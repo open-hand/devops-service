@@ -3,7 +3,7 @@ import pick from 'lodash/pick';
 import map from 'lodash/map';
 import isEmpty from 'lodash/isEmpty';
 
-const RES_TYPES = ['services', 'ingresses', 'certifications', 'configMaps', 'secrets', 'customResources', 'instances'];
+const RES_TYPES = ['instances', 'services', 'ingresses', 'certifications', 'configMaps', 'secrets', 'customResources'];
 const ENV_KEYS = ['id', 'name', 'connect', 'synchronize'];
 const ENV_ITEM = 'environment';
 

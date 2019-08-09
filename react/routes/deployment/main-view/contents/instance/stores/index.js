@@ -2,8 +2,9 @@ import React, { createContext, useMemo, useContext } from 'react';
 import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
 import { DataSet } from 'choerodon-ui/pro';
-import CasesDataSet from './CasesDataSet';
 import { useDeploymentStore } from '../../../../stores';
+import CasesDataSet from './CasesDataSet';
+import PodsDataset from './PodsDataSet';
 import useStore from './useStore';
 
 const Store = createContext();
@@ -14,9 +15,26 @@ export function useInstanceStore() {
 
 export const StoreProvider = injectIntl(inject('AppState')(
   (props) => {
-    const { AppState: { currentMenuType: { id } }, children } = props;
-    const { deploymentStore: { getSelectedMenu: { menuId } } } = useDeploymentStore();
+    const { AppState: { currentMenuType: { id } }, children, intl } = props;
+    const {
+      deploymentStore: {
+        getSelectedMenu: {
+          menuId,
+          parentId,
+        } },
+      intlPrefix,
+    } = useDeploymentStore();
+    const [envId, appId] = parentId.split('-');
+
     const casesDs = useMemo(() => new DataSet(CasesDataSet(id, menuId)), [id, menuId]);
+    const podsDs = useMemo(() => new DataSet(PodsDataset({
+      intl,
+      intlPrefix,
+      projectId: id,
+      envId,
+      appId,
+      istId: menuId,
+    })), [appId, envId, id, intl, intlPrefix, menuId]);
     const istStore = useStore();
 
     const value = {
@@ -27,6 +45,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
         PODS_TAB: 'pods',
       },
       casesDs,
+      podsDs,
       istStore,
     };
     return (

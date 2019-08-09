@@ -42,7 +42,7 @@ export default class Details extends Component {
   getDeployContent = (podType) => {
     const {
       detailsStore,
-      instanceStatus,
+      istStore: { getDetail: { status } },
       instanceId,
     } = this.context;
     const {
@@ -67,7 +67,6 @@ export default class Details extends Component {
       || 0} current / ${item[desired] || 0} desired`;
 
       const podCount = computedPodCount(devopsEnvPodDTOS);
-      const status = instanceStatus ? instanceStatus.status : '';
 
       return (
         <div key={name} className="c7n-deploy-expanded-item">

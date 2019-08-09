@@ -366,7 +366,7 @@ class InstancesStore {
     },
   ) => axios
     .get(
-      `/devops/v1/projects/${projectId}/app_versions/list_by_app/${appId}?page=${page}&app_version_id=${initId}&version=${param}&size=15`,
+      `/devops/v1/projects/${projectId}/app_service_versions/page_by_app_service/${appId}?page=${page}&app_version_id=${initId}&version=${param}&size=15`,
     );
 
   loadNetworking = (projectId, instanceId, page = 1, size = (height <= 900 ? 10 : 15)) => {

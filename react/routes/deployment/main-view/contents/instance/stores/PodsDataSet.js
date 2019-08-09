@@ -1,4 +1,4 @@
-import getTablePostData from '../../../../../../../utils/getTablePostData';
+import getTablePostData from '../../../../../../utils/getTablePostData';
 
 export default ({ intl, intlPrefix, projectId, envId, appId, istId }) => ({
   autoQuery: true,
