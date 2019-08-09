@@ -21,11 +21,23 @@
                ins.env_id,
                ins.last_update_date,
                ins.object_version_number,
-               env.cluster_id
+               env.cluster_id,
+               cmd.`status` commandStatus,
+               cmd.object_version_id commandVersionId,
+                (
+                select
+                ndav.version
+                from
+                devops_app_service_version  ndav
+                where ndav.id = cmd.object_version_id
+                ) commandVersion,
+               cmd.command_type commandType,
+               cmd.error error
         FROM devops_app_service_instance ins
                  LEFT JOIN devops_app_service_version  version ON ins.app_service_version_id = version.id
                  LEFT JOIN devops_app_service das ON ins.app_service_id = das.id
                  LEFT JOIN devops_env env ON ins.env_id = env.id
+                 LEFT JOIN devops_env_command cmd ON cmd.id = ins.command_id
         WHERE ins.id = #{instanceId}
     </select>
 
