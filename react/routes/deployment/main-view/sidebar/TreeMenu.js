@@ -18,7 +18,7 @@ const TreeMenu = observer(() => {
   const bounds = useMemo(() => mainStore.getNavBounds, [mainStore.getNavBounds]);
   const nodeRenderer = useCallback((record, search) => <TreeItem record={record} search={search} />, []);
 
-  return <nav style={bounds} className="c7n-deployment-sidebar">
+  return <nav style={bounds} className="c7ncd-deployment-sidebar">
     <SidebarHeading />
     <TreeView
       ds={treeDs}

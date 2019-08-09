@@ -1,48 +1,48 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { observer, inject } from 'mobx-react';
-import { withRouter } from 'react-router-dom';
-import { Modal, Select, Icon, Button } from 'choerodon-ui';
-import { Content } from '@choerodon/boot';
+import { Select, Button } from 'choerodon-ui';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import _ from 'lodash';
-import YamlEditor from '../../components/yamlEditor';
-import InterceptMask from '../../components/interceptMask/InterceptMask';
-import LoadingBar from '../../components/loadingBar';
-import { handlePromptError } from '../../utils';
+import YamlEditor from '../../../../../../../components/yamlEditor';
+import InterceptMask from '../../../../../../../components/interceptMask/InterceptMask';
+import { handlePromptError } from '../../../../../../../utils';
+import LoadingBar from '../../../../../../../components/loadingBar';
 
-import './instances-home/index.scss';
-import '../main.scss';
+import './index.less';
 
-const { Sidebar } = Modal;
-const Option = Select.Option;
+const { Option } = Select;
 
-@withRouter
 @injectIntl
 @inject('AppState')
 @observer
-export default class UpgradeIst extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      versionId: undefined,
-      values: null,
-      loading: false,
-      submitting: false,
-      hasEditorError: false,
-      idArr: {},
-      versionLoading: false,
-      versionOptions: [],
-      versions: [],
-      versionPageNum: 2,
-    };
-  }
-
-  componentDidMount = async () => {
-    const {
-      idArr,
-    } = this.props;
-    this.handleLoadVersion(idArr.appId, '', '', true);
+export default class Upgrade extends Component {
+  state = {
+    versionId: undefined,
+    values: '',
+    loading: false,
+    submitting: false,
+    hasEditorError: false,
+    idArr: {},
+    versionLoading: false,
+    versionOptions: [],
+    versions: [],
+    versionPageNum: 2,
   };
+
+  componentDidMount() {
+    const {
+      modal,
+      vo: {
+        parentId,
+        versionId,
+      },
+    } = this.props;
+    const appId = parentId.split('-')[1];
+
+    modal.handleOk(this.handleOk);
+
+    this.handleLoadVersion(appId, '', versionId, true);
+  }
 
   /**
    * 加载版本
@@ -51,7 +51,7 @@ export default class UpgradeIst extends Component {
    * @param init 版本id 需要在列表中的版本
    * @param shouldLoadValue 是否需要加载value
    */
-  handleLoadVersion = async (appId, param = '', init, shouldLoadValue = false) => {
+  handleLoadVersion = async (appId, param = '', init = '', shouldLoadValue = false) => {
     const {
       AppState: {
         currentMenuType: {
@@ -59,41 +59,45 @@ export default class UpgradeIst extends Component {
         },
       },
       store,
-      idArr,
+      vo,
     } = this.props;
 
     this.setState({ versionLoading: true });
 
-    const initId = init || '';
-    const data = await store.loadUpVersion({ projectId, appId, page: 1, param, initId })
-      .catch(() => {
-        this.setState({ versionLoading: false });
-      });
+    try {
+      const data = await store.loadUpVersion({ projectId, appId, page: 1, param, init });
+      if (handlePromptError(data)) {
+        const { hasNextPage, list } = data;
+        const versionOptions = renderVersionOptions(list);
 
-    if (handlePromptError(data)) {
-      const { hasNextPage, list } = data;
-      const versionOptions = renderVersionOptions(list);
+        if (hasNextPage) {
+          // 在选项最后置入一个加载更多按钮
+          const loadMoreBtn = renderLoadMoreBtn(this.handleLoadMoreVersion);
+          versionOptions.push(loadMoreBtn);
+        }
 
-      if (hasNextPage) {
-        // 在选项最后置入一个加载更多按钮
-        const loadMoreBtn = renderLoadMoreBtn(this.handleLoadMoreVersion);
-        versionOptions.push(loadMoreBtn);
+        this.setState({
+          versionOptions,
+          versions: list,
+          versionLoading: false,
+        });
+
+        if (shouldLoadValue) {
+          const { id, parentId } = vo;
+          const [envId] = parentId.split('-');
+
+          const newIdArr = {
+            appInstanceId: id,
+            environmentId: envId,
+            appId,
+            appVersionId: list[0].id,
+          };
+          this.setState({ idArr: newIdArr });
+          this.handleVersionChange(list[0].id);
+        }
       }
-
-      this.setState({
-        versionOptions,
-        versions: list,
-        versionLoading: false,
-      });
-
-      if (shouldLoadValue) {
-        const newIdArr = {
-          ...idArr,
-          appVersionId: list[0].id,
-        };
-        this.setState({ idArr: newIdArr });
-        this.handleVersionChange(list[0].id);
-      }
+    } catch (e) {
+      this.setState({ versionLoading: false });
     }
   };
 
@@ -174,16 +178,20 @@ export default class UpgradeIst extends Component {
     }
   };
 
-  handleNextStepEnable = flag => this.setState({ hasEditorError: flag });
+  handleNextStepEnable = (flag) => {
+    const { modal } = this.props;
+    this.setState({ hasEditorError: flag });
+    modal.update({ okProps: { disabled: flag } });
+  };
 
   handleChangeValue = values => this.setState({ values });
-
-  onClose = () => this.props.onClose(false);
 
   /**
    * 修改配置升级实例
    */
   handleOk = async () => {
+    if (this.state.hasEditorError) return false;
+
     const {
       store,
       appInstanceId,
@@ -193,9 +201,14 @@ export default class UpgradeIst extends Component {
       },
     } = this.props;
 
-    const { values, versionId, idArr, versions } = this.state;
+    const {
+      values,
+      versionId,
+      idArr,
+      versions,
+    } = this.state;
     const verId = versionId || versions[0].id;
-    const { id, yaml } = store.getValue || {};
+    const { id, yaml } = store.getUpgradeValue || {};
 
     const data = {
       ...idArr,
@@ -207,7 +220,7 @@ export default class UpgradeIst extends Component {
     };
 
     this.setState({ submitting: true });
-    const res = await store.reDeploy(projectId, data)
+    const res = await store.upgrade(projectId, data)
       .catch((e) => {
         this.setState({ submitting: false });
         onClose(true);
@@ -219,7 +232,6 @@ export default class UpgradeIst extends Component {
     }
 
     this.setState({ submitting: false });
-    onClose(true);
   };
 
   /**
@@ -229,13 +241,13 @@ export default class UpgradeIst extends Component {
   handleVersionChange = (id) => {
     const {
       store,
-      appInstanceId,
       AppState: {
         currentMenuType: { projectId },
       },
+      vo: { id: appInstanceId },
     } = this.props;
     this.setState({ versionId: id, values: null, loading: true });
-    store.setValue(null);
+    store.setUpgradeValue({});
     store.loadValue(projectId, appInstanceId, id).then(() => {
       this.setState({ loading: false });
     });
@@ -244,91 +256,55 @@ export default class UpgradeIst extends Component {
   render() {
     const {
       intl: { formatMessage },
-      store: {
-        getValue,
-      },
-      name,
-      visible,
+      store,
+      intlPrefix,
+      prefixCls,
     } = this.props;
     const {
       values,
       submitting,
       loading,
       versionId,
-      hasEditorError,
       versionOptions,
       versions,
       versionLoading,
     } = this.state;
 
-    const initValue = getValue ? getValue.yaml : '';
+    const { name, yaml } = store.getUpgradeValue;
 
     return (
-      <Sidebar
-        title={formatMessage({ id: 'ist.upgrade' })}
-        visible={visible}
-        confirmLoading={submitting}
-        footer={
-          [<Button
-            key="submit"
-            type="primary"
-            funcType="raised"
-            onClick={this.handleOk}
-            loading={submitting}
-            disabled={hasEditorError}
-          >
-            {formatMessage({ id: 'ist.upgrade' })}
-          </Button>,
-            <Button
-              funcType="raised"
-              key="back"
-              onClick={this.onClose}
-              disabled={submitting}
-            >
-              {formatMessage({ id: 'cancel' })}
-            </Button>]
-        }
-      >
-        <Content
-          code="ist.upgrade"
-          values={{ name }}
-          className="sidebar-content"
+      <Fragment>
+        <Select
+          filter
+          className={`${prefixCls}-version-select`}
+          label={formatMessage({ id: `${intlPrefix}.modal.version` })}
+          notFoundContent={formatMessage({ id: `${intlPrefix}.modal.version.empty` })}
+          loading={versionLoading}
+          filterOption={false}
+          onSearch={this.handleVersionSearch}
+          onChange={this.handleVersionChange}
+          value={versionId || (versions.length ? versions[0].id : undefined)}
         >
-          <Select
-            filter
-            className="c7n-app-select_512"
-            label={formatMessage({ id: 'deploy.step.one.version.title' })}
-            notFoundContent={formatMessage({ id: 'ist.noUpVer' })}
-            loading={versionLoading}
-            filterOption={false}
-            onSearch={this.handleVersionSearch}
-            onChange={this.handleVersionChange}
-            value={versionId || (versions.length ? versions[0].id : undefined)}
-          >
-            {versionOptions}
-          </Select>
-
-          {versions.length === 0 ? (
-            <div>
-              <Icon type="error" className="c7n-noVer-waring" />
-              {formatMessage({ id: 'ist.noUpVer' })}
-            </div>
-          ) : null}
-
-          <div className="c7n-config-section">
-            {getValue ? <YamlEditor
-              readOnly={false}
-              value={values || initValue}
-              originValue={initValue}
-              handleEnableNext={this.handleNextStepEnable}
-              onValueChange={this.handleChangeValue}
-            /> : null}
-          </div>
-          <LoadingBar display={loading} />
-        </Content>
-
+          {versionOptions}
+        </Select>
+        <div className={`${prefixCls}-configValue-text`}>
+          <span>{formatMessage({ id: `${intlPrefix}.modal.config` })}：</span>
+          <span className={`${prefixCls}-configValue-name`}>
+            {name || formatMessage({ id: `${intlPrefix}.modal.config.empty` })}
+          </span>
+        </div>
+        <div className="c7n-config-section">
+          <YamlEditor
+            readOnly={false}
+            value={values || yaml || ''}
+            originValue={yaml}
+            handleEnableNext={this.handleNextStepEnable}
+            onValueChange={this.handleChangeValue}
+          />
+        </div>
+        <LoadingBar display={loading} />
         <InterceptMask visible={submitting} />
-      </Sidebar>
+      </Fragment>
     );
   }
 }

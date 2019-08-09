@@ -7,15 +7,14 @@ export default function useStore() {
     tabKey: 'cases',
     detailLoading: false,
     detail: {},
+    upgradeValue: {},
+    valueLoading: false,
 
     setTabKey(data) {
       this.tabKey = data;
     },
     get getTabKey() {
       return this.tabKey;
-    },
-    redeploy(projectId, id) {
-      axios.put(`/devops/v1/projects/${projectId}/app_service_instances/${id}/restart`);
     },
     setDetailLoading(data) {
       this.detailLoading = data;
@@ -29,6 +28,26 @@ export default function useStore() {
     get getDetail() {
       return this.detail;
     },
+    setUpgradeValue(value) {
+      this.upgradeValue = value;
+    },
+    get getUpgradeValue() {
+      return this.upgradeValue;
+    },
+    setValueLoading(data) {
+      this.valueLoading = data;
+    },
+    get getValueLoading() {
+      return this.valueLoading;
+    },
+
+    redeploy(projectId, id) {
+      return axios.put(`/devops/v1/projects/${projectId}/app_service_instances/${id}/restart`);
+    },
+
+    upgrade(projectId, data) {
+      return axios.post(`/devops/v1/projects/${projectId}/app_service_instances`, JSON.stringify(data));
+    },
 
     async detailFetch(projectId, id) {
       this.setDetailLoading(true);
@@ -41,6 +60,24 @@ export default function useStore() {
       } catch (e) {
         this.setDetailLoading(false);
       }
+    },
+
+    async loadValue(projectId, id, versionId) {
+      try {
+        const data = await axios.get(`/devops/v1/projects/${projectId}/app_service_instances/${id}/appServiceService/${versionId}/upgrade_value`);
+        const result = handlePromptError(data);
+        if (result) {
+          this.setUpgradeValue(data);
+        }
+      } catch (e) {
+        Choerodon.handleResponseError(e);
+      }
+    },
+
+    loadUpVersion({ projectId, appId, page, param = '', initId = '' }) {
+      return axios.get(
+        `/devops/v1/projects/${projectId}/app_service_versions/page_by_app_service/${appId}?page=${page}&app_version_id=${initId}&version=${param}&size=15`,
+      );
     },
   }));
 }

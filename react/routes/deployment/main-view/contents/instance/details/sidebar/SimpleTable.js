@@ -72,8 +72,13 @@ class SimpleTable extends PureComponent {
         cell: BodyCell,
       },
     };
-    const { columns, data } = this.props;
-    return <Table columns={columns} data={data} components={components} />;
+    const { columns, data, ...props } = this.props;
+    return <Table
+      {...props}
+      columns={columns}
+      data={data}
+      components={components}
+    />;
   }
 }
 
