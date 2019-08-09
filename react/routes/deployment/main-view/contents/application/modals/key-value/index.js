@@ -10,7 +10,6 @@ import { objToYaml, yamlToObj, takeObject, ConfigNode, makePostData } from '../u
 import YamlEditor from '../../../../../../../components/yamlEditor';
 import InterceptMask from '../../../../../../../components/interceptMask/InterceptMask';
 import { handlePromptError } from '../../../../../../../utils';
-import Store from '../stores';
 
 import '../../../../../../main.scss';
 import './index.less';
@@ -33,10 +32,9 @@ const formItemLayout = {
 
 @Form.create({})
 @injectIntl
+@inject('AppState')
 @observer
 export default class FormView extends Component {
-  static contextType = Store;
-
   static defaultProps = {
     modeSwitch: false,
   };
@@ -66,17 +64,15 @@ export default class FormView extends Component {
    */
   checkName = _.debounce(async (rule, value, callback) => {
     const {
+      intl: {
+        formatMessage,
+      },
       AppState: {
         currentMenuType: {
           projectId,
         },
       },
       envId,
-    } = this.context;
-    const {
-      intl: {
-        formatMessage,
-      },
       store,
     } = this.props;
 
@@ -103,15 +99,12 @@ export default class FormView extends Component {
     const {
       id,
       store,
-    } = this.props;
-    const {
       AppState: {
         currentMenuType: {
           projectId,
         },
       },
-    } = this.context;
-
+    } = this.props;
     if (typeof id === 'number') {
       try {
         const res = await store.loadSingleData(projectId, id);
@@ -228,13 +221,6 @@ export default class FormView extends Component {
         formatMessage,
       },
     } = this.props;
-    const {
-      AppState: {
-        currentMenuType: {
-          projectId,
-        },
-      },
-    } = this.context;
 
     const _data = data || this.state.dataSource;
     const hasKey = _data.filter(({ key }) => !_.isEmpty(key));
@@ -298,8 +284,6 @@ export default class FormView extends Component {
       form,
       id,
       store,
-    } = this.props;
-    const {
       AppState: {
         currentMenuType: {
           id: projectId,
@@ -307,7 +291,7 @@ export default class FormView extends Component {
       },
       envId,
       appId,
-    } = this.context;
+    } = this.props;
     const {
       dataSource,
       isYamlEdit,
@@ -611,14 +595,12 @@ export default class FormView extends Component {
       id,
       title,
       modeSwitch,
-    } = this.props;
-    const {
       AppState: {
         currentMenuType: {
           name: menuName,
         },
       },
-    } = this.context;
+    } = this.props;
     const {
       submitting,
       data,

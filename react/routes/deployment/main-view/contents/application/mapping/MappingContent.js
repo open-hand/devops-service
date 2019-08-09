@@ -12,7 +12,7 @@ import StatusTags from '../../../../../../components/StatusTags';
 import { useDeploymentStore } from '../../../../stores';
 import { useMappingStore } from './stores';
 import TimePopover from '../../../../../../components/timePopover/TimePopover';
-import FormView from './form-view';
+import KeyValueModal from '../modals/key-value';
 
 import './index.less';
 
@@ -22,7 +22,7 @@ const ConfigMap = observer((props) => {
   const {
     prefixCls,
     intlPrefix,
-    deploymentStore: { getSelectedMenu: { parentId } },
+    deploymentStore: { getSelectedMenu: { menuId, parentId } },
   } = useDeploymentStore();
   const {
     intl: { formatMessage },
@@ -32,20 +32,20 @@ const ConfigMap = observer((props) => {
   } = useMappingStore();
 
   const [showModal, setShowModal] = useState(false);
-  const [configMapId, setConfigMapId] = useState(null);
+  const [recordId, setRecordId] = useState(null);
 
   function refresh() {
     return tableDs.query();
   }
 
   const closeSideBar = useCallback((isLoad) => {
-    setConfigMapId(null);
+    setRecordId(null);
     setShowModal(false);
-    isLoad && tableDs.query();
+    isLoad && refresh();
   });
 
   function handleEdit(record) {
-    setConfigMapId(record.get('id'));
+    setRecordId(record.get('id'));
     setShowModal(true);
   }
 
@@ -89,7 +89,6 @@ const ConfigMap = observer((props) => {
   
   return (
     <div className={`${prefixCls}-mapping-content`}>
-      <Button onClick={() => setShowModal(true)}>创建</Button>
       <Table
         dataSet={tableDs}
         border={false}
@@ -100,11 +99,13 @@ const ConfigMap = observer((props) => {
         <Column name="key" renderer={renderKey} />
         <Column name="lastUpdateDate" renderer={renderDate} />
       </Table>
-      {showModal && <FormView
-        modeSwitch
+      {showModal && <KeyValueModal
+        modeSwitch={type === 'mapping'}
         title={type === 'mapping' ? 'configMap' : 'secret'}
         visible={showModal}
-        id={configMapId}
+        id={recordId}
+        envId={parentId}
+        appId={menuId}
         onClose={closeSideBar}
         store={formStore}
       />}
