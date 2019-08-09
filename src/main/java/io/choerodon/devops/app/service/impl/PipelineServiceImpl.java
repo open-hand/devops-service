@@ -194,10 +194,10 @@ public class PipelineServiceImpl implements PipelineService {
         pipelineE.setProjectId(projectId);
         checkName(projectId, pipelineReqVO.getName());
         pipelineE = baseCreate(projectId, pipelineE);
-        createUserRel(pipelineReqVO.getPipelineUserRelDTOS(), pipelineE.getId(), null, null);
+        createUserRel(pipelineReqVO.getPipelineUserRels(), pipelineE.getId(), null, null);
 
         Long pipelineId = pipelineE.getId();
-        List<PipelineStageDTO> pipelineStageES = ConvertUtils.convertList(pipelineReqVO.getPipelineStageVOS(), PipelineStageDTO.class)
+        List<PipelineStageDTO> pipelineStageES = ConvertUtils.convertList(pipelineReqVO.getPipelineStageVOs(), PipelineStageDTO.class)
                 .stream().map(t -> {
                     t.setPipelineId(pipelineId);
                     t.setProjectId(projectId);
@@ -205,8 +205,8 @@ public class PipelineServiceImpl implements PipelineService {
                 }).collect(Collectors.toList());
         for (int i = 0; i < pipelineStageES.size(); i++) {
             Long stageId = pipelineStageES.get(i).getId();
-            createUserRel(pipelineReqVO.getPipelineStageVOS().get(i).getStageUserRelDTOS(), null, stageId, null);
-            List<PipelineTaskVO> taskDTOList = pipelineReqVO.getPipelineStageVOS().get(i).getPipelineTaskVOS();
+            createUserRel(pipelineReqVO.getPipelineStageVOs().get(i).getStageUserRels(), null, stageId, null);
+            List<PipelineTaskVO> taskDTOList = pipelineReqVO.getPipelineStageVOs().get(i).getPipelineTaskVOs();
             if (taskDTOList != null && taskDTOList.size() > 0) {
                 taskDTOList.forEach(t -> createPipelineTask(t, projectId, stageId));
             }
@@ -220,13 +220,13 @@ public class PipelineServiceImpl implements PipelineService {
         pipelineReqVO.setProjectId(projectId);
         PipelineDTO pipelineE = ConvertUtils.convertObject(pipelineReqVO, PipelineDTO.class);
         pipelineE = baseUpdate(projectId, pipelineE);
-        updateUserRel(pipelineReqVO.getPipelineUserRelDTOS(), pipelineE.getId(), null, null);
+        updateUserRel(pipelineReqVO.getPipelineUserRels(), pipelineE.getId(), null, null);
         Long pipelineId = pipelineE.getId();
-        removeStages(pipelineReqVO.getPipelineStageVOS(), pipelineId);
+        removeStages(pipelineReqVO.getPipelineStageVOs(), pipelineId);
 
-        for (int i = 0; i < pipelineReqVO.getPipelineStageVOS().size(); i++) {
-            PipelineStageDTO pipelineStageDTO = createOrUpdateStage(pipelineReqVO.getPipelineStageVOS().get(i), pipelineId, projectId);
-            List<PipelineTaskVO> taskDTOList = pipelineReqVO.getPipelineStageVOS().get(i).getPipelineTaskVOS();
+        for (int i = 0; i < pipelineReqVO.getPipelineStageVOs().size(); i++) {
+            PipelineStageDTO pipelineStageDTO = createOrUpdateStage(pipelineReqVO.getPipelineStageVOs().get(i), pipelineId, projectId);
+            List<PipelineTaskVO> taskDTOList = pipelineReqVO.getPipelineStageVOs().get(i).getPipelineTaskVOs();
             if (taskDTOList != null) {
                 removeTasks(taskDTOList, pipelineStageDTO.getId());
                 taskDTOList.stream().filter(Objects::nonNull).forEach(t -> {
@@ -268,22 +268,22 @@ public class PipelineServiceImpl implements PipelineService {
     @Override
     public PipelineReqVO queryById(Long projectId, Long pipelineId) {
         PipelineReqVO pipelineReqVO = ConvertUtils.convertObject(baseQueryById(pipelineId), PipelineReqVO.class);
-        pipelineReqVO.setPipelineUserRelDTOS(userRelationshipService.baseListByOptions(pipelineId, null, null).stream().map(PipelineUserRelationshipDTO::getUserId).collect(Collectors.toList()));
+        pipelineReqVO.setPipelineUserRels(userRelationshipService.baseListByOptions(pipelineId, null, null).stream().map(PipelineUserRelationshipDTO::getUserId).collect(Collectors.toList()));
         List<PipelineStageVO> pipelineStageES = ConvertUtils.convertList(pipelineStageService.baseListByPipelineId(pipelineId), PipelineStageVO.class);
         pipelineStageES = pipelineStageES.stream()
                 .peek(stage -> {
                     List<PipelineTaskVO> pipelineTaskVOS = ConvertUtils.convertList(pipelineTaskService.baseQueryTaskByStageId(stage.getId()), PipelineTaskVO.class);
                     pipelineTaskVOS = pipelineTaskVOS.stream().peek(task -> {
                         if (task.getAppDeployId() != null) {
-                            task.setPipelineAppServiceDeployVO(ConvertUtils.convertObject(baseQueryById(task.getAppDeployId()), PipelineAppServiceDeployVO.class));
+                            task.setPipelineAppServiceDeployVO(ConvertUtils.convertObject(pipelineAppDeployService.baseQueryById(task.getAppDeployId()), PipelineAppServiceDeployVO.class));
                         } else {
-                            task.setTaskUserRelDTOS(userRelationshipService.baseListByOptions(null, null, task.getId()).stream().map(PipelineUserRelationshipDTO::getUserId).collect(Collectors.toList()));
+                            task.setTaskUserRels(userRelationshipService.baseListByOptions(null, null, task.getId()).stream().map(PipelineUserRelationshipDTO::getUserId).collect(Collectors.toList()));
                         }
                     }).collect(Collectors.toList());
-                    stage.setPipelineTaskVOS(pipelineTaskVOS);
-                    stage.setStageUserRelDTOS(userRelationshipService.baseListByOptions(null, stage.getId(), null).stream().map(PipelineUserRelationshipDTO::getUserId).collect(Collectors.toList()));
+                    stage.setPipelineTaskVOs(pipelineTaskVOS);
+                    stage.setStageUserRels(userRelationshipService.baseListByOptions(null, stage.getId(), null).stream().map(PipelineUserRelationshipDTO::getUserId).collect(Collectors.toList()));
                 }).collect(Collectors.toList());
-        pipelineReqVO.setPipelineStageVOS(pipelineStageES);
+        pipelineReqVO.setPipelineStageVOs(pipelineStageES);
         return pipelineReqVO;
     }
 
@@ -1005,9 +1005,9 @@ public class PipelineServiceImpl implements PipelineService {
             stageE.setPipelineId(pipelineId);
             stageE.setProjectId(projectId);
             stageE = pipelineStageService.baseCreate(stageE);
-            createUserRel(stageDTO.getStageUserRelDTOS(), null, stageE.getId(), null);
+            createUserRel(stageDTO.getStageUserRels(), null, stageE.getId(), null);
         }
-        updateUserRel(stageDTO.getStageUserRelDTOS(), null, stageE.getId(), null);
+        updateUserRel(stageDTO.getStageUserRels(), null, stageE.getId(), null);
         return stageE;
     }
 
@@ -1018,7 +1018,7 @@ public class PipelineServiceImpl implements PipelineService {
             }
             Long taskId = pipelineTaskService.baseUpdateTask(ConvertUtils.convertObject(taskDTO, PipelineTaskDTO.class)).getId();
             if (MANUAL.equals(taskDTO.getType())) {
-                updateUserRel(taskDTO.getTaskUserRelDTOS(), null, null, taskId);
+                updateUserRel(taskDTO.getTaskUserRels(), null, null, taskId);
             }
         } else {
             createPipelineTask(taskDTO, projectId, stageId);
@@ -1153,7 +1153,7 @@ public class PipelineServiceImpl implements PipelineService {
         }
         Long taskId = pipelineTaskService.baseCreateTask(ConvertUtils.convertObject(t, PipelineTaskDTO.class)).getId();
         if (MANUAL.equals(t.getType())) {
-            createUserRel(t.getTaskUserRelDTOS(), null, null, taskId);
+            createUserRel(t.getTaskUserRels(), null, null, taskId);
         }
     }
 

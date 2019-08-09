@@ -12,20 +12,20 @@ public class PipelineStageVO {
     private Long id;
     private String stageName;
     private String triggerType;
-    private List<Long> stageUserRelDTOS;
+    private List<Long> stageUserRels;
     private Integer isParallel;
-    private List<PipelineTaskVO> pipelineTaskVOS;
+    private List<PipelineTaskVO> pipelineTaskVOs;
     private Long pipelineId;
     private Long projectId;
     private Long objectVersionNumber;
     private Date lastUpdateDate;
 
-    public List<Long> getStageUserRelDTOS() {
-        return stageUserRelDTOS;
+    public List<Long> getStageUserRels() {
+        return stageUserRels;
     }
 
-    public void setStageUserRelDTOS(List<Long> stageUserRelDTOS) {
-        this.stageUserRelDTOS = stageUserRelDTOS;
+    public void setStageUserRels(List<Long> stageUserRels) {
+        this.stageUserRels = stageUserRels;
     }
 
     public Long getId() {
@@ -60,12 +60,12 @@ public class PipelineStageVO {
         this.isParallel = isParallel;
     }
 
-    public List<PipelineTaskVO> getPipelineTaskVOS() {
-        return pipelineTaskVOS;
+    public List<PipelineTaskVO> getPipelineTaskVOs() {
+        return pipelineTaskVOs;
     }
 
-    public void setPipelineTaskVOS(List<PipelineTaskVO> pipelineTaskVOS) {
-        this.pipelineTaskVOS = pipelineTaskVOS;
+    public void setPipelineTaskVOs(List<PipelineTaskVO> pipelineTaskVOs) {
+        this.pipelineTaskVOs = pipelineTaskVOs;
     }
 
     public Long getPipelineId() {
