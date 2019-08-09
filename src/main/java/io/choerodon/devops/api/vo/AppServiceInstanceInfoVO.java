@@ -19,6 +19,11 @@ public class AppServiceInstanceInfoVO {
     private Date lastUpdateDate;
     private Long objectVersionNumber;
     private Boolean connect;
+    private Long commandVersionId;
+    private String commandVersion;
+    private String commandType;
+    private String commandStatus;
+    private String error;
 
     public Long getId() {
         return id;
@@ -114,5 +119,45 @@ public class AppServiceInstanceInfoVO {
 
     public void setConnect(Boolean connect) {
         this.connect = connect;
+    }
+
+    public String getCommandType() {
+        return commandType;
+    }
+
+    public void setCommandType(String commandType) {
+        this.commandType = commandType;
+    }
+
+    public Long getCommandVersionId() {
+        return commandVersionId;
+    }
+
+    public void setCommandVersionId(Long commandVersionId) {
+        this.commandVersionId = commandVersionId;
+    }
+
+    public String getCommandStatus() {
+        return commandStatus;
+    }
+
+    public void setCommandStatus(String commandStatus) {
+        this.commandStatus = commandStatus;
+    }
+
+    public String getCommandVersion() {
+        return commandVersion;
+    }
+
+    public void setCommandVersion(String commandVersion) {
+        this.commandVersion = commandVersion;
+    }
+
+    public String getError() {
+        return error;
+    }
+
+    public void setError(String error) {
+        this.error = error;
     }
 }
