@@ -22,18 +22,6 @@ export const StoreProvider = injectIntl(inject('AppState')(
         RUNNING_COLOR: '#0bc2a8',
         PADDING_COLOR: '#fbb100',
       },
-      itemType: {
-        ENV_ITEM: 'environment',
-        APP_ITEM: 'application',
-        IST_ITEM: 'instances',
-        GROUP_ITEM: 'group',
-        SERVICES_ITEM: 'services',
-        INGRESS_ITEM: 'ingresses',
-        CERT_ITEM: 'certifications',
-        MAP_ITEM: 'configMaps',
-        CIPHER_ITEM: 'secrets',
-        CUSTOM_ITEM: 'customResources',
-      },
       mainStore,
     };
     return (

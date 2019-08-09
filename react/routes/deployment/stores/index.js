@@ -29,7 +29,6 @@ export const StoreProvider = injectIntl(inject('AppState')(
         ENV_ITEM: 'environment',
         APP_ITEM: 'application',
         IST_ITEM: 'instances',
-        GROUP_ITEM: 'group',
         SERVICES_ITEM: 'services',
         INGRESS_ITEM: 'ingresses',
         CERT_ITEM: 'certifications',

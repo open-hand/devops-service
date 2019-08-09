@@ -34,7 +34,8 @@ const formatData = (value, store) => {
         id: j,
         name: childType,
         key: groupKey,
-        itemType: 'group',
+        isGroup: true,
+        itemType: childType,
         parentId: String(envId),
         expand: expandsKeys.includes(groupKey),
       };

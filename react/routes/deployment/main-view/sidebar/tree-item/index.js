@@ -19,7 +19,6 @@ const TreeItem = observer(({ record, search }) => {
       ENV_ITEM,
       APP_ITEM,
       IST_ITEM,
-      GROUP_ITEM,
       SERVICES_ITEM,
       INGRESS_ITEM,
       CERT_ITEM,
@@ -43,70 +42,70 @@ const TreeItem = observer(({ record, search }) => {
 
   const prefixIcon = useMemo(() => {
     let prefix;
-    switch (type) {
-      case ENV_ITEM: {
-        const connect = record.get('connect');
-        const synchronize = record.get('synchronize');
 
-        prefix = <StatusDot
-          connect={connect}
-          synchronize={synchronize}
-          size="small"
-        />;
-        break;
-      }
-      case APP_ITEM:
-      case GROUP_ITEM:
-      case SERVICES_ITEM:
-      case INGRESS_ITEM:
-      case CERT_ITEM:
-      case MAP_ITEM:
-      case CIPHER_ITEM:
-      case CUSTOM_ITEM: {
-        const iconMappings = {
-          [APP_ITEM]: 'widgets',
-          [GROUP_ITEM]: 'folder_open',
-          [SERVICES_ITEM]: 'router',
-          [INGRESS_ITEM]: 'language',
-          [CERT_ITEM]: 'class',
-          [MAP_ITEM]: 'compare_arrows',
-          [CIPHER_ITEM]: 'vpn_key',
-          [CUSTOM_ITEM]: 'filter_b_and_w',
-        };
-        let iconType = iconMappings[type];
+    const isGroup = record.get('isGroup');
 
-        if (type === GROUP_ITEM) {
-          iconType = isExpand ? 'folder_open2' : 'folder_open';
+    if (isGroup) {
+      prefix = isExpand ? <Icon type="folder_open2" /> : <Icon type="folder_open" />;
+    } else {
+      switch (type) {
+        case ENV_ITEM: {
+          const connect = record.get('connect');
+          const synchronize = record.get('synchronize');
+
+          prefix = <StatusDot
+            connect={connect}
+            synchronize={synchronize}
+            size="small"
+          />;
+          break;
         }
+        case APP_ITEM:
+        case SERVICES_ITEM:
+        case INGRESS_ITEM:
+        case CERT_ITEM:
+        case MAP_ITEM:
+        case CIPHER_ITEM:
+        case CUSTOM_ITEM: {
+          const iconMappings = {
+            [APP_ITEM]: 'widgets',
+            [SERVICES_ITEM]: 'router',
+            [INGRESS_ITEM]: 'language',
+            [CERT_ITEM]: 'class',
+            [MAP_ITEM]: 'compare_arrows',
+            [CIPHER_ITEM]: 'vpn_key',
+            [CUSTOM_ITEM]: 'filter_b_and_w',
+          };
+          const iconType = iconMappings[type];
+          prefix = <Icon type={iconType} />;
+          break;
+        }
+        case IST_ITEM: {
+          const podRunningCount = record.get('podRunningCount');
+          const podCount = record.get('podCount');
+          const podUnlinkCount = podCount - podRunningCount;
 
-        prefix = <Icon type={iconType} />;
-        break;
+          prefix = <PodCircle
+            size="small"
+            dataSource={[{
+              name: 'running',
+              value: podRunningCount,
+              stroke: RUNNING_COLOR,
+            }, {
+              name: 'unlink',
+              value: podUnlinkCount,
+              stroke: PADDING_COLOR,
+            }]}
+          />;
+          break;
+        }
+        default:
+          prefix = null;
       }
-      case IST_ITEM: {
-        const podRunningCount = record.get('podRunningCount');
-        const podCount = record.get('podCount');
-        const podUnlinkCount = podCount - podRunningCount;
-
-        prefix = <PodCircle
-          size="small"
-          dataSource={[{
-            name: 'running',
-            value: podRunningCount,
-            stroke: RUNNING_COLOR,
-          }, {
-            name: 'unlink',
-            value: podUnlinkCount,
-            stroke: PADDING_COLOR,
-          }]}
-        />;
-        break;
-      }
-      default:
-        prefix = null;
     }
 
     return prefix;
-  }, [APP_ITEM, CERT_ITEM, CIPHER_ITEM, CUSTOM_ITEM, ENV_ITEM, GROUP_ITEM, INGRESS_ITEM, IST_ITEM, MAP_ITEM, PADDING_COLOR, RUNNING_COLOR, SERVICES_ITEM, isExpand, record, type]);
+  }, [APP_ITEM, CERT_ITEM, CIPHER_ITEM, CUSTOM_ITEM, ENV_ITEM, INGRESS_ITEM, IST_ITEM, MAP_ITEM, PADDING_COLOR, RUNNING_COLOR, SERVICES_ITEM, isExpand, record, type]);
 
   const text = useMemo(() => {
     const index = toUpper(name).indexOf(toUpper(search));

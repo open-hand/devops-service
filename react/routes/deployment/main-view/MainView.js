@@ -25,7 +25,6 @@ const MainView = observer(() => {
       ENV_ITEM,
       APP_ITEM,
       IST_ITEM,
-      GROUP_ITEM,
       SERVICES_ITEM,
       INGRESS_ITEM,
       CERT_ITEM,
