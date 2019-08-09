@@ -37,6 +37,7 @@ class SimpleTable extends PureComponent {
     `;
 
     const BodyCell = styled.td`
+      white-space: normal !important;
       padding: 5px 2px !important;
       border-bottom: none !important;
       font-size: 13px;
@@ -71,8 +72,13 @@ class SimpleTable extends PureComponent {
         cell: BodyCell,
       },
     };
-    const { columns, data } = this.props;
-    return <Table columns={columns} data={data} components={components} />;
+    const { columns, data, ...props } = this.props;
+    return <Table
+      {...props}
+      columns={columns}
+      data={data}
+      components={components}
+    />;
   }
 }
 

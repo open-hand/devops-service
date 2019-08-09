@@ -6,14 +6,13 @@ import { Content, Header, Page, stores } from '@choerodon/boot';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import _ from 'lodash';
 import '../../main.scss';
-import './CiPipelineHome.scss';
-import CiPipelineStore from '../../../stores/project/ciPipelineManage';
-import DevPipelineStore from '../../../stores/project/devPipeline';
+import '../index.scss';
+import CiPipelineStore from '../stores';
+import DevPipelineStore from '../../devPipeline/DevPipelineStore';
 import DepPipelineEmpty from '../../../components/DepPipelineEmpty/DepPipelineEmpty';
 import RefreshBtn from '../../../components/refreshBtn';
 import DevopsStore from '../../../stores/DevopsStore';
-import { getTableTitle } from '../../../utils';
-import CiPipelineTable from '../ciPipelineTable';
+import CiPipelineTable from '../CiPipelineTable.js';
 
 const { Option, OptGroup } = Select;
 const { AppState } = stores;
@@ -27,7 +26,6 @@ class CiPipelineHome extends Component {
   }
 
   componentDidMount() {
-    DevPipelineStore.queryAppData(AppState.currentMenuType.id, 'ci');
   }
 
   componentWillUnmount() {
@@ -42,7 +40,6 @@ class CiPipelineHome extends Component {
       CiPipelineStore.pagination.current,
       CiPipelineStore.pagination.pageSize,
     );
-    DevPipelineStore.queryAppData(AppState.currentMenuType.id);
   };
 
   handleChange(appId) {
@@ -109,9 +106,9 @@ class CiPipelineHome extends Component {
           </Select>
           <RefreshBtn name="ci" onFresh={this.handleRefresh} />
         </Header>
-        <Content code={appData.length ? 'ciPipeline.app' : 'ciPipeline'} values={{ name: titleName }}>
-          <CiPipelineTable store={CiPipelineStore} loading={CiPipelineStore.loading}/>
-        </Content></Fragment> : <DepPipelineEmpty title={<FormattedMessage id="ciPipeline.head" />} type="app" />}
+          <Content code={appData.length ? 'ciPipeline.app' : 'ciPipeline'} values={{ name: titleName }}>
+            <CiPipelineTable store={CiPipelineStore} loading={CiPipelineStore.loading} />
+          </Content></Fragment> : <DepPipelineEmpty title={<FormattedMessage id="ciPipeline.head" />} type="app" />}
       </Page>
     );
   }

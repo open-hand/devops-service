@@ -1,7 +1,7 @@
 import { observable, action, computed } from 'mobx';
 import { axios, store } from '@choerodon/boot';
 import { handleProptError } from '../../../utils';
-import DevPipelineStore from '../../../stores/project/devPipeline';
+import DevPipelineStore from '../../devPipeline';
 
 @store('AppTagStore')
 class AppTagStore {
@@ -81,7 +81,7 @@ class AppTagStore {
    * @returns {Promise<T>}
    */
   queryBranchData = ({ projectId, sorter = { field: 'createDate', order: 'asc' }, postData = { searchParam: {}, param: '' }, size = 3 }) => {
-    axios.post(`/devops/v1/projects/${projectId}/apps/${DevPipelineStore.selectedApp}/git/branches?page=1&size=${size}`, JSON.stringify(postData)).then((data) => {
+    axios.post(`/devops/v1/projects/${projectId}/app_service/${DevPipelineStore.selectedApp}/git/branches?page=1&size=${size}`, JSON.stringify(postData)).then((data) => {
       const result = handleProptError(data);
       if (result) {
         this.setBranchData(result);
@@ -94,7 +94,7 @@ class AppTagStore {
    * @param projectId
    * @param name
    */
-  checkTagName = (projectId, name) => axios.get(`/devops/v1/projects/${projectId}/apps/${DevPipelineStore.selectedApp}/git/tags_check?tag_name=${name}`);
+  checkTagName = (projectId, name) => axios.get(`/devops/v1/projects/${projectId}/app_service/${DevPipelineStore.selectedApp}/git/tags_check?tag_name=${name}`);
 
   /**
    * 创建tag
@@ -103,7 +103,7 @@ class AppTagStore {
    * @param ref 来源分支
    * @param release 发布日志
    */
-  createTag = (projectId, tag, ref, release) => axios.post(`/devops/v1/projects/${projectId}/apps/${DevPipelineStore.selectedApp}/git/tags?tag=${tag}&ref=${ref}`, release);
+  createTag = (projectId, tag, ref, release) => axios.post(`/devops/v1/projects/${projectId}/app_service/${DevPipelineStore.selectedApp}/git/tags?tag=${tag}&ref=${ref}`, release);
 
   /**
    * 编辑发布日志
@@ -112,14 +112,14 @@ class AppTagStore {
    * @param release
    * @returns {IDBRequest | Promise<void>}
    */
-  editTag = (projectId, tag, release) => axios.put(`/devops/v1/projects/${projectId}/apps/${DevPipelineStore.selectedApp}/git/tags?tag=${tag}`, release);
+  editTag = (projectId, tag, release) => axios.put(`/devops/v1/projects/${projectId}/app_service/${DevPipelineStore.selectedApp}/git/tags?tag=${tag}`, release);
 
   /**
    * 删除标记
    * @param projectId
    * @param tag
    */
-  deleteTag = (projectId, tag) => axios.delete(`/devops/v1/projects/${projectId}/apps/${DevPipelineStore.selectedApp}/git/tags?tag=${tag}`);
+  deleteTag = (projectId, tag) => axios.delete(`/devops/v1/projects/${projectId}/app_service/${DevPipelineStore.selectedApp}/git/tags?tag=${tag}`);
 }
 
 const appTagStore = new AppTagStore();

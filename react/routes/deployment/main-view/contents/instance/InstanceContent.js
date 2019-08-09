@@ -1,20 +1,17 @@
-import React, { Fragment, useMemo, useState, lazy, Suspense, useCallback } from 'react';
+import React, { Fragment, useEffect, lazy, Suspense } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Tabs } from 'choerodon-ui';
-import { useInstanceStore } from './stores';
-import { useDeploymentStore } from '../../../stores';
+import isEmpty from 'lodash/isEmpty';
 import PrefixTitle from '../../components/prefix-title';
 import PodCircle from '../../components/pod-circle';
+import Modals from './modals';
+import { useDeploymentStore } from '../../../stores';
+import { useMainStore } from '../../stores';
+import { useInstanceStore } from './stores';
 
 import './index.less';
 
-const RUNNING_COLOR = '#0bc2a8';
-const PADDING_COLOR = '#fbb100';
-
 const { TabPane } = Tabs;
-const CASES_TAB = 'cases';
-const DETAILS_TAB = 'details';
-const PODS_TAB = 'pods';
 
 const Cases = lazy(() => import('./cases'));
 const Details = lazy(() => import('./details'));
@@ -24,59 +21,73 @@ const InstanceContent = observer(() => {
   const {
     prefixCls,
     intlPrefix,
+    deploymentStore: { getSelectedMenu: { menuId } },
   } = useDeploymentStore();
   const {
+    podColor: {
+      RUNNING_COLOR,
+      PADDING_COLOR,
+    },
+  } = useMainStore();
+  const {
     intl: { formatMessage },
-    baseInfoDs,
+    tabs: {
+      CASES_TAB,
+      DETAILS_TAB,
+      PODS_TAB,
+    },
+    istStore,
+    AppState: { currentMenuType: { id } },
   } = useInstanceStore();
-  const [activeKey, setActiveKey] = useState(CASES_TAB);
-  const baseInfo = baseInfoDs.data;
 
-  const handleChange = useCallback((key) => {
-    setActiveKey(key);
-  }, []);
+  useEffect(() => {
+    istStore.detailFetch(id, menuId);
+  }, [id, istStore, menuId]);
 
-  const title = useMemo(() => {
-    if (baseInfo.length) {
-      const record = baseInfo[0];
-      const name = record.get('code');
-      const podRunningCount = record.get('podRunningCount');
-      const podCount = record.get('podCount');
-      const podUnlinkCount = podCount - podRunningCount;
+  function handleChange(key) {
+    istStore.setTabKey(key);
+  }
 
-      return <Fragment>
-        <PodCircle
-          style={{
-            width: 22,
-            height: 22,
-          }}
-          dataSource={[{
-            name: 'running',
-            value: podRunningCount,
-            stroke: RUNNING_COLOR,
-          }, {
-            name: 'unlink',
-            value: podUnlinkCount,
-            stroke: PADDING_COLOR,
-          }]}
-        />
-        <span className={`${prefixCls}-title-text`}>{name}</span>
-      </Fragment>;
-    }
-  }, [baseInfo, prefixCls]);
+  function getTitle() {
+    const detail = istStore.getDetail;
+    if (isEmpty(detail)) return null;
+
+    const { code, podRunningCount, podCount } = detail;
+    const podUnlinkCount = podCount - podRunningCount;
+
+    return <Fragment>
+      <PodCircle
+        style={{
+          width: 22,
+          height: 22,
+        }}
+        dataSource={[{
+          name: 'running',
+          value: podRunningCount,
+          stroke: RUNNING_COLOR,
+        }, {
+          name: 'unlink',
+          value: podUnlinkCount,
+          stroke: PADDING_COLOR,
+        }]}
+      />
+      <span className={`${prefixCls}-title-text`}>{code}</span>
+    </Fragment>;
+  }
 
   return (
     <div className={`${prefixCls}-instance`}>
+      <Modals />
       <PrefixTitle
         prefixCls={prefixCls}
-        fallback={!title}
+        fallback={istStore.getDetailLoading}
       >
-        {title}
+        {getTitle()}
       </PrefixTitle>
       <Tabs
         className={`${prefixCls}-environment-tabs`}
         animated={false}
-        activeKey={activeKey}
+        activeKey={istStore.getTabKey}
         onChange={handleChange}
       >
         <TabPane

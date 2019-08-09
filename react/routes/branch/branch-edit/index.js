@@ -9,9 +9,9 @@ import '../../main.scss';
 import '../branch-create/index.scss';
 import '../index.scss';
 import MouserOverWrapper from '../../../components/MouseOverWrapper';
-import DevPipelineStore from '../../../stores/project/devPipeline';
+import DevPipelineStore from '../../devPipeline';
 import DevConsoleStore from '../../devConsole/stores';
-import InterceptMask from "../../../components/interceptMask/InterceptMask";
+import InterceptMask from '../../../components/interceptMask/InterceptMask';
 
 const { AppState } = stores;
 const Sidebar = Modal.Sidebar;
@@ -76,7 +76,7 @@ class BranchEdit extends Component {
     }
     return (<span>
       <Tooltip title={mes}>
-        <div style={{ color: color, marginRight: 5 }} className="branch-issue"><i className={`icon icon-${icon}`} /></div>
+        <div style={{ color, marginRight: 5 }} className="branch-issue"><i className={`icon icon-${icon}`} /></div>
         <span className="branch-issue-content">
           <span style={{ color: 'rgb(0,0,0,0.65)' }}>{s.issueNum}</span>
           <MouserOverWrapper style={{ display: 'inline-block', verticalAlign: 'sub' }} width="350px" text={s.summary}>{s.summary}</MouserOverWrapper>

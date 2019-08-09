@@ -1,17 +1,14 @@
-import React, { useState, useContext, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
-import {
-  Tooltip,
-  Icon,
-} from 'choerodon-ui/pro';
+import { Icon } from 'choerodon-ui/pro';
 import { Popover } from 'choerodon-ui';
 import map from 'lodash/map';
 import classnames from 'classnames';
 import Slider from 'react-slick';
 import UserInfo from '../../../../../../components/userInfo/UserInfo';
-import { useCasesStore } from './stores';
 import { useDeploymentStore } from '../../../../stores';
+import { useInstanceStore } from '../stores';
 
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
@@ -44,7 +41,7 @@ const Operation = observer(({ handleClick }) => {
   const {
     intl: { formatMessage },
     casesDs,
-  } = useCasesStore();
+  } = useInstanceStore();
   const [cardActive, setCardActive] = useState('');
 
   const handleRecordClick = useCallback((createTime, podEventVO) => {

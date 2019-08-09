@@ -22,6 +22,9 @@ const commonField = {
   loadMore: '展开更多',
   permissions: '权限分配',
   deploy: '应用部署',
+  deployment: '部署',
+  upgrade: '升级',
+  modify: '变更',
 
   // 通用描述
   app: '应用',
@@ -53,6 +56,12 @@ const commonField = {
   operating: '处理中',
   connect: '已连接',
   disconnect: '未连接',
+  stopping: '停止中',
+  deleting: '删除中',
+  pending: '部署中',
+  stopped: '已停止',
+  failed: '失败',
+  deleted: '已删除',
 
   // public
   detail: '详情',
@@ -65,12 +74,6 @@ const commonField = {
   Mobile: '移动',
   Application: '普通应用',
   JavaLib: 'Java 库',
-  stopping: '停止中',
-  deleting: '删除中',
-  pending: '部署中',
-  stopped: '已停止',
-  failed: '失败',
-  deleted: '已删除',
   install_failed: '创建失败',
   upgrade_failed: '更新失败',
   starting_failed: '重启失败',
@@ -137,8 +140,6 @@ const commonField = {
   ci_skipped: '未执行',
   ci_manual: '未执行',
   retry: '重新执行',
-  deployConfig: '部署配置',
-  configValue: '配置信息',
   cover: '覆盖',
   notCovered: '不覆盖',
   container: '容器',
@@ -146,28 +147,8 @@ const commonField = {
 };
 
 const deployment = {
-  'deployment.header': '部署管理',
-  'deployment.create.resource': '创建资源',
-  'deployment.environment.card.code': '环境编码',
-  'deployment.environment.card.status': '环境状态',
-  'deployment.environment.card.cluster': '连接集群',
-  'deployment.environment.card.gitops': 'GitOps',
-  'deployment.environment.creator.app': '关联应用',
-  'deployment.environment.creator.net': '创建网络',
-  'deployment.environment.creator.domain': '创建域名',
-  'deployment.environment.creator.map': '创建配置映射',
-  'deployment.environment.creator.cipher': '创建密文',
-  'deployment.environment.creator.detail': '服务详情',
-  'deployment.app.status': '应用状态',
-  'deployment.app.code': '应用编码',
-  'deployment.app.repo': '仓库地址',
-  'deployment.instance.status': '实例状态',
-  'deployment.instance.pod': 'Pod 状态',
-  'deployment.instance.pods': 'Pods 状态',
-  'deployment.instance.version': '版本',
-  'deployment.operation.ports': '端口号',
   'c7ncd.deployment.viewer.instance': '实例视图',
-  'c7ncd.deployment.viewer.resource': '资源识图',
+  'c7ncd.deployment.viewer.resource': '资源视图',
   'c7ncd.deployment.environment.tabs.sync': '提交同步情况',
   'c7ncd.deployment.environment.tabs.assignPermissions': '已分配权限人员',
   'c7ncd.deployment.environment.error.logs': '错误日志',
@@ -189,6 +170,11 @@ const deployment = {
   'c7ncd.deployment.environment.permission.name': '登录名',
   'c7ncd.deployment.environment.permission.role': '项目角色',
   'c7ncd.deployment.environment.permission.addTime': '添加时间',
+  'c7ncd.deployment.environment.code': '环境编码',
+  'c7ncd.deployment.environment.status': '环境状态',
+  'c7ncd.deployment.environment.description': '环境描述',
+  'c7ncd.deployment.environment.cluster': '连接集群',
+  'c7ncd.deployment.environment.add.service': '添加服务',
   'c7ncd.deployment.application.tabs.networking': '网络与域名',
   'c7ncd.deployment.application.tabs.mapping': '配置映射',
   'c7ncd.deployment.application.tabs.cipher': '密文',
@@ -209,6 +195,13 @@ const deployment = {
   'c7ncd.deployment.instance.ip': 'Pod IP',
   'c7ncd.deployment.instance.log': '容器日志',
   'c7ncd.deployment.instance.term': '运行命令',
+  'c7ncd.deployment.instance.status': '实例状态',
+  'c7ncd.deployment.instance.status.operating': '处理中',
+  'c7ncd.deployment.instance.status.running': '运行中',
+  'c7ncd.deployment.instance.status.failed.deploy.': '部署失败',
+  'c7ncd.deployment.instance.status.failed.upgrade': '变更失败',
+  'c7ncd.deployment.instance.status.stopped': '已停用',
+  'c7ncd.deployment.instance.status.deleted': '已删除',
   'c7ncd.deployment.instance.cases.empty': '暂无实例事件',
   'c7ncd.deployment.instance.cases.record': '操作记录',
   'c7ncd.deployment.instance.cases.result': '部署结果',
@@ -226,6 +219,28 @@ const deployment = {
   'c7ncd.deployment.modal.link-service': '关联服务',
   'c7ncd.deployment.modal.env-detail': '环境详情',
   'c7ncd.deployment.modal.permission': '权限管理',
+  'c7ncd.deployment.modal.values': '修改Values',
+  'c7ncd.deployment.modal.config': '部属配置',
+  'c7ncd.deployment.modal.config.empty': '未使用部署配置',
+  'c7ncd.deployment.modal.modify': '变更实例',
+  'c7ncd.deployment.modal.version': '选择版本',
+  'c7ncd.deployment.modal.version.empty': '暂无相关版本',
+  'c7ncd.deployment.modal.redeploy': '重新部署',
+  'c7ncd.deployment.modal.detail': '实例详情',
+  'c7ncd.deployment.app-service': '应用服务',
+  'c7ncd.deployment.set-operator': '设置该环境的开发操作人员',
+  'c7ncd.deployment.project.member': '项目成员',
+  'c7ncd.deployment.member.all': '项目下所有成员',
+  'c7ncd.deployment.member.specific': '项目下特定成员',
+  'c7ncd.deployment.add.member': '添加人员',
+  'c7ncd.deployment.create.network': '创建网络',
+  'c7ncd.deployment.create.ingress': '创建域名',
+  'c7ncd.deployment.create.config-map': '创建配置映射',
+  'c7ncd.deployment.create.secret': '创建密文',
+  'c7ncd.deployment.service.detail': '服务详情',
+  'c7ncd.deployment.service.status': '服务状态',
+  'c7ncd.deployment.service.code': '服务编码',
+  'c7ncd.deployment.service.url': '仓库地址',
 };
 
 const appService = {
@@ -260,7 +275,7 @@ const appService = {
 };
 
 // 文档地址前缀
-const docServer = 'http://v0-17.choerodon.io/zh/docs';
+const docServer = 'http://v0-18.choerodon.io/zh/docs';
 // 界面标题描述统一管理
 const pageDetail = {
   // network

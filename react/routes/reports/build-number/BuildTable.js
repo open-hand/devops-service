@@ -8,7 +8,7 @@ import TimeAgo from 'timeago-react';
 import MouserOverWrapper from '../../../components/MouseOverWrapper';
 import CiPipelineStore from '../../ciPipelineManage/stores';
 import ReportsStore from '../stores';
-import '../../ciPipelineManage/index.scss';
+import '../../ciPipelineManage/index.less';
 
 const { AppState } = stores;
 
@@ -313,7 +313,7 @@ class BuildTable extends Component {
     } else {
       CiPipelineStore.retryPipeline(record.gitlabProjectId, record.pipelineId);
     }
-    this.tableChange(ReportsStore.pageInfo)
+    this.tableChange(ReportsStore.pageInfo);
   }
 
   /**
