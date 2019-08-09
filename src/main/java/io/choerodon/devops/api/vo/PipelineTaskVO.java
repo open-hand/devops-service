@@ -12,7 +12,7 @@ public class PipelineTaskVO {
     private Long id;
     private String name;
     private String type;
-    private List<Long> taskUserRelDTOS;
+    private List<Long> taskUserRels;
     private Integer isCountersigned;
     private Long appDeployId;
     private PipelineAppServiceDeployVO pipelineAppServiceDeployVO;
@@ -45,12 +45,12 @@ public class PipelineTaskVO {
         this.type = type;
     }
 
-    public List<Long> getTaskUserRelDTOS() {
-        return taskUserRelDTOS;
+    public List<Long> getTaskUserRels() {
+        return taskUserRels;
     }
 
-    public void setTaskUserRelDTOS(List<Long> taskUserRelDTOS) {
-        this.taskUserRelDTOS = taskUserRelDTOS;
+    public void setTaskUserRels(List<Long> taskUserRels) {
+        this.taskUserRels = taskUserRels;
     }
 
     public Integer getIsCountersigned() {

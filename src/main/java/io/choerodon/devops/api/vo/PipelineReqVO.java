@@ -12,8 +12,8 @@ public class PipelineReqVO {
     private Long id;
     private String name;
     private String triggerType;
-    private List<Long> pipelineUserRelDTOS;
-    private List<PipelineStageVO> pipelineStageVOS;
+    private List<Long> pipelineUserRels;
+    private List<PipelineStageVO> pipelineStageVOs;
     private Long projectId;
     private Long objectVersionNumber;
     private Date lastUpdateDate;
@@ -27,12 +27,12 @@ public class PipelineReqVO {
         this.edit = edit;
     }
 
-    public List<Long> getPipelineUserRelDTOS() {
-        return pipelineUserRelDTOS;
+    public List<Long> getPipelineUserRels() {
+        return pipelineUserRels;
     }
 
-    public void setPipelineUserRelDTOS(List<Long> pipelineUserRelDTOS) {
-        this.pipelineUserRelDTOS = pipelineUserRelDTOS;
+    public void setPipelineUserRels(List<Long> pipelineUserRels) {
+        this.pipelineUserRels = pipelineUserRels;
     }
 
     public Long getId() {
@@ -59,12 +59,12 @@ public class PipelineReqVO {
         this.triggerType = triggerType;
     }
 
-    public List<PipelineStageVO> getPipelineStageVOS() {
-        return pipelineStageVOS;
+    public List<PipelineStageVO> getPipelineStageVOs() {
+        return pipelineStageVOs;
     }
 
-    public void setPipelineStageVOS(List<PipelineStageVO> pipelineStageVOS) {
-        this.pipelineStageVOS = pipelineStageVOS;
+    public void setPipelineStageVOs(List<PipelineStageVO> pipelineStageVOs) {
+        this.pipelineStageVOs = pipelineStageVOs;
     }
 
     public Long getProjectId() {
