@@ -71,7 +71,7 @@ public class DevopsOrganizationConfigController {
 
     @Permission(type = ResourceType.ORGANIZATION,roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "组织下查询默认配置")
-    @GetMapping
+    @GetMapping("/default_config")
     public ResponseEntity<DefaultConfigVO> queryOrganizationDefaultConfig(
             @ApiParam(value = "组织Id")
             @PathVariable(value = "organization_id") Long organizationId) {
