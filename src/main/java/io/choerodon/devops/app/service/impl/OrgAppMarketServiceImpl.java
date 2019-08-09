@@ -55,12 +55,12 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
     public PageInfo<AppServiceMarketVO> pageByAppId(Long appId,
                                                     PageRequest pageRequest, String params) {
         Map<String, Object> mapParams = TypeUtil.castMapParams(params);
-        List<String> paramList = mapParams.get(TypeUtil.PARAMS) == null ? null : (List<String>) mapParams.get(TypeUtil.PARAMS);
+        List<String> paramList = TypeUtil.cast(mapParams.get(TypeUtil.PARAMS));
         PageInfo<AppServiceDTO> appServiceDTOPageInfo = PageHelper
                 .startPage(pageRequest.getPage(),
                         pageRequest.getSize(),
                         PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() ->
-                        appServiceMapper.listByAppId(appId, (Map<String, Object>) mapParams.get(TypeUtil.SEARCH_PARAM), paramList));
+                        appServiceMapper.listByAppId(appId, TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)), paramList));
 
         PageInfo<AppServiceMarketVO> appServiceMarketVOPageInfo = ConvertUtils.convertPage(appServiceDTOPageInfo, this::dtoToMarketVO);
         List<AppServiceMarketVO> list = appServiceMarketVOPageInfo.getList();

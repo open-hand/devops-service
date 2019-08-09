@@ -256,12 +256,15 @@
                 </foreach>
             </if>
         </if>
-        <if test='param != null and param != ""'>
-            AND (ds.`name` LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR da.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR de.`name` LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR de.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR ds.external_ip LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%') )
+        <if test='params != null and params.size>0'>
+            AND
+            <foreach collection="params" item="param" open="(" separator=" OR " close=")">
+                (ds.`name` LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                OR da.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                OR de.`name` LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                OR de.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                OR ds.external_ip LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%') )
+            </foreach>
         </if>
     </sql>
 

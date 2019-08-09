@@ -16,7 +16,7 @@ public interface PipelineRecordMapper extends Mapper<PipelineRecordDTO> {
     List<PipelineRecordDTO> listByOptions(@Param("projectId") Long projectId,
                                           @Param("pipelineId") Long pipelineId,
                                           @Param("searchParam") Map<String, Object> searchParam,
-                                          @Param("param") String param,
+                                          @Param("params") List<String> params,
                                           @Param("classifyParam") Map<String, Object> classifyParam);
 
     PipelineRecordDTO queryById(@Param("pipelineRecordId") Long pipelineRecordId);

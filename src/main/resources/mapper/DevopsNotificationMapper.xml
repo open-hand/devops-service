@@ -57,11 +57,14 @@
                 </foreach>
             </if>
         </if>
-        <if test='param != null and param != ""'>
-            AND (dn.notify_object LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR dn.notify_trigger_event LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR dn.notify_type LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            )
+        <if test='params != null and params.size>0'>
+            AND
+            <foreach collection="params" item="param" separator=" OR " >
+                (dn.notify_object LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                OR dn.notify_trigger_event LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                OR dn.notify_type LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                )
+            </foreach>
         </if>
     </sql>
 

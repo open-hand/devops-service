@@ -15,7 +15,7 @@ import org.apache.ibatis.annotations.Param;
 public interface PipelineMapper extends Mapper<PipelineDTO> {
     List<PipelineDTO> listByOptions(@Param("projectId") Long projectId,
                                     @Param("searchParam") Map<String, Object> searchParam,
-                                    @Param("param") String param,
+                                    @Param("params") List<String> params,
                                     @Param("index") String index,
                                     @Param("classifyParam") Map<String, Object> classifyParam);
 }

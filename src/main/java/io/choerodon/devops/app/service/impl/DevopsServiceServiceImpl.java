@@ -468,9 +468,10 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                     TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS)), appServiceId);
 
             result.setTotal(count);
+            List<String> paramList=TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS));
             devopsServiceQueryDTOS = devopsServiceMapper.listDevopsServiceByPage(
                     projectId, envId, instanceId, TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
-                    TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS)), sortResult, appServiceId);
+                    paramList , sortResult, appServiceId);
             result.setList(devopsServiceQueryDTOS.subList(start, stop > devopsServiceQueryDTOS.size() ? devopsServiceQueryDTOS.size() : stop));
         } else {
             count = devopsServiceMapper

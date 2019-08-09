@@ -168,10 +168,13 @@
                 </foreach>
             </if>
         </if>
-        <if test='param != null and param != ""'>
-            AND ( dpr.status = #{param, jdbcType=VARCHAR}
-            OR dpr.trigger_type = #{param, jdbcType=VARCHAR}
-            OR dpr.pipeline_name= #{param, jdbcType=VARCHAR})
+        <if test='params != null and params.size>0'>
+            AND
+            <foreach collection="params" item="param" open="(" separator=" OR " close=")">
+                ( dpr.status = #{param, jdbcType=VARCHAR}
+                OR dpr.trigger_type = #{param, jdbcType=VARCHAR}
+                OR dpr.pipeline_name= #{param, jdbcType=VARCHAR})
+            </foreach>
         </if>
     </sql>
 

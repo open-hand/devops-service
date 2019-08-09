@@ -340,8 +340,8 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
     public PageInfo<DevopsNotificationDTO> basePageByOptions(Long projectId, Long envId, String params, PageRequest pageRequest) {
         Map<String, Object> map = gson.fromJson(params, Map.class);
         Map<String, Object> searchParamMap = TypeUtil.cast(map.get(TypeUtil.SEARCH_PARAM));
-        String paramMap = TypeUtil.cast(map.get(TypeUtil.PARAMS));
-        return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> devopsNotificationMapper.listByOptions(projectId, envId, searchParamMap, paramMap));
+        List<String> paramList = TypeUtil.cast(map.get(TypeUtil.PARAMS));
+        return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> devopsNotificationMapper.listByOptions(projectId, envId, searchParamMap, paramList));
     }
 
     public List<DevopsNotificationDTO> baseListByEnvId(Long projectId, Long envId) {
