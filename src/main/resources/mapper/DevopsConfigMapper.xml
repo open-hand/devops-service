@@ -116,4 +116,13 @@
         where app_service_id is not null
     </select>
 
+
+    <select id="queryDefaultConfig" resultType="io.choerodon.devops.infra.dto.DevopsConfigDTO">
+        SELECT
+        * from devops_config
+        where app_service_id is null and organization_id is null and project_id is null
+        and `type` = #{type}
+    </select>
+
+
 </mapper>

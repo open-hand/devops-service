@@ -12,7 +12,6 @@ import com.google.gson.Gson;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.validator.DevopsProjectConfigValidator;
 import io.choerodon.devops.api.vo.ConfigVO;
 import io.choerodon.devops.api.vo.DefaultConfigVO;
 import io.choerodon.devops.api.vo.DevopsConfigVO;
@@ -21,6 +20,7 @@ import io.choerodon.devops.app.service.DevopsConfigService;
 import io.choerodon.devops.app.service.DevopsProjectService;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
 import io.choerodon.devops.infra.config.HarborConfigurationProperties;
+import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.DevopsConfigDTO;
 import io.choerodon.devops.infra.dto.DevopsProjectDTO;
 import io.choerodon.devops.infra.dto.harbor.*;
@@ -30,7 +30,6 @@ import io.choerodon.devops.infra.feign.HarborClient;
 import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
 import io.choerodon.devops.infra.mapper.DevopsConfigMapper;
-import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.PageRequestUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 import org.springframework.beans.BeanUtils;
@@ -51,15 +50,11 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
     private static final String HARBOR = "harbor";
     private static final String CHART = "chart";
     private static final String CUSTOM = "custom";
-    private static final String DEFAULT = "default";
     private static final Gson gson = new Gson();
-
+    public static final String APP_SERVICE = "appService";
 
     @Autowired
     private DevopsConfigMapper devopsConfigMapper;
-
-    @Autowired
-    private DevopsProjectConfigValidator configValidator;
 
     @Autowired
     private IamServiceClientOperator iamServiceClientOperator;
@@ -71,7 +66,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
     private DevopsProjectService devopsProjectService;
 
     @Autowired
-    private AppServiceService applicationService;
+    private AppServiceService appServiceService;
 
     public void operate(Long resourceId, String resourceType, List<DevopsConfigVO> devopsConfigVOS) {
 
@@ -118,11 +113,11 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
 
         List<DevopsConfigVO> devopsConfigVOS = new ArrayList<>();
 
-        List<DevopsConfigDTO> devopsConfigDTOS = baseListByResource(resourceId,resourceType);
+        List<DevopsConfigDTO> devopsConfigDTOS = baseListByResource(resourceId, resourceType);
         devopsConfigDTOS.stream().forEach(devopsConfigDTO -> {
             DevopsConfigVO devopsConfigVO = dtoToVo(devopsConfigDTO);
             //如果是项目层级下的harbor类型，需返回是否私有
-            if(devopsConfigVO.getProjectId()!=null&&devopsConfigVO.getType().equals(HARBOR)) {
+            if (devopsConfigVO.getProjectId() != null && devopsConfigVO.getType().equals(HARBOR)) {
                 DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(devopsConfigVO.getProjectId());
                 devopsConfigVO.setHarborPrivate(devopsProjectDTO.getHarborProjectIsPrivate());
             }
@@ -130,7 +125,6 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
         });
         return devopsConfigVOS;
     }
-
 
 
     private void operateHarborProject(Long projectId, Boolean harborPrivate) {
@@ -141,7 +135,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
         Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
         HarborClient harborClient = retrofit.create(HarborClient.class);
         if (harborPrivate) {
-            //设置为私有后将harbor项目设置为私有,新增项目默认harbor配置,以及更新项目下所有应用的默认harbor配置
+            //设置为私有后将harbor项目设置为私有
             DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
             String username = devopsProjectDTO.getHarborProjectUserName() == null ? String.format("user%s%s", organizationDTO.getId(), projectId) : devopsProjectDTO.getHarborProjectUserName();
             String email = devopsProjectDTO.getHarborProjectUserEmail() == null ? String.format("%s@choerodon.com", username) : devopsProjectDTO.getHarborProjectUserEmail();
@@ -205,28 +199,8 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
             }
             devopsProjectDTO.setHarborProjectIsPrivate(true);
             devopsProjectService.baseUpdate(devopsProjectDTO);
-
-
-            //新增项目harbor配置
-            DevopsConfigVO devopsConfigVO = new DevopsConfigVO();
-            devopsConfigVO.setName("project_harbor_default");
-            devopsConfigVO.setType(HARBOR);
-            devopsConfigVO.setProjectId(projectId);
-            ConfigVO configVO = new ConfigVO();
-            configVO.setPrivate(true);
-            configVO.setUrl(harborConfigurationProperties.getBaseUrl());
-            configVO.setPassword(user.getPassword());
-            configVO.setUserName(user.getUsername());
-            configVO.setEmail(user.getEmail());
-            configVO.setProject(organizationDTO.getCode() + "-" + projectDTO.getCode());
-            devopsConfigVO.setConfig(configVO);
-            DevopsConfigDTO devopsConfigDTO = baseCreate(voToDto(devopsConfigVO));
-
-            //更新项目下所有应用的harbor配置为该默认配置
-            List<DevopsConfigDTO> oldDevopsConfigDTOS = baseListByIdAndType(projectId, HARBOR);
-            applicationService.baseUpdateHarborConfig(projectId, devopsConfigDTO.getId(), oldDevopsConfigDTOS.get(0).getId(), true);
         } else {
-            //设置为公有后将harbor项目设置为公有,删除成员角色,并删除项目默认harbor配置,以及更新项目下所有应用的默认harbor配置
+            //设置为公有后将harbor项目设置为公有,删除成员角色
             try {
                 Response<List<ProjectDetail>> projects = harborClient.listProject(organizationDTO.getCode() + "-" + projectDTO.getCode()).execute();
                 if (!projects.body().isEmpty()) {
@@ -255,14 +229,10 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                         }
                         harborClient.deleteMember(projects.body().get(0).getProjectId(), projectMembers.body().get(0).getId()).execute();
                     }
-                    DevopsConfigDTO devopsConfigDTO = baseQueryByName(projectId, "project_harbor_default");
-                    DevopsConfigDTO newDevopsConfigDTO = baseQueryByName(null, "harbor_default");
 
                     DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
                     devopsProjectDTO.setHarborProjectIsPrivate(false);
                     devopsProjectService.baseUpdate(devopsProjectDTO);
-                    applicationService.baseUpdateHarborConfig(projectId, newDevopsConfigDTO.getId(), devopsConfigDTO.getId(), false);
-                    baseDelete(devopsConfigDTO.getId());
 
                 }
             } catch (IOException e) {
@@ -286,6 +256,49 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
             defaultConfigVO.setChartConfigUrl(gson.fromJson(chartConfig.getConfig(), ConfigVO.class).getUrl());
         }
         return defaultConfigVO;
+    }
+
+    @Override
+    public DevopsConfigDTO queryRealConfig(Long resourceId, String resourceType, String configType) {
+        //应用服务层次，先找应用配置，在找项目配置,最后找组织配置,项目和组织层次同理
+        DevopsConfigDTO defaultConfig = baseQueryDefaultConfig(configType);
+        if (resourceType.equals(APP_SERVICE)) {
+            DevopsConfigDTO appServiceConfig = baseQueryByResourceAndType(resourceId, resourceType, configType);
+            if (appServiceConfig != null) {
+                return appServiceConfig;
+            }
+            AppServiceDTO appServiceDTO = appServiceService.baseQuery(resourceId);
+            Long projectId = devopsProjectService.queryProjectIdByAppId(appServiceDTO.getAppId());
+            DevopsConfigDTO projectConfig = baseQueryByResourceAndType(projectId, ResourceLevel.PROJECT.value(), configType);
+            if (projectConfig != null) {
+                return projectConfig;
+            }
+            ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(projectId);
+            OrganizationDTO organizationDTO = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+            DevopsConfigDTO organizationConfig = baseQueryByResourceAndType(organizationDTO.getId(), ResourceLevel.ORGANIZATION.value(), configType);
+            if (organizationConfig != null) {
+                return organizationConfig;
+            }
+            return defaultConfig;
+        } else if (resourceType.equals(ResourceLevel.PROJECT.value())) {
+            DevopsConfigDTO projectConfig = baseQueryByResourceAndType(resourceId, ResourceLevel.PROJECT.value(), configType);
+            if (projectConfig != null) {
+                return projectConfig;
+            }
+            ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(resourceId);
+            OrganizationDTO organizationDTO = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+            DevopsConfigDTO organizationConfig = baseQueryByResourceAndType(organizationDTO.getId(), ResourceLevel.ORGANIZATION.value(), configType);
+            if (organizationConfig != null) {
+                return organizationConfig;
+            }
+            return defaultConfig;
+        } else {
+            DevopsConfigDTO organizationConfig = baseQueryByResourceAndType(resourceId, ResourceLevel.ORGANIZATION.value(), configType);
+            if (organizationConfig != null) {
+                return organizationConfig;
+            }
+            return defaultConfig;
+        }
     }
 
 
@@ -357,11 +370,18 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
         }
     }
 
+    @Autowired
     public DevopsConfigDTO baseQueryByResourceAndType(Long resourceId, String resourceType, String type) {
         DevopsConfigDTO devopsConfigDTO = new DevopsConfigDTO();
         setResourceId(resourceId, resourceType, devopsConfigDTO);
         devopsConfigDTO.setType(type);
         return devopsConfigMapper.selectOne(devopsConfigDTO);
+    }
+
+
+    @Autowired
+    public DevopsConfigDTO baseQueryDefaultConfig(String type) {
+        return devopsConfigMapper.queryDefaultConfig(type);
     }
 
     private void setResourceId(Long resourceId, String resourceType, DevopsConfigDTO devopsConfigDTO) {
@@ -378,14 +398,13 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
         return devopsConfigMapper.checkIsUsed(checkIsUsed).isEmpty();
     }
 
-
     public List<DevopsConfigDTO> baseListByResource(Long resourceId, String resourceType) {
         DevopsConfigDTO devopsConfigDTO = new DevopsConfigDTO();
-        setResourceId(resourceId,resourceType,devopsConfigDTO);
+        setResourceId(resourceId, resourceType, devopsConfigDTO);
         return devopsConfigMapper.select(devopsConfigDTO);
     }
 
-    private DevopsConfigVO dtoToVo(DevopsConfigDTO devopsConfigDTO) {
+    public DevopsConfigVO dtoToVo(DevopsConfigDTO devopsConfigDTO) {
         DevopsConfigVO devopsConfigVO = new DevopsConfigVO();
         BeanUtils.copyProperties(devopsConfigDTO, devopsConfigVO);
         ConfigVO configVO = gson.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class);
@@ -393,7 +412,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
         return devopsConfigVO;
     }
 
-    private DevopsConfigDTO voToDto(DevopsConfigVO devopsConfigVO) {
+    public DevopsConfigDTO voToDto(DevopsConfigVO devopsConfigVO) {
         DevopsConfigDTO devopsConfigDTO = new DevopsConfigDTO();
         BeanUtils.copyProperties(devopsConfigVO, devopsConfigDTO);
         String configJson = gson.toJson(devopsConfigVO.getConfig());

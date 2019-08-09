@@ -65,4 +65,11 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
         Long appId = devopsProjectMapper.queryAppIdByProjectId(projectId);
         return appId == null ? projectId : appId;
     }
+
+    @Override
+    public Long queryProjectIdByAppId(Long appId) {
+        DevopsProjectDTO devopsProjectDTO = new DevopsProjectDTO();
+        devopsProjectDTO.setAppId(appId);
+        return devopsProjectMapper.selectOne(devopsProjectDTO).getIamProjectId();
+    }
 }

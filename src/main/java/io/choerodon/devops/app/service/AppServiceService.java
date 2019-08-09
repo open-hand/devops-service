@@ -353,7 +353,7 @@ public interface AppServiceService {
 
     void updateApplicationStatus(AppServiceDTO appServiceDTO);
 
-    AppServiceDTO baseQuery(Long applicationId);
+    AppServiceDTO baseQuery(Long appServiceId);
 
     PageInfo<AppServiceDTO> basePageByOptions(Long projectId, Boolean isActive, Boolean hasVersion, Boolean
             appMarket,

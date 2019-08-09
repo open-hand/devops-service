@@ -48,7 +48,6 @@ public class DevopsProjectConfigController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-
     /**
      * 项目下查询配置详情
      * *
