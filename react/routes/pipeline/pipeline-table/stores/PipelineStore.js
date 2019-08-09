@@ -88,10 +88,10 @@ class PipelineStore {
     this.setLoading(true);
     let searchPath = '';
     let envPath = '';
-    if(searchData && searchData.length) {
-      _.forEach(searchData, item => {
-        searchPath += `&${item}=true`
-      })
+    if (searchData && searchData.length) {
+      _.forEach(searchData, (item) => {
+        searchPath += `&${item}=true`;
+      });
     }
     if (envIds && envIds.length) {
       envPath = `&envIds=${envIds.join()}`;
@@ -99,10 +99,10 @@ class PipelineStore {
     const sortPath = sort ? `&sort=${sort.field || sort.columnKey},${SORTER_MAP[sort.order] || 'desc'}` : '';
     const data = await axios
       .post(
-        `/devops/v1/projects/${projectId}/pipeline/list_by_options?page=${page}&size=${size}${sortPath}${searchPath}${envPath}`,
+        `/devops/v1/projects/${projectId}/pipeline/page_by_options?page=${page}&size=${size}${sortPath}${searchPath}${envPath}`,
         JSON.stringify(param),
       )
-      .catch(e => {
+      .catch((e) => {
         this.setLoading(false);
         Choerodon.handleResponseError(e);
       });
@@ -124,7 +124,7 @@ class PipelineStore {
 
   deletePipeline(projectId, id) {
     return axios.delete(`/devops/v1/projects/${projectId}/pipeline/${id}`);
-  };
+  }
 
   /**
    * 启/停用流水线
@@ -135,7 +135,7 @@ class PipelineStore {
    */
   changeStatus(projectId, id, status) {
     return axios.put(`/devops/v1/projects/${projectId}/pipeline/${id}?isEnabled=${status}`);
-  };
+  }
 
   /**
    * 执行手动触发的流水线
@@ -172,8 +172,7 @@ class PipelineStore {
    * @param projectId
    * @param id 执行记录id
    */
-  retry = (projectId, id) =>
-    axios.get(`/devops/v1/projects/${projectId}/pipeline/${id}/retry`);
+  retry = (projectId, id) => axios.get(`/devops/v1/projects/${projectId}/pipeline/${id}/retry`);
 
   /**
    * 加载记录详情
@@ -183,8 +182,8 @@ class PipelineStore {
    */
   async loadPipelineRecordDetail(projectId, id) {
     this.setDetailLoading(true);
-    let data = await axios.get(`/devops/v1/projects/${projectId}/pipeline/${id}/record_detail`)
-      .catch(e => {
+    const data = await axios.get(`/devops/v1/projects/${projectId}/pipeline/${id}/record_detail`)
+      .catch((e) => {
         this.setDetailLoading(false);
         Choerodon.handleResponseError(e);
       });
@@ -194,10 +193,10 @@ class PipelineStore {
       this.setDetail(result);
     }
     this.setDetailLoading(false);
-  };
+  }
 
   async loadExeRecord(projectId, id) {
-    let data = await axios
+    const data = await axios
       .get(`/devops/v1/projects/${projectId}/pipeline/${id}/list`)
       .catch(e => Choerodon.handleResponseError(e));
     const result = handleProptError(data);
@@ -206,14 +205,13 @@ class PipelineStore {
     }
   }
 
-  loadEnvData = projectId =>
-    axios
-      .get(`/devops/v1/projects/${projectId}/envs?active=true`)
-      .then((data) => {
-        if (handlePromptError(data)) {
-          this.setEnvData(data);
-        }
-      });
+  loadEnvData = projectId => axios
+    .get(`/devops/v1/projects/${projectId}/envs/list_by_active?active=true`)
+    .then((data) => {
+      if (handlePromptError(data)) {
+        this.setEnvData(data);
+      }
+    });
 }
 
 const pipelineStore = new PipelineStore();
