@@ -13,18 +13,9 @@ export const StoreProvider = injectIntl(inject('AppState')(
   (props) => {
     const { AppState: { currentMenuType: { id } }, children } = props;
     const { deploymentStore } = useDeploymentStore();
-    const { baseInfoDs } = useInstanceStore();
     const { getSelectedMenu: { menuId } } = deploymentStore;
+    const { istStore } = useInstanceStore();
     const detailsStore = useMemo(() => new DetailsStore(), []);
-    const instanceStatus = useMemo(() => {
-      const info = baseInfoDs.data;
-      const record = info[0];
-      if (record) {
-        const status = record.get('status');
-        return { status };
-      }
-      return null;
-    }, [baseInfoDs.data]);
 
     useEffect(() => {
       detailsStore.loadResource(id, menuId);
@@ -33,8 +24,8 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const value = {
       ...props,
       detailsStore,
+      istStore,
       instanceId: menuId,
-      instanceStatus,
     };
     return (
       <Store.Provider value={value}>

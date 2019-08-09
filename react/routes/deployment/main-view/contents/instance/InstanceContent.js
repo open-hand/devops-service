@@ -1,4 +1,4 @@
-import React, { Fragment, useMemo, useEffect, lazy, Suspense, useCallback } from 'react';
+import React, { Fragment, useEffect, lazy, Suspense } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Tabs } from 'choerodon-ui';
 import isEmpty from 'lodash/isEmpty';
@@ -44,11 +44,11 @@ const InstanceContent = observer(() => {
     istStore.detailFetch(id, menuId);
   }, [id, istStore, menuId]);
 
-  const handleChange = useCallback((key) => {
+  function handleChange(key) {
     istStore.setTabKey(key);
-  }, [istStore]);
+  }
 
-  const title = useMemo(() => {
+  function getTitle() {
     const detail = istStore.getDetail;
     if (isEmpty(detail)) return null;
 
@@ -73,7 +73,7 @@ const InstanceContent = observer(() => {
       />
       <span className={`${prefixCls}-title-text`}>{code}</span>
     </Fragment>;
-  }, [PADDING_COLOR, RUNNING_COLOR, istStore.getDetail, prefixCls]);
+  }
 
   return (
     <div className={`${prefixCls}-instance`}>
@@ -82,7 +82,7 @@ const InstanceContent = observer(() => {
         prefixCls={prefixCls}
         fallback={istStore.getDetailLoading}
       >
-        {title}
+        {getTitle()}
       </PrefixTitle>
       <Tabs
         className={`${prefixCls}-environment-tabs`}

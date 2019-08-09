@@ -1,4 +1,4 @@
-import React, { Fragment, useMemo, useCallback } from 'react';
+import React, { Fragment, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { Action } from '@choerodon/boot';
 import { observer } from 'mobx-react-lite';
@@ -121,28 +121,30 @@ const TreeItem = observer(({ record, search }) => {
     </Fragment> : name;
   }, [name, prefixCls, search]);
 
-  const instanceFunc = useCallback((id) => {
+  function freshMenu() {
     treeDs.query();
-  }, [treeDs]);
+  }
 
-  const suffix = useMemo(() => {
+  function getSuffix() {
     const istId = record.get('id');
-    const actionData = [
-      {
-        service: [],
-        text: formatMessage({ id: 'delete' }),
-        action: () => instanceFunc(istId),
-      },
-    ];
+    const actionData = [{
+      service: [],
+      text: formatMessage({ id: 'delete' }),
+      action: () => freshMenu(istId),
+    }, {
+      service: [],
+      text: formatMessage({ id: 'delete' }),
+      action: () => freshMenu(istId),
+    }];
     return <Action placement="bottomRight" data={actionData} />;
-  }, [formatMessage, instanceFunc, record]);
+  }
 
   return <Fragment>
     {prefixIcon}
     <span className={`${prefixCls}-tree-text`}>
       {text}
     </span>
-    {type === IST_ITEM && suffix}
+    {type === IST_ITEM && getSuffix()}
   </Fragment>;
 });
 

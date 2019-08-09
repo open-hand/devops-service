@@ -161,7 +161,11 @@ export default class DetailsSidebar extends Component {
       return (
         <div key={vol.name} className="c7ncd-deploy-volume-wrap">
           {vDom}
-          <SimpleTable columns={columns} data={mounts} />
+          <SimpleTable
+            columns={columns}
+            data={mounts}
+            rowKey={record => record.key}
+          />
         </div>
       );
     };

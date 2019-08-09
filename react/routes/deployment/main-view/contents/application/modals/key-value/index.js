@@ -161,7 +161,7 @@ export default class FormView extends Component {
       newData.push(initConfig);
     }
 
-    const uniqData = _.uniqBy([...dataSource.filter(item => item.index !== ''), ...newData], 'index');
+    const uniqData = _.uniqBy([...dataSource.filter(item => item.index !== ''), ...newData], 'Config.js');
     this.setState({
       dataSource: uniqData,
       counter: _counter,
@@ -174,7 +174,7 @@ export default class FormView extends Component {
    */
   handleSave = (row) => {
     const newData = [...this.state.dataSource];
-    const index = _.findIndex(newData, ['index', row.Layout]);
+    const index = _.findIndex(newData, ['Config.js', row.Layout]);
 
     newData.splice(index, 1, {
       ...newData[index],
@@ -306,7 +306,7 @@ export default class FormView extends Component {
     if (!isYamlEdit) {
       hasKVError = this.checkErrorData();
       const allData = [...dataSource.filter(item => !_.isEmpty(item.key))];
-      configData = _.uniqBy(allData, 'index');
+      configData = _.uniqBy(allData, 'Config.js');
     } else {
       hasConfigRuleError = this.checkConfigRuleError();
       // TODO: yaml 转对象的错误处理
