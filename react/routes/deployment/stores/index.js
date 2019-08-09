@@ -35,6 +35,12 @@ export const StoreProvider = injectIntl(inject('AppState')(
         MAP_ITEM: 'configMaps',
         CIPHER_ITEM: 'secrets',
         CUSTOM_ITEM: 'customResources',
+        SERVICES_GROUP: 'group_services',
+        INGRESS_GROUP: 'group_ingresses',
+        CERT_GROUP: 'group_certifications',
+        MAP_GROUP: 'group_configMaps',
+        CIPHER_GROUP: 'group_secrets',
+
       },
       deploymentStore,
     };

@@ -32,6 +32,7 @@ const commonField = {
   environment: '环境',
   envName: '环境名称',
   instance: '实例',
+  network: '网络',
   label: '标签',
   version: '版本',
   file: '文件',
@@ -241,6 +242,9 @@ const deployment = {
   'c7ncd.deployment.service.status': '服务状态',
   'c7ncd.deployment.service.code': '服务编码',
   'c7ncd.deployment.service.url': '仓库地址',
+  'c7ncd.deployment.domains': '域名地址',
+  'c7ncd.deployment.certificate.name': '证书名称',
+  'c7ncd.deployment.create.certificate': '创建证书',
 };
 
 const appService = {
