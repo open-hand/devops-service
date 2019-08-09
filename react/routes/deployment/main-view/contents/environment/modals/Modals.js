@@ -150,7 +150,7 @@ const EnvModals = observer(() => {
     group: 1,
   }, {
     name: formatMessage({ id: `${intlPrefix}.modal.env-detail` }),
-    icon: 'relate',
+    icon: 'find_in_page',
     handler: openEnvDetail,
     display: true,
     group: 1,

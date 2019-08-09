@@ -4,8 +4,7 @@ import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
 import TableDataSet from './TableDataSet';
 import { useDeploymentStore } from '../../../../../stores';
-import useConfigMapStore from './useConfigMapStore';
-import useSecretStore from './useSecretStore';
+import { useApplicationStore } from '../../stores';
 
 const Store = createContext();
 
@@ -22,6 +21,10 @@ export const StoreProvider = injectIntl(inject('AppState')(
       intlPrefix,
     } = useDeploymentStore();
     const {
+      mappingStore,
+      cipherStore,
+    } = useApplicationStore();
+    const {
       AppState: { currentMenuType: { id } },
       intl: { formatMessage },
       value: { type },
@@ -36,11 +39,9 @@ export const StoreProvider = injectIntl(inject('AppState')(
       envId: parentId,
       appId: menuId,
     })), [formatMessage, id, intlPrefix, menuId, parentId, type]);
-    const formStore = type === 'mapping' ? useConfigMapStore() : useSecretStore();
+    const formStore = type === 'mapping' ? mappingStore : cipherStore;
     const value = {
       ...props,
-      appId: menuId,
-      envId: parentId,
       tableDs,
       formStore,
     };

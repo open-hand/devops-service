@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react';
+import React, { Fragment, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import { Action } from '@choerodon/boot';
@@ -14,6 +14,9 @@ import MouserOverWrapper from '../../../../../../components/MouseOverWrapper/Mou
 import StatusIcon from '../../../../../../components/StatusIcon';
 import { useDeploymentStore } from '../../../../stores';
 import { useNetStore } from './stores';
+import { useApplicationStore } from '../stores';
+import DomainModal from '../modals/domain';
+import EditNetwork from '../../../../../network/network-edit';
 
 import './index.less';
 
@@ -23,11 +26,24 @@ const Networking = observer(() => {
   const {
     prefixCls,
     intlPrefix,
+    deploymentStore: { getSelectedMenu: { menuId, parentId } },
   } = useDeploymentStore();
   const {
     tableDs,
     intl: { formatMessage },
   } = useNetStore();
+  const {
+    domainStore,
+    networkStore,
+  } = useApplicationStore();
+
+  const [showDomain, setShowDomain] = useState(false);
+  const [domainId, setDomainId] = useState(null);
+  const [showNetwork, setNetwork] = useState(false);
+
+  function refresh() {
+    tableDs.query();
+  }
 
   function renderName({ record }) {
     const name = record.get('name');
@@ -228,15 +244,11 @@ const Networking = observer(() => {
   }
 
   function renderAction({ record }) {
-    const button = {
-
-      funcType: 'flat',
-    };
     const buttons = [
       {
         service: [],
         text: formatMessage({ id: 'edit' }),
-        // action: () => handleEdit(record),
+        action: () => showNetwork(true),
       },
       {
         service: [],
@@ -248,6 +260,22 @@ const Networking = observer(() => {
     return (<Action data={buttons} />);
   }
 
+  function openDomainEdit(itemId) {
+    setDomainId(itemId);
+    setShowDomain(true);
+  }
+
+  function closeDomainEdit(isLoad) {
+    setDomainId(null);
+    setShowDomain(false);
+    isLoad && refresh();
+  }
+
+  function closeNetworkEdit(isLoad) {
+    showNetwork(false);
+    isLoad && refresh();
+  }
+
   function renderExpandedRow({ record }) {
     const devopsIngressDTOS = record.get('devopsIngressDTOS');
     const button = {
@@ -255,44 +283,46 @@ const Networking = observer(() => {
       size: 'small',
       funcType: 'flat',
     };
-    const buttons = [
-      {
-        service: [],
-        text: formatMessage({ id: 'edit' }),
-        // action: () => handleIngressEdit(record),
-      },
-      {
-        service: [],
-        text: formatMessage({ id: 'delete' }),
-        // action: () => handleIngressDelete(record),
-      },
-    ];
     const content = devopsIngressDTOS && devopsIngressDTOS.length ? (
-      _.map(devopsIngressDTOS, ({ id: itemId, name, domain, error, status, pathList }) => (
-        <div key={itemId} className="net-expandedRow-detail">
-          <FormattedMessage id={`${intlPrefix}.application.net.ingress`} />：
-          <div className="net-ingress-text">
-            <StatusIcon
-              name={name}
-              status={status}
-              error={error}
-            />
+      _.map(devopsIngressDTOS, ({ id: itemId, name, domain, error, status, pathList }) => {
+        const buttons = [
+          {
+            service: [],
+            text: formatMessage({ id: 'edit' }),
+            action: () => openDomainEdit(itemId),
+          },
+          {
+            service: [],
+            text: formatMessage({ id: 'delete' }),
+            // action: () => handleIngressDelete(record),
+          },
+        ];
+        return (
+          <div key={itemId} className="net-expandedRow-detail">
+            <FormattedMessage id={`${intlPrefix}.application.net.ingress`} />：
+            <div className="net-ingress-text">
+              <StatusIcon
+                name={name}
+                status={status}
+                error={error}
+              />
+            </div>
+            <Action data={buttons} />
+            <FormattedMessage id="address" />：
+            <div className="net-ingress-text">
+              <MouserOverWrapper text={domain} width={0.2}>
+                {domain}
+              </MouserOverWrapper>
+            </div>
+            <FormattedMessage id="path" />：
+            <div className="net-ingress-text">
+              <MouserOverWrapper text={pathList[0] ? pathList[0].path : ''} width={0.2}>
+                {pathList[0] ? pathList[0].path : ''}
+              </MouserOverWrapper>
+            </div>
           </div>
-          <Action data={buttons} />
-          <FormattedMessage id="address" />：
-          <div className="net-ingress-text">
-            <MouserOverWrapper text={domain} width={0.2}>
-              {domain}
-            </MouserOverWrapper>
-          </div>
-          <FormattedMessage id="path" />：
-          <div className="net-ingress-text">
-            <MouserOverWrapper text={pathList[0] ? pathList[0].path : ''} width={0.2}>
-              {pathList[0] ? pathList[0].path : ''}
-            </MouserOverWrapper>
-          </div>
-        </div>
-      ))
+        );
+      })
     ) : (<span className="net-no-ingress">{formatMessage({ id: `${intlPrefix}.application.net.empty` })}</span>);
     return (
       <div className="net-expandedRow-content">
@@ -315,6 +345,25 @@ const Networking = observer(() => {
         <Column renderer={renderTarget} header={formatMessage({ id: `${intlPrefix}.application.net.target` })} />
         <Column name="type" renderer={renderConfigType} />
       </Table>
+      {showDomain && (
+        <DomainModal
+          envId={parentId}
+          appServiceId={menuId}
+          id={domainId}
+          visible={showDomain}
+          type="edit"
+          store={domainStore}
+          onClose={closeDomainEdit}
+        />
+      )}
+      {showNetwork && (
+        <EditNetwork
+          netId={tableDs.current.get('id')}
+          visible={showNetwork}
+          store={networkStore}
+          onClose={closeNetworkEdit}
+        />
+      )}
     </div>
   );
 });
