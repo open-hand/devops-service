@@ -4,6 +4,14 @@ import java.util.List;
 import java.util.Optional;
 
 import com.github.pagehelper.PageInfo;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
+
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.enums.ResourceType;
@@ -13,13 +21,6 @@ import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.iam.UserVO;
 import io.choerodon.devops.app.service.PipelineService;
 import io.choerodon.swagger.annotation.CustomPageRequest;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -35,7 +36,7 @@ public class PipelineController {
     /**
      * 项目下创建流水线
      *
-     * @param projectId      项目id
+     * @param projectId     项目id
      * @param pipelineReqVO 流水线信息
      * @return PipelineAppDeployDTO
      */
@@ -55,7 +56,7 @@ public class PipelineController {
     /**
      * 项目下更新流水线
      *
-     * @param projectId      项目id
+     * @param projectId     项目id
      * @param pipelineReqVO 流水线信息
      * @return PipelineAppDeployDTO
      */
@@ -137,9 +138,9 @@ public class PipelineController {
     /**
      * 项目下获取流水线
      *
-     * @param projectId   项目Id
-     * @param pageRequest 分页参数
-     * @param params      查询参数
+     * @param projectId        项目Id
+     * @param pageRequest      分页参数
+     * @param pipelineSearchVO 查询参数
      * @return
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
@@ -149,17 +150,11 @@ public class PipelineController {
     public ResponseEntity<PageInfo<PipelineVO>> pageByOptions(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "创建者", required = false)
-            @RequestParam(value = "creator", required = false) Boolean creator,
-            @ApiParam(value = "执行者", required = false)
-            @RequestParam(value = "executor", required = false) Boolean executor,
-            @ApiParam(value = "环境Id", required = false)
-            @RequestParam(value = "envIds", required = false) List<String> envIds,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "查询参数")
-            @RequestBody(required = false) String params) {
-        return Optional.ofNullable(pipelineService.pageByOptions(projectId, creator, executor, envIds, pageRequest, params))
+            @RequestBody(required = false) PipelineSearchVO pipelineSearchVO) {
+        return Optional.ofNullable(pipelineService.pageByOptions(projectId, pipelineSearchVO, pageRequest))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.pipeline.list"));
     }

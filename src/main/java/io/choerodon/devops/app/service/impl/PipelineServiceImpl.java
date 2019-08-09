@@ -9,6 +9,20 @@ import java.util.stream.Collectors;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+import io.reactivex.Emitter;
+import io.reactivex.Observable;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.Observer;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -36,19 +50,6 @@ import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
 import io.choerodon.devops.infra.mapper.PipelineMapper;
 import io.choerodon.devops.infra.mapper.PipelineRecordMapper;
 import io.choerodon.devops.infra.util.*;
-import io.reactivex.Emitter;
-import io.reactivex.Observable;
-import io.reactivex.ObservableOnSubscribe;
-import io.reactivex.Observer;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.schedulers.Schedulers;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -106,14 +107,10 @@ public class PipelineServiceImpl implements PipelineService {
     private PipelineRecordMapper pipelineRecordMapper;
 
     @Override
-    public PageInfo<PipelineVO> pageByOptions(Long projectId, Boolean creator, Boolean executor, List<String> envIds, PageRequest pageRequest, String params) {
+    public PageInfo<PipelineVO> pageByOptions(Long projectId, PipelineSearchVO pipelineSearchVO, PageRequest pageRequest) {
         ProjectDTO projectDTO = iamService.queryIamProject(projectId);
-        Map<String, Object> classifyParam = new HashMap<>();
-        classifyParam.put("creator", creator);
-        classifyParam.put("executor", executor);
-        classifyParam.put("userId", DetailsHelper.getUserDetails().getUserId());
-        classifyParam.put("envIds", envIds);
-        PageInfo<PipelineVO> pipelineDTOS = ConvertUtils.convertPage(baseListByOptions(projectId, pageRequest, params, classifyParam), PipelineVO.class);
+        Long userId = DetailsHelper.getUserDetails().getUserId();
+        PageInfo<PipelineVO> pipelineDTOS = ConvertUtils.convertPage(baseListByOptions(projectId, pageRequest, pipelineSearchVO, userId), PipelineVO.class);
         PageInfo<PipelineVO> page = new PageInfo<>();
         BeanUtils.copyProperties(pipelineDTOS, page);
         page.setList(pipelineDTOS.getList().stream().peek(t -> {
@@ -1486,12 +1483,9 @@ public class PipelineServiceImpl implements PipelineService {
     }
 
     @Override
-    public PageInfo<PipelineDTO> baseListByOptions(Long projectId, PageRequest pageRequest, String params, Map<String, Object> classifyParam) {
-        Map maps = gson.fromJson(params, Map.class);
-        Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
-        List<String> paramList = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
+    public PageInfo<PipelineDTO> baseListByOptions(Long projectId, PageRequest pageRequest, PipelineSearchVO pipelineSearchVO, Long userId) {
         return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() ->
-                pipelineMapper.listByOptions(projectId, searchParamMap, paramList, PageRequestUtil.checkSortIsEmpty(pageRequest), classifyParam));
+                pipelineMapper.listByOptions(projectId, PageRequestUtil.checkSortIsEmpty(pageRequest), pipelineSearchVO, userId));
     }
 
     @Override
