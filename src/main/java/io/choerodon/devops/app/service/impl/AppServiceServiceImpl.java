@@ -106,6 +106,9 @@ public class AppServiceServiceImpl implements AppServiceService {
     private static final String TEST = "test-application";
     private static final String DUPLICATE = "duplicate";
     private static final String FILE_SEPARATOR = "/";
+    public static final String APP_SERVICE = "appService";
+    public static final String HARBOR = "harbor";
+    public static final String CHART = "chart";
     private Gson gson = new Gson();
     private JSON json = new JSON();
 
@@ -548,26 +551,17 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     @Override
     public String queryFile(String token, String type) {
-        AppServiceDTO applicationDTO = baseQueryByToken(token);
-        if (applicationDTO == null) {
+        AppServiceDTO appServiceDTO = baseQueryByToken(token);
+        if (appServiceDTO == null) {
             return null;
         }
         try {
-            ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(applicationDTO.getAppId());
+            ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(appServiceDTO.getAppId());
             OrganizationDTO organizationDTO = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
             InputStream inputStream;
-            ConfigVO harborProjectConfig;
-            ConfigVO chartProjectConfig;
-            if (applicationDTO.getHarborConfigId() != null) {
-                harborProjectConfig = gson.fromJson(devopsConfigService.baseQuery(applicationDTO.getHarborConfigId()).getConfig(), ConfigVO.class);
-            } else {
-                harborProjectConfig = gson.fromJson(devopsConfigService.baseListByIdAndType(null, ProjectConfigType.HARBOR.getType()).get(0).getConfig(), ConfigVO.class);
-            }
-            if (applicationDTO.getChartConfigId() != null) {
-                chartProjectConfig = gson.fromJson(devopsConfigService.baseQuery(applicationDTO.getChartConfigId()).getConfig(), ConfigVO.class);
-            } else {
-                chartProjectConfig = gson.fromJson(devopsConfigService.baseListByIdAndType(null, ProjectConfigType.CHART.getType()).get(0).getConfig(), ConfigVO.class);
-            }
+            ConfigVO harborProjectConfig = gson.fromJson(devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, HARBOR).getConfig(), ConfigVO.class);
+            ConfigVO chartProjectConfig = gson.fromJson(devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, CHART).getConfig(), ConfigVO.class);
+
             if (type == null) {
                 inputStream = this.getClass().getResourceAsStream("/shell/ci.sh");
             } else {
@@ -582,7 +576,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             dockerUrl = dockerUrl.endsWith("/") ? dockerUrl.substring(0, dockerUrl.length() - 1) : dockerUrl;
 
             params.put("{{ GROUP_NAME }}", groupName);
-            params.put("{{ PROJECT_NAME }}", applicationDTO.getCode());
+            params.put("{{ PROJECT_NAME }}", appServiceDTO.getCode());
             params.put("{{ PRO_CODE }}", projectDTO.getCode());
             params.put("{{ ORG_CODE }}", organizationDTO.getCode());
             params.put("{{ DOCKER_REGISTRY }}", dockerUrl);

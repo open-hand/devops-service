@@ -44,6 +44,10 @@ public interface DevopsConfigService {
      */
     DefaultConfigVO queryDefaultConfig(Long resourceId,String resourceType);
 
+
+    DevopsConfigDTO queryRealConfig(Long resourceId, String resourceType, String configType);
+
+
     DevopsConfigDTO baseCreate(DevopsConfigDTO devopsConfigDTO);
 
     Boolean baseCheckByName(DevopsConfigDTO devopsConfigDTO);
@@ -66,4 +70,10 @@ public interface DevopsConfigService {
 
     Boolean baseCheckUsed(Long checkIsUsed);
 
+    DevopsConfigDTO baseQueryByResourceAndType(Long resourceId, String resourceType, String configType);
+
+    DevopsConfigVO dtoToVo(DevopsConfigDTO devopsConfigDTO);
+
+    DevopsConfigDTO voToDto(DevopsConfigVO devopsConfigVO);
 }
+

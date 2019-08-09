@@ -15,4 +15,6 @@ public interface DevopsProjectService {
     void baseUpdate(DevopsProjectDTO devopsProjectDTO);
 
     Long queryAppIdByProjectId(Long projectId);
+
+    Long queryProjectIdByAppId(Long appId);
 }

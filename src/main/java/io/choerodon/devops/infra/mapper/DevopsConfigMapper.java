@@ -29,4 +29,6 @@ public interface DevopsConfigMapper extends Mapper<DevopsConfigDTO> {
     void deleteByProject();
 
     List<DevopsConfigDTO> existAppSerciveConfig();
+
+    DevopsConfigDTO queryDefaultConfig(@Param("type") String type);
 }
