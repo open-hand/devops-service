@@ -15,6 +15,12 @@ const EnvContent = lazy(() => import('./contents/environment'));
 const AppContent = lazy(() => import('./contents/application'));
 const IstContent = lazy(() => import('./contents/instance'));
 
+// 资源视图
+const NetworkContent = lazy(() => import('./contents/network'));
+const IngressContent = lazy(() => import('./contents/ingress'));
+const CertContent = lazy(() => import('./contents/certificate'));
+const KeyValueContent = lazy(() => import('./contents/key-value'));
+
 const MainView = observer(() => {
   const {
     prefixCls,
@@ -31,6 +37,11 @@ const MainView = observer(() => {
       MAP_ITEM,
       CIPHER_ITEM,
       CUSTOM_ITEM,
+      SERVICES_GROUP,
+      INGRESS_GROUP,
+      CERT_GROUP,
+      MAP_GROUP,
+      CIPHER_GROUP,
     },
   } = useDeploymentStore();
   const { mainStore } = useMainStore();
@@ -41,11 +52,16 @@ const MainView = observer(() => {
       [ENV_ITEM]: <EnvContent />,
       [APP_ITEM]: <AppContent />,
       [IST_ITEM]: <IstContent />,
+      [SERVICES_GROUP]: <NetworkContent />,
+      [INGRESS_GROUP]: <IngressContent />,
+      [CERT_GROUP]: <CertContent />,
+      [MAP_GROUP]: <KeyValueContent contentType={MAP_GROUP} />,
+      [CIPHER_GROUP]: <KeyValueContent contentType={CIPHER_GROUP} />,
     };
     return cmMaps[menuType]
       ? <Suspense fallback={<div>loading</div>}>{cmMaps[menuType]}</Suspense>
       : <div>加载数据中</div>;
-  }, [APP_ITEM, ENV_ITEM, IST_ITEM, getSelectedMenu]);
+  }, [APP_ITEM, CERT_GROUP, CIPHER_GROUP, ENV_ITEM, INGRESS_GROUP, IST_ITEM, MAP_GROUP, SERVICES_GROUP, getSelectedMenu]);
 
   const rootRef = useRef(null);
 
