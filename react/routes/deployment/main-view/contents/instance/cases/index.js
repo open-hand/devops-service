@@ -59,7 +59,7 @@ const Cases = observer(() => {
         'content-step-des-hidden': !flag,
       });
       return (
-        <div className="operation-content-step">
+        <div key={index} className="operation-content-step">
           <div className="content-step-title">
             {jobPodStatus === 'running' ? (
               <Progress strokeWidth={10} width={13} type="loading" />
