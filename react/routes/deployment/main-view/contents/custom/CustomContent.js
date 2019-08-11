@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react';
+import React, { Fragment, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import { Action } from '@choerodon/boot';
@@ -10,6 +10,7 @@ import { useCustomStore } from './stores';
 import Modals from './modals';
 
 import './index.less';
+import CustomForm from './modals/form-view';
 
 const { Column } = Table;
 
@@ -22,7 +23,10 @@ const CustomContent = observer(() => {
   const {
     customDs,
     intl: { formatMessage },
+    customStore,
   } = useCustomStore();
+
+  const [showModal, setShowModal] = useState(false);
 
   function refresh() {
     customDs.query();
@@ -47,7 +51,7 @@ const CustomContent = observer(() => {
       {
         service: [],
         text: formatMessage({ id: 'edit' }),
-        // action: openEdit,
+        action: openShow,
       },
       {
         service: ['devops-service.devops-customize-resource.deleteResource'],
@@ -57,6 +61,15 @@ const CustomContent = observer(() => {
     ];
 
     return (<Action data={buttons} />);
+  }
+
+  function openShow() {
+    setShowModal(true);
+  }
+
+  function closeModal(isLoad) {
+    setShowModal(false);
+    isLoad && customDs.query();
   }
 
   function handleDelete() {
@@ -76,6 +89,14 @@ const CustomContent = observer(() => {
         <Column name="k8sKind" />
         <Column name="lastUpdateDate" renderer={renderTime} />
       </Table>
+      {showModal && <CustomForm
+        id={customDs.current.get('id')}
+        envId={parentId}
+        type="edit"
+        store={customStore}
+        visible={showModal}
+        onClose={closeModal}
+      />}
     </div>
   );
 });

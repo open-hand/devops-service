@@ -28,6 +28,7 @@ const ConfigMap = observer((props) => {
     intl: { formatMessage },
     listDs,
     itemType,
+    permissions,
   } = useKeyValueStore();
 
   function refresh() {
@@ -63,7 +64,12 @@ const ConfigMap = observer((props) => {
   function renderAction() {
     const buttons = [
       {
-        service: [],
+        service: permissions.edit,
+        text: formatMessage({ id: 'edit' }),
+        // action: handleEdit,
+      },
+      {
+        service: permissions.delete,
         text: formatMessage({ id: 'delete' }),
         action: handleDelete,
       },

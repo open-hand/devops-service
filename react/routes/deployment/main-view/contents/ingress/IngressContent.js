@@ -93,7 +93,7 @@ const IngressContent = observer(() => {
         // action: () => showIngressEdit(true),
       },
       {
-        service: [],
+        service: ['devops-service.devops-ingress.delete'],
         text: formatMessage({ id: 'delete' }),
         action: handleDelete,
       },

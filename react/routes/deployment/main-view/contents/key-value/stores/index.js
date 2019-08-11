@@ -32,11 +32,23 @@ export const StoreProvider = injectIntl(inject('AppState')(
       projectId: id,
       envId: parentId,
     })), [formatMessage, id, itemType, parentId]);
+
+    const permissions = {
+      configMap: {
+        edit: ['devops-service.devops-config-map.create'],
+        delete: ['devops-service.devops-config-map.delete'],
+      },
+      secret: {
+        edit: ['devops-service.devops-secret.createOrUpdate'],
+        delete: ['devops-service.devops-secret.deleteSecret'],
+      },
+    };
   
     const value = {
       ...props,
       itemType,
       listDs,
+      permissions: permissions[itemType],
     };
   
     return (

@@ -94,7 +94,7 @@ const CertContent = observer(() => {
   function renderAction() {
     const buttons = [
       {
-        service: [],
+        service: ['devops-service.certification.delete'],
         text: formatMessage({ id: 'delete' }),
         action: handleDelete,
       },
