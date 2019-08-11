@@ -6,7 +6,6 @@ import static java.util.Comparator.comparing;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import io.reactivex.Emitter;
@@ -47,6 +46,7 @@ import io.choerodon.devops.infra.enums.PipelineNoticeType;
 import io.choerodon.devops.infra.enums.WorkFlowStatus;
 import io.choerodon.devops.infra.feign.NotifyClient;
 import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
+import io.choerodon.devops.infra.mapper.PipelineAppServiceDeployMapper;
 import io.choerodon.devops.infra.mapper.PipelineMapper;
 import io.choerodon.devops.infra.mapper.PipelineRecordMapper;
 import io.choerodon.devops.infra.util.*;
@@ -105,28 +105,43 @@ public class PipelineServiceImpl implements PipelineService {
     private DevopsDeployRecordService devopsDeployRecordService;
     @Autowired
     private PipelineRecordMapper pipelineRecordMapper;
+    @Autowired
+    private PipelineAppServiceDeployMapper appServiceDeployMapper;
+
 
     @Override
     public PageInfo<PipelineVO> pageByOptions(Long projectId, PipelineSearchVO pipelineSearchVO, PageRequest pageRequest) {
         ProjectDTO projectDTO = iamService.queryIamProject(projectId);
         Long userId = DetailsHelper.getUserDetails().getUserId();
-        PageInfo<PipelineVO> pipelineDTOS = ConvertUtils.convertPage(baseListByOptions(projectId, pageRequest, pipelineSearchVO, userId), PipelineVO.class);
-        PageInfo<PipelineVO> page = new PageInfo<>();
-        BeanUtils.copyProperties(pipelineDTOS, page);
-        page.setList(pipelineDTOS.getList().stream().peek(t -> {
-            IamUserDTO iamUserDTO = iamService.queryUserByUserId(t.getCreatedBy());
-            t.setCreateUserName(iamUserDTO.getLoginName());
-            t.setCreateUserUrl(iamUserDTO.getImageUrl());
-            t.setCreateUserRealName(iamUserDTO.getRealName());
-            List<Long> pipelineEnvIds = getAllAppDeploy(t.getId()).stream().map(PipelineAppServiceDeployDTO::getEnvId).collect(Collectors.toList());
-            t.setEdit(checkPipelineEnvPermission(projectDTO, pipelineEnvIds));
-        }).collect(Collectors.toList()));
-        return page;
+        List<PipelineVO> pipelineVOS = ConvertUtils.convertList(pipelineMapper.listByOptions(projectId, pipelineSearchVO, userId, pageRequest.getSort().toSql()), PipelineVO.class);
+        List<PipelineVO> pipelineVOList;
+        Boolean projectOwner = iamService.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectDTO);
+        if (pipelineSearchVO != null && pipelineSearchVO.getManager()) {
+            pipelineVOList = pipelineVOS.stream().filter(t -> {
+                List<Long> pipelineEnvIds = getAllAppDeploy(t.getId()).stream().map(PipelineAppServiceDeployDTO::getEnvId).collect(Collectors.toList());
+                return checkPipelineEnvPermission(pipelineEnvIds, projectOwner);
+            }).peek(t -> {
+                IamUserDTO iamUserDTO = iamService.queryUserByUserId(t.getCreatedBy());
+                t.setCreateUserName(iamUserDTO.getLoginName());
+                t.setCreateUserUrl(iamUserDTO.getImageUrl());
+                t.setEdit(true);
+            }).collect(Collectors.toList());
+        } else {
+            pipelineVOList = pipelineVOS.stream().peek(t -> {
+                IamUserDTO iamUserDTO = iamService.queryUserByUserId(t.getCreatedBy());
+                t.setCreateUserName(iamUserDTO.getLoginName());
+                t.setCreateUserUrl(iamUserDTO.getImageUrl());
+                List<Long> pipelineEnvIds = getAllAppDeploy(t.getId()).stream().map(PipelineAppServiceDeployDTO::getEnvId).collect(Collectors.toList());
+                t.setEdit(checkPipelineEnvPermission(pipelineEnvIds, projectOwner));
+            }).collect(Collectors.toList());
+        }
+        return PageInfoUtil.createPageFromList(pipelineVOList, pageRequest);
     }
 
     @Override
     public PageInfo<PipelineRecordVO> listRecords(Long projectId, Long pipelineId, PageRequest pageRequest, String params, Boolean pendingcheck, Boolean executed, Boolean reviewed) {
         ProjectDTO projectDTO = iamService.queryIamProject(projectId);
+        Boolean projectOwner = iamService.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectDTO);
         Map<String, Object> classifyParam = new HashMap<>();
         classifyParam.put("executed", executed);
         classifyParam.put("reviewed", reviewed);
@@ -177,7 +192,7 @@ public class PipelineServiceImpl implements PipelineService {
             } else if (t.getStatus().equals(WorkFlowStatus.FAILED.toValue())) {
                 if (t.getTriggerType().equals(AUTO) || checkRecordTriggerPermission(t.getId(), null)) {
                     List<Long> pipelineEnvIds = pipelineTaskRecordService.baseQueryAllAutoTaskRecord(t.getId()).stream().map(PipelineTaskRecordDTO::getEnvId).collect(Collectors.toList());
-                    t.setExecute(checkPipelineEnvPermission(projectDTO, pipelineEnvIds));
+                    t.setExecute(checkPipelineEnvPermission(pipelineEnvIds, projectOwner));
                 }
             }
         }).collect(Collectors.toList()));
@@ -250,8 +265,8 @@ public class PipelineServiceImpl implements PipelineService {
         userRelationshipService.baseListByOptions(pipelineId, null, null).forEach(t -> userRelationshipService.baseDelete(t));
         pipelineStageService.baseListByPipelineId(pipelineId).forEach(stage -> {
             pipelineTaskService.baseQueryTaskByStageId(stage.getId()).forEach(task -> {
-                if (task.getAppDeployId() != null) {
-                    pipelineAppDeployService.baseDeleteById(task.getAppDeployId());
+                if (task.getAppServiceDeployId() != null) {
+                    pipelineAppDeployService.baseDeleteById(task.getAppServiceDeployId());
                 }
                 pipelineTaskService.baseDeleteTaskById(task.getId());
                 userRelationshipService.baseListByOptions(null, null, task.getId()).forEach(t -> userRelationshipService.baseDelete(t));
@@ -653,6 +668,7 @@ public class PipelineServiceImpl implements PipelineService {
     @Override
     public PipelineRecordReqVO getRecordById(Long projectId, Long pipelineRecordId) {
         ProjectDTO projectDTO = iamService.queryIamProject(projectId);
+        Boolean projectOwner = iamService.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectDTO);
         PipelineRecordReqVO recordReqDTO = new PipelineRecordReqVO();
         PipelineRecordDTO pipelineRecordE = pipelineRecordService.baseQueryById(pipelineRecordId);
         BeanUtils.copyProperties(pipelineRecordE, recordReqDTO);
@@ -700,7 +716,7 @@ public class PipelineServiceImpl implements PipelineService {
             List<Long> pipelineEnvIds = pipelineTaskRecordService.baseQueryAllAutoTaskRecord(pipelineRecordId)
                     .stream()
                     .map(PipelineTaskRecordDTO::getEnvId).collect(Collectors.toList());
-            if (checkRecordTriggerPermission(pipelineRecordE.getId(), null) && checkPipelineEnvPermission(projectDTO, pipelineEnvIds)) {
+            if (checkRecordTriggerPermission(pipelineRecordE.getId(), null) && checkPipelineEnvPermission(pipelineEnvIds, projectOwner)) {
                 recordReqDTO.setExecute(true);
             }
         }
@@ -988,7 +1004,7 @@ public class PipelineServiceImpl implements PipelineService {
                 if (t.getType().equals(MANUAL)) {
                     updateUserRel(null, null, null, t.getId());
                 } else {
-                    pipelineAppDeployService.baseDeleteById(t.getAppDeployId());
+                    pipelineAppDeployService.baseDeleteById(t.getAppServiceDeployId());
                 }
             }
         });
@@ -1094,8 +1110,8 @@ public class PipelineServiceImpl implements PipelineService {
         taskRecordE.setTaskType(taskE.getType());
         taskRecordE.setStatus(WorkFlowStatus.UNEXECUTED.toValue());
         taskRecordE.setStageRecordId(stageRecordId);
-        if (taskE.getAppDeployId() != null) {
-            PipelineAppServiceDeployDTO appDeployE = pipelineAppDeployService.baseQueryById(taskE.getAppDeployId());
+        if (taskE.getAppServiceDeployId() != null) {
+            PipelineAppServiceDeployDTO appDeployE = pipelineAppDeployService.baseQueryById(taskE.getAppServiceDeployId());
             BeanUtils.copyProperties(appDeployE, taskRecordE);
             if (appDeployE.getInstanceName() == null) {
                 taskRecordE.setInstanceName(appServiceInstanceService.baseQuery(appDeployE.getInstanceId()).getCode());
@@ -1116,9 +1132,9 @@ public class PipelineServiceImpl implements PipelineService {
         List<PipelineAppServiceDeployDTO> appDeployEList = new ArrayList<>();
         pipelineStageService.baseListByPipelineId(pipelineId).forEach(stageE -> {
             pipelineTaskService.baseQueryTaskByStageId(stageE.getId()).forEach(taskE -> {
-                if (taskE.getAppDeployId() != null) {
-                    PipelineAppServiceDeployDTO appDeployE = pipelineAppDeployService.baseQueryById(taskE.getAppDeployId());
-                    appDeployEList.add(appDeployE);
+                if (taskE.getAppServiceDeployId() != null) {
+                    PipelineAppServiceDeployDTO appServiceDeployDTO = appServiceDeployMapper.selectByPrimaryKey(taskE.getAppServiceDeployId());
+                    appDeployEList.add(appServiceDeployDTO);
                 }
             });
         });
@@ -1436,9 +1452,9 @@ public class PipelineServiceImpl implements PipelineService {
                 });
     }
 
-    private Boolean checkPipelineEnvPermission(ProjectDTO projectDTO, List<Long> pipelineEnvIds) {
+    private Boolean checkPipelineEnvPermission(List<Long> pipelineEnvIds, Boolean projectOwner) {
         Boolean index = true;
-        if (!iamService.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectDTO)) {
+        if (!projectOwner) {
             List<Long> envIds = devopsEnvUserPermissionService
                     .listByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId())).stream()
                     .filter(DevopsEnvUserPermissionDTO::getPermitted)
@@ -1480,12 +1496,6 @@ public class PipelineServiceImpl implements PipelineService {
             sendAuditSiteMassage(PipelineNoticeType.PIPELINESTOP.toValue(), auditUser, recordRelDTO.getPipelineRecordId(), stageName);
         }
         return status;
-    }
-
-    @Override
-    public PageInfo<PipelineDTO> baseListByOptions(Long projectId, PageRequest pageRequest, PipelineSearchVO pipelineSearchVO, Long userId) {
-        return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() ->
-                pipelineMapper.listByOptions(projectId, PageRequestUtil.checkSortIsEmpty(pageRequest), pipelineSearchVO, userId));
     }
 
     @Override

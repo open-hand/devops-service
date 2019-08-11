@@ -17,7 +17,7 @@ public class PipelineTaskDTO extends BaseDTO {
     private Long stageId;
     private String name;
     private String type;
-    private Long appDeployId;
+    private Long appServiceDeployId;
     private Integer isCountersigned;
     private Long projectId;
 
@@ -64,12 +64,12 @@ public class PipelineTaskDTO extends BaseDTO {
         this.type = type;
     }
 
-    public Long getAppDeployId() {
-        return appDeployId;
+    public Long getAppServiceDeployId() {
+        return appServiceDeployId;
     }
 
-    public void setAppDeployId(Long appDeployId) {
-        this.appDeployId = appDeployId;
+    public void setAppServiceDeployId(Long appServiceDeployId) {
+        this.appServiceDeployId = appServiceDeployId;
     }
 
     public Integer getIsCountersigned() {

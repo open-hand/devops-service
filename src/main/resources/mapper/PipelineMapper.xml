@@ -3,87 +3,24 @@
 
 <mapper namespace="io.choerodon.devops.infra.mapper.PipelineMapper">
     <select id="listByOptions" resultType="io.choerodon.devops.infra.dto.PipelineDTO">
-        <include refid="creatorSql"/>
+        <choose>
+            <when test="pipelineSearchVO!=null and pipelineSearchVO.executor !=null and pipelineSearchVO.creator != null and pipelineSearchVO.manager=null">
+                <include refid="executorSql"/>
+                union
+                <include refid="creatorSql"/>
+            </when>
+            <when test="pipelineSearchVO!=null and pipelineSearchVO.executor !=null and pipelineSearchVO.manager=null">
+                <include refid="executorSql"/>
+            </when>
+            <when test="pipelineSearchVO!=null and pipelineSearchVO.creator != null and pipelineSearchVO.manager=null">
+                <include refid="creatorSql"/>
+            </when>
+            <otherwise>
+                <include refid="manageSql"/>
+            </otherwise>
+        </choose>
+      ORDER By  #{sort}
     </select>
-
-    <!--<select id="listByOptions" resultType="io.choerodon.devops.infra.dto.PipelineDTO">-->
-        <!--<choose>-->
-            <!--<when test="pipelineSearchVO.executor !=null and pipelineSearchVO.creator != null and pipelineSearchVO.manager!=null">-->
-                <!--SELECT-->
-                <!--DISTINCT dp.is_enabled,-->
-                <!--dp. NAME,-->
-                <!--dp.trigger_type,-->
-                <!--dp.created_by,-->
-                <!--dp.last_update_date,-->
-                <!--dp.object_version_number,-->
-                <!--dp.id,-->
-                <!--EXISTS (-->
-                <!--SELECT-->
-                <!--1-->
-                <!--FROM-->
-                <!--devops_pipeline_user_rel dpur-->
-                <!--WHERE-->
-                <!--dpur.user_id = #{userId}-->
-                <!--AND dpur.pipeline_id = dp.id-->
-                <!--AND dp.is_enabled = 1-->
-                <!--) AS execute-->
-                <!--FROM-->
-                <!--devops_pipeline dp-->
-                <!--<include refid="sqlparamEnvId"/>-->
-                <!--WHERE-->
-                <!--dp.project_id = #{projectId}-->
-                <!--<include refid="sqlparamTriggerType"/>-->
-                <!--AND dp.trigger_type='manual' and dp.created_by = #{userId}-->
-                <!--UNION-->
-                <!--<include refid="executorSql"/>-->
-            <!--</when>-->
-            <!--<when test="pipelineSearchVO.executor != null">-->
-                <!--<include refid="executorSql"/>-->
-            <!--</when>-->
-            <!--<otherwise>-->
-                <!--SELECT-->
-                <!--DISTINCT dp.is_enabled,-->
-                <!--dp. NAME,-->
-                <!--dp.trigger_type,-->
-                <!--dp.created_by,-->
-                <!--dp.last_update_date,-->
-                <!--dp.object_version_number,-->
-                <!--dp.id,-->
-                <!--EXISTS (-->
-                <!--SELECT-->
-                <!--1-->
-                <!--FROM-->
-                <!--devops_pipeline_user_rel dpur-->
-                <!--WHERE-->
-                <!--dpur.pipeline_id = dp.id-->
-                <!--AND dpur.user_id = #{userId}-->
-                <!--AND dp.is_enabled = 1-->
-                <!--) AS EXECUTE-->
-                <!--FROM-->
-                <!--devops_pipeline dp-->
-                <!--<if test="pipelineSearchVO.envIds!=null and pipelineSearchVO.envIds.size>0">-->
-                    <!--JOIN devops_pipeline_stage dps ON dps.pipeline_id = dp.id-->
-                    <!--JOIN devops_pipeline_task dpt ON dpt.stage_id = dps.id-->
-                    <!--JOIN devops_pipeline_app_service_deploy dpad ON dpad.id = dpt.app_service_deploy_id-->
-                    <!--AND dpad.env_id IN-->
-                    <!--<foreach collection="pipelineSearchVO.envIds" item="envId" open="(" separator="," close=")">-->
-                        <!--#{envId}-->
-                    <!--</foreach>-->
-                <!--</if>-->
-                <!--WHERE-->
-                <!--dp.project_id = #{projectId}-->
-                <!--<include refid="sqlparam"/>-->
-                <!--<if test='pipelineSearchVO.creator != null and userId != null'>-->
-                    <!--AND dp.created_by = #{userId}-->
-                <!--</if>-->
-            <!--</otherwise>-->
-        <!--</choose>-->
-        <!--<if test="index !=''">-->
-            <!--ORDER BY-->
-            <!--is_enabled DESC,-->
-            <!--id DESC-->
-        <!--</if>-->
-    <!--</select>-->
 
     <sql id="sqlparamEnvId">
         <if test='pipelineSearchVO!=null and pipelineSearchVO.envId!= null'>
@@ -96,7 +33,7 @@
 
     <sql id="sqlparamTriggerType">
         <if test='pipelineSearchVO!=null and pipelineSearchVO.triggerType != null and pipelineSearchVO.triggerType!=""'>
-            AND  dp.trigger_type='manual'
+            AND dp.trigger_type='manual'
         </if>
     </sql>
 
@@ -124,7 +61,7 @@
     </sql>
 
     <sql id="executorSql">
-       <include refid="baseSql"/>
+        <include refid="baseSql"/>
         JOIN devops_pipeline_user_rel dpur ON dpur.pipeline_id = dp.id
         AND dpur.user_id =#{userId}
         <include refid="sqlparamEnvId"/>
@@ -148,9 +85,6 @@
         WHERE
         dp.project_id = #{projectId}
         <include refid="sqlparamTriggerType"/>
-        <if test="pipelineSearchVO.projectOwner=false">
-            JOIN devops_env_user_permission deup on deup.
-        </if>
     </sql>
 
 </mapper>

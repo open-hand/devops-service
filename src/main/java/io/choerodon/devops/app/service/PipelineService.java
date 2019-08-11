@@ -69,8 +69,6 @@ public interface PipelineService {
 
     void sendSiteMessage(Long pipelineRecordId, String type, List<NoticeSendDTO.User> users, Map<String, Object> params);
 
-    PageInfo<PipelineDTO> baseListByOptions(Long projectId, PageRequest pageRequest, PipelineSearchVO pipelineSearchVO, Long userId);
-
     PipelineDTO baseCreate(Long projectId, PipelineDTO devopsPipelineDTO);
 
     PipelineDTO baseUpdate(Long projectId, PipelineDTO devopsPipelineDTO);

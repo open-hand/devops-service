@@ -14,12 +14,14 @@ import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.domain.PageRequest;
+import io.choerodon.base.domain.Sort;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.iam.UserVO;
 import io.choerodon.devops.app.service.PipelineService;
+import io.choerodon.mybatis.annotation.SortDefault;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 
 /**
@@ -151,7 +153,7 @@ public class PipelineController {
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
-            @ApiIgnore PageRequest pageRequest,
+            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) PipelineSearchVO pipelineSearchVO) {
         return Optional.ofNullable(pipelineService.pageByOptions(projectId, pipelineSearchVO, pageRequest))

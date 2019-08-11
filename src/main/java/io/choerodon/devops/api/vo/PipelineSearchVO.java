@@ -11,7 +11,6 @@ public class PipelineSearchVO {
     private Boolean manager;
     private Long envId;
     private String triggerType;
-    private Boolean projectOwner;
 
     public Boolean getCreator() {
         return creator;
