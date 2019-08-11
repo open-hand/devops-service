@@ -66,7 +66,7 @@ const Content = observer(() => {
         // action: openEdit,
       },
       {
-        service: ['devops-service.devops-customize-resource.deleteResource'],
+        service: ['devops-service.app-service-instance.delete'],
         text: formatMessage({ id: 'delete' }),
         action: handleDelete,
       },

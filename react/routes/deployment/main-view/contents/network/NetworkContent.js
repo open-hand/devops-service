@@ -240,7 +240,7 @@ const NetworkContent = observer(() => {
         // action: () => showNetwork(true),
       },
       {
-        service: [],
+        service: ['devops-service.devops-service.delete'],
         text: formatMessage({ id: 'delete' }),
         action: handleDelete,
       },
