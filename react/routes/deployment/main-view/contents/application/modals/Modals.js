@@ -106,7 +106,7 @@ const AppModals = observer(() => {
     display: true,
     group: 1,
   }, {
-    name: formatMessage({ id: `${intlPrefix}.create.config-map` }),
+    name: formatMessage({ id: `${intlPrefix}.create.configMap` }),
     icon: 'playlist_add',
     handler: () => openKeyValue('configMap'),
     display: true,

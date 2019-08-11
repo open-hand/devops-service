@@ -6,13 +6,13 @@ import { FormattedMessage } from 'react-intl';
 import HeaderButtons from '../../../components/header-buttons';
 import { useDeploymentStore } from '../../../../stores';
 import { useModalStore } from './stores';
-import { useKeyValueStore } from '../stores';
+import { useCustomStore } from '../stores';
 
 const modalStyle = {
   width: '26%',
 };
 
-const KeyValueModals = observer(() => {
+const CustomModals = observer(() => {
   const {
     intlPrefix,
     prefixCls,
@@ -20,9 +20,8 @@ const KeyValueModals = observer(() => {
     deploymentStore,
   } = useDeploymentStore();
   const {
-    listDs,
-    itemType,
-  } = useKeyValueStore();
+    certificateDs,
+  } = useCustomStore();
   const {
     permissions,
     AppState: { currentMenuType: { projectId } },
@@ -38,11 +37,11 @@ const KeyValueModals = observer(() => {
   }, [deploymentStore]);
 
   function refresh() {
-    listDs.query();
+    certificateDs.query();
   }
   
   const buttons = useMemo(() => ([{
-    name: formatMessage({ id: `${intlPrefix}.create.${itemType}` }),
+    name: formatMessage({ id: `${intlPrefix}.create.custom` }),
     icon: 'playlist_add',
     handler: openModal,
     display: true,
@@ -54,9 +53,9 @@ const KeyValueModals = observer(() => {
     handler: refresh,
     display: true,
     group: 1,
-  }]), [formatMessage, intlPrefix, itemType, openModal, permissions, refresh]);
+  }]), [formatMessage, intlPrefix, openModal, permissions, refresh]);
 
   return <HeaderButtons items={buttons} />;
 });
 
-export default KeyValueModals;
+export default CustomModals;

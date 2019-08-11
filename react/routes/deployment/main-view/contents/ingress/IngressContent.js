@@ -115,7 +115,7 @@ const IngressContent = observer(() => {
         queryBar="none"
       >
         <Column name="name" renderer={renderName} />
-        <Column renderer={renderAction} />
+        <Column renderer={renderAction} width="0.7rem" />
         <Column name="domain" />
         <Column name="pathList" renderer={renderPath} />
         <Column name="pathList" renderer={renderService} header={formatMessage({ id: 'network' })} />

@@ -1,94 +1,63 @@
-import React, { Fragment } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import { Action } from '@choerodon/boot';
 import {
+  Button,
   Popover,
 } from 'choerodon-ui';
 import { Table } from 'choerodon-ui/pro';
-import StatusIcon from '../../../../../components/StatusIcon';
+import MouserOverWrapper from '../../../../../components/MouseOverWrapper/MouserOverWrapper';
+import StatusTags from '../../../../../components/StatusTags';
+import TimePopover from '../../../../../components/timePopover/TimePopover';
 import { useDeploymentStore } from '../../../stores';
-import { useCertificateStore } from './stores';
+import { useKeyValueStore } from './stores';
 import Modals from './modals';
-import MouserOverWrapper from '../../../../../components/MouseOverWrapper';
-import { getTimeLeft } from '../../../../../utils';
 
 import './index.less';
 
 const { Column } = Table;
 
-const Content = observer(() => {
+const ConfigMap = observer((props) => {
   const {
     prefixCls,
     intlPrefix,
     deploymentStore: { getSelectedMenu: { parentId } },
   } = useDeploymentStore();
   const {
-    certificateDs,
     intl: { formatMessage },
-  } = useCertificateStore();
+    listDs,
+    itemType,
+  } = useKeyValueStore();
 
   function refresh() {
-    certificateDs.query();
+    return listDs.query();
   }
 
   function renderName({ value, record }) {
+    const commandStatus = record.get('commandStatus');
     return (
-      <div className="c7n-network-service">
-        <StatusIcon
-          name={value}
-          status={record.get('commandStatus') || ''}
-          error={record.get('error') || ''}
+      <div>
+        <StatusTags
+          name={formatMessage({ id: commandStatus || 'null' })}
+          colorCode={commandStatus || 'success'}
+          style={{ minWidth: 40, marginRight: '0.08rem' }}
         />
+        <span>{value}</span>
       </div>
     );
   }
 
-  function renderDomains({ value }) {
+  function renderKey({ value = [] }) {
     return (
-      <MouserOverWrapper text={value[0] || ''} width={0.25}>
-        {value[0]}
+      <MouserOverWrapper width={0.5}>
+        {value.join(',')}
       </MouserOverWrapper>
     );
   }
 
-
-  function renderValid({ record }) {
-    const validFrom = record.get('validFrom');
-    const validUntil = record.get('validUntil');
-    const commandStatus = record.get('commandStatus');
-    let msg = null;
-    let content = null;
-    if (!(validFrom && validUntil && commandStatus === 'success')) return content;
-
-    content = (
-      <Fragment>
-        <FormattedMessage id="timeFrom" />：{validFrom}
-        <br />
-        <FormattedMessage id="timeUntil" />：{validUntil}
-      </Fragment>
-    );
-    const start = new Date(validFrom.replace(/-/g, '/')).getTime();
-    const end = new Date(validUntil.replace(/-/g, '/')).getTime();
-    const now = Date.now();
-
-    if (now < start) {
-      msg = <FormattedMessage id="notActive" />;
-    } else if (now > end) {
-      msg = <FormattedMessage id="expired" />;
-    } else {
-      msg = getTimeLeft(now, end);
-    }
-    return (
-      <Popover
-        content={content}
-        getPopupContainer={triggerNode => triggerNode.parentNode}
-        trigger="hover"
-        placement="top"
-      >
-        <span>{msg}</span>
-      </Popover>
-    );
+  function renderDate({ value }) {
+    return <TimePopover content={value} />;
   }
 
   function renderAction() {
@@ -99,29 +68,28 @@ const Content = observer(() => {
         action: handleDelete,
       },
     ];
-
-    return (<Action data={buttons} />);
+    return <Action data={buttons} />;
   }
 
   function handleDelete() {
-    certificateDs.delete(certificateDs.current);
+    listDs.delete(listDs.current);
   }
 
   return (
-    <div className={`${prefixCls}-ingress-table`}>
+    <div className={`${prefixCls}-keyValue-table`}>
       <Modals />
       <Table
-        dataSet={certificateDs}
+        dataSet={listDs}
         border={false}
-        queryBar="none"
+        queryBar="bar"
       >
-        <Column name="name" renderer={renderName} />
-        <Column renderer={renderAction} />
-        <Column name="domains" renderer={renderDomains} />
-        <Column renderer={renderValid} header={formatMessage({ id: 'validDate' })} />
+        <Column name="name" header={formatMessage({ id: `${intlPrefix}.${itemType}` })} renderer={renderName} />
+        <Column renderer={renderAction} width="0.7rem" />
+        <Column name="key" renderer={renderKey} />
+        <Column name="lastUpdateDate" renderer={renderDate} />
       </Table>
     </div>
   );
 });
 
-export default Content;
+export default ConfigMap;
