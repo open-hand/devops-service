@@ -262,7 +262,7 @@ const NetworkContent = observer(() => {
         queryBar="none"
       >
         <Column name="name" renderer={renderName} />
-        <Column renderer={renderAction} />
+        <Column renderer={renderAction} width="0.7rem" />
         <Column renderer={renderTargetType} header={formatMessage({ id: `${intlPrefix}.application.net.targetType` })} />
         <Column renderer={renderTarget} header={formatMessage({ id: `${intlPrefix}.application.net.target` })} />
         <Column name="type" renderer={renderConfigType} />

@@ -236,8 +236,9 @@ const deployment = {
   'c7ncd.deployment.add.member': '添加人员',
   'c7ncd.deployment.create.network': '创建网络',
   'c7ncd.deployment.create.ingress': '创建域名',
-  'c7ncd.deployment.create.config-map': '创建配置映射',
+  'c7ncd.deployment.create.configMap': '创建配置映射',
   'c7ncd.deployment.create.secret': '创建密文',
+  'c7ncd.deployment.create.custom': '创建自定义资源',
   'c7ncd.deployment.service.detail': '服务详情',
   'c7ncd.deployment.service.status': '服务状态',
   'c7ncd.deployment.service.code': '服务编码',
@@ -245,6 +246,11 @@ const deployment = {
   'c7ncd.deployment.domains': '域名地址',
   'c7ncd.deployment.certificate.name': '证书名称',
   'c7ncd.deployment.create.certificate': '创建证书',
+  'c7ncd.deployment.configMap': '配置映射',
+  'c7ncd.deployment.secret': '密文',
+  'c7ncd.deployment.resource.type': '资源类型',
+  'c7ncd.deployment.instance.name': '实例名称',
+  'c7ncd.deployment.instance.pod.status': 'Pods状态',
 };
 
 const appService = {

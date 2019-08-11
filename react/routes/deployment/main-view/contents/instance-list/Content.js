@@ -1,0 +1,100 @@
+import React, { Fragment } from 'react';
+import { FormattedMessage } from 'react-intl';
+import { observer } from 'mobx-react-lite';
+import { Action } from '@choerodon/boot';
+import { Table } from 'choerodon-ui/pro';
+import StatusIcon from '../../../../../components/StatusIcon';
+import AppName from '../../../../../components/appName';
+import PodStatus from '../../../../instances/components/PodStatus/PodStatus';
+import { useDeploymentStore } from '../../../stores';
+import { useIstListStore } from './stores';
+import Modals from './modals';
+
+import './index.less';
+
+
+const { Column } = Table;
+
+const Content = observer(() => {
+  const {
+    prefixCls,
+    intlPrefix,
+    deploymentStore: { getSelectedMenu: { parentId } },
+    AppState: { currentMenuType: { id } },
+  } = useDeploymentStore();
+  const {
+    istListDs,
+    intl: { formatMessage },
+  } = useIstListStore();
+
+  function refresh() {
+    istListDs.query();
+  }
+
+  function renderName({ value, record }) {
+    return (
+      <StatusIcon
+        name={value}
+        width={0.2}
+        status={record.get('status') || ''}
+        error={record.get('error') || ''}
+      />
+    );
+  }
+
+  function renderAppName({ value, record }) {
+    return (
+      <AppName
+        width={0.18}
+        name={value}
+        showIcon={!!record.get('projectId')}
+        self={record.get('projectId') === id}
+      />
+    );
+  }
+
+  function renderPods({ record }) {
+    const dataSource = record.toData();
+    return <PodStatus dataSource={dataSource} />;
+  }
+
+  function renderAction() {
+    const buttons = [
+      {
+        service: [],
+        text: formatMessage({ id: 'edit' }),
+        // action: openEdit,
+      },
+      {
+        service: ['devops-service.devops-customize-resource.deleteResource'],
+        text: formatMessage({ id: 'delete' }),
+        action: handleDelete,
+      },
+    ];
+
+    return (<Action data={buttons} />);
+  }
+
+  function handleDelete() {
+    istListDs.delete(istListDs.current);
+  }
+
+  return (
+    <div className={`${prefixCls}-instance-table`}>
+      <Modals />
+      <Table
+        dataSet={istListDs}
+        border={false}
+        queryBar="none"
+      >
+        <Column name="code" renderer={renderName} />
+        <Column renderer={renderAction} width="0.7rem" />
+        <Column name="versionName" />
+        <Column name="appServiceName" renderer={renderAppName} />
+        <Column renderer={renderPods} width="1rem" header={formatMessage({ id: `${intlPrefix}.instance.pod.status` })} />
+      </Table>
+    </div>
+  );
+});
+
+export default Content;

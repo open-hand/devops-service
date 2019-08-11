@@ -9,7 +9,7 @@ export default ({ formatMessage, intlPrefix, projectId, envId }) => ({
       const postData = getTablePostData(data);
 
       return ({
-        url: `/devops/v1/projects/${projectId}/certifications/page_by_options?env_id=${envId}`,
+        url: `/devops/v1/projects/${projectId}/customize_resource/${envId}/page_by_env`,
         method: 'post',
         data: postData,
       });
@@ -17,11 +17,10 @@ export default ({ formatMessage, intlPrefix, projectId, envId }) => ({
   },
   fields: [
     { name: 'id', type: 'number' },
-    { name: 'certName', type: 'string', label: formatMessage({ id: `${intlPrefix}.certificate.name` }) },
-    { name: 'error', type: 'string' },
+    { name: 'name', type: 'string', label: formatMessage({ id: 'name' }) },
+    { name: 'k8sKind', type: 'string', label: formatMessage({ id: `${intlPrefix}.resource.type` }) },
+    { name: 'commandErrors', type: 'string' },
     { name: 'commandStatus', type: 'string' },
-    { name: 'domains', type: 'object', label: formatMessage({ id: `${intlPrefix}.domains` }) },
-    { name: 'validFrom', type: 'string' },
-    { name: 'validUntil', type: 'string' },
+    { name: 'lastUpdateDate', type: 'string', label: formatMessage({ id: 'updateDate' }) },
   ],
 });

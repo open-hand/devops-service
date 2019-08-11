@@ -20,6 +20,8 @@ const NetworkContent = lazy(() => import('./contents/network'));
 const IngressContent = lazy(() => import('./contents/ingress'));
 const CertContent = lazy(() => import('./contents/certificate'));
 const KeyValueContent = lazy(() => import('./contents/key-value'));
+const CustomContent = lazy(() => import('./contents/custom'));
+const IstListContent = lazy(() => import('./contents/instance-list'));
 
 const MainView = observer(() => {
   const {
@@ -42,6 +44,8 @@ const MainView = observer(() => {
       CERT_GROUP,
       MAP_GROUP,
       CIPHER_GROUP,
+      CUSTOM_GROUP,
+      IST_GROUP,
     },
   } = useDeploymentStore();
   const { mainStore } = useMainStore();
@@ -57,11 +61,13 @@ const MainView = observer(() => {
       [CERT_GROUP]: <CertContent />,
       [MAP_GROUP]: <KeyValueContent contentType={MAP_GROUP} />,
       [CIPHER_GROUP]: <KeyValueContent contentType={CIPHER_GROUP} />,
+      [CUSTOM_GROUP]: <CustomContent />,
+      [IST_GROUP]: <IstListContent />,
     };
     return cmMaps[menuType]
       ? <Suspense fallback={<div>loading</div>}>{cmMaps[menuType]}</Suspense>
       : <div>加载数据中</div>;
-  }, [APP_ITEM, CERT_GROUP, CIPHER_GROUP, ENV_ITEM, INGRESS_GROUP, IST_ITEM, MAP_GROUP, SERVICES_GROUP, getSelectedMenu]);
+  }, [APP_ITEM, CERT_GROUP, CIPHER_GROUP, CUSTOM_GROUP, ENV_ITEM, INGRESS_GROUP, IST_GROUP, IST_ITEM, MAP_GROUP, SERVICES_GROUP, getSelectedMenu]);
 
   const rootRef = useRef(null);
 

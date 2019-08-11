@@ -5,38 +5,30 @@ import { injectIntl } from 'react-intl';
 import TableDataSet from './TableDataSet';
 import { useDeploymentStore } from '../../../../stores';
 
-const TYPE = {
-  group_configMaps: 'configMap',
-  group_secrets: 'secret',
-};
-
 const Store = createContext();
 
-export function useKeyValueStore() {
+export function useCustomStore() {
   return useContext(Store);
 }
 
 export const StoreProvider = injectIntl(inject('AppState')(
   (props) => {
-    const { AppState: { currentMenuType: { id } }, children, contentType } = props;
+    const { AppState: { currentMenuType: { id } }, children } = props;
     const {
       intlPrefix,
       intl: { formatMessage },
       deploymentStore: { getSelectedMenu: { parentId } },
     } = useDeploymentStore();
-    const itemType = TYPE[contentType];
-    
-    const listDs = useMemo(() => new DataSet(TableDataSet({
+    const customDs = useMemo(() => new DataSet(TableDataSet({
       formatMessage,
-      itemType,
+      intlPrefix,
       projectId: id,
       envId: parentId,
-    })), [formatMessage, id, itemType, parentId]);
+    })), [formatMessage, id, intlPrefix, parentId]);
   
     const value = {
       ...props,
-      itemType,
-      listDs,
+      customDs,
     };
   
     return (
