@@ -3,8 +3,8 @@ package io.choerodon.devops.app.service.impl;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -114,7 +114,6 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         FileUtil.createDirectory(appFilePath, appServiceFileName);
         FileUtil.createDirectory(String.format("%s/%s", appFilePath, appServiceFileName), "chart");
         String appServiceChartPath = String.format("%s/%s/%s", appFilePath, appServiceFileName, "chart");
-        helmUrl = helmUrl.endsWith("/") ? helmUrl : helmUrl + "/";
         appServiceMarketVO.getAppServiceMarketVersionVOS().forEach(appServiceMarketVersionVO -> {
             //2.下载chart
             AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQuery(appServiceMarketVersionVO.getId());
@@ -123,7 +122,40 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
 
     }
 
-    private void analysisChart(String zipPath) {
+    private void analysisChart(String zipPath, AppServiceVersionDTO appServiceVersionDTO, String harborUrl) {
+        String unZipPath = String.format("%s/%s", zipPath, "unzip");
+        FileUtil.unTarGZ(unZipPath, unZipPath);
+        File zipDirectory = new File(unZipPath);
+        //解析 解压过后的文件
+        if (zipDirectory.exists() && zipDirectory.isDirectory()) {
+            File[] listFiles = zipDirectory.listFiles();
+            //获取替换Repository
+            List<File> appMarkets = Arrays.stream(listFiles).parallel()
+                    .filter(k -> k.getName().equals("values.yaml"))
+                    .collect(Collectors.toCollection(ArrayList::new));
+            if (!appMarkets.isEmpty() && appMarkets.size() == 1) {
+                File valuesFile = appMarkets.get(0);
+                Map<String, String> params = new HashMap<>();
+                params.put(appServiceVersionDTO.getRepository(), String.format("%s/%s", harborUrl, appServiceVersionDTO.getVersion()));
+                FileUtil.fileToInputStream(valuesFile, params);
+            }
+        } else {
+            FileUtil.deleteDirectory(zipDirectory);
+            throw new CommonException("error.chart.empty");
+        }
+        // 打包
+        String newZipPath = String.format("new-charts/%s", appServiceVersionDTO.getVersion());
+        try {
+            FileOutputStream fileOutputStream = new FileOutputStream(new File(newZipPath));
+            FileUtil.toZip(unZipPath, fileOutputStream, true);
+        } catch (FileNotFoundException e) {
+            throw new CommonException("error.upload.chart");
+        } finally {
+            FileUtil.deleteDirectory(new File(zipPath));
+            FileUtil.deleteDirectory(new File(unZipPath));
+        }
+
+
     }
 
     private void toZip(String outputPath, String filePath) {

@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
 
+import io.choerodon.base.domain.Sort;
 import io.choerodon.devops.api.vo.PipelineSearchVO;
 import io.choerodon.devops.infra.dto.PipelineDTO;
 import io.choerodon.mybatis.common.Mapper;
@@ -15,7 +16,7 @@ import io.choerodon.mybatis.common.Mapper;
  */
 public interface PipelineMapper extends Mapper<PipelineDTO> {
     List<PipelineDTO> listByOptions(@Param("projectId") Long projectId,
-                                    @Param("index") String index,
                                     @Param("pipelineSearchVO") PipelineSearchVO pipelineSearchVO,
-                                    @Param("userId") Long userId);
+                                    @Param("userId") Long userId,
+                                    @Param("sort") String sort);
 }
