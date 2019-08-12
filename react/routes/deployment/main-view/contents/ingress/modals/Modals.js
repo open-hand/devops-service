@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback, useEffect } from 'react';
+import React, { Fragment, useMemo, useCallback, useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Modal } from 'choerodon-ui/pro';
 import { Button } from 'choerodon-ui';
@@ -7,6 +7,7 @@ import HeaderButtons from '../../../components/header-buttons';
 import { useDeploymentStore } from '../../../../stores';
 import { useModalStore } from './stores';
 import { useIngressStore } from '../stores';
+import DomainModal from '../../application/modals/domain';
 
 const modalStyle = {
   width: '26%',
@@ -21,16 +22,15 @@ const EnvModals = observer(() => {
   } = useDeploymentStore();
   const {
     ingressDs,
+    ingressStore,
   } = useIngressStore();
   const {
     permissions,
     AppState: { currentMenuType: { projectId } },
   } = useModalStore();
-  const { menuId } = deploymentStore.getSelectedMenu;
+  const { menuId, parentId } = deploymentStore.getSelectedMenu;
 
-  const openModal = useCallback(() => {
-    // console.log(modal);
-  }, []);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     deploymentStore.setNoHeader(false);
@@ -38,6 +38,15 @@ const EnvModals = observer(() => {
 
   function refresh() {
     ingressDs.query();
+  }
+
+  function openModal() {
+    setShowModal(true);
+  }
+
+  function closeModal(isLoad) {
+    setShowModal(false);
+    isLoad && refresh();
   }
   
   const buttons = useMemo(() => ([{
@@ -55,7 +64,20 @@ const EnvModals = observer(() => {
     group: 1,
   }]), [formatMessage, intlPrefix, openModal, permissions, refresh]);
 
-  return <HeaderButtons items={buttons} />;
+  return (
+    <Fragment>
+      <HeaderButtons items={buttons} />
+      {showModal && (
+        <DomainModal
+          envId={parentId}
+          visible={showModal}
+          type="create"
+          store={ingressStore}
+          onClose={closeModal}
+        />
+      )}
+    </Fragment>
+  );
 });
 
 export default EnvModals;

@@ -28,9 +28,9 @@ export default function useStore() {
       return this.certificates;
     },
 
-    async loadNetwork(projectId, envId, appId) {
+    async loadNetwork(projectId, envId) {
       try {
-        const res = axios.get(`/devops/v1/projects/${projectId}/service/list_by_env?env_id=${envId}&app_service_id=${appId}`);
+        const res = axios.get(`/devops/v1/projects/${projectId}/service/list_by_env?env_id=${envId}`);
         if (handlePromptError(res)) {
           this.setNetwork(res);
         }

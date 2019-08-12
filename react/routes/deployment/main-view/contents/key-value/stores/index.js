@@ -4,6 +4,8 @@ import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
 import TableDataSet from './TableDataSet';
 import { useDeploymentStore } from '../../../../stores';
+import useConfigMapStore from './useConfigMapStore';
+import useSecretStore from './useSecretStore';
 
 const TYPE = {
   group_configMaps: 'configMap',
@@ -33,14 +35,20 @@ export const StoreProvider = injectIntl(inject('AppState')(
       envId: parentId,
     })), [formatMessage, id, itemType, parentId]);
 
-    const permissions = {
+    const itemData = {
       configMap: {
-        edit: ['devops-service.devops-config-map.create'],
-        delete: ['devops-service.devops-config-map.delete'],
+        permissions: {
+          edit: ['devops-service.devops-config-map.create'],
+          delete: ['devops-service.devops-config-map.delete'],
+        },
+        formStore: useConfigMapStore(),
       },
       secret: {
-        edit: ['devops-service.devops-secret.createOrUpdate'],
-        delete: ['devops-service.devops-secret.deleteSecret'],
+        permissions: {
+          edit: ['devops-service.devops-secret.createOrUpdate'],
+          delete: ['devops-service.devops-secret.deleteSecret'],
+        },
+        formStore: useSecretStore(),
       },
     };
   
@@ -48,7 +56,8 @@ export const StoreProvider = injectIntl(inject('AppState')(
       ...props,
       itemType,
       listDs,
-      permissions: permissions[itemType],
+      permissions: itemData[itemType].permissions,
+      formStore: itemData[itemType].formStore,
     };
   
     return (

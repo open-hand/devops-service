@@ -18,6 +18,7 @@ import MouserOverWrapper from '../../../../../components/MouseOverWrapper';
 import StatusTags from '../../../../../components/StatusTags';
 
 import './index.less';
+import DomainModal from '../application/modals/domain';
 
 const serviceStyle = {
   minWidth: 40,
@@ -36,7 +37,10 @@ const IngressContent = observer(() => {
   const {
     ingressDs,
     intl: { formatMessage },
+    ingressStore,
   } = useIngressStore();
+
+  const [showModal, setShowModal] = useState(false);
 
   function refresh() {
     ingressDs.query();
@@ -90,7 +94,7 @@ const IngressContent = observer(() => {
       {
         service: [],
         text: formatMessage({ id: 'edit' }),
-        // action: () => showIngressEdit(true),
+        action: openModal,
       },
       {
         service: ['devops-service.devops-ingress.delete'],
@@ -104,6 +108,15 @@ const IngressContent = observer(() => {
 
   function handleDelete() {
     ingressDs.delete(ingressDs.current);
+  }
+
+  function openModal() {
+    setShowModal(true);
+  }
+
+  function closeModal(isLoad) {
+    setShowModal(false);
+    isLoad && refresh();
   }
 
   return (
@@ -120,6 +133,16 @@ const IngressContent = observer(() => {
         <Column name="pathList" renderer={renderPath} />
         <Column name="pathList" renderer={renderService} header={formatMessage({ id: 'network' })} />
       </Table>
+      {showModal && (
+        <DomainModal
+          envId={parentId}
+          id={ingressDs.current.get('id')}
+          visible={showModal}
+          type="edit"
+          store={ingressStore}
+          onClose={closeModal}
+        />
+      )}
     </div>
   );
 });

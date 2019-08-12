@@ -3,11 +3,11 @@ import getTablePostData from '../../../../../../../utils/getTablePostData';
 export default ({ formatMessage, type, projectId, envId, appId }) => {
   const url = {
     mapping: {
-      read: `/devops/v1/projects/${projectId}/config_maps/page_by_options?env_id=${envId}`,
+      read: `/devops/v1/projects/${projectId}/config_maps/page_by_options?env_id=${envId}&app_service_id=${appId}`,
       destroy: `/devops/v1/projects/${projectId}/config_maps/`,
     },
     cipher: {
-      read: `/devops/v1/projects/${projectId}/secret/page_by_options?env_id=${envId}`,
+      read: `/devops/v1/projects/${projectId}/secret/page_by_options?env_id=${envId}&app_service_id=${appId}`,
       destroy: `/devops/v1/projects/${projectId}/secret/${envId}/`,
     },
   };
