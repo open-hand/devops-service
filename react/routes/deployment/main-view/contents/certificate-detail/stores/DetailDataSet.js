@@ -11,11 +11,12 @@ export default ({ projectId, id }) => ({
   },
   fields: [
     { name: 'id', type: 'number' },
-    { name: 'certName', type: 'string' },
-    { name: 'error', type: 'string' },
-    { name: 'commandStatus', type: 'string' },
-    { name: 'domains', type: 'object' },
-    { name: 'validFrom', type: 'string' },
-    { name: 'validUntil', type: 'string' },
+    { name: 'name', type: 'string' },
+    { name: 'DNSNames', type: 'object' },
+    { name: 'ingresses', type: 'object' },
+    { name: 'creationDate', type: 'dateTime' },
+    { name: 'creatorName', type: 'string' },
+    { name: 'lastUpdateDate', type: 'dateTime' },
+    { name: 'commonName', type: 'string' },
   ],
 });

@@ -8,7 +8,7 @@ import { useDeploymentStore } from '../../../../stores';
 
 const Store = createContext();
 
-export function useNetworkStore() {
+export function useNetworkDetailStore() {
   return useContext(Store);
 }
 
@@ -18,20 +18,13 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const {
       intlPrefix,
       intl: { formatMessage },
-      deploymentStore: { getSelectedMenu: { parentId } },
+      deploymentStore: { getSelectedMenu: { menuId } },
     } = useDeploymentStore();
-    const baseInfoDs = useMemo(() => new DataSet(BaseInfoDataSet(id, parentId)), [id, parentId]);
-    const networkDs = useMemo(() => new DataSet(TableDataSet({
-      formatMessage,
-      intlPrefix,
-      projectId: id,
-      envId: parentId,
-    })), [formatMessage, id, intlPrefix, parentId]);
+    const baseInfoDs = useMemo(() => new DataSet(BaseInfoDataSet(id, menuId)), [id, menuId]);
   
     const value = {
       ...props,
       baseInfoDs,
-      networkDs,
     };
   
     return (

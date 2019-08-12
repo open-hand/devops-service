@@ -1,6 +1,7 @@
 export default ({ projectId, id }) => ({
   autoQuery: true,
   selection: false,
+  paging: false,
   dataKey: null,
   transport: {
     read: {
@@ -15,5 +16,7 @@ export default ({ projectId, id }) => ({
     { name: 'commandErrors', type: 'string' },
     { name: 'commandStatus', type: 'string' },
     { name: 'lastUpdateDate', type: 'string' },
+    { name: 'resourceContent', type: 'string' },
+    { name: 'description', type: 'string' },
   ],
 });

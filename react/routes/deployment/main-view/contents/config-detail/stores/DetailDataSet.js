@@ -1,6 +1,7 @@
 export default ({ projectId, id }) => ({
   autoQuery: true,
   selection: false,
+  paging: false,
   dataKey: null,
   transport: {
     read: {

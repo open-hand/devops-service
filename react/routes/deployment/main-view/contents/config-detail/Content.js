@@ -1,6 +1,8 @@
 import React, { Fragment, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
+import { Icon } from 'choerodon-ui';
+import map from 'lodash/map';
 import { useDeploymentStore } from '../../../stores';
 import { useCustomDetailStore } from './stores';
 import Modals from './modals';
@@ -18,6 +20,9 @@ const Content = observer(() => {
     intl: { formatMessage },
   } = useCustomDetailStore();
 
+  const record = detailDs.current;
+  if (!record) return;
+
   function refresh() {
     detailDs.query();
   }
@@ -25,7 +30,23 @@ const Content = observer(() => {
   return (
     <div className={`${prefixCls}-configMap-detail`}>
       <Modals />
-      <div>configMap-detail</div>
+      <div className="detail-content-title">
+        <Icon type="compare_arrows" className="detail-content-title-icon" />
+        <span>{record.get('name')}</span>
+      </div>
+      <div className="detail-content-section-title">
+        <FormattedMessage id={`${intlPrefix}.key.value`} />
+      </div>
+      {map(record.get('value'), (value, key) => (
+        <div className="configMap-detail-section">
+          <div className="configMap-detail-section-title">
+            <span>{key}</span>
+          </div>
+          <div className="configMap-detail-section-content">
+            <pre className="configMap-detail-section-content-pre">{value}</pre>
+          </div>
+        </div>
+      ))}
     </div>
   );
 });

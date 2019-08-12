@@ -8,7 +8,7 @@ import HeaderButtons from '../../../components/header-buttons';
 import { useDeploymentStore } from '../../../../stores';
 import { useModalStore } from './stores';
 import { handlePromptError } from '../../../../../../utils';
-import { useNetworkStore } from '../stores';
+import { useNetworkDetailStore } from '../stores';
 import Detail from './network-detail';
 
 const modalKey1 = Modal.key();
@@ -29,7 +29,7 @@ const EnvModals = observer(() => {
   const {
     networkDs,
     baseInfoDs,
-  } = useNetworkStore();
+  } = useNetworkDetailStore();
   const {
     permissions,
     AppState: { currentMenuType: { projectId } },

@@ -6,10 +6,11 @@ export default (projectId, id) => ({
   fields: [
     { name: 'name', type: 'string' },
     { name: 'id', type: 'number' },
+    { name: 'config', type: 'object' },
   ],
   transport: {
     read: {
-      url: `/devops/v1/projects/${projectId}/app_service/${id}`,
+      url: `/devops/v1/projects/${projectId}/service/${id}`,
       method: 'get',
     },
   },

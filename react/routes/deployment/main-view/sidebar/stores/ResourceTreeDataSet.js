@@ -43,7 +43,7 @@ const formatData = (value, store) => {
       const items = map(child, item => ({
         ...item,
         name: childType === 'instances' ? item.code : item.name,
-        key: `${envId}-${item.id}`,
+        key: `${envId}-${item.id}-${childType}`,
         itemType: childType,
         parentId: `${envId}-${childType}`,
         expand: false,

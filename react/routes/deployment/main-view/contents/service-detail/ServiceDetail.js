@@ -10,13 +10,11 @@ import {
 import { Table } from 'choerodon-ui/pro';
 import _ from 'lodash';
 import classnames from 'classnames';
-import StatusIcon from '../../../../../components/StatusIcon';
 import { useDeploymentStore } from '../../../stores';
+import { useNetworkDetailStore } from './stores';
 import Modals from './modals';
 
 import './index.less';
-
-const { Column } = Table;
 
 const ServiceDetail = observer(() => {
   const {
@@ -24,12 +22,39 @@ const ServiceDetail = observer(() => {
     intlPrefix,
     deploymentStore: { getSelectedMenu: { parentId } },
   } = useDeploymentStore();
+  const {
+    baseInfoDs,
+    intl: { formatMessage },
+  } = useNetworkDetailStore();
+
+  const record = baseInfoDs.current;
+  // if (!record) return <span>loading</span>;
  
 
   return (
-    <div>
+    <div className={`${prefixCls}-service-detail`}>
       <Modals />
-      <h1>网络详情页面</h1>
+      <div className="detail-content-title">
+        <Icon type="router" className="detail-content-title-icon" />
+        <span>{record.get('name')}</span>
+      </div>
+      <ul className={`${prefixCls}-service-detail-content`}>
+        <li>
+          <div className="detail-content-section-title">
+            <FormattedMessage id="port" />
+          </div>
+        </li>
+        <li>
+          <div className="detail-content-section-title">
+            <FormattedMessage id={`${intlPrefix}.load`} />
+          </div>
+        </li>
+        <li>
+          <div className="detail-content-section-title">
+            <FormattedMessage id={`${intlPrefix}.pods`} />
+          </div>
+        </li>
+      </ul>
     </div>
   );
 });
