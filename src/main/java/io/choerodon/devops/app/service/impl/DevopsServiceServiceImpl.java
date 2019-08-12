@@ -151,12 +151,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                 }
             }
         }
-        DevopsServiceQueryDTO devopsServiceQueryDTO = baseQueryById(id);
-        if(devopsServiceQueryDTO!=null) {
-            return queryDtoToVo(baseQueryById(id));
-        }else {
-            return null;
-        }
+        return queryDtoToVo(baseQueryById(id));
     }
 
     @Override
@@ -468,10 +463,10 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                     TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS)), appServiceId);
 
             result.setTotal(count);
-            List<String> paramList=TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS));
+            List<String> paramList = TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS));
             devopsServiceQueryDTOS = devopsServiceMapper.listDevopsServiceByPage(
                     projectId, envId, instanceId, TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
-                    paramList , sortResult, appServiceId);
+                    paramList, sortResult, appServiceId);
             result.setList(devopsServiceQueryDTOS.subList(start, stop > devopsServiceQueryDTOS.size() ? devopsServiceQueryDTOS.size() : stop));
         } else {
             count = devopsServiceMapper
@@ -688,10 +683,12 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         // service的dnsName为${serviceName.namespace}
         devopsServiceVO.setDns(devopsServiceVO.getName() + "." + devopsServiceQueryDTO.getEnvCode());
 
-        if (devopsServiceQueryDTO.getCreatedBy() != 0) {
+        if (devopsServiceQueryDTO.getCreatedBy() != null && devopsServiceQueryDTO.getCreatedBy() != 0) {
             devopsServiceVO.setCreatorName(iamServiceClientOperator.queryUserByUserId(devopsServiceQueryDTO.getCreatedBy()).getRealName());
         }
-
+        if (devopsServiceQueryDTO.getLastUpdatedBy() != null && devopsServiceQueryDTO.getLastUpdatedBy() != 0) {
+            devopsServiceVO.setLastUpdaterName(iamServiceClientOperator.queryUserByUserId(devopsServiceQueryDTO.getLastUpdatedBy()).getRealName());
+        }
         return devopsServiceVO;
     }
 

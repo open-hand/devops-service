@@ -349,8 +349,11 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         }
 
         secretRespVO.setValue(secretMaps);
-        if (devopsSecretDTO.getCreatedBy() != 0) {
+        if (devopsSecretDTO.getCreatedBy() != null && devopsSecretDTO.getCreatedBy() != 0) {
             secretRespVO.setCreatorName(iamServiceClientOperator.queryUserByUserId(devopsSecretDTO.getCreatedBy()).getRealName());
+        }
+        if (devopsSecretDTO.getLastUpdatedBy() != null && devopsSecretDTO.getLastUpdatedBy() != 0) {
+            secretRespVO.setLastUpdaterName(iamServiceClientOperator.queryUserByUserId(devopsSecretDTO.getLastUpdatedBy()).getRealName());
         }
         return secretRespVO;
     }

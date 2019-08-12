@@ -148,8 +148,8 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     /**
      * 查询传入的网络是否全是同一个应用下
      *
-     * @param appServiceId      应用id
-     * @param serviceIds 网络id
+     * @param appServiceId 应用id
+     * @param serviceIds   网络id
      * @return false 如果某个网络不存在和应用的关系或所有网络不在同一个应用下
      */
     private boolean isAllServiceInApp(Long appServiceId, List<Long> serviceIds) {
@@ -335,8 +335,11 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         DevopsIngressPathDTO devopsIngressPathDTO = new DevopsIngressPathDTO(vo.getId());
         devopsIngressPathMapper.select(devopsIngressPathDTO).forEach(e -> setDevopsIngressDTO(vo, e));
 
-        if (devopsIngressDTO.getCreatedBy() != 0) {
+        if (devopsIngressDTO.getCreatedBy() != null && devopsIngressDTO.getCreatedBy() != 0) {
             vo.setCreatorName(iamServiceClientOperator.queryUserByUserId(devopsIngressDTO.getCreatedBy()).getRealName());
+        }
+        if (devopsIngressDTO.getLastUpdatedBy() != null && devopsIngressDTO.getLastUpdatedBy() != 0) {
+            vo.setLastUpdaterName(iamServiceClientOperator.queryUserByUserId(devopsIngressDTO.getLastUpdatedBy()).getRealName());
         }
 
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsIngressDTO.getEnvId());
