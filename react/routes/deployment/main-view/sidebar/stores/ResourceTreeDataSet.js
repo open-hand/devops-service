@@ -96,7 +96,6 @@ export default (projectId, store, sidebarStore) => ({
         const res = JSON.parse(response);
         const result = formatData(res, sidebarStore);
         const selectedMenu = store.getSelectedMenu;
-
         if (result.length && isEmpty(selectedMenu)) {
           const { id, itemType, parentId, key } = result[0];
           store.setSelectedMenu({

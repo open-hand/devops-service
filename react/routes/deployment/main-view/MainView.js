@@ -27,6 +27,7 @@ const IngressDetail = lazy(() => import('./contents/ingress-detail'));
 const CertDetail = lazy(() => import('./contents/certificate-detail'));
 const ConfigMapDetail = lazy(() => import('./contents/config-detail'));
 const SecretDetail = lazy(() => import('./contents/secret-detail'));
+const ServiceDetail = lazy(() => import('./contents/service-detail'));
 
 const MainView = observer(() => {
   const {
@@ -73,6 +74,7 @@ const MainView = observer(() => {
       [CERT_ITEM]: <CertDetail />,
       [MAP_ITEM]: <ConfigMapDetail />,
       [CIPHER_ITEM]: <SecretDetail />,
+      [SERVICES_ITEM]: <ServiceDetail />,
     };
 
     return cmMaps[menuType]

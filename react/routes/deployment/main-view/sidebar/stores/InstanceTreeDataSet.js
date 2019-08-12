@@ -58,12 +58,10 @@ export default (projectId, store, sidebarStore) => ({
       const currentId = record.get('id');
       const currentType = record.get('itemType');
       const parentId = record.get('parentId');
-      const key = record.get('key');
       store.setSelectedMenu({
         menuId: currentId,
         menuType: currentType,
         parentId,
-        key,
       });
     },
     unSelect: ({ record }) => {
@@ -79,16 +77,12 @@ export default (projectId, store, sidebarStore) => ({
       transformResponse(response) {
         const res = JSON.parse(response);
         const result = formatData(res, sidebarStore);
-        const selectedMenu = store.getSelectedMenu;
-
-        // 存在记录且没有选中项，默认选中第一项记录
-        if (result.length && isEmpty(selectedMenu)) {
-          const { id, itemType, parentId, key } = result[0];
+        if (result.length) {
+          const { id, itemType, parentId } = result[0];
           store.setSelectedMenu({
             menuId: id,
             menuType: itemType,
             parentId,
-            key,
           });
         }
         return {
@@ -98,3 +92,4 @@ export default (projectId, store, sidebarStore) => ({
     },
   },
 });
+'';

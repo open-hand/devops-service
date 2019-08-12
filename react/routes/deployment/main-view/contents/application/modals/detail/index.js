@@ -5,7 +5,6 @@ import './index.less';
 
 
 export default function ({ intlPrefix, record, prefixCls, formatMessage }) {
-
   let status;
   if (record.get('fail')) {
     status = 'failed';
