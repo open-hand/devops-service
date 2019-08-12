@@ -18,6 +18,7 @@ import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.base.domain.PageRequest;
+import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.validator.ApplicationValidator;
@@ -73,6 +74,8 @@ import retrofit2.Retrofit;
 @Service
 @EnableConfigurationProperties(HarborConfigurationProperties.class)
 public class AppServiceServiceImpl implements AppServiceService {
+    private static final String HARBOR = "harbor";
+    private static final String CHART = "chart";
     private static final String SONAR_KEY = "%s-%s:%s";
     public static final String SEVERITIES = "severities";
     public static final Logger LOGGER = LoggerFactory.getLogger(AppServiceServiceImpl.class);
@@ -89,7 +92,9 @@ public class AppServiceServiceImpl implements AppServiceService {
     private static final String PROJECT_OWNER = "role/project/default/project-owner";
     private static final String PROJECT_MEMBER = "role/project/default/project-member";
     private static final ConcurrentMap<Long, String> templateDockerfileMap = new ConcurrentHashMap<>();
+    private static final String APP_SERVICE="appService";
     private static final IOFileFilter filenameFilter = new IOFileFilter() {
+
         @Override
         public boolean accept(File file) {
             return accept(null, file.getName());
@@ -106,9 +111,6 @@ public class AppServiceServiceImpl implements AppServiceService {
     private static final String TEST = "test-application";
     private static final String DUPLICATE = "duplicate";
     private static final String FILE_SEPARATOR = "/";
-    public static final String APP_SERVICE = "appService";
-    public static final String HARBOR = "harbor";
-    public static final String CHART = "chart";
     private Gson gson = new Gson();
     private JSON json = new JSON();
 
@@ -163,6 +165,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     private AppServiceVersionService appServiceVersionService;
     @Autowired
     private ChartUtil chartUtil;
+
 
     @Value("${services.helm.url}")
     private String helmUrl;
@@ -231,6 +234,8 @@ public class AppServiceServiceImpl implements AppServiceService {
         OrganizationDTO organizationDTO = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
         AppServiceRepVO appServiceRepVO = ConvertUtils.convertObject(appServiceDTO, AppServiceRepVO.class);
+        List<DevopsConfigVO> devopsConfigVOS=devopsConfigService.queryByResourceId(appServiceId,APP_SERVICE);
+        appServiceRepVO.setDevopsConfigVOS(devopsConfigVOS);
         //url地址拼接
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         if (appServiceDTO.getGitlabProjectId() != null) {
@@ -273,10 +278,18 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Transactional
     public Boolean update(Long projectId, AppServiceUpdateDTO appServiceUpdateDTO) {
         AppServiceDTO appServiceDTO = ConvertUtils.convertObject(appServiceUpdateDTO, AppServiceDTO.class);
-        appServiceDTO.setHarborConfigId(appServiceUpdateDTO.getHarborConfigId());
-        appServiceDTO.setChartConfigId(appServiceUpdateDTO.getChartConfigId());
-
+        List<DevopsConfigVO> devopsConfigVOS=appServiceUpdateDTO.getDevopsConfigVOS();
         Long appServiceId = appServiceUpdateDTO.getId();
+        devopsConfigService.operate(appServiceId,APP_SERVICE,devopsConfigVOS);
+        devopsConfigVOS.stream().forEach(devopsConfigVO -> {
+            if(devopsConfigVO.getType().equals(HARBOR)) {
+                appServiceDTO.setHarborConfigId(devopsConfigVO.getId());
+            }
+            else if(devopsConfigVO.getType().equals(CHART)) {
+                appServiceDTO.setChartConfigId(devopsConfigVO.getId());
+            }
+        });
+
         AppServiceDTO oldAppServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
 
         if (oldAppServiceDTO == null) {
