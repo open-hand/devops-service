@@ -58,8 +58,8 @@ export default class Certificate extends Component {
    */
   closeSideBar = () => {
     this.setState({
-      createSelectedRowKeys: [],
-      createSelected: [],
+      // createSelectedRowKeys: [],
+      // createSelected: [],
       showType: '',
     });
     CertificateStore.setCert(null);
