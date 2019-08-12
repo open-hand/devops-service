@@ -2,6 +2,7 @@ import React, { Fragment, useState, useMemo } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import { Icon } from 'choerodon-ui';
+import map from 'lodash/map';
 import { useDeploymentStore } from '../../../stores';
 import { useCustomDetailStore } from './stores';
 import Modals from './modals';
@@ -19,7 +20,8 @@ const Content = observer(() => {
     intl: { formatMessage },
   } = useCustomDetailStore();
 
-  const record = useMemo(() => detailDs.current, []);
+  const record = detailDs.current;
+  if (!record) return <span>loading</span>;
 
   function refresh() {
     detailDs.query();
@@ -29,7 +31,37 @@ const Content = observer(() => {
     <div className={`${prefixCls}-certificate-detail`}>
       <Modals />
       <div className="detail-content-title">
-        <Icon type="edit" className="detail-content-title-icon" />
+        <Icon type="class" className="detail-content-title-icon" />
+        <span>{record.get('name')}</span>
+      </div>
+      <div>
+        <div className="detail-content-section-title">
+          <FormattedMessage id={`${intlPrefix}.domains`} />
+        </div>
+        <div className="detail-content-section-name">
+          <span>CommonName:&nbsp;</span>
+          <span>{record.get('commonName')}</span>
+        </div>
+        <ul className="detail-section-ul">
+          {map(record.get('DNSNames'), item => (
+            <li className="detail-section-li">
+              <span className="detail-section-li-text">DNSNames:&nbsp;</span>
+              <span>{item}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div>
+        <div className="detail-content-section-title">
+          <FormattedMessage id={`${intlPrefix}.current.domains`} />
+        </div>
+        <ul className="detail-section-ul">
+          {map(record.get('ingresses'), item => (
+            <li className="detail-section-li">
+              <span>{item}</span>
+            </li>
+          ))}
+        </ul>
       </div>
     </div>
   );

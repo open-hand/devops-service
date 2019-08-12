@@ -1,6 +1,7 @@
 import React, { Fragment, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
+import { Icon } from 'choerodon-ui';
 import { useDeploymentStore } from '../../../stores';
 import { useCustomDetailStore } from './stores';
 import Modals from './modals';
@@ -18,6 +19,9 @@ const Content = observer(() => {
     intl: { formatMessage },
   } = useCustomDetailStore();
 
+  const record = detailDs.current;
+  if (!record) return;
+
   function refresh() {
     detailDs.query();
   }
@@ -25,7 +29,16 @@ const Content = observer(() => {
   return (
     <div className={`${prefixCls}-custom-detail`}>
       <Modals />
-      <div>custom-detail</div>
+      <div className="detail-content-title">
+        <Icon type="filter_b_and_w" className="detail-content-title-icon" />
+        <span>{record.get('name')}</span>
+      </div>
+      <div className="detail-content-section-title">
+        <span>Description</span>
+      </div>
+      <pre className="custom-detail-section-content">
+        {record.get('description')}
+      </pre>
     </div>
   );
 });

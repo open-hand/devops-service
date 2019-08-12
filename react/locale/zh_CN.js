@@ -51,6 +51,9 @@ const commonField = {
   password: '密码',
   projectRole: '项目角色',
   addTime: '添加时间',
+  annotation: '注解',
+  routing: '路由',
+  port: '端口',
 
   // 状态描述
   null: '无',
@@ -260,6 +263,11 @@ const deployment = {
   'c7ncd.deployment.net.dns': 'DNS',
   'c7ncd.deployment.net.endpoints': 'Endpoints',
   'c7ncd.deployment.net.detail': '网络详情',
+  'c7ncd.deployment.current.domains': '当前关联域名',
+  'c7ncd.deployment.click.visit': '点击访问',
+  'c7ncd.deployment.key.value': '键与值',
+  'c7ncd.deployment.load': '负载',
+  'c7ncd.deployment.pods': 'Pods',
 };
 
 const appService = {

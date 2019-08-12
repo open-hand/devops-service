@@ -13,7 +13,7 @@ export default function useStore() {
     },
 
     async loadSingleData(projectId, id) {
-      const res = await axios.get(`/devops/v1/projects/${projectId}/secret/${id}`);
+      const res = await axios.get(`/devops/v1/projects/${projectId}/secret/${id}?to_decode=true`);
       if (handlePromptError(res)) {
         this.setSingleData(res);
       }

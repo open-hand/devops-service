@@ -1,6 +1,7 @@
 export default ({ projectId, id }) => ({
   autoQuery: true,
   selection: false,
+  paging: false,
   dataKey: null,
   transport: {
     read: {
@@ -15,5 +16,6 @@ export default ({ projectId, id }) => ({
     { name: 'commandStatus', type: 'string' },
     { name: 'domain', type: 'string' },
     { name: 'pathList', type: 'object' },
+    { name: 'annotations', type: 'object' },
   ],
 });

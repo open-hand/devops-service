@@ -1,10 +1,11 @@
 export default ({ projectId, id }) => ({
   autoQuery: true,
   selection: false,
+  paging: false,
   dataKey: null,
   transport: {
     read: {
-      url: `/devops/v1/projects/${projectId}/secret/${id}`,
+      url: `/devops/v1/projects/${projectId}/secret/${id}?to_decode=false`,
       method: 'get',
     },
   },
