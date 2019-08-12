@@ -52,14 +52,14 @@ export default class Certificate extends Component {
   showSideBar = (showType, id) => {
     this.setState({ showType, id });
   };
-
+  
   /**
    * 关闭创建侧边栏
    */
   closeSideBar = () => {
     this.setState({
-      createSelectedRowKeys: [],
-      createSelected: [],
+      // createSelectedRowKeys: [],
+      // createSelected: [],
       showType: '',
     });
     CertificateStore.setCert(null);
@@ -77,7 +77,7 @@ export default class Certificate extends Component {
     this.setState({ deleteStatus: true });
 
     const response = await CertificateStore.deleteCertById(organizationId, deleteCert)
-      .catch(err => {
+      .catch((err) => {
         this.setState({ deleteStatus: false });
         Choerodon.handleResponseError(err);
       });
@@ -99,12 +99,11 @@ export default class Certificate extends Component {
    * @param id
    * @param certName
    */
-  openRemoveModal = (id, certName) =>
-    this.setState({
-      removeDisplay: true,
-      deleteCert: id,
-      certName,
-    });
+  openRemoveModal = (id, certName) => this.setState({
+    removeDisplay: true,
+    deleteCert: id,
+    certName,
+  });
 
   /**
    * 关闭删除确认框
@@ -236,7 +235,7 @@ export default class Certificate extends Component {
         rowKey={record => record.id}
       />
     );
-  };
+  }
 
   get getDeleteModal() {
     const {
@@ -324,8 +323,8 @@ export default class Certificate extends Component {
         </Header>
         <Content
           className="page-content"
-          code="certificate"
-          values={{ name }}
+          // code="certificate"
+          // values={{ name }}
         >
           {this.getCertTable}
         </Content>

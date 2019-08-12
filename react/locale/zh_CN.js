@@ -4,6 +4,7 @@ const commonField = {
   status: '状态',
   name: '名称',
   creator: '创建者',
+  updater: '更新者',
   updateDate: '更新时间',
   createDate: '创建时间',
   description: '描述',
@@ -255,6 +256,10 @@ const deployment = {
   'c7ncd.deployment.resource.type': '资源类型',
   'c7ncd.deployment.instance.name': '实例名称',
   'c7ncd.deployment.instance.pod.status': 'Pods状态',
+  'c7ncd.deployment.net.selecter': '选择器',
+  'c7ncd.deployment.net.dns': 'DNS',
+  'c7ncd.deployment.net.endpoints': 'Endpoints',
+  'c7ncd.deployment.net.detail': '网络详情',
 };
 
 const appService = {

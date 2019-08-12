@@ -40,6 +40,8 @@ const Notifications = asyncRouter(() => import('./routes/notifications'));
 const Resource = asyncRouter(() => import('./routes/resource'));
 const Deployment = asyncRouter(() => import('./routes/deployment'));
 const CodeManager = asyncRouter(() => import('./routes/code-manager'));
+const CertificateManageIndex = asyncRouter(() => import('./routes/certificate-manager'));
+
 
 function DEVOPSIndex({ match, AppState: { currentLanguage: language } }) {
   const IntlProviderAsync = asyncLocaleProvider(language, () => import(`./locale/${language}`),);
@@ -65,8 +67,8 @@ function DEVOPSIndex({ match, AppState: { currentLanguage: language } }) {
           <Route path={`${match.url}/container`} component={Container} />
           <Route path={`${match.url}/app-release`} component={AppRelease} />
           <Route path={`${match.url}/branch`} component={Branch} />
-          <Route path={`${match.url}/merge-request`} component={PipelineIndex} />
-          <Route path={`${match.url}/tag`} component={AppTag} />
+          <Route path={`${match.url}/merge-request`} component={CertificateManage} />
+          <Route path={`${match.url}/tag`} component={CertificateManageIndex} />
           <Route path={`${match.url}/repository`} component={Repository} />
           <Route path={`${match.url}/certificate`} component={Certificate} />
           <Route path={`${match.url}/reports`} component={Reports} />
