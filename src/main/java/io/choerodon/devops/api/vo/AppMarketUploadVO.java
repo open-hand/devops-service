@@ -12,6 +12,15 @@ public class AppMarketUploadVO {
     private List<AppServiceMarketVO> appServiceMarketVOList;
     private String status;
     private String harborUrl;
+    private Long iamUserId;
+
+    public Long getIamUserId() {
+        return iamUserId;
+    }
+
+    public void setIamUserId(Long iamUserId) {
+        this.iamUserId = iamUserId;
+    }
 
     public Long getAppId() {
         return appId;

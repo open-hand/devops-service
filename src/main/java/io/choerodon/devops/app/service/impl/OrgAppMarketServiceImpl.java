@@ -17,14 +17,18 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.AppMarketUploadVO;
 import io.choerodon.devops.api.vo.AppServiceMarketVO;
 import io.choerodon.devops.api.vo.AppServiceMarketVersionVO;
+import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.app.service.AppServiceVersionService;
-import io.choerodon.devops.app.service.IamService;
 import io.choerodon.devops.app.service.OrgAppMarketService;
+import io.choerodon.devops.app.service.UserAttrService;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.AppServiceVersionDTO;
+import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.PublishTypeEnum;
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
 import io.choerodon.devops.infra.mapper.AppServiceMapper;
 import io.choerodon.devops.infra.util.*;
 
@@ -45,11 +49,19 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
     @Autowired
     private GitUtil gitUtil;
     @Autowired
-    private IamService iamService;
+    private IamServiceClientOperator iamServiceClientOperator;
     @Autowired
     private ChartUtil chartUtil;
     @Value("${services.helm.url}")
     private String helmUrl;
+    @Value("${services.gitlab.url}")
+    private String gitlabUrl;
+    @Autowired
+    private GitlabServiceClientOperator gitlabServiceClientOperator;
+    @Autowired
+    private UserAttrService userAttrService;
+    @Autowired
+    private AppServiceService appServiceService;
 
     @Override
     public PageInfo<AppServiceMarketVO> pageByAppId(Long appId,
@@ -71,23 +83,30 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
     }
 
     @Override
-    public void upload(AppMarketUploadVO marketUploadVO) {
-        //1.创建根目录 应用
-        String appFilePath = APPLICATION + System.currentTimeMillis();
-        FileUtil.createDirectory(appFilePath);
-        if (marketUploadVO.getStatus().equals(PublishTypeEnum.DOWNLOAD_ONLY.value())) {
-            //2.clone 并压缩源代码
-            marketUploadVO.getAppServiceMarketVOList().forEach(appServiceMarketVO -> packageSourceCode(appServiceMarketVO, appFilePath));
-        } else if (marketUploadVO.getStatus().equals(PublishTypeEnum.DEPLOY_ONLY.value())) {
-
-        }
+    public List<AppServiceMarketVO> listAllAppServices() {
+        List<AppServiceDTO> appServiceDTOList = appServiceMapper.selectAll();
+        return ConvertUtils.convertList(appServiceDTOList, this::dtoToMarketVO);
     }
 
     @Override
-    public List<AppServiceMarketVO> listAllAppServices(){
-        List<AppServiceDTO> appServiceDTOList = appServiceMapper.selectAll();
-        return ConvertUtils.convertList(appServiceDTOList, this::dtoToMarkVO);
+    public void upload(AppMarketUploadVO marketUploadVO) {
+        //1.创建根目录 应用
+//        String appFilePath = gitUtil.getWorkingDirectory(APPLICATION + System.currentTimeMillis());
+        String appFilePath = "D:\\mydata_file\\test\\" + APPLICATION + System.currentTimeMillis();
+        FileUtil.createDirectory(appFilePath);
+        if (marketUploadVO.getStatus().equals(PublishTypeEnum.DOWNLOAD_ONLY.value())) {
+            //2.clone 并压缩源代码
+            marketUploadVO.getAppServiceMarketVOList().forEach(appServiceMarketVO -> packageSourceCode(appServiceMarketVO, appFilePath, marketUploadVO.getIamUserId()));
+        } else if (marketUploadVO.getStatus().equals(PublishTypeEnum.DEPLOY_ONLY.value())) {
+            marketUploadVO.getAppServiceMarketVOList().forEach(appServiceMarketVO -> packageChart(appServiceMarketVO, appFilePath, marketUploadVO.getHarborUrl()));
+        } else {
+            marketUploadVO.getAppServiceMarketVOList().forEach(appServiceMarketVO -> {
+                packageSourceCode(appServiceMarketVO, appFilePath, marketUploadVO.getIamUserId());
+                packageChart(appServiceMarketVO, appFilePath, marketUploadVO.getHarborUrl());
+            });
+        }
     }
+
 
     @Override
     public List<AppServiceMarketVersionVO> listServiceVersionsByAppServiceId(Long appServiceId) {
@@ -95,14 +114,24 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         return ConvertUtils.convertList(appServiceVersionDTOList, AppServiceMarketVersionVO.class);
     }
 
-    private void packageSourceCode(AppServiceMarketVO appServiceMarketVO, String appFilePath) {
+    private void packageSourceCode(AppServiceMarketVO appServiceMarketVO, String appFilePath, Long iamUserId) {
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceMarketVO.getAppServiceId());
+
+//        ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(appServiceDTO.getAppId());
+//        OrganizationDTO organizationDTO = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+
         //1.创建目录 应用服务仓库
         String appServiceFileName = String.format("%s-%s", APPLICATION_SERVICE, appServiceDTO.getCode());
         FileUtil.createDirectory(appFilePath, appServiceFileName);
         FileUtil.createDirectory(String.format("%s/%s", appFilePath, appServiceFileName), "repository");
         String appServiceRepositoryPath = String.format("%s/%s/%s", appFilePath, appServiceFileName, "repository");
 
+        String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(iamUserId);
+        String newToken = appServiceService.getToken(appServiceDTO.getGitlabProjectId(), appFilePath, userAttrDTO);
+//        appServiceDTO.setRepoUrl(repoUrl + organizationDTO.getCode()
+//                + "-" + projectDTO.getCode() + "/" + appServiceDTO.getCode() + ".git");
+        appServiceDTO.setRepoUrl(repoUrl + "testorg0110-testpro0110" + "/" + appServiceDTO.getCode() + ".git");
         appServiceMarketVO.getAppServiceMarketVersionVOS().forEach(appServiceMarketVersionVO -> {
             AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQuery(appServiceMarketVersionVO.getId());
             //2. 创建目录 应用服务版本
@@ -110,16 +139,16 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             String appServiceVersionPath = String.format("%s/%s", appServiceRepositoryPath, appServiceVersionDTO.getVersion());
 
             //3.clone源码,checkout到版本所在commit，并删除.git文件
-            gitUtil.cloneAndCheckout(appServiceVersionPath, appServiceDTO.getGitlabProjectUrl(), appServiceDTO.getToken(), appServiceVersionDTO.getCommit());
+            gitUtil.cloneAndCheckout(appServiceVersionPath, appServiceDTO.getRepoUrl(), null, appServiceVersionDTO.getCommit());
         });
         //4.压缩文件
         toZip(appFilePath, appServiceRepositoryPath);
     }
 
-    private void packageChart(AppServiceMarketVO appServiceMarketVO, String appFilePath) {
+    private void packageChart(AppServiceMarketVO appServiceMarketVO, String appFilePath, String harborUrl) {
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceMarketVO.getAppServiceId());
-        ProjectDTO projectDTO = iamService.queryIamProject(appServiceDTO.getAppId());
-        OrganizationDTO organizationDTO = iamService.queryOrganizationById(projectDTO.getOrganizationId());
+        ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(appServiceDTO.getAppId());
+        OrganizationDTO organizationDTO = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 
         //1.创建目录 应用服务仓库
         String appServiceFileName = String.format("%s-%s", APPLICATION_SERVICE, appServiceDTO.getCode());
@@ -130,6 +159,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             //2.下载chart
             AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQuery(appServiceMarketVersionVO.getId());
             chartUtil.downloadChart(appServiceVersionDTO, organizationDTO, projectDTO, appServiceDTO, appServiceChartPath);
+            analysisChart(appServiceChartPath, appServiceVersionDTO, harborUrl);
         });
 
     }
@@ -166,8 +196,6 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             FileUtil.deleteDirectory(new File(zipPath));
             FileUtil.deleteDirectory(new File(unZipPath));
         }
-
-
     }
 
     private void toZip(String outputPath, String filePath) {
@@ -187,13 +215,4 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         appServiceMarketVO.setAppServiceName(applicationDTO.getName());
         return appServiceMarketVO;
     }
-
-    private AppServiceMarketVO dtoToMarkVO(AppServiceDTO applicationDTO){
-        AppServiceMarketVO appServiceMarketVO = new AppServiceMarketVO();
-        appServiceMarketVO.setAppServiceId(applicationDTO.getId());
-        appServiceMarketVO.setAppServiceCode(applicationDTO.getCode());
-        appServiceMarketVO.setAppServiceName(applicationDTO.getName());
-        return appServiceMarketVO;
-    }
-
 }

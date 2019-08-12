@@ -2170,7 +2170,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
 
-    private String getToken(Integer gitlabProjectId, String applicationDir, UserAttrDTO userAttrDTO) {
+    @Override
+    public String getToken(Integer gitlabProjectId, String applicationDir, UserAttrDTO userAttrDTO) {
         String accessToken = userAttrDTO.getGitlabToken();
         if (accessToken == null) {
             accessToken = gitlabServiceClientOperator.createProjectToken(gitlabProjectId,
