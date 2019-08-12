@@ -3,7 +3,7 @@ import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react';
 import _ from 'lodash';
 import { Button, Modal, Collapse, Spin } from 'choerodon-ui';
-import Store from '../stores';
+import Store from '../../stores';
 import SimpleTable from './SimpleTable';
 
 import './index.less';
@@ -294,22 +294,13 @@ export default class DetailsSidebar extends Component {
     let volumes = [];
     let hostIPC = null;
     let hostNetwork = null;
-    let labels = [];
-    let annotations = [];
 
-    if (detail) {
-      if (detail.metadata) {
-        labels = detail.metadata.labels;
-        annotations = detail.metadata.annotations;
-      }
-
-      if (detail.spec && detail.spec.template && detail.spec.template.spec) {
-        const spec = detail.spec.template.spec;
-        containers = spec.containers;
-        volumes = spec.volumes;
-        hostIPC = spec.hostIPC;
-        hostNetwork = spec.hostNetwork;
-      }
+    if (detail && detail.spec && detail.spec.template && detail.spec.template.spec) {
+      const spec = detail.spec.template.spec;
+      containers = spec.containers;
+      volumes = spec.volumes;
+      hostIPC = spec.hostIPC;
+      hostNetwork = spec.hostNetwork;
     }
 
     const renderFun = {

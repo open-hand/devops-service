@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Modal } from 'choerodon-ui/pro';
+import { handlePromptError } from '../../../../../../utils';
 import HeaderButtons from '../../../components/header-buttons';
 import DetailsModal from './details';
 import ValueModalContent from './values/Config';
@@ -23,6 +24,7 @@ const EnvModals = observer(() => {
     casesDs,
     podsDs,
     istStore,
+    detailsStore,
     tabs: {
       CASES_TAB,
       DETAILS_TAB,
@@ -103,9 +105,7 @@ const EnvModals = observer(() => {
       drawer: true,
       okCancel: false,
       okText: formatMessage({ id: 'close' }),
-      style: {
-        width: 380,
-      },
+      style: { width: 380 },
       children: <DetailsModal
         record={istStore.getDetail}
         intlPrefix={intlPrefix}
@@ -115,24 +115,36 @@ const EnvModals = observer(() => {
     });
   }
 
-  function getDs() {
-    const activeKey = istStore.getTabKey;
+  function getDs(key) {
     const dsMapping = {
       [CASES_TAB]: casesDs,
-      // [DETAILS_TAB]: ,
       [PODS_TAB]: podsDs,
     };
-    return dsMapping[activeKey];
+    return dsMapping[key];
   }
 
   function refresh() {
-    const ds = getDs();
-    ds && ds.query();
+    const activeKey = istStore.getTabKey;
+    const { menuId } = deploymentStore.getSelectedMenu;
+
+    if (activeKey === DETAILS_TAB) {
+      detailsStore.loadResource(projectId, menuId);
+    } else {
+      const ds = getDs(activeKey);
+      ds && ds.query();
+    }
   }
 
-  function redeploy() {
+  async function redeploy() {
     const { menuId } = deploymentStore.getSelectedMenu;
-    istStore.redeploy(projectId, menuId);
+    try {
+      const result = await istStore.redeploy(projectId, menuId);
+      if (handlePromptError(result, false)) {
+        refresh();
+      }
+    } catch (e) {
+      Choerodon.handleResponseError(e);
+    }
   }
 
   function getHeader() {

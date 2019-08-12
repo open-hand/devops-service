@@ -1,18 +1,14 @@
-import React, { Fragment, useState, useMemo } from 'react';
+import React, { Fragment, useState, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import { FormattedMessage } from 'react-intl';
-import {
-  Tooltip,
-  Icon,
-  Progress,
-} from 'choerodon-ui/pro';
+import { Tooltip, Icon, Progress } from 'choerodon-ui/pro';
 import _ from 'lodash';
-import classnames from 'classnames';
-import Operation from './Operation';
+import LoadingBar from '../../../../../../components/loadingBar';
+import Operation from './op-record';
 import { useDeploymentStore } from '../../../../stores';
 import { useInstanceStore } from '../stores';
 
-import './style/index.less';
+import './index.less';
 
 const Cases = observer(() => {
   const {
@@ -23,16 +19,20 @@ const Cases = observer(() => {
     intl: { formatMessage },
     casesDs,
   } = useInstanceStore();
-  const [podEvent, setPodEvent] = useState([]);
-  const [activeKey, setActiveKey] = useState([]);
-  const record = useMemo(() => casesDs.data, [casesDs.data]);
+  const [podTime, setPodTime] = useState('');
+  const [expandKeys, setExpandKeys] = useState([]);
+  const loading = casesDs.status === 'loading';
+
+  const changeEvent = useCallback((data) => {
+    setPodTime(data);
+  }, []);
 
   /**
    * 展开更多
    * @param item
    */
   function showMore(item) {
-    const data = [...activeKey];
+    const data = [...expandKeys];
     const flag = _.includes(data, item);
     if (flag) {
       const index = _.indexOf(data, item);
@@ -40,24 +40,15 @@ const Cases = observer(() => {
     } else {
       data.push(item);
     }
-    setActiveKey(data);
+    setExpandKeys(data);
   }
 
-  /**
-   * 点击操作日志
-   * @param podEventVO
-   */
-  function changeEvent(podEventVO) {
-    setPodEvent(podEventVO);
-  }
+  function istEventDom(data) {
+    const podEventVO = data.get('podEventVO');
 
-  function istEventDom() {
-    const podEventVO = record[0].get('podEventVO');
-    return _.map(podEvent.length ? podEvent : podEventVO, ({ name, log, event, jobPodStatus }, index) => {
-      const flag = _.includes(activeKey, `${index}-${name}`);
-      const desClass = classnames({
-        'content-step-des-hidden': !flag,
-      });
+    return _.map(podEventVO, ({ name, log, event, jobPodStatus }, index) => {
+      const flag = _.includes(expandKeys, `${index}-${name}`);
+
       return (
         <div key={index} className="operation-content-step">
           <div className="content-step-title">
@@ -75,14 +66,12 @@ const Cases = observer(() => {
                 title={formatMessage({ id: `${intlPrefix}.instance.cases.log` })}
                 placement="bottom"
               >
-                <Icon
-                  type="find_in_page"
-                />
+                <Icon type="find_in_page" />
               </Tooltip>
             )}
           </div>
           <div className="content-step-des">
-            <pre className={desClass}>
+            <pre className={!flag ? 'content-step-des-hidden' : ''}>
               {event}
             </pre>
             {event && event.split('\n').length > 4 && (
@@ -96,27 +85,37 @@ const Cases = observer(() => {
     });
   }
 
-  function renderDetail() {
+  function getContent() {
+    const record = casesDs.data;
     if (record.length) {
+      const currentPod = casesDs.find((data) => {
+        const time = data.get('createTime');
+        return time === podTime;
+      });
+      const data = currentPod || casesDs.get(0);
       return (
         <Fragment>
-          <Operation handleClick={changeEvent} />
+          <Operation
+            handleClick={changeEvent}
+            active={podTime}
+          />
           <div className="cases-operation-content">
-            {istEventDom()}
+            {istEventDom(data)}
           </div>
         </Fragment>
       );
     }
-    return (
-      <div className="cases-content-empty">
-        <Icon type="info" className="case-content-empty-icon" />
-        <FormattedMessage id={`${intlPrefix}.instance.cases.empty`} />
-      </div>
-    );
+    return <div className={`${prefixCls}-event-empty`}>
+      <Icon type="info" className={`${prefixCls}-event-empty-icon`} />
+      <span className={`${prefixCls}-event-empty-text`}>
+        {formatMessage({ id: `${intlPrefix}.instance.cases.empty` })}
+      </span>
+    </div>;
   }
+
   return (
     <div className={`${prefixCls}-instance-cases`}>
-      {renderDetail()}
+      {loading ? <LoadingBar display /> : getContent()}
     </div>
   );
 });

@@ -1,12 +1,12 @@
 import { observable, action, computed } from 'mobx';
 import { axios } from '@choerodon/boot';
-import { handlePromptError } from '../../../../../../../utils';
+import { handlePromptError } from '../../../../../../utils';
 import { resourceData, deploymentsData } from './mock';
 
 export default class InstanceDetails {
   @observable resources = {};
 
-  @observable loading = false;
+  @observable loading = true;
 
   @observable deployments = {};
 

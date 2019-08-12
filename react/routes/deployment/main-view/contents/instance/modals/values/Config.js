@@ -64,20 +64,22 @@ const ValueModalContent = observer((
   }
 
   return (<Fragment>
-    <div className={`${prefixCls}-configValue-text`}>
-      <span>{formatMessage({ id: `${intlPrefix}.modal.config` })}：</span>
-      <span className={`${prefixCls}-configValue-name`}>
-        {name || formatMessage({ id: `${intlPrefix}.modal.config.empty` })}
-      </span>
-    </div>
-    <YamlEditor
-      readOnly={false}
-      value={value || yaml || ''}
-      originValue={yaml}
-      onValueChange={handleChange}
-      handleEnableNext={handleEnableNext}
-    />
-    <LoadingBar display={store.getValueLoading} />
+    {store.getValueLoading ? <LoadingBar display /> : <Fragment>
+      <div className={`${prefixCls}-configValue-text`}>
+        <span>{formatMessage({ id: `${intlPrefix}.modal.config` })}：</span>
+        <span className={`${prefixCls}-configValue-name`}>
+          {name || formatMessage({ id: `${intlPrefix}.modal.config.empty` })}
+        </span>
+      </div>
+      <YamlEditor
+        readOnly={false}
+        value={value || yaml || ''}
+        originValue={yaml}
+        onValueChange={handleChange}
+        handleEnableNext={handleEnableNext}
+      />
+    </Fragment>
+    }
     <InterceptMask visible={isLoading} />
   </Fragment>);
 });

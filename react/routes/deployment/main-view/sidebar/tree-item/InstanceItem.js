@@ -6,7 +6,7 @@ import PodCircle from '../../components/pod-circle';
 import { useSidebarStore } from '../stores';
 
 function InstanceItem({
-  istId,
+  record,
   name,
   podColor,
   running,
@@ -15,7 +15,6 @@ function InstanceItem({
   intl: { formatMessage },
 }) {
   const { treeDs } = useSidebarStore();
-
   const podData = useMemo(() => {
     const {
       RUNNING_COLOR,
@@ -37,11 +36,15 @@ function InstanceItem({
     treeDs.query();
   }
 
+  function deleteItem() {
+    treeDs.remove(record);
+  }
+
   const getSuffix = useMemo(() => {
     const actionData = [{
       service: [],
       text: formatMessage({ id: `${intlPrefix}.instance.action.stop` }),
-      action: freshMenu,
+      action: deleteItem,
     }, {
       service: [],
       text: formatMessage({ id: `${intlPrefix}.instance.action.delete` }),
@@ -61,7 +64,6 @@ function InstanceItem({
 }
 
 InstanceItem.propTypes = {
-  istId: PropTypes.number,
   name: PropTypes.any,
   podColor: PropTypes.shape({}),
   running: PropTypes.number,

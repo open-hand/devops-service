@@ -72,9 +72,9 @@ const TreeItem = observer(({ record, search }) => {
     const podRunningCount = record.get('podRunningCount');
     const podCount = record.get('podCount');
     const podUnlinkCount = podCount - podRunningCount;
-    const istId = record.get('id');
-    return istId ? <InstanceItem
-      istId={istId}
+
+    return record.get('id') ? <InstanceItem
+      record={record}
       name={name}
       intlPrefix={intlPrefix}
       running={podRunningCount}
