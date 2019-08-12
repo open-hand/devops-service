@@ -22,6 +22,11 @@ const CertContent = lazy(() => import('./contents/certificate'));
 const KeyValueContent = lazy(() => import('./contents/key-value'));
 const CustomContent = lazy(() => import('./contents/custom'));
 const IstListContent = lazy(() => import('./contents/instance-list'));
+const CustomDetail = lazy(() => import('./contents/custom-detail'));
+const IngressDetail = lazy(() => import('./contents/ingress-detail'));
+const CertDetail = lazy(() => import('./contents/certificate-detail'));
+const ConfigMapDetail = lazy(() => import('./contents/config-detail'));
+const SecretDetail = lazy(() => import('./contents/secret-detail'));
 
 const MainView = observer(() => {
   const {
@@ -63,6 +68,11 @@ const MainView = observer(() => {
       [CIPHER_GROUP]: <KeyValueContent contentType={CIPHER_GROUP} />,
       [CUSTOM_GROUP]: <CustomContent />,
       [IST_GROUP]: <IstListContent />,
+      [CUSTOM_ITEM]: <CustomDetail />,
+      [INGRESS_ITEM]: <IngressDetail />,
+      [CERT_ITEM]: <CertDetail />,
+      [MAP_ITEM]: <ConfigMapDetail />,
+      [CIPHER_ITEM]: <SecretDetail />,
     };
 
     return cmMaps[menuType]
