@@ -1,7 +1,6 @@
 package io.choerodon.devops.api.ws;
 
 import io.choerodon.websocket.helper.SocketHandlerRegistration;
-import jdk.jfr.events.SocketReadEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
@@ -25,7 +24,7 @@ public class ExecSocketHandlerRegistration implements SocketHandlerRegistration 
 
     @Override
     public boolean beforeHandshake(ServerHttpRequest serverHttpRequest, ServerHttpResponse serverHttpResponse) {
-        execAndLogSocketHandler.beforeHandshake(serverHttpRequest,serverHttpResponse);
+        execAndLogSocketHandler.beforeHandshake(serverHttpRequest, serverHttpResponse);
         return true;
     }
 
@@ -36,6 +35,6 @@ public class ExecSocketHandlerRegistration implements SocketHandlerRegistration 
 
     @Override
     public void afterConnectionClosed(WebSocketSession webSocketSession, CloseStatus closeStatus) {
-        execAndLogSocketHandler.afterConnectionClosed(webSocketSession,closeStatus);
+        execAndLogSocketHandler.afterConnectionClosed(webSocketSession, closeStatus);
     }
 }
