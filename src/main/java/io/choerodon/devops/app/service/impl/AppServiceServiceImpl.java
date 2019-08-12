@@ -111,9 +111,6 @@ public class AppServiceServiceImpl implements AppServiceService {
     private static final String TEST = "test-application";
     private static final String DUPLICATE = "duplicate";
     private static final String FILE_SEPARATOR = "/";
-    public static final String APP_SERVICE = "appService";
-    public static final String HARBOR = "harbor";
-    public static final String CHART = "chart";
     private Gson gson = new Gson();
     private JSON json = new JSON();
 
