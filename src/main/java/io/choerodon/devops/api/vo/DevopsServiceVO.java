@@ -3,6 +3,8 @@ package io.choerodon.devops.api.vo;
 import java.util.List;
 import java.util.Map;
 
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * Created by Zenger on 2018/4/19.
  */
@@ -22,6 +24,7 @@ public class DevopsServiceVO extends DevopsResourceDataInfoVO {
     /**
      * 网络本身的标签
      */
+    @ApiModelProperty("网络本身的标签")
     private Map<String, String> labels;
     private DevopsServiceTargetVO target;
     private DevopsServiceConfigVO config;

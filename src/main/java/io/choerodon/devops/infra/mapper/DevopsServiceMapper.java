@@ -38,7 +38,7 @@ public interface DevopsServiceMapper extends Mapper<DevopsServiceDTO> {
                           @Param("params") List<String> params,
                           @Param("appServiceId") Long appServiceId);
 
-    Boolean checkServiceByEnv(@Param("envId") Long envId);
+    Boolean checkEnvContainingService(@Param("envId") Long envId);
 
     void setLabelsToNull(@Param("serviceId") Long serviceId);
 
