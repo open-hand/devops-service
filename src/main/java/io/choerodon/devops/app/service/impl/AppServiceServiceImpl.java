@@ -1462,22 +1462,42 @@ public class AppServiceServiceImpl implements AppServiceService {
         devOpsUserPayload.setAppId(appServiceId);
         devOpsUserPayload.setGitlabProjectId(appServiceDTO.getGitlabProjectId());
 
-        //原来不跳，现在跳
-        if (applicationPermissionVO.getSkipCheckPermission()) {
-            appServiceDTO.setId(appServiceId);
-            appServiceDTO.setIsSkipCheckPermission(true);
-            appServiceMapper.updateByPrimaryKeySelective(appServiceDTO);
-            appServiceUserPermissionService.baseDeleteByAppServiceId(appServiceId);
-            devOpsUserPayload.setOption(2);
-        } else {
-            //原来不跳，现在也不跳，新增用户权限
-            applicationPermissionVO.getUserIds().forEach(u -> {
-                appServiceUserPermissionService.baseCreate(u, appServiceId);
-            });
-            devOpsUserPayload.setIamUserIds(applicationPermissionVO.getUserIds());
-            devOpsUserPayload.setOption(3);
+        //原先是否跳过权限检查
+        boolean skip=appServiceDTO.getIsSkipCheckPermission();
+        if(skip){
+            if(applicationPermissionVO.getSkipCheckPermission()){
+                //原来跳过权限检查，现在也跳过权限检查
+                return;
+            }else{
+                //原来跳过权限检查，现在不跳过权限检查
+                appServiceDTO.setId(appServiceId);
+                appServiceDTO.setIsSkipCheckPermission(false);
+                appServiceMapper.updateByPrimaryKeySelective(appServiceDTO);
+                applicationPermissionVO.getUserIds().forEach(u -> {
+                    appServiceUserPermissionService.baseCreate(u, appServiceId);
+                });
+                devOpsUserPayload.setIamUserIds(applicationPermissionVO.getUserIds());
+                devOpsUserPayload.setOption(3);
+            }
+        }else {
+            if (applicationPermissionVO.getSkipCheckPermission()) {
+                //原来不跳过权限检查，现在跳过权限检查
+                appServiceDTO.setId(appServiceId);
+                appServiceDTO.setIsSkipCheckPermission(true);
+                appServiceMapper.updateByPrimaryKeySelective(appServiceDTO);
+                appServiceUserPermissionService.baseDeleteByAppServiceId(appServiceId);
+                devOpsUserPayload.setOption(2);
+            }else {
+                //原来不跳过权限检查，现在也不跳过权限检查，新增用户权限
+                applicationPermissionVO.getUserIds().forEach(u -> {
+                    appServiceUserPermissionService.baseCreate(u, appServiceId);
+                });
+                devOpsUserPayload.setIamUserIds(applicationPermissionVO.getUserIds());
+                devOpsUserPayload.setOption(3);
 
+            }
         }
+
         producer.applyAndReturn(
                 StartSagaBuilder
                         .newBuilder()
