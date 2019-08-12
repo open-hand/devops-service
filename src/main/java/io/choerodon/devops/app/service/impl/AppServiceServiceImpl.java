@@ -1464,7 +1464,6 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         //原先是否跳过权限检查
         boolean skip=appServiceDTO.getIsSkipCheckPermission();
-
         if(skip){
             if(applicationPermissionVO.getSkipCheckPermission()){
                 //原来跳过权限检查，现在也跳过权限检查
