@@ -22,6 +22,7 @@ const CertContent = lazy(() => import('./contents/certificate'));
 const KeyValueContent = lazy(() => import('./contents/key-value'));
 const CustomContent = lazy(() => import('./contents/custom'));
 const IstListContent = lazy(() => import('./contents/instance-list'));
+const ServiceDetail = lazy(() => import('./contents/service-detail'));
 
 const MainView = observer(() => {
   const {
@@ -63,6 +64,7 @@ const MainView = observer(() => {
       [CIPHER_GROUP]: <KeyValueContent contentType={CIPHER_GROUP} />,
       [CUSTOM_GROUP]: <CustomContent />,
       [IST_GROUP]: <IstListContent />,
+      [SERVICES_ITEM]: <ServiceDetail />,
     };
 
     return cmMaps[menuType]
