@@ -25,12 +25,18 @@ import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.util.FileUtil;
 import io.choerodon.devops.infra.util.GitUtil;
 import io.choerodon.websocket.helper.WebSocketHelper;
+import io.choerodon.websocket.relationship.RelationshipDefining;
 import io.choerodon.websocket.send.WebSocketSendPayload;
 import io.codearte.props2yaml.Props2YAML;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketSession;
 
 
 /**
@@ -38,6 +44,10 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class AgentCommandServiceImpl implements AgentCommandService {
+
+    public static final Logger LOGGER = LoggerFactory.getLogger(AgentCommandServiceImpl.class);
+
+
     private static final String ERROR_PAYLOAD_ERROR = "error.payload.error";
     private static final String KEY_FORMAT = "cluster:%d.release:%s";
     private static final String CLUSTER_FORMAT = "cluster:%s";
@@ -60,6 +70,8 @@ public class AgentCommandServiceImpl implements AgentCommandService {
     private GitUtil gitUtil;
     @Autowired
     private WebSocketHelper webSocketHelper;
+    @Autowired
+    private RelationshipDefining relationshipDefining;
 
     @Value("${services.helm.url}")
     private String helmUrl;
@@ -146,7 +158,21 @@ public class AgentCommandServiceImpl implements AgentCommandService {
         } catch (IOException e) {
             throw new CommonException(ERROR_PAYLOAD_ERROR, e);
         }
-        sendToWebsocket(devopsClusterDTO.getId(), msg);
+
+        //0.18.0到0.19.0 为了agent的平滑升级，所以不能以通用的新Msg方式发送，继续用以前的Msg格式发送
+        this.relationshipDefining.getWebSocketSessionsByKey(devopsClusterDTO.getId().toString()).stream().filter(session-> session!=null).forEach((session) -> {
+                if (!session.isOpen()) {
+                    this.relationshipDefining.removeWebSocketSessionContact(session);
+                } else {
+                    try {
+                        TextMessage textMessage = new TextMessage(mapper.writeValueAsBytes(payload));
+                        session.sendMessage(textMessage);
+                    } catch (IOException var4) {
+                        LOGGER.warn("error.messageOperator.sendWebSocket.IOException, payload: {}", payload, var4);
+                    }
+
+                }
+        });
     }
 
     @Override

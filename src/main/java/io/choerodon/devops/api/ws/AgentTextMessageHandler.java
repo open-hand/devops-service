@@ -30,10 +30,10 @@ public class AgentTextMessageHandler implements MessageHandler<AgentMsgVO> {
     public void handle(WebSocketSession webSocketSession, String type, String key, AgentMsgVO msg) {
         HelmType helmType = HelmType.forValue(String.valueOf(msg.getType()));
         if(helmType==null) {
-            System.out.println("找不到指令啊" + msg.getType());
+            logger.info("找不到指令啊" + msg.getType());
             return;
         }
-        System.out.println("收到了这个指令嘿嘿:" + helmType.toString());
+        logger.info("收到了这个指令嘿嘿:" + helmType.toString());
         //设置集群id
         msg.setClusterId(key.split(":")[1]);
 
@@ -196,7 +196,6 @@ public class AgentTextMessageHandler implements MessageHandler<AgentMsgVO> {
                 agentMsgHandlerService.handlePodRealTimeData(msg.getPayload());
                 break;
             default:
-                System.out.println("找不到指令啊" + helmType.toString());
                 break;
         }
     }

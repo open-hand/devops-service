@@ -746,7 +746,7 @@ public class  AppServiceInstanceServiceImpl implements AppServiceInstanceService
         //校验values
         FileUtil.checkYamlFormat(appServiceDeployVO.getValues());
 
-        //初始化ApplicationInstanceE,DevopsEnvCommandE,DevopsEnvCommandValueE
+        //初始化ApplicationInstanceDTO,DevopsEnvCommandDTO,DevopsEnvCommandValueDTO
         AppServiceInstanceDTO appServiceInstanceDTO = initApplicationInstanceDTO(appServiceDeployVO);
         DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(appServiceDeployVO);
         DevopsEnvCommandValueDTO devopsEnvCommandValueDTO = initDevopsEnvCommandValueDTO(appServiceDeployVO);
@@ -805,7 +805,7 @@ public class  AppServiceInstanceServiceImpl implements AppServiceInstanceService
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
         //校验环境相关信息
-//        devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
+        devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
 
         DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(appServiceInstanceDTO.getCommandId());
         AppServiceDTO applicationDTO = applicationService.baseQuery(appServiceInstanceDTO.getAppServiceId());
@@ -1130,7 +1130,7 @@ public class  AppServiceInstanceServiceImpl implements AppServiceInstanceService
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
         //校验环境相关信息
-//        devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
+        devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
 
         if (CommandType.RESTART.getType().equals(type)) {
             if (!appServiceInstanceDTO.getStatus().equals(InstanceStatus.STOPPED.getStatus())) {

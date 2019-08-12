@@ -10,7 +10,6 @@ import javax.servlet.http.HttpServletRequest;
 import io.choerodon.devops.api.vo.PipeRequestVO;
 import io.choerodon.devops.app.service.AgentCommandService;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.websocket.helper.SocketHandlerRegistration;
 import io.choerodon.websocket.helper.WebSocketHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,10 +71,6 @@ public class ExecAndLogSocketHandler{
             throw new HandshakeFailureException("LogId is null!");
         }
 
-        //校验是否已经有关联该key的日志或命令行连接到了devops
-        if (keys.contains(key)) {
-            throw new HandshakeFailureException("already have a same log or exec ws connect to devops!");
-        }
         return true;
     }
 
@@ -92,7 +87,7 @@ public class ExecAndLogSocketHandler{
         //通知agent建立与前端同样的ws连接
         PipeRequestVO pipeRequest = new PipeRequestVO(attribute.get("podName").toString(), attribute.get("containerName").toString(), attribute.get("logId").toString(), attribute.get("env").toString());
         Long clusterId = TypeUtil.objToLong(registerKey.split("\\.")[0].split(":")[1]);
-        if (webSocketSession.getUri().equals("/ws/log")) {
+        if (webSocketSession.getUri().getPath().equals("/ws/log")) {
             agentCommandService.startLogOrExecConnection(KUBERNETES_GET_LOGS, registerKey, pipeRequest, clusterId);
         } else {
             agentCommandService.startLogOrExecConnection(EXEC_COMMAND, registerKey, pipeRequest, clusterId);
