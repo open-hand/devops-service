@@ -563,7 +563,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
     @Override
     public Boolean baseCheckServiceByEnv(Long envId) {
-        return devopsServiceMapper.checkServiceByEnv(envId);
+        return devopsServiceMapper.checkEnvContainingService(envId);
     }
 
     public List<DevopsServiceDTO> baseList() {

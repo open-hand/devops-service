@@ -214,7 +214,7 @@
         <result property="lastUpdateDate" column="last_update_by"/>
         <result property="createdBy" column="created_by"/>
         <result property="creationDate" column="creation_date"/>
-        <collection property="appServiceInstance" ofType="io.choerodon.devops.infra.dto.AppServiceInstanceInfoDTO">
+        <collection property="instances" ofType="io.choerodon.devops.infra.dto.AppServiceInstanceInfoDTO">
             <result column="instance_id" property="id" jdbcType="VARCHAR"/>
             <result column="ins_code" property="code" jdbcType="VARCHAR"/>
             <result column="ins_status" property="status" jdbcType="VARCHAR"/>
@@ -260,7 +260,7 @@
         </if>
     </sql>
 
-    <select id="checkEnvHasService" resultType="java.lang.Boolean">
+    <select id="checkEnvContainingService" resultType="java.lang.Boolean">
         SELECT
         COUNT( 1 ) > 0 exist
         FROM

@@ -3,6 +3,8 @@ package io.choerodon.devops.api.vo;
 import java.util.List;
 import java.util.Map;
 
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * Creator: Runge
  * Date: 2018/8/3
@@ -14,6 +16,7 @@ public class DevopsServiceTargetVO {
     /**
      * 是创建网络时所填的标签，也是这个网络本身的选择器
      */
+    @ApiModelProperty("网络的选择器")
     private Map<String, String> labels;
     private Map<String, List<EndPointPortVO>> endPoints;
 

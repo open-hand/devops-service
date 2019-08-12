@@ -268,6 +268,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                         checkLog.setContent(String.format(
                                 "Sync cluster migration to the project,clusterId: %s, organizationId: %s", cluster.getId(), organizationId));
                         if (projectDTO != null) {
+                            cluster.setProjectId(projectDTO.getId());
                             checkLog.setResult(devopsClusterMapper.updateByPrimaryKeySelective(cluster) != 1 ? "failed" : "success");
                         } else {
                             checkLog.setResult("failed");
