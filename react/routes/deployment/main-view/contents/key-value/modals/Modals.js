@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback, useEffect } from 'react';
+import React, { Fragment, useMemo, useCallback, useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Modal } from 'choerodon-ui/pro';
 import { Button } from 'choerodon-ui';
@@ -7,10 +7,7 @@ import HeaderButtons from '../../../components/header-buttons';
 import { useDeploymentStore } from '../../../../stores';
 import { useModalStore } from './stores';
 import { useKeyValueStore } from '../stores';
-
-const modalStyle = {
-  width: '26%',
-};
+import KeyValueModal from '../../application/modals/key-value';
 
 const KeyValueModals = observer(() => {
   const {
@@ -22,16 +19,15 @@ const KeyValueModals = observer(() => {
   const {
     listDs,
     itemType,
+    formStore,
   } = useKeyValueStore();
   const {
     permissions,
     AppState: { currentMenuType: { projectId } },
   } = useModalStore();
-  const { menuId } = deploymentStore.getSelectedMenu;
+  const { parentId } = deploymentStore.getSelectedMenu;
 
-  const openModal = useCallback(() => {
-    // console.log(modal);
-  }, []);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     deploymentStore.setNoHeader(false);
@@ -39,6 +35,15 @@ const KeyValueModals = observer(() => {
 
   function refresh() {
     listDs.query();
+  }
+
+  function openModal() {
+    setShowModal(true);
+  }
+
+  function closeModal(isLoad) {
+    setShowModal(false);
+    isLoad && refresh();
   }
   
   const buttons = useMemo(() => ([{
@@ -56,7 +61,19 @@ const KeyValueModals = observer(() => {
     group: 1,
   }]), [formatMessage, intlPrefix, itemType, openModal, permissions, refresh]);
 
-  return <HeaderButtons items={buttons} />;
+  return (
+    <Fragment>
+      <HeaderButtons items={buttons} />
+      {showModal && <KeyValueModal
+        modeSwitch={itemType === 'configMap'}
+        title={itemType}
+        visible={showModal}
+        envId={parentId}
+        onClose={closeModal}
+        store={formStore}
+      />}
+    </Fragment>
+  );
 });
 
 export default KeyValueModals;

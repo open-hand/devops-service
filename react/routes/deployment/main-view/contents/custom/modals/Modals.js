@@ -46,7 +46,7 @@ const CustomModals = observer(() => {
 
   function closeModal(isLoad) {
     setShowModal(false);
-    isLoad && customDs.query();
+    isLoad && refresh();
   }
 
   const buttons = useMemo(() => ([{

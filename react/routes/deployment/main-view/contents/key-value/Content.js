@@ -15,6 +15,7 @@ import { useKeyValueStore } from './stores';
 import Modals from './modals';
 
 import './index.less';
+import KeyValueModal from '../application/modals/key-value';
 
 const { Column } = Table;
 
@@ -29,7 +30,10 @@ const ConfigMap = observer((props) => {
     listDs,
     itemType,
     permissions,
+    formStore,
   } = useKeyValueStore();
+
+  const [showModal, setShowModal] = useState(false);
 
   function refresh() {
     return listDs.query();
@@ -66,7 +70,7 @@ const ConfigMap = observer((props) => {
       {
         service: permissions.edit,
         text: formatMessage({ id: 'edit' }),
-        // action: handleEdit,
+        action: openModal,
       },
       {
         service: permissions.delete,
@@ -79,6 +83,15 @@ const ConfigMap = observer((props) => {
 
   function handleDelete() {
     listDs.delete(listDs.current);
+  }
+
+  function openModal() {
+    setShowModal(true);
+  }
+
+  function closeModal(isLoad) {
+    setShowModal(false);
+    isLoad && refresh();
   }
 
   return (
@@ -94,6 +107,15 @@ const ConfigMap = observer((props) => {
         <Column name="key" renderer={renderKey} />
         <Column name="lastUpdateDate" renderer={renderDate} />
       </Table>
+      {showModal && <KeyValueModal
+        modeSwitch={itemType === 'configMap'}
+        title={itemType}
+        visible={showModal}
+        id={listDs.current.get('id')}
+        envId={parentId}
+        onClose={closeModal}
+        store={formStore}
+      />}
     </div>
   );
 });
