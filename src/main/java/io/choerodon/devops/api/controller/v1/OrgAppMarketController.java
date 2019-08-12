@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.controller.v1;
 
+import java.util.List;
 import java.util.Optional;
 
 import io.choerodon.base.annotation.Permission;
@@ -31,6 +32,19 @@ import springfox.documentation.annotations.ApiIgnore;
 public class OrgAppMarketController {
     @Autowired
     private OrgAppMarketService orgAppMarketService;
+
+    @Permission(type = ResourceType.SITE, permissionWithin = true)
+    @ApiOperation(value = "查询所有应用服务")
+    @CustomPageRequest
+    @GetMapping("/list_all_app_services")
+    public ResponseEntity<List<AppServiceMarketVO>> listAllAppServices(){
+        return Optional.ofNullable(
+                orgAppMarketService.listAllAppServices())
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.app.services.listAll"));
+    }
+
+
 
     /**
      * @param appId

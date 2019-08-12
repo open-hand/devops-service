@@ -6,6 +6,8 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.AppMarketUploadVO;
 import io.choerodon.devops.api.vo.AppServiceMarketVO;
 
+import java.util.List;
+
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  10:27 2019/8/8
@@ -17,4 +19,6 @@ public interface OrgAppMarketService {
                                              String params);
 
     void upload(AppMarketUploadVO marketUploadVO);
+
+    List<AppServiceMarketVO> listAllAppServices();
 }
