@@ -1,4 +1,4 @@
-import React, { Component } from 'react/index';
+import React, { Component } from 'react';
 import { observer, inject } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import { Modal } from 'choerodon-ui';
@@ -161,7 +161,9 @@ class CreateDomain extends Component {
           confirmLoading={submitting}
         >
           <DomainForm
-            wrappedComponentRef={form => this.formRef = form}
+            wrappedComponentRef={(form) => {
+              this.formRef = form;
+            }}
             type={type}
             envId={envId}
             ingressId={id}

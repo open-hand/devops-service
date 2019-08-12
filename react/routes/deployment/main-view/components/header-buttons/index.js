@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { useMemo, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import groupBy from 'lodash/groupBy';
 import initial from 'lodash/initial';
@@ -11,32 +11,37 @@ import './index.less';
 
 const Split = <div className="c7ncd-deployment-header-split" />;
 
-const HeaderButtons = memo(({ items }) => {
-  const displayBtn = items.filter(({ display }) => display);
-  const btnGroups = map(groupBy(displayBtn, 'group'), (value) => {
-    const btns = map(value, ({ icon, name, handler, permissions }) => {
-      const btn = <Button
-        key={name}
-        className="c7ncd-deployment-header-btn"
-        funcType="flat"
-        icon={icon}
-        onClick={handler}
-      >
-        {name}
-      </Button>;
-      return permissions && permissions.length ? <Permission service={permissions}>{btn}</Permission> : btn;
+const HeaderButtons = ({ items }) => {
+  const displayBtn = useMemo(() => items.filter(({ display }) => !!display), [items]);
+
+  const btnNodes = useMemo(() => {
+    const btnGroups = map(groupBy(displayBtn, 'group'), (value) => {
+      const btns = map(value, ({ name, handler, permissions, ...props }) => {
+        const btn = <Button
+          {...props}
+          className="c7ncd-deployment-header-btn"
+          funcType="flat"
+          onClick={handler}
+        >
+          {name}
+        </Button>;
+        return <Fragment key={name}>
+          {permissions && permissions.length ? <Permission service={permissions}>{btn}</Permission> : btn}
+        </Fragment>;
+      });
+
+      return [...btns, Split];
     });
 
-    return [...btns, Split];
-  });
-  const btnNodes = initial(flatten(btnGroups));
+    return initial(flatten(btnGroups));
+  }, [displayBtn]);
 
   return displayBtn.length ? <div className="c7ncd-deployment-header-btns">
     <Header>
       {btnNodes}
     </Header>
   </div> : null;
-});
+};
 
 HeaderButtons.propTypes = {
   items: PropTypes.array,

@@ -71,7 +71,6 @@ const EnvModals = observer(() => {
   function openUpgradeModal() {
     const { menuId, parentId } = deploymentStore.getSelectedMenu;
     const { appServiceVersionId } = istStore.getDetail;
-
     const deployVo = {
       id: menuId,
       parentId,
@@ -116,14 +115,18 @@ const EnvModals = observer(() => {
     });
   }
 
-  function refresh() {
+  function getDs() {
     const activeKey = istStore.getTabKey;
     const dsMapping = {
       [CASES_TAB]: casesDs,
       // [DETAILS_TAB]: ,
       [PODS_TAB]: podsDs,
     };
-    const ds = dsMapping[activeKey];
+    return dsMapping[activeKey];
+  }
+
+  function refresh() {
+    const ds = getDs();
     ds && ds.query();
   }
 
@@ -133,6 +136,9 @@ const EnvModals = observer(() => {
   }
 
   function getHeader() {
+    const { menuId } = deploymentStore.getSelectedMenu;
+    const btnDisabled = !menuId;
+
     const buttons = [{
       name: formatMessage({ id: `${intlPrefix}.modal.values` }),
       icon: 'rate_review1',
@@ -140,6 +146,7 @@ const EnvModals = observer(() => {
       display: true,
       permissions: [],
       group: 1,
+      disabled: btnDisabled,
     }, {
       name: formatMessage({ id: `${intlPrefix}.modal.modify` }),
       icon: 'backup_line',
@@ -147,6 +154,7 @@ const EnvModals = observer(() => {
       permissions: [],
       display: true,
       group: 1,
+      disabled: btnDisabled,
     }, {
       name: formatMessage({ id: `${intlPrefix}.modal.redeploy` }),
       icon: 'redeploy_line',
@@ -154,6 +162,7 @@ const EnvModals = observer(() => {
       permissions: [],
       display: true,
       group: 1,
+      disabled: btnDisabled,
     }, {
       name: formatMessage({ id: `${intlPrefix}.modal.detail` }),
       icon: 'find_in_page',
@@ -161,12 +170,14 @@ const EnvModals = observer(() => {
       permissions: [],
       display: true,
       group: 2,
+      disabled: btnDisabled,
     }, {
       name: formatMessage({ id: 'refresh' }),
       icon: 'refresh',
       handler: refresh,
       display: true,
       group: 2,
+      disabled: btnDisabled,
     }];
 
     return <HeaderButtons items={buttons} />;

@@ -50,7 +50,7 @@ const MainView = observer(() => {
   } = useDeploymentStore();
   const { mainStore } = useMainStore();
 
-  const content = useMemo(() => {
+  function getContent() {
     const { menuType } = getSelectedMenu;
     const cmMaps = {
       [ENV_ITEM]: <EnvContent />,
@@ -64,10 +64,11 @@ const MainView = observer(() => {
       [CUSTOM_GROUP]: <CustomContent />,
       [IST_GROUP]: <IstListContent />,
     };
+
     return cmMaps[menuType]
       ? <Suspense fallback={<div>loading</div>}>{cmMaps[menuType]}</Suspense>
-      : <div>加载数据中</div>;
-  }, [APP_ITEM, CERT_GROUP, CIPHER_GROUP, CUSTOM_GROUP, ENV_ITEM, INGRESS_GROUP, IST_GROUP, IST_ITEM, MAP_GROUP, SERVICES_GROUP, getSelectedMenu]);
+      : <div>加载中</div>;
+  }
 
   const rootRef = useRef(null);
 
@@ -88,6 +89,8 @@ const MainView = observer(() => {
   }), [dragPrefixCls, isDragging]);
 
   const dragRight = resizeNav.x >= X_AXIS_WIDTH_MAX ? X_AXIS_WIDTH_MAX : bounds.width - X_AXIS_WIDTH;
+
+  const content = getContent();
 
   return (<div
     ref={rootRef}

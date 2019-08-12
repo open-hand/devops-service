@@ -3,8 +3,8 @@ import PropTypes from 'prop-types';
 import { observer } from 'mobx-react-lite';
 import toUpper from 'lodash/toUpper';
 import { Icon } from 'choerodon-ui/pro';
+import StatusDot from '../../components/status-dot';
 import InstanceItem from './InstanceItem';
-import EnvironmentItem from './EnvironmentItem';
 import AppItem from './AppItem';
 import { useDeploymentStore } from '../../../stores';
 import { useMainStore } from '../../stores';
@@ -26,9 +26,29 @@ function getName(name, search, prefixCls) {
   </span>;
 }
 
+const EnvironmentItem = ({ name, connect, synchronize }) => {
+  const getPrefix = useMemo(() => <StatusDot
+    connect={connect}
+    synchronize={synchronize}
+    size="small"
+  />, [connect, synchronize]);
+
+  return <Fragment>
+    {getPrefix}
+    {name}
+  </Fragment>;
+};
+
+EnvironmentItem.propTypes = {
+  name: PropTypes.any,
+  connect: PropTypes.bool,
+  synchronize: PropTypes.bool,
+};
+
 const TreeItem = observer(({ record, search }) => {
   const {
     prefixCls,
+    intlPrefix,
     itemType: {
       ENV_ITEM,
       APP_ITEM,
@@ -43,13 +63,10 @@ const TreeItem = observer(({ record, search }) => {
   } = useDeploymentStore();
   const { podColor } = useMainStore();
 
-  const type = record.get('itemType');
-  const isExpand = record.isExpanded;
-
   const name = useMemo(() => {
     const itemName = record.get('name');
     return getName(itemName, search, prefixCls);
-  }, [prefixCls, record, search]);
+  }, [record, search]);
 
   function getInstance() {
     const podRunningCount = record.get('podRunningCount');
@@ -59,13 +76,14 @@ const TreeItem = observer(({ record, search }) => {
     return istId ? <InstanceItem
       istId={istId}
       name={name}
+      intlPrefix={intlPrefix}
       running={podRunningCount}
       unlink={podUnlinkCount}
       podColor={podColor}
     /> : null;
   }
 
-  function getIconItem() {
+  function getIconItem(type) {
     const iconMappings = {
       [SERVICES_ITEM]: 'router',
       [INGRESS_ITEM]: 'language',
@@ -92,10 +110,20 @@ const TreeItem = observer(({ record, search }) => {
     />;
   }
 
-  function getItem(flag) {
-    let treeItem;
+  return useMemo(() => {
+    const type = record.get('itemType');
+    const isExpand = record.isExpanded;
+    const isGroup = record.get('isGroup');
 
-    switch (flag) {
+    if (isGroup) {
+      return <Fragment>
+        {isExpand ? <Icon type="folder_open2" /> : <Icon type="folder_open" />}
+        {name}
+      </Fragment>;
+    }
+
+    let treeItem;
+    switch (type) {
       case ENV_ITEM: {
         treeItem = getEnvIcon();
         break;
@@ -106,7 +134,7 @@ const TreeItem = observer(({ record, search }) => {
       case MAP_ITEM:
       case CIPHER_ITEM:
       case CUSTOM_ITEM: {
-        treeItem = getIconItem();
+        treeItem = getIconItem(type);
         break;
       }
       case IST_ITEM: {
@@ -120,9 +148,7 @@ const TreeItem = observer(({ record, search }) => {
         treeItem = null;
     }
     return treeItem;
-  }
-
-  return getItem(type);
+  }, [record.isExpanded]);
 });
 
 TreeItem.propTypes = {

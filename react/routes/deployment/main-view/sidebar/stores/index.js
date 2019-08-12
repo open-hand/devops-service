@@ -1,4 +1,4 @@
-import React, { createContext, useMemo, useContext } from 'react';
+import React, { createContext, useMemo, useContext, useEffect } from 'react';
 import { inject } from 'mobx-react';
 import { observer } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
@@ -35,7 +35,43 @@ export const StoreProvider = injectIntl(inject('AppState')(
         };
         const TreeDataSet = treeMapping[viewType];
         return new DataSet(TreeDataSet(id, deploymentStore, sidebarStore));
-      }, [IST_VIEW_TYPE, RES_VIEW_TYPE, deploymentStore, id, sidebarStore, viewType]);
+      }, [id, viewType]);
+
+      useEffect(() => {
+        const recordList = treeDs.data;
+
+        if (recordList.length) {
+          const selectedRecord = treeDs.find(record => record.isSelected);
+          const { key: selectedKey } = deploymentStore.getSelectedMenu;
+
+          // 记录中没有选中项或者选中项和store中保存的项不匹配
+          if (!selectedRecord || selectedRecord.get('key') !== selectedKey) {
+            const prevSelected = treeDs.find(record => record.get('key') === selectedKey);
+            // 记录中寻找匹配的项
+            // 找到则设置为选中，否则设置第一个记录为选中
+            if (prevSelected) {
+              prevSelected.isSelected = true;
+            } else {
+              const first = treeDs.first();
+              first.then((record) => {
+                record.isSelected = true;
+                const selectedId = record.get('id');
+                const itemType = record.get('itemType');
+                const parentId = record.get('parentId');
+                const key = record.get('key');
+                deploymentStore.setSelectedMenu({
+                  menuId: selectedId,
+                  menuType: itemType,
+                  parentId,
+                  key,
+                });
+              }, () => {
+                deploymentStore.setSelectedMenu({});
+              });
+            }
+          }
+        }
+      }, [treeDs.data]);
 
       const value = {
         ...props,

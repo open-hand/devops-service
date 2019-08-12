@@ -1,61 +1,64 @@
-import React, { Fragment, useMemo, useCallback } from 'react';
+import React, { Fragment, useMemo } from 'react';
 import PropTypes from 'prop-types';
+import { injectIntl } from 'react-intl';
 import { Action } from '@choerodon/boot';
 import PodCircle from '../../components/pod-circle';
-import { useDeploymentStore } from '../../../stores';
 import { useSidebarStore } from '../stores';
 
-import './index.less';
-
-const InstanceItem = ({ istId, name, podColor, running, unlink }) => {
-  const {
-    intl: { formatMessage },
-  } = useDeploymentStore();
+function InstanceItem({
+  istId,
+  name,
+  podColor,
+  running,
+  unlink,
+  intlPrefix,
+  intl: { formatMessage },
+}) {
   const { treeDs } = useSidebarStore();
 
-  const getPrefix = useMemo(() => {
+  const podData = useMemo(() => {
     const {
       RUNNING_COLOR,
       PADDING_COLOR,
     } = podColor;
 
-    return <PodCircle
-      size="small"
-      dataSource={[{
-        name: 'running',
-        value: running,
-        stroke: RUNNING_COLOR,
-      }, {
-        name: 'unlink',
-        value: unlink,
-        stroke: PADDING_COLOR,
-      }]}
-    />;
+    return [{
+      name: 'running',
+      value: running,
+      stroke: RUNNING_COLOR,
+    }, {
+      name: 'unlink',
+      value: unlink,
+      stroke: PADDING_COLOR,
+    }];
   }, [podColor, running, unlink]);
 
-  const freshMenu = useCallback(() => {
+  function freshMenu() {
     treeDs.query();
-  }, [treeDs]);
+  }
 
   const getSuffix = useMemo(() => {
     const actionData = [{
       service: [],
-      text: formatMessage({ id: 'delete' }),
-      action: () => freshMenu(istId),
+      text: formatMessage({ id: `${intlPrefix}.instance.action.stop` }),
+      action: freshMenu,
     }, {
       service: [],
-      text: formatMessage({ id: 'delete' }),
-      action: () => freshMenu(istId),
+      text: formatMessage({ id: `${intlPrefix}.instance.action.delete` }),
+      action: freshMenu,
     }];
     return <Action placement="bottomRight" data={actionData} />;
-  }, [formatMessage, freshMenu, istId]);
+  }, []);
 
   return <Fragment>
-    {getPrefix}
+    <PodCircle
+      size="small"
+      dataSource={podData}
+    />
     {name}
     {getSuffix}
   </Fragment>;
-};
+}
 
 InstanceItem.propTypes = {
   istId: PropTypes.number,
@@ -65,4 +68,4 @@ InstanceItem.propTypes = {
   unlink: PropTypes.number,
 };
 
-export default InstanceItem;
+export default injectIntl(InstanceItem);

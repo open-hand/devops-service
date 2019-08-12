@@ -5,8 +5,8 @@ import { injectIntl, FormattedMessage } from 'react-intl';
 import _ from 'lodash';
 import YamlEditor from '../../../../../../../components/yamlEditor';
 import InterceptMask from '../../../../../../../components/interceptMask/InterceptMask';
-import { handlePromptError } from '../../../../../../../utils';
 import LoadingBar from '../../../../../../../components/loadingBar';
+import { handlePromptError } from '../../../../../../../utils';
 
 import './index.less';
 

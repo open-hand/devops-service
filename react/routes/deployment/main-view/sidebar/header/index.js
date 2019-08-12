@@ -22,9 +22,10 @@ const SidebarHeader = () => {
 
   const handleChoose = useCallback((choose) => {
     deploymentStore.changeViewType(choose);
+    deploymentStore.setSelectedMenu({});
     sidebarStore.setExpandedKeys([]);
     sidebarStore.setSearchValue('');
-  }, [deploymentStore, sidebarStore]);
+  }, []);
 
   return <div className={`${prefixCls}-sidebar-head`}>
     <Select

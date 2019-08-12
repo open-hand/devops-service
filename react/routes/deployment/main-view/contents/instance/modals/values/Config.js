@@ -2,6 +2,7 @@ import React, { useState, Fragment } from 'react';
 import { observer } from 'mobx-react-lite';
 import YamlEditor from '../../../../../../../components/yamlEditor';
 import InterceptMask from '../../../../../../../components/interceptMask/InterceptMask';
+import LoadingBar from '../../../../../../../components/loadingBar';
 import { handlePromptError } from '../../../../../../../utils';
 
 import './index.less';
@@ -76,6 +77,7 @@ const ValueModalContent = observer((
       onValueChange={handleChange}
       handleEnableNext={handleEnableNext}
     />
+    <LoadingBar display={store.getValueLoading} />
     <InterceptMask visible={isLoading} />
   </Fragment>);
 });

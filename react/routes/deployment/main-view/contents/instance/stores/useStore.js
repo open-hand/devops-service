@@ -7,8 +7,8 @@ export default function useStore() {
     tabKey: 'cases',
     detailLoading: false,
     detail: {},
+    valueLoading: true,
     upgradeValue: {},
-    valueLoading: false,
 
     setTabKey(data) {
       this.tabKey = data;

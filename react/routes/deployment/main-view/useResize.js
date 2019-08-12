@@ -34,19 +34,19 @@ export const useResize = (rootRef, store) => {
     };
   }, [rootRef]);
 
-  const handleDrag = (e, data) => {
+  function handleDrag(e, data) {
     if (data.deltaX) {
       setResizeNav({ x: data.x, y: data.y });
     }
-  };
+  }
 
-  const handleStartDrag = () => {
+  function handleStartDrag() {
     setIsDragging(true);
-  };
+  }
 
-  const handleUnsetDrag = () => {
+  function handleUnsetDrag() {
     setIsDragging(false);
-  };
+  }
 
   useEffect(() => {
     const navX = resizeNav.x;
@@ -77,7 +77,7 @@ export const useResize = (rootRef, store) => {
     setResizeNav(nextResize);
     setDraggable(computedLeft > X_AXIS_WIDTH);
     store.setNavBounds(navBounds);
-  }, [bounds.width, resizeNav, store]);
+  }, [bounds.width, resizeNav]);
 
   return {
     bounds,

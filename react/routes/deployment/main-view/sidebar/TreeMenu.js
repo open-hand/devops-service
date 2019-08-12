@@ -2,7 +2,7 @@ import React, { useMemo, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import SidebarHeading from './header';
 import TreeView from '../../../../components/tree-view';
-import TreeItem from './tree-item/TreeItem';
+import TreeItem from './tree-item';
 import { useSidebarStore } from './stores';
 import { useMainStore } from '../stores';
 
