@@ -41,7 +41,7 @@
         SELECT
         dp.id,
         dp.ip,
-        de.project_id projectId,
+        project.iam_project_id projectId,
         dam.share_level,
         dp.`name`,
         dp.instance_id,
@@ -63,6 +63,7 @@
         JOIN devops_app_service da ON dav.app_service_id = da.id
         JOIN devops_env de ON de.id = dai.env_id
         LEFT JOIN devops_app_service_share_rule dam on dam.app_service_id = da.id
+        LEFT JOIN devops_project project ON da.app_id = project.app_id
         WHERE de.project_id = #{projectId}
         <if test='appServiceId != null'>
             AND da.id= #{appServiceId}

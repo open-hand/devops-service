@@ -90,7 +90,7 @@
         cmd.`status` commandStatus,
         cmd.command_type commandType,
         cmd.error error,
-        de.project_id AS appServiceProjectId,
+        project.iam_project_id AS appServiceProjectId,
         dsai.instance_id AS instance_id,
         dsai.code AS code,
         dai.`status` AS instance_status
@@ -119,6 +119,7 @@
         LEFT JOIN devops_app_service da ON da.id = ds.app_service_id
         LEFT JOIN devops_service_instance dsai ON dsai.service_id = ds.id
         LEFT JOIN devops_app_service_instance dai ON dai.id = dsai.instance_id
+        LEFT JOIN devops_project project ON da.app_id = project.app_id
         WHERE 1
         <if test="instanceId != null">
             AND dai.id = #{instanceId}
@@ -136,7 +137,7 @@
         ds.`name`,
         ds.external_ip,
         ds.labels,
-        de.project_id appServiceProjectId,
+        project.iam_project_id appServiceProjectId,
         ds. ports,
         ds.end_points,
         ds.`status`,
@@ -176,6 +177,7 @@
         LEFT JOIN devops_service_instance dsai ON dsai.service_id = ds.id
         LEFT JOIN devops_app_service_instance dai ON dai.id = dsai.instance_id
         LEFT JOIN devops_app_service da ON da.id = dai.app_service_id
+        LEFT JOIN devops_project project ON da.app_id = project.app_id
         WHERE
         ds.id = #{id}
         AND ds.`status` != 'deleted'

@@ -24,6 +24,7 @@ public class AppServiceInstanceInfoVO {
     private String commandType;
     private String commandStatus;
     private String error;
+    private Long projectId;
 
     public Long getId() {
         return id;
@@ -159,5 +160,13 @@ public class AppServiceInstanceInfoVO {
 
     public void setError(String error) {
         this.error = error;
+    }
+
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
     }
 }
