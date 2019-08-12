@@ -19,7 +19,7 @@
         SELECT
         *
         FROM devops_cluster dc
-        where dc.organization_id = #{organizationId}
+        where dc.project_id = #{projectId}
         <include refid="sqlparam"/>
     </select>
 

@@ -65,23 +65,15 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
     @Override
     @Transactional
-    public String createCluster(Long organizationId, DevopsClusterReqVO devopsClusterReqVO) {
+    public String createCluster(Long projectId, DevopsClusterReqVO devopsClusterReqVO) {
 
         // 插入记录
         DevopsClusterDTO devopsClusterDTO = ConvertUtils.convertObject(devopsClusterReqVO, DevopsClusterDTO.class);
         devopsClusterDTO.setToken(GenerateUUID.generateUUID());
-        devopsClusterDTO.setOrganizationId(organizationId);
+        devopsClusterDTO.setProjectId(projectId);
         devopsClusterDTO = baseCreateCluster(devopsClusterDTO);
 
-        //插入集群项目关系表
-        if (!devopsClusterDTO.getSkipCheckProjectPermission() && devopsClusterReqVO.getProjects() != null) {
-            for (Long projectId : devopsClusterReqVO.getProjects()) {
-                DevopsClusterProPermissionDTO devopsClusterProPermissionDTO = new DevopsClusterProPermissionDTO();
-                devopsClusterProPermissionDTO.setClusterId(devopsClusterDTO.getId());
-                devopsClusterProPermissionDTO.setProjectId(projectId);
-                devopsClusterProPermissionService.baseInsertPermission(devopsClusterProPermissionDTO);
-            }
-        }
+        devopsClusterDTO.setSkipCheckProjectPermission(true);
 
         IamUserDTO iamUserDTO = iamServiceClientOperator.queryUserByUserId(GitUserNameUtil.getUserId().longValue());
 
@@ -142,18 +134,20 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     }
 
     @Override
-    public void checkName(Long organizationId, String name) {
+    public void checkName(Long projectId, String name) {
         DevopsClusterDTO devopsClusterDTO = new DevopsClusterDTO();
-        devopsClusterDTO.setOrganizationId(organizationId);
+        devopsClusterDTO.setProjectId(projectId);
         devopsClusterDTO.setName(name);
         baseCheckName(devopsClusterDTO);
     }
 
     @Override
-    public PageInfo<ProjectReqVO> pageProjects(Long organizationId, Long clusterId, PageRequest pageRequest,
+    public PageInfo<ProjectReqVO> pageProjects(Long projectId, Long clusterId, PageRequest pageRequest,
                                                String[] params) {
+        ProjectDTO iamProjectDTO = iamServiceClientOperator.queryIamProjectById(projectId);
+
         PageInfo<ProjectDTO> projectDTOPageInfo = iamServiceClientOperator
-                .pageProjectByOrgId(organizationId, pageRequest.getPage(), pageRequest.getSize(), null, params);
+                .pageProjectByOrgId(iamProjectDTO.getOrganizationId(), pageRequest.getPage(), pageRequest.getSize(), null, params);
         PageInfo<ProjectReqVO> projectReqVOPageInfo = ConvertUtils.convertPage(projectDTOPageInfo, ProjectReqVO.class);
         List<ProjectReqVO> projectDTOS = new ArrayList<>();
         if (!projectDTOPageInfo.getList().isEmpty()) {
@@ -199,16 +193,16 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     }
 
     @Override
-    public void checkCode(Long organizationId, String code) {
+    public void checkCode(Long projectId, String code) {
         DevopsClusterDTO devopsClusterDTO = new DevopsClusterDTO();
-        devopsClusterDTO.setOrganizationId(organizationId);
+        devopsClusterDTO.setProjectId(projectId);
         devopsClusterDTO.setCode(code);
         baseCheckCode(devopsClusterDTO);
     }
 
     @Override
-    public PageInfo<ClusterWithNodesVO> pageClusters(Long organizationId, Boolean doPage, PageRequest pageRequest, String params) {
-        PageInfo<DevopsClusterRepVO> devopsClusterRepVOPageInfo = ConvertUtils.convertPage(basePageClustersByOptions(organizationId, doPage, pageRequest, params), DevopsClusterRepVO.class);
+    public PageInfo<ClusterWithNodesVO> pageClusters(Long projectId, Boolean doPage, PageRequest pageRequest, String params) {
+        PageInfo<DevopsClusterRepVO> devopsClusterRepVOPageInfo = ConvertUtils.convertPage(basePageClustersByOptions(projectId, doPage, pageRequest, params), DevopsClusterRepVO.class);
         PageInfo<ClusterWithNodesVO> devopsClusterRepDTOPage = ConvertUtils.convertPage(devopsClusterRepVOPageInfo, ClusterWithNodesVO.class);
 
         List<Long> connectedEnvList = clusterConnectionHandler.getConnectedEnvList();
@@ -216,12 +210,12 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         devopsClusterRepVOPageInfo.getList().forEach(devopsClusterRepVO ->
                 setClusterStatus(connectedEnvList, updatedEnvList, devopsClusterRepVO));
 
-        devopsClusterRepDTOPage.setList(fromClusterE2ClusterWithNodesDTO(devopsClusterRepVOPageInfo.getList(), organizationId));
+        devopsClusterRepDTOPage.setList(fromClusterE2ClusterWithNodesDTO(devopsClusterRepVOPageInfo.getList(), projectId));
         return devopsClusterRepDTOPage;
     }
 
     @Override
-    public List<ProjectReqVO> listClusterProjects(Long organizationId, Long clusterId) {
+    public List<ProjectReqVO> listClusterProjects(Long projectId, Long clusterId) {
         return devopsClusterProPermissionService.baseListByClusterId(clusterId).stream()
                 .map(devopsClusterProPermissionDTO -> {
                     ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(devopsClusterProPermissionDTO.getProjectId());
@@ -277,8 +271,8 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     }
 
     @Override
-    public DevopsClusterRepVO queryByCode(Long organizationId, String code) {
-        return ConvertUtils.convertObject(baseQueryByCode(organizationId, code), DevopsClusterRepVO.class);
+    public DevopsClusterRepVO queryByCode(Long projectId, String code) {
+        return ConvertUtils.convertObject(baseQueryByCode(projectId, code), DevopsClusterRepVO.class);
     }
 
 
@@ -330,12 +324,12 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     }
 
     @Override
-    public PageInfo<DevopsClusterDTO> basePageClustersByOptions(Long organizationId, Boolean doPage, PageRequest pageRequest, String params) {
+    public PageInfo<DevopsClusterDTO> basePageClustersByOptions(Long projectId, Boolean doPage, PageRequest pageRequest, String params) {
         Map<String, Object> searchParamMap = TypeUtil.castMapParams(params);
         return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest))
                 .doSelectPageInfo(
                         () -> devopsClusterMapper.listClusters(
-                                organizationId,
+                                projectId,
                                 TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
                                 TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS))));
     }
@@ -367,9 +361,9 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     }
 
     @Override
-    public DevopsClusterDTO baseQueryByCode(Long organizationId, String code) {
+    public DevopsClusterDTO baseQueryByCode(Long projectId, String code) {
         DevopsClusterDTO devopsClusterDTO = new DevopsClusterDTO();
-        devopsClusterDTO.setOrganizationId(organizationId);
+        devopsClusterDTO.setProjectId(projectId);
         devopsClusterDTO.setCode(code);
         return devopsClusterMapper.selectOne(devopsClusterDTO);
     }
@@ -404,10 +398,10 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
      * convert cluster entity to instances of {@link ClusterWithNodesVO}
      *
      * @param devopsClusterRepVOS the cluster entities
-     * @param organizationId      the organization id
+     * @param projectId           the project id
      * @return the instances of the return type
      */
-    private List<ClusterWithNodesVO> fromClusterE2ClusterWithNodesDTO(List<DevopsClusterRepVO> devopsClusterRepVOS, Long organizationId) {
+    private List<ClusterWithNodesVO> fromClusterE2ClusterWithNodesDTO(List<DevopsClusterRepVO> devopsClusterRepVOS, Long projectId) {
         // default three records of nodes in the instance
         PageRequest pageRequest = new PageRequest(1, 3);
 
@@ -415,7 +409,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
             ClusterWithNodesVO clusterWithNodesDTO = new ClusterWithNodesVO();
             BeanUtils.copyProperties(cluster, clusterWithNodesDTO);
             if (Boolean.TRUE.equals(clusterWithNodesDTO.getConnect())) {
-                clusterWithNodesDTO.setNodes(clusterNodeInfoService.pageClusterNodeInfo(cluster.getId(), organizationId, pageRequest));
+                clusterWithNodesDTO.setNodes(clusterNodeInfoService.pageClusterNodeInfo(cluster.getId(), projectId, pageRequest));
             }
             return clusterWithNodesDTO;
         }).collect(Collectors.toList());

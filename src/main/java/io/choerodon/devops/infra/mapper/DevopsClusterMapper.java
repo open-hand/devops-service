@@ -15,7 +15,7 @@ public interface DevopsClusterMapper extends Mapper<DevopsClusterDTO> {
 
     void updateSkipCheckPro(@Param("clusterId") Long clusterId, @Param("skipCheckPro") Boolean skipCheckPro);
 
-    List<DevopsClusterDTO> listClusters(@Param("organizationId") Long organizationId,
+    List<DevopsClusterDTO> listClusters(@Param("projectId") Long projectId,
                                         @Param("searchParam") Map<String, Object> searchParam,
                                         @Param("params") List<String> params);
 
