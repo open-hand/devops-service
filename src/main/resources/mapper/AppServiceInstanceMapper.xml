@@ -53,13 +53,17 @@
                 WHERE dp.instance_id = ins.id
                   AND dp.`status` = 'Running'
                   AND dp.is_ready = TRUE) pod_running_count,
-               ins.app_service_id,
-               ins.app_service_version_id,
-               version.version as version_name,
-               das.name as app_service_name
+                ins.app_service_id,
+                ins.app_service_version_id,
+                version.version as version_name,
+                das.name as app_service_name,
+                project.iam_project_id AS project_id,
+                cmd.error
         FROM devops_app_service_instance ins
                  LEFT JOIN devops_app_service_version  version ON ins.app_service_version_id = version.id
                  LEFT JOIN devops_app_service das ON ins.app_service_id = das.id
+                 LEFT JOIN devops_project project ON das.app_id = project.app_id
+                 LEFT JOIN devops_env_command cmd ON cmd.id = ins.command_id
         WHERE ins.env_id = #{envId}
         <include refid="infoSqlParam"/>
     </select>
@@ -103,7 +107,7 @@
         dai.`code` code,
         dam.share_level publishLevel,
         da.id appServiceId,
-        de.project_id projectId,
+        project.iam_project_id projectId,
         da.code as appServiceCode,
         da.`name` appServiceName,
         dav.version appServiceVersion,
@@ -164,6 +168,7 @@
         LEFT JOIN devops_app_service_version  dav ON dai.app_service_version_id = dav.id
         LEFT JOIN devops_env_command cmd ON cmd.id = dai.command_id
         LEFT JOIN devops_app_service_share_rule dam ON dam.app_service_id = da.id
+        LEFT JOIN devops_project project ON da.app_id = project.app_id;
         WHERE de.project_id = #{projectId}
         AND dai.`status` != 'deleted'
         <include refid="sqlparam"/>
