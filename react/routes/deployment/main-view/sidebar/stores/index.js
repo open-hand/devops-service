@@ -52,22 +52,22 @@ export const StoreProvider = injectIntl(inject('AppState')(
             if (prevSelected) {
               prevSelected.isSelected = true;
             } else {
-              const first = treeDs.first();
-              first.then((record) => {
-                record.isSelected = true;
-                const selectedId = record.get('id');
-                const itemType = record.get('itemType');
-                const parentId = record.get('parentId');
-                const key = record.get('key');
+              const first = treeDs.get(0);
+              if (first) {
+                first.isSelected = true;
+                const selectedId = first.get('id');
+                const itemType = first.get('itemType');
+                const parentId = first.get('parentId');
+                const key = first.get('key');
                 deploymentStore.setSelectedMenu({
                   menuId: selectedId,
                   menuType: itemType,
                   parentId,
                   key,
                 });
-              }, () => {
+              } else {
                 deploymentStore.setSelectedMenu({});
-              });
+              }
             }
           }
         }

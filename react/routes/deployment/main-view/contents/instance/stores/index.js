@@ -5,9 +5,12 @@ import { DataSet } from 'choerodon-ui/pro';
 import { useDeploymentStore } from '../../../../stores';
 import CasesDataSet from './CasesDataSet';
 import PodsDataset from './PodsDataSet';
+import DetailsStore from './DetailsStore';
 import useStore from './useStore';
 
 const Store = createContext();
+
+export default Store;
 
 export function useInstanceStore() {
   return useContext(Store);
@@ -26,6 +29,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
     } = useDeploymentStore();
     const [envId, appId] = parentId.split('-');
 
+    const detailsStore = useMemo(() => new DetailsStore(), []);
     const casesDs = useMemo(() => new DataSet(CasesDataSet(id, menuId)), [id, menuId]);
     const podsDs = useMemo(() => new DataSet(PodsDataset({
       intl,
@@ -47,6 +51,8 @@ export const StoreProvider = injectIntl(inject('AppState')(
       casesDs,
       podsDs,
       istStore,
+      detailsStore,
+      instanceId: menuId,
     };
     return (
       <Store.Provider value={value}>

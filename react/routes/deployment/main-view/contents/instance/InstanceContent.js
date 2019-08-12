@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect, lazy, Suspense } from 'react';
+import React, { Fragment, useEffect, lazy, Suspense, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Tabs } from 'choerodon-ui';
 import isEmpty from 'lodash/isEmpty';
@@ -36,16 +36,33 @@ const InstanceContent = observer(() => {
       DETAILS_TAB,
       PODS_TAB,
     },
+    casesDs,
+    podsDs,
     istStore,
+    detailsStore,
     AppState: { currentMenuType: { id } },
   } = useInstanceStore();
+  const podSize = useMemo(() => ({
+    width: 22,
+    height: 22,
+  }), []);
 
   useEffect(() => {
     istStore.detailFetch(id, menuId);
-  }, [id, istStore, menuId]);
+  }, [id, menuId]);
 
   function handleChange(key) {
     istStore.setTabKey(key);
+    if (key === DETAILS_TAB) {
+      detailsStore.loadResource(id, menuId);
+    } else {
+      const dsMapping = {
+        [CASES_TAB]: casesDs,
+        [PODS_TAB]: podsDs,
+      };
+      const ds = dsMapping[key];
+      ds && ds.query();
+    }
   }
 
   function getTitle() {
@@ -57,10 +74,7 @@ const InstanceContent = observer(() => {
 
     return <Fragment>
       <PodCircle
-        style={{
-          width: 22,
-          height: 22,
-        }}
+        style={podSize}
         dataSource={[{
           name: 'running',
           value: podRunningCount,

@@ -102,8 +102,6 @@ const MainView = observer(() => {
 
   const dragRight = resizeNav.x >= X_AXIS_WIDTH_MAX ? X_AXIS_WIDTH_MAX : bounds.width - X_AXIS_WIDTH;
 
-  const content = getContent();
-
   return (<div
     ref={rootRef}
     className={`${prefixCls}-wrap`}
@@ -131,7 +129,7 @@ const MainView = observer(() => {
     <Fragment>
       <Sidebar />
       {!isEmpty(getSelectedMenu) && <div className={`${prefixCls}-main ${dragPrefixCls}-animate`}>
-        {content}
+        {getContent()}
       </div>}
     </Fragment>
   </div>);

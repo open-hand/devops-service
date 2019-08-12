@@ -63,13 +63,16 @@ export default function useStore() {
     },
 
     async loadValue(projectId, id, versionId) {
+      this.setValueLoading(true);
       try {
         const data = await axios.get(`/devops/v1/projects/${projectId}/app_service_instances/${id}/appServiceService/${versionId}/upgrade_value`);
         const result = handlePromptError(data);
         if (result) {
           this.setUpgradeValue(data);
         }
+        this.setValueLoading(false);
       } catch (e) {
+        this.setValueLoading(false);
         Choerodon.handleResponseError(e);
       }
     },

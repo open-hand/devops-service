@@ -1,23 +1,41 @@
+@import '~choerodon-ui/lib/style/themes/default';
+
+@active-color: #5266d4;
+
 .c7ncd-deployment-cases-record {
-  background: #fafafa;
   position: relative;
+  display: flex;
+  align-items: center;
   margin-bottom: .14rem;
+  height: .74rem;
+
+  &-arrow {
+    margin-top: -0.04rem;
+
+    .icon {
+      font-size: .28rem;
+    }
+  }
 
   .cases-record-title {
-    position: absolute;
-    top: .26rem;
+    white-space: nowrap;
+    margin-right: .1rem;
   }
 
   .cases-record-detail {
-    margin: 0 .2rem 0 .85rem;
-    padding: 0 .03rem;
+    display: flex;
+    margin: 0 .1rem;
+    flex: 1;
+    overflow: hidden;
 
     .operation-record-card {
       display: flex;
+      flex: 0 0 1.6rem;
       align-items: center;
       flex-direction: column;
       position: relative;
       padding: .07rem 0;
+      width: 1.6rem;
       text-align: center;
 
       .operation-record-title {
@@ -31,58 +49,43 @@
         transform: scale(0.9);
       }
 
-      .operation-record-line {
-        position: absolute;
-        left: 0;
-        top: .22rem;
+      .operation-record-step {
+        position: relative;
         width: 100%;
 
-        &:after {
-          height: 1px;
+        &:before {
+          position: absolute;
+          left: 0;
+          top: 50%;
+          height: .02rem;
           width: 100%;
+          transform: translateY(-0.01rem);
           background: rgba(0, 0, 0, 0.12);
           content: "";
-          display: inline-block;
         }
-      }
-
-      .operation-record-step {
-        z-index: 10;
 
         .operation-record-icon {
-          color: #5266d4;
-          margin: .05rem 0;
-          font-size: .12rem;
-          transform: scale(0.8);
+          display: inline-block;
+          width: .11rem;
+          height: .11rem;
+          color: @active-color;
+          border: .025rem solid;
+          border-radius: 50%;
           background: #fff;
+          transform: scale(0.8);
         }
       }
 
       &-active {
-
         .operation-record-time,
         .operation-record-title {
-          color: #5266d4;
+          color: @active-color;
+        }
+
+        .operation-record-icon {
+          background: @active-color !important;
         }
       }
-    }
-
-    .operation-slick-arrow {
-      color: #3f51b5;
-      font-size: .2rem;
-    }
-
-    .slick-prev:before,
-    .slick-next:before {
-      content: none;
-    }
-
-    .slick-disabled {
-      display: none !important;
-    }
-
-    .slick-track {
-      margin: 0;
     }
   }
 }
@@ -99,10 +102,19 @@
       margin-bottom: 0;
     }
   }
+
+  &-bottom {
+    margin: 0 -0.16rem -0.12rem;
+    padding: 0 0.16rem;
+    height: .35rem;
+    line-height: .34rem;
+    border-top: 1px solid #d3d3d3;
+    font-size: 12px;
+    color: rgba(0, 0, 0, 0.54);
+  }
 }
 
 .c7ncd-deployment-cases-status {
-
   &-failed {
     color: #f44336;
     vertical-align: text-bottom;
