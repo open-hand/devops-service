@@ -61,9 +61,7 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
 
     @Override
     public Long queryAppIdByProjectId(Long projectId) {
-        // 未修复数据时，需要此逻辑，修复后，正式发布0.19.0前要删除此逻辑 TODO
-        Long appId = devopsProjectMapper.queryAppIdByProjectId(projectId);
-        return appId == null ? projectId : appId;
+        return devopsProjectMapper.queryAppIdByProjectId(projectId);
     }
 
     @Override
