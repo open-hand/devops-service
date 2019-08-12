@@ -26,4 +26,6 @@ public interface DevopsCertificationMapper extends Mapper<CertificationDTO> {
     void updateSkipCheckPro(@Param("certId") Long clusterId, @Param("skipCheckPro") Boolean skipCheckPro);
 
     List<CertificationDTO> listByProjectId(@Param("projectId") Long projectId, @Param("organizationId") Long organizationId);
+
+    List<CertificationDTO> listAllOrgCertification();
 }
