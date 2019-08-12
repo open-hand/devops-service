@@ -13,7 +13,8 @@
 	dcrc.content resourceContent,
     dcr.created_by,
     dcr.last_update_date,
-    dcr.creation_date
+    dcr.creation_date,
+    dcr.last_updated_by
 FROM
 	devops_customize_resource dcr
 	LEFT JOIN devops_customize_resource_content dcrc ON dcr.content_id = dcrc.id

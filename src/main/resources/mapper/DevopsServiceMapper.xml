@@ -151,6 +151,7 @@
         ds.last_update_date,
         ds.creation_date,
         ds.created_by,
+        ds.last_updated_by,
         de.code AS env_code,
         (SELECT detail.message
          FROM devops_env_resource resource
@@ -214,7 +215,8 @@
         <result property="lastUpdateDate" column="last_update_by"/>
         <result property="createdBy" column="created_by"/>
         <result property="creationDate" column="creation_date"/>
-        <collection property="instances" ofType="io.choerodon.devops.infra.dto.AppServiceInstanceInfoDTO">
+        <result property="lastUpdatedBy" column="last_updated_by"/>
+        <collection property="instances" ofType="io.choerodon.devops.infra.dto.AppServiceInstanceInfoDTO" notNullColumn="instance_id">
             <result column="instance_id" property="id" jdbcType="VARCHAR"/>
             <result column="ins_code" property="code" jdbcType="VARCHAR"/>
             <result column="ins_status" property="status" jdbcType="VARCHAR"/>

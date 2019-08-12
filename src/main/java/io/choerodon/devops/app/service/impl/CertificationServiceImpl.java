@@ -160,7 +160,7 @@ public class CertificationServiceImpl implements CertificationService {
                 certContent = certificationFileDTO.getCertFile();
             }
 
-            C7nCertification c7nCertification  = getC7nCertification(certName, type, domains, keyContent, certContent, envCode);
+            C7nCertification c7nCertification = getC7nCertification(certName, type, domains, keyContent, certContent, envCode);
 
             createAndStore(newCertificationDTO, c7nCertification);
 
@@ -387,7 +387,7 @@ public class CertificationServiceImpl implements CertificationService {
         respVO.setCommonName(domains.isEmpty() ? null : domains.remove(0));
         respVO.setDNSNames(domains);
         respVO.setIngresses(listIngressNamesByCertId(certId));
-        if (certificationDTO.getCreatedBy() != 0) {
+        if (certificationDTO.getCreatedBy() != null && certificationDTO.getCreatedBy() != 0) {
             respVO.setCreatorName(iamServiceClientOperator.queryUserByUserId(certificationDTO.getCreatedBy()).getRealName());
         }
         return respVO;

@@ -213,10 +213,12 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
     public DevopsCustomizeResourceVO queryDevopsCustomizeResourceDetail(Long resourceId) {
         DevopsCustomizeResourceDTO devopsCustomizeResourceDTO = devopsCustomizeResourceMapper.queryDetail(resourceId);
         DevopsCustomizeResourceVO resource = ConvertUtils.convertObject(devopsCustomizeResourceDTO, DevopsCustomizeResourceVO.class);
-        if(devopsCustomizeResourceDTO.getCreatedBy() != 0) {
+        if (devopsCustomizeResourceDTO.getCreatedBy() != null && devopsCustomizeResourceDTO.getCreatedBy() != 0) {
             resource.setCreatorName(iamServiceClientOperator.queryUserByUserId(devopsCustomizeResourceDTO.getId()).getRealName());
         }
-
+        if (devopsCustomizeResourceDTO.getLastUpdatedBy() != null && devopsCustomizeResourceDTO.getLastUpdatedBy() != 0) {
+            resource.setLastUpdaterName(iamServiceClientOperator.queryUserByUserId(devopsCustomizeResourceDTO.getLastUpdatedBy()).getRealName());
+        }
         return resource;
     }
 

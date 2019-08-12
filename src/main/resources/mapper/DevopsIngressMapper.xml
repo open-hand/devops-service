@@ -7,11 +7,11 @@
         FROM devops_ingress_path path
                  INNER JOIN devops_service svc ON path.service_id = svc.id
                  INNER JOIN devops_service_instance sins ON svc.id = sins.service_id
-                 INNER JOIN devops_app_service_instance ins ON sins.app_instance_id = ins.id
+                 INNER JOIN devops_app_service_instance ins ON sins.instance_id = ins.id
         WHERE path.ingress_id = #{ingressId}
     </select>
 
-    <select id="queryIngressNameByServiceId" resultType="java.lang.String">
+    <select id="listIngressNameByServiceId" resultType="java.lang.String">
         SELECT
         di. NAME
         FROM
@@ -31,7 +31,7 @@
     </select>
 
     <select id="queryById" resultType="io.choerodon.devops.infra.dto.DevopsIngressDTO">
-        SELECT DISTINCT
+        SELECT
         di.id id,
         di.project_id projectId,
         di.env_id envId,
@@ -46,6 +46,7 @@
         cmd.error  error,
         de.`code` namespace,
         di.last_update_date,
+        di.last_updated_by,
         di.creation_date,
         di.created_by,
         (SELECT derd.message
