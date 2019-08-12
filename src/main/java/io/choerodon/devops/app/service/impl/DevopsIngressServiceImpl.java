@@ -312,7 +312,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
                     ingressId, devopsIngressDTO.getDomain(), devopsIngressDTO.getName(), devopsEnvironmentDTO.getId(),
                     devopsIngressDTO.getUsable(), devopsEnvironmentDTO.getName());
             DevopsIngressPathDTO devopsIngressPathDTO = new DevopsIngressPathDTO(ingressId);
-            devopsIngressPathMapper.select(devopsIngressPathDTO).forEach(e -> getDevopsIngressDTO(devopsIngressVO, e));
+            devopsIngressPathMapper.select(devopsIngressPathDTO).forEach(e -> setDevopsIngressDTO(devopsIngressVO, e));
             devopsIngressDTO.setStatus(devopsIngressDTO.getStatus());
             setIngressDTOCert(devopsIngressDTO.getCertId(), devopsIngressVO);
             return devopsIngressVO;

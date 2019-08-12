@@ -137,7 +137,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         V1Pod v1Pod = json.deserialize(msg, V1Pod.class);
 
         AppServiceInstanceDTO appServiceInstanceDTO =
-                appServiceInstanceService.baseQueryByCodeAndEnv(KeyParseTool.getReleaseName(key), envId);
+                appServiceInstanceService.baseQueryByCodeAndEnv(KeyParseUtil.getReleaseName(key), envId);
         if (appServiceInstanceDTO == null) {
             logger.info("instance not found");
             return;
@@ -331,7 +331,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             String releaseName = null;
             DevopsEnvResourceDTO oldDevopsEnvResourceDTO = null;
             AppServiceInstanceDTO appServiceInstanceDTO = null;
-            ResourceType resourceType = ResourceType.forString(KeyParseTool.getResourceType(key));
+            ResourceType resourceType = ResourceType.forString(KeyParseUtil.getResourceType(key));
 
             if (resourceType == null) {
                 resourceType = ResourceType.forString("MissType");
@@ -517,7 +517,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             logger.info(ENV_NOT_EXIST, KeyParseUtil.getNamespace(key));
             return;
         }
-        AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQueryByCodeAndEnv(KeyParseTool.getReleaseName(key), envId);
+        AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQueryByCodeAndEnv(KeyParseUtil.getReleaseName(key), envId);
         if (appServiceInstanceDTO != null) {
             // 删除实例历史日志记录
             devopsEnvCommandLogService.baseDeleteByInstanceId(appServiceInstanceDTO.getId());
