@@ -27,6 +27,7 @@ public class CertificationDTO extends BaseDTO {
     private Date validUntil;
     private Boolean skipCheckProjectPermission;
     private Long orgCertId;
+    private Long projectId;
 
     @Transient
     private String commandType;
@@ -198,4 +199,11 @@ public class CertificationDTO extends BaseDTO {
         this.orgCertId = orgCertId;
     }
 
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
+    }
 }

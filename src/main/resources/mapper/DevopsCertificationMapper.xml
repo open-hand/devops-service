@@ -82,4 +82,11 @@
         join devops_certification_pro_rel dcp on dc.id = dcp.cert_id
         where dcp.project_id = #{projectId}
     </select>
+
+    <select id="listAllOrgCertification">
+        SELECT
+            cert.id, cert.name, cert.organization_id, cert.object_version_number
+        FROM devops_certification cert
+        WHERE cert.organization_id IS NOT NULL;
+    </select>
 </mapper>

@@ -191,8 +191,8 @@ public class OrgCertificationController {
     public ResponseEntity<String> deleteOrgCert(
             @ApiParam(value = "组织ID", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
-            @ApiParam(value = "集群Id")
-            @PathVariable(value = "cert_Id") Long certId) {
+            @ApiParam(value = "证书Id")
+            @PathVariable(value = "cert_id") Long certId) {
         devopsOrgCertificationService.deleteCert(certId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
