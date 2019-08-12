@@ -83,6 +83,12 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         }
     }
 
+    @Override
+    public List<AppServiceMarketVO> listAllAppServices(){
+        List<AppServiceDTO> appServiceDTOList = appServiceMapper.selectAll();
+        return ConvertUtils.convertList(appServiceDTOList, this::dtoToMarkVO);
+    }
+
     private void packageSourceCode(AppServiceMarketVO appServiceMarketVO, String appFilePath) {
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceMarketVO.getAppServiceId());
         //1.创建目录 应用服务仓库
@@ -169,6 +175,14 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
     }
 
     private AppServiceMarketVO dtoToMarketVO(AppServiceDTO applicationDTO) {
+        AppServiceMarketVO appServiceMarketVO = new AppServiceMarketVO();
+        appServiceMarketVO.setAppServiceId(applicationDTO.getId());
+        appServiceMarketVO.setAppServiceCode(applicationDTO.getCode());
+        appServiceMarketVO.setAppServiceName(applicationDTO.getName());
+        return appServiceMarketVO;
+    }
+
+    private AppServiceMarketVO dtoToMarkVO(AppServiceDTO applicationDTO){
         AppServiceMarketVO appServiceMarketVO = new AppServiceMarketVO();
         appServiceMarketVO.setAppServiceId(applicationDTO.getId());
         appServiceMarketVO.setAppServiceCode(applicationDTO.getCode());
