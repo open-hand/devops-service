@@ -89,6 +89,12 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         return ConvertUtils.convertList(appServiceDTOList, this::dtoToMarkVO);
     }
 
+    @Override
+    public List<AppServiceMarketVersionVO> listServiceVersionsByAppServiceId(Long appServiceId) {
+        List<AppServiceVersionDTO> appServiceVersionDTOList = appServiceVersionService.baseListByAppServiceId(appServiceId);
+        return ConvertUtils.convertList(appServiceVersionDTOList, AppServiceMarketVersionVO.class);
+    }
+
     private void packageSourceCode(AppServiceMarketVO appServiceMarketVO, String appFilePath) {
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceMarketVO.getAppServiceId());
         //1.创建目录 应用服务仓库

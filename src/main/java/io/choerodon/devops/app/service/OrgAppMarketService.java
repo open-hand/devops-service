@@ -5,7 +5,7 @@ import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.AppMarketUploadVO;
 import io.choerodon.devops.api.vo.AppServiceMarketVO;
-
+import io.choerodon.devops.api.vo.AppServiceMarketVersionVO;
 import java.util.List;
 
 /**
@@ -21,4 +21,6 @@ public interface OrgAppMarketService {
     void upload(AppMarketUploadVO marketUploadVO);
 
     List<AppServiceMarketVO> listAllAppServices();
+
+    List<AppServiceMarketVersionVO> listServiceVersionsByAppServiceId(Long appServiceId);
 }
