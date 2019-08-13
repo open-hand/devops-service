@@ -3,7 +3,6 @@ import { DataSet } from 'choerodon-ui/pro';
 import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
 import BaseInfoDataSet from './BaseInfoDataSet';
-import TableDataSet from './TableDataSet';
 import { useDeploymentStore } from '../../../../stores';
 
 const Store = createContext();

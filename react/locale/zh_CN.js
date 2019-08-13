@@ -54,6 +54,7 @@ const commonField = {
   annotation: '注解',
   routing: '路由',
   port: '端口',
+  protocol: '协议',
 
   // 状态描述
   null: '无',
@@ -273,6 +274,8 @@ const deployment = {
   'c7ncd.deployment.config-map.detail': '配置映射详情',
   'c7ncd.deployment.ingress.detail': '域名详情',
   'c7ncd.deployment.gateway.address': '网管地址',
+  'c7ncd.deployment.target.port': '目标端口',
+  'c7ncd.deployment.change.number': '更改次数',
 };
 
 const appService = {

@@ -30,21 +30,21 @@ const Content = observer(() => {
   return (
     <div className={`${prefixCls}-certificate-detail`}>
       <Modals />
-      <div className="detail-content-title">
-        <Icon type="class" className="detail-content-title-icon" />
+      <div className={`${prefixCls}-detail-content-title`}>
+        <Icon type="class" className={`${prefixCls}-detail-content-title-icon`} />
         <span>{record.get('name')}</span>
       </div>
       <div>
-        <div className="detail-content-section-title">
+        <div className={`${prefixCls}-detail-content-section-title`}>
           <FormattedMessage id={`${intlPrefix}.domains`} />
         </div>
-        <div className="detail-content-section-name">
+        <div className={`${prefixCls}-detail-content-section-name`}>
           <span>CommonName:&nbsp;</span>
           <span>{record.get('commonName')}</span>
         </div>
-        <ul className="detail-section-ul">
+        <ul className={`${prefixCls}-detail-section-ul`}>
           {map(record.get('DNSNames'), item => (
-            <li className="detail-section-li">
+            <li className={`${prefixCls}-detail-section-li`}>
               <span className="detail-section-li-text">DNSNames:&nbsp;</span>
               <span>{item}</span>
             </li>
@@ -52,12 +52,12 @@ const Content = observer(() => {
         </ul>
       </div>
       <div>
-        <div className="detail-content-section-title">
+        <div className={`${prefixCls}-detail-content-section-title`}>
           <FormattedMessage id={`${intlPrefix}.current.domains`} />
         </div>
-        <ul className="detail-section-ul">
+        <ul className={`${prefixCls}-detail-section-ul`}>
           {map(record.get('ingresses'), item => (
-            <li className="detail-section-li">
+            <li className={`${prefixCls}-detail-section-li`}>
               <span>{item}</span>
             </li>
           ))}

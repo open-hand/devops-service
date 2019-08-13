@@ -7,6 +7,8 @@ export default (projectId, id) => ({
     { name: 'name', type: 'string' },
     { name: 'id', type: 'number' },
     { name: 'config', type: 'object' },
+    { name: 'target', type: 'object' },
+    { name: 'target', type: 'object' },
   ],
   transport: {
     read: {

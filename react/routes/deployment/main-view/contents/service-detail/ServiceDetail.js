@@ -1,18 +1,12 @@
-import React, { Fragment, useState } from 'react';
+import React from 'react';
 import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
-import { Action } from '@choerodon/boot';
-import {
-  Tooltip,
-  Icon,
-  Popover,
-} from 'choerodon-ui';
-import { Table } from 'choerodon-ui/pro';
-import _ from 'lodash';
-import classnames from 'classnames';
+import { Icon } from 'choerodon-ui';
 import { useDeploymentStore } from '../../../stores';
 import { useNetworkDetailStore } from './stores';
 import Modals from './modals';
+import PortsList from './PortsList';
+import LoadList from './LoadList';
 
 import './index.less';
 
@@ -20,7 +14,6 @@ const ServiceDetail = observer(() => {
   const {
     prefixCls,
     intlPrefix,
-    deploymentStore: { getSelectedMenu: { parentId } },
   } = useDeploymentStore();
   const {
     baseInfoDs,
@@ -28,29 +21,21 @@ const ServiceDetail = observer(() => {
   } = useNetworkDetailStore();
 
   const record = baseInfoDs.current;
-  // if (!record) return <span>loading</span>;
+  if (!record) return <span>loading</span>;
  
 
   return (
     <div className={`${prefixCls}-service-detail`}>
       <Modals />
-      <div className="detail-content-title">
-        <Icon type="router" className="detail-content-title-icon" />
+      <div className={`${prefixCls}-detail-content-title`}>
+        <Icon type="router" className={`${prefixCls}-detail-content-title-icon`} />
         <span>{record && record.get('name')}</span>
       </div>
       <ul className={`${prefixCls}-service-detail-content`}>
+        <li><PortsList /></li>
+        <li><LoadList /></li>
         <li>
-          <div className="detail-content-section-title">
-            <FormattedMessage id="port" />
-          </div>
-        </li>
-        <li>
-          <div className="detail-content-section-title">
-            <FormattedMessage id={`${intlPrefix}.load`} />
-          </div>
-        </li>
-        <li>
-          <div className="detail-content-section-title">
+          <div className={`${prefixCls}-detail-content-section-title`}>
             <FormattedMessage id={`${intlPrefix}.pods`} />
           </div>
         </li>

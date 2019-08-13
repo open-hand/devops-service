@@ -30,11 +30,11 @@ const Content = observer(() => {
   return (
     <div className={`${prefixCls}-configMap-detail`}>
       <Modals />
-      <div className="detail-content-title">
-        <Icon type="compare_arrows" className="detail-content-title-icon" />
+      <div className={`${prefixCls}-detail-content-title`}>
+        <Icon type="compare_arrows" className={`${prefixCls}-detail-content-title-icon`} />
         <span>{record.get('name')}</span>
       </div>
-      <div className="detail-content-section-title">
+      <div className={`${prefixCls}-detail-content-section-title`}>
         <FormattedMessage id={`${intlPrefix}.key.value`} />
       </div>
       {map(record.get('value'), (value, key) => (
