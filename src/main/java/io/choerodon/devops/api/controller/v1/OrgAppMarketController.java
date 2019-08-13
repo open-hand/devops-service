@@ -92,7 +92,7 @@ public class OrgAppMarketController {
      * @return
      */
     @Permission(type = ResourceType.SITE, permissionWithin = true )
-    @ApiOperation(value = "据应用服务ID查询所应用版本")
+    @ApiOperation(value = "根据应用服务ID查询所对应的应用版本")
     @GetMapping("/list_versions/{app_service_id}")
     public ResponseEntity<List<AppServiceMarketVersionVO>> listVersionsByAppServiceId(
             @ApiParam(value = "应用服务Id")
