@@ -28,9 +28,6 @@
         <if test="envId != null">
             AND dc.env_id = #{envId}
         </if>
-        <if test="organizationId != null">
-            AND dc.organization_id = #{organizationId}
-        </if>
         <if test='searchParam != null'>
             <if test='searchParam.certName != null and searchParam.certName.length > 0'>
                 AND
@@ -83,7 +80,7 @@
         where dcp.project_id = #{projectId}
     </select>
 
-    <select id="listAllOrgCertification">
+    <select id="listAllOrgCertification" resultType="io.choerodon.devops.infra.dto.CertificationDTO">
         SELECT
             cert.id, cert.name, cert.organization_id, cert.object_version_number
         FROM devops_certification cert
