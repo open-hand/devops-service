@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * Creator: Runge
  * Date: 2018/4/20
@@ -25,11 +27,14 @@ public class DevopsIngressVO extends DevopsResourceDataInfoVO{
     private Long certId;
     private String certName;
     private String certStatus;
+    @ApiModelProperty("域名对应的path，其中是path对象")
     private List<DevopsIngressPathVO> pathList;
     private String commandType;
     private String commandStatus;
     private String error;
+    @ApiModelProperty("Annotations键值对，键不是确定值")
     private Map<String, String> annotations;
+    @ApiModelProperty("实例名称数组")
     private List<String> instances;
 
     public DevopsIngressVO() {

@@ -14,9 +14,9 @@ public class DevopsResourceDataInfoVO {
     private Date lastUpdateDate;
     @ApiModelProperty("创建时间")
     private Date creationDate;
-    @ApiModelProperty("创建者")
+    @ApiModelProperty("创建者/为空时是GitOps逻辑创建的")
     private String creatorName;
-    @ApiModelProperty("更新者")
+    @ApiModelProperty("更新者/为空可能是GitOps逻辑创建的也可能是没有更新过")
     private String lastUpdaterName;
 
     public Date getLastUpdateDate() {
