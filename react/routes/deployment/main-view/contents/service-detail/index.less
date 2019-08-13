@@ -7,4 +7,104 @@
     margin: 0;
     padding: 0;
   }
+
+  .service-detail-port {
+
+    &-list {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 .3rem;
+      display: flex;
+      align-items: center;
+
+      .service-detail-arrow-item {
+        margin: 0 .2rem;
+      }
+    }
+
+    &-item {
+      font-size: .12rem;
+      color: rgba(0, 0, 0, 0.65);
+      line-height: .17rem;
+
+      &-text {
+        display: block;
+        font-size: .14rem;
+        font-weight: 500;
+        color: rgba(0, 0, 0, 1);
+        line-height: .2rem;
+        margin-bottom: .1rem;
+      }
+
+      &-arrow {
+        display: block;
+        transform: scale(2.5);
+        margin: 0 .1rem;
+        color: rgba(0, 0, 0, 0.2);
+      }
+    }
+  }
+
+  .service-detail-load {
+
+    &-list {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 .4rem;
+      display: flex;
+      align-items: center;
+    }
+
+    &-item {
+      border-right: 1px dashed rgba(0, 0, 0, 0.12);
+      padding: 0 .2rem;
+      width: 2.44rem;
+      font-size: .12rem;
+      line-height: .2rem;
+
+      &:last-child {
+        border-right: none;
+      }
+
+      &:first-child {
+        padding: 0;
+      }
+
+      &-key {
+        color: rgba(0, 0, 0, 0.65);
+        width: .56rem;
+        display: inline-block;
+      }
+
+      &-code {
+        font-weight: 500;
+        display: block;
+      }
+
+      &-status {
+        display: inline-block;
+      }
+    }
+
+    &-item-status-dot {
+      width: .08rem;
+      height: .08rem;
+      display: inline-block;
+      background-color: #00bfa5;
+      border-radius: 50%;
+      margin: .02rem;
+
+      &-failed {
+        background-color: #f44336;
+      }
+
+      &-operating {
+        background-color: #4d90fe;
+      }
+
+      &-deleted {
+        background-color: rgba(0, 0, 0, .4);
+      }
+    }
+  }
 }

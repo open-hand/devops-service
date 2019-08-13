@@ -29,11 +29,11 @@ const Content = observer(() => {
   return (
     <div className={`${prefixCls}-custom-detail`}>
       <Modals />
-      <div className="detail-content-title">
-        <Icon type="filter_b_and_w" className="detail-content-title-icon" />
+      <div className={`${prefixCls}-detail-content-title`}>
+        <Icon type="filter_b_and_w" className={`${prefixCls}-detail-content-title-icon`} />
         <span>{record.get('name')}</span>
       </div>
-      <div className="detail-content-section-title">
+      <div className={`${prefixCls}-detail-content-section-title`}>
         <span>Description</span>
       </div>
       <pre className="custom-detail-section-content">
