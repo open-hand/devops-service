@@ -86,5 +86,22 @@ public class OrgAppMarketController {
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
+    /**
+     *
+     * @param appServiceId
+     * @return
+     */
+    @Permission(type = ResourceType.SITE, permissionWithin = true )
+    @ApiOperation(value = "根据应用服务ID查询所对应的应用版本")
+    @GetMapping("/list_versions/{app_service_id}")
+    public ResponseEntity<List<AppServiceMarketVersionVO>> listVersionsByAppServiceId(
+            @ApiParam(value = "应用服务Id")
+            @PathVariable(value = "app_service_id") Long appServiceId){
+        return Optional.ofNullable(
+                orgAppMarketService.listServiceVersionsByAppServiceId(appServiceId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.app.services_version.listByAppServiceId"));
+    }
+
 }
 
