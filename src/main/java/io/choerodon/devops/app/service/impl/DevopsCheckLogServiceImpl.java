@@ -114,7 +114,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             LOGGER.info("sync config begin!!!");
 
             //避免2次修复数据
-            List<DevopsConfigDTO> configs = devopsConfigMapper.existAppSerciveConfig();
+            List<DevopsConfigDTO> configs = devopsConfigMapper.existAppServiceConfig();
             if (configs.isEmpty()) {
                 DevopsConfigDTO harborDefault = devopsConfigMapper.queryByNameWithNoProject("harbor_default");
                 DevopsConfigDTO chartDefault = devopsConfigMapper.queryByNameWithNoProject("chart_default");

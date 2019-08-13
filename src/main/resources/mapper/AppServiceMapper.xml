@@ -290,7 +290,7 @@
         where da.id = #{appServiceId}
     </update>
 
-    <update id="updateAppHarborConfig" parameterType="io.choerodon.devops.infra.dto.AppServiceDTO">
+    <update id="updateHarborConfig" parameterType="io.choerodon.devops.infra.dto.AppServiceDTO">
         UPDATE devops_app_service da
         <if test='harborPrivate != null'>
             <if test='harborPrivate == true'>
@@ -343,7 +343,7 @@
           AND da.app_id is null
     </select>
 
-    <select id="listShareApplications" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
+    <select id="listShareApplicationService" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
         SELECT
             da.id,
             da.`code`,

@@ -58,6 +58,6 @@
         ON re.resource_detail_id = detail.id
         WHERE re.name = #{name}
         AND re.kind = #{kind}
-        AND re.app_instance_id = #{instanceId}
+        AND re.instance_id = #{instanceId}
     </select>
 </mapper>

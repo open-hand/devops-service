@@ -17,7 +17,7 @@
         <include refid="sqlparam"/>
     </select>
 
-    <select id="listAllUserPermission" resultType="io.choerodon.devops.infra.dto.DevopsEnvUserPermissionDTO">
+    <select id="listByEnvId" resultType="io.choerodon.devops.infra.dto.DevopsEnvUserPermissionDTO">
         SELECT
         deup.login_name,
         deup.iam_user_id,

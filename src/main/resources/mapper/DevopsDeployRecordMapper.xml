@@ -20,7 +20,7 @@ FROM
 	devops_deploy_record ddr
 	LEFT JOIN devops_env_command dc ON ddr.deploy_id = dc.id
 WHERE
-	ddr.deploy_type = "manual" UNION
+	ddr.deploy_type = 'manual' UNION
 SELECT
 	ddr.id,
 	ddr.project_id,
@@ -36,7 +36,7 @@ FROM
 	devops_deploy_record ddr
 	LEFT JOIN devops_pipeline_record dpc ON ddr.deploy_id = dpc.id
 WHERE
-	ddr.deploy_type = "auto"
+	ddr.deploy_type = 'auto'
 	) t
 	where t.project_id=#{projectId}
 	<include refid="sqlparam"/>

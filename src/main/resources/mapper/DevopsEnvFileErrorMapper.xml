@@ -32,7 +32,7 @@
             AND d.file_path = #{filePath}
         </if>
         <if test="commits != null">
-            AND d.commit_sha in
+            AND d.commit in
             <foreach collection="commits" index="index" item="commit" open="(" separator="," close=")">
                 #{commit}
             </foreach>

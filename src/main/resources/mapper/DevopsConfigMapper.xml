@@ -61,7 +61,7 @@
         </if>
     </sql>
 
-    <select id="queryByIdAndType" resultType="io.choerodon.devops.infra.dto.DevopsConfigDTO">
+    <select id="listByIdAndType" resultType="io.choerodon.devops.infra.dto.DevopsConfigDTO">
             SELECT
                 dpc.id,
                 dpc.project_id,
@@ -108,7 +108,7 @@
     </delete>
 
 
-    <select id="existAppSerciveConfig" resultType="io.choerodon.devops.infra.dto.DevopsConfigDTO">
+    <select id="existAppServiceConfig" resultType="io.choerodon.devops.infra.dto.DevopsConfigDTO">
         SELECT
         * from devops_config
         where app_service_id is not null
