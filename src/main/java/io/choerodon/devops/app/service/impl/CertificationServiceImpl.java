@@ -9,6 +9,12 @@ import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.domain.Sort;
 import io.choerodon.core.exception.CommonException;
@@ -16,7 +22,7 @@ import io.choerodon.devops.api.validator.DevopsCertificationValidator;
 import io.choerodon.devops.api.vo.C7nCertificationVO;
 import io.choerodon.devops.api.vo.CertificationRespVO;
 import io.choerodon.devops.api.vo.CertificationVO;
-import io.choerodon.devops.api.vo.OrgCertificationVO;
+import io.choerodon.devops.api.vo.ProjectCertificationVO;
 import io.choerodon.devops.api.vo.kubernetes.C7nCertification;
 import io.choerodon.devops.api.vo.kubernetes.certification.*;
 import io.choerodon.devops.app.service.*;
@@ -32,11 +38,6 @@ import io.choerodon.devops.infra.mapper.DevopsCertificationMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
 import io.choerodon.devops.infra.mapper.DevopsIngressMapper;
 import io.choerodon.devops.infra.util.*;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 /**
  * Created by n!Ck
@@ -311,19 +312,19 @@ public class CertificationServiceImpl implements CertificationService {
     }
 
     @Override
-    public List<OrgCertificationVO> listOrgCertInProject(Long projectId) {
+    public List<ProjectCertificationVO> listProjectCertInProject(Long projectId) {
         ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(projectId);
-        List<OrgCertificationVO> orgCertificationVOS = new ArrayList<>();
+        List<ProjectCertificationVO> projectCertificationVOS = new ArrayList<>();
         baseListByProject(projectId, projectDTO.getOrganizationId()).forEach(certificationDTO -> {
-            OrgCertificationVO orgCertificationVO = new OrgCertificationVO();
-            orgCertificationVO.setName(certificationDTO.getName());
-            orgCertificationVO.setId(certificationDTO.getId());
+            ProjectCertificationVO projectCertificationVO = new ProjectCertificationVO();
+            projectCertificationVO.setName(certificationDTO.getName());
+            projectCertificationVO.setId(certificationDTO.getId());
             List<String> domains = gson.fromJson(certificationDTO.getDomains(), new TypeToken<List<String>>() {
             }.getType());
-            orgCertificationVO.setDomain(domains.get(0));
-            orgCertificationVOS.add(orgCertificationVO);
+            projectCertificationVO.setDomain(domains.get(0));
+            projectCertificationVOS.add(projectCertificationVO);
         });
-        return orgCertificationVOS;
+        return projectCertificationVOS;
     }
 
     @Override
@@ -342,8 +343,8 @@ public class CertificationServiceImpl implements CertificationService {
     }
 
     @Override
-    public PageInfo<CertificationVO> pageByOptions(Long projectId, Long envId, PageRequest pageRequest, String params) {
-        PageInfo<CertificationVO> certificationDTOPage = ConvertUtils.convertPage(basePage(projectId, null, envId, pageRequest, params), this::dtoToVo);
+    public PageInfo<CertificationVO> pageByOptions(Long projectId,Long envId, PageRequest pageRequest, String params) {
+        PageInfo<CertificationVO> certificationDTOPage = ConvertUtils.convertPage(basePage(projectId,  envId, pageRequest, params), this::dtoToVo);
         List<Long> connectedEnvList = clusterConnectionHandler.getConnectedEnvList();
         List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedEnvList();
         certificationDTOPage.getList().stream()
@@ -428,6 +429,7 @@ public class CertificationServiceImpl implements CertificationService {
     }
 
 
+    @Override
     public Long createCertCommand(String type, Long certId, Long userId) {
         DevopsEnvCommandDTO devopsEnvCommandDTO = new DevopsEnvCommandDTO();
         devopsEnvCommandDTO.setCommandType(type);
@@ -459,7 +461,7 @@ public class CertificationServiceImpl implements CertificationService {
     }
 
     @Override
-    public PageInfo<CertificationDTO> basePage(Long projectId, Long organizationId, Long envId, PageRequest pageRequest, String params) {
+    public PageInfo<CertificationDTO> basePage(Long projectId, Long envId, PageRequest pageRequest, String params) {
         Map<String, Object> maps = TypeUtil.castMapParams(params);
 
         Sort sort = pageRequest.getSort();
@@ -484,7 +486,7 @@ public class CertificationServiceImpl implements CertificationService {
 
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
         PageInfo<CertificationDTO> certificationDTOPage = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), sortResult)
-                .doSelectPageInfo(() -> devopsCertificationMapper.listCertificationByOptions(projectId, organizationId, envId, searchParamMap, TypeUtil.cast(maps.get(TypeUtil.PARAMS))));
+                .doSelectPageInfo(() -> devopsCertificationMapper.listCertificationByOptions(projectId, envId, searchParamMap, TypeUtil.cast(maps.get(TypeUtil.PARAMS))));
 
         // check if cert is overdue
         certificationDTOPage.getList().forEach(dto -> {
@@ -603,10 +605,10 @@ public class CertificationServiceImpl implements CertificationService {
     }
 
     @Override
-    public CertificationDTO baseQueryByOrgAndName(Long orgId, String name) {
+    public CertificationDTO baseQueryByProjectAndName(Long projectId, String name) {
         CertificationDTO certificationDTO = new CertificationDTO();
         certificationDTO.setName(name);
-        certificationDTO.setOrganizationId(orgId);
+        certificationDTO.setProjectId(projectId);
         return devopsCertificationMapper.selectOne(certificationDTO);
     }
 
