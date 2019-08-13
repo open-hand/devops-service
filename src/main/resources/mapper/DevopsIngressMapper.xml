@@ -31,36 +31,33 @@
     </select>
 
     <select id="queryById" resultType="io.choerodon.devops.infra.dto.DevopsIngressDTO">
-        SELECT
-        di.id id,
-        di.project_id projectId,
-        di.env_id envId,
-        di.`name` name,
-        di.`domain` domain,
-        di.status,
-        di.is_usable isUsable,
-        di.cert_id certId,
-        de.`name` envName,
-        cmd.`status` commandStatus,
-        cmd.command_type  commandType,
-        cmd.error  error,
-        de.`code` namespace,
-        di.last_update_date,
-        di.last_updated_by,
-        di.creation_date,
-        di.created_by,
-        (SELECT derd.message
-         FROM devops_env_resource der
-         LEFT JOIN devops_env_resource_detail derd ON der.resource_detail_id  = derd.id
-         WHERE der.env_id = di.env_id AND der.kind = 'Ingress' AND der.name = di.name
-        ) AS message
-        FROM
-        devops_ingress di
-        JOIN devops_ingress_path dip ON dip.ingress_id = di.id
-        JOIN devops_env de on de.id = di.env_id
-        LEFT JOIN devops_env_command cmd on di.command_id = cmd.id
-        LEFT JOIN devops_service ds on ds.id = dip.service_id
-        WHERE di.id = #{id}
+        SELECT di.id                         id,
+               di.project_id                 projectId,
+               di.env_id                     envId,
+               di.`name`                     name,
+               di.`domain`                   domain,
+               di.status,
+               di.is_usable                  isUsable,
+               di.cert_id                    certId,
+               de.`name`                     envName,
+               cmd.`status`                  commandStatus,
+               cmd.command_type              commandType,
+               cmd.error                     error,
+               de.`code`                     namespace,
+               di.last_update_date,
+               di.last_updated_by,
+               di.creation_date,
+               di.created_by,
+               (SELECT derd.message
+                FROM devops_env_resource der
+                         LEFT JOIN devops_env_resource_detail derd ON der.resource_detail_id = derd.id
+                WHERE der.env_id = di.env_id
+                  AND der.kind = 'Ingress'
+                  AND der.name = di.name) AS message
+        FROM devops_ingress di
+                 LEFT JOIN devops_env de on de.id = di.env_id
+                 LEFT JOIN devops_env_command cmd on di.command_id = cmd.id
+        WHERE di.id = #{id};
     </select>
 
     <select id="listIngressByOptions" resultType="io.choerodon.devops.infra.dto.DevopsIngressDTO">
