@@ -268,6 +268,11 @@ const deployment = {
   'c7ncd.deployment.key.value': '键与值',
   'c7ncd.deployment.load': '负载',
   'c7ncd.deployment.pods': 'Pods',
+  'c7ncd.deployment.secret.detail': '密文详情',
+  'c7ncd.deployment.custom-resource.detail': '自定义资源详情',
+  'c7ncd.deployment.config-map.detail': '配置映射详情',
+  'c7ncd.deployment.ingress.detail': '域名详情',
+  'c7ncd.deployment.gateway.address': '网管地址',
 };
 
 const appService = {
@@ -1608,6 +1613,7 @@ const zhCN = {
   'ctf.key.required': '请上传Key格式的文件',
   'ctf.crt.required': '请上传Cert格式的文件',
   'validDate.tip': '证书的可用期限',
+  'ctf.validDate': '证书有效期',
 
   // 报表
   'report.head': 'Devops报表',

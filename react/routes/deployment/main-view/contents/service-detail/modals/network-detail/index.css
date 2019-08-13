@@ -15,6 +15,13 @@
   list-style: none;
   font-size: .14rem;
 }
+.c7ncd-deployment-net .c7ncd-deployment-application-detail-modal .detail-item .instance {
+  display: flex;
+}
+.c7ncd-deployment-net .c7ncd-deployment-application-detail-modal .detail-item .instance p {
+  line-height: .14rem;
+  margin-bottom: .02rem;
+}
 .c7ncd-deployment-net .c7ncd-deployment-application-detail-modal .detail-item-text {
   color: rgba(0, 0, 0, 0.65);
   width: .88rem;
