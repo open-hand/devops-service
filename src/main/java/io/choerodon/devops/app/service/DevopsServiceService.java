@@ -143,8 +143,6 @@ public interface DevopsServiceService {
 
     List<DevopsServiceDTO> baseListByEnvId(Long envId);
 
-    DevopsServiceQueryDTO baseQueryById(Long id);
-
     DevopsServiceDTO baseCreate(DevopsServiceDTO devopsServiceDTO);
 
     void baseDelete(Long id);
