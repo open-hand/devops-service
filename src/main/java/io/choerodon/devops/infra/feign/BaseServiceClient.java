@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.feign;
 
+import io.choerodon.devops.infra.dto.iam.ApplicationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.fallback.BaseServiceClientFallback;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -13,7 +14,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 @FeignClient(value = "base-service", fallback = BaseServiceClientFallback.class)
 public interface BaseServiceClient {
-    @GetMapping(value = "/v1/organizations/{organization_id}/applications/{id}/project")
-    ResponseEntity<ProjectDTO> queryProjectByApp(@PathVariable("organization_id") Long organizationId,
-                                                 @PathVariable("id") Long applicationId);
+    @GetMapping(value = "/v1/applications/{id}/project")
+    ResponseEntity<ProjectDTO> queryProjectByApp(@PathVariable("id") Long id);
+
+    @GetMapping(value = "/v1/applications/{id}")
+    ResponseEntity<ApplicationDTO> getAppById(@PathVariable(value = "id")Long id);
 }
