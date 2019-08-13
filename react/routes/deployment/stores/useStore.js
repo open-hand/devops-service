@@ -5,7 +5,7 @@ const NO_HEADER = [];
 export default function useStore() {
   return useLocalStore(() => ({
     selectedMenu: {},
-    viewType: 'instance',
+    viewType: 'resource',
     noHeader: true,
     setSelectedMenu(data) {
       this.selectedMenu = data;
