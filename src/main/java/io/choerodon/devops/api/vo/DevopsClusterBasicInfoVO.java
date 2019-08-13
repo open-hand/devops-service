@@ -2,20 +2,22 @@ package io.choerodon.devops.api.vo;
 
 import io.swagger.annotations.ApiModelProperty;
 
-public class DevopsClusterRepVO {
+import java.util.List;
+
+public class DevopsClusterBasicInfoVO {
 
     private Long id;
+    @ApiModelProperty(value = "集群名称")
     private String name;
-    private Boolean skipCheckProjectPermission;
     private String code;
+    @ApiModelProperty(value = "是否已经连接")
     private Boolean connect;
     @ApiModelProperty(value = "是否需要升级")
     private Boolean upgrade;
+    @ApiModelProperty(value = "升级信息")
     private String upgradeMessage;
-    private String description;
-    private String token;
-    private String choerodonId;
-    private Long createBy;
+    @ApiModelProperty(value = "节点列表")
+    private List<String> nodes;
 
     public Long getId() {
         return id;
@@ -33,14 +35,6 @@ public class DevopsClusterRepVO {
         this.name = name;
     }
 
-    public Boolean getSkipCheckProjectPermission() {
-        return skipCheckProjectPermission;
-    }
-
-    public void setSkipCheckProjectPermission(Boolean skipCheckProjectPermission) {
-        this.skipCheckProjectPermission = skipCheckProjectPermission;
-    }
-
     public String getCode() {
         return code;
     }
@@ -48,15 +42,6 @@ public class DevopsClusterRepVO {
     public void setCode(String code) {
         this.code = code;
     }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
 
     public Boolean getConnect() {
         return connect;
@@ -82,28 +67,11 @@ public class DevopsClusterRepVO {
         this.upgradeMessage = upgradeMessage;
     }
 
-
-    public Long getCreateBy() {
-        return createBy;
+    public List<String> getNodes() {
+        return nodes;
     }
 
-    public void setCreateBy(Long createBy) {
-        this.createBy = createBy;
-    }
-
-    public String getToken() {
-        return token;
-    }
-
-    public void setToken(String token) {
-        this.token = token;
-    }
-
-    public String getChoerodonId() {
-        return choerodonId;
-    }
-
-    public void setChoerodonId(String choerodonId) {
-        this.choerodonId = choerodonId;
+    public void setNodes(List<String> nodes) {
+        this.nodes = nodes;
     }
 }

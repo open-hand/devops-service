@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -206,11 +207,38 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
         List<Long> connectedEnvList = clusterConnectionHandler.getConnectedEnvList();
         List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedEnvList();
-        devopsClusterRepVOPageInfo.getList().forEach(devopsClusterRepVO ->
-                setClusterStatus(connectedEnvList, updatedEnvList, devopsClusterRepVO));
+        devopsClusterRepVOPageInfo.getList().forEach(devopsClusterRepVO -> {
+            devopsClusterRepVO.setConnect(isConnect(connectedEnvList, updatedEnvList, devopsClusterRepVO.getId()));
+            devopsClusterRepVO.setUpgrade(isUpdated(connectedEnvList, updatedEnvList, devopsClusterRepVO.getId()));
+            if (devopsClusterRepVO.getUpgrade()) {
+                devopsClusterRepVO.setUpgradeMessage("Version is too low, please upgrade!");
+            }
+        });
 
         devopsClusterRepDTOPage.setList(fromClusterE2ClusterWithNodesDTO(devopsClusterRepVOPageInfo.getList(), projectId));
         return devopsClusterRepDTOPage;
+    }
+
+    @Override
+    public List<DevopsClusterBasicInfoVO> queryClustersAndNodes(Long projectId) {
+        DevopsClusterDTO devopsClusterDTO = new DevopsClusterDTO();
+        devopsClusterDTO.setProjectId(projectId);
+        List<DevopsClusterDTO> devopsClusterDTOList = devopsClusterMapper.select(devopsClusterDTO);
+        List<DevopsClusterBasicInfoVO> devopsClusterBasicInfoVOList = ConvertUtils.convertList(devopsClusterDTOList, DevopsClusterBasicInfoVO.class);
+        List<Long> connectedEnvList = clusterConnectionHandler.getConnectedEnvList();
+        List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedEnvList();
+
+        devopsClusterBasicInfoVOList.forEach(devopsClusterBasicInfoVO -> {
+            devopsClusterBasicInfoVO.setConnect(isConnect(connectedEnvList, updatedEnvList, devopsClusterBasicInfoVO.getId()));
+            devopsClusterBasicInfoVO.setUpgrade(isUpdated(connectedEnvList, updatedEnvList, devopsClusterBasicInfoVO.getId()));
+            if (devopsClusterBasicInfoVO.getUpgrade()) {
+                devopsClusterBasicInfoVO.setUpgradeMessage("Version is too low, please upgrade!");
+            }
+        });
+        devopsClusterBasicInfoVOList.forEach(devopsClusterBasicInfoVO ->
+                devopsClusterBasicInfoVO.setNodes(clusterNodeInfoService.queryNodeName(projectId, devopsClusterBasicInfoVO.getId())));
+
+        return devopsClusterBasicInfoVOList;
     }
 
     @Override
@@ -222,20 +250,26 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
                 }).collect(Collectors.toList());
     }
 
-    private void setClusterStatus(List<Long> connectedEnvList, List<Long> updatedEnvList, DevopsClusterRepVO devopsClusterRepVO) {
-        if (connectedEnvList.contains(devopsClusterRepVO.getId())) {
-            if (updatedEnvList.contains(devopsClusterRepVO.getId())) {
-                devopsClusterRepVO.setUpgrade(false);
-                devopsClusterRepVO.setConnect(true);
+    public boolean isConnect(List<Long> connectedEnvList, List<Long> updatedEnvList, Long id) {
+        if (connectedEnvList.contains(id)) {
+            if (updatedEnvList.contains(id)) {
+                return true;
             } else {
-                devopsClusterRepVO.setUpgrade(true);
-                devopsClusterRepVO.setConnect(false);
-                devopsClusterRepVO.setUpgradeMessage("Version is too low, please upgrade!");
+                return false;
             }
-        } else {
-            devopsClusterRepVO.setUpgrade(false);
-            devopsClusterRepVO.setConnect(false);
         }
+        return false;
+    }
+
+    public boolean isUpdated(List<Long> connectedEnvList, List<Long> updatedEnvList, Long id) {
+        if (connectedEnvList.contains(id)) {
+            if (updatedEnvList.contains(id)) {
+                return false;
+            } else {
+                return true;
+            }
+        }
+        return false;
     }
 
 
@@ -418,7 +452,12 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         DevopsClusterRepVO devopsClusterRepVO = ConvertUtils.convertObject(baseQuery(clusterId), DevopsClusterRepVO.class);
         List<Long> connectedEnvList = clusterConnectionHandler.getConnectedEnvList();
         List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedEnvList();
-        setClusterStatus(connectedEnvList, updatedEnvList, devopsClusterRepVO);
+
+        devopsClusterRepVO.setConnect(isConnect(connectedEnvList, updatedEnvList, devopsClusterRepVO.getId()));
+        devopsClusterRepVO.setUpgrade(isUpdated(connectedEnvList, updatedEnvList, devopsClusterRepVO.getId()));
+        if (devopsClusterRepVO.getUpgrade()) {
+            devopsClusterRepVO.setUpgradeMessage("Version is too low, please upgrade!");
+        }
         return devopsClusterRepVO;
     }
 
