@@ -36,7 +36,7 @@ const ServiceDetail = observer(() => {
       <Modals />
       <div className="detail-content-title">
         <Icon type="router" className="detail-content-title-icon" />
-        <span>{record.get('name')}</span>
+        <span>{record && record.get('name')}</span>
       </div>
       <ul className={`${prefixCls}-service-detail-content`}>
         <li>

@@ -36,10 +36,6 @@ const EnvModals = observer(() => {
   } = useModalStore();
   const { menuId } = deploymentStore.getSelectedMenu;
 
-  const openModal = useCallback(() => {
-    // console.log(modal);
-  }, []);
-
   useEffect(() => {
     deploymentStore.setNoHeader(false);
   }, [deploymentStore]);
@@ -48,7 +44,6 @@ const EnvModals = observer(() => {
     const detailModal = Modal.open({
       key: modalKey1,
       title: formatMessage({ id: `${intlPrefix}.net.detail` }),
-      // children: <Detail record={baseInfoDs.current} intlPrefix={intlPrefix} prefixCls={prefixCls} formatMessage={formatMessage} />,
       children: <Detail record={baseInfoDs.current} intlPrefix={intlPrefix} prefixCls={prefixCls} formatMessage={formatMessage} />,
       drawer: true,
       style: modalStyle,
@@ -78,7 +73,7 @@ const EnvModals = observer(() => {
     handler: refresh,
     display: true,
     group: 1,
-  }]), [formatMessage, intlPrefix, openModal, permissions, refresh]);
+  }]), [formatMessage, intlPrefix, permissions, refresh]);
 
   return <HeaderButtons items={buttons} />;
 });

@@ -14,9 +14,9 @@ export default ({ projectId, id }) => ({
     { name: 'name', type: 'string' },
     { name: 'DNSNames', type: 'object' },
     { name: 'ingresses', type: 'object' },
-    { name: 'creationDate', type: 'dateTime' },
+    { name: 'creationDate', type: 'string' },
     { name: 'creatorName', type: 'string' },
-    { name: 'lastUpdateDate', type: 'dateTime' },
+    { name: 'lastUpdateDate', type: 'string' },
     { name: 'commonName', type: 'string' },
   ],
 });
