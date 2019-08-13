@@ -50,9 +50,6 @@ public class HarborServiceImpl implements HarborService {
     public void createHarbor(HarborPayload harborPayload) {
         //创建harbor仓库
         try {
-            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(harborPayload.getProjectId());
-            OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-
             //获取当前项目的harbor设置,如果有自定义的取自定义，没自定义取组织层的harbor配置
             DevopsConfigVO devopsConfigVO = devopsConfigService.dtoToVo(devopsConfigService.queryRealConfig(harborPayload.getProjectId(), ResourceLevel.PROJECT.value(), HARBOR));
             harborConfigurationProperties.setUsername(devopsConfigVO.getConfig().getUserName());
