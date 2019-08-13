@@ -13,7 +13,7 @@
     </select>
 
 
-    <select id="listByProjectIdAndBranch" resultType="io.choerodon.devops.infra.dto.DevopsMergeRequestDTO">
+    <select id="listBySourceBranch" resultType="io.choerodon.devops.infra.dto.DevopsMergeRequestDTO">
         SELECT
         *
         FROM

@@ -45,12 +45,6 @@ public interface AppServiceVersionMapper extends Mapper<AppServiceVersionDTO> {
     List<AppServiceVersionDTO> listAppDeployedVersion(@Param("projectId") Long projectId,
                                                       @Param("appServiceId") Long appServiceId);
 
-    List<AppServiceVersionDTO> listApplicationVersionInApp(
-            @Param("projectId") Long projectId,
-            @Param("appServiceId") Long appServiceId,
-            @Param("searchParam") Map<String, Object> searchParam,
-            @Param("params") List<String> params);
-
     List<AppServiceVersionDTO> listByPublished(@Param("applicationId") Long applicationId);
 
     List<Long> listByAppIdAndVersionIds(@Param("applicationId") Long applicationId);
@@ -67,14 +61,14 @@ public interface AppServiceVersionMapper extends Mapper<AppServiceVersionDTO> {
 
     String queryByPipelineId(@Param("pipelineId") Long pipelineId, @Param("branch") String branch, @Param("appServiceId") Long appServiceId);
 
-    String queryValueByAppId(@Param("appServiceId") Long appServiceId);
+    String queryValueByAppServiceId(@Param("appServiceId") Long appServiceId);
 
     void updateRepository(@Param("helmUrl") String url);
 
     AppServiceVersionDTO queryByCommitSha(@Param("appServiceId") Long appServiceId, @Param("ref") String ref, @Param("commit") String commit);
 
 
-    void updateObJectVersionNumber(@Param("versionId") Long versionId);
+    void updateObjectVersionNumber(@Param("versionId") Long versionId);
 
     void updatePublishTime();
 

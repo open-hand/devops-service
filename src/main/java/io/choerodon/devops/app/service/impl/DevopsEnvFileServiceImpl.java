@@ -105,12 +105,6 @@ public class DevopsEnvFileServiceImpl implements DevopsEnvFileService {
     }
 
     @Override
-    public DevopsEnvFileDTO baseQueryByEnvAndPathAndCommits(Long envId, String path, List<String> commits) {
-        DevopsEnvFileDTO devopsEnvFileDTO = new DevopsEnvFileDTO();
-        return devopsEnvFileMapper.queryByEnvAndPathAndCommits(envId, path, commits);
-    }
-
-    @Override
     public void baseUpdate(DevopsEnvFileDTO devopsEnvFileDTO) {
         devopsEnvFileDTO = devopsEnvFileMapper.selectByPrimaryKey(devopsEnvFileDTO.getId());
         devopsEnvFileDTO.setDevopsCommit(devopsEnvFileDTO.getDevopsCommit());

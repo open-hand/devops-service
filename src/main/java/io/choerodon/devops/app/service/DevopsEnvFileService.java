@@ -38,8 +38,6 @@ public interface DevopsEnvFileService {
 
     DevopsEnvFileDTO baseQueryByEnvAndPathAndCommit(Long envId, String path, String commit);
 
-    DevopsEnvFileDTO baseQueryByEnvAndPathAndCommits(Long envId, String path, List<String> commits);
-
     DevopsEnvFileDTO baseQueryByEnvAndPath(Long envId, String path);
 
     void baseUpdate(DevopsEnvFileDTO devopsEnvFileDTO);

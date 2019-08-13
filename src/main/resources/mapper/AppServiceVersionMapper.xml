@@ -74,7 +74,7 @@
         </if>
     </select>
 
-    <select id="listAppLatestVersion" resultType="io.choerodon.devops.infra.dto.AppServiceLatestVersionDTO">
+    <select id="listAppNewestVersion" resultType="io.choerodon.devops.infra.dto.AppServiceLatestVersionDTO">
         SELECT
         dap.version,
         dap.id versionId,
@@ -146,27 +146,6 @@
         AND dav.id = #{versionId}
     </select>
 
-    <select id="selectByAppId" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
-        SELECT
-        dav.id,
-        dav.version,
-        dav.creation_date
-        FROM
-        devops_app_service_version dav
-        WHERE
-        dav.app_service_id = #{appServiceId}
-        <if test="isPublish != null">
-            <if test="isPublish == true">
-                AND dav.is_publish = TRUE
-            </if>
-            <if test="isPublish != true">
-                AND ( is_publish != TRUE OR is_publish IS NULL )
-            </if>
-        </if>
-        ORDER BY
-        dav.id DESC
-    </select>
-
     <select id="selectByAppIdAndParamWithPage" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
         SELECT
         dav.id,
@@ -193,7 +172,7 @@
         dav.id DESC
     </select>
 
-    <select id="selectDeployedByAppId" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
+    <select id="listAppDeployedVersion" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
         SELECT DISTINCT
         dav.id,
         dav.version
@@ -209,17 +188,17 @@
         dav.id DESC
     </select>
 
-    <select id="getAllPublishedVersion" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
+    <select id="listByPublished" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
         select
         dav.id,
         dav.version,
         dav.creation_date
         from devops_app_service_version dav
-        where dav.app_service_id=#{applicationId}
+        where dav.app_service_id = #{applicationId}
         and dav.is_publish=1
     </select>
 
-    <select id="selectVersionsByAppId" resultType="java.lang.Long">
+    <select id="listByAppIdAndVersionIds" resultType="java.lang.Long">
         SELECT
         dav.id
         FROM
@@ -230,7 +209,7 @@
         dav.app_service_id = #{applicationId}
     </select>
 
-    <select id="selectUpgradeVersions" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
+    <select id="listUpgradeVersion" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
         SELECT id, app_service_id, version,creation_date
         FROM
         devops_app_service_version
@@ -246,7 +225,7 @@
         AND id > #{appServiceServiceId}
         ORDER BY id DESC
     </select>
-    <select id="checkProIdAndVerId" resultType="java.lang.Integer">
+    <select id="checkByProjectAndVersionId" resultType="java.lang.Integer">
         SELECT
         COUNT(0)
         FROM
@@ -258,7 +237,7 @@
     </select>
 
 
-    <select id="getLatestVersion" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
+    <select id="queryNewestVersion" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
         select * from devops_app_service_version where app_service_id = #{appServiceId} order by id desc limit 1
     </select>
 
@@ -301,7 +280,7 @@
         and dav.version LIKE CONCAT('%', #{branch, jdbcType=VARCHAR})
     </select>
 
-    <select id="queryValueById" resultType="java.lang.String">
+    <select id="queryValueByAppServiceId" resultType="java.lang.String">
         SELECT
         davv.value
         FROM
@@ -318,7 +297,7 @@
      update devops_app_service_version set repository = CONCAT(#{helmUrl},repository);
     </update>
 
-    <update id="updateObJectVersionNumber">
+    <update id="updateObjectVersionNumber">
      update devops_app_service_version set object_version_number = 1 where id = #{versionId};
     </update>
 
