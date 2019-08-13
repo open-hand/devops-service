@@ -105,6 +105,8 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                 packageChart(appServiceMarketVO, appFilePath, marketUploadVO.getHarborUrl());
             });
         }
+        //4.压缩文件
+//        toZip(String.format("%s-%s", appFilePath, "source-code.zip"), appFilePath);
     }
 
 
@@ -123,8 +125,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         //1.创建目录 应用服务仓库
         String appServiceFileName = String.format("%s-%s", APPLICATION_SERVICE, appServiceDTO.getCode());
         FileUtil.createDirectory(appFilePath, appServiceFileName);
-        FileUtil.createDirectory(String.format("%s/%s", appFilePath, appServiceFileName), "repository");
-        String appServiceRepositoryPath = String.format("%s/%s/%s", appFilePath, appServiceFileName, "repository");
+        String appServiceRepositoryPath = String.format("%s/%s", appFilePath, appServiceFileName);
 
         String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(iamUserId);
@@ -139,10 +140,8 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             String appServiceVersionPath = String.format("%s/%s", appServiceRepositoryPath, appServiceVersionDTO.getVersion());
 
             //3.clone源码,checkout到版本所在commit，并删除.git文件
-            gitUtil.cloneAndCheckout(appServiceVersionPath, appServiceDTO.getRepoUrl(), null, appServiceVersionDTO.getCommit());
+            gitUtil.cloneAndCheckout(appServiceVersionPath, appServiceDTO.getRepoUrl(), newToken, appServiceVersionDTO.getCommit());
         });
-        //4.压缩文件
-        toZip(appFilePath, appServiceRepositoryPath);
     }
 
     private void packageChart(AppServiceMarketVO appServiceMarketVO, String appFilePath, String harborUrl) {
@@ -153,20 +152,23 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         //1.创建目录 应用服务仓库
         String appServiceFileName = String.format("%s-%s", APPLICATION_SERVICE, appServiceDTO.getCode());
         FileUtil.createDirectory(appFilePath, appServiceFileName);
-        FileUtil.createDirectory(String.format("%s/%s", appFilePath, appServiceFileName), "chart");
-        String appServiceChartPath = String.format("%s/%s/%s", appFilePath, appServiceFileName, "chart");
+        String appServiceChartPath = String.format("%s%s%s", appFilePath, File.separator, appServiceFileName);
         appServiceMarketVO.getAppServiceMarketVersionVOS().forEach(appServiceMarketVersionVO -> {
             //2.下载chart
             AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQuery(appServiceMarketVersionVO.getId());
             chartUtil.downloadChart(appServiceVersionDTO, organizationDTO, projectDTO, appServiceDTO, appServiceChartPath);
-            analysisChart(appServiceChartPath, appServiceVersionDTO, harborUrl);
+            analysisChart(appServiceChartPath, appServiceDTO.getCode(), appServiceVersionDTO, harborUrl);
         });
 
     }
 
-    private void analysisChart(String zipPath, AppServiceVersionDTO appServiceVersionDTO, String harborUrl) {
-        String unZipPath = String.format("%s/%s", zipPath, "unzip");
-        FileUtil.unTarGZ(unZipPath, unZipPath);
+    private void analysisChart(String zipPath, String appServiceCode, AppServiceVersionDTO appServiceVersionDTO, String harborUrl) {
+        FileUtil.unTarGZ(String.format("%s%s%s-%s.tgz",
+                zipPath,
+                File.separator,
+                appServiceCode,
+                appServiceVersionDTO.getVersion()), zipPath);
+        String unZipPath = String.format("%s%s%s", zipPath, File.separator, appServiceCode);
         File zipDirectory = new File(unZipPath);
         //解析 解压过后的文件
         if (zipDirectory.exists() && zipDirectory.isDirectory()) {
@@ -176,26 +178,20 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                     .filter(k -> k.getName().equals("values.yaml"))
                     .collect(Collectors.toCollection(ArrayList::new));
             if (!appMarkets.isEmpty() && appMarkets.size() == 1) {
-                File valuesFile = appMarkets.get(0);
                 Map<String, String> params = new HashMap<>();
-                params.put(appServiceVersionDTO.getRepository(), String.format("%s/%s", harborUrl, appServiceVersionDTO.getVersion()));
-                FileUtil.fileToInputStream(valuesFile, params);
+                String image=appServiceVersionDTO.getImage().replace(":"+appServiceVersionDTO.getVersion(),"");
+                params.put(image, String.format("%s/%s", harborUrl, appServiceVersionDTO.getVersion()));
+                FileUtil.fileToInputStream(appMarkets.get(0), params);
+
             }
         } else {
             FileUtil.deleteDirectory(zipDirectory);
             throw new CommonException("error.chart.empty");
         }
         // 打包
-        String newZipPath = String.format("new-charts/%s", appServiceVersionDTO.getVersion());
-        try {
-            FileOutputStream fileOutputStream = new FileOutputStream(new File(newZipPath));
-            FileUtil.toZip(unZipPath, fileOutputStream, true);
-        } catch (FileNotFoundException e) {
-            throw new CommonException("error.upload.chart");
-        } finally {
-            FileUtil.deleteDirectory(new File(zipPath));
-            FileUtil.deleteDirectory(new File(unZipPath));
-        }
+        String chartFilePath = String.format("%s%s%s-%s.tgz", zipPath, File.separator, appServiceCode, appServiceVersionDTO.getVersion());
+        FileUtil.deleteFile(new File(chartFilePath));
+        toZip(chartFilePath, unZipPath);
     }
 
     private void toZip(String outputPath, String filePath) {

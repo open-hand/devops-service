@@ -76,6 +76,7 @@ public class FileUtil {
                 }
                 stringBuilder.append(content);
             }
+            inputStream.close();
             return stringBuilder.toString();
         } catch (IOException e) {
             throw new CommonException("error.param.render", e);
