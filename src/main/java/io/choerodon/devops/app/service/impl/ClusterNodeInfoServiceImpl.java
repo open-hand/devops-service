@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service.impl;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,7 +29,7 @@ import org.springframework.util.StringUtils;
  */
 @Service
 public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
-    private static final String REDIS_CLUSTER_KEY_TEMPLATE = "node_info_org_id_%s_cluster_id_%s";
+    private static final String REDIS_CLUSTER_KEY_TEMPLATE = "node_info_project_id_%s_cluster_id_%s";
     private static final String CPU_MEASURE_FORMAT = "%.3f";
     private static final String MEMORY_MEASURE_FORMAT = "%.3f%s";
     private static final String[] MEMORY_MEASURE = {"Ki", "Ki", "Mi", "Gi"};
@@ -49,15 +50,15 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
     public String getRedisClusterKey(Long clusterId) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
         if (devopsClusterDTO != null) {
-            return getRedisClusterKey(clusterId, devopsClusterDTO.getOrganizationId());
+            return getRedisClusterKey(clusterId, devopsClusterDTO.getProjectId());
         } else {
             throw new CommonException("error.cluster.get");
         }
     }
 
     @Override
-    public String getRedisClusterKey(Long clusterId, Long organizationId) {
-        return String.format(REDIS_CLUSTER_KEY_TEMPLATE, organizationId, clusterId);
+    public String getRedisClusterKey(Long clusterId, Long projectId) {
+        return String.format(REDIS_CLUSTER_KEY_TEMPLATE, projectId, clusterId);
     }
 
     @Override
@@ -173,10 +174,10 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
     }
 
     @Override
-    public PageInfo<ClusterNodeInfoVO> pageClusterNodeInfo(Long clusterId, Long organizationId, PageRequest pageRequest) {
+    public PageInfo<ClusterNodeInfoVO> pageClusterNodeInfo(Long clusterId, Long projectId, PageRequest pageRequest) {
         long start = (long) (pageRequest.getPage() - 1) * (long) pageRequest.getSize();
         long stop = start + (long) pageRequest.getSize() - 1;
-        String redisKey = getRedisClusterKey(clusterId, organizationId);
+        String redisKey = getRedisClusterKey(clusterId, projectId);
 
         long total = stringRedisTemplate.opsForList().size(redisKey);
         List<ClusterNodeInfoVO> nodes = stringRedisTemplate
@@ -199,12 +200,12 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
     }
 
     @Override
-    public ClusterNodeInfoVO queryNodeInfo(Long organizationId, Long clusterId, String nodeName) {
+    public ClusterNodeInfoVO queryNodeInfo(Long projectId, Long clusterId, String nodeName) {
         if (StringUtils.isEmpty(nodeName)) {
             return null;
         }
 
-        String redisKey = getRedisClusterKey(clusterId, organizationId);
+        String redisKey = getRedisClusterKey(clusterId, projectId);
         long total = stringRedisTemplate.opsForList().size(redisKey);
 
         // get all nodes according to the cluster id and filter the node with the certain name
@@ -216,5 +217,20 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
                 .filter(node -> nodeName.equals(node.getNodeName()))
                 .findFirst()
                 .orElse(null);
+    }
+
+    public List<String> queryNodeName(Long projectId, Long clusterId){
+        String rediskey = getRedisClusterKey(clusterId, projectId);
+
+        long total = stringRedisTemplate.opsForList().size(rediskey);
+
+        return stringRedisTemplate
+                .opsForList()
+                .range(rediskey, 0, total-1)
+                .stream()
+                .map(node -> JSONObject.parseObject(node, ClusterNodeInfoVO.class))
+                .map(node -> node.getNodeName())
+                .collect(Collectors.toList());
+
     }
 }

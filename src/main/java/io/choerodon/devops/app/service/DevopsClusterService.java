@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
+import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.*;
@@ -13,16 +14,16 @@ public interface DevopsClusterService {
     /**
      * 创建集群
      *
-     * @param organizationId 组织id
+     * @param projectId          项目id
      * @param devopsClusterReqVO 集群信息
      * @return
      */
-    String createCluster(Long organizationId, DevopsClusterReqVO devopsClusterReqVO);
+    String createCluster(Long projectId, DevopsClusterReqVO devopsClusterReqVO);
 
     /**
      * 更新集群
      *
-     * @param clusterId 集群id
+     * @param clusterId          集群id
      * @param devopsClusterReqVO 集群信息
      */
     void updateCluster(Long clusterId, DevopsClusterReqVO devopsClusterReqVO);
@@ -30,51 +31,61 @@ public interface DevopsClusterService {
     /**
      * 校验集群名唯一性
      *
-     * @param organizationId 组织id
-     * @param name 集群名称
+     * @param projectId 项目id
+     * @param name      集群名称
      */
-    void checkName(Long organizationId, String name);
+    void checkName(Long projectId, String name);
 
     /**
      * 分页查询项目列表
      *
-     * @param organizationId 组织id
-     * @param clusterId 集群id
+     * @param projectId   项目id
+     * @param clusterId   集群id
      * @param pageRequest 分页参数
-     * @param params 查询参数
+     * @param params      查询参数
      * @return 项目信息
      */
-    PageInfo<ProjectReqVO> pageProjects(Long organizationId, Long clusterId, PageRequest pageRequest, String[] params);
+    PageInfo<ProjectReqVO> pageProjects(Long projectId, Long clusterId, PageRequest pageRequest, String[] params);
 
     String queryShell(Long clusterId);
 
     /**
      * 校验集群编码唯一性
      *
-     * @param organizationId 组织id
-     * @param code 集群code
+     * @param projectId 项目id
+     * @param code      集群code
      */
-    void checkCode(Long organizationId, String code);
+    void checkCode(Long projectId, String code);
+
 
     /**
      * 集群列表查询
      *
-     * @param organizationId 组织id
-     * @param doPage 是否分页
+     * @param projectId   项目id
+     * @param doPage      是否分页
      * @param pageRequest 分页参数
-     * @param params 查询参数
+     * @param params      查询参数
      * @return 集群列表
      */
-    PageInfo<ClusterWithNodesVO> pageClusters(Long organizationId, Boolean doPage, PageRequest pageRequest, String params);
+    PageInfo<ClusterWithNodesVO> pageClusters(Long projectId, Boolean doPage, PageRequest pageRequest, String params);
+
+
+    /**
+     * 查询项目下的集群以及所有节点信息
+     *
+     * @param projectId 项目id
+     * @return 集群列表
+     */
+    List<DevopsClusterBasicInfoVO> queryClustersAndNodes(Long projectId);
 
     /**
      * 查询集群下已有权限的项目列表
      *
-     * @param organizationId 组织id
+     * @param projectId 项目id
      * @param clusterId 集群id
      * @return 项目
      */
-    List<ProjectReqVO> listClusterProjects(Long organizationId, Long clusterId);
+    List<ProjectReqVO> listClusterProjects(Long projectId, Long clusterId);
 
     /**
      * 删除集群
@@ -100,8 +111,9 @@ public interface DevopsClusterService {
 
     /**
      * 分页查询节点下的Pod
-     * @param clusterId 集群id
-     * @param nodeName 节点名称
+     *
+     * @param clusterId   集群id
+     * @param nodeName    节点名称
      * @param pageRequest 分页参数
      * @param searchParam 查询参数
      * @return pods
@@ -110,13 +122,13 @@ public interface DevopsClusterService {
 
 
     /**
-     *  根据组织Id和集群编码查询集群信息
+     * 根据组织Id和集群编码查询集群信息
      *
-     * @param organizationId organization id
+     * @param projectId project id
      * @param code      the cluster code
      * @return the node information
      */
-    DevopsClusterRepVO queryByCode(Long organizationId, String code);
+    DevopsClusterRepVO queryByCode(Long projectId, String code);
 
 
     DevopsClusterDTO baseCreateCluster(DevopsClusterDTO devopsClusterDTO);
@@ -141,8 +153,9 @@ public interface DevopsClusterService {
 
     /**
      * 分页查询节点下的Pod
-     * @param clusterId 集群id
-     * @param nodeName 节点名称
+     *
+     * @param clusterId   集群id
+     * @param nodeName    节点名称
      * @param pageRequest 分页参数
      * @param searchParam 查询参数
      * @return pods

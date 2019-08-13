@@ -9,9 +9,9 @@ spring:
     host: localhost
   http:
     encoding:
-     charset: UTF-8
-     force: true
-     enabled: true
+      charset: UTF-8
+      force: true
+      enabled: true
 services:
   harbor:
     baseUrl: "harbor.example.com"

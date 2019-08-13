@@ -207,6 +207,22 @@ public class DevopsClusterController {
     }
 
     /**
+     * 查询项目下的集群以及所有节点名称
+     *
+     * @param projectId 项目ID
+     */
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "项目下所有集群以及所有的节点名称")
+    @GetMapping("/tree_menu")
+    public ResponseEntity<List<DevopsClusterBasicInfoVO>> queryClustersAndNodes(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId) {
+        return Optional.ofNullable(devopsClusterService.queryClustersAndNodes(projectId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException(ERROR_CLUSTER_QUERY));
+    }
+
+    /**
      * 集群列表查询
      *
      * @param projectId 项目ID
