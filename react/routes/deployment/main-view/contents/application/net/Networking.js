@@ -60,11 +60,11 @@ const Networking = observer(() => {
   }
 
   function renderTargetType({ record }) {
-    const { appInstance, labels } = record.get('target') || {};
-    const appId = record.get('appId');
+    const { instances, labels } = record.get('target') || {};
+    const appId = record.get('appServiceId');
 
     let type = 'EndPoints';
-    if (appId && appInstance && appInstance.length) {
+    if (appId && instances && instances.length) {
       type = formatMessage({ id: 'instance' });
     } else if (labels) {
       type = formatMessage({ id: 'label' });
@@ -74,12 +74,12 @@ const Networking = observer(() => {
   }
 
   function renderTarget({ record }) {
-    const { appInstance, labels, endPoints } = record.get('target') || {};
+    const { instances, labels, endPoints } = record.get('target') || {};
     const node = [];
     const port = [];
     const len = endPoints ? 2 : 1;
-    if (appInstance && appInstance.length) {
-      _.forEach(appInstance, ({ id: itemId, code, instanceStatus }) => {
+    if (instances && instances.length) {
+      _.forEach(instances, ({ id: itemId, code, instanceStatus }) => {
         const targetClass = classnames({
           'net-target-item': true,
           'net-target-item-failed': instanceStatus !== 'operating' && instanceStatus !== 'running',

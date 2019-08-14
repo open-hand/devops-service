@@ -4,8 +4,6 @@ import { handlePromptError } from '../../../../../../utils';
 
 export default function useStore() {
   return useLocalStore(() => ({
-    certData: [],
-
     cert: [],
     setCert(data) {
       this.cert = data;
@@ -16,7 +14,7 @@ export default function useStore() {
 
     async loadCert(projectId) {
       try {
-        const res = axios.get(`/devops/v1/projects/${projectId}/certifications/list_org_cert`);
+        const res = await axios.get(`/devops/v1/projects/${projectId}/certifications/list_org_cert`);
         if (handlePromptError(res)) {
           this.setCert(res);
         }

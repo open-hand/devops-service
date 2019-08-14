@@ -48,7 +48,7 @@ const Content = observer(() => {
         width={0.18}
         name={value}
         showIcon={!!record.get('projectId')}
-        self={record.get('projectId') === id}
+        self={record.get('projectId') === Number(id)}
       />
     );
   }
@@ -56,23 +56,6 @@ const Content = observer(() => {
   function renderPods({ record }) {
     const dataSource = record.toData();
     return <PodStatus dataSource={dataSource} />;
-  }
-
-  function renderAction() {
-    const buttons = [
-      {
-        service: [],
-        text: formatMessage({ id: 'edit' }),
-        // action: openEdit,
-      },
-      {
-        service: ['devops-service.app-service-instance.delete'],
-        text: formatMessage({ id: 'delete' }),
-        action: handleDelete,
-      },
-    ];
-
-    return (<Action data={buttons} />);
   }
 
   function handleDelete() {
@@ -88,7 +71,6 @@ const Content = observer(() => {
         queryBar="none"
       >
         <Column name="code" renderer={renderName} />
-        <Column renderer={renderAction} width="0.7rem" />
         <Column name="versionName" />
         <Column name="appServiceName" renderer={renderAppName} />
         <Column renderer={renderPods} width="1rem" header={formatMessage({ id: `${intlPrefix}.instance.pod.status` })} />

@@ -46,7 +46,7 @@ const ConfigMap = observer((props) => {
         <StatusTags
           name={formatMessage({ id: commandStatus || 'null' })}
           colorCode={commandStatus || 'success'}
-          style={{ minWidth: 40, marginRight: '0.08rem' }}
+          style={{ minWidth: 40, marginRight: '0.08rem', height: '0.16rem', lineHeight: '0.16rem' }}
         />
         <span>{value}</span>
       </div>
