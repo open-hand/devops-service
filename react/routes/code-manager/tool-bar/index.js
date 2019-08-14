@@ -6,11 +6,11 @@ import { Header } from '@choerodon/boot';
 import { Button, Select, Tooltip } from 'choerodon-ui';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import _ from 'lodash';
-import DevPipelineStore from '../../devPipeline';
-import CodeQualityStore from '../../codeQuality/stores';
+import DevPipelineStore from '../devPipeline';
+import CodeQualityStore from '../codeQuality/stores';
 import handleMapStore from '../main-view/store/handleMapStore';
 import './index.less';
-import branch from '../../branch';
+import branch from '../branch';
 
 
 const { Option, OptGroup } = Select;
@@ -19,7 +19,7 @@ const { Option, OptGroup } = Select;
 @injectIntl
 @withRouter
 @inject('AppState')
-@observer 
+@observer
 class CodeManagerToolBar extends Component {
   constructor(props) {
     super(props);
@@ -33,9 +33,9 @@ class CodeManagerToolBar extends Component {
       AppState: { currentMenuType: { projectId } },
       location: { state },
     } = this.props;
-    
+
     const { appId } = state || {};
-    DevPipelineStore.queryAppData(projectId, 'branch', appId);    
+    DevPipelineStore.queryAppData(projectId, 'branch', appId);
   }
 
   /**
@@ -54,7 +54,7 @@ class CodeManagerToolBar extends Component {
     });
   };
 
-  
+
   /**
    * 点击复制代码成功回调
    * @returns {*|string}
@@ -66,7 +66,7 @@ class CodeManagerToolBar extends Component {
   };
 
   getSelfToolBar = () => {
-    const obj = handleMapStore[this.state.name] 
+    const obj = handleMapStore[this.state.name]
     && handleMapStore[this.state.name].getSelfToolBar
     && handleMapStore[this.state.name].getSelfToolBar();
     return obj || null;
@@ -135,7 +135,7 @@ class CodeManagerToolBar extends Component {
             onCopy={this.handleCopy}
           >
             <Button icon="content_copy">
-              <FormattedMessage id="repository.copyUrl" />  
+              <FormattedMessage id="repository.copyUrl" />
             </Button>
           </CopyToClipboard>
         </Tooltip> : null}

@@ -32,7 +32,7 @@ All notable changes to devops-service will be documented in this file.
 - Added the node list to view detailed information about cluster nodes in the cluster page.
 - Added instance operation logs in the instance details section which support viewing detailed operation records of each instance. 
 - Added the entry to build reports on the continuous integration card in the development console page pipeline module.
-- Add the entry to the deployment report on the Deployment Overview page.
+- Add the entry to the deployment report on the Resource Overview page.
 ###Changed
 - Optimized the logic to increase or decrease the number of Pods in the instance details, the number of Pods cannot be reduced to zero
 - Optimized the logic and auto-refresh issues in the development console page pipeline section
@@ -103,7 +103,7 @@ All notable changes to devops-service will be documented in this file.
 - Added ciphertext function to support adding ciphertext in each environment, which can be used to store k8s resources of small pieces of sensitive data, such as passwords, tokens, or keys.
 - Added the management function of the organization-level certificate, the certificate created at the organization level, can be used when creating a certificate for each project under the organization
 - Added instance events, support for viewing event records for each instance job and pod
-- Add a new instance to the Deployment for more details, including: port, data volume, health check, host settings, environment variableDTOS, tags
+- Add a new instance to the Resource for more details, including: port, data volume, health check, host settings, environment variableDTOS, tags
 - New test application creation, this type of application is only available for automated testing
 - Added automatic refresh page, click on the corner next to all refresh buttons to set
 - The CrtManager plugin is automatically added to the cluster to enable the environment under the cluster to use the certificate.
@@ -266,7 +266,7 @@ All notable changes to devops-service will be documented in this file.
 - Optimize the instance scan mechanism.
 
 ### Removed
-- "Rapid Deployment" functionalities.
+- "Rapid Resource" functionalities.
 
 ### Fixed
 - Logical bug in version check and error shown in frontend in `branch management`. 
@@ -278,8 +278,8 @@ All notable changes to devops-service will be documented in this file.
 [0.16.0] - 2019-04-19
 Added
 - The deployment pipeline module added the feature of pipelines to allow multiple phases in the pipeline, with multiple tasks added to each phase. Including automatic deployment tasks and manual card point tasks.
-- Added a new pipeline execution overview page in the Deployment Pipeline to support viewing pipeline execution, process details, and approval history
-- The Deployment Pipeline Module adds a new deployment configuration page that allows you to create a deployment configuration here for the automatic deployment task in the pipeline.
+- Added a new pipeline execution overview page in the Resource Pipeline to support viewing pipeline execution, process details, and approval history
+- The Resource Pipeline Module adds a new deployment configuration page that allows you to create a deployment configuration here for the automatic deployment task in the pipeline.
 - CLI tools were added to support page operations in the command line execution platform
 Fixed
 - Fixed an issue with an error when deleting a network with a deployment error

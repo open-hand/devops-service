@@ -28,7 +28,7 @@
         WHERE
         dai.app_service_id = #{appServiceId}
         AND dai.env_id = #{envId}
-        AND der.kind = 'Deployment'
+        AND der.kind = 'Resource'
     </select>
 
     <!-- 此处的布尔字段因为目前缺少默认值，只能这样写条件 -->
