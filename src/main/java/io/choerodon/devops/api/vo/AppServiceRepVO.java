@@ -26,7 +26,8 @@ public class AppServiceRepVO {
     private String type;
     private Boolean permission;
     private Long objectVersionNumber;
-    private List<DevopsConfigVO> devopsConfigVOS;
+    private DevopsConfigVO harbor;
+    private DevopsConfigVO chart;
     private String imgUrl;
     private Date creationDate;
     private Date lastUpdateDate;
@@ -35,13 +36,20 @@ public class AppServiceRepVO {
     private String updateUserName;
     private String updateLoginName;
 
-
-    public List<DevopsConfigVO> getDevopsConfigVOS() {
-        return devopsConfigVOS;
+    public DevopsConfigVO getHarbor() {
+        return harbor;
     }
 
-    public void setDevopsConfigVOS(List<DevopsConfigVO> devopsConfigVOS) {
-        this.devopsConfigVOS = devopsConfigVOS;
+    public void setHarbor(DevopsConfigVO harbor) {
+        this.harbor = harbor;
+    }
+
+    public DevopsConfigVO getChart() {
+        return chart;
+    }
+
+    public void setChart(DevopsConfigVO chart) {
+        this.chart = chart;
     }
 
     public Date getCreationDate() {
