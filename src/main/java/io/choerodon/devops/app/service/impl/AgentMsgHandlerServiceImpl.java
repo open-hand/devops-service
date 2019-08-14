@@ -137,6 +137,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     private DevopsRegistrySecretService devopsRegistrySecretService;
     @Autowired
     private DevopsCustomizeResourceService devopsCustomizeResourceService;
+    @Autowired
+    private AgentPodService agentPodService;
 
 
     public void handlerUpdatePodMessage(String key, String msg, Long envId) {
@@ -650,7 +652,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     }
 
     @Override
-    public void helmReleaeStopFail(String key, String msg, Long clusterId) {
+    public void helmReleaseStopFail(String key, String msg, Long clusterId) {
         updateInstanceStatus(key, KeyParseTool.getReleaseName(key),
                 clusterId,
                 InstanceStatus.RUNNING.getStatus(),
@@ -1694,6 +1696,11 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             devopsRegistrySecretDTO.setStatus(true);
         }
         devopsRegistrySecretService.baseUpdate(devopsRegistrySecretDTO);
+    }
+
+    @Override
+    public void handlePodRealTimeData(String payload) {
+        agentPodService.handleRealTimePodData(JSONArray.parseArray(payload, AgentPodInfoVO.class));
     }
 }
 
