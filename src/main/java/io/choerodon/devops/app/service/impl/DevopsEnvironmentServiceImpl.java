@@ -995,6 +995,19 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 gitlabServiceClientOperator.deleteProjectById(gitlabProjectId, gitlabUserId);
             }
         }
+
+        //更新集群关联的namespaces数据
+        DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(devopsEnvironmentDTO.getClusterId());
+        if (devopsClusterDTO.getNamespaces() != null) {
+            List<String> namespaces = JSONArray.parseArray(devopsClusterDTO.getNamespaces(), String.class);
+            if(namespaces.contains(devopsEnvironmentDTO.getCode())) {
+                namespaces.remove(devopsEnvironmentDTO.getCode());
+            }
+            devopsClusterDTO.setNamespaces((String) JSONArray.toJSON(namespaces));
+            devopsClusterService.baseUpdate(devopsClusterDTO);
+        }
+
+
         // 删除环境命名空间
         if (devopsEnvironmentDTO.getClusterId() != null) {
             agentCommandService.deleteEnv(envId, devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getClusterId());

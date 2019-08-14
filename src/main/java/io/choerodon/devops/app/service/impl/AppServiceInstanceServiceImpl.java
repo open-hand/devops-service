@@ -945,8 +945,14 @@ public class  AppServiceInstanceServiceImpl implements AppServiceInstanceService
 
     @Override
     public void checkName(String code, Long envId) {
+
         AppInstanceValidator.checkName(code);
-        baseCheckName(code, envId);
+
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
+        List<Long> envIds = devopsEnvironmentService.baseListByClusterId(devopsEnvironmentDTO.getClusterId()).stream().map(DevopsEnvironmentDTO::getId).collect(Collectors.toList());
+        if(appServiceInstanceMapper.checkCodeExist(code,envIds)) {
+            throw new CommonException("error.app.instance.name.already.exist");
+        }
         pipelineAppDeployService.baseCheckName(code, envId);
     }
 
@@ -1107,14 +1113,7 @@ public class  AppServiceInstanceServiceImpl implements AppServiceInstanceService
     }
 
 
-    public void baseCheckName(String instanceName, Long envId) {
-        AppServiceInstanceDTO appServiceInstanceDTO = new AppServiceInstanceDTO();
-        appServiceInstanceDTO.setCode(instanceName);
-        appServiceInstanceDTO.setEnvId(envId);
-        if (appServiceInstanceMapper.selectOne(appServiceInstanceDTO) != null) {
-            throw new CommonException("error.app.instance.name.already.exist");
-        }
-    }
+
 
     public String baseGetInstanceResourceDetailJson(Long instanceId, String resourceName, ResourceType resourceType) {
         return appServiceInstanceMapper.getInstanceResourceDetailJson(instanceId, resourceName, resourceType.getType());

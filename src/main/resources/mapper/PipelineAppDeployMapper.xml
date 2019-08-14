@@ -47,4 +47,22 @@
          SET instance_id = NULL
          WHERE instance_id = #{instanceId}
     </update>
+
+
+    <select id="checkNameExist" resultType="java.lang.Boolean">
+        SELECT
+        count( 1 ) >0  exist
+        FROM
+        devops_pipeline_app_service_deploy dpasd
+        WHERE
+        dpasd.instance_name = #{name}
+        AND #{name} IN ( SELECT dpasd.instance_name FROM devops_app_service_instance dpasd
+        <if test="envIds != null">
+            WHERE dpasd.env_id in
+            <foreach collection="envIds" item="envIds" index="index"
+                     open="(" close=")" separator=",">
+                #{envIds}
+            </foreach>
+        </if> )
+    </select>
 </mapper>

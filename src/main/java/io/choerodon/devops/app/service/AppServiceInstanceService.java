@@ -357,8 +357,6 @@ public interface AppServiceInstanceService {
     PageInfo<DeployDTO> basePageDeployTimeTable(Long projectId, PageRequest pageRequest, Long envId, Long[] appServiceIds,
                                                 Date startTime, Date endTime);
 
-    void baseCheckName(String instanceName, Long envId);
-
     String baseGetInstanceResourceDetailJson(Long instanceId, String resourceName, ResourceType resourceType);
 
     void baseDeleteInstanceRelInfo(Long instanceId);
