@@ -9,15 +9,23 @@ public class AppServiceUpdateDTO {
 
     private Long id;
     private String name;
+    private DevopsConfigVO harbor;
+    private DevopsConfigVO chart;
 
-    private List<DevopsConfigVO> devopsConfigVOS;
-
-    public List<DevopsConfigVO> getDevopsConfigVOS() {
-        return devopsConfigVOS;
+    public DevopsConfigVO getHarbor() {
+        return harbor;
     }
 
-    public void setDevopsConfigVOS(List<DevopsConfigVO> devopsConfigVOS) {
-        this.devopsConfigVOS = devopsConfigVOS;
+    public void setHarbor(DevopsConfigVO harbor) {
+        this.harbor = harbor;
+    }
+
+    public DevopsConfigVO getChart() {
+        return chart;
+    }
+
+    public void setChart(DevopsConfigVO chart) {
+        this.chart = chart;
     }
 
     public Long getId() {

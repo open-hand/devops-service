@@ -237,8 +237,17 @@ public class AppServiceServiceImpl implements AppServiceService {
         OrganizationDTO organizationDTO = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
         AppServiceRepVO appServiceRepVO = dtoToRepVo(appServiceDTO);
-        List<DevopsConfigVO> devopsConfigVOS=devopsConfigService.queryByResourceId(appServiceId,APP_SERVICE);
-        appServiceRepVO.setDevopsConfigVOS(devopsConfigVOS);
+        List<DevopsConfigVO> devopsConfigVOS = devopsConfigService.queryByResourceId(appServiceId, APP_SERVICE);
+        if (!devopsConfigVOS.isEmpty()) {
+            devopsConfigVOS.stream().forEach(devopsConfigVO -> {
+                if (devopsConfigVO.getType().equals(HARBOR)) {
+                    appServiceRepVO.setHarbor(devopsConfigVO);
+                }
+                if (devopsConfigVO.getType().equals(CHART)) {
+                    appServiceRepVO.setChart(devopsConfigVO);
+                }
+            });
+        }
         //url地址拼接
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         if (appServiceDTO.getGitlabProjectId() != null) {
@@ -281,16 +290,18 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Transactional
     public Boolean update(Long projectId, AppServiceUpdateDTO appServiceUpdateDTO) {
         AppServiceDTO appServiceDTO = ConvertUtils.convertObject(appServiceUpdateDTO, AppServiceDTO.class);
-        List<DevopsConfigVO> devopsConfigVOS = appServiceUpdateDTO.getDevopsConfigVOS();
         Long appServiceId = appServiceUpdateDTO.getId();
+        List<DevopsConfigVO> devopsConfigVOS = new ArrayList<>();
+        if (appServiceUpdateDTO.getHarbor() != null) {
+            devopsConfigVOS.add(appServiceUpdateDTO.getHarbor());
+            appServiceDTO.setHarborConfigId(appServiceUpdateDTO.getHarbor().getId());
+        }
+        if (appServiceUpdateDTO.getChart() != null) {
+            devopsConfigVOS.add(appServiceUpdateDTO.getChart());
+            appServiceDTO.setChartConfigId(appServiceUpdateDTO.getChart().getId());
+        }
         devopsConfigService.operate(appServiceId, APP_SERVICE, devopsConfigVOS);
-        devopsConfigVOS.stream().forEach(devopsConfigVO -> {
-            if (devopsConfigVO.getType().equals(HARBOR)) {
-                appServiceDTO.setHarborConfigId(devopsConfigVO.getId());
-            } else if (devopsConfigVO.getType().equals(CHART)) {
-                appServiceDTO.setChartConfigId(devopsConfigVO.getId());
-            }
-        });
+
 
         AppServiceDTO oldAppServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
 
@@ -1376,7 +1387,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             Map maps = gson.fromJson(searchParam, Map.class);
             searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
             List<String> list = (List<String>) maps.get(TypeUtil.PARAMS);
-            if(!CollectionUtils.isEmpty(list)){
+            if (!CollectionUtils.isEmpty(list)) {
                 param = TypeUtil.cast(list.toString());
                 roleAssignmentSearchVO.setParam(new String[]{param});
             }
@@ -2336,7 +2347,6 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
         appServiceRepVO.setGitlabProjectId(TypeUtil.objToLong(appServiceDTO.getGitlabProjectId()));
         return appServiceRepVO;
-
 
 
     }
