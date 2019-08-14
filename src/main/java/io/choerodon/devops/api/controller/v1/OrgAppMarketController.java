@@ -47,10 +47,6 @@ public class OrgAppMarketController {
                 .orElseThrow(() -> new CommonException("error.app.services.listAll"));
     }
 
-<<<<<<< HEAD
-
-=======
->>>>>>> [IMP] 修改上传文件到APIM接口
     /**
      * @param appId
      * @param pageRequest
@@ -90,7 +86,6 @@ public class OrgAppMarketController {
     }
 
     /**
-<<<<<<< HEAD
      * @param appServiceId
      * @return
      */
