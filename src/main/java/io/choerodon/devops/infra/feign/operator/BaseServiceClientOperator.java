@@ -301,18 +301,17 @@ public class BaseServiceClientOperator {
         }
     }
 
-
-    public ProjectDTO queryProjectByApp(Long id){
+    public ProjectDTO queryProjectByAppId(Long id){
         try{
-            return baseServiceClient.queryProjectByApp(id).getBody();
+            return baseServiceClient.queryProjectByAppId(id).getBody();
         }catch(Exception e){
             return null;
         }
     }
 
-    public ApplicationDTO getAppById(Long id){
+    public ApplicationDTO queryAppById(Long id){
         try{
-            return baseServiceClient.getAppById(id).getBody();
+            return baseServiceClient.queryAppById(id).getBody();
         }catch (Exception e){
             return null;
         }

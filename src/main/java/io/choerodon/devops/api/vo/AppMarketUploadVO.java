@@ -13,8 +13,8 @@ public class AppMarketUploadVO {
     private Long appId;
     private List<AppServiceMarketVO> appServiceMarketVOList;
     private String status;
-    private String harborUrl;
     private Long iamUserId;
+    private String harborUrl;
     private User user;
 
     public User getUser() {

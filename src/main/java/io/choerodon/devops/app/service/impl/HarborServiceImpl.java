@@ -28,10 +28,6 @@ import io.choerodon.devops.infra.dto.harbor.Project;
 import io.choerodon.devops.infra.dto.harbor.ProjectDetail;
 import io.choerodon.devops.infra.dto.harbor.Role;
 import io.choerodon.devops.infra.feign.HarborClient;
-<<<<<<< HEAD
-import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-=======
->>>>>>> [IMP] 修改上传文件到APIM接口
 import io.choerodon.devops.infra.handler.RetrofitHandler;
 
 /**

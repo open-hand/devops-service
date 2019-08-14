@@ -142,10 +142,9 @@ public interface BaseServiceClient {
 
 
     @GetMapping(value = "/v1/applications/{id}/project")
-    ResponseEntity<ProjectDTO> queryProjectByApp(@PathVariable("id") Long id);
+    ResponseEntity<ProjectDTO> queryProjectByAppId(@PathVariable("id") Long id);
 
     @GetMapping(value = "/v1/applications/{id}")
-    ResponseEntity<ApplicationDTO> getAppById(@PathVariable(value = "id")Long id);
-
+    ResponseEntity<ApplicationDTO> queryAppById(@PathVariable(value = "id")Long id);
 
 }

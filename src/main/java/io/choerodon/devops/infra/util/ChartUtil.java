@@ -81,7 +81,7 @@ public class ChartUtil {
                 }
             }
         } catch (IOException e) {
-            throw new CommonException(e.getMessage(), e);
+            throw new CommonException("error.download.chart", e.getMessage());
         }
     }
 

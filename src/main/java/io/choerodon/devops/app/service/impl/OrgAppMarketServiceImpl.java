@@ -22,11 +22,11 @@ import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.AppServiceVersionDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.dto.harbor.User;
+import io.choerodon.devops.infra.dto.iam.ApplicationDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.PublishTypeEnum;
-import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
-import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.AppServiceMapper;
 import io.choerodon.devops.infra.thread.CommandWaitForThread;
 import io.choerodon.devops.infra.util.*;
@@ -52,8 +52,6 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
     @Autowired
     private GitUtil gitUtil;
     @Autowired
-    private IamServiceClientOperator iamServiceClientOperator;
-    @Autowired
     private ChartUtil chartUtil;
     @Value("${services.helm.url}")
     private String helmUrl;
@@ -67,6 +65,8 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
     private HarborService harborService;
     @Autowired
     private DevopsConfigService devopsConfigService;
+    @Autowired
+    private BaseServiceClientOperator baseServiceClientOperator;
 
     @Override
     public PageInfo<AppServiceMarketVO> pageByAppId(Long appId,
@@ -130,9 +130,8 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
 
     private void packageSourceCode(AppServiceMarketVO appServiceMarketVO, String appFilePath, Long iamUserId) {
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceMarketVO.getAppServiceId());
-
-//        ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(appServiceDTO.getAppId());
-//        OrganizationDTO organizationDTO = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        ApplicationDTO applicationDTO = baseServiceClientOperator.queryAppById(appServiceDTO.getAppId());
+        OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(applicationDTO.getOrganizationId());
 
         //1.创建目录 应用服务仓库
         String appServiceFileName = String.format("%s-%s", APPLICATION_SERVICE, appServiceDTO.getCode());
@@ -142,9 +141,9 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(iamUserId);
         String newToken = appServiceService.getToken(appServiceDTO.getGitlabProjectId(), appFilePath, userAttrDTO);
-//        appServiceDTO.setRepoUrl(repoUrl + organizationDTO.getCode()
-//                + "-" + projectDTO.getCode() + "/" + appServiceDTO.getCode() + ".git");
-        appServiceDTO.setRepoUrl(repoUrl + "testorg0110-testpro0110" + "/" + appServiceDTO.getCode() + ".git");
+        appServiceDTO.setRepoUrl(repoUrl + organizationDTO.getCode()
+                + "-" + applicationDTO.getCode() + "/" + appServiceDTO.getCode() + ".git");
+//        appServiceDTO.setRepoUrl(repoUrl + "testorg0110-testpro0110" + "/" + appServiceDTO.getCode() + ".git");
         appServiceMarketVO.getAppServiceMarketVersionVOS().forEach(appServiceMarketVersionVO -> {
             AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQuery(appServiceMarketVersionVO.getId());
             //2. 创建目录 应用服务版本
@@ -158,8 +157,8 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
 
     private void packageChart(AppServiceMarketVO appServiceMarketVO, String appFilePath, String harborUrl) {
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceMarketVO.getAppServiceId());
-        ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(appServiceDTO.getAppId());
-        OrganizationDTO organizationDTO = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getAppId());
+        OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 
         //1.创建目录 应用服务仓库
         String appServiceFileName = String.format("%s-%s", APPLICATION_SERVICE, appServiceDTO.getCode());
@@ -187,14 +186,13 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             File[] listFiles = zipDirectory.listFiles();
             //获取替换Repository
             List<File> appMarkets = Arrays.stream(listFiles).parallel()
-                    .filter(k -> k.getName().equals("values.yaml"))
+                    .filter(k -> "values.yaml".equals(k.getName()))
                     .collect(Collectors.toCollection(ArrayList::new));
             if (!appMarkets.isEmpty() && appMarkets.size() == 1) {
                 Map<String, String> params = new HashMap<>();
                 String image = appServiceVersionDTO.getImage().replace(":" + appServiceVersionDTO.getVersion(), "");
                 params.put(image, String.format("%s/%s", harborUrl, appServiceVersionDTO.getVersion()));
                 FileUtil.fileToInputStream(appMarkets.get(0), params);
-
             }
         } else {
             FileUtil.deleteDirectory(zipDirectory);
@@ -218,7 +216,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
 
     private void pushImage(AppMarketUploadVO appMarketUploadVO) {
         String osname = System.getProperty("os.name");
-        if("win".contains(osname)){
+        if ("win".contains(osname)) {
             throw new CommonException("error.os.windows");
         }
         String shellPath = this.getClass().getResource("/shell").getPath();

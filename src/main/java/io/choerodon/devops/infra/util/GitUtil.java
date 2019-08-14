@@ -271,7 +271,6 @@ public class GitUtil {
                     .call();
             git.checkout().setName(commit).call();
             git.close();
-//            checkout(dirName, commit);
             FileUtil.deleteDirectory(new File(localPathFile + GIT_SUFFIX));
         } catch (GitAPIException e) {
             throw new CommonException(ERROR_GIT_CLONE, e);
