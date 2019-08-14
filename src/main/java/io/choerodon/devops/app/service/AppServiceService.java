@@ -397,4 +397,10 @@ public interface AppServiceService {
     AppServiceDTO getApplicationServiceDTO(Long projectId, AppServiceReqVO applicationReqDTO);
 
     AppServiceDTO baseCreate(AppServiceDTO appServiceDTO);
+
+    /**
+     * 查询组织共享和市场下载的应用服务并分组返回
+     * @return List<AppServiceGroupVO>
+     */
+    List<AppServiceGroupVO> ListAppServiceGroup();
 }

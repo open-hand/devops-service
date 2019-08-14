@@ -18,7 +18,6 @@ import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.validator.ApplicationValidator;
@@ -33,10 +32,12 @@ import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.*;
 import io.choerodon.devops.infra.dto.harbor.ProjectDetail;
 import io.choerodon.devops.infra.dto.harbor.User;
+import io.choerodon.devops.infra.dto.iam.ApplicationDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.*;
+import io.choerodon.devops.infra.feign.BaseServiceClient;
 import io.choerodon.devops.infra.feign.ChartClient;
 import io.choerodon.devops.infra.feign.HarborClient;
 import io.choerodon.devops.infra.feign.SonarClient;
@@ -92,7 +93,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     private static final String PROJECT_OWNER = "role/project/default/project-owner";
     private static final String PROJECT_MEMBER = "role/project/default/project-member";
     private static final ConcurrentMap<Long, String> templateDockerfileMap = new ConcurrentHashMap<>();
-    private static final String APP_SERVICE="appService";
+    private static final String APP_SERVICE = "appService";
     private static final IOFileFilter filenameFilter = new IOFileFilter() {
 
         @Override
@@ -169,7 +170,8 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     @Value("${services.helm.url}")
     private String helmUrl;
-
+    @Autowired
+    private BaseServiceClient baseServiceClient;
 
     @Override
     @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_APPLICATION_SERVICE,
@@ -278,14 +280,13 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Transactional
     public Boolean update(Long projectId, AppServiceUpdateDTO appServiceUpdateDTO) {
         AppServiceDTO appServiceDTO = ConvertUtils.convertObject(appServiceUpdateDTO, AppServiceDTO.class);
-        List<DevopsConfigVO> devopsConfigVOS=appServiceUpdateDTO.getDevopsConfigVOS();
+        List<DevopsConfigVO> devopsConfigVOS = appServiceUpdateDTO.getDevopsConfigVOS();
         Long appServiceId = appServiceUpdateDTO.getId();
-        devopsConfigService.operate(appServiceId,APP_SERVICE,devopsConfigVOS);
+        devopsConfigService.operate(appServiceId, APP_SERVICE, devopsConfigVOS);
         devopsConfigVOS.stream().forEach(devopsConfigVO -> {
-            if(devopsConfigVO.getType().equals(HARBOR)) {
+            if (devopsConfigVO.getType().equals(HARBOR)) {
                 appServiceDTO.setHarborConfigId(devopsConfigVO.getId());
-            }
-            else if(devopsConfigVO.getType().equals(CHART)) {
+            } else if (devopsConfigVO.getType().equals(CHART)) {
                 appServiceDTO.setChartConfigId(devopsConfigVO.getId());
             }
         });
@@ -1463,12 +1464,12 @@ public class AppServiceServiceImpl implements AppServiceService {
         devOpsUserPayload.setGitlabProjectId(appServiceDTO.getGitlabProjectId());
 
         //原先是否跳过权限检查
-        boolean skip=appServiceDTO.getIsSkipCheckPermission();
-        if(skip){
-            if(applicationPermissionVO.getSkipCheckPermission()){
+        boolean skip = appServiceDTO.getIsSkipCheckPermission();
+        if (skip) {
+            if (applicationPermissionVO.getSkipCheckPermission()) {
                 //原来跳过权限检查，现在也跳过权限检查
                 return;
-            }else{
+            } else {
                 //原来跳过权限检查，现在不跳过权限检查
                 appServiceDTO.setId(appServiceId);
                 appServiceDTO.setIsSkipCheckPermission(false);
@@ -1479,7 +1480,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 devOpsUserPayload.setIamUserIds(applicationPermissionVO.getUserIds());
                 devOpsUserPayload.setOption(3);
             }
-        }else {
+        } else {
             if (applicationPermissionVO.getSkipCheckPermission()) {
                 //原来不跳过权限检查，现在跳过权限检查
                 appServiceDTO.setId(appServiceId);
@@ -1487,7 +1488,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 appServiceMapper.updateByPrimaryKeySelective(appServiceDTO);
                 appServiceUserPermissionService.baseDeleteByAppServiceId(appServiceId);
                 devOpsUserPayload.setOption(2);
-            }else {
+            } else {
                 //原来不跳过权限检查，现在也不跳过权限检查，新增用户权限
                 applicationPermissionVO.getUserIds().forEach(u -> {
                     appServiceUserPermissionService.baseCreate(u, appServiceId);
@@ -2004,6 +2005,33 @@ public class AppServiceServiceImpl implements AppServiceService {
         return appServiceDTO;
     }
 
+    @Override
+    public List<AppServiceGroupVO> ListAppServiceGroup() {
+        // 分别获取组织共享和市场下载的应用服务集合
+        List<AppServiceDTO> organizationShareApps = appServiceMapper.queryOrganizationShareApps();
+        List<AppServiceDTO> marketDownloadApps = appServiceMapper.queryMarketDownloadApps();
+        List<AppServiceGroupVO> appServiceGroupList = new ArrayList<AppServiceGroupVO>();
+        if (!organizationShareApps.isEmpty()) {
+            // 获取organizationShareApps中appid的集合
+            Set<Long> organizationShareAppIdList = getAppIds(organizationShareApps);
+
+            // 进行分组合并
+            List<AppServiceGroupVO> organizationShareList = groupMerging(organizationShareAppIdList, organizationShareApps, true);
+
+            appServiceGroupList.addAll(organizationShareList);
+        }
+        if (!marketDownloadApps.isEmpty()) {
+            // 获取marketDownloadApps中appid的集合
+            Set<Long> marketDownloadAppIdList = getAppIds(marketDownloadApps);
+            // 进行分组合并
+            List<AppServiceGroupVO> marketDownloadList = groupMerging(marketDownloadAppIdList, marketDownloadApps, false);
+
+            appServiceGroupList.addAll(marketDownloadList);
+        }
+
+        return appServiceGroupList;
+    }
+
     private List<AppServiceDTO> baseListAll(Long projectId) {
         return appServiceMapper.listAll(projectId);
     }
@@ -2014,6 +2042,62 @@ public class AppServiceServiceImpl implements AppServiceService {
         appServiceDTO.setHarborConfigId(appServiceImportVO.getHarborConfigId());
         appServiceDTO.setChartConfigId(appServiceImportVO.getChartConfigId());
         return appServiceDTO;
+    }
+
+    /**
+     * 对appservice集合进行分组
+     *
+     * @param ids            分组的appId集合
+     * @param appServiceList 要进行分组appservice的集合
+     * @param share          true为组织共享 false为市场下载
+     * @return List<AppServiceGroupVO>
+     */
+    private List<AppServiceGroupVO> groupMerging(Set<Long> ids, List<AppServiceDTO> appServiceList, Boolean share) {
+        List<AppServiceGroupVO> list = new ArrayList<AppServiceGroupVO>();
+        Map<Long, List<AppServiceGroupInfoVO>> collect = appServiceList.stream().map(appServiceDTO -> dtoToGroupInfoVO(appServiceDTO)).collect(Collectors.groupingBy(AppServiceGroupInfoVO::getAppId));
+        // 遍历ids集合
+        ids.stream().forEach(appId -> {
+            /**
+             * 待base-service稳定替换
+             * ApplicationDTO appDTO = baseServiceClient.getAppById(appId).getBody();
+             * AppServiceGroupVO appServiceGroupVO = dtoToGroupVO(appDTO);
+             */
+            AppServiceGroupVO appServiceGroupVO = new AppServiceGroupVO();
+            appServiceGroupVO.setId(appId);
+            // 当前应用下的应用服务集合
+            List<AppServiceGroupInfoVO> commonGroupAppServiceList = collect.get(appId);
+            appServiceGroupVO.setShare(share);
+            appServiceGroupVO.setAppServiceList(commonGroupAppServiceList);
+            list.add(appServiceGroupVO);
+        });
+
+        return list;
+    }
+
+    /**
+     * 根据传入的appServiceList集合获取app_id集合
+     *
+     * @param appServiceList
+     * @return
+     */
+    private Set<Long> getAppIds(List<AppServiceDTO> appServiceList) {
+        Set<Long> appIds = new HashSet<>();
+        appServiceList.stream().forEach(appServiceDTO -> {
+            appIds.add(appServiceDTO.getAppId());
+        });
+        return appIds;
+    }
+
+    private AppServiceGroupInfoVO dtoToGroupInfoVO(AppServiceDTO appServiceDTO) {
+        AppServiceGroupInfoVO appServiceGroupInfoVO = new AppServiceGroupInfoVO();
+        BeanUtils.copyProperties(appServiceDTO, appServiceGroupInfoVO);
+        return appServiceGroupInfoVO;
+    }
+
+    private AppServiceGroupVO dtoToGroupVO(ApplicationDTO applicationDTO) {
+        AppServiceGroupVO appServiceGroupVO = new AppServiceGroupVO();
+        BeanUtils.copyProperties(applicationDTO, appServiceGroupVO);
+        return appServiceGroupVO;
     }
 
     /**

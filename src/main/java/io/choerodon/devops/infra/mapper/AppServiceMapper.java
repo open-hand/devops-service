@@ -79,5 +79,9 @@ public interface AppServiceMapper extends Mapper<AppServiceDTO> {
     void updateHarborConfigNullByServiceId(@Param("appServiceId")Long appServiceId);
 
     void updateChartConfigNullByServiceId(@Param("appServiceId") Long appServiceId);
+
+    List<AppServiceDTO> queryOrganizationShareApps();
+
+    List<AppServiceDTO> queryMarketDownloadApps();
 }
 
