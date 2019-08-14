@@ -58,4 +58,6 @@ public interface AppServiceInstanceMapper extends Mapper<AppServiceInstanceDTO> 
     String getInstanceResourceDetailJson(@Param("instanceId") Long instanceId, @Param("resourceName") String resourceName, @Param("resourceType") String resourceType);
 
     void deleteInstanceRelInfo(@Param("instanceId") Long instanceId);
+
+    Boolean checkCodeExist(@Param("code") String code, @Param("envIds") List<Long> envIds);
 }

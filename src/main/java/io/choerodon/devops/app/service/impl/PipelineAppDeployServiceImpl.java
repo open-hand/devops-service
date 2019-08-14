@@ -1,7 +1,10 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
+import io.choerodon.devops.app.service.DevopsEnvironmentService;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.PipelineAppServiceDeployDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,8 +20,11 @@ import io.choerodon.devops.infra.mapper.PipelineAppServiceDeployMapper;
  */
 @Service
 public class PipelineAppDeployServiceImpl implements PipelineAppDeployService {
+
     @Autowired
     private PipelineAppServiceDeployMapper appDeployMapper;
+    @Autowired
+    DevopsEnvironmentService devopsEnvironmentService;
 
     @Override
     public PipelineAppServiceDeployDTO baseCreate(PipelineAppServiceDeployDTO pipelineAppServiceDeployDTO) {
@@ -55,10 +61,9 @@ public class PipelineAppDeployServiceImpl implements PipelineAppDeployService {
 
     @Override
     public void baseCheckName(String name, Long envId) {
-        PipelineAppServiceDeployDTO appDeployDO = new PipelineAppServiceDeployDTO();
-        appDeployDO.setInstanceName(name);
-        appDeployDO.setEnvId(envId);
-        if (appDeployMapper.selectOne(appDeployDO) == null) {
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
+        List<Long> envIds = devopsEnvironmentService.baseListByClusterId(devopsEnvironmentDTO.getClusterId()).stream().map(DevopsEnvironmentDTO::getId).collect(Collectors.toList());
+        if(appDeployMapper.checkNameExist(name,envIds)) {
             throw new CommonException("error.app.instance.name.already.exist");
         }
     }
