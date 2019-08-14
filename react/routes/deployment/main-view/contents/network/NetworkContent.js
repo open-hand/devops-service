@@ -14,6 +14,7 @@ import StatusIcon from '../../../../../components/StatusIcon';
 import { useDeploymentStore } from '../../../stores';
 import { useNetworkStore } from './stores';
 import Modals from './modals';
+import EditNetwork from './modals/network-edit';
 
 import './index.less';
 
@@ -27,8 +28,11 @@ const NetworkContent = observer(() => {
   } = useDeploymentStore();
   const {
     networkDs,
+    networkStore,
     intl: { formatMessage },
   } = useNetworkStore();
+
+  const [showModal, setShowModal] = useState(false);
 
   function refresh() {
     networkDs.query();
@@ -49,11 +53,11 @@ const NetworkContent = observer(() => {
   }
 
   function renderTargetType({ record }) {
-    const { appInstance, labels } = record.get('target') || {};
-    const appId = record.get('appId');
+    const { instances, labels } = record.get('target') || {};
+    const appId = record.get('appServiceId');
 
     let type = 'EndPoints';
-    if (appId && appInstance && appInstance.length) {
+    if (appId && instances && instances.length) {
       type = formatMessage({ id: 'instance' });
     } else if (labels) {
       type = formatMessage({ id: 'label' });
@@ -63,12 +67,12 @@ const NetworkContent = observer(() => {
   }
 
   function renderTarget({ record }) {
-    const { appInstance, labels, endPoints } = record.get('target') || {};
+    const { instances, labels, endPoints } = record.get('target') || {};
     const node = [];
     const port = [];
     const len = endPoints ? 2 : 1;
-    if (appInstance && appInstance.length) {
-      _.forEach(appInstance, ({ id: itemId, code, instanceStatus }) => {
+    if (instances && instances.length) {
+      _.forEach(instances, ({ id: itemId, code, instanceStatus }) => {
         const targetClass = classnames({
           'net-target-item': true,
           'net-target-item-failed': instanceStatus !== 'operating' && instanceStatus !== 'running',
@@ -232,12 +236,12 @@ const NetworkContent = observer(() => {
     );
   }
 
-  function renderAction({ record }) {
+  function renderAction() {
     const buttons = [
       {
         service: [],
         text: formatMessage({ id: 'edit' }),
-        // action: () => showNetwork(true),
+        action: openModal,
       },
       {
         service: ['devops-service.devops-service.delete'],
@@ -251,6 +255,15 @@ const NetworkContent = observer(() => {
 
   function handleDelete() {
     networkDs.delete(networkDs.current);
+  }
+
+  function openModal() {
+    setShowModal(true);
+  }
+
+  function closeModal(isLoad) {
+    setShowModal(false);
+    isLoad && refresh();
   }
 
   return (
@@ -267,6 +280,15 @@ const NetworkContent = observer(() => {
         <Column renderer={renderTarget} header={formatMessage({ id: `${intlPrefix}.application.net.target` })} />
         <Column name="type" renderer={renderConfigType} />
       </Table>
+      {showModal && (
+        <EditNetwork
+          netId={networkDs.current.get('id')}
+          envId={parentId}
+          visible={showModal}
+          store={networkStore}
+          onClose={closeModal}
+        />
+      )}
     </div>
   );
 });

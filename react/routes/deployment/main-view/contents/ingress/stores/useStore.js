@@ -30,7 +30,7 @@ export default function useStore() {
 
     async loadNetwork(projectId, envId) {
       try {
-        const res = axios.get(`/devops/v1/projects/${projectId}/service/list_by_env?env_id=${envId}`);
+        const res = await axios.get(`/devops/v1/projects/${projectId}/service/list_by_env?env_id=${envId}`);
         if (handlePromptError(res)) {
           this.setNetwork(res);
         }
@@ -40,14 +40,13 @@ export default function useStore() {
     },
 
     async loadDataById(projectId, id) {
-      try {
-        const res = await axios.get(`/devops/v1/projects/${projectId}/ingress/${id}`);
-        if (handlePromptError(res)) {
-          this.setSingleData(res);
-        }
-      } catch (e) {
-        Choerodon.handleResponseError(e);
-      }
+      return axios.get(`/devops/v1/projects/${projectId}/ingress/${id}`)
+        .then((res) => {
+          if (handlePromptError(res)) {
+            this.setSingleData(res);
+          }
+          return res;
+        });
     },
 
     async loadCertByEnv(projectId, envId, domain) {

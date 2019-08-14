@@ -1,0 +1,49 @@
+.c7ncd-deployment-network-form {
+
+  .network-panel-title {
+    display: flex;
+    margin-bottom: 10px;
+
+    i {
+      line-height: 24px;
+      font-size: 16px;
+      padding-right: 5px;
+    }
+
+    &_disabled {
+      color: rgba(0, 0, 0, .36);
+    }
+
+    span {
+      font-size: 16px;
+      font-weight: 500;
+      line-height: 24px;
+      margin-bottom: 10px;
+    }
+  }
+
+  .network-form-name {
+    margin-bottom: 0;
+  }
+
+  // 改变选择器多选时选中项的背景色
+  .network-select-instance {
+    &.c7n-select-multiple {
+      .c7n-select-selection--multiple {
+        .c7n-select-selection__choice {
+          background-color: #3f51b5;
+          border: none;
+          color: #fff;
+        }
+
+        .c7n-select-selection__choice__remove {
+          color: #fff;
+        }
+      }
+    }
+  }
+
+  .ip-check-error {
+    background-color: #d50000 !important;
+  }
+}

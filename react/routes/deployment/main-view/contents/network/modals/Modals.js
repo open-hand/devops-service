@@ -1,21 +1,12 @@
-import React, { useMemo, useCallback, useEffect } from 'react';
+import React, { Fragment, useMemo, useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Modal } from 'choerodon-ui/pro';
 import { Button } from 'choerodon-ui';
 import { FormattedMessage } from 'react-intl';
-import uniqBy from 'lodash/uniqBy';
 import HeaderButtons from '../../../components/header-buttons';
 import { useDeploymentStore } from '../../../../stores';
 import { useModalStore } from './stores';
-import { handlePromptError } from '../../../../../../utils';
 import { useNetworkStore } from '../stores';
-
-const modalKey1 = Modal.key();
-const modalKey2 = Modal.key();
-const modalKey3 = Modal.key();
-const modalStyle = {
-  width: '26%',
-};
+import CreateNetwork from './network-create';
 
 const EnvModals = observer(() => {
   const {
@@ -26,16 +17,15 @@ const EnvModals = observer(() => {
   } = useDeploymentStore();
   const {
     networkDs,
+    networkStore,
   } = useNetworkStore();
   const {
     permissions,
     AppState: { currentMenuType: { projectId } },
   } = useModalStore();
-  const { menuId } = deploymentStore.getSelectedMenu;
+  const { parentId } = deploymentStore.getSelectedMenu;
 
-  const openModal = useCallback(() => {
-    // console.log(modal);
-  }, []);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     deploymentStore.setNoHeader(false);
@@ -43,6 +33,15 @@ const EnvModals = observer(() => {
 
   function refresh() {
     networkDs.query();
+  }
+  
+  function openModal() {
+    setShowModal(true);
+  }
+
+  function closeModal(isLoad) {
+    setShowModal(false);
+    isLoad && refresh();
   }
 
   const buttons = useMemo(() => ([{
@@ -60,7 +59,19 @@ const EnvModals = observer(() => {
     group: 1,
   }]), [formatMessage, intlPrefix, openModal, permissions, refresh]);
 
-  return <HeaderButtons items={buttons} />;
+  return (
+    <Fragment>
+      <HeaderButtons items={buttons} />
+      {showModal && (
+        <CreateNetwork
+          envId={parentId}
+          visible={showModal}
+          store={networkStore}
+          onClose={closeModal}
+        />
+      )}
+    </Fragment>
+  );
 });
 
 export default EnvModals;

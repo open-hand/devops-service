@@ -17,7 +17,7 @@ import {
 import CertConfig from '../../../../../../../components/certConfig';
 import Tips from '../../../../../../../components/Tips/Tips';
 import InterceptMask from '../../../../../../../components/interceptMask/InterceptMask';
-import { handleCheckerProptError } from '../../../../../../../utils';
+import { handlePromptError } from '../../../../../../../utils';
 
 import '../../../../../../main.scss';
 import './index.less';
@@ -121,6 +121,7 @@ export default class CertificateCreate extends Component {
         const excludeProps = ['domainArr', 'cert', 'key'];
 
         _data.domains = _.filter(_data.domains);
+        _data.envId = envId;
 
         if (_data.type === CERT_TYPE_CHOOSE) {
           _data.type = CERT_TYPE_REQUEST;
@@ -146,7 +147,7 @@ export default class CertificateCreate extends Component {
 
         this.setState({ submitting: false });
 
-        if (handleCheckerProptError(response)) {
+        if (handlePromptError(response, false)) {
           this.handleClose(true);
         }
       } else {
@@ -323,7 +324,6 @@ export default class CertificateCreate extends Component {
     return (
       <div className="c7ncd-sidebar-select">
         <FormItem
-          className="c7n-select_480"
           {...formItemLayout}
         >
           {getFieldDecorator('certId', {
@@ -335,7 +335,6 @@ export default class CertificateCreate extends Component {
             ],
           })(
             <Select
-              className="c7n-select_480"
               label={<FormattedMessage id="ctf.choose" />}
               placeholder={formatMessage({ id: 'ctf.choose' })}
               optionFilterProp="children"
@@ -401,11 +400,6 @@ export default class CertificateCreate extends Component {
 
     const domainArr = getFieldValue('domainArr');
     const isDomainGroup = domainArr.length > 1;
-    const domainClass = classnames({
-      'creation-form-item': true,
-      'c7n-select_454': isDomainGroup,
-      'c7n-select_480': !isDomainGroup,
-    });
 
     const domainItems = _.map(domainArr, k => (
       <div
@@ -413,7 +407,7 @@ export default class CertificateCreate extends Component {
         className="creation-panel-group c7n-form-domains"
       >
         <FormItem
-          className={domainClass}
+          className="creation-form-item"
           {...formItemLayout}
         >
           {getFieldDecorator(`domains[${k}]`, {
@@ -447,20 +441,6 @@ export default class CertificateCreate extends Component {
       </div>
     ));
 
-    const envOptions = _.map(envs, ({ id, connect, name }) => {
-      const statusClass = classnames({
-        'c7ncd-status': true,
-        'c7ncd-status-success': connect,
-        'c7ncd-status-disconnect': !connect,
-      });
-      return (
-        <Option key={id} value={id} disabled={!connect}>
-          <span className={statusClass} />
-          {name}
-        </Option>
-      );
-    });
-
     return (
       <div className="c7n-region">
         <Sidebar
@@ -472,12 +452,13 @@ export default class CertificateCreate extends Component {
           onOk={this.handleSubmit}
           onCancel={this.handleClose}
           confirmLoading={submitting}
+          width={380}
         >
           <Content
-            className="c7n-deployment-ctf-create sidebar-content"
+            className="c7ncd-deployment-ctf-create sidebar-content"
           >
-            <Form layout="vertical" className="c7n-sidebar-form">
-              <FormItem className="c7n-select_512" {...formItemLayout}>
+            <Form layout="vertical">
+              <FormItem {...formItemLayout}>
                 {getFieldDecorator('certName', {
                   rules: [
                     {
@@ -501,37 +482,31 @@ export default class CertificateCreate extends Component {
                 <Icon type="settings" />
                 <FormattedMessage id="ctf.config" />
               </div>
-              <div className="c7n-creation-radio">
-                <div className="creation-radio-label">
-                  <FormattedMessage id="chooseType" />
-                </div>
-                <FormItem
-                  className="c7n-select_512 creation-radio-form"
-                  label={<FormattedMessage id="ctf.target.type" />}
-                  {...formItemLayout}
-                >
-                  {getFieldDecorator('type', {
-                    initialValue: CERT_TYPE_REQUEST,
-                  })(
-                    <RadioGroup name="type" onChange={this.handleTypeChange}>
-                      <Radio value={CERT_TYPE_REQUEST}>
-                        <FormattedMessage id="ctf.apply" />
-                      </Radio>
-                      <Radio value={CERT_TYPE_UPLOAD}>
-                        <FormattedMessage id="ctf.upload" />
-                      </Radio>
-                      <Radio value={CERT_TYPE_CHOOSE}>
-                        <FormattedMessage id="ctf.choose" />
-                      </Radio>
-                    </RadioGroup>,
-                  )}
-                </FormItem>
-              </div>
+              <FormItem
+                label={<FormattedMessage id="ctf.target.type" />}
+                {...formItemLayout}
+              >
+                {getFieldDecorator('type', {
+                  initialValue: CERT_TYPE_REQUEST,
+                })(
+                  <RadioGroup name="type" onChange={this.handleTypeChange}>
+                    <Radio value={CERT_TYPE_REQUEST}>
+                      <FormattedMessage id="ctf.apply" />
+                    </Radio>
+                    <Radio value={CERT_TYPE_UPLOAD}>
+                      <FormattedMessage id="ctf.upload" />
+                    </Radio>
+                    <Radio value={CERT_TYPE_CHOOSE}>
+                      <FormattedMessage id="ctf.choose" />
+                    </Radio>
+                  </RadioGroup>,
+                )}
+              </FormItem>
               <div className="c7n-creation-panel">
                 {type === 'choose' && this.getChooseContent}
                 {domainItems}
                 <FormItem
-                  className="c7n-select_480 creation-panel-button"
+                  className="creation-panel-button"
                   {...formItemLayout}
                 >
                   <Button

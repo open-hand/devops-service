@@ -249,6 +249,7 @@ export default class ResourceSidebar extends Component {
           title={<FormattedMessage id={`resource.${type}.header`} />}
           visible={visible}
           className="c7ncd-deployment-resource-sidebar"
+          width={mode === 'upload' ? 380 : null}
           footer={
             [<Button
               key="submit"

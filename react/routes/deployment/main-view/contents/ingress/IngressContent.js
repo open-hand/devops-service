@@ -23,6 +23,8 @@ import DomainModal from '../application/modals/domain';
 const serviceStyle = {
   minWidth: 40,
   marginRight: 8,
+  height: '.16rem',
+  lineHeight: '.16rem',
 };
 
 
