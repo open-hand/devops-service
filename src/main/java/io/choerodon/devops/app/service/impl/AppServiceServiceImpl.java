@@ -63,6 +63,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import retrofit2.Call;
 import retrofit2.Response;
@@ -1374,8 +1375,11 @@ public class AppServiceServiceImpl implements AppServiceService {
         if (!org.springframework.util.StringUtils.isEmpty(searchParam)) {
             Map maps = gson.fromJson(searchParam, Map.class);
             searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
-            param = TypeUtil.cast(maps.get(TypeUtil.PARAMS).toString());
-            roleAssignmentSearchVO.setParam(new String[]{param});
+            List<String> list = (List<String>) maps.get(TypeUtil.PARAMS);
+            if(!CollectionUtils.isEmpty(list)){
+                param = TypeUtil.cast(list.toString());
+                roleAssignmentSearchVO.setParam(new String[]{param});
+            }
             if (searchParamMap.get("loginName") != null) {
                 String loginName = TypeUtil.objToString(searchParamMap.get("loginName"));
                 roleAssignmentSearchVO.setLoginName(loginName);
