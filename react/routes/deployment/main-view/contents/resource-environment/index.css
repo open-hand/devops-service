@@ -82,6 +82,7 @@
 }
 .c7ncd-deployment-resource-environment .card .card-content .item .bottom {
   margin-top: 0.1rem;
+  text-align: center;
 }
 .c7ncd-deployment-resource-environment .card .card-content .item .bottom span {
   height: 0.18rem;
