@@ -10,6 +10,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -17,6 +18,8 @@ import org.springframework.stereotype.Component;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.app.eventhandler.payload.AppServicePayload;
+import io.choerodon.devops.app.eventhandler.payload.ApplicationPayload;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.AppServiceVersionDTO;
@@ -126,6 +129,17 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
     public List<AppServiceMarketVersionVO> listServiceVersionsByAppServiceId(Long appServiceId) {
         List<AppServiceVersionDTO> appServiceVersionDTOList = appServiceVersionService.baseListByAppServiceId(appServiceId);
         return ConvertUtils.convertList(appServiceVersionDTOList, AppServiceMarketVersionVO.class);
+    }
+
+    @Override
+    public void downLoadApp(ApplicationPayload applicationPayload) {
+//        applicationPayload.getAppServicePayloads().forEach(appServicePayload -> {
+//            AppServiceDownloadPayload downloadPayload = new AppServiceDownloadPayload();
+//            BeanUtils.copyProperties(appServicePayload, downloadPayload);
+//            downloadPayload.setGitlabGroupId(groupDTO.getId());
+//            downloadPayload.setGitlabUserId(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+//            downloadPayload.setPath(groupDTO.getPath());
+//        }
     }
 
     private void packageSourceCode(AppServiceMarketVO appServiceMarketVO, String appFilePath, Long iamUserId) {

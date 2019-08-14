@@ -21,6 +21,8 @@ import io.choerodon.devops.api.vo.AppMarketUploadVO;
 import io.choerodon.devops.api.vo.AppServiceMarketVO;
 import io.choerodon.devops.api.vo.AppServiceMarketVersionVO;
 import io.choerodon.devops.api.vo.HarborMarketVO;
+import io.choerodon.devops.app.eventhandler.payload.AppServicePayload;
+import io.choerodon.devops.app.eventhandler.payload.ApplicationPayload;
 import io.choerodon.devops.app.service.OrgAppMarketService;
 import io.choerodon.mybatis.annotation.SortDefault;
 import io.choerodon.swagger.annotation.CustomPageRequest;
@@ -115,6 +117,23 @@ public class OrgAppMarketController {
         orgAppMarketService.createHarborRepository(harborMarketVO);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
+
+    /**
+     *
+     * @param applicationPayload
+     * @return
+     */
+    @Permission(type = ResourceType.SITE, permissionWithin = true)
+    @ApiOperation(value = "")
+    @PostMapping("/harbor_repo")
+    public ResponseEntity downLoadApp(
+            @ApiParam(value = "应用信息",required = true)
+            @RequestBody ApplicationPayload applicationPayload) {
+        orgAppMarketService.downLoadApp(applicationPayload);
+        return new ResponseEntity(HttpStatus.NO_CONTENT);
+    }
+
+
 
 }
 

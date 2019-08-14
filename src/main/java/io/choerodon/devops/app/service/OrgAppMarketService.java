@@ -9,6 +9,8 @@ import io.choerodon.devops.api.vo.AppMarketUploadVO;
 import io.choerodon.devops.api.vo.AppServiceMarketVO;
 import io.choerodon.devops.api.vo.AppServiceMarketVersionVO;
 import io.choerodon.devops.api.vo.HarborMarketVO;
+import io.choerodon.devops.app.eventhandler.payload.AppServicePayload;
+import io.choerodon.devops.app.eventhandler.payload.ApplicationPayload;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -27,4 +29,6 @@ public interface OrgAppMarketService {
     List<AppServiceMarketVersionVO> listServiceVersionsByAppServiceId(Long appServiceId);
 
     void createHarborRepository(HarborMarketVO harborMarketVO);
+
+    void downLoadApp(ApplicationPayload appServicePayload);
 }
