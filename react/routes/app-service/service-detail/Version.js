@@ -1,5 +1,5 @@
 import React from 'react';
-import { TabPage, Content, Header, Breadcrumb } from '@choerodon/boot';
+import { TabPage, Content, Header, Breadcrumb } from '@choerodon/master';
 import { Table } from 'choerodon-ui/pro';
 import { Button } from 'choerodon-ui';
 import { FormattedMessage } from 'react-intl';

@@ -7,7 +7,7 @@ import {
   Switch,
 } from 'react-router-dom';
 
-import { asyncRouter, nomatch } from '@choerodon/boot';
+import { asyncRouter, nomatch } from '@choerodon/master';
 
 const BranchHome = asyncRouter(() => import('./branchHome'), () => import('../../stores/project/branchManage'));
 

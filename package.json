@@ -50,8 +50,8 @@
     "xterm": "^3.12.0"
   },
   "devDependencies": {
-    "@choerodon/boot": "0.19.x",
-    "@choerodon/master": "0.19.x",
+    "@choerodon/boot": "^0.20.4",
+    "@choerodon/master": "^0.20.10",
     "babel-preset-env": "^1.7.0",
     "choerodon-ui": "^0.8.3",
     "del": "^4.1.1",

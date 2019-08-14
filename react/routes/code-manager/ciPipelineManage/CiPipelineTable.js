@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { observer } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import { Button, Table, Tooltip } from 'choerodon-ui';
-import { Permission, stores } from '@choerodon/boot';
+import { Permission, stores } from '@choerodon/master';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import TimeAgo from 'timeago-react';
 import MouserOverWrapper from '../../../components/MouseOverWrapper';

@@ -1,6 +1,6 @@
 import React, { Fragment, Component } from 'react';
 import { Card, Button, Icon } from 'choerodon-ui';
-import { Content, Header } from '@choerodon/boot';
+import { Content, Header } from '@choerodon/master';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { withRouter } from 'react-router-dom';
 

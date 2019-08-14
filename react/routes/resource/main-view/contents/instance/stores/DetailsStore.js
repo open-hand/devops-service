@@ -1,5 +1,5 @@
 import { observable, action, computed } from 'mobx';
-import { axios } from '@choerodon/boot';
+import { axios } from '@choerodon/master';
 import { handlePromptError } from '../../../../../../utils';
 import resourceData from './mock';
 

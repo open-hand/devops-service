@@ -1,4 +1,4 @@
-import { axios } from '@choerodon/boot';
+import { axios } from '@choerodon/master';
 import getTablePostData from '../../../../utils/getTablePostData';
 
 export default ((formatMessage, projectId, id) => ({

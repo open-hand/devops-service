@@ -3,7 +3,7 @@ import { Form, TextField, Select, Upload, SelectBox, UrlField, Password, EmailFi
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import { Icon, Input, Button } from 'choerodon-ui';
-import { axios } from '@choerodon/boot';
+import { axios } from '@choerodon/master';
 
 import '../index.less';
 

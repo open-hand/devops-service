@@ -1,6 +1,6 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { TabPage, Content, Header, Breadcrumb } from '@choerodon/boot';
+import { TabPage, Content, Header, Breadcrumb } from '@choerodon/master';
 import { Button } from 'choerodon-ui';
 import CodeManagerHeader from '../../header';
 import CodeManagerToolBar from '../../tool-bar';  

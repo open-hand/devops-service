@@ -1,7 +1,7 @@
 import React, { Fragment, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { injectIntl } from 'react-intl';
-import { Action } from '@choerodon/boot';
+import { Action } from '@choerodon/master';
 import PodCircle from '../../components/pod-circle';
 import { useResourceStore } from '../../../stores';
 

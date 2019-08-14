@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { observer } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import { Button, Tooltip, Modal, Table, Popover, Select, Icon } from 'choerodon-ui';
-import { Content, Header, Page, Permission, stores } from '@choerodon/boot';
+import { Content, Header, Page, Permission, stores } from '@choerodon/master';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import _ from 'lodash';
 import BranchCreate from './branch-create';

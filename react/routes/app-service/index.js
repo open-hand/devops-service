@@ -4,7 +4,7 @@ import {
   Switch,
 } from 'react-router-dom';
 
-import { asyncRouter, nomatch } from '@choerodon/boot';
+import { asyncRouter, nomatch } from '@choerodon/master';
 
 const AppList = asyncRouter(() => import('./app-list'));
 const ServiceDetail = asyncRouter(() => import('./service-detail'));

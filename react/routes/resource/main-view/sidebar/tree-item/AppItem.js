@@ -1,5 +1,5 @@
 import React, { Fragment, useMemo } from 'react';
-import { Action } from '@choerodon/boot';
+import { Action } from '@choerodon/master';
 import { injectIntl } from 'react-intl';
 import { Icon } from 'choerodon-ui/pro';
 import PropTypes from 'prop-types';

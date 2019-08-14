@@ -3,7 +3,7 @@ import { observer, inject } from 'mobx-react';
 import { withRouter, Prompt } from 'react-router-dom';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { Button, Icon, Form, Input, Select, Radio } from 'choerodon-ui';
-import { Content, Header, Page } from '@choerodon/boot';
+import { Content, Header, Page } from '@choerodon/master';
 import _ from 'lodash';
 import StageCard from '../components/stageCard';
 import StageCreateModal from '../components/stageCreateModal';

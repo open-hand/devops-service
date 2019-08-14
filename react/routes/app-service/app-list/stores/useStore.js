@@ -1,5 +1,5 @@
 import { useLocalStore } from 'mobx-react-lite';
-import { axios } from '@choerodon/boot';
+import { axios } from '@choerodon/master';
 import map from 'lodash/map';
 import { handlePromptError } from '../../../../utils';
 

@@ -16,7 +16,7 @@ import {
   Radio,
   Tooltip,
 } from 'choerodon-ui';
-import { stores, Content } from '@choerodon/boot';
+import { stores, Content } from '@choerodon/master';
 import AppName from '../../../../../../../../components/appName';
 import InterceptMask from '../../../../../../../../components/interceptMask/InterceptMask';
 import Tips from '../../../../../../../../components/Tips/Tips';
