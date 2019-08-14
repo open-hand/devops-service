@@ -233,7 +233,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(projectId);
         OrganizationDTO organizationDTO = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
-        AppServiceRepVO appServiceRepVO = ConvertUtils.convertObject(appServiceDTO, AppServiceRepVO.class);
+        AppServiceRepVO appServiceRepVO = dtoToRepVo(appServiceDTO);
         List<DevopsConfigVO> devopsConfigVOS=devopsConfigService.queryByResourceId(appServiceId,APP_SERVICE);
         appServiceRepVO.setDevopsConfigVOS(devopsConfigVOS);
         //url地址拼接
@@ -2233,11 +2233,24 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
     }
 
-    private AppServiceRepVO dtoToRepVo(AppServiceDTO applicationDTO) {
-        AppServiceRepVO applicationRepVO = new AppServiceRepVO();
-        BeanUtils.copyProperties(applicationDTO, applicationRepVO);
-        applicationRepVO.setGitlabProjectId(TypeUtil.objToLong(applicationDTO.getGitlabProjectId()));
-        return applicationRepVO;
+    private AppServiceRepVO dtoToRepVo(AppServiceDTO appServiceDTO) {
+        AppServiceRepVO appServiceRepVO = new AppServiceRepVO();
+        BeanUtils.copyProperties(appServiceDTO, appServiceRepVO);
+        IamUserDTO createUser = iamServiceClientOperator.queryUserByUserId(appServiceDTO.getCreatedBy());
+        IamUserDTO updateUser = iamServiceClientOperator.queryUserByUserId(appServiceDTO.getLastUpdatedBy());
+        if (createUser != null) {
+            appServiceRepVO.setCreateUserName(createUser.getRealName());
+            appServiceRepVO.setCreateLoginName(createUser.getLoginName());
+        }
+        if (updateUser != null) {
+            appServiceRepVO.setUpdateUserName(updateUser.getRealName());
+            appServiceRepVO.setUpdateLoginName(updateUser.getLoginName());
+        }
+        appServiceRepVO.setGitlabProjectId(TypeUtil.objToLong(appServiceDTO.getGitlabProjectId()));
+        return appServiceRepVO;
+
+
+
     }
 
     private DevopsUserPermissionVO iamUserTOUserPermissionVO(IamUserDTO iamUserDTO, String role, Date creationDate) {

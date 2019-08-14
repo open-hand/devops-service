@@ -29,6 +29,12 @@ public class AppServiceRepVO {
     private List<DevopsConfigVO> devopsConfigVOS;
     private String imgUrl;
     private Date creationDate;
+    private Date lastUpdateDate;
+    private String createUserName;
+    private String createLoginName;
+    private String updateUserName;
+    private String updateLoginName;
+
 
     public List<DevopsConfigVO> getDevopsConfigVOS() {
         return devopsConfigVOS;
@@ -180,5 +186,45 @@ public class AppServiceRepVO {
 
     public void setGitlabProjectId(Long gitlabProjectId) {
         this.gitlabProjectId = gitlabProjectId;
+    }
+
+    public Date getLastUpdateDate() {
+        return lastUpdateDate;
+    }
+
+    public void setLastUpdateDate(Date lastUpdateDate) {
+        this.lastUpdateDate = lastUpdateDate;
+    }
+
+    public String getCreateUserName() {
+        return createUserName;
+    }
+
+    public void setCreateUserName(String createUserName) {
+        this.createUserName = createUserName;
+    }
+
+    public String getCreateLoginName() {
+        return createLoginName;
+    }
+
+    public void setCreateLoginName(String createLoginName) {
+        this.createLoginName = createLoginName;
+    }
+
+    public String getUpdateUserName() {
+        return updateUserName;
+    }
+
+    public void setUpdateUserName(String updateUserName) {
+        this.updateUserName = updateUserName;
+    }
+
+    public String getUpdateLoginName() {
+        return updateLoginName;
+    }
+
+    public void setUpdateLoginName(String updateLoginName) {
+        this.updateLoginName = updateLoginName;
     }
 }
