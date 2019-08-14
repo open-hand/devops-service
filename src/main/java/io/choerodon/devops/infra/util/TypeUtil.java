@@ -5,6 +5,8 @@ import org.apache.commons.lang.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
+import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
 
 /**
  * Created by younger on 2018/3/29.

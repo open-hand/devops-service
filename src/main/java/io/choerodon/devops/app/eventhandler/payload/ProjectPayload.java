@@ -20,8 +20,6 @@ public class ProjectPayload {
     private Long programId;
     private Long applicationId;
 
-    private ApplicationEventPayload applicationEventPayload;
-
     private Set<String> roleLabels;
 
     public Long getProjectId() {
@@ -118,13 +116,5 @@ public class ProjectPayload {
 
     public void setApplicationId(Long applicationId) {
         this.applicationId = applicationId;
-    }
-
-    public ApplicationEventPayload getApplicationEventPayload() {
-        return applicationEventPayload;
-    }
-
-    public void setApplicationEventPayload(ApplicationEventPayload applicationEventPayload) {
-        this.applicationEventPayload = applicationEventPayload;
     }
 }

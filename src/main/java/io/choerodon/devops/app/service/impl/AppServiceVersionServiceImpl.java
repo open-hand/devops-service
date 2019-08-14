@@ -11,7 +11,6 @@ import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import io.kubernetes.client.JSON;
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -361,7 +360,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
 
     @Override
     public String queryValueById(Long projectId, Long appServiceId) {
-        return appServiceVersionMapper.queryValueByAppId(appServiceId);
+        return appServiceVersionMapper.queryValueByAppServiceId(appServiceId);
     }
 
     @Override
@@ -462,7 +461,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
             appServiceVersionDTO.setObjectVersionNumber(appServiceVersionMapper.selectByPrimaryKey(id).getObjectVersionNumber());
             if (appServiceVersionDTO.getObjectVersionNumber() == null) {
                 appServiceVersionDTO.setPublishTime(new java.sql.Date(new java.util.Date().getTime()));
-                appServiceVersionMapper.updateObJectVersionNumber(id);
+                appServiceVersionMapper.updateObjectVersionNumber(id);
                 appServiceVersionDTO.setObjectVersionNumber(1L);
             }
             appServiceVersionMapper.updateByPrimaryKeySelective(appServiceVersionDTO);
@@ -489,17 +488,11 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         }
 
         PageInfo<AppServiceVersionDTO> applicationVersionDTOPageInfo;
-        if (!StringUtils.isEmpty(searchParam)) {
-            Map<String, Object> searchParamMap = TypeUtil.castMapParams(searchParam);
-            applicationVersionDTOPageInfo = PageHelper
-                    .startPage(pageRequest.getPage(), pageRequest.getSize(), sortResult).doSelectPageInfo(() -> appServiceVersionMapper.listApplicationVersion(projectId, appServiceId,
-                            TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
-                            TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS)), isProjectOwner, userId));
-        } else {
-            applicationVersionDTOPageInfo = PageHelper.startPage(
-                    pageRequest.getPage(), pageRequest.getSize(), sortResult).doSelectPageInfo(() -> appServiceVersionMapper
-                    .listApplicationVersion(projectId, appServiceId, null, null, isProjectOwner, userId));
-        }
+        Map<String, Object> searchParamMap = TypeUtil.castMapParams(searchParam);
+        applicationVersionDTOPageInfo = PageHelper
+                .startPage(pageRequest.getPage(), pageRequest.getSize(), sortResult).doSelectPageInfo(() -> appServiceVersionMapper.listApplicationVersion(projectId, appServiceId,
+                        TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
+                        TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS)), isProjectOwner, userId));
         return applicationVersionDTOPageInfo;
     }
 
@@ -587,7 +580,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     }
 
     public String baseQueryValueByAppId(Long appServiceId) {
-        return appServiceVersionMapper.queryValueByAppId(appServiceId);
+        return appServiceVersionMapper.queryValueByAppServiceId(appServiceId);
     }
 
 }

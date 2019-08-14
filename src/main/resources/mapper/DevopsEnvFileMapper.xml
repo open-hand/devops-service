@@ -11,17 +11,4 @@
         d.env_id = #{envId} and d.file_path = #{filePath}
         ORDER BY d.id DESC LIMIT 1
     </select>
-
-    <select id="queryByEnvAndPathAndCommits" resultType="io.choerodon.devops.infra.dto.DevopsEnvFileDTO">
-        SELECT
-        d.*
-        FROM
-        devops_env_file d
-        WHERE
-        d.env_id = #{envId} and d.file_path = #{filePath}
-        and d.commit_sha in
-        <foreach collection="commits" index="index" item="commit" open="(" separator="," close=")">
-            #{commit}
-        </foreach>
-    </select>
 </mapper>

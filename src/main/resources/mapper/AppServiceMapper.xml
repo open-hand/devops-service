@@ -71,7 +71,7 @@
         da.`code`,
         da.`name` ,
         dam.share_level,
-        da.app_id app_id,
+        da.app_id app_id
         FROM
         devops_app_service da
         JOIN devops_app_service_instance dai ON dai.app_service_id = da.id
@@ -135,51 +135,42 @@
 
     <sql id="sqlparam">
         <if test='searchParam != null'>
-            <if test='searchParam.code != null and searchParam.code.size > 0'>
-                AND
-                <foreach collection="searchParam.code" item="code" open="(" separator=" OR " close=")">
-                    da.code LIKE CONCAT(CONCAT('%', #{code, jdbcType=VARCHAR}),'%')
-                </foreach>
+            <if test='searchParam.code != null and searchParam.code.length > 0'>
+                AND da.code LIKE CONCAT(CONCAT('%', #{searchParam.code, jdbcType=VARCHAR}),'%')
             </if>
-            <if test='searchParam.type != null and searchParam.type.size > 0'>
+            <if test='searchParam.type != null'>
                 AND
-                <foreach collection="searchParam.type" item="type">
-                    <if test='type == 0'>
+                    <if test='searchParam.type == 0'>
                         da.type = 'normal'
                     </if>
-                    <if test="type == 1">
+                    <if test="searchParam.type == 1">
                         da.type = 'test'
                     </if>
-                </foreach>
             </if>
-            <if test='searchParam.name != null and searchParam.name.size > 0'>
+            <if test='searchParam.name != null and searchParam.name.length > 0'>
                 AND
-                <foreach collection="searchParam.name" item="name" open="(" separator=" OR " close=")">
-                    da.name LIKE CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
-                </foreach>
+                    da.name LIKE CONCAT(CONCAT('%', #{searchParam.name, jdbcType=VARCHAR}),'%')
             </if>
-            <if test='searchParam.active != null and searchParam.active.size > 0'>
+            <if test='searchParam.active != null'>
                 AND
-                <foreach collection="searchParam.active" item="active">
-                    <if test='active == -1'>
+                    <if test='searchParam.active == -1'>
                         da.is_failed = 1
                     </if>
-                    <if test="active == 0">
+                    <if test="searchParam.active == 0">
                         da.is_active = 0
                     </if>
-                    <if test="active == 1">
+                    <if test="searchParam.active == 1">
                         da.is_active = 1
                         AND da.is_synchro = 1
                         AND (da.is_failed IS NULL OR is_failed=0)
                     </if>
-                    <if test="active == 2">
+                    <if test="searchParam.active == 2">
                         da.is_synchro = 0
                         AND (da.is_failed IS NULL OR is_failed=0)
                     </if>
-                </foreach>
             </if>
         </if>
-        <if test='params != null and params.size>0'>
+        <if test='params != null and params.size > 0'>
             AND
             <foreach collection="params" item="param" open="(" separator=" OR " close=")">
                  (da.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
@@ -299,7 +290,7 @@
         where da.id = #{appServiceId}
     </update>
 
-    <update id="updateAppHarborConfig" parameterType="io.choerodon.devops.infra.dto.AppServiceDTO">
+    <update id="updateHarborConfig" parameterType="io.choerodon.devops.infra.dto.AppServiceDTO">
         UPDATE devops_app_service da
         <if test='harborPrivate != null'>
             <if test='harborPrivate == true'>
@@ -352,7 +343,7 @@
           AND da.app_id is null
     </select>
 
-    <select id="listShareApplications" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
+    <select id="listShareApplicationService" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
         SELECT
             da.id,
             da.`code`,
@@ -381,4 +372,33 @@
             </foreach>
         </if>
     </select>
+
+    <select id="queryOrganizationShareApps" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
+          SELECT DISTINCT
+            das.id,
+            das.app_id,
+            das.`name`,
+            das.CODE
+        FROM
+            devops_app_service das
+            LEFT JOIN devops_app_service_share_rule dassr ON das.id = dassr.app_service_id
+        WHERE
+            dassr.app_service_id IS NOT NULL
+    </select>
+
+    <select id="queryMarketDownloadApps" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
+        SELECT DISTINCT
+            das.id,
+            das.app_id,
+            das.`name`,
+            das.CODE
+        FROM
+            devops_app_service das
+            LEFT JOIN devops_project db ON das.app_id = db.app_id
+        WHERE
+            das.app_id IS NOT NULL
+            AND db.iam_project_id IS NULL
+            AND db.app_id IS NOT NULL
+    </select>
+
 </mapper>

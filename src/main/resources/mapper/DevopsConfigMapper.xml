@@ -41,29 +41,27 @@
 
     <sql id="sqlparam">
         <if test='searchParam != null'>
-            <if test='searchParam.url != null and searchParam.url.size > 0'>
+            <if test='searchParam.url != null and searchParam.url.length > 0'>
                 AND
-                <foreach collection="searchParam.url" item="url" open="(" separator=" OR " close=")">
                     REPLACE(json_extract(dpc.config,'$.url'),'"','') LIKE CONCAT(CONCAT('%',
-                    #{url, jdbcType=VARCHAR}),'%')
-                </foreach>
+                    #{searchParam.url, jdbcType=VARCHAR}),'%')
             </if>
-            <if test='searchParam.name != null and searchParam.name.size > 0'>
+            <if test='searchParam.name != null and searchParam.name.length > 0'>
                 AND
-                <foreach collection="searchParam.name" item="name" open="(" separator=" OR " close=")">
-                    dpc.name LIKE CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
-                </foreach>
+                    dpc.name LIKE CONCAT(CONCAT('%', #{searchParam.name, jdbcType=VARCHAR}),'%')
             </if>
         </if>
-        <if test='param != null and param != ""'>
-            AND (REPLACE(json_extract(dpc.config,'$.url'),'"','') LIKE CONCAT(CONCAT('%',
-            #{param, jdbcType=VARCHAR}),'%')
-            OR dpc.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            )
+        <if test='params != null and params.size > 0'>
+            AND
+            <foreach collection="params" item="param" open="(" separator=" OR " close=")">
+                (REPLACE(json_extract(dpc.config,'$.url'),'"','') LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}), '%')
+                OR dpc.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}), '%')
+                )
+            </foreach>
         </if>
     </sql>
 
-    <select id="queryByIdAndType" resultType="io.choerodon.devops.infra.dto.DevopsConfigDTO">
+    <select id="listByIdAndType" resultType="io.choerodon.devops.infra.dto.DevopsConfigDTO">
             SELECT
                 dpc.id,
                 dpc.project_id,
@@ -110,10 +108,19 @@
     </delete>
 
 
-    <select id="existAppSerciveConfig" resultType="io.choerodon.devops.infra.dto.DevopsConfigDTO">
+    <select id="existAppServiceConfig" resultType="io.choerodon.devops.infra.dto.DevopsConfigDTO">
         SELECT
         * from devops_config
         where app_service_id is not null
     </select>
+
+
+    <select id="queryDefaultConfig" resultType="io.choerodon.devops.infra.dto.DevopsConfigDTO">
+        SELECT
+        * from devops_config
+        where app_service_id is null and organization_id is null and project_id is null
+        and `type` = #{type}
+    </select>
+
 
 </mapper>

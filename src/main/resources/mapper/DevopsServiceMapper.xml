@@ -90,10 +90,10 @@
         cmd.`status` commandStatus,
         cmd.command_type commandType,
         cmd.error error,
-        de.project_id AS appServiceProjectId,
+        project.iam_project_id AS app_service_project_id,
         dsai.instance_id AS instance_id,
-        dsai.code AS code,
-        dai.`status` AS instance_status
+        dsai.code AS ins_code,
+        dai.`status` AS ins_status
         FROM
         (
         SELECT
@@ -119,6 +119,7 @@
         LEFT JOIN devops_app_service da ON da.id = ds.app_service_id
         LEFT JOIN devops_service_instance dsai ON dsai.service_id = ds.id
         LEFT JOIN devops_app_service_instance dai ON dai.id = dsai.instance_id
+        LEFT JOIN devops_project project ON da.app_id = project.app_id
         WHERE 1
         <if test="instanceId != null">
             AND dai.id = #{instanceId}
@@ -136,7 +137,7 @@
         ds.`name`,
         ds.external_ip,
         ds.labels,
-        de.project_id appServiceProjectId,
+        project.iam_project_id app_service_project_id,
         ds. ports,
         ds.end_points,
         ds.`status`,
@@ -146,10 +147,10 @@
         de.id AS env_id,
         de.`name` AS env_name,
         dsai.instance_id AS instance_id,
-        dai.`status` AS instance_status,
         ds.last_update_date,
         ds.creation_date,
         ds.created_by,
+        ds.last_updated_by,
         de.code AS env_code,
         (SELECT detail.message
          FROM devops_env_resource resource
@@ -157,8 +158,10 @@
          WHERE resource.kind = 'Service'
            AND resource.name = ds.name
            AND env_id = resource.env_id
+         LIMIT 1
+        # 使用LIMIT 1是因为表设计原因，根据多个实例创建的网络会有多条记录，但是message是一样的
         ) AS message,
-        dai.code AS ins_code,
+        dsai.code AS ins_code,
         (SELECT count(1)
          FROM devops_env_pod dp
          WHERE dp.instance_id = dai.id) pod_count,
@@ -176,6 +179,7 @@
         LEFT JOIN devops_service_instance dsai ON dsai.service_id = ds.id
         LEFT JOIN devops_app_service_instance dai ON dai.id = dsai.instance_id
         LEFT JOIN devops_app_service da ON da.id = dai.app_service_id
+        LEFT JOIN devops_project project ON da.app_id = project.app_id
         WHERE
         ds.id = #{id}
         AND ds.`status` != 'deleted'
@@ -198,7 +202,7 @@
         <result property="status" column="status"/>
         <result property="appServiceId" column="app_service_id"/>
         <result property="appServiceName" column="app_service_name"/>
-        <result property="appServiceProjectId" column="appServiceProjectId"/>
+        <result property="appServiceProjectId" column="app_service_project_id"/>
         <result property="loadBalanceIp" column="load_balance_ip"/>
         <result property="type" column="type"/>
         <result property="envId" column="env_id"/>
@@ -212,7 +216,8 @@
         <result property="lastUpdateDate" column="last_update_by"/>
         <result property="createdBy" column="created_by"/>
         <result property="creationDate" column="creation_date"/>
-        <collection property="appServiceInstance" ofType="io.choerodon.devops.infra.dto.AppServiceInstanceInfoDTO">
+        <result property="lastUpdatedBy" column="last_updated_by"/>
+        <collection property="instances" ofType="io.choerodon.devops.infra.dto.AppServiceInstanceInfoDTO" notNullColumn="instance_id">
             <result column="instance_id" property="id" jdbcType="VARCHAR"/>
             <result column="ins_code" property="code" jdbcType="VARCHAR"/>
             <result column="ins_status" property="status" jdbcType="VARCHAR"/>
@@ -225,47 +230,40 @@
 
     <sql id="sqlparam">
         <if test='searchParam != null'>
-            <if test='searchParam.name != null and searchParam.name.size > 0'>
+            <if test='searchParam.name != null and searchParam.name.length > 0'>
                 AND
-                <foreach collection="searchParam.name" item="name" open="(" separator=" OR " close=")">
-                    ds.`name` LIKE CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
-                </foreach>
+                    ds.`name` LIKE CONCAT(CONCAT('%', #{searchParam.name, jdbcType=VARCHAR}),'%')
             </if>
-            <if test='searchParam.appServiceName != null and searchParam.appServiceName.size > 0'>
+            <if test='searchParam.appServiceName != null and searchParam.appServiceName.length > 0'>
                 AND
-                <foreach collection="searchParam.appServiceName" item="appServiceName" open="(" separator=" OR " close=")">
-                    da.`name` LIKE CONCAT(CONCAT('%', #{appServiceName, jdbcType=VARCHAR}),'%')
-                </foreach>
+                    da.`name` LIKE CONCAT(CONCAT('%', #{searchParam.appServiceName, jdbcType=VARCHAR}),'%')
             </if>
-            <if test='searchParam.envName != null and searchParam.envName.size > 0'>
+            <if test='searchParam.envName != null and searchParam.envName.length > 0'>
                 AND
-                <foreach collection="searchParam.envName" item="envName" open="(" separator=" OR " close=")">
-                    de.`name` LIKE CONCAT(CONCAT('%', #{envName, jdbcType=VARCHAR}),'%')
-                </foreach>
+                    de.`name` LIKE CONCAT(CONCAT('%', #{searchParam.envName, jdbcType=VARCHAR}),'%')
             </if>
-            <if test='searchParam.envCode != null and searchParam.envCode.size > 0'>
+            <if test='searchParam.envCode != null and searchParam.envCode.length > 0'>
                 AND
-                <foreach collection="searchParam.envCode" item="envCode" open="(" separator=" OR " close=")">
-                    de.code LIKE CONCAT(CONCAT('%', #{envCode, jdbcType=VARCHAR}),'%')
-                </foreach>
+                    de.code LIKE CONCAT(CONCAT('%', #{searchParam.envCode, jdbcType=VARCHAR}),'%')
             </if>
-            <if test='searchParam.externalIp != null and searchParam.externalIp.size > 0'>
+            <if test='searchParam.externalIp != null and searchParam.externalIp.length > 0'>
                 AND
-                <foreach collection="searchParam.externalIp" item="externalIp" open="(" separator=" OR " close=")">
-                    ds.external_ip LIKE CONCAT(CONCAT('%', #{externalIp, jdbcType=VARCHAR}),'%')
-                </foreach>
+                    ds.external_ip LIKE CONCAT(CONCAT('%', #{searchParam.externalIp, jdbcType=VARCHAR}),'%')
             </if>
         </if>
-        <if test='param != null and param != ""'>
-            AND (ds.`name` LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR da.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR de.`name` LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR de.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR ds.external_ip LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%') )
+        <if test='params != null and params.size > 0'>
+            AND
+            <foreach collection="params" item="param" open="(" separator=" OR " close=")">
+                (ds.`name` LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                OR da.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                OR de.`name` LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                OR de.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                OR ds.external_ip LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%') )
+            </foreach>
         </if>
     </sql>
 
-    <select id="checkEnvHasService" resultType="java.lang.Boolean">
+    <select id="checkEnvContainingService" resultType="java.lang.Boolean">
         SELECT
         COUNT( 1 ) > 0 exist
         FROM

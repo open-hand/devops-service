@@ -54,4 +54,9 @@ databaseChangeLog(logicalFilePath: 'db/devops_certification.groovy') {
         }
     }
 
+    changeSet(author: 'ZMF', id: '2019-08-12-add-column') {
+        addColumn(tableName: 'devops_certification') {
+            column(name: "project_id", type: "BIGINT UNSIGNED", afterColumn: 'organization_id', remarks: '项目ID')
+        }
+    }
 }

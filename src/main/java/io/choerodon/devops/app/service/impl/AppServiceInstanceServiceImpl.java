@@ -68,6 +68,7 @@ public class  AppServiceInstanceServiceImpl implements AppServiceInstanceService
     private static final String FILE_SEPARATOR = "file.separator";
     private static final String C7NHELM_RELEASE = "C7NHelmRelease";
     private static final String RELEASE_NAME = "ReleaseName";
+    public static final String APP_SERVICE = "appService";
     private static Gson gson = new Gson();
 
     @Value("${agent.version}")
@@ -155,11 +156,11 @@ public class  AppServiceInstanceServiceImpl implements AppServiceInstanceService
 
     @Override
     public PageInfo<AppServiceInstanceInfoVO> pageInstanceInfoByOptions(Long projectId, Long envId, PageRequest pageRequest, String params) {
-        Map maps = gson.fromJson(params, Map.class);
-        Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
-        List<String> paramList = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
+        Map<String, Object> maps = TypeUtil.castMapParams(params);
         return ConvertUtils.convertPage(PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest))
-                .doSelectPageInfo(() -> appServiceInstanceMapper.listInstanceInfoByEnvAndOptions(envId, searchParamMap, paramList)), AppServiceInstanceInfoVO.class);
+                .doSelectPageInfo(() -> appServiceInstanceMapper.listInstanceInfoByEnvAndOptions(
+                        envId, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)), TypeUtil.cast(maps.get(TypeUtil.PARAMS)))),
+                AppServiceInstanceInfoVO.class);
     }
 
     @Override
@@ -689,10 +690,10 @@ public class  AppServiceInstanceServiceImpl implements AppServiceInstanceService
      * @param envId 环境id
      */
     private void createEnvAppRelationShipIfNon(Long appServiceId, Long envId) {
-        DevopsEnvApplicationDTO devopsEnvApplicationDTO = new DevopsEnvApplicationDTO();
-        devopsEnvApplicationDTO.setAppServiceId(appServiceId);
-        devopsEnvApplicationDTO.setEnvId(envId);
-        devopsEnvAppServiceMapper.insertIgnore(devopsEnvApplicationDTO);
+        DevopsEnvAppServiceDTO devopsEnvAppServiceDTO = new DevopsEnvAppServiceDTO();
+        devopsEnvAppServiceDTO.setAppServiceId(appServiceId);
+        devopsEnvAppServiceDTO.setEnvId(envId);
+        devopsEnvAppServiceMapper.insertIgnore(devopsEnvAppServiceDTO);
     }
 
     @Override
@@ -1418,10 +1419,10 @@ public class  AppServiceInstanceServiceImpl implements AppServiceInstanceService
         return appServiceInstanceDTO;
     }
 
-    private String getSecret(AppServiceDTO applicationDTO, String secretCode, DevopsEnvironmentDTO devopsEnvironmentDTO) {
+    private String getSecret(AppServiceDTO appServiceDTO, String secretCode, DevopsEnvironmentDTO devopsEnvironmentDTO) {
         //如果应用绑定了私有镜像库,则处理secret
-        if (applicationDTO.getHarborConfigId() != null) {
-            DevopsConfigDTO devopsConfigDTO = devopsConfigService.baseQuery(applicationDTO.getHarborConfigId());
+        DevopsConfigDTO devopsConfigDTO = devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE,HARBOR);
+        if (devopsConfigDTO != null) {
             ConfigVO configVO = gson.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class);
             if (configVO.getPrivate() != null) {
                 DevopsRegistrySecretDTO devopsRegistrySecretDTO = devopsRegistrySecretService.baseQueryByEnvAndId(devopsEnvironmentDTO.getCode(), devopsConfigDTO.getId());

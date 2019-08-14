@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.controller.v1;
 
+import java.util.List;
 import java.util.Optional;
 
 import io.choerodon.base.annotation.Permission;
@@ -31,6 +32,20 @@ import springfox.documentation.annotations.ApiIgnore;
 public class OrgAppMarketController {
     @Autowired
     private OrgAppMarketService orgAppMarketService;
+
+
+    @Permission(type = ResourceType.SITE, permissionWithin = true)
+    @ApiOperation(value = "查询所有应用服务")
+    @CustomPageRequest
+    @GetMapping("/list_all_app_services")
+    public ResponseEntity<List<AppServiceMarketVO>> listAllAppServices(){
+        return Optional.ofNullable(
+                orgAppMarketService.listAllAppServices())
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.app.services.listAll"));
+    }
+
+
 
     /**
      * @param appId
@@ -69,6 +84,23 @@ public class OrgAppMarketController {
             @RequestBody AppMarketUploadVO appMarketUploadVO) {
         orgAppMarketService.upload(appMarketUploadVO);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
+    }
+
+    /**
+     *
+     * @param appServiceId
+     * @return
+     */
+    @Permission(type = ResourceType.SITE, permissionWithin = true )
+    @ApiOperation(value = "根据应用服务ID查询所对应的应用版本")
+    @GetMapping("/list_versions/{app_service_id}")
+    public ResponseEntity<List<AppServiceMarketVersionVO>> listVersionsByAppServiceId(
+            @ApiParam(value = "应用服务Id")
+            @PathVariable(value = "app_service_id") Long appServiceId){
+        return Optional.ofNullable(
+                orgAppMarketService.listServiceVersionsByAppServiceId(appServiceId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.app.services_version.listByAppServiceId"));
     }
 
 }

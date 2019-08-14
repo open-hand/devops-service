@@ -1,6 +1,8 @@
 package io.choerodon.devops.api.vo;
 
+
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author younger
@@ -24,10 +26,23 @@ public class AppServiceRepVO {
     private String type;
     private Boolean permission;
     private Long objectVersionNumber;
-    private Long harborConfigId;
-    private Long chartConfigId;
+    private List<DevopsConfigVO> devopsConfigVOS;
     private String imgUrl;
     private Date creationDate;
+    private Date lastUpdateDate;
+    private String createUserName;
+    private String createLoginName;
+    private String updateUserName;
+    private String updateLoginName;
+
+
+    public List<DevopsConfigVO> getDevopsConfigVOS() {
+        return devopsConfigVOS;
+    }
+
+    public void setDevopsConfigVOS(List<DevopsConfigVO> devopsConfigVOS) {
+        this.devopsConfigVOS = devopsConfigVOS;
+    }
 
     public Date getCreationDate() {
         return creationDate;
@@ -165,27 +180,51 @@ public class AppServiceRepVO {
         this.objectVersionNumber = objectVersionNumber;
     }
 
-    public Long getHarborConfigId() {
-        return harborConfigId;
-    }
-
-    public void setHarborConfigId(Long harborConfigId) {
-        this.harborConfigId = harborConfigId;
-    }
-
-    public Long getChartConfigId() {
-        return chartConfigId;
-    }
-
-    public void setChartConfigId(Long chartConfigId) {
-        this.chartConfigId = chartConfigId;
-    }
-
     public Long getGitlabProjectId() {
         return gitlabProjectId;
     }
 
     public void setGitlabProjectId(Long gitlabProjectId) {
         this.gitlabProjectId = gitlabProjectId;
+    }
+
+    public Date getLastUpdateDate() {
+        return lastUpdateDate;
+    }
+
+    public void setLastUpdateDate(Date lastUpdateDate) {
+        this.lastUpdateDate = lastUpdateDate;
+    }
+
+    public String getCreateUserName() {
+        return createUserName;
+    }
+
+    public void setCreateUserName(String createUserName) {
+        this.createUserName = createUserName;
+    }
+
+    public String getCreateLoginName() {
+        return createLoginName;
+    }
+
+    public void setCreateLoginName(String createLoginName) {
+        this.createLoginName = createLoginName;
+    }
+
+    public String getUpdateUserName() {
+        return updateUserName;
+    }
+
+    public void setUpdateUserName(String updateUserName) {
+        this.updateUserName = updateUserName;
+    }
+
+    public String getUpdateLoginName() {
+        return updateLoginName;
+    }
+
+    public void setUpdateLoginName(String updateLoginName) {
+        this.updateLoginName = updateLoginName;
     }
 }

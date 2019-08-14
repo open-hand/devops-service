@@ -19,7 +19,7 @@
         </if>
     </select>
 
-    <select id="queryPendingCheck"  resultType="io.choerodon.devops.infra.dto.PipelineStageRecordDTO">
+    <select id="queryByPendingCheckStatus"  resultType="io.choerodon.devops.infra.dto.PipelineStageRecordDTO">
         SELECT
             dpsr.id
         FROM

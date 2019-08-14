@@ -13,7 +13,8 @@
 	dcrc.content resourceContent,
     dcr.created_by,
     dcr.last_update_date,
-    dcr.creation_date
+    dcr.creation_date,
+    dcr.last_updated_by
 FROM
 	devops_customize_resource dcr
 	LEFT JOIN devops_customize_resource_content dcrc ON dcr.content_id = dcrc.id
@@ -43,17 +44,13 @@ FROM
 
     <sql id="sqlparam">
         <if test='searchParam != null'>
-            <if test='searchParam.name != null and searchParam.name.size > 0'>
+            <if test='searchParam.name != null and searchParam.name.length > 0'>
                 AND
-                <foreach collection="searchParam.name" item="name" open="(" separator=" OR " close=")">
-                    dcr.name LIKE CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
-                </foreach>
+                    dcr.name LIKE CONCAT(CONCAT('%', #{searchParam.name, jdbcType=VARCHAR}),'%')
             </if>
-            <if test='searchParam.k8sKind != null and searchParam.k8sKind.size > 0'>
+            <if test='searchParam.k8sKind != null and searchParam.k8sKind.length > 0'>
                 AND
-                <foreach collection="searchParam.k8sKind" item="k8sKind" open="(" separator=" OR " close=")">
-                    dcr.k8s_kind LIKE CONCAT(CONCAT('%', #{k8sKind, jdbcType=VARCHAR}),'%')
-                </foreach>
+                    dcr.k8s_kind LIKE CONCAT(CONCAT('%', #{searchParam.k8sKind, jdbcType=VARCHAR}),'%')
             </if>
         </if>
         <if test='params != null and params.size > 0'>

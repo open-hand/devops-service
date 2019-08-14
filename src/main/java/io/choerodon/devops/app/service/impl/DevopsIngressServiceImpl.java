@@ -148,8 +148,8 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     /**
      * 查询传入的网络是否全是同一个应用下
      *
-     * @param appServiceId      应用id
-     * @param serviceIds 网络id
+     * @param appServiceId 应用id
+     * @param serviceIds   网络id
      * @return false 如果某个网络不存在和应用的关系或所有网络不在同一个应用下
      */
     private boolean isAllServiceInApp(Long appServiceId, List<Long> serviceIds) {
@@ -335,14 +335,15 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         DevopsIngressPathDTO devopsIngressPathDTO = new DevopsIngressPathDTO(vo.getId());
         devopsIngressPathMapper.select(devopsIngressPathDTO).forEach(e -> setDevopsIngressDTO(vo, e));
 
-        if (devopsIngressDTO.getCreatedBy() != 0) {
+        if (devopsIngressDTO.getCreatedBy() != null && devopsIngressDTO.getCreatedBy() != 0) {
             vo.setCreatorName(iamServiceClientOperator.queryUserByUserId(devopsIngressDTO.getCreatedBy()).getRealName());
+        }
+        if (devopsIngressDTO.getLastUpdatedBy() != null && devopsIngressDTO.getLastUpdatedBy() != 0) {
+            vo.setLastUpdaterName(iamServiceClientOperator.queryUserByUserId(devopsIngressDTO.getLastUpdatedBy()).getRealName());
         }
 
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsIngressDTO.getEnvId());
-        if (updatedEnvList.contains(devopsEnvironmentDTO.getClusterId())) {
-            vo.setEnvStatus(true);
-        }
+        vo.setEnvStatus(updatedEnvList.contains(devopsEnvironmentDTO.getClusterId()));
 
         return vo;
     }
@@ -350,16 +351,14 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     @Override
 
     public PageInfo<DevopsIngressVO> pageByEnv(Long projectId, Long envId, PageRequest pageRequest, String params) {
-        PageInfo<DevopsIngressVO> devopsIngressDTOS = basePageByOptions(projectId, envId, null, pageRequest, params);
+        PageInfo<DevopsIngressVO> devopsIngressVOPage = basePageByOptions(projectId, envId, null, pageRequest, params);
 
         List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedEnvList();
-        devopsIngressDTOS.getList().forEach(devopsIngressDTO -> {
-            DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsIngressDTO.getEnvId());
-            if (updatedEnvList.contains(devopsEnvironmentDTO.getClusterId())) {
-                devopsIngressDTO.setEnvStatus(true);
-            }
+        devopsIngressVOPage.getList().forEach(devopsIngressVO -> {
+            DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsIngressVO.getEnvId());
+            devopsIngressVO.setEnvStatus(updatedEnvList.contains(devopsEnvironmentDTO.getClusterId()));
         });
-        return devopsIngressDTOS;
+        return devopsIngressVOPage;
     }
 
     @Override
@@ -752,7 +751,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
         PageInfo<DevopsIngressDTO> devopsIngressDTOPageInfo =
                 PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), sortResult).doSelectPageInfo(
-                        () -> devopsIngressMapper.selectIngress(projectId, envId, serviceId, maps == null ? null : TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)), maps == null ? null : TypeUtil.cast(maps.get(TypeUtil.PARAMS))));
+                        () -> devopsIngressMapper.listIngressByOptions(projectId, envId, serviceId, maps == null ? null : TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)), maps == null ? null : TypeUtil.cast(maps.get(TypeUtil.PARAMS))));
         devopsIngressDTOPageInfo.getList().forEach(t -> {
             DevopsIngressVO devopsIngressVO =
                     new DevopsIngressVO(t.getId(), t.getDomain(), t.getName(),

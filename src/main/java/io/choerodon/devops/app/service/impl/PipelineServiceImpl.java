@@ -6,9 +6,22 @@ import static java.util.Comparator.comparing;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+import io.reactivex.Emitter;
+import io.reactivex.Observable;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.Observer;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -33,22 +46,10 @@ import io.choerodon.devops.infra.enums.PipelineNoticeType;
 import io.choerodon.devops.infra.enums.WorkFlowStatus;
 import io.choerodon.devops.infra.feign.NotifyClient;
 import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
+import io.choerodon.devops.infra.mapper.PipelineAppServiceDeployMapper;
 import io.choerodon.devops.infra.mapper.PipelineMapper;
 import io.choerodon.devops.infra.mapper.PipelineRecordMapper;
 import io.choerodon.devops.infra.util.*;
-import io.reactivex.Emitter;
-import io.reactivex.Observable;
-import io.reactivex.ObservableOnSubscribe;
-import io.reactivex.Observer;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.schedulers.Schedulers;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -104,32 +105,43 @@ public class PipelineServiceImpl implements PipelineService {
     private DevopsDeployRecordService devopsDeployRecordService;
     @Autowired
     private PipelineRecordMapper pipelineRecordMapper;
+    @Autowired
+    private PipelineAppServiceDeployMapper appServiceDeployMapper;
+
 
     @Override
-    public PageInfo<PipelineVO> pageByOptions(Long projectId, Boolean creator, Boolean executor, List<String> envIds, PageRequest pageRequest, String params) {
+    public PageInfo<PipelineVO> pageByOptions(Long projectId, PipelineSearchVO pipelineSearchVO, PageRequest pageRequest) {
         ProjectDTO projectDTO = iamService.queryIamProject(projectId);
-        Map<String, Object> classifyParam = new HashMap<>();
-        classifyParam.put("creator", creator);
-        classifyParam.put("executor", executor);
-        classifyParam.put("userId", DetailsHelper.getUserDetails().getUserId());
-        classifyParam.put("envIds", envIds);
-        PageInfo<PipelineVO> pipelineDTOS = ConvertUtils.convertPage(baseListByOptions(projectId, pageRequest, params, classifyParam), PipelineVO.class);
-        PageInfo<PipelineVO> page = new PageInfo<>();
-        BeanUtils.copyProperties(pipelineDTOS, page);
-        page.setList(pipelineDTOS.getList().stream().peek(t -> {
-            IamUserDTO iamUserDTO = iamService.queryUserByUserId(t.getCreatedBy());
-            t.setCreateUserName(iamUserDTO.getLoginName());
-            t.setCreateUserUrl(iamUserDTO.getImageUrl());
-            t.setCreateUserRealName(iamUserDTO.getRealName());
-            List<Long> pipelineEnvIds = getAllAppDeploy(t.getId()).stream().map(PipelineAppServiceDeployDTO::getEnvId).collect(Collectors.toList());
-            t.setEdit(checkPipelineEnvPermission(projectDTO, pipelineEnvIds));
-        }).collect(Collectors.toList()));
-        return page;
+        Long userId = DetailsHelper.getUserDetails().getUserId();
+        List<PipelineVO> pipelineVOS = ConvertUtils.convertList(pipelineMapper.listByOptions(projectId, pipelineSearchVO, userId, pageRequest.getSort().toSql()), PipelineVO.class);
+        List<PipelineVO> pipelineVOList;
+        Boolean projectOwner = iamService.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectDTO);
+        if (pipelineSearchVO != null && pipelineSearchVO.getManager()) {
+            pipelineVOList = pipelineVOS.stream().filter(t -> {
+                List<Long> pipelineEnvIds = getAllAppDeploy(t.getId()).stream().map(PipelineAppServiceDeployDTO::getEnvId).collect(Collectors.toList());
+                return checkPipelineEnvPermission(pipelineEnvIds, projectOwner);
+            }).peek(t -> {
+                IamUserDTO iamUserDTO = iamService.queryUserByUserId(t.getCreatedBy());
+                t.setCreateUserName(iamUserDTO.getLoginName());
+                t.setCreateUserUrl(iamUserDTO.getImageUrl());
+                t.setEdit(true);
+            }).collect(Collectors.toList());
+        } else {
+            pipelineVOList = pipelineVOS.stream().peek(t -> {
+                IamUserDTO iamUserDTO = iamService.queryUserByUserId(t.getCreatedBy());
+                t.setCreateUserName(iamUserDTO.getLoginName());
+                t.setCreateUserUrl(iamUserDTO.getImageUrl());
+                List<Long> pipelineEnvIds = getAllAppDeploy(t.getId()).stream().map(PipelineAppServiceDeployDTO::getEnvId).collect(Collectors.toList());
+                t.setEdit(checkPipelineEnvPermission(pipelineEnvIds, projectOwner));
+            }).collect(Collectors.toList());
+        }
+        return PageInfoUtil.createPageFromList(pipelineVOList, pageRequest);
     }
 
     @Override
     public PageInfo<PipelineRecordVO> listRecords(Long projectId, Long pipelineId, PageRequest pageRequest, String params, Boolean pendingcheck, Boolean executed, Boolean reviewed) {
         ProjectDTO projectDTO = iamService.queryIamProject(projectId);
+        Boolean projectOwner = iamService.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectDTO);
         Map<String, Object> classifyParam = new HashMap<>();
         classifyParam.put("executed", executed);
         classifyParam.put("reviewed", reviewed);
@@ -180,7 +192,7 @@ public class PipelineServiceImpl implements PipelineService {
             } else if (t.getStatus().equals(WorkFlowStatus.FAILED.toValue())) {
                 if (t.getTriggerType().equals(AUTO) || checkRecordTriggerPermission(t.getId(), null)) {
                     List<Long> pipelineEnvIds = pipelineTaskRecordService.baseQueryAllAutoTaskRecord(t.getId()).stream().map(PipelineTaskRecordDTO::getEnvId).collect(Collectors.toList());
-                    t.setExecute(checkPipelineEnvPermission(projectDTO, pipelineEnvIds));
+                    t.setExecute(checkPipelineEnvPermission(pipelineEnvIds, projectOwner));
                 }
             }
         }).collect(Collectors.toList()));
@@ -194,10 +206,10 @@ public class PipelineServiceImpl implements PipelineService {
         pipelineE.setProjectId(projectId);
         checkName(projectId, pipelineReqVO.getName());
         pipelineE = baseCreate(projectId, pipelineE);
-        createUserRel(pipelineReqVO.getPipelineUserRelDTOS(), pipelineE.getId(), null, null);
+        createUserRel(pipelineReqVO.getPipelineUserRels(), pipelineE.getId(), null, null);
 
         Long pipelineId = pipelineE.getId();
-        List<PipelineStageDTO> pipelineStageES = ConvertUtils.convertList(pipelineReqVO.getPipelineStageVOS(), PipelineStageDTO.class)
+        List<PipelineStageDTO> pipelineStageES = ConvertUtils.convertList(pipelineReqVO.getPipelineStageVOs(), PipelineStageDTO.class)
                 .stream().map(t -> {
                     t.setPipelineId(pipelineId);
                     t.setProjectId(projectId);
@@ -205,8 +217,8 @@ public class PipelineServiceImpl implements PipelineService {
                 }).collect(Collectors.toList());
         for (int i = 0; i < pipelineStageES.size(); i++) {
             Long stageId = pipelineStageES.get(i).getId();
-            createUserRel(pipelineReqVO.getPipelineStageVOS().get(i).getStageUserRelDTOS(), null, stageId, null);
-            List<PipelineTaskVO> taskDTOList = pipelineReqVO.getPipelineStageVOS().get(i).getPipelineTaskVOS();
+            createUserRel(pipelineReqVO.getPipelineStageVOs().get(i).getStageUserRels(), null, stageId, null);
+            List<PipelineTaskVO> taskDTOList = pipelineReqVO.getPipelineStageVOs().get(i).getPipelineTaskVOs();
             if (taskDTOList != null && taskDTOList.size() > 0) {
                 taskDTOList.forEach(t -> createPipelineTask(t, projectId, stageId));
             }
@@ -220,13 +232,13 @@ public class PipelineServiceImpl implements PipelineService {
         pipelineReqVO.setProjectId(projectId);
         PipelineDTO pipelineE = ConvertUtils.convertObject(pipelineReqVO, PipelineDTO.class);
         pipelineE = baseUpdate(projectId, pipelineE);
-        updateUserRel(pipelineReqVO.getPipelineUserRelDTOS(), pipelineE.getId(), null, null);
+        updateUserRel(pipelineReqVO.getPipelineUserRels(), pipelineE.getId(), null, null);
         Long pipelineId = pipelineE.getId();
-        removeStages(pipelineReqVO.getPipelineStageVOS(), pipelineId);
+        removeStages(pipelineReqVO.getPipelineStageVOs(), pipelineId);
 
-        for (int i = 0; i < pipelineReqVO.getPipelineStageVOS().size(); i++) {
-            PipelineStageDTO pipelineStageDTO = createOrUpdateStage(pipelineReqVO.getPipelineStageVOS().get(i), pipelineId, projectId);
-            List<PipelineTaskVO> taskDTOList = pipelineReqVO.getPipelineStageVOS().get(i).getPipelineTaskVOS();
+        for (int i = 0; i < pipelineReqVO.getPipelineStageVOs().size(); i++) {
+            PipelineStageDTO pipelineStageDTO = createOrUpdateStage(pipelineReqVO.getPipelineStageVOs().get(i), pipelineId, projectId);
+            List<PipelineTaskVO> taskDTOList = pipelineReqVO.getPipelineStageVOs().get(i).getPipelineTaskVOs();
             if (taskDTOList != null) {
                 removeTasks(taskDTOList, pipelineStageDTO.getId());
                 taskDTOList.stream().filter(Objects::nonNull).forEach(t -> {
@@ -253,8 +265,8 @@ public class PipelineServiceImpl implements PipelineService {
         userRelationshipService.baseListByOptions(pipelineId, null, null).forEach(t -> userRelationshipService.baseDelete(t));
         pipelineStageService.baseListByPipelineId(pipelineId).forEach(stage -> {
             pipelineTaskService.baseQueryTaskByStageId(stage.getId()).forEach(task -> {
-                if (task.getAppDeployId() != null) {
-                    pipelineAppDeployService.baseDeleteById(task.getAppDeployId());
+                if (task.getAppServiceDeployId() != null) {
+                    pipelineAppDeployService.baseDeleteById(task.getAppServiceDeployId());
                 }
                 pipelineTaskService.baseDeleteTaskById(task.getId());
                 userRelationshipService.baseListByOptions(null, null, task.getId()).forEach(t -> userRelationshipService.baseDelete(t));
@@ -268,22 +280,22 @@ public class PipelineServiceImpl implements PipelineService {
     @Override
     public PipelineReqVO queryById(Long projectId, Long pipelineId) {
         PipelineReqVO pipelineReqVO = ConvertUtils.convertObject(baseQueryById(pipelineId), PipelineReqVO.class);
-        pipelineReqVO.setPipelineUserRelDTOS(userRelationshipService.baseListByOptions(pipelineId, null, null).stream().map(PipelineUserRelationshipDTO::getUserId).collect(Collectors.toList()));
+        pipelineReqVO.setPipelineUserRels(userRelationshipService.baseListByOptions(pipelineId, null, null).stream().map(PipelineUserRelationshipDTO::getUserId).collect(Collectors.toList()));
         List<PipelineStageVO> pipelineStageES = ConvertUtils.convertList(pipelineStageService.baseListByPipelineId(pipelineId), PipelineStageVO.class);
         pipelineStageES = pipelineStageES.stream()
                 .peek(stage -> {
                     List<PipelineTaskVO> pipelineTaskVOS = ConvertUtils.convertList(pipelineTaskService.baseQueryTaskByStageId(stage.getId()), PipelineTaskVO.class);
                     pipelineTaskVOS = pipelineTaskVOS.stream().peek(task -> {
                         if (task.getAppDeployId() != null) {
-                            task.setPipelineAppServiceDeployVO(ConvertUtils.convertObject(baseQueryById(task.getAppDeployId()), PipelineAppServiceDeployVO.class));
+                            task.setPipelineAppServiceDeployVO(ConvertUtils.convertObject(pipelineAppDeployService.baseQueryById(task.getAppDeployId()), PipelineAppServiceDeployVO.class));
                         } else {
-                            task.setTaskUserRelDTOS(userRelationshipService.baseListByOptions(null, null, task.getId()).stream().map(PipelineUserRelationshipDTO::getUserId).collect(Collectors.toList()));
+                            task.setTaskUserRels(userRelationshipService.baseListByOptions(null, null, task.getId()).stream().map(PipelineUserRelationshipDTO::getUserId).collect(Collectors.toList()));
                         }
                     }).collect(Collectors.toList());
-                    stage.setPipelineTaskVOS(pipelineTaskVOS);
-                    stage.setStageUserRelDTOS(userRelationshipService.baseListByOptions(null, stage.getId(), null).stream().map(PipelineUserRelationshipDTO::getUserId).collect(Collectors.toList()));
+                    stage.setPipelineTaskVOs(pipelineTaskVOS);
+                    stage.setStageUserRels(userRelationshipService.baseListByOptions(null, stage.getId(), null).stream().map(PipelineUserRelationshipDTO::getUserId).collect(Collectors.toList()));
                 }).collect(Collectors.toList());
-        pipelineReqVO.setPipelineStageVOS(pipelineStageES);
+        pipelineReqVO.setPipelineStageVOs(pipelineStageES);
         return pipelineReqVO;
     }
 
@@ -656,6 +668,7 @@ public class PipelineServiceImpl implements PipelineService {
     @Override
     public PipelineRecordReqVO getRecordById(Long projectId, Long pipelineRecordId) {
         ProjectDTO projectDTO = iamService.queryIamProject(projectId);
+        Boolean projectOwner = iamService.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectDTO);
         PipelineRecordReqVO recordReqDTO = new PipelineRecordReqVO();
         PipelineRecordDTO pipelineRecordE = pipelineRecordService.baseQueryById(pipelineRecordId);
         BeanUtils.copyProperties(pipelineRecordE, recordReqDTO);
@@ -703,7 +716,7 @@ public class PipelineServiceImpl implements PipelineService {
             List<Long> pipelineEnvIds = pipelineTaskRecordService.baseQueryAllAutoTaskRecord(pipelineRecordId)
                     .stream()
                     .map(PipelineTaskRecordDTO::getEnvId).collect(Collectors.toList());
-            if (checkRecordTriggerPermission(pipelineRecordE.getId(), null) && checkPipelineEnvPermission(projectDTO, pipelineEnvIds)) {
+            if (checkRecordTriggerPermission(pipelineRecordE.getId(), null) && checkPipelineEnvPermission(pipelineEnvIds, projectOwner)) {
                 recordReqDTO.setExecute(true);
             }
         }
@@ -991,7 +1004,7 @@ public class PipelineServiceImpl implements PipelineService {
                 if (t.getType().equals(MANUAL)) {
                     updateUserRel(null, null, null, t.getId());
                 } else {
-                    pipelineAppDeployService.baseDeleteById(t.getAppDeployId());
+                    pipelineAppDeployService.baseDeleteById(t.getAppServiceDeployId());
                 }
             }
         });
@@ -1005,9 +1018,9 @@ public class PipelineServiceImpl implements PipelineService {
             stageE.setPipelineId(pipelineId);
             stageE.setProjectId(projectId);
             stageE = pipelineStageService.baseCreate(stageE);
-            createUserRel(stageDTO.getStageUserRelDTOS(), null, stageE.getId(), null);
+            createUserRel(stageDTO.getStageUserRels(), null, stageE.getId(), null);
         }
-        updateUserRel(stageDTO.getStageUserRelDTOS(), null, stageE.getId(), null);
+        updateUserRel(stageDTO.getStageUserRels(), null, stageE.getId(), null);
         return stageE;
     }
 
@@ -1018,7 +1031,7 @@ public class PipelineServiceImpl implements PipelineService {
             }
             Long taskId = pipelineTaskService.baseUpdateTask(ConvertUtils.convertObject(taskDTO, PipelineTaskDTO.class)).getId();
             if (MANUAL.equals(taskDTO.getType())) {
-                updateUserRel(taskDTO.getTaskUserRelDTOS(), null, null, taskId);
+                updateUserRel(taskDTO.getTaskUserRels(), null, null, taskId);
             }
         } else {
             createPipelineTask(taskDTO, projectId, stageId);
@@ -1097,8 +1110,8 @@ public class PipelineServiceImpl implements PipelineService {
         taskRecordE.setTaskType(taskE.getType());
         taskRecordE.setStatus(WorkFlowStatus.UNEXECUTED.toValue());
         taskRecordE.setStageRecordId(stageRecordId);
-        if (taskE.getAppDeployId() != null) {
-            PipelineAppServiceDeployDTO appDeployE = pipelineAppDeployService.baseQueryById(taskE.getAppDeployId());
+        if (taskE.getAppServiceDeployId() != null) {
+            PipelineAppServiceDeployDTO appDeployE = pipelineAppDeployService.baseQueryById(taskE.getAppServiceDeployId());
             BeanUtils.copyProperties(appDeployE, taskRecordE);
             if (appDeployE.getInstanceName() == null) {
                 taskRecordE.setInstanceName(appServiceInstanceService.baseQuery(appDeployE.getInstanceId()).getCode());
@@ -1119,9 +1132,9 @@ public class PipelineServiceImpl implements PipelineService {
         List<PipelineAppServiceDeployDTO> appDeployEList = new ArrayList<>();
         pipelineStageService.baseListByPipelineId(pipelineId).forEach(stageE -> {
             pipelineTaskService.baseQueryTaskByStageId(stageE.getId()).forEach(taskE -> {
-                if (taskE.getAppDeployId() != null) {
-                    PipelineAppServiceDeployDTO appDeployE = pipelineAppDeployService.baseQueryById(taskE.getAppDeployId());
-                    appDeployEList.add(appDeployE);
+                if (taskE.getAppServiceDeployId() != null) {
+                    PipelineAppServiceDeployDTO appServiceDeployDTO = appServiceDeployMapper.selectByPrimaryKey(taskE.getAppServiceDeployId());
+                    appDeployEList.add(appServiceDeployDTO);
                 }
             });
         });
@@ -1153,7 +1166,7 @@ public class PipelineServiceImpl implements PipelineService {
         }
         Long taskId = pipelineTaskService.baseCreateTask(ConvertUtils.convertObject(t, PipelineTaskDTO.class)).getId();
         if (MANUAL.equals(t.getType())) {
-            createUserRel(t.getTaskUserRelDTOS(), null, null, taskId);
+            createUserRel(t.getTaskUserRels(), null, null, taskId);
         }
     }
 
@@ -1439,9 +1452,9 @@ public class PipelineServiceImpl implements PipelineService {
                 });
     }
 
-    private Boolean checkPipelineEnvPermission(ProjectDTO projectDTO, List<Long> pipelineEnvIds) {
+    private Boolean checkPipelineEnvPermission(List<Long> pipelineEnvIds, Boolean projectOwner) {
         Boolean index = true;
-        if (!iamService.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectDTO)) {
+        if (!projectOwner) {
             List<Long> envIds = devopsEnvUserPermissionService
                     .listByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId())).stream()
                     .filter(DevopsEnvUserPermissionDTO::getPermitted)
@@ -1483,15 +1496,6 @@ public class PipelineServiceImpl implements PipelineService {
             sendAuditSiteMassage(PipelineNoticeType.PIPELINESTOP.toValue(), auditUser, recordRelDTO.getPipelineRecordId(), stageName);
         }
         return status;
-    }
-
-    @Override
-    public PageInfo<PipelineDTO> baseListByOptions(Long projectId, PageRequest pageRequest, String params, Map<String, Object> classifyParam) {
-        Map maps = gson.fromJson(params, Map.class);
-        Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
-        String paramMap = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
-        return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() ->
-                pipelineMapper.listByOptions(projectId, searchParamMap, paramMap, PageRequestUtil.checkSortIsEmpty(pageRequest), classifyParam));
     }
 
     @Override

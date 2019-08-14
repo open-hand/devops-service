@@ -212,11 +212,16 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
     @Override
     public DevopsCustomizeResourceVO queryDevopsCustomizeResourceDetail(Long resourceId) {
         DevopsCustomizeResourceDTO devopsCustomizeResourceDTO = devopsCustomizeResourceMapper.queryDetail(resourceId);
-        DevopsCustomizeResourceVO resource = ConvertUtils.convertObject(devopsCustomizeResourceDTO, DevopsCustomizeResourceVO.class);
-        if(devopsCustomizeResourceDTO.getCreatedBy() != 0) {
-            resource.setCreatorName(iamServiceClientOperator.queryUserByUserId(devopsCustomizeResourceDTO.getId()).getRealName());
+        if (devopsCustomizeResourceDTO == null) {
+            return null;
         }
-
+        DevopsCustomizeResourceVO resource = ConvertUtils.convertObject(devopsCustomizeResourceDTO, DevopsCustomizeResourceVO.class);
+        if (devopsCustomizeResourceDTO.getCreatedBy() != null && devopsCustomizeResourceDTO.getCreatedBy() != 0) {
+            resource.setCreatorName(iamServiceClientOperator.queryUserByUserId(devopsCustomizeResourceDTO.getCreatedBy()).getRealName());
+        }
+        if (devopsCustomizeResourceDTO.getLastUpdatedBy() != null && devopsCustomizeResourceDTO.getLastUpdatedBy() != 0) {
+            resource.setLastUpdaterName(iamServiceClientOperator.queryUserByUserId(devopsCustomizeResourceDTO.getLastUpdatedBy()).getRealName());
+        }
         return resource;
     }
 
@@ -224,15 +229,11 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
     @Override
     public PageInfo<DevopsCustomizeResourceVO> pageResources(Long envId, PageRequest pageRequest, String params) {
         PageInfo<DevopsCustomizeResourceDTO> devopsCustomizeResourceDTOPageInfo = pageDevopsCustomizeResourceE(envId, pageRequest, params);
-        List<Long> connectedEnvList = clusterConnectionHandler.getConnectedEnvList();
         List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedEnvList();
         PageInfo<DevopsCustomizeResourceVO> devopsCustomizeResourceVOPageInfo = ConvertUtils.convertPage(devopsCustomizeResourceDTOPageInfo, DevopsCustomizeResourceVO.class);
         devopsCustomizeResourceVOPageInfo.getList().forEach(devopsCustomizeResourceDTO -> {
             DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
-            if (connectedEnvList.contains(devopsEnvironmentDTO.getClusterId())
-                    && updatedEnvList.contains(devopsEnvironmentDTO.getClusterId())) {
-                devopsCustomizeResourceDTO.setEnvStatus(true);
-            }
+            devopsCustomizeResourceDTO.setEnvStatus(updatedEnvList.contains(devopsEnvironmentDTO.getClusterId()));
         });
         return devopsCustomizeResourceVOPageInfo;
     }

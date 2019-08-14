@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.vo;
 
+import io.swagger.annotations.ApiModelProperty;
+
 public class DevopsClusterRepVO {
 
     private Long id;
@@ -7,6 +9,7 @@ public class DevopsClusterRepVO {
     private Boolean skipCheckProjectPermission;
     private String code;
     private Boolean connect;
+    @ApiModelProperty(value = "是否需要升级")
     private Boolean upgrade;
     private String upgradeMessage;
     private String description;

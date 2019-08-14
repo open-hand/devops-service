@@ -149,8 +149,11 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
         devopsConfigMapRespVO.setValue(gson.fromJson(devopsConfigMapDTO.getValue(), new TypeToken<Map<String, String>>() {
         }.getType()));
 
-        if (devopsConfigMapDTO.getCreatedBy() != 0) {
+        if (devopsConfigMapDTO.getCreatedBy() != null && devopsConfigMapDTO.getCreatedBy() != 0) {
             devopsConfigMapRespVO.setCreatorName(iamServiceClientOperator.queryUserByUserId(devopsConfigMapDTO.getCreatedBy()).getRealName());
+        }
+        if (devopsConfigMapDTO.getLastUpdatedBy() != null && devopsConfigMapDTO.getLastUpdatedBy() != 0) {
+            devopsConfigMapRespVO.setLastUpdaterName(iamServiceClientOperator.queryUserByUserId(devopsConfigMapDTO.getLastUpdatedBy()).getRealName());
         }
 
         return devopsConfigMapRespVO;

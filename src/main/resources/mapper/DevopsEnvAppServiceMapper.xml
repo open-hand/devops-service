@@ -32,7 +32,7 @@
     </select>
 
     <!-- 此处的布尔字段因为目前缺少默认值，只能这样写条件 -->
-    <select id="listNonRelatedApplications" resultType="io.choerodon.devops.api.vo.BaseApplicationVO">
+    <select id="listNonRelatedApplications" resultType="io.choerodon.devops.api.vo.BaseApplicationServiceVO">
         SELECT app.id, app.name
         FROM devops_app_service app
                  LEFT JOIN (

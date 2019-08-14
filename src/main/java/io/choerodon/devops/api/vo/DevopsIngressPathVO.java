@@ -2,6 +2,8 @@ package io.choerodon.devops.api.vo;
 
 import java.util.Objects;
 
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * Creator: Runge
  * Date: 2018/4/20
@@ -9,11 +11,15 @@ import java.util.Objects;
  * Description:
  */
 public class DevopsIngressPathVO {
-
+    @ApiModelProperty("Ingress的path值")
     private String path;
+    @ApiModelProperty("path对应的网络id")
     private Long serviceId;
+    @ApiModelProperty("网络名称")
     private String serviceName;
+    @ApiModelProperty("网络状态")
     private String serviceStatus;
+    @ApiModelProperty("网络端口")
     private Long servicePort;
 
     public DevopsIngressPathVO() {
@@ -80,7 +86,7 @@ public class DevopsIngressPathVO {
         DevopsIngressPathVO that = (DevopsIngressPathVO) o;
         return Objects.equals(path, that.path)
                 && Objects.equals(serviceId, that.serviceId)
-                && Objects.equals(servicePort,that.servicePort);
+                && Objects.equals(servicePort, that.servicePort);
     }
 
     @Override

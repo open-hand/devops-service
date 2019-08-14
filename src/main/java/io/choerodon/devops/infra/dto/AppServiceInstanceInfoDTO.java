@@ -4,6 +4,7 @@ import java.util.Date;
 
 /**
  * 展示实例详情页面的单个实例的信息
+ *
  * @author zmf
  */
 public class AppServiceInstanceInfoDTO {
@@ -20,6 +21,13 @@ public class AppServiceInstanceInfoDTO {
     private Long objectVersionNumber;
     private Long envId;
     private Long clusterId;
+    private Long commandVersionId;
+    private String commandVersion;
+    private String commandType;
+    private String commandStatus;
+    private String error;
+    private Long projectId;
+
 
     public Long getId() {
         return id;
@@ -123,5 +131,53 @@ public class AppServiceInstanceInfoDTO {
 
     public void setClusterId(Long clusterId) {
         this.clusterId = clusterId;
+    }
+
+    public String getCommandType() {
+        return commandType;
+    }
+
+    public void setCommandType(String commandType) {
+        this.commandType = commandType;
+    }
+
+    public Long getCommandVersionId() {
+        return commandVersionId;
+    }
+
+    public void setCommandVersionId(Long commandVersionId) {
+        this.commandVersionId = commandVersionId;
+    }
+
+    public String getCommandStatus() {
+        return commandStatus;
+    }
+
+    public void setCommandStatus(String commandStatus) {
+        this.commandStatus = commandStatus;
+    }
+
+    public String getCommandVersion() {
+        return commandVersion;
+    }
+
+    public void setCommandVersion(String commandVersion) {
+        this.commandVersion = commandVersion;
+    }
+
+    public String getError() {
+        return error;
+    }
+
+    public void setError(String error) {
+        this.error = error;
+    }
+
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
     }
 }

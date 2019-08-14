@@ -6,14 +6,20 @@
         select * FROM devops_project where devops_app_group_id = #{gitlabGroupId}
     </select>
 
-    <update id="updateObJectVersionNumber">
+    <update id="updateObjectVersionNumber">
      update devops_project set object_version_number = 1 where iam_project_id = #{iamProjectId};
     </update>
 
     <select id="queryAppIdByProjectId" resultType="java.lang.Long">
         SELECT project.app_id
         FROM devops_project project
-        WHERE project.iam_project_id = ${iamProjectId}
+        WHERE project.iam_project_id = #{iamProjectId}
+    </select>
+
+    <select id="queryProjectIdByAppId" resultType="java.lang.Long">
+        SELECT project.iam_project_id
+        FROM devops_project project
+        WHERE project.app_id = #{appId}
     </select>
 
     <update id="fixAppIdValue">

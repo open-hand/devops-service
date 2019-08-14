@@ -349,8 +349,11 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         }
 
         secretRespVO.setValue(secretMaps);
-        if (devopsSecretDTO.getCreatedBy() != 0) {
+        if (devopsSecretDTO.getCreatedBy() != null && devopsSecretDTO.getCreatedBy() != 0) {
             secretRespVO.setCreatorName(iamServiceClientOperator.queryUserByUserId(devopsSecretDTO.getCreatedBy()).getRealName());
+        }
+        if (devopsSecretDTO.getLastUpdatedBy() != null && devopsSecretDTO.getLastUpdatedBy() != 0) {
+            secretRespVO.setLastUpdaterName(iamServiceClientOperator.queryUserByUserId(devopsSecretDTO.getLastUpdatedBy()).getRealName());
         }
         return secretRespVO;
     }
@@ -414,9 +417,9 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     public PageInfo<DevopsSecretDTO> basePageByOption(Long envId, PageRequest pageRequest, String params, Long appServiceId) {
         Map maps = gson.fromJson(params, Map.class);
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
-        String paramMap = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
+        List<String> paramList = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
         PageInfo<DevopsSecretDTO> devopsSecretDTOPageInfo = PageHelper
-                .startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> devopsSecretMapper.listByOption(envId, searchParamMap, paramMap, appServiceId));
+                .startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> devopsSecretMapper.listByOption(envId, searchParamMap, paramList, appServiceId));
         return devopsSecretDTOPageInfo;
     }
 

@@ -17,7 +17,7 @@ public interface DevopsNotificationMapper extends Mapper<DevopsNotificationDTO> 
     List<DevopsNotificationDTO> listByOptions(@Param("projectId") Long projectId,
                                               @Param("envId") Long envId,
                                               @Param("searchParam") Map<String, Object> searchParam,
-                                              @Param("param") String param);
+                                              @Param("params") List<String> params);
 
     Integer queryByEnvIdAndEvent(@Param("projectId") Long projectId,
                                  @Param("envId") Long envId,

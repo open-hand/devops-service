@@ -117,7 +117,7 @@ public class ClusterConnectionHandler {
     }
 
     /**
-     * 环境更新列表
+     * 环境更新列表, 不需要进行升级的集群 up-to-date
      *
      * @return 环境更新列表
      */
@@ -144,6 +144,9 @@ public class ClusterConnectionHandler {
         gitUtil.setSshKey(envRsa);
         if (!file.exists()) {
             gitUtil.cloneBySsh(path, url);
+        } else {
+            gitUtil.checkout(path, "master");
+            gitUtil.pullBySsh(path);
         }
         return path;
     }

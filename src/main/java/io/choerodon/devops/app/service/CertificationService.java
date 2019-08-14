@@ -3,15 +3,16 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 
 import com.github.pagehelper.PageInfo;
+import org.springframework.web.multipart.MultipartFile;
+
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.C7nCertificationVO;
 import io.choerodon.devops.api.vo.CertificationRespVO;
 import io.choerodon.devops.api.vo.CertificationVO;
-import io.choerodon.devops.api.vo.OrgCertificationVO;
+import io.choerodon.devops.api.vo.ProjectCertificationVO;
 import io.choerodon.devops.api.vo.kubernetes.C7nCertification;
 import io.choerodon.devops.infra.dto.CertificationDTO;
 import io.choerodon.devops.infra.dto.CertificationFileDTO;
-import org.springframework.web.multipart.MultipartFile;
 
 /**
  * Created by n!Ck
@@ -55,6 +56,7 @@ public interface CertificationService {
 
     /**
      * 根据证书ID查询证书
+     *
      * @param certId 证书ID
      * @return 证书信息
      */
@@ -62,7 +64,7 @@ public interface CertificationService {
 
     Long createCertCommand(String type, Long certId, Long userId);
 
-    List<OrgCertificationVO> listOrgCertInProject(Long projectId);
+    List<ProjectCertificationVO> listProjectCertInProject(Long projectId);
 
     CertificationDTO baseCreate(CertificationDTO certificationVO);
 
@@ -70,7 +72,7 @@ public interface CertificationService {
 
     CertificationDTO baseQueryByEnvAndName(Long envId, String name);
 
-    PageInfo<CertificationDTO> basePage(Long projectId, Long organizationId, Long envId, PageRequest pageRequest, String params);
+    PageInfo<CertificationDTO> basePage(Long projectId, Long envId, PageRequest pageRequest, String params);
 
     List<CertificationDTO> baseQueryActiveByDomain(Long projectId, Long clusterId, String domain);
 
@@ -96,7 +98,7 @@ public interface CertificationService {
 
     void baseUpdateSkipProjectPermission(CertificationDTO certificationDTO);
 
-    CertificationDTO baseQueryByOrgAndName(Long orgId, String name);
+    CertificationDTO baseQueryByProjectAndName(Long projectId, String name);
 
     List<CertificationDTO> baseListByOrgCertId(Long orgCertId);
 

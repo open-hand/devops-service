@@ -4,52 +4,44 @@
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsEnvPodMapper">
     <sql id="sqlparam">
         <if test='searchParam != null'>
-            <if test='searchParam.name != null and searchParam.name.size > 0'>
+            <if test='searchParam.name != null and searchParam.name.length > 0'>
                 AND
-                <foreach collection="searchParam.name" item="name" open="(" separator=" OR " close=")">
-                    dp.`name` LIKE CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
-                </foreach>
+                    dp.`name` LIKE CONCAT(CONCAT('%', #{searchParam.name, jdbcType=VARCHAR}),'%')
             </if>
-            <if test='searchParam.appServiceService != null and searchParam.appServiceService.size > 0'>
+            <if test='searchParam.appServiceService != null and searchParam.appServiceService.length > 0'>
                 AND
-                <foreach collection="searchParam.appServiceService" item="appServiceService" open="(" separator=" OR " close=")">
-                    dav.version LIKE CONCAT(CONCAT('%', #{appServiceService, jdbcType=VARCHAR}),'%')
-                </foreach>
+                    dav.version LIKE CONCAT(CONCAT('%', #{searchParam.appServiceService, jdbcType=VARCHAR}),'%')
             </if>
-            <if test='searchParam.ip != null and searchParam.ip.size > 0'>
+            <if test='searchParam.ip != null and searchParam.ip.length > 0'>
                 AND
-                <foreach collection="searchParam.ip" item="ip" open="(" separator=" OR " close=")">
-                    dp.ip LIKE CONCAT(CONCAT('%', #{ip, jdbcType=VARCHAR}),'%')
-                </foreach>
+                    dp.ip LIKE CONCAT(CONCAT('%', #{searchParam.ip, jdbcType=VARCHAR}),'%')
             </if>
-            <if test='searchParam.ready != null and searchParam.ready.size > 0'>
-                AND dp.is_ready IN
-                <foreach collection="searchParam.ready" item="ready" open="(" separator="," close=")">
-                    #{ready}
-                </foreach>
+            <if test='searchParam.ready != null and searchParam.ready.length > 0'>
+                AND dp.is_ready = #{searchParam.ready}
             </if>
-            <if test='searchParam.instanceCode != null and searchParam.instanceCode.size > 0'>
+            <if test='searchParam.instanceCode != null and searchParam.instanceCode.length > 0'>
                 AND
-                <foreach collection="searchParam.instanceCode" item="instanceCode" open="(" separator=" OR " close=")">
-                    dai.`code` LIKE CONCAT(CONCAT('%', #{instanceCode, jdbcType=VARCHAR}),'%')
-                </foreach>
+                    dai.`code` LIKE CONCAT(CONCAT('%', #{searchParam.instanceCode, jdbcType=VARCHAR}),'%')
             </if>
         </if>
-        <if test='param != null and param != ""'>
-            AND (dp.`name` LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR dav.version LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR dp.ip LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR dp.is_ready LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR dai.`code` LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            )
+        <if test='params != null and params.size > 0'>
+            AND
+            <foreach collection="params" item="param" open="(" separator=" OR " close=")">
+                (dp.`name` LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                OR dav.version LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                OR dp.ip LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                OR dp.is_ready LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                OR dai.`code` LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                )
+            </foreach>
         </if>
     </sql>
 
-    <select id="listAppPod" resultType="io.choerodon.devops.infra.dto.DevopsEnvPodDTO">
+    <select id="listAppServicePod" resultType="io.choerodon.devops.infra.dto.DevopsEnvPodDTO">
         SELECT
         dp.id,
         dp.ip,
-        de.project_id projectId,
+        project.iam_project_id projectId,
         dam.share_level,
         dp.`name`,
         dp.instance_id,
@@ -71,6 +63,7 @@
         JOIN devops_app_service da ON dav.app_service_id = da.id
         JOIN devops_env de ON de.id = dai.env_id
         LEFT JOIN devops_app_service_share_rule dam on dam.app_service_id = da.id
+        LEFT JOIN devops_project project ON da.app_id = project.app_id
         WHERE de.project_id = #{projectId}
         <if test='appServiceId != null'>
             AND da.id= #{appServiceId}

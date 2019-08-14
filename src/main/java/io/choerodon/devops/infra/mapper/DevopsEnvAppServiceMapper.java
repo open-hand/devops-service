@@ -2,21 +2,20 @@ package io.choerodon.devops.infra.mapper;
 
 import java.util.List;
 
-import io.choerodon.devops.api.vo.BaseApplicationVO;
+import io.choerodon.devops.api.vo.BaseApplicationServiceVO;
 import io.choerodon.devops.api.vo.iam.DevopsEnvMessageVO;
-import io.choerodon.devops.infra.dto.DevopsEnvApplicationDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvAppServiceDTO;
 import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-public interface DevopsEnvAppServiceMapper extends Mapper<DevopsEnvApplicationDTO> {
+public interface DevopsEnvAppServiceMapper extends Mapper<DevopsEnvAppServiceDTO> {
 
     /**
      * 当记录不存在时，插入记录
      *
-     * @param devopsEnvApplicationDO 环境应用关联关系
-     * @return 影响的记录数目
+     * @param devopsEnvAppServiceDTO 环境应用关联关系
      */
-    void insertIgnore(DevopsEnvApplicationDTO devopsEnvApplicationDO);
+    void insertIgnore(DevopsEnvAppServiceDTO devopsEnvAppServiceDTO);
 
     /**
      * 通过环境Id查询所有应用Id
@@ -29,7 +28,7 @@ public interface DevopsEnvAppServiceMapper extends Mapper<DevopsEnvApplicationDT
     /**
      * 通过环境Id查询所有应用Id
      *
-     * @param envId 环境Id
+     * @param envId        环境Id
      * @param appServiceId 应用Id
      * @return List 环境资源信息
      */
@@ -42,5 +41,5 @@ public interface DevopsEnvAppServiceMapper extends Mapper<DevopsEnvApplicationDT
      * @param envId     环境id
      * @return 应用列表
      */
-    List<BaseApplicationVO> listNonRelatedApplications(@Param("projectId") Long projectId, @Param("envId") Long envId);
+    List<BaseApplicationServiceVO> listNonRelatedApplications(@Param("projectId") Long projectId, @Param("envId") Long envId);
 }

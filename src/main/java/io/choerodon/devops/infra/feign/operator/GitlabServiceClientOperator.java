@@ -8,7 +8,6 @@ import feign.FeignException;
 import feign.RetryableException;
 import io.choerodon.devops.infra.dto.RepositoryFileDTO;
 import io.kubernetes.client.JSON;
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +21,8 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
 import io.choerodon.devops.infra.util.GitUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 
 /**
@@ -30,9 +31,7 @@ import io.choerodon.devops.infra.util.TypeUtil;
 
 @Component
 public class GitlabServiceClientOperator {
-
     private static final Logger LOGGER = LoggerFactory.getLogger(GitlabServiceClientOperator.class);
-    private static final JSON json = new JSON();
 
     @Autowired
     private GitlabServiceClient gitlabServiceClient;
@@ -496,74 +495,67 @@ public class GitlabServiceClientOperator {
     }
 
     private Boolean filterTag(TagDTO tagDTO, String params) {
-        Integer index = 0;
+        Integer index = -1;
         if (!StringUtils.isEmpty(params)) {
-            Map<String, Object> maps = json.deserialize(params, Map.class);
-            String param = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
-            param = param == null ? "" : param;
-            if (!param.equals("")) {
-                if (tagDTO.getName().contains(param) || tagDTO.getCommit().getShortId().contains(param)
-                        || tagDTO.getCommit().getCommitterName().contains(param)
-                        || tagDTO.getCommit().getMessage().contains(param)) {
-                    index = 1;
-                } else {
-                    return false;
+            Map<String, Object> maps = TypeUtil.castMapParams(params);
+            List<String> paramList = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
+            if (!CollectionUtils.isEmpty(paramList)) {
+                for (String param : paramList) {
+                    if (tagDTO.getName().contains(param) || tagDTO.getCommit().getShortId().contains(param)
+                            || tagDTO.getCommit().getCommitterName().contains(param)
+                            || tagDTO.getCommit().getMessage().contains(param)) {
+                        index = 1;
+                        break;
+                    }
                 }
             }
-            Object obj = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
-            if (obj != null) {
-                Map<String, ArrayList<String>> mapSearch = (Map<String, ArrayList<String>>) obj;
-                index = getTagName(index, tagDTO, mapSearch);
-                index = getShortId(index, tagDTO, mapSearch);
-                index = getCommitterName(index, tagDTO, mapSearch);
-                index = getMessage(index, tagDTO, mapSearch);
+            Map<String, Object> searchParam = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
+            if (searchParam != null) {
+                index = getTagName(index, tagDTO, searchParam);
+                index = getShortId(index, tagDTO, searchParam);
+                index = getCommitterName(index, tagDTO, searchParam);
+                index = getMessage(index, tagDTO, searchParam);
             }
+        } else {
+            return true;
         }
-        return index >= 0;
+        return index > 0;
     }
 
-    private Integer getTagName(Integer index, TagDTO tagDTO, Map<String, ArrayList<String>> mapSearch) {
+    private Integer getTagName(Integer index, TagDTO tagDTO, Map<String, Object> mapSearch) {
         String tagName = "tagName";
-        if (mapSearch.containsKey(tagName)
-                && mapSearch.get(tagName) != null
-                && !mapSearch.get(tagName).isEmpty()
-                && mapSearch.get(tagName).get(0) != null) {
-            index = tagDTO.getName().contains(mapSearch.get(tagName).get(0)) ? 1 : -1;
+        if (index >= 0 && mapSearch.containsKey(tagName)
+                && !StringUtils.isEmpty(mapSearch.get(tagName))) {
+            index = tagDTO.getName().contains(String.valueOf(mapSearch.get(tagName))) ? 1 : -1;
         }
         return index;
     }
 
-    private Integer getShortId(Integer index, TagDTO tagDTO, Map<String, ArrayList<String>> mapSearch) {
+    private Integer getShortId(Integer index, TagDTO tagDTO, Map<String, Object> mapSearch) {
         String shortId = "shortId";
         if (index >= 0 && mapSearch.containsKey(shortId)
-                && mapSearch.get(shortId) != null
-                && !mapSearch.get(shortId).isEmpty()
-                && mapSearch.get(shortId).get(0) != null) {
+                && !StringUtils.isEmpty(mapSearch.get(shortId))) {
             index = tagDTO.getCommit().getId()
-                    .contains(mapSearch.get(shortId).get(0)) ? 1 : -1;
+                    .contains(String.valueOf(mapSearch.get(shortId))) ? 1 : -1;
         }
         return index;
     }
 
-    private Integer getCommitterName(Integer index, TagDTO tagDTO, Map<String, ArrayList<String>> mapSearch) {
+    private Integer getCommitterName(Integer index, TagDTO tagDTO, Map<String, Object> mapSearch) {
         String committerName = "committerName";
         if (index >= 0 && mapSearch.containsKey(committerName)
-                && mapSearch.get(committerName) != null
-                && !mapSearch.get(committerName).isEmpty()
-                && mapSearch.get(committerName).get(0) != null) {
+                && !StringUtils.isEmpty(mapSearch.get(committerName))) {
             index = tagDTO.getCommit().getCommitterName()
-                    .contains(mapSearch.get(committerName).get(0)) ? 1 : -1;
+                    .contains(String.valueOf(mapSearch.get(committerName))) ? 1 : -1;
         }
         return index;
     }
 
-    private Integer getMessage(Integer index, TagDTO tagDTO, Map<String, ArrayList<String>> mapSearch) {
+    private Integer getMessage(Integer index, TagDTO tagDTO, Map<String, Object> mapSearch) {
         String msg = "message";
         if (index >= 0 && mapSearch.containsKey(msg)
-                && mapSearch.get(msg) != null
-                && !mapSearch.get(msg).isEmpty()
-                && mapSearch.get(msg).get(0) != null) {
-            index = tagDTO.getCommit().getMessage().contains(mapSearch.get(msg).get(0)) ? 1 : -1;
+                && !StringUtils.isEmpty(mapSearch.get(msg))) {
+            index = tagDTO.getCommit().getMessage().contains(String.valueOf(mapSearch.get(msg))) ? 1 : -1;
         }
         return index;
     }
@@ -727,7 +719,7 @@ public class GitlabServiceClientOperator {
         }
     }
 
-    public List<CommitDTO> listCommits(Integer projectId, Integer mergeRequestId,Integer userId) {
+    public List<CommitDTO> listCommits(Integer projectId, Integer mergeRequestId, Integer userId) {
         try {
             List<CommitDTO> commitDTOS = new LinkedList<>();
             commitDTOS.addAll(gitlabServiceClient.listCommits(projectId, mergeRequestId, userId).getBody());

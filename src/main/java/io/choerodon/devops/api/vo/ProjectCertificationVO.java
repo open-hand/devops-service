@@ -2,7 +2,7 @@ package io.choerodon.devops.api.vo;
 
 import java.util.List;
 
-public class OrgCertificationVO {
+public class ProjectCertificationVO {
 
     private Long id;
     private String name;
@@ -13,12 +13,12 @@ public class OrgCertificationVO {
     private Boolean skipCheckProjectPermission;
 
 
-    public OrgCertificationVO(){
+    public ProjectCertificationVO() {
 
 
     }
 
-    public OrgCertificationVO(Long id, String name, String domain, Boolean skipCheckProjectPermission) {
+    public ProjectCertificationVO(Long id, String name, String domain, Boolean skipCheckProjectPermission) {
         this.id = id;
         this.name = name;
         this.domain = domain;

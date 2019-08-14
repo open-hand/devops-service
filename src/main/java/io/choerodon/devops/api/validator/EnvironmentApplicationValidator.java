@@ -2,17 +2,17 @@ package io.choerodon.devops.api.validator;
 
 import java.util.stream.Stream;
 
-import com.netflix.discovery.converters.Auto;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.DevopsEnvAppServiceVO;
-import io.choerodon.devops.infra.dto.DevopsEnvApplicationDTO;
-import io.choerodon.devops.infra.mapper.AppServiceMapper;
-import io.choerodon.devops.infra.mapper.DevopsEnvAppServiceMapper;
-import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.DevopsEnvAppServiceVO;
+import io.choerodon.devops.infra.dto.DevopsEnvAppServiceDTO;
+import io.choerodon.devops.infra.mapper.AppServiceMapper;
+import io.choerodon.devops.infra.mapper.DevopsEnvAppServiceMapper;
+import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
 
 /**
  * @author zmf
@@ -75,11 +75,10 @@ public class EnvironmentApplicationValidator {
         if (appServiceIds == null || appServiceIds.length == 0) {
             throw new CommonException("error.app.ids.null");
         }
-        Stream.of(appServiceIds).map(id -> new DevopsEnvApplicationDTO(id, envId))
+        Stream.of(appServiceIds).map(id -> new DevopsEnvAppServiceDTO(id, envId))
                 .forEach(devopsEnvApplicationDTO -> {
                     if (devopsEnvAppServiceMapper.selectOne(devopsEnvApplicationDTO) == null) {
-                        String relation = "envId:" + devopsEnvApplicationDTO.getEnvId() + "," + "appId" + devopsEnvApplicationDTO.getAppServiceId();
-                        throw new CommonException("error.envAndApp.not.exist", relation);
+                        throw new CommonException("error.envAndApp.not.exist", devopsEnvApplicationDTO.getEnvId(),devopsEnvApplicationDTO.getAppServiceId());
                     }
                 });
     }

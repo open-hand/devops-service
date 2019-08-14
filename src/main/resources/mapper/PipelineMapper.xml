@@ -4,122 +4,48 @@
 <mapper namespace="io.choerodon.devops.infra.mapper.PipelineMapper">
     <select id="listByOptions" resultType="io.choerodon.devops.infra.dto.PipelineDTO">
         <choose>
-            <when test="classifyParam.executor !=null and classifyParam.creator != null">
-                SELECT
-                DISTINCT dp.is_enabled,
-                dp. NAME,
-                dp.trigger_type,
-                dp.created_by,
-                dp.last_update_date,
-                dp.object_version_number,
-                dp.id,
-                EXISTS (
-                SELECT
-                1
-                FROM
-                devops_pipeline_user_rel dpur
-                WHERE
-                dpur.user_id = #{classifyParam.userId}
-                AND dpur.pipeline_id = dp.id
-                AND dp.is_enabled = 1
-                ) AS execute
-                FROM
-                devops_pipeline dp
-                <if test="classifyParam.envIds!=null and classifyParam.envIds.size>0">
-                    JOIN devops_pipeline_stage dps ON dps.pipeline_id = dp.id
-                    JOIN devops_pipeline_task dpt ON dpt.stage_id = dps.id
-                    JOIN devops_pipeline_app_service_deploy dpad ON dpad.id = dpt.app_service_deploy_id
-                    AND dpad.env_id IN
-                    <foreach collection="classifyParam.envIds" item="envId" open="(" separator="," close=")">
-                        #{envId}
-                    </foreach>
-                </if>
-                WHERE
-                dp.project_id = #{projectId}
-                <include refid="sqlparam"/>
-                AND dp.trigger_type='manual' and dp.created_by = #{classifyParam.userId}
-                UNION
+            <when test="pipelineSearchVO!=null and pipelineSearchVO.executor !=null and pipelineSearchVO.creator != null and pipelineSearchVO.manager=null">
+                <include refid="executorSql"/>
+                union
+                <include refid="creatorSql"/>
+            </when>
+            <when test="pipelineSearchVO!=null and pipelineSearchVO.executor !=null and pipelineSearchVO.manager=null">
                 <include refid="executorSql"/>
             </when>
-            <when test="classifyParam.executor != null">
-                <include refid="executorSql"/>
+            <when test="pipelineSearchVO!=null and pipelineSearchVO.creator != null and pipelineSearchVO.manager=null">
+                <include refid="creatorSql"/>
             </when>
             <otherwise>
-                SELECT
-                DISTINCT dp.is_enabled,
-                dp. NAME,
-                dp.trigger_type,
-                dp.created_by,
-                dp.last_update_date,
-                dp.object_version_number,
-                dp.id,
-                EXISTS (
-                SELECT
-                1
-                FROM
-                devops_pipeline_user_rel dpur
-                WHERE
-                dpur.pipeline_id = dp.id
-                AND dpur.user_id = #{classifyParam.userId}
-                AND dp.is_enabled = 1
-                ) AS EXECUTE
-                FROM
-                devops_pipeline dp
-                <if test="classifyParam.envIds!=null and classifyParam.envIds.size>0">
-                    JOIN devops_pipeline_stage dps ON dps.pipeline_id = dp.id
-                    JOIN devops_pipeline_task dpt ON dpt.stage_id = dps.id
-                    JOIN devops_pipeline_app_service_deploy dpad ON dpad.id = dpt.app_service_deploy_id
-                    AND dpad.env_id IN
-                    <foreach collection="classifyParam.envIds" item="envId" open="(" separator="," close=")">
-                        #{envId}
-                    </foreach>
-                </if>
-                WHERE
-                dp.project_id = #{projectId}
-                <include refid="sqlparam"/>
-                <if test='classifyParam.creator != null and classifyParam.userId != null'>
-                    AND dp.created_by = #{classifyParam.userId}
-                </if>
+                <include refid="manageSql"/>
             </otherwise>
         </choose>
-        <if test="index !=''">
-            ORDER BY
-            is_enabled DESC,
-            id DESC
-        </if>
+      ORDER By  #{sort}
     </select>
 
-    <sql id="sqlparam">
-        <if test='searchParam != null'>
-            <if test='searchParam.name != null and searchParam.name.size > 0'>
-                AND
-                <foreach collection="searchParam.name" item="name" open="(" separator=" OR " close=")">
-                    dp.name LIKE CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
-                </foreach>
-            </if>
-            <if test='searchParam.triggerType != null and searchParam.triggerType.size > 0'>
-                AND
-                <foreach collection="searchParam.triggerType" item="triggerType">
-                    dp.trigger_type LIKE CONCAT(CONCAT('%', #{triggerType, jdbcType=VARCHAR}),'%')
-                </foreach>
-            </if>
-        </if>
-        <if test='param != null and param != ""'>
-            AND (dp.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR dp.trigger_type LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            )
+    <sql id="sqlparamEnvId">
+        <if test='pipelineSearchVO!=null and pipelineSearchVO.envId!= null'>
+            JOIN devops_pipeline_stage dps ON dps.pipeline_id = dp.id
+            JOIN devops_pipeline_task dpt ON dpt.stage_id = dps.id
+            JOIN devops_pipeline_app_service_deploy dpad ON dpad.id = dpt.app_service_deploy_id
+            AND dpad.env_id=#{pipelineSearchVO.envId}
         </if>
     </sql>
 
-    <sql id="executorSql">
-        SELECT
-        DISTINCT dp.is_enabled,
+    <sql id="sqlparamTriggerType">
+        <if test='pipelineSearchVO!=null and pipelineSearchVO.triggerType != null and pipelineSearchVO.triggerType!=""'>
+            AND dp.trigger_type='manual'
+        </if>
+    </sql>
+
+    <sql id="baseSql">
+        SELECT DISTINCT
+        dp.id,
+        dp.is_enabled,
         dp. NAME,
         dp.trigger_type,
         dp.created_by,
         dp.last_update_date,
         dp.object_version_number,
-        dp.id,
         EXISTS (
         SELECT
         1
@@ -127,42 +53,38 @@
         devops_pipeline_user_rel dpur
         WHERE
         dpur.pipeline_id = dp.id
-        AND dpur.user_id = #{classifyParam.userId}
+        AND dpur.user_id = #{userId}
         AND dp.is_enabled = 1
         ) AS EXECUTE
         FROM
         devops_pipeline dp
+    </sql>
+
+    <sql id="executorSql">
+        <include refid="baseSql"/>
         JOIN devops_pipeline_user_rel dpur ON dpur.pipeline_id = dp.id
-        AND dpur.user_id =#{classifyParam.userId}
-        <if test="classifyParam.envIds!=null and classifyParam.envIds.size>0">
-            JOIN devops_pipeline_stage dps ON dps.pipeline_id = dp.id
-            JOIN devops_pipeline_task dpt ON dpt.stage_id = dps.id
-            JOIN devops_pipeline_app_service_deploy dpad ON dpad.id = dpt.app_service_deploy_id
-            AND dpad.env_id IN
-            <foreach collection="classifyParam.envIds" item="envId" open="(" separator="," close=")">
-                #{envId}
-            </foreach>
-        </if>
+        AND dpur.user_id =#{userId}
+        <include refid="sqlparamEnvId"/>
         WHERE
         dp.project_id = #{projectId}
-        <include refid="sqlparam"/>
+        <include refid="sqlparamTriggerType"/>
     </sql>
 
     <sql id="creatorSql">
-        SELECT
-        dp.is_enabled,
-        dp. NAME,
-        dp.trigger_type,
-        dp.created_by,
-        dp.last_update_date,
-        dp.object_version_number,
-        dp.id
-        FROM
-        devops_pipeline dp
+        <include refid="baseSql"/>
+        <include refid="sqlparamEnvId"/>
         WHERE
         dp.project_id = #{projectId}
-        <include refid="sqlparam"/>
-        AND dp.created_by = #{classifyParam.userId}
+        <include refid="sqlparamTriggerType"/>
+        AND dp.created_by = #{userId}
+    </sql>
+
+    <sql id="manageSql">
+        <include refid="baseSql"/>
+        <include refid="sqlparamEnvId"/>
+        WHERE
+        dp.project_id = #{projectId}
+        <include refid="sqlparamTriggerType"/>
     </sql>
 
 </mapper>

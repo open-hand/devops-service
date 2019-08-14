@@ -445,11 +445,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     private void setEnvStatus(List<Long> connectedEnvList, List<Long> upgradeEnvList, DevopsEnvironmentDTO t) {
-        if (connectedEnvList.contains(t.getClusterId()) && upgradeEnvList.contains(t.getClusterId())) {
-            t.setConnected(true);
-        } else {
-            t.setConnected(false);
-        }
+        t.setConnected(upgradeEnvList.contains(t.getClusterId()));
     }
 
 
@@ -902,8 +898,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         if (!StringUtils.isEmpty(searchParams)) {
             Map maps = gson.fromJson(searchParams, Map.class);
             Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
-            String param = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
-            roleAssignmentSearchVO.setParam(new String[]{param});
+            List<String> param = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
+            roleAssignmentSearchVO.setParam(param.toArray(new String[0]));
             if (searchParamMap.get("loginName") != null) {
                 String loginName = TypeUtil.objToString(searchParamMap.get("loginName"));
                 String subLogin = loginName.substring(1, loginName.length() - 1);

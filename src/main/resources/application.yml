@@ -9,9 +9,9 @@ spring:
     host: localhost
   http:
     encoding:
-     charset: UTF-8
-     force: true
-     enabled: true
+      charset: UTF-8
+      force: true
+      enabled: true
 services:
   harbor:
     baseUrl: "harbor.example.com"
@@ -21,7 +21,7 @@ services:
   gitlab:
     url: "gitlab.example.com"
     sshUrl: "gitlab.example.com"
-    password: 123456
+    password: 12345678
     projectLimit: 100
   helm:
     url: "helm.example.com"

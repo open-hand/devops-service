@@ -63,6 +63,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private DevopsConfigMapper devopsConfigMapper;
     @Autowired
     private AppServiceMapper appServiceMapper;
+    @Autowired
+    private DevopsCertificationMapper devopsCertificationMapper;
 
     @Override
     public void checkLog(String version) {
@@ -94,7 +96,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 //                syncEnvAppRelevance(logs);
 //                syncAppShare(logs);
 //                syncDeployRecord(logs);
-//                syncCulster(logs);
+//                syncCulsterAndCertifications(logs);
 //                syncProjectAppId();
                 syncConfig();
             } else {
@@ -107,13 +109,13 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             devopsCheckLogMapper.insert(devopsCheckLogDTO);
         }
 
-        private void syncConfig(){
+        private void syncConfig() {
 
             LOGGER.info("sync config begin!!!");
 
             //避免2次修复数据
-            List<DevopsConfigDTO> configs = devopsConfigMapper.existAppSerciveConfig();
-            if(configs.isEmpty()) {
+            List<DevopsConfigDTO> configs = devopsConfigMapper.existAppServiceConfig();
+            if (configs.isEmpty()) {
                 DevopsConfigDTO harborDefault = devopsConfigMapper.queryByNameWithNoProject("harbor_default");
                 DevopsConfigDTO chartDefault = devopsConfigMapper.queryByNameWithNoProject("chart_default");
                 List<DevopsConfigDTO> addHarborConfigs = new ArrayList<>();
@@ -161,12 +163,10 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             }
 
 
-
-
         }
 
         private void syncEnvAppRelevance(List<CheckLog> logs) {
-            List<DevopsEnvApplicationDTO> applicationInstanceDTOS = ConvertUtils.convertList(appServiceInstanceMapper.selectAll(), DevopsEnvApplicationDTO.class);
+            List<DevopsEnvAppServiceDTO> applicationInstanceDTOS = ConvertUtils.convertList(appServiceInstanceMapper.selectAll(), DevopsEnvAppServiceDTO.class);
 
             applicationInstanceDTOS.stream().distinct().forEach(v -> {
                 CheckLog checkLog = new CheckLog();
@@ -238,36 +238,61 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
         }
 
-        private void syncCulster(List<CheckLog> checkLogs) {
-            LOGGER.info("开始迁移集群到项目下!");
-            Map<Long, List<DevopsClusterDTO>> map = devopsClusterMapper.selectAll().stream()
+        private void syncCulsterAndCertifications(List<CheckLog> checkLogs) {
+            LOGGER.info("开始迁移集群和证书到项目下!");
+            Map<Long, List<DevopsClusterDTO>> clusters = devopsClusterMapper.selectAll().stream()
                     .collect(Collectors.groupingBy(DevopsClusterDTO::getOrganizationId));
+            Map<Long, List<CertificationDTO>> orgCertifications = devopsCertificationMapper.listAllOrgCertification()
+                    .stream()
+                    .collect(Collectors.groupingBy(CertificationDTO::getOrganizationId));
+
             List<Long> categoryIds = orgServiceClientOperator.baseProjectCategoryList(0L, "普通项目群")
                     .getList().stream().map(ProjectCategoryDTO::getId).collect(Collectors.toList());
-            map.forEach((organizationId, devopsClusterDTOList) -> {
+
+            Set<Long> allOrgIds = new HashSet<>(clusters.keySet());
+            allOrgIds.addAll(orgCertifications.keySet());
+
+            allOrgIds.forEach(organizationId -> {
+                // 创建组织下的项目
                 ProjectCreateDTO projectCreateDTO = new ProjectCreateDTO();
                 projectCreateDTO.setName("默认运维项目");
                 projectCreateDTO.setCode("def-ops-proj");
                 projectCreateDTO.setCategoryIds(categoryIds);
                 projectCreateDTO.setOrganizationId(organizationId);
                 ProjectDTO projectDTO = iamServiceClientOperator.createProject(organizationId, projectCreateDTO);
-                devopsClusterDTOList.forEach(devopsClusterDTO -> {
-                    CheckLog checkLog = new CheckLog();
-                    checkLog.setContent(String.format(
-                            "Sync cluster migration to the project,clusterId: %s, organizationId: %s", devopsClusterDTO.getId(), organizationId));
-                    if (projectDTO != null) {
-                        devopsClusterDTO.setProjectId(projectDTO.getId());
-                        if (devopsClusterMapper.updateByPrimaryKeySelective(devopsClusterDTO) != 1) {
+
+                // 迁移集群
+                if (clusters.containsKey(organizationId)) {
+                    clusters.get(organizationId).forEach(cluster -> {
+                        CheckLog checkLog = new CheckLog();
+                        checkLog.setContent(String.format(
+                                "Sync cluster migration to the project,clusterId: %s, organizationId: %s", cluster.getId(), organizationId));
+                        if (projectDTO != null) {
+                            cluster.setProjectId(projectDTO.getId());
+                            checkLog.setResult(devopsClusterMapper.updateByPrimaryKeySelective(cluster) != 1 ? "failed" : "success");
+                        } else {
                             checkLog.setResult("failed");
                         }
-                        checkLog.setResult("success");
-                    } else {
-                        checkLog.setResult("failed");
-                    }
-                    checkLogs.add(checkLog);
-                });
+                        checkLogs.add(checkLog);
+                    });
+                }
+
+                // 迁移证书
+                if (orgCertifications.containsKey(organizationId)) {
+                    orgCertifications.get(organizationId).forEach(cert -> {
+                        CheckLog checkLog = new CheckLog();
+                        checkLog.setContent(String.format("Migrate organization certification to the project, org-cert-id: %s, organizationId: %s", cert.getId(), organizationId));
+                        if (projectDTO != null) {
+                            cert.setProjectId(projectDTO.getId());
+                            checkLog.setResult(devopsCertificationMapper.updateByPrimaryKeySelective(cert) != 1 ? "failed" : "success");
+                        } else {
+                            checkLog.setResult("failed");
+                        }
+                        checkLogs.add(checkLog);
+                    });
+                }
             });
-            LOGGER.info("迁移集群到项目下已完成！");
+            LOGGER.info("迁移集群及证书到项目下已完成！");
         }
     }
 }

@@ -18,7 +18,7 @@
         FROM
         devops_env_command d
         WHERE
-        d.object = "instance" and d.object_id = dai.id
+        d.object = 'instance' and d.object_id = dai.id
         ORDER BY d.id DESC LIMIT 1)
         </update>
 

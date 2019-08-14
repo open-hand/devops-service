@@ -16,7 +16,6 @@ import org.apache.ibatis.annotations.Param;
 
 public interface DevopsCertificationMapper extends Mapper<CertificationDTO> {
     List<CertificationDTO> listCertificationByOptions(@Param("projectId") Long projectId,
-                                                      @Param("organizationId") Long organizationId,
                                                       @Param("envId") Long envId,
                                                       @Param("searchParam") Map<String, Object> searchParam,
                                                       @Param("params") List<String> params);
@@ -26,4 +25,6 @@ public interface DevopsCertificationMapper extends Mapper<CertificationDTO> {
     void updateSkipCheckPro(@Param("certId") Long clusterId, @Param("skipCheckPro") Boolean skipCheckPro);
 
     List<CertificationDTO> listByProjectId(@Param("projectId") Long projectId, @Param("organizationId") Long organizationId);
+
+    List<CertificationDTO> listAllOrgCertification();
 }

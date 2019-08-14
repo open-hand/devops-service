@@ -19,7 +19,7 @@ public interface DevopsServiceMapper extends Mapper<DevopsServiceDTO> {
             @Param("envId") Long envId,
             @Param("instanceId") Long instanceId,
             @Param("searchParam") Map<String, Object> searchParam,
-            @Param("param") String param,
+            @Param("params") List<String> params,
             @Param("sort") String sort,
             @Param("appServiceId") Long appServiceId);
 
@@ -31,10 +31,14 @@ public interface DevopsServiceMapper extends Mapper<DevopsServiceDTO> {
 
     int selectCountByOptions(@Param("projectId") Long projectId, @Param("envId") Long envId, @Param("name") String name);
 
-    int selectCountByName(@Param("projectId") Long projectId, @Param("envId") Long envId, @Param("instanceId") Long instanceId, @Param("searchParam") Map<String, Object> searchParam,
-                          @Param("param") String param,@Param("appServiceId") Long appServiceId);
+    int selectCountByName(@Param("projectId") Long projectId,
+                          @Param("envId") Long envId,
+                          @Param("instanceId") Long instanceId,
+                          @Param("searchParam") Map<String, Object> searchParam,
+                          @Param("params") List<String> params,
+                          @Param("appServiceId") Long appServiceId);
 
-    Boolean checkServiceByEnv(@Param("envId") Long envId);
+    Boolean checkEnvContainingService(@Param("envId") Long envId);
 
     void setLabelsToNull(@Param("serviceId") Long serviceId);
 

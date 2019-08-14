@@ -22,7 +22,7 @@ public class DevopsConfigVO {
 
     private String type;
 
-    private String configType;
+    private Boolean custom;
 
     private Long objectVersionNumber;
 
@@ -90,12 +90,12 @@ public class DevopsConfigVO {
         this.appServiceId = appServiceId;
     }
 
-    public String getConfigType() {
-        return configType;
+    public Boolean getCustom() {
+        return custom;
     }
 
-    public void setConfigType(String configType) {
-        this.configType = configType;
+    public void setCustom(Boolean custom) {
+        this.custom = custom;
     }
 
     public Boolean getHarborPrivate() {

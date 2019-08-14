@@ -3,8 +3,8 @@ package io.choerodon.devops.app.service.impl;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -55,12 +55,12 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
     public PageInfo<AppServiceMarketVO> pageByAppId(Long appId,
                                                     PageRequest pageRequest, String params) {
         Map<String, Object> mapParams = TypeUtil.castMapParams(params);
-        List<String> paramList = mapParams.get(TypeUtil.PARAMS) == null ? null : (List<String>) mapParams.get(TypeUtil.PARAMS);
+        List<String> paramList = TypeUtil.cast(mapParams.get(TypeUtil.PARAMS));
         PageInfo<AppServiceDTO> appServiceDTOPageInfo = PageHelper
                 .startPage(pageRequest.getPage(),
                         pageRequest.getSize(),
                         PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() ->
-                        appServiceMapper.listByAppId(appId, (Map<String, Object>) mapParams.get(TypeUtil.SEARCH_PARAM), paramList));
+                        appServiceMapper.listByAppId(appId, TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)), paramList));
 
         PageInfo<AppServiceMarketVO> appServiceMarketVOPageInfo = ConvertUtils.convertPage(appServiceDTOPageInfo, this::dtoToMarketVO);
         List<AppServiceMarketVO> list = appServiceMarketVOPageInfo.getList();
@@ -81,6 +81,18 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         } else if (marketUploadVO.getStatus().equals(PublishTypeEnum.DEPLOY_ONLY.value())) {
 
         }
+    }
+
+    @Override
+    public List<AppServiceMarketVO> listAllAppServices(){
+        List<AppServiceDTO> appServiceDTOList = appServiceMapper.selectAll();
+        return ConvertUtils.convertList(appServiceDTOList, this::dtoToMarkVO);
+    }
+
+    @Override
+    public List<AppServiceMarketVersionVO> listServiceVersionsByAppServiceId(Long appServiceId) {
+        List<AppServiceVersionDTO> appServiceVersionDTOList = appServiceVersionService.baseListByAppServiceId(appServiceId);
+        return ConvertUtils.convertList(appServiceVersionDTOList, AppServiceMarketVersionVO.class);
     }
 
     private void packageSourceCode(AppServiceMarketVO appServiceMarketVO, String appFilePath) {
@@ -114,7 +126,6 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         FileUtil.createDirectory(appFilePath, appServiceFileName);
         FileUtil.createDirectory(String.format("%s/%s", appFilePath, appServiceFileName), "chart");
         String appServiceChartPath = String.format("%s/%s/%s", appFilePath, appServiceFileName, "chart");
-        helmUrl = helmUrl.endsWith("/") ? helmUrl : helmUrl + "/";
         appServiceMarketVO.getAppServiceMarketVersionVOS().forEach(appServiceMarketVersionVO -> {
             //2.下载chart
             AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQuery(appServiceMarketVersionVO.getId());
@@ -123,7 +134,40 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
 
     }
 
-    private void analysisChart(String zipPath) {
+    private void analysisChart(String zipPath, AppServiceVersionDTO appServiceVersionDTO, String harborUrl) {
+        String unZipPath = String.format("%s/%s", zipPath, "unzip");
+        FileUtil.unTarGZ(unZipPath, unZipPath);
+        File zipDirectory = new File(unZipPath);
+        //解析 解压过后的文件
+        if (zipDirectory.exists() && zipDirectory.isDirectory()) {
+            File[] listFiles = zipDirectory.listFiles();
+            //获取替换Repository
+            List<File> appMarkets = Arrays.stream(listFiles).parallel()
+                    .filter(k -> k.getName().equals("values.yaml"))
+                    .collect(Collectors.toCollection(ArrayList::new));
+            if (!appMarkets.isEmpty() && appMarkets.size() == 1) {
+                File valuesFile = appMarkets.get(0);
+                Map<String, String> params = new HashMap<>();
+                params.put(appServiceVersionDTO.getRepository(), String.format("%s/%s", harborUrl, appServiceVersionDTO.getVersion()));
+                FileUtil.fileToInputStream(valuesFile, params);
+            }
+        } else {
+            FileUtil.deleteDirectory(zipDirectory);
+            throw new CommonException("error.chart.empty");
+        }
+        // 打包
+        String newZipPath = String.format("new-charts/%s", appServiceVersionDTO.getVersion());
+        try {
+            FileOutputStream fileOutputStream = new FileOutputStream(new File(newZipPath));
+            FileUtil.toZip(unZipPath, fileOutputStream, true);
+        } catch (FileNotFoundException e) {
+            throw new CommonException("error.upload.chart");
+        } finally {
+            FileUtil.deleteDirectory(new File(zipPath));
+            FileUtil.deleteDirectory(new File(unZipPath));
+        }
+
+
     }
 
     private void toZip(String outputPath, String filePath) {
@@ -137,6 +181,14 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
     }
 
     private AppServiceMarketVO dtoToMarketVO(AppServiceDTO applicationDTO) {
+        AppServiceMarketVO appServiceMarketVO = new AppServiceMarketVO();
+        appServiceMarketVO.setAppServiceId(applicationDTO.getId());
+        appServiceMarketVO.setAppServiceCode(applicationDTO.getCode());
+        appServiceMarketVO.setAppServiceName(applicationDTO.getName());
+        return appServiceMarketVO;
+    }
+
+    private AppServiceMarketVO dtoToMarkVO(AppServiceDTO applicationDTO){
         AppServiceMarketVO appServiceMarketVO = new AppServiceMarketVO();
         appServiceMarketVO.setAppServiceId(applicationDTO.getId());
         appServiceMarketVO.setAppServiceCode(applicationDTO.getCode());

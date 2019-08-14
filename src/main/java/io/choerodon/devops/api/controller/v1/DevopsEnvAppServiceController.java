@@ -1,5 +1,15 @@
 package io.choerodon.devops.api.controller.v1;
 
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
@@ -7,15 +17,6 @@ import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.validator.EnvironmentApplicationValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.DevopsEnvApplicationService;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Optional;
 
 /**
  * @author lizongwei
@@ -52,7 +53,7 @@ public class DevopsEnvAppServiceController {
 
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "删除指定环境关联的多个服务")
-    @PostMapping("/batch_delete")
+    @DeleteMapping("/batch_delete")
     public ResponseEntity batchDelete(
             @ApiParam(value = "关联信息", required = true)
             @RequestBody DevopsEnvAppServiceVO devopsEnvAppServiceVO) {
@@ -130,7 +131,7 @@ public class DevopsEnvAppServiceController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询项目下可用的且没有与该环境关联的服务")
     @GetMapping("/non_related_app_service")
-    public ResponseEntity<List<BaseApplicationVO>> listNonRelatedAppService(
+    public ResponseEntity<List<BaseApplicationServiceVO>> listNonRelatedAppService(
             @ApiParam(value = "项目id", required = true)
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)

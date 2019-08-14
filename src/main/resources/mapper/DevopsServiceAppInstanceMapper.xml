@@ -7,7 +7,7 @@
             resultType="io.choerodon.devops.infra.dto.DevopsServiceInstanceDTO">
     SELECT
 	  dsi.id,
-	  dsi.app_instance_id
+	  dsi.instance_id
     FROM
 	devops_service_instance dsi
 	LEFT JOIN devops_service ds ON dsi.service_id = ds.id

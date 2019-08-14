@@ -15,6 +15,8 @@ public interface DevopsProjectMapper extends Mapper<DevopsProjectDTO> {
 
     Long queryAppIdByProjectId(@Param("iamProjectId") Long iamProjectId);
 
+    Long queryProjectIdByAppId(@Param("appId") Long appId);
+
     /**
      * 0.19版本前修复表中appId的值，可以在0.20版本删除
      */
