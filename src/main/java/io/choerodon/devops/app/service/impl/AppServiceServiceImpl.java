@@ -292,14 +292,14 @@ public class AppServiceServiceImpl implements AppServiceService {
         AppServiceDTO appServiceDTO = ConvertUtils.convertObject(appServiceUpdateDTO, AppServiceDTO.class);
         Long appServiceId = appServiceUpdateDTO.getId();
         List<DevopsConfigVO> devopsConfigVOS = new ArrayList<>();
-         if(appServiceUpdateDTO.getHarbor()!=null){
-             devopsConfigVOS.add(appServiceUpdateDTO.getHarbor());
-             appServiceDTO.setHarborConfigId(appServiceUpdateDTO.getHarbor().getId());
-         }
-         if(appServiceUpdateDTO.getChart()!=null){
-             devopsConfigVOS.add(appServiceUpdateDTO.getChart());
-             appServiceDTO.setChartConfigId(appServiceUpdateDTO.getChart().getId());
-         }
+        if (appServiceUpdateDTO.getHarbor() != null) {
+            devopsConfigVOS.add(appServiceUpdateDTO.getHarbor());
+            appServiceDTO.setHarborConfigId(appServiceUpdateDTO.getHarbor().getId());
+        }
+        if (appServiceUpdateDTO.getChart() != null) {
+            devopsConfigVOS.add(appServiceUpdateDTO.getChart());
+            appServiceDTO.setChartConfigId(appServiceUpdateDTO.getChart().getId());
+        }
         devopsConfigService.operate(appServiceId, APP_SERVICE, devopsConfigVOS);
 
 
