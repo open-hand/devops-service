@@ -27,5 +27,20 @@ export default function useStore() {
     get getNoHeader() {
       return this.noHeader;
     },
+
+    expandedKeys: [],
+    searchValue: '',
+    setExpandedKeys(keys) {
+      this.expandedKeys = keys;
+    },
+    get getExpandedKeys() {
+      return this.expandedKeys.slice();
+    },
+    setSearchValue(value) {
+      this.searchValue = value;
+    },
+    get getSearchValue() {
+      return this.searchValue;
+    },
   }));
 }

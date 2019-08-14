@@ -59,7 +59,7 @@ const EnvModals = observer(() => {
   function refresh() {
     networkDs.query();
   }
-  
+
   const buttons = useMemo(() => ([{
     name: formatMessage({ id: `${intlPrefix}.net.detail` }),
     icon: 'find_in_page',

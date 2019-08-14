@@ -1,4 +1,4 @@
-/* eslint-disable react/sort-comp, react/no-access-state-in-setstate, no-bitwise */
+/* eslint-disable */
 import React, { Component } from 'react';
 import { observer, inject } from 'mobx-react';
 import { observable, action } from 'mobx';
@@ -109,7 +109,7 @@ export default class AppOverview extends Component {
     }
   }
 
-  componentWillMount() {
+  componentDidMount() {
     InstancesStore.setValue(null);
   }
 

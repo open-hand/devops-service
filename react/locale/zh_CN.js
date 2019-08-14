@@ -276,6 +276,7 @@ const deployment = {
   'c7ncd.deployment.gateway.address': '网管地址',
   'c7ncd.deployment.target.port': '目标端口',
   'c7ncd.deployment.change.number': '更改次数',
+  'c7ncd.deployment.port.number': '端口号',
 };
 
 const appService = {

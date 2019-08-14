@@ -1,7 +1,8 @@
 import React, { PureComponent, Fragment } from 'react';
 import { inject } from 'mobx-react';
 import { FormattedMessage, injectIntl } from 'react-intl';
-import _ from 'lodash';
+import debounce from 'lodash/debounce';
+import assign from 'lodash/assign';
 import { Button } from 'choerodon-ui';
 
 import './index.less';
@@ -18,7 +19,7 @@ export default class Pods extends PureComponent {
    * 限制连续点击发送请求的次数
    * 限制600ms
    */
-  operatePodCount = _.debounce((count) => {
+  operatePodCount = debounce((count) => {
     const {
       store,
       envId,
@@ -64,7 +65,7 @@ export default class Pods extends PureComponent {
       this.setState({ btnDisable });
       this.operatePodCount(count);
       handleChangeCount(
-        _.assign({}, targetCount, { [`${name}-${podType}`]: count }),
+        assign({}, targetCount, { [`${name}-${podType}`]: count }),
       );
     }
   };
@@ -91,14 +92,13 @@ export default class Pods extends PureComponent {
     this.setState({ btnDisable });
     this.operatePodCount(count);
     handleChangeCount(
-      _.assign({}, targetCount, { [`${name}-${podType}`]: count }),
+      assign({}, targetCount, { [`${name}-${podType}`]: count }),
     );
   };
 
   /**
    * 获取 pod 的环形图
    * @readonly
-   * @memberof PodCircle
    */
   get renderCircle() {
     const { count: { sum, correct, correctCount } } = this.props;
@@ -159,7 +159,7 @@ export default class Pods extends PureComponent {
           <div className="c7ncd-pod-content">
             {this.renderCircle}
           </div>
-          {podType === 'deploymentDTOS' && (
+          {podType === 'deploymentVOS' && (
             <div className="c7ncd-pod-content c7ncd-pod-btn-wrap">
               <Button
                 disabled={!(connect && status === 'running')}

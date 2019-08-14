@@ -9,16 +9,17 @@ import { Button } from 'choerodon-ui/pro';
 
 import './index.less';
 
-const Split = <div className="c7ncd-deployment-header-split" />;
-
 const HeaderButtons = ({ items }) => {
-  const displayBtn = useMemo(() => items.filter(({ display }) => !!display), [items]);
+  const displayBtn = useMemo(() => items.filter(({ display }) => display), [items]);
 
   const btnNodes = useMemo(() => {
-    const btnGroups = map(groupBy(displayBtn, 'group'), (value) => {
-      const btns = map(value, ({ name, handler, permissions, ...props }) => {
+    const btnGroups = map(groupBy(displayBtn, 'group'), (value, index) => {
+      const Split = <div key={index} className="c7ncd-deployment-header-split" />;
+
+      const btns = map(value, ({ name, handler, permissions, display, ...props }) => {
         const btn = <Button
           {...props}
+          key={name}
           className="c7ncd-deployment-header-btn"
           funcType="flat"
           onClick={handler}

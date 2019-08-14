@@ -36,13 +36,13 @@ export default class DetailsSidebar extends Component {
   };
 
   handleExpandAll = () => {
-    this.setState(prev => ({
+    this.setState((prev) => ({
       isExpand: !prev.isExpand,
       activeKey: !prev.isExpand ? PANEL_TYPE : [],
     }));
   };
 
-  renderHealth = (containers, isLoading) => {
+  renderHealth = (containers) => {
     let healthContent = null;
 
     if (containers && containers.length) {
@@ -81,16 +81,10 @@ export default class DetailsSidebar extends Component {
       );
     }
 
-    return isLoading ? (
-      <div className="c7ncd-deploy-spin">
-        <Spin />
-      </div>
-    ) : (
-      healthContent
-    );
+    return healthContent;
   };
 
-  renderVar = (containers, isLoading) => {
+  renderVar = (containers) => {
     const columns = [
       {
         width: '50%',
@@ -133,22 +127,16 @@ export default class DetailsSidebar extends Component {
       );
     }
 
-    return isLoading ? (
-      <div className="c7ncd-deploy-spin">
-        <Spin />
-      </div>
-    ) : (
-      envContent
-    );
+    return envContent;
   };
 
-  renderVolume = (containers, volumes, isLoading) => {
+  renderVolume = (containers, volumes) => {
     let volumeContent = null;
 
     const volumeType = (vol, mounts) => {
       const vDom = volumesTemplate(vol);
       const columnsItem = ['mountPath', 'subPath', 'readOnly'];
-      const columns = _.map(columnsItem, item => ({
+      const columns = _.map(columnsItem, (item) => ({
         title: <FormattedMessage id={`ist.deploy.volume.${item}`} />,
         key: item,
         dataIndex: item,
@@ -164,7 +152,7 @@ export default class DetailsSidebar extends Component {
           <SimpleTable
             columns={columns}
             data={mounts}
-            rowKey={record => record.key}
+            rowKey={(record) => record.key}
           />
         </div>
       );
@@ -176,7 +164,7 @@ export default class DetailsSidebar extends Component {
         const mounts = [];
         _.forEach(containers, (item) => {
           const { volumeMounts } = item;
-          const filterVol = _.filter(volumeMounts, m => m.name === name);
+          const filterVol = _.filter(volumeMounts, (m) => m.name === name);
           mounts.push(...filterVol);
         });
         return volumeType(vol, mounts);
@@ -190,16 +178,10 @@ export default class DetailsSidebar extends Component {
       );
     }
 
-    return isLoading ? (
-      <div className="c7ncd-deploy-spin">
-        <Spin />
-      </div>
-    ) : (
-      volumeContent
-    );
+    return volumeContent;
   };
 
-  renderSecurity = (containers, hostIPC, hostNetwork, isLoading) => {
+  renderSecurity = (containers, hostIPC, hostNetwork) => {
     const containerArr = containers.length ? containers : [{}];
     const securityCtx = _.map(containerArr, (item) => {
       const { imagePullPolicy, name } = item;
@@ -221,14 +203,14 @@ export default class DetailsSidebar extends Component {
       }
 
       const addArr = capAdd.length ? (
-        _.map(capAdd, text => (
+        _.map(capAdd, (text) => (
           <p className="c7ncd-deploy-detail-text">{text}</p>
         ))
       ) : (
         <FormattedMessage id="ist.deploy.none" />
       );
       const dropArr = capDrop.length ? (
-        _.map(capDrop, text => (
+        _.map(capDrop, (text) => (
           <p className="c7ncd-deploy-detail-text">{text}</p>
         ))
       ) : (
@@ -262,7 +244,7 @@ export default class DetailsSidebar extends Component {
       );
     });
 
-    const securityContent = (
+    return (
       <div className="c7ncd-deploy-security-wrap">
         <div className="c7ncd-deploy-security-block">
           {securityItem('hostIPC', hostIPC)}
@@ -270,14 +252,6 @@ export default class DetailsSidebar extends Component {
         </div>
         {securityCtx}
       </div>
-    );
-
-    return isLoading ? (
-      <div className="c7ncd-deploy-spin">
-        <Spin />
-      </div>
-    ) : (
-      securityContent
     );
   };
 
@@ -287,7 +261,6 @@ export default class DetailsSidebar extends Component {
     const { activeKey, isExpand } = this.state;
     const {
       getDeployments: { detail },
-      getModalLoading,
     } = detailsStore;
 
     let containers = [];
@@ -304,10 +277,10 @@ export default class DetailsSidebar extends Component {
     }
 
     const renderFun = {
-      volume: () => this.renderVolume(containers, volumes, getModalLoading),
-      health: () => this.renderHealth(containers, getModalLoading),
-      variables: () => this.renderVar(containers, getModalLoading),
-      security: () => this.renderSecurity(containers, hostIPC, hostNetwork, getModalLoading),
+      volume: () => this.renderVolume(containers, volumes),
+      health: () => this.renderHealth(containers),
+      variables: () => this.renderVar(containers),
+      security: () => this.renderSecurity(containers, hostIPC, hostNetwork),
     };
 
     return (<Sidebar
@@ -338,7 +311,7 @@ export default class DetailsSidebar extends Component {
         activeKey={activeKey}
         onChange={this.handlePanelChange}
       >
-        {_.map(PANEL_TYPE, item => (
+        {_.map(PANEL_TYPE, (item) => (
           <Panel
             key={item}
             header={
@@ -391,7 +364,7 @@ function returnHealthDom(name, data) {
         <FormattedMessage id={`ist.deploy.health.${name}`} />
       </div>
       <div className="c7ncd-deploy-health-main">
-        {_.map(items, item => (
+        {_.map(items, (item) => (
           <div className="c7ncd-deploy-health-item">
             <p className="c7ncd-deploy-detail-label">
               <FormattedMessage id={`ist.deploy.health.${item}`} />
@@ -430,7 +403,7 @@ function volumesTemplate(data) {
   const vKey = Object.keys(data);
   const { name } = data;
 
-  let type = _.toString(_.filter(VOL_TYPE, item => vKey.includes(item)));
+  let type = _.toString(_.filter(VOL_TYPE, (item) => vKey.includes(item)));
   switch (type) {
     case 'configMap':
     case 'secret': {

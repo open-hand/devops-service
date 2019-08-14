@@ -33,7 +33,7 @@ const CustomModals = observer(() => {
   function refresh() {
     istListDs.query();
   }
-  
+
   const buttons = useMemo(() => ([{
     name: formatMessage({ id: 'refresh' }),
     icon: 'refresh',

@@ -51,6 +51,8 @@
         "ignorePureComponents": true
       }
     ],
+    "react/jsx-props-no-spreading": "off",
+    "react/static-property-placement": "off",
     "comma-dangle": [
       2,
       "always-multiline"
@@ -79,6 +81,7 @@
     "global-require": "off",
     "import/no-dynamic-require": "off",
     "max-len": "off",
+    "react/jsx-fragments": "off",
     "object-curly-newline": "off",
     "react/destructuring-assignment": "off",
     "react/jsx-wrap-multilines": "off",
