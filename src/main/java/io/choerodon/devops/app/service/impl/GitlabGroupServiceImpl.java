@@ -26,7 +26,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class GitlabGroupServiceImpl implements GitlabGroupService {
     private static final String GROUP_NAME_FORMAT = "%s-%s%s";
-    private static final String SITE_APP_GROUP_NAME_FORMAT = "site-%s";
+    private static final String SITE_APP_GROUP_NAME_FORMAT = "site_%s";
     private static final String GROUP_APP_MARKET = "application-marker";
     private static final String ENV_GROUP_SUFFIX = "-gitops";
 
