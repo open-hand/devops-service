@@ -17,6 +17,7 @@ const AppContent = lazy(() => import('./contents/application'));
 const IstContent = lazy(() => import('./contents/instance'));
 
 // 资源视图
+const ResourceEnvContent = lazy(() => import('./contents/resource-environment'));
 const NetworkContent = lazy(() => import('./contents/network'));
 const IngressContent = lazy(() => import('./contents/ingress'));
 const CertContent = lazy(() => import('./contents/certificate'));
@@ -34,7 +35,12 @@ const MainView = observer(() => {
   const {
     prefixCls,
     deploymentStore: {
+      getViewType,
       getSelectedMenu,
+    },
+    viewType: {
+      IST_VIEW_TYPE,
+      RES_VIEW_TYPE,
     },
     itemType: {
       ENV_ITEM,
@@ -59,8 +65,9 @@ const MainView = observer(() => {
   const rootRef = useRef(null);
   const content = useMemo(() => {
     const { menuType } = getSelectedMenu;
+    const viewType = getViewType;
     const cmMaps = {
-      [ENV_ITEM]: <EnvContent />,
+      [ENV_ITEM]: viewType === IST_VIEW_TYPE ? <EnvContent /> : <ResourceEnvContent />,
       [APP_ITEM]: <AppContent />,
       [IST_ITEM]: <IstContent />,
       [SERVICES_GROUP]: <NetworkContent />,
