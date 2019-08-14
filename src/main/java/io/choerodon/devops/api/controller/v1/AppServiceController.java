@@ -638,7 +638,7 @@ public class AppServiceController {
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
     @Permission(type = ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value ="查询应用服务按分组" )
+    @ApiOperation(value ="分组查询应用服务" )
     @GetMapping(value = "/list_app_group")
     public ResponseEntity<List<AppServiceGroupVO>> ListAppServiceGroup(){
         return Optional.ofNullable(
