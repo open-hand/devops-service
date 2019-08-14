@@ -135,6 +135,12 @@ public interface GitlabServiceClient {
     @GetMapping(value = "/v1/users/{userId}/impersonation_tokens")
     ResponseEntity<List<ImpersonationTokenDO>> listProjectToken(@PathVariable("userId") Integer userId);
 
+    /**
+     * 根据组的path查询组
+     * @param groupName 组的path
+     * @param userId 用户id
+     * @return 组
+     */
     @GetMapping(value = "/v1/groups/{groupName}")
     ResponseEntity<GroupDTO> queryGroupByName(@PathVariable("groupName") String groupName,
                                               @RequestParam(value = "userId") Integer userId);

@@ -10,10 +10,9 @@ import io.choerodon.mybatis.entity.BaseDTO;
  */
 @Table(name = "devops_project")
 public class DevopsProjectDTO extends BaseDTO {
-
     @Id
-    private Long iamProjectId;
     private Long appId;
+    private Long iamProjectId;
     private Long devopsAppGroupId;
     private Long devopsEnvGroupId;
     private Boolean harborProjectIsPrivate;

@@ -647,11 +647,13 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
         DevopsServiceTargetVO devopsServiceTargetVO = new DevopsServiceTargetVO();
 
-        devopsServiceQueryDTO.getInstances().forEach(i -> {
-            if (i.getStatus() == null) {
-                i.setStatus(InstanceStatus.DELETED.getStatus());
-            }
-        });
+        if (devopsServiceQueryDTO.getInstances() != null) {
+            devopsServiceQueryDTO.getInstances().forEach(i -> {
+                if (i.getStatus() == null) {
+                    i.setStatus(InstanceStatus.DELETED.getStatus());
+                }
+            });
+        }
 
         devopsServiceTargetVO.setInstances(ConvertUtils.convertList(devopsServiceQueryDTO.getInstances(), AppServiceInstanceInfoVO.class));
         if (!StringUtils.isEmpty(devopsServiceQueryDTO.getMessage())) {

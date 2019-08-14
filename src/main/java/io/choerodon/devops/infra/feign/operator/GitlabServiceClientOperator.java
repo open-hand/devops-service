@@ -31,9 +31,7 @@ import org.springframework.util.StringUtils;
 
 @Component
 public class GitlabServiceClientOperator {
-
     private static final Logger LOGGER = LoggerFactory.getLogger(GitlabServiceClientOperator.class);
-    private static final JSON json = new JSON();
 
     @Autowired
     private GitlabServiceClient gitlabServiceClient;

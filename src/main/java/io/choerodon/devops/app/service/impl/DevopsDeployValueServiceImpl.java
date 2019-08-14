@@ -71,7 +71,6 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
     @Override
     public PageInfo<DevopsDeployValueVO> pageByOptions(Long projectId, Long appServiceId, Long envId, PageRequest pageRequest, String params) {
         ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(projectId);
-        List<Long> connectedEnvList = clusterConnectionHandler.getConnectedEnvList();
         List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedEnvList();
         Long userId = null;
         if (!iamServiceClientOperator.isProjectOwner(DetailsHelper.getUserDetails().getUserId(), projectDTO)) {
@@ -87,8 +86,7 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
             devopsDeployValueVO.setCreateUserUrl(iamUserDTO.getImageUrl());
             devopsDeployValueVO.setCreateUserRealName(iamUserDTO.getRealName());
             DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsDeployValueDTO.getEnvId());
-            if (connectedEnvList.contains(devopsEnvironmentDTO.getClusterId())
-                    && updatedEnvList.contains(devopsEnvironmentDTO.getClusterId())) {
+            if (updatedEnvList.contains(devopsEnvironmentDTO.getClusterId())) {
                 devopsDeployValueVO.setEnvStatus(true);
             }
             return devopsDeployValueVO;

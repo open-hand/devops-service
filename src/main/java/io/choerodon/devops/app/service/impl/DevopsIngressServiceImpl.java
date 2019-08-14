@@ -343,9 +343,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         }
 
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsIngressDTO.getEnvId());
-        if (updatedEnvList.contains(devopsEnvironmentDTO.getClusterId())) {
-            vo.setEnvStatus(true);
-        }
+        vo.setEnvStatus(updatedEnvList.contains(devopsEnvironmentDTO.getClusterId()));
 
         return vo;
     }
@@ -353,16 +351,14 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     @Override
 
     public PageInfo<DevopsIngressVO> pageByEnv(Long projectId, Long envId, PageRequest pageRequest, String params) {
-        PageInfo<DevopsIngressVO> devopsIngressDTOS = basePageByOptions(projectId, envId, null, pageRequest, params);
+        PageInfo<DevopsIngressVO> devopsIngressVOPage = basePageByOptions(projectId, envId, null, pageRequest, params);
 
         List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedEnvList();
-        devopsIngressDTOS.getList().forEach(devopsIngressDTO -> {
-            DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsIngressDTO.getEnvId());
-            if (updatedEnvList.contains(devopsEnvironmentDTO.getClusterId())) {
-                devopsIngressDTO.setEnvStatus(true);
-            }
+        devopsIngressVOPage.getList().forEach(devopsIngressVO -> {
+            DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsIngressVO.getEnvId());
+            devopsIngressVO.setEnvStatus(updatedEnvList.contains(devopsEnvironmentDTO.getClusterId()));
         });
-        return devopsIngressDTOS;
+        return devopsIngressVOPage;
     }
 
     @Override

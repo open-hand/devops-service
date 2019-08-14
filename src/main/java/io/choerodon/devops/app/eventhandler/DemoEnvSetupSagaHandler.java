@@ -10,14 +10,11 @@ import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.devops.app.eventhandler.constants.SagaTaskCodeConstants;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.GitlabGroupPayload;
-import io.choerodon.devops.app.eventhandler.payload.OrganizationEventPayload;
 import io.choerodon.devops.app.eventhandler.payload.OrganizationRegisterEventPayload;
 import io.choerodon.devops.app.service.DevopsDemoEnvInitService;
 import io.choerodon.devops.app.service.GitlabGroupService;
-import io.choerodon.devops.app.service.OrganizationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -40,27 +37,7 @@ public class DemoEnvSetupSagaHandler {
     @Autowired
     private GitlabGroupService gitlabGroupService;
     @Autowired
-    private OrganizationService organizationService;
-    @Autowired
     private DevopsDemoEnvInitService devopsDemoEnvInitService;
-
-    /**
-     * 创建组织事件
-     */
-    @SagaTask(code = SagaTaskCodeConstants.REGISTER_DEVOPS_INIT_ORG,
-            description = "注册组织事件",
-            sagaCode = SagaTopicCodeConstants.REGISTER_ORG,
-            maxRetryCount = 3,
-            seq = 30)
-    public OrganizationRegisterEventPayload handleDemoOrganizationCreateEvent(String payload) {
-        logInfoPayload(SagaTaskCodeConstants.REGISTER_DEVOPS_INIT_ORG, payload);
-        OrganizationRegisterEventPayload registerInfo = gson.fromJson(payload, OrganizationRegisterEventPayload.class);
-        OrganizationEventPayload organizationEventPayload = new OrganizationEventPayload();
-        BeanUtils.copyProperties(registerInfo.getOrganization(), organizationEventPayload);
-        organizationEventPayload.setUserId(registerInfo.getUser().getId());
-        organizationService.create(organizationEventPayload);
-        return registerInfo;
-    }
 
 
     /**
@@ -83,8 +60,8 @@ public class DemoEnvSetupSagaHandler {
         gitlabGroupPayload.setUserId(registerInfo.getUser().getId());
         gitlabGroupPayload.setUserName(registerInfo.getUser().getLoginName());
 
-        gitlabGroupService.createGroup(gitlabGroupPayload, "");
-        gitlabGroupService.createGroup(gitlabGroupPayload, "-gitops");
+//        gitlabGroupService.createGroup(gitlabGroupPayload, "");
+//        gitlabGroupService.createGroup(gitlabGroupPayload, "-gitops");
         return registerInfo;
     }
 

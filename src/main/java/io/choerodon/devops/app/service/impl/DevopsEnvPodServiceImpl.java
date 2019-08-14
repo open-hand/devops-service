@@ -53,7 +53,6 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
 
     @Override
     public PageInfo<DevopsEnvPodVO> pageByOptions(Long projectId, Long envId, Long appServiceId, Long instanceId, PageRequest pageRequest, String searchParam) {
-        List<Long> connectedEnvList = clusterConnectionHandler.getConnectedEnvList();
         List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedEnvList();
         PageInfo<DevopsEnvPodDTO> devopsEnvPodDTOPageInfo = basePageByIds(projectId, envId, appServiceId, instanceId, pageRequest, searchParam);
         PageInfo<DevopsEnvPodVO> devopsEnvPodVOPageInfo = ConvertUtils.convertPage(devopsEnvPodDTOPageInfo, DevopsEnvPodVO.class);
@@ -62,10 +61,7 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
             DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsEnvPodDTO.getEnvId());
             DevopsEnvPodVO devopsEnvPodVO = ConvertUtils.convertObject(devopsEnvPodDTO, DevopsEnvPodVO.class);
             devopsEnvPodVO.setClusterId(devopsEnvironmentDTO.getClusterId());
-            if (connectedEnvList.contains(devopsEnvironmentDTO.getClusterId())
-                    && updatedEnvList.contains(devopsEnvironmentDTO.getClusterId())) {
-                devopsEnvPodVO.setConnect(true);
-            }
+            devopsEnvPodVO.setConnect(updatedEnvList.contains(devopsEnvironmentDTO.getClusterId()));
             //给pod设置containers
             setContainers(devopsEnvPodVO);
             return devopsEnvPodVO;
