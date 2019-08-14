@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { TabPage, Content, Header, Breadcrumb } from '@choerodon/boot';
 import CodeManagerHeader from '../../header';
 import CodeManagerToolBar from '../../tool-bar';  
-import Branch from '../../../branch';
+import Branch from '../../branch';
 
 import '../index.less';
 

@@ -1,0 +1,29 @@
+
+.c7ncd-deployment-secret-detail-modal {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  .detail-item {
+    margin-bottom: .16rem;
+    list-style: none;
+    font-size: .14rem;
+
+    &-text {
+      color: rgba(0, 0, 0, 0.65);
+      width: .88rem;
+      display: inline-block;
+    }
+
+    &-has-url {
+      display: flex;
+    }
+    &-url {
+      width: calc(100% - 0.88rem);
+      overflow: hidden;
+      word-break: keep-all;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+  }
+}

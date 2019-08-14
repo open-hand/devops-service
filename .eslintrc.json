@@ -51,6 +51,8 @@
         "ignorePureComponents": true
       }
     ],
+    "react/jsx-props-no-spreading": "off",
+    "react/static-property-placement": "off",
     "comma-dangle": [
       2,
       "always-multiline"
@@ -79,6 +81,7 @@
     "global-require": "off",
     "import/no-dynamic-require": "off",
     "max-len": "off",
+    "react/jsx-fragments": "off",
     "object-curly-newline": "off",
     "react/destructuring-assignment": "off",
     "react/jsx-wrap-multilines": "off",
@@ -87,8 +90,7 @@
     "react/forbid-prop-types": "off",
     "react/sort-comp": "off",
     "prefer-destructuring": "off",
-    "react-hooks/rules-of-hooks": "error", // 检查 Hook 的规则
-    "react-hooks/exhaustive-deps": "warn" // 检查 effect 的依赖
+    "react-hooks/rules-of-hooks": "error"
   },
   "globals": {
     "Choerodon": true

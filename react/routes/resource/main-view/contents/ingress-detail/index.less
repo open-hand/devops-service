@@ -1,0 +1,58 @@
+@import "../style/index";
+
+.c7ncd-deployment-ingress-detail {
+
+  .c7ncd-deployment-detail-content-section-title {
+
+    &-hover {
+      display: none;
+    }
+
+    &:hover {
+
+      .detail-content-section-title-hover {
+        display: inline-block;
+      }
+    }
+  }
+
+  .detail-section-service {
+    display: flex;
+    align-items: center;
+  }
+
+  .ingress-detail-annotation {
+    width: 40%;
+
+    &-value {
+      width: 60%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      word-break: keep-all;
+    }
+  }
+
+  .c7ncd-deployment-detail-section-li {
+    display: flex;
+  }
+
+  .detail-section-li-table {
+    width: 100%;
+
+    .td-width {
+
+      &-30 {
+        width: 30%;
+      }
+
+      &-20 {
+        width: 20%;
+      }
+
+      &-6px {
+        width: .6rem;
+      }
+    }
+  }
+}

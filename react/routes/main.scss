@@ -163,33 +163,6 @@ table {
   }
 }
 
-// 环境、实例连接状态
-.c7ncd-status {
-  display: inline-block;
-  margin-right: 5px;
-  width: 8px;
-  height: 8px;
-  border-radius: 8px;
-
-  &-success {
-    background-color: #00bf96;
-  }
-
-  &-error {
-    background-color: #d50000;
-  }
-
-  &-disconnect {
-    background-color: #ff9915;
-  }
-
-  &-update {
-    background-color: #4d90fe;
-    margin: 0;
-    flex-shrink: 0;
-  }
-}
-
 /* 修改UI组件默认样式 */
 .is-required {
   .c7n-select-disabled {
