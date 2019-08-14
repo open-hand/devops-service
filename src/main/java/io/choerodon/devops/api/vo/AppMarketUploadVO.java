@@ -2,6 +2,8 @@ package io.choerodon.devops.api.vo;
 
 import java.util.List;
 
+import io.choerodon.devops.infra.dto.harbor.User;
+
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  10:59 2019/8/8
@@ -13,6 +15,15 @@ public class AppMarketUploadVO {
     private String status;
     private String harborUrl;
     private Long iamUserId;
+    private User user;
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
 
     public Long getIamUserId() {
         return iamUserId;

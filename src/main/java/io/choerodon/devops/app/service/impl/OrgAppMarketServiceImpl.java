@@ -8,28 +8,27 @@ import java.util.stream.Collectors;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.AppMarketUploadVO;
-import io.choerodon.devops.api.vo.AppServiceMarketVO;
-import io.choerodon.devops.api.vo.AppServiceMarketVersionVO;
-import io.choerodon.devops.app.service.AppServiceService;
-import io.choerodon.devops.app.service.AppServiceVersionService;
-import io.choerodon.devops.app.service.OrgAppMarketService;
-import io.choerodon.devops.app.service.UserAttrService;
+import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.AppServiceVersionDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
+import io.choerodon.devops.infra.dto.harbor.User;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.PublishTypeEnum;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
 import io.choerodon.devops.infra.mapper.AppServiceMapper;
+import io.choerodon.devops.infra.thread.CommandWaitForThread;
 import io.choerodon.devops.infra.util.*;
 
 /**
@@ -39,8 +38,12 @@ import io.choerodon.devops.infra.util.*;
  */
 @Component
 public class OrgAppMarketServiceImpl implements OrgAppMarketService {
+    public static final Logger LOGGER = LoggerFactory.getLogger(CommandWaitForThread.class);
+
     private static final String APPLICATION = "application";
     private static final String APPLICATION_SERVICE = "application-service";
+    private static final String IMAGES = "images";
+    private static final String PUSH_IAMGES = "push_image.sh";
 
     @Autowired
     private AppServiceMapper appServiceMapper;
@@ -57,15 +60,18 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
     @Autowired
-    private GitlabServiceClientOperator gitlabServiceClientOperator;
-    @Autowired
     private UserAttrService userAttrService;
     @Autowired
     private AppServiceService appServiceService;
+    @Autowired
+    private HarborService harborService;
+    @Autowired
+    private DevopsConfigService devopsConfigService;
 
     @Override
     public PageInfo<AppServiceMarketVO> pageByAppId(Long appId,
-                                                    PageRequest pageRequest, String params) {
+                                                    PageRequest pageRequest,
+                                                    String params) {
         Map<String, Object> mapParams = TypeUtil.castMapParams(params);
         List<String> paramList = TypeUtil.cast(mapParams.get(TypeUtil.PARAMS));
         PageInfo<AppServiceDTO> appServiceDTOPageInfo = PageHelper
@@ -91,24 +97,30 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
     @Override
     public void upload(AppMarketUploadVO marketUploadVO) {
         //1.创建根目录 应用
-//        String appFilePath = gitUtil.getWorkingDirectory(APPLICATION + System.currentTimeMillis());
-        String appFilePath = "D:\\mydata_file\\test\\" + APPLICATION + System.currentTimeMillis();
+        String appFilePath = gitUtil.getWorkingDirectory(APPLICATION + System.currentTimeMillis());
         FileUtil.createDirectory(appFilePath);
         if (marketUploadVO.getStatus().equals(PublishTypeEnum.DOWNLOAD_ONLY.value())) {
             //2.clone 并压缩源代码
             marketUploadVO.getAppServiceMarketVOList().forEach(appServiceMarketVO -> packageSourceCode(appServiceMarketVO, appFilePath, marketUploadVO.getIamUserId()));
         } else if (marketUploadVO.getStatus().equals(PublishTypeEnum.DEPLOY_ONLY.value())) {
             marketUploadVO.getAppServiceMarketVOList().forEach(appServiceMarketVO -> packageChart(appServiceMarketVO, appFilePath, marketUploadVO.getHarborUrl()));
+            pushImage(marketUploadVO);
         } else {
             marketUploadVO.getAppServiceMarketVOList().forEach(appServiceMarketVO -> {
                 packageSourceCode(appServiceMarketVO, appFilePath, marketUploadVO.getIamUserId());
                 packageChart(appServiceMarketVO, appFilePath, marketUploadVO.getHarborUrl());
             });
+            pushImage(marketUploadVO);
         }
         //4.压缩文件
-//        toZip(String.format("%s-%s", appFilePath, "source-code.zip"), appFilePath);
+        toZip(String.format("%s-%s", appFilePath, "source-code.zip"), appFilePath);
+
     }
 
+    @Override
+    public void createHarborRepository(HarborMarketVO harborMarketVO) {
+        harborService.createHarborForAppMarket(harborMarketVO);
+    }
 
     @Override
     public List<AppServiceMarketVersionVO> listServiceVersionsByAppServiceId(Long appServiceId) {
@@ -179,7 +191,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                     .collect(Collectors.toCollection(ArrayList::new));
             if (!appMarkets.isEmpty() && appMarkets.size() == 1) {
                 Map<String, String> params = new HashMap<>();
-                String image=appServiceVersionDTO.getImage().replace(":"+appServiceVersionDTO.getVersion(),"");
+                String image = appServiceVersionDTO.getImage().replace(":" + appServiceVersionDTO.getVersion(), "");
                 params.put(image, String.format("%s/%s", harborUrl, appServiceVersionDTO.getVersion()));
                 FileUtil.fileToInputStream(appMarkets.get(0), params);
 
@@ -201,6 +213,54 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             FileUtil.deleteDirectory(new File(filePath));
         } catch (FileNotFoundException e) {
             throw new CommonException("error.zip.repository", e.getMessage());
+        }
+    }
+
+    private void pushImage(AppMarketUploadVO appMarketUploadVO) {
+        String osname = System.getProperty("os.name");
+        if("win".contains(osname)){
+            throw new CommonException("error.os.windows");
+        }
+        String shellPath = this.getClass().getResource("/shell").getPath();
+        String scriptStr = String.format("%s/%s", shellPath.substring(1, shellPath.length()), PUSH_IAMGES);
+        appMarketUploadVO.getAppServiceMarketVOList().forEach(appServiceMarketVO -> {
+            StringBuilder stringBuilder = new StringBuilder();
+            appServiceMarketVO.getAppServiceMarketVersionVOS().forEach(t -> {
+                AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQuery(t.getId());
+                stringBuilder.append(appServiceVersionDTO.getImage());
+                stringBuilder.append(System.getProperty("line.separator"));
+            });
+            ConfigVO configVO = devopsConfigService.queryByResourceId(
+                    appServiceService.baseQuery(appServiceMarketVO.getAppServiceId()).getChartConfigId(), "harbor")
+                    .get(0).getConfig();
+            FileUtil.saveDataToFile(shellPath, IMAGES, stringBuilder.toString());
+            callScript(scriptStr, appMarketUploadVO.getHarborUrl(), appMarketUploadVO.getUser(), configVO);
+            FileUtil.deleteFile(String.format("%s%s%s", shellPath, File.separator, IMAGES));
+        });
+    }
+
+    /**
+     * 脚本文件具体执行及脚本执行过程探测
+     *
+     * @param script 脚本文件绝对路径
+     */
+    private void callScript(String script, String harborUrl, User user, ConfigVO configVO) {
+        try {
+            String cmd = String.format("sh %s %s %s %s %s %s", script, harborUrl, user.getUsername(), user.getPassword(), configVO.getUserName(), configVO.getPassword());
+            //启动独立线程等待process执行完成
+            CommandWaitForThread commandThread = new CommandWaitForThread(cmd);
+            commandThread.start();
+            while (!commandThread.isFinish()) {
+                LOGGER.info("push_image.sh还未执行完毕,10s后重新探测");
+                Thread.sleep(10000);
+            }
+            //检查脚本执行结果状态码
+            if (commandThread.getExitValue() != 0) {
+                throw new CommonException("error.exec.push.image");
+            }
+            LOGGER.info("push_image.sh执行成功,exitValue = {}", commandThread.getExitValue());
+        } catch (Exception e) {
+            throw new CommonException("error.exec.push.image");
         }
     }
 

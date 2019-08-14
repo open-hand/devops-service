@@ -1,12 +1,14 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+
 import com.github.pagehelper.PageInfo;
 
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.AppMarketUploadVO;
 import io.choerodon.devops.api.vo.AppServiceMarketVO;
 import io.choerodon.devops.api.vo.AppServiceMarketVersionVO;
-import java.util.List;
+import io.choerodon.devops.api.vo.HarborMarketVO;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -23,4 +25,6 @@ public interface OrgAppMarketService {
     List<AppServiceMarketVO> listAllAppServices();
 
     List<AppServiceMarketVersionVO> listServiceVersionsByAppServiceId(Long appServiceId);
+
+    void createHarborRepository(HarborMarketVO harborMarketVO);
 }

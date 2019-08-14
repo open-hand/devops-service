@@ -20,6 +20,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.AppMarketUploadVO;
 import io.choerodon.devops.api.vo.AppServiceMarketVO;
 import io.choerodon.devops.api.vo.AppServiceMarketVersionVO;
+import io.choerodon.devops.api.vo.HarborMarketVO;
 import io.choerodon.devops.app.service.OrgAppMarketService;
 import io.choerodon.mybatis.annotation.SortDefault;
 import io.choerodon.swagger.annotation.CustomPageRequest;
@@ -46,7 +47,10 @@ public class OrgAppMarketController {
                 .orElseThrow(() -> new CommonException("error.app.services.listAll"));
     }
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> [IMP] 修改上传文件到APIM接口
     /**
      * @param appId
      * @param pageRequest
@@ -86,6 +90,7 @@ public class OrgAppMarketController {
     }
 
     /**
+<<<<<<< HEAD
      * @param appServiceId
      * @return
      */
@@ -102,16 +107,17 @@ public class OrgAppMarketController {
     }
 
     /**
-     * @param appMarketUploadVO
+     *
+     * @param harborMarketVO
      * @return
      */
     @Permission(type = ResourceType.SITE, permissionWithin = true)
     @ApiOperation(value = "创建harbor仓库")
     @PostMapping("/harbor_repo")
     public ResponseEntity createHarborRepository(
-            @ApiParam(value = "应用信息", required = true)
-            @RequestBody AppMarketUploadVO appMarketUploadVO) {
-        orgAppMarketService.upload(appMarketUploadVO);
+            @ApiParam(value = "应用信息",required = true)
+            @RequestBody HarborMarketVO harborMarketVO) {
+        orgAppMarketService.createHarborRepository(harborMarketVO);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
