@@ -345,15 +345,12 @@ public class CertificationServiceImpl implements CertificationService {
     @Override
     public PageInfo<CertificationVO> pageByOptions(Long projectId,Long envId, PageRequest pageRequest, String params) {
         PageInfo<CertificationVO> certificationDTOPage = ConvertUtils.convertPage(basePage(projectId,  envId, pageRequest, params), this::dtoToVo);
-        List<Long> connectedEnvList = clusterConnectionHandler.getConnectedEnvList();
         List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedEnvList();
         certificationDTOPage.getList().stream()
                 .filter(certificationDTO -> certificationDTO.getOrganizationId() == null)
                 .forEach(certificationDTO -> {
                     DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(certificationDTO.getEnvId());
-                    certificationDTO.setEnvConnected(
-                            connectedEnvList.contains(devopsEnvironmentDTO.getClusterId())
-                                    && updatedEnvList.contains(devopsEnvironmentDTO.getClusterId()));
+                    certificationDTO.setEnvConnected(updatedEnvList.contains(devopsEnvironmentDTO.getClusterId()));
                 });
         return certificationDTOPage;
     }

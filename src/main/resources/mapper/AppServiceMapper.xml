@@ -71,7 +71,7 @@
         da.`code`,
         da.`name` ,
         dam.share_level,
-        da.app_id app_id,
+        da.app_id app_id
         FROM
         devops_app_service da
         JOIN devops_app_service_instance dai ON dai.app_service_id = da.id

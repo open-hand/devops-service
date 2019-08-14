@@ -29,6 +29,11 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
     }
 
     @Override
+    public DevopsProjectDTO queryByAppId(Long appId) {
+        return devopsProjectMapper.selectByPrimaryKey(appId);
+    }
+
+    @Override
     public DevopsProjectDTO baseQueryByGitlabAppGroupId(Integer appGroupId) {
         DevopsProjectDTO devopsProjectDTO = new DevopsProjectDTO();
         devopsProjectDTO.setDevopsAppGroupId(TypeUtil.objToLong(appGroupId));
@@ -50,9 +55,9 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
 
     @Override
     public void baseUpdate(DevopsProjectDTO devopsProjectDTO) {
-        DevopsProjectDTO oldDevopsProjectDTO = devopsProjectMapper.selectByPrimaryKey(devopsProjectDTO.getIamProjectId());
+        DevopsProjectDTO oldDevopsProjectDTO = devopsProjectMapper.selectByPrimaryKey(devopsProjectDTO);
         if (oldDevopsProjectDTO == null) {
-            devopsProjectMapper.insert(devopsProjectDTO);
+            devopsProjectMapper.insertSelective(devopsProjectDTO);
         } else {
             devopsProjectDTO.setObjectVersionNumber(oldDevopsProjectDTO.getObjectVersionNumber());
             devopsProjectMapper.updateByPrimaryKeySelective(devopsProjectDTO);

@@ -1,6 +1,6 @@
 package io.choerodon.devops.app.eventhandler.payload;
 
-import java.util.List;
+import java.util.Set;
 
 /**
  * GitLab group create event
@@ -14,8 +14,8 @@ public class GitlabGroupPayload {
     private String organizationName;
     private String userName;
     private Long userId;
-    private List<String> roleLabels;
-    private ApplicationEventPayload applicationEventPayload;
+    private Set<String> roleLabels;
+    private Long applicationId;
 
     public GitlabGroupPayload() {
     }
@@ -85,19 +85,19 @@ public class GitlabGroupPayload {
         this.userId = userId;
     }
 
-    public List<String> getRoleLabels() {
+    public Set<String> getRoleLabels() {
         return roleLabels;
     }
 
-    public void setRoleLabels(List<String> roleLabels) {
+    public void setRoleLabels(Set<String> roleLabels) {
         this.roleLabels = roleLabels;
     }
 
-    public ApplicationEventPayload getApplicationEventPayload() {
-        return applicationEventPayload;
+    public Long getApplicationId() {
+        return applicationId;
     }
 
-    public void setApplicationEventPayload(ApplicationEventPayload applicationEventPayload) {
-        this.applicationEventPayload = applicationEventPayload;
+    public void setApplicationId(Long applicationId) {
+        this.applicationId = applicationId;
     }
 }

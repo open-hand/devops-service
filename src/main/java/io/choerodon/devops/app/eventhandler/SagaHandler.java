@@ -37,8 +37,6 @@ public class SagaHandler {
     @Autowired
     private HarborService harborService;
     @Autowired
-    private OrganizationService organizationService;
-    @Autowired
     private GitlabGroupMemberService gitlabGroupMemberService;
     @Autowired
     private GitlabUserService gitlabUserService;
@@ -49,22 +47,23 @@ public class SagaHandler {
     }
 
 
+    /**
+     * 消费创建应用事件，为应用创建组
+     */
     @SagaTask(code = SagaTaskCodeConstants.DEVOPS_CREATE_GITLAB_GROUP,
-            description = "devops创建应用Group",
-            sagaCode = SagaTopicCodeConstants.IAM_CREATE_PROJECT,
+            description = "消费创建应用事件",
+            sagaCode = SagaTopicCodeConstants.BASE_CREATE_APPLICATION,
             maxRetryCount = 3,
             seq = 1)
-    public String handleGitlabGroupEvent(String msg) {
-        ProjectPayload projectPayload = gson.fromJson(msg, ProjectPayload.class);
-        GitlabGroupPayload gitlabGroupPayload = new GitlabGroupPayload();
-        BeanUtils.copyProperties(projectPayload, gitlabGroupPayload);
-        loggerInfo(gitlabGroupPayload);
-        gitlabGroupService.createGroup(gitlabGroupPayload, "");
+    public String handleApplicationCreation(String msg) {
+        ApplicationEventPayload applicationEventPayload = gson.fromJson(msg, ApplicationEventPayload.class);
+        loggerInfo(msg);
+        gitlabGroupService.createApplicationGroup(applicationEventPayload);
         return msg;
     }
 
     /**
-     * 创建组事件
+     * 创建组事件，消费创建项目事件
      */
     @SagaTask(code = SagaTaskCodeConstants.DEVOPS_CREATE_GITOPS_GROUP,
             description = "devops 创建 GitOps Group",
@@ -76,25 +75,29 @@ public class SagaHandler {
         GitlabGroupPayload gitlabGroupPayload = new GitlabGroupPayload();
         BeanUtils.copyProperties(projectPayload, gitlabGroupPayload);
         loggerInfo(gitlabGroupPayload);
-        gitlabGroupService.createGroup(gitlabGroupPayload, "-gitops");
+        gitlabGroupService.createEnvGroup(gitlabGroupPayload);
         return msg;
     }
 
 
+    /**
+     * 消费更新应用事件，更新应用对应的组
+     */
     @SagaTask(code = SagaTaskCodeConstants.DEVOPS_UPDATE_GITLAB_GROUP,
             description = "devops  更新 应用 Group",
             sagaCode = SagaTopicCodeConstants.BASE_UPDATE_APPLICATION,
             maxRetryCount = 3,
             seq = 1)
     public String handleUpdateGitlabGroupEvent(String msg) {
-        ProjectPayload projectPayload = gson.fromJson(msg, ProjectPayload.class);
-        GitlabGroupPayload gitlabGroupPayload = new GitlabGroupPayload();
-        BeanUtils.copyProperties(projectPayload, gitlabGroupPayload);
-        loggerInfo(gitlabGroupPayload);
-        gitlabGroupService.updateGroup(gitlabGroupPayload, "");
+        loggerInfo(msg);
+        ApplicationEventPayload projectPayload = gson.fromJson(msg, ApplicationEventPayload.class);
+        gitlabGroupService.updateApplicationGroup(projectPayload);
         return msg;
     }
 
+    /**
+     * 更新项目事件，为项目更新环境组
+     */
     @SagaTask(code = SagaTaskCodeConstants.DEVOPS_UPDATE_GITOPS_GROUP,
             description = "devops  更新 GitOps Group",
             sagaCode = SagaTopicCodeConstants.IAM_UPDATE_PROJECT,
@@ -104,8 +107,8 @@ public class SagaHandler {
         ProjectPayload projectPayload = gson.fromJson(msg, ProjectPayload.class);
         GitlabGroupPayload gitlabGroupPayload = new GitlabGroupPayload();
         BeanUtils.copyProperties(projectPayload, gitlabGroupPayload);
-        loggerInfo(gitlabGroupPayload);
-        gitlabGroupService.updateGroup(gitlabGroupPayload, "-gitops");
+        loggerInfo(msg);
+        gitlabGroupService.updateEnvGroup(gitlabGroupPayload);
         return msg;
     }
 
@@ -126,21 +129,6 @@ public class SagaHandler {
         loggerInfo(harborPayload);
         harborService.createHarbor(harborPayload);
         return msg;
-    }
-
-    /**
-     * 创建组织事件
-     */
-    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_CREATE_ORGANIZATION,
-            description = "创建组织事件",
-            sagaCode = SagaTopicCodeConstants.DEVOPS_CREATE_ORGANIZATION,
-            maxRetryCount = 3,
-            seq = 1)
-    public String handleOrganizationCreateEvent(String payload) {
-        OrganizationEventPayload organizationEventPayload = gson.fromJson(payload, OrganizationEventPayload.class);
-        loggerInfo(organizationEventPayload);
-        organizationService.create(organizationEventPayload);
-        return payload;
     }
 
     /**

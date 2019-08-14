@@ -19,6 +19,14 @@ public class ApplicationEventPayload {
 
     private Long sourceId;
 
+    private String organizationCode;
+
+    private String organizationName;
+
+    private Long projectId;
+
+    private Long userId;
+
     public Long getId() {
         return id;
     }
@@ -73,5 +81,37 @@ public class ApplicationEventPayload {
 
     public void setSourceId(Long sourceId) {
         this.sourceId = sourceId;
+    }
+
+    public String getOrganizationCode() {
+        return organizationCode;
+    }
+
+    public void setOrganizationCode(String organizationCode) {
+        this.organizationCode = organizationCode;
+    }
+
+    public String getOrganizationName() {
+        return organizationName;
+    }
+
+    public void setOrganizationName(String organizationName) {
+        this.organizationName = organizationName;
+    }
+
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 }

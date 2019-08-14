@@ -117,7 +117,7 @@ public class ClusterConnectionHandler {
     }
 
     /**
-     * 环境更新列表
+     * 环境更新列表, 不需要进行升级的集群 up-to-date
      *
      * @return 环境更新列表
      */

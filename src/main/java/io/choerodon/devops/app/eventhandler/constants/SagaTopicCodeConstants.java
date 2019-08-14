@@ -149,14 +149,9 @@ public class SagaTopicCodeConstants {
     public static final String BASE_UPDATE_APPLICATION = "base-update-application";
 
     /**
-     * 创建组织事件
+     * base-service创建应用事件
      */
-    public static final String DEVOPS_CREATE_ORGANIZATION = "devopsCreateOrganization";
-
-    /**
-     * Iam创建应用事件
-     */
-    public static final String IAM_CREATE_APPLICATION = "iam-create-application";
+    public static final String BASE_CREATE_APPLICATION = "base-create-application";
 
     /**
      * Iam删除应用

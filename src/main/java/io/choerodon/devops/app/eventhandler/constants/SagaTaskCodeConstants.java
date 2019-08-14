@@ -82,12 +82,6 @@ public class SagaTaskCodeConstants {
      */
     public static final String DEVOPS_CREATE_INGRESS = "devopsCreateIngress";
 
-
-    /**
-     * 注册组织事件
-     */
-    public static final String REGISTER_DEVOPS_INIT_ORG = "register-devops-init-org";
-
     /**
      * 初始化Demo环境的项目相关数据
      */

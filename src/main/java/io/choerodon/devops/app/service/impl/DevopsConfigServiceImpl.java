@@ -70,7 +70,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
 
     public void operate(Long resourceId, String resourceType, List<DevopsConfigVO> devopsConfigVOS) {
 
-        devopsConfigVOS.stream().forEach(devopsConfigVO -> {
+        devopsConfigVOS.forEach(devopsConfigVO -> {
             //根据每个配置的默认还是自定义执行不同逻辑
             if (devopsConfigVO.getCustom()) {
 
@@ -114,7 +114,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
         List<DevopsConfigVO> devopsConfigVOS = new ArrayList<>();
 
         List<DevopsConfigDTO> devopsConfigDTOS = baseListByResource(resourceId, resourceType);
-        devopsConfigDTOS.stream().forEach(devopsConfigDTO -> {
+        devopsConfigDTOS.forEach(devopsConfigDTO -> {
             DevopsConfigVO devopsConfigVO = dtoToVo(devopsConfigDTO);
             //如果是项目层级下的harbor类型，需返回是否私有
             if (devopsConfigVO.getProjectId() != null && devopsConfigVO.getType().equals(HARBOR)) {

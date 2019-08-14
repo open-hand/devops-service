@@ -445,11 +445,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     private void setEnvStatus(List<Long> connectedEnvList, List<Long> upgradeEnvList, DevopsEnvironmentDTO t) {
-        if (connectedEnvList.contains(t.getClusterId()) && upgradeEnvList.contains(t.getClusterId())) {
-            t.setConnected(true);
-        } else {
-            t.setConnected(false);
-        }
+        t.setConnected(upgradeEnvList.contains(t.getClusterId()));
     }
 
 
