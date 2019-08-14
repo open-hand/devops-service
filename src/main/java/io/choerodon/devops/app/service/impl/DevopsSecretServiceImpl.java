@@ -8,6 +8,13 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+import io.kubernetes.client.models.V1ObjectMeta;
+import io.kubernetes.client.models.V1Secret;
+
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.validator.DevopsSecretValidator;
@@ -26,12 +33,6 @@ import io.choerodon.devops.infra.gitops.ResourceFileCheckHandler;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsSecretMapper;
 import io.choerodon.devops.infra.util.*;
-import io.kubernetes.client.models.V1ObjectMeta;
-import io.kubernetes.client.models.V1Secret;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 
 /**
@@ -350,10 +351,10 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
 
         secretRespVO.setValue(secretMaps);
         if (devopsSecretDTO.getCreatedBy() != null && devopsSecretDTO.getCreatedBy() != 0) {
-            secretRespVO.setCreatorName(iamServiceClientOperator.queryUserByUserId(devopsSecretDTO.getCreatedBy()).getRealName());
+            secretRespVO.setCreatorName(ResourceCreatorInfoUtil.getOperatorName(iamServiceClientOperator, devopsSecretDTO.getCreatedBy()));
         }
         if (devopsSecretDTO.getLastUpdatedBy() != null && devopsSecretDTO.getLastUpdatedBy() != 0) {
-            secretRespVO.setLastUpdaterName(iamServiceClientOperator.queryUserByUserId(devopsSecretDTO.getLastUpdatedBy()).getRealName());
+            secretRespVO.setLastUpdaterName(ResourceCreatorInfoUtil.getOperatorName(iamServiceClientOperator, devopsSecretDTO.getLastUpdatedBy()));
         }
         return secretRespVO;
     }
@@ -369,6 +370,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         baseCheckName(name, envId);
     }
 
+    @Override
     public DevopsSecretDTO baseCreate(DevopsSecretDTO devopsSecretDTO) {
         if (devopsSecretMapper.insert(devopsSecretDTO) != 1) {
             throw new CommonException("error.secret.insert");
@@ -376,6 +378,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         return devopsSecretDTO;
     }
 
+    @Override
     public void baseUpdate(DevopsSecretDTO devopsSecretDTO) {
         DevopsSecretDTO oldDevopsSecretDTO = devopsSecretMapper.selectByPrimaryKey(devopsSecretDTO.getId());
         if (oldDevopsSecretDTO == null) {
@@ -387,11 +390,13 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         }
     }
 
+    @Override
     public void baseDelete(Long secretId) {
         devopsSecretMapper.deleteByPrimaryKey(secretId);
         devopsSecretMapper.delete(new DevopsSecretDTO(secretId));
     }
 
+    @Override
     public void baseCheckName(String name, Long envId) {
         DevopsSecretDTO devopsSecretDTO = new DevopsSecretDTO();
         devopsSecretDTO.setName(name);
@@ -414,15 +419,16 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         return devopsSecretMapper.selectOne(devopsSecretDTO);
     }
 
+    @Override
     public PageInfo<DevopsSecretDTO> basePageByOption(Long envId, PageRequest pageRequest, String params, Long appServiceId) {
         Map maps = gson.fromJson(params, Map.class);
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
         List<String> paramList = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
-        PageInfo<DevopsSecretDTO> devopsSecretDTOPageInfo = PageHelper
+        return PageHelper
                 .startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> devopsSecretMapper.listByOption(envId, searchParamMap, paramList, appServiceId));
-        return devopsSecretDTOPageInfo;
     }
 
+    @Override
     public List<DevopsSecretDTO> baseListByEnv(Long envId) {
         DevopsSecretDTO devopsSecretDTO = new DevopsSecretDTO();
         devopsSecretDTO.setEnvId(envId);

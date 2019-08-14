@@ -6,12 +6,14 @@ import java.util.*;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -217,10 +219,10 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
         }
         DevopsCustomizeResourceVO resource = ConvertUtils.convertObject(devopsCustomizeResourceDTO, DevopsCustomizeResourceVO.class);
         if (devopsCustomizeResourceDTO.getCreatedBy() != null && devopsCustomizeResourceDTO.getCreatedBy() != 0) {
-            resource.setCreatorName(iamServiceClientOperator.queryUserByUserId(devopsCustomizeResourceDTO.getCreatedBy()).getRealName());
+            resource.setCreatorName(ResourceCreatorInfoUtil.getOperatorName(iamServiceClientOperator, devopsCustomizeResourceDTO.getCreatedBy()));
         }
         if (devopsCustomizeResourceDTO.getLastUpdatedBy() != null && devopsCustomizeResourceDTO.getLastUpdatedBy() != 0) {
-            resource.setLastUpdaterName(iamServiceClientOperator.queryUserByUserId(devopsCustomizeResourceDTO.getLastUpdatedBy()).getRealName());
+            resource.setLastUpdaterName(ResourceCreatorInfoUtil.getOperatorName(iamServiceClientOperator, devopsCustomizeResourceDTO.getLastUpdatedBy()));
         }
         return resource;
     }

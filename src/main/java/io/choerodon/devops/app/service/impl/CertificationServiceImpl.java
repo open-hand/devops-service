@@ -343,8 +343,8 @@ public class CertificationServiceImpl implements CertificationService {
     }
 
     @Override
-    public PageInfo<CertificationVO> pageByOptions(Long projectId,Long envId, PageRequest pageRequest, String params) {
-        PageInfo<CertificationVO> certificationDTOPage = ConvertUtils.convertPage(basePage(projectId,  envId, pageRequest, params), this::dtoToVo);
+    public PageInfo<CertificationVO> pageByOptions(Long projectId, Long envId, PageRequest pageRequest, String params) {
+        PageInfo<CertificationVO> certificationDTOPage = ConvertUtils.convertPage(basePage(projectId, envId, pageRequest, params), this::dtoToVo);
         List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedEnvList();
         certificationDTOPage.getList().stream()
                 .filter(certificationDTO -> certificationDTO.getOrganizationId() == null)
@@ -386,7 +386,7 @@ public class CertificationServiceImpl implements CertificationService {
         respVO.setDNSNames(domains);
         respVO.setIngresses(listIngressNamesByCertId(certId));
         if (certificationDTO.getCreatedBy() != null && certificationDTO.getCreatedBy() != 0) {
-            respVO.setCreatorName(iamServiceClientOperator.queryUserByUserId(certificationDTO.getCreatedBy()).getRealName());
+            respVO.setCreatorName(ResourceCreatorInfoUtil.getOperatorName(iamServiceClientOperator, certificationDTO.getCreatedBy()));
         }
         return respVO;
     }

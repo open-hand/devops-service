@@ -11,6 +11,16 @@ import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+import io.kubernetes.client.JSON;
+import io.kubernetes.client.custom.IntOrString;
+import io.kubernetes.client.models.*;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -38,16 +48,8 @@ import io.choerodon.devops.infra.mapper.DevopsIngressPathMapper;
 import io.choerodon.devops.infra.mapper.DevopsServiceMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
+import io.choerodon.devops.infra.util.ResourceCreatorInfoUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.kubernetes.client.JSON;
-import io.kubernetes.client.custom.IntOrString;
-import io.kubernetes.client.models.*;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 @Component
 public class DevopsIngressServiceImpl implements DevopsIngressService {
@@ -336,10 +338,10 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         devopsIngressPathMapper.select(devopsIngressPathDTO).forEach(e -> setDevopsIngressDTO(vo, e));
 
         if (devopsIngressDTO.getCreatedBy() != null && devopsIngressDTO.getCreatedBy() != 0) {
-            vo.setCreatorName(iamServiceClientOperator.queryUserByUserId(devopsIngressDTO.getCreatedBy()).getRealName());
+            vo.setCreatorName(ResourceCreatorInfoUtil.getOperatorName(iamServiceClientOperator, devopsIngressDTO.getCreatedBy()));
         }
         if (devopsIngressDTO.getLastUpdatedBy() != null && devopsIngressDTO.getLastUpdatedBy() != 0) {
-            vo.setLastUpdaterName(iamServiceClientOperator.queryUserByUserId(devopsIngressDTO.getLastUpdatedBy()).getRealName());
+            vo.setLastUpdaterName(ResourceCreatorInfoUtil.getOperatorName(iamServiceClientOperator, devopsIngressDTO.getLastUpdatedBy()));
         }
 
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsIngressDTO.getEnvId());
@@ -787,11 +789,13 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         }
     }
 
+    @Override
     public void baseDelete(Long ingressId) {
         devopsIngressMapper.deleteByPrimaryKey(ingressId);
         devopsIngressPathMapper.delete(new DevopsIngressPathDTO(ingressId));
     }
 
+    @Override
     public Long baseUpdateStatus(Long envId, String name, String status) {
         DevopsIngressDTO ingressDTO = new DevopsIngressDTO(name);
         ingressDTO.setEnvId(envId);
@@ -809,6 +813,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         return devopsIngressMapper.listIngressNameByServiceId(serviceId);
     }
 
+    @Override
     public Boolean baseCheckName(Long envId, String name) {
         DevopsIngressDTO devopsIngressDTO = new DevopsIngressDTO(name);
         devopsIngressDTO.setEnvId(envId);
@@ -828,6 +833,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         return devopsIngressMapper.selectOne(devopsIngressDTO);
     }
 
+    @Override
     public DevopsIngressDTO baseCreateIngress(DevopsIngressDTO devopsIngressDTO) {
         if (devopsIngressMapper.insert(devopsIngressDTO) != 1) {
             throw new CommonException("error.domain.insert");
@@ -835,20 +841,24 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         return devopsIngressDTO;
     }
 
+    @Override
     public void baseCreatePath(DevopsIngressPathDTO devopsIngressPathDTO) {
         if (devopsIngressPathMapper.insert(devopsIngressPathDTO) != 1) {
             throw new CommonException("error.domainAttr.insert");
         }
     }
 
+    @Override
     public List<DevopsIngressPathDTO> baseListPathByEnvIdAndServiceName(Long envId, String serviceName) {
         return devopsIngressPathMapper.listPathByEnvIdAndServiceName(envId, serviceName);
     }
 
+    @Override
     public List<DevopsIngressPathDTO> baseListPathByEnvIdAndServiceId(Long envId, Long serviceId) {
         return devopsIngressPathMapper.listPathByEnvIdAndServiceId(envId, serviceId);
     }
 
+    @Override
     public List<DevopsIngressPathDTO> baseListPathByIngressId(Long ingressId) {
         DevopsIngressPathDTO devopsIngressPathDTO = new DevopsIngressPathDTO();
         devopsIngressPathDTO.setIngressId(ingressId);
@@ -862,12 +872,14 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         return devopsIngressMapper.select(devopsIngressDTO);
     }
 
+    @Override
     public void baseUpdateIngressPath(DevopsIngressPathDTO devopsIngressPathDTO) {
         if (devopsIngressPathMapper.updateByPrimaryKey(devopsIngressPathDTO) != 1) {
             throw new CommonException("error.domainAttr.update");
         }
     }
 
+    @Override
     public void baseDeletePathByIngressId(Long ingressId) {
         DevopsIngressPathDTO devopsIngressPathDTO = new DevopsIngressPathDTO();
         devopsIngressPathDTO.setIngressId(ingressId);
@@ -879,6 +891,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         return devopsIngressMapper.checkEnvHasIngress(envId);
     }
 
+    @Override
     public List<DevopsIngressDTO> baseList() {
         return devopsIngressMapper.selectAll();
     }
