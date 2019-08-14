@@ -1374,7 +1374,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         if (!org.springframework.util.StringUtils.isEmpty(searchParam)) {
             Map maps = gson.fromJson(searchParam, Map.class);
             searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
-            param = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
+            param = TypeUtil.cast(maps.get(TypeUtil.PARAMS).toString());
             roleAssignmentSearchVO.setParam(new String[]{param});
             if (searchParamMap.get("loginName") != null) {
                 String loginName = TypeUtil.objToString(searchParamMap.get("loginName"));
