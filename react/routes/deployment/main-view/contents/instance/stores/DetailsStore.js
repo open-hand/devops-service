@@ -1,7 +1,7 @@
 import { observable, action, computed } from 'mobx';
 import { axios } from '@choerodon/boot';
 import { handlePromptError } from '../../../../../../utils';
-import { resourceData, deploymentsData } from './mock';
+import resourceData from './mock';
 
 export default class InstanceDetails {
   @observable resources = {};
@@ -9,8 +9,6 @@ export default class InstanceDetails {
   @observable loading = true;
 
   @observable deployments = {};
-
-  @observable modalLoading = false;
 
   @observable targetCount = {};
 
@@ -52,16 +50,6 @@ export default class InstanceDetails {
     return this.deployments;
   }
 
-  @action
-  setModalLoading(data) {
-    this.modalLoading = data;
-  }
-
-  @computed
-  get getModalLoading() {
-    return this.modalLoading;
-  }
-
   /**
    * 根据实例id获取更多部署详情(Json格式)
    * @param type
@@ -70,13 +58,10 @@ export default class InstanceDetails {
    * @param name
    */
   async loadDeploymentsJson(type, project, instance, name) {
-    this.setModalLoading(true);
-    this.setDeployments(deploymentsData);
-
     const URL_TYPE = {
-      deploymentDTOS: `deployment_detail_json?deployment_name=${name}`,
-      statefulSetDTOS: `stateful_set_detail_json?stateful_set_name=${name}`,
-      daemonSetDTOS: `daemon_set_detail_json?daemon_set_name=${name}`,
+      deploymentVOS: `deployment_detail_json?deployment_name=${name}`,
+      statefulSetVOS: `stateful_set_detail_json?stateful_set_name=${name}`,
+      daemonSetVOS: `daemon_set_detail_json?daemon_set_name=${name}`,
     };
 
     try {
@@ -85,11 +70,12 @@ export default class InstanceDetails {
       const res = handlePromptError(data);
       if (res) {
         this.setDeployments(data);
+        return true;
       }
-      this.setModalLoading(false);
+      return false;
     } catch (e) {
-      this.setModalLoading(false);
       Choerodon.handleResponseError(e);
+      return false;
     }
   }
 

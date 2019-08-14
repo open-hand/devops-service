@@ -1,8 +1,8 @@
 import React, { useState, Fragment } from 'react';
 import { observer } from 'mobx-react-lite';
+import { Spin } from 'choerodon-ui';
 import YamlEditor from '../../../../../../../components/yamlEditor';
 import InterceptMask from '../../../../../../../components/interceptMask/InterceptMask';
-import LoadingBar from '../../../../../../../components/loadingBar';
 import { handlePromptError } from '../../../../../../../utils';
 
 import './index.less';
@@ -27,26 +27,27 @@ const ValueModalContent = observer((
   async function handleOk() {
     if (isDisabled) return false;
     setIsLoading(true);
-    const { id, parentId, projectId } = vo;
+    const { id, parentId, projectId, appServiceVersionId } = vo;
     const [envId, appId] = parentId.split('-');
 
     const data = {
       values: value || yaml || '',
-      appInstanceId: id,
+      instanceId: id,
       type: 'update',
-      environmentId: envId,
-      appId,
+      environmentId: Number(envId),
+      appServiceId: Number(appId),
+      appServiceVersionId,
     };
 
     try {
       const result = await store.upgrade(projectId, data);
-      setIsLoading(false);
-      if (!handlePromptError(result)) {
-        return false;
+      if (handlePromptError(result)) {
+        Choerodon.prompt('修改成功.');
+      } else {
+        Choerodon.prompt('修改失败.');
       }
     } catch (e) {
       Choerodon.handleResponseError(e);
-      return false;
     }
   }
 
@@ -64,13 +65,13 @@ const ValueModalContent = observer((
   }
 
   return (<Fragment>
-    {store.getValueLoading ? <LoadingBar display /> : <Fragment>
-      <div className={`${prefixCls}-configValue-text`}>
-        <span>{formatMessage({ id: `${intlPrefix}.modal.config` })}：</span>
-        <span className={`${prefixCls}-configValue-name`}>
-          {name || formatMessage({ id: `${intlPrefix}.modal.config.empty` })}
-        </span>
-      </div>
+    <div className={`${prefixCls}-configValue-text`}>
+      <span>{formatMessage({ id: `${intlPrefix}.modal.config` })}：</span>
+      <span className={`${prefixCls}-configValue-name`}>
+        {name || formatMessage({ id: `${intlPrefix}.modal.config.empty` })}
+      </span>
+    </div>
+    <Spin spinning={store.getValueLoading}>
       <YamlEditor
         readOnly={false}
         value={value || yaml || ''}
@@ -78,8 +79,7 @@ const ValueModalContent = observer((
         onValueChange={handleChange}
         handleEnableNext={handleEnableNext}
       />
-    </Fragment>
-    }
+    </Spin>
     <InterceptMask visible={isLoading} />
   </Fragment>);
 });

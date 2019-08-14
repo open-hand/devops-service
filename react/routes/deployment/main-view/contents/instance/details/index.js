@@ -1,9 +1,10 @@
 import React, { Component, Fragment } from 'react';
+import PropTypes from 'prop-types';
 import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react';
 import _ from 'lodash';
 import TimeAgo from 'timeago-react';
-import { Tooltip, Button } from 'choerodon-ui';
+import { Tooltip, Button, Icon, Popover } from 'choerodon-ui';
 import { formatDate } from '../../../../../../utils';
 import LoadingBar from '../../../../../../components/loadingBar';
 import Store from '../stores';
@@ -14,7 +15,7 @@ import './index.less';
 
 function computedPodCount(collection) {
   // 计算 pod 数量和环形图占比
-  const count = _.countBy(collection, pod => !!pod.ready);
+  const count = _.countBy(collection, (pod) => !!pod.ready);
   // 通过 ready 字段进行分类计数，分类结果是 true 和 false 的数量
   const correctCount = count.true || 0;
   const errorCount = count.false || 0;
@@ -27,12 +28,23 @@ function computedPodCount(collection) {
   };
 }
 
+const Label = ({ name, value }) => (<div className="c7ncd-deployment-popover-labels">
+  <span>键-{name}</span>
+  <span>值-{value}</span>
+</div>);
+
+Label.propTypes = {
+  name: PropTypes.string.isRequired,
+  value: PropTypes.string,
+};
+
 @observer
 export default class Details extends Component {
   static contextType = Store;
 
   state = {
     visible: false,
+    isDisabled: false,
   };
 
   changeTargetCount = (count) => {
@@ -40,21 +52,45 @@ export default class Details extends Component {
     detailsStore.setTargetCount(count);
   };
 
+  /**
+   * 打开Deployment详情侧边栏，并加载数据
+   * @param {string} type
+   * @param {*} id
+   * @param {*} name
+   */
+  handleClick = async (type, id, name) => {
+    this.setState({ isDisabled: true });
+    const {
+      detailsStore,
+      AppState: {
+        currentMenuType: {
+          id: projectId,
+        },
+      },
+    } = this.context;
+    const result = await detailsStore.loadDeploymentsJson(type, projectId, id, name);
+    if (result) {
+      this.setState({ visible: true });
+    }
+    this.setState({ isDisabled: false });
+  };
+
   getDeployContent = (podType) => {
     const {
       detailsStore,
-      istStore: { getDetail: { status } },
+      istStore: { getDetail: { status, connect } },
       instanceId,
     } = this.context;
+    const { isDisabled } = this.state;
     const {
       getResources,
       getTargetCount: targetCount,
     } = detailsStore;
     const POD_TYPE = {
       // 确保“当前/需要/可提供”的顺序
-      deploymentDTOS: ['current', 'desired', 'available'],
-      daemonSetDTOS: ['currentScheduled', 'desiredScheduled', 'numberAvailable'],
-      statefulSetDTOS: ['currentReplicas', 'desiredReplicas', 'readyReplicas'],
+      deploymentVOS: ['current', 'desired', 'available'],
+      daemonSetVOS: ['currentScheduled', 'desiredScheduled', 'numberAvailable'],
+      statefulSetVOS: ['currentReplicas', 'desiredReplicas', 'readyReplicas'],
     };
     const [current, desired, available] = POD_TYPE[podType];
     const deployments = getResources[podType];
@@ -62,12 +98,50 @@ export default class Details extends Component {
     if (!deployments || !deployments.length) return null;
 
     return _.map(deployments, (item) => {
-      const { name, age, devopsEnvPodDTOS } = item;
-
+      const { name, age, devopsEnvPodVOS, ports, labels } = item;
       const replica = `${item[available] || 0} available / ${item[current]
       || 0} current / ${item[desired] || 0} desired`;
+      const podCount = computedPodCount(devopsEnvPodVOS);
+      let portValues = null;
+      let labelValues = null;
+      if (ports && ports.length) {
+        portValues = <Fragment>
+          <span className="c7n-deploy-expanded-values">
+            {_.head(ports)}
+          </span>
+          {ports.length > 1 && <Popover
+            arrowPointAtCenter
+            placement="bottom"
+            getPopupContainer={(triggerNode) => triggerNode.parentNode}
+            content={_.map(_.tail(ports), (port) => <div className="c7ncd-deployment-popover-port" key={port}>{port}</div>)}
+          >
+            <Icon type="expand_more" className="c7ncd-deployment-icon-more" />
+          </Popover>}
+        </Fragment>;
+      }
 
-      const podCount = computedPodCount(devopsEnvPodDTOS);
+      if (!_.isEmpty(labels)) {
+        const keys = Object.keys(labels);
+        const firstKey = keys[0];
+
+        labelValues = <Fragment>
+          <span className="c7n-deploy-expanded-values">
+            <Label name={firstKey} value={labels[firstKey]} />
+          </span>
+          {keys.length > 1 && <Popover
+            arrowPointAtCenter
+            placement="bottom"
+            getPopupContainer={(triggerNode) => triggerNode.parentNode}
+            content={_.map(_.tail(keys), (key) => <Label
+              key={key}
+              name={key}
+              value={labels[key]}
+            />)}
+          >
+            <Icon type="expand_more" className="c7ncd-deployment-icon-more" />
+          </Popover>}
+        </Fragment>;
+      }
 
       return (
         <div key={name} className="c7n-deploy-expanded-item">
@@ -85,7 +159,7 @@ export default class Details extends Component {
             </li>
             <li className="c7n-deploy-expanded-lists">
               <span className="c7n-deploy-expanded-keys">
-                {podType === 'deploymentDTOS' ? 'ReplicaSet' : <FormattedMessage id="status" />}
+                {podType === 'deploymentVOS' ? 'ReplicaSet' : <FormattedMessage id="status" />}
                 ：
               </span>
               <span title={replica} className="c7n-deploy-expanded-values">{replica}</span>
@@ -103,10 +177,22 @@ export default class Details extends Component {
                 </Tooltip>
               </span>
             </li>
+            {_.has(item, 'ports') && <li className="c7n-deploy-expanded-lists">
+              <span className="c7n-deploy-expanded-keys">
+                <FormattedMessage id="c7ncd.deployment.port.number" />：
+              </span>
+              {portValues}
+            </li>}
+            {_.has(item, 'labels') && <li className="c7n-deploy-expanded-lists">
+              <span className="c7n-deploy-expanded-keys">
+                <FormattedMessage id="label" />：
+              </span>
+              {labelValues}
+            </li>}
             <li className="c7n-deploy-expanded-lists">
               <Button
                 className="c7ncd-detail-btn"
-                onClick={() => this.handleClick(podType, instanceId, name)}
+                onClick={isDisabled ? null : () => this.handleClick(podType, instanceId, name)}
               >
                 <FormattedMessage id="detailMore" />
               </Button>
@@ -115,7 +201,7 @@ export default class Details extends Component {
           <div className="c7n-deploy-expanded-pod">
             <Pods
               podType={podType}
-              // connect={connect}
+              connect={connect}
               name={name}
               count={podCount}
               targetCount={targetCount}
@@ -143,15 +229,15 @@ export default class Details extends Component {
 
     if (!resources || !resources.length) return null;
     const TYPE_KEY = {
-      serviceDTOS: {
+      serviceVOS: {
         leftItems: ['type', 'externalIp', 'age'],
         rightItems: ['clusterIp', 'port'],
       },
-      ingressDTOS: {
+      ingressVOS: {
         leftItems: ['type', 'ports'],
         rightItems: ['address', 'age'],
       },
-      persistentVolumeClaimDTOS: {
+      persistentVolumeClaimVOS: {
         leftItems: ['status', 'accessModes'],
         rightItems: ['capacity', 'age'],
       },
@@ -192,7 +278,7 @@ export default class Details extends Component {
         );
       };
       return (
-        <div key={data.name} className="c7n-deploy-expanded-item">
+        <Fragment key={data.name}>
           <div className="c7n-deploy-expanded-lists">
             <span className="c7n-deploy-expanded-keys c7n-expanded-text_bold">
               <FormattedMessage id="ist.expand.name" />：
@@ -204,34 +290,17 @@ export default class Details extends Component {
               {data.name}
             </span>
           </div>
-          <ul className="c7n-deploy-expanded-text c7n-deploy-expanded_half">
-            {_.map(TYPE_KEY[type].leftItems, item => content(item))}
-          </ul>
-          <ul className="c7n-deploy-expanded-text c7n-deploy-expanded_half">
-            {_.map(TYPE_KEY[type].rightItems, item => content(item))}
-          </ul>
-        </div>
+          <div className="c7n-deploy-expanded-item">
+            <ul className="c7n-deploy-expanded-text">
+              {_.map(TYPE_KEY[type].leftItems, (item) => content(item))}
+            </ul>
+            <ul className="c7n-deploy-expanded-text">
+              {_.map(TYPE_KEY[type].rightItems, (item) => content(item))}
+            </ul>
+          </div>
+        </Fragment>
       );
     });
-  };
-
-  /**
-   * 打开Deployment详情侧边栏，并加载数据
-   * @param {string} type
-   * @param {*} id
-   * @param {*} name
-   */
-  handleClick = (type, id, name) => {
-    const {
-      detailsStore,
-      AppState: {
-        currentMenuType: {
-          id: projectId,
-        },
-      },
-    } = this.context;
-    this.setState({ visible: true });
-    detailsStore.loadDeploymentsJson(type, projectId, id, name);
   };
 
   hideSidebar = () => {
@@ -251,31 +320,31 @@ export default class Details extends Component {
     const contentList = [
       {
         title: 'Deployments',
-        main: this.getDeployContent('deploymentDTOS'),
+        main: this.getDeployContent('deploymentVOS'),
       },
       {
         title: 'Stateful Set',
-        main: this.getDeployContent('statefulSetDTOS'),
+        main: this.getDeployContent('statefulSetVOS'),
       },
       {
         title: 'Daemon Set',
-        main: this.getDeployContent('daemonSetDTOS'),
+        main: this.getDeployContent('daemonSetVOS'),
       },
       {
         title: 'PVC',
-        main: this.getNoPodContent('persistentVolumeClaimDTOS'),
+        main: this.getNoPodContent('persistentVolumeClaimVOS'),
       },
       {
         title: 'Service',
-        main: this.getNoPodContent('serviceDTOS'),
+        main: this.getNoPodContent('serviceVOS'),
       },
       {
         title: 'Ingress',
-        main: this.getNoPodContent('ingressDTOS'),
+        main: this.getNoPodContent('ingressVOS'),
       },
     ];
 
-    const hasContent = _.find(contentList, item => item.main && item.main.length);
+    const hasContent = _.find(contentList, (item) => item.main && item.main.length);
 
     return (
       <Fragment>

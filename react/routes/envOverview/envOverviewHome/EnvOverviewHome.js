@@ -1,4 +1,4 @@
-/* eslint-disable react/sort-comp */
+/* eslint-disable */
 import React, { Component, Fragment } from 'react';
 import { observer } from 'mobx-react';
 import { observable, action, configure } from 'mobx';
@@ -67,7 +67,7 @@ class EnvOverviewHome extends Component {
     };
   }
 
-  componentWillMount() {
+  componentDidMount() {
     this.loadEnvCards();
   }
 

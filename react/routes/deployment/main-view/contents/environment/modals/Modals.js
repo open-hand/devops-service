@@ -71,7 +71,7 @@ const EnvModals = observer(() => {
       ),
     });
   }
-  
+
   function openLinkService() {
     Modal.open({
       key: modalKey2,
@@ -131,9 +131,9 @@ const EnvModals = observer(() => {
       return false;
     }
   }
-  
+
   function getUniqueIds(data) {
-    return uniqBy([...data].filter(item => !!item));
+    return uniqBy([...data].filter((item) => !!item));
   }
 
   const buttons = useMemo(() => ([{
@@ -158,9 +158,9 @@ const EnvModals = observer(() => {
     name: formatMessage({ id: 'refresh' }),
     icon: 'refresh',
     handler: refresh,
-    display: tabKey === ASSIGN_TAB,
+    display: true,
     group: 2,
-  }]), [ASSIGN_TAB, formatMessage, intlPrefix, openEnvDetail, openModal, refresh, tabKey]);
+  }]), [tabKey]);
 
   return <HeaderButtons items={buttons} />;
 });

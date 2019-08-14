@@ -4,6 +4,7 @@ import isEmpty from 'lodash/isEmpty';
 import classnames from 'classnames';
 import Draggable from 'react-draggable';
 import Sidebar from './sidebar';
+import LoadingBar from '../../../components/loadingBar';
 import { useMainStore } from './stores';
 import { useDeploymentStore } from '../stores';
 import { useResize, X_AXIS_WIDTH, X_AXIS_WIDTH_MAX } from './useResize';
@@ -55,8 +56,8 @@ const MainView = observer(() => {
     },
   } = useDeploymentStore();
   const { mainStore } = useMainStore();
-
-  function getContent() {
+  const rootRef = useRef(null);
+  const content = useMemo(() => {
     const { menuType } = getSelectedMenu;
     const cmMaps = {
       [ENV_ITEM]: <EnvContent />,
@@ -66,7 +67,7 @@ const MainView = observer(() => {
       [INGRESS_GROUP]: <IngressContent />,
       [CERT_GROUP]: <CertContent />,
       [MAP_GROUP]: <KeyValueContent contentType={MAP_GROUP} />,
-      [CIPHER_GROUP]: <KeyValueContent contentType={CIPHER_GROUP} />,
+      [CIPHER_GROUP]: <KeyValueContent contentTypeg={CIPHER_GROUP} />,
       [CUSTOM_GROUP]: <CustomContent />,
       [IST_GROUP]: <IstListContent />,
       [CUSTOM_ITEM]: <CustomDetail />,
@@ -76,14 +77,10 @@ const MainView = observer(() => {
       [CIPHER_ITEM]: <SecretDetail />,
       [SERVICES_ITEM]: <ServiceDetail />,
     };
-
     return cmMaps[menuType]
       ? <Suspense fallback={<div>loading</div>}>{cmMaps[menuType]}</Suspense>
       : <div>加载中</div>;
-  }
-
-  const rootRef = useRef(null);
-
+  }, [getSelectedMenu.menuType]);
   const {
     isDragging,
     bounds,
@@ -93,12 +90,12 @@ const MainView = observer(() => {
     handleStartDrag,
     handleDrag,
   } = useResize(rootRef, mainStore);
-  const dragPrefixCls = `${prefixCls}-draggers`;
 
+  const dragPrefixCls = `${prefixCls}-draggers`;
   const draggableClass = useMemo(() => classnames({
     [`${dragPrefixCls}-handle`]: true,
     [`${dragPrefixCls}-handle-dragged`]: isDragging,
-  }), [dragPrefixCls, isDragging]);
+  }), [isDragging]);
 
   const dragRight = resizeNav.x >= X_AXIS_WIDTH_MAX ? X_AXIS_WIDTH_MAX : bounds.width - X_AXIS_WIDTH;
 
@@ -128,9 +125,9 @@ const MainView = observer(() => {
     )}
     <Fragment>
       <Sidebar />
-      {!isEmpty(getSelectedMenu) && <div className={`${prefixCls}-main ${dragPrefixCls}-animate`}>
-        {getContent()}
-      </div>}
+      {!isEmpty(getSelectedMenu) ? <div className={`${prefixCls}-main ${dragPrefixCls}-animate`}>
+        {content}
+      </div> : <LoadingBar display />}
     </Fragment>
   </div>);
 });

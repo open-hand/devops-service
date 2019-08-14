@@ -110,7 +110,7 @@ const TreeItem = observer(({ record, search }) => {
     />;
   }
 
-  return useMemo(() => {
+  function getItem() {
     const type = record.get('itemType');
     const isExpand = record.isExpanded;
     const isGroup = record.get('isGroup');
@@ -148,7 +148,9 @@ const TreeItem = observer(({ record, search }) => {
         treeItem = null;
     }
     return treeItem;
-  }, [record.isExpanded]);
+  }
+
+  return getItem();
 });
 
 TreeItem.propTypes = {

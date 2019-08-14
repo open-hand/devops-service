@@ -45,7 +45,7 @@ const KeyValueModals = observer(() => {
     setShowModal(false);
     isLoad && refresh();
   }
-  
+
   const buttons = useMemo(() => ([{
     name: formatMessage({ id: `${intlPrefix}.create.${itemType}` }),
     icon: 'playlist_add',

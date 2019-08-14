@@ -48,7 +48,7 @@ const EnvModals = observer(() => {
     setShowModal(false);
     isLoad && refresh();
   }
-  
+
   const buttons = useMemo(() => ([{
     name: formatMessage({ id: `${intlPrefix}.create.certificate` }),
     icon: 'playlist_add',

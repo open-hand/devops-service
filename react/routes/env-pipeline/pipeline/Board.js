@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { DragDropContext } from 'react-dnd';
@@ -33,7 +34,7 @@ class Board extends Component {
     };
   }
 
-  componentWillMount() {
+  componentDidMount() {
     const { Title } = this.props;
     scrollLeft[Title || 'none'] = 0;
   }

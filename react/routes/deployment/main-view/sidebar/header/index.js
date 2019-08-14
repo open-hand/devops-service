@@ -1,7 +1,7 @@
-import React, { useCallback } from 'react';
+import React from 'react';
+import { runInAction } from 'mobx';
 import { Select } from 'choerodon-ui/pro';
 import { useDeploymentStore } from '../../../stores';
-import { useSidebarStore } from '../stores';
 
 import './index.less';
 
@@ -9,7 +9,7 @@ const { Option } = Select;
 
 const SidebarHeader = () => {
   const {
-    viewType: {
+    viewTypeMappings: {
       IST_VIEW_TYPE,
       RES_VIEW_TYPE,
     },
@@ -18,14 +18,16 @@ const SidebarHeader = () => {
     intl: { formatMessage },
     deploymentStore,
   } = useDeploymentStore();
-  const { sidebarStore } = useSidebarStore();
 
-  const handleChoose = useCallback((choose) => {
-    deploymentStore.changeViewType(choose);
-    deploymentStore.setSelectedMenu({});
-    sidebarStore.setExpandedKeys([]);
-    sidebarStore.setSearchValue('');
-  }, []);
+  function handleChoose(choose) {
+    runInAction(() => {
+      deploymentStore.changeViewType(choose);
+      deploymentStore.setSelectedMenu({});
+      deploymentStore.setNoHeader(true);
+      deploymentStore.setExpandedKeys([]);
+      deploymentStore.setSearchValue('');
+    });
+  }
 
   return <div className={`${prefixCls}-sidebar-head`}>
     <Select

@@ -1,170 +1,124 @@
 const resourceData = {
-  podDTOS: [{
-    name: 'devops-service-ed8ad-6f56c4d5-knzvg',
-    ready: 1,
-    desire: 1,
-    status: 'Running',
-    restarts: 0,
-    age: '2019-08-06T16:37:34.000+08:00',
-  }],
-  serviceDTOS: [],
-  ingressDTOS: [],
-  deploymentDTOS: [{
-    name: 'devops-service-ed8ad',
-    desired: 1,
-    current: 1,
-    upToDate: 1,
-    available: 1,
-    age: '2019-08-06T16:39:44.000+08:00',
-    devopsEnvPodDTOS: [{
-      id: 71072,
+  replicaSetVOS: [
+    {
       name: 'devops-service-ed8ad-6f56c4d5-knzvg',
-      ip: '10.233.69.72',
-      status: 'Running',
-      creationDate: '2019-08-06 16:37:34',
-      appName: null,
-      namespace: 'c7ncd-staging',
-      appVersion: null,
-      publishLevel: null,
-      instanceCode: null,
-      envId: null,
-      projectId: null,
-      envCode: null,
-      envName: null,
-      objectVersionNumber: 5,
-      clusterId: null,
-      containers: null,
-      nodeName: 'staging05',
-      restartCount: 0,
-      ready: true,
-      connect: null,
-    }],
-  }],
-  replicaSetDTOS: [{
-    name: 'devops-service-ed8ad-6f56c4d5',
-    desired: 1,
-    current: 1,
-    ready: 1,
-    age: '2019-08-06T16:37:34.000+08:00',
-  }],
-  daemonSetDTOS: [],
-  statefulSetDTOS: [],
-  persistentVolumeClaimDTOS: [],
-};
-
-const deploymentsData = {
-  instanceId: 8693,
-  detail: {
-    metadata: {
-      name: 'gitlab-service-fa318',
-      namespace: 'c7ncd-staging',
-      selfLink: '/apis/extensions/v1beta1/namespaces/c7ncd-staging/deployments/gitlab-service-fa318',
-      uid: 'b74f7852-81e0-11e9-b7ff-52540202ef6c',
-      resourceVersion: '63217059',
-      generation: 17,
-      creationTimestamp: '2019-05-29T07:09:35Z',
+      desired: 1,
+      current: 1,
+      ready: 1,
+      age: '2019-08-06T16:37:34.000+08:00',
+    },
+  ],
+  statefulSetVOS: [
+    {
+      desiredReplicas: 1,
+      name: 'devops-service-ed8ad-6f56c4d5-knzvg',
+      readyReplicas: 1,
+      currentReplicas: 1,
+      devopsEnvPodVOS: [
+        {
+          ready: true,
+        },
+      ],
+      age: 'string',
+    },
+  ],
+  serviceVOS: [
+    {
+      port: '9000',
+      name: 'devops-service-ed8ad-6f56c4d5-knzvg',
+      type: 'string',
+      externalIp: '127.0.0.1',
+      targetPort: '9527',
+      age: '2019-08-06T16:39:44.000+08:00',
+      clusterIp: '192.168.1.1',
+    },
+  ],
+  deploymentVOS: [
+    {
+      name: 'devops-service-ed8ad-6f56c4d5-knzvg',
+      desired: 1,
+      current: 1,
+      upToDate: 1,
+      available: 1,
+      devopsEnvPodVOS: [
+        {
+          id: 71072,
+          name: 'devops-service-ed8ad-6f56c4d5-knzvg',
+          ip: '10.233.69.72',
+          status: 'Running',
+          creationDate: '2019-08-06 16:37:34',
+          appName: null,
+          namespace: 'c7ncd-staging',
+          appVersion: null,
+          publishLevel: null,
+          instanceCode: null,
+          envId: null,
+          projectId: null,
+          envCode: null,
+          envName: null,
+          objectVersionNumber: 5,
+          clusterId: null,
+          containers: null,
+          nodeName: 'staging05',
+          restartCount: 0,
+          ready: true,
+          connect: null,
+        },
+      ],
+      ports: ['9000', '8080', '8081', '8848'],
+      age: '2019-08-06T16:39:44.000+08:00',
       labels: {
         'choerodon.io': '0.18.0',
         'choerodon.io/application': 'gitlab-service',
-        'choerodon.io/logs-parser': 'spring-boot',
+        'choerodon.io/metrics-port': '8071',
         'choerodon.io/release': 'gitlab-service-fa318',
+        'choerodon.io/service': 'gitlab-service',
         'choerodon.io/version': '2019.7.20-112555-hotfix-0-18-1',
       },
-      annotations: { 'deployment.kubernetes.io/revision': '12' },
     },
-    spec: {
-      replicas: 1,
-      selector: { matchLabels: { 'choerodon.io/release': 'gitlab-service-fa318' } },
-      template: {
-        metadata: {
-          creationTimestamp: null,
-          labels: {
-            'choerodon.io': '0.18.0',
-            'choerodon.io/application': 'gitlab-service',
-            'choerodon.io/metrics-port': '8071',
-            'choerodon.io/release': 'gitlab-service-fa318',
-            'choerodon.io/service': 'gitlab-service',
-            'choerodon.io/version': '2019.7.20-112555-hotfix-0-18-1',
-          },
-          annotations: {
-            'choerodon.io/metrics-group': 'spring-boot',
-            'choerodon.io/metrics-path': '/actuator/prometheus',
-          },
+  ],
+  persistentVolumeClaimVOS: [
+    {
+      name: 'devops-service-ed8ad-6f56c4d5-knzvg',
+      accessModes: 'string',
+      age: '2019-08-06T16:39:44.000+08:00',
+      capacity: 'string',
+      status: 'Running',
+    },
+  ],
+  daemonSetVOS: [
+    {
+      numberAvailable: 2,
+      name: 'devops-service-ed8ad-6f56c4d5-knzvg',
+      currentScheduled: 2,
+      desiredScheduled: 0,
+      age: '2019-08-06T16:39:44.000+08:00',
+      devopsEnvPodDTOS: [
+        {
+          ready: 'boolean',
         },
-        spec: {
-          containers: [{
-            name: 'gitlab-service-fa318',
-            image: 'registry.choerodon.com.cn/choerodon-c7ncd/gitlab-service:2019.7.20-112555-hotfix-0-18-1',
-            ports: [{ name: 'http', containerPort: 8070, protocol: 'TCP' }],
-            env: [{
-              name: 'EUREKA_CLIENT_SERVICEURL_DEFAULTZONE',
-              value: 'http://register-server.c7nf-staging:8000/eureka/',
-            }, { name: 'FOR_UPDARE', value: '1' }, {
-              name: 'GITLAB_PRIVATETOKEN',
-              value: 'kEXZHti27y8zJDyWahaC',
-            }, {
-              name: 'GITLAB_URL',
-              value: 'http://git.staging.saas.hand-china.com/',
-            }, {
-              name: 'SKYWALKING_OPTS',
-              value: '-javaagent:/agent/skywalking-agent.jar -Dskywalking.agent.service_name=gitlab-service -Dskywalking.agent.sample_n_per_3_secs=-1 -Dskywalking.collector.backend_service=192.168.16.227:11800',
-            }, {
-              name: 'SPRING_CLOUD_CONFIG_URI',
-              value: 'https://config-server.c7nf-staging:8010/',
-            }, { name: 'SPRING_DATASOURCE_PASSWORD', value: 'handhand' }, {
-              name: 'SPRING_DATASOURCE_URL',
-              value: 'jdbc:mysql://c7ncd-mysql.c7nop-staging:3306/gitlab_service?useUnicode=true&characterEncoding=utf-8&useSSL=false',
-            }, { name: 'SPRING_DATASOURCE_USERNAME', value: 'root' }],
-            resources: { limits: { memory: '1Gi' }, requests: { memory: '1Gi' } },
-            readinessProbe: {
-              exec: { command: ['/bin/sh', '-c', 'curl -s localhost:8071/actuator/health --fail && nc -z localhost 8070'] },
-              initialDelaySeconds: 60,
-              timeoutSeconds: 120,
-              periodSeconds: 10,
-              successThreshold: 1,
-              failureThreshold: 3,
-            },
-            terminationMessagePath: '/dev/termination-log',
-            terminationMessagePolicy: 'File',
-            imagePullPolicy: 'IfNotPresent',
-          }],
-          restartPolicy: 'Always',
-          terminationGracePeriodSeconds: 30,
-          dnsPolicy: 'ClusterFirst',
-          securityContext: {},
-          schedulerName: 'default-scheduler',
-        },
-      },
-      strategy: { type: 'RollingUpdate', rollingUpdate: { maxUnavailable: '25%', maxSurge: '25%' } },
-      revisionHistoryLimit: 10,
-      progressDeadlineSeconds: 600,
+      ],
     },
-    status: {
-      observedGeneration: 17,
-      replicas: 1,
-      updatedReplicas: 1,
-      readyReplicas: 1,
-      availableReplicas: 1,
-      conditions: [{
-        type: 'Progressing',
-        status: 'True',
-        lastUpdateTime: '2019-07-31T01:33:56Z',
-        lastTransitionTime: '2019-07-30T12:48:29Z',
-        reason: 'NewReplicaSetAvailable',
-        message: 'ReplicaSet "gitlab-service-fa318-774dd9cb7d" has successfully progressed.',
-      }, {
-        type: 'Available',
-        status: 'True',
-        lastUpdateTime: '2019-08-04T16:58:11Z',
-        lastTransitionTime: '2019-08-04T16:58:11Z',
-        reason: 'MinimumReplicasAvailable',
-        message: 'Deployment has minimum availability.',
-      }],
+  ],
+  podVOS: [
+    {
+      desire: 1,
+      ready: 1,
+      name: 'devops-service-ed8ad-6f56c4d5-knzvg',
+      restarts: 0,
+      age: '2019-08-06T16:37:34.000+08:00',
+      status: 'Pending',
     },
-  },
+  ],
+  ingressVOS: [
+    {
+      address: '192.168.1.1',
+      hosts: 'example.com',
+      name: 'devops-service-ed8ad-6f56c4d5-knzvg',
+      ports: '8096',
+      age: '2019-08-06T16:37:34.000+08:00',
+    },
+  ],
 };
 
-export {
-  resourceData,
-  deploymentsData,
-};
+export default resourceData;

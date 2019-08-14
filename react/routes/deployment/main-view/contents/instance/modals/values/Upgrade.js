@@ -1,11 +1,10 @@
 import React, { Component, Fragment } from 'react';
 import { observer, inject } from 'mobx-react';
-import { Select, Button } from 'choerodon-ui';
+import { Select, Button, Spin } from 'choerodon-ui';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import _ from 'lodash';
 import YamlEditor from '../../../../../../../components/yamlEditor';
 import InterceptMask from '../../../../../../../components/interceptMask/InterceptMask';
-import LoadingBar from '../../../../../../../components/loadingBar';
 import { handlePromptError } from '../../../../../../../utils';
 
 import './index.less';
@@ -88,7 +87,7 @@ export default class Upgrade extends Component {
 
           const newIdArr = {
             appInstanceId: id,
-            environmentId: envId,
+            environmentId: Number(envId),
             appId,
             appVersionId: list[0].id,
           };
@@ -184,7 +183,7 @@ export default class Upgrade extends Component {
     modal.update({ okProps: { disabled: flag } });
   };
 
-  handleChangeValue = values => this.setState({ values });
+  handleChangeValue = (values) => this.setState({ values });
 
   /**
    * 修改配置升级实例
@@ -192,10 +191,9 @@ export default class Upgrade extends Component {
   handleOk = async () => {
     if (this.state.hasEditorError) return false;
 
+    this.setState({ submitting: true });
     const {
       store,
-      appInstanceId,
-      onClose,
       AppState: {
         currentMenuType: { projectId },
       },
@@ -204,41 +202,42 @@ export default class Upgrade extends Component {
     const {
       values,
       versionId,
-      idArr,
-      versions,
+      idArr: {
+        appInstanceId,
+        environmentId,
+        appId,
+        appVersionId,
+      },
     } = this.state;
-    const verId = versionId || versions[0].id;
-    const { id, yaml } = store.getUpgradeValue || {};
+    const verId = versionId || appVersionId;
+    const { yaml } = store.getUpgradeValue || {};
 
     const data = {
-      ...idArr,
       values: values || yaml || '',
-      valueId: id,
-      appInstanceId,
-      appVersionId: verId,
+      appServiceVersionId: verId,
       type: 'update',
+      instanceId: appInstanceId,
+      environmentId: Number(environmentId),
+      appServiceId: Number(appId),
     };
 
-    this.setState({ submitting: true });
-    const res = await store.upgrade(projectId, data)
-      .catch((e) => {
-        this.setState({ submitting: false });
-        onClose(true);
-        Choerodon.handleResponseError(e);
-      });
-
-    if (res && res.failed) {
-      Choerodon.prompt(res.message);
+    try {
+      const result = await store.upgrade(projectId, data);
+      if (handlePromptError(result)) {
+        Choerodon.prompt('变更成功.');
+      } else {
+        Choerodon.prompt('变更失败.');
+      }
+    } catch (e) {
+      Choerodon.handleResponseError(e);
     }
-
-    this.setState({ submitting: false });
   };
 
   /**
    * 切换实例版本，加载该版本下的配置内容
    * @param id
    */
-  handleVersionChange = (id) => {
+  handleVersionChange = async (id) => {
     const {
       store,
       AppState: {
@@ -246,11 +245,15 @@ export default class Upgrade extends Component {
       },
       vo: { id: appInstanceId },
     } = this.props;
-    this.setState({ versionId: id, values: null, loading: true });
-    store.setUpgradeValue({});
-    store.loadValue(projectId, appInstanceId, id).then(() => {
+    this.setState({ loading: true });
+    try {
+      const result = await store.loadValue(projectId, appInstanceId, id);
+      if (handlePromptError(result)) {
+        this.setState({ versionId: id, values: null, loading: false });
+      }
+    } catch (e) {
       this.setState({ loading: false });
-    });
+    }
   };
 
   render() {
@@ -293,7 +296,7 @@ export default class Upgrade extends Component {
             {name || formatMessage({ id: `${intlPrefix}.modal.config.empty` })}
           </span>
         </div>
-        <div className="c7n-config-section">
+        <Spin spinning={loading}>
           <YamlEditor
             readOnly={false}
             value={values || yaml || ''}
@@ -301,8 +304,7 @@ export default class Upgrade extends Component {
             handleEnableNext={this.handleNextStepEnable}
             onValueChange={this.handleChangeValue}
           />
-        </div>
-        <LoadingBar display={loading} />
+        </Spin>
         <InterceptMask visible={submitting} />
       </Fragment>
     );

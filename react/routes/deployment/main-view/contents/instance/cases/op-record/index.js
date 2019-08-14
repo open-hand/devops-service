@@ -8,8 +8,6 @@ import UserInfo from '../../../../../../../components/userInfo/UserInfo';
 import { useDeploymentStore } from '../../../../../stores';
 import { useInstanceStore } from '../../stores';
 
-import 'slick-carousel/slick/slick.css';
-import 'slick-carousel/slick/slick-theme.css';
 import './index.less';
 
 const ICON_TYPE_MAPPING = {
@@ -56,7 +54,7 @@ const OpRecord = observer(({ handleClick, active }) => {
   const renderOperation = useMemo(() => {
     const firstRecord = casesDs.get(0);
     let realActive = cardActive || active;
-    const isExist = casesDs.find(r => r.get('createTime') === realActive);
+    const isExist = casesDs.find((r) => r.get('createTime') === realActive);
 
     if (!realActive || !isExist) {
       realActive = firstRecord.get('createTime');
@@ -72,7 +70,7 @@ const OpRecord = observer(({ handleClick, active }) => {
             loginName,
             realName,
             userImage,
-          ] = map(podKeys, item => record.get(item));
+          ] = map(podKeys, (item) => record.get(item));
           const cardClass = classnames({
             'operation-record-card': true,
             'operation-record-card-active': realActive === createTime,

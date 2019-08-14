@@ -44,7 +44,7 @@ const EnvModals = observer(() => {
   function refresh() {
     networkDs.query();
   }
-  
+
   const buttons = useMemo(() => ([{
     name: formatMessage({ id: `${intlPrefix}.create.network` }),
     icon: 'playlist_add',

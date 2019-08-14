@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useCallback } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Modal } from 'choerodon-ui/pro';
 import { handlePromptError } from '../../../../../../utils';
@@ -49,6 +49,7 @@ const EnvModals = observer(() => {
       id: menuId,
       parentId,
       projectId,
+      appServiceVersionId,
     };
     Modal.open({
       key: valuesKey,
