@@ -38,9 +38,8 @@ const MainView = observer(() => {
       getViewType,
       getSelectedMenu,
     },
-    viewType: {
+    viewTypeMappings: {
       IST_VIEW_TYPE,
-      RES_VIEW_TYPE,
     },
     itemType: {
       ENV_ITEM,
@@ -65,9 +64,8 @@ const MainView = observer(() => {
   const rootRef = useRef(null);
   const content = useMemo(() => {
     const { menuType } = getSelectedMenu;
-    const viewType = getViewType;
     const cmMaps = {
-      [ENV_ITEM]: viewType === IST_VIEW_TYPE ? <EnvContent /> : <ResourceEnvContent />,
+      [ENV_ITEM]: getViewType === IST_VIEW_TYPE ? <EnvContent /> : <ResourceEnvContent />,
       [APP_ITEM]: <AppContent />,
       [IST_ITEM]: <IstContent />,
       [SERVICES_GROUP]: <NetworkContent />,
@@ -87,7 +85,7 @@ const MainView = observer(() => {
     return cmMaps[menuType]
       ? <Suspense fallback={<div>loading</div>}>{cmMaps[menuType]}</Suspense>
       : <div>加载中</div>;
-  }, [getSelectedMenu.menuType]);
+  }, [getSelectedMenu.menuType, getViewType]);
   const {
     isDragging,
     bounds,
