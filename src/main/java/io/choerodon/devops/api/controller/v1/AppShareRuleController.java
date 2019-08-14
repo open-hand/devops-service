@@ -75,7 +75,7 @@ public class AppShareRuleController {
             @ApiParam(value = "过滤参数")
             @RequestBody(required = false) String param) {
         return Optional.ofNullable(
-                applicationShareService.pageByOptions(appServiceId, pageRequest, param))
+                applicationShareService.pageByOptions(projectId, appServiceId, pageRequest, param))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.share.rule.page"));
     }
