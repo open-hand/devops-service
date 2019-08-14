@@ -2011,7 +2011,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         List<AppServiceDTO> organizationShareApps = appServiceMapper.queryOrganizationShareApps();
         List<AppServiceDTO> marketDownloadApps = appServiceMapper.queryMarketDownloadApps();
         List<AppServiceGroupVO> appServiceGroupList = new ArrayList<AppServiceGroupVO>();
-        if (organizationShareApps != null && organizationShareApps.size() > 0) {
+        if (!organizationShareApps.isEmpty()) {
             // 获取organizationShareApps中appid的集合
             Set<Long> organizationShareAppIdList = getAppIds(organizationShareApps);
 
@@ -2020,7 +2020,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
             appServiceGroupList.addAll(organizationShareList);
         }
-        if (marketDownloadApps != null && marketDownloadApps.size() > 0) {
+        if (!marketDownloadApps.isEmpty()) {
             // 获取marketDownloadApps中appid的集合
             Set<Long> marketDownloadAppIdList = getAppIds(marketDownloadApps);
             // 进行分组合并
@@ -2053,6 +2053,7 @@ public class AppServiceServiceImpl implements AppServiceService {
      */
     private List<AppServiceGroupVO> groupMerging(Set<Long> ids, List<AppServiceDTO> appServiceList,Boolean share) {
         List<AppServiceGroupVO> list = new ArrayList<AppServiceGroupVO>();
+        Map<Long, List<AppServiceGroupInfoVO>> collect = appServiceList.stream().map(appServiceDTO -> dtoToGroupInfoVO(appServiceDTO)).collect(Collectors.groupingBy(AppServiceGroupInfoVO::getAppId));
         // 遍历ids集合
         ids.stream().forEach(appId -> {
             /**
@@ -2063,17 +2064,12 @@ public class AppServiceServiceImpl implements AppServiceService {
             AppServiceGroupVO appServiceGroupVO =new AppServiceGroupVO();
             appServiceGroupVO.setId(appId);
             // 当前应用下的应用服务集合
-            List<AppServiceGroupInfoVO> commonGroupAppServiceList = new ArrayList<>();
-            // 遍历应用服务集合，根据appId判断属于当前分组的应用并加入集合
-            appServiceList.stream().forEach(appServiceDTO -> {
-                if (appId.equals(appServiceDTO.getAppId())) {
-                    commonGroupAppServiceList.add(dtoToGroupInfoVO(appServiceDTO));
-                }
-            });
+            List<AppServiceGroupInfoVO> commonGroupAppServiceList=collect.get(appId);
             appServiceGroupVO.setShare(share);
             appServiceGroupVO.setAppServiceList(commonGroupAppServiceList);
             list.add(appServiceGroupVO);
            });
+
         return list;
          }
     /**
