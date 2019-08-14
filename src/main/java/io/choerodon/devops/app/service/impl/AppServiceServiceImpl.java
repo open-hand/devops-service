@@ -282,7 +282,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         AppServiceDTO appServiceDTO = ConvertUtils.convertObject(appServiceUpdateDTO, AppServiceDTO.class);
         List<DevopsConfigVO> devopsConfigVOS = appServiceUpdateDTO.getDevopsConfigVOS();
         Long appServiceId = appServiceUpdateDTO.getId();
-        devopsConfigService.operate(appServiceId,APP_SERVICE,devopsConfigVOS);
+        devopsConfigService.operate(appServiceId, APP_SERVICE, devopsConfigVOS);
         devopsConfigVOS.stream().forEach(devopsConfigVO -> {
             if (devopsConfigVO.getType().equals(HARBOR)) {
                 appServiceDTO.setHarborConfigId(devopsConfigVO.getId());
@@ -2016,7 +2016,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             Set<Long> organizationShareAppIdList = getAppIds(organizationShareApps);
 
             // 进行分组合并
-            List<AppServiceGroupVO> organizationShareList = groupMerging(organizationShareAppIdList,organizationShareApps,true);
+            List<AppServiceGroupVO> organizationShareList = groupMerging(organizationShareAppIdList, organizationShareApps, true);
 
             appServiceGroupList.addAll(organizationShareList);
         }
@@ -2024,7 +2024,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             // 获取marketDownloadApps中appid的集合
             Set<Long> marketDownloadAppIdList = getAppIds(marketDownloadApps);
             // 进行分组合并
-            List<AppServiceGroupVO> marketDownloadList = groupMerging(marketDownloadAppIdList,marketDownloadApps,false);
+            List<AppServiceGroupVO> marketDownloadList = groupMerging(marketDownloadAppIdList, marketDownloadApps, false);
 
             appServiceGroupList.addAll(marketDownloadList);
         }
@@ -2046,12 +2046,13 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     /**
      * 对appservice集合进行分组
-     * @param ids 分组的appId集合
+     *
+     * @param ids            分组的appId集合
      * @param appServiceList 要进行分组appservice的集合
-     * @param share true为组织共享 false为市场下载
+     * @param share          true为组织共享 false为市场下载
      * @return List<AppServiceGroupVO>
      */
-    private List<AppServiceGroupVO> groupMerging(Set<Long> ids, List<AppServiceDTO> appServiceList,Boolean share) {
+    private List<AppServiceGroupVO> groupMerging(Set<Long> ids, List<AppServiceDTO> appServiceList, Boolean share) {
         List<AppServiceGroupVO> list = new ArrayList<AppServiceGroupVO>();
         Map<Long, List<AppServiceGroupInfoVO>> collect = appServiceList.stream().map(appServiceDTO -> dtoToGroupInfoVO(appServiceDTO)).collect(Collectors.groupingBy(AppServiceGroupInfoVO::getAppId));
         // 遍历ids集合
@@ -2061,19 +2062,21 @@ public class AppServiceServiceImpl implements AppServiceService {
              * ApplicationDTO appDTO = baseServiceClient.getAppById(appId).getBody();
              * AppServiceGroupVO appServiceGroupVO = dtoToGroupVO(appDTO);
              */
-            AppServiceGroupVO appServiceGroupVO =new AppServiceGroupVO();
+            AppServiceGroupVO appServiceGroupVO = new AppServiceGroupVO();
             appServiceGroupVO.setId(appId);
             // 当前应用下的应用服务集合
-            List<AppServiceGroupInfoVO> commonGroupAppServiceList=collect.get(appId);
+            List<AppServiceGroupInfoVO> commonGroupAppServiceList = collect.get(appId);
             appServiceGroupVO.setShare(share);
             appServiceGroupVO.setAppServiceList(commonGroupAppServiceList);
             list.add(appServiceGroupVO);
-           });
+        });
 
         return list;
-         }
+    }
+
     /**
      * 根据传入的appServiceList集合获取app_id集合
+     *
      * @param appServiceList
      * @return
      */
@@ -2082,16 +2085,16 @@ public class AppServiceServiceImpl implements AppServiceService {
         appServiceList.stream().forEach(appServiceDTO -> {
             appIds.add(appServiceDTO.getAppId());
         });
-        return  appIds;
+        return appIds;
     }
 
-     private  AppServiceGroupInfoVO  dtoToGroupInfoVO(AppServiceDTO appServiceDTO) {
-         AppServiceGroupInfoVO appServiceGroupInfoVO = new AppServiceGroupInfoVO();
-         BeanUtils.copyProperties(appServiceDTO, appServiceGroupInfoVO);
-         return appServiceGroupInfoVO;
-      }
+    private AppServiceGroupInfoVO dtoToGroupInfoVO(AppServiceDTO appServiceDTO) {
+        AppServiceGroupInfoVO appServiceGroupInfoVO = new AppServiceGroupInfoVO();
+        BeanUtils.copyProperties(appServiceDTO, appServiceGroupInfoVO);
+        return appServiceGroupInfoVO;
+    }
 
-    private  AppServiceGroupVO  dtoToGroupVO(ApplicationDTO applicationDTO) {
+    private AppServiceGroupVO dtoToGroupVO(ApplicationDTO applicationDTO) {
         AppServiceGroupVO appServiceGroupVO = new AppServiceGroupVO();
         BeanUtils.copyProperties(applicationDTO, appServiceGroupVO);
         return appServiceGroupVO;
