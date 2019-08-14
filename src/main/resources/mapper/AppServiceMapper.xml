@@ -372,4 +372,33 @@
             </foreach>
         </if>
     </select>
+
+    <select id="queryOrganizationShareApps" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
+          SELECT DISTINCT
+            das.id,
+            das.app_id,
+            das.`name`,
+            das.CODE
+        FROM
+            devops_app_service das
+            LEFT JOIN devops_app_service_share_rule dassr ON das.id = dassr.app_service_id
+        WHERE
+            dassr.app_service_id IS NOT NULL
+    </select>
+
+    <select id="queryMarketDownloadApps" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
+        SELECT DISTINCT
+            das.id,
+            das.app_id,
+            das.`name`,
+            das.CODE
+        FROM
+            devops_app_service das
+            LEFT JOIN devops_project db ON das.app_id = db.app_id
+        WHERE
+            das.app_id IS NOT NULL
+            AND db.iam_project_id IS NULL
+            AND db.app_id IS NOT NULL
+    </select>
+
 </mapper>
