@@ -1,9 +1,8 @@
 const config = {
-  server: 'http://api.upgrade.staging.saas.hand-china.com',
+  server: 'http://api.staging.saas.test.com',
   fileServer: 'http://minio.staging.saas.test.com',
   projectType: 'choerodon',
   buildType: 'single',
-  // master: '@choerodon/master',
   master: './node_modules/@choerodon/master/lib/master.js',
   theme: {
     'primary-color': '#3f51b5',
