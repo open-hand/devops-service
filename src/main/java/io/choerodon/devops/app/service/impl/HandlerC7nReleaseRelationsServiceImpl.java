@@ -16,7 +16,7 @@ import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.ObjectType;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
-import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.util.GitUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.kubernetes.client.models.V1Endpoints;
@@ -34,7 +34,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
     @Autowired
     private AppServiceInstanceService appServiceInstanceService;
     @Autowired
-    private IamServiceClientOperator iamServiceClientOperator;
+    private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
     private AgentMsgHandlerService agentMsgHandlerService;
     @Autowired
@@ -182,8 +182,8 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
 
     private AppServiceDeployVO getApplicationDeployDTO(C7nHelmRelease c7nHelmRelease,
                                                        Long projectId, Long envId, String filePath, String type) {
-        ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(projectId);
-        OrganizationDTO organization = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        OrganizationDTO organization = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 
         List<AppServiceDTO> applications = agentMsgHandlerService.getApplication(c7nHelmRelease.getSpec().getChartName(), projectId, organization.getId());
 

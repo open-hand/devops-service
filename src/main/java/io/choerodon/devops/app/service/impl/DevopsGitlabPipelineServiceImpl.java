@@ -28,7 +28,7 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
-import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsGitlabPipelineMapper;
 import io.choerodon.devops.infra.util.PageRequestUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
@@ -49,7 +49,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
     @Autowired
     private AppServiceService applicationService;
     @Autowired
-    private IamServiceClientOperator iamServiceClientOperator;
+    private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
     private DevopsGitlabCommitService devopsGitlabCommitService;
     @Autowired
@@ -307,8 +307,8 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
         });
 
         AppServiceDTO applicationDTO = applicationService.baseQuery(appServiceId);
-        ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(applicationDTO.getAppId());
-        OrganizationDTO organization = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(applicationDTO.getAppId());
+        OrganizationDTO organization = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 
         //获取pipeline记录
         Set<Long> userIds = new HashSet<>();
@@ -317,7 +317,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
             userIds.add(devopsGitlabPipelineDO.getPipelineCreateUserId());
         });
 
-        List<IamUserDTO> userES = iamServiceClientOperator.listUsersByIds(new ArrayList<>(userIds));
+        List<IamUserDTO> userES = baseServiceClientOperator.listUsersByIds(new ArrayList<>(userIds));
         devopsGitlabPipelineDOS.getList().forEach(devopsGitlabPipelineDO -> {
             DevopsGitlabPipelineVO devopsGitlabPipelineDTO = new DevopsGitlabPipelineVO();
             if (devopsGitlabPipelineDO.getPipelineId().equals(refWithPipelineIds.get(devopsGitlabPipelineDO.getRef()))) {

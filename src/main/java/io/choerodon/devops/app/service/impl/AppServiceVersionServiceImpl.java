@@ -28,7 +28,7 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
-import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.AppServiceMapper;
 import io.choerodon.devops.infra.mapper.AppServiceVersionMapper;
 import io.choerodon.devops.infra.mapper.AppServiceVersionReadmeMapper;
@@ -50,7 +50,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     @Autowired
     private AppServiceService applicationService;
     @Autowired
-    private IamServiceClientOperator iamServiceClientOperator;
+    private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
     private AppServiceVersionValueService appServiceVersionValueService;
     @Autowired
@@ -108,8 +108,8 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
 
         AppServiceVersionValueDTO appServiceVersionValueDTO = new AppServiceVersionValueDTO();
         AppServiceVersionDTO appServiceVersionDTO = new AppServiceVersionDTO();
-        ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(applicationDTO.getAppId());
-        OrganizationDTO organization = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(applicationDTO.getAppId());
+        OrganizationDTO organization = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         AppServiceVersionDTO newApplicationVersion = baseQueryByAppIdAndVersion(applicationDTO.getId(), version);
         appServiceVersionDTO.setAppServiceId(applicationDTO.getId());
         appServiceVersionDTO.setImage(image);
@@ -329,14 +329,14 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     public List<AppServiceVersionAndCommitVO> listByAppIdAndBranch(Long appServiceId, String branch) {
         List<AppServiceVersionDTO> appServiceVersionDTOS = baseListByAppIdAndBranch(appServiceId, branch);
         AppServiceDTO applicationDTO = applicationService.baseQuery(appServiceId);
-        ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(applicationDTO.getAppId());
-        OrganizationDTO organization = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(applicationDTO.getAppId());
+        OrganizationDTO organization = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         List<AppServiceVersionAndCommitVO> appServiceVersionAndCommitVOS = new ArrayList<>();
 
         appServiceVersionDTOS.forEach(applicationVersionDTO -> {
             AppServiceVersionAndCommitVO appServiceVersionAndCommitVO = new AppServiceVersionAndCommitVO();
             DevopsGitlabCommitDTO devopsGitlabCommitE = devopsGitlabCommitService.baseQueryByShaAndRef(applicationVersionDTO.getCommit(), branch);
-            IamUserDTO userE = iamServiceClientOperator.queryUserByUserId(devopsGitlabCommitE.getUserId());
+            IamUserDTO userE = baseServiceClientOperator.queryUserByUserId(devopsGitlabCommitE.getUserId());
             appServiceVersionAndCommitVO.setAppServiceName(applicationDTO.getName());
             appServiceVersionAndCommitVO.setCommit(applicationVersionDTO.getCommit());
             appServiceVersionAndCommitVO.setCommitContent(devopsGitlabCommitE.getCommitContent());
@@ -378,8 +378,8 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
 
     @Override
     public List<AppServiceLatestVersionDTO> baseListAppNewestVersion(Long projectId) {
-        ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(projectId);
-        List<ProjectDTO> projectEList = iamServiceClientOperator.listIamProjectByOrgId(projectDTO.getOrganizationId(), null, null);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        List<ProjectDTO> projectEList = baseServiceClientOperator.listIamProjectByOrgId(projectDTO.getOrganizationId(), null, null);
         List<Long> projectIds = projectEList.stream().map(ProjectDTO::getId)
                 .collect(Collectors.toCollection(ArrayList::new));
         return appServiceVersionMapper.listAppNewestVersion(projectId, projectIds);

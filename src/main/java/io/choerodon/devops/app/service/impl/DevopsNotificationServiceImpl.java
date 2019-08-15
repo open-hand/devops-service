@@ -25,7 +25,7 @@ import io.choerodon.devops.infra.enums.ObjectType;
 import io.choerodon.devops.infra.enums.TriggerObject;
 import io.choerodon.devops.infra.enums.TriggerType;
 import io.choerodon.devops.infra.feign.NotifyClient;
-import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsNotificationMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
@@ -50,7 +50,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
     @Autowired
     private DevopsNotificationUserRelService devopsNotificationUserRelService;
     @Autowired
-    private IamServiceClientOperator iamServiceClientOperator;
+    private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
     private RedisTemplate redisTemplate;
     @Autowired
@@ -135,7 +135,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
             if ("specifier".equals(t.getNotifyObject())) {
                 List<DevopsNotificationUserRelVO> userRelVOS = ConvertUtils.convertList(devopsNotificationUserRelService.baseListByNotificationId(t.getId()), DevopsNotificationUserRelVO.class);
                 userRelVOS = userRelVOS.stream().peek(u -> {
-                    IamUserDTO iamUserDTO = iamServiceClientOperator.queryUserByUserId(u.getUserId());
+                    IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(u.getUserId());
                     if (iamUserDTO != null) {
                         u.setImageUrl(iamUserDTO.getImageUrl());
                         u.setRealName(iamUserDTO.getRealName());
@@ -180,7 +180,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
                         }
                     }).collect(Collectors.toList()).toArray(), ","));
                     if (devopsNotificationDTO.getNotifyObject().equals(TriggerObject.HANDLER.getObject())) {
-                        List<IamUserDTO> users = iamServiceClientOperator.listUsersByIds(Arrays.asList(GitUserNameUtil.getUserId().longValue()));
+                        List<IamUserDTO> users = baseServiceClientOperator.listUsersByIds(Arrays.asList(GitUserNameUtil.getUserId().longValue()));
                         if (!users.isEmpty()) {
                             if (users.get(0).getRealName() != null) {
                                 resourceCheckVO.setUser(users.get(0).getRealName());
@@ -192,8 +192,8 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
                         resourceCheckVO.setUser("项目所有者");
                     } else {
                         List<Long> userIds = devopsNotificationUserRelService.baseListByNotificationId(devopsNotificationDTO.getId()).stream().map(DevopsNotificationUserRelDTO::getUserId).collect(Collectors.toList());
-                        iamServiceClientOperator.listUsersByIds(userIds).stream().map(IamUserDTO::getRealName).collect(Collectors.toList());
-                        resourceCheckVO.setUser(StringUtils.join(iamServiceClientOperator.listUsersByIds(userIds).stream().map(userDTO -> {
+                        baseServiceClientOperator.listUsersByIds(userIds).stream().map(IamUserDTO::getRealName).collect(Collectors.toList());
+                        resourceCheckVO.setUser(StringUtils.join(baseServiceClientOperator.listUsersByIds(userIds).stream().map(userDTO -> {
                             if (userDTO.getRealName() != null) {
                                 return userDTO.getRealName();
                             } else {
@@ -224,7 +224,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         List<String> triggerTypes = Arrays.asList(devopsNotificationDTO.getNotifyType().split(","));
         NotifyVO notifyVO = new NotifyVO();
         Map<String, Object> params = new HashMap<>();
-        List<IamUserDTO> userES = iamServiceClientOperator.listUsersByIds(Arrays.asList(GitUserNameUtil.getUserId().longValue()));
+        List<IamUserDTO> userES = baseServiceClientOperator.listUsersByIds(Arrays.asList(GitUserNameUtil.getUserId().longValue()));
         if (!userES.isEmpty()) {
             if (userES.get(0).getRealName() != null) {
                 params.put("user", userES.get(0).getRealName());
@@ -247,8 +247,8 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
             user.setId(GitUserNameUtil.getUserId().longValue());
             notifyVO.setTargetUsers(Arrays.asList(user));
         } else if (devopsNotificationDTO.getNotifyObject().equals(TriggerObject.OWNER.getObject())) {
-            Long ownerId = iamServiceClientOperator.queryRoleIdByCode(PROJECT_OWNER);
-            PageInfo<IamUserDTO> allOwnerUsersPage = iamServiceClientOperator
+            Long ownerId = baseServiceClientOperator.queryRoleIdByCode(PROJECT_OWNER);
+            PageInfo<IamUserDTO> allOwnerUsersPage = baseServiceClientOperator
 
                     .pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, 0), new RoleAssignmentSearchVO(),
 
@@ -267,7 +267,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         } else {
             List<Long> userIds = devopsNotificationUserRelService.baseListByNotificationId(devopsNotificationDTO.getId()).stream().map(DevopsNotificationUserRelDTO::getUserId).collect(Collectors.toList());
             List<NoticeSendDTO.User> users = new ArrayList<>();
-            params.put("mobile", StringUtils.join(iamServiceClientOperator.listUsersByIds(userIds).stream().map(userDTO -> {
+            params.put("mobile", StringUtils.join(baseServiceClientOperator.listUsersByIds(userIds).stream().map(userDTO -> {
                 NoticeSendDTO.User user = new NoticeSendDTO.User();
                 user.setEmail(userDTO.getEmail());
                 user.setId(userDTO.getId());

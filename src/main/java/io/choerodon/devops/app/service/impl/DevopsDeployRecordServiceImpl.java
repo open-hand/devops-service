@@ -7,7 +7,6 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.base.Joiner;
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsDeployRecordVO;
@@ -16,7 +15,7 @@ import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.infra.dto.DevopsDeployRecordDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
-import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsDeployRecordMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.PageRequestUtil;
@@ -39,7 +38,7 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
-    private IamServiceClientOperator iamServiceClientOperator;
+    private BaseServiceClientOperator baseServiceClientOperator;
 
     @Override
     public PageInfo<DevopsDeployRecordVO> pageByProjectId(Long projectId, String params, PageRequest pageRequest) {
@@ -61,7 +60,7 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
 
         //查询用户信息
         List<Long> userIds = devopsDeployRecordVOPageInfo.getList().stream().map(DevopsDeployRecordVO::getDeployCreatedBy).collect(Collectors.toList());
-        List<IamUserDTO> iamUserDTOS = iamServiceClientOperator.listUsersByIds(userIds);
+        List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.listUsersByIds(userIds);
 
 
         //设置环境信息以及用户信息

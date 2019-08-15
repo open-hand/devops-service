@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
-import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +37,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
     @Autowired
     private DevopsEnvCommandService devopsEnvCommandService;
     @Autowired
-    private IamServiceClientOperator iamServiceClientOperator;
+    private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
     private DevopsCommandEventService devopsCommandEventService;
     @Autowired
@@ -193,7 +193,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
                 .baseListInstanceCommand(ObjectType.INSTANCE.getType(), instanceId);
         devopsEnvCommandDTOS.forEach(devopsEnvCommandDTO -> {
             InstanceEventVO instanceEventVO = new InstanceEventVO();
-            IamUserDTO iamUserDTO = iamServiceClientOperator.queryUserByUserId(devopsEnvCommandDTO.getCreatedBy());
+            IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(devopsEnvCommandDTO.getCreatedBy());
             instanceEventVO.setLoginName(iamUserDTO == null ? null : iamUserDTO.getLoginName());
             instanceEventVO.setRealName(iamUserDTO == null ? null : iamUserDTO.getRealName());
             instanceEventVO.setStatus(devopsEnvCommandDTO.getStatus());

@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -27,7 +26,7 @@ import io.choerodon.devops.infra.dto.DevopsEnvPodDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
 import io.choerodon.devops.infra.util.*;
@@ -48,7 +47,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     private JSON json = new JSON();
 
     @Autowired
-    private IamServiceClientOperator iamServiceClientOperator;
+    private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
     private ClusterConnectionHandler clusterConnectionHandler;
     @Autowired
@@ -75,7 +74,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
         devopsClusterDTO.setSkipCheckProjectPermission(true);
 
-        IamUserDTO iamUserDTO = iamServiceClientOperator.queryUserByUserId(GitUserNameUtil.getUserId().longValue());
+        IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(GitUserNameUtil.getUserId().longValue());
 
         // 渲染激活环境的命令参数
         InputStream inputStream = this.getClass().getResourceAsStream("/shell/cluster.sh");
@@ -144,9 +143,9 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     @Override
     public PageInfo<ProjectReqVO> pageProjects(Long projectId, Long clusterId, PageRequest pageRequest,
                                                String[] params) {
-        ProjectDTO iamProjectDTO = iamServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO iamProjectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
 
-        PageInfo<ProjectDTO> projectDTOPageInfo = iamServiceClientOperator
+        PageInfo<ProjectDTO> projectDTOPageInfo = baseServiceClientOperator
                 .pageProjectByOrgId(iamProjectDTO.getOrganizationId(), pageRequest.getPage(), pageRequest.getSize(), null, params);
         PageInfo<ProjectReqVO> projectReqVOPageInfo = ConvertUtils.convertPage(projectDTOPageInfo, ProjectReqVO.class);
         List<ProjectReqVO> projectDTOS = new ArrayList<>();
@@ -178,7 +177,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         }
 
         //初始化渲染脚本
-        IamUserDTO iamUserDTO = iamServiceClientOperator.queryUserByUserId(devopsClusterRepVO.getCreateBy());
+        IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(devopsClusterRepVO.getCreateBy());
         Map<String, String> params = new HashMap<>();
         params.put("{VERSION}", agentExpectVersion);
         params.put("{NAME}", "choerodon-cluster-agent-" + devopsClusterRepVO.getCode());
@@ -245,7 +244,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     public List<ProjectReqVO> listClusterProjects(Long projectId, Long clusterId) {
         return devopsClusterProPermissionService.baseListByClusterId(clusterId).stream()
                 .map(devopsClusterProPermissionDTO -> {
-                    ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(devopsClusterProPermissionDTO.getProjectId());
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsClusterProPermissionDTO.getProjectId());
                     return new ProjectReqVO(devopsClusterProPermissionDTO.getProjectId(), projectDTO.getName(), projectDTO.getCode(), null);
                 }).collect(Collectors.toList());
     }

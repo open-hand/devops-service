@@ -1,6 +1,7 @@
 package io.choerodon.devops.infra.util;
 
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
 
 /**
@@ -17,12 +18,12 @@ public class ResourceCreatorInfoUtil {
     /**
      * 获得资源创造者的名称 登录名+真实名
      *
-     * @param iamServiceClientOperator
+     * @param baseServiceClientOperator
      * @param userId
      * @return
      */
-    public static String getOperatorName(IamServiceClientOperator iamServiceClientOperator, Long userId) {
-        IamUserDTO iamUserDTO = iamServiceClientOperator.queryUserByUserId(userId);
+    public static String getOperatorName(BaseServiceClientOperator baseServiceClientOperator, Long userId) {
+        IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(userId);
         return iamUserDTO.getLoginName() + " " + iamUserDTO.getRealName();
     }
 }

@@ -22,7 +22,7 @@ import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
-import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 import io.choerodon.devops.infra.gitops.ResourceFileCheckHandler;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
@@ -91,7 +91,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     @Autowired
     private TransactionalProducer producer;
     @Autowired
-    private IamServiceClientOperator iamServiceClientOperator;
+    private BaseServiceClientOperator baseServiceClientOperator;
 
 
     @Override
@@ -685,10 +685,10 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         devopsServiceVO.setDns(devopsServiceVO.getName() + "." + devopsServiceQueryDTO.getEnvCode());
 
         if (devopsServiceQueryDTO.getCreatedBy() != null && devopsServiceQueryDTO.getCreatedBy() != 0) {
-            devopsServiceVO.setCreatorName(ResourceCreatorInfoUtil.getOperatorName(iamServiceClientOperator, devopsServiceQueryDTO.getCreatedBy()));
+            devopsServiceVO.setCreatorName(ResourceCreatorInfoUtil.getOperatorName(baseServiceClientOperator, devopsServiceQueryDTO.getCreatedBy()));
         }
         if (devopsServiceQueryDTO.getLastUpdatedBy() != null && devopsServiceQueryDTO.getLastUpdatedBy() != 0) {
-            devopsServiceVO.setLastUpdaterName(ResourceCreatorInfoUtil.getOperatorName(iamServiceClientOperator, devopsServiceQueryDTO.getLastUpdatedBy()));
+            devopsServiceVO.setLastUpdaterName(ResourceCreatorInfoUtil.getOperatorName(baseServiceClientOperator, devopsServiceQueryDTO.getLastUpdatedBy()));
         }
         return devopsServiceVO;
     }

@@ -19,7 +19,7 @@ import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.HelmType;
-import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.util.FileUtil;
 import io.choerodon.devops.infra.util.GitUtil;
@@ -53,7 +53,7 @@ public class AgentCommandServiceImpl implements AgentCommandService {
     private CommandSender commandSender;
 
     @Autowired
-    private IamServiceClientOperator iamServiceClientOperator;
+    private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
     private ClusterConnectionHandler clusterConnectionHandler;
     @Autowired
@@ -219,8 +219,8 @@ public class AgentCommandServiceImpl implements AgentCommandService {
     public void initEnv(DevopsEnvironmentDTO devopsEnvironmentDTO, Long clusterId) {
         GitConfigVO gitConfigVO = gitUtil.getGitConfig(clusterId);
         List<GitEnvConfigVO> gitEnvConfigVOS = new ArrayList<>();
-        ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
-        OrganizationDTO organization = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
+        OrganizationDTO organization = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         String repoUrl = GitUtil.getGitlabSshUrl(pattern, gitlabSshUrl, organization.getCode(), projectDTO.getCode(), devopsEnvironmentDTO.getCode());
 
         GitEnvConfigVO gitEnvConfigVO = new GitEnvConfigVO();

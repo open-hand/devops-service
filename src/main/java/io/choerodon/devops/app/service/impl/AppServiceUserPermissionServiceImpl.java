@@ -5,7 +5,7 @@ import java.util.List;
 import io.choerodon.devops.app.service.AppServiceUserPermissionService;
 import io.choerodon.devops.infra.dto.AppServiceUserRelDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
-import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.AppServiceUserRelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,7 +22,7 @@ public class AppServiceUserPermissionServiceImpl implements AppServiceUserPermis
     @Autowired
     private AppServiceUserRelMapper appServiceUserRelMapper;
     @Autowired
-    private IamServiceClientOperator iamServiceClientOperator;
+    private BaseServiceClientOperator baseServiceClientOperator;
 
 
 @Override
@@ -64,7 +64,7 @@ public class AppServiceUserPermissionServiceImpl implements AppServiceUserPermis
     @Transactional(rollbackFor = Exception.class)
     public void baseUpdate(Long appServiceId, List<Long> addUserIds, List<Long> deleteUserIds) {
         // 待添加的用户列表
-        List<IamUserDTO> addIamUsers = iamServiceClientOperator.listUsersByIds(addUserIds);
+        List<IamUserDTO> addIamUsers = baseServiceClientOperator.listUsersByIds(addUserIds);
         addIamUsers.forEach(e -> appServiceUserRelMapper.insert(new AppServiceUserRelDTO(e.getId(), appServiceId)));
         // 待删除的用户列表
         deleteUserIds.forEach(e -> {

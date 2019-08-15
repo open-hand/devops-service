@@ -17,7 +17,7 @@ import io.choerodon.devops.infra.dto.harbor.Project;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.HarborClient;
-import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,7 +42,7 @@ public class HarborServiceImpl implements HarborService {
     @Autowired
     private HarborConfigurationProperties harborConfigurationProperties;
     @Autowired
-    private IamServiceClientOperator iamServiceClientOperator;
+    private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
     private DevopsConfigService devopsConfigService;
 
@@ -50,8 +50,8 @@ public class HarborServiceImpl implements HarborService {
     public void createHarbor(HarborPayload harborPayload) {
         //创建harbor仓库
         try {
-            ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(harborPayload.getProjectId());
-            OrganizationDTO organizationDTO = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(harborPayload.getProjectId());
+            OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 
             //获取当前项目的harbor设置,如果有自定义的取自定义，没自定义取组织层的harbor配置
             DevopsConfigVO devopsConfigVO = devopsConfigService.dtoToVo(devopsConfigService.queryRealConfig(harborPayload.getProjectId(), ResourceLevel.PROJECT.value(), HARBOR));

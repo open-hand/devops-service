@@ -14,7 +14,7 @@ import io.choerodon.devops.infra.dto.DevopsEnvFileErrorDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsEnvFileMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import org.springframework.beans.BeanUtils;
@@ -41,7 +41,7 @@ public class DevopsEnvFileServiceImpl implements DevopsEnvFileService {
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
-    private IamServiceClientOperator iamServiceClientOperator;
+    private BaseServiceClientOperator baseServiceClientOperator;
 
     @Override
     public List<DevopsEnvFileErrorVO> listByEnvId(Long envId) {
@@ -128,8 +128,8 @@ public class DevopsEnvFileServiceImpl implements DevopsEnvFileService {
 
     private String getGitlabUrl(Long envId) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
-        ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
-        OrganizationDTO organizationDTO = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
+        OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         return String.format("%s%s%s-%s-gitops/%s/tree/",
                 gitlabUrl, urlSlash, organizationDTO.getCode(), projectDTO.getCode(), devopsEnvironmentDTO.getCode());
