@@ -13,7 +13,6 @@ import io.choerodon.devops.infra.mapper.DevopsBranchMapper;
 import io.choerodon.devops.infra.util.PageRequestUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.kubernetes.client.JSON;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -62,7 +61,12 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
     }
 
     public DevopsBranchDTO baseCreate(DevopsBranchDTO devopsBranchDTO) {
-        devopsBranchDTO.setDeleted(false);
+        DevopsBranchDTO exist = new DevopsBranchDTO();
+        exist.setAppServiceId(devopsBranchDTO.getAppServiceId());
+        exist.setBranchName(devopsBranchDTO.getBranchName());
+        if (devopsBranchMapper.selectOne(exist) != null) {
+            throw new CommonException("error.branch.exist");
+        }
         devopsBranchMapper.insert(devopsBranchDTO);
         return devopsBranchDTO;
     }
@@ -96,11 +100,9 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
     public void baseDelete(Long appServiceId, String branchName) {
         DevopsBranchDTO devopsBranchDTO = devopsBranchMapper.queryByAppAndBranchName(appServiceId, branchName);
         if (devopsBranchDTO != null) {
-            devopsBranchDTO.setDeleted(true);
-            devopsBranchMapper.updateByPrimaryKeySelective(devopsBranchDTO);
+            devopsBranchMapper.delete(devopsBranchDTO);
         }
     }
-
 
     public List<DevopsBranchDTO> baseListByAppId(Long appServiceId) {
         DevopsBranchDTO devopsBranchDTO = new DevopsBranchDTO();

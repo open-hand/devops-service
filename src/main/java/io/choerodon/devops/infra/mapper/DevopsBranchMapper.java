@@ -15,4 +15,8 @@ public interface DevopsBranchMapper extends Mapper<DevopsBranchDTO> {
     List<DevopsBranchDTO> list(@Param("appServiceId") Long appServiceId,
                                @Param("searchParam") Map<String, Object> searchParam,
                                @Param("params") List<String> params);
+
+    void  deleteByIsDelete();
+
+    void  deleteDuplicateBranch();
 }

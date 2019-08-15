@@ -10,7 +10,6 @@
         WHERE
         db.app_service_id = #{appServiceId}
         and db.branch_name = #{branchName}
-        and db.is_deleted = FALSE
         ORDER BY
         db.creation_date DESC
         LIMIT 1
@@ -23,7 +22,6 @@
         devops_branch db
         WHERE
         db.app_service_id = #{appServiceId}
-        and db.is_deleted = FALSE
         <if test='searchParam != null'>
             <if test='searchParam.branchName != null and searchParam.branchName.length > 0'>
                 AND db.branch_name LIKE CONCAT(CONCAT('%', #{searchParam.branchName, jdbcType=VARCHAR}),'%')
@@ -36,6 +34,32 @@
             </foreach>
         </if>
     </select>
+
+
+    <delete id="deleteByIsDelete">
+      delete from devops_branch where is_deleted = true
+    </delete>
+
+    <delete id="deleteDuplicateBranch">
+    DELETE
+FROM
+	devops_branch
+WHERE
+	( app_service_id, branch_name ) IN (
+SELECT
+	t.app_service_id,
+	t.branch_name
+FROM
+	( SELECT app_service_id, branch_name FROM devops_branch GROUP BY app_service_id, branch_name HAVING count( 1 ) > 1 ) t
+	)
+	AND id NOT IN (
+SELECT
+	dt.id
+FROM
+	( SELECT max( id ) AS id FROM devops_branch GROUP BY app_service_id, branch_name HAVING count( 1 ) > 1 ) dt
+	)
+    </delete>
+
 
 
 </mapper>

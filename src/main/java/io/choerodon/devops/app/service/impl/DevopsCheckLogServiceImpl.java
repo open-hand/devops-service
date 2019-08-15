@@ -15,6 +15,7 @@ import io.choerodon.devops.app.service.DevopsCheckLogService;
 import io.choerodon.devops.app.service.DevopsDeployRecordService;
 import io.choerodon.devops.app.service.DevopsEnvApplicationService;
 import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.gitlab.BranchDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectCategoryDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
@@ -65,6 +66,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private AppServiceMapper appServiceMapper;
     @Autowired
     private DevopsCertificationMapper devopsCertificationMapper;
+    @Autowired
+    private DevopsBranchMapper  devopsBranchMapper;
 
     @Override
     public void checkLog(String version) {
@@ -98,7 +101,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 //                syncDeployRecord(logs);
 //                syncCulsterAndCertifications(logs);
 //                syncProjectAppId();
-                syncConfig();
+//                syncConfig();
+                  syncBranch();
             } else {
                 LOGGER.info("version not matched");
             }
@@ -107,6 +111,14 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             devopsCheckLogDTO.setEndCheckDate(new Date());
 
             devopsCheckLogMapper.insert(devopsCheckLogDTO);
+        }
+
+
+        private void syncBranch() {
+            //删除状态为已删除的分支
+            devopsBranchMapper.deleteByIsDelete();
+            //删除重复的分支
+            devopsBranchMapper.deleteDuplicateBranch();
         }
 
         private void syncConfig() {
