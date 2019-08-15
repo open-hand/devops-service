@@ -10,7 +10,7 @@ import IssueDescription from './IssueDescription';
 import LoadingBar from '../../../components/loadingBar';
 import TimePopover from '../../../components/timePopover';
 import InterceptMask from "../../../components/interceptMask/InterceptMask";
-import { Content } from "@choerodon/boot";
+import { Content } from '@choerodon/master';
 
 const Sidebar = Modal.Sidebar;
 const QuillDeltaToHtmlConverter = require('quill-delta-to-html');

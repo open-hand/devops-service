@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
 import { FormattedMessage } from 'react-intl';
-import { Header, Permission } from '@choerodon/boot';
+import { Header, Permission } from '@choerodon/master';
 import { Button } from 'choerodon-ui';
 import { useServiceDetailStore } from './stores';
 

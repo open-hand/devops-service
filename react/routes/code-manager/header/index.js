@@ -1,6 +1,6 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { Breadcrumb } from '@choerodon/boot';
+import { Breadcrumb } from '@choerodon/master';
 import { useCodeManagerStore } from '../stores';
 import './index.less';
 

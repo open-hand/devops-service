@@ -1,5 +1,5 @@
 import React from 'react';
-import { Page, Header } from '@choerodon/boot';
+import { Page, Header } from '@choerodon/master';
 import { Button } from 'choerodon-ui';
 
 import CodeManagerToolBar from './tool-bar';

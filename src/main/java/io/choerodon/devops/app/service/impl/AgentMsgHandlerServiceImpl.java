@@ -23,7 +23,7 @@ import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.*;
-import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.websocket.Msg;
 import io.choerodon.websocket.process.SocketMsgDispatcher;
@@ -99,7 +99,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     @Autowired
     private AppServiceVersionService appServiceVersionService;
     @Autowired
-    private IamServiceClientOperator iamServiceClientOperator;
+    private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
     private DevopsEnvCommandService devopsEnvCommandService;
     @Autowired
@@ -1149,7 +1149,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         List<AppServiceDTO> applicationDTOS = applicationService.baseListByCode(appServiceName);
         List<AppServiceDTO> applicationList = applicationDTOS.stream()
                 .filter(result ->
-                        iamServiceClientOperator.queryIamProjectById(result.getAppId()).getOrganizationId().equals(orgId))
+                        baseServiceClientOperator.queryIamProjectById(result.getAppId()).getOrganizationId().equals(orgId))
                 .collect(Collectors.toList());
         applications.addAll(findAppInAppMarket(applicationDTOS, applicationList));
         return applications;
@@ -1385,7 +1385,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             upgradeClusterVO.getEnvs().forEach(clusterEnv -> {
                 DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(clusterEnv.getEnvId());
                 if (devopsEnvironmentDTO != null && devopsEnvironmentDTO.getCode().equals(clusterEnv.getNamespace())) {
-                    ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
                     if (projectDTO.getOrganizationId().equals(devopsClusterDTO.getOrganizationId())) {
                         DevopsClusterProPermissionDTO devopsClusterProPermissionDTO = new DevopsClusterProPermissionDTO();
                         devopsClusterProPermissionDTO.setProjectId(projectDTO.getId());

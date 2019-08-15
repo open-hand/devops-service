@@ -1,6 +1,6 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { Action } from '@choerodon/boot';
+import { Action } from '@choerodon/master';
 import { Table } from 'choerodon-ui/pro';
 import StatusIcon from '../../../../../components/StatusIcon';
 import AppName from '../../../../../components/appName';

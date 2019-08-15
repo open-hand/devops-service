@@ -1,6 +1,6 @@
 import React from 'react';
 import { observer, inject } from 'mobx-react';
-import { PageWrap, PageTab } from '@choerodon/boot';
+import { PageWrap, PageTab } from '@choerodon/master';
 import CodeQuality from './code-quality';
 import CodeManagerBranch from './branch';
 import CodeManagerMergeRequest from './merge-request';

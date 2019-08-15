@@ -27,7 +27,7 @@ import io.choerodon.devops.infra.enums.HelmObjectKind;
 import io.choerodon.devops.infra.enums.ObjectType;
 import io.choerodon.devops.infra.enums.SecretStatus;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
-import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 import io.choerodon.devops.infra.gitops.ResourceFileCheckHandler;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
@@ -72,7 +72,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     @Autowired
     private DevopsSecretMapper devopsSecretMapper;
     @Autowired
-    private IamServiceClientOperator iamServiceClientOperator;
+    private BaseServiceClientOperator baseServiceClientOperator;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -351,10 +351,10 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
 
         secretRespVO.setValue(secretMaps);
         if (devopsSecretDTO.getCreatedBy() != null && devopsSecretDTO.getCreatedBy() != 0) {
-            secretRespVO.setCreatorName(ResourceCreatorInfoUtil.getOperatorName(iamServiceClientOperator, devopsSecretDTO.getCreatedBy()));
+            secretRespVO.setCreatorName(ResourceCreatorInfoUtil.getOperatorName(baseServiceClientOperator, devopsSecretDTO.getCreatedBy()));
         }
         if (devopsSecretDTO.getLastUpdatedBy() != null && devopsSecretDTO.getLastUpdatedBy() != 0) {
-            secretRespVO.setLastUpdaterName(ResourceCreatorInfoUtil.getOperatorName(iamServiceClientOperator, devopsSecretDTO.getLastUpdatedBy()));
+            secretRespVO.setLastUpdaterName(ResourceCreatorInfoUtil.getOperatorName(baseServiceClientOperator, devopsSecretDTO.getLastUpdatedBy()));
         }
         return secretRespVO;
     }

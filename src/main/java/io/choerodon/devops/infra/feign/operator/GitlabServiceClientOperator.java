@@ -7,7 +7,6 @@ import com.github.pagehelper.PageInfo;
 import feign.FeignException;
 import feign.RetryableException;
 import io.choerodon.devops.infra.dto.RepositoryFileDTO;
-import io.kubernetes.client.JSON;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +35,7 @@ public class GitlabServiceClientOperator {
     @Autowired
     private GitlabServiceClient gitlabServiceClient;
     @Autowired
-    private IamServiceClientOperator iamServiceClientOperator;
+    private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
     private GitUtil gitUtil;
 
@@ -473,7 +472,7 @@ public class GitlabServiceClientOperator {
                 .map(TagDTO::new)
                 .parallel()
                 .peek(t -> {
-                    IamUserDTO userDTO = iamServiceClientOperator.queryByEmail(TypeUtil.objToLong(gitlabProjectId), t.getCommit().getAuthorEmail());
+                    IamUserDTO userDTO = baseServiceClientOperator.queryByEmail(TypeUtil.objToLong(gitlabProjectId), t.getCommit().getAuthorEmail());
                     if (userDTO != null) {
                         t.setCommitUserImage(userDTO.getImageUrl());
                     }

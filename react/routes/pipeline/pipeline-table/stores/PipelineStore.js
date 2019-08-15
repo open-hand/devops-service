@@ -1,5 +1,5 @@
 import { observable, action, computed } from 'mobx';
-import { axios, store } from '@choerodon/boot';
+import { axios, store } from '@choerodon/master';
 import _ from 'lodash';
 import { handleProptError, handlePromptError } from '../../../../utils';
 

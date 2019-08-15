@@ -24,7 +24,7 @@ import io.choerodon.devops.infra.enums.CommandStatus;
 import io.choerodon.devops.infra.enums.CommandType;
 import io.choerodon.devops.infra.enums.ObjectType;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
-import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 import io.choerodon.devops.infra.gitops.ResourceFileCheckHandler;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
@@ -63,7 +63,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
     @Autowired
     private GitlabServiceClientOperator gitlabServiceClientOperator;
     @Autowired
-    private IamServiceClientOperator iamServiceClientOperator;
+    private BaseServiceClientOperator baseServiceClientOperator;
 
 
     @Override
@@ -148,10 +148,10 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
         }.getType()));
 
         if (devopsConfigMapDTO.getCreatedBy() != null && devopsConfigMapDTO.getCreatedBy() != 0) {
-            devopsConfigMapRespVO.setCreatorName(ResourceCreatorInfoUtil.getOperatorName(iamServiceClientOperator, devopsConfigMapDTO.getCreatedBy()));
+            devopsConfigMapRespVO.setCreatorName(ResourceCreatorInfoUtil.getOperatorName(baseServiceClientOperator, devopsConfigMapDTO.getCreatedBy()));
         }
         if (devopsConfigMapDTO.getLastUpdatedBy() != null && devopsConfigMapDTO.getLastUpdatedBy() != 0) {
-            devopsConfigMapRespVO.setLastUpdaterName(ResourceCreatorInfoUtil.getOperatorName(iamServiceClientOperator, devopsConfigMapDTO.getLastUpdatedBy()));
+            devopsConfigMapRespVO.setLastUpdaterName(ResourceCreatorInfoUtil.getOperatorName(baseServiceClientOperator, devopsConfigMapDTO.getLastUpdatedBy()));
         }
 
         return devopsConfigMapRespVO;

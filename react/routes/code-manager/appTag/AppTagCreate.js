@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { observer, inject } from 'mobx-react';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { Content, stores } from '@choerodon/boot';
+import { Content, stores } from '@choerodon/master';
 import { Select, Modal, Form, Input, Icon } from 'choerodon-ui';
 import _ from 'lodash';
 import MdEditor from '../../../components/MdEditor';

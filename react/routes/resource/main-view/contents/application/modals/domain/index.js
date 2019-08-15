@@ -3,7 +3,7 @@ import { observer, inject } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import { Modal } from 'choerodon-ui';
 import { injectIntl } from 'react-intl';
-import { Content } from '@choerodon/boot';
+import { Content } from '@choerodon/master';
 import _ from 'lodash';
 import InterceptMask from '../../../../../../../components/interceptMask/InterceptMask';
 import DomainForm from './domainForm';

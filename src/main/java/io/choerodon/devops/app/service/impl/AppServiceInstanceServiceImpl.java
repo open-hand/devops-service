@@ -33,7 +33,7 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
-import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 import io.choerodon.devops.infra.gitops.ResourceFileCheckHandler;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
@@ -95,7 +95,7 @@ public class  AppServiceInstanceServiceImpl implements AppServiceInstanceService
     @Autowired
     private DevopsEnvUserPermissionService devopsEnvUserPermissionService;
     @Autowired
-    private IamServiceClientOperator iamServiceClientOperator;
+    private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
     private AppServiceVersionService appServiceVersionService;
     @Autowired
@@ -193,8 +193,8 @@ public class  AppServiceInstanceServiceImpl implements AppServiceInstanceService
                 .filter(DevopsEnvUserPermissionDTO::getPermitted).map(DevopsEnvUserPermissionDTO::getEnvId)
                 .collect(Collectors.toList());
 
-        ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(projectId);
-        if (iamServiceClientOperator.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectDTO)) {
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        if (baseServiceClientOperator.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectDTO)) {
             permissionEnvIds = devopsEnvironmentService.baseListByProjectId(projectId).stream()
                     .map(DevopsEnvironmentDTO::getId).collect(Collectors.toList());
         }
@@ -1495,7 +1495,7 @@ public class  AppServiceInstanceServiceImpl implements AppServiceInstanceService
             deployDetailTableVO.setDeployTime(
                     getDeployTime(deployDTO.getLastUpdateDate().getTime() - deployDTO.getCreationDate().getTime()));
             if (deployDTO.getCreatedBy() != 0) {
-                IamUserDTO iamUserDTO = iamServiceClientOperator.queryUserByUserId(deployDTO.getCreatedBy());
+                IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(deployDTO.getCreatedBy());
                 deployDetailTableVO.setLastUpdatedName(iamUserDTO.getRealName());
             }
             deployDetailTableVOS.add(deployDetailTableVO);

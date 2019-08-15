@@ -24,7 +24,7 @@ import io.choerodon.devops.infra.dto.iam.IamAppDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.feign.IamServiceClient;
+import io.choerodon.devops.infra.feign.BaseServiceClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -42,15 +42,15 @@ public class IamServiceImpl implements IamService {
     private static final Logger LOGGER = LoggerFactory.getLogger(IamServiceImpl.class);
 
     @Autowired
-    private IamServiceClient iamServiceClient;
+    private BaseServiceClient baseServiceClient;
 
-    public IamServiceImpl(IamServiceClient iamServiceClient) {
-        this.iamServiceClient = iamServiceClient;
+    public IamServiceImpl(BaseServiceClient baseServiceClient) {
+        this.baseServiceClient = baseServiceClient;
     }
 
     @Override
     public ProjectDTO queryIamProject(Long projectId) {
-        ResponseEntity<ProjectDTO> projectDO = iamServiceClient.queryIamProject(projectId);
+        ResponseEntity<ProjectDTO> projectDO = baseServiceClient.queryIamProject(projectId);
         if (!projectDO.getStatusCode().is2xxSuccessful()) {
             throw new CommonException("error.project.get");
         }
@@ -59,7 +59,7 @@ public class IamServiceImpl implements IamService {
 
     @Override
     public OrganizationDTO queryOrganization() {
-        ResponseEntity<OrganizationDTO> organization = iamServiceClient.queryOrganization();
+        ResponseEntity<OrganizationDTO> organization = baseServiceClient.queryOrganization();
         if (organization.getStatusCode().is2xxSuccessful()) {
             return organization.getBody();
         } else {
@@ -69,7 +69,7 @@ public class IamServiceImpl implements IamService {
 
     @Override
     public OrganizationDTO queryOrganizationById(Long organizationId) {
-        ResponseEntity<OrganizationDTO> organization = iamServiceClient.queryOrganizationById(organizationId);
+        ResponseEntity<OrganizationDTO> organization = baseServiceClient.queryOrganizationById(organizationId);
         if (organization.getStatusCode().is2xxSuccessful()) {
             return organization.getBody();
         } else {
@@ -80,7 +80,7 @@ public class IamServiceImpl implements IamService {
     @Override
     public IamUserDTO queryByLoginName(String userName) {
         try {
-            ResponseEntity<IamUserDTO> responseEntity = iamServiceClient.queryByLoginName(userName);
+            ResponseEntity<IamUserDTO> responseEntity = baseServiceClient.queryByLoginName(userName);
             return responseEntity.getBody();
         } catch (FeignException e) {
             LOGGER.error("get user by longin name {} error", userName);
@@ -94,7 +94,7 @@ public class IamServiceImpl implements IamService {
         int page = 0;
         int size = 0;
         ResponseEntity<PageInfo<ProjectDTO>> pageResponseEntity =
-                iamServiceClient.queryProjectByOrgId(organizationId, page, size, name, null);
+                baseServiceClient.queryProjectByOrgId(organizationId, page, size, name, null);
         PageInfo<ProjectDTO> projectDOPage = pageResponseEntity.getBody();
         List<ProjectDTO> projectEList = projectDOPage.getList();
         if (!projectEList.isEmpty()) {
@@ -106,7 +106,7 @@ public class IamServiceImpl implements IamService {
     @Override
     public PageInfo<ProjectDTO> queryProjectByOrgId(Long organizationId, int page, int size, String name, String[] params) {
         try {
-            ResponseEntity<PageInfo<ProjectDTO>> pageInfoResponseEntity = iamServiceClient.queryProjectByOrgId(organizationId, page, size, name, params);
+            ResponseEntity<PageInfo<ProjectDTO>> pageInfoResponseEntity = baseServiceClient.queryProjectByOrgId(organizationId, page, size, name, params);
             return pageInfoResponseEntity.getBody();
         } catch (FeignException e) {
             throw new CommonException(e);
@@ -119,7 +119,7 @@ public class IamServiceImpl implements IamService {
         int page = 0;
         int size = 0;
         ResponseEntity<PageInfo<ProjectWithRoleVO>> pageResponseEntity =
-                iamServiceClient.listProjectWithRole(userId, page, size);
+                baseServiceClient.listProjectWithRole(userId, page, size);
         PageInfo<ProjectWithRoleVO> projectWithRoleDTOPage = pageResponseEntity.getBody();
         if (!projectWithRoleDTOPage.getList().isEmpty()) {
             returnList.addAll(projectWithRoleDTOPage.getList());
@@ -133,7 +133,7 @@ public class IamServiceImpl implements IamService {
         if (ids != null && !ids.isEmpty()) {
             Long[] newIds = new Long[ids.size()];
             try {
-                userES = iamServiceClient.listUsersByIds(ids.toArray(newIds)).getBody();
+                userES = baseServiceClient.listUsersByIds(ids.toArray(newIds)).getBody();
             } catch (Exception e) {
                 throw new CommonException("error.users.get", e);
             }
@@ -157,7 +157,7 @@ public class IamServiceImpl implements IamService {
                                                                        RoleAssignmentSearchVO roleAssignmentSearchVO,
                                                                        Long roleId, Long projectId, Boolean doPage) {
         try {
-            return iamServiceClient.pagingQueryUsersByRoleIdOnProjectLevel(pageRequest.getPage(), pageRequest.getSize(), roleId,
+            return baseServiceClient.pagingQueryUsersByRoleIdOnProjectLevel(pageRequest.getPage(), pageRequest.getSize(), roleId,
                     projectId, doPage, roleAssignmentSearchVO).getBody();
         } catch (FeignException e) {
             LOGGER.error("get users by role id {} and project id {} error", roleId, projectId);
@@ -170,7 +170,7 @@ public class IamServiceImpl implements IamService {
                                                                    Boolean doPage) {
         try {
             RoleAssignmentSearchVO roleAssignmentSearchVO = new RoleAssignmentSearchVO();
-            ResponseEntity<PageInfo<UserWithRoleVO>> userEPageResponseEntity = iamServiceClient
+            ResponseEntity<PageInfo<UserWithRoleVO>> userEPageResponseEntity = baseServiceClient
                     .queryUserByProjectId(projectId,
                             pageRequest.getPage(), pageRequest.getSize(), doPage, roleAssignmentSearchVO);
             return userEPageResponseEntity.getBody();
@@ -183,7 +183,7 @@ public class IamServiceImpl implements IamService {
     @Override
     public IamUserDTO queryByEmail(Long projectId, String email) {
         try {
-            ResponseEntity<PageInfo<IamUserDTO>> userDOResponseEntity = iamServiceClient
+            ResponseEntity<PageInfo<IamUserDTO>> userDOResponseEntity = baseServiceClient
                     .listUsersByEmail(projectId, 0, 0, email);
             if (userDOResponseEntity.getBody().getList().isEmpty()) {
                 return null;
@@ -200,7 +200,7 @@ public class IamServiceImpl implements IamService {
         try {
             RoleSearchVO roleSearchVO = new RoleSearchVO();
             roleSearchVO.setCode(roleCode);
-            return iamServiceClient.queryRoleIdByCode(roleSearchVO).getBody().getList().get(0).getId();
+            return baseServiceClient.queryRoleIdByCode(roleSearchVO).getBody().getList().get(0).getId();
         } catch (FeignException e) {
             LOGGER.error("get role id by code {} error", roleCode);
             return null;
@@ -264,7 +264,7 @@ public class IamServiceImpl implements IamService {
     public IamAppDTO createIamApp(Long organizationId, IamAppDTO iamAppDTO) {
         ResponseEntity<IamAppDTO> iamAppPayLoadResponseEntity = null;
         try {
-            iamAppPayLoadResponseEntity = iamServiceClient.createIamApplication(organizationId, iamAppDTO);
+            iamAppPayLoadResponseEntity = baseServiceClient.createIamApplication(organizationId, iamAppDTO);
         } catch (FeignException e) {
             throw new CommonException(e);
         }
@@ -279,7 +279,7 @@ public class IamServiceImpl implements IamService {
     public IamAppDTO updateIamApp(Long organizationId, Long id, IamAppDTO iamAppDTO) {
         ResponseEntity<IamAppDTO> iamAppPayLoadResponseEntity = null;
         try {
-            iamAppPayLoadResponseEntity = iamServiceClient.updateIamApplication(organizationId, id, iamAppDTO);
+            iamAppPayLoadResponseEntity = baseServiceClient.updateIamApplication(organizationId, id, iamAppDTO);
         } catch (FeignException e) {
             throw new CommonException(e);
         }
@@ -290,7 +290,7 @@ public class IamServiceImpl implements IamService {
     public IamAppDTO queryIamAppByCode(Long organizationId, String code) {
         ResponseEntity<PageInfo<IamAppDTO>> iamAppPayLoadResponseEntity = null;
         try {
-            iamAppPayLoadResponseEntity = iamServiceClient.getIamApplication(organizationId, code);
+            iamAppPayLoadResponseEntity = baseServiceClient.getIamApplication(organizationId, code);
         } catch (FeignException e) {
             throw new CommonException(e);
         }
@@ -302,7 +302,7 @@ public class IamServiceImpl implements IamService {
         try {
             ProjectCreateDTO projectDTO = new ProjectCreateDTO();
             BeanUtils.copyProperties(projectCreateVO, projectDTO);
-            ResponseEntity<ProjectDTO> projectDTORes = iamServiceClient
+            ResponseEntity<ProjectDTO> projectDTORes = baseServiceClient
                     .createProject(organizationId, projectDTO);
             return projectDTORes.getBody();
         } catch (FeignException e) {
@@ -314,7 +314,7 @@ public class IamServiceImpl implements IamService {
     @Override
     public PageInfo<OrganizationSimplifyVO> getAllOrgs(Integer page, Integer size) {
         try {
-            ResponseEntity<PageInfo<OrganizationSimplifyVO>> simplifyDTOs = iamServiceClient
+            ResponseEntity<PageInfo<OrganizationSimplifyVO>> simplifyDTOs = baseServiceClient
                     .getAllOrgs(page, size);
             return simplifyDTOs.getBody();
         } catch (FeignException e) {

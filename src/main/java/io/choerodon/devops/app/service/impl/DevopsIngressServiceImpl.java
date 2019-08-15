@@ -38,7 +38,7 @@ import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
-import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 import io.choerodon.devops.infra.gitops.ResourceFileCheckHandler;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
@@ -100,7 +100,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     @Autowired
     private TransactionalProducer producer;
     @Autowired
-    private IamServiceClientOperator iamServiceClientOperator;
+    private BaseServiceClientOperator baseServiceClientOperator;
     private JSON json = new JSON();
 
     @Override
@@ -338,10 +338,10 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         devopsIngressPathMapper.select(devopsIngressPathDTO).forEach(e -> setDevopsIngressDTO(vo, e));
 
         if (devopsIngressDTO.getCreatedBy() != null && devopsIngressDTO.getCreatedBy() != 0) {
-            vo.setCreatorName(ResourceCreatorInfoUtil.getOperatorName(iamServiceClientOperator, devopsIngressDTO.getCreatedBy()));
+            vo.setCreatorName(ResourceCreatorInfoUtil.getOperatorName(baseServiceClientOperator, devopsIngressDTO.getCreatedBy()));
         }
         if (devopsIngressDTO.getLastUpdatedBy() != null && devopsIngressDTO.getLastUpdatedBy() != 0) {
-            vo.setLastUpdaterName(ResourceCreatorInfoUtil.getOperatorName(iamServiceClientOperator, devopsIngressDTO.getLastUpdatedBy()));
+            vo.setLastUpdaterName(ResourceCreatorInfoUtil.getOperatorName(baseServiceClientOperator, devopsIngressDTO.getLastUpdatedBy()));
         }
 
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsIngressDTO.getEnvId());

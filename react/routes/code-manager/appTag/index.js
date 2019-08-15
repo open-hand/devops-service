@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { observer } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { Content, Header, Page, Permission, stores } from '@choerodon/boot';
+import { Content, Header, Page, Permission, stores } from '@choerodon/master';
 import { Button, Select, Modal, Form, Icon, Collapse, Avatar, Pagination, Tooltip } from 'choerodon-ui';
 import ReactMarkdown from 'react-markdown';
 import _ from 'lodash';

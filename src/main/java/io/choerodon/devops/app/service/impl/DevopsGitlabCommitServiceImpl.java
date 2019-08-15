@@ -21,7 +21,7 @@ import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
 import io.choerodon.devops.infra.dto.DevopsGitlabCommitDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
-import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsGitlabCommitMapper;
 import io.choerodon.devops.infra.util.PageRequestUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
@@ -37,7 +37,7 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
     private static final Integer ADMIN = 1;
 
     @Autowired
-    private IamServiceClientOperator iamServiceClientOperator;
+    private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
     private DevopsGitlabCommitMapper devopsGitlabCommitMapper;
     @Autowired
@@ -67,7 +67,7 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
                     if ("root".equals(commitDTO.getAuthor().getName())) {
                         devopsGitlabCommitDTO.setUserId(1L);
                     } else {
-                        IamUserDTO iamUserDTO = iamServiceClientOperator.queryByEmail(applicationDTO.getAppId(),
+                        IamUserDTO iamUserDTO = baseServiceClientOperator.queryByEmail(applicationDTO.getAppId(),
                                 commitDTO.getAuthor().getEmail());
                         if (iamUserDTO != null) {
                             devopsGitlabCommitDTO.setUserId(iamUserDTO.getId());
@@ -91,7 +91,7 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
                 if ("root".equals(commitDTO.getAuthorName())) {
                     devopsGitlabCommitDTO.setUserId(1L);
                 } else {
-                    IamUserDTO userE = iamServiceClientOperator.queryByEmail(applicationDTO.getAppId(),
+                    IamUserDTO userE = baseServiceClientOperator.queryByEmail(applicationDTO.getAppId(),
                             commitDTO.getAuthorEmail());
                     if (userE != null) {
                         devopsGitlabCommitDTO.setUserId(userE.getId());
@@ -155,7 +155,7 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
 
     private Map<Long, IamUserDTO> getUserDOMap(List<DevopsGitlabCommitDTO> devopsGitlabCommitDTOS) {
         // 获取users
-        List<IamUserDTO> userEList = iamServiceClientOperator.listUsersByIds(devopsGitlabCommitDTOS.stream().map(
+        List<IamUserDTO> userEList = baseServiceClientOperator.listUsersByIds(devopsGitlabCommitDTOS.stream().map(
                 DevopsGitlabCommitDTO::getUserId).distinct().collect(Collectors.toList()));
 
         return userEList.stream().collect(Collectors.toMap(IamUserDTO::getId, u -> u, (u1, u2) -> u1));

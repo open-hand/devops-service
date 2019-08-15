@@ -1,6 +1,6 @@
 import React from 'react';
 import { Route, Switch } from 'react-router-dom';
-import { asyncRouter, nomatch } from '@choerodon/boot';
+import { asyncRouter, nomatch } from '@choerodon/master';
 
 const PipelineHome = asyncRouter(() => import('./pipeline-table'), () => import('./pipeline-table/stores'));
 const PipelineCreate = asyncRouter(() => import('./pipeline-create'), () => import('./stores'));

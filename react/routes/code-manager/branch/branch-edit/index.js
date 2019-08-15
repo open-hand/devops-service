@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
 import { observer } from 'mobx-react';
 import { Modal, Form, Select, Tooltip } from 'choerodon-ui';
-import { stores, Content } from '@choerodon/boot';
+import { stores, Content } from '@choerodon/master';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import _ from 'lodash';
 import '../../main.scss';

@@ -27,7 +27,7 @@ import io.choerodon.devops.infra.dto.harbor.*;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.HarborClient;
-import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
 import io.choerodon.devops.infra.mapper.DevopsConfigMapper;
 import io.choerodon.devops.infra.util.PageRequestUtil;
@@ -57,7 +57,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
     private DevopsConfigMapper devopsConfigMapper;
 
     @Autowired
-    private IamServiceClientOperator iamServiceClientOperator;
+    private BaseServiceClientOperator baseServiceClientOperator;
 
     @Autowired
     private HarborConfigurationProperties harborConfigurationProperties;
@@ -128,8 +128,8 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
 
 
     private void operateHarborProject(Long projectId, Boolean harborPrivate) {
-        ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(projectId);
-        OrganizationDTO organizationDTO = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         ConfigurationProperties configurationProperties = new ConfigurationProperties(harborConfigurationProperties);
         configurationProperties.setType(HARBOR);
         Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
@@ -273,8 +273,8 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
             if (projectConfig != null) {
                 return projectConfig;
             }
-            ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(projectId);
-            OrganizationDTO organizationDTO = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+            OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
             DevopsConfigDTO organizationConfig = baseQueryByResourceAndType(organizationDTO.getId(), ResourceLevel.ORGANIZATION.value(), configType);
             if (organizationConfig != null) {
                 return organizationConfig;
@@ -285,8 +285,8 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
             if (projectConfig != null) {
                 return projectConfig;
             }
-            ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(resourceId);
-            OrganizationDTO organizationDTO = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(resourceId);
+            OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
             DevopsConfigDTO organizationConfig = baseQueryByResourceAndType(organizationDTO.getId(), ResourceLevel.ORGANIZATION.value(), configType);
             if (organizationConfig != null) {
                 return organizationConfig;

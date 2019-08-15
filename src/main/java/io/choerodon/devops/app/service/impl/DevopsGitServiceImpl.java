@@ -37,7 +37,7 @@ import io.choerodon.devops.infra.enums.GitOpsObjectError;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.infra.feign.operator.AgileServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
-import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.message.ResourceBundleHandler;
 import io.choerodon.devops.infra.util.*;
 import io.kubernetes.client.models.*;
@@ -92,7 +92,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Autowired
     private UserAttrService userAttrService;
     @Autowired
-    private IamServiceClientOperator iamServiceClientOperator;
+    private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
     private AgileServiceClientOperator agileServiceClientOperator;
     @Autowired
@@ -247,12 +247,12 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
     @Override
     public PageInfo<BranchVO> pageBranchByOptions(Long projectId, PageRequest pageRequest, Long appServiceId, String params) {
-        ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(projectId);
-        OrganizationDTO organizationDTO = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         AppServiceDTO applicationDTO = applicationService.baseQuery(appServiceId);
         // 查询用户是否在该gitlab project下
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-        if (!iamServiceClientOperator.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectDTO)) {
+        if (!baseServiceClientOperator.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectDTO)) {
             MemberDTO memberDTO = gitlabServiceClientOperator.getProjectMember(applicationDTO.getGitlabProjectId(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
             if (memberDTO == null) {
                 throw new CommonException("error.user.not.in.project");
@@ -271,9 +271,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             if (t.getIssueId() != null) {
                 issueDTO = agileServiceClientOperator.queryIssue(projectId, t.getIssueId(), organizationDTO.getId());
             }
-            IamUserDTO userDTO = iamServiceClientOperator.queryUserByUserId(
+            IamUserDTO userDTO = baseServiceClientOperator.queryUserByUserId(
                     userAttrService.getUserIdByGitlabUserId(t.getUserId()));
-            IamUserDTO commitUserDTO = iamServiceClientOperator.queryUserByUserId(
+            IamUserDTO commitUserDTO = baseServiceClientOperator.queryUserByUserId(
                     userAttrService.getUserIdByGitlabUserId(t.getLastCommitUser()));
             String commitUrl = String.format("%s/commit/%s?view=parallel", path, t.getLastCommit());
             return getBranchVO(t, commitUrl, commitUserDTO, userDTO, issueDTO);
@@ -345,9 +345,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
     @Override
     public PageInfo<TagVO> pageTagsByOptions(Long projectId, Long applicationId, String params, Integer page, Integer size) {
-        ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         AppServiceDTO applicationDTO = applicationService.baseQuery(applicationId);
-        OrganizationDTO organizationDTO = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         String path = String.format("%s%s%s-%s/%s",
                 gitlabUrl, urlSlash, organizationDTO.getCode(), projectDTO.getCode(), applicationDTO.getCode());
@@ -389,7 +389,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         LOGGER.info(String.format("````````````````````````````` %s", pushWebHookVO.getCheckoutSha()));
 
         Long userId = userAttrService.baseQueryUserIdByGitlabUserId(TypeUtil.objToLong(pushWebHookVO.getUserId()));
-        IamUserDTO iamUserDTO = iamServiceClientOperator.queryUserByUserId(userId);
+        IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(userId);
 
         DemoEnvSetupSagaHandler.beforeInvoke(iamUserDTO.getLoginName(),userId, iamUserDTO.getOrganizationId());
 
@@ -445,8 +445,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         boolean tagNotExist;
         Map<String, String> objectPath;
         //从iam服务中查出项目和组织code
-        ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
-        OrganizationDTO organizationDTO = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
+        OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 
         //本地路径
         final String path = String.format("gitops/%s/%s/%s",
@@ -866,7 +866,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         } catch (FeignException e) {
             LOGGER.info(e.getMessage());
         }
-        IamUserDTO authorUser = iamServiceClientOperator.queryUserByUserId(authorUserId);
+        IamUserDTO authorUser = baseServiceClientOperator.queryUserByUserId(authorUserId);
         if (authorUser != null) {
             AuthorVO authorVO = new AuthorVO();
             authorVO.setUsername(authorUser.getLoginName());
@@ -875,7 +875,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             authorVO.setWebUrl(authorUser.getImageUrl());
             mergeRequestVO.setAuthor(authorVO);
         }
-        IamUserDTO assigneeUser = iamServiceClientOperator.queryUserByUserId(assigneeId);
+        IamUserDTO assigneeUser = baseServiceClientOperator.queryUserByUserId(assigneeId);
         if (assigneeUser != null) {
             AssigneeVO assigneeVO = new AssigneeVO();
             assigneeVO.setUsername(assigneeUser.getLoginName());

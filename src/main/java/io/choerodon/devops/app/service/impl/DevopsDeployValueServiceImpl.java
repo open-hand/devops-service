@@ -21,7 +21,7 @@ import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.PipelineAppServiceDeployDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsDeployValueMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
@@ -42,7 +42,7 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
     @Autowired
     private DevopsDeployValueMapper devopsDeployValueMapper;
     @Autowired
-    private IamServiceClientOperator iamServiceClientOperator;
+    private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
     private ClusterConnectionHandler clusterConnectionHandler;
     @Autowired
@@ -70,10 +70,10 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
 
     @Override
     public PageInfo<DevopsDeployValueVO> pageByOptions(Long projectId, Long appServiceId, Long envId, PageRequest pageRequest, String params) {
-        ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedEnvList();
         Long userId = null;
-        if (!iamServiceClientOperator.isProjectOwner(DetailsHelper.getUserDetails().getUserId(), projectDTO)) {
+        if (!baseServiceClientOperator.isProjectOwner(DetailsHelper.getUserDetails().getUserId(), projectDTO)) {
             userId = DetailsHelper.getUserDetails().getUserId();
         }
         PageInfo<DevopsDeployValueDTO> deployValueDTOPageInfo = basePageByOptions(projectId, appServiceId, envId, userId, pageRequest, params);
@@ -81,7 +81,7 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
         page.setList(deployValueDTOPageInfo.getList().stream().map(devopsDeployValueDTO -> {
 
             DevopsDeployValueVO devopsDeployValueVO = ConvertUtils.convertObject(devopsDeployValueDTO, DevopsDeployValueVO.class);
-            IamUserDTO iamUserDTO = iamServiceClientOperator.queryUserByUserId(devopsDeployValueDTO.getCreatedBy());
+            IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(devopsDeployValueDTO.getCreatedBy());
             devopsDeployValueVO.setCreateUserName(iamUserDTO.getLoginName());
             devopsDeployValueVO.setCreateUserUrl(iamUserDTO.getImageUrl());
             devopsDeployValueVO.setCreateUserRealName(iamUserDTO.getRealName());

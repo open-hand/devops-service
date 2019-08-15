@@ -1,7 +1,7 @@
 import React from 'react';
 import { Route, Switch } from 'react-router-dom';
 import { inject } from 'mobx-react';
-import { asyncRouter, asyncLocaleProvider, nomatch } from '@choerodon/boot';
+import { asyncRouter, asyncLocaleProvider, nomatch } from '@choerodon/master';
 import { ModalContainer } from 'choerodon-ui/pro';
 
 const AppService = asyncRouter(() => import('./routes/app-service'));

@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { FormattedMessage } from 'react-intl';
-import { Permission } from '@choerodon/boot';
+import { Permission } from '@choerodon/master';
 import { Table } from 'choerodon-ui/pro';
 import MouserOverWrapper from '../../../../../../components/MouseOverWrapper';
 import TimePopover from '../../../../../../components/timePopover';

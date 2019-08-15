@@ -1,5 +1,5 @@
 import React, { useCallback, Fragment } from 'react';
-import { PageWrap, PageTab, Header, Permission, Action, Breadcrumb } from '@choerodon/boot';
+import { PageWrap, PageTab, Header, Permission, Action, Breadcrumb } from '@choerodon/master';
 import { Table, Modal } from 'choerodon-ui/pro';
 import { Button } from 'choerodon-ui';
 import { FormattedMessage } from 'react-intl';

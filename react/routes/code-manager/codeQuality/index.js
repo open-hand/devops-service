@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { observer, inject } from 'mobx-react';
 import { withRouter, Link } from 'react-router-dom';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { Page, Header, Content } from '@choerodon/boot';
+import { Page, Header, Content } from '@choerodon/master';
 import { Select, Button, Tooltip, Icon, Card } from 'choerodon-ui';
 import _ from 'lodash';
 import { CopyToClipboard } from 'react-copy-to-clipboard';

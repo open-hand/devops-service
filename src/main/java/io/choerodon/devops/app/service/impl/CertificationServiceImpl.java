@@ -30,7 +30,7 @@ import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
-import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsCertificationFileMapper;
@@ -58,7 +58,7 @@ public class CertificationServiceImpl implements CertificationService {
     @Autowired
     private DevopsEnvironmentMapper devopsEnvironmentMapper;
     @Autowired
-    private IamServiceClientOperator iamServiceClientOperator;
+    private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
     private DevopsCertificationValidator devopsCertificationValidator;
     @Autowired
@@ -98,7 +98,7 @@ public class CertificationServiceImpl implements CertificationService {
         devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
 
 
-        ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         String path = String.format("tmp%s%s%s%s", FILE_SEPARATOR, projectDTO.getCode(), FILE_SEPARATOR, devopsEnvironmentDTO.getCode());
 
         String certFileName;
@@ -313,7 +313,7 @@ public class CertificationServiceImpl implements CertificationService {
 
     @Override
     public List<ProjectCertificationVO> listProjectCertInProject(Long projectId) {
-        ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         List<ProjectCertificationVO> projectCertificationVOS = new ArrayList<>();
         baseListByProject(projectId, projectDTO.getOrganizationId()).forEach(certificationDTO -> {
             ProjectCertificationVO projectCertificationVO = new ProjectCertificationVO();
@@ -386,7 +386,7 @@ public class CertificationServiceImpl implements CertificationService {
         respVO.setDNSNames(domains);
         respVO.setIngresses(listIngressNamesByCertId(certId));
         if (certificationDTO.getCreatedBy() != null && certificationDTO.getCreatedBy() != 0) {
-            respVO.setCreatorName(ResourceCreatorInfoUtil.getOperatorName(iamServiceClientOperator, certificationDTO.getCreatedBy()));
+            respVO.setCreatorName(ResourceCreatorInfoUtil.getOperatorName(baseServiceClientOperator, certificationDTO.getCreatedBy()));
         }
         return respVO;
     }

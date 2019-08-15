@@ -17,7 +17,7 @@ import io.choerodon.devops.app.service.DevopsEnvApplicationService;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.ProjectCategoryDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.OrgServiceClientOperator;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.ConvertUtils;
@@ -56,7 +56,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     @Autowired
     private DevopsProjectMapper devopsProjectMapper;
     @Autowired
-    private IamServiceClientOperator iamServiceClientOperator;
+    private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
     private OrgServiceClientOperator orgServiceClientOperator;
     @Autowired
@@ -259,7 +259,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 projectCreateDTO.setCode("def-ops-proj");
                 projectCreateDTO.setCategoryIds(categoryIds);
                 projectCreateDTO.setOrganizationId(organizationId);
-                ProjectDTO projectDTO = iamServiceClientOperator.createProject(organizationId, projectCreateDTO);
+                ProjectDTO projectDTO = baseServiceClientOperator.createProject(organizationId, projectCreateDTO);
 
                 // 迁移集群
                 if (clusters.containsKey(organizationId)) {

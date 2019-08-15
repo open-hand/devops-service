@@ -9,7 +9,7 @@ import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import io.choerodon.devops.infra.dto.AppServiceShareRuleDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.kubernetes.client.JSON;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,7 +54,7 @@ public class AppServiceShareRuleServiceImpl implements AppServiceShareRuleServic
     private String helmUrl;
 
     @Autowired
-    private IamServiceClientOperator iamServiceClientOperator;
+    private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
     private AppServiceVersionReadmeMapper appServiceVersionReadmeMapper;
     @Autowired
@@ -86,7 +86,7 @@ public class AppServiceShareRuleServiceImpl implements AppServiceShareRuleServic
 
     @Override
     public PageInfo<AppServiceShareRuleVO> pageByOptions(Long projectId, Long appServiceId, PageRequest pageRequest, String params) {
-        ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         Map<String, Object> mapParams = TypeUtil.castMapParams(params);
         PageInfo<AppServiceShareRuleDTO> devopsProjectConfigDTOPageInfo = PageHelper.startPage(
                 pageRequest.getPage(),
@@ -104,7 +104,7 @@ public class AppServiceShareRuleServiceImpl implements AppServiceShareRuleServic
     @Override
     public AppServiceShareRuleVO query(Long projectId, Long ruleId) {
         AppServiceShareRuleVO appServiceShareRuleVO = ConvertUtils.convertObject(appServiceShareRuleMapper.selectByPrimaryKey(ruleId), AppServiceShareRuleVO.class);
-        appServiceShareRuleVO.setProjectName(iamServiceClientOperator.queryIamProjectById(appServiceShareRuleVO.getAppId()).getName());
+        appServiceShareRuleVO.setProjectName(baseServiceClientOperator.queryIamProjectById(appServiceShareRuleVO.getAppId()).getName());
         return appServiceShareRuleVO;
     }
 

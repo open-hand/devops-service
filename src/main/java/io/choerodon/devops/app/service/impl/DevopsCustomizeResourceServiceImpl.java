@@ -11,7 +11,7 @@ import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
-import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,7 +54,7 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
     @Autowired
     private DevopsCustomizeResourceMapper devopsCustomizeResourceMapper;
     @Autowired
-    private IamServiceClientOperator iamServiceClientOperator;
+    private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
     private DevopsCustomizeResourceContentService devopsCustomizeResourceContentService;
     @Autowired
@@ -82,7 +82,7 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
-        ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
 
         //校验环境相关信息
         devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
@@ -219,10 +219,10 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
         }
         DevopsCustomizeResourceVO resource = ConvertUtils.convertObject(devopsCustomizeResourceDTO, DevopsCustomizeResourceVO.class);
         if (devopsCustomizeResourceDTO.getCreatedBy() != null && devopsCustomizeResourceDTO.getCreatedBy() != 0) {
-            resource.setCreatorName(ResourceCreatorInfoUtil.getOperatorName(iamServiceClientOperator, devopsCustomizeResourceDTO.getCreatedBy()));
+            resource.setCreatorName(ResourceCreatorInfoUtil.getOperatorName(baseServiceClientOperator, devopsCustomizeResourceDTO.getCreatedBy()));
         }
         if (devopsCustomizeResourceDTO.getLastUpdatedBy() != null && devopsCustomizeResourceDTO.getLastUpdatedBy() != 0) {
-            resource.setLastUpdaterName(ResourceCreatorInfoUtil.getOperatorName(iamServiceClientOperator, devopsCustomizeResourceDTO.getLastUpdatedBy()));
+            resource.setLastUpdaterName(ResourceCreatorInfoUtil.getOperatorName(baseServiceClientOperator, devopsCustomizeResourceDTO.getLastUpdatedBy()));
         }
         return resource;
     }

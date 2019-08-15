@@ -1,5 +1,5 @@
 import { observable, action, computed, set } from 'mobx';
-import { axios, store, stores } from '@choerodon/boot';
+import { axios, store, stores } from '@choerodon/master';
 
 @store('HandleMapStore')
 class HandleMapStore {

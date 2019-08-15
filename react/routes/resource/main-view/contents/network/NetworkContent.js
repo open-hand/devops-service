@@ -1,7 +1,7 @@
 import React, { Fragment, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
-import { Action } from '@choerodon/boot';
+import { Action } from '@choerodon/master';
 import {
   Tooltip,
   Icon,
