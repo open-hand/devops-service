@@ -23,6 +23,48 @@ public class K8sUtil {
     }
 
 
+    /**
+     * get byte value from memory string of other measure format
+     * ex: "1K" -> 1024, "1M" -> 1024 * 1024
+     *
+     * @param memory the memory string
+     * @return byte value
+     */
+    public static long getByteFromMemoryString(String memory) {
+        int index;
+        if ((index = memory.indexOf('K')) != -1) {
+            return Long.parseLong(memory.substring(0, index)) << 10;
+        } else if ((index = memory.indexOf('M')) != -1) {
+            return Long.parseLong(memory.substring(0, index)) << 20;
+        } else if ((index = memory.indexOf('G')) != -1) {
+            return Long.parseLong(memory.substring(0, index)) << 30;
+        } else if (memory.matches("^\\d+$")) {
+            return Long.parseLong(memory);
+        } else if ((index = memory.indexOf('m')) != -1) {
+            return Long.parseLong(memory.substring(0, index)) / 1000;
+        } else {
+            return 0;
+        }
+    }
+
+    /**
+     * get normal value of cpu measure.
+     * ex: "132m" -> 0.132, "1.3" -> 1.3
+     *
+     * @param cpuAmount cpu string with measure 'm'
+     * @return the normal value
+     */
+    public static double getNormalValueFromCpuString(String cpuAmount) {
+        if (cpuAmount.endsWith("m")) {
+            return Long.parseLong(cpuAmount.substring(0, cpuAmount.length() - 1)) / 1000.0;
+        }
+        if (cpuAmount.matches("^\\d+$")) {
+            return Double.parseDouble(cpuAmount);
+        }
+        return 0.0;
+    }
+
+
     private static String getPodStatus(V1ContainerStateTerminated containerStateTerminated) {
         if (containerStateTerminated.getReason() != null) {
             if (containerStateTerminated.getReason().length() == 0) {

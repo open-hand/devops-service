@@ -15,6 +15,7 @@ import io.choerodon.devops.api.vo.ClusterNodeInfoVO;
 import io.choerodon.devops.app.service.ClusterNodeInfoService;
 import io.choerodon.devops.app.service.DevopsClusterService;
 import io.choerodon.devops.infra.dto.DevopsClusterDTO;
+import io.choerodon.devops.infra.util.K8sUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +37,7 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
     private static final String PERCENTAGE_FORMAT = "%.2f%%";
     /**
      * 如果出现时间的解析失误，可能是并发问题，不建议作为局部变量，可以考虑使用Joda-Time库，
-     * 目前考虑Agent发送消息的间隔不会产生并发问题，当前日期(201901018)
+     * 目前考虑Agent发送消息的间隔不会产生并发问题，当前日期(20190118)
      */
     private final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private static final Logger LOGGER = LoggerFactory.getLogger(ClusterNodeInfoServiceImpl.class);
@@ -67,14 +68,6 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
         stringRedisTemplate.opsForList().rightPushAll(redisClusterKey, agentNodeInfoVOS.stream().map(this::node2JsonString).collect(Collectors.toList()));
     }
 
-    private String toNormalCpuValue(String cpuAmount) {
-        if (cpuAmount.endsWith("m")) {
-            double amount = Long.parseLong(cpuAmount.substring(0, cpuAmount.length() - 1)) / 1000.0;
-            return String.format(CPU_MEASURE_FORMAT, amount);
-        }
-        return cpuAmount;
-    }
-
     private void setCpuPercentage(ClusterNodeInfoVO node) {
         double total = Double.parseDouble(node.getCpuTotal());
         double limit = Double.parseDouble(node.getCpuLimit());
@@ -93,9 +86,9 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
     private String node2JsonString(AgentNodeInfoVO raw) {
         ClusterNodeInfoVO node = new ClusterNodeInfoVO();
         BeanUtils.copyProperties(raw, node);
-        node.setCpuLimit(toNormalCpuValue(node.getCpuLimit()));
-        node.setCpuRequest(toNormalCpuValue(node.getCpuRequest()));
-        node.setCpuTotal(toNormalCpuValue(StringUtils.isEmpty(raw.getCpuAllocatable()) ? raw.getCpuCapacity() : raw.getCpuAllocatable()));
+        node.setCpuLimit(String.format(CPU_MEASURE_FORMAT, K8sUtil.getNormalValueFromCpuString(node.getCpuLimit())));
+        node.setCpuRequest(String.format(CPU_MEASURE_FORMAT, K8sUtil.getNormalValueFromCpuString(node.getCpuRequest())));
+        node.setCpuTotal(String.format(CPU_MEASURE_FORMAT, K8sUtil.getNormalValueFromCpuString(StringUtils.isEmpty(raw.getCpuAllocatable()) ? raw.getCpuCapacity() : raw.getCpuAllocatable())));
         node.setPodTotal(Long.parseLong(StringUtils.isEmpty(raw.getPodAllocatable()) ? raw.getPodCapacity() : raw.getPodAllocatable()));
         node.setMemoryTotal(StringUtils.isEmpty(raw.getMemoryAllocatable()) ? raw.getMemoryCapacity() : raw.getMemoryAllocatable());
 
@@ -119,38 +112,15 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
      * @param node the node information
      */
     private void setMemoryInfo(ClusterNodeInfoVO node) {
-        double total = ((Long) getByteOfMemory(node.getMemoryTotal())).doubleValue();
-        long request = getByteOfMemory(node.getMemoryRequest());
-        long limit = getByteOfMemory(node.getMemoryLimit());
+        double total = ((Long) K8sUtil.getByteFromMemoryString(node.getMemoryTotal())).doubleValue();
+        long request = K8sUtil.getByteFromMemoryString(node.getMemoryRequest());
+        long limit = K8sUtil.getByteFromMemoryString(node.getMemoryLimit());
         node.setMemoryLimitPercentage(String.format(PERCENTAGE_FORMAT, limit / total * 100));
         node.setMemoryRequestPercentage(String.format(PERCENTAGE_FORMAT, request / total * 100));
 
         node.setMemoryTotal(dealWithMemoryMeasure(total));
         node.setMemoryRequest(dealWithMemoryMeasure(request));
         node.setMemoryLimit(dealWithMemoryMeasure(limit));
-    }
-
-    /**
-     * get byte value from memory string of other measure format
-     *
-     * @param memory the memory string
-     * @return byte value
-     */
-    private long getByteOfMemory(String memory) {
-        int index;
-        if ((index = memory.indexOf('K')) != -1) {
-            return Long.parseLong(memory.substring(0, index)) << 10;
-        } else if ((index = memory.indexOf('M')) != -1) {
-            return Long.parseLong(memory.substring(0, index)) << 20;
-        } else if ((index = memory.indexOf('G')) != -1) {
-            return Long.parseLong(memory.substring(0, index)) << 30;
-        } else if (memory.matches("^\\d+$")) {
-            return Long.parseLong(memory);
-        } else if ((index = memory.indexOf('m')) != -1) {
-            return Long.parseLong(memory.substring(0, index)) / 1000;
-        } else {
-            return 0;
-        }
     }
 
     /**
@@ -219,14 +189,14 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
                 .orElse(null);
     }
 
-    public List<String> queryNodeName(Long projectId, Long clusterId){
+    public List<String> queryNodeName(Long projectId, Long clusterId) {
         String rediskey = getRedisClusterKey(clusterId, projectId);
 
         long total = stringRedisTemplate.opsForList().size(rediskey);
 
         return stringRedisTemplate
                 .opsForList()
-                .range(rediskey, 0, total-1)
+                .range(rediskey, 0, total - 1)
                 .stream()
                 .map(node -> JSONObject.parseObject(node, ClusterNodeInfoVO.class))
                 .map(node -> node.getNodeName())
