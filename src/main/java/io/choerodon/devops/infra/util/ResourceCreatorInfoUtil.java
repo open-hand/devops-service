@@ -2,7 +2,6 @@ package io.choerodon.devops.infra.util;
 
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
 
 /**
  * 资源创造者信息工具
