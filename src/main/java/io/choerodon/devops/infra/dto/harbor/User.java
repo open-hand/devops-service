@@ -17,8 +17,10 @@ public class User {
 
     private String realname;
 
+    public User() {
+    }
 
-    public User(String username,String email, String password, String realname) {
+    public User(String username, String email, String password, String realname) {
         this.username = username;
         this.password = password;
         this.email = email;

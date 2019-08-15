@@ -13,11 +13,8 @@ public class AppServicePayload {
     private Long appId;
     private String name;
     private String code;
-    private String imgUrl;
     private String type;
-    private String repository;
     private ConfigVO harbor;
-    private ConfigVO chart;
     private List<AppServiceVersionPayload> appServiceVersionPayloads;
 
     public Long getAppId() {
@@ -44,30 +41,6 @@ public class AppServicePayload {
         this.code = code;
     }
 
-    public String getImgUrl() {
-        return imgUrl;
-    }
-
-    public void setImgUrl(String imgUrl) {
-        this.imgUrl = imgUrl;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public String getRepository() {
-        return repository;
-    }
-
-    public void setRepository(String repository) {
-        this.repository = repository;
-    }
-
     public ConfigVO getHarbor() {
         return harbor;
     }
@@ -76,12 +49,12 @@ public class AppServicePayload {
         this.harbor = harbor;
     }
 
-    public ConfigVO getChart() {
-        return chart;
+    public String getType() {
+        return type;
     }
 
-    public void setChart(ConfigVO chart) {
-        this.chart = chart;
+    public void setType(String type) {
+        this.type = type;
     }
 
     public List<AppServiceVersionPayload> getAppServiceVersionPayloads() {

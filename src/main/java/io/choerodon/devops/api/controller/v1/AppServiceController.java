@@ -210,7 +210,7 @@ public class AppServiceController {
     @ApiOperation(value = "根据环境id分页获取已部署正在运行实例的服务")
     @CustomPageRequest
     @GetMapping("/page_by_ids")
-    public ResponseEntity<PageInfo<AppServiceCodeVO>> pageByEnvIdAndappServiceId(
+    public ResponseEntity<PageInfo<AppServiceCodeVO>> pageByEnvIdAndAppServiceId(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境 ID", required = true)

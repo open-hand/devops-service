@@ -11,6 +11,7 @@ import io.choerodon.devops.app.eventhandler.payload.ApplicationPayload;
 import io.choerodon.devops.app.eventhandler.payload.DevOpsAppImportServicePayload;
 import io.choerodon.devops.app.eventhandler.payload.DevOpsAppServicePayload;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
+import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.enums.GitPlatformType;
 
 /**
@@ -83,6 +84,7 @@ public interface AppServiceService {
                                             Boolean doPage,
                                             PageRequest pageRequest,
                                             String params);
+
     /**
      * 处理服务创建逻辑
      *
@@ -345,7 +347,7 @@ public interface AppServiceService {
      */
     void importAppServiceInternal(Long projectId, List<ApplicationImportInternalVO> importInternalVOS);
 
-    void downLoadAppService(ApplicationPayload applicationPayload);
+    void setProjectHook(AppServiceDTO appServiceDTO, Integer projectId, String token, Integer userId);
 
     void baseCheckApp(Long projectId, Long appServiceId);
 
@@ -403,4 +405,6 @@ public interface AppServiceService {
      * @return List<AppServiceGroupVO>
      */
     List<AppServiceGroupVO> ListAppServiceGroup();
+
+    String getToken(Integer gitlabProjectId, String applicationDir, UserAttrDTO userAttrDTO);
 }
