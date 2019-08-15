@@ -59,7 +59,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
     @Override
     public void createGitlabGroupMemberRole(List<GitlabGroupMemberVO> gitlabGroupMemberVOList) {
         gitlabGroupMemberVOList.stream()
-                .filter(gitlabGroupMemberVO -> !gitlabGroupMemberVO.getResourceType().equals(SITE))
+                .filter(gitlabGroupMemberVO -> gitlabGroupMemberVO.getResourceType().equals(PROJECT))
                 .forEach(gitlabGroupMemberVO -> {
                     try {
                         List<String> userMemberRoleList = gitlabGroupMemberVO.getRoleLabels();
@@ -85,7 +85,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
     @Override
     public void deleteGitlabGroupMemberRole(List<GitlabGroupMemberVO> gitlabGroupMemberVOList) {
         gitlabGroupMemberVOList.stream()
-                .filter(gitlabGroupMemberVO -> !gitlabGroupMemberVO.getResourceType().equals(SITE))
+                .filter(gitlabGroupMemberVO -> gitlabGroupMemberVO.getResourceType().equals(PROJECT))
                 .forEach(gitlabGroupMemberVO -> {
                     UserAttrDTO userAttrDTO = userAttrService.baseQueryById(gitlabGroupMemberVO.getUserId());
                     Integer gitlabUserId = TypeUtil.objToInteger(userAttrDTO.getGitlabUserId());
@@ -97,7 +97,6 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                     }
                     DevopsProjectDTO devopsProjectDTO;
                     MemberDTO memberDTO;
-                    if (PROJECT.equals(gitlabGroupMemberVO.getResourceType())) {
                         devopsProjectDTO = devopsProjectService.baseQueryByProjectId(gitlabGroupMemberVO.getResourceId());
                         memberDTO = gitlabServiceClientOperator.queryGroupMember(
                                 TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()), gitlabUserId);
@@ -112,23 +111,6 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
 
                         deleteAboutApplicationService(gitlabGroupMemberVO.getResourceId(), userAttrDTO.getGitlabUserId().intValue(), userAttrDTO.getIamUserId());
                         deleteAboutEnvironment(gitlabGroupMemberVO.getResourceId(), userAttrDTO.getGitlabUserId().intValue(), userAttrDTO.getIamUserId());
-                    } else {
-                        OrganizationDTO organizationDTO =
-                                iamService.queryOrganizationById(gitlabGroupMemberVO.getResourceId());
-                        GroupDTO groupDTO = gitlabServiceClientOperator.queryGroupByName(
-                                organizationDTO.getCode() + "_" + TEMPLATE,
-                                TypeUtil.objToInteger(gitlabUserId));
-                        if (groupDTO == null) {
-                            LOGGER.error(ERROR_GITLAB_GROUP_ID_SELECT);
-                            return;
-                        }
-                        memberDTO = gitlabServiceClientOperator.queryGroupMember(
-                                TypeUtil.objToInteger(groupDTO.getId()), gitlabUserId);
-                        if (memberDTO != null && memberDTO.getUserId() != null) {
-                            gitlabServiceClientOperator.deleteGroupMember(
-                                    groupDTO.getId(), gitlabUserId);
-                        }
-                    }
                 });
     }
 
@@ -292,7 +274,6 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
             // 为当前项目下所有跳过权限检查的环境库加上gitlab用户权限
             addRoleForSkipPermissionEnvironment(resourceId, gitlabUserId);
         } else if (AccessLevel.OWNER.equals(accessLevel)) {
-            if (resourceType.equals(PROJECT)) {
                 try {
                     // 删除用户时同时清除gitlab的权限
                     List<Integer> gitlabProjectIds = applicationService
@@ -323,22 +304,6 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                 } catch (Exception e) {
                     LOGGER.info(ERROR_GITLAB_GROUP_ID_SELECT);
                 }
-            } else {
-                //给组织对应的模板库分配owner角色
-                OrganizationDTO organizationDTO = iamService.queryOrganizationById(resourceId);
-                GroupDTO groupDTO = gitlabServiceClientOperator.queryGroupByName(
-                        organizationDTO.getCode() + "_" + TEMPLATE,
-                        TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
-                if (groupDTO == null) {
-                    LOGGER.info(ERROR_GITLAB_GROUP_ID_SELECT);
-                    return;
-                }
-                memberDTO = gitlabServiceClientOperator.queryGroupMember(
-                        TypeUtil.objToInteger(groupDTO.getId()),
-                        (TypeUtil.objToInteger(userAttrDTO.getGitlabUserId())));
-                addOrUpdateGitlabRole(accessLevel, memberDTO,
-                        TypeUtil.objToInteger(groupDTO.getId()), userAttrDTO);
-            }
         }
     }
 
