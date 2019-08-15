@@ -17,6 +17,7 @@ import io.choerodon.devops.infra.util.TypeUtil;
 public abstract class UpdateUserPermissionService {
 
     private GitlabServiceClientOperator gitlabServiceClientOperator;
+
     protected UpdateUserPermissionService() {
         this.gitlabServiceClientOperator = ApplicationContextHelper.getSpringFactory()
                 .getBean(GitlabServiceClientOperator.class);
@@ -29,7 +30,7 @@ public abstract class UpdateUserPermissionService {
     public abstract Boolean updateUserPermission(Long projectId, Long id, List<Long> userIds, Integer option);
 
     public void updateGitlabUserPermission(String type, Integer gitlabGroupId, Integer gitlabProjectId, List<Integer> addGitlabUserIds,
-                                              List<Integer> deleteGitlabUserIds) {
+                                           List<Integer> deleteGitlabUserIds) {
         addGitlabUserIds.forEach(e -> {
             MemberDTO memberDTO = gitlabServiceClientOperator.queryGroupMember(gitlabGroupId, TypeUtil.objToInteger(e));
             if (memberDTO != null) {
@@ -42,7 +43,7 @@ public abstract class UpdateUserPermissionService {
 
     private void addGitlabMember(String type, Integer gitlabProjectId, Integer userId) {
         MemberDTO projectMember = gitlabServiceClientOperator.getProjectMember(gitlabProjectId, userId);
-        if (projectMember != null && projectMember.getUserId() == null) {
+        if (projectMember == null) {
             MemberDTO memberDTO = null;
             if (type.equals("env")) {
                 memberDTO = new MemberDTO(userId, 40, "");

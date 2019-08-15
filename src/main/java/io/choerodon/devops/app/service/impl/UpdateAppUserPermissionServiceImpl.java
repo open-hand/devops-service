@@ -89,8 +89,14 @@ public class UpdateAppUserPermissionServiceImpl extends UpdateUserPermissionServ
                 return true;
             // 原来不跳过，现在也不跳过，新增用户
             case 3:
-                addGitlabUserIds = userAttrService.baseListByUserIds(userIds).stream()
-                        .map(e -> TypeUtil.objToInteger(e.getGitlabUserId())).collect(Collectors.toList());
+                addGitlabUserIds = userIds.stream().map(userId -> {
+                    UserAttrDTO userAttrDTO = userAttrService.baseQueryById(userId);
+                    if (userAttrDTO == null) {
+                        throw new CommonException("error.gitlab.user.sync.failed");
+                    }
+                    return TypeUtil.objToInteger(userAttrDTO.getGitlabUserId());
+                }).collect(Collectors.toList());
+
                 super.updateGitlabUserPermission("app", gitlabGroupId, gitlabProjectId, addGitlabUserIds, new ArrayList<>());
                 return true;
             // 原来不跳过，现在也不跳过，删除用户

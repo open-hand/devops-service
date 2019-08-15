@@ -23,6 +23,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.validator.ApplicationValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.sonar.*;
+import io.choerodon.devops.app.eventhandler.DevopsSagaHandler;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.*;
 import io.choerodon.devops.app.service.*;
@@ -167,6 +168,9 @@ public class AppServiceServiceImpl implements AppServiceService {
     private AppServiceVersionService appServiceVersionService;
     @Autowired
     private ChartUtil chartUtil;
+
+    @Autowired
+    DevopsSagaHandler devopsSagaHandler;
 
 
     @Value("${services.helm.url}")
@@ -1514,16 +1518,17 @@ public class AppServiceServiceImpl implements AppServiceService {
             }
         }
 
-        producer.applyAndReturn(
-                StartSagaBuilder
-                        .newBuilder()
-                        .withLevel(ResourceLevel.PROJECT)
-                        .withRefType("app")
-                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_UPDATE_GITLAB_USERS),
-                builder -> builder
-                        .withPayloadAndSerialize(devOpsUserPayload)
-                        .withRefId(String.valueOf(appServiceId))
-                        .withSourceId(projectId));
+        devopsSagaHandler.updateGitlabUser(json.serialize(devOpsUserPayload));
+//        producer.applyAndReturn(
+//                StartSagaBuilder
+//                        .newBuilder()
+//                        .withLevel(ResourceLevel.PROJECT)
+//                        .withRefType("app")
+//                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_UPDATE_GITLAB_USERS),
+//                builder -> builder
+//                        .withPayloadAndSerialize(devOpsUserPayload)
+//                        .withRefId(String.valueOf(appServiceId))
+//                        .withSourceId(projectId));
     }
 
     @Override
