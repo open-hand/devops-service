@@ -47,11 +47,11 @@ public class HarborServiceImpl implements HarborService {
     private HarborConfigurationProperties harborConfigurationProperties;
     @Autowired
     private DevopsConfigService devopsConfigService;
-    @Value("services.harbor.baseUrl")
+    @Value("${services.harbor.baseUrl}")
     private String baseUrl;
-    @Value("services.harbor.username")
+    @Value("${services.harbor.username}")
     private String username;
-    @Value("services.harbor.password")
+    @Value("${services.harbor.password}")
     private String password;
 
     @Override
@@ -87,15 +87,17 @@ public class HarborServiceImpl implements HarborService {
     }
 
     @Override
-    public void createHarborForAppMarket(HarborMarketVO harborMarketVO) {
+    public String createHarborForAppMarket(HarborMarketVO harborMarketVO) {
         try {
             //1.获取当前项目的harbor设置,如果有自定义的取自定义，没自定义取组织层的harbor配置
             harborConfigurationProperties.setUsername(username);
             harborConfigurationProperties.setPassword(password);
+            baseUrl = baseUrl.endsWith("/") ? baseUrl : baseUrl + "/";
             harborConfigurationProperties.setBaseUrl(baseUrl);
 
             ConfigurationProperties configurationProperties = new ConfigurationProperties(harborConfigurationProperties);
             configurationProperties.setType(HARBOR);
+            configurationProperties.setInsecureSkipTlsVerify(true);
             Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
             HarborClient harborClient = retrofit.create(HarborClient.class);
             //2. 创建项目
@@ -117,13 +119,14 @@ public class HarborServiceImpl implements HarborService {
                 role.setUsername(harborMarketVO.getUser().getUsername());
                 role.setRoles(Arrays.asList(1));
                 Response<Void> roleResult = harborClient.setProjectMember(projectId, role).execute();
-                if (roleResult.raw().code() != 201) {
+                if (roleResult.raw().code() != 200) {
                     throw new CommonException("error.create.harbor.role", roleResult.message());
                 }
             }
         } catch (IOException e) {
             throw new CommonException(e);
         }
+        return String.format("%s/%s", baseUrl, harborMarketVO.getProjectCode());
     }
 
 }

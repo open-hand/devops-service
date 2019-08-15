@@ -347,7 +347,7 @@ public interface AppServiceService {
      */
     void importAppServiceInternal(Long projectId, List<ApplicationImportInternalVO> importInternalVOS);
 
-    void downLoadAppService(ApplicationPayload applicationPayload);
+    void setProjectHook(AppServiceDTO appServiceDTO, Integer projectId, String token, Integer userId);
 
     void baseCheckApp(Long projectId, Long appServiceId);
 

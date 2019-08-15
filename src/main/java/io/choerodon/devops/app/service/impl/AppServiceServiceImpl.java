@@ -1596,7 +1596,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         //根据版本推送代码和下载chart
         appServicePayload.getAppServiceVersionPayloads().forEach(appServiceVersionPayload -> {
             //拉取代码
-            Git git = gitUtil.cloneAppMarket(applicationDir, appServiceVersionPayload.getVersion(), appServicePayload.getRepository());
+            Git git = gitUtil.cloneAppMarket(applicationDir, appServiceVersionPayload.getVersion(),null);
             //push 到远程仓库
             String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
             String repositoryUrl = repoUrl + groupDTO.getPath() + "/" + appServicePayload.getCode() + ".git";
@@ -1667,28 +1667,6 @@ public class AppServiceServiceImpl implements AppServiceService {
         appServiceDTO.setToken(accessToken);
         setProjectHook(appServiceDTO, appServiceDTO.getGitlabProjectId(), accessToken, TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         baseUpdate(appServiceDTO);
-    }
-
-
-    @Override
-    public void downLoadAppService(ApplicationPayload applicationPayload) {
-        UserAttrVO userAttrVO = userAttrService.queryByUserId(applicationPayload.getUserId());
-        OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(applicationPayload.getOrganizationId());
-        //创建gitlab group
-        GitlabGroupPayload gitlabGroupPayload = new GitlabGroupPayload();
-        gitlabGroupPayload.setOrganizationCode(organizationDTO.getCode());
-        gitlabGroupPayload.setOrganizationName(organizationDTO.getName());
-        gitlabGroupPayload.setUserId(applicationPayload.getUserId());
-        GroupDTO groupDTO = gitlabGroupService.createAppMarketGroup(gitlabGroupPayload);
-        // 查询创建应用所在的gitlab应用组 用户权限
-        MemberDTO memberDTO = gitlabGroupMemberService.queryByUserId(
-                TypeUtil.objToInteger(groupDTO.getId()),
-                TypeUtil.objToInteger(userAttrVO.getGitlabUserId()));
-        if (memberDTO == null || !memberDTO.getAccessLevel().equals(AccessLevel.OWNER.value)) {
-            throw new CommonException("error.user.not.owner");
-        }
-        applicationPayload.getAppServicePayloads().forEach(appServicePayload -> createRemoteAppService(appServicePayload, groupDTO, organizationDTO.getCode(), applicationPayload.getUserId()));
-
     }
 
     @Override
@@ -2291,7 +2269,8 @@ public class AppServiceServiceImpl implements AppServiceService {
      * @param token         the token for project hook
      * @param userId        the gitlab user id
      */
-    private void setProjectHook(AppServiceDTO appServiceDTO, Integer projectId, String token, Integer userId) {
+    @Override
+    public void setProjectHook(AppServiceDTO appServiceDTO, Integer projectId, String token, Integer userId) {
         ProjectHookDTO projectHookDTO = ProjectHookDTO.allHook();
         projectHookDTO.setEnableSslVerification(true);
         projectHookDTO.setProjectId(projectId);

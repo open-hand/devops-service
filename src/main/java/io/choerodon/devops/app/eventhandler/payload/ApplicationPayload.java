@@ -8,10 +8,10 @@ import java.util.List;
  * Description:
  */
 public class ApplicationPayload {
-    private Long userId;
-    private Long organizationId;
+    private Long iamUserId;
     private Long appId;
-    private String appCode;
+    private String filePath;
+    private String groupPath;
     private List<AppServicePayload> appServicePayloads;
 
     public Long getAppId() {
@@ -22,28 +22,20 @@ public class ApplicationPayload {
         this.appId = appId;
     }
 
-    public Long getOrganizationId() {
-        return organizationId;
+    public Long getIamUserId() {
+        return iamUserId;
     }
 
-    public void setOrganizationId(Long organizationId) {
-        this.organizationId = organizationId;
+    public void setIamUserId(Long iamUserId) {
+        this.iamUserId = iamUserId;
     }
 
-    public String getAppCode() {
-        return appCode;
+    public String getFilePath() {
+        return filePath;
     }
 
-    public void setAppCode(String appCode) {
-        this.appCode = appCode;
-    }
-
-    public Long getUserId() {
-        return userId;
-    }
-
-    public void setUserId(Long userId) {
-        this.userId = userId;
+    public void setFilePath(String filePath) {
+        this.filePath = filePath;
     }
 
     public List<AppServicePayload> getAppServicePayloads() {
@@ -52,5 +44,13 @@ public class ApplicationPayload {
 
     public void setAppServicePayloads(List<AppServicePayload> appServicePayloads) {
         this.appServicePayloads = appServicePayloads;
+    }
+
+    public String getGroupPath() {
+        return groupPath;
+    }
+
+    public void setGroupPath(String groupPath) {
+        this.groupPath = groupPath;
     }
 }

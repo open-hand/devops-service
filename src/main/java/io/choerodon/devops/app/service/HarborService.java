@@ -13,6 +13,6 @@ import io.choerodon.devops.app.eventhandler.payload.HarborPayload;
 public interface HarborService {
     void createHarbor(HarborPayload harborPayload);
 
-    void createHarborForAppMarket(HarborMarketVO harborMarketVO);
+    String createHarborForAppMarket(HarborMarketVO harborMarketVO);
 
 }

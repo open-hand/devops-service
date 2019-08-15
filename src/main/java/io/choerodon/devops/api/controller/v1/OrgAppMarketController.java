@@ -111,11 +111,13 @@ public class OrgAppMarketController {
     @Permission(type = ResourceType.SITE, permissionWithin = true)
     @ApiOperation(value = "创建harbor仓库")
     @PostMapping("/harbor_repo")
-    public ResponseEntity createHarborRepository(
+    public ResponseEntity<String> createHarborRepository(
             @ApiParam(value = "应用信息",required = true)
             @RequestBody HarborMarketVO harborMarketVO) {
-        orgAppMarketService.createHarborRepository(harborMarketVO);
-        return new ResponseEntity(HttpStatus.NO_CONTENT);
+        return Optional.ofNullable(
+                orgAppMarketService.createHarborRepository(harborMarketVO))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.create.harbor.project"));
     }
 
     /**
@@ -125,7 +127,7 @@ public class OrgAppMarketController {
      */
     @Permission(type = ResourceType.SITE, permissionWithin = true)
     @ApiOperation(value = "")
-    @PostMapping("/harbor_repo")
+    @PostMapping("/download")
     public ResponseEntity downLoadApp(
             @ApiParam(value = "应用信息",required = true)
             @RequestBody ApplicationPayload applicationPayload) {

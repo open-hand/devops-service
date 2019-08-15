@@ -28,7 +28,7 @@ public interface OrgAppMarketService {
 
     List<AppServiceMarketVersionVO> listServiceVersionsByAppServiceId(Long appServiceId);
 
-    void createHarborRepository(HarborMarketVO harborMarketVO);
+    String createHarborRepository(HarborMarketVO harborMarketVO);
 
     void downLoadApp(ApplicationPayload appServicePayload);
 }

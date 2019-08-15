@@ -379,6 +379,38 @@ public class GitUtil {
         }
     }
 
+    public void commitAndPushForMaster(Git git, String repoUrl, String commitMessage, String accessToken) {
+        try {
+            git.add().addFilepattern(".").call();
+            git.add().setUpdate(true).addFilepattern(".").call();
+            git.commit().setMessage(commitMessage).call();
+            PushCommand pushCommand = git.push();
+            pushCommand.add("master");
+            pushCommand.setRemote(repoUrl);
+            pushCommand.setCredentialsProvider(new UsernamePasswordCredentialsProvider("", accessToken));
+            pushCommand.call();
+        } catch (GitAPIException e) {
+            throw new CommonException("error.git.push", e);
+        }
+    }
+
+    /**
+     * 获取最近一次commit
+     *
+     * @param git
+     * @return
+     */
+    public String getFirstCommit(Git git) {
+        String commit;
+        try {
+            Iterable<RevCommit> log = git.log().call();
+            commit = log.iterator().next().getName();
+        } catch (GitAPIException e) {
+            throw new CommonException("error.get.commit");
+        }
+        return commit;
+    }
+
     /**
      * 将代码推到目标库
      */
@@ -437,6 +469,56 @@ public class GitUtil {
                 throw new CommonException("error.directory.delete", e);
             }
         }
+    }
+
+    public Git initGit(File file) {
+        Git git = null;
+        try {
+            git = Git.init().setDirectory(file).call();
+        } catch (GitAPIException e) {
+            throw new CommonException("error.git.init", e);
+        }
+        return git;
+    }
+
+    /**
+     * Git克隆
+     */
+    public String clone(String name, String remoteUrl, String accessToken) {
+        Git git = null;
+        String workingDirectory = getWorkingDirectory(name);
+        File oldLocalPathFile = new File(workingDirectory);
+        deleteDirectory(oldLocalPathFile);
+        try {
+            Git.cloneRepository()
+                    .setURI(remoteUrl)
+                    .setDirectory(oldLocalPathFile)
+                    .setCredentialsProvider(StringUtils.isEmpty(accessToken) ? null : new UsernamePasswordCredentialsProvider("", accessToken))
+                    .call()
+                    .close();
+        } catch (GitAPIException e) {
+            throw new CommonException(ERROR_GIT_CLONE, e);
+        }
+        return workingDirectory;
+    }
+
+
+    /**
+     * 合并
+     *
+     * @param newFilePath
+     * @param oldFilePath
+     * @return
+     */
+    public Git combineAppMarket(String oldFilePath, String newFilePath) {
+        Git git = null;
+        FileUtil.copyDir(new File(oldFilePath + GIT_SUFFIX), new File(newFilePath + GIT_SUFFIX));
+        try {
+            git = Git.open(new File(newFilePath));
+        } catch (IOException e) {
+            throw new CommonException("error.git.open", e);
+        }
+        return git;
     }
 
     /**

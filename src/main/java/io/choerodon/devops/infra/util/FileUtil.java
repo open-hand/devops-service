@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
@@ -19,9 +20,6 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.google.gson.Gson;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.KeyPair;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.kubernetes.HighlightMarker;
-import io.choerodon.devops.api.vo.kubernetes.InstanceValueVO;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
@@ -41,6 +39,10 @@ import org.yaml.snakeyaml.nodes.ScalarNode;
 import org.yaml.snakeyaml.parser.ParserImpl;
 import org.yaml.snakeyaml.reader.StreamReader;
 import org.yaml.snakeyaml.resolver.Resolver;
+
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.kubernetes.HighlightMarker;
+import io.choerodon.devops.api.vo.kubernetes.InstanceValueVO;
 
 /**
  * Created by younger on 2018/4/13.
@@ -222,12 +224,16 @@ public class FileUtil {
             destDir = tarFile.getParent();
         }
         destDir = destDir.endsWith(File.separator) ? destDir : destDir + File.separator;
+        FileInputStream inputStream = null;
         try {
-            unTar(new GzipCompressorInputStream(new FileInputStream(tarFile)), destDir);
+            inputStream = new FileInputStream(tarFile);
+            unTar(new GzipCompressorInputStream(inputStream), destDir);
         } catch (IOException e) {
             if (logger.isDebugEnabled()) {
                 logger.debug(e.getMessage());
             }
+        } finally {
+            IOUtils.closeQuietly(inputStream);
         }
     }
 
