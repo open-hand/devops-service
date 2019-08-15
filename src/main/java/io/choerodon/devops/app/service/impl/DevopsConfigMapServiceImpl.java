@@ -8,6 +8,12 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import io.kubernetes.client.models.V1ConfigMap;
+import io.kubernetes.client.models.V1ObjectMeta;
+
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsConfigMapRespVO;
@@ -23,15 +29,7 @@ import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 import io.choerodon.devops.infra.gitops.ResourceFileCheckHandler;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsConfigMapMapper;
-import io.choerodon.devops.infra.util.ConvertUtils;
-import io.choerodon.devops.infra.util.GitUserNameUtil;
-import io.choerodon.devops.infra.util.PageRequestUtil;
-import io.choerodon.devops.infra.util.TypeUtil;
-import io.kubernetes.client.models.V1ConfigMap;
-import io.kubernetes.client.models.V1ObjectMeta;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import io.choerodon.devops.infra.util.*;
 
 @Service
 public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
@@ -150,10 +148,10 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
         }.getType()));
 
         if (devopsConfigMapDTO.getCreatedBy() != null && devopsConfigMapDTO.getCreatedBy() != 0) {
-            devopsConfigMapRespVO.setCreatorName(iamServiceClientOperator.queryUserByUserId(devopsConfigMapDTO.getCreatedBy()).getRealName());
+            devopsConfigMapRespVO.setCreatorName(ResourceCreatorInfoUtil.getOperatorName(iamServiceClientOperator, devopsConfigMapDTO.getCreatedBy()));
         }
         if (devopsConfigMapDTO.getLastUpdatedBy() != null && devopsConfigMapDTO.getLastUpdatedBy() != 0) {
-            devopsConfigMapRespVO.setLastUpdaterName(iamServiceClientOperator.queryUserByUserId(devopsConfigMapDTO.getLastUpdatedBy()).getRealName());
+            devopsConfigMapRespVO.setLastUpdaterName(ResourceCreatorInfoUtil.getOperatorName(iamServiceClientOperator, devopsConfigMapDTO.getLastUpdatedBy()));
         }
 
         return devopsConfigMapRespVO;
@@ -309,12 +307,11 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
     @Override
     public PageInfo<DevopsConfigMapDTO> basePageByEnv(Long envId, PageRequest pageRequest, String params, Long appServiceId) {
         Map maps = gson.fromJson(params, Map.class);
-        PageInfo<DevopsConfigMapDTO> devopsConfigMapDOS = PageHelper
+        return PageHelper
                 .startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> devopsConfigMapMapper.listByEnv(envId,
                         TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
                         TypeUtil.cast(maps.get(TypeUtil.PARAMS)),
                         appServiceId));
-        return devopsConfigMapDOS;
     }
 
     @Override
