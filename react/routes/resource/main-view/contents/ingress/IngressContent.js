@@ -11,7 +11,7 @@ import { Table } from 'choerodon-ui/pro';
 import map from 'lodash/map';
 import classnames from 'classnames';
 import StatusIcon from '../../../../../components/StatusIcon';
-import { useDeploymentStore } from '../../../stores';
+import { useResourceStore } from '../../../stores';
 import { useIngressStore } from './stores';
 import Modals from './modals';
 import MouserOverWrapper from '../../../../../components/MouseOverWrapper';
@@ -34,8 +34,8 @@ const IngressContent = observer(() => {
   const {
     prefixCls,
     intlPrefix,
-    deploymentStore: { getSelectedMenu: { parentId } },
-  } = useDeploymentStore();
+    resourceStore: { getSelectedMenu: { parentId } },
+  } = useResourceStore();
   const {
     ingressDs,
     intl: { formatMessage },

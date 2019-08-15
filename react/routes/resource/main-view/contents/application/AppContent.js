@@ -2,7 +2,7 @@ import React, { useContext, Fragment, useState, lazy, Suspense, useCallback, use
 import { observer } from 'mobx-react-lite';
 import { Tabs, Icon } from 'choerodon-ui';
 import { useApplicationStore } from './stores';
-import { useDeploymentStore } from '../../../stores';
+import { useResourceStore } from '../../../stores';
 import PrefixTitle from '../../components/prefix-title';
 import Modals from './modals';
 
@@ -28,7 +28,7 @@ const AppContent = observer(() => {
   const {
     prefixCls,
     intlPrefix,
-  } = useDeploymentStore();
+  } = useResourceStore();
 
   const handleChange = useCallback((key) => {
     appStore.setTabKey(key);

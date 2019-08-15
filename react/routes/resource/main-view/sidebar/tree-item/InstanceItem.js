@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { injectIntl } from 'react-intl';
 import { Action } from '@choerodon/boot';
 import PodCircle from '../../components/pod-circle';
-import { useDeploymentStore } from '../../../stores';
+import { useResourceStore } from '../../../stores';
 
 function InstanceItem({
   record,
@@ -14,7 +14,7 @@ function InstanceItem({
   intlPrefix,
   intl: { formatMessage },
 }) {
-  const { treeDs } = useDeploymentStore();
+  const { treeDs } = useResourceStore();
   const podData = useMemo(() => {
     const {
       RUNNING_COLOR,

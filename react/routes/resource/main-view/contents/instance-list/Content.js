@@ -5,7 +5,7 @@ import { Table } from 'choerodon-ui/pro';
 import StatusIcon from '../../../../../components/StatusIcon';
 import AppName from '../../../../../components/appName';
 import PodStatus from './components/pod-status';
-import { useDeploymentStore } from '../../../stores';
+import { useResourceStore } from '../../../stores';
 import { useIstListStore } from './stores';
 import Modals from './modals';
 
@@ -18,9 +18,9 @@ const Content = observer(() => {
   const {
     prefixCls,
     intlPrefix,
-    deploymentStore: { getSelectedMenu: { parentId } },
+    resourceStore: { getSelectedMenu: { parentId } },
     AppState: { currentMenuType: { id } },
-  } = useDeploymentStore();
+  } = useResourceStore();
   const {
     istListDs,
     intl: { formatMessage },

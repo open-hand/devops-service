@@ -8,7 +8,7 @@ import {
 import { Table, DataSet } from 'choerodon-ui/pro';
 import MouserOverWrapper from '../../../../../../components/MouseOverWrapper/MouserOverWrapper';
 import StatusTags from '../../../../../../components/StatusTags';
-import { useDeploymentStore } from '../../../../stores';
+import { useResourceStore } from '../../../../stores';
 import { useCipherStore } from './stores';
 import TimePopover from '../../../../../../components/timePopover/TimePopover';
 
@@ -18,7 +18,7 @@ const Cipher = observer((props) => {
   const {
     prefixCls,
     intlPrefix,
-  } = useDeploymentStore();
+  } = useResourceStore();
   const {
     intl: { formatMessage },
     tableDs,

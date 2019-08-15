@@ -9,7 +9,7 @@ import {
 import { Table } from 'choerodon-ui/pro';
 import MouserOverWrapper from '../../../../../../components/MouseOverWrapper/MouserOverWrapper';
 import StatusTags from '../../../../../../components/StatusTags';
-import { useDeploymentStore } from '../../../../stores';
+import { useResourceStore } from '../../../../stores';
 import { useMappingStore } from './stores';
 import TimePopover from '../../../../../../components/timePopover/TimePopover';
 import KeyValueModal from '../modals/key-value';
@@ -22,8 +22,8 @@ const ConfigMap = observer((props) => {
   const {
     prefixCls,
     intlPrefix,
-    deploymentStore: { getSelectedMenu: { menuId, parentId } },
-  } = useDeploymentStore();
+    resourceStore: { getSelectedMenu: { menuId, parentId } },
+  } = useResourceStore();
   const {
     intl: { formatMessage },
     tableDs,
@@ -86,7 +86,7 @@ const ConfigMap = observer((props) => {
     ];
     return <Action data={buttons} />;
   }, [formatMessage, tableDs]);
-  
+
   return (
     <div className={`${prefixCls}-mapping-content`}>
       <Table

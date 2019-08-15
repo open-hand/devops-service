@@ -1,7 +1,7 @@
 import React from 'react';
 import { runInAction } from 'mobx';
 import { Select } from 'choerodon-ui/pro';
-import { useDeploymentStore } from '../../../stores';
+import { useResourceStore } from '../../../stores';
 
 import './index.less';
 
@@ -16,16 +16,16 @@ const SidebarHeader = () => {
     intlPrefix,
     prefixCls,
     intl: { formatMessage },
-    deploymentStore,
-  } = useDeploymentStore();
+    resourceStore,
+  } = useResourceStore();
 
   function handleChoose(choose) {
     runInAction(() => {
-      deploymentStore.changeViewType(choose);
-      deploymentStore.setSelectedMenu({});
-      deploymentStore.setNoHeader(true);
-      deploymentStore.setExpandedKeys([]);
-      deploymentStore.setSearchValue('');
+      resourceStore.changeViewType(choose);
+      resourceStore.setSelectedMenu({});
+      resourceStore.setNoHeader(true);
+      resourceStore.setExpandedKeys([]);
+      resourceStore.setSearchValue('');
     });
   }
 
@@ -34,7 +34,7 @@ const SidebarHeader = () => {
       className={`${prefixCls}-sidebar-drop`}
       dropdownMatchSelectWidth
       onChange={handleChoose}
-      value={deploymentStore.getViewType}
+      value={resourceStore.getViewType}
       clearButton={false}
     >
       <Option value={IST_VIEW_TYPE} key={IST_VIEW_TYPE}>

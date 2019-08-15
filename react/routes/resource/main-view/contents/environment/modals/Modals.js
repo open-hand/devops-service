@@ -5,7 +5,7 @@ import { Button } from 'choerodon-ui';
 import { FormattedMessage } from 'react-intl';
 import uniqBy from 'lodash/uniqBy';
 import HeaderButtons from '../../../components/header-buttons';
-import { useDeploymentStore } from '../../../../stores';
+import { useResourceStore } from '../../../../stores';
 import { useEnvironmentStore } from '../stores';
 import { useModalStore } from './stores';
 import EnvDetail from './env-detail';
@@ -25,8 +25,8 @@ const EnvModals = observer(() => {
     intlPrefix,
     prefixCls,
     intl: { formatMessage },
-    deploymentStore,
-  } = useDeploymentStore();
+    resourceStore,
+  } = useResourceStore();
   const {
     envStore: {
       tabKey,
@@ -43,15 +43,15 @@ const EnvModals = observer(() => {
     modalStore,
     AppState: { currentMenuType: { projectId } },
   } = useModalStore();
-  const { menuId } = deploymentStore.getSelectedMenu;
+  const { menuId } = resourceStore.getSelectedMenu;
 
   const openModal = useCallback(() => {
     // console.log(modal);
   }, []);
 
   useEffect(() => {
-    deploymentStore.setNoHeader(false);
-  }, [deploymentStore]);
+    resourceStore.setNoHeader(false);
+  }, [resourceStore]);
 
   function refresh() {
     permissionsDs.query();

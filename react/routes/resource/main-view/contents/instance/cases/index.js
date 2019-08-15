@@ -5,7 +5,7 @@ import { Tooltip, Icon, Progress } from 'choerodon-ui/pro';
 import _ from 'lodash';
 import LoadingBar from '../../../../../../components/loadingBar';
 import Operation from './op-record';
-import { useDeploymentStore } from '../../../../stores';
+import { useResourceStore } from '../../../../stores';
 import { useInstanceStore } from '../stores';
 
 import './index.less';
@@ -14,7 +14,7 @@ const Cases = observer(() => {
   const {
     prefixCls,
     intlPrefix,
-  } = useDeploymentStore();
+  } = useResourceStore();
   const {
     intl: { formatMessage },
     casesDs,

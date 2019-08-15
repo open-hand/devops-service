@@ -2,7 +2,7 @@ import React from 'react';
 import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import { Icon } from 'choerodon-ui';
-import { useDeploymentStore } from '../../../stores';
+import { useResourceStore } from '../../../stores';
 import { useNetworkDetailStore } from './stores';
 import Modals from './modals';
 import PortsList from './PortsList';
@@ -14,7 +14,7 @@ const ServiceDetail = observer(() => {
   const {
     prefixCls,
     intlPrefix,
-  } = useDeploymentStore();
+  } = useResourceStore();
   const {
     baseInfoDs,
     intl: { formatMessage },
@@ -22,7 +22,7 @@ const ServiceDetail = observer(() => {
 
   const record = baseInfoDs.current;
   if (!record) return <span>loading</span>;
- 
+
 
   return (
     <div className={`${prefixCls}-service-detail`}>

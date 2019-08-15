@@ -5,7 +5,7 @@ import isEmpty from 'lodash/isEmpty';
 import PrefixTitle from '../../components/prefix-title';
 import PodCircle from '../../components/pod-circle';
 import Modals from './modals';
-import { useDeploymentStore } from '../../../stores';
+import { useResourceStore } from '../../../stores';
 import { useMainStore } from '../../stores';
 import { useInstanceStore } from './stores';
 
@@ -21,8 +21,7 @@ const InstanceContent = observer(() => {
   const {
     prefixCls,
     intlPrefix,
-    deploymentStore: { getSelectedMenu: { menuId } },
-  } = useDeploymentStore();
+  } = useResourceStore();
   const {
     podColor: {
       RUNNING_COLOR,
@@ -36,57 +35,36 @@ const InstanceContent = observer(() => {
       DETAILS_TAB,
       PODS_TAB,
     },
-    casesDs,
-    podsDs,
     istStore,
-    detailsStore,
-    AppState: { currentMenuType: { id } },
   } = useInstanceStore();
   const podSize = useMemo(() => ({
     width: 22,
     height: 22,
   }), []);
 
-  useEffect(() => {
-    istStore.detailFetch(id, menuId);
-  }, [id, menuId]);
-
   function handleChange(key) {
     istStore.setTabKey(key);
-    if (key === DETAILS_TAB) {
-      detailsStore.loadResource(id, menuId);
-    } else {
-      const dsMapping = {
-        [CASES_TAB]: casesDs,
-        [PODS_TAB]: podsDs,
-      };
-      const ds = dsMapping[key];
-      ds && ds.query();
-    }
   }
 
   function getTitle() {
-    const detail = istStore.getDetail;
-    if (isEmpty(detail)) return null;
+    // const { code, podRunningCount, podCount } = detail;
+    // const podUnlinkCount = podCount - podRunningCount;
 
-    const { code, podRunningCount, podCount } = detail;
-    const podUnlinkCount = podCount - podRunningCount;
-
-    return <Fragment>
-      <PodCircle
-        style={podSize}
-        dataSource={[{
-          name: 'running',
-          value: podRunningCount,
-          stroke: RUNNING_COLOR,
-        }, {
-          name: 'unlink',
-          value: podUnlinkCount,
-          stroke: PADDING_COLOR,
-        }]}
-      />
-      <span className={`${prefixCls}-title-text`}>{code}</span>
-    </Fragment>;
+    // return <Fragment>
+    //   <PodCircle
+    //     style={podSize}
+    //     dataSource={[{
+    //       name: 'running',
+    //       value: podRunningCount,
+    //       stroke: RUNNING_COLOR,
+    //     }, {
+    //       name: 'unlink',
+    //       value: podUnlinkCount,
+    //       stroke: PADDING_COLOR,
+    //     }]}
+    //   />
+    //   <span className={`${prefixCls}-title-text`}>{code}</span>
+    // </Fragment>;
   }
 
   return (
@@ -94,9 +72,9 @@ const InstanceContent = observer(() => {
       <Modals />
       <PrefixTitle
         prefixCls={prefixCls}
-        fallback={istStore.getDetailLoading}
+        fallback
       >
-        {getTitle()}
+        {/* getTitle() */}
       </PrefixTitle>
       <Tabs
         className={`${prefixCls}-environment-tabs`}

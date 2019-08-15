@@ -10,13 +10,13 @@ import {
 } from 'choerodon-ui/pro';
 import { Popover } from 'choerodon-ui';
 import { useSyncStore } from './stores';
-import { useDeploymentStore } from '../../../../stores';
+import { useResourceStore } from '../../../../stores';
 
 const SyncSituation = observer(() => {
   const {
     prefixCls,
     intlPrefix,
-  } = useDeploymentStore();
+  } = useResourceStore();
   const {
     intl: { formatMessage },
     tableDs,

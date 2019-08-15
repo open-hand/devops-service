@@ -5,7 +5,7 @@ import { Action } from '@choerodon/boot';
 import { Table } from 'choerodon-ui/pro';
 import StatusIcon from '../../../../../components/StatusIcon';
 import TimePopover from '../../../../../components/timePopover';
-import { useDeploymentStore } from '../../../stores';
+import { useResourceStore } from '../../../stores';
 import { useCustomStore } from './stores';
 import Modals from './modals';
 
@@ -18,8 +18,8 @@ const CustomContent = observer(() => {
   const {
     prefixCls,
     intlPrefix,
-    deploymentStore: { getSelectedMenu: { parentId } },
-  } = useDeploymentStore();
+    resourceStore: { getSelectedMenu: { parentId } },
+  } = useResourceStore();
   const {
     customDs,
     intl: { formatMessage },

@@ -1,18 +1,18 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { Breadcrumb } from '@choerodon/boot';
-import { useDeploymentStore } from '../stores';
+import { useResourceStore } from '../stores';
 
 import './index.less';
 
 const DeploymentHeader = observer(() => {
   const {
     prefixCls,
-    deploymentStore: {
+    resourceStore: {
       getSelectedMenu: { menuType },
       getNoHeader,
     },
-  } = useDeploymentStore();
+  } = useResourceStore();
 
   return <div className={`${prefixCls}-header`}>
     {!getNoHeader && <div className={`${prefixCls}-header-placeholder`} />}

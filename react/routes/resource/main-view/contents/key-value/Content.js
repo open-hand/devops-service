@@ -10,7 +10,7 @@ import { Table } from 'choerodon-ui/pro';
 import MouserOverWrapper from '../../../../../components/MouseOverWrapper/MouserOverWrapper';
 import StatusTags from '../../../../../components/StatusTags';
 import TimePopover from '../../../../../components/timePopover/TimePopover';
-import { useDeploymentStore } from '../../../stores';
+import { useResourceStore } from '../../../stores';
 import { useKeyValueStore } from './stores';
 import Modals from './modals';
 
@@ -23,8 +23,8 @@ const ConfigMap = observer((props) => {
   const {
     prefixCls,
     intlPrefix,
-    deploymentStore: { getSelectedMenu: { parentId } },
-  } = useDeploymentStore();
+    resourceStore: { getSelectedMenu: { parentId } },
+  } = useResourceStore();
   const {
     intl: { formatMessage },
     listDs,

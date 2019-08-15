@@ -4,7 +4,7 @@ import { Modal } from 'choerodon-ui/pro';
 import { Button } from 'choerodon-ui';
 import { FormattedMessage } from 'react-intl';
 import HeaderButtons from '../../../components/header-buttons';
-import { useDeploymentStore } from '../../../../stores';
+import { useResourceStore } from '../../../../stores';
 import { useApplicationStore } from '../stores';
 import { useModalStore } from './stores';
 import Detail from './detail';
@@ -24,8 +24,8 @@ const AppModals = observer(() => {
     intlPrefix,
     prefixCls,
     intl: { formatMessage },
-    deploymentStore,
-  } = useDeploymentStore();
+    resourceStore,
+  } = useResourceStore();
   const {
     appStore: {
       tabKey,
@@ -45,7 +45,7 @@ const AppModals = observer(() => {
     modalStore,
     AppState: { currentMenuType: { projectId } },
   } = useModalStore();
-  const { menuId, parentId } = deploymentStore.getSelectedMenu;
+  const { menuId, parentId } = resourceStore.getSelectedMenu;
 
   const [showKeyValue, setShowKeyValue] = useState(false);
   const [showDomain, setShowDomain] = useState(false);
@@ -56,8 +56,8 @@ const AppModals = observer(() => {
   }, []);
 
   useEffect(() => {
-    deploymentStore.setNoHeader(false);
-  }, [deploymentStore]);
+    resourceStore.setNoHeader(false);
+  }, [resourceStore]);
 
   function refresh() {
   }

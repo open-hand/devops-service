@@ -5,7 +5,7 @@ import { Button } from 'choerodon-ui';
 import { FormattedMessage } from 'react-intl';
 import Detail from './secret-detail';
 import HeaderButtons from '../../../components/header-buttons';
-import { useDeploymentStore } from '../../../../stores';
+import { useResourceStore } from '../../../../stores';
 import { useModalStore } from './stores';
 import { useCustomDetailStore } from '../stores';
 
@@ -20,8 +20,8 @@ const CustomModals = observer(() => {
     intlPrefix,
     prefixCls,
     intl: { formatMessage },
-    deploymentStore,
-  } = useDeploymentStore();
+    resourceStore,
+  } = useResourceStore();
   const {
     detailDs,
   } = useCustomDetailStore();
@@ -29,11 +29,11 @@ const CustomModals = observer(() => {
     permissions,
     AppState: { currentMenuType: { projectId } },
   } = useModalStore();
-  const { parentId } = deploymentStore.getSelectedMenu;
+  const { parentId } = resourceStore.getSelectedMenu;
 
   useEffect(() => {
-    deploymentStore.setNoHeader(false);
-  }, [deploymentStore]);
+    resourceStore.setNoHeader(false);
+  }, [resourceStore]);
 
   function refresh() {
     detailDs.query();

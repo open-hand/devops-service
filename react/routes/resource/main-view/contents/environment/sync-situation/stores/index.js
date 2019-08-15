@@ -5,7 +5,7 @@ import { DataSet } from 'choerodon-ui/pro';
 import TableDataSet from './TableDataSet';
 import GitopsLogDataSet from './GitopsLogDataSet';
 import RetryDataSet from './RetryDataSet';
-import { useDeploymentStore } from '../../../../../stores';
+import { useResourceStore } from '../../../../../stores';
 
 const Store = createContext();
 
@@ -18,10 +18,10 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const { AppState: { currentMenuType: { id } }, children, intl } = props;
     const {
       intlPrefix,
-      deploymentStore: {
+      resourceStore: {
         getSelectedMenu: { menuId },
       },
-    } = useDeploymentStore();
+    } = useResourceStore();
 
     const tableDs = useMemo(() => new DataSet(TableDataSet({
       intl,

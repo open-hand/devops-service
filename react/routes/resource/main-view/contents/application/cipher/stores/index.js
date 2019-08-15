@@ -3,7 +3,7 @@ import { DataSet } from 'choerodon-ui/pro';
 import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
 import TableDataSet from './TableDataSet';
-import { useDeploymentStore } from '../../../../../stores';
+import { useResourceStore } from '../../../../../stores';
 
 const Store = createContext();
 
@@ -14,9 +14,9 @@ export function useCipherStore() {
 export const StoreProvider = injectIntl(inject('AppState')(
   (props) => {
     const {
-      deploymentStore: { getSelectedMenu: { parentId } },
+      resourceStore: { getSelectedMenu: { parentId } },
       intlPrefix,
-    } = useDeploymentStore();
+    } = useResourceStore();
     const {
       AppState: { currentMenuType: { id } },
       intl: { formatMessage },

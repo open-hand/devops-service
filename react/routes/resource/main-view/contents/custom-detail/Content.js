@@ -2,7 +2,7 @@ import React, { Fragment, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import { Icon } from 'choerodon-ui';
-import { useDeploymentStore } from '../../../stores';
+import { useResourceStore } from '../../../stores';
 import { useCustomDetailStore } from './stores';
 import Modals from './modals';
 
@@ -12,8 +12,8 @@ const Content = observer(() => {
   const {
     prefixCls,
     intlPrefix,
-    deploymentStore: { getSelectedMenu: { menuId, parentId } },
-  } = useDeploymentStore();
+    resourceStore: { getSelectedMenu: { menuId, parentId } },
+  } = useResourceStore();
   const {
     detailDs,
     intl: { formatMessage },

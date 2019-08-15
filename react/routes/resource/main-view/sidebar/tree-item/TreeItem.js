@@ -6,7 +6,7 @@ import { Icon } from 'choerodon-ui/pro';
 import StatusDot from '../../components/status-dot';
 import InstanceItem from './InstanceItem';
 import AppItem from './AppItem';
-import { useDeploymentStore } from '../../../stores';
+import { useResourceStore } from '../../../stores';
 import { useMainStore } from '../../stores';
 
 import './index.less';
@@ -60,7 +60,7 @@ const TreeItem = observer(({ record, search }) => {
       CIPHER_ITEM,
       CUSTOM_ITEM,
     },
-  } = useDeploymentStore();
+  } = useResourceStore();
   const { podColor } = useMainStore();
 
   const name = useMemo(() => {

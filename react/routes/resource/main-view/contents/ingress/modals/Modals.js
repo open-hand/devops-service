@@ -4,7 +4,7 @@ import { Modal } from 'choerodon-ui/pro';
 import { Button } from 'choerodon-ui';
 import { FormattedMessage } from 'react-intl';
 import HeaderButtons from '../../../components/header-buttons';
-import { useDeploymentStore } from '../../../../stores';
+import { useResourceStore } from '../../../../stores';
 import { useModalStore } from './stores';
 import { useIngressStore } from '../stores';
 import DomainModal from '../../application/modals/domain';
@@ -18,8 +18,8 @@ const EnvModals = observer(() => {
     intlPrefix,
     prefixCls,
     intl: { formatMessage },
-    deploymentStore,
-  } = useDeploymentStore();
+    resourceStore,
+  } = useResourceStore();
   const {
     ingressDs,
     ingressStore,
@@ -28,13 +28,13 @@ const EnvModals = observer(() => {
     permissions,
     AppState: { currentMenuType: { projectId } },
   } = useModalStore();
-  const { menuId, parentId } = deploymentStore.getSelectedMenu;
+  const { menuId, parentId } = resourceStore.getSelectedMenu;
 
   const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
-    deploymentStore.setNoHeader(false);
-  }, [deploymentStore]);
+    resourceStore.setNoHeader(false);
+  }, [resourceStore]);
 
   function refresh() {
     ingressDs.query();

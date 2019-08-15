@@ -88,17 +88,20 @@ function formatInstance(value, expandsKeys) {
   return flatted;
 }
 
-export default (projectId, store, type) => {
-  const urlMaps = {
-    [IST_VIEW_TYPE]: `/devops/v1/projects/${projectId}/envs/ins_tree_menu`,
-    [RES_VIEW_TYPE]: `/devops/v1/projects/${projectId}/envs/resource_tree_menu`,
-  };
+function handleSelect(record, store) {
+  const menuId = record.get('id');
+  const menuType = record.get('itemType');
+  const parentId = record.get('parentId');
+  const key = record.get('key');
+  store.setSelectedMenu({ menuId, menuType, parentId, key });
+}
+
+export default (store, type) => {
   const formatMaps = {
     [IST_VIEW_TYPE]: formatInstance,
     [RES_VIEW_TYPE]: formatResource,
   };
   return {
-    autoQuery: true,
     paging: false,
     selection: 'single',
     parentField: 'parentId',
@@ -113,36 +116,29 @@ export default (projectId, store, type) => {
     ],
     events: {
       select: ({ record }) => {
-        const menuId = record.get('id');
-        const menuType = record.get('itemType');
-        const parentId = record.get('parentId');
-        const key = record.get('key');
-        store.setSelectedMenu({ menuId, menuType, parentId, key });
+        handleSelect(record, store);
       },
       unSelect: ({ record }) => {
         // 禁用取消选中
         // 实际上依然会取消只是又重新选中
         record.isSelected = true;
       },
+      load: ({ dataSet }) => {
+        const record = dataSet.current;
+        // record.ready();
+        // record &&
+        handleSelect(record, store);
+      },
     },
     transport: {
       read: {
-        url: urlMaps[type],
         method: 'get',
+        // TODO: 让后端返回需要的数据，前端不再做处理
+        //   或者添加加载错误处理
         transformResponse(response) {
           const res = JSON.parse(response);
           const expandsKeys = store.getExpandedKeys;
-
-          const selectedMenu = store.getSelectedMenu;
           const result = formatMaps[type](res, expandsKeys);
-          if (result.length && isEmpty(selectedMenu)) {
-            const { id, itemType, parentId } = result[0];
-            store.setSelectedMenu({
-              menuId: id,
-              menuType: itemType,
-              parentId,
-            });
-          }
           return {
             list: result,
           };

@@ -4,7 +4,7 @@ import { injectIntl } from 'react-intl';
 import { DataSet } from 'choerodon-ui/pro';
 import BaseInfoDataSet from './BaseInfoDataSet';
 import ResourceCountDataSet from './ResourceCountDataSet';
-import { useDeploymentStore } from '../../../../stores';
+import { useResourceStore } from '../../../../stores';
 
 const Store = createContext();
 
@@ -15,7 +15,7 @@ export function useEnvironmentStore() {
 export const StoreProvider = injectIntl(inject('AppState')(
   (props) => {
     const { intl, AppState: { currentMenuType: { id } }, children } = props;
-    const { intlPrefix, deploymentStore: { getSelectedMenu: { menuId } } } = useDeploymentStore();
+    const { intlPrefix, resourceStore: { getSelectedMenu: { menuId } } } = useResourceStore();
     const baseInfoDs = useMemo(() => new DataSet(BaseInfoDataSet(id, menuId)), [id, menuId]);
     const resourceCountDs = useMemo(() => new DataSet(ResourceCountDataSet(id, menuId)), [id, menuId]);
     // TODO: 设置 autoQuery 为 false，在切换tab时手动 query
