@@ -37,7 +37,7 @@ public interface AgentMsgHandlerService {
 
     void helmReleaseUpgradeFail(String key, String msg, Long clusterId);
 
-    void helmReleaeStopFail(String key, String msg, Long clusterId);
+    void helmReleaseStopFail(String key, String msg, Long clusterId);
 
     void commandNotSend(Long commandId, String msg);
 
@@ -78,4 +78,6 @@ public interface AgentMsgHandlerService {
     void handleConfigUpdate(String key, String msg, Long clusterId);
 
     void operateDockerRegistrySecretResp(String key, String msg, Long clusterId);
+
+    void handlePodRealTimeData(String payload);
 }

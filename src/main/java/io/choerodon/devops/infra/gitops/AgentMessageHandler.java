@@ -116,7 +116,7 @@ public class AgentMessageHandler extends AbstractAgentMsgHandler {
                         msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
             case HELM_RELEASE_STOP_FAILED:
-                agentMsgHandlerService.helmReleaeStopFail(
+                agentMsgHandlerService.helmReleaseStopFail(
                         msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
             case HELM_RELEASE_ROLLBACK_FAILED:
@@ -186,6 +186,9 @@ public class AgentMessageHandler extends AbstractAgentMsgHandler {
                 break;
             case OPERATE_DOCKER_REGISTRY_SECRET:
                 agentMsgHandlerService.operateDockerRegistrySecretResp(msg.getKey(), "success", TypeUtil.objToLong(msg.getClusterId()));
+                break;
+            case POD_REAL_TIME:
+                agentMsgHandlerService.handlePodRealTimeData(msg.getPayload());
                 break;
             default:
                 break;
