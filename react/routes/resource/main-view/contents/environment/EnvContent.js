@@ -2,7 +2,7 @@ import React, { Fragment, lazy, Suspense, useCallback, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Tabs } from 'choerodon-ui';
 import { useEnvironmentStore } from './stores';
-import { useDeploymentStore } from '../../../stores';
+import { useResourceStore } from '../../../stores';
 import StatusDot from '../../components/status-dot';
 import PrefixTitle from '../../components/prefix-title';
 import Modals from './modals';
@@ -18,7 +18,7 @@ const EnvContent = observer(() => {
   const {
     prefixCls,
     intlPrefix,
-  } = useDeploymentStore();
+  } = useResourceStore();
   const {
     intl: { formatMessage },
     baseInfoDs,
@@ -32,11 +32,9 @@ const EnvContent = observer(() => {
     envStore.setTabKey(key);
   }, [envStore]);
 
-  const baseInfo = baseInfoDs.data;
-
   const title = useMemo(() => {
-    if (baseInfo.length) {
-      const record = baseInfo[0];
+    const record = baseInfoDs.current;
+    if (record) {
       const name = record.get('name');
       const connect = record.get('connect');
       const synchronize = record.get('synchronize');
@@ -50,7 +48,7 @@ const EnvContent = observer(() => {
       </Fragment>;
     }
     return null;
-  }, [baseInfo, prefixCls]);
+  }, []);
 
   return (
     <div className={`${prefixCls}-environment`}>

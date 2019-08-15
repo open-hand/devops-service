@@ -3,7 +3,7 @@ import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import { Icon } from 'choerodon-ui';
 import map from 'lodash/map';
-import { useDeploymentStore } from '../../../stores';
+import { useResourceStore } from '../../../stores';
 import { useCustomDetailStore } from './stores';
 import Modals from './modals';
 
@@ -13,8 +13,8 @@ const Content = observer(() => {
   const {
     prefixCls,
     intlPrefix,
-    deploymentStore: { getSelectedMenu: { menuId, parentId } },
-  } = useDeploymentStore();
+    resourceStore: { getSelectedMenu: { menuId, parentId } },
+  } = useResourceStore();
   const {
     detailDs,
     intl: { formatMessage },
@@ -43,7 +43,7 @@ const Content = observer(() => {
           <span>{record.get('commonName')}</span>
         </div>
         <ul className={`${prefixCls}-detail-section-ul`}>
-          {map(record.get('DNSNames'), item => (
+          {map(record.get('DNSNames'), (item) => (
             <li className={`${prefixCls}-detail-section-li`}>
               <span className="detail-section-li-text">DNSNames:&nbsp;</span>
               <span>{item}</span>
@@ -56,7 +56,7 @@ const Content = observer(() => {
           <FormattedMessage id={`${intlPrefix}.current.domains`} />
         </div>
         <ul className={`${prefixCls}-detail-section-ul`}>
-          {map(record.get('ingresses'), item => (
+          {map(record.get('ingresses'), (item) => (
             <li className={`${prefixCls}-detail-section-li`}>
               <span>{item}</span>
             </li>

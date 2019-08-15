@@ -1,10 +1,11 @@
-import React, { createContext, useMemo, useContext } from 'react';
+import React, { createContext, useMemo, useContext, useEffect } from 'react';
 import { inject } from 'mobx-react';
+import { observer } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
 import { DataSet } from 'choerodon-ui/pro';
 import BaseInfoDataSet from './BaseInfoDataSet';
 import PermissionsDataSet from './PermissionsDataSet';
-import { useDeploymentStore } from '../../../../stores';
+import { useResourceStore } from '../../../../stores';
 import useStore from './useStore';
 
 const Store = createContext();
@@ -14,11 +15,16 @@ export function useEnvironmentStore() {
 }
 
 export const StoreProvider = injectIntl(inject('AppState')(
-  (props) => {
+  observer((props) => {
     const { intl, AppState: { currentMenuType: { id } }, children } = props;
-    const { intlPrefix, deploymentStore: { getSelectedMenu: { menuId } } } = useDeploymentStore();
-    const baseInfoDs = useMemo(() => new DataSet(BaseInfoDataSet(id, menuId)), [id, menuId]);
-    // TODO: 设置 autoQuery 为 false，在切换tab时手动 query
+    const { intlPrefix, resourceStore: { getSelectedMenu: { menuId } } } = useResourceStore();
+    const baseInfoDs = useMemo(() => new DataSet(BaseInfoDataSet()), []);
+
+    useEffect(() => {
+      baseInfoDs.transport.read.url = `/devops/v1/projects/${id}/envs/${menuId}/info`;
+      baseInfoDs.query();
+    }, [id, menuId]);
+
     const permissionsDs = useMemo(() => new DataSet(PermissionsDataSet({
       intl,
       intlPrefix,
@@ -42,5 +48,5 @@ export const StoreProvider = injectIntl(inject('AppState')(
         {children}
       </Store.Provider>
     );
-  },
+  })
 ));

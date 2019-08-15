@@ -11,7 +11,7 @@ import { Table } from 'choerodon-ui/pro';
 import _ from 'lodash';
 import classnames from 'classnames';
 import StatusIcon from '../../../../../components/StatusIcon';
-import { useDeploymentStore } from '../../../stores';
+import { useResourceStore } from '../../../stores';
 import { useNetworkStore } from './stores';
 import Modals from './modals';
 import EditNetwork from './modals/network-edit';
@@ -24,8 +24,8 @@ const NetworkContent = observer(() => {
   const {
     prefixCls,
     intlPrefix,
-    deploymentStore: { getSelectedMenu: { parentId } },
-  } = useDeploymentStore();
+    resourceStore: { getSelectedMenu: { parentId } },
+  } = useResourceStore();
   const {
     networkDs,
     networkStore,
@@ -127,7 +127,7 @@ const NetworkContent = observer(() => {
                     <Popover
                       arrowPointAtCenter
                       placement="bottomRight"
-                      getPopupContainer={triggerNode => triggerNode.parentNode}
+                      getPopupContainer={(triggerNode) => triggerNode.parentNode}
                       content={<Fragment>{item}</Fragment>}
                     >
                       <Icon type="expand_more" className="net-expend-icon" />
@@ -149,7 +149,7 @@ const NetworkContent = observer(() => {
     const iPArr = [];
     const portArr = [];
     if (externalIps && externalIps.length) {
-      _.forEach(externalIps, item => (
+      _.forEach(externalIps, (item) => (
         iPArr.push(
           <div key={item} className="net-config-item">
             {item}
@@ -227,7 +227,7 @@ const NetworkContent = observer(() => {
         <Popover
           arrowPointAtCenter
           placement="bottomRight"
-          getPopupContainer={triggerNode => triggerNode.parentNode}
+          getPopupContainer={(triggerNode) => triggerNode.parentNode}
           content={content}
         >
           <Icon type="expand_more" className="net-expend-icon" />

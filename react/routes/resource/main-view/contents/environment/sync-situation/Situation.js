@@ -6,7 +6,7 @@ import MouserOverWrapper from '../../../../../../components/MouseOverWrapper';
 import TimePopover from '../../../../../../components/timePopover';
 import SyncSituation from './SyncSituation';
 import { useSyncStore } from './stores';
-import { useDeploymentStore } from '../../../../stores';
+import { useResourceStore } from '../../../../stores';
 
 import './index.less';
 
@@ -14,7 +14,7 @@ export default function Situation() {
   const {
     prefixCls,
     intlPrefix,
-  } = useDeploymentStore();
+  } = useResourceStore();
   const { tableDs } = useSyncStore();
 
   const columns = useMemo(() => ([

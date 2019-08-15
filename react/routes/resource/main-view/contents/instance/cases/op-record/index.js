@@ -5,7 +5,7 @@ import { Popover, Icon, Button } from 'choerodon-ui';
 import map from 'lodash/map';
 import classnames from 'classnames';
 import UserInfo from '../../../../../../../components/userInfo/UserInfo';
-import { useDeploymentStore } from '../../../../../stores';
+import { useResourceStore } from '../../../../../stores';
 import { useInstanceStore } from '../../stores';
 
 import './index.less';
@@ -20,7 +20,7 @@ const OpRecord = observer(({ handleClick, active }) => {
   const {
     prefixCls,
     intlPrefix,
-  } = useDeploymentStore();
+  } = useResourceStore();
   const {
     intl: { formatMessage },
     casesDs,

@@ -7,7 +7,7 @@ import map from 'lodash/map';
 import MouserOverWrapper from '../../../../../../components/MouseOverWrapper';
 import TimePopover from '../../../../../../components/timePopover/TimePopover';
 import StatusTags from '../../../../../../components/StatusTags';
-import { useDeploymentStore } from '../../../../stores';
+import { useResourceStore } from '../../../../stores';
 import { useInstanceStore } from '../stores';
 
 import './index.less';
@@ -18,7 +18,7 @@ const PodDetail = memo(() => {
   const {
     prefixCls,
     intlPrefix,
-  } = useDeploymentStore();
+  } = useResourceStore();
   const {
     intl,
     podsDs,
@@ -94,13 +94,12 @@ const PodDetail = memo(() => {
             <MouserOverWrapper text={item.name} width={0.08}>
               {item.name}
             </MouserOverWrapper>
-          </Fragment>)
-        }
+          </Fragment>)}
         {node.length > 1 && (
           <Popover
             arrowPointAtCenter
             placement="bottomRight"
-            getPopupContainer={triggerNode => triggerNode.parentNode}
+            getPopupContainer={(triggerNode) => triggerNode.parentNode}
             content={<Fragment>{node}</Fragment>}
             overlayClassName={`${prefixCls}-pods-popover`}
           >

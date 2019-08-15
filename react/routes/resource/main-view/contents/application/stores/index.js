@@ -3,7 +3,7 @@ import { DataSet } from 'choerodon-ui/pro';
 import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
 import BaseInfoDataSet from './BaseInfoDataSet';
-import { useDeploymentStore } from '../../../../stores';
+import { useResourceStore } from '../../../../stores';
 import useStore from './useStore';
 import useConfigMapStore from './useConfigMapStore';
 import useSecretStore from './useSecretStore';
@@ -19,10 +19,10 @@ export function useApplicationStore() {
 export const StoreProvider = injectIntl(inject('AppState')(
   (props) => {
     const {
-      deploymentStore: { getSelectedMenu: { menuId } },
-    } = useDeploymentStore();
+      resourceStore: { getSelectedMenu: { menuId } },
+    } = useResourceStore();
     const { AppState: { currentMenuType: { id } }, children } = props;
-    
+
     const baseInfoDs = useMemo(() => new DataSet(BaseInfoDataSet(id, menuId)), [id, menuId]);
     const appStore = useStore();
     const mappingStore = useConfigMapStore();

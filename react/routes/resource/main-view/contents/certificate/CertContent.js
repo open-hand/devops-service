@@ -7,7 +7,7 @@ import {
 } from 'choerodon-ui';
 import { Table } from 'choerodon-ui/pro';
 import StatusIcon from '../../../../../components/StatusIcon';
-import { useDeploymentStore } from '../../../stores';
+import { useResourceStore } from '../../../stores';
 import { useCertificateStore } from './stores';
 import Modals from './modals';
 import MouserOverWrapper from '../../../../../components/MouseOverWrapper';
@@ -21,8 +21,8 @@ const CertContent = observer(() => {
   const {
     prefixCls,
     intlPrefix,
-    deploymentStore: { getSelectedMenu: { parentId } },
-  } = useDeploymentStore();
+    resourceStore: { getSelectedMenu: { parentId } },
+  } = useResourceStore();
   const {
     certificateDs,
     intl: { formatMessage },
@@ -82,7 +82,7 @@ const CertContent = observer(() => {
     return (
       <Popover
         content={content}
-        getPopupContainer={triggerNode => triggerNode.parentNode}
+        getPopupContainer={(triggerNode) => triggerNode.parentNode}
         trigger="hover"
         placement="top"
       >

@@ -3,9 +3,9 @@ export default () => ({
   paging: false,
   dataKey: null,
   fields: [
-    { name: 'name', type: 'string' },
-    { name: 'connect', type: 'boolean' },
-    { name: 'synchronize', type: 'boolean' },
+    { name: 'code', type: 'string' },
+    { name: 'podRunningCount', type: 'number' },
+    { name: 'podCount', type: 'number' },
     { name: 'id', type: 'number' },
   ],
   transport: {

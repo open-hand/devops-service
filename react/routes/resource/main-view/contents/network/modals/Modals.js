@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { Button } from 'choerodon-ui';
 import { FormattedMessage } from 'react-intl';
 import HeaderButtons from '../../../components/header-buttons';
-import { useDeploymentStore } from '../../../../stores';
+import { useResourceStore } from '../../../../stores';
 import { useModalStore } from './stores';
 import { useNetworkStore } from '../stores';
 import CreateNetwork from './network-create';
@@ -13,8 +13,8 @@ const EnvModals = observer(() => {
     intlPrefix,
     prefixCls,
     intl: { formatMessage },
-    deploymentStore,
-  } = useDeploymentStore();
+    resourceStore,
+  } = useResourceStore();
   const {
     networkDs,
     networkStore,
@@ -23,18 +23,18 @@ const EnvModals = observer(() => {
     permissions,
     AppState: { currentMenuType: { projectId } },
   } = useModalStore();
-  const { parentId } = deploymentStore.getSelectedMenu;
+  const { parentId } = resourceStore.getSelectedMenu;
 
   const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
-    deploymentStore.setNoHeader(false);
-  }, [deploymentStore]);
+    resourceStore.setNoHeader(false);
+  }, [resourceStore]);
 
   function refresh() {
     networkDs.query();
   }
-  
+
   function openModal() {
     setShowModal(true);
   }

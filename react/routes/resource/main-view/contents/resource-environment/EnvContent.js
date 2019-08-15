@@ -2,7 +2,7 @@ import React, { Fragment, lazy, Suspense, useCallback, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Row, Col, Card, Icon } from 'choerodon-ui';
 import { useEnvironmentStore } from './stores';
-import { useDeploymentStore } from '../../../stores';
+import { useResourceStore } from '../../../stores';
 import StatusDot from '../../components/status-dot';
 import PrefixTitle from '../../components/prefix-title';
 // import Modals from './modals';
@@ -39,13 +39,13 @@ const EnvContent = observer(() => {
     prefixCls,
     intlPrefix,
     intl: { formatMessage },
-  } = useDeploymentStore();
+  } = useResourceStore();
   formatMessagefun = formatMessage;
   const {
     baseInfoDs,
     resourceCountDs,
   } = useEnvironmentStore();
-  
+
   const baseInfo = baseInfoDs.data;
   const countData = resourceCountDs.data;
   const title = useMemo(() => {
@@ -54,7 +54,7 @@ const EnvContent = observer(() => {
       const name = record.get('name');
       const connect = record.get('connect');
       const synchronize = record.get('synchronize');
-  
+
       return <Fragment>
         <StatusDot
           connect={connect}
@@ -67,15 +67,15 @@ const EnvContent = observer(() => {
   }, [baseInfo, prefixCls, countData]);
 
   const { resourceCount, statusCount } = useMemo(() => {
-    let resourceCount = null;
-    let statusCount = null;
+    let resource = null;
+    let status = null;
     if (!countData.length) {
       return {
-        resourceCount, statusCount,
+        resourceCount: resource, statusCount: status,
       };
     }
     const record = countData[0];
-    resourceCount = (
+    resource = (
       <div className="card-content">
         <ItemNumberByResource count={record.get('instanceCount')} name={formatMessage({ id: 'instance' })} />
         <ItemNumberByResource count={record.get('serviceCount')} name={formatMessage({ id: 'network.header.title' })} />
@@ -85,7 +85,7 @@ const EnvContent = observer(() => {
         <ItemNumberByResource count={record.get('secretCount')} name={formatMessage({ id: 'c7ncd.deployment.application.tabs.cipher' })} />
       </div>
     );
-    statusCount = (
+    status = (
       <div className="card-content card-content-right">
         <ItemNumberByStatus color={color.running} count={record.get('runningInstanceCount')} />
         <ItemNumberByStatus color={color.operating} count={record.get('operatingInstanceCount')} />
@@ -94,10 +94,10 @@ const EnvContent = observer(() => {
       </div>
     );
     return {
-      resourceCount, statusCount,
+      resourceCount: resource, statusCount: status,
     };
   });
-  
+
   return (
     <div className={`${prefixCls}-resource-environment`}>
       {/* <Modals /> */}
@@ -107,7 +107,7 @@ const EnvContent = observer(() => {
       >
         {title}
       </PrefixTitle>
-      <Row gutter={16}> 
+      <Row gutter={16}>
         <Col span={14}>
           <div className="card">
             <div className="card-title">部署资源</div>
@@ -145,7 +145,7 @@ function ItemNumberByResource(props) {
 
 function ItemNumberByStatus(props) {
   const { color: { bfcolor, bgcolor, status }, count } = props;
-  
+
   return (
     <div className="item item-box">
       <div className="top" style={{ borderColor: bfcolor, background: bgcolor }}>
@@ -157,5 +157,5 @@ function ItemNumberByStatus(props) {
     </div>
   );
 }
-  
+
 export default EnvContent;

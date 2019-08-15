@@ -6,7 +6,7 @@ import Draggable from 'react-draggable';
 import Sidebar from './sidebar';
 import LoadingBar from '../../../components/loadingBar';
 import { useMainStore } from './stores';
-import { useDeploymentStore } from '../stores';
+import { useResourceStore } from '../stores';
 import { useResize, X_AXIS_WIDTH, X_AXIS_WIDTH_MAX } from './useResize';
 
 import './styles/index.less';
@@ -34,7 +34,7 @@ const ServiceDetail = lazy(() => import('./contents/service-detail'));
 const MainView = observer(() => {
   const {
     prefixCls,
-    deploymentStore: {
+    resourceStore: {
       getViewType,
       getSelectedMenu,
     },
@@ -59,7 +59,7 @@ const MainView = observer(() => {
       CUSTOM_GROUP,
       IST_GROUP,
     },
-  } = useDeploymentStore();
+  } = useResourceStore();
   const { mainStore } = useMainStore();
   const rootRef = useRef(null);
   const content = useMemo(() => {

@@ -4,7 +4,7 @@ import { Modal } from 'choerodon-ui/pro';
 import { Button } from 'choerodon-ui';
 import { FormattedMessage } from 'react-intl';
 import HeaderButtons from '../../../components/header-buttons';
-import { useDeploymentStore } from '../../../../stores';
+import { useResourceStore } from '../../../../stores';
 import { useModalStore } from './stores';
 import { useIstListStore } from '../stores';
 
@@ -17,8 +17,8 @@ const CustomModals = observer(() => {
     intlPrefix,
     prefixCls,
     intl: { formatMessage },
-    deploymentStore,
-  } = useDeploymentStore();
+    resourceStore,
+  } = useResourceStore();
   const {
     istListDs,
   } = useIstListStore();
@@ -27,8 +27,8 @@ const CustomModals = observer(() => {
   } = useModalStore();
 
   useEffect(() => {
-    deploymentStore.setNoHeader(false);
-  }, [deploymentStore]);
+    resourceStore.setNoHeader(false);
+  }, [resourceStore]);
 
   function refresh() {
     istListDs.query();

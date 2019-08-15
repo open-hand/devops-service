@@ -12,7 +12,7 @@ import _ from 'lodash';
 import classnames from 'classnames';
 import MouserOverWrapper from '../../../../../../components/MouseOverWrapper/MouserOverWrapper';
 import StatusIcon from '../../../../../../components/StatusIcon';
-import { useDeploymentStore } from '../../../../stores';
+import { useResourceStore } from '../../../../stores';
 import { useNetStore } from './stores';
 import { useApplicationStore } from '../stores';
 import DomainModal from '../modals/domain';
@@ -26,8 +26,8 @@ const Networking = observer(() => {
   const {
     prefixCls,
     intlPrefix,
-    deploymentStore: { getSelectedMenu: { menuId, parentId } },
-  } = useDeploymentStore();
+    resourceStore: { getSelectedMenu: { menuId, parentId } },
+  } = useResourceStore();
   const {
     tableDs,
     intl: { formatMessage },

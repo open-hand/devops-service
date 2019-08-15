@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import SidebarHeading from './header';
 import TreeView from '../../../../components/tree-view';
 import TreeItem from './tree-item';
-import { useDeploymentStore } from '../../stores';
+import { useResourceStore } from '../../stores';
 import { useMainStore } from '../stores';
 
 import './index.less';
@@ -11,8 +11,8 @@ import './index.less';
 const TreeMenu = observer(() => {
   const {
     treeDs,
-    deploymentStore,
-  } = useDeploymentStore();
+    resourceStore,
+  } = useResourceStore();
   const { mainStore } = useMainStore();
 
   const bounds = useMemo(() => mainStore.getNavBounds, [mainStore.getNavBounds]);
@@ -23,7 +23,7 @@ const TreeMenu = observer(() => {
 
     if (recordList.length) {
       const selectedRecord = treeDs.find((record) => record.isSelected);
-      const { key: selectedKey } = deploymentStore.getSelectedMenu;
+      const { key: selectedKey } = resourceStore.getSelectedMenu;
 
       // 记录中没有选中项或者选中项和store中保存的项不匹配
       if (!selectedRecord || selectedRecord.get('key') !== selectedKey) {
@@ -40,14 +40,14 @@ const TreeMenu = observer(() => {
             const itemType = first.get('itemType');
             const parentId = first.get('parentId');
             const key = first.get('key');
-            deploymentStore.setSelectedMenu({
+            resourceStore.setSelectedMenu({
               menuId: selectedId,
               menuType: itemType,
               parentId,
               key,
             });
           } else {
-            deploymentStore.setSelectedMenu({});
+            resourceStore.setSelectedMenu({});
           }
         }
       }
@@ -58,7 +58,7 @@ const TreeMenu = observer(() => {
     <SidebarHeading />
     <TreeView
       ds={treeDs}
-      store={deploymentStore}
+      store={resourceStore}
       nodesRender={nodeRenderer}
     />
   </nav>;

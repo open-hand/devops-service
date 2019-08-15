@@ -5,7 +5,7 @@ import { Button } from 'choerodon-ui';
 import { FormattedMessage } from 'react-intl';
 import uniqBy from 'lodash/uniqBy';
 import HeaderButtons from '../../../components/header-buttons';
-import { useDeploymentStore } from '../../../../stores';
+import { useResourceStore } from '../../../../stores';
 import { useModalStore } from './stores';
 import { handlePromptError } from '../../../../../../utils';
 import { useNetworkDetailStore } from '../stores';
@@ -24,8 +24,8 @@ const EnvModals = observer(() => {
     intlPrefix,
     prefixCls,
     intl: { formatMessage },
-    deploymentStore,
-  } = useDeploymentStore();
+    resourceStore,
+  } = useResourceStore();
   const {
     networkDs,
     baseInfoDs,
@@ -34,11 +34,11 @@ const EnvModals = observer(() => {
     permissions,
     AppState: { currentMenuType: { projectId } },
   } = useModalStore();
-  const { menuId } = deploymentStore.getSelectedMenu;
+  const { menuId } = resourceStore.getSelectedMenu;
 
   useEffect(() => {
-    deploymentStore.setNoHeader(false);
-  }, [deploymentStore]);
+    resourceStore.setNoHeader(false);
+  }, [resourceStore]);
 
   function openDetail() {
     const detailModal = Modal.open({

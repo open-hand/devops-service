@@ -6,7 +6,7 @@ import HeaderButtons from '../../../components/header-buttons';
 import DetailsModal from './details';
 import ValueModalContent from './values/Config';
 import UpgradeModalContent from './values/Upgrade';
-import { useDeploymentStore } from '../../../../stores';
+import { useResourceStore } from '../../../../stores';
 import { useInstanceStore } from '../stores';
 
 const detailKey = Modal.key();
@@ -18,8 +18,8 @@ const EnvModals = observer(() => {
     prefixCls,
     intlPrefix,
     intl: { formatMessage },
-    deploymentStore,
-  } = useDeploymentStore();
+    resourceStore,
+  } = useResourceStore();
   const {
     casesDs,
     podsDs,
@@ -37,11 +37,11 @@ const EnvModals = observer(() => {
   }), []);
 
   useEffect(() => {
-    deploymentStore.setNoHeader(false);
+    resourceStore.setNoHeader(false);
   }, []);
 
   function openValueModal() {
-    const { menuId, parentId } = deploymentStore.getSelectedMenu;
+    const { menuId, parentId } = resourceStore.getSelectedMenu;
     const { appServiceVersionId } = istStore.getDetail;
     istStore.loadValue(projectId, menuId, appServiceVersionId);
 
@@ -72,7 +72,7 @@ const EnvModals = observer(() => {
   }
 
   function openUpgradeModal() {
-    const { menuId, parentId } = deploymentStore.getSelectedMenu;
+    const { menuId, parentId } = resourceStore.getSelectedMenu;
     const { appServiceVersionId } = istStore.getDetail;
     const deployVo = {
       id: menuId,
@@ -126,7 +126,7 @@ const EnvModals = observer(() => {
 
   function refresh() {
     const activeKey = istStore.getTabKey;
-    const { menuId } = deploymentStore.getSelectedMenu;
+    const { menuId } = resourceStore.getSelectedMenu;
 
     if (activeKey === DETAILS_TAB) {
       detailsStore.loadResource(projectId, menuId);
@@ -137,7 +137,7 @@ const EnvModals = observer(() => {
   }
 
   async function redeploy() {
-    const { menuId } = deploymentStore.getSelectedMenu;
+    const { menuId } = resourceStore.getSelectedMenu;
     try {
       const result = await istStore.redeploy(projectId, menuId);
       if (handlePromptError(result, false)) {
@@ -149,7 +149,7 @@ const EnvModals = observer(() => {
   }
 
   function getHeader() {
-    const { menuId } = deploymentStore.getSelectedMenu;
+    const { menuId } = resourceStore.getSelectedMenu;
     const btnDisabled = !menuId;
 
     const buttons = [{
