@@ -105,6 +105,9 @@ class PipelineRecord extends Component {
     const sort = { field: 'id', order: 'desc' };
     if (sorter.column) {
       sort.field = sorter.field || sorter.columnKey;
+      if (sort.field === 'triggerType') {
+        sort.field = 'trigger_type';
+      }
       if (sorter.order === 'ascend') {
         sort.order = 'asc';
       } else if (sorter.order === 'descend') {
