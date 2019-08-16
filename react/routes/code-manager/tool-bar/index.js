@@ -6,11 +6,9 @@ import { Header } from '@choerodon/master';
 import { Button, Select, Tooltip } from 'choerodon-ui';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import _ from 'lodash';
-import DevPipelineStore from '../devPipeline';
-import CodeQualityStore from '../codeQuality/stores';
+import DevPipelineStore from '../stores/DevPipelineStore';
 import handleMapStore from '../main-view/store/handleMapStore';
 import './index.less';
-import branch from '../branch';
 
 
 const { Option, OptGroup } = Select;

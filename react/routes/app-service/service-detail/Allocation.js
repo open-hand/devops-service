@@ -50,7 +50,6 @@ const Allocation = observer((props) => {
         }
         permissionDs.query();
         detailDs.query();
-        nonePermissionDs.query();
         return true;
       },
       okText: formatMessage({ id: 'save' }),
