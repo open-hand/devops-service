@@ -6,6 +6,15 @@ package io.choerodon.devops.api.vo;
 public class ContainerVO {
     private String name;
     private Boolean isReady;
+    private String registry;
+
+    public String getRegistry() {
+        return registry;
+    }
+
+    public void setRegistry(String registry) {
+        this.registry = registry;
+    }
 
     public String getName() {
         return name;

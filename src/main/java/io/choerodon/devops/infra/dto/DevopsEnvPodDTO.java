@@ -43,6 +43,16 @@ public class DevopsEnvPodDTO extends BaseDTO {
     private Long projectId;
     @Transient
     private List<ContainerVO> containers;
+    @Transient
+    private String message;
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
 
     public List<ContainerVO> getContainers() {
         return containers;
