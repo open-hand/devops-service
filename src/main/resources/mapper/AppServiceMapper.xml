@@ -58,12 +58,24 @@
         SELECT
         da.id,
         da.app_id,
-        da.name,
-        da.code
-        FROM devops_app_service da
-        JOIN devops_app_service_version dasv on dasv.app_service_id=da.id
-        where da.app_id = #{appId}
+        da. NAME,
+        da. CODE,
+        EXISTS (
+        SELECT
+        1
+        FROM
+        devops_app_service_version dasv
+        WHERE
+        dasv.app_service_id = da.id
+        ) AS version
+        FROM
+        devops_app_service da
+        WHERE
+        da.app_id = #{appId}
         <include refid="sqlparam"/>
+        ORDER BY
+        version != 1,
+        da.id
     </select>
 
     <select id="listByEnvId" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
