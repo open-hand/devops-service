@@ -117,7 +117,7 @@ public interface GitlabServiceClient {
 
 
     @PostMapping(value = "/v1/users/{userId}/impersonation_tokens")
-    ResponseEntity<ImpersonationTokenDO> create(@PathVariable("userId") Integer userId);
+    ResponseEntity<ImpersonationTokenDTO> create(@PathVariable("userId") Integer userId);
 
     @PostMapping(value = "/v1/groups")
     ResponseEntity<GroupDTO> createGroup(
@@ -130,10 +130,10 @@ public interface GitlabServiceClient {
                                                         @RequestParam(value = "userId", required = false) Integer userId);
 
     @PostMapping(value = "/v1/users/{userId}/impersonation_tokens")
-    ResponseEntity<ImpersonationTokenDO> createProjectToken(@PathVariable("userId") Integer userId);
+    ResponseEntity<ImpersonationTokenDTO> createProjectToken(@PathVariable("userId") Integer userId);
 
     @GetMapping(value = "/v1/users/{userId}/impersonation_tokens")
-    ResponseEntity<List<ImpersonationTokenDO>> listProjectToken(@PathVariable("userId") Integer userId);
+    ResponseEntity<List<ImpersonationTokenDTO>> listProjectToken(@PathVariable("userId") Integer userId);
 
     /**
      * 根据组的path查询组

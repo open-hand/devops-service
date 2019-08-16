@@ -208,7 +208,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
 
 
     @Override
-    public ResponseEntity<ImpersonationTokenDO> create(Integer userId) {
+    public ResponseEntity<ImpersonationTokenDTO> create(Integer userId) {
         throw new CommonException("error.access_token.create");
     }
 
@@ -298,12 +298,12 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<ImpersonationTokenDO> createProjectToken(Integer userId) {
+    public ResponseEntity<ImpersonationTokenDTO> createProjectToken(Integer userId) {
         throw new CommonException("error.project.token.create");
     }
 
     @Override
-    public ResponseEntity<List<ImpersonationTokenDO>> listProjectToken(Integer userId) {
+    public ResponseEntity<List<ImpersonationTokenDTO>> listProjectToken(Integer userId) {
         throw new CommonException("error.project.token.list");
     }
 

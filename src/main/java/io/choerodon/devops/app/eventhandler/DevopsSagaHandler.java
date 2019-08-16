@@ -57,7 +57,7 @@ public class DevopsSagaHandler {
     @Autowired
     private AppServiceInstanceService appServiceInstanceService;
     @Autowired
-    private PipelineTaskRecordService taskRecordRepository;
+    private PipelineTaskRecordService pipelineTaskRecordService;
     @Autowired
     private PipelineStageRecordService pipelineStageRecordService;
     @Autowired
@@ -269,9 +269,9 @@ public class DevopsSagaHandler {
     public void pipelineAutoDeployInstance(String data) {
         AppServiceDeployVO appServiceDeployVO = gson.fromJson(data, AppServiceDeployVO.class);
         Long taskRecordId = appServiceDeployVO.getRecordId();
-        Long stageRecordId = taskRecordRepository.baseQueryRecordById(taskRecordId).getStageRecordId();
+        Long stageRecordId = pipelineTaskRecordService.baseQueryRecordById(taskRecordId).getStageRecordId();
         PipelineStageRecordDTO stageRecordDTO = pipelineStageRecordService.baseQueryById(stageRecordId);
-        PipelineTaskRecordDTO taskRecordDTO = taskRecordRepository.baseQueryRecordById(taskRecordId);
+        PipelineTaskRecordDTO taskRecordDTO = pipelineTaskRecordService.baseQueryRecordById(taskRecordId);
         Long pipelineRecordId = stageRecordDTO.getPipelineRecordId();
         try {
             AppServiceInstanceVO appServiceInstanceVO = appServiceInstanceService.createOrUpdate(appServiceDeployVO);
@@ -281,7 +281,7 @@ public class DevopsSagaHandler {
                     pipelineTaskRecordDTO.setInstanceId(appServiceInstanceVO.getId());
                     pipelineTaskRecordDTO.setStatus(WorkFlowStatus.SUCCESS.toString());
                     pipelineTaskRecordDTO.setId(appServiceDeployVO.getRecordId());
-                    taskRecordRepository.baseCreateOrUpdateRecord(pipelineTaskRecordDTO);
+                    pipelineTaskRecordService.baseCreateOrUpdateRecord(pipelineTaskRecordDTO);
                     LOGGER.info("create pipeline auto deploy instance success");
                 }
             }
@@ -289,7 +289,7 @@ public class DevopsSagaHandler {
             PipelineTaskRecordDTO pipelineTaskRecordDTO = new PipelineTaskRecordDTO();
             pipelineTaskRecordDTO.setId(appServiceDeployVO.getRecordId());
             pipelineTaskRecordDTO.setStatus(WorkFlowStatus.FAILED.toValue());
-            taskRecordRepository.baseCreateOrUpdateRecord(pipelineTaskRecordDTO);
+            pipelineTaskRecordService.baseCreateOrUpdateRecord(pipelineTaskRecordDTO);
             pipelineService.updateStatus(pipelineRecordId, stageRecordId, WorkFlowStatus.FAILED.toValue(), e.getMessage());
             NoticeSendDTO.User user = new NoticeSendDTO.User();
             user.setEmail(GitUserNameUtil.getEmail());
