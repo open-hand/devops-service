@@ -6,22 +6,22 @@
         <if test='searchParam != null'>
             <if test='searchParam.name != null and searchParam.name.length > 0'>
                 AND
-                    dp.`name` LIKE CONCAT(CONCAT('%', #{searchParam.name, jdbcType=VARCHAR}),'%')
+                dp.`name` LIKE CONCAT(CONCAT('%', #{searchParam.name, jdbcType=VARCHAR}),'%')
             </if>
             <if test='searchParam.appServiceService != null and searchParam.appServiceService.length > 0'>
                 AND
-                    dav.version LIKE CONCAT(CONCAT('%', #{searchParam.appServiceService, jdbcType=VARCHAR}),'%')
+                dav.version LIKE CONCAT(CONCAT('%', #{searchParam.appServiceService, jdbcType=VARCHAR}),'%')
             </if>
             <if test='searchParam.ip != null and searchParam.ip.length > 0'>
                 AND
-                    dp.ip LIKE CONCAT(CONCAT('%', #{searchParam.ip, jdbcType=VARCHAR}),'%')
+                dp.ip LIKE CONCAT(CONCAT('%', #{searchParam.ip, jdbcType=VARCHAR}),'%')
             </if>
             <if test='searchParam.ready != null and searchParam.ready.length > 0'>
                 AND dp.is_ready = #{searchParam.ready}
             </if>
             <if test='searchParam.instanceCode != null and searchParam.instanceCode.length > 0'>
                 AND
-                    dai.`code` LIKE CONCAT(CONCAT('%', #{searchParam.instanceCode, jdbcType=VARCHAR}),'%')
+                dai.`code` LIKE CONCAT(CONCAT('%', #{searchParam.instanceCode, jdbcType=VARCHAR}),'%')
             </if>
         </if>
         <if test='params != null and params.size > 0'>
@@ -75,5 +75,13 @@
             AND de.id= #{envId}
         </if>
         <include refid="sqlparam"/>
+    </select>
+
+    <select id="queryEnvPodIns" resultType="io.choerodon.devops.api.vo.DevopsEnvPodInfoVO">
+        SELECT dep.name name, ins.code instanceName, dep.creation_date creationDate
+        FROM devops_env_pod dep
+                 INNER JOIN devops_app_service_instance ins ON dep.instance_id = ins.id
+                 INNER JOIN devops_env de ON dep.namespace = de.code
+        WHERE ins.env_id = #{envId}
     </select>
 </mapper>

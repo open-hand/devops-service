@@ -228,4 +228,5 @@
         FROM devops_certification t
         WHERE t.env_id = #{envId};
     </select>
+
 </mapper>

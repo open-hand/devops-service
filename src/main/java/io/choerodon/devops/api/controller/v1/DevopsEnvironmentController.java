@@ -11,10 +11,12 @@ import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.app.service.DevopsEnvPodService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,11 +29,11 @@ import springfox.documentation.annotations.ApiIgnore;
 @RequestMapping(value = "/v1/projects/{project_id}/envs")
 public class DevopsEnvironmentController {
 
+    @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
 
-    public DevopsEnvironmentController(DevopsEnvironmentService devopsEnvironmentService) {
-        this.devopsEnvironmentService = devopsEnvironmentService;
-    }
+    @Autowired
+    private DevopsEnvPodService devopsEnvPodService;
 
     /**
      * 项目下创建环境
@@ -229,6 +231,28 @@ public class DevopsEnvironmentController {
         return Optional.ofNullable(devopsEnvironmentService.queryEnvResourceCount(envId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.environment.query"));
+    }
+
+
+    /**
+     * 按资源用量列出环境下Pod信息
+     *
+     * @param envId 环境id
+     * @param sort  排序条件
+     * @return 环境下相关资源的数量
+     */
+    @Permission(type = ResourceType.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "按资源用量列出环境下Pod信息")
+    @GetMapping("/{env_id}/pod_ranking")
+    public ResponseEntity<List<DevopsEnvPodInfoVO>> queryEnvPodInfo(
+            @ApiParam(value = "环境id", required = true)
+            @PathVariable(value = "env_id") Long envId,
+            @ApiParam(value = "排序方式")
+            @RequestParam(value = "sort", required = false, defaultValue = "memory") String sort) {
+        return Optional.ofNullable(devopsEnvPodService.queryEnvPodInfo(envId, sort))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.pod.ranking.query"));
     }
 
 
