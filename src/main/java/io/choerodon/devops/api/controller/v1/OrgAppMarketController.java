@@ -41,7 +41,7 @@ public class OrgAppMarketController {
 
     @Permission(type = ResourceType.SITE, permissionWithin = true)
     @ApiOperation(value = "查询所有应用服务")
-    @GetMapping("/list_all_app_services")
+    @GetMapping("/list_app_services")
     public ResponseEntity<List<AppServiceMarketVO>> listAllAppServices() {
         return Optional.ofNullable(
                 orgAppMarketService.listAllAppServices())
