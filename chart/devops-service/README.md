@@ -80,9 +80,24 @@ choerodon.io/metrics-path: {{ .Values.metrics.path | quote }}
 
 参数名 | 含义 
 --- |  --- 
-service.enable|是否创建service
-preJob.preConfig.mysql{}|初始化配置所需manager_service数据库信息
-preJob.preInitDB.mysql{}|初始化数据库所需数据库信息
+replicaCount| ReplicaSet数量
+image.repository| 镜像仓库地址
+image.pullPolicy|镜像拉取策略
+preJob.timeout|初始化job超时时间
+preJob.image|初始化job镜像
+preJob.preConfig.enable|是否执行初始化配置job
+preJob.preConfig.configFile|初始化配置解析的文件
+preJob.preConfig.configType|初始化配置的方式
+preJob.preConfig.registerHost|初始化配置所需注册中心地址
+preJob.preConfig.datasource.url|初始化配置数据库地址
+preJob.preConfig.datasource.username|初始化配置数据库用户名
+preJob.preConfig.datasource.password|初始化配置数据库密码
+preJob.preInitDB.enable|是否执行初始化数据库job
+preJob.preInitDB.datasource.url|初始化数据库地址
+preJob.preInitDB.datasource.username|初始化数据库用户名
+preJob.preInitDB.datasource.password|初始化数据库密码
+deployment.managementPort|管理端口
+env.open.SPRING_REDIS_HOST| redis地址
 env.open.SPRING_DATASOURCE_URL|数据库链接地址
 env.open.SPRING_DATASOURCE_USERNAME|数据库用户名
 env.open.SPRING_DATASOURCE_PASSWORD|数据库密码
@@ -90,25 +105,39 @@ env.open.SPRING_CLOUD_CONFIG_ENABLED|启用配置中心
 env.open.SPRING_CLOUD_CONFIG_URI|配置中心地址
 env.open.EUREKA_CLIENT_SERVICEURL_DEFAULTZONE|注册服务地址
 env.open.SERVICES_GITLAB_URL|gitlab地址
-env.open.SPRING_REDIS_HOST|redis地址
-env.open.SERVICES_GITLAB_URL|gitlab 地址
+env.open.SERVICES_GITLAB_SSHURL|gitlab ssh地址
 env.open.SERVICES_GITLAB_PASSWORD|gitlab默认创建用户密码
 env.open.SERVICES_GITLAB_PROJECTLIMIT|gitlab用户可以创建项目限制
 env.open.SERVICES_HELM_URL|helm地址
 env.open.SERVICES_HARBOR_BASEURL|harbor地址
 env.open.SERVICES_HARBOR_USERNAME|harbor用户名
 env.open.SERVICES_HARBOR_PASSWORD|harbor密码
+env.open.SERVICES_HARBOR_INSECURESKIPTLSVERIFY|harbor跳过证书安全校验
 env.open.SERVICES_SONARQUBE_URL|sonarqube地址
 env.open.SERVICES_GATEWAY_URL|gateway地址
 env.open.AGENT_VERSION|agengt版本
 env.open.SECURITY_BASIC_ENABLE|安全性验证
 env.open.SECURITY_IGNORED|安全性忽略
-env.open.AGENT_SERVICEURL|agent地址
+env.open.AGENT_SERVICEURL|agent连接devops ws地址
 env.open.AGENT_REPOURL|agent仓库地址
-env.open.TEMPLATE_VERSION_MICROSERVICE|微服务模板版本
-env.open.TEMPLATE_VERSION_MICROSERVICEFRONT|前端服务模板版本
-env.open.TEMPLATE_VERSION_JAVALIB|javalib模板版本
+env.open.AGENT_CERTMANAGERURL|certmanager仓库地址
 env.open.SKYWALKING_OPTS | skywalking 代理端配置
-persistence.enabled|是否启用持久化存储
-persistence.existingClaim|绑定的pvc名称
-
+env.open.API_HOST| 前端变量gateway地址
+env.open.DEVOPS_HOST| 前端变量devops域名地址
+env.open.CLIENT_ID|前端client
+env.open.LOCAL|
+env.open.TITLE_NAME|
+env.open.HEADER_TITLE_NAME|
+env.open.COOKIE_SERVER|
+env.open.FILE_SERVER|文件服务地址
+metrics.path|监控地址
+metrics.group|监控组
+log.parser|日志
+service.enabled|是否创建service
+service.name|service名字
+service.type|service类型
+service.port|service端口
+ingress.enabled|是否创建域名
+ingress.host|域名地址
+resources.limits.memory|资源请求限制
+resources.requests.memory|资源请求需求

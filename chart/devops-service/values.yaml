@@ -54,17 +54,14 @@ env:
     AGENT_SERVICEURL: ws://devops-service.choerodon.com.cn/agent/
     AGENT_REPOURL: https://openchart.choerodon.com.cn/choerodon/c7n/
     AGENT_CERTMANAGERURL: https://openchart.choerodon.com.cn/choerodon/infra/
-    TEMPLATE_VERSION: 0.13.0
-    TEMPLATE_URL: https://github.com/choerodon/choerodon-devops-templates.git
-    PRO_API_HOST: gateway.choerodon.com.cn
-    PRO_DEVOPS_HOST: localhost:8060
-    PRO_CLIENT_ID: devops
-    PRO_LOCAL: true
-    PRO_TITLE_NAME: Choerodon
-    PRO_HEADER_TITLE_NAME: Choerodon
-    PRO_COOKIE_SERVER: choerodon.com.cn
-    PRO_HTTP: http
-    PRO_FILE_SERVER: http://minio.choerodon.com.cn
+    API_HOST: gateway.choerodon.com.cn
+    DEVOPS_HOST: localhost:8060
+    CLIENT_ID: devops
+    LOCAL: true
+    TITLE_NAME: Choerodon
+    HEADER_TITLE_NAME: Choerodon
+    COOKIE_SERVER: choerodon.com.cn
+    FILE_SERVER: http://minio.choerodon.com.cn
 #    SKYWALKING_OPTS: >-
 #          -javaagent:/agent/skywalking-agent.jar
 #          -Dskywalking.agent.application_code=devops-service
@@ -77,21 +74,17 @@ metrics:
 logs:
   parser: spring-boot
 
-persistence:
-  enabled: true
-  existingClaim:
-  subPath:
-  ## A manually managed Persistent Volume and Claim
-  ## Requires persistence.enabled: true
-  ## If defined, PVC must be created manually before volume will be bound
-  # existingClaim: 
-  # subPath: 
-
 service:
   name: devops-service
   enabled: false
   type: ClusterIP
   port: 8060
+
+
+ingress:
+  enabled: false
+  host: devops-service.choerodon.com.cn
+
 
 resources: 
   # We usually recommend not to specify default resources and to leave this as a conscious
@@ -104,7 +97,3 @@ resources:
   requests:
     # cpu: 100m
     memory: 2Gi
-
-ingress:
-  enabled: false
-  host: devops-service.choerodon.com.cn
