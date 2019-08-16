@@ -26,15 +26,15 @@ const Allocation = observer((props) => {
     prefixCls,
     permissionDs,
     detailDs,
-    nonePermissionDs, 
+    nonePermissionDs,
     params,
   } = useServiceDetailStore();
   const permissionStore = usePermissionStore();
-  
+
   function renderTime({ value }) {
     return <TimePopover content={value} />;
   }
-  
+
   function openDetail() {
     permissionStore.setChecked(detailDs.current.get('permission'));
     permissionStore.clearPermissionUsers();
@@ -50,6 +50,7 @@ const Allocation = observer((props) => {
         }
         permissionDs.query();
         detailDs.query();
+        nonePermissionDs.query();
         return true;
       },
       okText: formatMessage({ id: 'save' }),
@@ -58,7 +59,7 @@ const Allocation = observer((props) => {
 
   return (
     <TabPage>
-      
+
       <HeaderButtons>
         <Permission
           service={['devops-service.app-service.updatePermission']}
