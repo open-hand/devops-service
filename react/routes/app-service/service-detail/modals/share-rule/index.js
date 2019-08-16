@@ -8,7 +8,7 @@ const Option = Select.Option;
 
 export default function ({ record, formatMessage, prefixCls, intlPrefix }) {
   const handleChange = (value) => {
-    console.log(value);
+    // console.log(value);
   };
   return (
     <div>

@@ -12,7 +12,6 @@ const { AppState } = stores;
 
 @observer
 class DepPipelineEmpty extends Component {
-
   handleClick = () => {
     const { history } = this.props;
     const { projectId, name, organizationId, type } = AppState.currentMenuType;
@@ -25,7 +24,7 @@ class DepPipelineEmpty extends Component {
     const { history } = this.props;
     const { projectId, name, organizationId, type } = AppState.currentMenuType;
     history.push({
-      pathname: `/devops/app`,
+      pathname: '/devops/app',
       search: `?type=${type}&id=${projectId}&name=${name}&organizationId=${organizationId}`,
       state: { show: true, modeType: 'create' },
     });
@@ -57,7 +56,7 @@ class DepPipelineEmpty extends Component {
               <FormattedMessage id="envPl.create" />
             </Button>
           </Card>)}
-          {type === 'env'&& env === 'member' && (<Card title={formatMessage({ id: 'depPl.noPermission' })}>
+          {type === 'env' && env === 'member' && (<Card title={formatMessage({ id: 'depPl.noPermission' })}>
             <FormattedMessage id="depPl.noPerDes" /><br />
             <FormattedMessage id="depPl.addPermission" />
             <a
