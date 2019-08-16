@@ -20,13 +20,13 @@ public class PipelineDO extends BaseDTO {
     private Long projectId;
 
     @Transient
-    private Boolean execute;
+    private Long execute;
 
-    public Boolean getExecute() {
+    public Long getExecute() {
         return execute;
     }
 
-    public void setExecute(Boolean execute) {
+    public void setExecute(Long execute) {
         this.execute = execute;
     }
 

@@ -13,16 +13,13 @@
                 dp.last_update_date,
                 dp.object_version_number,
                 dp.id,
-                EXISTS (
-                SELECT
-                1
+                (SELECT count(*)
                 FROM
                 devops_pipeline_user_rel dpur
                 WHERE
-                dpur.user_id = #{classifyParam.userId}
-                AND dpur.pipeline_id = dp.id
-                AND dp.is_enabled = 1
-                ) AS execute
+                dpur.pipeline_id = dp.id
+                AND dpur.user_id = #{classifyParam.userId}
+                AND dp.is_enabled = 1) as `execute`
                 FROM
                 devops_pipeline dp
                 WHERE
@@ -44,16 +41,13 @@
                 dp.last_update_date,
                 dp.object_version_number,
                 dp.id,
-                EXISTS (
-                SELECT
-                1
+                (SELECT count(*)
                 FROM
                 devops_pipeline_user_rel dpur
                 WHERE
                 dpur.pipeline_id = dp.id
                 AND dpur.user_id = #{classifyParam.userId}
-                AND dp.is_enabled = 1
-                ) AS EXECUTE
+                AND dp.is_enabled = 1) as `execute`
                 FROM
                 devops_pipeline dp
                 WHERE
@@ -102,16 +96,13 @@
         dp.last_update_date,
         dp.object_version_number,
         dp.id,
-        EXISTS (
-        SELECT
-        1
+        (SELECT count(*)
         FROM
         devops_pipeline_user_rel dpur
         WHERE
         dpur.pipeline_id = dp.id
         AND dpur.user_id = #{classifyParam.userId}
-        AND dp.is_enabled = 1
-        ) AS EXECUTE
+        AND dp.is_enabled = 1) as `execute`
         FROM
         devops_pipeline dp
         JOIN devops_pipeline_user_rel dpur ON dpur.pipeline_id = dp.id

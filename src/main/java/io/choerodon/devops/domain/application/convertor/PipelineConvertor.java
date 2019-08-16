@@ -18,6 +18,11 @@ public class PipelineConvertor implements ConvertorI<PipelineE, PipelineDO, Pipe
     public PipelineE doToEntity(PipelineDO pipelineDO) {
         PipelineE pipelineE = new PipelineE();
         BeanUtils.copyProperties(pipelineDO, pipelineE);
+        if (pipelineDO.getExecute() > 0) {
+            pipelineE.setExecute(true);
+        }else {
+            pipelineE.setExecute(false);
+        }
         return pipelineE;
     }
 
