@@ -41,7 +41,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class DevopsSagaHandler {
     private static final String TEMPLATE = "template";
-    private static final String APPLICATION = "application";
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsSagaHandler.class);
 
     private final Gson gson = new Gson();
@@ -52,7 +51,7 @@ public class DevopsSagaHandler {
     @Autowired
     private DevopsGitService devopsGitService;
     @Autowired
-    private AppServiceService applicationService;
+    private AppServiceService appServiceService;
     @Autowired
     private DevopsGitlabPipelineService devopsGitlabPipelineService;
     @Autowired
@@ -146,13 +145,11 @@ public class DevopsSagaHandler {
             seq = 1)
     public String createAppService(String data) {
         DevOpsAppServicePayload devOpsAppServicePayload = gson.fromJson(data, DevOpsAppServicePayload.class);
-        if (devOpsAppServicePayload.getType().equals(APPLICATION)) {
-            try {
-                applicationService.operationApplication(devOpsAppServicePayload);
-            } catch (Exception e) {
-                applicationService.setAppErrStatus(data, devOpsAppServicePayload.getIamProjectId());
-                throw e;
-            }
+        try {
+            appServiceService.operationApplication(devOpsAppServicePayload);
+        } catch (Exception e) {
+            appServiceService.setAppErrStatus(data, devOpsAppServicePayload.getIamProjectId());
+            throw e;
         }
         return data;
     }
@@ -167,18 +164,16 @@ public class DevopsSagaHandler {
             seq = 1)
     public String importApp(String data) {
         DevOpsAppImportServicePayload devOpsAppImportPayload = gson.fromJson(data, DevOpsAppImportServicePayload.class);
-        if (devOpsAppImportPayload.getType().equals(APPLICATION)) {
-            try {
-                applicationService.operationApplicationImport(devOpsAppImportPayload);
-            } catch (Exception e) {
-                applicationService.setAppErrStatus(data, devOpsAppImportPayload.getIamProjectId());
-                throw e;
-            }
-            AppServiceDTO applicationDTO = applicationService.baseQuery(devOpsAppImportPayload.getAppServiceId());
-            if (applicationDTO.getFailed() != null && applicationDTO.getFailed()) {
-                applicationDTO.setFailed(false);
-                 applicationService.baseUpdate(applicationDTO);
-            }
+        try {
+            appServiceService.operationApplicationImport(devOpsAppImportPayload);
+        } catch (Exception e) {
+            appServiceService.setAppErrStatus(data, devOpsAppImportPayload.getIamProjectId());
+            throw e;
+        }
+        AppServiceDTO applicationDTO = appServiceService.baseQuery(devOpsAppImportPayload.getAppServiceId());
+        if (applicationDTO.getFailed() != null && applicationDTO.getFailed()) {
+            applicationDTO.setFailed(false);
+            appServiceService.baseUpdate(applicationDTO);
         }
         return data;
     }
@@ -235,12 +230,11 @@ public class DevopsSagaHandler {
             seq = 1)
     public String setAppErr(String data) {
         DevOpsAppServicePayload devOpsAppServicePayload = gson.fromJson(data, DevOpsAppServicePayload.class);
-        AppServiceDTO applicationDTO = applicationService.baseQuery(devOpsAppServicePayload.getAppServiceId());
+        AppServiceDTO applicationDTO = appServiceService.baseQuery(devOpsAppServicePayload.getAppServiceId());
         applicationDTO.setFailed(true);
-        applicationService.baseUpdate(applicationDTO);
+        appServiceService.baseUpdate(applicationDTO);
         return data;
     }
-
 
 
     /**

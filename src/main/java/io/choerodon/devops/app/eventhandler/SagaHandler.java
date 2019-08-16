@@ -40,6 +40,8 @@ public class SagaHandler {
     private GitlabGroupMemberService gitlabGroupMemberService;
     @Autowired
     private GitlabUserService gitlabUserService;
+    @Autowired
+    private ApplicationService applicationService;
 
 
     private void loggerInfo(Object o) {
@@ -58,7 +60,7 @@ public class SagaHandler {
     public String handleApplicationCreation(String msg) {
         ApplicationEventPayload applicationEventPayload = gson.fromJson(msg, ApplicationEventPayload.class);
         loggerInfo(msg);
-        gitlabGroupService.createApplicationGroup(applicationEventPayload);
+        applicationService.handleApplicationCreation(applicationEventPayload);
         return msg;
     }
 

@@ -321,7 +321,7 @@ public class GitUtil {
 
 
     /**
-     * clone 外部代码平台的仓库
+     * 克隆公开仓库的或者根据access token克隆私库的代码所有分支
      *
      * @param dirName     directory name
      * @param remoteUrl   remote url to clone
@@ -329,7 +329,7 @@ public class GitUtil {
      * @return the git instance of local repository
      */
     public Git cloneRepository(String dirName, String remoteUrl, String accessToken) {
-        Git git = null;
+        Git git;
         String workingDirectory = getWorkingDirectory(dirName);
         File localPathFile = new File(workingDirectory);
         deleteDirectory(localPathFile);
@@ -341,12 +341,36 @@ public class GitUtil {
                     .setDirectory(localPathFile)
                     .call();
             git = Git.open(new File(localPathFile + GIT_SUFFIX));
-        } catch (GitAPIException e) {
-            throw new CommonException(ERROR_GIT_CLONE, e);
-        } catch (IOException e) {
+        } catch (GitAPIException | IOException e) {
             throw new CommonException(ERROR_GIT_CLONE, e);
         }
         return git;
+    }
+
+    /**
+     * 克隆公开仓库或者根据access token克隆代码克隆特定分支
+     *
+     * @param dirName     directory name
+     * @param remoteUrl   remote url to clone
+     * @param accessToken the access token for access
+     * @param branchName  branch name
+     * @return the git instance of local repository
+     */
+    public Git cloneRepository(String dirName, String remoteUrl, String accessToken, String branchName) {
+        String workingDirectory = getWorkingDirectory(dirName);
+        File localPathFile = new File(workingDirectory);
+        deleteDirectory(localPathFile);
+        try {
+            return Git.cloneRepository()
+                    .setURI(remoteUrl)
+                    .setCloneAllBranches(false)
+                    .setBranch(branchName)
+                    .setCredentialsProvider(StringUtils.isEmpty(accessToken) ? null : new UsernamePasswordCredentialsProvider("", accessToken))
+                    .setDirectory(localPathFile)
+                    .call();
+        } catch (GitAPIException e) {
+            throw new CommonException(ERROR_GIT_CLONE, e);
+        }
     }
 
     /**
