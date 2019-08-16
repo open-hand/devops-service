@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -10,8 +11,11 @@ import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.domain.Sort;
+import io.choerodon.devops.api.vo.AgentPodInfoVO;
 import io.choerodon.devops.api.vo.ContainerVO;
+import io.choerodon.devops.api.vo.DevopsEnvPodInfoVO;
 import io.choerodon.devops.api.vo.DevopsEnvPodVO;
+import io.choerodon.devops.app.service.AgentPodService;
 import io.choerodon.devops.app.service.DevopsEnvPodService;
 import io.choerodon.devops.app.service.DevopsEnvResourceService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
@@ -49,7 +53,8 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
     private DevopsEnvResourceService devopsEnvResourceService;
     @Autowired
     private DevopsEnvPodMapper devopsEnvPodMapper;
-
+    @Autowired
+    private AgentPodService agentPodService;
 
     @Override
     public PageInfo<DevopsEnvPodVO> pageByOptions(Long projectId, Long envId, Long appServiceId, Long instanceId, PageRequest pageRequest, String searchParam) {
@@ -202,5 +207,36 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
         devopsEnvPodDTO.setName(name);
         devopsEnvPodDTO.setNamespace(namespace);
         return devopsEnvPodMapper.selectOne(devopsEnvPodDTO);
+    }
+
+    @Override
+    public List<DevopsEnvPodInfoVO> queryEnvPodInfo(Long envId, String sort) {
+        List<DevopsEnvPodInfoVO> devopsEnvPodInfoVOList = devopsEnvPodMapper.queryEnvPodIns(envId);
+        devopsEnvPodInfoVOList.forEach(devopsEnvPodInfoVO -> {
+            AgentPodInfoVO agentPodInfoVO = agentPodService.queryLatestPodSnapshot(devopsEnvPodInfoVO.getName(), devopsEnvPodInfoVO.getInstanceName());
+            if (agentPodInfoVO != null) {
+                devopsEnvPodInfoVO.setCpuUsed(agentPodInfoVO.getCpuUsed());
+                devopsEnvPodInfoVO.setCpuValue(K8sUtil.getNormalValueFromCpuString(agentPodInfoVO.getCpuUsed()));
+                devopsEnvPodInfoVO.setMemoryUsed(agentPodInfoVO.getMemoryUsed());
+                devopsEnvPodInfoVO.setMemoryValue(K8sUtil.getByteFromMemoryString(agentPodInfoVO.getMemoryUsed()));
+                devopsEnvPodInfoVO.setPodIp(agentPodInfoVO.getPodIp());
+            }
+        });
+
+        // 根据cpu进行逆序排序，考虑为null值的情况
+        if ("cpu".equals(sort)) {
+            devopsEnvPodInfoVOList = devopsEnvPodInfoVOList.stream()
+                    .sorted(Comparator.comparing(DevopsEnvPodInfoVO::getCpuValue, Comparator.nullsFirst(Double::compareTo)).reversed())
+                    .collect(Collectors.toList());
+        }
+
+        // 默认根据memory进行逆序排序，考虑为null值的情况
+        if ("memory".equals(sort)) {
+            devopsEnvPodInfoVOList = devopsEnvPodInfoVOList.stream()
+                    .sorted(Comparator.comparing(DevopsEnvPodInfoVO::getMemoryValue, Comparator.nullsFirst(Long::compareTo)).reversed())
+                    .collect(Collectors.toList());
+        }
+
+        return devopsEnvPodInfoVOList;
     }
 }
