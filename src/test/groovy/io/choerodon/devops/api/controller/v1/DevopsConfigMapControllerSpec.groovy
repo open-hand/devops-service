@@ -1,31 +1,27 @@
 package io.choerodon.devops.api.controller.v1
 
 import com.github.pagehelper.PageInfo
-import io.choerodon.core.domain.Page
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.api.vo.DevopsConfigMapDTO
 import io.choerodon.devops.api.vo.DevopsConfigMapRespVO
+import io.choerodon.devops.api.vo.DevopsConfigMapVO
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO
 import io.choerodon.devops.api.vo.iam.RoleVO
-import io.choerodon.devops.app.service.DevopsEnvironmentService
+import io.choerodon.devops.app.service.GitlabGroupMemberService
+import io.choerodon.devops.app.service.IamService
 import io.choerodon.devops.app.service.impl.DevopsConfigMapServiceImpl
-import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE
-import io.choerodon.devops.domain.application.repository.IamRepository
-import io.choerodon.devops.domain.application.valueobject.RepositoryFile
-import io.choerodon.devops.infra.common.util.EnvUtil
-import io.choerodon.devops.infra.common.util.FileUtil
-import io.choerodon.devops.infra.common.util.enums.AccessLevel
-import io.choerodon.devops.infra.dataobject.DevopsEnvFileResourceDO
-import io.choerodon.devops.infra.dataobject.DevopsEnvironmentDO
-import io.choerodon.devops.infra.dataobject.gitlab.MemberDTO
-import io.choerodon.devops.infra.dataobject.iam.ProjectDO
+import io.choerodon.devops.infra.dto.DevopsEnvFileResourceDTO
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO
+import io.choerodon.devops.infra.dto.RepositoryFileDTO
+import io.choerodon.devops.infra.dto.gitlab.MemberDTO
+import io.choerodon.devops.infra.dto.iam.ProjectDTO
+import io.choerodon.devops.infra.feign.BaseServiceClient
 import io.choerodon.devops.infra.feign.GitlabServiceClient
-import io.choerodon.devops.infra.feign.IamServiceClient
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator
+import io.choerodon.devops.infra.handler.ClusterConnectionHandler
 import io.choerodon.devops.infra.mapper.DevopsConfigMapMapper
 import io.choerodon.devops.infra.mapper.DevopsEnvFileResourceMapper
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper
-import io.choerodon.websocket.helper.EnvListener
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
@@ -44,7 +40,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @Import(IntegrationTestConfiguration)
-@Subject(ApplicationController)
+@Subject(DevopsConfigMapController)
 @Stepwise
 class DevopsConfigMapControllerSpec extends Specification {
 
@@ -61,25 +57,24 @@ class DevopsConfigMapControllerSpec extends Specification {
     @Autowired
     private DevopsEnvFileResourceMapper devopsEnvFileResourceMapper
     @Autowired
-    private IamRepository iamRepository
+    private IamService iamRepository
     @Autowired
-    private GitlabRepository gitlabRepository
+    private GitlabServiceClientOperator gitlabRepository
     @Autowired
-    private GitlabGroupMemberRepository gitlabGroupMemberRepository
+    private GitlabGroupMemberService gitlabGroupMemberRepository
 
 
     @Autowired
-    @Qualifier("mockEnvUtil")
-    private EnvUtil envUtil
+    @Qualifier("mockClusterConnectionHandler")
+    private ClusterConnectionHandler envUtil
 
-    DevopsEnvironmentService devopsEnvironmentService = Mockito.mock(DevopsEnvironmentService.class)
-    IamServiceClient iamServiceClient = Mockito.mock(IamServiceClient.class)
+    BaseServiceClient iamServiceClient = Mockito.mock(BaseServiceClient.class)
     GitlabServiceClient gitlabServiceClient = Mockito.mock(GitlabServiceClient.class)
 
     @Shared
-    private DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO()
+    private DevopsEnvironmentDTO devopsEnvironmentDO = new DevopsEnvironmentDTO()
     @Shared
-    private DevopsEnvFileResourceDO devopsEnvFileResourceDO = new DevopsEnvFileResourceDO()
+    private DevopsEnvFileResourceDTO devopsEnvFileResourceDO = new DevopsEnvFileResourceDTO()
     @Shared
     private boolean isToInit = true
     @Shared
@@ -91,14 +86,14 @@ class DevopsConfigMapControllerSpec extends Specification {
             return
         }
 
-        DependencyInjectUtil.setAttribute(iamRepository, "iamServiceClient", iamServiceClient)
+        DependencyInjectUtil.setAttribute(iamRepository, "baseServiceClient", iamServiceClient)
         DependencyInjectUtil.setAttribute(gitlabRepository, "gitlabServiceClient", gitlabServiceClient)
         DependencyInjectUtil.setAttribute(gitlabGroupMemberRepository, "gitlabServiceClient", gitlabServiceClient)
 
-        ProjectDO projectDO = new ProjectDO()
-        projectDO.setName("pro")
-        projectDO.setOrganizationId(1L)
-        ResponseEntity<ProjectDO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
+        ProjectDTO projectDTO = new ProjectDTO()
+        projectDTO.setName("pro")
+        projectDTO.setOrganizationId(1L)
+        ResponseEntity<ProjectDTO> responseEntity = new ResponseEntity<>(projectDTO, HttpStatus.OK)
         Mockito.when(iamServiceClient.queryIamProject(anyLong())).thenReturn(responseEntity)
 
         List<RoleVO> roleDTOList = new ArrayList<>()
@@ -119,9 +114,9 @@ class DevopsConfigMapControllerSpec extends Specification {
         ResponseEntity<MemberDTO> responseEntity1 = new ResponseEntity<>(memberDO, HttpStatus.OK)
         Mockito.when(gitlabServiceClient.queryGroupMember(anyInt(), anyInt())).thenReturn(responseEntity1)
 
-        RepositoryFile file = new RepositoryFile()
+        RepositoryFileDTO file = new RepositoryFileDTO()
         file.setFilePath("filePath")
-        ResponseEntity<RepositoryFile> responseEntity2 = new ResponseEntity<>(file, HttpStatus.OK)
+        ResponseEntity<RepositoryFileDTO> responseEntity2 = new ResponseEntity<>(file, HttpStatus.OK)
         Mockito.when(gitlabServiceClient.createFile(anyInt(), anyString(), anyString(), anyString(), anyInt())).thenReturn(responseEntity2)
 
         Mockito.when(gitlabServiceClient.updateFile(anyInt(), anyString(), anyString(), anyString(), anyInt())).thenReturn(responseEntity2)
@@ -132,7 +127,7 @@ class DevopsConfigMapControllerSpec extends Specification {
             return
         }
 
-        DependencyInjectUtil.restoreDefaultDependency(iamRepository, "iamServiceClient")
+        DependencyInjectUtil.restoreDefaultDependency(iamRepository, "baseServiceClient")
         DependencyInjectUtil.restoreDefaultDependency(gitlabRepository, "gitlabServiceClient")
         DependencyInjectUtil.restoreDefaultDependency(gitlabGroupMemberRepository, "gitlabServiceClient")
 //        DependencyInjectUtil.restoreDefaultDependency(devopsConfigMapServiceImpl, "devopsEnvironmentService")
@@ -169,7 +164,7 @@ class DevopsConfigMapControllerSpec extends Specification {
         devopsEnvFileResourceMapper.insert(devopsEnvFileResourceDO)
 
         and: '初始化DTO'
-        DevopsConfigMapDTO devopsConfigMapDTO = new DevopsConfigMapDTO()
+        DevopsConfigMapVO devopsConfigMapDTO = new DevopsConfigMapVO()
         devopsConfigMapDTO.setId(1L)
         devopsConfigMapDTO.setName("asdasdqqqq")
         devopsConfigMapDTO.setEnvId(1L)
@@ -181,7 +176,7 @@ class DevopsConfigMapControllerSpec extends Specification {
 
         and: 'mock envUtil'
         envUtil.checkEnvConnection(_ as Long) >> null
-        envUtil.handDevopsEnvGitRepository(_ as DevopsEnvironmentE) >> "src/test/gitops/testConfigMap"
+        envUtil.handDevopsEnvGitRepository(_ as Long, _ as String, _ as String) >> "src/test/gitops/testConfigMap"
 
         when: '创建'
         restTemplate.postForObject(MAPPING, devopsConfigMapDTO, Object.class, 1L)
@@ -228,7 +223,7 @@ class DevopsConfigMapControllerSpec extends Specification {
         String params = "{\"searchParam\":{},\"param\":\"\"}"
 
         when: '分页插叙'
-        def page = restTemplate.postForEntity(MAPPING + "/1/listByEnv?page=0&size=10", params, Page.class, 1L)
+        def page = restTemplate.postForEntity(MAPPING + "/1/listByEnv?page=0&size=10", params, PageInfo.class, 1L)
 
         then: '校验结果'
         page.getBody().get(0)["name"] == "asdasdqqqq"
@@ -236,7 +231,7 @@ class DevopsConfigMapControllerSpec extends Specification {
 
     def "Delete"() {
         given: 'mock envUtil'
-        envUtil.checkEnvConnection(_ as Long, _ as EnvListener) >> null
+        envUtil.checkEnvConnection(_ as Long) >> null
 
         when: '删除密钥'
         restTemplate.delete(MAPPING + "/1/delete", 1L)

@@ -136,7 +136,7 @@ public class GitlabServiceClientOperator {
     }
 
     public List<String> listProjectToken(Integer gitlabProjectId, String name, Integer userId) {
-        ResponseEntity<List<ImpersonationTokenDO>> impersonationTokens;
+        ResponseEntity<List<ImpersonationTokenDTO>> impersonationTokens;
         try {
             impersonationTokens = gitlabServiceClient
                     .listProjectToken(userId);
@@ -153,7 +153,7 @@ public class GitlabServiceClientOperator {
     }
 
     public String createProjectToken(Integer gitlabProjectId, String name, Integer userId) {
-        ResponseEntity<ImpersonationTokenDO> impersonationToken;
+        ResponseEntity<ImpersonationTokenDTO> impersonationToken;
         try {
             impersonationToken = gitlabServiceClient.createProjectToken(userId);
         } catch (FeignException e) {
@@ -173,7 +173,7 @@ public class GitlabServiceClientOperator {
      */
     @Nullable
     public String createProjectToken(Integer gitlabProjectId, Integer userId) {
-        ResponseEntity<ImpersonationTokenDO> impersonationToken;
+        ResponseEntity<ImpersonationTokenDTO> impersonationToken;
         try {
             impersonationToken = gitlabServiceClient.createProjectToken(userId);
         } catch (FeignException e) {

@@ -1,17 +1,16 @@
 package io.choerodon.devops.api.controller.v1
 
 import com.github.pagehelper.PageInfo
-import io.choerodon.core.domain.Page
 import io.choerodon.core.exception.CommonException
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.api.vo.OrgCertificationVO
-
-import io.choerodon.devops.infra.common.util.EnvUtil
-import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
-import io.choerodon.devops.infra.dataobject.iam.ProjectDO
-import io.choerodon.devops.infra.feign.IamServiceClient
+import io.choerodon.devops.api.vo.ProjectCertificationVO
+import io.choerodon.devops.app.service.IamService
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO
+import io.choerodon.devops.infra.dto.iam.ProjectDTO
+import io.choerodon.devops.infra.feign.BaseServiceClient
+import io.choerodon.devops.infra.handler.ClusterConnectionHandler
 import io.choerodon.devops.infra.mapper.DevopsCertificationMapper
 import io.choerodon.devops.infra.mapper.DevopsCertificationProRelMapper
 import org.mockito.Mockito
@@ -26,12 +25,12 @@ import spock.lang.Specification
 import spock.lang.Stepwise
 import spock.lang.Subject
 
-import static org.mockito.Matchers.*
+import static org.mockito.ArgumentMatchers.*
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @Import(IntegrationTestConfiguration)
-@Subject(OrgCertificationController)
+@Subject(ProjectCertificationController)
 @Stepwise
 class OrgCertificationControllerSpec extends Specification {
 
@@ -43,44 +42,44 @@ class OrgCertificationControllerSpec extends Specification {
     private TestRestTemplate restTemplate
 
     @Autowired
-    private IamRepository iamRepository
+    private IamService iamRepository
     @Autowired
     private DevopsCertificationMapper devopsCertificationMapper
     @Autowired
     private DevopsCertificationProRelMapper devopsCertificationProRelMapper
 
     @Autowired
-    @Qualifier("mockEnvUtil")
-    private EnvUtil envUtil
+    @Qualifier("mockClusterConnectionHandler")
+    private ClusterConnectionHandler envUtil
 
-    IamServiceClient iamServiceClient = Mockito.mock(IamServiceClient.class)
+    BaseServiceClient iamServiceClient = Mockito.mock(BaseServiceClient)
 
     void setup() {
-        DependencyInjectUtil.setAttribute(iamRepository, "iamServiceClient", iamServiceClient)
+        DependencyInjectUtil.setAttribute(iamRepository, "baseServiceClient", iamServiceClient)
 
-        ProjectDO projectDO = new ProjectDO()
+        ProjectDTO projectDO = new ProjectDTO()
         projectDO.setId(1L)
         projectDO.setCode("pro")
         projectDO.setOrganizationId(1L)
-        ResponseEntity<ProjectDO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
+        ResponseEntity<ProjectDTO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
         Mockito.doReturn(responseEntity).when(iamServiceClient).queryIamProject(anyLong())
 
-        OrganizationDO organizationDO = new OrganizationDO()
+        OrganizationDTO organizationDO = new OrganizationDTO()
         organizationDO.setId(1L)
         organizationDO.setCode("org")
-        ResponseEntity<OrganizationDO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
+        ResponseEntity<OrganizationDTO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
         Mockito.doReturn(responseEntity1).when(iamServiceClient).queryOrganizationById(anyLong())
 
-        List<ProjectDO> projectDOList = new ArrayList<>()
+        List<ProjectDTO> projectDOList = new ArrayList<>()
         projectDOList.add(projectDO)
-        PageInfo<ProjectDO> projectDOPage = new PageInfo<>(projectDOList)
-        ResponseEntity<PageInfo<ProjectDO>> projectDOPageResponseEntity = new ResponseEntity<>(projectDOPage, HttpStatus.OK)
-        Mockito.when(iamServiceClient.queryProjectByOrgId(anyLong(), anyInt(), anyInt(), any(), any())).thenReturn(projectDOPageResponseEntity)
+        PageInfo<ProjectDTO> projectDOPage = new PageInfo<>(projectDOList)
+        ResponseEntity<PageInfo<ProjectDTO>> projectDOPageResponseEntity = new ResponseEntity<>(projectDOPage, HttpStatus.OK)
+        Mockito.when(iamServiceClient.queryProjectByOrgId(anyLong(), anyInt(), anyInt(), anyString(), any(String[]))).thenReturn(projectDOPageResponseEntity)
     }
 
     def "Create"() {
         given: '初始化DTO'
-        OrgCertificationVO orgCertificationDTO = new OrgCertificationVO()
+        ProjectCertificationVO orgCertificationDTO = new ProjectCertificationVO()
         orgCertificationDTO.setName("test")
         orgCertificationDTO.setDomain("test")
         orgCertificationDTO.setCertValue("test")
@@ -128,7 +127,7 @@ class OrgCertificationControllerSpec extends Specification {
 
     def "Update"() {
         given: '初始化DTO'
-        OrgCertificationVO orgCertificationDTO = new OrgCertificationVO()
+        ProjectCertificationVO orgCertificationDTO = new ProjectCertificationVO()
         List<Long> projectIds = new ArrayList<>()
         projectIds.add(2L)
         orgCertificationDTO.setProjects(projectIds)
@@ -144,7 +143,7 @@ class OrgCertificationControllerSpec extends Specification {
 
     def "Query"() {
         when: '查询单个证书信息'
-        def dto = restTemplate.getForObject(MAPPING + "/" + ID, OrgCertificationVO.class, 1L)
+        def dto = restTemplate.getForObject(MAPPING + "/" + ID, ProjectCertificationVO.class, 1L)
 
         then: '校验返回值'
         dto["name"] == "test"
@@ -165,10 +164,10 @@ class OrgCertificationControllerSpec extends Specification {
         str[0] = "{}"
 
         when: '分页查询项目列表'
-        def e = restTemplate.postForEntity(MAPPING + "/page_projects?page=0&size=10&certId=" + ID, str, Page.class, 1L)
+        def e = restTemplate.postForEntity(MAPPING + "/page_projects?page=0&size=10&certId=" + ID, str, PageInfo.class, 1L)
 
         then: '校验返回值'
-        e.getBody().get(0)["code"] == "pro"
+        e.getBody().getList().get(0)["code"] == "pro"
     }
 
     def "ListCertProjects"() {
@@ -185,10 +184,10 @@ class OrgCertificationControllerSpec extends Specification {
 
 
         when: '证书列表查询'
-        def e = restTemplate.postForEntity(MAPPING + "/page_cert?page=0&size=10", str, Page.class, 1L)
+        def e = restTemplate.postForEntity(MAPPING + "/page_cert?page=0&size=10", str, PageInfo.class, 1L)
 
         then: '校验返回值'
-        e.getBody().get(0)["name"] == "test"
+        e.getBody().getList().get(0)["name"] == "test"
     }
 
     def "DeleteOrgCert"() {

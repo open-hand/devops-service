@@ -2,30 +2,17 @@ package io.choerodon.devops.api.controller.v1
 
 import com.github.pagehelper.PageInfo
 import io.choerodon.base.domain.PageRequest
-import io.choerodon.core.domain.Page
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.ExportOctetStream2HttpMessageConverter
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.api.vo.AppServiceMarketDownloadVO
-import io.choerodon.devops.api.vo.AppServiceMarketVO
-import io.choerodon.devops.api.vo.AppServiceMarketVersionVO
-import io.choerodon.devops.api.vo.AppServiceReleasingVO
-import io.choerodon.devops.api.vo.DevopsEnvApplicationVO
-import io.choerodon.devops.api.vo.UserAttrVO
+import io.choerodon.devops.api.vo.*
 import io.choerodon.devops.app.service.IamService
-import io.choerodon.devops.infra.common.util.FileUtil
-import io.choerodon.devops.infra.dataobject.*
-import io.choerodon.devops.infra.dto.AppServiceInstanceDTO
-import io.choerodon.devops.infra.dto.AppServiceShareRuleDTO
-import io.choerodon.devops.infra.dto.AppServiceVersionDTO
-import io.choerodon.devops.infra.dto.AppServiceVersionReadmeDTO
-import io.choerodon.devops.infra.dto.AppServiceVersionValueDTO
-import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO
-import io.choerodon.devops.infra.dto.iam.ApplicationDTO
+import io.choerodon.devops.infra.dto.*
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO
 import io.choerodon.devops.infra.dto.iam.ProjectDTO
 import io.choerodon.devops.infra.feign.BaseServiceClient
 import io.choerodon.devops.infra.mapper.*
+import io.choerodon.devops.infra.util.FileUtil
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -79,7 +66,7 @@ class AppServiceMarketControllerSpec extends Specification {
     BaseServiceClient baseServiceClient = Mockito.mock(BaseServiceClient.class)
 
     @Shared
-    ApplicationDTO applicationDTO = new ApplicationDTO()
+    AppServiceDTO appServiceDTO = new AppServiceDTO()
     @Shared
     DevopsEnvironmentDTO devopsEnvironmentDO = new DevopsEnvironmentDTO()
     @Shared
@@ -126,11 +113,11 @@ class AppServiceMarketControllerSpec extends Specification {
         pageRequest.page = 0
 
         // da
-        applicationDTO.setId(1L)
-        applicationDTO.setActive(true)
-        applicationDTO.setProjectId(1L)
-        applicationDTO.setCode("appCode")
-        applicationDTO.setName("appName")
+        appServiceDTO.setId(1L)
+        appServiceDTO.setActive(true)
+        appServiceDTO.setProjectId(1L)
+        appServiceDTO.setCode("appCode")
+        appServiceDTO.setName("appName")
 
         // dav
         applicationVersionDTO.setId(1L)
@@ -170,12 +157,12 @@ class AppServiceMarketControllerSpec extends Specification {
         projectDOList.add(projectDO)
         PageInfo<ProjectDTO> projectDOPage = new PageInfo(projectDOList)
         ResponseEntity<PageInfo<ProjectDTO>> projectDOPageResponseEntity = new ResponseEntity<>(projectDOPage, HttpStatus.OK)
-        Mockito.when(baseServiceClient.queryProjectByOrgId(anyLong(), anyInt(), anyInt(), isNull(), isNull())).thenReturn(projectDOPageResponseEntity)
+        Mockito.when(baseServiceClient.queryProjectByOrgId(anyLong(), anyInt(), anyInt(), anyString(), any(String[]))).thenReturn(projectDOPageResponseEntity)
     }
 
     def "Create"() {
         given: '插入数据'
-        applicationMapper.insert(applicationDTO)
+        applicationMapper.insert(appServiceDTO)
         applicationVersionMapper.insert(applicationVersionDTO)
 
         and: '准备DTO'
@@ -189,7 +176,7 @@ class AppServiceMarketControllerSpec extends Specification {
         applicationReleasingDTO.setPublishLevel("public")
 
         and: '应用版本'
-        List<AppServiceMarketVO> appVersions = new ArrayList<>()
+        List<AppServiceMarketVersionVO> appVersions = new ArrayList<>()
         AppServiceMarketVersionVO appMarketVersionDTO = new AppServiceMarketVersionVO()
         appMarketVersionDTO.setId(1L)
         appVersions.add(appMarketVersionDTO)
@@ -208,18 +195,18 @@ class AppServiceMarketControllerSpec extends Specification {
         applicationInstanceMapper.insert(applicationInstanceDO)
 
         when: '查询所有发布在应用市场的应用'
-        def page = restTemplate.postForObject("/v1/projects/1/apps_market/baseList", searchParam, Page.class)
+        def page = restTemplate.postForObject("/v1/projects/1/apps_market/baseList", searchParam, PageInfo.class)
 
         then: '验证返回值'
-        page.getContent().get(0)["name"] == "appName"
+        page.getList().get(0)["name"] == "appName"
     }
 
     def "ListAllApp"() {
         when: '查询发布级别为全局或者在本组织下的所有应用市场的应用'
-        def page = restTemplate.postForObject("/v1/projects/1/apps_market/list_all", searchParam, Page.class)
+        def page = restTemplate.postForObject("/v1/projects/1/apps_market/list_all", searchParam, PageInfo.class)
 
         then: '验证返回值'
-        page.getContent().get(0)["name"] == "appName"
+        page.getList().get(0)["name"] == "appName"
     }
 
     def "QueryAppInProject"() {
@@ -251,11 +238,11 @@ class AppServiceMarketControllerSpec extends Specification {
 
     def "QueryAppVersionsInProjectByPage"() {
         when: '分页查询项目下单个应用市场的应用的版本'
-        def page = restTemplate.postForObject("/v1/projects/1/apps_market/{app_market_id}/versions", searchParam, Page.class,
+        def page = restTemplate.postForObject("/v1/projects/1/apps_market/{app_market_id}/versions", searchParam, PageInfo.class,
                 applicationMarketMapper.selectAll().get(0).getId())
 
         then:
-        page.getContent().get(0)["version"] == "0.0"
+        page.getList().get(0)["version"] == "0.0"
     }
 
     def "QueryAppVersionReadme"() {
@@ -291,7 +278,7 @@ class AppServiceMarketControllerSpec extends Specification {
         given: '准备dotList'
         AppServiceMarketVersionVO appMarketVersionDTO = new AppServiceMarketVersionVO()
         appMarketVersionDTO.setId(1L)
-        List<AppServiceMarketVO> dtoList = new ArrayList<>()
+        List<AppServiceMarketVersionVO> dtoList = new ArrayList<>()
         dtoList.add(appMarketVersionDTO)
 
         when: '更新单个应用市场的应用'
@@ -369,9 +356,9 @@ class AppServiceMarketControllerSpec extends Specification {
         responseEntity.getHeaders().get("Content-Length").get(0).toString().toInteger() != 0
 
         // 删除app
-        List<ApplicationDTO> list = applicationMapper.selectAll()
+        List<AppServiceDTO> list = applicationMapper.selectAll()
         if (list != null && !list.isEmpty()) {
-            for (ApplicationDTO e : list) {
+            for (AppServiceDTO e : list) {
                 applicationMapper.delete(e)
             }
         }
@@ -383,9 +370,9 @@ class AppServiceMarketControllerSpec extends Specification {
             }
         }
         // 删除env
-        List<DevopsEnvApplicationVO> list2 = devopsEnvironmentMapper.selectAll()
+        List<DevopsEnvironmentDTO> list2 = devopsEnvironmentMapper.selectAll()
         if (list2 != null && !list2.isEmpty()) {
-            for (DevopsEnvApplicationVO e : list2) {
+            for (DevopsEnvironmentDTO e : list2) {
                 devopsEnvironmentMapper.delete(e)
             }
         }
@@ -411,9 +398,9 @@ class AppServiceMarketControllerSpec extends Specification {
             }
         }
         // 删除appInstance
-        List<AppServiceVersionDTO> list6 = applicationInstanceMapper.selectAll()
+        List<AppServiceInstanceDTO> list6 = applicationInstanceMapper.selectAll()
         if (list6 != null && !list6.isEmpty()) {
-            for (AppServiceVersionDTO e : list6) {
+            for (AppServiceInstanceDTO e : list6) {
                 applicationInstanceMapper.delete(e)
             }
         }

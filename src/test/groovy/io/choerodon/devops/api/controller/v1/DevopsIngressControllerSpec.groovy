@@ -1,27 +1,29 @@
 package io.choerodon.devops.api.controller.v1
 
 import com.github.pagehelper.PageInfo
-import io.choerodon.core.domain.Page
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.DevopsIngressPathVO
 import io.choerodon.devops.api.vo.DevopsIngressVO
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO
 import io.choerodon.devops.api.vo.iam.RoleVO
-
-import io.choerodon.devops.domain.application.repository.*
-import io.choerodon.devops.domain.application.valueobject.RepositoryFile
-import io.choerodon.devops.infra.common.util.EnvUtil
-import io.choerodon.devops.infra.common.util.FileUtil
-import io.choerodon.devops.infra.common.util.GitUtil
-import io.choerodon.devops.infra.common.util.enums.AccessLevel
-import io.choerodon.devops.infra.common.util.enums.CertificationStatus
-import io.choerodon.devops.infra.dataobject.gitlab.MemberDTO
-import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
-import io.choerodon.devops.infra.dataobject.iam.ProjectDO
+import io.choerodon.devops.app.service.DevopsEnvCommandService
+import io.choerodon.devops.app.service.DevopsProjectService
+import io.choerodon.devops.app.service.GitlabGroupMemberService
+import io.choerodon.devops.app.service.IamService
+import io.choerodon.devops.infra.dto.*
+import io.choerodon.devops.infra.dto.gitlab.MemberDTO
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO
+import io.choerodon.devops.infra.dto.iam.ProjectDTO
+import io.choerodon.devops.infra.enums.AccessLevel
+import io.choerodon.devops.infra.enums.CertificationStatus
+import io.choerodon.devops.infra.feign.BaseServiceClient
 import io.choerodon.devops.infra.feign.GitlabServiceClient
-import io.choerodon.devops.infra.feign.IamServiceClient
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator
+import io.choerodon.devops.infra.handler.ClusterConnectionHandler
 import io.choerodon.devops.infra.mapper.*
+import io.choerodon.devops.infra.util.FileUtil
+import io.choerodon.devops.infra.util.GitUtil
 import io.choerodon.websocket.helper.EnvListener
 import io.choerodon.websocket.helper.EnvSession
 import org.mockito.Mockito
@@ -63,7 +65,7 @@ class DevopsIngressControllerSpec extends Specification {
     @Autowired
     private DevopsEnvCommandMapper devopsEnvCommandMapper
     @Autowired
-    private DevopsProjectRepository devopsProjectRepository
+    private DevopsProjectService devopsProjectRepository
     @Autowired
     private DevopsEnvironmentMapper devopsEnvironmentMapper
     @Autowired
@@ -73,11 +75,11 @@ class DevopsIngressControllerSpec extends Specification {
     @Autowired
     private DevopsEnvFileResourceMapper devopsEnvFileResourceMapper
     @Autowired
-    private DevopsEnvCommandRepository devopsEnvCommandRepository
+    private DevopsEnvCommandService devopsEnvCommandRepository
 
     @Autowired
-    @Qualifier("mockEnvUtil")
-    private EnvUtil envUtil
+    @Qualifier("mockClusterConnectionHandler")
+    private ClusterConnectionHandler envUtil
     @Autowired
     @Qualifier("mockGitUtil")
     private GitUtil gitUtil
@@ -86,15 +88,13 @@ class DevopsIngressControllerSpec extends Specification {
     private EnvListener envListener
 
     @Autowired
-    private IamRepository iamRepository
+    private IamService iamRepository
     @Autowired
-    private GitlabRepository gitlabRepository
+    private GitlabServiceClientOperator gitlabRepository
     @Autowired
-    private GitlabProjectRepository gitlabProjectRepository
-    @Autowired
-    private GitlabGroupMemberRepository gitlabGroupMemberRepository
+    private GitlabGroupMemberService gitlabGroupMemberRepository
 
-    IamServiceClient iamServiceClient = Mockito.mock(IamServiceClient.class)
+    BaseServiceClient iamServiceClient = Mockito.mock(BaseServiceClient)
     GitlabServiceClient gitlabServiceClient = Mockito.mock(GitlabServiceClient.class)
 
     @Shared
@@ -102,17 +102,17 @@ class DevopsIngressControllerSpec extends Specification {
     @Shared
     DevopsIngressPathVO devopsIngressPathDTO = new DevopsIngressPathVO()
     @Shared
-    DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO()
+    DevopsEnvironmentDTO devopsEnvironmentDO = new DevopsEnvironmentDTO()
     @Shared
-    DevopsServiceDO devopsServiceDO = new DevopsServiceDO()
+    DevopsServiceDTO devopsServiceDO = new DevopsServiceDTO()
     @Shared
-    DevopsIngressDO devopsIngressDO = new DevopsIngressDO()
+    DevopsIngressDTO devopsIngressDO = new DevopsIngressDTO()
     @Shared
-    DevopsEnvCommandDO devopsEnvCommandDO = new DevopsEnvCommandDO()
+    DevopsEnvCommandDTO devopsEnvCommandDO = new DevopsEnvCommandDTO()
     @Shared
-    DevopsIngressPathDO devopsIngressPathDO = new DevopsIngressPathDO()
+    DevopsIngressPathDTO devopsIngressPathDO = new DevopsIngressPathDTO()
     @Shared
-    DevopsEnvFileResourceDO devopsEnvFileResourceDO = new DevopsEnvFileResourceDO()
+    DevopsEnvFileResourceDTO devopsEnvFileResourceDO = new DevopsEnvFileResourceDTO()
 
     def setupSpec() {
         FileUtil.copyFile("src/test/gitops/org/pro/env/test-ing.yaml", "gitops/org/pro/env")
@@ -180,26 +180,26 @@ class DevopsIngressControllerSpec extends Specification {
     }
 
     def setup() {
-        DependencyInjectUtil.setAttribute(iamRepository, "iamServiceClient", iamServiceClient)
+        DependencyInjectUtil.setAttribute(iamRepository, "baseServiceClient", iamServiceClient)
         DependencyInjectUtil.setAttribute(gitlabRepository, "gitlabServiceClient", gitlabServiceClient)
         DependencyInjectUtil.setAttribute(gitlabProjectRepository, "gitlabServiceClient", gitlabServiceClient)
         DependencyInjectUtil.setAttribute(gitlabGroupMemberRepository, "gitlabServiceClient", gitlabServiceClient)
 
-        ProjectDO projectDO = new ProjectDO()
+        ProjectDTO projectDO = new ProjectDTO()
         projectDO.setId(1L)
         projectDO.setCode("pro")
         projectDO.setOrganizationId(1L)
-        ResponseEntity<ProjectDO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
+        ResponseEntity<ProjectDTO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
         Mockito.doReturn(responseEntity).when(iamServiceClient).queryIamProject(1L)
 
-        OrganizationDO organizationDO = new OrganizationDO()
+        OrganizationDTO organizationDO = new OrganizationDTO()
         organizationDO.setId(1L)
         organizationDO.setCode("org")
-        ResponseEntity<OrganizationDO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
+        ResponseEntity<OrganizationDTO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
         Mockito.doReturn(responseEntity1).when(iamServiceClient).queryOrganizationById(1L)
 
         MemberDTO memberDO = new MemberDTO()
-        memberDO.setAccessLevel(AccessLevel.OWNER)
+        memberDO.setAccessLevel(AccessLevel.OWNER.toValue())
         ResponseEntity<MemberDTO> responseEntity2 = new ResponseEntity<>(memberDO, HttpStatus.OK)
         Mockito.when(gitlabServiceClient.queryGroupMember(anyInt(), anyInt())).thenReturn(responseEntity2)
 
@@ -216,9 +216,9 @@ class DevopsIngressControllerSpec extends Specification {
         ResponseEntity<PageInfo<ProjectWithRoleVO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
         Mockito.doReturn(pageResponseEntity).when(iamServiceClient).listProjectWithRole(anyLong(), anyInt(), anyInt())
 
-        RepositoryFile repositoryFile = new RepositoryFile()
+        RepositoryFileDTO repositoryFile = new RepositoryFileDTO()
         repositoryFile.setFilePath("testFilePath")
-        ResponseEntity<RepositoryFile> responseEntity3 = new ResponseEntity<>(repositoryFile, HttpStatus.OK)
+        ResponseEntity<RepositoryFileDTO> responseEntity3 = new ResponseEntity<>(repositoryFile, HttpStatus.OK)
         Mockito.when(gitlabServiceClient.createFile(anyInt(), anyString(), anyString(), anyString(), anyInt())).thenReturn(responseEntity3)
         Mockito.when(gitlabServiceClient.updateFile(anyInt(), anyString(), anyString(), anyString(), anyInt())).thenReturn(responseEntity3)
     }
@@ -233,14 +233,14 @@ class DevopsIngressControllerSpec extends Specification {
         devopsEnvFileResourceMapper.insert(devopsEnvFileResourceDO)
 
         and: '创建证书'
-        CertificationDO certificationDO = new CertificationDO()
+        CertificationDTO certificationDO = new CertificationDTO()
         certificationDO.setId(1L)
         certificationDO.setName("cert")
         certificationDO.setStatus(CertificationStatus.ACTIVE.getStatus())
         devopsCertificationMapper.insert(certificationDO)
 
         and: 'mock envUtil'
-        envUtil.checkEnvConnection(_ as Long, _ as EnvListener) >> null
+        envUtil.checkEnvConnection(_ as Long) >> null
 
         when: '项目下创建域名'
         restTemplate.postForEntity("/v1/projects/1/ingress?envId=1", devopsIngressDTO, Object.class)
@@ -273,7 +273,7 @@ class DevopsIngressControllerSpec extends Specification {
         gitUtil.cloneBySsh(_ as String, _ as String) >> null
 
         and: "mock handDevopsEnvGitRepository"
-        envUtil.handDevopsEnvGitRepository(_ as DevopsEnvironmentE) >> "src/test/gitops/org/pro/env"
+        envUtil.handDevopsEnvGitRepository(_ as Long, _ as String, _ as String) >> "src/test/gitops/org/pro/env"
 
         when: '项目下更新域名'
         restTemplate.put("/v1/projects/1/ingress/1", newDevopsIngressDTO, Object.class)
@@ -292,7 +292,7 @@ class DevopsIngressControllerSpec extends Specification {
 
     def "Delete"() {
         given: 'mock envUtil'
-        envUtil.checkEnvConnection(_ as Long, _ as EnvListener) >> null
+        envUtil.checkEnvConnection(_ as Long) >> null
 
         when: '项目下删除域名'
         restTemplate.delete("/v1/projects/1/ingress/1")
@@ -339,59 +339,59 @@ class DevopsIngressControllerSpec extends Specification {
         envUtil.getUpdatedEnvList() >> envList
 
         when: '环境总览域名查询'
-        def page = restTemplate.postForObject("/v1/projects/1/ingress/1/listByEnv", strEntity, Page.class)
+        def page = restTemplate.postForObject("/v1/projects/1/ingress/1/listByEnv", strEntity, PageInfo.class)
 
         then: '校验返回值'
-        page.size() == 1
+        page.getTotal() == 1
 
         and: '清理数据'
 
         // 删除cert
-        List<CertificationDO> list = devopsCertificationMapper.selectAll()
+        List<CertificationDTO> list = devopsCertificationMapper.selectAll()
         if (list != null && !list.isEmpty()) {
-            for (CertificationDO e : list) {
+            for (CertificationDTO e : list) {
                 devopsCertificationMapper.delete(e)
             }
         }
         // 删除env
-        List<DevopsEnvironmentDO> list1 = devopsEnvironmentMapper.selectAll()
+        List<DevopsEnvironmentDTO> list1 = devopsEnvironmentMapper.selectAll()
         if (list1 != null && !list1.isEmpty()) {
-            for (DevopsEnvironmentDO e : list1) {
+            for (DevopsEnvironmentDTO e : list1) {
                 devopsEnvironmentMapper.delete(e)
             }
         }
         // 删除ingress
-        List<DevopsIngressDO> list2 = devopsIngressMapper.selectAll()
+        List<DevopsIngressDTO> list2 = devopsIngressMapper.selectAll()
         if (list2 != null && !list2.isEmpty()) {
-            for (DevopsIngressDO e : list2) {
+            for (DevopsIngressDTO e : list2) {
                 devopsIngressMapper.delete(e)
             }
         }
         // 删除service
-        List<DevopsServiceDO> list3 = devopsServiceMapper.selectAll()
+        List<DevopsServiceDTO> list3 = devopsServiceMapper.selectAll()
         if (list3 != null && !list3.isEmpty()) {
-            for (DevopsServiceDO e : list3) {
+            for (DevopsServiceDTO e : list3) {
                 devopsServiceMapper.delete(e)
             }
         }
         // 删除envCommand
-        List<DevopsEnvCommandDO> list4 = devopsEnvCommandMapper.selectAll()
+        List<DevopsEnvCommandDTO> list4 = devopsEnvCommandMapper.selectAll()
         if (list4 != null && !list4.isEmpty()) {
-            for (DevopsEnvCommandDO e : list4) {
+            for (DevopsEnvCommandDTO e : list4) {
                 devopsEnvCommandMapper.delete(e)
             }
         }
         // 删除envFileResource
-        List<DevopsEnvFileResourceDO> list5 = devopsEnvFileResourceMapper.selectAll()
+        List<DevopsEnvFileResourceDTO> list5 = devopsEnvFileResourceMapper.selectAll()
         if (list5 != null && !list5.isEmpty()) {
-            for (DevopsEnvFileResourceDO e : list5) {
+            for (DevopsEnvFileResourceDTO e : list5) {
                 devopsEnvFileResourceMapper.delete(e)
             }
         }
         // 删除ingressPath
-        List<DevopsIngressPathDO> list6 = devopsIngressPathMapper.selectAll()
+        List<DevopsIngressPathDTO> list6 = devopsIngressPathMapper.selectAll()
         if (list6 != null && !list6.isEmpty()) {
-            for (DevopsIngressPathDO e : list6) {
+            for (DevopsIngressPathDTO e : list6) {
                 devopsIngressPathMapper.delete(e)
             }
         }

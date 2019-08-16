@@ -2,8 +2,8 @@ package io.choerodon.devops.api.controller.v1
 
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.DevopsEnvGroupVO
-import io.choerodon.devops.infra.dataobject.DevopsEnvGroupDO
-import io.choerodon.devops.infra.dataobject.DevopsEnvironmentDO
+import io.choerodon.devops.infra.dto.DevopsEnvGroupDTO
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO
 import io.choerodon.devops.infra.mapper.DevopsEnvGroupMapper
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper
 import org.springframework.beans.factory.annotation.Autowired
@@ -29,9 +29,6 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @Subject(DevopsEnvGroupController)
 @Stepwise
 class DevopsEnvGroupControllerSpec extends Specification {
-
-    private static flag = 0
-
     @Autowired
     private TestRestTemplate restTemplate
     @Autowired
@@ -40,9 +37,9 @@ class DevopsEnvGroupControllerSpec extends Specification {
     DevopsEnvironmentMapper devopsEnvironmentMapper
 
     @Shared
-    DevopsEnvGroupDO devopsEnvGroupDO = new DevopsEnvGroupDO()
+    DevopsEnvGroupDTO devopsEnvGroupDO = new DevopsEnvGroupDTO()
     @Shared
-    DevopsEnvGroupDO devopsEnvGroupDO1 = new DevopsEnvGroupDO()
+    DevopsEnvGroupDTO devopsEnvGroupDO1 = new DevopsEnvGroupDTO()
 
     def setupSpec() {
         devopsEnvGroupDO.setId(1L)
@@ -102,24 +99,24 @@ class DevopsEnvGroupControllerSpec extends Specification {
 
     def "Delete"() {
         given: '创建环境DO类'
-        DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO()
-        devopsEnvironmentDO.setId(1L)
-        devopsEnvironmentDO.setProjectId(1L)
-        devopsEnvironmentDO.setActive(true)
-        devopsEnvironmentDO.setGitlabEnvProjectId(1L)
-        devopsEnvironmentDO.setSequence(1L)
-        devopsEnvironmentDO.setCode("env")
-        devopsEnvironmentDO.setDevopsEnvGroupId(1L)
-        DevopsEnvironmentDO devopsEnvironmentDO1 = new DevopsEnvironmentDO()
-        devopsEnvironmentDO1.setId(2L)
-        devopsEnvironmentDO1.setProjectId(1L)
-        devopsEnvironmentDO1.setActive(true)
-        devopsEnvironmentDO1.setCode("env1")
-        devopsEnvironmentDO1.setGitlabEnvProjectId(1L)
-        devopsEnvironmentDO1.setSequence(2L)
-        devopsEnvironmentDO1.setDevopsEnvGroupId(1L)
-        devopsEnvironmentMapper.insert(devopsEnvironmentDO)
-        devopsEnvironmentMapper.insert(devopsEnvironmentDO1)
+        DevopsEnvironmentDTO devopsEnvironmentDTO = new DevopsEnvironmentDTO()
+        devopsEnvironmentDTO.setId(1L)
+        devopsEnvironmentDTO.setProjectId(1L)
+        devopsEnvironmentDTO.setActive(true)
+        devopsEnvironmentDTO.setGitlabEnvProjectId(1L)
+        devopsEnvironmentDTO.setSequence(1L)
+        devopsEnvironmentDTO.setCode("env")
+        devopsEnvironmentDTO.setDevopsEnvGroupId(1L)
+        DevopsEnvironmentDTO devopsEnvironmentDTO1 = new DevopsEnvironmentDTO()
+        devopsEnvironmentDTO1.setId(2L)
+        devopsEnvironmentDTO1.setProjectId(1L)
+        devopsEnvironmentDTO1.setActive(true)
+        devopsEnvironmentDTO1.setCode("env1")
+        devopsEnvironmentDTO1.setGitlabEnvProjectId(1L)
+        devopsEnvironmentDTO1.setSequence(2L)
+        devopsEnvironmentDTO1.setDevopsEnvGroupId(1L)
+        devopsEnvironmentMapper.insert(devopsEnvironmentDTO)
+        devopsEnvironmentMapper.insert(devopsEnvironmentDTO1)
 
         when: '环境组删除'
         restTemplate.delete("/v1/projects/1/env_groups/1")
@@ -129,16 +126,16 @@ class DevopsEnvGroupControllerSpec extends Specification {
 
         and: '清理数据'
         // 删除envGroup
-        List<DevopsEnvGroupDO> list = devopsEnvGroupMapper.selectAll()
+        List<DevopsEnvGroupDTO> list = devopsEnvGroupMapper.selectAll()
         if (list != null && !list.isEmpty()) {
-            for (DevopsEnvGroupDO e : list) {
+            for (DevopsEnvGroupDTO e : list) {
                 devopsEnvGroupMapper.delete(e)
             }
         }
         // 删除env
-        List<DevopsEnvironmentDO> list1 = devopsEnvironmentMapper.selectAll()
+        List<DevopsEnvironmentDTO> list1 = devopsEnvironmentMapper.selectAll()
         if (list1 != null && !list1.isEmpty()) {
-            for (DevopsEnvironmentDO e : list1) {
+            for (DevopsEnvironmentDTO e : list1) {
                 devopsEnvironmentMapper.delete(e)
             }
         }

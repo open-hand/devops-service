@@ -1,27 +1,27 @@
 package io.choerodon.devops.app.eventhandler
 
 import com.google.gson.Gson
+import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.api.vo.CommitVO
 import io.choerodon.devops.api.vo.PipelineWebHookVO
 import io.choerodon.devops.api.vo.PushWebHookVO
-import io.choerodon.devops.app.service.*
-
-
-import io.choerodon.devops.app.eventhandler.payload.DevOpsAppPayload
+import io.choerodon.devops.app.eventhandler.payload.DevOpsAppServicePayload
 import io.choerodon.devops.app.eventhandler.payload.DevOpsUserPayload
 import io.choerodon.devops.app.eventhandler.payload.GitlabProjectPayload
-
-
-import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository
-
+import io.choerodon.devops.app.service.*
+import io.choerodon.devops.app.service.impl.UpdateEnvUserPermissionServiceImpl
+import io.choerodon.devops.infra.dto.AppServiceDTO
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO
 import org.junit.runner.RunWith
 import org.powermock.api.mockito.PowerMockito
 import org.powermock.modules.junit4.PowerMockRunner
 import org.powermock.modules.junit4.PowerMockRunnerDelegate
 import org.spockframework.runtime.Sputnik
+import spock.lang.Shared
 import spock.lang.Specification
 
-import static org.mockito.Matchers.*
+import static org.mockito.ArgumentMatchers.any
+import static org.mockito.ArgumentMatchers.anyLong
 
 /**
  * Created by n!Ck
@@ -38,28 +38,69 @@ class DevopsSagaHandlerSpec extends Specification {
 
     private DevopsEnvironmentService devopsEnvironmentService = PowerMockito.mock(DevopsEnvironmentService)
     private DevopsGitService devopsGitService = PowerMockito.mock(DevopsGitService)
-    private ApplicationTemplateService applicationTemplateService = PowerMockito.mock(ApplicationTemplateService)
-    private ApplicationService applicationService = PowerMockito.mock(ApplicationService)
+    private AppServiceService appServiceService = PowerMockito.mock(AppServiceService)
     private DevopsGitlabPipelineService devopsGitlabPipelineService = PowerMockito.mock(DevopsGitlabPipelineService)
-    private ApplicationRepository applicationRepository = PowerMockito.mock(ApplicationRepository)
-    private ApplicationTemplateRepository applicationTemplateRepository = PowerMockito.mock(ApplicationTemplateRepository)
-    private DevopsEnvironmentRepository devopsEnvironmentRepository = PowerMockito.mock(DevopsEnvironmentRepository)
-    private GitlabRepository gitlabRepository = PowerMockito.mock(GitlabRepository)
-    private ApplicationInstanceService applicationInstanceService = PowerMockito.mock(ApplicationInstanceService)
 
+    private AppServiceInstanceService appServiceInstanceService = PowerMockito.mock(AppServiceInstanceService)
+    private PipelineTaskRecordService pipelineTaskRecordService = PowerMockito.mock(PipelineTaskRecordService)
+    private PipelineStageRecordService pipelineStageRecordService = PowerMockito.mock(PipelineStageRecordService)
+    private PipelineService pipelineService = PowerMockito.mock(PipelineService)
+    private PipelineRecordService pipelineRecordService = PowerMockito.mock(PipelineRecordService)
+    private DevopsServiceService devopsServiceService = PowerMockito.mock(DevopsServiceService)
+    private DevopsIngressService devopsIngressService = PowerMockito.mock(DevopsIngressService)
 
-    private DevopsSagaHandler devopsSagaHandler = new DevopsSagaHandler(devopsEnvironmentService,
-            devopsGitService, applicationTemplateService, applicationService, devopsGitlabPipelineService, applicationRepository,
-            applicationTemplateRepository, devopsEnvironmentRepository,gitlabRepository,applicationInstanceService)
+    private UpdateEnvUserPermissionServiceImpl updateUserEnvPermissionService = PowerMockito.mock(UpdateEnvUserPermissionServiceImpl)
+
+    @Shared
+    private boolean toSetUp = true
+    @Shared
+    private boolean toCleanUp = false
+
+    private DevopsSagaHandler devopsSagaHandler = new DevopsSagaHandler()
+
+    def setup() {
+        if (toSetUp) {
+            DependencyInjectUtil.setAttribute(devopsSagaHandler, "devopsEnvironmentService", devopsEnvironmentService)
+            DependencyInjectUtil.setAttribute(devopsSagaHandler, "devopsGitService", devopsGitService)
+            DependencyInjectUtil.setAttribute(devopsSagaHandler, "appServiceService", appServiceService)
+            DependencyInjectUtil.setAttribute(devopsSagaHandler, "devopsGitlabPipelineService", devopsGitlabPipelineService)
+            DependencyInjectUtil.setAttribute(devopsSagaHandler, "appServiceInstanceService", appServiceInstanceService)
+            DependencyInjectUtil.setAttribute(devopsSagaHandler, "pipelineTaskRecordService", pipelineTaskRecordService)
+            DependencyInjectUtil.setAttribute(devopsSagaHandler, "pipelineStageRecordService", pipelineStageRecordService)
+            DependencyInjectUtil.setAttribute(devopsSagaHandler, "pipelineService", pipelineService)
+            DependencyInjectUtil.setAttribute(devopsSagaHandler, "pipelineRecordService", pipelineRecordService)
+            DependencyInjectUtil.setAttribute(devopsSagaHandler, "devopsServiceService", devopsServiceService)
+            DependencyInjectUtil.setAttribute(devopsSagaHandler, "devopsIngressService", devopsIngressService)
+            DependencyInjectUtil.setAttribute(devopsSagaHandler, "updateUserEnvPermissionService", updateUserEnvPermissionService)
+        }
+    }
+
+    def cleanup() {
+        if (toCleanUp) {
+            DependencyInjectUtil.restoreDefaultDependency(devopsSagaHandler, "devopsEnvironmentService")
+            DependencyInjectUtil.restoreDefaultDependency(devopsSagaHandler, "devopsGitService")
+            DependencyInjectUtil.restoreDefaultDependency(devopsSagaHandler, "appServiceService")
+            DependencyInjectUtil.restoreDefaultDependency(devopsSagaHandler, "devopsGitlabPipelineService")
+            DependencyInjectUtil.restoreDefaultDependency(devopsSagaHandler, "appServiceInstanceService")
+            DependencyInjectUtil.restoreDefaultDependency(devopsSagaHandler, "pipelineTaskRecordService")
+            DependencyInjectUtil.restoreDefaultDependency(devopsSagaHandler, "pipelineStageRecordService")
+            DependencyInjectUtil.restoreDefaultDependency(devopsSagaHandler, "pipelineService")
+            DependencyInjectUtil.restoreDefaultDependency(devopsSagaHandler, "pipelineRecordService")
+            DependencyInjectUtil.restoreDefaultDependency(devopsSagaHandler, "devopsServiceService")
+            DependencyInjectUtil.restoreDefaultDependency(devopsSagaHandler, "devopsIngressService")
+            DependencyInjectUtil.restoreDefaultDependency(devopsSagaHandler, "updateUserEnvPermissionService")
+        }
+    }
 
     def "DevopsCreateEnv"() {
         given: '初始化GitlabProjectPayload'
+        toSetUp = false
         GitlabProjectPayload gitlabProjectPayload = new GitlabProjectPayload()
         gitlabProjectPayload.setUserId(1)
         String data = gson.toJson(gitlabProjectPayload)
 
-        and: '构造DevopsEnvironmentE'
-        DevopsEnvironmentE devopsEnvironmentE = new DevopsEnvironmentE()
+        and: '构造DevopsEnvironmentDTO'
+        DevopsEnvironmentDTO devopsEnvironmentE = new DevopsEnvironmentDTO()
         devopsEnvironmentE.setFailed(true)
         PowerMockito.when(devopsEnvironmentRepository.baseQueryByClusterIdAndCode(any(), any())).thenReturn(devopsEnvironmentE)
 
@@ -77,8 +118,8 @@ class DevopsSagaHandlerSpec extends Specification {
         gitlabProjectPayload.setUserId(1)
         String data = gson.toJson(gitlabProjectPayload)
 
-        and: '构造DevopsEnvironmentE'
-        DevopsEnvironmentE devopsEnvironmentE = new DevopsEnvironmentE()
+        and: '构造DevopsEnvironmentDTO'
+        DevopsEnvironmentDTO devopsEnvironmentE = new DevopsEnvironmentDTO()
         devopsEnvironmentE.setFailed(true)
         PowerMockito.when(devopsEnvironmentRepository.baseQueryByClusterIdAndCode(any(), any())).thenReturn(devopsEnvironmentE)
 
@@ -108,23 +149,22 @@ class DevopsSagaHandlerSpec extends Specification {
 
     def "CreateApp"() {
         given: '初始化DevOpsAppPayload'
-        DevOpsAppPayload devOpsAppPayload = new DevOpsAppPayload()
-        devOpsAppPayload.setAppId(1L)
-        devOpsAppPayload.setType("application")
-        String data = gson.toJson(devOpsAppPayload)
+        DevOpsAppServicePayload devOpsAppServicePayload = new DevOpsAppServicePayload()
+        devOpsAppServicePayload.setAppId(1L)
+        String data = gson.toJson(devOpsAppServicePayload)
 
         and: 'mock方法调用'
-        ApplicationE applicationE = new ApplicationE()
-        applicationE.setFailed(true)
-        PowerMockito.when(applicationRepository.query(any())).thenReturn(applicationE)
-        PowerMockito.when(applicationRepository.update(any(ApplicationE.class))).thenReturn(0)
+        AppServiceDTO appServiceDTO = new AppServiceDTO()
+        appServiceDTO.setFailed(true)
+        PowerMockito.when(appServiceService.baseQuery(anyLong())).thenReturn(appServiceDTO)
+        PowerMockito.when(appServiceService.baseUpdate(any(AppServiceDTO.class))).thenReturn(appServiceDTO)
 
         when: '方法调用'
-        def str = devopsSagaHandler.createApp(data)
+        def str = devopsSagaHandler.createAppService(data)
 
         then: '校验方法调用'
         noExceptionThrown()
-        str == "{\"type\":\"application\",\"appId\":1}"
+        str == "{\"appId\":1}"
     }
 
     def "UpdateGitlabUser"() {
@@ -149,63 +189,24 @@ class DevopsSagaHandlerSpec extends Specification {
 
     def "SetAppErr"() {
         given: '初始化DevOpsAppPayload'
-        DevOpsAppPayload devOpsAppPayload = new DevOpsAppPayload()
+        DevOpsAppServicePayload devOpsAppPayload = new DevOpsAppServicePayload()
         devOpsAppPayload.setAppId(1L)
-        devOpsAppPayload.setType("application")
         String data = gson.toJson(devOpsAppPayload)
 
         and: 'mock方法调用'
-        ApplicationE applicationE = new ApplicationE()
-        PowerMockito.when(applicationRepository.query(any())).thenReturn(applicationE)
-        PowerMockito.when(applicationRepository.update(any(ApplicationE.class))).thenReturn(0)
+        AppServiceDTO appServiceDTO = new AppServiceDTO()
+        PowerMockito.when(appServiceService.baseQuery(anyLong())).thenReturn(appServiceDTO)
+        PowerMockito.when(appServiceService.baseUpdate(any(AppServiceDTO.class))).thenReturn(appServiceDTO)
 
         when: '方法调用'
         def str = devopsSagaHandler.setAppErr(data)
 
         then: '校验方法调用'
         noExceptionThrown()
-        str == "{\"type\":\"application\",\"appId\":1}"
+        str == "{\"appId\":1}"
     }
 
-    def "SetAppTemplateErr"() {
-        given: '初始化DevOpsAppPayload'
-        DevOpsAppPayload devOpsAppPayload = new DevOpsAppPayload()
-        devOpsAppPayload.setAppId(1L)
-        devOpsAppPayload.setType("application")
-        String data = gson.toJson(devOpsAppPayload)
 
-        and: 'mock方法调用'
-        ApplicationTemplateE applicationTemplateE = new ApplicationTemplateE(1L)
-        PowerMockito.when(applicationTemplateRepository.baseQueryByCode(any(), any())).thenReturn(applicationTemplateE)
-
-        when: '方法调用'
-        def str = devopsSagaHandler.setAppTemplateErr(data)
-
-        then: '校验返回值'
-        noExceptionThrown()
-        str == "{\"type\":\"application\",\"appId\":1}"
-    }
-
-    def "CreateTemplate"() {
-        given: '初始化GitlabProjectPayload'
-        GitlabProjectPayload gitlabProjectEventDTO = new GitlabProjectPayload()
-        gitlabProjectEventDTO.setType("template")
-        gitlabProjectEventDTO.setOrganizationId(1L)
-        gitlabProjectEventDTO.setPath("pro")
-        String data = gson.toJson(gitlabProjectEventDTO)
-
-        and: 'mock方法调用'
-        ApplicationTemplateE applicationTemplateE = new ApplicationTemplateE(1L)
-        applicationTemplateE.setFailed(true)
-        PowerMockito.when(applicationTemplateRepository.baseQueryByCode(any(), any())).thenReturn(applicationTemplateE)
-
-        when: '方法调用'
-        def str = devopsSagaHandler.createTemplate(data)
-
-        then: '校验方法调用'
-        noExceptionThrown()
-        str == "{\"path\":\"pro\",\"type\":\"template\",\"organizationId\":1}"
-    }
 
     def "GitlabPipeline"() {
         given: '初始化PipelineWebHookDTO'
@@ -214,6 +215,7 @@ class DevopsSagaHandlerSpec extends Specification {
 
         when: '方法调用'
         def str = devopsSagaHandler.gitlabPipeline(data)
+        toCleanUp = true
 
         then: '校验方法调用'
         noExceptionThrown()

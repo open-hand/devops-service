@@ -3,20 +3,19 @@ package io.choerodon.devops.api.controller.v1
 import io.choerodon.core.domain.Page
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.app.service.DevopsEnvironmentService
-
+import io.choerodon.devops.app.service.GitlabGroupMemberService
+import io.choerodon.devops.app.service.IamService
 import io.choerodon.devops.app.service.impl.CertificationServiceImpl
-
-
-import io.choerodon.devops.domain.application.valueobject.RepositoryFile
-import io.choerodon.devops.infra.common.util.EnvUtil
-import io.choerodon.devops.infra.dataobject.CertificationDO
-import io.choerodon.devops.infra.dataobject.DevopsEnvCommandDO
-import io.choerodon.devops.infra.dataobject.DevopsEnvironmentDO
-import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
-import io.choerodon.devops.infra.dataobject.iam.ProjectDO
+import io.choerodon.devops.infra.dto.CertificationDTO
+import io.choerodon.devops.infra.dto.DevopsEnvCommandDTO
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO
+import io.choerodon.devops.infra.dto.RepositoryFileDTO
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO
+import io.choerodon.devops.infra.dto.iam.ProjectDTO
+import io.choerodon.devops.infra.feign.BaseServiceClient
 import io.choerodon.devops.infra.feign.GitlabServiceClient
-import io.choerodon.devops.infra.feign.IamServiceClient
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator
+import io.choerodon.devops.infra.handler.ClusterConnectionHandler
 import io.choerodon.devops.infra.mapper.DevopsCertificationMapper
 import io.choerodon.devops.infra.mapper.DevopsEnvCommandMapper
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper
@@ -57,29 +56,27 @@ class CertificationControllerSpec extends Specification {
     @Autowired
     private DevopsEnvCommandMapper devopsEnvCommandMapper
     @Autowired
-    private IamRepository iamRepository
+    private IamService iamRepository
     @Autowired
-    private GitlabRepository gitlabRepository
+    private GitlabServiceClientOperator gitlabRepository
     @Autowired
     private CertificationServiceImpl certificationService
     @Autowired
     private TestRestTemplate restTemplate
     @Autowired
-    @Qualifier("mockEnvUtil")
-    private EnvUtil envUtil
+    @Qualifier("mockClusterConnectionHandler")
+    private ClusterConnectionHandler clusterConnectionHandler
 
-    private IamServiceClient iamServiceClient = Mockito.mock(IamServiceClient)
+    private BaseServiceClient baseServiceClient = Mockito.mock(BaseServiceClient)
     private GitlabServiceClient gitlabServiceClient = Mockito.mock(GitlabServiceClient)
-    private DevopsEnvUserPermissionRepository mockDevopsEnvUserPermissionRepository = Mockito.mock(DevopsEnvUserPermissionRepository)
     private GitlabGroupMemberService gitlabGroupMemberService = Mockito.mock(GitlabGroupMemberService)
-    private DevopsEnvironmentService devopsEnvironmentService = Mockito.mock(DevopsEnvironmentService)
 
     @Shared
-    private CertificationDO certificationDO = new CertificationDO()
+    private CertificationDTO certificationDTO = new CertificationDTO()
     @Shared
-    private DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO()
+    private DevopsEnvironmentDTO devopsEnvironmentDTO = new DevopsEnvironmentDTO()
     @Shared
-    private DevopsEnvCommandDO devopsEnvCommandDO = new DevopsEnvCommandDO()
+    private DevopsEnvCommandDTO devopsEnvCommandDTO = new DevopsEnvCommandDTO()
     @Shared
     private boolean isToInit = true
     @Shared
@@ -87,48 +84,47 @@ class CertificationControllerSpec extends Specification {
 
     def setup() {
         if (isToInit) {
-            DependencyInjectUtil.setAttribute(iamRepository, "iamServiceClient", iamServiceClient)
+            DependencyInjectUtil.setAttribute(iamRepository, "baseServiceClient", baseServiceClient)
             DependencyInjectUtil.setAttribute(gitlabRepository, "gitlabServiceClient", gitlabServiceClient)
-            DependencyInjectUtil.setAttribute(certificationService, "devopsEnvUserPermissionRepository", mockDevopsEnvUserPermissionRepository)
             DependencyInjectUtil.setAttribute(certificationService, "gitlabGroupMemberService", gitlabGroupMemberService)
 
             // environment
-            devopsEnvironmentDO.setProjectId(projectId)
-            devopsEnvironmentDO.setName("env-test")
-            devopsEnvironmentDO.setClusterId(1L)
-            devopsEnvironmentDO.setCode("env-test")
-            devopsEnvironmentDO.setGitlabEnvProjectId(1L)
-            devopsEnvironmentMapper.insert(devopsEnvironmentDO)
+            devopsEnvironmentDTO.setProjectId(projectId)
+            devopsEnvironmentDTO.setName("env-test")
+            devopsEnvironmentDTO.setClusterId(1L)
+            devopsEnvironmentDTO.setCode("env-test")
+            devopsEnvironmentDTO.setGitlabEnvProjectId(1L)
+            devopsEnvironmentMapper.insert(devopsEnvironmentDTO)
 
             // devops env command
-            devopsEnvCommandDO.setCommandType("instance")
-            devopsEnvCommandMapper.insert(devopsEnvCommandDO)
+            devopsEnvCommandDTO.setCommandType("instance")
+            devopsEnvCommandMapper.insert(devopsEnvCommandDTO)
 
             // certification
-            certificationDO.setOrganizationId(organizationId)
-            certificationDO.setDomains("[\"aaa.c7n.wenqi.us\"]")
-            certificationDO.setSkipCheckProjectPermission(Boolean.TRUE)
-            certificationDO.setEnvId(devopsEnvironmentDO.getId())
-            certificationDO.setName("cert-name")
-            certificationDO.setCommandId(devopsEnvCommandDO.getId())
-            devopsCertificationMapper.insert(certificationDO)
+            certificationDTO.setOrganizationId(organizationId)
+            certificationDTO.setDomains("[\"aaa.c7n.wenqi.us\"]")
+            certificationDTO.setSkipCheckProjectPermission(Boolean.TRUE)
+            certificationDTO.setEnvId(devopsEnvironmentDTO.getId())
+            certificationDTO.setName("cert-name")
+            certificationDTO.setCommandId(devopsEnvCommandDTO.getId())
+            devopsCertificationMapper.insert(certificationDTO)
 
-            // mock iamServiceClient
-            ProjectDO projectDO = new ProjectDO()
-            projectDO.setId(projectId)
-            projectDO.setOrganizationId(organizationId)
-            projectDO.setCode("cert")
-            ResponseEntity<ProjectDO> iamPro = new ResponseEntity<>(projectDO, HttpStatus.OK)
-            Mockito.when(iamServiceClient.queryIamProject(Mockito.anyLong())).thenReturn(iamPro)
+            // mock baseServiceClient
+            ProjectDTO projectDTO = new ProjectDTO()
+            projectDTO.setId(projectId)
+            projectDTO.setOrganizationId(organizationId)
+            projectDTO.setCode("cert")
+            ResponseEntity<ProjectDTO> iamPro = new ResponseEntity<>(projectDTO, HttpStatus.OK)
+            Mockito.when(baseServiceClient.queryIamProject(Mockito.anyLong())).thenReturn(iamPro)
 
-            OrganizationDO organizationDO = new OrganizationDO()
-            organizationDO.setId(1L)
-            ResponseEntity<OrganizationDO> organizationEntity = new ResponseEntity<>(organizationDO, HttpStatus.OK)
-            Mockito.when(iamServiceClient.queryOrganizationById(Mockito.anyLong())).thenReturn(organizationEntity)
+            OrganizationDTO organizationDTO = new OrganizationDTO()
+            organizationDTO.setId(1L)
+            ResponseEntity<OrganizationDTO> organizationEntity = new ResponseEntity<>(organizationDTO, HttpStatus.OK)
+            Mockito.when(baseServiceClient.queryOrganizationById(Mockito.anyLong())).thenReturn(organizationEntity)
 
-            RepositoryFile repositoryFile = new RepositoryFile()
+            RepositoryFileDTO repositoryFile = new RepositoryFileDTO()
             repositoryFile.setFilePath("test")
-            ResponseEntity<RepositoryFile> repositoryFileEntity = new ResponseEntity<>(repositoryFile, HttpStatus.OK)
+            ResponseEntity<RepositoryFileDTO> repositoryFileEntity = new ResponseEntity<>(repositoryFile, HttpStatus.OK)
             Mockito.when(gitlabServiceClient.createFile(Mockito.anyInt(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyInt())).thenReturn(repositoryFileEntity)
 //            Mockito.doReturn(repositoryFileEntity).when(gitlabServiceClient).createFile( null, anyString(), anyString(), anyString(), anyInt())
 
@@ -139,13 +135,12 @@ class CertificationControllerSpec extends Specification {
 
     def cleanup() {
         if (isToClean) {
-            DependencyInjectUtil.restoreDefaultDependency(iamRepository, "iamServiceClient")
-            DependencyInjectUtil.restoreDefaultDependency(certificationService, "devopsEnvUserPermissionRepository")
+            DependencyInjectUtil.restoreDefaultDependency(iamRepository, "baseServiceClient")
             DependencyInjectUtil.restoreDefaultDependency(certificationService, "gitlabGroupMemberService")
 
-            devopsEnvironmentMapper.delete(devopsEnvironmentDO)
-            devopsCertificationMapper.delete(certificationDO)
-            devopsEnvCommandMapper.delete(devopsEnvCommandDO)
+            devopsEnvironmentMapper.delete(devopsEnvironmentDTO)
+            devopsCertificationMapper.delete(certificationDTO)
+            devopsEnvCommandMapper.delete(devopsEnvCommandDTO)
         }
     }
 
@@ -153,8 +148,8 @@ class CertificationControllerSpec extends Specification {
         given: "插入数据"
         isToInit = false
         MultiValueMap<String, Object> map = new LinkedMultiValueMap<String, Object>()
-        map.add("envId", devopsEnvironmentDO.getId())
-        map.add("envName", certificationDO.getName())
+        map.add("envId", devopsEnvironmentDTO.getId())
+        map.add("envName", certificationDTO.getName())
         map.add("certName", "pro-cert-name")
         map.add("domains", Arrays.asList("cd.as.aa.aa"))
         map.add("type", "request")
@@ -201,13 +196,13 @@ class CertificationControllerSpec extends Specification {
         List<Long> envList = new ArrayList<>()
         envList.add(1L)
         envList.add(2L)
-        envUtil.getConnectedEnvList() >> envList
-        envUtil.getUpdatedEnvList() >> envList
+        clusterConnectionHandler.getConnectedEnvList() >> envList
+        clusterConnectionHandler.getUpdatedEnvList() >> envList
         def url = BASE_URL + "/list_by_options?page=0&size=10&sort=id,desc&env_id={env_id}"
         def requestBody = "{\"searchParam\":{},\"param\":\"\"}"
 
         when: "调用方法"
-        def entity = restTemplate.postForEntity(url, requestBody, Page, projectId, certificationDO.getEnvId())
+        def entity = restTemplate.postForEntity(url, requestBody, Page, projectId, certificationDTO.getEnvId())
 
         then: "校验结果"
         entity.getStatusCode().is2xxSuccessful()
@@ -225,7 +220,7 @@ class CertificationControllerSpec extends Specification {
 
         when: "通过域名查询已生效的证书"
 //        def entity = restTemplate.postForEntity(url, "", String, projectId, certificationDO.getEnvId(), certificationDO.getDomains())
-        def entity = restTemplate.exchange(url, HttpMethod.POST, httpEntity, String, projectId, certificationDO.getEnvId(), certificationDO.getDomains())
+        def entity = restTemplate.exchange(url, HttpMethod.POST, httpEntity, String, projectId, certificationDTO.getEnvId(), certificationDTO.getDomains())
 
         then: "校验结果"
         entity.getStatusCode().is2xxSuccessful()
@@ -236,8 +231,8 @@ class CertificationControllerSpec extends Specification {
         given: "准备数据"
         def url = BASE_URL + "/unique?env_id={env_id}&cert_name={cert_name}"
         Map<String, Object> requestParams = new HashMap<>(2)
-        requestParams.put("env_id", devopsEnvironmentDO.getId())
-        requestParams.put("cert_name", certificationDO.getName())
+        requestParams.put("env_id", devopsEnvironmentDTO.getId())
+        requestParams.put("cert_name", certificationDTO.getName())
         requestParams.put("project_id", projectId)
 
         when: "发送请求"
@@ -248,7 +243,7 @@ class CertificationControllerSpec extends Specification {
         entity.getBody() == Boolean.FALSE
 
         and: "更改参数"
-        requestParams.put("cert_name", certificationDO.getName() + "non")
+        requestParams.put("cert_name", certificationDTO.getName() + "non")
 
         when: "再次请求"
         entity = restTemplate.getForEntity(url, Boolean, requestParams)
@@ -275,10 +270,10 @@ class CertificationControllerSpec extends Specification {
         isToClean = true
 
         when: "删除证书"
-        restTemplate.delete(url, projectId, certificationDO.getId())
+        restTemplate.delete(url, projectId, certificationDTO.getId())
 
         then: "校验结果"
-        List<CertificationDO> certificationDOList = devopsCertificationMapper.selectAll()
+        List<CertificationDTO> certificationDOList = devopsCertificationMapper.selectAll()
         certificationDOList.forEach {
             devopsCertificationMapper.delete(it)
         }

@@ -1,14 +1,13 @@
 package io.choerodon.devops.api.controller.v1
 
-
-import io.choerodon.core.convertor.ConvertHelper
-import io.choerodon.core.domain.Page
+import com.github.pagehelper.PageInfo
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.api.vo.DevopsProjectConfigVO
-import io.choerodon.devops.api.vo.ProjectConfigVO
-
-import io.choerodon.devops.domain.application.repository.DevopsProjectConfigRepository
+import io.choerodon.devops.api.vo.ConfigVO
+import io.choerodon.devops.api.vo.DevopsConfigVO
+import io.choerodon.devops.app.service.DevopsConfigService
+import io.choerodon.devops.infra.dto.DevopsConfigDTO
 import io.choerodon.devops.infra.feign.HarborClient
+import io.choerodon.devops.infra.util.ConvertUtils
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -38,17 +37,17 @@ class DevopsProjectConfigControllerSpec extends Specification {
     @Autowired
     private TestRestTemplate restTemplate
     @Autowired
-    private DevopsProjectConfigRepository devopsProjectConfigRepository
+    private DevopsConfigService devopsProjectConfigRepository
     @Shared
     Long project_id = 1L
 
     //创建配置
     def "Create"() {
-        DevopsProjectConfigVO devopsProjectConfigDTO = new DevopsProjectConfigVO()
+        DevopsConfigVO devopsProjectConfigDTO = new DevopsConfigVO()
         devopsProjectConfigDTO.setName("test")
         devopsProjectConfigDTO.setType("chart")
         devopsProjectConfigDTO.setProjectId(project_id)
-        ProjectConfigVO projectConfigDTO = new ProjectConfigVO()
+        ConfigVO projectConfigDTO = new ConfigVO()
         projectConfigDTO.setEmail("test")
         projectConfigDTO.setPassword("test")
         projectConfigDTO.setPrivate(true)
@@ -58,7 +57,7 @@ class DevopsProjectConfigControllerSpec extends Specification {
         devopsProjectConfigDTO.setConfig(projectConfigDTO)
 
         when: '创建配置'
-        def entity = restTemplate.postForEntity(MAPPING, devopsProjectConfigDTO, DevopsProjectConfigVO.class, project_id)
+        def entity = restTemplate.postForEntity(MAPPING, devopsProjectConfigDTO, DevopsConfigVO.class, project_id)
 
         then:
         entity.getBody().getName().equals("test")
@@ -70,41 +69,39 @@ class DevopsProjectConfigControllerSpec extends Specification {
         def entity = restTemplate.getForEntity(MAPPING + "/check_name?name=test", Object, 1L)
 
         then: '名字存在抛出异常'
-        entity.getBody().getAt("failed") == true
+        entity.getBody()["failed"] == true
     }
-
 
     //更新配置
     def "Update"() {
-        DevopsProjectConfigE devopsProjectConfigE = devopsProjectConfigRepository.baseQuery(3L)
-        DevopsProjectConfigVO devopsProjectConfigDTO = ConvertHelper.convert(devopsProjectConfigE, DevopsProjectConfigVO.class)
-        devopsProjectConfigDTO.setName("testnew")
+        DevopsConfigDTO devopsConfigDTO = devopsProjectConfigRepository.baseQuery(3L)
+        DevopsConfigVO devopsConfigVO = ConvertUtils.convertObject(devopsConfigDTO, DevopsConfigVO.class)
+        devopsConfigVO.setName("testnew")
 
         when:
-        restTemplate.put(MAPPING, devopsProjectConfigDTO, project_id)
+        restTemplate.put(MAPPING, devopsConfigVO, project_id)
 
         then:
-        devopsProjectConfigRepository.baseQuery(3L).getName().equals("testnew")
+        devopsProjectConfigRepository.baseQuery(3L).getName() == "testnew"
 
     }
 
     //分页查询配置
     def "PageByOptions"() {
         when:
-        def page = restTemplate.postForObject(MAPPING + "/list_by_options", null, Page.class, 1L)
+        def page = restTemplate.postForObject(MAPPING + "/list_by_options", null, PageInfo.class, 1L)
 
         then:
-        page.size() == 3
+        page.getTotal() == 3
     }
-
 
     //根据id查询配置
     def "QueryByPrimaryKey"() {
         when:
-        def object = restTemplate.getForObject(MAPPING + "/{project_config_id}", DevopsProjectConfigVO.class, 1, 3)
+        def object = restTemplate.getForObject(MAPPING + "/{project_config_id}", DevopsConfigVO.class, 1, 3)
 
         then:
-        object.getName().equals("testnew")
+        object.getName() == "testnew"
     }
 
     //根据类型查询配置列表
@@ -117,7 +114,6 @@ class DevopsProjectConfigControllerSpec extends Specification {
 
     }
 
-
     //检查配置是否被使用过
     def "CheckIsUsed"() {
 
@@ -125,9 +121,8 @@ class DevopsProjectConfigControllerSpec extends Specification {
         def bool = restTemplate.getForObject(MAPPING + "/{project_config_id}/check", Boolean.class, 1, 3)
 
         then:
-        bool == true
+        bool
     }
-
 
     //删除配置
     def "DeleteByProjectConfigId"() {

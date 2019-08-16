@@ -1,26 +1,25 @@
 package io.choerodon.devops.api.controller.v1
 
 import com.github.pagehelper.PageInfo
-import io.choerodon.core.domain.Page
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.DevopsServiceReqVO
 import io.choerodon.devops.api.vo.DevopsServiceVO
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO
 import io.choerodon.devops.api.vo.iam.RoleVO
-import io.choerodon.devops.infra.dto.PortMapVO
-import io.choerodon.devops.domain.application.repository.*
-import io.choerodon.devops.domain.application.valueobject.RepositoryFile
-import io.choerodon.devops.infra.common.util.EnvUtil
-import io.choerodon.devops.infra.common.util.FileUtil
-import io.choerodon.devops.infra.common.util.GitUtil
-import io.choerodon.devops.infra.common.util.enums.AccessLevel
-import io.choerodon.devops.infra.dataobject.gitlab.MemberDTO
-import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
-import io.choerodon.devops.infra.dataobject.iam.ProjectDO
+import io.choerodon.devops.app.service.*
+import io.choerodon.devops.infra.dto.*
+import io.choerodon.devops.infra.dto.gitlab.MemberDTO
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO
+import io.choerodon.devops.infra.dto.iam.ProjectDTO
+import io.choerodon.devops.infra.enums.AccessLevel
+import io.choerodon.devops.infra.feign.BaseServiceClient
 import io.choerodon.devops.infra.feign.GitlabServiceClient
-import io.choerodon.devops.infra.feign.IamServiceClient
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator
+import io.choerodon.devops.infra.handler.ClusterConnectionHandler
 import io.choerodon.devops.infra.mapper.*
+import io.choerodon.devops.infra.util.FileUtil
+import io.choerodon.devops.infra.util.GitUtil
 import io.choerodon.websocket.helper.EnvListener
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
@@ -34,7 +33,7 @@ import spock.lang.Specification
 import spock.lang.Stepwise
 import spock.lang.Subject
 
-import static org.mockito.Matchers.*
+import static org.mockito.ArgumentMatchers.*
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
 /**
@@ -55,7 +54,7 @@ class DevopsServiceControllerSpec extends Specification {
     @Autowired
     private TestRestTemplate restTemplate
     @Autowired
-    private ApplicationMapper applicationMapper
+    private AppServiceMapper applicationMapper
     @Autowired
     private DevopsServiceMapper devopsServiceMapper
     @Autowired
@@ -63,23 +62,23 @@ class DevopsServiceControllerSpec extends Specification {
     @Autowired
     private DevopsEnvCommandMapper devopsEnvCommandMapper
     @Autowired
-    private DevopsProjectRepository devopsProjectRepository
+    private DevopsProjectService devopsProjectRepository
     @Autowired
     private DevopsEnvironmentMapper devopsEnvironmentMapper
     @Autowired
-    private ApplicationInstanceMapper applicationInstanceMapper
+    private AppServiceInstanceMapper applicationInstanceMapper
     @Autowired
     private DevopsEnvFileResourceMapper devopsEnvFileResourceMapper
     @Autowired
-    private DevopsServiceAppInstanceMapper devopsServiceAppInstanceMapper
+    private DevopsServiceInstanceMapper devopsServiceAppInstanceMapper
     @Autowired
-    private DevopsEnvCommandRepository devopsEnvCommandRepository
+    private DevopsEnvCommandService devopsEnvCommandRepository
     @Autowired
-    private DevopsServiceRepository devopsServiceRepository
+    private DevopsServiceService devopsServiceRepository
 
     @Autowired
     @Qualifier("mockEnvUtil")
-    private EnvUtil envUtil
+    private ClusterConnectionHandler envUtil
     @Autowired
     @Qualifier("mockGitUtil")
     private GitUtil gitUtil
@@ -88,26 +87,24 @@ class DevopsServiceControllerSpec extends Specification {
     private EnvListener envListener
 
     @Shared
-    DevopsEnvCommandDO devopsEnvCommandDO = new DevopsEnvCommandDO()
+    DevopsEnvCommandDTO devopsEnvCommandDO = new DevopsEnvCommandDTO()
     @Shared
-    DevopsEnvFileResourceDO devopsEnvFileResourceDO = new DevopsEnvFileResourceDO()
+    DevopsEnvFileResourceDTO devopsEnvFileResourceDO = new DevopsEnvFileResourceDTO()
     @Shared
-    DevopsServiceAppInstanceDO devopsServiceAppInstanceDO = new DevopsServiceAppInstanceDO()
+    DevopsServiceInstanceDTO devopsServiceAppInstanceDO = new DevopsServiceInstanceDTO()
     @Shared
-    ApplicationInstanceDO applicationInstanceDO = new ApplicationInstanceDO()
+    AppServiceInstanceDTO applicationInstanceDO = new AppServiceInstanceDTO()
     @Shared
-    DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO()
+    DevopsEnvironmentDTO devopsEnvironmentDO = new DevopsEnvironmentDTO()
 
     @Autowired
-    private IamRepository iamRepository
+    private IamService iamRepository
     @Autowired
-    private GitlabRepository gitlabRepository
+    private GitlabServiceClientOperator gitlabRepository
     @Autowired
-    private GitlabProjectRepository gitlabProjectRepository
-    @Autowired
-    private GitlabGroupMemberRepository gitlabGroupMemberRepository
+    private GitlabGroupMemberService gitlabGroupMemberRepository
 
-    IamServiceClient iamServiceClient = Mockito.mock(IamServiceClient.class)
+    BaseServiceClient iamServiceClient = Mockito.mock(BaseServiceClient.class)
     GitlabServiceClient gitlabServiceClient = Mockito.mock(GitlabServiceClient.class)
 
     def setupSpec() {
@@ -142,26 +139,26 @@ class DevopsServiceControllerSpec extends Specification {
     }
 
     def setup() {
-        DependencyInjectUtil.setAttribute(iamRepository, "iamServiceClient", iamServiceClient)
+        DependencyInjectUtil.setAttribute(iamRepository, "baseServiceClient", iamServiceClient)
         DependencyInjectUtil.setAttribute(gitlabProjectRepository, "gitlabServiceClient", gitlabServiceClient)
         DependencyInjectUtil.setAttribute(gitlabRepository, "gitlabServiceClient", gitlabServiceClient)
         DependencyInjectUtil.setAttribute(gitlabGroupMemberRepository, "gitlabServiceClient", gitlabServiceClient)
 
-        ProjectDO projectDO = new ProjectDO()
+        ProjectDTO projectDO = new ProjectDTO()
         projectDO.setId(1L)
         projectDO.setCode("pro")
         projectDO.setOrganizationId(1L)
-        ResponseEntity<ProjectDO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
+        ResponseEntity<ProjectDTO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
         Mockito.doReturn(responseEntity).when(iamServiceClient).queryIamProject(1L)
 
-        OrganizationDO organizationDO = new OrganizationDO()
+        OrganizationDTO organizationDO = new OrganizationDTO()
         organizationDO.setId(1L)
         organizationDO.setCode("org")
-        ResponseEntity<OrganizationDO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
+        ResponseEntity<OrganizationDTO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
         Mockito.doReturn(responseEntity1).when(iamServiceClient).queryOrganizationById(1L)
 
         MemberDTO memberDO = new MemberDTO()
-        memberDO.setAccessLevel(AccessLevel.OWNER)
+        memberDO.setAccessLevel(AccessLevel.OWNER.toValue())
         ResponseEntity<MemberDTO> responseEntity2 = new ResponseEntity<>(memberDO, HttpStatus.OK)
         Mockito.when(gitlabServiceClient.queryGroupMember(anyInt(), anyInt())).thenReturn(responseEntity2)
 
@@ -178,9 +175,9 @@ class DevopsServiceControllerSpec extends Specification {
         ResponseEntity<PageInfo<ProjectWithRoleVO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
         Mockito.doReturn(pageResponseEntity).when(iamServiceClient).listProjectWithRole(anyLong(), anyInt(), anyInt())
 
-        RepositoryFile repositoryFile = new RepositoryFile()
+        RepositoryFileDTO repositoryFile = new RepositoryFileDTO()
         repositoryFile.setFilePath("testFilePath")
-        ResponseEntity<RepositoryFile> responseEntity3 = new ResponseEntity<>(repositoryFile, HttpStatus.OK)
+        ResponseEntity<RepositoryFileDTO> responseEntity3 = new ResponseEntity<>(repositoryFile, HttpStatus.OK)
         Mockito.when(gitlabServiceClient.createFile(anyInt(), anyString(), anyString(), anyString(), anyInt())).thenReturn(responseEntity3)
         Mockito.when(gitlabServiceClient.updateFile(anyInt(), anyString(), anyString(), anyString(), anyInt())).thenReturn(responseEntity3)
     }
@@ -218,7 +215,7 @@ class DevopsServiceControllerSpec extends Specification {
         devopsServiceReqDTO.setPorts(portMapES)
         devopsServiceReqDTO.setExternalIp("1.1.1.1")
 
-        envUtil.checkEnvConnection(_ as Long, _ as EnvListener) >> null
+        envUtil.checkEnvConnection(_ as Long) >> null
 
         when: '部署网络'
         def result = restTemplate.postForObject("/v1/projects/1/service", devopsServiceReqDTO, Boolean.class)
@@ -247,7 +244,7 @@ class DevopsServiceControllerSpec extends Specification {
         newDevopsServiceReqDTO.setPorts(portMapES)
         newDevopsServiceReqDTO.setExternalIp("1.2.1.1")
 
-        envUtil.checkEnvConnection(_ as Long, _ as EnvListener) >> null
+        envUtil.checkEnvConnection(_ as Long) >> null
         id = devopsServiceRepository.baseQueryByNameAndEnvId("svcsvc", 1L).getId()
         devopsEnvFileResourceDO = devopsEnvFileResourceMapper.selectByPrimaryKey(1L)
         devopsEnvFileResourceDO.setResourceId(id)
@@ -262,7 +259,7 @@ class DevopsServiceControllerSpec extends Specification {
 
     def "Delete"() {
         given: 'mock envUtil'
-        envUtil.checkEnvConnection(_ as Long, _ as EnvListener) >> null
+        envUtil.checkEnvConnection(_ as Long) >> null
 
         ResponseEntity responseEntity = new ResponseEntity<>(HttpStatus.OK)
         Mockito.when(gitlabServiceClient.deleteFile(anyInt(), anyString(), anyString(), anyInt())).thenReturn(responseEntity)
@@ -276,7 +273,7 @@ class DevopsServiceControllerSpec extends Specification {
 
     def "ListByEnvId"() {
         given: '初始化网络DO类'
-        DevopsServiceDO devopsServiceDO = new DevopsServiceDO()
+        DevopsServiceDTO devopsServiceDO = new DevopsServiceDTO()
         devopsServiceDO.setEnvId(1L)
         devopsServiceDO.setAppId(1L)
         devopsServiceDO.setName("svcsvc2")
@@ -317,50 +314,50 @@ class DevopsServiceControllerSpec extends Specification {
         envUtil.getUpdatedEnvList() >> envList
 
         when: '环境总览网络查询'
-        def page = restTemplate.postForObject("/v1/projects/1/service/1/listByEnv", strEntity, Page.class)
+        def page = restTemplate.postForObject("/v1/projects/1/service/1/listByEnv", strEntity, PageInfo.class)
 
         then: '校验返回值'
-        page.size() == 2
+        page.getTotal() == 2
 
         // 删除envCommand
-        List<DevopsEnvCommandDO> list = devopsEnvCommandMapper.selectAll()
+        List<DevopsEnvCommandDTO> list = devopsEnvCommandMapper.selectAll()
         if (list != null && !list.isEmpty()) {
-            for (DevopsEnvCommandDO e : list) {
+            for (DevopsEnvCommandDTO e : list) {
                 devopsEnvCommandMapper.delete(e)
             }
         }
         // 删除env
-        List<DevopsEnvironmentDO> list1 = devopsEnvironmentMapper.selectAll()
+        List<DevopsEnvironmentDTO> list1 = devopsEnvironmentMapper.selectAll()
         if (list1 != null && !list1.isEmpty()) {
-            for (DevopsEnvironmentDO e : list1) {
+            for (DevopsEnvironmentDTO e : list1) {
                 devopsEnvironmentMapper.delete(e)
             }
         }
         // 删除appInstance
-        List<ApplicationInstanceDO> list2 = applicationInstanceMapper.selectAll()
+        List<AppServiceInstanceDTO> list2 = applicationInstanceMapper.selectAll()
         if (list2 != null && !list2.isEmpty()) {
-            for (ApplicationInstanceDO e : list2) {
+            for (AppServiceInstanceDTO e : list2) {
                 applicationInstanceMapper.delete(e)
             }
         }
         // 删除envFileResource
-        List<DevopsEnvFileResourceDO> list3 = devopsEnvFileResourceMapper.selectAll()
+        List<DevopsEnvFileResourceDTO> list3 = devopsEnvFileResourceMapper.selectAll()
         if (list3 != null && !list3.isEmpty()) {
-            for (DevopsEnvFileResourceDO e : list3) {
+            for (DevopsEnvFileResourceDTO e : list3) {
                 devopsEnvFileResourceMapper.delete(e)
             }
         }
         // 删除serviceInstance
-        List<DevopsServiceAppInstanceDO> list4 = devopsServiceAppInstanceMapper.selectAll()
+        List<DevopsServiceInstanceDTO> list4 = devopsServiceAppInstanceMapper.selectAll()
         if (list4 != null && !list4.isEmpty()) {
-            for (DevopsServiceAppInstanceDO e : list4) {
+            for (DevopsServiceInstanceDTO e : list4) {
                 devopsServiceAppInstanceMapper.delete(e)
             }
         }
         // 删除service
-        List<DevopsServiceDO> list5 = devopsServiceMapper.selectAll()
+        List<DevopsServiceDTO> list5 = devopsServiceMapper.selectAll()
         if (list5 != null && !list5.isEmpty()) {
-            for (DevopsServiceDO e : list5) {
+            for (DevopsServiceDTO e : list5) {
                 devopsServiceMapper.delete(e)
             }
         }

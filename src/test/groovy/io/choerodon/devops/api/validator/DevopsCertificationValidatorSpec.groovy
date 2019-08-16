@@ -1,7 +1,7 @@
 package io.choerodon.devops.api.validator
 
 import io.choerodon.core.exception.CommonException
-import io.choerodon.devops.domain.application.repository.CertificationRepository
+import io.choerodon.devops.app.service.CertificationService
 import org.mockito.Mockito
 import spock.lang.Specification
 
@@ -11,7 +11,7 @@ import spock.lang.Specification
  *
  */
 class DevopsCertificationValidatorSpec extends Specification {
-    CertificationRepository mockCertificationRepository = Mockito.mock(CertificationRepository)
+    CertificationService mockCertificationRepository = Mockito.mock(CertificationService)
     DevopsCertificationValidator devopsCertificationValidator = new DevopsCertificationValidator(mockCertificationRepository)
 
     def "CheckCertification For Valid Input"() {

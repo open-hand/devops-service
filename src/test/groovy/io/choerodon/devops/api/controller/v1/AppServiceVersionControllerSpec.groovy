@@ -5,16 +5,14 @@ import io.choerodon.core.domain.Page
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.DeployVersionVO
-import io.choerodon.devops.api.vo.DeployVersionVO
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO
 import io.choerodon.devops.api.vo.iam.RoleVO
-
-import io.choerodon.devops.infra.dataobject.*
-import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
-import io.choerodon.devops.infra.dataobject.iam.ProjectDO
-import io.choerodon.devops.infra.dataobject.iam.UserDO
-import io.choerodon.devops.infra.dto.AppUserPermissionDTO
-import io.choerodon.devops.infra.feign.IamServiceClient
+import io.choerodon.devops.app.service.IamService
+import io.choerodon.devops.infra.dto.*
+import io.choerodon.devops.infra.dto.iam.IamUserDTO
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO
+import io.choerodon.devops.infra.dto.iam.ProjectDTO
+import io.choerodon.devops.infra.feign.BaseServiceClient
 import io.choerodon.devops.infra.mapper.*
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
@@ -42,35 +40,35 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @Import(IntegrationTestConfiguration)
-@Subject(ApplicationVersionController)
+@Subject(AppServiceVersionController)
 @Stepwise
-class ApplicationVersionControllerSpec extends Specification {
+class AppServiceVersionControllerSpec extends Specification {
 
     private static final String mapping = "/v1/projects/{project_id}/app_versions"
 
     @Autowired
     private TestRestTemplate restTemplate
     @Autowired
-    private ApplicationMapper applicationMapper
+    private AppServiceMapper applicationMapper
     @Autowired
     private DevopsEnvCommandMapper devopsEnvCommandMapper
     @Autowired
     private DevopsEnvironmentMapper devopsEnvironmentMapper
     @Autowired
-    private ApplicationUserPermissionMapper appUserPermissionMapper
+    private AppServiceUserRelMapper appUserPermissionMapper
     @Autowired
-    private ApplicationVersionMapper applicationVersionMapper
+    private AppServiceVersionMapper applicationVersionMapper
     @Autowired
-    private ApplicationInstanceMapper applicationInstanceMapper
+    private AppServiceInstanceMapper applicationInstanceMapper
     @Autowired
-    private ApplicationVersionValueMapper applicationVersionValueMapper
+    private AppServiceVersionValueMapper applicationVersionValueMapper
     @Autowired
     private DevopsGitlabPipelineMapper devopsGitlabPipelineMapper
     @Autowired
     private DevopsGitlabCommitMapper devopsGitlabCommitMapper
 
     @Autowired
-    private IamRepository iamRepository
+    private IamService iamRepository
 
     @Shared
     Long project_id = 1L
@@ -79,39 +77,39 @@ class ApplicationVersionControllerSpec extends Specification {
     @Shared
     Map<String, Object> searchParam = new HashMap<>()
     @Shared
-    DevopsEnvCommandDO devopsEnvCommandDO = new DevopsEnvCommandDO()
+    DevopsEnvCommandDTO devopsEnvCommandDO = new DevopsEnvCommandDTO()
     @Shared
-    ApplicationVersionValueDO applicationVersionValueDO = new ApplicationVersionValueDO()
+    AppServiceVersionValueDTO applicationVersionValueDO = new AppServiceVersionValueDTO()
     @Shared
-    AppUserPermissionDTO appUserPermissionDO = new AppUserPermissionDTO()
+    AppServiceUserRelDTO appUserPermissionDO = new AppServiceUserRelDTO()
     @Shared
-    DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO()
+    DevopsEnvironmentDTO devopsEnvironmentDO = new DevopsEnvironmentDTO()
     @Shared
-    ApplicationInstanceDO applicationInstanceDO = new ApplicationInstanceDO()
+    AppServiceInstanceDTO applicationInstanceDO = new AppServiceInstanceDTO()
     @Shared
-    ApplicationVersionDO applicationVersionDO = new ApplicationVersionDO()
+    AppServiceVersionDTO applicationVersionDO = new AppServiceVersionDTO()
     @Shared
-    DevopsGitlabPipelineDO devopsGitlabPipelineDO = new DevopsGitlabPipelineDO()
+    DevopsGitlabPipelineDTO devopsGitlabPipelineDO = new DevopsGitlabPipelineDTO()
     @Shared
-    DevopsGitlabCommitDO devopsGitlabCommitDO = new DevopsGitlabCommitDO()
+    DevopsGitlabCommitDTO devopsGitlabCommitDO = new DevopsGitlabCommitDTO()
     @Shared
-    ApplicationDTO applicationDO = new ApplicationDTO()
+    AppServiceDTO applicationDO = new AppServiceDTO()
 
-    IamServiceClient iamServiceClient = Mockito.mock(IamServiceClient.class)
+    BaseServiceClient baseServiceClient = Mockito.mock(BaseServiceClient.class)
 
     def setup() {
-        DependencyInjectUtil.setAttribute(iamRepository, "iamServiceClient", iamServiceClient)
+        DependencyInjectUtil.setAttribute(iamRepository, "baseServiceClient", baseServiceClient)
 
-        ProjectDO projectDO = new ProjectDO()
+        ProjectDTO projectDO = new ProjectDTO()
         projectDO.setName("pro")
         projectDO.setOrganizationId(1L)
-        ResponseEntity<ProjectDO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
-        Mockito.doReturn(responseEntity).when(iamServiceClient).queryIamProject(1L)
-        OrganizationDO organizationDO = new OrganizationDO()
+        ResponseEntity<ProjectDTO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
+        Mockito.doReturn(responseEntity).when(baseServiceClient).queryIamProject(1L)
+        OrganizationDTO organizationDO = new OrganizationDTO()
         organizationDO.setId(1L)
         organizationDO.setCode("testOrganization")
-        ResponseEntity<OrganizationDO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
-        Mockito.doReturn(responseEntity1).when(iamServiceClient).queryOrganizationById(1L)
+        ResponseEntity<OrganizationDTO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
+        Mockito.doReturn(responseEntity1).when(baseServiceClient).queryOrganizationById(1L)
 
         List<ProjectWithRoleVO> list = new ArrayList<>()
         List<RoleVO> roleDTOList = new ArrayList<>()
@@ -125,14 +123,14 @@ class ApplicationVersionControllerSpec extends Specification {
         list.add(projectWithRoleDTO)
         PageInfo<ProjectWithRoleVO> page = new PageInfo(list)
         ResponseEntity<PageInfo<ProjectWithRoleVO>> responseEntity2 = new ResponseEntity<>(page, HttpStatus.OK)
-        Mockito.when(iamServiceClient.listProjectWithRole(anyLong(), anyInt(), anyInt())).thenReturn(responseEntity2)
-        List<UserDO> userDOList = new ArrayList<>()
-        UserDO userDO1 = new UserDO()
+        Mockito.when(baseServiceClient.listProjectWithRole(anyLong(), anyInt(), anyInt())).thenReturn(responseEntity2)
+        List<IamUserDTO> userDOList = new ArrayList<>()
+        IamUserDTO userDO1 = new IamUserDTO()
         userDO1.setLoginName("loginName")
         userDO1.setRealName("realName")
         userDOList.add(userDO1)
-        ResponseEntity<List<UserDO>> responseEntity3 = new ResponseEntity<>(userDOList, HttpStatus.OK)
-        Mockito.doReturn(responseEntity3).when(iamServiceClient).listUsersByIds(1L)
+        ResponseEntity<List<IamUserDTO>> responseEntity3 = new ResponseEntity<>(userDOList, HttpStatus.OK)
+        Mockito.doReturn(responseEntity3).when(baseServiceClient).listUsersByIds(1L)
     }
 
     def setupSpec() {
@@ -221,9 +219,9 @@ class ApplicationVersionControllerSpec extends Specification {
     // 应用下查询应用所有版本
     def "QueryByAppId"() {
         given:
-        String version = "0.1.0-dev.20180521111826";
+        String version = "0.1.0-dev.20180521111826"
         when: '应用下查询应用所有版本'
-        def page = restTemplate.getForObject(mapping + "/list_by_app/{app_id}?is_publish=true&page=0&size=10&version={version}", Page.class, project_id, init_id,version)
+        def page = restTemplate.getForObject(mapping + "/list_by_app/{app_id}?is_publish=true&page=0&size=10&version={version}", Page.class, project_id, init_id, version)
 
         then: '返回值'
         page.size() == 1
@@ -259,7 +257,7 @@ class ApplicationVersionControllerSpec extends Specification {
     // 实例下查询可升级版本
     def "GetUpgradeAppVersion"() {
         given: '初始化应用版本DO类'
-        ApplicationVersionDO applicationVersionDO = new ApplicationVersionDO()
+        AppServiceVersionDTO applicationVersionDO = new AppServiceVersionDTO()
         applicationVersionDO.setId(2L)
         applicationVersionDO.setVersion("0.2.0-dev.20180521111826")
         applicationVersionDO.setAppId(init_id)
@@ -304,16 +302,16 @@ class ApplicationVersionControllerSpec extends Specification {
         then: '校验返回值'
         dto.statusCode.is2xxSuccessful()
         dto.getBody().size() != 0
-        ((LinkedHashMap)dto.getBody().get(0)).get("version") == applicationVersionDO.getVersion()
+        ((LinkedHashMap) dto.getBody().get(0)).get("version") == applicationVersionDO.getVersion()
     }
 
     def "getAppversionByBranch"() {
 
-         when:'根据分支名查询版本'
-         def list = restTemplate.getForObject(mapping + "/list_by_branch?appId=1&branch=0.1.0-dev.20180521111826", List.class, 1L)
+        when: '根据分支名查询版本'
+        def list = restTemplate.getForObject(mapping + "/list_by_branch?appId=1&branch=0.1.0-dev.20180521111826", List.class, 1L)
 
-         then: '校验返回值'
-         list.size() == 1
+        then: '校验返回值'
+        list.size() == 1
     }
 
     def "queryByPipeline"() {
@@ -323,7 +321,7 @@ class ApplicationVersionControllerSpec extends Specification {
 
 
         then: '校验返回值'
-        result == true
+        result
 
 
     }
@@ -332,67 +330,67 @@ class ApplicationVersionControllerSpec extends Specification {
     def "cleanupData"() {
         given:
         // 删除appInstance
-        List<ApplicationInstanceDO> list = applicationInstanceMapper.selectAll()
+        List<AppServiceInstanceDTO> list = applicationInstanceMapper.selectAll()
         if (list != null && !list.isEmpty()) {
-            for (ApplicationInstanceDO e : list) {
+            for (AppServiceInstanceDTO e : list) {
                 applicationInstanceMapper.delete(e)
             }
         }
         // 删除env
-        List<DevopsEnvironmentDO> list1 = devopsEnvironmentMapper.selectAll()
+        List<DevopsEnvironmentDTO> list1 = devopsEnvironmentMapper.selectAll()
         if (list1 != null && !list1.isEmpty()) {
-            for (DevopsEnvironmentDO e : list1) {
+            for (DevopsEnvironmentDTO e : list1) {
                 devopsEnvironmentMapper.delete(e)
             }
         }
         // 删除app
-        List<ApplicationDTO> list2 = applicationMapper.selectAll()
+        List<AppServiceDTO> list2 = applicationMapper.selectAll()
         if (list2 != null && !list2.isEmpty()) {
-            for (ApplicationDTO e : list2) {
+            for (AppServiceDTO e : list2) {
                 applicationMapper.delete(e)
             }
         }
         // 删除appVersion
-        List<ApplicationVersionDO> list3 = applicationVersionMapper.selectAll()
+        List<AppServiceVersionDTO> list3 = applicationVersionMapper.selectAll()
         if (list3 != null && !list3.isEmpty()) {
-            for (ApplicationVersionDO e : list3) {
+            for (AppServiceVersionDTO e : list3) {
                 applicationVersionMapper.delete(e)
             }
         }
         // 删除appUserPermission
-        List<AppUserPermissionDTO> list4 = appUserPermissionMapper.selectAll()
+        List<AppServiceUserRelDTO> list4 = appUserPermissionMapper.selectAll()
         if (list4 != null && !list4.isEmpty()) {
-            for (AppUserPermissionDTO e : list4) {
+            for (AppServiceUserRelDTO e : list4) {
                 appUserPermissionMapper.delete(e)
             }
         }
         // 删除appVersionValue
-        List<ApplicationVersionValueDO> list5 = applicationVersionValueMapper.selectAll()
+        List<AppServiceVersionValueDTO> list5 = applicationVersionValueMapper.selectAll()
         if (list5 != null && !list5.isEmpty()) {
-            for (ApplicationVersionValueDO e : list5) {
+            for (AppServiceVersionValueDTO e : list5) {
                 applicationVersionValueMapper.delete(e)
             }
         }
         // 删除envCommand
-        List<DevopsEnvCommandDO> list6 = devopsEnvCommandMapper.selectAll()
+        List<DevopsEnvCommandDTO> list6 = devopsEnvCommandMapper.selectAll()
         if (list6 != null && !list6.isEmpty()) {
-            for (DevopsEnvCommandDO e : list6) {
+            for (DevopsEnvCommandDTO e : list6) {
                 devopsEnvCommandMapper.delete(e)
             }
         }
 
         //删除gitlabPipeline
-        List<DevopsGitlabPipelineDO> list7 = devopsGitlabPipelineMapper.selectAll()
-        if(list7!=null&&!list7.isEmpty()) {
-            for(DevopsGitlabPipelineDO e:list7) {
+        List<DevopsGitlabPipelineDTO> list7 = devopsGitlabPipelineMapper.selectAll()
+        if (list7 != null && !list7.isEmpty()) {
+            for (DevopsGitlabPipelineDTO e : list7) {
                 devopsGitlabPipelineMapper.delete(e)
             }
         }
 
         //删除gitlabCommit
-        List<DevopsGitlabCommitDO> list8 = devopsGitlabCommitMapper.selectAll()
-        if(list8 !=null&&!list8.isEmpty()) {
-            for(DevopsGitlabCommitDO e:list8) {
+        List<DevopsGitlabCommitDTO> list8 = devopsGitlabCommitMapper.selectAll()
+        if (list8 != null && !list8.isEmpty()) {
+            for (DevopsGitlabCommitDTO e : list8) {
                 devopsGitlabCommitMapper.delete(e)
             }
         }

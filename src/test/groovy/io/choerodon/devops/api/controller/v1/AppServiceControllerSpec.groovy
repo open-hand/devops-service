@@ -3,33 +3,26 @@ package io.choerodon.devops.api.controller.v1
 import com.github.pagehelper.PageInfo
 import io.choerodon.asgard.saga.dto.SagaInstanceDTO
 import io.choerodon.asgard.saga.dto.StartInstanceDTO
-import io.choerodon.asgard.saga.feign.SagaClient
+import io.choerodon.asgard.saga.producer.StartSagaBuilder
+import io.choerodon.asgard.saga.producer.TransactionalProducer
 import io.choerodon.core.domain.Page
 import io.choerodon.core.exception.CommonException
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.api.vo.ApplicationImportVO
-import io.choerodon.devops.api.vo.ApplicationRepVO
-import io.choerodon.devops.api.vo.ApplicationReqVO
-import io.choerodon.devops.api.vo.ApplicationUpdateVO
+import io.choerodon.devops.api.vo.*
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO
 import io.choerodon.devops.api.vo.iam.RoleVO
-import io.choerodon.devops.app.service.ApplicationService
-import io.choerodon.devops.app.service.DevopsGitService
-import io.choerodon.devops.api.vo.ProjectVO
-
-import io.choerodon.devops.app.eventhandler.payload.IamAppPayLoad
-import io.choerodon.devops.domain.application.repository.*
-import io.choerodon.devops.domain.application.valueobject.OrganizationVO
-import io.choerodon.devops.infra.common.util.enums.AccessLevel
-import io.choerodon.devops.infra.dataobject.*
-import io.choerodon.devops.infra.dataobject.gitlab.MemberDTO
-import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
-import io.choerodon.devops.infra.dataobject.iam.ProjectDO
-import io.choerodon.devops.infra.dto.AppUserPermissionDTO
+import io.choerodon.devops.app.service.*
+import io.choerodon.devops.infra.dto.*
+import io.choerodon.devops.infra.dto.gitlab.MemberDTO
+import io.choerodon.devops.infra.dto.iam.IamAppDTO
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO
+import io.choerodon.devops.infra.dto.iam.ProjectDTO
+import io.choerodon.devops.infra.enums.AccessLevel
+import io.choerodon.devops.infra.feign.BaseServiceClient
 import io.choerodon.devops.infra.feign.GitlabServiceClient
-import io.choerodon.devops.infra.feign.IamServiceClient
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator
 import io.choerodon.devops.infra.mapper.*
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
@@ -43,6 +36,8 @@ import spock.lang.Specification
 import spock.lang.Stepwise
 import spock.lang.Subject
 
+import java.util.function.Consumer
+
 import static org.mockito.ArgumentMatchers.*
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
@@ -54,60 +49,56 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  */
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @Import(IntegrationTestConfiguration)
-@Subject(ApplicationController)
+@Subject(AppServiceController)
 @Stepwise
-class ApplicationControllerSpec extends Specification {
+class AppServiceControllerSpec extends Specification {
 
-    private static final String MAPPING = "/v1/projects/{project_id}/apps"
+    private static final String MAPPING = "/v1/projects/{project_id}/app_service"
 
     @Autowired
     private TestRestTemplate restTemplate
     @Autowired
     private DevopsGitService devopsGitService
     @Autowired
-    private ApplicationMapper applicationMapper
+    private AppServiceMapper appServiceMapper
     @Autowired
-    private ApplicationService applicationService
+    private AppServiceService appServiceService
     @Autowired
-    private UserAttrRepository userAttrRepository
+    private UserAttrService userAttributeService
     @Autowired
     private DevopsEnvPodMapper devopsEnvPodMapper
     @Autowired
     private DevopsProjectMapper devopsProjectMapper
     @Autowired
-    private ApplicationUserPermissionMapper appUserPermissionMapper
+    private AppServiceUserRelMapper appUserPermissionMapper
     @Autowired
-    private ApplicationShareMapper applicationMarketMapper
+    private AppServiceShareRuleMapper applicationMarketMapper
     @Autowired
-    private DevopsProjectRepository devopsProjectRepository
+    private DevopsProjectService devopsProjectService
     @Autowired
     protected DevopsEnvironmentMapper devopsEnvironmentMapper
     @Autowired
-    private ApplicationVersionMapper applicationVersionMapper
+    private AppServiceVersionMapper appServiceVersionMapper
     @Autowired
-    private ApplicationInstanceMapper applicationInstanceMapper
+    private AppServiceInstanceMapper appServiceInstanceMapper
     @Autowired
-    private ApplicationTemplateMapper applicationTemplateMapper
-    @Autowired
-    private ApplicationInstanceRepository applicationInstanceRepository
+    private AppServiceInstanceService appServiceInstanceService
 
     @Autowired
-    private IamRepository iamRepository
+    private IamService iamService
     @Autowired
-    private GitlabRepository gitlabRepository
+    private GitlabServiceClientOperator gitlabServiceClientOperator
     @Autowired
-    private GitlabGroupMemberRepository gitlabGroupMemberRepository
+    private GitlabGroupService gitlabGroupService
 
-    SagaClient sagaClient = Mockito.mock(SagaClient.class)
-    IamServiceClient iamServiceClient = Mockito.mock(IamServiceClient.class)
+    TransactionalProducer producer = Mockito.mock(TransactionalProducer.class)
+    BaseServiceClient iamServiceClient = Mockito.mock(BaseServiceClient.class)
     GitlabServiceClient gitlabServiceClient = Mockito.mock(GitlabServiceClient.class)
 
     @Shared
-    OrganizationVO organization = new OrganizationVO()
-    @Shared
     ProjectVO projectE = new ProjectVO()
     @Shared
-    UserAttrE userAttrE = new UserAttrE()
+    UserAttrVO userAttrE = new UserAttrVO()
     @Shared
     Map<String, Object> searchParam = new HashMap<>()
     @Shared
@@ -115,11 +106,9 @@ class ApplicationControllerSpec extends Specification {
     @Shared
     Long init_id = 1L
     @Shared
-    DevopsAppShareDO devopsAppMarketDO = new DevopsAppShareDO()
+    AppServiceShareRuleDTO devopsAppMarketDO = new AppServiceShareRuleDTO()
     @Shared
-    DevopsEnvPodDO devopsEnvPodDO = new DevopsEnvPodDO()
-    @Shared
-    ApplicationTemplateDO applicationTemplateDO = new ApplicationTemplateDO()
+    DevopsEnvPodDTO devopsEnvPodDO = new DevopsEnvPodDTO()
     @Shared
     private boolean isToInit = true
     @Shared
@@ -160,23 +149,23 @@ class ApplicationControllerSpec extends Specification {
     def setup() {
 
         if (isToInit) {
-            DependencyInjectUtil.setAttribute(iamRepository, "iamServiceClient", iamServiceClient)
-            DependencyInjectUtil.setAttribute(gitlabRepository, "gitlabServiceClient", gitlabServiceClient)
-            DependencyInjectUtil.setAttribute(gitlabGroupMemberRepository, "gitlabServiceClient", gitlabServiceClient)
-            DependencyInjectUtil.setAttribute(applicationService, "sagaClient", sagaClient)
+            DependencyInjectUtil.setAttribute(iamService, "producer", producer)
+            DependencyInjectUtil.setAttribute(gitlabServiceClientOperator, "gitlabServiceClient", gitlabServiceClient)
+            DependencyInjectUtil.setAttribute(gitlabGroupService, "gitlabServiceClient", gitlabServiceClient)
+            DependencyInjectUtil.setAttribute(appServiceService, "sagaClient", sagaClient)
 
             // 删除app
-            applicationMapper.selectAll().forEach { applicationMapper.delete(it) }
+            appServiceMapper.selectAll().forEach { appServiceMapper.delete(it) }
 
-            ProjectDO projectDO = new ProjectDO()
+            ProjectDTO projectDO = new ProjectDTO()
             projectDO.setName("pro")
             projectDO.setOrganizationId(1L)
-            ResponseEntity<ProjectDO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
+            ResponseEntity<ProjectDTO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
             Mockito.doReturn(responseEntity).when(iamServiceClient).queryIamProject(1L)
-            OrganizationDO organizationDO = new OrganizationDO()
-            organizationDO.setId(1L)
-            organizationDO.setCode("testOrganization")
-            ResponseEntity<OrganizationDO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
+            OrganizationDTO organizationDTO = new OrganizationDTO()
+            organizationDTO.setId(1L)
+            organizationDTO.setCode("testOrganization")
+            ResponseEntity<OrganizationDTO> responseEntity1 = new ResponseEntity<>(organizationDTO, HttpStatus.OK)
             Mockito.doReturn(responseEntity1).when(iamServiceClient).queryOrganizationById(1L)
 
             List<RoleVO> roleDTOList = new ArrayList<>()
@@ -196,19 +185,19 @@ class ApplicationControllerSpec extends Specification {
 
     def cleanup() {
         if (isToClean) {
-            DependencyInjectUtil.restoreDefaultDependency(iamRepository, "iamServiceClient")
-            DependencyInjectUtil.restoreDefaultDependency(gitlabRepository, "gitlabServiceClient")
-            DependencyInjectUtil.restoreDefaultDependency(gitlabGroupMemberRepository, "gitlabServiceClient")
-            DependencyInjectUtil.restoreDefaultDependency(applicationService, "sagaClient")
+            DependencyInjectUtil.restoreDefaultDependency(iamService, "baseServiceClient")
+            DependencyInjectUtil.restoreDefaultDependency(gitlabServiceClientOperator, "gitlabServiceClient")
+            DependencyInjectUtil.restoreDefaultDependency(gitlabGroupService, "gitlabServiceClient")
+            DependencyInjectUtil.restoreDefaultDependency(appServiceService, "sagaClient")
 
             // 删除appInstance
-            applicationInstanceMapper.selectAll().forEach { applicationInstanceMapper.delete(it) }
+            appServiceInstanceMapper.selectAll().forEach { appServiceInstanceMapper.delete(it) }
             // 删除env
             devopsEnvironmentMapper.selectAll().forEach { devopsEnvironmentMapper.delete(it) }
             // 删除app
-            applicationMapper.selectAll().forEach { applicationMapper.delete(it) }
+            appServiceMapper.selectAll().forEach { appServiceMapper.delete(it) }
             // 删除appVersion
-            applicationVersionMapper.selectAll().forEach { applicationVersionMapper.delete(it) }
+            appServiceVersionMapper.selectAll().forEach { appServiceVersionMapper.delete(it) }
             // 删除appMarket
             applicationMarketMapper.selectAll().forEach { applicationMarketMapper.delete(it) }
             // 删除appTemplate
@@ -224,7 +213,7 @@ class ApplicationControllerSpec extends Specification {
     def "create"() {
         given: '创建issueDTO'
         isToInit = false
-        ApplicationReqVO applicationDTO = new ApplicationReqVO()
+        AppServiceReqVO applicationDTO = new AppServiceReqVO()
 
         and: '赋值'
         applicationDTO.setId(init_id)
@@ -248,14 +237,14 @@ class ApplicationControllerSpec extends Specification {
         Mockito.when(gitlabServiceClient.queryGroupMember(anyInt(), anyInt())).thenReturn(memberDOResponseEntity)
 
         and: 'mock iam创建用户'
-        IamAppPayLoad iamAppPayLoad = new IamAppPayLoad()
-        iamAppPayLoad.setProjectId(init_id)
-        iamAppPayLoad.setOrganizationId(init_id)
-        ResponseEntity<IamAppPayLoad> iamAppPayLoadResponseEntity = new ResponseEntity<>(iamAppPayLoad, HttpStatus.OK)
+        IamAppDTO iamAppDTO = new IamAppDTO()
+        iamAppDTO.setProjectId(init_id)
+        iamAppDTO.setOrganizationId(init_id)
+        ResponseEntity<IamAppDTO> iamAppPayLoadResponseEntity = new ResponseEntity<>(iamAppDTO, HttpStatus.OK)
         Mockito.when(iamServiceClient.createIamApplication(anyLong(), any(IamAppPayLoad))).thenReturn(iamAppPayLoadResponseEntity)
 
-        and: 'mock启动sagaClient'
-        Mockito.doReturn(new SagaInstanceDTO()).when(sagaClient).startSaga(anyString(), any(StartInstanceDTO))
+        and: 'mock启动producer'
+        Mockito.doReturn(null).when(producer).applyAndReturn(any(StartSagaBuilder), any(Consumer))
 
         when: '创建一个应用'
         def entity = restTemplate.postForEntity(MAPPING, applicationDTO, ApplicationRepVO.class, project_id)
@@ -263,7 +252,7 @@ class ApplicationControllerSpec extends Specification {
         then: '校验结果'
         entity.statusCode.is2xxSuccessful()
         entity.getBody().getId() == 1L
-        ApplicationDTO applicationDO = applicationMapper.selectByPrimaryKey(init_id)
+        AppServiceDTO applicationDO = appServiceMapper.selectByPrimaryKey(init_id)
 
         expect: '校验查询结果'
         applicationDO["code"] == "appCode"
@@ -281,56 +270,56 @@ class ApplicationControllerSpec extends Specification {
     // 项目下更新应用信息
     def "update"() {
         given: '设置applicationUpdateDTO类'
-        ApplicationUpdateVO applicationUpdateDTO = new ApplicationUpdateVO()
-        applicationUpdateDTO.setId(init_id)
-        applicationUpdateDTO.setName("updatename")
-        applicationUpdateDTO.setIsSkipCheckPermission(true)
+        AppServiceUpdateDTO appServiceUpdateDTO = new AppServiceUpdateDTO()
+        appServiceUpdateDTO.setId(init_id)
+        appServiceUpdateDTO.setName("updatename")
+        appServiceUpdateDTO.setIsSkipCheckPermission(true)
 
         and: "初始化gitlab数据"
-        ApplicationDTO applicationDO = applicationMapper.selectByPrimaryKey(init_id)
+        AppServiceDTO applicationDO = appServiceMapper.selectByPrimaryKey(init_id)
         applicationDO.setGitlabProjectId(1)
-        applicationMapper.updateByPrimaryKeySelective(applicationDO)
+        appServiceMapper.updateByPrimaryKeySelective(applicationDO)
 
         and: 'mock启动sagaClient'
         Mockito.doReturn(new SagaInstanceDTO()).when(sagaClient).startSaga(anyString(), any(StartInstanceDTO))
 
         when: '以前和现在都跳过权限检查，直接返回true，且该应用下无权限表记录'
-        restTemplate.put(MAPPING, applicationUpdateDTO, project_id)
+        restTemplate.put(MAPPING, appServiceUpdateDTO, project_id)
         then: '校验结果'
-        List<AppUserPermissionDTO> permissionResult = appUserPermissionMapper.selectAll()
-        ApplicationDTO appResult = applicationMapper.selectByPrimaryKey(1L)
+        List<AppServiceUserRelDTO> permissionResult = appUserPermissionMapper.selectAll()
+        AppServiceDTO appResult = appServiceMapper.selectByPrimaryKey(1L)
         permissionResult.size() == 0
         appResult.getIsSkipCheckPermission()
 
         when: '以前跳过权限检查，现在不跳过，该应用加入权限表记录'
-        applicationUpdateDTO.setIsSkipCheckPermission(false)
+        appServiceUpdateDTO.setIsSkipCheckPermission(false)
         List<Long> userIds = new ArrayList<>()
         userIds.add(2L)
-        applicationUpdateDTO.setUserIds(userIds)
-        restTemplate.put(MAPPING, applicationUpdateDTO, project_id)
+        appServiceUpdateDTO.setUserIds(userIds)
+        restTemplate.put(MAPPING, appServiceUpdateDTO, project_id)
         then: '校验结果'
-        List<AppUserPermissionDTO> permissionResult1 = appUserPermissionMapper.selectAll()
-        ApplicationDTO appResult1 = applicationMapper.selectByPrimaryKey(1L)
+        List<AppServiceUserRelDTO> permissionResult1 = appUserPermissionMapper.selectAll()
+        AppServiceDTO appResult1 = appServiceMapper.selectByPrimaryKey(1L)
         permissionResult1.size() == 1
         permissionResult1.get(0).getAppId() == 1L
         !appResult1.getIsSkipCheckPermission()
 
         when: '以前不跳过权限检查，现在也不跳过，该应用下有权限记录表'
-        applicationUpdateDTO.setIsSkipCheckPermission(false)
-        restTemplate.put(MAPPING, applicationUpdateDTO, project_id)
+        appServiceUpdateDTO.setIsSkipCheckPermission(false)
+        restTemplate.put(MAPPING, appServiceUpdateDTO, project_id)
         then: '校验结果'
-        List<AppUserPermissionDTO> permissionResult2 = appUserPermissionMapper.selectAll()
-        ApplicationDTO appResult2 = applicationMapper.selectByPrimaryKey(1L)
+        List<AppServiceUserRelDTO> permissionResult2 = appUserPermissionMapper.selectAll()
+        AppServiceDTO appResult2 = appServiceMapper.selectByPrimaryKey(1L)
         permissionResult2.size() == 1
         permissionResult2.get(0).getAppId() == 1L
         !appResult2.getIsSkipCheckPermission()
 
         when: '以前不跳过权限检查，现在跳过，该应用下无权限记录表'
-        applicationUpdateDTO.setIsSkipCheckPermission(true)
-        restTemplate.put(MAPPING, applicationUpdateDTO, project_id)
+        appServiceUpdateDTO.setIsSkipCheckPermission(true)
+        restTemplate.put(MAPPING, appServiceUpdateDTO, project_id)
         then: '校验结果'
-        List<AppUserPermissionDTO> permissionResult3 = appUserPermissionMapper.selectAll()
-        ApplicationDTO appResult3 = applicationMapper.selectByPrimaryKey(1L)
+        List<AppServiceUserRelDTO> permissionResult3 = appUserPermissionMapper.selectAll()
+        AppServiceDTO appResult3 = appServiceMapper.selectByPrimaryKey(1L)
         permissionResult3.size() == 0
         appResult3.getIsSkipCheckPermission()
     }
@@ -339,10 +328,10 @@ class ApplicationControllerSpec extends Specification {
     def "disableApp"() {
         when:
         restTemplate.put(MAPPING + "/{init_id}?active=false", Boolean, 1L, init_id)
-        applicationMapper.selectAll().forEach { println(it.getId() + it.getName() + it.getCode() + it.getActive()) }
+        appServiceMapper.selectAll().forEach { println(it.getId() + it.getName() + it.getCode() + it.getActive()) }
 
         then: '校验是否激活'
-        !applicationMapper.selectByPrimaryKey(init_id).getActive()
+        !appServiceMapper.selectByPrimaryKey(init_id).getActive()
     }
 
     // 启用应用
@@ -351,10 +340,10 @@ class ApplicationControllerSpec extends Specification {
         restTemplate.put(MAPPING + "/1?active=true", Boolean.class, 1L)
 
         then: '返回值'
-        ApplicationDTO applicationDO = applicationMapper.selectByPrimaryKey(init_id)
+        AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(init_id)
 
         expect: '校验是否激活'
-        applicationDO["isActive"] == true
+        appServiceDTO["isActive"] == true
     }
 
     // 删除应用
@@ -367,21 +356,21 @@ class ApplicationControllerSpec extends Specification {
         restTemplate.delete(MAPPING + "/1", 1L)
 
         then: '校验是否删除'
-        applicationMapper.selectAll().isEmpty()
+        appServiceMapper.selectAll().isEmpty()
 
         and: '添加上删除的应用'
-        ApplicationDTO applicationDO = new ApplicationDTO()
-        applicationDO.setId(1L)
-        applicationDO.setProjectId(1L)
-        applicationDO.setName("appName")
-        applicationDO.setCode("appCode")
-        applicationDO.setActive(true)
-        applicationDO.setSynchro(true)
-        applicationDO.setType("normal")
-        applicationDO.setGitlabProjectId(1)
-        applicationDO.setAppTemplateId(1L)
-        applicationDO.setIsSkipCheckPermission(true)
-        applicationMapper.insert(applicationDO)
+        AppServiceDTO appServiceDTO = new AppServiceDTO()
+        appServiceDTO.setId(1L)
+        appServiceDTO.setProjectId(1L)
+        appServiceDTO.setName("appName")
+        appServiceDTO.setCode("appCode")
+        appServiceDTO.setActive(true)
+        appServiceDTO.setSynchro(true)
+        appServiceDTO.setType("normal")
+        appServiceDTO.setGitlabProjectId(1)
+        appServiceDTO.setAppTemplateId(1L)
+        appServiceDTO.setIsSkipCheckPermission(true)
+        appServiceMapper.insert(appServiceDTO)
     }
 
     // 项目下分页查询应用
@@ -399,25 +388,25 @@ class ApplicationControllerSpec extends Specification {
     // 根据环境id分页获取已部署正在运行实例的应用
     def "pageByEnvIdAndStatus"() {
         given: '添加应用运行实例'
-        ApplicationInstanceDO applicationInstanceDO = new ApplicationInstanceDO()
-        applicationInstanceDO.setId(init_id)
-        applicationInstanceDO.setCode("spock-test")
-        applicationInstanceDO.setStatus("running")
-        applicationInstanceDO.setAppId(init_id)
-        applicationInstanceDO.setAppVersionId(init_id)
-        applicationInstanceDO.setEnvId(init_id)
-        applicationInstanceDO.setCommandId(init_id)
-        applicationInstanceMapper.insert(applicationInstanceDO)
+        AppServiceInstanceDTO appServiceInstanceDTO = new AppServiceInstanceDTO()
+        appServiceInstanceDTO.setId(init_id)
+        appServiceInstanceDTO.setCode("spock-test")
+        appServiceInstanceDTO.setStatus("running")
+        appServiceInstanceDTO.setAppId(init_id)
+        appServiceInstanceDTO.setAppVersionId(init_id)
+        appServiceInstanceDTO.setEnvId(init_id)
+        appServiceInstanceDTO.setCommandId(init_id)
+        appServiceInstanceMapper.insert(appServiceInstanceDTO)
 
         and: '添加env'
-        DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO()
-        devopsEnvironmentDO.setId(init_id)
-        devopsEnvironmentDO.setCode("spock-test")
-        devopsEnvironmentDO.setGitlabEnvProjectId(init_id)
-        devopsEnvironmentDO.setHookId(init_id)
-        devopsEnvironmentDO.setDevopsEnvGroupId(init_id)
-        devopsEnvironmentDO.setProjectId(init_id)
-        devopsEnvironmentMapper.insert(devopsEnvironmentDO)
+        DevopsEnvironmentDTO devopsEnvironmentDTO = new DevopsEnvironmentDTO()
+        devopsEnvironmentDTO.setId(init_id)
+        devopsEnvironmentDTO.setCode("spock-test")
+        devopsEnvironmentDTO.setGitlabEnvProjectId(init_id)
+        devopsEnvironmentDTO.setHookId(init_id)
+        devopsEnvironmentDTO.setDevopsEnvGroupId(init_id)
+        devopsEnvironmentDTO.setProjectId(init_id)
+        devopsEnvironmentMapper.insert(devopsEnvironmentDTO)
 
         and: '初始化appMarket对象'
         applicationMarketMapper.insert(devopsAppMarketDO)
@@ -520,11 +509,11 @@ class ApplicationControllerSpec extends Specification {
     // 项目下查询所有已经启用的且未发布的且有版本的应用
     def "listByActiveAndPubAndVersion"() {
         given: '初始化appVersionDO类'
-        ApplicationVersionDO applicationVersionDO = new ApplicationVersionDO()
-        applicationVersionDO.setId(init_id)
-        applicationVersionDO.setVersion("0.1.0")
-        applicationVersionDO.setAppId(init_id)
-        applicationVersionMapper.insert(applicationVersionDO)
+        AppServiceVersionDTO appServiceVersionDTO = new AppServiceVersionDTO()
+        appServiceVersionDTO.setId(init_id)
+        appServiceVersionDTO.setVersion("0.1.0")
+        appServiceVersionDTO.setAppId(init_id)
+        appServiceVersionMapper.insert(appServiceVersionDTO)
 
         when:
         def entity = restTemplate.postForObject(MAPPING + "/list_unpublish", searchParam, Page.class, 1L)
@@ -592,7 +581,7 @@ class ApplicationControllerSpec extends Specification {
     def "import Application"() {
         given: '创建issueDTO'
         def url = MAPPING + "/import"
-        ApplicationImportVO applicationDTO = new ApplicationImportVO()
+        AppServiceImportVO applicationDTO = new AppServiceImportVO()
         applicationDTO.setName("test-import-github")
         applicationDTO.setCode("test-import-gitlab")
         applicationDTO.setType("normal")
@@ -604,7 +593,7 @@ class ApplicationControllerSpec extends Specification {
         applicationDTO.setHarborConfigId(harborConfigId)
         applicationDTO.setChartConfigId(chartConfigId)
 
-        def searchCondition = new ApplicationDTO()
+        def searchCondition = new AppServiceDTO()
         searchCondition.setCode(applicationDTO.getCode())
 
         when: '导入一个github应用'
@@ -612,8 +601,8 @@ class ApplicationControllerSpec extends Specification {
 
         then: '校验结果'
         entity.statusCode.is2xxSuccessful()
-        applicationMapper.selectOne(searchCondition) != null
-        applicationMapper.delete(searchCondition)
+        appServiceMapper.selectOne(searchCondition) != null
+        appServiceMapper.delete(searchCondition)
 
         when: '导入一个不可用地址的仓库'
         applicationDTO.setName("test-import-invalid")
@@ -648,8 +637,8 @@ class ApplicationControllerSpec extends Specification {
 
         then: '校验结果'
         entity.getStatusCode().is2xxSuccessful()
-        applicationMapper.selectOne(searchCondition) != null
-        applicationMapper.delete(searchCondition)
+        appServiceMapper.selectOne(searchCondition) != null
+        appServiceMapper.delete(searchCondition)
     }
 
     // 清除测试数据

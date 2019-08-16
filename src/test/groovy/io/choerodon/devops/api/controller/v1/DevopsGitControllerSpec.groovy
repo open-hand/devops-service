@@ -1,7 +1,6 @@
 package io.choerodon.devops.api.controller.v1
 
 import com.github.pagehelper.PageInfo
-import io.choerodon.core.domain.Page
 import io.choerodon.core.exception.CommonException
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.devops.DependencyInjectUtil
@@ -9,25 +8,28 @@ import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.DevopsBranchVO
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO
 import io.choerodon.devops.api.vo.iam.RoleVO
-
-import io.choerodon.devops.api.vo.iam.entity.iam.UserE
-import io.choerodon.devops.domain.application.repository.*
-
-import io.choerodon.devops.infra.common.util.enums.AccessLevel
-import io.choerodon.devops.infra.dataobject.ApplicationDTO
-import io.choerodon.devops.infra.dataobject.DevopsBranchDO
-import io.choerodon.devops.infra.dataobject.DevopsMergeRequestDO
-import io.choerodon.devops.infra.dataobject.gitlab.BranchDO
+import io.choerodon.devops.app.service.DevopsBranchService
+import io.choerodon.devops.app.service.DevopsGitService
+import io.choerodon.devops.app.service.IamService
+import io.choerodon.devops.app.service.UserAttrService
+import io.choerodon.devops.infra.dto.AppServiceDTO
+import io.choerodon.devops.infra.dto.DevopsBranchDTO
+import io.choerodon.devops.infra.dto.DevopsMergeRequestDTO
+import io.choerodon.devops.infra.dto.UserAttrDTO
+import io.choerodon.devops.infra.dto.agile.IssueDTO
+import io.choerodon.devops.infra.dto.gitlab.BranchDTO
 import io.choerodon.devops.infra.dto.gitlab.CommitDTO
-import io.choerodon.devops.infra.dataobject.gitlab.MemberDTO
-import io.choerodon.devops.infra.dataobject.gitlab.TagDO
-import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
-import io.choerodon.devops.infra.dataobject.iam.ProjectDO
-import io.choerodon.devops.infra.dataobject.iam.UserDO
+import io.choerodon.devops.infra.dto.gitlab.MemberDTO
+import io.choerodon.devops.infra.dto.gitlab.TagDTO
+import io.choerodon.devops.infra.dto.iam.IamUserDTO
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO
+import io.choerodon.devops.infra.dto.iam.ProjectDTO
+import io.choerodon.devops.infra.enums.AccessLevel
 import io.choerodon.devops.infra.feign.AgileServiceClient
+import io.choerodon.devops.infra.feign.BaseServiceClient
 import io.choerodon.devops.infra.feign.GitlabServiceClient
-import io.choerodon.devops.infra.feign.IamServiceClient
-import io.choerodon.devops.infra.mapper.ApplicationMapper
+import io.choerodon.devops.infra.feign.operator.AgileServiceClientOperator
+import io.choerodon.devops.infra.mapper.AppServiceMapper
 import io.choerodon.devops.infra.mapper.DevopsBranchMapper
 import io.choerodon.devops.infra.mapper.DevopsMergeRequestMapper
 import io.choerodon.devops.infra.mapper.UserAttrMapper
@@ -43,7 +45,7 @@ import spock.lang.Specification
 import spock.lang.Stepwise
 import spock.lang.Subject
 
-import static org.mockito.Matchers.*
+import static org.mockito.ArgumentMatchers.*
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
@@ -55,33 +57,31 @@ class DevopsGitControllerSpec extends Specification {
     @Autowired
     private TestRestTemplate restTemplate
     @Autowired
-    private ApplicationMapper applicationMapper
+    private AppServiceMapper applicationMapper
     @Autowired
-    private DevopsGitRepository devopsGitRepository
+    private DevopsGitService devopsGitRepository
     @Autowired
     private DevopsBranchMapper devopsBranchMapper
     @Autowired
-    private AgileRepository agileRepository
+    private AgileServiceClientOperator agileRepository
     @Autowired
     private DevopsMergeRequestMapper devopsMergeRequestMapper
     @Autowired
     private UserAttrMapper userAttrMapper
     @Autowired
-    private DevopsBranchRepository devopsBranchRepository
+    private DevopsBranchService devopsBranchRepository
 
     @Autowired
-    private IamRepository iamRepository
+    private IamService iamRepository
     @Autowired
-    private UserAttrRepository userAttrRepository
-    @Autowired
-    private GitlabProjectRepository gitlabProjectRepository
+    private UserAttrService userAttrRepository
 
     GitlabServiceClient gitlabServiceClient = Mockito.mock(GitlabServiceClient.class)
     AgileServiceClient agileServiceClient = Mockito.mock(AgileServiceClient.class)
-    IamServiceClient iamServiceClient = Mockito.mock(IamServiceClient.class)
+    BaseServiceClient iamServiceClient = Mockito.mock(BaseServiceClient)
 
     @Shared
-    ApplicationDTO applicationDO = new ApplicationDTO()
+    AppServiceDTO applicationDO = new AppServiceDTO()
 
     def setupSpec() {
         applicationDO.setId(1L)
@@ -92,39 +92,39 @@ class DevopsGitControllerSpec extends Specification {
     }
 
     def setup() {
-        DependencyInjectUtil.setAttribute(iamRepository, "iamServiceClient", iamServiceClient)
+        DependencyInjectUtil.setAttribute(iamRepository, "baseServiceClient", iamServiceClient)
         DependencyInjectUtil.setAttribute(devopsGitRepository, "gitlabServiceClient", gitlabServiceClient)
         DependencyInjectUtil.setAttribute(gitlabProjectRepository, "gitlabServiceClient", gitlabServiceClient)
 
 
-        ProjectDO projectDO = new ProjectDO()
+        ProjectDTO projectDO = new ProjectDTO()
         projectDO.setName("pro")
         projectDO.setOrganizationId(1L)
-        ResponseEntity<ProjectDO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
+        ResponseEntity<ProjectDTO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
         Mockito.doReturn(responseEntity).when(iamServiceClient).queryIamProject(1L)
-        OrganizationDO organizationDO = new OrganizationDO()
+        OrganizationDTO organizationDO = new OrganizationDTO()
         organizationDO.setId(1L)
         organizationDO.setCode("testOrganization")
-        ResponseEntity<OrganizationDO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
+        ResponseEntity<OrganizationDTO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
         Mockito.doReturn(responseEntity1).when(iamServiceClient).queryOrganizationById(1L)
 
-        UserDO userDO = new UserDO()
+        IamUserDTO userDO = new IamUserDTO()
         userDO.setLoginName("test")
         userDO.setId(1L)
         userDO.setImageUrl("imageURL")
-        ResponseEntity<UserDO> responseEntity2 = new ResponseEntity<>(userDO, HttpStatus.OK)
+        ResponseEntity<IamUserDTO> responseEntity2 = new ResponseEntity<>(userDO, HttpStatus.OK)
         Mockito.when(iamServiceClient.queryByLoginName(anyString())).thenReturn(responseEntity2)
 
-        List<UserDO> userDOList = new ArrayList<>()
+        List<IamUserDTO> userDOList = new ArrayList<>()
         userDOList.add(userDO)
-        ResponseEntity<List<UserDO>> responseEntity3 = new ResponseEntity<>(userDOList, HttpStatus.OK)
+        ResponseEntity<List<IamUserDTO>> responseEntity3 = new ResponseEntity<>(userDOList, HttpStatus.OK)
         Mockito.when(iamServiceClient.listUsersByIds(any(Long[].class))).thenReturn(responseEntity3)
 
-        PageInfo<UserDO> page = new PageInfo<>(userDOList)
-        ResponseEntity<PageInfo<UserDO>> responseEntityPage = new ResponseEntity<>(page, HttpStatus.OK)
-        Mockito.when(iamServiceClient.listUsersByEmail(anyLong(), anyInt(), anyInt(), isNull())).thenReturn(responseEntityPage)
+        PageInfo<IamUserDTO> page = new PageInfo<>(userDOList)
+        ResponseEntity<PageInfo<IamUserDTO>> responseEntityPage = new ResponseEntity<>(page, HttpStatus.OK)
+        Mockito.when(iamServiceClient.listUsersByEmail(anyLong(), anyInt(), anyInt(), anyString())).thenReturn(responseEntityPage)
 
-        TagDO tagDO = new TagDO()
+        TagDTO tagDO = new TagDTO()
         tagDO.setName("testTag")
         CommitDTO commitDO = new CommitDTO()
         commitDO.setId("DOcommitId")
@@ -132,22 +132,22 @@ class DevopsGitControllerSpec extends Specification {
         commitDO.setCommittedDate(new Date(2018, 11, 9, 0, 0, 0))
         commitDO.setAuthorName("testAuthorName")
         tagDO.setCommit(commitDO)
-        ResponseEntity<TagDO> responseEntity4 = new ResponseEntity<>(tagDO, HttpStatus.OK)
+        ResponseEntity<TagDTO> responseEntity4 = new ResponseEntity<>(tagDO, HttpStatus.OK)
         Mockito.when(gitlabServiceClient.updateTag(anyInt(), anyString(), anyString(), anyInt())).thenReturn(responseEntity4)
 
-        List<TagDO> tagDOList = new ArrayList<>()
+        List<TagDTO> tagDOList = new ArrayList<>()
         tagDOList.add(tagDO)
-        ResponseEntity<List<TagDO>> responseEntity5 = new ResponseEntity<>(tagDOList, HttpStatus.OK)
+        ResponseEntity<List<TagDTO>> responseEntity5 = new ResponseEntity<>(tagDOList, HttpStatus.OK)
         Mockito.when(gitlabServiceClient.getTags(anyInt(), anyInt())).thenReturn(responseEntity5)
 
-        BranchDO branchDO = new BranchDO()
-        io.choerodon.devops.api.vo.iam.entity.gitlab.CommitDTO commitE = new io.choerodon.devops.api.vo.iam.entity.gitlab.CommitDTO()
-        commitE.setMessage("message")
-        commitE.setId("EcommitId")
-        commitE.setCommittedDate(new Date(2018, 11, 9, 0, 0, 0))
-        commitE.setAuthorName("testAuthorName")
-        branchDO.setCommit(commitE)
-        ResponseEntity<BranchDO> responseEntity6 = new ResponseEntity<>(branchDO, HttpStatus.OK)
+        BranchDTO branchDTO = new BranchDTO()
+        CommitDTO commitDTO = new CommitDTO()
+        commitDTO.setMessage("message")
+        commitDTO.setId("EcommitId")
+        commitDTO.setCommittedDate(new Date(2018, 11, 9, 0, 0, 0))
+        commitDTO.setAuthorName("testAuthorName")
+        branchDTO.setCommit(commitDTO)
+        ResponseEntity<BranchDTO> responseEntity6 = new ResponseEntity<>(branchDTO, HttpStatus.OK)
         Mockito.when(gitlabServiceClient.createBranch(anyInt(), anyString(), anyString(), anyInt())).thenReturn(responseEntity6)
     }
 
@@ -164,7 +164,7 @@ class DevopsGitControllerSpec extends Specification {
 
     def "CreateTag"() {
         given: 'mock gitlab创建tag'
-        UserAttrE userAttrE = new UserAttrE()
+        UserAttrDTO userAttrE = new UserAttrDTO()
         userAttrE.setIamUserId(1L)
         userAttrE.setGitlabUserId(1L)
         Mockito.doReturn(null).when(gitlabServiceClient).createTag(null, null, null, null, null, null)
@@ -178,10 +178,10 @@ class DevopsGitControllerSpec extends Specification {
 
     def "UpdateTagRelease"() {
         given: 'mock 更新tag'
-        UserAttrE userAttrE = new UserAttrE()
+        UserAttrDTO userAttrE = new UserAttrDTO()
         userAttrE.setIamUserId(1L)
         userAttrE.setGitlabUserId(1L)
-        ResponseEntity<TagDO> responseEntity = new ResponseEntity<>(new TagDO(), HttpStatus.OK)
+        ResponseEntity<TagDTO> responseEntity = new ResponseEntity<>(new TagDTO(), HttpStatus.OK)
         Mockito.doReturn(responseEntity).when(gitlabServiceClient).updateTag(1, "test", "test", 1)
 
         when: '更新标签'
@@ -193,46 +193,46 @@ class DevopsGitControllerSpec extends Specification {
 
     def "GetTagByPage"() {
         given:
-        UserAttrE userAttrE = new UserAttrE()
+        UserAttrDTO userAttrE = new UserAttrDTO()
         userAttrE.setIamUserId(1L)
         userAttrE.setGitlabUserId(1L)
 
-        List<TagDO> tagDOS = new ArrayList<>()
-        TagDO tagDO = new TagDO()
+        List<TagDTO> tagDOS = new ArrayList<>()
+        TagDTO tagDO = new TagDTO()
         CommitDTO commitDO = new CommitDTO()
         commitDO.setId("test")
         commitDO.setAuthorName("test")
         tagDO.setCommit(commitDO)
         tagDOS.add(tagDO)
-        ResponseEntity<List<TagDO>> tagResponseEntity = new ResponseEntity<>(tagDOS, HttpStatus.OK)
+        ResponseEntity<List<TagDTO>> tagResponseEntity = new ResponseEntity<>(tagDOS, HttpStatus.OK)
         Mockito.doReturn(tagResponseEntity).when(gitlabServiceClient).getTags(1, 1)
 
         and: '数据准备'
         MemberDTO memberDO = new MemberDTO()
-        memberDO.setAccessLevel(AccessLevel.OWNER)
+        memberDO.setAccessLevel(AccessLevel.OWNER.toValue())
         ResponseEntity<MemberDTO> responseEntity2 = new ResponseEntity<>(memberDO, HttpStatus.OK)
         Mockito.when(gitlabServiceClient.getProjectMember(anyInt(), anyInt())).thenReturn(responseEntity2)
 
         when: '获取标签分页列表'
-        def page = restTemplate.postForObject("/v1/projects/1/apps/1/git/tags_list_options?page=0&size=10", null, Page.class)
+        def page = restTemplate.postForObject("/v1/projects/1/apps/1/git/tags_list_options?page=0&size=10", null, PageInfo.class)
 
         then: '校验返回值'
-        page.size() == 1
+        page.getTotal() == 1
     }
 
     def "GetTagList"() {
         given:
-        UserAttrE userAttrE = new UserAttrE()
+        UserAttrDTO userAttrE = new UserAttrDTO()
         userAttrE.setIamUserId(1L)
         userAttrE.setGitlabUserId(1L)
-        List<TagDO> tagDOS = new ArrayList<>()
-        TagDO tagDO = new TagDO()
+        List<TagDTO> tagDOS = new ArrayList<>()
+        TagDTO tagDO = new TagDTO()
         CommitDTO commitDO = new CommitDTO()
         commitDO.setId("test")
         commitDO.setAuthorName("test")
         tagDO.setCommit(commitDO)
         tagDOS.add(tagDO)
-        ResponseEntity<List<TagDO>> tagResponseEntity = new ResponseEntity<>(tagDOS, HttpStatus.OK)
+        ResponseEntity<List<TagDTO>> tagResponseEntity = new ResponseEntity<>(tagDOS, HttpStatus.OK)
         Mockito.doReturn(tagResponseEntity).when(gitlabServiceClient).getTags(1, 1)
         userAttrRepository.baseQueryById(_ as Long) >> userAttrE
 
@@ -245,17 +245,17 @@ class DevopsGitControllerSpec extends Specification {
 
     def "CheckTag"() {
         given: 'mock gitlab获取tag'
-        UserAttrE userAttrE = new UserAttrE()
+        UserAttrDTO userAttrE = new UserAttrDTO()
         userAttrE.setIamUserId(1L)
         userAttrE.setGitlabUserId(1L)
-        List<TagDO> tagDOS = new ArrayList<>()
-        TagDO tagDO = new TagDO()
+        List<TagDTO> tagDOS = new ArrayList<>()
+        TagDTO tagDO = new TagDTO()
         CommitDTO commitDO = new CommitDTO()
         commitDO.setId("test")
         commitDO.setAuthorName("test")
         tagDO.setCommit(commitDO)
         tagDOS.add(tagDO)
-        ResponseEntity<List<TagDO>> tagResponseEntity = new ResponseEntity<>(tagDOS, HttpStatus.OK)
+        ResponseEntity<List<TagDTO>> tagResponseEntity = new ResponseEntity<>(tagDOS, HttpStatus.OK)
         Mockito.doReturn(tagResponseEntity).when(gitlabServiceClient).getTags(1, 1)
         userAttrRepository.baseQueryById(_ as Long) >> userAttrE
 
@@ -268,7 +268,7 @@ class DevopsGitControllerSpec extends Specification {
 
     def "DeleteTag"() {
         given: 'mock gitlab删除tag'
-        UserAttrE userAttrE = new UserAttrE()
+        UserAttrDTO userAttrE = new UserAttrDTO()
         userAttrE.setIamUserId(1L)
         userAttrE.setGitlabUserId(1L)
         Mockito.doReturn(null).when(gitlabServiceClient).deleteTag(null, null, null)
@@ -282,7 +282,7 @@ class DevopsGitControllerSpec extends Specification {
 
     def "CreateBranch"() {
         given: 'mock gitlab创建分支'
-        UserAttrE userAttrE = new UserAttrE()
+        UserAttrDTO userAttrE = new UserAttrDTO()
         userAttrE.setIamUserId(1L)
         userAttrE.setGitlabUserId(1L)
         DevopsBranchVO devopsBranchDTO = new DevopsBranchVO()
@@ -291,13 +291,13 @@ class DevopsGitControllerSpec extends Specification {
         devopsBranchDTO.setIssueId(1L)
         devopsBranchDTO.setAppId(1L)
         devopsBranchDTO.setOriginBranch("test")
-        BranchDO branchDO = new BranchDO()
-        io.choerodon.devops.api.vo.iam.entity.gitlab.CommitDTO commitE = new io.choerodon.devops.api.vo.iam.entity.gitlab.CommitDTO()
+        BranchDTO branchDO = new BranchDTO()
+        CommitDTO commitE = new CommitDTO()
         commitE.setId("test")
         commitE.setCommittedDate(new Date())
         commitE.setMessage("test")
         branchDO.setCommit(commitE)
-        ResponseEntity<BranchDO> branchDOResponseEntity = new ResponseEntity<>(branchDO, HttpStatus.OK)
+        ResponseEntity<BranchDTO> branchDOResponseEntity = new ResponseEntity<>(branchDO, HttpStatus.OK)
         Mockito.doReturn(branchDOResponseEntity).when(gitlabServiceClient).createBranch(1, "test", "test", 1)
         userAttrRepository.baseQueryById(_ as Long) >> userAttrE
 
@@ -310,12 +310,12 @@ class DevopsGitControllerSpec extends Specification {
 
     def "ListByAppId"() {
         given: 'mock gitlab查询issue'
-        UserAttrE userAttrE = new UserAttrE()
+        UserAttrDTO userAttrE = new UserAttrDTO()
         userAttrE.setIamUserId(1L)
         userAttrE.setGitlabUserId(1L)
-        Issue issue = new Issue()
-        ResponseEntity<Issue> issueResponseEntity = new ResponseEntity<>(issue, HttpStatus.OK)
-        UserE userE = new UserE()
+        IssueDTO issue = new IssueDTO()
+        ResponseEntity<IssueDTO> issueResponseEntity = new ResponseEntity<>(issue, HttpStatus.OK)
+        IamUserDTO userE = new IamUserDTO()
         userE.setLoginName("test")
         userE.setId(1L)
         userE.setRealName("test")
@@ -338,11 +338,11 @@ class DevopsGitControllerSpec extends Specification {
         Mockito.doReturn(pageResponseEntity).when(iamServiceClient).listProjectWithRole(anyLong(), anyInt(), anyInt())
 
         when: '获取工程下所有分支名'
-        def branches = restTemplate.postForObject("/v1/projects/1/apps/1/git/branches?page=0&size=10", null, Page.class)
+        def branches = restTemplate.postForObject("/v1/projects/1/apps/1/git/branches?page=0&size=10", null, PageInfo.class)
 
 
         then: '校验返回值'
-        branches.size() == 1
+        branches.getTotal() == 1
     }
 
     def "QueryByAppId"() {
@@ -368,15 +368,15 @@ class DevopsGitControllerSpec extends Specification {
 
     def "Delete"() {
         given: 'mock gitlab删除分支'
-        UserAttrE userAttrE = new UserAttrE()
+        UserAttrDTO userAttrE = new UserAttrDTO()
         userAttrE.setIamUserId(1L)
         userAttrE.setGitlabUserId(1L)
         ResponseEntity responseEntity = new ResponseEntity(new Object(), HttpStatus.OK)
         Mockito.when(gitlabServiceClient.deleteBranch(anyInt(), anyString(), anyInt())).thenReturn(responseEntity)
 
         and: 'mock gitlab查询分支'
-        List<BranchDO> branchDOList = new ArrayList<>()
-        BranchDO branchDO = new BranchDO()
+        List<BranchDTO> branchDOList = new ArrayList<>()
+        BranchDTO branchDO = new BranchDTO()
         branchDO.setName("test")
         branchDOList.add(branchDO)
         ResponseEntity branchResponse = new ResponseEntity(branchDOList, HttpStatus.OK)
@@ -391,15 +391,15 @@ class DevopsGitControllerSpec extends Specification {
 
     def "GetMergeRequestList"() {
         given: 'mock 查询commits'
-        UserE userE = new UserE()
+        IamUserDTO userE = new IamUserDTO()
         userE.setLoginName("test")
         userE.setId(1L)
         userE.setRealName("test")
         userE.setImageUrl("test")
-        UserAttrE userAttrE = new UserAttrE()
+        UserAttrDTO userAttrE = new UserAttrDTO()
         userAttrE.setIamUserId(1L)
         userAttrE.setGitlabUserId(1L)
-        DevopsMergeRequestDO devopsMergeRequestDO = new DevopsMergeRequestDO()
+        DevopsMergeRequestDTO devopsMergeRequestDO = new DevopsMergeRequestDTO()
         devopsMergeRequestDO.setId(1L)
         devopsMergeRequestDO.setState("merged")
         devopsMergeRequestDO.setProjectId(1L)
@@ -407,7 +407,7 @@ class DevopsGitControllerSpec extends Specification {
         devopsMergeRequestDO.setAuthorId(1L)
         devopsMergeRequestDO.setAssigneeId(1L)
         devopsMergeRequestMapper.insert(devopsMergeRequestDO)
-        DevopsMergeRequestDO devopsMergeRequestDO1 = new DevopsMergeRequestDO()
+        DevopsMergeRequestDTO devopsMergeRequestDO1 = new DevopsMergeRequestDTO()
         devopsMergeRequestDO1.setId(2L)
         devopsMergeRequestDO1.setState("closed")
         devopsMergeRequestDO1.setProjectId(1L)
@@ -415,7 +415,7 @@ class DevopsGitControllerSpec extends Specification {
         devopsMergeRequestDO1.setAuthorId(1L)
         devopsMergeRequestDO1.setAssigneeId(1L)
         devopsMergeRequestMapper.insert(devopsMergeRequestDO1)
-        DevopsMergeRequestDO devopsMergeRequestDO2 = new DevopsMergeRequestDO()
+        DevopsMergeRequestDTO devopsMergeRequestDO2 = new DevopsMergeRequestDTO()
         devopsMergeRequestDO2.setId(3L)
         devopsMergeRequestDO2.setState("opened")
         devopsMergeRequestDO2.setProjectId(1L)
@@ -440,8 +440,8 @@ class DevopsGitControllerSpec extends Specification {
 
     def "CheckName"() {
         given: 'mock gitlab查询分支'
-        List<BranchDO> branchDOList = new ArrayList<>()
-        BranchDO branchDO = new BranchDO()
+        List<BranchDTO> branchDOList = new ArrayList<>()
+        BranchDTO branchDO = new BranchDTO()
         branchDO.setName("test")
         branchDOList.add(branchDO)
         ResponseEntity branchResponse = new ResponseEntity(branchDOList, HttpStatus.OK)
@@ -455,23 +455,23 @@ class DevopsGitControllerSpec extends Specification {
         notThrown(CommonException)
 
         // 删除app
-        List<ApplicationDTO> list = applicationMapper.selectAll()
+        List<AppServiceDTO> list = applicationMapper.selectAll()
         if (list != null && !list.isEmpty()) {
-            for (ApplicationDTO e : list) {
+            for (AppServiceDTO e : list) {
                 applicationMapper.delete(e)
             }
         }
         // 删除branch
-        List<DevopsBranchDO> list1 = devopsBranchMapper.selectAll()
+        List<DevopsBranchDTO> list1 = devopsBranchMapper.selectAll()
         if (list1 != null && !list1.isEmpty()) {
-            for (DevopsBranchDO e : list1) {
+            for (DevopsBranchDTO e : list1) {
                 devopsBranchMapper.delete(e)
             }
         }
         // 删除mergeRequest
-        List<DevopsMergeRequestDO> list2 = devopsMergeRequestMapper.selectAll()
+        List<DevopsMergeRequestDTO> list2 = devopsMergeRequestMapper.selectAll()
         if (list2 != null && !list2.isEmpty()) {
-            for (DevopsMergeRequestDO e : list2) {
+            for (DevopsMergeRequestDTO e : list2) {
                 devopsMergeRequestMapper.delete(e)
             }
         }

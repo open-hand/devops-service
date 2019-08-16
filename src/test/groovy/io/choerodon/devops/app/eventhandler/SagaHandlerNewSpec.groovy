@@ -1,26 +1,27 @@
 package io.choerodon.devops.app.eventhandler
 
-
-import io.choerodon.asgard.saga.dto.SagaInstanceDTO
-import io.choerodon.asgard.saga.feign.SagaClient
-import io.choerodon.core.domain.Page
+import com.github.pagehelper.PageInfo
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.app.service.ApplicationService
-import io.choerodon.devops.domain.application.repository.*
-import io.choerodon.devops.infra.common.util.enums.AccessLevel
-import io.choerodon.devops.infra.dataobject.ApplicationDTO
-import io.choerodon.devops.infra.dataobject.DevopsProjectDTO
-import io.choerodon.devops.infra.dataobject.UserAttrDTO
-
-import io.choerodon.devops.infra.dataobject.gitlab.GroupDO
-import io.choerodon.devops.infra.dataobject.gitlab.MemberDTO
-import io.choerodon.devops.infra.dataobject.gitlab.UserDO
-import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
-import io.choerodon.devops.infra.dataobject.iam.ProjectDO
+import io.choerodon.devops.app.service.GitlabGroupMemberService
+import io.choerodon.devops.app.service.GitlabUserService
+import io.choerodon.devops.app.service.IamService
+import io.choerodon.devops.infra.dto.AppServiceDTO
+import io.choerodon.devops.infra.dto.DevopsProjectDTO
+import io.choerodon.devops.infra.dto.UserAttrDTO
+import io.choerodon.devops.infra.dto.gitlab.GitlabProjectDTO
+import io.choerodon.devops.infra.dto.gitlab.GitlabUserReqDTO
+import io.choerodon.devops.infra.dto.gitlab.GroupDTO
+import io.choerodon.devops.infra.dto.gitlab.MemberDTO
+import io.choerodon.devops.infra.dto.iam.IamUserDTO
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO
+import io.choerodon.devops.infra.dto.iam.ProjectDTO
+import io.choerodon.devops.infra.enums.AccessLevel
+import io.choerodon.devops.infra.feign.BaseServiceClient
 import io.choerodon.devops.infra.feign.GitlabServiceClient
-import io.choerodon.devops.infra.feign.IamServiceClient
-import io.choerodon.devops.infra.mapper.ApplicationMapper
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator
+import io.choerodon.devops.infra.mapper.AppServiceMapper
 import io.choerodon.devops.infra.mapper.DevopsProjectMapper
 import io.choerodon.devops.infra.mapper.UserAttrMapper
 import org.mockito.Mockito
@@ -55,33 +56,30 @@ class SagaHandlerNewSpec extends Specification {
     @Shared
     Long org_id = 1L
     @Shared
-    ResponseEntity<GroupDO> groupDOResponseEntity = null
+    ResponseEntity<GroupDTO> groupDOResponseEntity = null
     @Shared
-    ResponseEntity<UserDO> userDOResponseEntity = null
+    ResponseEntity<IamUserDTO> userDOResponseEntity = null
 
     @Autowired
     private SagaHandler sagaHandler
     @Autowired
-    private IamRepository iamRepository
+    private IamService iamRepository
     @Autowired
-    private GitlabRepository gitlabRepository
+    private GitlabServiceClientOperator gitlabRepository
     @Autowired
-    private GitlabGroupMemberRepository gitlabGroupMemberRepository
+    private GitlabGroupMemberService gitlabGroupMemberRepository
     @Autowired
     private UserAttrMapper userAttrMapper
     @Autowired
     private ApplicationService applicationService
     @Autowired
-    private ApplicationMapper applicationMapper
+    private AppServiceMapper applicationMapper
     @Autowired
-    private GitlabProjectRepository gitlabProjectRepository
-    @Autowired
-    private GitlabUserRepository gitlabUserRepository
+    private GitlabUserService gitlabUserRepository
     @Autowired
     private DevopsProjectMapper devopsProjectMapper
 
-    SagaClient sagaClient = Mockito.mock(SagaClient.class)
-    IamServiceClient iamServiceClient = Mockito.mock(IamServiceClient.class)
+    BaseServiceClient iamServiceClient = Mockito.mock(BaseServiceClient.class)
     GitlabServiceClient gitlabServiceClient = Mockito.mock(GitlabServiceClient.class)
 
     def setupSpec() {
@@ -95,7 +93,7 @@ class SagaHandlerNewSpec extends Specification {
 
             DemoEnvSetupSagaHandler.beforeInvoke("admin", 1L, 1L)
 
-            DependencyInjectUtil.setAttribute(iamRepository, "iamServiceClient", iamServiceClient)
+            DependencyInjectUtil.setAttribute(iamRepository, "baseServiceClient", iamServiceClient)
             DependencyInjectUtil.setAttribute(gitlabRepository, "gitlabServiceClient", gitlabServiceClient)
             DependencyInjectUtil.setAttribute(gitlabGroupMemberRepository, "gitlabServiceClient", gitlabServiceClient)
             DependencyInjectUtil.setAttribute(applicationService, "sagaClient", sagaClient)
@@ -103,62 +101,61 @@ class SagaHandlerNewSpec extends Specification {
             DependencyInjectUtil.setAttribute(gitlabUserRepository, "gitlabServiceClient", gitlabServiceClient)
 
 
-            ProjectDO projectDO = new ProjectDO()
+            ProjectDTO projectDO = new ProjectDTO()
             projectDO.setName("pro")
             projectDO.setOrganizationId(org_id)
-            ResponseEntity<ProjectDO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
+            ResponseEntity<ProjectDTO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
             Mockito.doReturn(responseEntity).when(iamServiceClient).queryIamProject(anyLong())
-            OrganizationDO organizationDO = new OrganizationDO()
+            OrganizationDTO organizationDO = new OrganizationDTO()
             organizationDO.setId(org_id)
             organizationDO.setCode("testOrganization")
-            ResponseEntity<OrganizationDO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
+            ResponseEntity<OrganizationDTO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
             Mockito.doReturn(responseEntity1).when(iamServiceClient).queryOrganizationById(anyLong())
 
-            Page<ProjectDO> projectDOPage = new Page<>()
-            List<ProjectDO> projectDOList = new ArrayList<>()
+            PageInfo<ProjectDTO> projectDOPage = new PageInfo<>()
+            List<ProjectDTO> projectDOList = new ArrayList<>()
             projectDOList.add(projectDO)
-            projectDOPage.setContent(projectDOList)
-            ResponseEntity<Page<ProjectDO>> projectDOPageResponseEntity = new ResponseEntity<>(projectDOPage, HttpStatus.OK)
-            Mockito.doReturn(projectDOPageResponseEntity).when(iamServiceClient).queryProjectByOrgId(anyLong(), anyInt(), anyInt(), any(), isNull())
+            projectDOPage.setList(projectDOList)
+            ResponseEntity<PageInfo<ProjectDTO>> projectDOPageResponseEntity = new ResponseEntity<>(projectDOPage, HttpStatus.OK)
+            Mockito.doReturn(projectDOPageResponseEntity).when(iamServiceClient).queryProjectByOrgId(anyLong(), anyInt(), anyInt(), anyString(), any(String[]))
 
 
-            GroupDO groupDO = new GroupDO()
+            GroupDTO groupDO = new GroupDTO()
             groupDO.setName("test")
             groupDO.setId(2)
             groupDOResponseEntity = new ResponseEntity<>(groupDO, HttpStatus.OK)
-            Mockito.doReturn(groupDOResponseEntity).when(gitlabServiceClient).createGroup(any(), any())
+            Mockito.doReturn(groupDOResponseEntity).when(gitlabServiceClient).createGroup(any(GroupDTO), anyInt())
 
-            Mockito.doReturn(new SagaInstanceDTO()).when(sagaClient).startSaga(anyString(), any())
 
             MemberDTO memberDO = new MemberDTO()
-            memberDO.setAccessLevel(AccessLevel.OWNER)
+            memberDO.setAccessLevel(AccessLevel.OWNER.toValue())
             ResponseEntity<MemberDTO> memberDOResponseEntity = new ResponseEntity<>(memberDO, HttpStatus.OK)
-            Mockito.doReturn(memberDOResponseEntity).when(gitlabServiceClient).queryGroupMember(any(), any())
+            Mockito.doReturn(memberDOResponseEntity).when(gitlabServiceClient).queryGroupMember(anyInt(), anyInt())
 
-            Mockito.doReturn(null).when(gitlabServiceClient).deleteMember(any(), any())
+            Mockito.doReturn(null).when(gitlabServiceClient).deleteMember(anyInt(), anyInt())
 
 
-            Mockito.doReturn(memberDOResponseEntity).when(gitlabServiceClient).getProjectMember(any(), any())
+            Mockito.doReturn(memberDOResponseEntity).when(gitlabServiceClient).getProjectMember(anyInt(), anyInt())
 
             GitlabProjectDTO gitlabProjectDO = new GitlabProjectDTO()
             gitlabProjectDO.setId(1)
             ResponseEntity<GitlabProjectDTO> gitlabProjectDOResponseEntity = new ResponseEntity<>(gitlabProjectDO, HttpStatus.OK)
-            Mockito.doReturn(gitlabProjectDOResponseEntity).when(gitlabServiceClient).queryProjectById(any())
+            Mockito.doReturn(gitlabProjectDOResponseEntity).when(gitlabServiceClient).queryProjectById(anyInt())
 
-            Mockito.doReturn(null).when(gitlabServiceClient).deleteProjectMember(any(), any())
+            Mockito.doReturn(null).when(gitlabServiceClient).deleteProjectMember(anyInt(), anyInt())
 
-            UserDO userDO = new UserDO()
+            IamUserDTO userDO = new IamUserDTO()
             userDO.setName("test")
             userDO.setId(1)
 
             userDOResponseEntity = new ResponseEntity<>(userDO, HttpStatus.OK)
-            Mockito.doReturn(userDOResponseEntity).when(gitlabServiceClient).queryUserById(any())
+            Mockito.doReturn(userDOResponseEntity).when(gitlabServiceClient).queryUserById(anyInt())
 
 
-            Mockito.doReturn(userDOResponseEntity).when(gitlabServiceClient).queryUserByUserName(any())
-            Mockito.doReturn(null).when(gitlabServiceClient).updateGitLabUser(any(), any(), any())
-            Mockito.doReturn(null).when(gitlabServiceClient).disableUser(any())
-            Mockito.doReturn(null).when(gitlabServiceClient).enableUser(any())
+            Mockito.doReturn(userDOResponseEntity).when(gitlabServiceClient).queryUserByUserName(anyString())
+            Mockito.doReturn(null).when(gitlabServiceClient).updateGitLabUser(anyInt(), anyInt(), any(GitlabUserReqDTO))
+            Mockito.doReturn(null).when(gitlabServiceClient).disableUser(anyInt())
+            Mockito.doReturn(null).when(gitlabServiceClient).enableUser(anyInt())
             isToInit = false
 
         }
@@ -192,7 +189,7 @@ class SagaHandlerNewSpec extends Specification {
     def "HandleUpdateGitlabGroupEvent"() {
         String msg = "{\"projectId\":2,\"projectCode\":\"front-demo\",\"projectName\":\"Choerodon演示aaaa\",\"projectCategory\":\"AGILE\",\"organizationCode\":\"org-8xvmnghjll\",\"organizationName\":\"汉得信息\",\"userName\":\"pk1mexhxsa\",\"userId\":1,\"imageUrl\":null,\"roleLabels\":[\"project.deploy.admin\",\"project.owner\",\"project.wiki.admin\",\"project.gitlab.owner\"]}"
         Mockito.doReturn(groupDOResponseEntity).when(gitlabServiceClient).queryGroupByName(anyString(), anyInt())
-        Mockito.doReturn(null).when(gitlabServiceClient).updateGroup(anyInt(), anyInt(), any())
+        Mockito.doReturn(null).when(gitlabServiceClient).updateGroup(anyInt(), anyInt(), any(GroupDTO))
         when:
         def result = sagaHandler.handleUpdateGitlabGroupEvent(msg)
 
@@ -271,7 +268,7 @@ class SagaHandlerNewSpec extends Specification {
     }
 
     def "HandleGitlabGroupMemberEvent"() {
-        List<ApplicationDTO> applicationDOS = applicationMapper.selectAll()
+        List<AppServiceDTO> applicationDOS = applicationMapper.selectAll()
         applicationDOS.get(0).setGitlabProjectId(1)
         applicationMapper.updateByPrimaryKey(applicationDOS.get(0))
 
@@ -354,8 +351,8 @@ class SagaHandlerNewSpec extends Specification {
                 userAttrMapper.delete(userAttrDO)
             }
         }
-        List<ApplicationDTO> applicationDOList = applicationMapper.selectAll()
-        for (ApplicationDTO application : applicationDOList) {
+        List<AppServiceDTO> applicationDOList = applicationMapper.selectAll()
+        for (AppServiceDTO application : applicationDOList) {
             applicationMapper.delete(application)
         }
         List<DevopsProjectDTO> devopsProjectDOList = devopsProjectMapper.selectAll()

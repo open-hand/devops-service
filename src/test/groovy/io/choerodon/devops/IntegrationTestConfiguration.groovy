@@ -4,14 +4,13 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import io.choerodon.core.exception.CommonException
 import io.choerodon.core.oauth.CustomUserDetails
 import io.choerodon.devops.app.service.ProjectConfigHarborService
-import io.choerodon.devops.infra.common.util.EnvUtil
-import io.choerodon.devops.infra.common.util.GitUtil
+import io.choerodon.devops.infra.handler.ClusterConnectionHandler
+import io.choerodon.devops.infra.util.GitUtil
 import io.choerodon.liquibase.LiquibaseConfig
 import io.choerodon.liquibase.LiquibaseExecutor
 import io.choerodon.websocket.helper.CommandSender
 import io.choerodon.websocket.helper.EnvListener
 import io.choerodon.websocket.process.SocketMsgDispatcher
-import org.apache.http.client.config.RequestConfig
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.TestConfiguration
@@ -76,9 +75,9 @@ class IntegrationTestConfiguration extends WebSecurityConfigurerAdapter {
     }
 
     @Primary
-    @Bean("mockEnvUtil")
-    EnvUtil envUtil() {
-        detachedMockFactory.Mock(EnvUtil)
+    @Bean("mockClusterConnectionHandler")
+    ClusterConnectionHandler clusterConnectionHandler() {
+        detachedMockFactory.Mock(ClusterConnectionHandler)
     }
 
     @Primary

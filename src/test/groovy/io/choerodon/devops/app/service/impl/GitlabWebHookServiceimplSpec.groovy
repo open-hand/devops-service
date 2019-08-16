@@ -4,26 +4,20 @@ import com.google.gson.Gson
 import io.choerodon.asgard.saga.feign.SagaClient
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
-
 import io.choerodon.devops.api.vo.PushWebHookVO
-import io.choerodon.devops.api.vo.PushWebHookVO
-import io.choerodon.devops.app.service.DevopsGitService
-
-import io.choerodon.devops.api.vo.iam.entity.*
-
-import io.choerodon.devops.domain.application.repository.*
-import io.choerodon.devops.app.service.AgentCommandService
-import io.choerodon.devops.infra.common.util.EnvUtil
-import io.choerodon.devops.infra.common.util.FileUtil
-import io.choerodon.devops.infra.common.util.enums.CommandStatus
-import io.choerodon.devops.infra.dataobject.gitlab.TagDO
-import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
-import io.choerodon.devops.infra.dataobject.iam.ProjectDO
-import io.choerodon.devops.infra.dto.PortMapVO
+import io.choerodon.devops.app.service.*
+import io.choerodon.devops.infra.dto.*
+import io.choerodon.devops.infra.dto.gitlab.CompareResultDTO
+import io.choerodon.devops.infra.dto.gitlab.DiffDTO
+import io.choerodon.devops.infra.dto.gitlab.TagDTO
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO
+import io.choerodon.devops.infra.dto.iam.ProjectDTO
+import io.choerodon.devops.infra.enums.CommandStatus
+import io.choerodon.devops.infra.feign.BaseServiceClient
 import io.choerodon.devops.infra.feign.GitlabServiceClient
-import io.choerodon.devops.infra.feign.IamServiceClient
+import io.choerodon.devops.infra.handler.ClusterConnectionHandler
 import io.choerodon.devops.infra.mapper.*
-import io.choerodon.websocket.helper.EnvListener
+import io.choerodon.devops.infra.util.FileUtil
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
@@ -49,25 +43,25 @@ class GitlabWebHookServiceimplSpec extends Specification {
     private DevopsGitService devopsGitService
 
     @Autowired
-    private IamRepository iamRepository
+    private IamService iamService
 
     @Autowired
-    private DevopsEnvironmentRepository devopsEnvironmentRepository
+    private DevopsEnvironmentService devopsEnvironmentService
 
     @Autowired
-    private DevopsEnvCommitRepository devopsEnvCommitRepository
+    private DevopsEnvCommitService devopsEnvCommitService
 
     @Autowired
-    private DevopsEnvFileResourceRepository devopsEnvFileResourceRepository
+    private DevopsEnvFileResourceService devopsEnvFileResourceRepository
 
     @Autowired
-    private DevopsEnvFileRepository devopsEnvFileRepository
+    private DevopsEnvFileService devopsEnvFileRepository
 
     @Autowired
-    private DevopsEnvFileErrorRepository devopsEnvFileErrorRepository
+    private DevopsEnvFileErrorService devopsEnvFileErrorRepository
 
     @Autowired
-    private ApplicationInstanceMapper applicationInstanceMapper
+    private AppServiceInstanceMapper applicationInstanceMapper
 
     @Autowired
     private DevopsServiceMapper devopsServiceMapper
@@ -85,13 +79,13 @@ class GitlabWebHookServiceimplSpec extends Specification {
     private DevopsConfigMapMapper devopsConfigMapMapper
 
     @Autowired
-    private ApplicationMapper applicationMapper
+    private AppServiceMapper applicationMapper
 
     @Autowired
-    private ApplicationVersionMapper applicationVersionMapper
+    private AppServiceVersionMapper applicationVersionMapper
 
     @Autowired
-    private ApplicationVersionValueMapper applicationVersionValueMapper
+    private AppServiceVersionValueMapper applicationVersionValueMapper
 
     @Autowired
     private DevopsEnvironmentMapper devopsEnvironmentMapper
@@ -117,78 +111,78 @@ class GitlabWebHookServiceimplSpec extends Specification {
     private DevopsCertificationFileMapper devopsCertificationFileMapper
 
     @Autowired
-    private DevopsEnvCommandValueRepository devopsEnvCommandValueRepository
+    private DevopsEnvCommandValueService devopsEnvCommandValueRepository
 
     @Autowired
-    private ApplicationInstanceRepository applicationInstanceRepository
+    private AppServiceInstanceService applicationInstanceRepository
 
     @Autowired
-    private DevopsServiceRepository devopsServiceRepository
+    private DevopsServiceService devopsServiceRepository
 
     @Autowired
-    private DevopsIngressRepository devopsIngressRepository
+    private DevopsIngressService devopsIngressRepository
 
     @Autowired
-    private ApplicationRepository applicationRepository
+    private AppServiceService applicationRepository
 
     @Autowired
-    private ApplicationVersionRepository applicationVersionRepository
+    private AppServiceVersionService applicationVersionRepository
 
     @Autowired
-    private DevopsEnvCommandRepository devopsEnvCommandRepository
+    private DevopsEnvCommandService devopsEnvCommandRepository
 
     @Autowired
     private DevopsIngressPathMapper devopsIngressPathMapper
 
     @Autowired
-    private ApplicationVersionValueRepository applicationVersionValueRepository
+    private AppServiceVersionValueMapper applicationVersionValueRepository
 
     @Autowired
-    private CertificationRepository certificationRepository
+    private CertificationServiceImpl certificationRepository
 
     @Autowired
-    private DevopsSecretRepository devopsSecretRepository
+    private DevopsSecretService devopsSecretRepository
 
     @Autowired
-    private DevopsConfigMapRepository devopsConfigMapRepository
+    private DevopsConfigMapService devopsConfigMapRepository
 
     @Autowired
-    private DevopsGitRepository devopsGitRepository
+    private DevopsGitService devopsGitRepository
 
     @Autowired
     private AgentCommandService deployService
 
     @Autowired
-    @Qualifier("mockEnvUtil")
-    private EnvUtil envUtil
+    @Qualifier("mockClusterConnectionHandler")
+    private ClusterConnectionHandler envUtil
 
     @Shared
     Gson gson = new Gson()
 
     @Shared
-    DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO()
+    DevopsEnvironmentDTO devopsEnvironmentDO = new DevopsEnvironmentDTO()
 
     @Shared
-    ApplicationDTO applicationDO = new ApplicationDTO()
+    AppServiceDTO applicationDO = new AppServiceDTO()
 
     @Shared
-    ApplicationVersionDO applicationVersionDO = new ApplicationVersionDO()
+    AppServiceVersionDTO applicationVersionDO = new AppServiceVersionDTO()
 
     @Shared
-    ApplicationVersionValueDO applicationVersionValueDO = new ApplicationVersionValueDO()
+    AppServiceVersionValueDTO applicationVersionValueDO = new AppServiceVersionValueDTO()
 
     @Shared
-    CertificationFileDO certificationFileDO = new CertificationFileDO()
+    CertificationFileDTO certificationFileDO = new CertificationFileDTO()
 
     @Shared
     PushWebHookVO pushWebHookDTO = new PushWebHookVO()
 
     @Shared
-    DevopsEnvCommitDO devopsEnvCommitDO = new DevopsEnvCommitDO()
+    DevopsEnvCommitDTO devopsEnvCommitDO = new DevopsEnvCommitDTO()
 
     SagaClient sagaClient = Mockito.mock(SagaClient.class)
 
-    IamServiceClient iamServiceClient = Mockito.mock(IamServiceClient.class)
+    BaseServiceClient iamServiceClient = Mockito.mock(BaseServiceClient.class)
 
     GitlabServiceClient gitlabServiceClient = Mockito.mock(GitlabServiceClient.class)
 
@@ -283,202 +277,195 @@ class GitlabWebHookServiceimplSpec extends Specification {
     def setup() {
         //通过反射方式注入sagaClient
         DependencyInjectUtil.setAttribute(devopsGitService, "sagaClient", sagaClient)
-        DependencyInjectUtil.setAttribute(iamRepository, "iamServiceClient", iamServiceClient)
+        DependencyInjectUtil.setAttribute(iamService, "baseServiceClient", iamServiceClient)
         DependencyInjectUtil.setAttribute(devopsGitRepository, "gitlabServiceClient", gitlabServiceClient)
 
         //mock查询Project
-        ProjectDO projectDO = new ProjectDO()
-        projectDO.setName("testProject")
-        projectDO.setCode("pro")
-        projectDO.setOrganizationId(1L)
-        ResponseEntity<ProjectDO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
+        ProjectDTO projectDTO = new ProjectDTO()
+        projectDTO.setName("testProject")
+        projectDTO.setCode("pro")
+        projectDTO.setOrganizationId(1L)
+        ResponseEntity<ProjectDTO> responseEntity = new ResponseEntity<>(projectDTO, HttpStatus.OK)
         Mockito.doReturn(responseEntity).when(iamServiceClient).queryIamProject(1L)
 
         //mock查询Organization
-        OrganizationDO organizationDO = new OrganizationDO()
-        organizationDO.setId(1L)
-        organizationDO.setCode("org")
-        ResponseEntity<OrganizationDO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
+        OrganizationDTO organizationDTO = new OrganizationDTO()
+        organizationDTO.setId(1L)
+        organizationDTO.setCode("org")
+        ResponseEntity<OrganizationDTO> responseEntity1 = new ResponseEntity<>(organizationDTO, HttpStatus.OK)
         Mockito.doReturn(responseEntity1).when(iamServiceClient).queryOrganizationById(1L)
 
-        //mock查询TagDO
-        List<TagDO> tagDOS = new ArrayList<>()
-        TagDO tagDO = new TagDO()
+        //mock查询TagDTO
+        List<TagDTO> tagDOS = new ArrayList<>()
+        TagDTO tagDO = new TagDTO()
         tagDO.setName("devops-sync")
         tagDOS.add(tagDO)
-        ResponseEntity<List<TagDO>> responseEntity2 = new ResponseEntity<>(tagDOS, HttpStatus.OK)
+        ResponseEntity<List<TagDTO>> responseEntity2 = new ResponseEntity<>(tagDOS, HttpStatus.OK)
         Mockito.doReturn(responseEntity2).when(gitlabServiceClient).getTags(1, 1)
 
 
     }
 
-    def hand(String code, DevopsEnvironmentE devopsEnvironmentE) {
+    def hand(String code, DevopsEnvironmentDTO devopsEnvironmentDTO) {
         //初始化实例
-        ApplicationInstanceE applicationInstanceE = new ApplicationInstanceE()
-        applicationInstanceE.setCode("ins" + code)
-        applicationInstanceE.initApplicationEById(1L)
-        applicationInstanceE.initApplicationVersionEById(1L)
-        applicationInstanceE.initDevopsEnvironmentEById(devopsEnvironmentE.getId())
-        applicationInstanceE = applicationInstanceRepository.create(applicationInstanceE)
+        AppServiceInstanceDTO appServiceInstanceDTO = new AppServiceInstanceDTO()
+        appServiceInstanceDTO.setCode("ins" + code)
+        appServiceInstanceDTO.setAppServiceId(1L)
+        appServiceInstanceDTO.setAppServiceVersionId(1L)
+        appServiceInstanceDTO.setEnvId(devopsEnvironmentDTO.getId())
+        appServiceInstanceDTO = applicationInstanceRepository.baseCreate(appServiceInstanceDTO)
 
-        DevopsEnvCommandValueVO devopsEnvCommandValueE = new DevopsEnvCommandValueVO()
-        devopsEnvCommandValueE.setValue(applicationVersionValueDO.getValue())
+        DevopsEnvCommandValueDTO devopsEnvCommandValueDTO = new DevopsEnvCommandValueDTO()
+        devopsEnvCommandValueDTO.setValue(applicationVersionValueDO.getValue())
 
-        DevopsEnvCommandVO devopsEnvCommandE = new DevopsEnvCommandVO()
-        devopsEnvCommandE.setObject("instance")
-        devopsEnvCommandE.setObjectId(applicationInstanceE.getId())
-        devopsEnvCommandE.setCommandType("create")
-        devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus())
-        devopsEnvCommandE.initDevopsEnvCommandValueE(devopsEnvCommandValueRepository.baseCreate(devopsEnvCommandValueE).getId())
+        DevopsEnvCommandDTO devopsEnvCommandDTO = new DevopsEnvCommandDTO()
+        devopsEnvCommandDTO.setObject("instance")
+        devopsEnvCommandDTO.setObjectId(appServiceInstanceDTO.getId())
+        devopsEnvCommandDTO.setCommandType("create")
+        devopsEnvCommandDTO.setStatus(CommandStatus.SUCCESS.getStatus())
+        devopsEnvCommandDTO.initDevopsEnvCommandValueE(devopsEnvCommandValueRepository.baseCreate(devopsEnvCommandValueDTO).getId())
 
-        applicationInstanceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId())
-        applicationInstanceRepository.update(applicationInstanceE)
-
+        appServiceInstanceDTO.setCommandId(devopsEnvCommandRepository.baseCreate(devopsEnvCommandDTO).getId())
+        applicationInstanceRepository.update(appServiceInstanceDTO)
 
         //初始化实例文件关系
-        DevopsEnvFileResourceVO devopsEnvFileResourceE = new DevopsEnvFileResourceVO()
-        devopsEnvFileResourceE.setEnvironment(devopsEnvironmentE)
-        devopsEnvFileResourceE.setResourceId(applicationInstanceE.getId())
-        devopsEnvFileResourceE.setResourceType("C7NHelmRelease")
-        devopsEnvFileResourceE.setFilePath(code + ".yaml")
-        devopsEnvFileResourceRepository.baseCreate(devopsEnvFileResourceE)
+        DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = new DevopsEnvFileResourceDTO()
+        devopsEnvFileResourceDTO.setEnvId(devopsEnvironmentDTO.getId())
+        devopsEnvFileResourceDTO.setResourceId(appServiceInstanceDTO.getId())
+        devopsEnvFileResourceDTO.setResourceType("C7NHelmRelease")
+        devopsEnvFileResourceDTO.setFilePath(code + ".yaml")
+        devopsEnvFileResourceRepository.baseCreate(devopsEnvFileResourceDTO)
 
         //初始化service
-        DevopsServiceE devopsServiceE = new DevopsServiceE()
-        devopsServiceE.setName("svc" + code)
-        devopsServiceE.setEnvId(devopsEnvironmentE.getId())
-        devopsServiceE.setAppId(1L)
-        devopsServiceE.setPorts(new ArrayList<PortMapVO>())
-        devopsServiceE = devopsServiceRepository.baseCreate(devopsServiceE)
+        DevopsServiceDTO devopsServiceDTO = new DevopsServiceDTO()
+        devopsServiceDTO.setName("svc" + code)
+        devopsServiceDTO.setEnvId(devopsEnvironmentDTO.getId())
+        devopsServiceDTO.setAppId(1L)
+        devopsServiceDTO.setPorts("{}")
+        devopsServiceDTO = devopsServiceRepository.baseCreate(devopsServiceDTO)
 
-        DevopsEnvCommandVO devopsEnvCommandE1 = new DevopsEnvCommandVO()
-        devopsEnvCommandE1.setObject("service")
-        devopsEnvCommandE1.setObjectId(devopsServiceE.getId())
-        devopsEnvCommandE1.setCommandType("create")
-        devopsEnvCommandE1.setStatus(CommandStatus.SUCCESS.getStatus())
+        DevopsEnvCommandDTO devopsEnvCommandDTO1 = new DevopsEnvCommandDTO()
+        devopsEnvCommandDTO1.setObject("service")
+        devopsEnvCommandDTO1.setObjectId(devopsServiceDTO.getId())
+        devopsEnvCommandDTO1.setCommandType("create")
+        devopsEnvCommandDTO1.setStatus(CommandStatus.SUCCESS.getStatus())
 
-        devopsServiceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE1).getId())
-        devopsServiceRepository.baseUpdate(devopsServiceE)
+        devopsServiceDTO.setCommandId(devopsEnvCommandRepository.baseCreate(devopsEnvCommandDTO1).getId())
+        devopsServiceRepository.baseUpdate(devopsServiceDTO)
 
         //初始化service文件关系
-        DevopsEnvFileResourceVO devopsEnvFileResourceE1 = new DevopsEnvFileResourceVO()
-        devopsEnvFileResourceE1.setEnvironment(devopsEnvironmentE)
-        devopsEnvFileResourceE1.setResourceId(devopsServiceE.getId())
-        devopsEnvFileResourceE1.setResourceType("Service")
-        devopsEnvFileResourceE1.setFilePath(code + ".yaml")
-        devopsEnvFileResourceRepository.baseCreate(devopsEnvFileResourceE1)
+        DevopsEnvFileResourceDTO devopsEnvFileResourceDTO1 = new DevopsEnvFileResourceDTO()
+        devopsEnvFileResourceDTO1.setEnvironment(devopsEnvironmentDTO)
+        devopsEnvFileResourceDTO1.setResourceId(devopsServiceDTO.getId())
+        devopsEnvFileResourceDTO1.setResourceType("Service")
+        devopsEnvFileResourceDTO1.setFilePath(code + ".yaml")
+        devopsEnvFileResourceRepository.baseCreate(devopsEnvFileResourceDTO1)
 
         //初始化域名
-        DevopsIngressE devopsIngressE = new DevopsIngressE()
-        devopsIngressE.setName("ing" + code)
-        devopsIngressE.setEnvId(devopsEnvironmentE.getId())
-        devopsIngressE.setDomain("devops-service2-front.staging.saas.test.com")
-        devopsIngressE = devopsIngressRepository.baseCreateIngress(devopsIngressE)
+        DevopsIngressDTO devopsIngressDTO = new DevopsIngressDTO()
+        devopsIngressDTO.setName("ing" + code)
+        devopsIngressDTO.setEnvId(devopsEnvironmentDTO.getId())
+        devopsIngressDTO.setDomain("devops-service2-front.staging.saas.test.com")
+        devopsIngressDTO = devopsIngressRepository.baseCreateIngress(devopsIngressDTO)
 
-        DevopsEnvCommandVO devopsEnvCommandE2 = new DevopsEnvCommandVO()
-        devopsEnvCommandE2.setObject("ingress")
-        devopsEnvCommandE2.setObjectId(devopsIngressE.getId())
-        devopsEnvCommandE2.setCommandType("create")
-        devopsEnvCommandE2.setStatus(CommandStatus.SUCCESS.getStatus())
-        devopsEnvCommandRepository.create(devopsEnvCommandE2)
+        DevopsEnvCommandDTO devopsEnvCommandDTO2 = new DevopsEnvCommandDTO()
+        devopsEnvCommandDTO2.setObject("ingress")
+        devopsEnvCommandDTO2.setObjectId(devopsIngressDTO.getId())
+        devopsEnvCommandDTO2.setCommandType("create")
+        devopsEnvCommandDTO2.setStatus(CommandStatus.SUCCESS.getStatus())
+        devopsEnvCommandRepository.create(devopsEnvCommandDTO2)
 
-        DevopsIngressDO devopsIngressDO = devopsIngressMapper.selectByPrimaryKey(devopsIngressE.getId())
-        devopsIngressDO.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE2).getId())
+        DevopsIngressDTO devopsIngressDO = devopsIngressMapper.selectByPrimaryKey(devopsIngressDTO.getId())
+        devopsIngressDO.setCommandId(devopsEnvCommandRepository.baseCreate(devopsEnvCommandDTO2).getId())
         devopsIngressRepository.baseUpdateIngress(devopsIngressDO)
 
         //初始化域名文件关系
-        DevopsEnvFileResourceVO devopsEnvFileResourceE2 = new DevopsEnvFileResourceVO()
-        devopsEnvFileResourceE2.setEnvironment(devopsEnvironmentE)
-        devopsEnvFileResourceE2.setResourceId(devopsIngressE.getId())
-        devopsEnvFileResourceE2.setResourceType("Ingress")
-        devopsEnvFileResourceE2.setFilePath(code + ".yaml")
-        devopsEnvFileResourceRepository.baseCreate(devopsEnvFileResourceE2)
+        DevopsEnvFileResourceDTO devopsEnvFileResourceDTO2 = new DevopsEnvFileResourceDTO()
+        devopsEnvFileResourceDTO2.setEnvironment(devopsEnvironmentDTO)
+        devopsEnvFileResourceDTO2.setResourceId(devopsIngressDTO.getId())
+        devopsEnvFileResourceDTO2.setResourceType("Ingress")
+        devopsEnvFileResourceDTO2.setFilePath(code + ".yaml")
+        devopsEnvFileResourceRepository.baseCreate(devopsEnvFileResourceDTO2)
 
         //初始化证书
-        CertificationE certificationE = new CertificationE()
+        CertificationDTO certificationE = new CertificationDTO()
         certificationE.setName("cert" + code)
-        certificationE.setEnvironmentE(devopsEnvironmentE)
+        certificationE.setEnvironmentE(devopsEnvironmentDTO)
         certificationE.setCertificationFileId(1L)
-        List<String> domain = new ArrayList<>()
-        domain.add("test.saas.test.com")
-        certificationE.setDomains(domain)
-        certificationE = certificationRepository.baseCreate(certificationE);
+        certificationE.setDomains("[\"test.saas.test.com\"]")
+        certificationE = certificationRepository.baseCreate(certificationE)
 
-        DevopsEnvCommandVO devopsEnvCommandE3 = new DevopsEnvCommandVO()
+        DevopsEnvCommandDTO devopsEnvCommandE3 = new DevopsEnvCommandDTO()
         devopsEnvCommandE3.setObject("certificate")
         devopsEnvCommandE3.setObjectId(certificationE.getId())
         devopsEnvCommandE3.setCommandType("create")
         devopsEnvCommandE3.setStatus(CommandStatus.SUCCESS.getStatus())
-        devopsEnvCommandRepository.create(devopsEnvCommandE3)
+        devopsEnvCommandRepository.baseCreate(devopsEnvCommandE3)
 
-        certificationE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE3).getId())
+        certificationE.setCommandId(devopsEnvCommandRepository.baseCreate(devopsEnvCommandE3).getId())
         certificationRepository.baseUpdateCommandId(certificationE)
 
         //初始化证书文件关系
-        DevopsEnvFileResourceVO devopsEnvFileResourceE3 = new DevopsEnvFileResourceVO()
-        devopsEnvFileResourceE3.setEnvironment(devopsEnvironmentE)
+        DevopsEnvFileResourceDTO devopsEnvFileResourceE3 = new DevopsEnvFileResourceDTO()
+        devopsEnvFileResourceE3.setEnvironment(devopsEnvironmentDTO)
         devopsEnvFileResourceE3.setResourceId(certificationE.getId())
         devopsEnvFileResourceE3.setResourceType("Certificate")
         devopsEnvFileResourceE3.setFilePath(code + ".yaml")
         devopsEnvFileResourceRepository.baseCreate(devopsEnvFileResourceE3)
 
         //初始化Secret
-        DevopsSecretE devopsSecretE = new DevopsSecretE()
+        DevopsSecretDTO devopsSecretE = new DevopsSecretDTO()
         devopsSecretE.setName("sec" + code)
-        devopsSecretE.setEnvId(devopsEnvironmentE.getId())
-        Map<String, String> keys = new HashMap<>()
-        keys.put("test", "test")
-        devopsSecretE.setValue(keys)
+        devopsSecretE.setEnvId(devopsEnvironmentDTO.getId())
+        devopsSecretE.setValue("{\"test\": \"test\"}")
         devopsSecretE.setDescription("test")
         devopsSecretE = devopsSecretRepository.baseCreate(devopsSecretE)
 
-        DevopsEnvCommandVO devopsEnvCommandE4 = new DevopsEnvCommandVO()
+        DevopsEnvCommandDTO devopsEnvCommandE4 = new DevopsEnvCommandDTO()
         devopsEnvCommandE4.setObject("secret")
         devopsEnvCommandE4.setObjectId(devopsSecretE.getId())
         devopsEnvCommandE4.setCommandType("create")
         devopsEnvCommandE4.setStatus(CommandStatus.SUCCESS.getStatus())
         devopsEnvCommandRepository.create(devopsEnvCommandE4)
 
-        devopsSecretE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE4).getId())
+        devopsSecretE.setCommandId(devopsEnvCommandRepository.baseCreate(devopsEnvCommandE4).getId())
         devopsSecretRepository.baseUpdate(devopsSecretE)
 
         //初始化Secret文件关系
-        DevopsEnvFileResourceVO devopsEnvFileResourceE4 = new DevopsEnvFileResourceVO()
-        devopsEnvFileResourceE4.setEnvironment(devopsEnvironmentE)
+        DevopsEnvFileResourceDTO devopsEnvFileResourceE4 = new DevopsEnvFileResourceDTO()
+        devopsEnvFileResourceE4.setEnvId(devopsEnvironmentDTO.getId())
         devopsEnvFileResourceE4.setResourceId(devopsSecretE.getId())
         devopsEnvFileResourceE4.setResourceType("Secret")
         devopsEnvFileResourceE4.setFilePath(code + ".yaml")
         devopsEnvFileResourceRepository.baseCreate(devopsEnvFileResourceE4)
 
         //初始化ConfigMap
-        DevopsConfigMapE devopsConfigMapE = new DevopsConfigMapE()
+        DevopsConfigMapDTO devopsConfigMapE = new DevopsConfigMapDTO()
         devopsConfigMapE.setName("configMap" + code)
-        devopsConfigMapE.initDevopsEnvironmentE(devopsEnvironmentE.getId())
+        devopsConfigMapE.setEnvId(devopsEnvironmentDTO.getId())
         devopsConfigMapE.setValue(gson.toJson(keys))
         devopsConfigMapE.setDescription("test")
         devopsConfigMapE = devopsConfigMapRepository.create(devopsConfigMapE)
 
-        DevopsEnvCommandVO devopsEnvCommandE5 = new DevopsEnvCommandVO()
+        DevopsEnvCommandDTO devopsEnvCommandE5 = new DevopsEnvCommandDTO()
         devopsEnvCommandE5.setObject("configMap")
         devopsEnvCommandE5.setObjectId(devopsConfigMapE.getId())
         devopsEnvCommandE5.setCommandType("create")
         devopsEnvCommandE5.setStatus(CommandStatus.SUCCESS.getStatus())
         devopsEnvCommandRepository.create(devopsEnvCommandE5)
 
-        devopsConfigMapE.initDevopsEnvCommandE(devopsEnvCommandRepository.create(devopsEnvCommandE5).getId())
-        devopsConfigMapRepository.update(devopsConfigMapE)
-
+        devopsConfigMapE.setCommandId(devopsEnvCommandRepository.baseCreate(devopsEnvCommandE5).getId())
+        devopsConfigMapRepository.baseUpdate(devopsConfigMapE)
 
         //初始化ConfigMap文件关系
-        DevopsEnvFileResourceVO devopsEnvFileResourceE5 = new DevopsEnvFileResourceVO()
-        devopsEnvFileResourceE5.setEnvironment(devopsEnvironmentE)
+        DevopsEnvFileResourceDTO devopsEnvFileResourceE5 = new DevopsEnvFileResourceDTO()
+        devopsEnvFileResourceE5.setEnvironment(devopsEnvironmentDTO)
         devopsEnvFileResourceE5.setResourceId(devopsConfigMapE.getId())
         devopsEnvFileResourceE5.setResourceType("ConfigMap")
         devopsEnvFileResourceE5.setFilePath(code + ".yaml")
         devopsEnvFileResourceRepository.baseCreate(devopsEnvFileResourceE5)
 
     }
-
 
 //    def "GitOpsWebHook"() {
 //
@@ -515,10 +502,10 @@ class GitlabWebHookServiceimplSpec extends Specification {
         devopsCertificationFileMapper.insert(certificationFileDO)
 
         //初始化对象
-        DevopsEnvironmentE devopsEnvironmentE = new DevopsEnvironmentE()
-        devopsEnvironmentE.setId(1L)
-        hand("gitopsa", devopsEnvironmentE)
-        hand("gitopsb", devopsEnvironmentE)
+        DevopsEnvironmentDTO devopsEnvironmentDTO = new DevopsEnvironmentDTO()
+        devopsEnvironmentDTO.setId(1L)
+        hand("gitopsa", devopsEnvironmentDTO)
+        hand("gitopsb", devopsEnvironmentDTO)
 
         //初始化gitops tag 比较结果
         CompareResultDTO compareResultsE = new CompareResultDTO()
@@ -547,27 +534,27 @@ class GitlabWebHookServiceimplSpec extends Specification {
         compareResultsE.setDiffs(diffES)
 
 
-        ApplicationInstanceE applicationInstanceE = new ApplicationInstanceE()
-        applicationInstanceE.setCode("insgitopsC")
-        applicationInstanceE.initApplicationEById(1L)
-        applicationInstanceE.initApplicationVersionEById(1L)
-        applicationInstanceE.initDevopsEnvironmentEById(devopsEnvironmentE.getId())
+        AppServiceInstanceDTO appServiceInstanceDTO = new AppServiceInstanceDTO()
+        appServiceInstanceDTO.setCode("insgitopsC")
+        appServiceInstanceDTO.setAppServiceId(1L)
+        appServiceInstanceDTO.setAppServiceVersionId(1L)
+        appServiceInstanceDTO.setEnvId(devopsEnvironmentDTO.getId())
 
-        DevopsServiceE devopsServiceE = new DevopsServiceE()
+        DevopsServiceDTO devopsServiceE = new DevopsServiceDTO()
         devopsServiceE.setName("svcgitopsC")
-        devopsServiceE.setEnvId(devopsEnvironmentE.getId())
-        devopsServiceE.setPorts(new ArrayList<PortMapVO>())
+        devopsServiceE.setEnvId(devopsEnvironmentDTO.getId())
+        devopsServiceE.setPorts("")
 
-        DevopsIngressE devopsIngressE = new DevopsIngressE()
+        DevopsIngressDTO devopsIngressE = new DevopsIngressDTO()
         devopsIngressE.setName("inggitopsC")
-        devopsIngressE.setEnvId(devopsEnvironmentE.getId())
+        devopsIngressE.setEnvId(devopsEnvironmentDTO.getId())
 
-        List<TagDO> tagDOS = new ArrayList<>()
-        TagDO tagDO = new TagDO()
+        List<TagDTO> tagDOS = new ArrayList<>()
+        TagDTO tagDO = new TagDTO()
         tagDO.setName("devops-sync")
         tagDOS.add(tagDO)
 
-        DevopsIngressPathDO devopsIngressPathDO = new DevopsIngressPathDO()
+        DevopsIngressPathDTO devopsIngressPathDO = new DevopsIngressPathDTO()
         devopsIngressPathDO.setPath("/")
         devopsIngressPathDO.setIngressId(2L)
         devopsIngressPathMapper.insert(devopsIngressPathDO)
@@ -580,11 +567,10 @@ class GitlabWebHookServiceimplSpec extends Specification {
         devopsGitService.fileResourceSync(pushWebHookDTO)
 
         then:
-        envUtil.checkEnvConnection(_ as Long, _ as EnvListener) >> null
-        List<DevopsEnvFileResourceVO> devopsEnvFileResourceE = devopsEnvFileResourceRepository.baseQueryByEnvIdAndPath(1, "gitopsc.yaml")
-        devopsEnvFileResourceE.size() == 6
+        envUtil.checkEnvConnection(_ as Long) >> null
+        List<DevopsEnvFileResourceDTO> devopsEnvFileResourceDTOS = devopsEnvFileResourceRepository.baseQueryByEnvIdAndPath(1, "gitopsc.yaml")
+        devopsEnvFileResourceDTOS.size() == 6
     }
-
 
 //    def "move a instance,service,ingress file to other file"() {
 //        PushWebHookDTO pushWebHookDTO = new PushWebHookDTO()
@@ -613,8 +599,8 @@ class GitlabWebHookServiceimplSpec extends Specification {
 //        diffE1.setNewPath("gitopsd.yaml")
 //        diffES.add(diffE1)
 //        compareResultsE.setDiffs(diffES)
-//        List<TagDO> tagDOS = new ArrayList<>()
-//        TagDO tagDO = new TagDO()
+//        List<TagDTO> tagDOS = new ArrayList<>()
+//        TagDTO tagDO = new TagDTO()
 //        tagDO.setName("devops-sync")
 //        tagDOS.add(tagDO)
 //        DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE()
@@ -661,8 +647,8 @@ class GitlabWebHookServiceimplSpec extends Specification {
 //        diffE.setNewPath("gitopse.yaml")
 //        diffES.add(diffE)
 //        compareResultsE.setDiffs(diffES)
-//        List<TagDO> tagDOS = new ArrayList<>()
-//        TagDO tagDO = new TagDO()
+//        List<TagDTO> tagDOS = new ArrayList<>()
+//        TagDTO tagDO = new TagDTO()
 //        tagDO.setName("devops-sync")
 //        tagDOS.add(tagDO)
 //
@@ -700,8 +686,8 @@ class GitlabWebHookServiceimplSpec extends Specification {
 //        diffE.setNewPath("gitopsf.yaml")
 //        diffES.add(diffE)
 //        compareResultsE.setDiffs(diffES)
-//        List<TagDO> tagDOS = new ArrayList<>()
-//        TagDO tagDO = new TagDO()
+//        List<TagDTO> tagDOS = new ArrayList<>()
+//        TagDTO tagDO = new TagDTO()
 //        tagDO.setName("devops-sync")
 //        tagDOS.add(tagDO)
 //
@@ -740,8 +726,8 @@ class GitlabWebHookServiceimplSpec extends Specification {
 //        diffE.setNewPath("gitopsg.yaml")
 //        diffES.add(diffE)
 //        compareResultsE.setDiffs(diffES)
-//        List<TagDO> tagDOS = new ArrayList<>()
-//        TagDO tagDO = new TagDO()
+//        List<TagDTO> tagDOS = new ArrayList<>()
+//        TagDTO tagDO = new TagDTO()
 //        tagDO.setName("devops-sync")
 //        tagDOS.add(tagDO)
 //
@@ -779,8 +765,8 @@ class GitlabWebHookServiceimplSpec extends Specification {
 //        diffE.setNewPath("gitopsh.yaml")
 //        diffES.add(diffE)
 //        compareResultsE.setDiffs(diffES)
-//        List<TagDO> tagDOS = new ArrayList<>()
-//        TagDO tagDO = new TagDO()
+//        List<TagDTO> tagDOS = new ArrayList<>()
+//        TagDTO tagDO = new TagDTO()
 //        tagDO.setName("devops-sync")
 //        tagDOS.add(tagDO)
 //
@@ -819,8 +805,8 @@ class GitlabWebHookServiceimplSpec extends Specification {
 //        diffE.setNewPath("gitopsi.yaml")
 //        diffES.add(diffE)
 //        compareResultsE.setDiffs(diffES)
-//        List<TagDO> tagDOS = new ArrayList<>()
-//        TagDO tagDO = new TagDO()
+//        List<TagDTO> tagDOS = new ArrayList<>()
+//        TagDTO tagDO = new TagDTO()
 //        tagDO.setName("devops-sync")
 //        tagDOS.add(tagDO)
 //
@@ -859,8 +845,8 @@ class GitlabWebHookServiceimplSpec extends Specification {
 //        diffE.setNewPath("gitopsj.yaml")
 //        diffES.add(diffE)
 //        compareResultsE.setDiffs(diffES)
-//        List<TagDO> tagDOS = new ArrayList<>()
-//        TagDO tagDO = new TagDO()
+//        List<TagDTO> tagDOS = new ArrayList<>()
+//        TagDTO tagDO = new TagDTO()
 //        tagDO.setName("devops-sync")
 //        tagDOS.add(tagDO)
 //
@@ -898,8 +884,8 @@ class GitlabWebHookServiceimplSpec extends Specification {
 //        diffE.setNewPath("gitopsk.yaml")
 //        diffES.add(diffE)
 //        compareResultsE.setDiffs(diffES)
-//        List<TagDO> tagDOS = new ArrayList<>()
-//        TagDO tagDO = new TagDO()
+//        List<TagDTO> tagDOS = new ArrayList<>()
+//        TagDTO tagDO = new TagDTO()
 //        tagDO.setName("devops-sync")
 //        tagDOS.add(tagDO)
 //
@@ -937,8 +923,8 @@ class GitlabWebHookServiceimplSpec extends Specification {
 //        diffE.setNewPath("gitopsl.yaml")
 //        diffES.add(diffE)
 //        compareResultsE.setDiffs(diffES)
-//        List<TagDO> tagDOS = new ArrayList<>()
-//        TagDO tagDO = new TagDO()
+//        List<TagDTO> tagDOS = new ArrayList<>()
+//        TagDTO tagDO = new TagDTO()
 //        tagDO.setName("devops-sync")
 //        tagDOS.add(tagDO)
 //
@@ -959,107 +945,106 @@ class GitlabWebHookServiceimplSpec extends Specification {
     def "cleanupData"() {
         given:
         // 删除appInstance
-        List<ApplicationInstanceDO> list = applicationInstanceMapper.selectAll()
+        List<AppServiceInstanceDTO> list = applicationInstanceMapper.selectAll()
         if (list != null && !list.isEmpty()) {
-            for (ApplicationInstanceDO e : list) {
+            for (AppServiceInstanceDTO e : list) {
                 applicationInstanceMapper.delete(e)
             }
         }
 
-
         // 删除appVersion
-        List<ApplicationVersionDO> list4 = applicationVersionMapper.selectAll()
+        List<AppServiceVersionDTO> list4 = applicationVersionMapper.selectAll()
         if (list4 != null && !list4.isEmpty()) {
-            for (ApplicationVersionDO e : list4) {
+            for (AppServiceVersionDTO e : list4) {
                 applicationVersionMapper.delete(e)
             }
         }
         // 删除appVersionValue
-        List<ApplicationVersionValueDO> list5 = applicationVersionValueMapper.selectAll()
+        List<AppServiceVersionValueDTO> list5 = applicationVersionValueMapper.selectAll()
         if (list5 != null && !list5.isEmpty()) {
-            for (ApplicationVersionValueDO e : list5) {
+            for (AppServiceVersionValueDTO e : list5) {
                 applicationVersionValueMapper.delete(e)
             }
         }
         // 删除app
-        List<ApplicationDTO> list6 = applicationMapper.selectAll()
+        List<AppServiceDTO> list6 = applicationMapper.selectAll()
         if (list6 != null && !list6.isEmpty()) {
-            for (ApplicationDTO e : list6) {
+            for (AppServiceDTO e : list6) {
                 applicationMapper.delete(e)
             }
         }
         // 删除env
-        List<DevopsEnvironmentDO> list7 = devopsEnvironmentMapper.selectAll()
+        List<DevopsEnvironmentDTO> list7 = devopsEnvironmentMapper.selectAll()
         if (list7 != null && !list7.isEmpty()) {
-            for (DevopsEnvironmentDO e : list7) {
+            for (DevopsEnvironmentDTO e : list7) {
                 devopsEnvironmentMapper.delete(e)
             }
         }
         // 删除envCommand
-        List<DevopsEnvCommandDO> list8 = devopsEnvCommandMapper.selectAll()
+        List<DevopsEnvCommandDTO> list8 = devopsEnvCommandMapper.selectAll()
         if (list8 != null && !list8.isEmpty()) {
-            for (DevopsEnvCommandDO e : list8) {
+            for (DevopsEnvCommandDTO e : list8) {
                 devopsEnvCommandMapper.delete(e)
             }
         }
         // 删除envCommandValue
-        List<DevopsEnvCommandValueDO> list9 = devopsEnvCommandValueMapper.selectAll()
+        List<DevopsEnvCommandValueDTO> list9 = devopsEnvCommandValueMapper.selectAll()
         if (list9 != null && !list9.isEmpty()) {
-            for (DevopsEnvCommandValueDO e : list9) {
+            for (DevopsEnvCommandValueDTO e : list9) {
                 devopsEnvCommandValueMapper.delete(e)
             }
         }
         // 删除envFile
-        List<DevopsEnvFileDO> list10 = devopsEnvFileMapper.selectAll()
+        List<DevopsEnvFileDTO> list10 = devopsEnvFileMapper.selectAll()
         if (list10 != null && !list10.isEmpty()) {
-            for (DevopsEnvFileDO e : list10) {
+            for (DevopsEnvFileDTO e : list10) {
                 devopsEnvFileMapper.delete(e)
             }
         }
         // 删除envFileResource
-        List<DevopsEnvFileResourceDO> list11 = devopsEnvFileResourceMapper.selectAll()
+        List<DevopsEnvFileResourceDTO> list11 = devopsEnvFileResourceMapper.selectAll()
         if (list11 != null && !list11.isEmpty()) {
-            for (DevopsEnvFileResourceDO e : list11) {
+            for (DevopsEnvFileResourceDTO e : list11) {
                 devopsEnvFileResourceMapper.delete(e)
             }
         }
 
         // 删除ingress
-        List<DevopsIngressDO> list12 = devopsIngressMapper.selectAll()
+        List<DevopsIngressDTO> list12 = devopsIngressMapper.selectAll()
         if (list12 != null && !list12.isEmpty()) {
-            for (DevopsIngressDO e : list12) {
+            for (DevopsIngressDTO e : list12) {
                 devopsIngressMapper.delete(e)
             }
         }
 
         // 删除service
-        List<DevopsServiceDO> list13 = devopsServiceMapper.selectAll()
+        List<DevopsServiceDTO> list13 = devopsServiceMapper.selectAll()
         if (list13 != null && !list13.isEmpty()) {
-            for (DevopsServiceDO e : list13) {
+            for (DevopsServiceDTO e : list13) {
                 devopsServiceMapper.delete(e)
             }
         }
 
         // 删除cert
-        List<CertificationDO> list14 = devopsCertificationMapper.selectAll()
+        List<CertificationDTO> list14 = devopsCertificationMapper.selectAll()
         if (list14 != null && !list14.isEmpty()) {
-            for (CertificationDO e : list14) {
+            for (CertificationDTO e : list14) {
                 devopsCertificationMapper.delete(e)
             }
         }
 
         // 删除secret
-        List<DevopsSecretDO> list15 = devopsSecretMapper.selectAll()
+        List<DevopsSecretDTO> list15 = devopsSecretMapper.selectAll()
         if (list15 != null && !list15.isEmpty()) {
-            for (DevopsSecretDO e : list15) {
+            for (DevopsSecretDTO e : list15) {
                 devopsSecretMapper.delete(e)
             }
         }
 
         // 删除secret
-        List<DevopsConfigMapDO> list16 = devopsConfigMapMapper.selectAll()
+        List<DevopsConfigMapDTO> list16 = devopsConfigMapMapper.selectAll()
         if (list16 != null && !list16.isEmpty()) {
-            for (DevopsConfigMapDO e : list16) {
+            for (DevopsConfigMapDTO e : list16) {
                 devopsConfigMapMapper.delete(e)
             }
         }

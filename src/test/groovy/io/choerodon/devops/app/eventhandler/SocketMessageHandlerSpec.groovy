@@ -1,7 +1,7 @@
 package io.choerodon.devops.app.eventhandler
 
 import io.choerodon.devops.app.service.AgentMsgHandlerService
-import io.choerodon.devops.infra.common.util.enums.HelmType
+import io.choerodon.devops.infra.enums.HelmType
 import io.choerodon.devops.infra.gitops.AgentMessageHandler
 import io.choerodon.websocket.Msg
 import io.choerodon.websocket.process.SocketMsgDispatcher

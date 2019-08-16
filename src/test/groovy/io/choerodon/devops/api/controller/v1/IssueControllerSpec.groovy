@@ -6,21 +6,20 @@ import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.IssueVO
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO
 import io.choerodon.devops.api.vo.iam.RoleVO
-import io.choerodon.devops.app.service.IssueService
-import io.choerodon.devops.domain.application.repository.*
-import io.choerodon.devops.infra.common.util.FileUtil
-import io.choerodon.devops.infra.common.util.enums.AccessLevel
-import io.choerodon.devops.infra.dataobject.ApplicationDTO
-import io.choerodon.devops.infra.dataobject.DevopsBranchDO
-import io.choerodon.devops.infra.dataobject.DevopsMergeRequestDO
-import io.choerodon.devops.infra.dataobject.gitlab.MemberDTO
-import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
-import io.choerodon.devops.infra.dataobject.iam.ProjectDO
-import io.choerodon.devops.infra.dataobject.iam.UserDO
+import io.choerodon.devops.app.service.*
+import io.choerodon.devops.infra.dto.AppServiceDTO
+import io.choerodon.devops.infra.dto.DevopsBranchDTO
+import io.choerodon.devops.infra.dto.DevopsMergeRequestDTO
 import io.choerodon.devops.infra.dto.gitlab.CommitDTO
+import io.choerodon.devops.infra.dto.gitlab.MemberDTO
+import io.choerodon.devops.infra.dto.iam.IamUserDTO
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO
+import io.choerodon.devops.infra.dto.iam.ProjectDTO
+import io.choerodon.devops.infra.enums.AccessLevel
+import io.choerodon.devops.infra.feign.BaseServiceClient
 import io.choerodon.devops.infra.feign.GitlabServiceClient
-import io.choerodon.devops.infra.feign.IamServiceClient
-import io.choerodon.devops.infra.mapper.ApplicationMapper
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator
+import io.choerodon.devops.infra.mapper.AppServiceMapper
 import io.choerodon.devops.infra.mapper.DevopsBranchMapper
 import io.choerodon.devops.infra.mapper.DevopsMergeRequestMapper
 import org.mockito.Mockito
@@ -58,26 +57,24 @@ class IssueControllerSpec extends Specification {
     @Autowired
     private DevopsBranchMapper devopsBranchMapper
     @Autowired
-    private ApplicationRepository applicationRepository
+    private AppServiceService applicationRepository
     @Autowired
     private DevopsMergeRequestMapper devopsMergeRequestMapper
     @Autowired
-    private DevopsMergeRequestRepository devopsMergeRequestRepository
+    private DevopsMergeRequestService devopsMergeRequestRepository
     @Autowired
-    private DevopsGitRepository devopsGitRepository
+    private DevopsGitService devopsGitRepository
     @Autowired
-    private ApplicationMapper applicationMapper
+    private AppServiceMapper applicationMapper
 
     @Autowired
-    private IamRepository iamRepository
+    private IamService iamRepository
     @Autowired
-    private GitlabRepository gitlabRepository
+    private GitlabServiceClientOperator gitlabRepository
     @Autowired
-    private GitlabProjectRepository gitlabProjectRepository
-    @Autowired
-    private GitlabGroupMemberRepository gitlabGroupMemberRepository
+    private GitlabGroupMemberService gitlabGroupMemberRepository
 
-    IamServiceClient iamServiceClient = Mockito.mock(IamServiceClient.class)
+    BaseServiceClient iamServiceClient = Mockito.mock(BaseServiceClient.class)
     GitlabServiceClient gitlabServiceClient = Mockito.mock(GitlabServiceClient.class)
 
     @Shared
@@ -85,15 +82,15 @@ class IssueControllerSpec extends Specification {
     @Shared
     Date date1 = new Date(2018, 9, 7, 9, 18, 0)
     @Shared
-    ApplicationDTO applicationDO = new ApplicationDTO()
+    AppServiceDTO applicationDO = new AppServiceDTO()
     @Shared
-    DevopsBranchDO devopsBranchDO = new DevopsBranchDO()
+    DevopsBranchDTO devopsBranchDO = new DevopsBranchDTO()
     @Shared
-    DevopsBranchDO devopsBranchDO1 = new DevopsBranchDO()
+    DevopsBranchDTO devopsBranchDO1 = new DevopsBranchDTO()
     @Shared
-    DevopsMergeRequestDO devopsMergeRequestDO = new DevopsMergeRequestDO()
+    DevopsMergeRequestDTO devopsMergeRequestDO = new DevopsMergeRequestDTO()
     @Shared
-    DevopsMergeRequestDO devopsMergeRequestDO1 = new DevopsMergeRequestDO()
+    DevopsMergeRequestDTO devopsMergeRequestDO1 = new DevopsMergeRequestDTO()
     @Shared
     List<CommitDTO> commitDOS = new ArrayList<>()
     @Shared
@@ -149,37 +146,37 @@ class IssueControllerSpec extends Specification {
     }
 
     def setup() {
-        DependencyInjectUtil.setAttribute(iamRepository, "iamServiceClient", iamServiceClient)
+        DependencyInjectUtil.setAttribute(iamRepository, "baseServiceClient", iamServiceClient)
         DependencyInjectUtil.setAttribute(gitlabRepository, "gitlabServiceClient", gitlabServiceClient)
         DependencyInjectUtil.setAttribute(gitlabProjectRepository, "gitlabServiceClient", gitlabServiceClient)
         DependencyInjectUtil.setAttribute(gitlabGroupMemberRepository, "gitlabServiceClient", gitlabServiceClient)
         DependencyInjectUtil.setAttribute(devopsGitRepository, "gitlabServiceClient", gitlabServiceClient)
 
-        ProjectDO projectDO = new ProjectDO()
+        ProjectDTO projectDO = new ProjectDTO()
         projectDO.setId(1L)
         projectDO.setCode("pro")
         projectDO.setOrganizationId(1L)
-        ResponseEntity<ProjectDO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
+        ResponseEntity<ProjectDTO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
         Mockito.doReturn(responseEntity).when(iamServiceClient).queryIamProject(1L)
 
-        OrganizationDO organizationDO = new OrganizationDO()
+        OrganizationDTO organizationDO = new OrganizationDTO()
         organizationDO.setId(1L)
         organizationDO.setCode("org")
-        ResponseEntity<OrganizationDO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
+        ResponseEntity<OrganizationDTO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
         Mockito.doReturn(responseEntity1).when(iamServiceClient).queryOrganizationById(1L)
 
-        List<UserDO> addIamUserList = new ArrayList<>()
-        UserDO userDO = new UserDO()
+        List<IamUserDTO> addIamUserList = new ArrayList<>()
+        IamUserDTO userDO = new IamUserDTO()
         userDO.setId(1L)
         userDO.setLoginName("test")
         userDO.setRealName("realTest")
         userDO.setImageUrl("imageURL")
         addIamUserList.add(userDO)
-        ResponseEntity<List<UserDO>> responseEntity2 = new ResponseEntity<>(addIamUserList, HttpStatus.OK)
+        ResponseEntity<List<IamUserDTO>> responseEntity2 = new ResponseEntity<>(addIamUserList, HttpStatus.OK)
         Mockito.when(iamServiceClient.listUsersByIds(any(Long[].class))).thenReturn(responseEntity2)
 
-        List<CommitDTO> commitDOS1 = new ArrayList<>();
-        CommitDTO commitDO = new CommitDTO();
+        List<CommitDTO> commitDOS1 = new ArrayList<>()
+        CommitDTO commitDO = new CommitDTO()
         commitDO.setId("test")
         commitDOS1.add(commitDO)
         ResponseEntity<List<CommitDTO>> responseEntity3 = new ResponseEntity<>(commitDOS1, HttpStatus.OK)
@@ -187,7 +184,7 @@ class IssueControllerSpec extends Specification {
 
 
         MemberDTO memberDO = new MemberDTO()
-        memberDO.setAccessLevel(AccessLevel.OWNER)
+        memberDO.setAccessLevel(AccessLevel.OWNER.toValue())
         ResponseEntity<MemberDTO> responseEntity4 = new ResponseEntity<>(memberDO, HttpStatus.OK)
         Mockito.when(gitlabServiceClient.queryGroupMember(anyInt(), anyInt())).thenReturn(responseEntity4)
 
@@ -242,23 +239,23 @@ class IssueControllerSpec extends Specification {
         issueDTO["mergeRequestStatus"] == "opened"
 
         // 删除app
-        List<ApplicationDTO> list = applicationMapper.selectAll()
+        List<AppServiceDTO> list = applicationMapper.selectAll()
         if (list != null && !list.isEmpty()) {
-            for (ApplicationDTO e : list) {
+            for (AppServiceDTO e : list) {
                 applicationMapper.delete(e)
             }
         }
         // 删除branch
-        List<DevopsBranchDO> list1 = devopsBranchMapper.selectAll()
+        List<DevopsBranchDTO> list1 = devopsBranchMapper.selectAll()
         if (list1 != null && !list1.isEmpty()) {
-            for (DevopsBranchDO e : list1) {
+            for (DevopsBranchDTO e : list1) {
                 devopsBranchMapper.delete(e)
             }
         }
         // 删除mergeRequest
-        List<DevopsMergeRequestDO> list2 = devopsMergeRequestMapper.selectAll()
+        List<DevopsMergeRequestDTO> list2 = devopsMergeRequestMapper.selectAll()
         if (list2 != null && !list2.isEmpty()) {
-            for (DevopsMergeRequestDO e : list2) {
+            for (DevopsMergeRequestDTO e : list2) {
                 devopsMergeRequestMapper.delete(e)
             }
         }

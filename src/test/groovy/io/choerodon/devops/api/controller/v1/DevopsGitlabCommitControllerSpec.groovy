@@ -1,17 +1,17 @@
 package io.choerodon.devops.api.controller.v1
 
-import io.choerodon.core.domain.Page
+import com.github.pagehelper.PageInfo
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.DevopsGitlabCommitVO
-import io.choerodon.devops.domain.application.repository.IamRepository
-import io.choerodon.devops.infra.dataobject.ApplicationDTO
-import io.choerodon.devops.infra.dataobject.DevopsGitlabCommitDO
-import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
-import io.choerodon.devops.infra.dataobject.iam.ProjectDO
-import io.choerodon.devops.infra.dataobject.iam.UserDO
-import io.choerodon.devops.infra.feign.IamServiceClient
-import io.choerodon.devops.infra.mapper.ApplicationMapper
+import io.choerodon.devops.app.service.IamService
+import io.choerodon.devops.infra.dto.AppServiceDTO
+import io.choerodon.devops.infra.dto.DevopsGitlabCommitDTO
+import io.choerodon.devops.infra.dto.iam.IamUserDTO
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO
+import io.choerodon.devops.infra.dto.iam.ProjectDTO
+import io.choerodon.devops.infra.feign.BaseServiceClient
+import io.choerodon.devops.infra.mapper.AppServiceMapper
 import io.choerodon.devops.infra.mapper.DevopsGitlabCommitMapper
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
@@ -40,17 +40,17 @@ class DevopsGitlabCommitControllerSpec extends Specification {
     private DevopsGitlabCommitMapper devopsGitlabCommitMapper
 
     @Autowired
-    private ApplicationMapper applicationMapper
+    private AppServiceMapper applicationMapper
 
     @Shared
-    ApplicationDTO applicationDO = new ApplicationDTO()
+    AppServiceDTO applicationDO = new AppServiceDTO()
     @Shared
-    DevopsGitlabCommitDO devopsGitlabCommitDO = new DevopsGitlabCommitDO()
+    DevopsGitlabCommitDTO devopsGitlabCommitDO = new DevopsGitlabCommitDTO()
 
     @Autowired
-    private IamRepository iamRepository
+    private IamService iamRepository
 
-    IamServiceClient iamServiceClient = Mockito.mock(IamServiceClient.class)
+    BaseServiceClient iamServiceClient = Mockito.mock(BaseServiceClient)
 
     def setupSpec() {
         applicationDO.setId(1L)
@@ -69,27 +69,27 @@ class DevopsGitlabCommitControllerSpec extends Specification {
     }
 
     def setup() {
-        DependencyInjectUtil.setAttribute(iamRepository, "iamServiceClient", iamServiceClient)
+        DependencyInjectUtil.setAttribute(iamRepository, "baseServiceClient", iamServiceClient)
 
-        ProjectDO projectDO = new ProjectDO()
+        ProjectDTO projectDO = new ProjectDTO()
         projectDO.setId(1L)
         projectDO.setCode("pro")
         projectDO.setOrganizationId(1L)
-        ResponseEntity<ProjectDO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
+        ResponseEntity<ProjectDTO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
         Mockito.doReturn(responseEntity).when(iamServiceClient).queryIamProject(1L)
 
-        OrganizationDO organizationDO = new OrganizationDO()
+        OrganizationDTO organizationDO = new OrganizationDTO()
         organizationDO.setId(1L)
         organizationDO.setCode("org")
-        ResponseEntity<OrganizationDO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
+        ResponseEntity<OrganizationDTO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
         Mockito.doReturn(responseEntity1).when(iamServiceClient).queryOrganizationById(1L)
 
-        UserDO userDO = new UserDO()
+        IamUserDTO userDO = new IamUserDTO()
         userDO.setLoginName("test")
         userDO.setId(1L)
-        List<UserDO> userDOList = new ArrayList<>()
+        List<IamUserDTO> userDOList = new ArrayList<>()
         userDOList.add(userDO)
-        ResponseEntity<List<UserDO>> responseEntity3 = new ResponseEntity<>(userDOList, HttpStatus.OK)
+        ResponseEntity<List<IamUserDTO>> responseEntity3 = new ResponseEntity<>(userDOList, HttpStatus.OK)
         Mockito.when(iamServiceClient.listUsersByIds(any(Long[].class))).thenReturn(responseEntity3)
     }
 
@@ -108,23 +108,23 @@ class DevopsGitlabCommitControllerSpec extends Specification {
 
     def "GetRecordCommits"() {
         when: '获取应用下的代码提交历史记录'
-        def pages = restTemplate.postForObject("/v1/projects/1/commits/record?page=0&size=5&start_date=2015/10/12&end_date=3018/10/18", [1], Page.class)
+        def pages = restTemplate.postForObject("/v1/projects/1/commits/record?page=0&size=5&start_date=2015/10/12&end_date=3018/10/18", [1], PageInfo.class)
 
         then: '校验返回值'
-        pages.size() == 1
+        pages.getTotal() == 1
 
         and: '清理数据'
         // 删除app
-        List<ApplicationDTO> list = applicationMapper.selectAll()
+        List<AppServiceDTO> list = applicationMapper.selectAll()
         if (list != null && !list.isEmpty()) {
-            for (ApplicationDTO e : list) {
+            for (AppServiceDTO e : list) {
                 applicationMapper.delete(e)
             }
         }
         // 删除gitlabCommit
-        List<DevopsGitlabCommitDO> list1 = devopsGitlabCommitMapper.selectAll()
+        List<DevopsGitlabCommitDTO> list1 = devopsGitlabCommitMapper.selectAll()
         if (list1 != null && !list1.isEmpty()) {
-            for (DevopsGitlabCommitDO e : list1) {
+            for (DevopsGitlabCommitDTO e : list1) {
                 devopsGitlabCommitMapper.delete(e)
             }
         }

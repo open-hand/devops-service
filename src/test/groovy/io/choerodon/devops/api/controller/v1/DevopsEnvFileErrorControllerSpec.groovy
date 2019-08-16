@@ -1,16 +1,14 @@
 package io.choerodon.devops.api.controller.v1
 
-import io.choerodon.core.domain.Page
+import com.github.pagehelper.PageInfo
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.api.vo.ProjectVO
-import io.choerodon.devops.domain.application.repository.IamRepository
-import io.choerodon.devops.domain.application.valueobject.OrganizationVO
-import io.choerodon.devops.infra.dataobject.DevopsEnvFileErrorDO
-import io.choerodon.devops.infra.dataobject.DevopsEnvironmentDO
-import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
-import io.choerodon.devops.infra.dataobject.iam.ProjectDO
-import io.choerodon.devops.infra.feign.IamServiceClient
+import io.choerodon.devops.app.service.IamService
+import io.choerodon.devops.infra.dto.DevopsEnvFileErrorDTO
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO
+import io.choerodon.devops.infra.dto.iam.ProjectDTO
+import io.choerodon.devops.infra.feign.BaseServiceClient
 import io.choerodon.devops.infra.mapper.DevopsEnvFileErrorMapper
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper
 import org.mockito.Mockito
@@ -47,54 +45,46 @@ class DevopsEnvFileErrorControllerSpec extends Specification {
     private DevopsEnvFileErrorMapper devopsEnvFileErrorMapper
 
     @Autowired
-    private IamRepository iamRepository
+    private IamService iamRepository
 
-    IamServiceClient iamServiceClient = Mockito.mock(IamServiceClient.class)
+    BaseServiceClient iamServiceClient = Mockito.mock(BaseServiceClient.class)
 
-    @Shared
-    Long init_id = 1L
     @Shared
     Long project_id = 1L
-    @Shared
-    ProjectVO projectE = new ProjectVO()
-    @Shared
-    UserAttrE userAttrE = new UserAttrE()
-    @Shared
-    OrganizationVO organization = new OrganizationVO()
 
     def setup() {
-        DependencyInjectUtil.setAttribute(iamRepository, "iamServiceClient", iamServiceClient)
-        ProjectDO projectDO = new ProjectDO()
-        projectDO.setId(1L)
-        projectDO.setCode("pro")
-        projectDO.setOrganizationId(1L)
-        ResponseEntity<ProjectDO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
+        DependencyInjectUtil.setAttribute(iamRepository, "baseServiceClient", iamServiceClient)
+        ProjectDTO projectDTO = new ProjectDTO()
+        projectDTO.setId(1L)
+        projectDTO.setCode("pro")
+        projectDTO.setOrganizationId(1L)
+        ResponseEntity<ProjectDTO> responseEntity = new ResponseEntity<>(projectDTO, HttpStatus.OK)
         Mockito.doReturn(responseEntity).when(iamServiceClient).queryIamProject(1L)
 
-        OrganizationDO organizationDO = new OrganizationDO()
-        organizationDO.setId(1L)
-        organizationDO.setCode("org")
-        ResponseEntity<OrganizationDO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
+        OrganizationDTO organizationDTO = new OrganizationDTO()
+        organizationDTO.setId(1L)
+        organizationDTO.setCode("org")
+        ResponseEntity<OrganizationDTO> responseEntity1 = new ResponseEntity<>(organizationDTO, HttpStatus.OK)
         Mockito.doReturn(responseEntity1).when(iamServiceClient).queryOrganizationById(1L)
     }
 
     def "List"() {
         given: '插入数据'
-        DevopsEnvFileErrorDO devopsEnvFileErrorDO = new DevopsEnvFileErrorDO()
-        devopsEnvFileErrorDO.setId(1L)
-        devopsEnvFileErrorDO.setEnvId(1L)
-        devopsEnvFileErrorMapper.insert(devopsEnvFileErrorDO)
-        DevopsEnvFileErrorDO devopsEnvFileErrorDO1 = new DevopsEnvFileErrorDO()
-        devopsEnvFileErrorDO.setId(2L)
-        devopsEnvFileErrorDO1.setEnvId(1L)
-        devopsEnvFileErrorMapper.insert(devopsEnvFileErrorDO1)
+        DevopsEnvFileErrorDTO devopsEnvFileErrorDTO = new DevopsEnvFileErrorDTO()
+        devopsEnvFileErrorDTO.setId(1L)
+        devopsEnvFileErrorDTO.setEnvId(1L)
+        devopsEnvFileErrorMapper.insert(devopsEnvFileErrorDTO)
+        DevopsEnvFileErrorDTO devopsEnvFileErrorDTO1 = new DevopsEnvFileErrorDTO()
+        devopsEnvFileErrorDTO.setId(2L)
+        devopsEnvFileErrorDTO1.setEnvId(1L)
+        devopsEnvFileErrorMapper.insert(devopsEnvFileErrorDTO1)
 
-        DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO()
-        devopsEnvironmentDO.setId(1L)
-        devopsEnvironmentDO.setCode("env")
-        devopsEnvironmentDO.setProjectId(1)
-        devopsEnvironmentDO.setDevopsEnvGroupId(1L)
-        devopsEnvironmentMapper.insert(devopsEnvironmentDO)
+        DevopsEnvironmentDTO devopsEnvironmentDTO = new DevopsEnvironmentDTO()
+        devopsEnvironmentDTO.setId(1L)
+        devopsEnvironmentDTO.setCode("env")
+        devopsEnvironmentDTO.setProjectId(1)
+        devopsEnvironmentDTO.setDevopsEnvGroupId(1L)
+        devopsEnvironmentMapper.insert(devopsEnvironmentDTO)
 
         when: '项目下查询环境文件错误列表'
         def list = restTemplate.getForObject("/v1/projects/1/envs/1/error_file/baseList", List.class)
@@ -105,22 +95,22 @@ class DevopsEnvFileErrorControllerSpec extends Specification {
 
     def "Page"() {
         when: '项目下查询环境文件错误列表'
-        def page = restTemplate.getForObject("/v1/projects/1/envs/1/error_file/list_by_page", Page.class)
+        def page = restTemplate.getForObject("/v1/projects/1/envs/1/error_file/list_by_page", PageInfo.class)
 
         then: '校验返回结果'
-        page.size() == 2
+        page.getTotal() == 2
 
         // 删除env
-        List<DevopsEnvironmentDO> list = devopsEnvironmentMapper.selectAll()
+        List<DevopsEnvironmentDTO> list = devopsEnvironmentMapper.selectAll()
         if (list != null && !list.isEmpty()) {
-            for (DevopsEnvironmentDO e : list) {
+            for (DevopsEnvironmentDTO e : list) {
                 devopsEnvironmentMapper.delete(e)
             }
         }
         // 删除envFileError
-        List<DevopsEnvFileErrorDO> list1 = devopsEnvFileErrorMapper.selectAll()
+        List<DevopsEnvFileErrorDTO> list1 = devopsEnvFileErrorMapper.selectAll()
         if (list1 != null && !list1.isEmpty()) {
-            for (DevopsEnvFileErrorDO e : list1) {
+            for (DevopsEnvFileErrorDTO e : list1) {
                 devopsEnvFileErrorMapper.delete(e)
             }
         }

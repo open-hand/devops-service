@@ -1,10 +1,6 @@
 package io.choerodon.devops.api.controller.v1
 
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.infra.common.util.enums.InstanceStatus
-
-import io.choerodon.devops.infra.dataobject.DevopsEnvPodDO
-
 import io.choerodon.devops.infra.mapper.DevopsEnvPodMapper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest

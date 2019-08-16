@@ -1,10 +1,11 @@
 package io.choerodon.devops.api.controller.v1
 
+import com.github.pagehelper.PageInfo
 import io.choerodon.base.domain.PageRequest
-import io.choerodon.core.domain.Page
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.infra.common.util.EnvUtil
 import io.choerodon.devops.infra.dataobject.*
+import io.choerodon.devops.infra.dto.*
+import io.choerodon.devops.infra.handler.ClusterConnectionHandler
 import io.choerodon.devops.infra.mapper.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
@@ -37,46 +38,46 @@ class DevopsEnvPodControllerSpec extends Specification {
     @Autowired
     private TestRestTemplate restTemplate
     @Autowired
-    private ApplicationMapper applicationMapper
+    private AppServiceMapper applicationMapper
     @Autowired
     private DevopsEnvPodMapper devopsEnvPodMapper
     @Autowired
     private DevopsEnvironmentMapper devopsEnvironmentMapper
     @Autowired
-    private ApplicationShareMapper applicationMarketMapper
+    private AppServiceShareRuleMapper applicationMarketMapper
     @Autowired
-    private ApplicationVersionMapper applicationVersionMapper
+    private AppServiceVersionMapper applicationVersionMapper
     @Autowired
-    private ApplicationInstanceMapper applicationInstanceMapper
+    private AppServiceInstanceMapper applicationInstanceMapper
     @Autowired
     private DevopsEnvResourceMapper devopsEnvResourceMapper
     @Autowired
     private DevopsEnvResourceDetailMapper devopsEnvResourceDetailMapper
 
     @Autowired
-    @Qualifier("mockEnvUtil")
-    private EnvUtil envUtil
+    @Qualifier("mockClusterConnectionHandler")
+    private ClusterConnectionHandler envUtil
 
     @Shared
-    DevopsEnvPodDO devopsEnvPodDO = new DevopsEnvPodDO()
+    DevopsEnvPodDTO devopsEnvPodDO = new DevopsEnvPodDTO()
     @Shared
-    ApplicationVersionDO applicationVersionDO = new ApplicationVersionDO()
+    AppServiceVersionDTO applicationVersionDO = new AppServiceVersionDTO()
     @Shared
-    ApplicationVersionDO applicationVersionDO1 = new ApplicationVersionDO()
+    AppServiceVersionDTO applicationVersionDO1 = new AppServiceVersionDTO()
     @Shared
-    ApplicationDTO applicationDO = new ApplicationDTO()
+    AppServiceDTO applicationDO = new AppServiceDTO()
     @Shared
-    ApplicationDTO applicationDO1 = new ApplicationDTO()
+    AppServiceDTO applicationDO1 = new AppServiceDTO()
     @Shared
-    DevopsAppShareDO devopsAppMarketDO = new DevopsAppShareDO()
+    AppServiceShareRuleDTO devopsAppMarketDO = new AppServiceShareRuleDTO()
     @Shared
-    ApplicationInstanceDO applicationInstanceDO = new ApplicationInstanceDO()
+    AppServiceInstanceDTO applicationInstanceDO = new AppServiceInstanceDTO()
     @Shared
-    DevopsEnvResourceDO devopsEnvResourceDO = new DevopsEnvResourceDO()
+    DevopsEnvResourceDTO devopsEnvResourceDO = new DevopsEnvResourceDTO()
     @Shared
-    DevopsEnvResourceDetailDO devopsEnvResourceDetailDO = new DevopsEnvResourceDetailDO()
+    DevopsEnvResourceDetailDTO devopsEnvResourceDetailDO = new DevopsEnvResourceDetailDTO()
     @Shared
-    DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO()
+    DevopsEnvironmentDTO devopsEnvironmentDO = new DevopsEnvironmentDTO()
 
     def setupSpec() {
         devopsEnvPodDO.setId(1L)
@@ -172,7 +173,7 @@ class DevopsEnvPodControllerSpec extends Specification {
         envUtil.getUpdatedEnvList() >> updateEnvList
 
         when: '分页查询容器管理'
-        def entity = restTemplate.postForEntity("/v1/projects/1/app_pod/list_by_options?envId=1&appId=1", strEntity, Page.class)
+        def entity = restTemplate.postForEntity("/v1/projects/1/app_pod/list_by_options?envId=1&appId=1", strEntity, PageInfo.class)
 
         then: '校验返回值和清除数据'
         entity.getStatusCode().is2xxSuccessful()
@@ -182,30 +183,30 @@ class DevopsEnvPodControllerSpec extends Specification {
 
         and: '清理数据'
         // 删除envPod
-        List<DevopsEnvPodDO> list = devopsEnvPodMapper.selectAll()
+        List<DevopsEnvPodDTO> list = devopsEnvPodMapper.selectAll()
         if (list != null && !list.isEmpty()) {
-            for (DevopsEnvPodDO e : list) {
+            for (DevopsEnvPodDTO e : list) {
                 devopsEnvPodMapper.delete(e)
             }
         }
         // 删除appVersion
-        List<ApplicationVersionDO> list1 = applicationVersionMapper.selectAll()
+        List<AppServiceVersionDTO> list1 = applicationVersionMapper.selectAll()
         if (list1 != null && !list1.isEmpty()) {
-            for (ApplicationVersionDO e : list1) {
+            for (AppServiceVersionDTO e : list1) {
                 applicationVersionMapper.delete(e)
             }
         }
         // 删除app
-        List<ApplicationDTO> list2 = applicationMapper.selectAll()
+        List<AppServiceDTO> list2 = applicationMapper.selectAll()
         if (list2 != null && !list2.isEmpty()) {
-            for (ApplicationDTO e : list2) {
+            for (AppServiceDTO e : list2) {
                 applicationMapper.delete(e)
             }
         }
         // 删除appMarket
-        List<DevopsAppShareDO> list3 = applicationMarketMapper.selectAll()
+        List<AppServiceShareRuleDTO> list3 = applicationMarketMapper.selectAll()
         if (list3 != null && !list3.isEmpty()) {
-            for (DevopsAppShareDO e : list3) {
+            for (AppServiceShareRuleDTO e : list3) {
                 applicationMarketMapper.delete(e)
             }
         }

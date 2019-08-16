@@ -2,7 +2,7 @@ package io.choerodon.devops.app.service.impl
 
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.app.eventhandler.payload.ProjectPayload
-import io.choerodon.devops.infra.dataobject.DevopsProjectDTO
+import io.choerodon.devops.infra.dto.DevopsProjectDTO
 import io.choerodon.devops.infra.mapper.DevopsProjectMapper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest

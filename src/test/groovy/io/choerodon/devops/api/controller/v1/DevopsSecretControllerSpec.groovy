@@ -1,27 +1,26 @@
 package io.choerodon.devops.api.controller.v1
 
 import com.github.pagehelper.PageInfo
-import io.choerodon.core.domain.Page
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.SecretReqVO
 import io.choerodon.devops.api.vo.SecretRespVO
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO
 import io.choerodon.devops.api.vo.iam.RoleVO
-import io.choerodon.devops.app.service.DevopsEnvironmentService
+import io.choerodon.devops.app.service.GitlabGroupMemberService
+import io.choerodon.devops.app.service.IamService
 import io.choerodon.devops.app.service.impl.DevopsSecretServiceImpl
-import io.choerodon.devops.domain.application.repository.IamRepository
-import io.choerodon.devops.domain.application.valueobject.RepositoryFile
-import io.choerodon.devops.infra.common.util.EnvUtil
-import io.choerodon.devops.infra.common.util.FileUtil
-import io.choerodon.devops.infra.common.util.enums.AccessLevel
-import io.choerodon.devops.infra.dataobject.DevopsEnvFileResourceDO
-import io.choerodon.devops.infra.dataobject.DevopsEnvironmentDO
-import io.choerodon.devops.infra.dataobject.DevopsSecretDO
-import io.choerodon.devops.infra.dataobject.gitlab.MemberDTO
-import io.choerodon.devops.infra.dataobject.iam.ProjectDO
+import io.choerodon.devops.infra.dto.DevopsEnvFileResourceDTO
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO
+import io.choerodon.devops.infra.dto.DevopsSecretDTO
+import io.choerodon.devops.infra.dto.RepositoryFileDTO
+import io.choerodon.devops.infra.dto.gitlab.MemberDTO
+import io.choerodon.devops.infra.dto.iam.ProjectDTO
+import io.choerodon.devops.infra.enums.AccessLevel
+import io.choerodon.devops.infra.feign.BaseServiceClient
 import io.choerodon.devops.infra.feign.GitlabServiceClient
-import io.choerodon.devops.infra.feign.IamServiceClient
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator
+import io.choerodon.devops.infra.handler.ClusterConnectionHandler
 import io.choerodon.devops.infra.mapper.DevopsEnvFileResourceMapper
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper
 import io.choerodon.devops.infra.mapper.DevopsSecretMapper
@@ -68,34 +67,33 @@ class DevopsSecretControllerSpec extends Specification {
     private DevopsEnvFileResourceMapper devopsEnvFileResourceMapper
 
     @Autowired
-    @Qualifier("mockEnvUtil")
-    private EnvUtil envUtil
+    @Qualifier("mockClusterConnectionHandler")
+    private ClusterConnectionHandler envUtil
 
     @Autowired
-    private IamRepository iamRepository
+    private IamService iamRepository
     @Autowired
-    private GitlabRepository gitlabRepository
+    private GitlabServiceClientOperator gitlabRepository
     @Autowired
-    private GitlabGroupMemberRepository gitlabGroupMemberRepository
+    private GitlabGroupMemberService gitlabGroupMemberRepository
 
-    DevopsEnvironmentService devopsEnvironmentService = Mockito.mock(DevopsEnvironmentService.class)
-    IamServiceClient iamServiceClient = Mockito.mock(IamServiceClient.class)
+    BaseServiceClient iamServiceClient = Mockito.mock(BaseServiceClient.class)
     GitlabServiceClient gitlabServiceClient = Mockito.mock(GitlabServiceClient.class)
 
     @Shared
-    private DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO()
+    private DevopsEnvironmentDTO devopsEnvironmentDO = new DevopsEnvironmentDTO()
     @Shared
-    private DevopsEnvFileResourceDO devopsEnvFileResourceDO = new DevopsEnvFileResourceDO()
+    private DevopsEnvFileResourceDTO devopsEnvFileResourceDO = new DevopsEnvFileResourceDTO()
 
     def setup() {
-        DependencyInjectUtil.setAttribute(iamRepository, "iamServiceClient", iamServiceClient)
+        DependencyInjectUtil.setAttribute(iamRepository, "baseServiceClient", iamServiceClient)
         DependencyInjectUtil.setAttribute(gitlabRepository, "gitlabServiceClient", gitlabServiceClient)
         DependencyInjectUtil.setAttribute(gitlabGroupMemberRepository, "gitlabServiceClient", gitlabServiceClient)
 
-        ProjectDO projectDO = new ProjectDO()
+        ProjectDTO projectDO = new ProjectDTO()
         projectDO.setName("pro")
         projectDO.setOrganizationId(1L)
-        ResponseEntity<ProjectDO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
+        ResponseEntity<ProjectDTO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
         Mockito.when(iamServiceClient.queryIamProject(anyLong())).thenReturn(responseEntity)
 
         List<RoleVO> roleDTOList = new ArrayList<>()
@@ -112,13 +110,13 @@ class DevopsSecretControllerSpec extends Specification {
         Mockito.doReturn(pageResponseEntity).when(iamServiceClient).listProjectWithRole(anyLong(), anyInt(), anyInt())
 
         MemberDTO memberDO = new MemberDTO()
-        memberDO.setAccessLevel(AccessLevel.OWNER)
+        memberDO.setAccessLevel(AccessLevel.OWNER.toValue())
         ResponseEntity<MemberDTO> responseEntity1 = new ResponseEntity<>(memberDO, HttpStatus.OK)
         Mockito.when(gitlabServiceClient.queryGroupMember(anyInt(), anyInt())).thenReturn(responseEntity1)
 
-        RepositoryFile file = new RepositoryFile()
+        RepositoryFileDTO file = new RepositoryFileDTO()
         file.setFilePath("filePath")
-        ResponseEntity<RepositoryFile> responseEntity2 = new ResponseEntity<>(file, HttpStatus.OK)
+        ResponseEntity<RepositoryFileDTO> responseEntity2 = new ResponseEntity<>(file, HttpStatus.OK)
         Mockito.when(gitlabServiceClient.createFile(anyInt(), anyString(), anyString(), anyString(), anyInt())).thenReturn(responseEntity2)
 
         Mockito.when(gitlabServiceClient.updateFile(anyInt(), anyString(), anyString(), anyString(), anyInt())).thenReturn(responseEntity2)
@@ -184,10 +182,10 @@ class DevopsSecretControllerSpec extends Specification {
         String params = "{\"searchParam\":{},\"param\":\"\"}"
 
         when: '分页插叙'
-        def page = restTemplate.postForEntity(MAPPING + "/1/list_by_option?page=0&size=10", params, Page.class, 1L)
+        def page = restTemplate.postForEntity(MAPPING + "/1/list_by_option?page=0&size=10", params, PageInfo.class, 1L)
 
         then: '校验结果'
-        page.getBody().get(0)["name"] == "secret"
+        page.getBody().getList().get(0)["name"] == "secret"
     }
 
     def "QuerySecret"() {
@@ -218,23 +216,23 @@ class DevopsSecretControllerSpec extends Specification {
 
         and: '清理数据'
         // 删除secret
-        List<DevopsSecretDO> list = devopsSecretMapper.selectAll()
+        List<DevopsSecretDTO> list = devopsSecretMapper.selectAll()
         if (list != null && !list.isEmpty()) {
-            for (DevopsSecretDO e : list) {
+            for (DevopsSecretDTO e : list) {
                 devopsSecretMapper.delete(e)
             }
         }
         // 删除envFileResource
-        List<DevopsEnvFileResourceDO> list1 = devopsEnvFileResourceMapper.selectAll()
+        List<DevopsEnvFileResourceDTO> list1 = devopsEnvFileResourceMapper.selectAll()
         if (list1 != null && !list1.isEmpty()) {
-            for (DevopsEnvFileResourceDO e : list1) {
+            for (DevopsEnvFileResourceDTO e : list1) {
                 devopsEnvFileResourceMapper.delete(e)
             }
         }
         // 删除env
-        List<DevopsEnvironmentDO> list2 = devopsEnvironmentMapper.selectAll()
+        List<DevopsEnvironmentDTO> list2 = devopsEnvironmentMapper.selectAll()
         if (list2 != null && !list2.isEmpty()) {
-            for (DevopsEnvironmentDO e : list2) {
+            for (DevopsEnvironmentDTO e : list2) {
                 devopsEnvironmentMapper.delete(e)
             }
         }

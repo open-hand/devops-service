@@ -10,16 +10,16 @@ import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.ClusterNodeInfoVO
 import io.choerodon.devops.api.vo.DevopsClusterRepVO
 import io.choerodon.devops.api.vo.DevopsClusterReqVO
+import io.choerodon.devops.app.service.IamService
 import io.choerodon.devops.app.service.impl.ClusterNodeInfoServiceImpl
-
-import io.choerodon.devops.infra.common.util.EnvUtil
-import io.choerodon.devops.infra.dataobject.ApplicationInstanceDO
-import io.choerodon.devops.infra.dataobject.DevopsClusterDO
-import io.choerodon.devops.infra.dataobject.DevopsEnvPodDO
-import io.choerodon.devops.infra.dataobject.DevopsEnvironmentDO
-import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
-import io.choerodon.devops.infra.dataobject.iam.ProjectDO
-import io.choerodon.devops.infra.feign.IamServiceClient
+import io.choerodon.devops.infra.dto.AppServiceInstanceDTO
+import io.choerodon.devops.infra.dto.DevopsClusterDTO
+import io.choerodon.devops.infra.dto.DevopsEnvPodDTO
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO
+import io.choerodon.devops.infra.dto.iam.ProjectDTO
+import io.choerodon.devops.infra.feign.BaseServiceClient
+import io.choerodon.devops.infra.handler.ClusterConnectionHandler
 import io.choerodon.devops.infra.mapper.*
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
@@ -58,7 +58,7 @@ class DevopsClusterControllerSpec extends Specification {
     private TestRestTemplate restTemplate
 
     @Autowired
-    private IamRepository iamRepository
+    private IamService iamRepository
     @Autowired
     private DevopsClusterMapper devopsClusterMapper
     @Autowired
@@ -69,26 +69,26 @@ class DevopsClusterControllerSpec extends Specification {
     @Autowired
     private DevopsEnvPodMapper devopsEnvPodMapper
     @Autowired
-    private ApplicationInstanceMapper applicationInstanceMapper
+    private AppServiceInstanceMapper applicationInstanceMapper
 
     @Autowired
     private ClusterNodeInfoServiceImpl clusterNodeInfoService
 
     @Autowired
-    @Qualifier("mockEnvUtil")
-    private EnvUtil envUtil
+    @Qualifier("mockClusterConnectionHandler")
+    private ClusterConnectionHandler clusterConnectionHandler
 
-    IamServiceClient iamServiceClient = Mockito.mock(IamServiceClient.class)
+    BaseServiceClient iamServiceClient = Mockito.mock(BaseServiceClient.class)
     StringRedisTemplate mockStringRedisTemplate = Mockito.mock(StringRedisTemplate)
 
     @Shared
-    private DevopsClusterDO devopsClusterDO = new DevopsClusterDO()
+    private DevopsClusterDTO devopsClusterDTO = new DevopsClusterDTO()
     @Shared
-    private DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO()
+    private DevopsEnvironmentDTO devopsEnvironmentDTO = new DevopsEnvironmentDTO()
     @Shared
-    private ApplicationInstanceDO applicationInstanceDO = new ApplicationInstanceDO()
+    private AppServiceInstanceDTO applicationInstanceDO = new AppServiceInstanceDTO()
     @Shared
-    private DevopsEnvPodDO devopsEnvPodDO = new DevopsEnvPodDO()
+    private DevopsEnvPodDTO devopsEnvPodDO = new DevopsEnvPodDTO()
 
     @Shared
     private boolean isToInit = true
@@ -100,42 +100,42 @@ class DevopsClusterControllerSpec extends Specification {
             return
         }
 
-        DependencyInjectUtil.setAttribute(iamRepository, "iamServiceClient", iamServiceClient)
+        DependencyInjectUtil.setAttribute(iamRepository, "baseServiceClient", iamServiceClient)
         DependencyInjectUtil.setAttribute(clusterNodeInfoService, "stringRedisTemplate", mockStringRedisTemplate)
 
-        ProjectDO projectDO = new ProjectDO()
+        ProjectDTO projectDO = new ProjectDTO()
         projectDO.setId(1L)
         projectDO.setCode("pro")
         projectDO.setOrganizationId(1L)
-        ResponseEntity<ProjectDO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
+        ResponseEntity<ProjectDTO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
         Mockito.doReturn(responseEntity).when(iamServiceClient).queryIamProject(anyLong())
 
-        OrganizationDO organizationDO = new OrganizationDO()
+        OrganizationDTO organizationDO = new OrganizationDTO()
         organizationDO.setId(1L)
         organizationDO.setCode("org")
-        ResponseEntity<OrganizationDO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
+        ResponseEntity<OrganizationDTO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
         Mockito.doReturn(responseEntity1).when(iamServiceClient).queryOrganizationById(anyLong())
 
-        List<ProjectDO> projectDOList = new ArrayList<>()
+        List<ProjectDTO> projectDOList = new ArrayList<>()
         projectDOList.add(projectDO)
-        PageInfo<ProjectDO> projectDOPage = new PageInfo(projectDOList)
-        ResponseEntity<PageInfo<ProjectDO>> projectDOPageResponseEntity = new ResponseEntity<>(projectDOPage, HttpStatus.OK)
+        PageInfo<ProjectDTO> projectDOPage = new PageInfo(projectDOList)
+        ResponseEntity<PageInfo<ProjectDTO>> projectDOPageResponseEntity = new ResponseEntity<>(projectDOPage, HttpStatus.OK)
         Mockito.when(iamServiceClient.queryProjectByOrgId(anyLong(), anyInt(), anyInt(), isNull(), any(String[].class))).thenReturn(projectDOPageResponseEntity)
 
-        devopsClusterDO.setCode("uat")
-        devopsClusterDO.setId(1000L)
-        devopsClusterDO.setName("uat")
-        devopsClusterDO.setOrganizationId(1L)
-        devopsClusterMapper.insert(devopsClusterDO)
+        devopsClusterDTO.setCode("uat")
+        devopsClusterDTO.setId(1000L)
+        devopsClusterDTO.setName("uat")
+        devopsClusterDTO.setOrganizationId(1L)
+        devopsClusterMapper.insert(devopsClusterDTO)
 
-        devopsEnvironmentDO.setName("env")
-        devopsEnvironmentDO.setCode("env")
-        devopsEnvironmentDO.setClusterId(devopsClusterDO.getId())
-        devopsEnvironmentMapper.insert(devopsEnvironmentDO)
+        devopsEnvironmentDTO.setName("env")
+        devopsEnvironmentDTO.setCode("env")
+        devopsEnvironmentDTO.setClusterId(devopsClusterDTO.getId())
+        devopsEnvironmentMapper.insert(devopsEnvironmentDTO)
 
         applicationInstanceDO.setAppId(1000L)
         applicationInstanceDO.setAppName("app")
-        applicationInstanceDO.setEnvId(devopsEnvironmentDO.getId())
+        applicationInstanceDO.setEnvId(devopsEnvironmentDTO.getId())
         applicationInstanceMapper.insert(applicationInstanceDO)
 
         devopsEnvPodDO.setAppInstanceId(applicationInstanceDO.getId())
@@ -158,7 +158,7 @@ class DevopsClusterControllerSpec extends Specification {
         if (!isToClean) {
             return
         }
-        DependencyInjectUtil.restoreDefaultDependency(iamRepository, "iamServiceClient")
+        DependencyInjectUtil.restoreDefaultDependency(iamRepository, "baseServiceClient")
         DependencyInjectUtil.restoreDefaultDependency(clusterNodeInfoService, "stringRedisTemplate")
 
         // 删除cluster
@@ -192,7 +192,7 @@ class DevopsClusterControllerSpec extends Specification {
 
     def "Update"() {
         given: '初始化DTO'
-        def searchCondition = new DevopsClusterDO()
+        def searchCondition = new DevopsClusterDTO()
         searchCondition.setCode("cluster")
         searchCondition.setName("cluster")
         ID = devopsClusterMapper.selectOne(searchCondition).getId()
@@ -265,8 +265,8 @@ class DevopsClusterControllerSpec extends Specification {
         List<Long> envList = new ArrayList<>()
         envList.add(1L)
         envList.add(2L)
-        envUtil.getConnectedEnvList() >> envList
-        envUtil.getUpdatedEnvList() >> envList
+        clusterConnectionHandler.getConnectedEnvList() >> envList
+        clusterConnectionHandler.getUpdatedEnvList() >> envList
 
         when: '查询shell脚本'
         def e = restTemplate.getForEntity(MAPPING + "/query_shell/{clusterId}", String.class, 1L, ID)
@@ -283,8 +283,8 @@ class DevopsClusterControllerSpec extends Specification {
         List<Long> envList = new ArrayList<>()
         envList.add(1L)
         envList.add(2L)
-        envUtil.getConnectedEnvList() >> envList
-        envUtil.getUpdatedEnvList() >> envList
+        clusterConnectionHandler.getConnectedEnvList() >> envList
+        clusterConnectionHandler.getUpdatedEnvList() >> envList
 
         when: '集群列表查询'
         def e = restTemplate.postForEntity(MAPPING + "/page_cluster?page=0&size=10&doPage=true", str, Page.class, 1L)
@@ -297,7 +297,7 @@ class DevopsClusterControllerSpec extends Specification {
         given: '准备查询数据'
 
         when: '发送请求'
-        def e = restTemplate.postForEntity(MAPPING + "/page_node_pods?page=0&size=10&cluster_id={clusterId}&node_name={nodeName}", "{}", Page.class, 1L, devopsClusterDO.getId(), devopsEnvPodDO.getNodeName())
+        def e = restTemplate.postForEntity(MAPPING + "/page_node_pods?page=0&size=10&cluster_id={clusterId}&node_name={nodeName}", "{}", Page.class, 1L, devopsClusterDTO.getId(), devopsEnvPodDO.getNodeName())
 
         then: '校验结果'
         e.getStatusCode().is2xxSuccessful()
@@ -310,7 +310,7 @@ class DevopsClusterControllerSpec extends Specification {
         def url = MAPPING + "/page_nodes?cluster_id={cluster_id}&page=0&size=10"
 
         when: "发送请求"
-        def res = restTemplate.getForEntity(url, Page, devopsClusterDO.getOrganizationId(), devopsClusterDO.getId())
+        def res = restTemplate.getForEntity(url, Page, devopsClusterDTO.getOrganizationId(), devopsClusterDTO.getId())
 
         then: "校验结果"
         res.getStatusCode().is2xxSuccessful()
@@ -323,7 +323,7 @@ class DevopsClusterControllerSpec extends Specification {
         def url = MAPPING + "/nodes?cluster_id={clusterId}&node_name={nodeName}"
 
         when: "发送请求"
-        def res = restTemplate.getForEntity(url, ClusterNodeInfoVO, devopsClusterDO.getOrganizationId(), devopsClusterDO.getId(), devopsEnvPodDO.getNodeName())
+        def res = restTemplate.getForEntity(url, ClusterNodeInfoVO, devopsClusterDTO.getOrganizationId(), devopsClusterDTO.getId(), devopsEnvPodDO.getNodeName())
 
         then: "校验结果"
         res.getStatusCode().is2xxSuccessful()
@@ -334,7 +334,7 @@ class DevopsClusterControllerSpec extends Specification {
         given: 'mock envUtil'
         List<Long> envList = new ArrayList<>()
         envList.add(999L)
-        envUtil.getConnectedEnvList() >> envList
+        clusterConnectionHandler.getConnectedEnvList() >> envList
 
         when: '删除集群'
         restTemplate.delete(MAPPING + "/{clusterId}", 1L, devopsClusterMapper.selectByPrimaryKey(ID).getId())

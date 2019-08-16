@@ -10,17 +10,24 @@ import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.*
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO
 import io.choerodon.devops.api.vo.iam.RoleVO
-import io.choerodon.devops.domain.application.valueobject.InstanceValueVO
-import io.choerodon.devops.domain.application.valueobject.RepositoryFile
-import io.choerodon.devops.infra.dataobject.gitlab.MemberDTO
-import io.choerodon.devops.infra.dataobject.gitlab.PipelineDO
-import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
-import io.choerodon.devops.infra.dataobject.iam.ProjectDO
-import io.choerodon.devops.infra.dataobject.iam.UserDO
+import io.choerodon.devops.api.vo.kubernetes.InstanceValueVO
+import io.choerodon.devops.app.service.GitlabGroupMemberService
+import io.choerodon.devops.app.service.IamService
+import io.choerodon.devops.infra.dto.*
 import io.choerodon.devops.infra.dto.gitlab.GitLabUserDTO
+import io.choerodon.devops.infra.dto.gitlab.MemberDTO
+import io.choerodon.devops.infra.dto.iam.IamUserDTO
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO
+import io.choerodon.devops.infra.dto.iam.ProjectDTO
+import io.choerodon.devops.infra.enums.AccessLevel
+import io.choerodon.devops.infra.enums.InstanceStatus
+import io.choerodon.devops.infra.feign.BaseServiceClient
 import io.choerodon.devops.infra.feign.GitlabServiceClient
-import io.choerodon.devops.infra.feign.IamServiceClient
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator
+import io.choerodon.devops.infra.handler.ClusterConnectionHandler
 import io.choerodon.devops.infra.mapper.*
+import io.choerodon.devops.infra.util.FileUtil
+import io.choerodon.devops.infra.util.GitUtil
 import io.choerodon.websocket.Msg
 import io.choerodon.websocket.helper.CommandSender
 import io.choerodon.websocket.helper.EnvListener
@@ -47,15 +54,15 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  */
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @Import(IntegrationTestConfiguration)
-@Subject(ApplicationInstanceController)
+@Subject(AppServiceInstanceController)
 @Stepwise
-class ApplicationInstanceControllerSpec extends Specification {
+class AppServiceInstanceControllerSpec extends Specification {
 
-    private static final String MAPPING = "/v1/projects/{project_id}/app_instances"
+    private static final String MAPPING = "/v1/projects/{project_id}/app_service_instances"
 
     @Autowired
-    @Qualifier("mockEnvUtil")
-    private EnvUtil envUtil
+    @Qualifier("mockClusterConnectionHandler")
+    private ClusterConnectionHandler envUtil
     @Autowired
     @Qualifier("mockEnvListener")
     private EnvListener envListener
@@ -69,21 +76,21 @@ class ApplicationInstanceControllerSpec extends Specification {
     @Autowired
     private TestRestTemplate restTemplate
     @Autowired
-    private ApplicationMapper applicationMapper
+    private AppServiceMapper appServiceMapper
     @Autowired
     private DevopsEnvPodMapper devopsEnvPodMapper
     @Autowired
     private DevopsEnvCommandMapper devopsEnvCommandMapper
     @Autowired
-    private ApplicationShareMapper applicationMarketMapper
+    private AppServiceShareRuleMapper applicationMarketMapper
     @Autowired
     private DevopsEnvironmentMapper devopsEnvironmentMapper
     @Autowired
     private DevopsEnvResourceMapper devopsEnvResourceMapper
     @Autowired
-    private ApplicationVersionMapper applicationVersionMapper
+    private AppServiceVersionMapper applicationVersionMapper
     @Autowired
-    private ApplicationInstanceMapper applicationInstanceMapper
+    private AppServiceInstanceMapper applicationInstanceMapper
     @Autowired
     private DevopsEnvCommandValueMapper devopsEnvCommandValueMapper
     @Autowired
@@ -91,7 +98,7 @@ class ApplicationInstanceControllerSpec extends Specification {
     @Autowired
     private DevopsEnvUserPermissionMapper devopsEnvUserPermissionMapper
     @Autowired
-    private ApplicationVersionValueMapper applicationVersionValueMapper
+    private AppServiceVersionValueMapper applicationVersionValueMapper
     @Autowired
     private DevopsCommandEventMapper devopsCommandEventMapper
     @Autowired
@@ -104,76 +111,74 @@ class ApplicationInstanceControllerSpec extends Specification {
     @Shared
     Map<String, Object> searchParam = new HashMap<>()
     @Shared
-    ApplicationDTO applicationDO = new ApplicationDTO()
+    AppServiceDTO applicationDO = new AppServiceDTO()
     @Shared
-    DevopsEnvPodDO devopsEnvPodDO = new DevopsEnvPodDO()
+    DevopsEnvPodDTO devopsEnvPodDO = new DevopsEnvPodDTO()
     @Shared
-    DevopsAppShareDO devopsAppMarketDO = new DevopsAppShareDO()
+    AppServiceShareRuleDTO devopsAppMarketDO = new AppServiceShareRuleDTO()
     @Shared
-    DevopsEnvCommandDO devopsEnvCommandDO = new DevopsEnvCommandDO()
+    DevopsEnvCommandDTO devopsEnvCommandDO = new DevopsEnvCommandDTO()
     @Shared
-    DevopsEnvResourceDO devopsEnvResourceDO = new DevopsEnvResourceDO()
+    DevopsEnvResourceDTO devopsEnvResourceDO = new DevopsEnvResourceDTO()
     @Shared
-    DevopsEnvResourceDO devopsEnvResourceDO2 = new DevopsEnvResourceDO()
+    DevopsEnvResourceDTO devopsEnvResourceDO2 = new DevopsEnvResourceDTO()
     @Shared
-    DevopsEnvResourceDO devopsEnvResourceDO3 = new DevopsEnvResourceDO()
+    DevopsEnvResourceDTO devopsEnvResourceDO3 = new DevopsEnvResourceDTO()
     @Shared
-    DevopsEnvResourceDO devopsEnvResourceDO4 = new DevopsEnvResourceDO()
+    DevopsEnvResourceDTO devopsEnvResourceDO4 = new DevopsEnvResourceDTO()
     @Shared
-    DevopsEnvResourceDO devopsEnvResourceDO5 = new DevopsEnvResourceDO()
+    DevopsEnvResourceDTO devopsEnvResourceDO5 = new DevopsEnvResourceDTO()
     @Shared
-    DevopsEnvResourceDO devopsEnvResourceDO6 = new DevopsEnvResourceDO()
+    DevopsEnvResourceDTO devopsEnvResourceDO6 = new DevopsEnvResourceDTO()
     @Shared
-    DevopsEnvResourceDO devopsEnvResourceDO7 = new DevopsEnvResourceDO()
+    DevopsEnvResourceDTO devopsEnvResourceDO7 = new DevopsEnvResourceDTO()
     @Shared
-    DevopsEnvResourceDO devopsEnvResourceDO8 = new DevopsEnvResourceDO()
+    DevopsEnvResourceDTO devopsEnvResourceDO8 = new DevopsEnvResourceDTO()
     @Shared
-    DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO()
+    DevopsEnvironmentDTO devopsEnvironmentDO = new DevopsEnvironmentDTO()
     @Shared
-    ApplicationVersionDO applicationVersionDO = new ApplicationVersionDO()
+    AppServiceVersionDTO applicationVersionDO = new AppServiceVersionDTO()
     @Shared
-    ApplicationInstanceDO applicationInstanceDO = new ApplicationInstanceDO()
+    AppServiceInstanceDTO applicationInstanceDO = new AppServiceInstanceDTO()
     @Shared
-    DevopsEnvCommandValueDO devopsEnvCommandValueDO = new DevopsEnvCommandValueDO()
+    DevopsEnvCommandValueDTO devopsEnvCommandValueDO = new DevopsEnvCommandValueDTO()
     @Shared
-    ApplicationVersionValueDO applicationVersionValueDO = new ApplicationVersionValueDO()
+    AppServiceVersionValueDTO applicationVersionValueDO = new AppServiceVersionValueDTO()
     @Shared
-    DevopsEnvResourceDetailDO devopsEnvResourceDetailDO = new DevopsEnvResourceDetailDO()
+    DevopsEnvResourceDetailDTO devopsEnvResourceDetailDO = new DevopsEnvResourceDetailDTO()
     @Shared
-    DevopsEnvResourceDetailDO devopsEnvResourceDetailDO2 = new DevopsEnvResourceDetailDO()
+    DevopsEnvResourceDetailDTO devopsEnvResourceDetailDO2 = new DevopsEnvResourceDetailDTO()
     @Shared
-    DevopsEnvResourceDetailDO devopsEnvResourceDetailDO3 = new DevopsEnvResourceDetailDO()
+    DevopsEnvResourceDetailDTO devopsEnvResourceDetailDO3 = new DevopsEnvResourceDetailDTO()
     @Shared
-    DevopsEnvResourceDetailDO devopsEnvResourceDetailDO4 = new DevopsEnvResourceDetailDO()
+    DevopsEnvResourceDetailDTO devopsEnvResourceDetailDO4 = new DevopsEnvResourceDetailDTO()
     @Shared
-    DevopsEnvResourceDetailDO devopsEnvResourceDetailDO5 = new DevopsEnvResourceDetailDO()
+    DevopsEnvResourceDetailDTO devopsEnvResourceDetailDO5 = new DevopsEnvResourceDetailDTO()
     @Shared
-    DevopsEnvResourceDetailDO devopsEnvResourceDetailDO6 = new DevopsEnvResourceDetailDO()
+    DevopsEnvResourceDetailDTO devopsEnvResourceDetailDO6 = new DevopsEnvResourceDetailDTO()
     @Shared
-    DevopsEnvResourceDetailDO devopsEnvResourceDetailDO7 = new DevopsEnvResourceDetailDO()
+    DevopsEnvResourceDetailDTO devopsEnvResourceDetailDO7 = new DevopsEnvResourceDetailDTO()
     @Shared
-    DevopsEnvResourceDetailDO devopsEnvResourceDetailDO8 = new DevopsEnvResourceDetailDO()
+    DevopsEnvResourceDetailDTO devopsEnvResourceDetailDO8 = new DevopsEnvResourceDetailDTO()
     @Shared
-    DevopsEnvUserPermissionDO devopsEnvUserPermissionDO = new DevopsEnvUserPermissionDO()
+    DevopsEnvUserPermissionDTO devopsEnvUserPermissionDO = new DevopsEnvUserPermissionDTO()
     @Shared
-    DevopsCommandEventDO devopsCommandEventDO = new DevopsCommandEventDO()
+    DevopsCommandEventDTO devopsCommandEventDO = new DevopsCommandEventDTO()
     @Shared
-    DevopsEnvCommandLogDO devopsEnvCommandLogDO = new DevopsEnvCommandLogDO()
+    DevopsEnvCommandLogDTO devopsEnvCommandLogDO = new DevopsEnvCommandLogDTO()
     @Shared
-    DevopsEnvFileResourceDO devopsEnvFileResourceDO = new DevopsEnvFileResourceDO()
+    DevopsEnvFileResourceDTO devopsEnvFileResourceDO = new DevopsEnvFileResourceDTO()
     @Shared
-    DevopsEnvFileDO devopsEnvFileDO = new DevopsEnvFileDO()
+    DevopsEnvFileDTO devopsEnvFileDO = new DevopsEnvFileDTO()
 
     @Autowired
-    private IamRepository iamRepository
+    private IamService iamRepository
     @Autowired
-    private GitlabRepository gitlabRepository
+    private GitlabServiceClientOperator gitlabRepository
     @Autowired
-    private GitlabProjectRepository gitlabProjectRepository
-    @Autowired
-    private GitlabGroupMemberRepository gitlabGroupMemberRepository
+    private GitlabGroupMemberService gitlabGroupMemberRepository
 
-    IamServiceClient iamServiceClient = Mockito.mock(IamServiceClient.class)
+    BaseServiceClient baseServiceClient = Mockito.mock(BaseServiceClient.class)
     GitlabServiceClient gitlabServiceClient = Mockito.mock(GitlabServiceClient.class)
 
     def setupSpec() {
@@ -444,22 +449,22 @@ class ApplicationInstanceControllerSpec extends Specification {
     }
 
     def setup() {
-        DependencyInjectUtil.setAttribute(iamRepository, "iamServiceClient", iamServiceClient)
+        DependencyInjectUtil.setAttribute(iamRepository, "baseServiceClient", baseServiceClient)
         DependencyInjectUtil.setAttribute(gitlabRepository, "gitlabServiceClient", gitlabServiceClient)
         DependencyInjectUtil.setAttribute(gitlabProjectRepository, "gitlabServiceClient", gitlabServiceClient)
         DependencyInjectUtil.setAttribute(gitlabGroupMemberRepository, "gitlabServiceClient", gitlabServiceClient)
 
-        ProjectDO projectDO = new ProjectDO()
+        ProjectDTO projectDO = new ProjectDTO()
         projectDO.setName("testProject")
         projectDO.setCode("pro")
         projectDO.setOrganizationId(1L)
-        ResponseEntity<ProjectDO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
-        Mockito.doReturn(responseEntity).when(iamServiceClient).queryIamProject(1L)
-        OrganizationDO organizationDO = new OrganizationDO()
+        ResponseEntity<ProjectDTO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
+        Mockito.doReturn(responseEntity).when(baseServiceClient).queryIamProject(1L)
+        OrganizationDTO organizationDO = new OrganizationDTO()
         organizationDO.setId(1L)
         organizationDO.setCode("org")
-        ResponseEntity<OrganizationDO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
-        Mockito.doReturn(responseEntity1).when(iamServiceClient).queryOrganizationById(1L)
+        ResponseEntity<OrganizationDTO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
+        Mockito.doReturn(responseEntity1).when(baseServiceClient).queryOrganizationById(1L)
 
         List<RoleVO> roleDTOList = new ArrayList<>()
         RoleVO roleDTO = new RoleVO()
@@ -472,13 +477,13 @@ class ApplicationInstanceControllerSpec extends Specification {
         projectWithRoleDTOList.add(projectWithRoleDTO)
         PageInfo<ProjectWithRoleVO> projectWithRoleDTOPage = new PageInfo(projectWithRoleDTOList)
         ResponseEntity<PageInfo<ProjectWithRoleVO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
-        Mockito.doReturn(pageResponseEntity).when(iamServiceClient).listProjectWithRole(anyLong(), anyInt(), anyInt())
+        Mockito.doReturn(pageResponseEntity).when(baseServiceClient).listProjectWithRole(anyLong(), anyInt(), anyInt())
 
-        List<ProjectDO> projectDOList = new ArrayList<>()
+        List<ProjectDTO> projectDOList = new ArrayList<>()
         projectDOList.add(projectDO)
-        PageInfo<ProjectDO> projectDOPage = new PageInfo(projectDOList)
-        ResponseEntity<PageInfo<ProjectDO>> projectDOPageResponseEntity = new ResponseEntity<>(projectDOPage, HttpStatus.OK)
-        Mockito.doReturn(projectDOPageResponseEntity).when(iamServiceClient).queryProjectByOrgId(anyLong(), anyInt(), anyInt(), isNull(), isNull())
+        PageInfo<ProjectDTO> projectDOPage = new PageInfo(projectDOList)
+        ResponseEntity<PageInfo<ProjectDTO>> projectDOPageResponseEntity = new ResponseEntity<>(projectDOPage, HttpStatus.OK)
+        Mockito.doReturn(projectDOPageResponseEntity).when(baseServiceClient).queryProjectByOrgId(anyLong(), anyInt(), anyInt(), anyString(), any(String[]))
 
         MemberDTO memberDO = new MemberDTO()
         memberDO.setId(1)
@@ -486,15 +491,15 @@ class ApplicationInstanceControllerSpec extends Specification {
         ResponseEntity<MemberDTO> responseEntity2 = new ResponseEntity<>(memberDO, HttpStatus.OK)
         Mockito.when(gitlabServiceClient.queryGroupMember(anyInt(), anyInt())).thenReturn(responseEntity2)
 
-        UserDO userDO = new UserDO()
-        userDO.setId(1L)
-        userDO.setLoginName("test")
-        userDO.setImageUrl("imageURL")
-        ResponseEntity<UserDO> responseEntity3 = new ResponseEntity<>(userDO, HttpStatus.OK)
-        Mockito.when(iamServiceClient.queryByLoginName(anyString())).thenReturn(responseEntity3)
+        IamUserDTO iamUserDTO = new IamUserDTO()
+        iamUserDTO.setId(1L)
+        iamUserDTO.setLoginName("test")
+        iamUserDTO.setImageUrl("imageURL")
+        ResponseEntity<IamUserDTO> responseEntity3 = new ResponseEntity<>(iamUserDTO, HttpStatus.OK)
+        Mockito.when(baseServiceClient.queryByLoginName(anyString())).thenReturn(responseEntity3)
 
-        List<PipelineDO> pipelineDOList = new ArrayList<>()
-        PipelineDO pipelineDO = new PipelineDO()
+        List<PipelineDTO> pipelineDOList = new ArrayList<>()
+        PipelineDTO pipelineDO = new PipelineDTO()
         pipelineDO.setId(1)
         GitLabUserDTO gitlabUser = new GitLabUserDTO()
         pipelineDO.setRef("")
@@ -502,37 +507,37 @@ class ApplicationInstanceControllerSpec extends Specification {
         gitlabUser.setId(1)
         gitlabUser.setName("gitlabTestName")
         pipelineDOList.add(pipelineDO)
-        ResponseEntity<List<PipelineDO>> responseEntity4 = new ResponseEntity<>(pipelineDOList, HttpStatus.OK)
+        ResponseEntity<List<PipelineDTO>> responseEntity4 = new ResponseEntity<>(pipelineDOList, HttpStatus.OK)
         Mockito.when(gitlabServiceClient.listPipeline(anyInt(), anyInt())).thenReturn(responseEntity4)
 
-        ResponseEntity<PipelineDO> responseEntity5 = new ResponseEntity<>(pipelineDO, HttpStatus.OK)
+        ResponseEntity<PipelineDTO> responseEntity5 = new ResponseEntity<>(pipelineDO, HttpStatus.OK)
         Mockito.when(gitlabServiceClient.queryPipeline(anyInt(), anyInt(), anyInt())).thenReturn(responseEntity5)
 
         ResponseEntity responseEntity6 = new ResponseEntity<>(HttpStatus.OK)
         Mockito.when(gitlabServiceClient.deleteFile(anyInt(), anyString(), anyString(), anyInt())).thenReturn(responseEntity6)
 
-        RepositoryFile repositoryFile = new RepositoryFile();
+        RepositoryFileDTO repositoryFile = new RepositoryFileDTO();
         repositoryFile.setFilePath("test")
-        ResponseEntity<RepositoryFile> responseEntity8 = new ResponseEntity<>(repositoryFile, HttpStatus.OK)
+        ResponseEntity<RepositoryFileDTO> responseEntity8 = new ResponseEntity<>(repositoryFile, HttpStatus.OK)
 
         Mockito.when(gitlabServiceClient.createFile(anyInt(), anyString(), anyString(), anyString(), anyInt())).thenReturn(responseEntity8)
 
 
-        List<UserDO> userDOList = new ArrayList<>()
-        UserDO userDO1 = new UserDO()
+        List<IamUserDTO> userDOList = new ArrayList<>()
+        IamUserDTO userDO1 = new IamUserDTO()
         userDO1.setId(1)
         userDO1.setLoginName("loginName")
         userDO1.setRealName("realName")
         userDO1.setImageUrl("imageUrl")
         userDOList.add(userDO1)
-        ResponseEntity<List<UserDO>> responseEntity7 = new ResponseEntity<>(userDOList, HttpStatus.OK)
-        Mockito.when(iamServiceClient.listUsersByIds(any(Long[].class))).thenReturn(responseEntity7)
-        Mockito.doReturn(responseEntity7).when(iamServiceClient).listUsersByIds(1L)
+        ResponseEntity<List<IamUserDTO>> responseEntity7 = new ResponseEntity<>(userDOList, HttpStatus.OK)
+        Mockito.when(baseServiceClient.listUsersByIds(any(Long[].class))).thenReturn(responseEntity7)
+        Mockito.doReturn(responseEntity7).when(baseServiceClient).listUsersByIds(1L)
     }
 
     def "PageByOptions"() {
         given: '初始化数据'
-        applicationMapper.insert(applicationDO)
+        appServiceMapper.insert(applicationDO)
         devopsEnvPodMapper.insert(devopsEnvPodDO)
         applicationMarketMapper.insert(devopsAppMarketDO)
         devopsEnvCommandMapper.selectAll().forEach { devopsEnvCommandMapper.delete(it) }
@@ -764,18 +769,18 @@ class ApplicationInstanceControllerSpec extends Specification {
     }
 
     def initForInstance(Map<String, Long> map, String deploymentName) {
-        ApplicationInstanceDO instanceInit = new ApplicationInstanceDO()
+        AppServiceDTO instanceInit = new AppServiceDTO()
         instanceInit.setCode("dependency-chart-59dad")
         instanceInit.setAppId(1L)
         instanceInit.setEnvId(1L)
         instanceInit.setCommandId(1L)
         applicationInstanceMapper.insert(instanceInit)
 
-        DevopsEnvResourceDetailDO detailInit = new DevopsEnvResourceDetailDO()
+        DevopsEnvResourceDetailDTO detailInit = new DevopsEnvResourceDetailDTO()
         detailInit.setMessage("{\"metadata\":{\"name\":\"ins4\",\"namespace\":\"env1112\",\"selfLink\":\"/apis/extensions/v1beta1/namespaces/env1112/deployments/ins4\",\"uid\":\"d444dd68-f44c-11e8-aca1-525400d91faf\",\"resourceVersion\":\"69026386\",\"generation\":2,\"creationTimestamp\":\"2018-11-30T03:05:45Z\",\"labels\":{\"choerodon.io\":\"2018.11.30-105053-master\",\"choerodon.io/application\":\"code-i\",\"choerodon.io/logs-parser\":\"nginx\",\"choerodon.io/release\":\"ins4\",\"choerodon.io/version\":\"2018.11.20-135445-master\"},\"annotation\":{\"deployment.kubernetes.io/revision\":\"2\"}},\"spec\":{\"replicas\":1,\"selector\":{\"matchLabels\":{\"choerodon.io/create\":\"ins4\"}},\"template\":{\"metadata\":{\"creationTimestamp\":null,\"labels\":{\"choerodon.io\":\"2018.11.30-105053-master\",\"choerodon.io/application\":\"code-i\",\"choerodon.io/create\":\"ins4\",\"choerodon.io/version\":\"2018.11.20-135445-master\"}},\"spec\":{\"containers\":[{\"name\":\"ins4\",\"image\":\"registry.saas.test.com/code-x-code-x/code-i:2018.11.20-135445-master\",\"ports\":[{\"name\":\"http\",\"containerPort\":80,\"protocol\":\"TCP\"}],\"env\":[{\"name\":\"PRO_API_HOST\",\"value\":\"api.example.com.cn\"},{\"name\":\"PRO_CLIENT_ID\",\"value\":\"example\"},{\"name\":\"PRO_COOKIE_SERVER\",\"value\":\"example.com.cn\"},{\"name\":\"PRO_HEADER_TITLE_NAME\",\"value\":\"Choerodon\"},{\"name\":\"PRO_HTTP\",\"value\":\"http\"},{\"name\":\"PRO_LOCAL\",\"value\":\"true\"},{\"name\":\"PRO_TITLE_NAME\",\"value\":\"Choerodon\"}],\"resources\":{},\"terminationMessagePath\":\"/dev/termination-log\",\"terminationMessagePolicy\":\"File\",\"imagePullPolicy\":\"IfNotPresent\"}],\"restartPolicy\":\"Always\",\"terminationGracePeriodSeconds\":30,\"dnsPolicy\":\"ClusterFirst\",\"securityContext\":{},\"schedulerName\":\"default-scheduler\"}},\"strategy\":{\"type\":\"RollingUpdate\",\"rollingUpdate\":{\"maxUnavailable\":\"25%\",\"maxSurge\":\"25%\"}},\"revisionHistoryLimit\":10,\"progressDeadlineSeconds\":600},\"status\":{\"observedGeneration\":2,\"replicas\":1,\"updatedReplicas\":1,\"readyReplicas\":1,\"availableReplicas\":1,\"conditions\":[{\"type\":\"Available\",\"status\":\"True\",\"lastUpdateTime\":\"2018-11-30T03:05:49Z\",\"lastTransitionTime\":\"2018-11-30T03:05:49Z\",\"reason\":\"MinimumReplicasAvailable\",\"message\":\"Deployment has minimum availability.\"},{\"type\":\"Progressing\",\"status\":\"True\",\"lastUpdateTime\":\"2018-12-02T08:20:37Z\",\"lastTransitionTime\":\"2018-11-30T03:05:45Z\",\"reason\":\"NewReplicaSetAvailable\",\"message\":\"ReplicaSet \\\"ins4-786469cf45\\\" has successfully progressed.\"}]}}")
         devopsEnvResourceDetailMapper.insert(detailInit)
 
-        DevopsEnvResourceDO resourceInit = new DevopsEnvResourceDO()
+        DevopsEnvResourceDTO resourceInit = new DevopsEnvResourceDTO()
         resourceInit.setAppInstanceId(instanceInit.getId())
         resourceInit.setKind("Deployment")
         resourceInit.setResourceDetailId(detailInit.getId())
@@ -817,7 +822,7 @@ class ApplicationInstanceControllerSpec extends Specification {
     //部署实例
     def "Deploy"() {
         given: '初始化applicationDeployDTO'
-        ApplicationDeployVO applicationDeployDTO = new ApplicationDeployVO()
+        AppServiceDeployVO applicationDeployDTO = new AppServiceDeployVO()
         applicationDeployDTO.setEnvironmentId(1L)
         applicationDeployDTO.setValues(applicationVersionValueDO.getValue())
         applicationDeployDTO.setAppId(1L)
@@ -827,7 +832,7 @@ class ApplicationInstanceControllerSpec extends Specification {
         applicationDeployDTO.setIsNotChange(false)
 
         and: 'mock envUtil'
-        envUtil.checkEnvConnection(_ as Long, _ as EnvListener) >> null
+        envUtil.checkEnvConnection(_ as Long) >> null
 
         and: 'mock gitUtil'
         gitUtil.cloneBySsh(_ as String, _ as String) >> null
@@ -843,7 +848,7 @@ class ApplicationInstanceControllerSpec extends Specification {
     def "deployTestApp"() {
         given: "准备数据"
         def url = MAPPING + "/deploy_test_app"
-        ApplicationDeployVO applicationDeployDTO = new ApplicationDeployVO()
+        AppServiceDeployVO applicationDeployDTO = new AppServiceDeployVO()
         applicationDeployDTO.setEnvironmentId(1L)
         applicationDeployDTO.setValues(applicationVersionValueDO.getValue())
         applicationDeployDTO.setAppId(1L)
@@ -897,7 +902,7 @@ class ApplicationInstanceControllerSpec extends Specification {
 
     def "Stop"() {
         given: 'mock envUtil'
-        envUtil.checkEnvConnection(_ as Long, _ as EnvListener) >> null
+        envUtil.checkEnvConnection(_ as Long) >> null
 
         when: '校验返回值'
         restTemplate.put("/v1/projects/1/app_instances/1/stop", null)
@@ -907,7 +912,7 @@ class ApplicationInstanceControllerSpec extends Specification {
     }
 
     def "Start"() {
-        ApplicationInstanceDO applicationInstanceDO1 = applicationInstanceMapper.selectByPrimaryKey(1L)
+        AppServiceInstanceDTO applicationInstanceDO1 = applicationInstanceMapper.selectByPrimaryKey(1L)
         applicationInstanceDO1.setStatus(InstanceStatus.STOPPED.getStatus())
         applicationInstanceMapper.updateByPrimaryKeySelective(applicationInstanceDO1)
 
@@ -943,7 +948,7 @@ class ApplicationInstanceControllerSpec extends Specification {
 
     def "Delete"() {
         given: 'mock envUtil'
-        envUtil.checkEnvConnection(_ as Long, _ as EnvListener) >> null
+        envUtil.checkEnvConnection(_ as Long) >> null
 
         and: 'mock gitUtil'
         gitUtil.cloneBySsh(_ as String, _ as String) >> null
@@ -987,7 +992,7 @@ class ApplicationInstanceControllerSpec extends Specification {
         List<Long> appIds = new ArrayList<>()
         appIds.add(1L)
 
-        DevopsEnvCommandDO e = new DevopsEnvCommandDO()
+        DevopsEnvCommandDTO e = new DevopsEnvCommandDTO()
         e.setId(999L)
         e.setObjectId(1L)
         e.setStatus("success")
@@ -1080,121 +1085,114 @@ class ApplicationInstanceControllerSpec extends Specification {
     def "cleanupData"() {
         given:
         // 删除appInstance
-        List<ApplicationInstanceDO> list = applicationInstanceMapper.selectAll()
+        List<AppServiceInstanceDTO> list = applicationInstanceMapper.selectAll()
         if (list != null && !list.isEmpty()) {
-            for (ApplicationInstanceDO e : list) {
+            for (AppServiceInstanceDTO e : list) {
                 applicationInstanceMapper.delete(e)
             }
         }
         // 删除appMarket
-        List<DevopsAppShareDO> list1 = applicationMarketMapper.selectAll()
+        List<AppServiceShareRuleDTO> list1 = applicationMarketMapper.selectAll()
         if (list1 != null && !list1.isEmpty()) {
-            for (DevopsAppShareDO e : list1) {
+            for (AppServiceShareRuleDTO e : list1) {
                 applicationMarketMapper.delete(e)
             }
         }
         // 删除envPod
-        List<DevopsEnvPodDO> list2 = devopsEnvPodMapper.selectAll()
+        List<DevopsEnvPodDTO> list2 = devopsEnvPodMapper.selectAll()
         if (list2 != null && !list2.isEmpty()) {
-            for (DevopsEnvPodDO e : list2) {
+            for (DevopsEnvPodDTO e : list2) {
                 devopsEnvPodMapper.delete(e)
             }
         }
-        // 删除appMarket
-        List<DevopsAppShareDO> list3 = applicationMarketMapper.selectAll()
-        if (list3 != null && !list3.isEmpty()) {
-            for (DevopsAppShareDO e : list3) {
-                applicationMarketMapper.delete(e)
-            }
-        }
         // 删除appVersion
-        List<ApplicationVersionDO> list4 = applicationVersionMapper.selectAll()
+        List<AppServiceVersionDTO> list4 = applicationVersionMapper.selectAll()
         if (list4 != null && !list4.isEmpty()) {
-            for (ApplicationVersionDO e : list4) {
+            for (AppServiceVersionDTO e : list4) {
                 applicationVersionMapper.delete(e)
             }
         }
         // 删除appVersionValue
-        List<ApplicationVersionValueDO> list5 = applicationVersionValueMapper.selectAll()
+        List<AppServiceVersionValueDTO> list5 = applicationVersionValueMapper.selectAll()
         if (list5 != null && !list5.isEmpty()) {
-            for (ApplicationVersionValueDO e : list5) {
+            for (AppServiceVersionValueDTO e : list5) {
                 applicationVersionValueMapper.delete(e)
             }
         }
         // 删除app
-        List<ApplicationDTO> list6 = applicationMapper.selectAll()
+        List<AppServiceDTO> list6 = appServiceMapper.selectAll()
         if (list6 != null && !list6.isEmpty()) {
-            for (ApplicationDTO e : list6) {
-                applicationMapper.delete(e)
+            for (AppServiceDTO e : list6) {
+                appServiceMapper.delete(e)
             }
         }
         // 删除env
-        List<DevopsEnvironmentDO> list7 = devopsEnvironmentMapper.selectAll()
+        List<DevopsEnvironmentDTO> list7 = devopsEnvironmentMapper.selectAll()
         if (list7 != null && !list7.isEmpty()) {
-            for (DevopsEnvironmentDO e : list7) {
+            for (DevopsEnvironmentDTO e : list7) {
                 devopsEnvironmentMapper.delete(e)
             }
         }
         // 删除envCommand
-        List<DevopsEnvCommandDO> list8 = devopsEnvCommandMapper.selectAll()
+        List<DevopsEnvCommandDTO> list8 = devopsEnvCommandMapper.selectAll()
         if (list8 != null && !list8.isEmpty()) {
-            for (DevopsEnvCommandDO e : list8) {
+            for (DevopsEnvCommandDTO e : list8) {
                 devopsEnvCommandMapper.delete(e)
             }
         }
         // 删除envCommandValue
-        List<DevopsEnvCommandValueDO> list9 = devopsEnvCommandValueMapper.selectAll()
+        List<DevopsEnvCommandValueDTO> list9 = devopsEnvCommandValueMapper.selectAll()
         if (list9 != null && !list9.isEmpty()) {
-            for (DevopsEnvCommandValueDO e : list9) {
+            for (DevopsEnvCommandValueDTO e : list9) {
                 devopsEnvCommandValueMapper.delete(e)
             }
         }
         // 删除envFile
-        List<DevopsEnvFileDO> list10 = devopsEnvFileMapper.selectAll()
+        List<DevopsEnvFileDTO> list10 = devopsEnvFileMapper.selectAll()
         if (list10 != null && !list10.isEmpty()) {
-            for (DevopsEnvFileDO e : list10) {
+            for (DevopsEnvFileDTO e : list10) {
                 devopsEnvFileMapper.delete(e)
             }
         }
         // 删除envFileResource
-        List<DevopsEnvFileResourceDO> list11 = devopsEnvFileResourceMapper.selectAll()
+        List<DevopsEnvFileResourceDTO> list11 = devopsEnvFileResourceMapper.selectAll()
         if (list11 != null && !list11.isEmpty()) {
-            for (DevopsEnvFileResourceDO e : list11) {
+            for (DevopsEnvFileResourceDTO e : list11) {
                 devopsEnvFileResourceMapper.delete(e)
             }
         }
         // 删除envResource
-        List<DevopsEnvResourceDO> list12 = devopsEnvResourceMapper.selectAll()
+        List<DevopsEnvResourceDTO> list12 = devopsEnvResourceMapper.selectAll()
         if (list12 != null && !list12.isEmpty()) {
-            for (DevopsEnvResourceDO e : list12) {
+            for (DevopsEnvResourceDTO e : list12) {
                 devopsEnvResourceMapper.delete(e)
             }
         }
         // 删除envResourceDetail
-        List<DevopsEnvResourceDetailDO> list13 = devopsEnvResourceDetailMapper.selectAll()
+        List<DevopsEnvResourceDetailDTO> list13 = devopsEnvResourceDetailMapper.selectAll()
         if (list13 != null && !list13.isEmpty()) {
-            for (DevopsEnvResourceDetailDO e : list13) {
+            for (DevopsEnvResourceDetailDTO e : list13) {
                 devopsEnvResourceDetailMapper.delete(e)
             }
         }
         // 删除envUserPermission
-        List<DevopsEnvUserPermissionDO> list14 = devopsEnvUserPermissionMapper.selectAll()
+        List<DevopsEnvUserPermissionDTO> list14 = devopsEnvUserPermissionMapper.selectAll()
         if (list14 != null && !list14.isEmpty()) {
-            for (DevopsEnvUserPermissionDO e : list14) {
+            for (DevopsEnvUserPermissionDTO e : list14) {
                 devopsEnvUserPermissionMapper.delete(e)
             }
         }
         // 删除commandEvent
-        List<DevopsCommandEventDO> list15 = devopsCommandEventMapper.selectAll()
+        List<DevopsCommandEventDTO> list15 = devopsCommandEventMapper.selectAll()
         if (list15 != null && !list15.isEmpty()) {
-            for (DevopsCommandEventDO e : list15) {
+            for (DevopsCommandEventDTO e : list15) {
                 devopsCommandEventMapper.delete(e)
             }
         }
         // 删除envCommandLog
-        List<DevopsEnvCommandLogDO> list16 = devopsEnvCommandLogMapper.selectAll()
+        List<DevopsEnvCommandLogDTO> list16 = devopsEnvCommandLogMapper.selectAll()
         if (list16 != null && !list16.isEmpty()) {
-            for (DevopsEnvCommandLogDO e : list16) {
+            for (DevopsEnvCommandLogDTO e : list16) {
                 devopsEnvCommandLogMapper.delete(e)
             }
         }

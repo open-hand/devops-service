@@ -1,12 +1,33 @@
 package io.choerodon.devops.api.controller.v1
 
-import io.choerodon.core.domain.Page
+import com.github.pagehelper.PageInfo
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.PipelineFrequencyVO
 import io.choerodon.devops.api.vo.PipelineTimeVO
+import io.choerodon.devops.app.service.IamService
+import io.choerodon.devops.infra.dto.AppServiceDTO
+import io.choerodon.devops.infra.dto.DevopsGitlabPipelineDTO
+import io.choerodon.devops.infra.dto.iam.IamUserDTO
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO
+import io.choerodon.devops.infra.dto.iam.ProjectDTO
+import io.choerodon.devops.infra.feign.BaseServiceClient
+import io.choerodon.devops.infra.mapper.AppServiceMapper
+import io.choerodon.devops.infra.mapper.DevopsGitlabCommitMapper
+import io.choerodon.devops.infra.mapper.DevopsGitlabPipelineMapper
+import org.mockito.Mockito
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.web.client.TestRestTemplate
+import org.springframework.context.annotation.Import
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
+import spock.lang.Shared
+import spock.lang.Specification
+import spock.lang.Stepwise
+import spock.lang.Subject
 
-@SpringBootTest(webEnvironment = RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(IntegrationTestConfiguration)
 @Subject(DevopsGitlabPipelineController)
 @Stepwise
@@ -20,17 +41,17 @@ class DevopsGitlabPipelineControlleSpec extends Specification {
     private DevopsGitlabCommitMapper devopsGitlabCommitMapper
 
     @Autowired
-    private ApplicationMapper applicationMapper
+    private AppServiceMapper applicationMapper
 
     @Autowired
-    private IamRepository iamRepository
+    private IamService iamRepository
 
-    IamServiceClient iamServiceClient = Mockito.mock(IamServiceClient.class)
+    BaseServiceClient baseServiceClient = Mockito.mock(BaseServiceClient)
 
     @Shared
-    ApplicationDTO applicationDO = new ApplicationDTO()
+    AppServiceDTO applicationDO = new AppServiceDTO()
     @Shared
-    DevopsGitlabPipelineDO devopsGitlabPipelineDO = new DevopsGitlabPipelineDO()
+    DevopsGitlabPipelineDTO devopsGitlabPipelineDO = new DevopsGitlabPipelineDTO()
 
     def setupSpec() {
         applicationDO.setId(1L)
@@ -49,34 +70,34 @@ class DevopsGitlabPipelineControlleSpec extends Specification {
     }
 
     def setup() {
-        DependencyInjectUtil.setAttribute(iamRepository, "iamServiceClient", iamServiceClient)
+        DependencyInjectUtil.setAttribute(iamRepository, "baseServiceClient", baseServiceClient)
 
-        ProjectDO projectDO = new ProjectDO()
+        ProjectDTO projectDO = new ProjectDTO()
         projectDO.setId(1L)
         projectDO.setCode("pro")
         projectDO.setOrganizationId(1L)
-        ResponseEntity<ProjectDO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
-        Mockito.doReturn(responseEntity).when(iamServiceClient).queryIamProject(1L)
+        ResponseEntity<ProjectDTO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
+        Mockito.doReturn(responseEntity).when(baseServiceClient).queryIamProject(1L)
 
-        OrganizationDO organizationDO = new OrganizationDO()
+        OrganizationDTO organizationDO = new OrganizationDTO()
         organizationDO.setId(1L)
         organizationDO.setCode("org")
-        ResponseEntity<OrganizationDO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
-        Mockito.doReturn(responseEntity1).when(iamServiceClient).queryOrganizationById(1L)
+        ResponseEntity<OrganizationDTO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
+        Mockito.doReturn(responseEntity1).when(baseServiceClient).queryOrganizationById(1L)
 
-        UserDO userDO = new UserDO()
+        IamUserDTO userDO = new IamUserDTO()
         userDO.setLoginName("test")
         userDO.setId(1L)
-        List<UserDO> userDOList = new ArrayList<>()
+        List<IamUserDTO> userDOList = new ArrayList<>()
         userDOList.add(userDO)
-        ResponseEntity<List<UserDO>> responseEntity3 = new ResponseEntity<>(userDOList, HttpStatus.OK)
-        Mockito.when(iamServiceClient.listUsersByIds(any(Long[].class))).thenReturn(responseEntity3)
+        ResponseEntity<List<IamUserDTO>> responseEntity3 = new ResponseEntity<>(userDOList, HttpStatus.OK)
+        Mockito.when(baseServiceClient.listUsersByIds()).thenReturn(responseEntity3)
     }
 
     def "ListPipelineTime"() {
         given: '初始化数据'
         applicationMapper.insert(applicationDO)
-        devopsGitlabPipelineMapper.insert(devopsGitlabPipelineDO);
+        devopsGitlabPipelineMapper.insert(devopsGitlabPipelineDO)
 
         when: '获取pipeline时长报表'
         def pipelineTimeDTO = restTemplate.getForObject("/v1/projects/1/pipeline/time?appId=1&startTime=2015/10/12&endTime=3018/10/18", PipelineTimeVO.class)
@@ -95,23 +116,23 @@ class DevopsGitlabPipelineControlleSpec extends Specification {
 
     def "PagePipeline"() {
         when: '分页获取pipeline'
-        def pages = restTemplate.getForObject("/v1/projects/384/pipeline/page?appId=1&startTime=2015/10/13&endTime=3018/10/19&page=0&size=10", Page.class)
+        def pages = restTemplate.getForObject("/v1/projects/384/pipeline/page?appId=1&startTime=2015/10/13&endTime=3018/10/19&page=0&size=10", PageInfo.class)
 
         then: '校验返回值'
-        pages.size() == 1
+        pages.getTotal() == 1
 
         and: '清理数据'
         // 删除app
-        List<ApplicationDTO> list = applicationMapper.selectAll()
+        List<AppServiceDTO> list = applicationMapper.selectAll()
         if (list != null && !list.isEmpty()) {
-            for (ApplicationDTO e : list) {
+            for (AppServiceDTO e : list) {
                 applicationMapper.delete(e)
             }
         }
         // 删除gitlabPipeline
-        List<DevopsGitlabPipelineDO> list1 = devopsGitlabPipelineMapper.selectAll()
+        List<DevopsGitlabPipelineDTO> list1 = devopsGitlabPipelineMapper.selectAll()
         if (list1 != null && !list1.isEmpty()) {
-            for (DevopsGitlabPipelineDO e : list1) {
+            for (DevopsGitlabPipelineDTO e : list1) {
                 devopsGitlabPipelineMapper.delete(e)
             }
         }

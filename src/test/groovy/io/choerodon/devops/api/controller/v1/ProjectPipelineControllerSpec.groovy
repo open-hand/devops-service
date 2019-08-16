@@ -2,8 +2,8 @@ package io.choerodon.devops.api.controller.v1
 
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
-
 import io.choerodon.devops.infra.feign.GitlabServiceClient
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -27,7 +27,7 @@ class ProjectPipelineControllerSpec extends Specification {
     private TestRestTemplate restTemplate
 
     @Autowired
-    private GitlabProjectRepository gitlabProjectRepository
+    private GitlabServiceClientOperator gitlabProjectRepository
 
     GitlabServiceClient gitlabServiceClient = Mockito.mock(GitlabServiceClient.class)
 
@@ -37,6 +37,7 @@ class ProjectPipelineControllerSpec extends Specification {
         ResponseEntity<Boolean> responseEntity = new ResponseEntity<>(true, HttpStatus.OK)
         Mockito.doReturn(responseEntity).when(gitlabServiceClient).retry(1, 1, 1)
     }
+
     def "Retry"() {
         when: 'Retry jobs in a pipeline'
         def result = restTemplate.postForObject("/v1/projects/1/gitlab_projects/1/pipelines/1/retry", null, Boolean.class)

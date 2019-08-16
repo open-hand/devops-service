@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 import io.choerodon.devops.infra.enums.JacksonJsonEnumHelper;
 
-public class ImpersonationTokenDO {
+public class ImpersonationTokenDTO {
 
     private Boolean active;
     private String token;

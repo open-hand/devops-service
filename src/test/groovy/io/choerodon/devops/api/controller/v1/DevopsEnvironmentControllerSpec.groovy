@@ -2,7 +2,6 @@ package io.choerodon.devops.api.controller.v1
 
 import com.github.pagehelper.PageInfo
 import io.choerodon.asgard.saga.dto.SagaInstanceDTO
-import io.choerodon.asgard.saga.feign.SagaClient
 import io.choerodon.core.domain.Page
 import io.choerodon.core.exception.CommonException
 import io.choerodon.core.exception.ExceptionResponse
@@ -13,19 +12,20 @@ import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO
 import io.choerodon.devops.api.vo.iam.RoleSearchVO
 import io.choerodon.devops.api.vo.iam.RoleVO
 import io.choerodon.devops.api.vo.iam.UserVO
-import io.choerodon.devops.app.service.DevopsEnvironmentService
-import io.choerodon.devops.domain.application.repository.*
-import io.choerodon.devops.domain.application.valueobject.OrganizationVO
-import io.choerodon.devops.infra.common.util.EnvUtil
-import io.choerodon.devops.infra.common.util.GitUtil
-import io.choerodon.devops.infra.common.util.enums.AccessLevel
-import io.choerodon.devops.infra.dataobject.gitlab.MemberDTO
-import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
-import io.choerodon.devops.infra.dataobject.iam.ProjectDO
-import io.choerodon.devops.infra.dataobject.iam.UserDO
+import io.choerodon.devops.app.service.*
+import io.choerodon.devops.infra.dto.*
+import io.choerodon.devops.infra.dto.gitlab.GitlabProjectDTO
+import io.choerodon.devops.infra.dto.gitlab.MemberDTO
+import io.choerodon.devops.infra.dto.iam.IamUserDTO
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO
+import io.choerodon.devops.infra.dto.iam.ProjectDTO
+import io.choerodon.devops.infra.enums.AccessLevel
+import io.choerodon.devops.infra.feign.BaseServiceClient
 import io.choerodon.devops.infra.feign.GitlabServiceClient
-import io.choerodon.devops.infra.feign.IamServiceClient
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator
+import io.choerodon.devops.infra.handler.ClusterConnectionHandler
 import io.choerodon.devops.infra.mapper.*
+import io.choerodon.devops.infra.util.GitUtil
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
@@ -65,19 +65,17 @@ class DevopsEnvironmentControllerSpec extends Specification {
     @Autowired
     private DevopsEnvironmentMapper devopsEnvironmentMapper
     @Autowired
-    private DevopsServiceRepository devopsServiceRepository
+    private DevopsServiceService devopsServiceService
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService
     @Autowired
     private DevopsEnvCommitMapper devopsEnvCommitMapper
     @Autowired
-    private DevopsEnvironmentRepository devopsEnvironmentRepository
-    @Autowired
-    private ApplicationInstanceRepository applicationInstanceRepository
+    private AppServiceInstanceService appServiceInstanceService
     @Autowired
     private DevopsProjectMapper devopsProjectMapper
     @Autowired
-    private ApplicationInstanceMapper applicationInstanceMapper
+    private AppServiceInstanceMapper appServiceInstanceMapper
     @Autowired
     private DevopsEnvUserPermissionMapper devopsEnvUserPermissionMapper
     @Autowired
@@ -87,41 +85,34 @@ class DevopsEnvironmentControllerSpec extends Specification {
     @Autowired
     private DevopsServiceMapper devopsServiceMapper
     @Autowired
-    private DevopsServiceAppInstanceMapper devopsServiceAppInstanceMapper
-    @Autowired
     private DevopsClusterMapper devopsClusterMapper
     @Autowired
     private DevopsClusterProPermissionMapper devopsClusterProPermissionMapper
+    @Autowired
+    private DevopsServiceInstanceService devopsServiceAppInstanceMapper;
 
     @Autowired
-    @Qualifier("mockEnvUtil")
-    private EnvUtil envUtil
+    @Qualifier("mockClusterConnectionHandler")
+    private ClusterConnectionHandler mockClusterConnectionHandler
 
     @Autowired
     @Qualifier("mockGitUtil")
     private GitUtil gitUtil
 
     @Autowired
-    private UserAttrRepository userAttrRepository
+    private UserAttrService userAttrRepository
     @Autowired
-    private IamRepository iamRepository
+    private IamService iamRepository
     @Autowired
-    private GitlabRepository gitlabRepository
+    private GitlabServiceClientOperator gitlabRepository
     @Autowired
-    private GitlabProjectRepository gitlabProjectRepository
-    @Autowired
-    private GitlabGroupMemberRepository gitlabGroupMemberRepository
+    private GitlabGroupMemberService gitlabGroupMemberRepository
 
-    SagaClient sagaClient = Mockito.mock(SagaClient.class)
-    IamServiceClient iamServiceClient = Mockito.mock(IamServiceClient.class)
+    BaseServiceClient iamServiceClient = Mockito.mock(BaseServiceClient)
     GitlabServiceClient gitlabServiceClient = Mockito.mock(GitlabServiceClient.class)
 
     @Shared
-    OrganizationVO organization = new OrganizationVO()
-    @Shared
     ProjectVO projectE = new ProjectVO()
-    @Shared
-    UserAttrE userAttrE = new UserAttrE()
     @Shared
     Map<String, Object> searchParam = new HashMap<>()
     @Shared
@@ -129,17 +120,17 @@ class DevopsEnvironmentControllerSpec extends Specification {
     @Shared
     Long init_id = 1L
     @Shared
-    DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO()
+    DevopsEnvironmentDTO devopsEnvironmentDO = new DevopsEnvironmentDTO()
     @Shared
-    DevopsEnvironmentDO devopsEnvironmentDO1 = new DevopsEnvironmentDO()
+    DevopsEnvironmentDTO devopsEnvironmentDO1 = new DevopsEnvironmentDTO()
     @Shared
-    DevopsEnvUserPermissionDO devopsEnvUserPermissionDO = new DevopsEnvUserPermissionDO()
+    DevopsEnvUserPermissionDTO devopsEnvUserPermissionDO = new DevopsEnvUserPermissionDTO()
     @Shared
-    DevopsEnvUserPermissionDO devopsEnvUserPermissionDO1 = new DevopsEnvUserPermissionDO()
+    DevopsEnvUserPermissionDTO devopsEnvUserPermissionDO1 = new DevopsEnvUserPermissionDTO()
     @Shared
-    DevopsEnvUserPermissionDO devopsEnvUserPermissionDO2 = new DevopsEnvUserPermissionDO()
+    DevopsEnvUserPermissionDTO devopsEnvUserPermissionDO2 = new DevopsEnvUserPermissionDTO()
     @Shared
-    DevopsClusterDO devopsClusterDO = new DevopsClusterDO()
+    DevopsClusterDTO devopsClusterDO = new DevopsClusterDTO()
 
     def setupSpec() {
         given:
@@ -207,23 +198,23 @@ class DevopsEnvironmentControllerSpec extends Specification {
     }
 
     def setup() {
-        DependencyInjectUtil.setAttribute(iamRepository, "iamServiceClient", iamServiceClient)
+        DependencyInjectUtil.setAttribute(iamRepository, "baseServiceClient", iamServiceClient)
         DependencyInjectUtil.setAttribute(gitlabRepository, "gitlabServiceClient", gitlabServiceClient)
         DependencyInjectUtil.setAttribute(gitlabProjectRepository, "gitlabServiceClient", gitlabServiceClient)
         DependencyInjectUtil.setAttribute(gitlabGroupMemberRepository, "gitlabServiceClient", gitlabServiceClient)
 
 
-        ProjectDO projectDO = new ProjectDO()
+        ProjectDTO projectDO = new ProjectDTO()
         projectDO.setId(1L)
         projectDO.setCode("pro")
         projectDO.setOrganizationId(1L)
-        ResponseEntity<ProjectDO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
+        ResponseEntity<ProjectDTO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
         Mockito.doReturn(responseEntity).when(iamServiceClient).queryIamProject(1L)
 
-        OrganizationDO organizationDO = new OrganizationDO()
+        OrganizationDTO organizationDO = new OrganizationDTO()
         organizationDO.setId(1L)
         organizationDO.setCode("org")
-        ResponseEntity<OrganizationDO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
+        ResponseEntity<OrganizationDTO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
         Mockito.doReturn(responseEntity1).when(iamServiceClient).queryOrganizationById(1L)
 
         List<RoleVO> roleDTOList = new ArrayList<>()
@@ -240,7 +231,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         Mockito.doReturn(pageResponseEntity).when(iamServiceClient).listProjectWithRole(anyLong(), anyInt(), anyInt())
 
         MemberDTO memberDO = new MemberDTO()
-        memberDO.setAccessLevel(AccessLevel.OWNER)
+        memberDO.setAccessLevel(AccessLevel.OWNER.value)
         ResponseEntity<MemberDTO> responseEntity2 = new ResponseEntity<>(memberDO, HttpStatus.OK)
         Mockito.when(gitlabServiceClient.queryGroupMember(anyInt(), anyInt())).thenReturn(responseEntity2)
 
@@ -302,14 +293,14 @@ class DevopsEnvironmentControllerSpec extends Specification {
         devopsEnvUserPermissionMapper.insert(devopsEnvUserPermissionDO2)
 
         and: '设置DTO类'
-        DevopsEnviromentVO devopsEnviromentDTO = new DevopsEnviromentVO()
+        DevopsEnviromentRepVO devopsEnviromentDTO = new DevopsEnviromentRepVO()
         devopsEnviromentDTO.setClusterId(1L)
         devopsEnviromentDTO.setCode("testCodeChange")
         devopsEnviromentDTO.setName("testNameChange")
         devopsEnviromentDTO.setDevopsEnvGroupId(1L)
 
         and: '设置用户'
-        UserAttrE userAttrE = new UserAttrE()
+        UserAttrDTO userAttrE = new UserAttrDTO()
         userAttrE.setIamUserId(1L)
         userAttrE.setGitlabUserId(1L)
 
@@ -318,12 +309,12 @@ class DevopsEnvironmentControllerSpec extends Specification {
         Mockito.doReturn(new SagaInstanceDTO()).when(sagaClient).startSaga(null, null)
 
         and: 'mock查询用户'
-        List<UserDO> userDOList = new ArrayList<>()
-        UserDO userDO = new UserDO()
+        List<IamUserDTO> userDOList = new ArrayList<>()
+        IamUserDTO userDO = new IamUserDTO()
         userDO.setLoginName("loginName")
         userDO.setRealName("realName")
         userDOList.add(userDO)
-        ResponseEntity<List<UserDO>> responseEntity2 = new ResponseEntity<>(userDOList, HttpStatus.OK)
+        ResponseEntity<List<IamUserDTO>> responseEntity2 = new ResponseEntity<>(userDOList, HttpStatus.OK)
         Mockito.when(iamServiceClient.listUsersByIds(any(Long[].class))).thenReturn(responseEntity2)
         Mockito.doReturn(responseEntity2).when(iamServiceClient).listUsersByIds(1L)
         userAttrRepository.baseQueryById(_ as Long) >> userAttrE
@@ -340,16 +331,16 @@ class DevopsEnvironmentControllerSpec extends Specification {
 
     def "ListByProjectIdDeployed"() {
         given: '设置网络对象'
-        DevopsServiceE devopsServiceE = new DevopsServiceE()
+        DevopsServiceDTO devopsServiceE = new DevopsServiceDTO()
         devopsServiceE.setId(1L)
         devopsServiceE.setEnvId(1L)
         devopsServiceE.setStatus("running")
-        DevopsServiceE devopsServiceE1 = new DevopsServiceE()
+        DevopsServiceDTO devopsServiceE1 = new DevopsServiceDTO()
         devopsServiceE.setId(2L)
         devopsServiceE1.setEnvId(2L)
         devopsServiceE1.setStatus("running")
-        devopsServiceRepository.baseCreate(devopsServiceE)
-        devopsServiceRepository.baseCreate(devopsServiceE1)
+        devopsServiceService.baseCreate(devopsServiceE)
+        devopsServiceService.baseCreate(devopsServiceE1)
 
         and: 'mock envUtil方法'
         List<Long> envList = new ArrayList<>()
@@ -357,8 +348,8 @@ class DevopsEnvironmentControllerSpec extends Specification {
         envList.add(2L)
         List<Long> connectedClusterList = new ArrayList<>()
         connectedClusterList.add(3L)
-        envUtil.getConnectedEnvList() >> connectedClusterList
-        envUtil.getUpdatedEnvList() >> envList
+        mockClusterConnectionHandler.getConnectedEnvList() >> connectedClusterList
+        mockClusterConnectionHandler.getUpdatedEnvList() >> envList
 
         when: '项目下查询存在网络环境'
         def envs = restTemplate.getForObject("/v1/projects/1/envs/deployed", List.class)
@@ -373,8 +364,8 @@ class DevopsEnvironmentControllerSpec extends Specification {
         List<Long> envList = new ArrayList<>()
         envList.add(1L)
         envList.add(2L)
-        envUtil.getConnectedEnvList() >> envList
-        envUtil.getUpdatedEnvList() >> envList
+        mockClusterConnectionHandler.getConnectedEnvList() >> envList
+        mockClusterConnectionHandler.getUpdatedEnvList() >> envList
 
         when: '项目下查询环境'
         def envs = restTemplate.getForObject("/v1/projects/1/envs?active=true", List.class)
@@ -390,16 +381,16 @@ class DevopsEnvironmentControllerSpec extends Specification {
         envList.add(2L)
 
         and: 'mock envUtil方法'
-        DevopsEnvGroupDO devopsEnvGroupDO = new DevopsEnvGroupDO()
+        DevopsEnvGroupDTO devopsEnvGroupDO = new DevopsEnvGroupDTO()
         devopsEnvGroupDO.setId(1L)
         devopsEnvGroupDO.setProjectId(1L)
-        DevopsEnvGroupDO devopsEnvGroupDO1 = new DevopsEnvGroupDO()
+        DevopsEnvGroupDTO devopsEnvGroupDO1 = new DevopsEnvGroupDTO()
         devopsEnvGroupDO1.setId(2L)
         devopsEnvGroupDO1.setProjectId(1L)
         devopsEnvGroupMapper.insert(devopsEnvGroupDO)
         devopsEnvGroupMapper.insert(devopsEnvGroupDO1)
-        envUtil.getConnectedEnvList() >> envList
-        envUtil.getUpdatedEnvList() >> envList
+        mockClusterConnectionHandler.getConnectedEnvList() >> envList
+        mockClusterConnectionHandler.getUpdatedEnvList() >> envList
 
         when: '项目下环境流水线查询环境'
         def list = restTemplate.getForObject("/v1/projects/1/envs/groups?active=true", List.class)
@@ -423,8 +414,8 @@ class DevopsEnvironmentControllerSpec extends Specification {
         envList.add(2L)
         List<Long> connectedEnvList = new ArrayList<>()
         connectedEnvList.add(3L)
-        envUtil.getConnectedEnvList() >> connectedEnvList
-        envUtil.getUpdatedEnvList() >> envList
+        mockClusterConnectionHandler.getConnectedEnvList() >> connectedEnvList
+        mockClusterConnectionHandler.getUpdatedEnvList() >> envList
 
         when: '项目下启用停用环境'
         restTemplate.put("/v1/projects/1/envs/1/active?active=false", Boolean.class)
@@ -464,8 +455,8 @@ class DevopsEnvironmentControllerSpec extends Specification {
         envList.add(1L)
         envList.add(2L)
         Long[] sequence = [2L, 1L]
-        envUtil.getConnectedEnvList() >> envList
-        envUtil.getUpdatedEnvList() >> envList
+        mockClusterConnectionHandler.getConnectedEnvList() >> envList
+        mockClusterConnectionHandler.getUpdatedEnvList() >> envList
 
         when: '项目下环境流水线排序'
         restTemplate.put("/v1/projects/1/envs/sort", sequence, List.class)
@@ -486,7 +477,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
     def "ListByProjectId"() {
         given: '初始化应用实例DO对象'
         List<Long> envList = new ArrayList<>()
-        ApplicationInstanceDO applicationInstanceDO = new ApplicationInstanceDO()
+        AppServiceInstanceDTO applicationInstanceDO = new AppServiceInstanceDTO()
         applicationInstanceDO.setId(1L)
         applicationInstanceDO.setAppId(1L)
         applicationInstanceDO.setEnvId(1L)
@@ -498,7 +489,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         applicationInstanceDO.setAppName("appname")
         applicationInstanceDO.setCommandId(1L)
         applicationInstanceDO.setObjectVersionNumber(1L)
-        ApplicationInstanceDO applicationInstanceDO1 = new ApplicationInstanceDO()
+        AppServiceInstanceDTO applicationInstanceDO1 = new AppServiceInstanceDTO()
         applicationInstanceDO1.setId(2L)
         applicationInstanceDO1.setAppId(2L)
         applicationInstanceDO1.setEnvId(2L)
@@ -510,14 +501,14 @@ class DevopsEnvironmentControllerSpec extends Specification {
         applicationInstanceDO1.setAppName("appname1")
         applicationInstanceDO1.setCommandId(1L)
         applicationInstanceDO1.setObjectVersionNumber(1L)
-        applicationInstanceMapper.insert(applicationInstanceDO)
-        applicationInstanceMapper.insert(applicationInstanceDO1)
+        appServiceInstanceMapper.insert(applicationInstanceDO)
+        appServiceInstanceMapper.insert(applicationInstanceDO1)
 
         and: 'mock envUtil方法'
         envList.add(1L)
         envList.add(2L)
-        envUtil.getConnectedEnvList() >> envList
-        envUtil.getUpdatedEnvList() >> envList
+        mockClusterConnectionHandler.getConnectedEnvList() >> envList
+        mockClusterConnectionHandler.getUpdatedEnvList() >> envList
 
         when: '项目下查询有正在运行实例的环境'
         def envs = restTemplate.getForObject("/v1/projects/1/envs/instance", List.class)
@@ -528,19 +519,19 @@ class DevopsEnvironmentControllerSpec extends Specification {
 
     def "QueryEnvSyncStatus"() {
         given: '更新devopsEnvCommit对象'
-        DevopsEnvCommitDO devopsEnvCommitDO = new DevopsEnvCommitDO()
-        devopsEnvCommitDO.setId(1L)
-        devopsEnvCommitDO.setCommitSha("testCommitSha")
-        devopsEnvCommitMapper.insert(devopsEnvCommitDO)
-        devopsEnvironmentMapper.updateAgentSyncEnvCommit(1L,1L)
-        devopsEnvironmentMapper.updateDevopsSyncEnvCommit(1L,1L)
-        devopsEnvironmentMapper.updateSagaSyncEnvCommit(1L,1L)
+        DevopsEnvCommitDTO devopsEnvCommitDTO = new DevopsEnvCommitDTO()
+        devopsEnvCommitDTO.setId(1L)
+        devopsEnvCommitDTO.setCommitSha("testCommitSha")
+        devopsEnvCommitMapper.insert(devopsEnvCommitDTO)
+        devopsEnvironmentMapper.updateAgentSyncEnvCommit(1L, 1L)
+        devopsEnvironmentMapper.updateDevopsSyncEnvCommit(1L, 1L)
+        devopsEnvironmentMapper.updateSagaSyncEnvCommit(1L, 1L)
 
         when: '查询环境同步状态'
         def envSyncStatusDTO = restTemplate.getForObject("/v1/projects/1/envs/1/status", EnvSyncStatusVO.class)
 
         then: '返回值'
-        envSyncStatusDTO.getAgentSyncCommit().equals("testCommitSha")
+        envSyncStatusDTO.getAgentSyncCommit() == "testCommitSha"
     }
 
     def "ListUserPermissionByEnvId"() {
@@ -582,21 +573,21 @@ class DevopsEnvironmentControllerSpec extends Specification {
         userIds.add(4L)
 
         and: 'mock待添加的iam用户列表'
-        List<UserDO> addIamUserList = new ArrayList<>()
-        UserDO userDO = new UserDO()
-        userDO.setId(4L)
-        userDO.setLoginName("test4")
-        userDO.setRealName("realTest4")
-        addIamUserList.add(userDO)
-        ResponseEntity<List<UserDO>> addIamUserResponseEntity = new ResponseEntity<>(addIamUserList, HttpStatus.OK)
+        List<IamUserDTO> addIamUserList = new ArrayList<>()
+        IamUserDTO iamUserDTO = new IamUserDTO()
+        iamUserDTO.setId(4L)
+        iamUserDTO.setLoginName("test4")
+        iamUserDTO.setRealName("realTest4")
+        addIamUserList.add(iamUserDTO)
+        ResponseEntity<List<IamUserDTO>> addIamUserResponseEntity = new ResponseEntity<>(addIamUserList, HttpStatus.OK)
         Mockito.when(iamServiceClient.listUsersByIds(any(Long[].class))).thenReturn(addIamUserResponseEntity)
 
         and: '初始化用户3，4的gitlab对象'
-        io.choerodon.devops.infra.dataobject.UserAttrDTO userAttrDO1 = new io.choerodon.devops.infra.dataobject.UserAttrDTO()
+        UserAttrDTO userAttrDO1 = new UserAttrDTO()
         userAttrDO1.setIamUserId(3L)
         userAttrDO1.setGitlabUserId(3L)
         userAttrMapper.insert(userAttrDO1)
-        io.choerodon.devops.infra.dataobject.UserAttrDTO userAttrDO2 = new io.choerodon.devops.infra.dataobject.UserAttrDTO()
+        UserAttrDTO userAttrDO2 = new UserAttrDTO()
         userAttrDO2.setIamUserId(4L)
         userAttrDO2.setGitlabUserId(4L)
         userAttrMapper.insert(userAttrDO2)
@@ -608,7 +599,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         and: '查询gitlab项目下是否有1和3用户'
         MemberDTO memberDO1 = new MemberDTO()
         memberDO1.setId(1)
-        memberDO1.setAccessLevel(AccessLevel.NONE)
+        memberDO1.setAccessLevel(AccessLevel.NONE.value)
         ResponseEntity<MemberDTO> memberDOResponseEntity1 = new ResponseEntity<>(memberDO1, HttpStatus.OK)
         Mockito.when(gitlabServiceClient.getProjectMember(anyInt(), anyInt())).thenReturn(memberDOResponseEntity1)
 
@@ -621,7 +612,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         def count = restTemplate.postForObject("/v1/projects/1/envs/1/permission", userIds, Boolean.class)
 
         then: '返回值'
-        List<DevopsEnvUserPermissionDO> lastUsers = devopsEnvUserPermissionMapper.selectAll()
+        List<DevopsEnvUserPermissionDTO> lastUsers = devopsEnvUserPermissionMapper.selectAll()
 
         expect: '校验用户4和用户2'
         lastUsers.get(0)["iamUserId"] == 2
@@ -631,17 +622,17 @@ class DevopsEnvironmentControllerSpec extends Specification {
     def "ListDevopsClusters"() {
         given: '创建集群和项目关联关系'
 
-        DevopsClusterProPermissionDO devopsClusterProPermissionDO = new DevopsClusterProPermissionDO()
+        DevopsClusterProPermissionDTO devopsClusterProPermissionDO = new DevopsClusterProPermissionDTO()
         devopsClusterProPermissionDO.setClusterId(1L)
         devopsClusterProPermissionDO.setProjectId(1L)
         devopsClusterProPermissionMapper.insert(devopsClusterProPermissionDO)
 
-        and:'mock envUtil'
+        and: 'mock envUtil'
         List<Long> envList = new ArrayList<>()
         envList.add(1L)
         envList.add(2L)
-        envUtil.getConnectedEnvList() >> envList
-        envUtil.getUpdatedEnvList() >> envList
+        mockClusterConnectionHandler.getConnectedEnvList() >> envList
+        mockClusterConnectionHandler.getUpdatedEnvList() >> envList
 
         when: '项目下查询集群信息'
         def list = restTemplate.getForObject("/v1/projects/1/envs/clusters", List.class)
@@ -650,67 +641,67 @@ class DevopsEnvironmentControllerSpec extends Specification {
         list.get(0)["name"] == "testCluster"
 
         // 删除user，保留默认初始化的1号用户
-        List<io.choerodon.devops.infra.dataobject.UserAttrDTO> list0 = userAttrMapper.selectAll()
+        List<UserAttrDTO> list0 = userAttrMapper.selectAll()
         if (list0 != null && !list0.isEmpty()) {
-            for (io.choerodon.devops.infra.dataobject.UserAttrDTO e : list0) {
+            for (UserAttrDTO e : list0) {
                 if (e.getIamUserId() != 1L) {
                     userAttrMapper.delete(e)
                 }
             }
         }
         // 删除envCommit
-        List<DevopsEnvCommitDO> list1 = devopsEnvCommitMapper.selectAll()
+        List<DevopsEnvCommitDTO> list1 = devopsEnvCommitMapper.selectAll()
         if (list1 != null && !list1.isEmpty()) {
-            for (DevopsEnvCommitDO e : list1) {
+            for (DevopsEnvCommitDTO e : list1) {
                 devopsEnvCommitMapper.delete(e)
             }
         }
         // 删除appInstance
-        List<ApplicationInstanceDO> list2 = applicationInstanceMapper.selectAll()
+        List<AppServiceInstanceDTO> list2 = appServiceInstanceMapper.selectAll()
         if (list2 != null && !list2.isEmpty()) {
-            for (ApplicationInstanceDO e : list2) {
-                applicationInstanceMapper.delete(e)
+            for (AppServiceInstanceDTO e : list2) {
+                appServiceInstanceMapper.delete(e)
             }
         }
         // 删除service
-        List<DevopsServiceDO> list3 = devopsServiceMapper.selectAll()
+        List<DevopsServiceDTO> list3 = devopsServiceMapper.selectAll()
         if (list3 != null && !list3.isEmpty()) {
-            for (DevopsServiceDO e : list3) {
+            for (DevopsServiceDTO e : list3) {
                 devopsServiceMapper.delete()
             }
         }
         // 删除envGroup
-        List<DevopsEnvGroupDO> list4 = devopsEnvGroupMapper.selectAll()
+        List<DevopsEnvGroupDTO> list4 = devopsEnvGroupMapper.selectAll()
         if (list4 != null && !list4.isEmpty()) {
-            for (DevopsEnvGroupDO e : list4) {
+            for (DevopsEnvGroupDTO e : list4) {
                 devopsEnvGroupMapper.delete(e)
             }
         }
         // 删除env
-        List<DevopsEnvironmentDO> list5 = devopsEnvironmentMapper.selectAll()
+        List<DevopsEnvironmentDTO> list5 = devopsEnvironmentMapper.selectAll()
         if (list5 != null && !list5.isEmpty()) {
-            for (DevopsEnvironmentDO e : list5) {
+            for (DevopsEnvironmentDTO e : list5) {
                 devopsEnvironmentMapper.delete(e)
             }
         }
         // 删除cluster
-        List<DevopsClusterDO> list6 = devopsClusterMapper.selectAll()
+        List<DevopsClusterDTO> list6 = devopsClusterMapper.selectAll()
         if (list6 != null && !list6.isEmpty()) {
-            for (DevopsClusterDO e : list6) {
+            for (DevopsClusterDTO e : list6) {
                 devopsClusterMapper.delete(e)
             }
         }
         // 删除clusterProPermission
-        List<DevopsClusterProPermissionDO> list7 = devopsClusterProPermissionMapper.selectAll()
+        List<DevopsClusterProPermissionDTO> list7 = devopsClusterProPermissionMapper.selectAll()
         if (list7 != null && !list7.isEmpty()) {
-            for (DevopsClusterProPermissionDO e : list7) {
+            for (DevopsClusterProPermissionDTO e : list7) {
                 devopsClusterProPermissionMapper.delete(e)
             }
         }
         // 删除envUserPermission
-        List<DevopsEnvUserPermissionDO> list8 = devopsEnvUserPermissionMapper.selectAll()
+        List<DevopsEnvUserPermissionDTO> list8 = devopsEnvUserPermissionMapper.selectAll()
         if (list8 != null && !list8.isEmpty()) {
-            for (DevopsEnvUserPermissionDO e : list8) {
+            for (DevopsEnvUserPermissionDTO e : list8) {
                 devopsEnvUserPermissionMapper.delete(e)
             }
         }
@@ -718,53 +709,53 @@ class DevopsEnvironmentControllerSpec extends Specification {
 
     def "DeleteDeactivatedEnvironment"() {
         given: '插入关联环境的对象'
-        DevopsEnvironmentDO devopsEnvironmentDODel = new DevopsEnvironmentDO()
+        DevopsEnvironmentDTO devopsEnvironmentDODel = new DevopsEnvironmentDTO()
         devopsEnvironmentDODel.setId(999L)
         devopsEnvironmentDODel.setClusterId(1L)
         devopsEnvironmentDODel.setGitlabEnvProjectId(888L)
         devopsEnvironmentMapper.insert(devopsEnvironmentDODel)
 
-        ApplicationInstanceDO applicationInstanceDODel = new ApplicationInstanceDO()
+        AppServiceInstanceDTO applicationInstanceDODel = new AppServiceInstanceDTO()
         applicationInstanceDODel.setId(999L)
         applicationInstanceDODel.setEnvId(999L)
-        applicationInstanceMapper.insert(applicationInstanceDODel)
+        appServiceInstanceMapper.insert(applicationInstanceDODel)
 
-        DevopsIngressDO devopsIngressDODel = new DevopsIngressDO()
+        DevopsIngressDTO devopsIngressDODel = new DevopsIngressDTO()
         devopsIngressDODel.setId(1000L)
         devopsIngressDODel.setEnvId(999L)
         devopsIngressMapper.insert(devopsIngressDODel)
 
-        DevopsIngressDO devopsIngressDODel1 = new DevopsIngressDO()
+        DevopsIngressDTO devopsIngressDODel1 = new DevopsIngressDTO()
         devopsIngressDODel1.setId(2000L)
         devopsIngressDODel1.setEnvId(999L)
         devopsIngressMapper.insert(devopsIngressDODel1)
 
-        DevopsIngressPathDO devopsIngressPathDODel = new DevopsIngressPathDO()
+        DevopsIngressPathDTO devopsIngressPathDODel = new DevopsIngressPathDTO()
         devopsIngressPathDODel.setId(100L)
         devopsIngressPathDODel.setIngressId(1000L)
         devopsIngressPathMapper.insert(devopsIngressPathDODel)
 
-        DevopsIngressPathDO devopsIngressPathDODel1 = new DevopsIngressPathDO()
+        DevopsIngressPathDTO devopsIngressPathDODel1 = new DevopsIngressPathDTO()
         devopsIngressPathDODel1.setId(200L)
         devopsIngressPathDODel1.setIngressId(2000L)
         devopsIngressPathMapper.insert(devopsIngressPathDODel1)
 
-        DevopsServiceDO devopsServiceDODel = new DevopsServiceDO()
+        DevopsServiceDTO devopsServiceDODel = new DevopsServiceDTO()
         devopsServiceDODel.setId(1L)
         devopsServiceDODel.setEnvId(999L)
         devopsServiceMapper.insert(devopsServiceDODel)
 
-        DevopsServiceDO devopsServiceDODel1 = new DevopsServiceDO()
+        DevopsServiceDTO devopsServiceDODel1 = new DevopsServiceDTO()
         devopsServiceDODel1.setId(2L)
         devopsServiceDODel1.setEnvId(999L)
         devopsServiceMapper.insert(devopsServiceDODel1)
 
-        DevopsServiceAppInstanceDO devopsServiceAppInstanceDODel = new DevopsServiceAppInstanceDO()
+        DevopsServiceInstanceDTO devopsServiceAppInstanceDODel = new DevopsServiceInstanceDTO()
         devopsServiceAppInstanceDODel.setId(7L)
         devopsServiceAppInstanceDODel.setServiceId(1L)
         devopsServiceAppInstanceMapper.insert(devopsServiceAppInstanceDODel)
 
-        DevopsServiceAppInstanceDO devopsServiceAppInstanceDODel1 = new DevopsServiceAppInstanceDO()
+        DevopsServiceInstanceDTO devopsServiceAppInstanceDODel1 = new DevopsServiceInstanceDTO()
         devopsServiceAppInstanceDODel1.setId(8L)
         devopsServiceAppInstanceDODel1.setServiceId(2L)
         devopsServiceAppInstanceMapper.insert(devopsServiceAppInstanceDODel1)
@@ -781,7 +772,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
 
         then: '校验所有关联对象是否被删除'
         devopsEnvironmentMapper.selectAll().size() == 0
-        applicationInstanceMapper.selectAll().size() == 0
+        appServiceInstanceMapper.selectAll().size() == 0
         devopsIngressMapper.selectAll().size() == 0
         devopsIngressPathMapper.selectAll().size() == 0
         devopsServiceMapper.selectAll().size() == 0
