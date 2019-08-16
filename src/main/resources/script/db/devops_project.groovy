@@ -65,4 +65,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_project.groovy') {
         dropDefaultValue(tableName: 'devops_project', columnName: "iam_project_id")
         dropDefaultValue(tableName: 'devops_project', columnName: "app_id")
     }
+    changeSet(id: '2019-08-16-drop-not-null-constraint-project-id', author: 'sheep') {
+        dropNotNullConstraint(tableName: 'devops_project', columnName: 'iam_project_id', columnDataType: 'BIGINT UNSIGNED')
+    }
 }

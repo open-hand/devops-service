@@ -44,7 +44,17 @@ public class AppServiceDTO extends BaseDTO {
     private String sonarUrl;
     @Transient
     private String gitlabProjectUrl;
-    
+    @Transient
+    private String version;
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
     public String getImgUrl() {
         return imgUrl;
     }

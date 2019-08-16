@@ -14,7 +14,7 @@
         <if test='searchParam != null'>
             <if test='searchParam.version != null and searchParam.version.length > 0'>
                 AND
-                    dav.version LIKE CONCAT(CONCAT('%', #{searchParam.version, jdbcType=VARCHAR}),'%')
+                dav.version LIKE CONCAT(CONCAT('%', #{searchParam.version, jdbcType=VARCHAR}),'%')
             </if>
         </if>
         <if test='params != null and params.size > 0'>
@@ -56,14 +56,15 @@
             <if test='isProjectOwner == false'>
                 AND (da.is_skip_check_permission = 1 OR (
                 da.is_skip_check_permission = 0
-                AND ( da.id IN ( SELECT daur.app_service_id FROM devops_app_service_user_rel daur WHERE daur.iam_user_id = #{userId}
+                AND ( da.id IN ( SELECT daur.app_service_id FROM devops_app_service_user_rel daur WHERE daur.iam_user_id
+                = #{userId}
                 ))))
             </if>
         </if>
         <if test='searchParam != null'>
             <if test='searchParam.version != null and searchParam.version.length > 0'>
                 AND
-                    dav.version LIKE CONCAT(CONCAT('%', #{searchParam.version, jdbcType=VARCHAR}),'%')
+                dav.version LIKE CONCAT(CONCAT('%', #{searchParam.version, jdbcType=VARCHAR}),'%')
             </if>
         </if>
         <if test='params != null and params.size > 0'>
@@ -310,59 +311,71 @@
 
     <select id="listShareVersionByAppId" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
         SELECT DISTINCT
-            davall.id,
-            davall.app_service_id,
-            davall.`commit`,
-            davall.image,
-            davall.version
+        davall.id,
+        davall.app_service_id,
+        davall.`commit`,
+        davall.image,
+        davall.version
         FROM
-            (
-                SELECT
-                    dav.app_service_id,
-                    dav.`commit`,
-                    dav.version,
-                    dav.id,
-                    dav.image
-                FROM
-                    devops_app_service_version dav
-                JOIN (
-                    SELECT
-                        dasr.version_type
-                    FROM
-                        devops_app_service_share_rule dasr
-                    WHERE
-                        dasr.app_service_id = #{appServiceId}
-                    AND dasr.version IS NULL
-                ) dasr1 ON dav.version LIKE CONCAT(
-                    CONCAT('%', dasr1.version_type, '%')
-                )
-                AND dav.app_service_id =  #{appServiceId}
-                UNION
-                    SELECT
-                        dav.app_service_id,
-                        dav.`commit`,
-                        dav.version,
-                        dav.id,
-                        dav.image
-                    FROM
-                        devops_app_service_version dav
-                    JOIN (
-                        SELECT
-                            dasr.version
-                        FROM
-                            devops_app_service_share_rule dasr
-                        WHERE
-                            dasr.app_service_id =  #{appServiceId}
-                        AND dasr.version IS NOT NULL
-                    ) dasr2 ON dav.version = dasr2.version
-                    AND dav.app_service_id =  #{appServiceId}
-            ) davall
-            <if test='params != null and params.size > 0'>
-                AND
-                <foreach collection="params" item="param" open="(" separator=" OR " close=")">
-                    WHERE davall.version LIKE CONCAT(CONCAT('%', #{param}, '%'))
-                </foreach>
-            </if>
+        (
+        SELECT
+        dav.app_service_id,
+        dav.`commit`,
+        dav.version,
+        dav.id,
+        dav.image
+        FROM
+        devops_app_service_version dav
+        JOIN (
+        SELECT
+        dasr.version_type
+        FROM
+        devops_app_service_share_rule dasr
+        WHERE
+        dasr.app_service_id = #{appServiceId}
+        AND dasr.version IS NULL
+        ) dasr1 ON dav.version LIKE CONCAT(
+        CONCAT('%', dasr1.version_type, '%')
+        )
+        AND dav.app_service_id = #{appServiceId}
+        UNION
+        SELECT
+        dav.app_service_id,
+        dav.`commit`,
+        dav.version,
+        dav.id,
+        dav.image
+        FROM
+        devops_app_service_version dav
+        JOIN (
+        SELECT
+        dasr.version
+        FROM
+        devops_app_service_share_rule dasr
+        WHERE
+        dasr.app_service_id = #{appServiceId}
+        AND dasr.version IS NOT NULL
+        ) dasr2 ON dav.version = dasr2.version
+        AND dav.app_service_id = #{appServiceId}
+        ) davall
+        <if test='params != null and params.size > 0'>
+            AND
+            <foreach collection="params" item="param" open="(" separator=" OR " close=")">
+                WHERE davall.version LIKE CONCAT(CONCAT('%', #{param}, '%'))
+            </foreach>
+        </if>
     </select>
 
+
+    <select id="queryServiceVersionByAppServiceId" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
+        select * from devops_app_service_version as b where not exists(select 1 from devops_app_service_version where
+        app_service_id= b.app_service_id
+        and b.last_update_date &lt; last_update_date)
+        and app_service_id=#{appServiceId}
+        <if test="share!=null and share !=''">
+            or version in(select version from devops_app_service_share_rule where app_service_id=#{appServiceId})
+        </if>
+        order by last_update_date desc
+        limit 1
+    </select>
 </mapper>

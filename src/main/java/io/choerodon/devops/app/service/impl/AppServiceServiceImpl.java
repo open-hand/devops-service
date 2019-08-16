@@ -176,7 +176,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Value("${services.helm.url}")
     private String helmUrl;
     @Autowired
-    private BaseServiceClient baseServiceClient;
+    private BaseServiceClientOperator baseServiceClient;
 
     @Override
     @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_APPLICATION_SERVICE,
@@ -1905,10 +1905,8 @@ public class AppServiceServiceImpl implements AppServiceService {
         if (!organizationShareApps.isEmpty()) {
             // 获取organizationShareApps中appid的集合
             Set<Long> organizationShareAppIdList = getAppIds(organizationShareApps);
-
             // 进行分组合并
             List<AppServiceGroupVO> organizationShareList = groupMerging(organizationShareAppIdList, organizationShareApps, true);
-
             appServiceGroupList.addAll(organizationShareList);
         }
         if (!marketDownloadApps.isEmpty()) {
@@ -1945,16 +1943,14 @@ public class AppServiceServiceImpl implements AppServiceService {
      */
     private List<AppServiceGroupVO> groupMerging(Set<Long> ids, List<AppServiceDTO> appServiceList, Boolean share) {
         List<AppServiceGroupVO> list = new ArrayList<AppServiceGroupVO>();
-        Map<Long, List<AppServiceGroupInfoVO>> collect = appServiceList.stream().map(appServiceDTO -> dtoToGroupInfoVO(appServiceDTO)).collect(Collectors.groupingBy(AppServiceGroupInfoVO::getAppId));
+        Map<Long, List<AppServiceGroupInfoVO>> collect = appServiceList.stream()
+                .map(appServiceDTO -> dtoToGroupInfoVO(appServiceDTO))
+                .map(appServiceGroupInfoVO -> getVersion(appServiceGroupInfoVO, share))
+                .collect(Collectors.groupingBy(AppServiceGroupInfoVO::getAppId));
         // 遍历ids集合
         ids.stream().forEach(appId -> {
-            /**
-             * 待base-service稳定替换
-             * ApplicationDTO appDTO = baseServiceClient.getAppById(appId).getBody();
-             * AppServiceGroupVO appServiceGroupVO = dtoToGroupVO(appDTO);
-             */
-            AppServiceGroupVO appServiceGroupVO = new AppServiceGroupVO();
-            appServiceGroupVO.setId(appId);
+            ApplicationDTO appDTO = baseServiceClient.getAppById(appId);
+            AppServiceGroupVO appServiceGroupVO = dtoToGroupVO(appDTO);
             // 当前应用下的应用服务集合
             List<AppServiceGroupInfoVO> commonGroupAppServiceList = collect.get(appId);
             appServiceGroupVO.setShare(share);
@@ -1963,6 +1959,28 @@ public class AppServiceServiceImpl implements AppServiceService {
         });
 
         return list;
+    }
+
+    /**
+     * 获取应用服务的最新版本号
+     *
+     * @param appServiceGroupInfoVO 应用服务
+     * @param share                 是否是组织共享
+     * @return AppServiceGroupInfoVO
+     */
+    private AppServiceGroupInfoVO getVersion(AppServiceGroupInfoVO appServiceGroupInfoVO, Boolean share) {
+        AppServiceVersionDTO appServiceVersionDTO = null;
+        // 判断是组织共享还是市场下载
+        if (share) {
+            appServiceVersionDTO = appServiceVersionService.queryServiceVersionByAppServiceId(appServiceGroupInfoVO.getId(), "share");
+        } else {
+            appServiceVersionDTO = appServiceVersionService.queryServiceVersionByAppServiceId(appServiceGroupInfoVO.getId(), null);
+        }
+
+        if (appServiceVersionDTO != null) {
+            appServiceGroupInfoVO.setVersion(appServiceVersionDTO.getVersion());
+        }
+        return appServiceGroupInfoVO;
     }
 
     /**

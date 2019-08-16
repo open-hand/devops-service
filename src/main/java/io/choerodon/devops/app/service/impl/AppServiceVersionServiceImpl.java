@@ -377,6 +377,12 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     }
 
     @Override
+    public AppServiceVersionDTO queryServiceVersionByAppServiceId(Long appServiceId, String share) {
+
+        return appServiceVersionMapper.queryServiceVersionByAppServiceId(appServiceId, share);
+    }
+
+    @Override
     public List<AppServiceLatestVersionDTO> baseListAppNewestVersion(Long projectId) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         List<ProjectDTO> projectEList = baseServiceClientOperator.listIamProjectByOrgId(projectDTO.getOrganizationId(), null, null);

@@ -153,40 +153,40 @@
             </if>
             <if test='searchParam.type != null'>
                 AND
-                    <if test='searchParam.type == 0'>
-                        da.type = 'normal'
-                    </if>
-                    <if test="searchParam.type == 1">
-                        da.type = 'test'
-                    </if>
+                <if test='searchParam.type == 0'>
+                    da.type = 'normal'
+                </if>
+                <if test="searchParam.type == 1">
+                    da.type = 'test'
+                </if>
             </if>
             <if test='searchParam.name != null and searchParam.name.length > 0'>
                 AND
-                    da.name LIKE CONCAT(CONCAT('%', #{searchParam.name, jdbcType=VARCHAR}),'%')
+                da.name LIKE CONCAT(CONCAT('%', #{searchParam.name, jdbcType=VARCHAR}),'%')
             </if>
             <if test='searchParam.active != null'>
                 AND
-                    <if test='searchParam.active == -1'>
-                        da.is_failed = 1
-                    </if>
-                    <if test="searchParam.active == 0">
-                        da.is_active = 0
-                    </if>
-                    <if test="searchParam.active == 1">
-                        da.is_active = 1
-                        AND da.is_synchro = 1
-                        AND (da.is_failed IS NULL OR is_failed=0)
-                    </if>
-                    <if test="searchParam.active == 2">
-                        da.is_synchro = 0
-                        AND (da.is_failed IS NULL OR is_failed=0)
-                    </if>
+                <if test='searchParam.active == -1'>
+                    da.is_failed = 1
+                </if>
+                <if test="searchParam.active == 0">
+                    da.is_active = 0
+                </if>
+                <if test="searchParam.active == 1">
+                    da.is_active = 1
+                    AND da.is_synchro = 1
+                    AND (da.is_failed IS NULL OR is_failed=0)
+                </if>
+                <if test="searchParam.active == 2">
+                    da.is_synchro = 0
+                    AND (da.is_failed IS NULL OR is_failed=0)
+                </if>
             </if>
         </if>
         <if test='params != null and params.size > 0'>
             AND
             <foreach collection="params" item="param" open="(" separator=" OR " close=")">
-                 (da.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                (da.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
                 OR da.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
                 )
             </foreach>
@@ -272,7 +272,8 @@
             <if test='isProjectOwner == false'>
                 AND (da.is_skip_check_permission = 1 OR (
                 da.is_skip_check_permission = 0
-                AND ( da.id IN ( SELECT daur.app_service_id FROM devops_app_service_user_rel daur WHERE daur.iam_user_id = #{userId}
+                AND ( da.id IN ( SELECT daur.app_service_id FROM devops_app_service_user_rel daur WHERE daur.iam_user_id
+                = #{userId}
                 ))))
             </if>
         </if>
@@ -319,8 +320,6 @@
     </update>
 
 
-
-
     <update id="updateHarborConfigNullByConfigId">
         UPDATE devops_app_service da
         set da.harbor_config_id = null
@@ -358,24 +357,24 @@
 
     <select id="listShareApplicationService" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
         SELECT
-            da.id,
-            da.`code`,
-            da.`name`,
-            da.app_id,
-            da.chart_config_id,
-            da.harbor_config_id
+        da.id,
+        da.`code`,
+        da.`name`,
+        da.app_id,
+        da.chart_config_id,
+        da.harbor_config_id
         FROM
-            devops_app_service_share_rule dasr
+        devops_app_service_share_rule dasr
         JOIN devops_app_service da ON da.id = dasr.app_service_id
 
         WHERE
-            dasr.app_service_id in
+        dasr.app_service_id in
         <foreach collection="appServiceIds" item="appServiceId" open="(" close=")" separator=",">
             #{appServiceId}
         </foreach>
         AND (
-            dasr.share_level = 'organization'
-            OR dasr.app_id = #{appId}
+        dasr.share_level = 'organization'
+        OR dasr.app_id = #{appId}
         )
         <if test='params != null and params.size > 0'>
             AND
@@ -387,16 +386,17 @@
     </select>
 
     <select id="queryOrganizationShareApps" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
-          SELECT DISTINCT
+         SELECT DISTINCT
             das.id,
             das.app_id,
             das.`name`,
-            das.CODE
+            das.CODE,
+            das.type
         FROM
             devops_app_service das
-            LEFT JOIN devops_app_service_share_rule dassr ON das.id = dassr.app_service_id
+            LEFT JOIN devops_app_service_share_rule b ON das.id = b.app_service_id
         WHERE
-            dassr.app_service_id IS NOT NULL
+          das.app_id is not null and b.app_service_id is not null
     </select>
 
     <select id="queryMarketDownloadApps" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
@@ -404,7 +404,8 @@
             das.id,
             das.app_id,
             das.`name`,
-            das.CODE
+            das.CODE,
+            das.type
         FROM
             devops_app_service das
             LEFT JOIN devops_project db ON das.app_id = db.app_id
