@@ -75,7 +75,7 @@
         <include refid="sqlparam"/>
         ORDER BY
         version != 1,
-        da.id
+        da.id DESC
     </select>
 
     <select id="listByEnvId" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">

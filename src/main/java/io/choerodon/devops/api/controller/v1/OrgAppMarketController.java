@@ -63,8 +63,7 @@ public class OrgAppMarketController {
             @ApiParam(value = "应用Id", required = true)
             @RequestParam(value = "app_id") Long appId,
             @ApiParam(value = "分页参数")
-            @ApiIgnore
-            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
+            @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "查询参数", required = false)
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(
