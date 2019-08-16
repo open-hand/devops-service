@@ -5,12 +5,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
-import io.choerodon.devops.api.vo.AgentPodInfoVO;
-import io.choerodon.devops.app.service.AgentPodService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
+
+import io.choerodon.devops.api.vo.AgentPodInfoVO;
+import io.choerodon.devops.app.service.AgentPodService;
 
 /**
  * @author zmf
@@ -24,7 +25,7 @@ public class AgentPodInfoServiceImpl implements AgentPodService {
     /**
      * 在redis中存的实时数据的最大数量
      */
-    private static final long RECORD_SIZE = 20;
+    private static final long RECORD_SIZE = 30;
 
     @Autowired
     private StringRedisTemplate stringRedisTemplate;

@@ -5,24 +5,25 @@ import java.util.Optional;
 import javax.validation.Valid;
 
 import com.github.pagehelper.PageInfo;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import springfox.documentation.annotations.ApiIgnore;
+
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.domain.Sort;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.vo.DevopsServiceVO;
 import io.choerodon.devops.api.vo.DevopsServiceReqVO;
+import io.choerodon.devops.api.vo.DevopsServiceVO;
 import io.choerodon.devops.app.service.DevopsServiceService;
 import io.choerodon.mybatis.annotation.SortDefault;
 import io.choerodon.swagger.annotation.CustomPageRequest;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
 
 /**
  * Created by Zenger on 2018/4/13.
@@ -44,7 +45,7 @@ public class DevopsServiceController {
      * @param name      网络名
      * @return Boolean
      */
-    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "检查网络唯一性")
     @GetMapping(value = "/check_name")
@@ -63,11 +64,11 @@ public class DevopsServiceController {
     /**
      * 部署网络
      *
-     * @param projectId           项目id
+     * @param projectId          项目id
      * @param devopsServiceReqVO 部署网络参数
      * @return Boolean
      */
-    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "部署网络")
     @PostMapping
@@ -84,12 +85,12 @@ public class DevopsServiceController {
     /**
      * 更新网络
      *
-     * @param projectId           项目id
-     * @param id                  网络ID
+     * @param projectId          项目id
+     * @param id                 网络ID
      * @param devopsServiceReqVO 部署网络参数
      * @return Boolean
      */
-    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "更新网络")
     @PutMapping(value = "/{id}")
@@ -112,7 +113,7 @@ public class DevopsServiceController {
      * @param id        网络ID
      * @return ResponseEntity
      */
-    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "删除网络")
     @DeleteMapping(value = "/{id}")
@@ -132,7 +133,7 @@ public class DevopsServiceController {
      * @param envId     参数
      * @return List of DevopsServiceVO
      */
-    @Permission(type= ResourceType.PROJECT,
+    @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据环境查询网络列表")
@@ -154,7 +155,7 @@ public class DevopsServiceController {
      * @param id        网络id
      * @return DevopsServiceVO
      */
-    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询单个网络")
     @GetMapping(value = "/{id}")
@@ -173,11 +174,11 @@ public class DevopsServiceController {
      * 根据网络名查询网络
      *
      * @param projectId 项目id
-     * @param envId   网络id
-     * @param name  网络名
+     * @param envId     网络id
+     * @param name      网络名
      * @return DevopsServiceVO
      */
-    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据网络名查询网络")
     @GetMapping(value = "/query_by_name")
@@ -188,7 +189,7 @@ public class DevopsServiceController {
             @RequestParam(value = "env_id") Long envId,
             @ApiParam(value = "网络名", required = true)
             @RequestParam String name) {
-        return Optional.ofNullable(devopsServiceService.queryByName(envId,name))
+        return Optional.ofNullable(devopsServiceService.queryByName(envId, name))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_APP_K8S_SERVICE_QUERY));
     }
@@ -214,7 +215,7 @@ public class DevopsServiceController {
             @ApiParam(value = "环境id", required = true)
             @PathVariable(value = "env_id") Long envId,
             @ApiParam(value = "服务id")
-            @RequestParam(value = "app_service_id",required = false) Long appServiceId,
+            @RequestParam(value = "app_service_id", required = false) Long appServiceId,
             @ApiParam(value = "分页参数")
             @SortDefault(value = "id", direction = Sort.Direction.DESC)
             @ApiIgnore PageRequest pageRequest,
@@ -230,11 +231,11 @@ public class DevopsServiceController {
      * 查询实例下关联的网络域名（不包含chart）
      *
      * @param projectId   项目id
-     * @param instanceId   实例Id
+     * @param instanceId  实例Id
      * @param pageRequest 分页参数
      * @return Page of DevopsServiceVO
      */
-    @Permission(type= ResourceType.PROJECT,
+    @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询实例下关联的网络域名（不包含chart）")
@@ -244,9 +245,9 @@ public class DevopsServiceController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "实例id")
-            @RequestParam(value = "instance_id",required = false) Long instanceId,
+            @RequestParam(value = "instance_id", required = false) Long instanceId,
             @ApiParam(value = "服务id")
-            @RequestParam(value = "app_service_id",required = false) Long appServiceId,
+            @RequestParam(value = "app_service_id", required = false) Long appServiceId,
             @ApiParam(value = "分页参数")
             @SortDefault(value = "id", direction = Sort.Direction.DESC)
             @ApiIgnore PageRequest pageRequest) {

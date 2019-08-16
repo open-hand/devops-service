@@ -34,6 +34,20 @@ public class DevopsServiceVO extends DevopsResourceDataInfoVO {
     private String loadBalanceIp;
     private List<DevopsIngressVO> devopsIngressVOS;
 
+    /**
+     * pod实时信息
+     */
+    @ApiModelProperty("pod实时信息")
+    private List<PodLiveInfoVO> podLiveInfos;
+
+    public List<PodLiveInfoVO> getPodLiveInfos() {
+        return podLiveInfos;
+    }
+
+    public void setPodLiveInfos(List<PodLiveInfoVO> podLiveInfos) {
+        this.podLiveInfos = podLiveInfos;
+    }
+
     public Long getId() {
         return id;
     }

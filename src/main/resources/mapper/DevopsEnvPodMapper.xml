@@ -84,4 +84,15 @@
                  INNER JOIN devops_env de ON dep.namespace = de.code
         WHERE ins.env_id = #{envId}
     </select>
+
+    <select id="queryPodByEnvIdAndInstanceId" resultType="io.choerodon.devops.infra.dto.DevopsEnvPodDTO">
+        select dep.id, dep.name, derd.message
+        from devops_env_pod dep
+                 join devops_env_resource der on der.instance_id = dep.instance_id
+                 join devops_env_resource_detail derd on der.resource_detail_id = derd.id
+        where der.instance_id = #{instanceId}
+          and der.env_id = #{envId}
+          and der.kind = 'Pod'
+          and dep.name = der.name
+    </select>
 </mapper>
