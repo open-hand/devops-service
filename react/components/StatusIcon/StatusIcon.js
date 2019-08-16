@@ -13,6 +13,7 @@ function StatusIcon(props) {
     name,
     intl: { formatMessage },
     width,
+    handleAtagClick,
   } = props;
   let statusDom = null;
   const statusClass = classnames({
@@ -29,7 +30,7 @@ function StatusIcon(props) {
       break;
     case 'operating':
       statusDom = (
-        <Tooltip title={formatMessage({ id: `ist_operating` })}>
+        <Tooltip title={formatMessage({ id: 'ist_operating' })}>
           <Progress
             className="c7ncd-status-progress"
             type="loading"
@@ -41,13 +42,18 @@ function StatusIcon(props) {
       break;
     case 'deleted':
       statusDom = (
-        <Tooltip title={formatMessage({ id: `deleted` })}>
+        <Tooltip title={formatMessage({ id: 'deleted' })}>
           <Icon type="cancel" className="c7n-status-deleted" />
         </Tooltip>
       );
       break;
     default:
   }
+
+  const handleClick = (e) => {
+    e.preventDefault();
+    handleAtagClick(name);
+  };
 
   return (
     <React.Fragment>
@@ -56,7 +62,7 @@ function StatusIcon(props) {
         width={width || 0.15}
         className="c7n-status-text"
       >
-        <span className={statusClass}>{name}</span>
+        <a className={statusClass} onClick={handleClick}>{name}</a>
       </MouseOverWrapper>
       {statusDom}
     </React.Fragment>

@@ -12,6 +12,11 @@
   display: inline-block;
   vertical-align: middle;
   margin-right: 5px;
+
+  a:hover {
+    text-decoration: underline;
+    color: rgba(63, 81, 181, 1);
+  }
 }
 
 .c7ncd-status-progress {
