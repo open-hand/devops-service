@@ -197,11 +197,8 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         AppServiceDTO appServiceDTO = getApplicationServiceDTO(projectId, appServiceReqVO);
         appServiceDTO = baseCreate(appServiceDTO);
-
         Long appServiceId = appServiceDTO.getId();
-        if (appServiceId == null) {
-            throw new CommonException("error.app.service.create.insert");
-        }
+
         // 如果不跳过权限检查
         List<Long> userIds = appServiceReqVO.getUserIds();
         if (!appServiceReqVO.getIsSkipCheckPermission() && userIds != null && !userIds.isEmpty()) {
@@ -210,7 +207,6 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         //创建saga payload
         DevOpsAppServicePayload devOpsAppServicePayload = new DevOpsAppServicePayload();
-        devOpsAppServicePayload.setType(APPLICATION);
         devOpsAppServicePayload.setPath(appServiceDTO.getCode());
         devOpsAppServicePayload.setOrganizationId(projectDTO.getOrganizationId());
         devOpsAppServicePayload.setUserId(TypeUtil.objToInteger(userAttrVO.getGitlabUserId()));
@@ -730,7 +726,6 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         //创建saga payload
         DevOpsAppServicePayload devOpsAppServicePayload = new DevOpsAppServicePayload();
-        devOpsAppServicePayload.setType(APPLICATION);
         devOpsAppServicePayload.setPath(appServiceDTO.getCode());
         devOpsAppServicePayload.setOrganizationId(projectDTO.getOrganizationId());
         devOpsAppServicePayload.setUserId(TypeUtil.objToInteger(userAttrVO.getGitlabUserId()));
@@ -764,7 +759,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_APPLICATION_SERVICE_EVENT,
             description = "devops创建应用服务",
             inputSchemaClass = io.choerodon.devops.infra.dto.AppServiceDTO.class)
-    private void sendCreateAppServiceInfo(AppServiceDTO appServiceDTO, Long projectId) {
+    @Override
+    public void sendCreateAppServiceInfo(AppServiceDTO appServiceDTO, Long projectId) {
         producer.apply(
                 StartSagaBuilder.newBuilder()
                         .withSourceId(projectId)
@@ -1963,18 +1959,18 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public AppServiceDTO getApplicationServiceDTO(Long projectId, AppServiceReqVO applicationReqDTO) {
-        AppServiceDTO applicationDTO = ConvertUtils.convertObject(applicationReqDTO, AppServiceDTO.class);
+    public AppServiceDTO getApplicationServiceDTO(Long projectId, AppServiceReqVO appServiceReqVO) {
+        AppServiceDTO appServiceDTO = ConvertUtils.convertObject(appServiceReqVO, AppServiceDTO.class);
         Long appId = devopsProjectService.queryAppIdByProjectId(projectId);
-        checkName(appId, applicationDTO.getName());
-        checkCode(appId, applicationDTO.getCode());
-        applicationDTO.setActive(true);
-        applicationDTO.setSynchro(false);
-        applicationDTO.setAppId(appId);
-        applicationDTO.setIsSkipCheckPermission(applicationReqDTO.getIsSkipCheckPermission());
-        applicationDTO.setHarborConfigId(applicationReqDTO.getHarborConfigId());
-        applicationDTO.setChartConfigId(applicationReqDTO.getChartConfigId());
-        return applicationDTO;
+        checkName(appId, appServiceDTO.getName());
+        checkCode(appId, appServiceDTO.getCode());
+        appServiceDTO.setActive(true);
+        appServiceDTO.setSynchro(false);
+        appServiceDTO.setAppId(appId);
+        appServiceDTO.setIsSkipCheckPermission(appServiceReqVO.getIsSkipCheckPermission());
+        appServiceDTO.setHarborConfigId(appServiceReqVO.getHarborConfigId());
+        appServiceDTO.setChartConfigId(appServiceReqVO.getChartConfigId());
+        return appServiceDTO;
     }
 
     private void baseCheckName(Long appId, String appServiceName) {

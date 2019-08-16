@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -159,6 +160,24 @@ public class GitlabServiceClientOperator {
             gitUtil.deleteWorkingDirectory(name);
             gitlabServiceClient.deleteProjectById(gitlabProjectId, userId);
             throw new CommonException(e);
+        }
+        return impersonationToken.getBody().getToken();
+    }
+
+    /**
+     * 从gitlab项目创建access token
+     *
+     * @param gitlabProjectId gitlab 项目id
+     * @param userId          用户id
+     * @return access token
+     */
+    @Nullable
+    public String createProjectToken(Integer gitlabProjectId, Integer userId) {
+        ResponseEntity<ImpersonationTokenDO> impersonationToken;
+        try {
+            impersonationToken = gitlabServiceClient.createProjectToken(userId);
+        } catch (FeignException e) {
+            return null;
         }
         return impersonationToken.getBody().getToken();
     }

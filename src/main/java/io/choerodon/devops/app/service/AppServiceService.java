@@ -231,6 +231,13 @@ public interface AppServiceService {
      */
     AppServiceRepVO importApp(Long projectId, AppServiceImportVO appServiceImportVO);
 
+    /**
+     * 发送创建应用服务消息
+     *
+     * @param appServiceDTO 应用服务信息
+     * @param projectId     项目id
+     */
+    void sendCreateAppServiceInfo(AppServiceDTO appServiceDTO, Long projectId);
 
     /**
      * 根据服务code查询服务
@@ -402,6 +409,7 @@ public interface AppServiceService {
 
     /**
      * 查询组织共享和市场下载的应用服务并分组返回
+     *
      * @return List<AppServiceGroupVO>
      */
     List<AppServiceGroupVO> ListAppServiceGroup();

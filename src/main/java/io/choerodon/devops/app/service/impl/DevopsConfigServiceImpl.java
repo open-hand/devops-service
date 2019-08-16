@@ -430,7 +430,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
         Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
         HarborClient harborClient = retrofit.create(HarborClient.class);
         Call<List<ProjectDetail>> listProject = harborClient.listProject(devopsConfigVO.getConfig().getProject());
-        Response<List<ProjectDetail>> projectResponse = null;
+        Response<List<ProjectDetail>> projectResponse;
         try {
             projectResponse = listProject.execute();
             if (projectResponse != null && projectResponse.body() != null) {
