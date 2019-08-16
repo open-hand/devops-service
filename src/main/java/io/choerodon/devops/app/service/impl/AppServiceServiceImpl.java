@@ -1561,7 +1561,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         PageInfo<ProjectVO> pageInfo = ConvertUtils.convertPage(baseServiceClientOperator.listProject(organizationId, new PageRequest(0, 0), paramsArr), ProjectVO.class);
         return pageInfo.getList().stream().filter(t -> !t.getId().equals(projectId)).collect(Collectors.toList());
     }
-
+    
     @Override
     public void importAppServiceInternal(Long projectId, List<ApplicationImportInternalVO> importInternalVOS) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
@@ -1949,7 +1949,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 .collect(Collectors.groupingBy(AppServiceGroupInfoVO::getAppId));
         // 遍历ids集合
         ids.stream().forEach(appId -> {
-            ApplicationDTO appDTO = baseServiceClient.getAppById(appId);
+            ApplicationDTO appDTO = baseServiceClient.queryAppById(appId);
             AppServiceGroupVO appServiceGroupVO = dtoToGroupVO(appDTO);
             // 当前应用下的应用服务集合
             List<AppServiceGroupInfoVO> commonGroupAppServiceList = collect.get(appId);
