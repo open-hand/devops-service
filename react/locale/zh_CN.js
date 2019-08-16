@@ -308,6 +308,8 @@ const appService = {
   'c7ncd.appService.version.specific': '特定版本',
   'c7ncd.appService.version.type': '特定类型',
   'c7ncd.appService.share.range': '共享范围',
+  'c7ncd.appService.mbr': '成员',
+  'c7ncd.appService.add.mbr': '添加成员',
 };
 
 // 文档地址前缀
