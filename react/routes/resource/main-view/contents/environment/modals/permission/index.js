@@ -19,7 +19,7 @@ const Permission = observer(({ store, projectId, envId, intlPrefix, prefixCls, f
     getSkipCheckPermission,
     setSkipCheckPermission,
   } = store;
-  
+
   useEffect(() => {
     loadUsers(projectId, envId);
   }, [envId, loadUsers, projectId, store]);
@@ -35,7 +35,7 @@ const Permission = observer(({ store, projectId, envId, intlPrefix, prefixCls, f
   function handleDelete(index) {
     setUserIds(getUserIds.filter((value, key) => index !== key));
   }
-  
+
   function handleChange(value, index) {
     const data = [...getUserIds];
     data.splice(index, 1, value);
@@ -63,7 +63,7 @@ const Permission = observer(({ store, projectId, envId, intlPrefix, prefixCls, f
             searchable
             required
             value={item}
-            onChange={value => handleChange(value, index)}
+            onChange={(value) => handleChange(value, index)}
             className="member-select-item"
           >
             {map(getUsersData, ({ iamUserId, realName, loginName }) => (

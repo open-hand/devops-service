@@ -1,6 +1,6 @@
 import React, { Fragment, lazy, Suspense, useCallback, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Tabs } from 'choerodon-ui';
+import { Tabs, Spin } from 'choerodon-ui';
 import { useEnvironmentStore } from './stores';
 import { useResourceStore } from '../../../stores';
 import StatusDot from '../../components/status-dot';
@@ -48,7 +48,7 @@ const EnvContent = observer(() => {
       </Fragment>;
     }
     return null;
-  }, []);
+  }, [baseInfoDs.current]);
 
   return (
     <div className={`${prefixCls}-environment`}>
@@ -68,7 +68,7 @@ const EnvContent = observer(() => {
           key={SYNC_TAB}
           tab={formatMessage({ id: `${intlPrefix}.environment.tabs.sync` })}
         >
-          <Suspense fallback={<div>loading</div>}>
+          <Suspense fallback={<Spin />}>
             <SyncSituation />
           </Suspense>
         </TabPane>
@@ -76,7 +76,7 @@ const EnvContent = observer(() => {
           key={ASSIGN_TAB}
           tab={formatMessage({ id: `${intlPrefix}.environment.tabs.assignPermissions` })}
         >
-          <Suspense fallback={<div>loading</div>}>
+          <Suspense fallback={<Spin />}>
             <Permissions />
           </Suspense>
         </TabPane>
