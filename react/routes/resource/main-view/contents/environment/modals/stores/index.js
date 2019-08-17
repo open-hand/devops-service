@@ -16,7 +16,6 @@ export const StoreProvider = injectIntl(inject('AppState')(
 
     const value = {
       ...props,
-      modal: 'test',
       permissions: [
         'devops-service.application-instance.pageByOptions',
       ],

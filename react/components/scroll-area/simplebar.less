@@ -4,7 +4,7 @@
   flex-wrap: wrap;
   justify-content: flex-start;
   align-content: flex-start;
-  align-items: flex-start
+  align-items: flex-start;
 }
 
 .simplebar-wrapper {
@@ -12,7 +12,7 @@
   width: inherit;
   height: inherit;
   max-width: inherit;
-  max-height: inherit
+  max-height: inherit;
 }
 
 .simplebar-mask {
@@ -27,7 +27,7 @@
   right: 0;
   width: auto !important;
   height: auto !important;
-  z-index: 0
+  z-index: 0;
 }
 
 .simplebar-offset {
@@ -41,7 +41,7 @@
   right: 0;
   padding: 0;
   margin: 0;
-  -webkit-overflow-scrolling: touch
+  -webkit-overflow-scrolling: touch;
 }
 
 .simplebar-content-wrapper {
@@ -55,7 +55,7 @@
   max-height: 100%;
   max-width: 100%;
   width: 100%;
-  pointer-events: none
+  pointer-events: none;
 }
 
 .simplebar-height-auto-observer-wrapper {
@@ -72,7 +72,7 @@
   pointer-events: none;
   flex-grow: inherit;
   flex-shrink: 0;
-  flex-basis: 0
+  flex-basis: 0;
 }
 
 .simplebar-height-auto-observer {
@@ -87,7 +87,7 @@
   min-width: 1px;
   overflow: hidden;
   pointer-events: none;
-  z-index: -1
+  z-index: -1;
 }
 
 .simplebar-track {
@@ -96,55 +96,55 @@
   right: 0;
   bottom: 0;
   pointer-events: none;
-  overflow: hidden
+  overflow: hidden;
 }
 
 [data-simplebar].simplebar-dragging .simplebar-track {
-  pointer-events: all
+  pointer-events: all;
 }
 
 .simplebar-scrollbar {
   position: absolute;
   right: 2px;
-  width: 7px;
-  min-height: 10px
+  width: 4px;
+  min-height: 10px;
 }
 
 .simplebar-scrollbar:before {
   position: absolute;
   content: '';
-  background: #d6d6d6;
-  border-radius: 7px;
+  background: rgba(0, 0, 0, .26);
+  border-radius: 0;
   left: 0;
   right: 0;
   opacity: 0;
-  transition: opacity .2s linear
+  transition: opacity .2s linear;
 }
 
 .simplebar-track .simplebar-scrollbar.simplebar-visible:before {
   opacity: 1;
-  transition: opacity 0s linear
+  transition: opacity 0s linear;
 }
 
 .simplebar-track.simplebar-vertical {
   top: 0;
-  width: 11px
+  width: 11px;
 }
 
 .simplebar-track.simplebar-vertical .simplebar-scrollbar:before {
   top: 2px;
-  bottom: 2px
+  bottom: 2px;
 }
 
 .simplebar-track.simplebar-horizontal {
   left: 0;
-  height: 11px
+  height: 11px;
 }
 
 .simplebar-track.simplebar-horizontal .simplebar-scrollbar:before {
   height: 100%;
   left: 2px;
-  right: 2px
+  right: 2px;
 }
 
 .simplebar-track.simplebar-horizontal .simplebar-scrollbar {
@@ -154,10 +154,10 @@
   height: 7px;
   min-height: 0;
   min-width: 10px;
-  width: auto
+  width: auto;
 }
 
 [data-simplebar-direction=rtl] .simplebar-track.simplebar-vertical {
   right: auto;
-  left: 0
+  left: 0;
 }

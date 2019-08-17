@@ -9,7 +9,7 @@ import {
   Modal,
 } from 'choerodon-ui/pro';
 import { Popover } from 'choerodon-ui';
-import { useSyncStore } from './stores';
+import { useEnvironmentStore } from '../stores';
 import { useResourceStore } from '../../../../stores';
 
 const SyncSituation = observer(() => {
@@ -19,10 +19,10 @@ const SyncSituation = observer(() => {
   } = useResourceStore();
   const {
     intl: { formatMessage },
-    tableDs,
-    logDs,
+    gitopsLogDs,
+    gitopsSyncDs,
     retryDs,
-  } = useSyncStore();
+  } = useEnvironmentStore();
 
   const content = useMemo(() => (
     <Fragment>
@@ -63,7 +63,8 @@ const SyncSituation = observer(() => {
   }
 
   function refresh() {
-    tableDs.query();
+    gitopsSyncDs.query();
+    gitopsLogDs.query();
   }
 
   /**
@@ -73,7 +74,6 @@ const SyncSituation = observer(() => {
     try {
       if ((await retryDs.query()) !== false) {
         refresh();
-        logDs.query();
       } else {
         return false;
       }
@@ -83,9 +83,8 @@ const SyncSituation = observer(() => {
   }
 
   const getDetail = useMemo(() => {
-    const data = logDs.data;
-    if (data.length) {
-      const record = data[0];
+    const record = gitopsSyncDs.current;
+    if (record) {
       const commitUrl = record.get('commitUrl');
       const sagaSyncCommit = record.get('sagaSyncCommit');
       const devopsSyncCommit = record.get('devopsSyncCommit');
@@ -157,7 +156,7 @@ const SyncSituation = observer(() => {
       );
     }
     return null;
-  }, [intlPrefix, logDs.data, showRetry]);
+  }, [gitopsSyncDs.data, showRetry]);
 
   return (
     <div className={`${prefixCls}-environment-sync-detail`}>

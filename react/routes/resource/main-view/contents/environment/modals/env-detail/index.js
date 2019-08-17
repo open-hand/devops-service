@@ -30,19 +30,19 @@ export default function ({ intlPrefix, record, prefixCls, formatMessage }) {
         <span className="detail-item-text">
           {formatMessage({ id: `${intlPrefix}.environment.code` })}:
         </span>
-        <span>{record.get('code')}</span>
+        <span className="detail-item-value">{record.get('code')}</span>
       </li>
       <li className="detail-item">
         <span className="detail-item-text">
           {formatMessage({ id: `${intlPrefix}.environment.description` })}:
         </span>
-        <span>{record.get('description')}</span>
+        <span className="detail-item-value">{record.get('description')}</span>
       </li>
       <li className="detail-item">
         <span className="detail-item-text">
           {formatMessage({ id: `${intlPrefix}.environment.cluster` })}:
         </span>
-        <span>{record.get('clusterName')}</span>
+        <span className="detail-item-value">{record.get('clusterName')}</span>
       </li>
     </ul>
   );

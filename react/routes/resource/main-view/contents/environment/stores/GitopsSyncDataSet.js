@@ -1,11 +1,10 @@
-export default (projectId, envId) => ({
+export default () => ({
   autoQuery: true,
   selection: false,
   paging: false,
   dataKey: null,
   transport: {
     read: {
-      url: `/devops/v1/projects/${projectId}/envs/${envId}/status`,
       method: 'get',
     },
   },
