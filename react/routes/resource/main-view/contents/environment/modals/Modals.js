@@ -1,24 +1,23 @@
-import React, { useMemo, useCallback, useEffect } from 'react';
+import React, { useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Modal } from 'choerodon-ui/pro';
-import { Button } from 'choerodon-ui';
-import { FormattedMessage } from 'react-intl';
 import uniqBy from 'lodash/uniqBy';
 import HeaderButtons from '../../../components/header-buttons';
-import { useResourceStore } from '../../../../stores';
-import { useEnvironmentStore } from '../stores';
-import { useModalStore } from './stores';
 import EnvDetail from './env-detail';
 import LinkService from './link-service';
 import PermissionForm from './permission';
 import { handlePromptError } from '../../../../../../utils';
+import { useResourceStore } from '../../../../stores';
+import { useEnvironmentStore } from '../stores';
+import { useModalStore } from './stores';
 
 const modalKey1 = Modal.key();
 const modalKey2 = Modal.key();
 const modalKey3 = Modal.key();
-const modalStyle = {
-  width: '26%',
-};
+
+function getUniqueIds(data) {
+  return uniqBy([...data].filter((item) => !!item));
+}
 
 const EnvModals = observer(() => {
   const {
@@ -36,57 +35,66 @@ const EnvModals = observer(() => {
       ASSIGN_TAB,
     },
     permissionsDs,
+    gitopsLogDs,
+    gitopsSyncDs,
     baseInfoDs,
   } = useEnvironmentStore();
   const {
-    modal,
     modalStore,
     AppState: { currentMenuType: { projectId } },
   } = useModalStore();
+  const modalStyle = useMemo(() => ({
+    width: 380,
+  }), []);
+
   const { menuId } = resourceStore.getSelectedMenu;
 
-  const openModal = useCallback(() => {
-    // console.log(modal);
-  }, []);
-
-  useEffect(() => {
-    resourceStore.setNoHeader(false);
-  }, [resourceStore]);
-
   function refresh() {
-    permissionsDs.query();
+    if (tabKey === SYNC_TAB) {
+      gitopsSyncDs.query();
+      gitopsLogDs.query();
+    } else if (tabKey === ASSIGN_TAB) {
+      permissionsDs.query();
+    }
   }
 
   function openEnvDetail() {
-    const envModal = Modal.open({
+    Modal.open({
       key: modalKey1,
       title: formatMessage({ id: `${intlPrefix}.modal.env-detail` }),
-      children: <EnvDetail record={baseInfoDs.current} intlPrefix={intlPrefix} prefixCls={prefixCls} formatMessage={formatMessage} />,
+      children: <EnvDetail
+        record={baseInfoDs.current}
+        intlPrefix={intlPrefix}
+        prefixCls={prefixCls}
+        formatMessage={formatMessage}
+      />,
       drawer: true,
       style: modalStyle,
-      footer: (
-        <Button funcType="raised" type="primary" onClick={() => envModal.close()}>
-          <FormattedMessage id="close" />
-        </Button>
-      ),
+      okCancel: false,
+      okText: formatMessage({ id: 'close' }),
     });
   }
 
   function openLinkService() {
+    modalStore.loadServiceData(projectId, menuId);
     Modal.open({
       key: modalKey2,
       title: formatMessage({ id: `${intlPrefix}.modal.link-service` }),
-      children: <LinkService store={modalStore} projectId={projectId} envId={menuId} intlPrefix={intlPrefix} prefixCls={prefixCls} formatMessage={formatMessage} />,
+      children: <LinkService
+        store={modalStore}
+        projectId={projectId}
+        envId={menuId}
+        intlPrefix={intlPrefix}
+        prefixCls={prefixCls}
+      />,
       drawer: true,
       style: modalStyle,
-      onOk: handleAddService,
-      onCancel: () => modalStore.setAppServiceIds([undefined]),
     });
   }
 
   function openPermission() {
     Modal.open({
-      key: modalKey2,
+      key: modalKey3,
       title: formatMessage({ id: `${intlPrefix}.modal.link-service` }),
       children: <PermissionForm store={modalStore} projectId={projectId} envId={menuId} intlPrefix={intlPrefix} prefixCls={prefixCls} formatMessage={formatMessage} />,
       drawer: true,
@@ -132,10 +140,6 @@ const EnvModals = observer(() => {
     }
   }
 
-  function getUniqueIds(data) {
-    return uniqBy([...data].filter((item) => !!item));
-  }
-
   const buttons = useMemo(() => ([{
     name: formatMessage({ id: `${intlPrefix}.modal.link-service` }),
     icon: 'relate',
@@ -160,7 +164,7 @@ const EnvModals = observer(() => {
     handler: refresh,
     display: true,
     group: 2,
-  }]), [tabKey]);
+  }]), []);
 
   return <HeaderButtons items={buttons} />;
 });

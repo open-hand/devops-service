@@ -9,7 +9,7 @@ export default function useStore() {
       this.serviceData = data;
     },
     get getServiceData() {
-      return this.serviceData;
+      return this.serviceData.slice();
     },
 
     appServiceIds: [undefined],

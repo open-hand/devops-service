@@ -1,72 +1,34 @@
-import React, { useEffect, useState } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { FormattedMessage } from 'react-intl';
-import { Select, Form } from 'choerodon-ui/pro';
-import { Button } from 'choerodon-ui';
-import map from 'lodash/map';
+import { injectIntl } from 'react-intl';
+import { Form } from 'choerodon-ui';
+import DynamicSelect from '../../../../components/dynamic-select';
 
 import './index.less';
 
-const { Option } = Select;
+const LinkService = observer(({ modal, form, store, intlPrefix, intl: { formatMessage } }) => {
+  const { getFieldsValue } = form;
+  const { getServiceData } = store;
 
+  modal.handleOk(() => false);
 
-const LinkService = observer(({ store, projectId, envId, intlPrefix, prefixCls, formatMessage }) => {
-  const {
-    getServiceData,
-    loadServiceData,
-    setAppServiceIds,
-    getAppServiceIds,
-  } = store;
-  
   useEffect(() => {
-    loadServiceData(projectId, envId);
-  }, [envId, loadServiceData, projectId, store]);
+    form.getFieldDecorator('keys', { initialValue: ['key0'] });
+    return () => null;
+  }, []);
 
-  function handleAdd() {
-    setAppServiceIds([...getAppServiceIds, undefined]);
-  }
-
-  function handleDelete(index) {
-    setAppServiceIds(getAppServiceIds.filter((value, key) => index !== key));
-  }
-  
-  function handleChange(value, index) {
-    const data = [...getAppServiceIds];
-    data.splice(index, 1, value);
-    setAppServiceIds(data);
-  }
-
+  const data = useMemo(() => getFieldsValue(), [getFieldsValue()]);
   return (
-    <div className={`${prefixCls}-environment-service-modal`}>
-      <Form>
-        {map(getAppServiceIds, (item, index) => (<div>
-          <Select
-            label={formatMessage({ id: `${intlPrefix}.app-service` })}
-            searchable
-            required
-            value={item}
-            onChange={value => handleChange(value, index)}
-          >
-            {map(getServiceData, ({ id, name }) => (
-              <Option value={id}>{name}</Option>
-            ))}
-          </Select>
-          <Button
-            shape="circle"
-            icon="delete"
-            onClick={() => handleDelete(index)}
-          />
-        </div>))}
-      </Form>
-      <Button
-        icon="add"
-        type="primary"
-        onClick={handleAdd}
-      >
-        <FormattedMessage id={`${intlPrefix}.environment.add.service`} />
-      </Button>
-    </div>
+    <Form>
+      <DynamicSelect
+        optionData={getServiceData}
+        form={form}
+        fieldKeys={data}
+        label={formatMessage({ id: `${intlPrefix}.app-service` })}
+        addText={formatMessage({ id: `${intlPrefix}.environment.add.service` })}
+      />
+    </Form>
   );
 });
 
-export default LinkService;
+export default Form.create()(injectIntl(LinkService));

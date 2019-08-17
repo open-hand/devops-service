@@ -155,7 +155,7 @@ const commonField = {
 const deployment = {
   'c7ncd.deployment.viewer.instance': '实例视图',
   'c7ncd.deployment.viewer.resource': '资源视图',
-  'c7ncd.deployment.environment.tabs.sync': '提交同步情况',
+  'c7ncd.deployment.environment.tabs.sync': 'GitOps日志',
   'c7ncd.deployment.environment.tabs.assignPermissions': '已分配权限人员',
   'c7ncd.deployment.environment.error.logs': '错误日志',
   'c7ncd.deployment.environment.error.info': '错误信息',
