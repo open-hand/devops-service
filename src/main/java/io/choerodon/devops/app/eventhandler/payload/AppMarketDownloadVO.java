@@ -7,12 +7,12 @@ import java.util.List;
  * Date:  9:56 2019/8/5
  * Description:
  */
-public class ApplicationPayload {
+public class AppMarketDownloadVO {
     private Long iamUserId;
     private Long appId;
     private String filePath;
     private String groupPath;
-    private List<AppServicePayload> appServicePayloads;
+    private List<AppServiceDownloadVO> appServiceMarketDownloadVOS;
 
     public Long getAppId() {
         return appId;
@@ -38,12 +38,12 @@ public class ApplicationPayload {
         this.filePath = filePath;
     }
 
-    public List<AppServicePayload> getAppServicePayloads() {
-        return appServicePayloads;
+    public List<AppServiceDownloadVO> getAppServiceMarketDownloadVOS() {
+        return appServiceMarketDownloadVOS;
     }
 
-    public void setAppServicePayloads(List<AppServicePayload> appServicePayloads) {
-        this.appServicePayloads = appServicePayloads;
+    public void setAppServiceMarketDownloadVOS(List<AppServiceDownloadVO> appServiceMarketDownloadVOS) {
+        this.appServiceMarketDownloadVOS = appServiceMarketDownloadVOS;
     }
 
     public String getGroupPath() {

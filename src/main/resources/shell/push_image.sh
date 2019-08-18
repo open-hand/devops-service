@@ -1,6 +1,6 @@
 #!/bin/bash
 echo '------------------------------------------'
-echo 'sh push_image.sh [new_url] [new_username] [new_password] [old_username] [old_password]\n'
+echo 'sh push_image.sh [new_url] [new_username] [new_password] [old_username] [old_password] [images_path]\n'
 echo '>>>     harbor_url 需要带上项目路径'
 echo '------------------------------------------\n'
 if [ x$1 != x ] ;then

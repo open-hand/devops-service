@@ -5,7 +5,7 @@ package io.choerodon.devops.app.eventhandler.payload;
  * Date:  14:05 2019/8/6
  * Description:
  */
-public class AppServiceDownloadPayload extends AppServicePayload {
+public class AppServiceDownloadPayload extends AppServiceDownloadVO {
     private Integer gitlabUserId;
     private Integer gitlabGroupId;
     private String path;

@@ -5,10 +5,9 @@ package io.choerodon.devops.app.eventhandler.payload;
  * Date:  11:16 2019/8/2
  * Description:
  */
-public class AppServiceVersionPayload {
+public class AppServiceVersionDownloadVO {
     private String version;
     private String image;
-    private String commit;
     private String repository;
 
     public String getVersion() {
@@ -25,14 +24,6 @@ public class AppServiceVersionPayload {
 
     public void setImage(String image) {
         this.image = image;
-    }
-
-    public String getCommit() {
-        return commit;
-    }
-
-    public void setCommit(String commit) {
-        this.commit = commit;
     }
 
     public String getRepository() {

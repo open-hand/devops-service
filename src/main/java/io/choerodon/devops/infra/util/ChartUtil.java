@@ -19,7 +19,7 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.app.eventhandler.payload.AppServiceVersionPayload;
+import io.choerodon.devops.app.eventhandler.payload.AppServiceVersionDownloadVO;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.AppServiceVersionDTO;
@@ -91,7 +91,7 @@ public class ChartUtil {
         }
     }
 
-    public String downloadChartForAppMarket(AppServiceVersionPayload appServiceVersionPayload, String appServiceCode, String destpath) {
+    public String downloadChartForAppMarket(AppServiceVersionDownloadVO appServiceVersionPayload, String appServiceCode, String destpath) {
         String repository = appServiceVersionPayload.getRepository();
         repository = repository.replace("http://", "");
         String[] repositoryArray = repository.split("/");

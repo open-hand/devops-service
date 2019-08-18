@@ -18,11 +18,10 @@ import io.choerodon.base.domain.Sort;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.AppMarketUploadVO;
-import io.choerodon.devops.api.vo.AppServiceMarketVO;
-import io.choerodon.devops.api.vo.AppServiceMarketVersionVO;
+import io.choerodon.devops.api.vo.AppServiceUploadVO;
+import io.choerodon.devops.api.vo.AppServiceVersionUploadVO;
 import io.choerodon.devops.api.vo.HarborMarketVO;
-import io.choerodon.devops.app.eventhandler.payload.AppServicePayload;
-import io.choerodon.devops.app.eventhandler.payload.ApplicationPayload;
+import io.choerodon.devops.app.eventhandler.payload.AppMarketDownloadVO;
 import io.choerodon.devops.app.service.OrgAppMarketService;
 import io.choerodon.mybatis.annotation.SortDefault;
 import io.choerodon.swagger.annotation.CustomPageRequest;
@@ -42,7 +41,7 @@ public class OrgAppMarketController {
     @Permission(type = ResourceType.SITE, permissionWithin = true)
     @ApiOperation(value = "查询所有应用服务")
     @GetMapping("/list_app_services")
-    public ResponseEntity<List<AppServiceMarketVO>> listAllAppServices() {
+    public ResponseEntity<List<AppServiceUploadVO>> listAllAppServices() {
         return Optional.ofNullable(
                 orgAppMarketService.listAllAppServices())
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
@@ -59,7 +58,7 @@ public class OrgAppMarketController {
     @ApiOperation(value = "根据应用Id，获取应用服务和应用服务版本")
     @CustomPageRequest
     @PostMapping("/page_app_services")
-    public ResponseEntity<PageInfo<AppServiceMarketVO>> pageByAppId(
+    public ResponseEntity<PageInfo<AppServiceUploadVO>> pageByAppId(
             @ApiParam(value = "应用Id", required = true)
             @RequestParam(value = "app_id") Long appId,
             @ApiParam(value = "分页参数")
@@ -93,7 +92,7 @@ public class OrgAppMarketController {
     @Permission(type = ResourceType.SITE, permissionWithin = true)
     @ApiOperation(value = "根据应用服务ID查询所对应的应用版本")
     @GetMapping("/list_versions/{app_service_id}")
-    public ResponseEntity<List<AppServiceMarketVersionVO>> listVersionsByAppServiceId(
+    public ResponseEntity<List<AppServiceVersionUploadVO>> listVersionsByAppServiceId(
             @ApiParam(value = "应用服务Id")
             @PathVariable(value = "app_service_id") Long appServiceId) {
         return Optional.ofNullable(
@@ -125,11 +124,11 @@ public class OrgAppMarketController {
      * @return
      */
     @Permission(type = ResourceType.SITE, permissionWithin = true)
-    @ApiOperation(value = "")
+    @ApiOperation(value = "应用下载")
     @PostMapping("/download")
     public ResponseEntity downLoadApp(
             @ApiParam(value = "应用信息",required = true)
-            @RequestBody ApplicationPayload applicationPayload) {
+            @RequestBody AppMarketDownloadVO applicationPayload) {
         orgAppMarketService.downLoadApp(applicationPayload);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }

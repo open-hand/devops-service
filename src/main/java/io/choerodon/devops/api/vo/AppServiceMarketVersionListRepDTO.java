@@ -7,7 +7,7 @@ import java.util.List;
  */
 public class AppServiceMarketVersionListRepDTO {
     private Long applicationId;
-    private List<AppServiceMarketVersionVO> versions;
+    private List<AppServiceVersionUploadVO> versions;
 
     public Long getApplicationId() {
         return applicationId;
@@ -17,11 +17,11 @@ public class AppServiceMarketVersionListRepDTO {
         this.applicationId = applicationId;
     }
 
-    public List<AppServiceMarketVersionVO> getVersions() {
+    public List<AppServiceVersionUploadVO> getVersions() {
         return versions;
     }
 
-    public void setVersions(List<AppServiceMarketVersionVO> versions) {
+    public void setVersions(List<AppServiceVersionUploadVO> versions) {
         this.versions = versions;
     }
 }
