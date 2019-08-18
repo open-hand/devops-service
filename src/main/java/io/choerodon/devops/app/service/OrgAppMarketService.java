@@ -6,11 +6,10 @@ import com.github.pagehelper.PageInfo;
 
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.AppMarketUploadVO;
-import io.choerodon.devops.api.vo.AppServiceMarketVO;
-import io.choerodon.devops.api.vo.AppServiceMarketVersionVO;
+import io.choerodon.devops.api.vo.AppServiceUploadVO;
+import io.choerodon.devops.api.vo.AppServiceVersionUploadVO;
 import io.choerodon.devops.api.vo.HarborMarketVO;
-import io.choerodon.devops.app.eventhandler.payload.AppServicePayload;
-import io.choerodon.devops.app.eventhandler.payload.ApplicationPayload;
+import io.choerodon.devops.app.eventhandler.payload.AppMarketDownloadVO;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -18,17 +17,17 @@ import io.choerodon.devops.app.eventhandler.payload.ApplicationPayload;
  * Description:
  */
 public interface OrgAppMarketService {
-    PageInfo<AppServiceMarketVO> pageByAppId(Long appId,
+    PageInfo<AppServiceUploadVO> pageByAppId(Long appId,
                                              PageRequest pageRequest,
                                              String params);
 
     void upload(AppMarketUploadVO marketUploadVO);
 
-    List<AppServiceMarketVO> listAllAppServices();
+    List<AppServiceUploadVO> listAllAppServices();
 
-    List<AppServiceMarketVersionVO> listServiceVersionsByAppServiceId(Long appServiceId);
+    List<AppServiceVersionUploadVO> listServiceVersionsByAppServiceId(Long appServiceId);
 
     String createHarborRepository(HarborMarketVO harborMarketVO);
 
-    void downLoadApp(ApplicationPayload appServicePayload);
+    void downLoadApp(AppMarketDownloadVO appServicePayload);
 }

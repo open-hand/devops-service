@@ -11,11 +11,20 @@ import io.choerodon.devops.infra.dto.harbor.User;
  */
 public class AppMarketUploadVO {
     private Long appId;
-    private List<AppServiceMarketVO> appServiceMarketVOList;
+    private List<AppServiceUploadVO> appServiceUploadVOS;
     private String status;
     private Long iamUserId;
     private String harborUrl;
     private User user;
+    private String saasUrl;
+
+    public String getSaasUrl() {
+        return saasUrl;
+    }
+
+    public void setSaasUrl(String saasUrl) {
+        this.saasUrl = saasUrl;
+    }
 
     public User getUser() {
         return user;
@@ -41,12 +50,12 @@ public class AppMarketUploadVO {
         this.appId = appId;
     }
 
-    public List<AppServiceMarketVO> getAppServiceMarketVOList() {
-        return appServiceMarketVOList;
+    public List<AppServiceUploadVO> getAppServiceUploadVOS() {
+        return appServiceUploadVOS;
     }
 
-    public void setAppServiceMarketVOList(List<AppServiceMarketVO> appServiceMarketVOList) {
-        this.appServiceMarketVOList = appServiceMarketVOList;
+    public void setAppServiceUploadVOS(List<AppServiceUploadVO> appServiceUploadVOS) {
+        this.appServiceUploadVOS = appServiceUploadVOS;
     }
 
     public String getStatus() {

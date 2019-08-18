@@ -7,11 +7,11 @@ import java.util.List;
  * Date:  17:24 2019/8/7
  * Description:
  */
-public class AppServiceMarketVO {
+public class AppServiceUploadVO {
     private Long appServiceId;
     private String appServiceCode;
     private String appServiceName;
-    private List<AppServiceMarketVersionVO> appServiceMarketVersionVOS;
+    private List<AppServiceVersionUploadVO> appServiceVersionUploadVOS;
 
     public Long getAppServiceId() {
         return appServiceId;
@@ -37,11 +37,11 @@ public class AppServiceMarketVO {
         this.appServiceName = appServiceName;
     }
 
-    public List<AppServiceMarketVersionVO> getAppServiceMarketVersionVOS() {
-        return appServiceMarketVersionVOS;
+    public List<AppServiceVersionUploadVO> getAppServiceVersionUploadVOS() {
+        return appServiceVersionUploadVOS;
     }
 
-    public void setAppServiceMarketVersionVOS(List<AppServiceMarketVersionVO> appServiceMarketVersionVOS) {
-        this.appServiceMarketVersionVOS = appServiceMarketVersionVOS;
+    public void setAppServiceVersionUploadVOS(List<AppServiceVersionUploadVO> appServiceVersionUploadVOS) {
+        this.appServiceVersionUploadVOS = appServiceVersionUploadVOS;
     }
 }

@@ -9,13 +9,13 @@ import io.choerodon.devops.api.vo.ConfigVO;
  * Date:  13:48 2019/8/2
  * Description:
  */
-public class AppServicePayload {
+public class AppServiceDownloadVO {
     private Long appId;
     private String name;
     private String code;
     private String type;
-    private ConfigVO harbor;
-    private List<AppServiceVersionPayload> appServiceVersionPayloads;
+    private ConfigVO configVO;
+    private List<AppServiceVersionDownloadVO> appServiceVersionDownloadVOS;
 
     public Long getAppId() {
         return appId;
@@ -41,12 +41,12 @@ public class AppServicePayload {
         this.code = code;
     }
 
-    public ConfigVO getHarbor() {
-        return harbor;
+    public ConfigVO getConfigVO() {
+        return configVO;
     }
 
-    public void setHarbor(ConfigVO harbor) {
-        this.harbor = harbor;
+    public void setConfigVO(ConfigVO configVO) {
+        this.configVO = configVO;
     }
 
     public String getType() {
@@ -57,11 +57,11 @@ public class AppServicePayload {
         this.type = type;
     }
 
-    public List<AppServiceVersionPayload> getAppServiceVersionPayloads() {
-        return appServiceVersionPayloads;
+    public List<AppServiceVersionDownloadVO> getAppServiceVersionDownloadVOS() {
+        return appServiceVersionDownloadVOS;
     }
 
-    public void setAppServiceVersionPayloads(List<AppServiceVersionPayload> appServiceVersionPayloads) {
-        this.appServiceVersionPayloads = appServiceVersionPayloads;
+    public void setAppServiceVersionDownloadVOS(List<AppServiceVersionDownloadVO> appServiceVersionDownloadVOS) {
+        this.appServiceVersionDownloadVOS = appServiceVersionDownloadVOS;
     }
 }

@@ -14,7 +14,7 @@ public class AppServiceReleasingVO {
     private String name;
     private String code;
     private String publishLevel;
-    private List<AppServiceMarketVersionVO> appServiceVersions;
+    private List<AppServiceVersionUploadVO> appServiceVersions;
     private String imgUrl;
     private String category;
     private String description;
@@ -90,11 +90,11 @@ public class AppServiceReleasingVO {
         this.publishLevel = publishLevel;
     }
 
-    public List<AppServiceMarketVersionVO> getAppServiceVersions() {
+    public List<AppServiceVersionUploadVO> getAppServiceVersions() {
         return appServiceVersions;
     }
 
-    public void setAppServiceVersions(List<AppServiceMarketVersionVO> appServiceVersions) {
+    public void setAppServiceVersions(List<AppServiceVersionUploadVO> appServiceVersions) {
         this.appServiceVersions = appServiceVersions;
     }
 

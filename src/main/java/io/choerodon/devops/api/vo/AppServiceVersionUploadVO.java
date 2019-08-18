@@ -6,7 +6,7 @@ package io.choerodon.devops.api.vo;
  * Time: 15:48
  * Description:
  */
-public class AppServiceMarketVersionVO {
+public class AppServiceVersionUploadVO {
     private Long id;
     private String version;
 
