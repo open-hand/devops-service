@@ -31,12 +31,14 @@ function getRepeatKey(data, value, field) {
   return findKey(omit(data, ['keys', field]), (item) => item === value);
 }
 
-export function SimpleSelect({ uid, label, options, onDelete, removeable, form }) {
+export function SimpleSelect({ uid, label, options, disabled, onDelete, removeable, form }) {
   const handleDelete = useCallback(() => {
     onDelete(uid);
   }, [uid]);
 
   function uniqValid(rule, value, callback) {
+    if (!value) callback('请选择一个应用服务');
+
     const { field } = rule;
     const data = form.getFieldsValue();
     const repeatKey = getRepeatKey(data, value, field);
@@ -54,16 +56,14 @@ export function SimpleSelect({ uid, label, options, onDelete, removeable, form }
     key={uid}
   >
     {form.getFieldDecorator(uid, {
-      validateTrigger: ['onChange'],
-      rules: [
-        {
-          required: true,
-          validator: uniqValid,
-        },
-      ],
+      rules: [{
+        required: true,
+        validator: uniqValid,
+      }],
     })(<Select
       required
       searchable
+      disabled={disabled}
       label={label}
     >
       {options}
@@ -84,6 +84,7 @@ SimpleSelect.propTypes = {
   label: PropTypes.string,
   removeable: PropTypes.bool,
   onDelete: PropTypes.func,
+  disabled: PropTypes.bool,
 };
 
 SimpleSelect.defaultProps = {
@@ -91,7 +92,7 @@ SimpleSelect.defaultProps = {
   options: [],
 };
 
-export default function DynamicSelect({ form, label, fieldKeys, optionData, addText }) {
+export default function DynamicSelect({ form, label, fieldKeys, options, addText }) {
   function add() {
     const keys = form.getFieldValue('keys');
     if (!keys) return;
@@ -117,21 +118,15 @@ export default function DynamicSelect({ form, label, fieldKeys, optionData, addT
     });
   }
 
-  const options = useMemo(() => map(optionData, ({ id, name }) => {
-    const selectedValues = Object.values(omit(fieldKeys, 'keys'));
-    return <Select.Option
-      disabled={selectedValues.includes(id)}
-      key={id}
-      value={id}
-    >{name}</Select.Option>;
-  }), [optionData, fieldKeys]);
   const keys = useMemo(() => fieldKeys.keys, [fieldKeys]);
+  const disabledAdd = options.length <= 1 || (keys && keys.length >= options.length);
 
   return <Fragment>
     {map(keys, (key, index) => (<SimpleSelect
       key={key}
       uid={key}
       form={form}
+      disabled={!options.length}
       options={options}
       removeable={index > 0 || (keys && keys.length > 1)}
       onDelete={remove}
@@ -142,7 +137,7 @@ export default function DynamicSelect({ form, label, fieldKeys, optionData, addT
         icon="add"
         type="primary"
         funcType="flat"
-        disabled={options.length <= 1}
+        disabled={disabledAdd}
         onClick={add}
       >
         {addText}
@@ -152,7 +147,7 @@ export default function DynamicSelect({ form, label, fieldKeys, optionData, addT
 }
 
 DynamicSelect.propTypes = {
-  optionData: PropTypes.array,
+  options: PropTypes.array,
   fieldKeys: PropTypes.shape({
     keys: PropTypes.array,
   }),
