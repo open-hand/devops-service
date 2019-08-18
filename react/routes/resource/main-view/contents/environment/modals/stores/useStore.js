@@ -4,74 +4,56 @@ import { handlePromptError } from '../../../../../../../utils';
 
 export default function useStore() {
   return useLocalStore(() => ({
-    serviceData: [],
-    setServiceData(data) {
-      this.serviceData = data;
+    services: [],
+    setServices(data) {
+      this.services = data;
     },
-    get getServiceData() {
-      return this.serviceData.slice();
-    },
-
-    appServiceIds: [undefined],
-    setAppServiceIds(data) {
-      this.appServiceIds = data;
-    },
-    get getAppServiceIds() {
-      return this.appServiceIds;
+    get getServices() {
+      return this.services.slice();
     },
 
     users: [],
-    setUsersData(data) {
+    setUsers(data) {
       this.users = data;
     },
-    get getUsersData() {
-      return this.users;
+    get getUsers() {
+      return this.users.slice();
     },
 
-    userIds: [undefined],
-    setUserIds(data) {
-      this.userIds = data;
-    },
-    get getUserIds() {
-      return this.userIds;
-    },
-
-    skipCheckPermission: true,
-    setSkipCheckPermission(flag) {
-      this.skipCheckPermission = flag;
-    },
-    get getSkipCheckPermission() {
-      return this.skipCheckPermission;
-    },
-
-    async loadServiceData(projectId, envId) {
-      const res = await axios.get(`/devops/v1/projects/${projectId}/env/app_services/non_related_app_service?env_id=${envId}`);
-      if (handlePromptError(res)) {
-        this.setServiceData(res);
+    async loadServices(projectId, envId) {
+      try {
+        const res = await axios.get(`/devops/v1/projects/${projectId}/env/app_services/non_related_app_service?env_id=${envId}`);
+        if (handlePromptError(res)) {
+          this.setServices(res);
+        }
+      } catch (e) {
+        Choerodon.handleResponseError(e);
       }
     },
 
-    AddService(projectId, envId) {
+    async loadUsers(projectId, envId) {
+      try {
+        const res = await axios.get(`/devops/v1/projects/${projectId}/envs/${envId}/permission/list_non_related`);
+        if (handlePromptError(res)) {
+          this.setUsers(res);
+        }
+      } catch (e) {
+        Choerodon.handleResponseError(e);
+      }
+    },
+
+    addService(projectId, envId, appServiceIds) {
       const data = {
         envId,
-        appServiceIds: this.appServiceIds,
+        appServiceIds,
       };
       return axios.post(`/devops/v1/projects/${projectId}/env/app_services/batch_create`, JSON.stringify(data));
     },
 
-    async loadUsers(projectId, envId) {
-      const res = await axios.get(`/devops/v1/projects/${projectId}/envs/${envId}/permission/list_non_related`);
-      if (handlePromptError(res)) {
-        this.setUsersData(res);
-      }
-    },
-
-    AddUsers(projectId, envId, objectVersionNumber) {
+    addUsers({ projectId, envId, ...rest }) {
       const data = {
         envId,
-        userIds: this.userIds,
-        skipCheckPermission: this.skipCheckPermission,
-        objectVersionNumber,
+        ...rest,
       };
       return axios.post(`/devops/v1/projects/${projectId}/envs/${envId}/permission`, JSON.stringify(data));
     },
