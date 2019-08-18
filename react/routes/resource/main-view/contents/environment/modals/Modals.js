@@ -5,8 +5,7 @@ import uniqBy from 'lodash/uniqBy';
 import HeaderButtons from '../../../components/header-buttons';
 import EnvDetail from './env-detail';
 import LinkService from './link-service';
-import PermissionForm from './permission';
-import { handlePromptError } from '../../../../../../utils';
+import Permission from './permission';
 import { useResourceStore } from '../../../../stores';
 import { useEnvironmentStore } from '../stores';
 import { useModalStore } from './stores';
@@ -15,16 +14,13 @@ const modalKey1 = Modal.key();
 const modalKey2 = Modal.key();
 const modalKey3 = Modal.key();
 
-function getUniqueIds(data) {
-  return uniqBy([...data].filter((item) => !!item));
-}
-
 const EnvModals = observer(() => {
   const {
     intlPrefix,
     prefixCls,
     intl: { formatMessage },
     resourceStore,
+    treeDs,
   } = useResourceStore();
   const {
     envStore: {
@@ -48,6 +44,26 @@ const EnvModals = observer(() => {
   }), []);
 
   const { menuId } = resourceStore.getSelectedMenu;
+
+  function linkServices(data) {
+    return modalStore.addService(projectId, menuId, data);
+  }
+
+  function addUsers(data) {
+    const record = baseInfoDs.current;
+    if (record) {
+      const objectVersionNumber = record.get('objectVersionNumber');
+      const users = {
+        projectId,
+        envId: menuId,
+        objectVersionNumber,
+        ...data,
+      };
+      return modalStore.addUsers(users);
+    }
+
+    return false;
+  }
 
   function refresh() {
     if (tabKey === SYNC_TAB) {
@@ -76,68 +92,42 @@ const EnvModals = observer(() => {
   }
 
   function openLinkService() {
-    modalStore.loadServiceData(projectId, menuId);
+    modalStore.loadServices(projectId, menuId);
     Modal.open({
       key: modalKey2,
       title: formatMessage({ id: `${intlPrefix}.modal.link-service` }),
+      style: modalStyle,
+      drawer: true,
       children: <LinkService
         store={modalStore}
-        projectId={projectId}
-        envId={menuId}
+        tree={treeDs}
+        onOk={linkServices}
         intlPrefix={intlPrefix}
         prefixCls={prefixCls}
       />,
-      drawer: true,
-      style: modalStyle,
+      afterClose: () => {
+        modalStore.setServices([]);
+      },
     });
   }
 
   function openPermission() {
+    modalStore.loadUsers(projectId, menuId);
     Modal.open({
       key: modalKey3,
-      title: formatMessage({ id: `${intlPrefix}.modal.link-service` }),
-      children: <PermissionForm store={modalStore} projectId={projectId} envId={menuId} intlPrefix={intlPrefix} prefixCls={prefixCls} formatMessage={formatMessage} />,
+      title: formatMessage({ id: `${intlPrefix}.modal.permission` }),
       drawer: true,
       style: modalStyle,
-      onOk: handleAddUsers,
-      onCancel: () => modalStore.setAppServiceIds([undefined]),
+      children: <Permission
+        store={modalStore}
+        onOk={addUsers}
+        intlPrefix={intlPrefix}
+        prefixCls={prefixCls}
+      />,
+      afterClose: () => {
+        modalStore.setUsers([]);
+      },
     });
-  }
-
-  async function handleAddService() {
-    const { getAppServiceIds } = modalStore;
-    const Ids = getUniqueIds(getAppServiceIds);
-    if (!Ids.length) return true;
-    try {
-      const res = await modalStore.AddService(projectId, menuId);
-      if (handlePromptError(res)) {
-        modalStore.setAppServiceIds([undefined]);
-      } else {
-        return false;
-      }
-    } catch (e) {
-      Choerodon.handleResponseError(e);
-      return false;
-    }
-  }
-
-  async function handleAddUsers() {
-    const record = baseInfoDs.current;
-    const objectVersionNumber = record.get('objectVersionNumber');
-    const { getUserIds } = modalStore;
-    const Ids = getUniqueIds(getUserIds);
-    if (!Ids.length) return true;
-    try {
-      const res = await modalStore.AddUsers(projectId, menuId, objectVersionNumber);
-      if (handlePromptError(res)) {
-        modalStore.setUserIds([undefined]);
-      } else {
-        return false;
-      }
-    } catch (e) {
-      Choerodon.handleResponseError(e);
-      return false;
-    }
   }
 
   const buttons = useMemo(() => ([{
