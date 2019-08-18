@@ -96,7 +96,7 @@ class AppServiceControllerSpec extends Specification {
     GitlabServiceClient gitlabServiceClient = Mockito.mock(GitlabServiceClient.class)
 
     @Shared
-    ProjectVO projectE = new ProjectVO()
+    ProjectVO projectVO = new ProjectVO()
     @Shared
     UserAttrVO userAttrE = new UserAttrVO()
     @Shared
@@ -106,7 +106,7 @@ class AppServiceControllerSpec extends Specification {
     @Shared
     Long init_id = 1L
     @Shared
-    AppServiceShareRuleDTO devopsAppMarketDO = new AppServiceShareRuleDTO()
+    AppServiceShareRuleDTO devopsAppMarketDTO = new AppServiceShareRuleDTO()
     @Shared
     DevopsEnvPodDTO devopsEnvPodDO = new DevopsEnvPodDTO()
     @Shared
@@ -117,15 +117,17 @@ class AppServiceControllerSpec extends Specification {
     Long harborConfigId = 1L
     @Shared
     Long chartConfigId = 2L
+    @Shared
+    OrganizationDTO organization=new OrganizationDTO()
 
     def setupSpec() {
         given:
         organization.setId(init_id)
         organization.setCode("org")
 
-        projectE.setId(init_id)
-        projectE.setCode("pro")
-        projectE.setOrganization(organization)
+        projectVO.setId(init_id)
+        projectVO.setCode("pro")
+        projectVO.setOrganizationId(organization.getId())
 
         userAttrE.setIamUserId(init_id)
         userAttrE.setGitlabUserId(init_id)
@@ -136,14 +138,12 @@ class AppServiceControllerSpec extends Specification {
         searchParam.put("searchParam", params)
         searchParam.put("param", "")
 
-        devopsAppMarketDO.setId(1L)
-        devopsAppMarketDO.setAppId(2L)
-        devopsAppMarketDO.setPublishLevel("pub")
-        devopsAppMarketDO.setContributor("con")
-        devopsAppMarketDO.setDescription("des")
+        devopsAppMarketDTO.setId(1L)
+        devopsAppMarketDTO.setAppId(2L)
+        devopsAppMarketDTO.setShareLevel("pub")
 
         devopsEnvPodDO.setId(1L)
-        devopsEnvPodDO.setAppInstanceId(1L)
+        devopsEnvPodDO.setInstanceId(1L)
     }
 
     def setup() {
@@ -200,8 +200,6 @@ class AppServiceControllerSpec extends Specification {
             appServiceVersionMapper.selectAll().forEach { appServiceVersionMapper.delete(it) }
             // 删除appMarket
             applicationMarketMapper.selectAll().forEach { applicationMarketMapper.delete(it) }
-            // 删除appTemplate
-            applicationTemplateMapper.delete(applicationTemplateDO)
             // 删除appUserPermission
             appUserPermissionMapper.selectAll().forEach { appUserPermissionMapper.delete(it) }
             // 删除envPod
@@ -221,7 +219,6 @@ class AppServiceControllerSpec extends Specification {
         applicationDTO.setCode("appCode")
         applicationDTO.setType("normal")
         applicationDTO.setProjectId(project_id)
-        applicationDTO.setApplicationTemplateId(init_id)
         applicationDTO.setIsSkipCheckPermission(true)
         applicationDTO.setHarborConfigId(harborConfigId)
         applicationDTO.setChartConfigId(chartConfigId)
@@ -231,7 +228,7 @@ class AppServiceControllerSpec extends Specification {
 
         and: 'mock查询gitlab用户'
         MemberDTO memberDO = new MemberDTO()
-        memberDO.setId(1)
+        memberDO.setUserId(1)
         memberDO.setAccessLevel(AccessLevel.OWNER)
         ResponseEntity<MemberDTO> memberDOResponseEntity = new ResponseEntity<>(memberDO, HttpStatus.OK)
         Mockito.when(gitlabServiceClient.queryGroupMember(anyInt(), anyInt())).thenReturn(memberDOResponseEntity)
@@ -251,7 +248,7 @@ class AppServiceControllerSpec extends Specification {
 
         then: '校验结果'
         entity.statusCode.is2xxSuccessful()
-        entity.getBody().getId() == 1L
+        entity.getBody() == 1L
         AppServiceDTO applicationDO = appServiceMapper.selectByPrimaryKey(init_id)
 
         expect: '校验查询结果'
@@ -409,7 +406,7 @@ class AppServiceControllerSpec extends Specification {
         devopsEnvironmentMapper.insert(devopsEnvironmentDTO)
 
         and: '初始化appMarket对象'
-        applicationMarketMapper.insert(devopsAppMarketDO)
+        applicationMarketMapper.insert(devopsAppMarketDTO)
 
         and: '初始化envPod对象'
         devopsEnvPodMapper.insert(devopsEnvPodDO)
