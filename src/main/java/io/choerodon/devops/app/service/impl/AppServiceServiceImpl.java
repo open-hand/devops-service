@@ -1,6 +1,8 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -14,42 +16,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
-import io.choerodon.asgard.saga.annotation.Saga;
-import io.choerodon.asgard.saga.producer.StartSagaBuilder;
-import io.choerodon.asgard.saga.producer.TransactionalProducer;
-import io.choerodon.base.domain.PageRequest;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.validator.ApplicationValidator;
-import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.api.vo.sonar.*;
-import io.choerodon.devops.app.eventhandler.DevopsSagaHandler;
-import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
-import io.choerodon.devops.app.eventhandler.payload.*;
-import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.infra.config.ConfigurationProperties;
-import io.choerodon.devops.infra.config.HarborConfigurationProperties;
-import io.choerodon.devops.infra.dto.*;
-import io.choerodon.devops.infra.dto.gitlab.*;
-import io.choerodon.devops.infra.dto.harbor.ProjectDetail;
-import io.choerodon.devops.infra.dto.harbor.User;
-import io.choerodon.devops.infra.dto.iam.ApplicationDTO;
-import io.choerodon.devops.infra.dto.iam.IamUserDTO;
-import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
-import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.enums.*;
-import io.choerodon.devops.infra.feign.BaseServiceClient;
-import io.choerodon.devops.infra.feign.ChartClient;
-import io.choerodon.devops.infra.feign.HarborClient;
-import io.choerodon.devops.infra.feign.SonarClient;
-import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
-import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.choerodon.devops.infra.handler.RetrofitHandler;
-import io.choerodon.devops.infra.mapper.AppServiceMapper;
-import io.choerodon.devops.infra.mapper.AppServiceUserRelMapper;
-import io.choerodon.devops.infra.mapper.UserAttrMapper;
-import io.choerodon.devops.infra.util.*;
-import io.choerodon.websocket.tool.UUIDTool;
 import io.kubernetes.client.JSON;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.eclipse.jgit.api.Git;
@@ -69,6 +35,48 @@ import org.springframework.util.StringUtils;
 import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
+
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.producer.StartSagaBuilder;
+import io.choerodon.asgard.saga.producer.TransactionalProducer;
+import io.choerodon.base.domain.PageRequest;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.validator.ApplicationValidator;
+import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.sonar.*;
+import io.choerodon.devops.app.eventhandler.DevopsSagaHandler;
+import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
+import io.choerodon.devops.app.eventhandler.payload.DevOpsAppImportServicePayload;
+import io.choerodon.devops.app.eventhandler.payload.DevOpsAppServicePayload;
+import io.choerodon.devops.app.eventhandler.payload.DevOpsUserPayload;
+import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.config.ConfigurationProperties;
+import io.choerodon.devops.infra.config.HarborConfigurationProperties;
+import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.gitlab.*;
+import io.choerodon.devops.infra.dto.harbor.ProjectDetail;
+import io.choerodon.devops.infra.dto.harbor.User;
+import io.choerodon.devops.infra.dto.iam.ApplicationDTO;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.enums.AccessLevel;
+import io.choerodon.devops.infra.enums.GitPlatformType;
+import io.choerodon.devops.infra.enums.Rate;
+import io.choerodon.devops.infra.enums.SonarQubeType;
+import io.choerodon.devops.infra.feign.BaseServiceClient;
+import io.choerodon.devops.infra.feign.ChartClient;
+import io.choerodon.devops.infra.feign.HarborClient;
+import io.choerodon.devops.infra.feign.SonarClient;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
+import io.choerodon.devops.infra.handler.RetrofitHandler;
+import io.choerodon.devops.infra.mapper.AppServiceMapper;
+import io.choerodon.devops.infra.mapper.AppServiceUserRelMapper;
+import io.choerodon.devops.infra.mapper.UserAttrMapper;
+import io.choerodon.devops.infra.util.*;
+import io.choerodon.websocket.tool.UUIDTool;
 
 
 /**
@@ -1553,10 +1561,9 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public List<ProjectVO> listProjects(Long organizationId, Long projectId, String params) {
         String[] paramsArr = null;
-        if (StringUtils.isEmpty(params)) {
-            Map<String, Object> paramMap = TypeUtil.castMapParams(params);
-            List<String> paramList = TypeUtil.cast(paramMap.get(TypeUtil.PARAMS));
-            paramsArr = paramList.toArray(new String[0]);
+        if (!StringUtils.isEmpty(params)) {
+            paramsArr = new String[1];
+            paramsArr[0]=params;
         }
         PageInfo<ProjectVO> pageInfo = ConvertUtils.convertPage(baseServiceClientOperator.listProject(organizationId, new PageRequest(0, 0), paramsArr), ProjectVO.class);
         return pageInfo.getList().stream().filter(t -> !t.getId().equals(projectId)).collect(Collectors.toList());
