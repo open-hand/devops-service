@@ -66,20 +66,16 @@ public class EnvironmentApplicationValidator {
     /**
      * 校验环境id和应用id存在关联
      */
-    public void checkEnvIdAndAppIdsExist(DevopsEnvAppServiceVO devopsEnvAppServiceVO) {
-        Long envId = devopsEnvAppServiceVO.getEnvId();
-        Long[] appServiceIds = devopsEnvAppServiceVO.getAppServiceIds();
+    public void checkEnvIdAndAppIdsExist(Long envId, Long appServiceId) {
         if (envId == null) {
             throw new CommonException("error.env.id.null");
         }
-        if (appServiceIds == null || appServiceIds.length == 0) {
-            throw new CommonException("error.app.ids.null");
+        if (appServiceId == null) {
+            throw new CommonException("error.app.id.null");
         }
-        Stream.of(appServiceIds).map(id -> new DevopsEnvAppServiceDTO(id, envId))
-                .forEach(devopsEnvApplicationDTO -> {
-                    if (devopsEnvAppServiceMapper.selectOne(devopsEnvApplicationDTO) == null) {
-                        throw new CommonException("error.envAndApp.not.exist", devopsEnvApplicationDTO.getEnvId(),devopsEnvApplicationDTO.getAppServiceId());
-                    }
-                });
+        DevopsEnvAppServiceDTO devopsEnvAppServiceDTO = new DevopsEnvAppServiceDTO(appServiceId, envId);
+        if (devopsEnvAppServiceMapper.selectOne(devopsEnvAppServiceDTO) == null) {
+            throw new CommonException("error.envAndApp.not.exist", envId, appServiceId);
+        }
     }
 }
