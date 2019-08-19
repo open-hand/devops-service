@@ -28,7 +28,7 @@ public interface AppServiceVersionService {
     /**
      * 应用下查询应用所有版本
      *
-     * @param appServiceId     应用Id
+     * @param appServiceId 应用Id
      * @return List
      */
     List<AppServiceVersionRespVO> listByAppServiceId(Long appServiceId);
@@ -38,9 +38,9 @@ public interface AppServiceVersionService {
      *
      * @param appServiceId        应用Id
      * @param appServiceServiceId 应用版本Id
-     * @param isPublish    是否发布
-     * @param pageRequest  分页参数
-     * @param searchParam  查询参数
+     * @param isPublish           是否发布
+     * @param pageRequest         分页参数
+     * @param searchParam         查询参数
      * @return List
      */
     PageInfo<AppServiceVersionRespVO> pageByAppIdAndParam(Long appServiceId, Boolean isPublish, Long appServiceServiceId, PageRequest pageRequest, String searchParam);
@@ -48,8 +48,8 @@ public interface AppServiceVersionService {
     /**
      * 项目下查询应用所有已部署版本
      *
-     * @param projectId 项目ID
-     * @param appServiceId     应用ID
+     * @param projectId    项目ID
+     * @param appServiceId 应用ID
      * @return List
      */
     List<AppServiceVersionRespVO> listDeployedByAppId(Long projectId, Long appServiceId);
@@ -57,9 +57,9 @@ public interface AppServiceVersionService {
     /**
      * 查询部署在某个环境的应用版本
      *
-     * @param projectId 项目id
-     * @param appServiceId     应用Id
-     * @param envId     环境Id
+     * @param projectId    项目id
+     * @param appServiceId 应用Id
+     * @param envId        环境Id
      * @return List
      */
     List<AppServiceVersionRespVO> listByAppIdAndEnvId(Long projectId, Long appServiceId, Long envId);
@@ -67,10 +67,10 @@ public interface AppServiceVersionService {
     /**
      * 分页查询某应用下的所有版本
      *
-     * @param projectId   项目id
-     * @param appServiceId       应用id
-     * @param pageRequest 分页参数
-     * @param searchParam 模糊搜索参数
+     * @param projectId    项目id
+     * @param appServiceId 应用id
+     * @param pageRequest  分页参数
+     * @param searchParam  模糊搜索参数
      * @return ApplicationVersionRespVO
      */
     PageInfo<AppServiceVersionVO> pageByOptions(Long projectId, Long appServiceId, PageRequest pageRequest, String searchParam);
@@ -100,9 +100,9 @@ public interface AppServiceVersionService {
     /**
      * 根据pipelineID 查询版本, 判断是否存在
      *
-     * @param pipelineId pipeline
-     * @param branch     分支
-     * @param appServiceId      应用id
+     * @param pipelineId   pipeline
+     * @param branch       分支
+     * @param appServiceId 应用id
      * @return
      */
     Boolean queryByPipelineId(Long pipelineId, String branch, Long appServiceId);
@@ -110,8 +110,8 @@ public interface AppServiceVersionService {
     /**
      * 项目下根据应用Id查询value
      *
-     * @param projectId 项目id
-     * @param appServiceId     应用id
+     * @param projectId    项目id
+     * @param appServiceId 应用id
      * @return
      */
     String queryValueById(Long projectId, Long appServiceId);
@@ -119,14 +119,15 @@ public interface AppServiceVersionService {
     /**
      * 根据应用和版本号查询应用版本
      *
-     * @param appServiceId   应用Id
-     * @param version 版本
+     * @param appServiceId 应用Id
+     * @param version      版本
      * @return ApplicationVersionRespVO
      */
     AppServiceVersionRespVO queryByAppAndVersion(Long appServiceId, String version);
 
     /**
      * 获取共享应用版本
+     *
      * @param appServiceId
      * @param pageRequest
      * @param params
@@ -185,4 +186,12 @@ public interface AppServiceVersionService {
     String baseQueryValueByAppId(Long appServiceId);
 
     AppServiceVersionDTO baseCreate(AppServiceVersionDTO appServiceVersionDTO);
+
+    /**
+     * 查询应用服务在组织共享下的最新版本
+     *
+     * @param appServiceId 应用服务Id
+     * @return 应用服务版本
+     */
+    AppServiceVersionDTO queryServiceVersionByAppServiceId(Long appServiceId, String share);
 }

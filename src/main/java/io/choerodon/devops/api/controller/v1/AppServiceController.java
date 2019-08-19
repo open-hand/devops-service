@@ -225,7 +225,6 @@ public class AppServiceController {
     }
 
 
-
     /**
      * 根据环境id获取已部署正在运行实例的服务
      *
@@ -637,12 +636,13 @@ public class AppServiceController {
         applicationServiceService.importAppServiceInternal(projectId, importInternalVOS);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
-    @Permission(type = ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value ="分组查询应用服务" )
+
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "分组查询应用服务")
     @GetMapping(value = "/list_app_group")
     public ResponseEntity<List<AppServiceGroupVO>> ListAppServiceGroup(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable(value = "project_id") Long projectId){
+            @PathVariable(value = "project_id") Long projectId) {
         return Optional.ofNullable(
                 applicationServiceService.ListAppServiceGroup())
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
