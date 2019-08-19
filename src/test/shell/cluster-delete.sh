@@ -1,1 +1,0 @@
-helm del choerodon-cluster-agent --purge&&kubectl delete namespace choerodon
