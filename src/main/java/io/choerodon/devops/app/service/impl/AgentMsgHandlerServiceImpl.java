@@ -646,7 +646,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     }
 
     @Override
-    public void helmReleaeStopFail(String key, String msg, Long clusterId) {
+    public void helmReleaseStopFail(String key, String msg, Long clusterId) {
         updateInstanceStatus(key, KeyParseUtil.getReleaseName(key),
                 clusterId,
                 InstanceStatus.RUNNING.getStatus(),
@@ -654,6 +654,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 msg);
 
     }
+
 
     @Override
     public void commandNotSend(Long commandId, String msg) {
