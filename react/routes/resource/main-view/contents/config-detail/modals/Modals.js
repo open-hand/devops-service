@@ -31,9 +31,6 @@ const CustomModals = observer(() => {
   } = useModalStore();
   const { parentId } = resourceStore.getSelectedMenu;
 
-  useEffect(() => {
-    resourceStore.setNoHeader(false);
-  }, [resourceStore]);
 
   function refresh() {
     detailDs.query();

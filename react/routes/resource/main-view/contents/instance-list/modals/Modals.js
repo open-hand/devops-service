@@ -26,10 +26,6 @@ const CustomModals = observer(() => {
     AppState: { currentMenuType: { projectId } },
   } = useModalStore();
 
-  useEffect(() => {
-    resourceStore.setNoHeader(false);
-  }, [resourceStore]);
-
   function refresh() {
     istListDs.query();
   }

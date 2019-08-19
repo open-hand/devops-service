@@ -1,9 +1,9 @@
 import React from 'react';
 import { StoreProvider } from './stores';
-import MappingContent from './MappingContent';
+import Configs from './Configs';
 
-export default props => (
+export default (props) => (
   <StoreProvider value={props}>
-    <MappingContent />
+    <Configs />
   </StoreProvider>
 );

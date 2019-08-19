@@ -1,7 +1,6 @@
 import getTablePostData from '../../../../../../utils/getTablePostData';
 
-export default ({ formatMessage, intlPrefix }) => ({
-  autoQuery: true,
+export default ({ formatMessage, intlPrefix, projectId, id }) => ({
   selection: false,
   pageSize: 10,
   transport: {
@@ -9,11 +8,12 @@ export default ({ formatMessage, intlPrefix }) => ({
       const postData = getTablePostData(data);
 
       return {
+        url: `/devops/v1/projects/${projectId}/envs/page_by_options?env_id=${id}`,
         method: 'post',
         data: postData,
       };
     },
-    destroy: (projectId, { data: [data] }) => ({
+    destroy: ({ data: [data] }) => ({
       url: `/devops/v1/projects/${projectId}/envs/permission/${data.iamUserId}`,
       method: 'delete',
       data,

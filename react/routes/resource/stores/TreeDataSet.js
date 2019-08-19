@@ -89,11 +89,13 @@ function formatInstance(value, expandsKeys) {
 }
 
 function handleSelect(record, store) {
-  const menuId = record.get('id');
-  const menuType = record.get('itemType');
-  const parentId = record.get('parentId');
-  const key = record.get('key');
-  store.setSelectedMenu({ menuId, menuType, parentId, key });
+  if (record) {
+    const menuId = record.get('id');
+    const menuType = record.get('itemType');
+    const parentId = record.get('parentId');
+    const key = record.get('key');
+    store.setSelectedMenu({ menuId, menuType, parentId, key });
+  }
 }
 
 export default (store, type) => {
@@ -125,8 +127,6 @@ export default (store, type) => {
       },
       load: ({ dataSet }) => {
         const record = dataSet.current;
-        // record.ready();
-        // record &&
         handleSelect(record, store);
       },
     },

@@ -6,7 +6,7 @@ import { Icon, Popover, Tooltip } from 'choerodon-ui';
 import map from 'lodash/map';
 import MouserOverWrapper from '../../../../../../components/MouseOverWrapper';
 import TimePopover from '../../../../../../components/timePopover/TimePopover';
-import StatusTags from '../../../../../../components/StatusTags';
+import StatusTags from '../../../../../../components/status-tag';
 import { useResourceStore } from '../../../../stores';
 import { useInstanceStore } from '../stores';
 
@@ -26,15 +26,6 @@ const PodDetail = memo(() => {
 
   function renderName({ value, record }) {
     const status = record.get('status');
-    const statusStyle = {
-      textOverflow: 'ellipsis',
-      width: '100%',
-      height: 20,
-      lineHeight: '20px',
-      overflow: 'hidden',
-      whiteSpace: 'nowrap',
-      marginRight: '.08rem',
-    };
     const wrapStyle = {
       width: 54,
       verticalAlign: 'bottom',
@@ -52,7 +43,7 @@ const PodDetail = memo(() => {
     return (
       <div>
         <StatusTags
-          ellipsis={wrap ? statusStyle : null}
+          ellipsis={wrap}
           color={color}
           name={status}
           style={wrapStyle}

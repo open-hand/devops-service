@@ -1,35 +1,36 @@
-import React, { useMemo, useState, useCallback } from 'react';
-import { FormattedMessage } from 'react-intl';
+import React, { useMemo, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Action } from '@choerodon/master';
-import {
-  Button,
-  Popover,
-} from 'choerodon-ui';
 import { Table } from 'choerodon-ui/pro';
 import MouserOverWrapper from '../../../../../../components/MouseOverWrapper/MouserOverWrapper';
-import StatusTags from '../../../../../../components/StatusTags';
-import { useResourceStore } from '../../../../stores';
-import { useMappingStore } from './stores';
+import StatusTags from '../../../../../../components/status-tag';
 import TimePopover from '../../../../../../components/timePopover/TimePopover';
 import KeyValueModal from '../modals/key-value';
+import { useResourceStore } from '../../../../stores';
+import { useApplicationStore } from '../stores';
+import { useConfigsStore } from './stores';
 
 import './index.less';
 
 const { Column } = Table;
 
-const ConfigMap = observer((props) => {
+const Configs = observer(() => {
   const {
+    intl: { formatMessage },
     prefixCls,
     intlPrefix,
     resourceStore: { getSelectedMenu: { menuId, parentId } },
   } = useResourceStore();
   const {
-    intl: { formatMessage },
+    appStore: {
+      getTabKey: type,
+    },
+  } = useApplicationStore();
+  const {
     tableDs,
     formStore,
-    value: { type },
-  } = useMappingStore();
+  } = useConfigsStore();
+  const statusStyle = useMemo(() => ({ marginRight: '0.08rem' }), []);
 
   const [showModal, setShowModal] = useState(false);
   const [recordId, setRecordId] = useState(null);
@@ -38,11 +39,11 @@ const ConfigMap = observer((props) => {
     return tableDs.query();
   }
 
-  const closeSideBar = useCallback((isLoad) => {
+  function closeSideBar(fresh) {
     setRecordId(null);
     setShowModal(false);
-    isLoad && refresh();
-  });
+    fresh && refresh();
+  }
 
   function handleEdit(record) {
     setRecordId(record.get('id'));
@@ -56,7 +57,7 @@ const ConfigMap = observer((props) => {
         <StatusTags
           name={formatMessage({ id: commandStatus || 'null' })}
           colorCode={commandStatus || 'success'}
-          style={{ minWidth: 40, marginRight: '0.08rem' }}
+          style={statusStyle}
         />
         <a className="content-table-name" onClick={() => handleEdit(record)}>{value}</a>
       </div>
@@ -75,17 +76,18 @@ const ConfigMap = observer((props) => {
     return <TimePopover content={value} />;
   }
 
-  const renderAction = useCallback(({ record }) => {
-    const handleDelete = () => tableDs.delete(record);
+  function renderAction({ record }) {
     const buttons = [
       {
         service: [],
         text: formatMessage({ id: 'delete' }),
-        action: () => handleDelete(record),
+        action: () => {
+          tableDs.delete(record);
+        },
       },
     ];
     return <Action data={buttons} />;
-  }, [formatMessage, tableDs]);
+  }
 
   return (
     <div className={`${prefixCls}-mapping-content`}>
@@ -113,4 +115,4 @@ const ConfigMap = observer((props) => {
   );
 });
 
-export default ConfigMap;
+export default Configs;
