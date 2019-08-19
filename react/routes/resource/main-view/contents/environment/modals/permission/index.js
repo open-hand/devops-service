@@ -1,91 +1,104 @@
-import React, { Fragment, useEffect, useState } from 'react';
+import React, { Fragment, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { FormattedMessage } from 'react-intl';
-import { Select, Form, SelectBox } from 'choerodon-ui/pro';
-import { Button } from 'choerodon-ui';
+import { injectIntl } from 'react-intl';
+import { Select, SelectBox } from 'choerodon-ui/pro';
+import { Form } from 'choerodon-ui';
+import omit from 'lodash/omit';
 import map from 'lodash/map';
+import DynamicSelect from '../../../../components/dynamic-select';
+import { handlePromptError } from '../../../../../../../utils';
 
 import './index.less';
 
+const FormItem = Form.Item;
 const { Option } = Select;
 
+const Permission = observer(({ modal, form, store, tree, onOk, intlPrefix, prefixCls, intl: { formatMessage } }) => {
+  const { getFieldDecorator } = form;
+  const { getUsers } = store;
+  const [isSkip, setIsSkip] = useState(true);
 
-const Permission = observer(({ store, projectId, envId, intlPrefix, prefixCls, formatMessage }) => {
-  const {
-    getUsersData,
-    loadUsers,
-    setUserIds,
-    getUserIds,
-    getSkipCheckPermission,
-    setSkipCheckPermission,
-  } = store;
-  
-  useEffect(() => {
-    loadUsers(projectId, envId);
-  }, [envId, loadUsers, projectId, store]);
+  modal.handleOk(async () => {
+    let users = null;
+    form.validateFields((err, values) => {
+      if (!err) {
+        const selectedUsers = omit(values, ['keys', 'skipCheckPermission']);
+        const skipCheckPermission = values.skipCheckPermission;
+        const userIds = Object.values(selectedUsers);
+        users = {
+          skipCheckPermission,
+          userIds,
+        };
+      }
+    });
 
-  function handleBoxChange(value) {
-    setSkipCheckPermission(value);
+    if (!users.userIds) return false;
+
+    try {
+      const res = await onOk(users);
+      if (!res || !handlePromptError(res)) return false;
+
+      tree.query();
+    } catch (e) {
+      Choerodon.handleResponseError(e);
+      return false;
+    }
+  });
+
+
+  // TODO: 替换掉 SelectBox
+  function handleChange(value) {
+    setIsSkip(value);
   }
 
-  function handleAdd() {
-    setUserIds([...getUserIds, undefined]);
+  function getSelector() {
+    if (isSkip) return null;
+
+    const { getFieldsValue } = form;
+    const data = getFieldsValue();
+
+    const options = map(getUsers, ({ iamUserId, realName }) => {
+      const selectedValues = Object.values(omit(data, 'keys'));
+      return <Select.Option
+        disabled={selectedValues.includes(iamUserId)}
+        key={iamUserId}
+        value={iamUserId}
+      >{realName}</Select.Option>;
+    });
+
+    return <DynamicSelect
+      options={options}
+      form={form}
+      fieldKeys={data}
+      label={formatMessage({ id: `${intlPrefix}.project.member` })}
+      addText={formatMessage({ id: `${intlPrefix}.add.member` })}
+    />;
   }
 
-  function handleDelete(index) {
-    setUserIds(getUserIds.filter((value, key) => index !== key));
-  }
-  
-  function handleChange(value, index) {
-    const data = [...getUserIds];
-    data.splice(index, 1, value);
-    setUserIds(data);
-  }
-
-  return (<Fragment>
-    <Form className={`${prefixCls}-environment-permission-modal`}>
-      <SelectBox
-        value={getSkipCheckPermission}
-        label={formatMessage({ id: `${intlPrefix}.set-operator` })}
-        onChange={handleBoxChange}
-      >
-        <Option value>
-          {formatMessage({ id: `${intlPrefix}.member.all` })}
-        </Option>
-        <Option value={false}>
-          {formatMessage({ id: `${intlPrefix}.member.specific` })}
-        </Option>
-      </SelectBox>
-      {!getSkipCheckPermission && (<div>
-        {map(getUserIds, (item, index) => (<div>
-          <Select
-            label={formatMessage({ id: `${intlPrefix}.project.member` })}
-            searchable
-            required
-            value={item}
-            onChange={value => handleChange(value, index)}
-            className="member-select-item"
-          >
-            {map(getUsersData, ({ iamUserId, realName, loginName }) => (
-              <Option value={iamUserId}>{realName}&nbsp;{loginName}</Option>
-            ))}
-          </Select>
-          <Button
-            shape="circle"
-            icon="delete"
-            onClick={() => handleDelete(index)}
-          />
-        </div>))}
-        <Button
-          icon="add"
-          type="primary"
-          onClick={handleAdd}
-        >
-          <FormattedMessage id={`${intlPrefix}.add.member`} />
-        </Button>
-      </div>)}
-    </Form>
-  </Fragment>);
+  form.getFieldDecorator('keys', { initialValue: ['key0'] });
+  return (
+    <Fragment>
+      <div className={`${prefixCls}-modal-head`}>{formatMessage({ id: `${intlPrefix}.set-operator` })}</div>
+      <Form>
+        <div className={`${prefixCls}-modal-selectbox`}>
+          <FormItem>
+            {getFieldDecorator('skipCheckPermission', { initialValue: isSkip })(<SelectBox
+              // readOnly={!getUsers.length}
+              onChange={handleChange}
+            >
+              <Option value>
+                {formatMessage({ id: `${intlPrefix}.member.all` })}
+              </Option>
+              <Option value={false}>
+                {formatMessage({ id: `${intlPrefix}.member.specific` })}
+              </Option>
+            </SelectBox>)}
+          </FormItem>
+        </div>
+        {getSelector()}
+      </Form>
+    </Fragment>
+  );
 });
 
-export default Permission;
+export default Form.create()(injectIntl(Permission));

@@ -3,11 +3,11 @@ import { observer } from 'mobx-react-lite';
 import { TabPage, Content, Header, Breadcrumb } from '@choerodon/master';
 import CodeManagerHeader from '../../header';
 import CodeManagerToolBar from '../../tool-bar';  
-import CodeManagerCiPipelineManage from '../../ciPipelineManage';
+import CodeManagerCiPipelineManage from '../../contents/ciPipelineManage';
 
 import '../index.less';
 
-const CiPipelineManage = observer(props => <TabPage>
+const CiPipelineManage = observer((props) => <TabPage>
   <CodeManagerToolBar name="CodeManagerCiPipelineManage" key="CodeManagerCiPipelineManage" />
   <CodeManagerHeader />
   <Content className="c7ncd-code-manager-content">

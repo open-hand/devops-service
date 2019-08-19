@@ -1,4 +1,5 @@
 import React from 'react';
+import { Progress } from 'choerodon-ui';
 import PropTypes from 'prop-types';
 
 import './index.less';
@@ -12,7 +13,7 @@ TitleWrap.propTypes = {
 };
 
 export const FailBack = ({ prefixCls }) => <TitleWrap prefixCls={prefixCls}>
-  <div className={`${prefixCls}-title-loading`}>正在请求数据</div>
+  <Progress type="loading" size="small" />
 </TitleWrap>;
 
 FailBack.propTypes = {
@@ -30,7 +31,4 @@ export default function PrefixTitle({ prefixCls, fallback, children }) {
 PrefixTitle.propTypes = {
   prefixCls: PropTypes.string,
   fallback: PropTypes.bool,
-};
-
-export const ResourceTitle = ({ record }) => {
 };

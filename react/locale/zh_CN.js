@@ -55,6 +55,7 @@ const commonField = {
   routing: '路由',
   port: '端口',
   protocol: '协议',
+  import: '导入',
 
   // 状态描述
   null: '无',
@@ -68,6 +69,7 @@ const commonField = {
   stopped: '已停止',
   failed: '失败',
   deleted: '已删除',
+  creating: '创建中',
 
   // public
   detail: '详情',
@@ -155,7 +157,7 @@ const commonField = {
 const deployment = {
   'c7ncd.deployment.viewer.instance': '实例视图',
   'c7ncd.deployment.viewer.resource': '资源视图',
-  'c7ncd.deployment.environment.tabs.sync': '提交同步情况',
+  'c7ncd.deployment.environment.tabs.sync': 'GitOps日志',
   'c7ncd.deployment.environment.tabs.assignPermissions': '已分配权限人员',
   'c7ncd.deployment.environment.error.logs': '错误日志',
   'c7ncd.deployment.environment.error.info': '错误信息',
@@ -227,6 +229,7 @@ const deployment = {
   'c7ncd.deployment.mapping.yaml': '配置类型',
   'c7ncd.deployment.mapping.name.failed': '名称只能由小写字母、数字、"-"组成，且以小写字母开头，不能以"-"结尾',
   'c7ncd.deployment.modal.link-service': '关联服务',
+  'c7ncd.deployment.modal.remove-service': '解除关联',
   'c7ncd.deployment.modal.env-detail': '环境详情',
   'c7ncd.deployment.modal.permission': '权限管理',
   'c7ncd.deployment.modal.values': '修改Values',
@@ -308,6 +311,24 @@ const appService = {
   'c7ncd.appService.version.specific': '特定版本',
   'c7ncd.appService.version.type': '特定类型',
   'c7ncd.appService.share.range': '共享范围',
+  'c7ncd.appService.mbr': '成员',
+  'c7ncd.appService.add.mbr': '添加成员',
+  'c7ncd.appService.repoUrl': '仓库地址',
+  'c7ncd.appService.import.type': '导入方式',
+  'c7ncd.appService.import.type.platform': '从平台应用导入',
+  'c7ncd.appService.import.type.github': '从GitHub导入',
+  'c7ncd.appService.import.type.gitlab': '从GitLab导入',
+  'c7ncd.appService.url.gitlab': 'GitLab地址',
+  'c7ncd.appService.url.github': 'GitHub地址',
+  'c7ncd.appService.token': '私有Token',
+  'c7ncd.appService.import': '导入应用服务',
+  'c7ncd.appService.add': '添加应用服务',
+  'c7ncd.appService.app': '所属应用',
+  'c7ncd.appService.source': '应用来源',
+  'c7ncd.appService.source.true': '组织共享',
+  'c7ncd.appService.source.false': '市场下载',
+  'c7ncd.appService.test.failed': '连接失败',
+  'c7ncd.appService.test.success': '连接成功',
 };
 
 // 文档地址前缀

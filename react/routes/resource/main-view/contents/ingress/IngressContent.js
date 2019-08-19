@@ -15,7 +15,7 @@ import { useResourceStore } from '../../../stores';
 import { useIngressStore } from './stores';
 import Modals from './modals';
 import MouserOverWrapper from '../../../../../components/MouseOverWrapper';
-import StatusTags from '../../../../../components/StatusTags';
+import StatusTags from '../../../../../components/status-tag';
 
 import './index.less';
 import DomainModal from '../application/modals/domain';

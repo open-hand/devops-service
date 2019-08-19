@@ -1,12 +1,12 @@
-import React, { Fragment, useRef, useMemo, lazy, Suspense } from 'react';
+import React, { Fragment, useRef, useMemo, lazy, Suspense, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import isEmpty from 'lodash/isEmpty';
 import classnames from 'classnames';
 import Draggable from 'react-draggable';
 import Sidebar from './sidebar';
 import LoadingBar from '../../../components/loadingBar';
-import { useMainStore } from './stores';
 import { useResourceStore } from '../stores';
+import { useMainStore } from './stores';
 import { useResize, X_AXIS_WIDTH, X_AXIS_WIDTH_MAX } from './useResize';
 
 import './styles/index.less';
@@ -62,8 +62,9 @@ const MainView = observer(() => {
   } = useResourceStore();
   const { mainStore } = useMainStore();
   const rootRef = useRef(null);
+
+  const { menuType } = getSelectedMenu;
   const content = useMemo(() => {
-    const { menuType } = getSelectedMenu;
     const cmMaps = {
       [ENV_ITEM]: getViewType === IST_VIEW_TYPE ? <EnvContent /> : <ResourceEnvContent />,
       [APP_ITEM]: <AppContent />,
@@ -85,7 +86,8 @@ const MainView = observer(() => {
     return cmMaps[menuType]
       ? <Suspense fallback={<div>loading</div>}>{cmMaps[menuType]}</Suspense>
       : <div>加载中</div>;
-  }, [getSelectedMenu.menuType, getViewType]);
+  }, [menuType, getViewType]);
+
   const {
     isDragging,
     bounds,

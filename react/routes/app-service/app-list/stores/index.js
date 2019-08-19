@@ -4,6 +4,8 @@ import { injectIntl } from 'react-intl';
 import { DataSet } from 'choerodon-ui/pro';
 import useStore from './useStore';
 import ListDataSet from './ListDataSet';
+import ImportDataSet from './ImportDataSet';
+import ImportTableDataSet from './ImportTableDataSet';
 
 const Store = createContext();
 
@@ -21,12 +23,16 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const intlPrefix = 'c7ncd.appService';
     const AppStore = useMemo(() => useStore(), []);
     const listDs = useMemo(() => new DataSet(ListDataSet(intlPrefix, formatMessage, projectId)), [formatMessage, projectId]);
+    const importDs = useMemo(() => new DataSet(ImportDataSet(intlPrefix, formatMessage, projectId)), [formatMessage, projectId]);
+    const importTableDs = useMemo(() => new DataSet(ImportTableDataSet(intlPrefix, formatMessage, projectId)), [formatMessage, projectId]);
 
     const value = {
       ...props,
       prefixCls: 'c7ncd-appService',
       intlPrefix,
       listDs,
+      importDs,
+      importTableDs,
       AppStore,
     };
     return (

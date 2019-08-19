@@ -1,6 +1,19 @@
-.c7ncd-deployment-environment-permission-modal {
+@import '~choerodon-ui/lib/style/themes/default';
 
-  .member-select-item {
-    margin: .07rem 0 .3rem;
+.c7ncd-deployment-modal {
+  &-head {
+    height: .15rem;
+    font-size: .12rem;
+    font-weight: 500;
+    color: rgba(0, 0, 0, 1);
+    line-height: .15rem;
+  }
+
+  &-selectbox {
+    .@{c7n-pro-prefix}-select-box {
+      .@{c7n-pro-prefix}-radio-wrapper {
+        margin-right: .3rem;
+      }
+    }
   }
 }

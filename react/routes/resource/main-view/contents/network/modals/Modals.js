@@ -27,10 +27,6 @@ const EnvModals = observer(() => {
 
   const [showModal, setShowModal] = useState(false);
 
-  useEffect(() => {
-    resourceStore.setNoHeader(false);
-  }, [resourceStore]);
-
   function refresh() {
     networkDs.query();
   }

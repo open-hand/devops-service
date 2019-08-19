@@ -32,10 +32,6 @@ const CustomModals = observer(() => {
 
   const [showModal, setShowModal] = useState(false);
 
-  useEffect(() => {
-    resourceStore.setNoHeader(false);
-  }, [resourceStore]);
-
   function refresh() {
     customDs.query();
   }

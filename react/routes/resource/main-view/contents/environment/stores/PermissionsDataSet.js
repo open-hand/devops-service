@@ -1,7 +1,6 @@
 import getTablePostData from '../../../../../../utils/getTablePostData';
 
-export default ({ intl, intlPrefix, projectId, envId }) => ({
-  autoQuery: true,
+export default ({ formatMessage, intlPrefix, projectId, id }) => ({
   selection: false,
   pageSize: 10,
   transport: {
@@ -9,7 +8,7 @@ export default ({ intl, intlPrefix, projectId, envId }) => ({
       const postData = getTablePostData(data);
 
       return {
-        url: `/devops/v1/projects/${projectId}/envs/page_by_options?env_id=${envId}`,
+        url: `/devops/v1/projects/${projectId}/envs/page_by_options?env_id=${id}`,
         method: 'post',
         data: postData,
       };
@@ -24,34 +23,34 @@ export default ({ intl, intlPrefix, projectId, envId }) => ({
     {
       name: 'realName',
       type: 'string',
-      label: intl.formatMessage({ id: `${intlPrefix}.environment.permission.user` }),
+      label: formatMessage({ id: `${intlPrefix}.environment.permission.user` }),
     },
     {
       name: 'loginName',
       type: 'string',
-      label: intl.formatMessage({ id: `${intlPrefix}.environment.permission.name` }),
+      label: formatMessage({ id: `${intlPrefix}.environment.permission.name` }),
     },
     {
       name: 'role',
       type: 'string',
-      label: intl.formatMessage({ id: `${intlPrefix}.environment.permission.role` }),
+      label: formatMessage({ id: `${intlPrefix}.environment.permission.role` }),
     },
     {
       name: 'createDate',
       type: 'dateTime',
-      label: intl.formatMessage({ id: `${intlPrefix}.environment.permission.addTime` }),
+      label: formatMessage({ id: `${intlPrefix}.environment.permission.addTime` }),
     },
   ],
   queryFields: [
     {
       name: 'realName',
       type: 'string',
-      label: intl.formatMessage({ id: `${intlPrefix}.environment.permission.user` }),
+      label: formatMessage({ id: `${intlPrefix}.environment.permission.user` }),
     },
     {
       name: 'loginName',
       type: 'string',
-      label: intl.formatMessage({ id: `${intlPrefix}.environment.permission.name` }),
+      label: formatMessage({ id: `${intlPrefix}.environment.permission.name` }),
     },
   ],
 });

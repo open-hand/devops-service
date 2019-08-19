@@ -8,7 +8,7 @@ import {
 } from 'choerodon-ui';
 import { Table } from 'choerodon-ui/pro';
 import MouserOverWrapper from '../../../../../components/MouseOverWrapper/MouserOverWrapper';
-import StatusTags from '../../../../../components/StatusTags';
+import StatusTags from '../../../../../components/status-tag';
 import TimePopover from '../../../../../components/timePopover/TimePopover';
 import { useResourceStore } from '../../../stores';
 import { useKeyValueStore } from './stores';
