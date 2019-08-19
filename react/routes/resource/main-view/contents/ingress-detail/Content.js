@@ -6,7 +6,7 @@ import map from 'lodash/map';
 import { useResourceStore } from '../../../stores';
 import { useCustomDetailStore } from './stores';
 import Modals from './modals';
-import StatusTags from '../../../../../components/StatusTags';
+import StatusTags from '../../../../../components/status-tag';
 
 import './index.less';
 import MouserOverWrapper from '../../../../../components/MouseOverWrapper';

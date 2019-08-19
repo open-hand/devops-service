@@ -1,10 +1,8 @@
 import { useLocalStore } from 'mobx-react-lite';
 
-const SYNC_TAB = 'sync';
-
-export default function useStore() {
+export default function useStore({ NET_TAB }) {
   return useLocalStore(() => ({
-    tabKey: SYNC_TAB,
+    tabKey: NET_TAB,
 
     setTabKey(data) {
       this.tabKey = data;

@@ -22,21 +22,23 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const { intl: { formatMessage }, AppState: { currentMenuType: { id } }, children } = props;
     const { intlPrefix, resourceStore } = useResourceStore();
     const { getSelectedMenu: { menuId } } = resourceStore;
-    const envStore = useStore();
 
     const tabs = useMemo(() => ({
       SYNC_TAB: 'sync',
       ASSIGN_TAB: 'assign',
     }), []);
+    const envStore = useStore(tabs);
     const baseInfoDs = useMemo(() => new DataSet(BaseInfoDataSet()), []);
-    const permissionsDs = useMemo(() => new DataSet(PermissionsDataSet({ formatMessage, intlPrefix })), []);
+    const permissionsDs = useMemo(() => new DataSet(PermissionsDataSet({
+      formatMessage,
+      intlPrefix,
+      projectId: id,
+      id: menuId,
+    })), [id, menuId]);
     const gitopsLogDs = useMemo(() => new DataSet(GitopsLogDataSet({ formatMessage, intlPrefix })), []);
     const gitopsSyncDs = useMemo(() => new DataSet(GitopsSyncDataSet()), []);
     const retryDs = useMemo(() => new DataSet(RetryDataSet()), []);
 
-    useEffect(() => {
-      resourceStore.setNoHeader(false);
-    }, []);
 
     useEffect(() => {
       retryDs.transport.read.url = `/devops/v1/projects/${id}/envs/${menuId}/retry`;
@@ -53,7 +55,6 @@ export const StoreProvider = injectIntl(inject('AppState')(
         gitopsLogDs.transport.read.url = `/devops/v1/projects/${id}/envs/${menuId}/error_file/page_by_env`;
         gitopsLogDs.query();
       } else if (tabKey === tabs.ASSIGN_TAB) {
-        permissionsDs.transport.read.url = `/devops/v1/projects/${id}/envs/page_by_options?env_id=${menuId}`;
         permissionsDs.query();
       }
     }, [id, menuId, tabKey]);

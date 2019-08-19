@@ -1,4 +1,4 @@
-export const itemTypeMappings = {
+const itemTypeMappings = {
   ENV_ITEM: 'environment',
   APP_ITEM: 'application',
   IST_ITEM: 'instances',
@@ -17,11 +17,21 @@ export const itemTypeMappings = {
   IST_GROUP: 'group_instances',
 };
 
-export const viewTypeMappings = {
+const viewTypeMappings = {
   IST_VIEW_TYPE: 'instance',
   RES_VIEW_TYPE: 'resource',
 };
 
-export const RES_TYPES = ['instances', 'services', 'ingresses', 'certifications', 'configMaps', 'secrets', 'customResources'];
+const RES_TYPES = ['instances', 'services', 'ingresses', 'certifications', 'configMaps', 'secrets', 'customResources'];
 
-export const ENV_KEYS = ['id', 'name', 'connect', 'synchronize'];
+const ENV_KEYS = ['id', 'name', 'connect', 'synchronize'];
+
+const noHeader = [];
+
+export {
+  itemTypeMappings,
+  viewTypeMappings,
+  RES_TYPES,
+  ENV_KEYS,
+  noHeader,
+};

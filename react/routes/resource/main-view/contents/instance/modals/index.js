@@ -36,10 +36,6 @@ const EnvModals = observer(() => {
     width: 'calc(100vw - 3.52rem)',
   }), []);
 
-  useEffect(() => {
-    resourceStore.setNoHeader(false);
-  }, []);
-
   function openValueModal() {
     const { menuId, parentId } = resourceStore.getSelectedMenu;
     const { appServiceVersionId } = istStore.getDetail;

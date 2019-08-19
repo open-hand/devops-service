@@ -8,7 +8,7 @@ export default function useStore() {
   return useLocalStore(() => ({
     selectedMenu: {},
     viewType: IST_VIEW_TYPE,
-    noHeader: true,
+    noHeader: false,
     setSelectedMenu(data) {
       this.selectedMenu = data;
       this.noHeader = NO_HEADER.includes(menuType);

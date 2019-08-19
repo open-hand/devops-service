@@ -1,4 +1,4 @@
-import getTablePostData from '../../../../../../../utils/getTablePostData';
+import getTablePostData from '../../../../../../utils/getTablePostData';
 
 export default ({ formatMessage, type, projectId, envId, appId }) => {
   const url = {
@@ -13,7 +13,6 @@ export default ({ formatMessage, type, projectId, envId, appId }) => {
   };
 
   return ({
-    autoQuery: true,
     selection: false,
     pageSize: 10,
     transport: {
