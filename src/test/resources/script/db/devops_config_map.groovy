@@ -20,6 +20,12 @@ databaseChangeLog(logicalFilePath: 'dba/devops_config_map.groovy') {
         }
 
         addUniqueConstraint(tableName: 'devops_config_map',
-                constraintName: 'config_map_uk_env_id_name', columnNames: 'env_id,name')
+                constraintName: 'uk_env_id_name', columnNames: 'env_id,name')
     }
+
+
+    changeSet(author: 'runge', id: '2019-01-07-change-column') {
+        modifyDataType(tableName: 'devops_config_map', columnName: 'name', newDataType: 'VARCHAR(128)')
+    }
+
 }

@@ -31,12 +31,30 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_template.groovy') {
                 constraintName: 'uk_org_id_code', columnNames: 'organization_id,code')
     }
 
+    changeSet(author: 'n1ck', id: '2018-11-20-modify-column-collate') {
+        sql("ALTER TABLE devops_app_template MODIFY COLUMN `name` VARCHAR(32) BINARY")
+    }
 
     changeSet(author: 'younger', id: '2018-11-21-add-column') {
         addColumn(tableName: 'devops_app_template') {
             column(name: 'is_synchro', type: 'TINYINT UNSIGNED', defaultValue: "0", remarks: 'is synchro', afterColumn: 'gitlab_project_id')
             column(name: 'is_failed', type: 'TINYINT UNSIGNED', defaultValue: "0", remarks: 'is failed', afterColumn: 'is_synchro')
         }
+        sql("UPDATE  devops_app_template  dat SET dat.is_synchro= (CASE when dat.gitlab_project_id is not null THEN 1  else  0  END)")
+        sql("UPDATE devops_app_template  dat SET dat.is_failed= (CASE when dat.gitlab_project_id  is  null THEN 1  else  0  END)")
+    }
+
+    changeSet(author: 'younger', id: '2018-11-23-add-sql') {
+        sql("UPDATE devops_app_template  dat SET dat.is_failed= 0,dat.is_synchro= 1 where organization_id is null")
+    }
+
+    changeSet(author: 'younger', id: '2018-12-17-delete-data') {
+        sql("delete from devops_app_template  where `code` = 'ChoerodonMoChaTemplate'")
+    }
+
+
+    changeSet(author: 'Sheep', id: '2019-08-02-delete-table') {
+        dropTable(tableName: "devops_app_template")
     }
 
 }

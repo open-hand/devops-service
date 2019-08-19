@@ -56,10 +56,15 @@ databaseChangeLog(logicalFilePath: 'dba/devops_application.groovy') {
 
     }
 
+    changeSet(author: 'n1ck', id: '2018-11-20-modify-column-collate') {
+        sql("ALTER TABLE devops_application MODIFY COLUMN `name` VARCHAR(64) BINARY")
+    }
+
     changeSet(author: 'younger', id: '2018-11-22-add-column') {
         addColumn(tableName: 'devops_application') {
             column(name: 'type', type: 'VARCHAR(50)', remarks: '应用类型', afterColumn: 'code')
         }
+        sql("UPDATE devops_application  da SET da.type = 'normal'")
     }
 
     changeSet(author: 'n1ck', id: '2018-11-23-add-column') {
@@ -73,10 +78,31 @@ databaseChangeLog(logicalFilePath: 'dba/devops_application.groovy') {
         sql("UPDATE devops_application da SET da.is_skip_check_permission = FALSE WHERE da.is_skip_check_permission IS NULL")
     }
 
+
     changeSet(author: '10980', id: '2019-3-13-add-column') {
         addColumn(tableName: 'devops_application') {
             column(name: 'harbor_config_id', type: 'BIGINT UNSIGNED', remarks: 'harbor配置信息', afterColumn: 'app_template_id')
             column(name: 'chart_config_id', type: 'BIGINT UNSIGNED', remarks: 'chart配置信息', afterColumn: 'harbor_config_id')
         }
+    }
+
+    changeSet(author: 'scp', id: '2019-7-29-rename-table') {
+        addColumn(tableName: 'devops_application') {
+            column(name: 'img_url', type:  'VARCHAR(200)', remarks: '图标url', afterColumn: 'is_failed')
+        }
+        renameTable(newTableName: 'devops_app_service', oldTableName: 'devops_application')
+
+    }
+
+    changeSet(author: 'Younger', id: '2019-8-05-drop-column') {
+        dropColumn(columnName: "app_template_id", tableName: "devops_app_service")
+    }
+
+    changeSet(author: 'zmf', id: '2019-08-06-rename-project-id-column') {
+        renameColumn(columnDataType: 'BIGINT UNSIGNED', newColumnName: 'app_id', oldColumnName: 'project_id', tableName: 'devops_app_service', remarks: '应用ID')
+    }
+
+    changeSet(author: 'zmf', id: '2019-08-07-drop-UniqueConstraint') {
+        dropUniqueConstraint(constraintName: "devops_app_uk_project_id_name", tableName: "devops_app_service")
     }
 }

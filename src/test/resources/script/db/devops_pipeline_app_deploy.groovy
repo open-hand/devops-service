@@ -21,4 +21,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_app_deploy.groovy') {
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
+
+    changeSet(author: 'scp', id: '2019-7-29-rename-table') {
+        renameColumn(columnDataType: 'BIGINT UNSIGNED', newColumnName: 'app_service_id', oldColumnName: 'application_id', tableName: 'devops_pipeline_app_deploy')
+        renameTable(newTableName: 'devops_pipeline_app_service_deploy', oldTableName: 'devops_pipeline_app_deploy')
+    }
+
 }

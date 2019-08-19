@@ -51,4 +51,31 @@ databaseChangeLog(logicalFilePath: 'dba/devops_branch.groovy') {
     changeSet(author: 'crockitwood', id: '2018-09-28-drop-branch-constraint') {
         dropUniqueConstraint(constraintName: "uk_branch_name_commit",tableName: "devops_branch")
     }
+
+    changeSet(author: 'younger', id: '2019-05-27-add-index') {
+        createIndex(indexName: "idx_branchname_appid_isdeleted_creationdate ", tableName: "devops_branch") {
+            column(name: "branch_name")
+            column(name: "app_id")
+            column(name: "is_deleted")
+            column(name: "creation_date")
+        }
+    }
+
+    changeSet(author: 'scp', id: '2019-06-13-add-index') {
+        createIndex(indexName: "idx_app_id", tableName: "devops_branch") {
+            column(name: "app_id")
+        }
+    }
+
+
+    changeSet(author: 'sheep', id: '2019-06-13-add-column') {
+        addColumn(tableName: 'devops_branch') {
+            column(name: 'status', type: 'VARCHAR(32)', remarks: '分支创建状态', afterColumn: 'branch_name', defaultValue: "success")
+            column(name: 'error_message', type: 'VARCHAR(5000)', remarks: '分支创建失败错误信息', afterColumn: 'status')
+        }
+    }
+
+    changeSet(author: 'scp', id: '2019-07-29-rename-column') {
+        renameColumn(columnDataType: 'BIGINT UNSIGNED', newColumnName: 'app_service_id', oldColumnName: 'app_id', tableName: 'devops_branch')
+    }
 }

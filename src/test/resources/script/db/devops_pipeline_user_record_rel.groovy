@@ -18,4 +18,13 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_user_record_rel.groovy')
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
+
+    changeSet(author: 'scp', id: '2019-06-04-idx-project-id') {
+        createIndex(indexName: "idx_task_record_id ", tableName: "devops_pipeline_user_record_rel") {
+            column(name: "task_record_id")
+        }
+        createIndex(indexName: "idx_stage_record_id ", tableName: "devops_pipeline_user_record_rel") {
+            column(name: "stage_record_id")
+        }
+    }
 }

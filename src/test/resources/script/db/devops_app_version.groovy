@@ -22,14 +22,14 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_versionion.groovy') {
         }
         addUniqueConstraint(tableName: 'devops_app_version',
                 constraintName: 'uk_app_id_version', columnNames: 'app_id,version')
-        createIndex(indexName: "app_version_idx_app_id", tableName: "devops_app_version") {
+        createIndex(indexName: "idx_app_id", tableName: "devops_app_version") {
             column(name: "app_id")
         }
     }
 
 
     changeSet(author: 'younger', id: '2018-09-03-modify-index') {
-        dropIndex(indexName: "app_version_idx_app_id",tableName: "devops_app_version")
+        dropIndex(indexName: "idx_app_id",tableName: "devops_app_version")
 
         createIndex(indexName: "app_version_idx_app_id", tableName: "devops_app_version") {
             column(name: "app_id")
@@ -43,4 +43,25 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_versionion.groovy') {
         }
     }
 
+    changeSet(author: 'scp', id: '2019-04-16-app-version-add--index') {
+        createIndex(indexName: "idx_commit_version", tableName: "devops_app_version") {
+            column(name: "commit")
+            column(name: 'version')
+        }
+    }
+
+    changeSet(author: 'scp', id: '2019-07-03-add-column') {
+        addColumn(tableName: 'devops_app_version') {
+            column(name: 'publish_time', type: 'DATETIME', remarks: 'publish time', afterColumn: 'is_publish')
+        }
+    }
+
+    changeSet(author: 'scp', id: '2019-07-29-rename-column') {
+        renameColumn(columnDataType: 'BIGINT UNSIGNED', newColumnName: 'app_service_id', oldColumnName: 'app_id', tableName: 'devops_app_version')
+    }
+
+
+    changeSet(author: 'sheep', id: '2019-8-05-rename-table') {
+        renameTable(newTableName: 'devops_app_service_version', oldTableName: 'devops_app_version')
+    }
 }

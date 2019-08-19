@@ -21,7 +21,6 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_version_readme.groovy') {
 
 
 
-
     changeSet(author: 'Runge', id: '2018-10-08-drop-column') {
         dropColumn(columnName: "object_version_number", tableName: "devops_app_version_readme")
         dropColumn(columnName: "created_by", tableName: "devops_app_version_readme")
@@ -33,5 +32,11 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_version_readme.groovy') {
     }
 
 
+    changeSet(author: 'Sheep', id: '2019-07-05-updateDataType') {
+        modifyDataType(tableName: 'devops_app_version_readme', columnName: 'readme', newDataType: 'MEDIUMTEXT')
+    }
 
+    changeSet(author: 'sheep', id: '2019-8-05-rename-table') {
+        renameTable(newTableName: 'devops_app_service_version_readme', oldTableName: 'devops_app_version_readme')
+    }
 }

@@ -40,10 +40,70 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_market.groovy') {
     }
 
     changeSet(author: 'younger', id: '2018-09-03-modify-index') {
-        dropIndex(indexName: "idx_app_id",tableName: "devops_app_market")
+        dropIndex(indexName: "idx_app_id", tableName: "devops_app_market")
 
         createIndex(indexName: "devops_market_idx_app_id", tableName: "devops_app_market") {
             column(name: "app_id")
         }
+    }
+    changeSet(author: 'scp', id: '2019-06-28-add-column') {
+        addColumn(tableName: 'devops_app_market') {
+            column(name: 'is_free', type: 'TINYINT UNSIGNED', remarks: '是否收费', afterColumn: "publish_level", defaultValue: "1")
+        }
+    }
+
+    changeSet(id: '2019-06-28-rename-table', author: 'scp') {
+        renameTable(newTableName: 'devops_app_share', oldTableName: 'devops_app_market')
+    }
+
+    changeSet(author: 'scp', id: '2019-07-02-add-column') {
+        addColumn(tableName: 'devops_app_share') {
+            column(name: 'is_site', type: 'TINYINT UNSIGNED', remarks: '是否发布到平台层', afterColumn: "publish_level", defaultValue: "0")
+        }
+    }
+
+    changeSet(id: '2019-07-24-rename-table', author: 'scp') {
+        dropColumn(columnName: "contributor", tableName: "devops_app_share")
+        dropColumn(columnName: "description", tableName: "devops_app_share")
+        dropColumn(columnName: "img_url", tableName: "devops_app_share")
+        dropColumn(columnName: "is_site", tableName: "devops_app_share")
+        dropColumn(columnName: "is_free", tableName: "devops_app_share")
+        renameColumn(columnDataType: 'VARCHAR(100)', newColumnName: 'share_level', oldColumnName: 'publish_level', remarks: '共享层级', tableName: 'devops_app_share')
+        renameTable(newTableName: 'devops_app_share_rule', oldTableName: 'devops_app_share')
+    }
+
+    changeSet(id: '2019-07-26-modify-table', author: 'scp') {
+        dropColumn(columnName: "category", tableName: "devops_app_share_rule")
+        dropColumn(columnName: "is_active", tableName: "devops_app_share_rule")
+        addColumn(tableName: 'devops_app_share_rule') {
+            column(name: 'version_type', type: 'VARCHAR(50)', remarks: '版本类型',afterColumn: "share_level")
+            column(name: 'version', type: 'VARCHAR(100)', remarks: '指定版本', afterColumn: "version_type")
+            column(name: 'project_id', type: 'BIGINT UNSIGNED', remarks: 'project Id', afterColumn: "version")
+            column(name: 'organization_id', type: 'BIGINT UNSIGNED', remarks: '组织Id', afterColumn: "project_id")
+        }
+    }
+
+    changeSet(author: 'scp', id: '2019-07-29-rename-column') {
+        renameColumn(columnDataType: 'BIGINT UNSIGNED', newColumnName: 'app_service_id', oldColumnName: 'app_id', tableName: 'devops_app_share_rule')
+    }
+
+    changeSet(id: '2019-07-26-drop-column', author: 'scp') {
+        dropColumn(columnName: "organization_id", tableName: "devops_app_share_rule")
+    }
+
+    changeSet(id: '2019-07-26-drop-constraint', author: 'scp') {
+        dropUniqueConstraint(constraintName: "uk_app_id",tableName: "devops_app_share_rule")
+    }
+
+    changeSet(id: '2019-08-05-rename-table', author: 'scp') {
+        renameTable(newTableName: 'devops_app_service_share_rule', oldTableName: 'devops_app_share_rule')
+    }
+
+    changeSet(author: 'zmf', id: '2019-08-06-rename-project-id-column') {
+        renameColumn(columnDataType: 'BIGINT UNSIGNED', newColumnName: 'app_id', oldColumnName: 'project_id', tableName: 'devops_app_service_share_rule', remarks: '应用ID')
+    }
+
+    changeSet(author: 'li jinyan', id: '2019-08-14-drop-column'){
+        dropColumn(columnName: "app_id", tableName: "devops_app_service_share_rule")
     }
 }
