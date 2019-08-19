@@ -273,13 +273,14 @@
         AND `status` != 'deleted';
     </select>
 
-    <update id="setLabelsToNull">
+
+    <update id="updateLables">
         UPDATE devops_service ds
         SET ds.labels = null
         WHERE ds.id = #{serviceId}
     </update>
 
-    <update id="setEndPointToNull">
+    <update id="updateEndPoint">
         UPDATE devops_service ds
         SET ds.end_points = null
         WHERE ds.id = #{serviceId}

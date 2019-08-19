@@ -142,7 +142,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
     @Override
     public DevopsServiceVO query(Long id) {
-        return queryDtoToVo(devopsServiceMapper.queryById(id));
+        return queryDtoToVo(devopsServiceMapper.selectById(id));
     }
 
     @Override
@@ -494,6 +494,11 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         DevopsServiceDTO devopsServiceDTO = new DevopsServiceDTO();
         devopsServiceDTO.setEnvId(envId);
         return devopsServiceMapper.select(devopsServiceDTO);
+    }
+
+
+    public DevopsServiceQueryDTO baseQueryById(Long id) {
+        return devopsServiceMapper.selectById(id);
     }
 
 

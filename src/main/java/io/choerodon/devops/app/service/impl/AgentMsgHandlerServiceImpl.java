@@ -25,17 +25,14 @@ import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.util.*;
-import io.choerodon.websocket.Msg;
-import io.choerodon.websocket.process.SocketMsgDispatcher;
-import io.choerodon.websocket.tool.KeyParseTool;
 import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.*;
+import org.checkerframework.checker.units.qual.A;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -61,7 +58,6 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     private static final String PUBLIC = "public";
     private static final Logger logger = LoggerFactory.getLogger(AgentMsgHandlerServiceImpl.class);
     private static final String RESOURCE_VERSION = "resourceVersion";
-    private static final String INIT_AGENT = "init_agent";
     private static final String ENV_NOT_EXIST = "env not exists: {}";
     private static JSON json = new JSON();
     private static ObjectMapper objectMapper = new ObjectMapper();
@@ -72,8 +68,6 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     private String helmUrl;
     @Value("${agent.repoUrl}")
     private String agentRepoUrl;
-    @Value("${agent.certManagerUrl}")
-    private String certManagerUrl;
 
 
     @Autowired
@@ -102,13 +96,6 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
     private DevopsEnvCommandService devopsEnvCommandService;
-    @Autowired
-    @Lazy
-    private SocketMsgDispatcher socketMsgDispatcher;
-    @Autowired
-    private AppServiceShareRuleService appServiceShareRuleService;
-    @Autowired
-    private DevopsCommandEventService devopsCommandEventService;
     @Autowired
     private DevopsEnvFileResourceService devopsEnvFileResourceService;
     @Autowired
@@ -139,13 +126,18 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     private DevopsCustomizeResourceService devopsCustomizeResourceService;
     @Autowired
     private AgentPodService agentPodService;
+    @Autowired
+    private AgentCommandService agentCommandService;
+    @Autowired
+    DevopsCommandEventService devopsCommandEventService;
+
 
 
     public void handlerUpdatePodMessage(String key, String msg, Long envId) {
         V1Pod v1Pod = json.deserialize(msg, V1Pod.class);
 
         AppServiceInstanceDTO appServiceInstanceDTO =
-                appServiceInstanceService.baseQueryByCodeAndEnv(KeyParseTool.getReleaseName(key), envId);
+                appServiceInstanceService.baseQueryByCodeAndEnv(KeyParseUtil.getReleaseName(key), envId);
         if (appServiceInstanceDTO == null) {
             logger.info("instance not found");
             return;
@@ -156,11 +148,11 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                         appServiceInstanceDTO.getId(),
                         null,
                         null,
-                        KeyParseTool.getResourceType(key),
+                        KeyParseUtil.getResourceType(key),
                         v1Pod.getMetadata().getName());
         DevopsEnvResourceDetailDTO devopsEnvResourceDetailDTO = new DevopsEnvResourceDetailDTO();
         devopsEnvResourceDetailDTO.setMessage(msg);
-        devopsEnvResourceDTO.setKind(KeyParseTool.getResourceType(key));
+        devopsEnvResourceDTO.setKind(KeyParseUtil.getResourceType(key));
         devopsEnvResourceDTO.setEnvId(envId);
         devopsEnvResourceDTO.setName(v1Pod.getMetadata().getName());
         devopsEnvResourceDTO.setReversion(TypeUtil.objToLong(v1Pod.getMetadata().getResourceVersion()));
@@ -246,10 +238,10 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     }
 
     @Override
-    public void handlerReleaseInstall(String key, String msg, Long clusterId) {
+    public void helmInstallResourceInfo(String key, String msg, Long clusterId) {
         Long envId = getEnvId(key, clusterId);
         if (envId == null) {
-            logger.info(ENV_NOT_EXIST, KeyParseTool.getNamespace(key));
+            logger.info(ENV_NOT_EXIST, KeyParseUtil.getNamespace(key));
             return;
         }
         ReleasePayloadVO releasePayloadVO = JSONArray.parseObject(msg, ReleasePayloadVO.class);
@@ -267,19 +259,20 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 appServiceInstanceDTO.setStatus(InstanceStatus.RUNNING.getStatus());
                 appServiceInstanceService.baseUpdate(appServiceInstanceDTO);
                 installResource(resources, appServiceInstanceDTO);
+
             }
         }
     }
 
 
     @Override
-    public void handlerPreInstall(String key, String msg, Long clusterId) {
+    public void helmInstallJobInfo(String key, String msg, Long clusterId) {
         if (msg.equals("null")) {
             return;
         }
         Long envId = getEnvId(key, clusterId);
         if (envId == null) {
-            logger.info(ENV_NOT_EXIST, KeyParseTool.getNamespace(key));
+            logger.info(ENV_NOT_EXIST, KeyParseUtil.getNamespace(key));
             return;
         }
 
@@ -321,7 +314,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         try {
             Long envId = getEnvId(key, clusterId);
             if (envId == null) {
-                logger.info(ENV_NOT_EXIST, KeyParseTool.getNamespace(key) + "clusterId: " + clusterId);
+                logger.info(ENV_NOT_EXIST, KeyParseUtil.getNamespace(key) + "clusterId: " + clusterId);
                 return;
             }
 
@@ -329,16 +322,17 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             DevopsEnvResourceDTO devopsEnvResourceDTO = new DevopsEnvResourceDTO();
             DevopsEnvResourceDetailDTO devopsEnvResourceDetailDTO = new DevopsEnvResourceDetailDTO();
             devopsEnvResourceDetailDTO.setMessage(msg);
-            devopsEnvResourceDTO.setKind(KeyParseTool.getResourceType(key));
+            devopsEnvResourceDTO.setKind(KeyParseUtil.getResourceType(key));
             devopsEnvResourceDTO.setEnvId(envId);
-            devopsEnvResourceDTO.setName(KeyParseTool.getResourceName(key));
+            devopsEnvResourceDTO.setName(KeyParseUtil.getResourceName(key));
             devopsEnvResourceDTO.setReversion(
                     TypeUtil.objToLong(
                             ((LinkedHashMap) ((LinkedHashMap) obj).get(METADATA)).get(RESOURCE_VERSION).toString()));
             String releaseName = null;
             DevopsEnvResourceDTO oldDevopsEnvResourceDTO = null;
             AppServiceInstanceDTO appServiceInstanceDTO = null;
-            ResourceType resourceType = ResourceType.forString(KeyParseTool.getResourceType(key));
+            ResourceType resourceType = ResourceType.forString(KeyParseUtil.getResourceType(key));
+
             if (resourceType == null) {
                 resourceType = ResourceType.forString("MissType");
             }
@@ -349,16 +343,16 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                                     null,
                                     null,
                                     envId,
-                                    KeyParseTool.getResourceType(key),
-                                    KeyParseTool.getResourceName(key));
+                                    KeyParseUtil.getResourceType(key),
+                                    KeyParseUtil.getResourceName(key));
                     //升级0.11.0-0.12.0,资源表新增envId,修复以前的域名数据
                     if (oldDevopsEnvResourceDTO == null) {
                         oldDevopsEnvResourceDTO = devopsEnvResourceService.baseQueryOptions(
                                 null,
                                 null,
                                 null,
-                                KeyParseTool.getResourceType(key),
-                                KeyParseTool.getResourceName(key));
+                                KeyParseUtil.getResourceType(key),
+                                KeyParseUtil.getResourceName(key));
                     }
                     saveOrUpdateResource(devopsEnvResourceDTO, oldDevopsEnvResourceDTO,
                             devopsEnvResourceDetailDTO, null);
@@ -375,19 +369,19 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                                     null,
                                     null,
                                     envId,
-                                    KeyParseTool.getResourceType(key),
-                                    KeyParseTool.getResourceName(key));
+                                    KeyParseUtil.getResourceType(key),
+                                    KeyParseUtil.getResourceName(key));
                     saveOrUpdateResource(devopsEnvResourceDTO, oldDevopsEnvResourceDTO,
                             devopsEnvResourceDetailDTO, null);
                     break;
                 case SECRET:
                     oldDevopsEnvResourceDTO = devopsEnvResourceService
-                            .baseQueryOptions(null, null, envId, KeyParseTool.getResourceType(key),
-                                    KeyParseTool.getResourceName(key));
+                            .baseQueryOptions(null, null, envId, KeyParseUtil.getResourceType(key),
+                                    KeyParseUtil.getResourceName(key));
                     saveOrUpdateResource(devopsEnvResourceDTO, oldDevopsEnvResourceDTO, devopsEnvResourceDetailDTO, null);
                     break;
                 default:
-                    releaseName = KeyParseTool.getReleaseName(key);
+                    releaseName = KeyParseUtil.getReleaseName(key);
                     if (releaseName != null) {
                         appServiceInstanceDTO = appServiceInstanceService.baseQueryByCodeAndEnv(releaseName, envId);
                         if (appServiceInstanceDTO == null) {
@@ -398,8 +392,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                                         appServiceInstanceDTO.getId(),
                                         resourceType.getType().equals(ResourceType.JOB.getType()) ? appServiceInstanceDTO.getCommandId() : null,
                                         envId,
-                                        KeyParseTool.getResourceType(key),
-                                        KeyParseTool.getResourceName(key));
+                                        KeyParseUtil.getResourceType(key),
+                                        KeyParseUtil.getResourceName(key));
 
                         if (oldDevopsEnvResourceDTO == null) {
                             oldDevopsEnvResourceDTO =
@@ -407,8 +401,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                                             appServiceInstanceDTO.getId(),
                                             resourceType.getType().equals(ResourceType.JOB.getType()) ? appServiceInstanceDTO.getCommandId() : null,
                                             null,
-                                            KeyParseTool.getResourceType(key),
-                                            KeyParseTool.getResourceName(key));
+                                            KeyParseUtil.getResourceType(key),
+                                            KeyParseUtil.getResourceName(key));
                         }
                         saveOrUpdateResource(devopsEnvResourceDTO, oldDevopsEnvResourceDTO, devopsEnvResourceDetailDTO, appServiceInstanceDTO);
                     }
@@ -461,8 +455,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                                         appServiceInstanceDTO.getId(),
                                         null,
                                         null,
-                                        KeyParseTool.getResourceType(key),
-                                        KeyParseTool.getResourceName(key));
+                                        KeyParseUtil.getResourceType(key),
+                                        KeyParseUtil.getResourceName(key));
                         DevopsEnvResourceDetailDTO newDevopsEnvResourceDetailDTO = new DevopsEnvResourceDetailDTO();
                         newDevopsEnvResourceDetailDTO.setMessage(msg);
                         saveOrUpdateResource(devopsEnvResourceDTO, oldDevopsEnvResourceDTO,
@@ -497,33 +491,33 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     public void resourceDelete(String key, String msg, Long clusterId) {
         Long envId = getEnvId(key, clusterId);
         if (envId == null) {
-            logger.info(ENV_NOT_EXIST, KeyParseTool.getNamespace(key));
+            logger.info(ENV_NOT_EXIST, KeyParseUtil.getNamespace(key));
             return;
         }
-        if (KeyParseTool.getResourceType(key).equals(ResourceType.JOB.getType())) {
+        if (KeyParseUtil.getResourceType(key).equals(ResourceType.JOB.getType())) {
             return;
         }
-        if (KeyParseTool.getResourceType(key).equals(ResourceType.POD.getType())) {
-            String podName = KeyParseTool.getResourceName(key);
-            String podNameSpace = KeyParseTool.getNamespace(key);
+        if (KeyParseUtil.getResourceType(key).equals(ResourceType.POD.getType())) {
+            String podName = KeyParseUtil.getResourceName(key);
+            String podNameSpace = KeyParseUtil.getNamespace(key);
             devopsEnvPodService.baseDeleteByName(podName, podNameSpace);
         }
 
         devopsEnvResourceService.deleteByEnvIdAndKindAndName(
                 envId,
-                KeyParseTool.getResourceType(key),
-                KeyParseTool.getResourceName(key));
+                KeyParseUtil.getResourceType(key),
+                KeyParseUtil.getResourceName(key));
 
     }
 
     @Override
-    public void helmReleaseHookLogs(String key, String msg, Long clusterId) {
+    public void helmJobLog(String key, String msg, Long clusterId) {
         Long envId = getEnvId(key, clusterId);
         if (envId == null) {
-            logger.info(ENV_NOT_EXIST, KeyParseTool.getNamespace(key));
+            logger.info(ENV_NOT_EXIST, KeyParseUtil.getNamespace(key));
             return;
         }
-        AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQueryByCodeAndEnv(KeyParseTool.getReleaseName(key), envId);
+        AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQueryByCodeAndEnv(KeyParseUtil.getReleaseName(key), envId);
         if (appServiceInstanceDTO != null) {
             // 删除实例历史日志记录
             devopsEnvCommandLogService.baseDeleteByInstanceId(appServiceInstanceDTO.getId());
@@ -542,7 +536,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     public void updateInstanceStatus(String key, String releaseName, Long clusterId, String instanceStatus, String commandStatus, String msg) {
         Long envId = getEnvId(key, clusterId);
         if (envId == null) {
-            logger.info(ENV_NOT_EXIST, KeyParseTool.getNamespace(key));
+            logger.info(ENV_NOT_EXIST, KeyParseUtil.getNamespace(key));
             return;
         }
         AppServiceInstanceDTO instanceDTO = appServiceInstanceService.baseQueryByCodeAndEnv(releaseName, envId);
@@ -561,7 +555,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     public void handlerDomainCreateMessage(String key, String msg, Long clusterId) {
         Long envId = getEnvId(key, clusterId);
         if (envId == null) {
-            logger.info(ENV_NOT_EXIST, KeyParseTool.getNamespace(key));
+            logger.info(ENV_NOT_EXIST, KeyParseUtil.getNamespace(key));
             return;
         }
 
@@ -569,8 +563,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         DevopsEnvResourceDTO devopsEnvResourceDTO = new DevopsEnvResourceDTO();
         DevopsEnvResourceDetailDTO devopsEnvResourceDetailDTO = new DevopsEnvResourceDetailDTO();
         devopsEnvResourceDetailDTO.setMessage(msg);
-        devopsEnvResourceDTO.setKind(KeyParseTool.getResourceType(key));
-        devopsEnvResourceDTO.setName(KeyParseTool.getResourceName(key));
+        devopsEnvResourceDTO.setKind(KeyParseUtil.getResourceType(key));
+        devopsEnvResourceDTO.setName(KeyParseUtil.getResourceName(key));
         devopsEnvResourceDTO.setEnvId(envId);
         devopsEnvResourceDTO.setReversion(TypeUtil.objToLong(ingress.getMetadata().getResourceVersion()));
         DevopsEnvResourceDTO oldDevopsEnvResourceDTO =
@@ -578,16 +572,16 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                         null,
                         null,
                         envId,
-                        KeyParseTool.getResourceType(key),
-                        KeyParseTool.getResourceName(key));
+                        KeyParseUtil.getResourceType(key),
+                        KeyParseUtil.getResourceName(key));
         if (oldDevopsEnvResourceDTO == null) {
             oldDevopsEnvResourceDTO =
                     devopsEnvResourceService.baseQueryOptions(
                             null,
                             null,
                             null,
-                            KeyParseTool.getResourceType(key),
-                            KeyParseTool.getResourceName(key));
+                            KeyParseUtil.getResourceType(key),
+                            KeyParseUtil.getResourceName(key));
         }
         saveOrUpdateResource(devopsEnvResourceDTO, oldDevopsEnvResourceDTO, devopsEnvResourceDetailDTO, null);
         String ingressName = ingress.getMetadata().getName();
@@ -595,20 +589,20 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     }
 
     @Override
-    public void helmReleasePreUpgrade(String key, String msg, Long clusterId) {
-        handlerPreInstall(key, msg, clusterId);
+    public void helmUpgradeJobInfo(String key, String msg, Long clusterId) {
+        helmInstallJobInfo(key, msg, clusterId);
     }
 
     @Override
-    public void handlerReleaseUpgrade(String key, String msg, Long clusterId) {
-        handlerReleaseInstall(key, msg, clusterId);
+    public void helmUpgradeResourceInfo(String key, String msg, Long clusterId) {
+        helmInstallResourceInfo(key, msg, clusterId);
     }
 
 
     @Override
     public void helmReleaseDeleteFail(String key, String msg, Long clusterId) {
 
-        updateInstanceStatus(key, KeyParseTool.getReleaseName(key),
+        updateInstanceStatus(key, KeyParseUtil.getReleaseName(key),
                 clusterId,
                 InstanceStatus.DELETED.getStatus(),
                 CommandStatus.FAILED.getStatus(),
@@ -619,7 +613,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     public void helmReleaseStartFail(String key, String msg, Long clusterId) {
         updateInstanceStatus(
                 key,
-                KeyParseTool.getReleaseName(key),
+                KeyParseUtil.getReleaseName(key),
                 clusterId,
                 InstanceStatus.STOPPED.getStatus(),
                 CommandStatus.FAILED.getStatus(),
@@ -634,7 +628,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     @Override
     public void helmReleaseInstallFail(String key, String msg, Long clusterId) {
         updateInstanceStatus(
-                key, KeyParseTool.getReleaseName(key),
+                key, KeyParseUtil.getReleaseName(key),
                 clusterId,
                 InstanceStatus.FAILED.getStatus(),
                 CommandStatus.FAILED.getStatus(),
@@ -644,7 +638,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     @Override
     public void helmReleaseUpgradeFail(String key, String msg, Long clusterId) {
 
-        updateInstanceStatus(key, KeyParseTool.getReleaseName(key),
+        updateInstanceStatus(key, KeyParseUtil.getReleaseName(key),
                 clusterId,
                 InstanceStatus.RUNNING.getStatus(),
                 CommandStatus.FAILED.getStatus(),
@@ -653,13 +647,14 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
     @Override
     public void helmReleaseStopFail(String key, String msg, Long clusterId) {
-        updateInstanceStatus(key, KeyParseTool.getReleaseName(key),
+        updateInstanceStatus(key, KeyParseUtil.getReleaseName(key),
                 clusterId,
                 InstanceStatus.RUNNING.getStatus(),
                 CommandStatus.FAILED.getStatus(),
                 msg);
 
     }
+
 
     @Override
     public void commandNotSend(Long commandId, String msg) {
@@ -689,7 +684,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     public void resourceSync(String key, String msg, Long clusterId) {
         Long envId = getEnvId(key, clusterId);
         if (envId == null) {
-            logger.info(ENV_NOT_EXIST, KeyParseTool.getNamespace(key));
+            logger.info(ENV_NOT_EXIST, KeyParseUtil.getNamespace(key));
             return;
         }
 
@@ -714,7 +709,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                                 devopsEnvResourceService.deleteByEnvIdAndKindAndName(
                                         envId, ResourceType.POD.getType(), devopsEnvResourceDTO.getName());
                                 devopsEnvPodService.baseDeleteByName(
-                                        devopsEnvResourceDTO.getName(), KeyParseTool.getValue(key, "env"));
+                                        devopsEnvResourceDTO.getName(), KeyParseUtil.getValue(key, "env"));
                             });
                 }
                 break;
@@ -748,7 +743,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     }
 
     @Override
-    public void jobEvent(String msg) {
+    public void helmJobEvent(String msg) {
         Event event = JSONArray.parseObject(msg, Event.class);
         if (event.getInvolvedObject().getKind().equals(ResourceType.POD.getType())) {
             event.getInvolvedObject().setKind(ResourceType.JOB.getType());
@@ -760,7 +755,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     }
 
     @Override
-    public void releasePodEvent(String msg) {
+    public void helmPodEvent(String msg) {
         Event event = JSONArray.parseObject(msg, Event.class);
         insertDevopsCommandEvent(event, ResourceType.POD.getType());
     }
@@ -769,7 +764,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     public void gitOpsSyncEvent(String key, String msg, Long clusterId) {
         Long envId = getEnvId(key, clusterId);
         if (envId == null) {
-            logger.info(ENV_NOT_EXIST, KeyParseTool.getNamespace(key));
+            logger.info(ENV_NOT_EXIST, KeyParseUtil.getNamespace(key));
             return;
         }
 
@@ -795,11 +790,13 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         List<DevopsEnvFileErrorDTO> errorDevopsFiles = getEnvFileErrors(envId, gitOpsSyncDTO, devopsEnvironmentDTO);
 
         gitOpsSyncDTO.getMetadata().getFilesCommit().forEach(fileCommit -> {
-            DevopsEnvFileDTO devopsEnvFileDTO = devopsEnvFileService.baseQueryByEnvAndPath(devopsEnvironmentDTO.getId(), fileCommit.getFile());
-            devopsEnvFileDTO.setAgentCommit(fileCommit.getCommit());
-            devopsEnvFileService.baseUpdate(devopsEnvFileDTO);
+            if(fileCommit.getFile().endsWith(".yaml")||fileCommit.getFile().endsWith("yml")) {
+                DevopsEnvFileDTO devopsEnvFileDTO = devopsEnvFileService.baseQueryByEnvAndPath(devopsEnvironmentDTO.getId(), fileCommit.getFile());
+                devopsEnvFileDTO.setAgentCommit(fileCommit.getCommit());
+                devopsEnvFileService.baseUpdate(devopsEnvFileDTO);
+            }
         });
-        gitOpsSyncDTO.getMetadata().getResourceCommitVOS()
+        gitOpsSyncDTO.getMetadata().getResourceCommits()
                 .forEach(resourceCommitVO -> {
                     String[] objects = resourceCommitVO.getResourceId().split("/");
                     switch (objects[0]) {
@@ -1178,10 +1175,10 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     }
 
     @Override
-    public void gitOpsCommandSyncEvent(String key, Long clusterId) {
+    public void resourceStatusSyncEvent(String key, Long clusterId) {
         Long envId = getEnvId(key, clusterId);
         if (envId == null) {
-            logger.info(ENV_NOT_EXIST, KeyParseTool.getNamespace(key));
+            logger.info(ENV_NOT_EXIST, KeyParseUtil.getNamespace(key));
             return;
         }
 
@@ -1189,18 +1186,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
         List<Command> commands = new ArrayList<>();
         getCommands(envId, commands);
-        Msg msg = new Msg();
-        msg.setKey(String.format("cluster:%d.env:%s.envId:%d",
-                clusterId,
-                devopsEnvironmentDTO.getCode(),
-                envId));
-        msg.setType(HelmType.STATUS_SYNC.toValue());
-        try {
-            msg.setPayload(JSONArray.toJSONString(commands));
-        } catch (Exception e) {
-            throw new CommonException("error.payload.error", e);
-        }
-        socketMsgDispatcher.dispatcher(msg);
+
+        agentCommandService.gitopsSyncCommandStatus(clusterId, devopsEnvironmentDTO.getCode(), envId, commands);
 
     }
 
@@ -1282,10 +1269,10 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
 
     @Override
-    public void gitOpsCommandSyncEventResult(String key, String msg, Long clusterId) {
+    public void resourceStatusSync(String key, String msg, Long clusterId) {
         Long envId = getEnvId(key, clusterId);
         if (envId == null) {
-            logger.info(ENV_NOT_EXIST, KeyParseTool.getNamespace(key));
+            logger.info(ENV_NOT_EXIST, KeyParseUtil.getNamespace(key));
             return;
         }
 
@@ -1315,12 +1302,12 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     public void handlerServiceCreateMessage(String key, String msg, Long clusterId) {
         Long envId = getEnvId(key, clusterId);
         if (envId == null) {
-            logger.info(ENV_NOT_EXIST, KeyParseTool.getNamespace(key));
+            logger.info(ENV_NOT_EXIST, KeyParseUtil.getNamespace(key));
             return;
         }
 
         DevopsServiceDTO devopsServiceDTO = devopsServiceService.baseQueryByNameAndEnvId(
-                KeyParseTool.getResourceName(key), envId);
+                KeyParseUtil.getResourceName(key), envId);
         try {
             V1Service v1Service = json.deserialize(msg, V1Service.class);
             String releaseNames = v1Service.getMetadata().getAnnotations()
@@ -1329,7 +1316,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             DevopsEnvResourceDTO devopsEnvResourceDTO = new DevopsEnvResourceDTO();
             DevopsEnvResourceDetailDTO devopsEnvResourceDetailDTO = new DevopsEnvResourceDetailDTO();
             devopsEnvResourceDetailDTO.setMessage(msg);
-            devopsEnvResourceDTO.setKind(KeyParseTool.getResourceType(key));
+            devopsEnvResourceDTO.setKind(KeyParseUtil.getResourceType(key));
             devopsEnvResourceDTO.setName(v1Service.getMetadata().getName());
             devopsEnvResourceDTO.setEnvId(envId);
             devopsEnvResourceDTO.setReversion(TypeUtil.objToLong(v1Service.getMetadata().getResourceVersion()));
@@ -1341,8 +1328,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                         .baseQueryOptions(
                                 appServiceInstanceDTO.getId(),
                                 null, null,
-                                KeyParseTool.getResourceType(key),
-                                KeyParseTool.getResourceName(key));
+                                KeyParseUtil.getResourceType(key),
+                                KeyParseUtil.getResourceName(key));
                 saveOrUpdateResource(devopsEnvResourceDTO,
                         oldDevopsEnvResourceDTO,
                         devopsEnvResourceDetailDTO,
@@ -1360,7 +1347,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     }
 
     @Override
-    public void updateNamespaces(String msg, Long clusterId) {
+    public void namespaceInfo(String msg, Long clusterId) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
         devopsClusterDTO.setNamespaces(msg);
         devopsClusterService.baseUpdate(devopsClusterDTO);
@@ -1401,16 +1388,6 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         devopsClusterDTO.setInit(true);
         devopsClusterService.baseUpdate(devopsClusterDTO);
         GitConfigVO gitConfigVO = gitUtil.getGitConfig(devopsClusterDTO.getId());
-        Msg initClusterEnv = new Msg();
-        try {
-            initClusterEnv.setPayload(mapper.writeValueAsString(gitConfigVO));
-        } catch (IOException e) {
-            throw new CommonException("read envId from agent session failed", e);
-        }
-        initClusterEnv.setType(INIT_AGENT);
-        initClusterEnv.setKey(String.format("cluster:%s", devopsClusterDTO.getId()
-        ));
-        socketMsgDispatcher.dispatcher(initClusterEnv);
     }
 
 
@@ -1427,7 +1404,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 podUpdateVO.setConName(container.get().getName());
             }
             podUpdateVO.setPodName(v1Pod.getMetadata().getName());
-            podUpdateVO.setReleaseNames(KeyParseTool.getReleaseName(key));
+            podUpdateVO.setReleaseNames(KeyParseUtil.getReleaseName(key));
             podUpdateVO.setStatus(0L);
 
             producer.applyAndReturn(
@@ -1448,7 +1425,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     public void testJobLog(String key, String msg, Long clusterId) {
         JobLogVO jobLogVO = json.deserialize(msg, JobLogVO.class);
         PodUpdateVO podUpdateVO = new PodUpdateVO();
-        podUpdateVO.setReleaseNames(KeyParseTool.getReleaseName(key));
+        podUpdateVO.setReleaseNames(KeyParseUtil.getReleaseName(key));
         if (jobLogVO.getSucceed() != null && jobLogVO.getSucceed()) {
             podUpdateVO.setStatus(1L);
         } else {
@@ -1500,23 +1477,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     @Override
     public void getCertManagerInfo(String payloadMsg, Long clusterId) {
         if (payloadMsg == null) {
-            Msg msg = new Msg();
-            Payload payload = new Payload(
-                    "kube-system",
-                    certManagerUrl,
-                    "cert-manager",
-                    "0.1.0",
-                    null, "choerodon-cert-manager", null);
-            msg.setKey(String.format("cluster:%d.release:%s",
-                    clusterId,
-                    "choerodon-cert-manager"));
-            msg.setType(HelmType.HELM_INSTALL_RELEASE.toValue());
-            try {
-                msg.setPayload(mapper.writeValueAsString(payload));
-            } catch (IOException e) {
-                throw new CommonException("error.payload.error", e);
-            }
-            socketMsgDispatcher.dispatcher(msg);
+            agentCommandService.createCertManager(clusterId);
         }
     }
 
@@ -1548,12 +1509,12 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     public void certIssued(String key, String msg, Long clusterId) {
         Long envId = getEnvId(key, clusterId);
         if (envId == null) {
-            logger.info(ENV_NOT_EXIST, KeyParseTool.getNamespace(key));
+            logger.info(ENV_NOT_EXIST, KeyParseUtil.getNamespace(key));
             return;
         }
 
         try {
-            String certName = KeyParseTool.getValue(key, "Cert");
+            String certName = KeyParseUtil.getValue(key, "Cert");
             CertificationDTO certificationDTO = certificationService.baseQueryByEnvAndName(envId, certName);
             if (certificationDTO != null) {
                 DevopsEnvCommandDTO commandDTO = devopsEnvCommandService.baseQuery(certificationDTO.getCommandId());
@@ -1575,7 +1536,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 commandDTO.setCommandType(CommandType.CREATE.getType());
                 commandDTO.setObjectId(certificationDTO.getId());
                 commandDTO.setStatus(CommandStatus.SUCCESS.getStatus());
-                commandDTO.setSha(KeyParseTool.getValue(key, "commit"));
+                commandDTO.setSha(KeyParseUtil.getValue(key, "commit"));
                 if (commandNotExist) {
                     commandDTO = devopsEnvCommandService.baseCreate(commandDTO);
                 } else {
@@ -1595,12 +1556,12 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     public void certFailed(String key, String msg, Long clusterId) {
         Long envId = getEnvId(key, clusterId);
         if (envId == null) {
-            logger.info(ENV_NOT_EXIST, KeyParseTool.getNamespace(key));
+            logger.info(ENV_NOT_EXIST, KeyParseUtil.getNamespace(key));
             return;
         }
 
-        String commitSha = KeyParseTool.getValue(key, "commit");
-        String certName = KeyParseTool.getValue(key, "Cert");
+        String commitSha = KeyParseUtil.getValue(key, "commit");
+        String certName = KeyParseUtil.getValue(key, "Cert");
         CertificationDTO certificationDTO = certificationService.baseQueryByEnvAndName(envId, certName);
         if (certificationDTO != null) {
             DevopsEnvCommandDTO commandDTO = devopsEnvCommandService.baseQuery(certificationDTO.getCommandId());
@@ -1639,7 +1600,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
 
     private Long getEnvId(String key, Long clusterId) {
-        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryByClusterIdAndCode(clusterId, KeyParseTool.getNamespace(key));
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryByClusterIdAndCode(clusterId, KeyParseUtil.getNamespace(key));
         Long envId = null;
         if (devopsEnvironmentDTO != null) {
             envId = devopsEnvironmentDTO.getId();
@@ -1656,7 +1617,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     public void handleConfigUpdate(String key, String msg, Long clusterId) {
         Long envId = getEnvId(key, clusterId);
         if (envId == null) {
-            logger.info(ENV_NOT_EXIST, KeyParseTool.getNamespace(key));
+            logger.info(ENV_NOT_EXIST, KeyParseUtil.getNamespace(key));
             return;
         }
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
@@ -1686,10 +1647,10 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     public void operateDockerRegistrySecretResp(String key, String result, Long clusterId) {
         Long envId = getEnvId(key, clusterId);
         if (envId == null) {
-            logger.info(ENV_NOT_EXIST, KeyParseTool.getNamespace(key));
+            logger.info(ENV_NOT_EXIST, KeyParseUtil.getNamespace(key));
             return;
         }
-        DevopsRegistrySecretDTO devopsRegistrySecretDTO = devopsRegistrySecretService.baseQueryByEnvAndName(envId, KeyParseTool.getResourceName(key));
+        DevopsRegistrySecretDTO devopsRegistrySecretDTO = devopsRegistrySecretService.baseQueryByEnvAndName(envId, KeyParseUtil.getResourceName(key));
         if (result.equals("failed")) {
             devopsRegistrySecretDTO.setStatus(false);
         } else {

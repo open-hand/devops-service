@@ -33,7 +33,7 @@ public class DevopsEnvFileErrorServiceImpl implements DevopsEnvFileErrorService 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public DevopsEnvFileErrorDTO baseCreateOrUpdate(DevopsEnvFileErrorDTO devopsEnvFileErrorDTO) {
-        DevopsEnvFileErrorDTO newDevopsEnvFileErrorDTO = devopsEnvFileErrorMapper.selectOne(devopsEnvFileErrorDTO);
+        DevopsEnvFileErrorDTO newDevopsEnvFileErrorDTO = devopsEnvFileErrorMapper.selectOne(new DevopsEnvFileErrorDTO(devopsEnvFileErrorDTO.getEnvId(),devopsEnvFileErrorDTO.getFilePath()));
         if (newDevopsEnvFileErrorDTO != null) {
             newDevopsEnvFileErrorDTO.setCommit(devopsEnvFileErrorDTO.getCommit());
             newDevopsEnvFileErrorDTO.setError(devopsEnvFileErrorDTO.getError());
@@ -41,7 +41,7 @@ public class DevopsEnvFileErrorServiceImpl implements DevopsEnvFileErrorService 
                 throw new CommonException("error.env.error.file.update");
             }
         } else {
-            if (devopsEnvFileErrorMapper.insert(ConvertHelper.convert(devopsEnvFileErrorDTO, DevopsEnvFileErrorDTO.class)) != 1) {
+            if (devopsEnvFileErrorMapper.insert(devopsEnvFileErrorDTO) != 1) {
                 throw new CommonException("error.env.error.file.create");
             }
         }

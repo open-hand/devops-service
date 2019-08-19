@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -115,6 +117,61 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         return ConvertUtils.convertObject(baseQuery(devopsSecretDTO.getId()), SecretRespVO.class);
     }
 
+    @Override
+    public DevopsSecretDTO voToDto(SecretReqVO secretReqVO) {
+        DevopsSecretDTO devopsSecretDTO = new DevopsSecretDTO();
+        BeanUtils.copyProperties(secretReqVO,devopsSecretDTO);
+        Map<String, String> encodedSecretMaps = new HashMap<>();
+        if (!secretReqVO.getValue().isEmpty()){
+            for (Map.Entry<String, String> e : secretReqVO.getValue().entrySet()) {
+                if (!e.getKey().equals(".dockerconfigjson")) {
+                    encodedSecretMaps.put(e.getKey(), Base64Util.getBase64EncodedString(e.getValue()));
+                } else {
+                    encodedSecretMaps.put(e.getKey(), e.getValue());
+                }
+            }
+            devopsSecretDTO.setValue(gson.toJson(encodedSecretMaps));
+        }
+        return devopsSecretDTO;
+    }
+
+    @Override
+    public SecretRespVO dtoToRespVo(DevopsSecretDTO devopsSecretDTO) {
+        SecretRespVO secretRespVO = new SecretRespVO();
+        BeanUtils.copyProperties(devopsSecretDTO,secretRespVO);
+        Map<String, String> secretMaps = gson
+                .fromJson(devopsSecretDTO.getValue(), new TypeToken<Map<String, String>>() {
+                }.getType());
+        secretRespVO.setValue(secretMaps);
+        for (Map.Entry<String, String> e : secretRespVO.getValue().entrySet()) {
+            if (!e.getKey().equals(".dockerconfigjson")) {
+                secretMaps.put(e.getKey(), Base64Util.getBase64DecodedString(e.getValue()));
+            }else {
+                secretMaps.put(e.getKey(),e.getValue());
+            }
+        }
+        List<String> key = new ArrayList<>();
+        secretMaps.forEach((key1, value) -> key.add(key1));
+        secretRespVO.setKey(key);
+        secretRespVO.setCommandStatus(devopsSecretDTO.getStatus());
+        secretRespVO.setLastUpdateDate(devopsSecretDTO.getLastUpdateDate());
+        secretRespVO.setValue(secretMaps);
+        return secretRespVO;
+    }
+
+    @Override
+    public SecretReqVO dtoToReqVo(DevopsSecretDTO devopsSecretDTO) {
+        SecretReqVO secretReqVO = new SecretReqVO();
+        BeanUtils.copyProperties(devopsSecretDTO,secretReqVO);
+        Map<String, String> secretMaps = gson
+                .fromJson(devopsSecretDTO.getValue(), new TypeToken<Map<String, String>>() {
+                }.getType());
+        secretMaps.forEach((key, value) -> secretMaps.put(key, Base64Util.getBase64DecodedString(value)));
+        secretReqVO.setValue(secretMaps);
+        return secretReqVO;
+    }
+
+
     private DevopsSecretDTO handleSecret(SecretReqVO secretReqVO) {
         if (CREATE.equals(secretReqVO.getType())) {
             // 校验secret名字合法性和环境下唯一性
@@ -127,28 +184,13 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         }
 
         DevopsSecretDTO devopsSecretDTO = voToDto(secretReqVO);
+
         devopsSecretDTO.setValueMap(secretReqVO.getValue());
         devopsSecretDTO.setStatus(SecretStatus.OPERATING.getStatus());
 
         return devopsSecretDTO;
     }
 
-    private DevopsSecretDTO voToDto(SecretReqVO reqVO) {
-        DevopsSecretDTO dto = new DevopsSecretDTO();
-        Map<String, String> encodedSecretMaps = new HashMap<>();
-        BeanUtils.copyProperties(reqVO, dto);
-        if (!reqVO.getValue().isEmpty()) {
-            for (Map.Entry<String, String> e : reqVO.getValue().entrySet()) {
-                if (!e.getKey().equals(".dockerconfigjson")) {
-                    encodedSecretMaps.put(e.getKey(), Base64Util.getBase64EncodedString(e.getValue()));
-                } else {
-                    encodedSecretMaps.put(e.getKey(), e.getValue());
-                }
-            }
-            dto.setValue(gson.toJson(encodedSecretMaps));
-        }
-        return dto;
-    }
 
     private V1Secret initV1Secret(DevopsSecretDTO devopsSecretDTO) {
         V1Secret secret = new V1Secret();

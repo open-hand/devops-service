@@ -145,8 +145,8 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
                         DevopsIngressVO devopsIngressVO = getDevopsIngressDTO(
                                 v1beta1Ingress,
                                 envId, filePath);
-                        DevopsIngressVO ingressDTO = devopsIngressService.queryIngress(projectId, devopsIngressDTO.getId());
-                        if (devopsIngressVO.equals(ingressDTO)) {
+                        DevopsIngressVO ingressVO = devopsIngressService.queryIngress(projectId, devopsIngressDTO.getId());
+                        if (devopsIngressVO.equals(ingressVO)) {
                             isNotChange = true;
                         }
                         if (!devopsIngressVO.getPathList().stream()

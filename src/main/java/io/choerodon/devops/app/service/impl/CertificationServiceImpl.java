@@ -518,6 +518,7 @@ public class CertificationServiceImpl implements CertificationService {
     public void baseUpdateCommandId(CertificationDTO certificationDTO) {
         CertificationDTO certificationDTOInDb = devopsCertificationMapper.selectByPrimaryKey(certificationDTO.getId());
         certificationDTOInDb.setCommandId(certificationDTO.getCommandId());
+        certificationDTOInDb.setCertificationFileId(certificationDTO.getCertificationFileId());
         devopsCertificationMapper.updateByPrimaryKeySelective(certificationDTOInDb);
     }
 

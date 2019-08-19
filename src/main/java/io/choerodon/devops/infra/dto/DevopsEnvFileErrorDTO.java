@@ -16,6 +16,14 @@ public class DevopsEnvFileErrorDTO extends BaseDTO {
     private String error;
 
 
+    public DevopsEnvFileErrorDTO(){}
+
+
+    public DevopsEnvFileErrorDTO(Long envId, String filePath) {
+        this.envId = envId;
+        this.filePath = filePath;
+    }
+
     @Transient
     private String resource;
 

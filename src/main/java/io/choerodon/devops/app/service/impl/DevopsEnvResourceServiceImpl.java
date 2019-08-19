@@ -536,7 +536,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
     @Override
     public void deleteByEnvIdAndKindAndName(Long envId, String kind, String name) {
         DevopsEnvResourceDTO devopsEnvResourceDO = new DevopsEnvResourceDTO();
-        if (devopsEnvResourceMapper.queryResource(null, null, envId, kind, name) != null) {
+        if (!devopsEnvResourceMapper.queryResource(null, null, envId, kind, name).isEmpty()) {
             devopsEnvResourceDO.setEnvId(envId);
         }
         devopsEnvResourceDO.setKind(kind);
@@ -565,7 +565,11 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
 
     @Override
     public DevopsEnvResourceDTO baseQueryOptions(Long instanceId, Long commandId, Long envId, String kind, String name) {
-        return devopsEnvResourceMapper.queryResource(instanceId, commandId, envId, kind, name);
+        List<DevopsEnvResourceDTO> devopsEnvResourceDTOS = devopsEnvResourceMapper.queryResource(instanceId, commandId, envId, kind, name);
+        if(devopsEnvResourceDTOS.isEmpty()) {
+            return null;
+        }
+        return devopsEnvResourceDTOS.get(0);
     }
 
 

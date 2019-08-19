@@ -9,23 +9,23 @@ import io.choerodon.devops.infra.dto.AppServiceDTO;
  */
 public interface AgentMsgHandlerService {
 
-    void handlerReleaseInstall(String key, String msg, Long clusterId);
+    void helmInstallResourceInfo(String key, String msg, Long clusterId);
 
-    void handlerPreInstall(String key, String msg, Long clusterId);
+    void helmInstallJobInfo(String key, String msg, Long clusterId);
 
     void resourceUpdate(String key, String msg, Long clusterId);
 
     void resourceDelete(String key, String msg, Long clusterId);
 
-    void helmReleaseHookLogs(String key, String msg, Long clusterId);
+    void helmJobLog(String key, String msg, Long clusterId);
 
     void updateInstanceStatus(String key, String releaseName, Long clusterId, String instanceStatus, String commandStatus, String commandMsg);
 
     void handlerDomainCreateMessage(String key, String msg, Long clusterId);
 
-    void helmReleasePreUpgrade(String key, String msg, Long clusterId);
+    void helmUpgradeJobInfo(String key, String msg, Long clusterId);
 
-    void handlerReleaseUpgrade(String key, String msg, Long clusterId);
+    void helmUpgradeResourceInfo(String key, String msg, Long clusterId);
 
     void helmReleaseDeleteFail(String key, String msg, Long clusterId);
 
@@ -43,25 +43,25 @@ public interface AgentMsgHandlerService {
 
     void resourceSync(String key, String msg, Long clusterId);
 
-    void jobEvent(String msg);
+    void helmJobEvent(String msg);
 
-    void releasePodEvent(String msg);
+    void helmPodEvent(String msg);
 
     void gitOpsSyncEvent(String key, String msg, Long clusterId);
 
     List<AppServiceDTO> getApplication(String appServiceName, Long projectId, Long orgId);
 
-    void gitOpsCommandSyncEvent(String key, Long clusterId);
+    void resourceStatusSyncEvent(String key, Long clusterId);
 
     void certIssued(String key, String msg, Long clusterId);
 
     void certFailed(String key, String msg, Long clusterId);
 
-    void gitOpsCommandSyncEventResult(String key, String msg, Long clusterId);
+    void resourceStatusSync(String key, String msg, Long clusterId);
 
     void handlerServiceCreateMessage(String key, String msg, Long clusterId);
 
-    void updateNamespaces(String msg, Long clusterId);
+    void namespaceInfo(String msg, Long clusterId);
 
     void upgradeCluster(String key, String msg);
 

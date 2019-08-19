@@ -35,7 +35,6 @@
         </if>
     </select>
 
-
     <delete id="deleteByIsDelete">
       delete from devops_branch where is_deleted = true
     </delete>

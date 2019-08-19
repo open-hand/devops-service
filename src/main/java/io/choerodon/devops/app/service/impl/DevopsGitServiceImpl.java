@@ -623,11 +623,17 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                             "", "", gitLabUserId);
                 }
             }
+
+            //创建新tag
+            if (getDevopsSyncTag(pushWebHookVO)) {
+                gitlabServiceClientOperator.createTag(
+                        gitLabProjectId, GitUtil.DEV_OPS_SYNC_TAG, devopsEnvCommitDTO.getCommitSha(),
+                        "", "", gitLabUserId);
+            }
         }
     }
 
-    private void handleDiffs(Integer
-                                     gitLabProjectId, List<String> operationFiles, List<String> deletedFiles,
+    private void handleDiffs(Integer gitLabProjectId, List<String> operationFiles, List<String> deletedFiles,
                              Set<DevopsEnvFileResourceDTO> beforeSync, Set<DevopsEnvFileResourceDTO> beforeSyncDelete,
                              DevopsEnvironmentDTO devopsEnvironmentDTO, DevopsEnvCommitDTO devopsEnvCommitDTO) {
         //获取将此次最新提交与tag作比价得到diff

@@ -8,16 +8,15 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.ClusterSessionVO;
 import io.choerodon.devops.app.service.IamService;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.util.GitUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.websocket.helper.EnvListener;
-import io.choerodon.websocket.helper.EnvSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 /**
@@ -30,18 +29,19 @@ import org.springframework.stereotype.Service;
 @Service
 public class ClusterConnectionHandler {
 
+    private static final String CLUSTER_SESSION = "cluster-sessions-catch";
+
     Pattern pattern = Pattern.compile("^[-\\+]?[\\d]*$");
     @Value("${agent.version}")
     private String agentExpectVersion;
     @Value("${services.gitlab.sshUrl}")
     private String gitlabSshUrl;
-    @Autowired(required = false)
-    @Lazy
-    private EnvListener envListener;
     @Autowired
     private IamService iamService;
     @Autowired
     private GitUtil gitUtil;
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
 
     public static int compareVersion(String a, String b) {
         if (!a.contains("-") && !b.contains("-")) {
@@ -95,8 +95,9 @@ public class ClusterConnectionHandler {
      * @param clusterId 环境ID
      */
     public void checkEnvConnection(Long clusterId) {
-        Map<String, EnvSession> connectedEnv = envListener.connectedEnv();
-        boolean envConnected = connectedEnv.entrySet().stream()
+        Map<String, ClusterSessionVO> clusterSessions = (Map<String,ClusterSessionVO>)(Map)redisTemplate.opsForHash().entries(CLUSTER_SESSION);
+
+        boolean envConnected = clusterSessions.entrySet().stream()
                 .anyMatch(t -> clusterId.equals(t.getValue().getClusterId())
                         && compareVersion(t.getValue().getVersion() == null ? "0" : t.getValue().getVersion(), agentExpectVersion) != 1);
         if (!envConnected) {
@@ -110,8 +111,8 @@ public class ClusterConnectionHandler {
      * @return 环境链接列表
      */
     public List<Long> getConnectedEnvList() {
-        Map<String, EnvSession> connectedEnv = envListener.connectedEnv();
-        return connectedEnv.entrySet().stream()
+        Map<String, ClusterSessionVO> clusterSessions = (Map<String,ClusterSessionVO>)(Map)redisTemplate.opsForHash().entries(CLUSTER_SESSION);
+        return clusterSessions.entrySet().stream()
                 .map(t -> t.getValue().getClusterId())
                 .collect(Collectors.toCollection(ArrayList::new));
     }
@@ -122,8 +123,8 @@ public class ClusterConnectionHandler {
      * @return 环境更新列表
      */
     public List<Long> getUpdatedEnvList() {
-        Map<String, EnvSession> connectedEnv = envListener.connectedEnv();
-        return connectedEnv.entrySet().stream()
+        Map<String, ClusterSessionVO> clusterSessions = (Map<String,ClusterSessionVO>)(Map)redisTemplate.opsForHash().entries(CLUSTER_SESSION);
+        return clusterSessions.entrySet().stream()
                 .filter(t -> compareVersion(t.getValue().getVersion() == null ? "0" : t.getValue().getVersion(), agentExpectVersion) != 1)
                 .map(t -> t.getValue().getClusterId())
                 .collect(Collectors.toCollection(ArrayList::new));

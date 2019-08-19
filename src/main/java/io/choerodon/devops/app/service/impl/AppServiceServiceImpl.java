@@ -16,26 +16,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
-import io.kubernetes.client.JSON;
-import org.apache.commons.io.filefilter.IOFileFilter;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.ListBranchCommand;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.Ref;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
-import retrofit2.Call;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -65,7 +45,6 @@ import io.choerodon.devops.infra.enums.AccessLevel;
 import io.choerodon.devops.infra.enums.GitPlatformType;
 import io.choerodon.devops.infra.enums.Rate;
 import io.choerodon.devops.infra.enums.SonarQubeType;
-import io.choerodon.devops.infra.feign.BaseServiceClient;
 import io.choerodon.devops.infra.feign.ChartClient;
 import io.choerodon.devops.infra.feign.HarborClient;
 import io.choerodon.devops.infra.feign.SonarClient;
@@ -76,7 +55,25 @@ import io.choerodon.devops.infra.mapper.AppServiceMapper;
 import io.choerodon.devops.infra.mapper.AppServiceUserRelMapper;
 import io.choerodon.devops.infra.mapper.UserAttrMapper;
 import io.choerodon.devops.infra.util.*;
-import io.choerodon.websocket.tool.UUIDTool;
+import io.kubernetes.client.JSON;
+import org.apache.commons.io.filefilter.IOFileFilter;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.ListBranchCommand;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.Ref;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
+import retrofit2.Call;
+import retrofit2.Response;
+import retrofit2.Retrofit;
 
 
 /**
@@ -477,9 +474,8 @@ public class AppServiceServiceImpl implements AppServiceService {
 
 
         // clone外部代码仓库
-        String applicationDir = APPLICATION + UUIDTool.genUuid();
+        String applicationDir = APPLICATION + GenerateUUID.generateUUID();
         Git repositoryGit = gitUtil.cloneRepository(applicationDir, devOpsAppServiceImportPayload.getRepositoryUrl(), devOpsAppServiceImportPayload.getAccessToken());
-
 
         // 设置Application对应的gitlab项目的仓库地址
         String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
@@ -1522,17 +1518,16 @@ public class AppServiceServiceImpl implements AppServiceService {
             }
         }
 
-        devopsSagaHandler.updateGitlabUser(json.serialize(devOpsUserPayload));
-//        producer.applyAndReturn(
-//                StartSagaBuilder
-//                        .newBuilder()
-//                        .withLevel(ResourceLevel.PROJECT)
-//                        .withRefType("app")
-//                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_UPDATE_GITLAB_USERS),
-//                builder -> builder
-//                        .withPayloadAndSerialize(devOpsUserPayload)
-//                        .withRefId(String.valueOf(appServiceId))
-//                        .withSourceId(projectId));
+        producer.applyAndReturn(
+                StartSagaBuilder
+                        .newBuilder()
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withRefType("app")
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_UPDATE_GITLAB_USERS),
+                builder -> builder
+                        .withPayloadAndSerialize(devOpsUserPayload)
+                        .withRefId(String.valueOf(appServiceId))
+                        .withSourceId(projectId));
     }
 
     @Override
@@ -1563,12 +1558,13 @@ public class AppServiceServiceImpl implements AppServiceService {
         String[] paramsArr = null;
         if (!StringUtils.isEmpty(params)) {
             paramsArr = new String[1];
-            paramsArr[0]=params;
+            paramsArr[0] = params;
         }
         PageInfo<ProjectVO> pageInfo = ConvertUtils.convertPage(baseServiceClientOperator.listProject(organizationId, new PageRequest(0, 0), paramsArr), ProjectVO.class);
         return pageInfo.getList().stream().filter(t -> !t.getId().equals(projectId)).collect(Collectors.toList());
     }
-    
+
+
     @Override
     public void importAppServiceInternal(Long projectId, List<ApplicationImportInternalVO> importInternalVOS) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);

@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import io.swagger.annotations.ApiParam;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.core.exception.CommonException;
@@ -15,7 +16,7 @@ import io.choerodon.devops.infra.mapper.DevopsEnvResourceDetailMapper;
  */
 @Service
 public class DevopsEnvResourceDetailServiceImpl implements DevopsEnvResourceDetailService {
-    @ApiParam
+    @Autowired
     private DevopsEnvResourceDetailMapper devopsEnvResourceDetailMapper;
 
     @Override
