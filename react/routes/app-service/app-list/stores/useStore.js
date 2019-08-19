@@ -6,6 +6,18 @@ import { handlePromptError } from '../../../../utils';
 export default function useStore() {
   return useLocalStore(() => ({
 
+    appServiceId: null,
+    setAppServiceId(data) {
+      this.appServiceId = data;
+    },
+    get getAppServiceId() {
+      return this.appServiceId;
+    },
+
+    loadAppById(projectId, id) {
+      return axios.get(`/devops/v1/projects/${projectId}/app_service/${id}`);
+    },
+
     checkChart(projectId, url) {
       return axios.get(`/devops/v1/projects/${projectId}/app_service/check_chart?url=${url}`);
     },
@@ -16,8 +28,16 @@ export default function useStore() {
         url = `${url}&${key}=${value}`;
       });
 
-      return axios.get(`/devops/v1/projects/${projectId}/app_service/check_harbor?${postData}`);
+      return axios.get(`/devops/v1/projects/${projectId}/app_service/check_harbor?${url}`);
     },
 
+    async changeActive(projectId, id, active) {
+      try {
+        const res = await axios.get(`/devops/v1/projects/${projectId}/app_service/${id}?active=${active}`);
+        return handlePromptError(res);
+      } catch (e) {
+        Choerodon.handleResponseError(e);
+      }
+    },
   }));
 }
