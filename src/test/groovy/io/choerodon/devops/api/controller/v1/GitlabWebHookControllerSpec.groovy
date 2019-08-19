@@ -99,7 +99,6 @@ class GitlabWebHookControllerSpec extends Specification {
             // dependency injection
             DependencyInjectUtil.setAttribute(iamRepository, "baseServiceClient", iamServiceClient)
             DependencyInjectUtil.setAttribute(devopsGitRepository, "gitlabServiceClient", mockGitlabServiceClient)
-            DependencyInjectUtil.setAttribute(deployService, "commandSender", mockCommandSender)
             DependencyInjectUtil.setAttribute(deployService, "envUtil", mockEnvUtil)
 
             // do preparation
@@ -141,7 +140,6 @@ class GitlabWebHookControllerSpec extends Specification {
             // reset dependency injection
             DependencyInjectUtil.restoreDefaultDependency(iamRepository, "baseServiceClient")
             DependencyInjectUtil.restoreDefaultDependency(devopsGitRepository, "gitlabServiceClient")
-            DependencyInjectUtil.restoreDefaultDependency(deployService, "commandSender")
             DependencyInjectUtil.restoreDefaultDependency(deployService, "envUtil")
 
             applicationMapper.delete(applicationDO)

@@ -95,7 +95,6 @@ class IntegrationTestConfiguration extends WebSecurityConfigurerAdapter {
         detachedMockFactory.Mock(TransactionalProducer)
     }
 
-
     @Bean("mockProjectConfigHarborService")
     @Primary
     ProjectConfigHarborService ProjectConfigHarborService() {
