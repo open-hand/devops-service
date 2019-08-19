@@ -4,15 +4,15 @@
 <mapper namespace="io.choerodon.devops.infra.mapper.PipelineMapper">
     <select id="listByOptions" resultType="io.choerodon.devops.infra.dto.PipelineDTO">
         <choose>
-            <when test="pipelineSearchVO!=null and pipelineSearchVO.executor !=null and pipelineSearchVO.creator != null and pipelineSearchVO.manager=null">
+            <when test="pipelineSearchVO!=null and pipelineSearchVO.executor !=null and pipelineSearchVO.creator != null and pipelineSearchVO.manager == null">
                 <include refid="executorSql"/>
                 union
                 <include refid="creatorSql"/>
             </when>
-            <when test="pipelineSearchVO!=null and pipelineSearchVO.executor !=null and pipelineSearchVO.manager=null">
+            <when test="pipelineSearchVO!=null and pipelineSearchVO.executor !=null and pipelineSearchVO.manager == null and  pipelineSearchVO.creator == null">
                 <include refid="executorSql"/>
             </when>
-            <when test="pipelineSearchVO!=null and pipelineSearchVO.creator != null and pipelineSearchVO.manager=null">
+            <when test="pipelineSearchVO!=null and pipelineSearchVO.creator != null and pipelineSearchVO.manager == null and pipelineSearchVO.executor == null">
                 <include refid="creatorSql"/>
             </when>
             <otherwise>
