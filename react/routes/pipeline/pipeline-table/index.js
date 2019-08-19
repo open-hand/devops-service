@@ -5,7 +5,7 @@ import { injectIntl, FormattedMessage } from 'react-intl';
 import { Table, Button, Modal, Spin, Select } from 'choerodon-ui';
 import { Permission, Content, Header, Page, Action, Breadcrumb } from '@choerodon/master';
 import _ from 'lodash';
-import StatusTags from '../../../components/StatusTags';
+import StatusTags from '../../../components/status-tag';
 import TimePopover from '../../../components/timePopover';
 import UserInfo from '../../../components/userInfo';
 import { handleCheckerProptError } from '../../../utils';
@@ -161,8 +161,8 @@ export default class Pipeline extends Component {
 
   /**
    * 删除
-   * @param {} id 
-   * @param {*} name 
+   * @param {} id
+   * @param {*} name
    */
   openRemove(id, name) {
     this.setState({
@@ -240,7 +240,7 @@ export default class Pipeline extends Component {
     } = this.props;
     const response = await PipelineStore
       .changeStatus(projectId, id, STATUS_ACTIVE)
-      .catch(e => Choerodon.handleResponseError(e));
+      .catch((e) => Choerodon.handleResponseError(e));
 
     if (handleCheckerProptError(response)) {
       this.handleRefresh();
@@ -281,7 +281,7 @@ export default class Pipeline extends Component {
     this.setState({ executeLoading: true });
     const response = await PipelineStore
       .executePipeline(projectId, executeId)
-      .catch(e => Choerodon.handleResponseError(e));
+      .catch((e) => Choerodon.handleResponseError(e));
     this.setState({ executeLoading: true });
 
     if (response && response.failed) {
@@ -311,7 +311,7 @@ export default class Pipeline extends Component {
     });
     const response = await PipelineStore
       .checkExecute(projectId, id)
-      .catch(e => Choerodon.handleResponseError(e));
+      .catch((e) => Choerodon.handleResponseError(e));
 
     if (response && response.failed) {
       Choerodon.prompt(response.message);
@@ -380,7 +380,7 @@ export default class Pipeline extends Component {
     } = this.props;
     const { id, name, isEnabled, triggerType, execute, edit } = record;
 
-    const filterItem = (collection, predicate) => _.filter(collection, item => (Array.isArray(predicate) ? !_.includes(predicate, item) : item !== predicate));
+    const filterItem = (collection, predicate) => _.filter(collection, (item) => (Array.isArray(predicate) ? !_.includes(predicate, item) : item !== predicate));
 
     const action = {
       detail: {
@@ -431,7 +431,7 @@ export default class Pipeline extends Component {
       actionItem = filterItem(actionItem, 'edit');
     }
 
-    return (<Action data={_.map(actionItem, item => ({ ...action[item] }))} />);
+    return (<Action data={_.map(actionItem, (item) => ({ ...action[item] }))} />);
   };
 
   get getColumns() {
@@ -488,7 +488,7 @@ export default class Pipeline extends Component {
     const {
       AppState: {
         currentMenuType: {
-          name,
+          // name,
           type,
           id: projectId,
           organizationId,
@@ -559,11 +559,11 @@ export default class Pipeline extends Component {
           label={formatMessage({ id: 'pipeline.search' })}
           allowClear
           className="c7ncd-pipeline-search"
-          onChange={value => this.handleSearch(value, 'searchData')}
+          onChange={(value) => this.handleSearch(value, 'searchData')}
           choiceRemove={false}
         >
           {
-            _.map(FAST_SEARCH, item => (
+            _.map(FAST_SEARCH, (item) => (
               <Option
                 key={item}
                 value={item}
@@ -581,18 +581,17 @@ export default class Pipeline extends Component {
           filter
           allowClear
           choiceRemove={false}
-          onChange={value => this.handleSearch(value, 'envIds')}
+          onChange={(value) => this.handleSearch(value, 'envIds')}
           filterOption={(input, option) => option.props.children
             .toLowerCase()
-            .indexOf(input.toLowerCase()) >= 0
-          }
+            .indexOf(input.toLowerCase()) >= 0}
         >
-          {_.map(getEnvData, ({ name, id }) => (
+          {_.map(getEnvData, ({ name: envName, id }) => (
             <Option
               key={id}
               value={id}
             >
-              {name}
+              {envName}
             </Option>
           ))}
         </Select>
@@ -604,7 +603,7 @@ export default class Pipeline extends Component {
           columns={this.getColumns}
           pagination={getPageInfo}
           dataSource={getListData}
-          rowKey={record => record.id}
+          rowKey={(record) => record.id}
         />
       </Content>
 
@@ -653,6 +652,7 @@ export default class Pipeline extends Component {
         </Button>]}
       >
         <div className="c7n-padding-top_8">
+          {/* eslint-disable-next-line no-nested-ternary */}
           {executeCheck
             ? (executeEnv
               ? <FormattedMessage
@@ -664,8 +664,7 @@ export default class Pipeline extends Component {
             : <Fragment>
               <Spin size="small" />
               <span className="c7ncd-pipeline-execute">{formatMessage({ id: 'pipeline.execute.checking' })}</span>
-            </Fragment>
-          }
+            </Fragment>}
         </div>
       </Modal>)}
       {showInvalid && (<Modal

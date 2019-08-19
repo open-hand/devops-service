@@ -1,4 +1,4 @@
-import React, { useContext, Fragment, useState, lazy, Suspense, useCallback, useMemo } from 'react';
+import React, { Fragment, lazy, Suspense, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Tabs, Icon } from 'choerodon-ui';
 import { useApplicationStore } from './stores';
@@ -10,8 +10,7 @@ import './index.less';
 
 const { TabPane } = Tabs;
 
-const CipherContent = lazy(() => import('./cipher'));
-const MappingContent = lazy(() => import('./mapping'));
+const MappingContent = lazy(() => import('./configs'));
 const NetContent = lazy(() => import('./net'));
 
 const AppContent = observer(() => {
@@ -30,29 +29,28 @@ const AppContent = observer(() => {
     intlPrefix,
   } = useResourceStore();
 
-  const handleChange = useCallback((key) => {
+  function handleChange(key) {
     appStore.setTabKey(key);
-  }, [appStore]);
-
-  const baseInfo = baseInfoDs.data;
-
-  let title = null;
-  if (baseInfo.length) {
-    const record = baseInfo[0];
-    const name = record.get('name');
-
-    title = <Fragment>
-      <Icon type="widgets" />
-      <span className={`${prefixCls}-title-text`}>{name}</span>
-    </Fragment>;
   }
+
+  const title = useMemo(() => {
+    const record = baseInfoDs.current;
+    if (record) {
+      const name = record.get('name');
+      return <Fragment>
+        <Icon type="widgets" />
+        <span className={`${prefixCls}-title-text`}>{name}</span>
+      </Fragment>;
+    }
+    return null;
+  }, [baseInfoDs.current]);
 
   return (
     <div className={`${prefixCls}-application`}>
       <Modals />
       <PrefixTitle
         prefixCls={prefixCls}
-        fallback={!baseInfo.length}
+        fallback={!title}
       >
         {title}
       </PrefixTitle>
@@ -75,7 +73,7 @@ const AppContent = observer(() => {
           tab={formatMessage({ id: `${intlPrefix}.application.tabs.mapping` })}
         >
           <Suspense fallback={<div>loading</div>}>
-            <MappingContent type={MAPPING_TAB} />
+            <MappingContent />
           </Suspense>
         </TabPane>
         <TabPane
@@ -83,7 +81,7 @@ const AppContent = observer(() => {
           tab={formatMessage({ id: `${intlPrefix}.application.tabs.cipher` })}
         >
           <Suspense fallback={<div>loading</div>}>
-            <MappingContent type={CIPHER_TAB} />
+            <MappingContent />
           </Suspense>
         </TabPane>
       </Tabs>

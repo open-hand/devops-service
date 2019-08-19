@@ -36,10 +36,6 @@ const EnvModals = observer(() => {
   } = useModalStore();
   const { menuId } = resourceStore.getSelectedMenu;
 
-  useEffect(() => {
-    resourceStore.setNoHeader(false);
-  }, [resourceStore]);
-
   function openDetail() {
     const detailModal = Modal.open({
       key: modalKey1,

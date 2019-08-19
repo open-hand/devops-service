@@ -13,5 +13,12 @@ export default function useStore() {
         `devops/v1/projects/${projectId}/app_instances/${istId}/${active}`,
       );
     },
+    removeService(projectId, envId, appServiceIds) {
+      const data = {
+        envId,
+        appServiceIds,
+      };
+      return axios.delete(`/devops/v1/projects/${projectId}/env/app_services/batch_delete`, JSON.stringify(data));
+    },
   }));
 }

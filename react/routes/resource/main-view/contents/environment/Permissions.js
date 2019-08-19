@@ -2,17 +2,12 @@ import React from 'react';
 import { Permission, Action } from '@choerodon/master';
 import { Table } from 'choerodon-ui/pro';
 import TimePopover from '../../../../../components/timePopover';
-import { useResourceStore } from '../../../stores';
 import { useEnvironmentStore } from './stores';
 
 const { Column } = Table;
 
 export default function Permissions() {
   const {
-    resourceStore: { getSelectedMenu: { menuId } },
-  } = useResourceStore();
-  const {
-    AppState: { currentMenuType: { id } },
     intl: { formatMessage },
     permissionsDs: tableDs,
   } = useEnvironmentStore();
@@ -23,7 +18,7 @@ export default function Permissions() {
         service: [],
         text: formatMessage({ id: 'delete' }),
         action: () => {
-          tableDs.delete(id, record);
+          tableDs.delete(record);
         },
       },
     ];
@@ -32,10 +27,6 @@ export default function Permissions() {
 
   function renderDate({ value }) {
     return <TimePopover content={value} />;
-  }
-
-  function refresh() {
-    tableDs.query();
   }
 
   return (

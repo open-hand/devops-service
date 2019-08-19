@@ -1,5 +1,6 @@
 import React, { Fragment, useMemo } from 'react';
 import PropTypes from 'prop-types';
+import { observer } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
 import { Action } from '@choerodon/master';
 import PodCircle from '../../components/pod-circle';
@@ -8,29 +9,27 @@ import { useResourceStore } from '../../../stores';
 function InstanceItem({
   record,
   name,
-  podColor,
-  running,
-  unlink,
+  podColor: {
+    RUNNING_COLOR,
+    PADDING_COLOR,
+  },
   intlPrefix,
   intl: { formatMessage },
 }) {
   const { treeDs } = useResourceStore();
-  const podData = useMemo(() => {
-    const {
-      RUNNING_COLOR,
-      PADDING_COLOR,
-    } = podColor;
 
-    return [{
-      name: 'running',
-      value: running,
-      stroke: RUNNING_COLOR,
-    }, {
-      name: 'unlink',
-      value: unlink,
-      stroke: PADDING_COLOR,
-    }];
-  }, [running, unlink]);
+  const podRunningCount = record.get('podRunningCount');
+  const podCount = record.get('podCount');
+  const podUnlinkCount = podCount - podRunningCount;
+  const podData = useMemo(() => [{
+    name: 'running',
+    value: podRunningCount,
+    stroke: RUNNING_COLOR,
+  }, {
+    name: 'unlink',
+    value: podUnlinkCount,
+    stroke: PADDING_COLOR,
+  }], [podUnlinkCount, podRunningCount]);
 
   function freshMenu() {
     treeDs.query();
@@ -40,7 +39,7 @@ function InstanceItem({
     treeDs.remove(record);
   }
 
-  const getSuffix = useMemo(() => {
+  function getSuffix() {
     const actionData = [{
       service: [],
       text: formatMessage({ id: `${intlPrefix}.instance.action.stop` }),
@@ -51,7 +50,7 @@ function InstanceItem({
       action: freshMenu,
     }];
     return <Action placement="bottomRight" data={actionData} />;
-  }, []);
+  }
 
   return <Fragment>
     <PodCircle
@@ -59,15 +58,13 @@ function InstanceItem({
       dataSource={podData}
     />
     {name}
-    {getSuffix}
+    {getSuffix()}
   </Fragment>;
 }
 
 InstanceItem.propTypes = {
   name: PropTypes.any,
   podColor: PropTypes.shape({}),
-  running: PropTypes.number,
-  unlink: PropTypes.number,
 };
 
-export default injectIntl(InstanceItem);
+export default injectIntl(observer(InstanceItem));

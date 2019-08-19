@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Modal } from 'choerodon-ui/pro';
-import uniqBy from 'lodash/uniqBy';
 import HeaderButtons from '../../../components/header-buttons';
 import EnvDetail from './env-detail';
 import LinkService from './link-service';
@@ -15,16 +14,20 @@ const modalKey2 = Modal.key();
 const modalKey3 = Modal.key();
 
 const EnvModals = observer(() => {
+  const modalStyle = useMemo(() => ({
+    width: 380,
+  }), []);
   const {
     intlPrefix,
     prefixCls,
     intl: { formatMessage },
     resourceStore,
+    AppState: { currentMenuType: { id: projectId } },
     treeDs,
   } = useResourceStore();
   const {
     envStore: {
-      tabKey,
+      getTabKey,
     },
     tabs: {
       SYNC_TAB,
@@ -37,11 +40,7 @@ const EnvModals = observer(() => {
   } = useEnvironmentStore();
   const {
     modalStore,
-    AppState: { currentMenuType: { projectId } },
   } = useModalStore();
-  const modalStyle = useMemo(() => ({
-    width: 380,
-  }), []);
 
   const { menuId } = resourceStore.getSelectedMenu;
 
@@ -66,6 +65,7 @@ const EnvModals = observer(() => {
   }
 
   function refresh() {
+    const tabKey = getTabKey;
     if (tabKey === SYNC_TAB) {
       gitopsSyncDs.query();
       gitopsLogDs.query();
@@ -130,33 +130,35 @@ const EnvModals = observer(() => {
     });
   }
 
-  const buttons = useMemo(() => ([{
-    name: formatMessage({ id: `${intlPrefix}.modal.link-service` }),
-    icon: 'relate',
-    handler: openLinkService,
-    display: true,
-    group: 1,
-  }, {
-    name: formatMessage({ id: `${intlPrefix}.modal.permission` }),
-    icon: 'authority',
-    handler: openPermission,
-    display: true,
-    group: 1,
-  }, {
-    name: formatMessage({ id: `${intlPrefix}.modal.env-detail` }),
-    icon: 'find_in_page',
-    handler: openEnvDetail,
-    display: true,
-    group: 1,
-  }, {
-    name: formatMessage({ id: 'refresh' }),
-    icon: 'refresh',
-    handler: refresh,
-    display: true,
-    group: 2,
-  }]), []);
+  function getButtons() {
+    return [{
+      name: formatMessage({ id: `${intlPrefix}.modal.link-service` }),
+      icon: 'relate',
+      handler: openLinkService,
+      display: true,
+      group: 1,
+    }, {
+      name: formatMessage({ id: `${intlPrefix}.modal.permission` }),
+      icon: 'authority',
+      handler: openPermission,
+      display: true,
+      group: 1,
+    }, {
+      name: formatMessage({ id: `${intlPrefix}.modal.env-detail` }),
+      icon: 'find_in_page',
+      handler: openEnvDetail,
+      display: true,
+      group: 1,
+    }, {
+      name: formatMessage({ id: 'refresh' }),
+      icon: 'refresh',
+      handler: refresh,
+      display: true,
+      group: 2,
+    }];
+  }
 
-  return <HeaderButtons items={buttons} />;
+  return <HeaderButtons items={getButtons()} />;
 });
 
 export default EnvModals;

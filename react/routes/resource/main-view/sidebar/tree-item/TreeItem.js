@@ -68,21 +68,6 @@ const TreeItem = observer(({ record, search }) => {
     return getName(itemName, search, prefixCls);
   }, [record, search]);
 
-  function getInstance() {
-    const podRunningCount = record.get('podRunningCount');
-    const podCount = record.get('podCount');
-    const podUnlinkCount = podCount - podRunningCount;
-
-    return record.get('id') ? <InstanceItem
-      record={record}
-      name={name}
-      intlPrefix={intlPrefix}
-      running={podRunningCount}
-      unlink={podUnlinkCount}
-      podColor={podColor}
-    /> : null;
-  }
-
   function getIconItem(type) {
     const iconMappings = {
       [SERVICES_ITEM]: 'router',
@@ -138,11 +123,20 @@ const TreeItem = observer(({ record, search }) => {
         break;
       }
       case IST_ITEM: {
-        treeItem = getInstance();
+        treeItem = <InstanceItem
+          record={record}
+          name={name}
+          intlPrefix={intlPrefix}
+          podColor={podColor}
+        />;
         break;
       }
       case APP_ITEM:
-        treeItem = <AppItem name={name} />;
+        treeItem = <AppItem
+          record={record}
+          name={name}
+          intlPrefix={intlPrefix}
+        />;
         break;
       default:
         treeItem = null;

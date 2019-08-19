@@ -1,7 +1,6 @@
-import React, { Fragment, useEffect, lazy, Suspense, useMemo } from 'react';
+import React, { Fragment, lazy, Suspense, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Tabs } from 'choerodon-ui';
-import isEmpty from 'lodash/isEmpty';
 import PrefixTitle from '../../components/prefix-title';
 import PodCircle from '../../components/pod-circle';
 import Modals from './modals';
@@ -18,6 +17,10 @@ const Details = lazy(() => import('./details'));
 const PodsDetails = lazy(() => import('./pods-details'));
 
 const InstanceContent = observer(() => {
+  const podSize = useMemo(() => ({
+    width: 22,
+    height: 22,
+  }), []);
   const {
     prefixCls,
     intlPrefix,
@@ -36,45 +39,48 @@ const InstanceContent = observer(() => {
       PODS_TAB,
     },
     istStore,
+    baseDs,
   } = useInstanceStore();
-  const podSize = useMemo(() => ({
-    width: 22,
-    height: 22,
-  }), []);
 
   function handleChange(key) {
     istStore.setTabKey(key);
   }
 
-  function getTitle() {
-    // const { code, podRunningCount, podCount } = detail;
-    // const podUnlinkCount = podCount - podRunningCount;
+  const title = useMemo(() => {
+    const record = baseDs.current;
+    if (record) {
+      const code = record.get('code');
+      const podRunningCount = record.get('podRunningCount');
+      const podCount = record.get('podCount');
+      const podUnlinkCount = podCount - podRunningCount;
 
-    // return <Fragment>
-    //   <PodCircle
-    //     style={podSize}
-    //     dataSource={[{
-    //       name: 'running',
-    //       value: podRunningCount,
-    //       stroke: RUNNING_COLOR,
-    //     }, {
-    //       name: 'unlink',
-    //       value: podUnlinkCount,
-    //       stroke: PADDING_COLOR,
-    //     }]}
-    //   />
-    //   <span className={`${prefixCls}-title-text`}>{code}</span>
-    // </Fragment>;
-  }
+      return <Fragment>
+        <PodCircle
+          style={podSize}
+          dataSource={[{
+            name: 'running',
+            value: podRunningCount,
+            stroke: RUNNING_COLOR,
+          }, {
+            name: 'unlink',
+            value: podUnlinkCount,
+            stroke: PADDING_COLOR,
+          }]}
+        />
+        <span className={`${prefixCls}-title-text`}>{code}</span>
+      </Fragment>;
+    }
+    return null;
+  }, [baseDs.current]);
 
   return (
     <div className={`${prefixCls}-instance`}>
       <Modals />
       <PrefixTitle
         prefixCls={prefixCls}
-        fallback
+        fallback={!title}
       >
-        {/* getTitle() */}
+        {title}
       </PrefixTitle>
       <Tabs
         className={`${prefixCls}-environment-tabs`}

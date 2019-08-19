@@ -1,4 +1,4 @@
-import React, { Fragment, lazy, Suspense, useCallback, useMemo } from 'react';
+import React, { Fragment, lazy, Suspense, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Tabs, Spin } from 'choerodon-ui';
 import { useEnvironmentStore } from './stores';
@@ -28,9 +28,10 @@ const EnvContent = observer(() => {
     },
     envStore,
   } = useEnvironmentStore();
-  const handleChange = useCallback((key) => {
+
+  function handleChange(key) {
     envStore.setTabKey(key);
-  }, [envStore]);
+  }
 
   const title = useMemo(() => {
     const record = baseInfoDs.current;
