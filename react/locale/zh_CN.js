@@ -55,6 +55,7 @@ const commonField = {
   routing: '路由',
   port: '端口',
   protocol: '协议',
+  import: '导入',
 
   // 状态描述
   null: '无',
@@ -68,6 +69,7 @@ const commonField = {
   stopped: '已停止',
   failed: '失败',
   deleted: '已删除',
+  creating: '创建中',
 
   // public
   detail: '详情',
@@ -310,6 +312,22 @@ const appService = {
   'c7ncd.appService.share.range': '共享范围',
   'c7ncd.appService.mbr': '成员',
   'c7ncd.appService.add.mbr': '添加成员',
+  'c7ncd.appService.repoUrl': '仓库地址',
+  'c7ncd.appService.import.type': '导入方式',
+  'c7ncd.appService.import.type.platform': '从平台应用导入',
+  'c7ncd.appService.import.type.github': '从GitHub导入',
+  'c7ncd.appService.import.type.gitlab': '从GitLab导入',
+  'c7ncd.appService.url.gitlab': 'GitLab地址',
+  'c7ncd.appService.url.github': 'GitHub地址',
+  'c7ncd.appService.token': '私有Token',
+  'c7ncd.appService.import': '导入应用服务',
+  'c7ncd.appService.add': '添加应用服务',
+  'c7ncd.appService.app': '所属应用',
+  'c7ncd.appService.source': '应用来源',
+  'c7ncd.appService.source.true': '组织共享',
+  'c7ncd.appService.source.false': '市场下载',
+  'c7ncd.appService.test.failed': '连接失败',
+  'c7ncd.appService.test.success': '连接成功',
 };
 
 // 文档地址前缀
