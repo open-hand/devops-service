@@ -20,10 +20,15 @@ databaseChangeLog(logicalFilePath: 'dba/devops_secret.groovy') {
         }
 
         addUniqueConstraint(tableName: 'devops_secret',
-                constraintName: 'secret_uk_env_id_name', columnNames: 'env_id,name')
+                constraintName: 'uk_env_id_name', columnNames: 'env_id,name')
 
         createIndex(indexName: "idx_name", tableName: "devops_secret") {
             column(name: "name")
         }
     }
+
+    changeSet(author: 'runge', id: '2019-01-07-change-column') {
+        modifyDataType(tableName: 'devops_secret', columnName: 'name', newDataType: 'VARCHAR(128)')
+    }
+
 }

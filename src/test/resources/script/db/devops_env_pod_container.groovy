@@ -20,4 +20,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env_pod_container.groovy') {
             column(name: "pod_id")
         }
     }
+
+    changeSet(author: 'Sheep', id: '2019-06-10-delete-table') {
+        dropTable(tableName: "devops_env_pod_container")
+    }
 }

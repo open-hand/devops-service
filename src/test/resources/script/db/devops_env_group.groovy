@@ -25,4 +25,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env_group.groovy') {
             column(name: 'sequence', type: 'BIGINT UNSIGNED', remarks: '环境组顺序', afterColumn: 'project_id')
         }
     }
+
+    changeSet(author: 'younger', id: '2019-07-30-drop-column')
+            {
+                dropColumn(columnName: "sequence", tableName: "devops_env_group")
+            }
 }

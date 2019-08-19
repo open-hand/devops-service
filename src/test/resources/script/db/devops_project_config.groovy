@@ -20,4 +20,23 @@ databaseChangeLog(logicalFilePath: 'dba/devops_project_config.groovy') {
         addUniqueConstraint(tableName: 'devops_project_config',
                 constraintName: 'uk_project_name', columnNames: 'project_id,name')
     }
+
+    changeSet(author: 'scp', id: '2019-07-03-modify-column-type') {
+        modifyDataType(tableName: 'devops_project_config', columnName: 'name', newDataType: 'VARCHAR(80)')
+
+    }
+
+
+    changeSet(author: 'sheep', id: '2019-8-05-rename-table') {
+
+
+        dropUniqueConstraint(constraintName: "uk_project_name",tableName: "devops_project_config")
+
+        addColumn(tableName: 'devops_project_config') {
+            column(name: 'organization_id', type: 'BIGINT UNSIGNED', afterColumn: 'id', remarks: '组织ID')
+            column(name: 'app_service_id', type: 'BIGINT UNSIGNED', afterColumn: 'id', remarks: '服务ID')
+        }
+        renameTable(newTableName: 'devops_config', oldTableName: 'devops_project_config')
+    }
+
 }

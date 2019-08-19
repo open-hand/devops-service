@@ -28,11 +28,39 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_instance.groovy') {
     }
 
 
-    changeSet(author: 'younger', id: '2018-09-10-add-column')
-            {
-                addColumn(tableName: 'devops_app_instance') {
-                    column(name: 'command_id', type: 'BIGINT UNSIGNED', remarks: 'command id', afterColumn: 'env_id')
-                }
-            }
+    changeSet(author: 'younger', id: '2018-09-10-add-column') {
+        addColumn(tableName: 'devops_app_instance') {
+            column(name: 'command_id', type: 'BIGINT UNSIGNED', remarks: 'command id', afterColumn: 'env_id')
+        }
+    }
 
+    changeSet(author: 'scp', id: '2019-06-04-idx-app-id') {
+        createIndex(indexName: "idx_app_id ", tableName: "devops_app_instance") {
+            column(name: "app_id")
+        }
+    }
+
+    changeSet(author: 'scp', id: '2019-06-05-idx-env-id') {
+        createIndex(indexName: "idx_env_id ", tableName: "devops_app_instance") {
+            column(name: "env_id")
+        }
+    }
+
+    changeSet(author: 'younger', id: '2019-06-05-add-column') {
+        addColumn(tableName: 'devops_app_instance') {
+            column(name: 'value_id', type: 'BIGINT UNSIGNED', remarks: 'devops deploy value id', afterColumn: 'env_id')
+        }
+    }
+
+    changeSet(author: 'scp', id: '2019-07-29-rename-column') {
+        renameColumn(columnDataType: 'BIGINT UNSIGNED', newColumnName: 'app_service_id', oldColumnName: 'app_id', tableName: 'devops_app_instance')
+    }
+
+    changeSet(author: 'sheep', id: '2019-8-02-rename-table') {
+        renameTable(newTableName: 'devops_app_service_instance', oldTableName: 'devops_app_instance')
+    }
+
+    changeSet(author: 'zmf', id: '2019-08-06-rename-app-version-id-column') {
+        renameColumn(columnDataType: 'BIGINT UNSIGNED', newColumnName: 'app_service_version_id', oldColumnName: 'app_version_id', tableName: 'devops_app_service_instance', remarks: '应用版本 ID')
+    }
 }

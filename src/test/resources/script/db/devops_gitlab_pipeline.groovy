@@ -7,8 +7,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_gitlab_pipeline.groovyovy') {
                 constraints(primaryKey: true)
             }
             column(name: 'pipeline_id', type: 'BIGINT UNSIGNED', remarks: 'pipeline Id') {
-                        constraints(unique: true)
-                    }
+                constraints(unique: true)
+            }
             column(name: 'app_id', type: 'BIGINT UNSIGNED', remarks: '应用id')
             column(name: 'pipeline_create_user_id', type: 'BIGINT UNSIGNED', remarks: '触发pipeline用户id')
             column(name: 'commit_id', type: 'BIGINT UNSIGNED', remarks: 'commit id')
@@ -24,5 +24,24 @@ databaseChangeLog(logicalFilePath: 'dba/devops_gitlab_pipeline.groovyovy') {
             column(name: "last_updated_by", type: "BIGINT UNSIGNED", defaultValue: "0")
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
+    }
+    changeSet(author: 'scp', id: '2019-04-16-gitlab-pipeline-add-index') {
+        createIndex(indexName: "idx_app_id", tableName: "devops_gitlab_pipeline") {
+            column(name: "app_id")
+        }
+        createIndex(indexName: "idx_pipelineid_commitid", tableName: "devops_gitlab_pipeline") {
+            column(name: "pipeline_id")
+            column(name: "commit_id")
+        }
+    }
+
+    changeSet(author: 'younger', id: '2019-05-27-add-index') {
+        createIndex(indexName: "idx_commitid ", tableName: "devops_gitlab_pipeline") {
+            column(name: "commit_id")
+        }
+    }
+
+    changeSet(author: 'scp', id: '2019-07-29-rename-column') {
+        renameColumn(columnDataType: 'BIGINT UNSIGNED', newColumnName: 'app_service_id', oldColumnName: 'app_id', tableName: 'devops_gitlab_pipeline')
     }
 }

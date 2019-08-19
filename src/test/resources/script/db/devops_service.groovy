@@ -23,9 +23,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_service.groovy') {
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
 
-//        createIndex(indexName: "idx_name", tableName: "devops_service") {
-//            column(name: "name")
-//        }
+        createIndex(indexName: "idx_name", tableName: "devops_service") {
+            column(name: "name")
+        }
         addUniqueConstraint(tableName: 'devops_service', constraintName: 'uk_namespace_name',
                 columnNames: 'namespace,name')
     }
@@ -62,7 +62,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_service.groovy') {
     }
 
     changeSet(author: 'younger', id: '2018-09-03-modify-UniqueConstraint') {
-        dropUniqueConstraint(constraintName: "uk_namespace_name",tableName: "devops_service")
+        dropUniqueConstraint(constraintName: "uk_namespace_name", tableName: "devops_service")
         addUniqueConstraint(tableName: 'devops_service',
                 constraintName: 'devops_service_uk_namespace_name', columnNames: 'namespace,name')
     }
@@ -77,7 +77,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_service.groovy') {
 
 
     changeSet(id: '2018-10-08-drop-column', author: 'younger') {
-        dropUniqueConstraint(constraintName: "devops_service_uk_namespace_name",tableName: "devops_service")
+        dropUniqueConstraint(constraintName: "devops_service_uk_namespace_name", tableName: "devops_service")
         dropColumn(columnName: "namespace", tableName: "devops_service")
 
     }
@@ -96,4 +96,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_service.groovy') {
                     column(name: 'load_balance_ip', type: 'VARCHAR(32)', remarks: 'load balance类型的ip', afterColumn: 'end_points')
                 }
             }
+
+    changeSet(author: 'scp', id: '2019-07-29-rename-column') {
+        renameColumn(columnDataType: 'BIGINT UNSIGNED', newColumnName: 'app_service_id', oldColumnName: 'app_id', tableName: 'devops_service')
+    }
 }
