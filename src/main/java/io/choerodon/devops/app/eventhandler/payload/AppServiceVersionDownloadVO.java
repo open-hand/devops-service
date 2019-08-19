@@ -1,14 +1,18 @@
 package io.choerodon.devops.app.eventhandler.payload;
 
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  11:16 2019/8/2
  * Description:
  */
 public class AppServiceVersionDownloadVO {
+    @ApiModelProperty("应用服务版本")
     private String version;
+
+    @ApiModelProperty("镜像地址")
     private String image;
-    private String repository;
 
     public String getVersion() {
         return version;
@@ -26,11 +30,4 @@ public class AppServiceVersionDownloadVO {
         this.image = image;
     }
 
-    public String getRepository() {
-        return repository;
-    }
-
-    public void setRepository(String repository) {
-        this.repository = repository;
-    }
 }

@@ -2,16 +2,29 @@ package io.choerodon.devops.app.eventhandler.payload;
 
 import java.util.List;
 
+import io.swagger.annotations.ApiModelProperty;
+
+import io.choerodon.devops.infra.dto.harbor.User;
+
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  9:56 2019/8/5
  * Description:
  */
 public class AppMarketDownloadVO {
+    @ApiModelProperty("iam用户Id")
     private Long iamUserId;
+
+    @ApiModelProperty("应用Id")
     private Long appId;
+
+    @ApiModelProperty("文件下载地址")
     private String filePath;
-    private String groupPath;
+
+    @ApiModelProperty("harbor用户")
+    private User user;
+
+    @ApiModelProperty("应用服务")
     private List<AppServiceDownloadVO> appServiceMarketDownloadVOS;
 
     public Long getAppId() {
@@ -46,11 +59,11 @@ public class AppMarketDownloadVO {
         this.appServiceMarketDownloadVOS = appServiceMarketDownloadVOS;
     }
 
-    public String getGroupPath() {
-        return groupPath;
+    public User getUser() {
+        return user;
     }
 
-    public void setGroupPath(String groupPath) {
-        this.groupPath = groupPath;
+    public void setUser(User user) {
+        this.user = user;
     }
 }

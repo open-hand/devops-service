@@ -92,7 +92,7 @@ public class ChartUtil {
     }
 
     public String downloadChartForAppMarket(AppServiceVersionDownloadVO appServiceVersionPayload, String appServiceCode, String destpath) {
-        String repository = appServiceVersionPayload.getRepository();
+        String repository = appServiceVersionPayload.getImage();
         repository = repository.replace("http://", "");
         String[] repositoryArray = repository.split("/");
 

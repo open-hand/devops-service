@@ -2,6 +2,8 @@ package io.choerodon.devops.api.vo;
 
 import java.util.List;
 
+import io.swagger.annotations.ApiModelProperty;
+
 import io.choerodon.devops.infra.dto.harbor.User;
 
 /**
@@ -10,20 +12,33 @@ import io.choerodon.devops.infra.dto.harbor.User;
  * Description:
  */
 public class AppMarketUploadVO {
+    @ApiModelProperty("应用Id")
     private Long appId;
-    private List<AppServiceUploadVO> appServiceUploadVOS;
-    private String status;
-    private Long iamUserId;
-    private String harborUrl;
-    private User user;
-    private String saasUrl;
 
-    public String getSaasUrl() {
-        return saasUrl;
+    @ApiModelProperty("应用code")
+    private String appCode;
+
+    @ApiModelProperty("应用服务")
+    private List<AppServiceUploadVO> appServiceUploadVOS;
+
+    @ApiModelProperty("状态: deploy_only,download_only,all")
+    private String status;
+
+    @ApiModelProperty("Iam用户Id")
+    private Long iamUserId;
+
+    @ApiModelProperty("Harbor用户")
+    private User user;
+
+    @ApiModelProperty("SAAS平台getaway URL")
+    private String saasGetawayUrl;
+
+    public String getAppCode() {
+        return appCode;
     }
 
-    public void setSaasUrl(String saasUrl) {
-        this.saasUrl = saasUrl;
+    public void setAppCode(String appCode) {
+        this.appCode = appCode;
     }
 
     public User getUser() {
@@ -66,11 +81,11 @@ public class AppMarketUploadVO {
         this.status = status;
     }
 
-    public String getHarborUrl() {
-        return harborUrl;
+    public String getSaasGetawayUrl() {
+        return saasGetawayUrl;
     }
 
-    public void setHarborUrl(String harborUrl) {
-        this.harborUrl = harborUrl;
+    public void setSaasGetawayUrl(String saasGetawayUrl) {
+        this.saasGetawayUrl = saasGetawayUrl;
     }
 }
