@@ -57,7 +57,6 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 class DevopsEnvironmentControllerSpec extends Specification {
     @Shared
     private String rootUrl = "/v1/projects/{project_id}/envs"
-
     @Autowired
     private TestRestTemplate restTemplate
     @Autowired
