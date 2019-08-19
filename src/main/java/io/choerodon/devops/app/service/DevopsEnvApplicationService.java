@@ -14,10 +14,11 @@ public interface DevopsEnvApplicationService {
     List<DevopsEnvApplicationVO> batchCreate(DevopsEnvAppServiceVO devopsEnvAppServiceVO);
 
     /**
-     * 批量删除与该环境关联的应用
-     * @param devopsEnvAppServiceVO
+     * 删除与该环境关联的应用
+     * @param envId
+     * @param appServiceId
      */
-    void batchDelete(DevopsEnvAppServiceVO devopsEnvAppServiceVO);
+    void delete(Long envId,Long appServiceId);
 
     /**
      * 查询环境下的所有应用

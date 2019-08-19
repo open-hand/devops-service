@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import retrofit2.http.Path;
 
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.enums.ResourceType;
@@ -53,12 +54,14 @@ public class DevopsEnvAppServiceController {
 
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "删除指定环境关联的多个服务")
-    @DeleteMapping("/batch_delete")
-    public ResponseEntity batchDelete(
-            @ApiParam(value = "关联信息", required = true)
-            @RequestBody DevopsEnvAppServiceVO devopsEnvAppServiceVO) {
-        validator.checkEnvIdAndAppIdsExist(devopsEnvAppServiceVO);
-        devopsEnvApplicationService.batchDelete(devopsEnvAppServiceVO);
+    @DeleteMapping
+    public ResponseEntity delete(
+            @ApiParam(value = "环境Id", required = true)
+            @RequestParam("env_id") Long envId,
+            @ApiParam(value = "应用服务Id", required = true)
+            @RequestParam("app_service_id") Long appServiceId) {
+        validator.checkEnvIdAndAppIdsExist(envId, appServiceId);
+        devopsEnvApplicationService.delete(envId, appServiceId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 

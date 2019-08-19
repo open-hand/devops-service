@@ -14,6 +14,7 @@ import io.choerodon.devops.app.service.DevopsEnvApplicationService;
 import io.choerodon.devops.infra.dto.DevopsEnvAppServiceDTO;
 import io.choerodon.devops.infra.mapper.DevopsEnvAppServiceMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
+
 import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.V1Container;
 import io.kubernetes.client.models.V1ContainerPort;
@@ -45,10 +46,9 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
     }
 
     @Override
-    public void batchDelete(DevopsEnvAppServiceVO devopsEnvAppServiceVO) {
-        Stream.of(devopsEnvAppServiceVO.getAppServiceIds())
-                .map(appServiceId -> new DevopsEnvAppServiceDTO(appServiceId, devopsEnvAppServiceVO.getEnvId()))
-                .forEach((e -> devopsEnvAppServiceMapper.delete(e)));
+    public void delete(Long envId, Long appServiceId) {
+        DevopsEnvAppServiceDTO devopsEnvAppServiceDTO = new DevopsEnvAppServiceDTO(appServiceId, envId);
+        devopsEnvAppServiceMapper.delete(devopsEnvAppServiceDTO);
     }
 
     @Override
