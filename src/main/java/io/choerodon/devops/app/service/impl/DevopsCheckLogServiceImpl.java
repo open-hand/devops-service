@@ -11,6 +11,7 @@ import com.alibaba.fastjson.JSON;
 import com.zaxxer.hikari.util.UtilityElf;
 import io.choerodon.devops.api.vo.kubernetes.CheckLog;
 import io.choerodon.devops.api.vo.kubernetes.ProjectCreateDTO;
+import io.choerodon.devops.app.service.DevopsBranchService;
 import io.choerodon.devops.app.service.DevopsCheckLogService;
 import io.choerodon.devops.app.service.DevopsDeployRecordService;
 import io.choerodon.devops.app.service.DevopsEnvApplicationService;
@@ -69,6 +70,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     @Autowired
     private DevopsBranchMapper  devopsBranchMapper;
 
+
     @Override
     public void checkLog(String version) {
         LOGGER.info("start upgrade task");
@@ -103,6 +105,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 //                syncProjectAppId();
 //                syncConfig();
                   syncBranch();
+
             } else {
                 LOGGER.info("version not matched");
             }

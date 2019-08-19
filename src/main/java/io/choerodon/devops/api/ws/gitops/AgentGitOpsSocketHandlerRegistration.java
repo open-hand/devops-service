@@ -1,4 +1,4 @@
-package io.choerodon.devops.api.ws;
+package io.choerodon.devops.api.ws.gitops;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.servlet.http.HttpServletRequest;
 
 import io.choerodon.devops.api.vo.ClusterSessionVO;
+import io.choerodon.devops.api.ws.WebSocketTool;
 import io.choerodon.devops.app.service.AgentCommandService;
 import io.choerodon.devops.app.service.DevopsClusterService;
 import io.choerodon.devops.infra.dto.DevopsClusterDTO;
@@ -36,10 +37,10 @@ import org.springframework.web.socket.server.HandshakeFailureException;
  */
 
 @Component
-public class AgentSocketHandlerRegistration implements SocketHandlerRegistration {
+public class AgentGitOpsSocketHandlerRegistration implements SocketHandlerRegistration {
 
     private static final String CLUSTER_SESSION = "cluster-sessions-catch";
-    private static final Logger logger = LoggerFactory.getLogger(AgentSocketHandlerRegistration.class);
+    private static final Logger logger = LoggerFactory.getLogger(AgentGitOpsSocketHandlerRegistration.class);
     private ConcurrentHashMap<String, Map<String, Object>> attributes = new ConcurrentHashMap<>();
     private Set<WebSocketSession> webSocketSessions = new HashSet<>();
 

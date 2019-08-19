@@ -1,19 +1,20 @@
 package io.choerodon.devops.api.ws;
 
 import java.io.IOException;
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import javax.servlet.http.HttpServletRequest;
 
 import io.choerodon.devops.api.vo.PipeRequestVO;
 import io.choerodon.devops.app.service.AgentCommandService;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.websocket.helper.WebSocketHelper;
+import io.choerodon.websocket.relationship.DefaultRelationshipDefining;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.http.server.ServletServerHttpRequest;
@@ -26,19 +27,22 @@ import org.springframework.web.socket.server.HandshakeFailureException;
  * Created by Sheep on 2019/7/25.
  */
 @Component
-public class ExecAndLogSocketHandler{
+public class DevopsExecAndLogSocketHandler {
 
-    private static final Logger logger = LoggerFactory.getLogger(ExecAndLogSocketHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(DevopsExecAndLogSocketHandler.class);
     public static final String KUBERNETES_GET_LOGS = "kubernetes_get_logs";
     public static final String EXEC_COMMAND = "kubernetes_exec";
-    private ConcurrentHashMap<String, Map<String, Object>> attributes = new ConcurrentHashMap<>();
-    private Set<String> keys = new HashSet<>();
+    public static final String EXEC_LOG_SESSIONS_CATCH = "exec_log_sessions_catch";
 
 
     @Autowired
     private WebSocketHelper webSocketHelper;
     @Autowired
     private AgentCommandService agentCommandService;
+    @Autowired
+    private DefaultRelationshipDefining defaultRelationshipDefining;
+    @Autowired
+    private RedisTemplate<String, Object>  redisTemplate;
 
 
     public boolean beforeHandshake(ServerHttpRequest serverHttpRequest, ServerHttpResponse serverHttpResponse) {
@@ -77,33 +81,48 @@ public class ExecAndLogSocketHandler{
     public void afterConnectionEstablished(WebSocketSession webSocketSession) {
         //解析参数列表，并存储
         Map<String, Object> attribute = WebSocketTool.getAttribute(webSocketSession);
-        attributes.put(webSocketSession.getId(), attribute);
 
         String registerKey = TypeUtil.objToString(attribute.get("key"));
-        //将websocketSession和关联的key做关联
-        webSocketHelper.contact(webSocketSession, registerKey);
+        //将websocketSession和关联的key做关联,存储到redis
+
+        List<WebSocketSession> webSocketSessions = (List<WebSocketSession>) redisTemplate.opsForHash().get(EXEC_LOG_SESSIONS_CATCH, registerKey);
+        if (webSocketSessions == null) {
+            webSocketSessions = new ArrayList<>();
+        }
+        webSocketSessions.add(webSocketSession);
+        redisTemplate.opsForHash().put(EXEC_LOG_SESSIONS_CATCH, registerKey, webSocketSessions);
 
 
         //通知agent建立与前端同样的ws连接
         PipeRequestVO pipeRequest = new PipeRequestVO(attribute.get("podName").toString(), attribute.get("containerName").toString(), attribute.get("logId").toString(), attribute.get("env").toString());
         Long clusterId = TypeUtil.objToLong(registerKey.split("\\.")[0].split(":")[1]);
-        if (webSocketSession.getUri().getPath().equals("/ws/log")) {
+        if (webSocketSession.getUri().getPath().equals("/devops/log")) {
             agentCommandService.startLogOrExecConnection(KUBERNETES_GET_LOGS, registerKey, pipeRequest, clusterId);
         } else {
             agentCommandService.startLogOrExecConnection(EXEC_COMMAND, registerKey, pipeRequest, clusterId);
         }
-        keys.add(registerKey);
     }
 
     public void afterConnectionClosed(WebSocketSession webSocketSession, CloseStatus closeStatus) {
-        Map<String, Object> attribute = attributes.get(webSocketSession.getId());
+
+        Map<String, Object> attribute = WebSocketTool.getAttribute(webSocketSession);
         String registerKey = TypeUtil.objToString(attribute.get("key"));
 
-        //移除关联关系
-        webSocketHelper.removeKeyContact(webSocketSession, registerKey);
-        keys.remove(registerKey);
+        //当时log或者exec类型的ws,断开devops前端到devops的ws时,同时需要断开与该ws对应的agent到devops的ws连接
+        List<WebSocketSession> webSocketSessions = (List<WebSocketSession>) redisTemplate.opsForHash().get(EXEC_LOG_SESSIONS_CATCH, registerKey);
+        if (webSocketSessions != null) {
+            redisTemplate.opsForHash().delete(EXEC_LOG_SESSIONS_CATCH, registerKey);
+        }
+        for (WebSocketSession session : webSocketSessions) {
+            if (session != webSocketSession) {
+                closeSession(session);
+            }
+        }
+    }
+
+    private void closeSession(WebSocketSession session) {
         try {
-            webSocketSession.close();
+            session.close();
         } catch (IOException e) {
             logger.warn("close clean timeout session failed {}", e.getMessage());
         }

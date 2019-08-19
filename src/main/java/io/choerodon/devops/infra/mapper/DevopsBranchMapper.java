@@ -19,4 +19,5 @@ public interface DevopsBranchMapper extends Mapper<DevopsBranchDTO> {
     void  deleteByIsDelete();
 
     void  deleteDuplicateBranch();
+
 }
