@@ -3,6 +3,7 @@ package io.choerodon.devops.infra.util;
 import java.util.List;
 
 import com.github.pagehelper.PageInfo;
+
 import io.choerodon.base.domain.PageRequest;
 
 /**
@@ -38,7 +39,7 @@ public class PageInfoUtil {
             size = 0;
         }
         result.setSize(queryAll ? all.size() : size);
-        result.setList(queryAll ? all : all.subList(fromIndex, result.getSize()));
+        result.setList(queryAll ? all : all.subList(fromIndex, fromIndex + result.getSize()));
         return result;
     }
 }
