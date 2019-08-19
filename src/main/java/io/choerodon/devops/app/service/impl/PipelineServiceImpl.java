@@ -116,7 +116,7 @@ public class PipelineServiceImpl implements PipelineService {
         List<PipelineVO> pipelineVOS = ConvertUtils.convertList(pipelineMapper.listByOptions(projectId, pipelineSearchVO, userId, pageRequest.getSort().toSql()), PipelineVO.class);
         List<PipelineVO> pipelineVOList;
         Boolean projectOwner = iamService.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectDTO);
-        if (pipelineSearchVO != null && pipelineSearchVO.getManager()) {
+        if (pipelineSearchVO != null && pipelineSearchVO.getManager() != null && pipelineSearchVO.getManager()) {
             pipelineVOList = pipelineVOS.stream().filter(t -> {
                 List<Long> pipelineEnvIds = getAllAppDeploy(t.getId()).stream().map(PipelineAppServiceDeployDTO::getEnvId).collect(Collectors.toList());
                 return checkPipelineEnvPermission(pipelineEnvIds, projectOwner);
