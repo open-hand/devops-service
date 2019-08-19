@@ -56,15 +56,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_application.groovy') {
 
     }
 
-    changeSet(author: 'n1ck', id: '2018-11-20-modify-column-collate') {
-        sql("ALTER TABLE devops_application MODIFY COLUMN `name` VARCHAR(64) BINARY")
-    }
-
     changeSet(author: 'younger', id: '2018-11-22-add-column') {
         addColumn(tableName: 'devops_application') {
             column(name: 'type', type: 'VARCHAR(50)', remarks: '应用类型', afterColumn: 'code')
         }
-        sql("UPDATE devops_application  da SET da.type = 'normal'")
     }
 
     changeSet(author: 'n1ck', id: '2018-11-23-add-column') {

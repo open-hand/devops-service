@@ -97,10 +97,6 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env.groovy') {
                         constraintName: 'devops_envs_uk_cluster_id_code', columnNames: 'cluster_id,code')
             }
 
-    changeSet(author: 'n1ck', id: '2018-11-20-modicy-column') {
-        sql("ALTER TABLE devops_env MODIFY COLUMN `name` VARCHAR(32) BINARY")
-    }
-
     changeSet(author: 'younger', id: '2018-11-21-add-column') {
         addColumn(tableName: 'devops_env') {
             column(name: 'is_synchro', type: 'TINYINT UNSIGNED', defaultValue: "0", remarks: 'is synchro', afterColumn: 'gitlab_env_project_id')

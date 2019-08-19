@@ -50,7 +50,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_record.groovy') {
         }
     }
     changeSet(author: 'scp', id: '2019-06-04-idx-project-id') {
-        createIndex(indexName: "idx_project_id ", tableName: "devops_pipeline_record") {
+        createIndex(indexName: "devops_pipeline_record_idx_project_id ", tableName: "devops_pipeline_record") {
             column(name: "project_id")
         }
     }

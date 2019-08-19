@@ -20,7 +20,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_market.groovy') {
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
 
-        createIndex(indexName: "idx_app_id", tableName: "devops_app_market") {
+        createIndex(indexName: "app_market_idx_app_id", tableName: "devops_app_market") {
             column(name: "app_id")
         }
 
@@ -40,7 +40,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_market.groovy') {
     }
 
     changeSet(author: 'younger', id: '2018-09-03-modify-index') {
-        dropIndex(indexName: "idx_app_id", tableName: "devops_app_market")
+        dropIndex(indexName: "app_market_idx_app_id", tableName: "devops_app_market")
 
         createIndex(indexName: "devops_market_idx_app_id", tableName: "devops_app_market") {
             column(name: "app_id")

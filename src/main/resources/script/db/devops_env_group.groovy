@@ -26,8 +26,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env_group.groovy') {
         }
     }
 
-    changeSet(author: 'younger', id: '2019-07-30-drop-column')
-            {
+    changeSet(author: 'younger', id: '2019-07-30-drop-column') {
                 dropColumn(columnName: "sequence", tableName: "devops_env_group")
-            }
+    }
 }

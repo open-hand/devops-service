@@ -26,7 +26,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_gitlab_pipeline.groovyovy') {
         }
     }
     changeSet(author: 'scp', id: '2019-04-16-gitlab-pipeline-add-index') {
-        createIndex(indexName: "idx_app_id", tableName: "devops_gitlab_pipeline") {
+        createIndex(indexName: "pipeline_idx_app_id", tableName: "devops_gitlab_pipeline") {
             column(name: "app_id")
         }
         createIndex(indexName: "idx_pipelineid_commitid", tableName: "devops_gitlab_pipeline") {

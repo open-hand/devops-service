@@ -20,7 +20,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_config_map.groovy') {
         }
 
         addUniqueConstraint(tableName: 'devops_config_map',
-                constraintName: 'uk_env_id_name', columnNames: 'env_id,name')
+                constraintName: 'config_map_uk_env_id_name', columnNames: 'env_id,name')
     }
 
 

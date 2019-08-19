@@ -11,7 +11,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_stage_record.groovy') {
             column(name: 'status', type: 'VARCHAR(20)', remarks: '状态')
             column(name: 'trigger_type', type: 'VARCHAR(10)', remarks: '触发方式')
             column(name: 'is_parallel', type: 'TINYINT UNSIGNED', remarks: '是否并行')
-            column(name: 'execution_time', type: 'DATETIME', remarks: '执行时间')
+            column(name: 'execution_time', type: 'VARCHAR(255)', remarks: '执行时间')
             column(name: 'project_id', type: 'BIGINT UNSIGNED', remarks: '项目Id')
 
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
@@ -26,16 +26,13 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_stage_record.groovy') {
             column(name: 'stage_name', type: 'VARCHAR(50)', remarks: '阶段名称')
         }
     }
-    changeSet(author: 'scp', id: '2019-04-18-devops_pipeline_stage-modify-column') {
-        sql("ALTER TABLE devops_pipeline_stage_record MODIFY COLUMN `execution_time` VARCHAR(255) BINARY")
-    }
     changeSet(author: 'scp', id: '2019-05-27-devops_pipeline_task-add-column') {
         addColumn(tableName: 'devops_pipeline_stage_record') {
             column(name: 'audit_user', type: 'VARCHAR(255)', remarks: '审核人员', afterColumn: "project_id")
         }
     }
     changeSet(author: 'scp', id: '2019-06-12-idx-pipeline-record-id') {
-        createIndex(indexName: "idx_pipeline_record_id ", tableName: "devops_pipeline_stage_record") {
+        createIndex(indexName: "stage_record_idx_pipeline_record_id ", tableName: "devops_pipeline_stage_record") {
             column(name: "pipeline_record_id")
         }
     }
