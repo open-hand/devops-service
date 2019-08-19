@@ -19,9 +19,9 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.validator.ApplicationValidator;
 import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.app.eventhandler.payload.AppMarketDownloadVO;
-import io.choerodon.devops.app.eventhandler.payload.AppServiceDownloadVO;
-import io.choerodon.devops.app.eventhandler.payload.AppServiceVersionDownloadVO;
+import io.choerodon.devops.app.eventhandler.payload.AppMarketDownloadPayload;
+import io.choerodon.devops.app.eventhandler.payload.AppServiceDownloadPayload;
+import io.choerodon.devops.app.eventhandler.payload.AppServiceVersionDownloadPayload;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
 import io.choerodon.devops.infra.dto.*;
@@ -181,7 +181,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
     }
 
     @Override
-    public void downLoadApp(AppMarketDownloadVO appMarketDownloadVO) {
+    public void downLoadApp(AppMarketDownloadPayload appMarketDownloadVO) {
         File file = new File("D:\\mydata_file\\test\\application1565938344784.zip");
         String unZipPath = "D:\\mydata_file\\test\\temp";
         FileUtil.unZipFiles(file, unZipPath);
@@ -216,7 +216,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
     }
 
 
-    private void createRemoteAppService(AppServiceDownloadVO downloadPayload, Integer gitlabGroupId, Long iamUserId, String groupPath, List<File> fileList) {
+    private void createRemoteAppService(AppServiceDownloadPayload downloadPayload, Integer gitlabGroupId, Long iamUserId, String groupPath, List<File> fileList) {
         ApplicationValidator.checkApplicationService(downloadPayload.getAppServiceCode());
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(iamUserId);
 
@@ -275,7 +275,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         });
     }
 
-    private Git gitResolver(Boolean isFirst, String groupPath, File file, AppServiceDownloadVO downloadPayload, String accessToken) {
+    private Git gitResolver(Boolean isFirst, String groupPath, File file, AppServiceDownloadPayload downloadPayload, String accessToken) {
         Git git = null;
         String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
         String repositoryUrl = repoUrl + groupPath + "/" + downloadPayload.getAppServiceCode() + ".git";
@@ -292,7 +292,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
     }
 
 
-    private String chartResolver(AppServiceVersionDownloadVO appServiceVersionPayload, Long appServiceId, String appServiceCode, File file) {
+    private String chartResolver(AppServiceVersionDownloadPayload appServiceVersionPayload, Long appServiceId, String appServiceCode, File file) {
         String unZipPath = String.format("%s%s%s", file.getParentFile().getAbsolutePath(), File.separator, "chart");
         FileUtil.unTarGZ(file.getAbsoluteFile(), unZipPath);
         File zipDirectory = new File(String.format("%s%s%s", unZipPath, File.separator, appServiceCode));
@@ -464,7 +464,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         return iamgeMap;
     }
 
-    private void pushImageForDownload(AppMarketDownloadVO appMarketDownloadVO) {
+    private void pushImageForDownload(AppMarketDownloadPayload appMarketDownloadVO) {
         //获取push_image 脚本目录
         String shellPath = this.getClass().getResource("/shell").getPath();
 
