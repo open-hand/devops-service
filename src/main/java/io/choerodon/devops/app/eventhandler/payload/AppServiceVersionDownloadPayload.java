@@ -7,7 +7,7 @@ import io.swagger.annotations.ApiModelProperty;
  * Date:  11:16 2019/8/2
  * Description:
  */
-public class AppServiceVersionDownloadVO {
+public class AppServiceVersionDownloadPayload {
     @ApiModelProperty("应用服务版本")
     private String version;
 

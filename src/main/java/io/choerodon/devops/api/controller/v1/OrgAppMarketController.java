@@ -14,16 +14,14 @@ import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.base.domain.Sort;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.AppMarketUploadVO;
 import io.choerodon.devops.api.vo.AppServiceUploadVO;
 import io.choerodon.devops.api.vo.AppServiceVersionUploadVO;
 import io.choerodon.devops.api.vo.HarborMarketVO;
-import io.choerodon.devops.app.eventhandler.payload.AppMarketDownloadVO;
+import io.choerodon.devops.app.eventhandler.payload.AppMarketDownloadPayload;
 import io.choerodon.devops.app.service.OrgAppMarketService;
-import io.choerodon.mybatis.annotation.SortDefault;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 
 /**
@@ -128,7 +126,7 @@ public class OrgAppMarketController {
     @PostMapping("/download")
     public ResponseEntity downLoadApp(
             @ApiParam(value = "应用信息",required = true)
-            @RequestBody AppMarketDownloadVO applicationPayload) {
+            @RequestBody AppMarketDownloadPayload applicationPayload) {
         orgAppMarketService.downLoadApp(applicationPayload);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }

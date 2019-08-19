@@ -1,36 +1,67 @@
 package io.choerodon.devops.app.eventhandler.payload;
 
+import java.util.List;
+
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * Creator: ChangpingShi0213@gmail.com
- * Date:  14:05 2019/8/6
+ * Date:  13:48 2019/8/2
  * Description:
  */
-public class AppServiceDownloadPayload extends AppServiceDownloadVO {
-    private Integer gitlabUserId;
-    private Integer gitlabGroupId;
-    private String path;
+public class AppServiceDownloadPayload {
+    @ApiModelProperty("应用服务Id，非必传")
+    private Long appId;
 
-    public Integer getGitlabUserId() {
-        return gitlabUserId;
+    @ApiModelProperty("应用服务Name")
+    private String appServiceName;
+
+    @ApiModelProperty("应用服务Code")
+    private String appServiceCode;
+
+    @ApiModelProperty("应用服务Type")
+    private String appServiceType;
+
+    @ApiModelProperty("应用服务版本")
+    private List<AppServiceVersionDownloadPayload> appServiceVersionDownloadVOS;
+
+    public String getAppServiceName() {
+        return appServiceName;
     }
 
-    public void setGitlabUserId(Integer gitlabUserId) {
-        this.gitlabUserId = gitlabUserId;
+    public void setAppServiceName(String appServiceName) {
+        this.appServiceName = appServiceName;
     }
 
-    public Integer getGitlabGroupId() {
-        return gitlabGroupId;
+    public String getAppServiceCode() {
+        return appServiceCode;
     }
 
-    public void setGitlabGroupId(Integer gitlabGroupId) {
-        this.gitlabGroupId = gitlabGroupId;
+    public void setAppServiceCode(String appServiceCode) {
+        this.appServiceCode = appServiceCode;
     }
 
-    public String getPath() {
-        return path;
+    public String getAppServiceType() {
+        return appServiceType;
     }
 
-    public void setPath(String path) {
-        this.path = path;
+    public void setAppServiceType(String appServiceType) {
+        this.appServiceType = appServiceType;
+    }
+
+    public List<AppServiceVersionDownloadPayload> getAppServiceVersionDownloadVOS() {
+        return appServiceVersionDownloadVOS;
+    }
+
+    public void setAppServiceVersionDownloadVOS(List<AppServiceVersionDownloadPayload> appServiceVersionDownloadVOS) {
+        this.appServiceVersionDownloadVOS = appServiceVersionDownloadVOS;
+    }
+
+    public Long getAppId() {
+        return appId;
+    }
+
+    public void setAppId(Long appId) {
+        this.appId = appId;
     }
 }

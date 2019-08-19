@@ -11,7 +11,7 @@ import io.choerodon.devops.infra.dto.harbor.User;
  * Date:  9:56 2019/8/5
  * Description:
  */
-public class AppMarketDownloadVO {
+public class AppMarketDownloadPayload {
     @ApiModelProperty("iam用户Id")
     private Long iamUserId;
 
@@ -25,7 +25,7 @@ public class AppMarketDownloadVO {
     private User user;
 
     @ApiModelProperty("应用服务")
-    private List<AppServiceDownloadVO> appServiceMarketDownloadVOS;
+    private List<AppServiceDownloadPayload> appServiceMarketDownloadVOS;
 
     public Long getAppId() {
         return appId;
@@ -51,11 +51,11 @@ public class AppMarketDownloadVO {
         this.filePath = filePath;
     }
 
-    public List<AppServiceDownloadVO> getAppServiceMarketDownloadVOS() {
+    public List<AppServiceDownloadPayload> getAppServiceMarketDownloadVOS() {
         return appServiceMarketDownloadVOS;
     }
 
-    public void setAppServiceMarketDownloadVOS(List<AppServiceDownloadVO> appServiceMarketDownloadVOS) {
+    public void setAppServiceMarketDownloadVOS(List<AppServiceDownloadPayload> appServiceMarketDownloadVOS) {
         this.appServiceMarketDownloadVOS = appServiceMarketDownloadVOS;
     }
 
