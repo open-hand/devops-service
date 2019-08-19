@@ -222,14 +222,8 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     }
 
     @Override
-    public List<AppServiceVersionRespVO> listByAppServiceId(Long appServiceId) {
-        return ConvertUtils.convertList(baseListByAppServiceId(appServiceId), AppServiceVersionRespVO.class);
-    }
-
-    @Override
-    public PageInfo<AppServiceVersionRespVO> pageByAppIdAndParam(Long appServiceId, Boolean isPublish, Long appServiceServiceId, PageRequest pageRequest, String searchParam) {
-        return ConvertUtils.convertPage(
-                basePageByPublished(appServiceId, isPublish, appServiceServiceId, pageRequest, searchParam), AppServiceVersionRespVO.class);
+    public List<AppServiceVersionRespVO> listByAppServiceId(Long appServiceId, String version) {
+        return ConvertUtils.convertList(baseListByAppServiceIdAndVersion(appServiceId, version), AppServiceVersionRespVO.class);
     }
 
     @Override
@@ -410,21 +404,12 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         return appServiceVersionDTOS;
     }
 
-    public PageInfo<AppServiceVersionDTO> basePageByPublished(Long appServiceId, Boolean isPublish, Long appServiceServiceId, PageRequest pageRequest, String searchParam) {
-        PageInfo<AppServiceVersionDTO> applicationVersionDTOPageInfo;
-        applicationVersionDTOPageInfo = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(
-                () -> appServiceVersionMapper.selectByAppIdAndParamWithPage(appServiceId, isPublish, searchParam));
-        if (appServiceServiceId != null) {
-            AppServiceVersionDTO versionDO = new AppServiceVersionDTO();
-            versionDO.setId(appServiceServiceId);
-            AppServiceVersionDTO searchDO = appServiceVersionMapper.selectByPrimaryKey(versionDO);
-            applicationVersionDTOPageInfo.getList().removeIf(v -> v.getId().equals(appServiceServiceId));
-            applicationVersionDTOPageInfo.getList().add(0, searchDO);
+    public List<AppServiceVersionDTO> baseListByAppServiceIdAndVersion(Long appServiceId, String version) {
+        List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceVersionMapper.listByAppIdAndVersion(appServiceId, version);
+        if (appServiceVersionDTOS.isEmpty()) {
+            return Collections.emptyList();
         }
-        if (applicationVersionDTOPageInfo.getList().isEmpty()) {
-            return new PageInfo<>(Collections.emptyList());
-        }
-        return applicationVersionDTOPageInfo;
+        return appServiceVersionDTOS;
     }
 
     public List<AppServiceVersionDTO> baseListAppDeployedVersion(Long projectId, Long appServiceId) {

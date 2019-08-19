@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.vo;
 
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  14:27 2019/7/26
@@ -7,11 +9,22 @@ package io.choerodon.devops.api.vo;
  */
 public class AppServiceShareRuleVO {
     private Long id;
+
+    @ApiModelProperty("应用服务Id")
     private Long appServiceId;
+
+    @ApiModelProperty("共享层级,organization/project")
     private String shareLevel;
+
+    @ApiModelProperty("共享版本类型")
     private String versionType;
+
+    @ApiModelProperty("共享版本")
     private String version;
-    private Long appId;
+    @ApiModelProperty("共享到指定项目,项目Id")
+    private Long projectId;
+
+    @ApiModelProperty("共享到指定项目,项目名称")
     private String projectName;
 
     public String getProjectName() {
@@ -62,11 +75,11 @@ public class AppServiceShareRuleVO {
         this.version = version;
     }
 
-    public Long getAppId() {
-        return appId;
+    public Long getProjectId() {
+        return projectId;
     }
 
-    public void setAppId(Long appId) {
-        this.appId = appId;
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
     }
 }

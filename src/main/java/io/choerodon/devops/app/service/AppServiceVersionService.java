@@ -25,25 +25,15 @@ public interface AppServiceVersionService {
      */
     void create(String image, String token, String version, String commit, MultipartFile file);
 
-    /**
-     * 应用下查询应用所有版本
-     *
-     * @param appServiceId 应用Id
-     * @return List
-     */
-    List<AppServiceVersionRespVO> listByAppServiceId(Long appServiceId);
 
     /**
      * 根据参数和页数在应用下查询应用所有版本
      *
      * @param appServiceId        应用Id
-     * @param appServiceServiceId 应用版本Id
-     * @param isPublish           是否发布
-     * @param pageRequest         分页参数
-     * @param searchParam         查询参数
+     * @param version         查询参数
      * @return List
      */
-    PageInfo<AppServiceVersionRespVO> pageByAppIdAndParam(Long appServiceId, Boolean isPublish, Long appServiceServiceId, PageRequest pageRequest, String searchParam);
+    List<AppServiceVersionRespVO> listByAppServiceId(Long appServiceId, String version);
 
     /**
      * 项目下查询应用所有已部署版本
@@ -139,8 +129,6 @@ public interface AppServiceVersionService {
     List<AppServiceLatestVersionDTO> baseListAppNewestVersion(Long projectId);
 
     List<AppServiceVersionDTO> baseListByAppServiceId(Long appServiceId);
-
-    PageInfo<AppServiceVersionDTO> basePageByPublished(Long appServiceId, Boolean isPublish, Long appServiceServiceId, PageRequest pageRequest, String searchParam);
 
 
     List<AppServiceVersionDTO> baseListAppDeployedVersion(Long projectId, Long appServiceId);

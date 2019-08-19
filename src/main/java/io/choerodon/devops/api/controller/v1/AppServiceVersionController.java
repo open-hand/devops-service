@@ -80,10 +80,7 @@ public class AppServiceVersionController {
      *
      * @param projectId    项目id
      * @param appServiceId        服务Id
-     * @param versionId 服务版本Id
-     * @param isPublish    版本是否发布
-     * @param pageRequest  分页参数
-     * @param searchParam  查询参数
+     * @param version  查询参数
      * @return List
      */
     @ApiOperation(value = "服务下查询服务所有版本")
@@ -91,21 +88,15 @@ public class AppServiceVersionController {
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @CustomPageRequest
-    @GetMapping("/page_by_app_service/{app_service_id}")
-    public ResponseEntity<PageInfo<AppServiceVersionRespVO>> queryByAppServiceId(
+    @GetMapping("/list_app_services/{app_service_id}")
+    public ResponseEntity<List<AppServiceVersionRespVO>> listByAppServiceId(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "服务Id")
             @PathVariable(value = "app_service_id") Long appServiceId,
-            @ApiParam(value = "服务版本Id")
-            @RequestParam(value = "version_id", required = false) Long versionId,
-            @ApiParam(value = "是否发布")
-            @RequestParam(value = "is_publish", required = false) Boolean isPublish,
-            @ApiParam(value = "分页参数")
-            @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "查询参数")
-            @RequestParam(value = "version", required = false) String searchParam) {
-        return Optional.ofNullable(appServiceVersionService.pageByAppIdAndParam(appServiceId, isPublish, versionId, pageRequest, searchParam))
+            @RequestParam(value = "version", required = false) String version) {
+        return Optional.ofNullable(appServiceVersionService.listByAppServiceId(appServiceId, version))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(VERSION_QUERY_ERROR));
     }

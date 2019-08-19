@@ -147,7 +147,7 @@
         AND dav.id = #{versionId}
     </select>
 
-    <select id="selectByAppIdAndParamWithPage" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
+    <select id="listByAppIdAndVersion" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
         SELECT
         dav.id,
         dav.version,
@@ -157,14 +157,6 @@
         devops_app_service_version dav
         WHERE
         dav.app_service_id = #{appServiceId}
-        <if test="isPublish != null">
-            <if test="isPublish == true">
-                AND dav.is_publish = TRUE
-            </if>
-            <if test="isPublish != true">
-                AND ( is_publish != TRUE OR is_publish IS NULL )
-            </if>
-        </if>
         <if test="version != null">
             AND
             dav.version LIKE CONCAT(CONCAT('%', #{version, jdbcType=VARCHAR}),'%')
