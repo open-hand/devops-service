@@ -2,7 +2,7 @@ package io.choerodon.devops.app.eventhandler.payload;
 
 import java.util.List;
 
-import io.choerodon.devops.api.vo.ConfigVO;
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -10,51 +10,43 @@ import io.choerodon.devops.api.vo.ConfigVO;
  * Description:
  */
 public class AppServiceDownloadVO {
+    @ApiModelProperty("应用服务Id，非必传")
     private Long appId;
-    private String name;
-    private String code;
-    private String type;
-    private ConfigVO configVO;
+
+    @ApiModelProperty("应用服务Name")
+    private String appServiceName;
+
+    @ApiModelProperty("应用服务Code")
+    private String appServiceCode;
+
+    @ApiModelProperty("应用服务Type")
+    private String appServiceType;
+
+    @ApiModelProperty("应用服务版本")
     private List<AppServiceVersionDownloadVO> appServiceVersionDownloadVOS;
 
-    public Long getAppId() {
-        return appId;
+    public String getAppServiceName() {
+        return appServiceName;
     }
 
-    public void setAppId(Long appId) {
-        this.appId = appId;
+    public void setAppServiceName(String appServiceName) {
+        this.appServiceName = appServiceName;
     }
 
-    public String getName() {
-        return name;
+    public String getAppServiceCode() {
+        return appServiceCode;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setAppServiceCode(String appServiceCode) {
+        this.appServiceCode = appServiceCode;
     }
 
-    public String getCode() {
-        return code;
+    public String getAppServiceType() {
+        return appServiceType;
     }
 
-    public void setCode(String code) {
-        this.code = code;
-    }
-
-    public ConfigVO getConfigVO() {
-        return configVO;
-    }
-
-    public void setConfigVO(ConfigVO configVO) {
-        this.configVO = configVO;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
+    public void setAppServiceType(String appServiceType) {
+        this.appServiceType = appServiceType;
     }
 
     public List<AppServiceVersionDownloadVO> getAppServiceVersionDownloadVOS() {
@@ -63,5 +55,13 @@ public class AppServiceDownloadVO {
 
     public void setAppServiceVersionDownloadVOS(List<AppServiceVersionDownloadVO> appServiceVersionDownloadVOS) {
         this.appServiceVersionDownloadVOS = appServiceVersionDownloadVOS;
+    }
+
+    public Long getAppId() {
+        return appId;
+    }
+
+    public void setAppId(Long appId) {
+        this.appId = appId;
     }
 }
