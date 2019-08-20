@@ -36,12 +36,13 @@ public class PageInfoUtil {
             } else {
                 size = pageRequest.getSize();
             }
+            result.setSize(queryAll ? all.size() : size);
             result.setList(queryAll ? all : all.subList(fromIndex, fromIndex + result.getSize()));
         } else {
             size = 0;
+            result.setSize(queryAll ? all.size() : size);
             result.setList(new ArrayList<>());
         }
-        result.setSize(queryAll ? all.size() : size);
         return result;
     }
 }
