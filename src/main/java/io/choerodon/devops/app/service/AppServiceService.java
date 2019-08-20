@@ -154,18 +154,27 @@ public interface AppServiceService {
     /**
      * 创建服务校验名称是否存在
      *
-     * @param appId 应用id
-     * @param name  服务name
+     * @param projectId 项目Id
+     * @param name      服务name
      */
-    void checkName(Long appId, String name);
+    void checkName(Long projectId, String name);
 
     /**
      * 创建服务校验编码是否存在
      *
-     * @param appId 应用id
-     * @param code  服务code
+     * @param projectId 项目id
+     * @param code      服务code
      */
-    void checkCode(Long appId, String code);
+    void checkCode(Long projectId, String code);
+
+    /**
+     * 批量校验应用服务code和name
+     *
+     * @param projectId
+     * @param appServiceBatchCheckVO
+     * @return
+     */
+    AppServiceBatchCheckVO checkCodeByProjectId(Long projectId, AppServiceBatchCheckVO appServiceBatchCheckVO);
 
     /**
      * 创建服务校验名称是否存在

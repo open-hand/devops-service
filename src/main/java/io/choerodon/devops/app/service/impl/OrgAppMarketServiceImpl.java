@@ -13,7 +13,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import retrofit2.Retrofit;
 
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
@@ -23,7 +22,6 @@ import io.choerodon.devops.app.eventhandler.payload.AppMarketDownloadPayload;
 import io.choerodon.devops.app.eventhandler.payload.AppServiceDownloadPayload;
 import io.choerodon.devops.app.eventhandler.payload.AppServiceVersionDownloadPayload;
 import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.infra.config.ConfigurationProperties;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.GitlabProjectDTO;
 import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
@@ -33,10 +31,8 @@ import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.AccessLevel;
 import io.choerodon.devops.infra.enums.PublishTypeEnum;
-import io.choerodon.devops.infra.feign.MarketServiceClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
-import io.choerodon.devops.infra.handler.RetrofitHandler;
 import io.choerodon.devops.infra.mapper.AppServiceMapper;
 import io.choerodon.devops.infra.thread.CommandWaitForThread;
 import io.choerodon.devops.infra.util.*;
@@ -127,44 +123,42 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         FileUtil.createDirectory(appFilePath);
         File appFile = new File(appFilePath);
         if (marketUploadVO.getStatus().equals(PublishTypeEnum.DOWNLOAD_ONLY.value())) {
-            FileUtil.createDirectory(appFilePath, "repo");
-            String appRepoFilePath = String.format("%s%s%s-%s", appFilePath, File.separator, "repo", marketUploadVO.getAppCode());
+            String appRepoFilePath = String.format("%s%s%s%s%s", appFilePath, File.separator, "repo", File.separator, marketUploadVO.getAppCode());
             //clone 并压缩源代码
             marketUploadVO.getAppServiceUploadVOS().forEach(appServiceMarketVO -> packageSourceCode(appServiceMarketVO, appRepoFilePath, marketUploadVO.getIamUserId()));
             //上传
-            fileUpload(APP_REPO_FORMAT, appFile, appRepoFilePath, marketUploadVO.getAppCode(), marketUploadVO.getSaasGetawayUrl());
+            fileUpload(APP_REPO_FORMAT, appFile, appRepoFilePath, marketUploadVO.getAppCode(), marketUploadVO.getSaasGetawayUrl(), null);
         } else if (marketUploadVO.getStatus().equals(PublishTypeEnum.DEPLOY_ONLY.value())) {
-            String appChartFilePath = String.format("%s%s%s-%s", appFilePath, File.separator, "chart", marketUploadVO.getAppCode());
+            String appChartFilePath = String.format("%s%s%s%s%s", appFilePath, File.separator, "chart", File.separator, marketUploadVO.getAppCode());
             marketUploadVO.getAppServiceUploadVOS().forEach(appServiceMarketVO -> packageChart(appServiceMarketVO, appChartFilePath));
-            Map<String, String> map = pushImageForUpload(marketUploadVO);
-
-//            fileUpload(APP_CHART_FORMAT, appFile, appChartFilePath, marketUploadVO.getSaasGetawayUrl(),map);
+//            Map<String, String> map = pushImageForUpload(marketUploadVO);
+            fileUpload(APP_CHART_FORMAT, appFile, appChartFilePath, marketUploadVO.getAppCode(), marketUploadVO.getSaasGetawayUrl(), null);
         } else {
-            String appRepoFilePath = String.format("%s%s%s", appFilePath, File.separator, "repo");
-            String appChartFilePath = String.format("%s%s%s", appFilePath, File.separator, "chart");
+            String appRepoFilePath = String.format("%s%s%s%s%s", appFilePath, File.separator, "repo", File.separator, marketUploadVO.getAppCode());
+            String appChartFilePath = String.format("%s%s%s%s%s", appFilePath, File.separator, "chart", File.separator, marketUploadVO.getAppCode());
 
             marketUploadVO.getAppServiceUploadVOS().forEach(appServiceMarketVO -> {
                 packageSourceCode(appServiceMarketVO, appRepoFilePath, marketUploadVO.getIamUserId());
                 packageChart(appServiceMarketVO, appChartFilePath);
             });
-            pushImageForUpload(marketUploadVO);
+//            Map<String, String> map = pushImageForUpload(marketUploadVO);
 
-            fileUpload(APP_REPO_FORMAT, appFile, appRepoFilePath, marketUploadVO.getAppCode(), marketUploadVO.getSaasGetawayUrl());
-            fileUpload(APP_CHART_FORMAT, appFile, appChartFilePath, marketUploadVO.getAppCode(), marketUploadVO.getSaasGetawayUrl());
+            fileUpload(APP_REPO_FORMAT, appFile, appRepoFilePath, marketUploadVO.getAppCode(), marketUploadVO.getSaasGetawayUrl(), null);
+            fileUpload(APP_CHART_FORMAT, appFile, appChartFilePath, marketUploadVO.getAppCode(), marketUploadVO.getSaasGetawayUrl(), null);
         }
         FileUtil.deleteDirectory(appFile);
     }
 
-    private void fileUpload(String type, File appFile, String inputFilePath, String appCode, String uploadUrl) {
+    private void fileUpload(String type, File appFile, String inputFilePath, String appCode, String uploadUrl, Map map) {
         String outputFilePath = String.format(type, appFile.getParent(), File.separator, appCode, System.currentTimeMillis(), ".zip");
         toZip(outputFilePath, inputFilePath);
         //todo 调用上传接口
-        ConfigurationProperties configurationProperties = new ConfigurationProperties();
-        configurationProperties.setBaseUrl(uploadUrl);
-        configurationProperties.setInsecureSkipTlsVerify(false);
-        configurationProperties.setType("market");
-        Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
-        MarketServiceClient marketServiceClient = retrofit.create(MarketServiceClient.class);
+//        ConfigurationProperties configurationProperties = new ConfigurationProperties();
+//        configurationProperties.setBaseUrl(uploadUrl);
+//        configurationProperties.setInsecureSkipTlsVerify(false);
+//        configurationProperties.setType("market");
+//        Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
+//        MarketServiceClient marketServiceClient = retrofit.create(MarketServiceClient.class);
 //        marketServiceClient.uploadFile().execute();
         FileUtil.deleteFile(outputFilePath);
     }
@@ -364,7 +358,6 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         String newToken = appServiceService.getToken(appServiceDTO.getGitlabProjectId(), appFilePath, userAttrDTO);
         appServiceDTO.setRepoUrl(repoUrl + organizationDTO.getCode()
                 + "-" + applicationDTO.getCode() + "/" + appServiceDTO.getCode() + ".git");
-//        appServiceDTO.setRepoUrl(repoUrl + "testorg0110-testpro0110" + "/" + appServiceDTO.getCode() + ".git");
         appServiceMarketVO.getAppServiceVersionUploadVOS().forEach(appServiceMarketVersionVO -> {
             AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQuery(appServiceMarketVersionVO.getId());
             //2. 创建目录 应用服务版本
@@ -374,6 +367,8 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
 
             //3.clone源码,checkout到版本所在commit，并删除.git文件
             gitUtil.cloneAndCheckout(appServiceVersionPath, appServiceDTO.getRepoUrl(), newToken, appServiceVersionDTO.getCommit());
+            toZip(String.format("%s%s", appServiceVersionPath, ".zip"), appServiceVersionPath);
+            FileUtil.deleteDirectory(new File(appServiceVersionPath));
         });
     }
 
@@ -435,7 +430,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         }
     }
 
-    private Map pushImageForUpload(AppMarketUploadVO appMarketUploadVO) {
+    private Map<String, String> pushImageForUpload(AppMarketUploadVO appMarketUploadVO) {
         Map<String, String> iamgeMap = new HashMap<>();
 
         //获取push_image 脚本目录

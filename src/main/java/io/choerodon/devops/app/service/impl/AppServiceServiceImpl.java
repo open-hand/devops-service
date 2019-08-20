@@ -16,14 +16,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 import io.kubernetes.client.JSON;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.eclipse.jgit.api.Git;
@@ -32,6 +24,14 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Ref;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
@@ -83,12 +83,12 @@ import io.choerodon.devops.infra.util.*;
 @Service
 @EnableConfigurationProperties(HarborConfigurationProperties.class)
 public class AppServiceServiceImpl implements AppServiceService {
-    private static final String HARBOR = "harbor";
-    private static final String CHART = "chart";
-    private static final String SONAR_KEY = "%s-%s:%s";
     public static final String SEVERITIES = "severities";
     public static final Logger LOGGER = LoggerFactory.getLogger(AppServiceServiceImpl.class);
     public static final String NODELETED = "nodeleted";
+    private static final String HARBOR = "harbor";
+    private static final String CHART = "chart";
+    private static final String SONAR_KEY = "%s-%s:%s";
     private static final Pattern REPOSITORY_URL_PATTERN = Pattern.compile("^http.*\\.git");
     private static final String GITLAB_CI_FILE = ".gitlab-ci.yml";
     private static final String DOCKER_FILE_NAME = "Dockerfile";
@@ -120,9 +120,10 @@ public class AppServiceServiceImpl implements AppServiceService {
     private static final String TEST = "test-application";
     private static final String DUPLICATE = "duplicate";
     private static final String FILE_SEPARATOR = "/";
+    @Autowired
+    DevopsSagaHandler devopsSagaHandler;
     private Gson gson = new Gson();
     private JSON json = new JSON();
-
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
     @Value("${spring.application.name}")
@@ -135,7 +136,6 @@ public class AppServiceServiceImpl implements AppServiceService {
     private String userName;
     @Value("${services.sonarqube.password:}")
     private String password;
-
     @Autowired
     private GitUtil gitUtil;
     @Autowired
@@ -162,14 +162,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     private DevopsConfigService devopsConfigService;
     @Autowired
     private DevopsBranchService devopsBranchService;
-
     @Autowired
     private AppServiceVersionService appServiceVersionService;
-
-    @Autowired
-    DevopsSagaHandler devopsSagaHandler;
-
-
     @Value("${services.helm.url}")
     private String helmUrl;
     @Autowired
@@ -380,13 +374,37 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public void checkName(Long appId, String name) {
-        baseCheckName(appId, name);
+    public void checkName(Long projectId, String name) {
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        baseCheckName(projectDTO.getApplicationId(), name);
     }
 
     @Override
-    public void checkCode(Long appId, String code) {
-        baseCheckCode(appId, code);
+    public void checkCode(Long projectId, String code) {
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        baseCheckCode(projectDTO.getApplicationId(), code);
+    }
+
+    @Override
+    public AppServiceBatchCheckVO checkCodeByProjectId(Long projectId, AppServiceBatchCheckVO appServiceBatchCheckVO) {
+        AppServiceBatchCheckVO batchCheckVO = new AppServiceBatchCheckVO();
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        batchCheckVO.setListCode(
+                appServiceBatchCheckVO.getListCode().stream().filter(code -> {
+                    AppServiceDTO appServiceDTO = new AppServiceDTO();
+                    appServiceDTO.setAppId(projectDTO.getApplicationId());
+                    appServiceDTO.setCode(code);
+                    List<AppServiceDTO> list = appServiceMapper.select(appServiceDTO);
+                    return list != null && list.size() != 0;
+                }).collect(Collectors.toList()));
+        batchCheckVO.setListName(appServiceBatchCheckVO.getListName().stream().filter(name -> {
+            AppServiceDTO appServiceDTO = new AppServiceDTO();
+            appServiceDTO.setAppId(projectDTO.getApplicationId());
+            appServiceDTO.setName(name);
+            List<AppServiceDTO> list = appServiceMapper.select(appServiceDTO);
+            return list != null && list.size() != 0;
+        }).collect(Collectors.toList()));
+        return batchCheckVO;
     }
 
     @Override
