@@ -142,7 +142,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
     @Override
     public DevopsServiceVO query(Long id) {
-        return queryDtoToVo(devopsServiceMapper.selectById(id));
+        return queryDtoToVo(devopsServiceMapper.queryById(id));
     }
 
     @Override
@@ -498,7 +498,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
 
     public DevopsServiceQueryDTO baseQueryById(Long id) {
-        return devopsServiceMapper.selectById(id);
+        return devopsServiceMapper.queryById(id);
     }
 
 
@@ -723,7 +723,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         //从数据库中获得pod已经存在的信息
         DevopsEnvPodDTO devopsEnvPodDTO = devopsEnvPodMapper.queryPodByEnvIdAndInstanceId(instanceId, envId);
         if (devopsEnvPodDTO == null) {
-            throw new CommonException("error.instance.pod.exist");
+            return null;
         }
         podLiveInfoVO.setPodId(devopsEnvPodDTO.getId());
 
