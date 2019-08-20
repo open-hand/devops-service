@@ -190,5 +190,5 @@ public interface AppServiceVersionService {
      * @param share
      * @return
      */
-    List<AppServiceVersionVO> queryServiceVersionByAppServiceIdAndShare(Long appServiceId, Boolean share);
+    List<AppServiceVersionVO> queryServiceVersionByAppServiceIdAndShare(Long appServiceId, String share);
 }

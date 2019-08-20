@@ -367,8 +367,8 @@ public class AppServiceVersionController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "服务Id", required = true)
             @PathVariable(value = "app_service_id") Long appServiceId,
-            @ApiParam(value = "共享形式", required = true)
-            @RequestParam(value = "share", required = true) Boolean share) {
+            @ApiParam(value = "共享形式")
+            @RequestParam(value = "share", required = true) String share) {
         return Optional.ofNullable(
                 appServiceVersionService.queryServiceVersionByAppServiceIdAndShare(appServiceId, share))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))

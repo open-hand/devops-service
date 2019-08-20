@@ -376,7 +376,7 @@
         app_service_id= b.app_service_id
         and b.last_update_date &lt; last_update_date)
         and app_service_id=#{appServiceId}
-        <if test="share==true and share !=''">
+        <if test="share!=null and share !=''">
             or version in(select version from devops_app_service_share_rule where app_service_id=#{appServiceId})
         </if>
         order by last_update_date desc

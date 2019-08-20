@@ -88,5 +88,5 @@ public interface AppServiceVersionMapper extends Mapper<AppServiceVersionDTO> {
      * @param share
      * @return
      */
-    List<AppServiceVersionDTO> queryServiceVersionByAppServiceIdAndShare(@Param("appServiceId") Long appServiceId, @Param("share") Boolean share);
+    List<AppServiceVersionDTO> queryServiceVersionByAppServiceIdAndShare(@Param("appServiceId") Long appServiceId, @Param("share") String share);
 }
