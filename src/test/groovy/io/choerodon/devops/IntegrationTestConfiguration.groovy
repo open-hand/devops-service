@@ -144,13 +144,11 @@ class IntegrationTestConfiguration extends WebSecurityConfigurerAdapter {
         defaultUserDetails.setOrganizationId(0L)
         defaultUserDetails.setLanguage('zh_CN')
         defaultUserDetails.setTimeZone('CCT')
-        String jwtToken = null
         try {
-            jwtToken = 'Bearer ' + JwtHelper.encode(objectMapper.writeValueAsString(defaultUserDetails), signer).getEncoded()
+            return 'Bearer ' + JwtHelper.encode(objectMapper.writeValueAsString(defaultUserDetails), signer).getEncoded()
         } catch (IOException e) {
             throw new CommonException(e)
         }
-        return jwtToken
     }
 
     /**
