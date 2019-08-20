@@ -7,9 +7,6 @@ import java.util.stream.Collectors;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
-import io.choerodon.devops.infra.dto.AppServiceShareRuleDTO;
-import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.kubernetes.client.JSON;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,8 +17,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.AppServiceShareRuleVO;
 import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.dto.AppServiceShareRuleDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.AppServiceShareRuleMapper;
 import io.choerodon.devops.infra.mapper.AppServiceVersionReadmeMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
@@ -34,19 +34,6 @@ import io.choerodon.devops.infra.util.TypeUtil;
  */
 @Service
 public class AppServiceShareRuleServiceImpl implements AppServiceShareRuleService {
-    private static final String CHARTS = "charts";
-    private static final String CHART = "chart";
-    private static final String ORGANIZATION = "organization";
-    private static final String PROJECTS = "projects";
-    private static final String IMAGES = "images";
-    private static final String PUSH_IAMGES = "push_image.sh";
-    private static final String JSON_FILE = ".json";
-
-    private static final String FILE_SEPARATOR = "/";
-    private static final Logger logger = LoggerFactory.getLogger(AppServiceShareRuleServiceImpl.class);
-
-    private static Gson gson = new Gson();
-    private JSON json = new JSON();
 
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
@@ -56,17 +43,7 @@ public class AppServiceShareRuleServiceImpl implements AppServiceShareRuleServic
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
-    private AppServiceVersionReadmeMapper appServiceVersionReadmeMapper;
-    @Autowired
-    private MarketConnectInfoService marketConnectInfoService;
-    @Autowired
     private AppServiceShareRuleMapper appServiceShareRuleMapper;
-    @Autowired
-    private AppServiceVersionService appServiceVersionService;
-    @Autowired
-    private AppServiceService applicationService;
-    @Autowired
-    private DevopsConfigService devopsConfigService;
 
     @Override
     @Transactional
@@ -86,7 +63,6 @@ public class AppServiceShareRuleServiceImpl implements AppServiceShareRuleServic
 
     @Override
     public PageInfo<AppServiceShareRuleVO> pageByOptions(Long projectId, Long appServiceId, PageRequest pageRequest, String params) {
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         Map<String, Object> mapParams = TypeUtil.castMapParams(params);
         PageInfo<AppServiceShareRuleDTO> devopsProjectConfigDTOPageInfo = PageHelper.startPage(
                 pageRequest.getPage(),
@@ -96,7 +72,11 @@ public class AppServiceShareRuleServiceImpl implements AppServiceShareRuleServic
                         TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)),
                         TypeUtil.cast(mapParams.get(TypeUtil.PARAMS))));
         PageInfo<AppServiceShareRuleVO> shareRuleVOPageInfo = ConvertUtils.convertPage(devopsProjectConfigDTOPageInfo, AppServiceShareRuleVO.class);
-        List<AppServiceShareRuleVO> appServiceShareRuleVOS = shareRuleVOPageInfo.getList().stream().peek(t -> t.setProjectName(projectDTO.getName())).collect(Collectors.toList());
+        List<AppServiceShareRuleVO> appServiceShareRuleVOS = shareRuleVOPageInfo.getList().stream().peek(t -> {
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(t.getProjectId());
+            t.setProjectName(projectDTO.getName());
+            t.setAppName(projectDTO.getApplicationName());
+        }).collect(Collectors.toList());
         shareRuleVOPageInfo.setList(appServiceShareRuleVOS);
         return shareRuleVOPageInfo;
     }
