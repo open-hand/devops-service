@@ -25,7 +25,6 @@ import org.springframework.web.socket.WebSocketSession;
 public class AgentExecAndLogSocketHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(AgentExecAndLogSocketHandler.class);
-    private static final String EXEC_LOG_SESSIONS_CATCH = "exec_log_sessions_catch";
 
 
     @Autowired
@@ -51,14 +50,8 @@ public class AgentExecAndLogSocketHandler {
         Map<String, Object> attribute = WebSocketTool.getAttribute(webSocketSession);
 
         String registerKey = TypeUtil.objToString(attribute.get("key"));
-        //将websocketSession和关联的key做关联,存储到redis
-
-        List<WebSocketSession> webSocketSessions = (List<WebSocketSession>) redisTemplate.opsForHash().get(EXEC_LOG_SESSIONS_CATCH, registerKey);
-        if (webSocketSessions == null) {
-            webSocketSessions = new ArrayList<>();
-        }
-        webSocketSessions.add(webSocketSession);
-        redisTemplate.opsForHash().put(EXEC_LOG_SESSIONS_CATCH, registerKey, webSocketSessions);
+        //将websocketSession和关联的key做关联
+        webSocketHelper.contact(webSocketSession,registerKey);
     }
 
 

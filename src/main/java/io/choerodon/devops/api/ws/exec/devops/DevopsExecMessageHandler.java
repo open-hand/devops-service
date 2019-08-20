@@ -12,7 +12,7 @@ import org.springframework.web.socket.WebSocketSession;
  */
 
 @Component
-public class DevopsExecMessageHandler implements MessageHandler<BinaryMessage> {
+public class  DevopsExecMessageHandler implements MessageHandler<BinaryMessage> {
 
 
     @Autowired

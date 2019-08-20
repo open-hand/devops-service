@@ -45,9 +45,6 @@ choerodon:
   websocket:
     max-redis-msg-listener-concurrency: 500
     security: false
-  resource:
-    jwt:
-      ignore: /agent/**, /devops/**
 agent:
   version: "0.5.0"
   serviceUrl: "agent.example.com"

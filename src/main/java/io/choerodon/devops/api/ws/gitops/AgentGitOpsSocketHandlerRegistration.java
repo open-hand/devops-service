@@ -119,7 +119,7 @@ public class AgentGitOpsSocketHandlerRegistration implements SocketHandlerRegist
         //将websocketSession和关联的key做关联
         webSocketHelper.contact(webSocketSession, registerKey);
 
-        //将已连接的agent集群信息放到redis中,用于判断集群是否连接
+
         ClusterSessionVO clusterSession = new ClusterSessionVO();
         clusterSession.setClusterId(TypeUtil.objToLong(attribute.get("clusterId")));
         clusterSession.setVersion(TypeUtil.objToString(attribute.get("version")));
@@ -128,13 +128,14 @@ public class AgentGitOpsSocketHandlerRegistration implements SocketHandlerRegist
 
         //连接成功之后,如果agent版本不匹配则提示升级agent,匹配则返回集群下关联环境的ssh信息
         Long clusterId = (TypeUtil.objToLong(attribute.get("clusterId")));
-        List<Long> connected = clusterConnectionHandler.getConnectedEnvList();
-        List<Long> upgraded = clusterConnectionHandler.getUpdatedEnvList();
-        if (connected.contains(clusterId) && !upgraded.contains(clusterId)) {
+        List<Long> notUpgraded = clusterConnectionHandler.getUpdatedEnvList();
+        if (!notUpgraded.contains(clusterId)) {
             DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
             agentCommandService.upgradeCluster(devopsClusterDTO);
+        } else {
+            //将已连接的agent集群信息放到redis中,用于判断集群是否连接
+            agentCommandService.initCluster(clusterId);
         }
-        agentCommandService.initCluster(clusterId);
     }
 
     @Override
@@ -153,14 +154,14 @@ public class AgentGitOpsSocketHandlerRegistration implements SocketHandlerRegist
 
     }
 
-    @Scheduled(initialDelay = 10*1000,fixedRate = 10*1000)
-    public void sendPing(){
-        for (WebSocketSession session : webSocketSessions){
+    @Scheduled(initialDelay = 10 * 1000, fixedRate = 10 * 1000)
+    public void sendPing() {
+        for (WebSocketSession session : webSocketSessions) {
             try {
                 session.sendMessage(new PingMessage());
             } catch (Exception e) {
                 webSocketSessions.remove(session);
-                afterConnectionClosed(session,new CloseStatus(500));
+                afterConnectionClosed(session, new CloseStatus(500));
                 logger.error("remove disconnected agent!");
             }
         }
