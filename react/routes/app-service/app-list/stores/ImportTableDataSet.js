@@ -6,8 +6,10 @@ function getNode(node, res, name = 'appServiceList') {
   res.push(node);
   if (node[name]) {
     node[name].forEach((n) => {
+      const { version, versionId } = n;
       n.share = node.share;
       n.appName = node.name;
+      n.version = { id: versionId, version };
       getNode(n, res, name = 'appServiceList');
     });
   }
@@ -84,10 +86,10 @@ export default ((intlPrefix, formatMessage, projectId) => {
       { name: 'type', type: 'string', label: formatMessage({ id: `${intlPrefix}.type` }) },
       { name: 'appName', type: 'string', label: formatMessage({ id: `${intlPrefix}.app` }) },
       { name: 'share', type: 'boolean', label: formatMessage({ id: `${intlPrefix}.source` }) },
-      { name: 'version', type: 'string', label: formatMessage({ id: `${intlPrefix}.version` }) },
       { name: 'selected', type: 'boolean', defaultValue: false },
-      { name: 'versionId', type: 'number' },
+      { name: 'version', type: 'object', label: formatMessage({ id: `${intlPrefix}.version` }), textField: 'version', valueField: 'id' },
       { name: 'nameFailed', type: 'boolean', defaultValue: false },
+      { name: 'codeFailed', type: 'boolean', defaultValue: false },
     ],
   });
 });
