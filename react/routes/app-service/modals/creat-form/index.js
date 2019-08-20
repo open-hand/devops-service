@@ -1,4 +1,4 @@
-import React, { Fragment, useCallback, useState, useEffect } from 'react';
+import React, { Fragment, useCallback, useState, useEffect } from 'react/index';
 import { Form, TextField, Select, Upload } from 'choerodon-ui/pro';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
@@ -7,17 +7,17 @@ import { axios } from '@choerodon/master';
 import pick from 'lodash/pick';
 import isEmpty from 'lodash/isEmpty';
 import Settings from './Settings';
+import { handlePromptError } from '../../../../utils';
 
 import './index.less';
-import { handlePromptError } from '../../../../../utils';
 
 const { Option } = Select;
 
 const CreateForm = injectIntl(observer((props) => {
-  const { dataSet, record, AppStore, projectId, intl: { formatMessage }, intlPrefix, prefixCls } = props;
+  const { modal, dataSet, record, AppStore, projectId, intl: { formatMessage }, intlPrefix, prefixCls } = props;
   const isModify = record.status !== 'add';
 
-  props.modal.handleOk(async () => {
+  modal.handleOk(async () => {
     if (isModify) {
       if (record.get('harborStatus') === 'failed' || record.get('chartStatus') === 'failed') return false;
       const harborTestFailed = record.get('harborType') === 'custom' && !isEmpty(record.get('harbor')) && !record.get('harborStatus') && !await handleTestHarbor();
