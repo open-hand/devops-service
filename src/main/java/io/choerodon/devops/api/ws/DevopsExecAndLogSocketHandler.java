@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 
 import io.choerodon.devops.api.vo.PipeRequestVO;
@@ -11,6 +12,8 @@ import io.choerodon.devops.app.service.AgentCommandService;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.websocket.helper.WebSocketHelper;
 import io.choerodon.websocket.relationship.DefaultRelationshipDefining;
+import io.choerodon.websocket.send.MessageSender;
+import io.choerodon.websocket.send.WebSocketSendPayload;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +35,6 @@ public class DevopsExecAndLogSocketHandler {
     private static final Logger logger = LoggerFactory.getLogger(DevopsExecAndLogSocketHandler.class);
     public static final String KUBERNETES_GET_LOGS = "kubernetes_get_logs";
     public static final String EXEC_COMMAND = "kubernetes_exec";
-    public static final String EXEC_LOG_SESSIONS_CATCH = "exec_log_sessions_catch";
 
 
     @Autowired
@@ -42,7 +44,9 @@ public class DevopsExecAndLogSocketHandler {
     @Autowired
     private DefaultRelationshipDefining defaultRelationshipDefining;
     @Autowired
-    private RedisTemplate<String, Object>  redisTemplate;
+    private RedisTemplate<String, Object> redisTemplate;
+    @Autowired
+    private MessageSender messageSender;
 
 
     public boolean beforeHandshake(ServerHttpRequest serverHttpRequest, ServerHttpResponse serverHttpResponse) {
@@ -80,18 +84,13 @@ public class DevopsExecAndLogSocketHandler {
 
     public void afterConnectionEstablished(WebSocketSession webSocketSession) {
         //解析参数列表，并存储
+
+
         Map<String, Object> attribute = WebSocketTool.getAttribute(webSocketSession);
 
         String registerKey = TypeUtil.objToString(attribute.get("key"));
-        //将websocketSession和关联的key做关联,存储到redis
-
-        List<WebSocketSession> webSocketSessions = (List<WebSocketSession>) redisTemplate.opsForHash().get(EXEC_LOG_SESSIONS_CATCH, registerKey);
-        if (webSocketSessions == null) {
-            webSocketSessions = new ArrayList<>();
-        }
-        webSocketSessions.add(webSocketSession);
-        redisTemplate.opsForHash().put(EXEC_LOG_SESSIONS_CATCH, registerKey, webSocketSessions);
-
+        //将websocketSession和关联的key做关联
+        webSocketHelper.contact(webSocketSession, registerKey);
 
         //通知agent建立与前端同样的ws连接
         PipeRequestVO pipeRequest = new PipeRequestVO(attribute.get("podName").toString(), attribute.get("containerName").toString(), attribute.get("logId").toString(), attribute.get("env").toString());
@@ -109,23 +108,40 @@ public class DevopsExecAndLogSocketHandler {
         String registerKey = TypeUtil.objToString(attribute.get("key"));
 
         //当时log或者exec类型的ws,断开devops前端到devops的ws时,同时需要断开与该ws对应的agent到devops的ws连接
-        List<WebSocketSession> webSocketSessions = (List<WebSocketSession>) redisTemplate.opsForHash().get(EXEC_LOG_SESSIONS_CATCH, registerKey);
-        if (webSocketSessions != null) {
-            redisTemplate.opsForHash().delete(EXEC_LOG_SESSIONS_CATCH, registerKey);
-        }
-        for (WebSocketSession session : webSocketSessions) {
-            if (session != webSocketSession) {
-                closeSession(session);
+        List<WebSocketSession> webSocketSessions = new ArrayList<>(defaultRelationshipDefining.getWebSocketSessionsByKey(registerKey));
+
+        //如果session列表的数量为2,证明devops前端到devops以及agent到devops的ws都连在同一个实例，则直接close
+        if (webSocketSessions.size() == 2) {
+            //解决npe
+            for (int i = 0; i < webSocketSessions.size(); i++) {
+                WebSocketSession session = webSocketSessions.get(i);
+                if(session!=webSocketSession) {
+                    closeSession(session);
+                }
             }
         }
+        //如果session列表的数量为1,证明agent到devops的ws连在其它实例中，需要借助redis channel发送管理agent到devops的ws
+        else {
+            Set<String> channels = defaultRelationshipDefining.getRedisChannelsByKey(registerKey, true);
+            WebSocketSendPayload<String> closeAgentSessionPayLoad = new WebSocketSendPayload<>();
+            closeAgentSessionPayLoad.setKey(registerKey);
+            closeAgentSessionPayLoad.setType("closeAgentSession");
+            closeAgentSessionPayLoad.setData("");
+            if (channels != null && !channels.isEmpty()) {
+                channels.forEach(channel -> messageSender.sendRedis(channel, closeAgentSessionPayLoad));
+            }
+        }
+        closeSession(webSocketSession);
     }
 
     private void closeSession(WebSocketSession session) {
+
         try {
             session.close();
         } catch (IOException e) {
-            logger.warn("close clean timeout session failed {}", e.getMessage());
+            e.printStackTrace();
         }
+
     }
 
 

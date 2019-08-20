@@ -128,11 +128,6 @@ public class AgentCommandServiceImpl implements AgentCommandService {
     }
 
 
-    /**
-     * 平滑升级agent版本
-     *
-     * @param devopsClusterDTO
-     */
     @Override
     public void upgradeCluster(DevopsClusterDTO devopsClusterDTO) {
         AgentMsgVO msg = new AgentMsgVO();
@@ -155,24 +150,26 @@ public class AgentCommandServiceImpl implements AgentCommandService {
         msg.setType(HELM_RELEASE_UPGRADE);
         try {
             msg.setPayload(mapper.writeValueAsString(payload));
-        } catch (IOException e) {
-            throw new CommonException(ERROR_PAYLOAD_ERROR, e);
-        }
+            String msgPayload = mapper.writeValueAsString(msg);
 
-        //0.18.0到0.19.0 为了agent的平滑升级，所以不能以通用的新Msg方式发送，继续用以前的Msg格式发送
-        this.relationshipDefining.getWebSocketSessionsByKey(devopsClusterDTO.getId().toString()).stream().filter(session-> session!=null).forEach((session) -> {
+            //0.18.0到0.19.0 为了agent的平滑升级，所以不能以通用的新Msg方式发送，继续用以前的Msg格式发送
+            relationshipDefining.getWebSocketSessionsByKey("cluster:"+ devopsClusterDTO.getId()).stream().filter(session -> session != null).forEach((session) -> {
                 if (!session.isOpen()) {
-                    this.relationshipDefining.removeWebSocketSessionContact(session);
+                    relationshipDefining.removeWebSocketSessionContact(session);
                 } else {
-                    try {
-                        TextMessage textMessage = new TextMessage(mapper.writeValueAsBytes(payload));
-                        session.sendMessage(textMessage);
-                    } catch (IOException var4) {
-                        LOGGER.warn("error.messageOperator.sendWebSocket.IOException, payload: {}", payload, var4);
+                    synchronized (session) {
+                        try {
+                            TextMessage textMessage = new TextMessage(msgPayload);
+                            session.sendMessage(textMessage);
+                        } catch (IOException e) {
+                            LOGGER.warn("error.messageOperator.sendWebSocket.IOException, message: {}", msgPayload, e);
+                        }
                     }
-
                 }
-        });
+            });
+        } catch (IOException e) {
+            throw new CommonException(e);
+        }
     }
 
     @Override
