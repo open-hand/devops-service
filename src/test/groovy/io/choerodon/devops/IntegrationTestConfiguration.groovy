@@ -10,9 +10,6 @@ import io.choerodon.devops.infra.handler.ClusterConnectionHandler
 import io.choerodon.devops.infra.util.GitUtil
 import io.choerodon.liquibase.LiquibaseConfig
 import io.choerodon.liquibase.LiquibaseExecutor
-import io.choerodon.websocket.helper.CommandSender
-import io.choerodon.websocket.helper.EnvListener
-import io.choerodon.websocket.process.SocketMsgDispatcher
 import org.powermock.api.mockito.PowerMockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -75,12 +72,6 @@ class IntegrationTestConfiguration extends WebSecurityConfigurerAdapter {
     final ObjectMapper objectMapper = new ObjectMapper()
 
     @Primary
-    @Bean("mockSocketMsgDispatcher")
-    SocketMsgDispatcher socketMsgDispatcher() {
-        detachedMockFactory.Mock(SocketMsgDispatcher)
-    }
-
-    @Primary
     @Bean("mockAgentPodInfoService")
     AgentPodService agentPodService() {
         PowerMockito.mock(AgentPodService)
@@ -90,12 +81,6 @@ class IntegrationTestConfiguration extends WebSecurityConfigurerAdapter {
     @Bean("mockClusterConnectionHandler")
     ClusterConnectionHandler clusterConnectionHandler() {
         PowerMockito.mock(ClusterConnectionHandler)
-    }
-
-    @Primary
-    @Bean("mockEnvListener")
-    EnvListener envListener() {
-        detachedMockFactory.Mock(EnvListener)
     }
 
     @Bean("mockGitUtil")
@@ -110,12 +95,6 @@ class IntegrationTestConfiguration extends WebSecurityConfigurerAdapter {
         detachedMockFactory.Mock(TransactionalProducer)
     }
 
-
-    @Bean("mockCommandSender")
-    @Primary
-    CommandSender commandSender() {
-        detachedMockFactory.Mock(CommandSender)
-    }
 
     @Bean("mockProjectConfigHarborService")
     @Primary
