@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Modal } from 'choerodon-ui/pro';
 import { handlePromptError } from '../../../../../../utils';
@@ -21,6 +21,7 @@ const EnvModals = observer(() => {
     resourceStore,
   } = useResourceStore();
   const {
+    baseDs,
     casesDs,
     podsDs,
     istStore,
@@ -37,8 +38,11 @@ const EnvModals = observer(() => {
   }), []);
 
   function openValueModal() {
+    const record = baseDs.current;
+    if (!record) return false;
+
     const { menuId, parentId } = resourceStore.getSelectedMenu;
-    const { appServiceVersionId } = istStore.getDetail;
+    const appServiceVersionId = record.get('appServiceVersionId');
     istStore.loadValue(projectId, menuId, appServiceVersionId);
 
     const deployVo = {
@@ -68,8 +72,11 @@ const EnvModals = observer(() => {
   }
 
   function openUpgradeModal() {
+    const record = baseDs.current;
+    if (!record) return false;
+
     const { menuId, parentId } = resourceStore.getSelectedMenu;
-    const { appServiceVersionId } = istStore.getDetail;
+    const appServiceVersionId = record.get('appServiceVersionId');
     const deployVo = {
       id: menuId,
       parentId,
@@ -104,7 +111,7 @@ const EnvModals = observer(() => {
       okText: formatMessage({ id: 'close' }),
       style: { width: 380 },
       children: <DetailsModal
-        record={istStore.getDetail}
+        record={baseDs.current}
         intlPrefix={intlPrefix}
         prefixCls={prefixCls}
         formatMessage={formatMessage}

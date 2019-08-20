@@ -40,22 +40,20 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const detailsStore = useMemo(() => new DetailsStore(), []);
     const baseDs = useMemo(() => new DataSet(BaseInfoDataSet()), []);
     const casesDs = useMemo(() => new DataSet(CasesDataSet()), []);
-    const podsDs = useMemo(() => new DataSet(PodsDataset({ intl, intlPrefix })), []);
+    const podsDs = useMemo(() => {
+      const [envId, appId] = parentId.split('-');
+      return new DataSet(PodsDataset({ intl, intlPrefix, projectId: id, envId, appId, id: menuId }));
+    }, [id, parentId, menuId]);
     const tabKey = istStore.getTabKey;
 
     useEffect(() => {
       baseDs.transport.read.url = `/devops/v1/projects/${id}/app_service_instances/${menuId}`;
-      casesDs.transport.read.url = `/devops/v1/projects/${id}/app_service_instances/${menuId}/events`;
       baseDs.query();
+      casesDs.transport.read.url = `/devops/v1/projects/${id}/app_service_instances/${menuId}/events`;
       tabKey === tabs.CASES_TAB && casesDs.query();
       tabKey === tabs.DETAILS_TAB && detailsStore.loadResource(id, menuId);
-    }, [id, menuId]);
-
-    useEffect(() => {
-      const [envId, appId] = parentId.split('-');
-      podsDs.transport.read.url = `devops/v1/projects/${id}/pods/page_by_options?env_id=${envId}&app_service_id=${appId}&instance_id=${menuId}`;
       tabKey === tabs.PODS_TAB && podsDs.query();
-    }, [id, parentId, menuId]);
+    }, [id, menuId, tabKey]);
 
     const value = {
       ...props,

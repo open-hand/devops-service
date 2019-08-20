@@ -280,6 +280,18 @@ const deployment = {
   'c7ncd.deployment.target.port': '目标端口',
   'c7ncd.deployment.change.number': '更改次数',
   'c7ncd.deployment.port.number': '端口号',
+  'c7ncd.deployment.status.runningInstanceCount': '运行中',
+  'c7ncd.deployment.status.operatingInstanceCount': '处理中',
+  'c7ncd.deployment.status.stoppedInstanceCount': '已停止',
+  'c7ncd.deployment.status.failedInstanceCount': '失败',
+  'c7ncd.deployment.resource.instanceCount': '实例',
+  'c7ncd.deployment.resource.serviceCount': '网络',
+  'c7ncd.deployment.resource.ingressCount': '域名',
+  'c7ncd.deployment.resource.certificationCount': '证书',
+  'c7ncd.deployment.resource.configMapCount': '配置映射',
+  'c7ncd.deployment.resource.secretCount': '密文',
+  'c7ncd.deployment.resource.deploy': '部署资源',
+  'c7ncd.deployment.resource.dosage': '用量排行',
 };
 
 const appService = {
