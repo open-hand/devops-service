@@ -2,6 +2,9 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
+import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+
 import io.choerodon.devops.api.vo.DevopsEnvGroupVO;
 import io.choerodon.devops.infra.dto.DevopsEnvGroupDTO;
 
@@ -40,6 +43,17 @@ public interface DevopsEnvGroupService {
      * @return
      */
     Boolean checkName(String name, Long projectId);
+
+
+    /**
+     * 校验环境组存在，且在该项目下
+     *
+     * @param groupId   组id 可为空，为空不校验
+     * @param projectId 项目id
+     * @throws io.choerodon.core.exception.CommonException 当环境组ID不为空时，环境组id不存在，
+     *                                                     或者环境组id存在但不在该项目下
+     */
+    void checkGroupIdInProject(@Nullable Long groupId, @NotNull Long projectId);
 
     /**
      * 环境组删除

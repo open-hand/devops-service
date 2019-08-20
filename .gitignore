@@ -10,6 +10,10 @@ target/
 .springBeans
 .sts4-cache
 
+### unit test
+gitops/
+application-localtest.yml
+
 ### IntelliJ IDEA ###
 .idea
 *.iws

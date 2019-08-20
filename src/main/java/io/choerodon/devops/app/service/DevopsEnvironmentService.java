@@ -189,7 +189,7 @@ public interface DevopsEnvironmentService {
      *
      * @param devopsEnvPermissionUpdateVO 权限更新信息
      */
-    Boolean updateEnvUserPermission(DevopsEnvPermissionUpdateVO devopsEnvPermissionUpdateVO);
+    void updateEnvUserPermission(DevopsEnvPermissionUpdateVO devopsEnvPermissionUpdateVO);
 
     /**
      * 删除已停用的环境

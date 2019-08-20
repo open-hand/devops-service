@@ -19,6 +19,8 @@ public class DevopsEnvPodInfoVO {
     private String podIp;
     private Date creationDate;
     @JsonIgnore
+    private String namespace;
+    @JsonIgnore
     private Double cpuValue;
     @JsonIgnore
     private Long memoryValue;
@@ -85,5 +87,13 @@ public class DevopsEnvPodInfoVO {
 
     public void setMemoryValue(Long memoryValue) {
         this.memoryValue = memoryValue;
+    }
+
+    public String getNamespace() {
+        return namespace;
+    }
+
+    public void setNamespace(String namespace) {
+        this.namespace = namespace;
     }
 }

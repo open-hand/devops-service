@@ -1,0 +1,57 @@
+spring:
+  datasource:
+    password: sa
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=Mysql;TRACE_LEVEL_SYSTEM_OUT=2;
+    username: sa
+  # 使用本地docker里的mysql
+#      username: root
+#      password:
+#      url: jdbc:mysql://localhost:3306/devops_service?useUnicode=true&characterEncoding=utf-8&useSSL=false
+  autoconfigure:
+    exclude:
+    - org.springframework.boot.autoconfigure.liquibase.LiquibaseAutoConfiguration
+    - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
+    - org.springframework.cloud.client.discovery.simple.SimpleDiscoveryClientAutoConfiguration
+    - org.springframework.cloud.client.discovery.composite.CompositeDiscoveryClientAutoConfiguration
+    - org.springframework.cloud.client.discovery.noop.NoopDiscoveryClientAutoConfiguration
+    - io.choerodon.websocket.SocketHelperAutoConfiguration
+  h2:
+    console:
+      enabled: true
+
+hystrix:
+  stream:
+    queue:
+      enabled: false
+data:
+  dir: src/test/resources
+eureka:
+  client:
+    enabled: false
+services:
+  harbor:
+    baseUrl: "https://registry.saas.test.com"
+    username: "admin"
+    password: "Handhand123"
+  helm:
+    url: "http://helm-charts.staging.saas.test.com"
+  gitlab:
+    sshUrl: "git.vk.vu:2289"
+    url: "http://git.alpha.saas.test.com"
+choerodon:
+  event:
+    consumer:
+      enabled: false # 是否开启，不设置默认开启
+  devops:
+    message: false
+  saga:
+    consumer:
+      enabled: false # 启动消费端
+      thread-num: 2 # saga消息消费线程池大小
+      max-poll-size: 200 # 每次拉取消息最大数量
+      poll-interval-ms: 1000 # 拉取间隔，默认1000毫秒
+  schedule:
+    consumer:
+      enabled: false # 启用任务调度消费端
+      thread-num: 1 # 任务调度消费线程数
+      poll-interval-ms: 1000 # 拉取间隔，默认1000毫秒

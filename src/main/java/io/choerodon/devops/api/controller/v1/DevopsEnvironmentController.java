@@ -309,7 +309,7 @@ public class DevopsEnvironmentController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "服务id")
-            @RequestParam(required = false) Long appServiceId) {
+            @RequestParam(value = "app_service_id",required = false) Long appServiceId) {
         return Optional.ofNullable(devopsEnvironmentService.listByProjectId(projectId, appServiceId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.environment.running.get"));
@@ -407,7 +407,7 @@ public class DevopsEnvironmentController {
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "列出项目下所有与该环境未分配权限的项目成员")
-    @GetMapping(value = "/{env_id}/permission/list_non_related")
+    @PostMapping(value = "/{env_id}/permission/list_non_related")
     public ResponseEntity<List<DevopsEnvUserVO>> listAllNonRelatedMembers(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
@@ -442,7 +442,7 @@ public class DevopsEnvironmentController {
     }
 
     /**
-     * 获取环境下所有用户权限
+     * 获取环境下所有用户权限（获取所有有环境权限的项目下项目成员）
      *
      * @param projectId 项目id
      * @param envId     环境id
@@ -472,16 +472,15 @@ public class DevopsEnvironmentController {
             roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "环境下为用户分配权限")
     @PostMapping(value = "/{env_id}/permission")
-    public ResponseEntity<Boolean> updateEnvUserPermission(
+    public ResponseEntity updateEnvUserPermission(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)
             @PathVariable(value = "env_id") Long envId,
             @ApiParam(value = "有权限的用户ids")
             @RequestBody @Valid DevopsEnvPermissionUpdateVO devopsEnvPermissionUpdateVO) {
-        return Optional.ofNullable(devopsEnvironmentService.updateEnvUserPermission(devopsEnvPermissionUpdateVO))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.env.user.permission.update"));
+        devopsEnvironmentService.updateEnvUserPermission(devopsEnvPermissionUpdateVO);
+        return new ResponseEntity(HttpStatus.OK);
     }
 
     /**

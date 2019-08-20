@@ -78,7 +78,7 @@
     </select>
 
     <select id="queryEnvPodIns" resultType="io.choerodon.devops.api.vo.DevopsEnvPodInfoVO">
-        SELECT dep.name name, ins.code instanceName, dep.creation_date creationDate
+        SELECT dep.name name, ins.code instance_name, dep.creation_date, dep.namespace
         FROM devops_env_pod dep
                  INNER JOIN devops_app_service_instance ins ON dep.instance_id = ins.id
                  INNER JOIN devops_env de ON dep.namespace = de.code

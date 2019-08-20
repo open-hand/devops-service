@@ -1,15 +1,29 @@
 package io.choerodon.devops.api.vo;
 
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * Created by younger on 2018/4/9.
  */
 public class DevopsEnvironmentUpdateVO {
+    @ApiModelProperty("环境id")
+    @NotNull(message = "error.env.id.null")
     private Long id;
+    @ApiModelProperty("环境名称，不能为空")
+    @NotEmpty(message = "error.env.name.empty")
     private String name;
+    @ApiModelProperty("环境描述")
     private String description;
+    @ApiModelProperty("环境编码 / 不能修改")
     private String code;
+    @ApiModelProperty("环境所属组id")
     private Long devopsEnvGroupId;
-    private Long clusterId;
+    @ApiModelProperty("版本号 / 更新必须")
+    @NotNull(message = "error.object.version.number.null")
+    private Long objectVersionNumber;
 
     public Long getId() {
         return id;
@@ -51,11 +65,11 @@ public class DevopsEnvironmentUpdateVO {
         this.devopsEnvGroupId = devopsEnvGroupId;
     }
 
-    public Long getClusterId() {
-        return clusterId;
+    public Long getObjectVersionNumber() {
+        return objectVersionNumber;
     }
 
-    public void setClusterId(Long clusterId) {
-        this.clusterId = clusterId;
+    public void setObjectVersionNumber(Long objectVersionNumber) {
+        this.objectVersionNumber = objectVersionNumber;
     }
 }
