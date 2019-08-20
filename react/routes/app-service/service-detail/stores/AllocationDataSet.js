@@ -14,6 +14,10 @@ export default ((formatMessage, projectId, id) => ({
         data: postData,
       };
     },
+    destroy: ({ data: [data] }) => ({
+      url: `/devops/v1/projects/${projectId}/app_service/${data.id}/delete_permission`,
+      method: 'delete',
+    }),
   },
   fields: [
     { name: 'realName', type: 'string', label: formatMessage({ id: 'userName' }) },

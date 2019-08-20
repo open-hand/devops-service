@@ -329,6 +329,9 @@ const appService = {
   'c7ncd.appService.source.false': '市场下载',
   'c7ncd.appService.test.failed': '连接失败',
   'c7ncd.appService.test.success': '连接成功',
+  'c7ncd.appService.role.member': '项目成员',
+  'c7ncd.appService.role.owner': '项目所有者',
+  'c7ncd.appService.project.all': '组织下所有项目',
 };
 
 // 文档地址前缀

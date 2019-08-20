@@ -6,20 +6,23 @@ import { Modal } from 'choerodon-ui/pro';
 import { observer } from 'mobx-react-lite';
 import { useServiceDetailStore } from './stores';
 import Detail from './modals/detail';
+import CreateForm from '../modals/creat-form';
 
 
 const modalKey1 = Modal.key();
 const modalStyle = {
-  width: '26%',
+  width: 380,
 };
 
 
 const HeaderButtons = observer(({ children }) => {
   const {
     intl: { formatMessage },
+    AppState: { currentMenuType: { id } },
     intlPrefix,
     prefixCls,
     detailDs,
+    AppStore,
   } = useServiceDetailStore();
 
   function openDetail() {
@@ -37,6 +40,34 @@ const HeaderButtons = observer(({ children }) => {
     });
   }
 
+  function openEdit() {
+    Modal.open({
+      key: modalKey1,
+      drawer: true,
+      style: modalStyle,
+      title: <FormattedMessage id={`${intlPrefix}.create`} />,
+      children: <CreateForm
+        dataSet={detailDs}
+        record={detailDs.current}
+        AppStore={AppStore}
+        projectId={id}
+        intlPrefix={intlPrefix}
+        prefixCls={prefixCls}
+        isDetailPage
+      />,
+      onCancel: () => handleCancel(),
+    });
+  }
+
+  function handleCancel() {
+    detailDs.current.reset();
+  }
+
+  function getActiveText() {
+    const active = detailDs.current && detailDs.current.get('active') ? 'disable' : 'enable';
+    return <FormattedMessage id={`${intlPrefix}.${active}`} />;
+  }
+
 
   return (
     <Header>
@@ -45,6 +76,7 @@ const HeaderButtons = observer(({ children }) => {
       >
         <Button
           icon="mode_edit "
+          onClick={openEdit}
         >
           <FormattedMessage id={`${intlPrefix}.edit`} />
         </Button>
@@ -55,7 +87,7 @@ const HeaderButtons = observer(({ children }) => {
         <Button
           icon="remove_circle_outline"
         >
-          <FormattedMessage id={`${intlPrefix}.disable`} />
+          {getActiveText()}
         </Button>
       </Permission>
       {children}

@@ -1,11 +1,10 @@
 import React from 'react';
-import { TabPage, Content, Permission, Breadcrumb } from '@choerodon/master';
+import { TabPage, Content, Permission, Breadcrumb, Action } from '@choerodon/master';
 import { Table, Modal } from 'choerodon-ui/pro';
 import { Button } from 'choerodon-ui';
 import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import { useServiceDetailStore } from './stores';
-import usePermissionStore from './modals/stores/useStore';
 import HeaderButtons from './HeaderButtons';
 import TimePopover from '../../../components/timePopover/TimePopover';
 import ServicePermission from './modals/permission';
@@ -16,7 +15,7 @@ const { Column } = Table;
 const modalKey1 = Modal.key();
 
 const modalStyle = {
-  width: '26%',
+  width: 380,
 };
 
 const Allocation = observer((props) => {
@@ -28,17 +27,31 @@ const Allocation = observer((props) => {
     detailDs,
     nonePermissionDs,
     params,
+    permissionStore,
   } = useServiceDetailStore();
-  const permissionStore = usePermissionStore();
 
   function renderTime({ value }) {
     return <TimePopover content={value} />;
   }
 
+  function renderRole({ value }) {
+    return <FormattedMessage id={`${intlPrefix}.role.${value}`} />;
+  }
+
+  function renderAction({ record }) {
+    if (detailDs.current.get('permission') || record.get('role') === 'owner') return;
+    const actionData = [{
+      service: [],
+      text: formatMessage({ id: 'delete' }),
+      action: handleDelete,
+    }];
+    return <Action data={actionData} />;
+  }
+
   function openDetail() {
     permissionStore.setChecked(detailDs.current.get('permission'));
     permissionStore.clearPermissionUsers();
-    const detailModal = Modal.open({
+    Modal.open({
       key: modalKey1,
       title: formatMessage({ id: `${intlPrefix}.detail` }),
       children: <ServicePermission store={permissionStore} record={detailDs.current} nonePermissionDS={nonePermissionDs} intlPrefix={intlPrefix} prefixCls={prefixCls} formatMessage={formatMessage} />,
@@ -54,6 +67,10 @@ const Allocation = observer((props) => {
       },
       okText: formatMessage({ id: 'save' }),
     });
+  }
+
+  function handleDelete() {
+    permissionDs.current.delete();
   }
 
   return (
@@ -75,8 +92,9 @@ const Allocation = observer((props) => {
       <Content>
         <Table dataSet={permissionDs}>
           <Column name="realName" />
+          <Column renderer={renderAction} width="0.7rem" />
           <Column name="loginName" />
-          <Column name="role" />
+          <Column name="role" renderer={renderRole} />
           <Column name="creationDate" renderer={renderTime} />
         </Table>
       </Content>
