@@ -1,11 +1,16 @@
 package io.choerodon.devops.app.service;
 
+import io.choerodon.devops.app.eventhandler.payload.ProjectPayload;
 import io.choerodon.devops.infra.dto.DevopsProjectDTO;
 
 /**
  * Created by Sheep on 2019/7/15.
  */
 public interface DevopsProjectService {
+    void createProject(ProjectPayload projectPayload);
+
+    boolean queryProjectGitlabGroupReady(Long projectId);
+
     DevopsProjectDTO queryByAppId(Long appId);
 
     DevopsProjectDTO baseQueryByGitlabAppGroupId(Integer appGroupId);

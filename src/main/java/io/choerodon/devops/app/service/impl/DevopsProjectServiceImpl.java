@@ -1,10 +1,12 @@
 package io.choerodon.devops.app.service.impl;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.app.eventhandler.payload.ProjectPayload;
 import io.choerodon.devops.app.service.DevopsProjectService;
 import io.choerodon.devops.infra.dto.DevopsProjectDTO;
 import io.choerodon.devops.infra.mapper.DevopsProjectMapper;
 import io.choerodon.devops.infra.util.TypeUtil;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,8 +19,24 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
     private DevopsProjectMapper devopsProjectMapper;
 
     @Override
+    public boolean queryProjectGitlabGroupReady(Long projectId) {
+        DevopsProjectDTO devopsProjectDTO = new DevopsProjectDTO();
+        devopsProjectDTO.setIamProjectId(projectId);
+        devopsProjectDTO = devopsProjectMapper.selectOne(devopsProjectDTO);
+        if (devopsProjectDTO == null) {
+            throw new CommonException("error.group.not.sync");
+        }
+        if (devopsProjectDTO.getDevopsAppGroupId() == null || devopsProjectDTO.getDevopsEnvGroupId() == null) {
+            throw new CommonException("error.gitlab.groupId.select");
+        }
+        return devopsProjectDTO.getDevopsAppGroupId() != null;
+    }
+
+    @Override
     public DevopsProjectDTO baseQueryByProjectId(Long projectId) {
-        DevopsProjectDTO devopsProjectDTO = devopsProjectMapper.selectByPrimaryKey(projectId);
+        DevopsProjectDTO devopsProjectDTO = new DevopsProjectDTO();
+        devopsProjectDTO.setIamProjectId(projectId);
+        devopsProjectDTO = devopsProjectMapper.selectOne(devopsProjectDTO);
         if (devopsProjectDTO == null) {
             throw new CommonException("error.group.not.sync");
         }
@@ -31,6 +49,15 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
     @Override
     public DevopsProjectDTO queryByAppId(Long appId) {
         return devopsProjectMapper.selectByPrimaryKey(appId);
+    }
+
+    @Override
+    public void createProject(ProjectPayload projectPayload) {
+        // create project in db
+        DevopsProjectDTO devopsProjectDTO = new DevopsProjectDTO(projectPayload.getProjectId());
+        if (devopsProjectMapper.insert(devopsProjectDTO) != 1) {
+            throw new CommonException("insert project attr error");
+        }
     }
 
     @Override

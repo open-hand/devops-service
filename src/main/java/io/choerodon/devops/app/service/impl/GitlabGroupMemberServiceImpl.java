@@ -3,6 +3,11 @@ package io.choerodon.devops.app.service.impl;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.GitlabGroupMemberVO;
 import io.choerodon.devops.api.vo.kubernetes.MemberHelper;
@@ -13,17 +18,11 @@ import io.choerodon.devops.infra.dto.DevopsProjectDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.dto.gitlab.GitLabUserDTO;
 import io.choerodon.devops.infra.dto.gitlab.GitlabProjectDTO;
-import io.choerodon.devops.infra.dto.gitlab.GroupDTO;
 import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
-import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.enums.AccessLevel;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
 import io.choerodon.devops.infra.util.TypeUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 
 /**
@@ -42,8 +41,6 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
     private DevopsProjectService devopsProjectService;
     @Autowired
     private UserAttrService userAttrService;
-    @Autowired
-    private IamService iamService;
     @Autowired
     private AppServiceService applicationService;
     @Autowired
@@ -97,20 +94,20 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                     }
                     DevopsProjectDTO devopsProjectDTO;
                     MemberDTO memberDTO;
-                        devopsProjectDTO = devopsProjectService.baseQueryByProjectId(gitlabGroupMemberVO.getResourceId());
-                        memberDTO = gitlabServiceClientOperator.queryGroupMember(
-                                TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()), gitlabUserId);
-                        if (memberDTO != null && memberDTO.getUserId() != null) {
-                            deleteGitlabRole(memberDTO, devopsProjectDTO, gitlabUserId, false);
-                        }
-                        memberDTO = gitlabServiceClientOperator.queryGroupMember(
-                                TypeUtil.objToInteger(devopsProjectDTO.getDevopsEnvGroupId()), gitlabUserId);
-                        if (memberDTO != null && memberDTO.getUserId() != null) {
-                            deleteGitlabRole(memberDTO, devopsProjectDTO, gitlabUserId, true);
-                        }
+                    devopsProjectDTO = devopsProjectService.baseQueryByProjectId(gitlabGroupMemberVO.getResourceId());
+                    memberDTO = gitlabServiceClientOperator.queryGroupMember(
+                            TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()), gitlabUserId);
+                    if (memberDTO != null && memberDTO.getUserId() != null) {
+                        deleteGitlabRole(memberDTO, devopsProjectDTO, gitlabUserId, false);
+                    }
+                    memberDTO = gitlabServiceClientOperator.queryGroupMember(
+                            TypeUtil.objToInteger(devopsProjectDTO.getDevopsEnvGroupId()), gitlabUserId);
+                    if (memberDTO != null && memberDTO.getUserId() != null) {
+                        deleteGitlabRole(memberDTO, devopsProjectDTO, gitlabUserId, true);
+                    }
 
-                        deleteAboutApplicationService(gitlabGroupMemberVO.getResourceId(), userAttrDTO.getGitlabUserId().intValue(), userAttrDTO.getIamUserId());
-                        deleteAboutEnvironment(gitlabGroupMemberVO.getResourceId(), userAttrDTO.getGitlabUserId().intValue(), userAttrDTO.getIamUserId());
+                    deleteAboutApplicationService(gitlabGroupMemberVO.getResourceId(), userAttrDTO.getGitlabUserId().intValue(), userAttrDTO.getIamUserId());
+                    deleteAboutEnvironment(gitlabGroupMemberVO.getResourceId(), userAttrDTO.getGitlabUserId().intValue(), userAttrDTO.getIamUserId());
                 });
     }
 
@@ -274,36 +271,36 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
             // 为当前项目下所有跳过权限检查的环境库加上gitlab用户权限
             addRoleForSkipPermissionEnvironment(resourceId, gitlabUserId);
         } else if (AccessLevel.OWNER.equals(accessLevel)) {
-                try {
-                    // 删除用户时同时清除gitlab的权限
-                    List<Integer> gitlabProjectIds = applicationService
-                            .baseListByProjectId(resourceId).stream().filter(e -> e.getGitlabProjectId() != null)
-                            .map(AppServiceDTO::getGitlabProjectId).map(TypeUtil::objToInteger)
-                            .collect(Collectors.toList());
-                    gitlabProjectIds.forEach(e -> {
-                        MemberDTO projectMember = gitlabServiceClientOperator.getProjectMember(e, gitlabUserId);
-                        if (projectMember != null && projectMember.getUserId() != null) {
-                            gitlabServiceClientOperator.deleteProjectMember(e, gitlabUserId);
-                        }
-                    });
-                    // 给gitlab应用组分配owner角色
-                    devopsProjectDTO = devopsProjectService.baseQueryByProjectId(resourceId);
-                    memberDTO = gitlabServiceClientOperator.queryGroupMember(
-                            TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()),
-                            (TypeUtil.objToInteger(userAttrDTO.getGitlabUserId())));
-                    addOrUpdateGitlabRole(accessLevel, memberDTO,
-                            TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()), userAttrDTO);
+            try {
+                // 删除用户时同时清除gitlab的权限
+                List<Integer> gitlabProjectIds = applicationService
+                        .baseListByProjectId(resourceId).stream().filter(e -> e.getGitlabProjectId() != null)
+                        .map(AppServiceDTO::getGitlabProjectId).map(TypeUtil::objToInteger)
+                        .collect(Collectors.toList());
+                gitlabProjectIds.forEach(e -> {
+                    MemberDTO projectMember = gitlabServiceClientOperator.getProjectMember(e, gitlabUserId);
+                    if (projectMember != null && projectMember.getUserId() != null) {
+                        gitlabServiceClientOperator.deleteProjectMember(e, gitlabUserId);
+                    }
+                });
+                // 给gitlab应用组分配owner角色
+                devopsProjectDTO = devopsProjectService.baseQueryByProjectId(resourceId);
+                memberDTO = gitlabServiceClientOperator.queryGroupMember(
+                        TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()),
+                        (TypeUtil.objToInteger(userAttrDTO.getGitlabUserId())));
+                addOrUpdateGitlabRole(accessLevel, memberDTO,
+                        TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()), userAttrDTO);
 
-                    //给gitlab环境组分配owner角色
-                    memberDTO = gitlabServiceClientOperator.queryGroupMember(
-                            TypeUtil.objToInteger(devopsProjectDTO.getDevopsEnvGroupId()),
-                            (TypeUtil.objToInteger(userAttrDTO.getGitlabUserId())));
-                    addOrUpdateGitlabRole(accessLevel, memberDTO,
-                            TypeUtil.objToInteger(devopsProjectDTO.getDevopsEnvGroupId()), userAttrDTO);
+                //给gitlab环境组分配owner角色
+                memberDTO = gitlabServiceClientOperator.queryGroupMember(
+                        TypeUtil.objToInteger(devopsProjectDTO.getDevopsEnvGroupId()),
+                        (TypeUtil.objToInteger(userAttrDTO.getGitlabUserId())));
+                addOrUpdateGitlabRole(accessLevel, memberDTO,
+                        TypeUtil.objToInteger(devopsProjectDTO.getDevopsEnvGroupId()), userAttrDTO);
 
-                } catch (Exception e) {
-                    LOGGER.info(ERROR_GITLAB_GROUP_ID_SELECT);
-                }
+            } catch (Exception e) {
+                LOGGER.info(ERROR_GITLAB_GROUP_ID_SELECT);
+            }
         }
     }
 

@@ -167,7 +167,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
         applicationDTO.setIsSkipCheckPermission(applicationReqDTO.getIsSkipCheckPermission());
 
         // 查询创建应用所在的gitlab应用组
-        DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(applicationDTO.getAppId());
+        DevopsProjectDTO devopsProjectDTO = devopsProjectService.queryByAppId(applicationDTO.getAppId());
         MemberDTO gitlabMember = gitlabGroupMemberService.queryByUserId(
                 TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()),
                 TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
