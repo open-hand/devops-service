@@ -2,7 +2,7 @@
   &-row {
     display: flex;
     padding: .08rem 0;
-    height: .36rem;
+    min-height: .36rem;
   }
 
   &-cell {
@@ -17,5 +17,9 @@
   &-value {
     flex: 1;
     color: #000;
+
+    span {
+      word-break: break-all;
+    }
   }
 }

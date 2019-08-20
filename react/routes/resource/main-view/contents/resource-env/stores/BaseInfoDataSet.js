@@ -1,4 +1,4 @@
-export default (projectId, id) => ({
+export default () => ({
   autoQuery: true,
   selection: false,
   paging: false,
@@ -11,7 +11,6 @@ export default (projectId, id) => ({
   ],
   transport: {
     read: {
-      url: `/devops/v1/projects/${projectId}/envs/${id}/info`,
       method: 'get',
     },
   },

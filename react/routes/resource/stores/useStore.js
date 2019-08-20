@@ -2,12 +2,12 @@ import { useLocalStore } from 'mobx-react-lite';
 import { viewTypeMappings } from './mappings';
 
 const NO_HEADER = [];
-const { IST_VIEW_TYPE } = viewTypeMappings;
+const { IST_VIEW_TYPE, RES_VIEW_TYPE } = viewTypeMappings;
 
 export default function useStore() {
   return useLocalStore(() => ({
     selectedMenu: {},
-    viewType: IST_VIEW_TYPE,
+    viewType: RES_VIEW_TYPE,
     noHeader: false,
     setSelectedMenu(data) {
       this.selectedMenu = data;
