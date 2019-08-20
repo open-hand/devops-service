@@ -372,12 +372,10 @@
     </select>
 
     <select id="queryServiceVersionByAppServiceIdAndShare" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
-        select * from devops_app_service_version as b where not exists(select 1 from devops_app_service_version where
-        app_service_id= b.app_service_id
-        and b.last_update_date &lt; last_update_date)
-        and app_service_id=#{appServiceId}
+      	select * from  devops_app_service_version
+				where app_service_id=#{appServiceId}
         <if test="share!=null and share !=''">
-            or version in(select version from devops_app_service_share_rule where app_service_id=#{appServiceId})
+				and version in(select version from devops_app_service_share_rule where app_service_id=#{appServiceId})
         </if>
         order by last_update_date desc
     </select>

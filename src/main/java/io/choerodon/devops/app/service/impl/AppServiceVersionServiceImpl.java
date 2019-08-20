@@ -380,7 +380,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     @Override
     public List<AppServiceVersionVO> queryServiceVersionByAppServiceIdAndShare(Long appServiceId, String share) {
         List<AppServiceVersionDTO> versionList = appServiceVersionMapper.queryServiceVersionByAppServiceIdAndShare(appServiceId, share);
-        List<AppServiceVersionVO> versionVoList = null;
+        List<AppServiceVersionVO> versionVoList = new ArrayList<>();
         if (!versionList.isEmpty()) {
             versionVoList = versionList.stream().map(appServiceVersionDTO -> dtoToVo(appServiceVersionDTO)).collect(Collectors.toList());
         }
