@@ -7,6 +7,7 @@ import { useResourceStore } from '../../../../stores';
 import { useModalStore } from './stores';
 import { useNetworkStore } from '../stores';
 import CreateNetwork from './network-create';
+import { useMainStore } from '../../../stores';
 
 const EnvModals = observer(() => {
   const {
@@ -17,8 +18,10 @@ const EnvModals = observer(() => {
   } = useResourceStore();
   const {
     networkDs,
-    networkStore,
   } = useNetworkStore();
+  const {
+    networkStore,
+  } = useMainStore();
   const {
     permissions,
     AppState: { currentMenuType: { projectId } },

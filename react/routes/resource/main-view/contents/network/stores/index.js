@@ -4,7 +4,6 @@ import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
 import TableDataSet from './TableDataSet';
 import { useResourceStore } from '../../../../stores';
-import useStore from './useStore';
 
 const Store = createContext();
 
@@ -27,12 +26,9 @@ export const StoreProvider = injectIntl(inject('AppState')(
       envId: parentId,
     })), [formatMessage, id, intlPrefix, parentId]);
 
-    const networkStore = useStore();
-
     const value = {
       ...props,
       networkDs,
-      networkStore,
     };
 
     return (

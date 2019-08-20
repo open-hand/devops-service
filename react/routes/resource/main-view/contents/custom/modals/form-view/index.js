@@ -281,7 +281,7 @@ export default class ResourceSidebar extends Component {
                   onChange={this.changeMode}
                 >
                   {
-                    _.map(['paste', 'upload'], item => (
+                    _.map(['paste', 'upload'], (item) => (
                       <Radio
                         key={item}
                         value={item}
