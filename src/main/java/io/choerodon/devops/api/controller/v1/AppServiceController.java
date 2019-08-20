@@ -5,6 +5,13 @@ import java.util.List;
 import java.util.Optional;
 
 import com.github.pagehelper.PageInfo;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
+
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.domain.Sort;
@@ -16,12 +23,6 @@ import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.infra.enums.GitPlatformType;
 import io.choerodon.mybatis.annotation.SortDefault;
 import io.choerodon.swagger.annotation.CustomPageRequest;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
 
 /**
  * Created by younger on 2018/4/4.
@@ -318,6 +319,25 @@ public class AppServiceController {
             @ApiParam(value = "服务编码", required = true)
             @RequestParam String code) {
         applicationServiceService.checkCodeByProjectId(projectId, code);
+    }
+
+    /**
+     * 批量校验appServiceCode和appServiceName
+     *
+     * @param projectId              项目ID
+     * @param appServiceBatchCheckVO 服务code
+     */
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "批量校验appServiceCode和appServiceName")
+    @PostMapping(value = "/batch_check")
+    public ResponseEntity<AppServiceBatchCheckVO> batchCheck(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "校验数据", required = true)
+            @RequestBody AppServiceBatchCheckVO appServiceBatchCheckVO) {
+        return Optional.ofNullable(applicationServiceService.checkCodeByProjectId(projectId, appServiceBatchCheckVO))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.app.service.check"));
     }
 
     /**
