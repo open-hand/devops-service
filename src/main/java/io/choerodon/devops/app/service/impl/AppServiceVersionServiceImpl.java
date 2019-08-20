@@ -13,6 +13,7 @@ import com.google.gson.Gson;
 import io.kubernetes.client.JSON;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -374,6 +375,22 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     public AppServiceVersionDTO queryServiceVersionByAppServiceId(Long appServiceId, String share) {
 
         return appServiceVersionMapper.queryServiceVersionByAppServiceId(appServiceId, share);
+    }
+
+    @Override
+    public List<AppServiceVersionVO> queryServiceVersionByAppServiceIdAndShare(Long appServiceId, String share) {
+        List<AppServiceVersionDTO> versionList = appServiceVersionMapper.queryServiceVersionByAppServiceIdAndShare(appServiceId, share);
+        List<AppServiceVersionVO> versionVoList = new ArrayList<>();
+        if (!versionList.isEmpty()) {
+            versionVoList = versionList.stream().map(appServiceVersionDTO -> dtoToVo(appServiceVersionDTO)).collect(Collectors.toList());
+        }
+        return versionVoList;
+    }
+
+    private AppServiceVersionVO dtoToVo(AppServiceVersionDTO appServiceVersionDTO) {
+        AppServiceVersionVO appServiceVersionVO = new AppServiceVersionVO();
+        BeanUtils.copyProperties(appServiceVersionDTO, appServiceVersionVO);
+        return appServiceVersionVO;
     }
 
     @Override

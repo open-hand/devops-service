@@ -80,4 +80,13 @@ public interface AppServiceVersionMapper extends Mapper<AppServiceVersionDTO> {
      * @return
      */
     AppServiceVersionDTO queryServiceVersionByAppServiceId(@Param("appServiceId") Long appServiceId, @Param("share") String share);
+
+    /**
+     * 查询应用服务共享的所有版本
+     *
+     * @param appServiceId
+     * @param share
+     * @return
+     */
+    List<AppServiceVersionDTO> queryServiceVersionByAppServiceIdAndShare(@Param("appServiceId") Long appServiceId, @Param("share") String share);
 }

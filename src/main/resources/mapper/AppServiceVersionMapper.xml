@@ -370,4 +370,13 @@
         order by last_update_date desc
         limit 1
     </select>
+
+    <select id="queryServiceVersionByAppServiceIdAndShare" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
+      	select * from  devops_app_service_version
+				where app_service_id=#{appServiceId}
+        <if test="share!=null and share !=''">
+				and version in(select version from devops_app_service_share_rule where app_service_id=#{appServiceId})
+        </if>
+        order by last_update_date desc
+    </select>
 </mapper>
