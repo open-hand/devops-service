@@ -17,10 +17,6 @@ const modalStyle = {
 const Platform = injectIntl(observer((props) => {
   const { tableDs, intl: { formatMessage }, intlPrefix, prefixCls } = props;
 
-  useEffect(() => {
-    tableDs.query();
-  }, []);
-
   function openModal() {
     Modal.open({
       key: modalKey1,
@@ -103,7 +99,7 @@ const Platform = injectIntl(observer((props) => {
         <Column name="appName" />
         <Column name="share" renderer={renderShare} />
         <Column name="type" renderer={renderType} />
-        <Column name="version" renderer={renderType} />
+        <Column name="version" />
       </Table>
     </div>
   );

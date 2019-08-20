@@ -1,16 +1,14 @@
-import React, { Fragment, useCallback, useState, useEffect } from 'react';
+import React, { Fragment, useCallback, useState, useEffect } from 'react/index';
 import { Form, TextField, Select, Upload, SelectBox, UrlField, Password, EmailField } from 'choerodon-ui/pro';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import { Icon, Button } from 'choerodon-ui';
 import isEmpty from 'lodash/isEmpty';
-import { handlePromptError } from '../../../../../utils';
-
-import '../../index.less';
+import { handlePromptError } from '../../../../utils';
 
 const { Option } = Select;
 
-const Settings = injectIntl(observer(({ record, AppStore, projectId, intl: { formatMessage }, intlPrefix, prefixCls, handleTestHarbor, handleTestChart }) => {
+const Settings = injectIntl(observer(({ record, AppStore, projectId, intl: { formatMessage }, intlPrefix, prefixCls, handleTestHarbor, handleTestChart, isDetailPage }) => {
   const [isExpand, setIsExpand] = useState(false);
 
   useEffect(() => {
@@ -18,34 +16,42 @@ const Settings = injectIntl(observer(({ record, AppStore, projectId, intl: { for
       try {
         const res = await AppStore.loadAppById(projectId, record.get('id'));
         if (handlePromptError(res)) {
-          record.set('chart', res.chart);
-          record.set('harbor', res.harbor);
-          record.set('oldName', res.name);
-          record.set('objectVersionNumber', res.objectVersionNumber);
-          if (!isEmpty(res.chart)) {
-            record.set('chartUrl', res.chart.config.url);
-            record.set('chartType', 'custom');
-          } else {
-            record.set('chartType', 'default');
-          }
-          if (!isEmpty(res.harbor)) {
-            const { url, userName, password, project, email } = res.harbor.config || {};
-            record.set('url', url);
-            record.set('userName', userName);
-            record.set('password', password);
-            record.set('email', email);
-            record.set('project', project);
-            record.set('harborType', 'custom');
-          } else {
-            record.set('harborType', 'default');
-          }
+          handleRes(res);
         }
       } catch (e) {
         Choerodon.handleResponseError(e);
       }
     }
-    loadData();
+    if (!isDetailPage) {
+      loadData();
+    } else {
+      handleRes(record.toData());
+    }
   }, []);
+
+  function handleRes(res) {
+    record.set('chart', res.chart);
+    record.set('harbor', res.harbor);
+    record.set('oldName', res.name);
+    record.set('objectVersionNumber', res.objectVersionNumber);
+    if (!isEmpty(res.chart)) {
+      record.set('chartUrl', res.chart.config.url);
+      record.set('chartType', 'custom');
+    } else {
+      record.set('chartType', 'default');
+    }
+    if (!isEmpty(res.harbor)) {
+      const { url, userName, password, project, email } = res.harbor.config || {};
+      record.set('url', url);
+      record.set('userName', userName);
+      record.set('password', password);
+      record.set('email', email);
+      record.set('project', project);
+      record.set('harborType', 'custom');
+    } else {
+      record.set('harborType', 'default');
+    }
+  }
 
   function handleExpand() {
     setIsExpand((pre) => !pre);

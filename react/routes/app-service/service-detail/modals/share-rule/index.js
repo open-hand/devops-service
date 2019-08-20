@@ -1,27 +1,44 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { FormattedMessage } from 'react-intl';
-import _ from 'lodash';
+import { observer } from 'mobx-react-lite';
+import { Select, Form } from 'choerodon-ui/pro';
+
 import './index.less';
-import { Select, Form } from 'choerodon-ui';
 
-const Option = Select.Option;
+const { Option } = Select;
 
-export default function ({ record, formatMessage, prefixCls, intlPrefix }) {
-  const handleChange = (value) => {
-    // value
-  };
+export default observer(({ record, versionOptions, levelOptions, projectId, formatMessage, appServiceId, intlPrefix }) => {
+  useEffect(() => {
+    async function createOption() {
+      await levelOptions.query();
+      const createdOption = levelOptions.create({
+        id: 'all',
+        name: formatMessage({ id: `${intlPrefix}.project.all` }),
+      });
+      levelOptions.unshift(createdOption);
+    }
+    createOption();
+    record.getField('version').set('options', versionOptions);
+    record.getField('shareLevel').set('options', levelOptions);
+  }, []);
+
+  useEffect(() => {
+    const url = record.get('versionType') ? `?version=${record.get('versionType')}` : '';
+    versionOptions.transport.read.url = `/devops/v1/projects/${projectId}/app_service_versions/list_app_services/${appServiceId}${url}`;
+    versionOptions.query();
+  }, [record.get('versionType')]);
+
   return (
-    <div>
-      <Select
-        mode="combobox"
-        onChange={handleChange}
-        style={{ width: '100%' }}
-        placeholder={formatMessage({ id: 'pipeline.task.version' })}
-      >
-        <Option value="1" key="1">1</Option>
-        <Option value="2" key="2">2</Option>
-        <Option value="3" key="3">3</Option>
+    <Form record={record}>
+      <Select name="versionType" combo>
+        <Option value="master">master</Option>
+        <Option value="feature">feature</Option>
+        <Option value="hotfix">hotfix</Option>
+        <Option value="bugfix">bugfix</Option>
+        <Option value="release">release</Option>
       </Select>
-    </div>
+      <Select name="version" searchable />
+      <Select name="shareLevel" searchable />
+    </Form>
   );
-}
+});

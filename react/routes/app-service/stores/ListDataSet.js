@@ -2,7 +2,6 @@ import { axios } from '@choerodon/master';
 import pick from 'lodash/pick';
 import isEmpty from 'lodash/isEmpty';
 import forEach from 'lodash/forEach';
-import getTablePostData from '../../../../utils/getTablePostData';
 
 function handleUpdate({ record, name, value }) {
   switch (name) {
@@ -96,19 +95,9 @@ export default ((intlPrefix, formatMessage, projectId) => {
   }
 
   return ({
-    autoQuery: true,
+    autoQuery: false,
     selection: false,
-    pageSize: 10,
     transport: {
-      read: ({ data }) => {
-        const postData = getTablePostData(data);
-  
-        return {
-          url: `/devops/v1/projects/${projectId}/app_service/page_by_options`,
-          method: 'post',
-          data: postData,
-        };
-      },
       create: ({ data: [data] }) => {
         const { type, code, name, imgUrl } = data;
         return ({
@@ -137,7 +126,7 @@ export default ((intlPrefix, formatMessage, projectId) => {
       { name: 'id', type: 'number' },
       { name: 'type', type: 'string', defaultValue: 'normal', label: formatMessage({ id: `${intlPrefix}.type` }), required: true },
       { name: 'active', type: 'boolean', label: formatMessage({ id: 'status' }) },
-      { name: 'creationDate', type: 'dateTime', label: formatMessage({ id: 'createDate' }) },
+      { name: 'creationDate', type: 'string', label: formatMessage({ id: 'createDate' }) },
       { name: 'permission', type: 'boolean' },
       { name: 'repoUrl', type: 'string', label: formatMessage({ id: `${intlPrefix}.repoUrl` }) },
       { name: 'imgUrl', type: 'string' },

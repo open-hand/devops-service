@@ -11,6 +11,10 @@ const { Option } = Select;
 const ImportForm = injectIntl(observer((props) => {
   const { dataSet, tableDs, record, AppStore, projectId, intl: { formatMessage }, intlPrefix, prefixCls, refresh } = props;
 
+  useEffect(() => {
+    tableDs.query();
+  }, []);
+
   props.modal.handleOk(async () => {
     if (record.get('platformType') === 'platform') {
       const lists = tableDs.toData().filter((item) => item.selected === true);
