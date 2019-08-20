@@ -361,12 +361,12 @@ public class AppServiceVersionController {
 
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下查询共享服务的所有共享版本")
-    @GetMapping(value = "/share/versions")
+    @GetMapping(value = "/{app_service_id}/list_share_versions")
     public ResponseEntity<List<AppServiceVersionVO>> ListAppServiceVersionByShareAndAppSerivceId(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "服务Id", required = true)
-            @RequestParam(value = "app_service_id") Long appServiceId,
+            @PathVariable(value = "app_service_id") Long appServiceId,
             @ApiParam(value = "共享形式", required = true)
             @RequestParam(value = "share", required = true) Boolean share) {
         return Optional.ofNullable(
