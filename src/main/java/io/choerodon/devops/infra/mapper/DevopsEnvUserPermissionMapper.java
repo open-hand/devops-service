@@ -18,7 +18,7 @@ public interface DevopsEnvUserPermissionMapper extends Mapper<DevopsEnvUserPermi
 
     List<DevopsEnvUserPermissionDTO> listUserEnvPermissionByOption(@Param("envId") Long envId,
                                                                    @Param("searchParam") Map<String, Object> searchParam,
-                                                                   @Param("param") String param);
+                                                                   @Param("params") List<String> params);
 
     List<DevopsEnvUserPermissionDTO> listByEnvId(@Param("envId") Long envId);
 

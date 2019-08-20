@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import io.choerodon.asgard.saga.producer.TransactionalProducer
 import io.choerodon.core.exception.CommonException
 import io.choerodon.core.oauth.CustomUserDetails
+import io.choerodon.devops.app.service.AgentPodService
 import io.choerodon.devops.app.service.ProjectConfigHarborService
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler
 import io.choerodon.devops.infra.util.GitUtil
@@ -12,6 +13,7 @@ import io.choerodon.liquibase.LiquibaseExecutor
 import io.choerodon.websocket.helper.CommandSender
 import io.choerodon.websocket.helper.EnvListener
 import io.choerodon.websocket.process.SocketMsgDispatcher
+import org.powermock.api.mockito.PowerMockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.TestConfiguration
@@ -61,6 +63,9 @@ class IntegrationTestConfiguration extends WebSecurityConfigurerAdapter {
     @Value('${spring.datasource.password}')
     String dataBasePassword
 
+    @Value('${liquibase.init:true}')
+    boolean isToExecuteLiquibase
+
     @Autowired
     TestRestTemplate testRestTemplate
 
@@ -76,9 +81,15 @@ class IntegrationTestConfiguration extends WebSecurityConfigurerAdapter {
     }
 
     @Primary
+    @Bean("mockAgentPodInfoService")
+    AgentPodService agentPodService() {
+        PowerMockito.mock(AgentPodService)
+    }
+
+    @Primary
     @Bean("mockClusterConnectionHandler")
     ClusterConnectionHandler clusterConnectionHandler() {
-        detachedMockFactory.Mock(ClusterConnectionHandler)
+        PowerMockito.mock(ClusterConnectionHandler)
     }
 
     @Primary
@@ -114,22 +125,26 @@ class IntegrationTestConfiguration extends WebSecurityConfigurerAdapter {
 
     @PostConstruct
     void init() {
-        liquibaseExecutor.execute()
+        if (isToExecuteLiquibase) {
+            liquibaseExecutor.execute()
+        }
         initSqlFunction()
         setTestRestTemplateJWT()
     }
 
     void initSqlFunction() {
-        //连接H2数据库
-        Class.forName("org.h2.Driver")
+        if (dataBaseUrl.contains("jdbc:h2")) {
+            //连接H2数据库
+            Class.forName("org.h2.Driver")
 //        Class.forName("com.mysql.jdbc.Driver")
-        Connection conn = DriverManager.
-                getConnection(dataBaseUrl, dataBaseUsername, dataBasePassword)
-        Statement stat = conn.createStatement()
-        //创建 SQL的IF函数，用JAVA的方法代替函数
-        stat.execute("CREATE ALIAS IF NOT EXISTS BINARY FOR \"io.choerodon.devops.infra.util.MybatisFunctionTestUtil.binaryFunction\"")
-        stat.close()
-        conn.close()
+            Connection conn = DriverManager.
+                    getConnection(dataBaseUrl, dataBaseUsername, dataBasePassword)
+            Statement stat = conn.createStatement()
+            //创建 SQL的IF函数，用JAVA的方法代替函数
+            stat.execute("CREATE ALIAS IF NOT EXISTS BINARY FOR \"io.choerodon.devops.infra.util.MybatisFunctionTestUtil.binaryFunction\"")
+            stat.close()
+            conn.close()
+        }
     }
 
     private void setTestRestTemplateJWT() {

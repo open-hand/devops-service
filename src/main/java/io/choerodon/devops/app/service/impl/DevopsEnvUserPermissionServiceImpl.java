@@ -55,10 +55,10 @@ public class DevopsEnvUserPermissionServiceImpl implements DevopsEnvUserPermissi
                                                    String params) {
         Map maps = gson.fromJson(params, Map.class);
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
-        String paramMap = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
+        List<String> paramList = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
         PageInfo<DevopsEnvUserVO> devopsEnvUserPermissionDTOPageInfo = PageHelper.startPage(pageRequest.getPage(),
                 pageRequest.getSize()).doSelectPageInfo(() -> devopsEnvUserPermissionMapper
-                .listUserEnvPermissionByOption(envId, searchParamMap, paramMap));
+                .listUserEnvPermissionByOption(envId, searchParamMap, paramList));
 
         PageInfo<DevopsEnvUserVO> devopsEnvUserPermissionVOPageInfo = new PageInfo<>();
         BeanUtils.copyProperties(devopsEnvUserPermissionDTOPageInfo, devopsEnvUserPermissionVOPageInfo);
@@ -133,10 +133,10 @@ public class DevopsEnvUserPermissionServiceImpl implements DevopsEnvUserPermissi
                                                                   String params) {
         Map maps = gson.fromJson(params, Map.class);
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
-        String paramMap = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
+        List<String> paramList = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
         return PageHelper.startPage(pageRequest.getPage(),
                 pageRequest.getSize()).doSelectPageInfo(() -> devopsEnvUserPermissionMapper
-                .listUserEnvPermissionByOption(envId, searchParamMap, paramMap));
+                .listUserEnvPermissionByOption(envId, searchParamMap, paramList));
     }
 
     @Override

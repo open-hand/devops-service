@@ -1,9 +1,12 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.validator.DevopsEnvGroupValidator;
 import io.choerodon.devops.api.vo.DevopsEnvGroupVO;
 import io.choerodon.devops.app.service.DevopsEnvGroupService;
@@ -60,6 +63,18 @@ public class DevopsEnvGroupServiceImpl implements DevopsEnvGroupService {
     @Override
     public Boolean checkName(String name, Long projectId) {
         return baseCheckUniqueInProject(name, projectId);
+    }
+
+    @Override
+    public void checkGroupIdInProject(@Nullable Long groupId, @NotNull Long projectId) {
+        if (groupId != null) {
+            DevopsEnvGroupDTO devopsEnvGroupDTO = new DevopsEnvGroupDTO();
+            devopsEnvGroupDTO.setId(groupId);
+            devopsEnvGroupDTO.setProjectId(projectId);
+            if (devopsEnvGroupMapper.selectOne(devopsEnvGroupDTO) == null) {
+                throw new CommonException("error.group.id.project.id.not.match", projectId, groupId);
+            }
+        }
     }
 
     @Override

@@ -25,7 +25,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_merge_request.groovy') {
         }
     }
     changeSet(author: 'scp', id: '2018-07-10-drop-create-table') {
-        dropTable(cascadeConstraints: true, catalogName: "devops_service", schemaName: "public", tableName: "devops_merge_request")
+        dropTable(tableName: "devops_merge_request")
         createTable(tableName: "devops_merge_request", remarks: '应用关联的合并请求') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)

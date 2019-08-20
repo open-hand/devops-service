@@ -213,7 +213,7 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
     public List<DevopsEnvPodInfoVO> queryEnvPodInfo(Long envId, String sort) {
         List<DevopsEnvPodInfoVO> devopsEnvPodInfoVOList = devopsEnvPodMapper.queryEnvPodIns(envId);
         devopsEnvPodInfoVOList.forEach(devopsEnvPodInfoVO -> {
-            AgentPodInfoVO agentPodInfoVO = agentPodService.queryLatestPodSnapshot(devopsEnvPodInfoVO.getName(), devopsEnvPodInfoVO.getInstanceName());
+            AgentPodInfoVO agentPodInfoVO = agentPodService.queryLatestPodSnapshot(devopsEnvPodInfoVO.getName(), devopsEnvPodInfoVO.getNamespace());
             if (agentPodInfoVO != null) {
                 devopsEnvPodInfoVO.setCpuUsed(agentPodInfoVO.getCpuUsed());
                 devopsEnvPodInfoVO.setCpuValue(K8sUtil.getNormalValueFromCpuString(agentPodInfoVO.getCpuUsed()));

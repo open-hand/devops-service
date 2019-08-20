@@ -130,7 +130,10 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         // 创建环境时默认跳过权限校验
         devopsEnvironmentDTO.setSkipCheckPermission(Boolean.TRUE);
         devopsEnvironmentDTO.setProjectId(projectId);
+
         checkCode(projectId, devopsEnvironmentVO.getClusterId(), devopsEnvironmentVO.getCode());
+        devopsEnvGroupService.checkGroupIdInProject(devopsEnvironmentDTO.getDevopsEnvGroupId(), projectId);
+
         devopsEnvironmentDTO.setActive(true);
         devopsEnvironmentDTO.setConnected(false);
         devopsEnvironmentDTO.setSynchro(false);
@@ -151,7 +154,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         MemberDTO memberDTO = gitlabServiceClientOperator.queryGroupMember(
                 TypeUtil.objToInteger(devopsProjectDTO.getDevopsEnvGroupId()),
                 TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
-        if (memberDTO == null || memberDTO.getAccessLevel().equals(AccessLevel.OWNER.toValue())) {
+        if (memberDTO == null || !memberDTO.getAccessLevel().equals(AccessLevel.OWNER.toValue())) {
             throw new CommonException("error.user.not.owner");
         }
 
@@ -429,19 +432,16 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     public DevopsEnvironmentUpdateVO update(DevopsEnvironmentUpdateVO devopsEnvironmentUpdateDTO, Long projectId) {
-        DevopsEnvironmentDTO environmentDTO = ConvertUtils.convertObject(
-                devopsEnvironmentUpdateDTO, DevopsEnvironmentDTO.class);
-        Long clusterId = baseQueryById(devopsEnvironmentUpdateDTO.getId()).getClusterId();
-        environmentDTO.setClusterId(clusterId);
-        environmentDTO.setProjectId(projectId);
-        DevopsEnvironmentDTO devopsEnvironmentDTO = baseQueryById(devopsEnvironmentUpdateDTO.getId());
+        DevopsEnvironmentDTO toUpdate = new DevopsEnvironmentDTO();
+        toUpdate.setId(devopsEnvironmentUpdateDTO.getId());
+        toUpdate.setName(devopsEnvironmentUpdateDTO.getName());
+        toUpdate.setDescription(devopsEnvironmentUpdateDTO.getDescription());
+        toUpdate.setObjectVersionNumber(devopsEnvironmentUpdateDTO.getObjectVersionNumber());
 
-        if (devopsEnvironmentUpdateDTO.getClusterId() != null && !devopsEnvironmentUpdateDTO.getClusterId()
-                .equals(devopsEnvironmentDTO.getClusterId())) {
-            agentCommandService.initCluster(devopsEnvironmentUpdateDTO.getClusterId());
-        }
-        return ConvertUtils.convertObject(baseUpdate(
-                environmentDTO), DevopsEnvironmentUpdateVO.class);
+        devopsEnvGroupService.checkGroupIdInProject(devopsEnvironmentUpdateDTO.getDevopsEnvGroupId(), projectId);
+
+        toUpdate.setDevopsEnvGroupId(devopsEnvironmentUpdateDTO.getDevopsEnvGroupId());
+        return ConvertUtils.convertObject(baseUpdate(toUpdate), DevopsEnvironmentUpdateVO.class);
     }
 
     private void setEnvStatus(List<Long> connectedEnvList, List<Long> upgradeEnvList, DevopsEnvironmentDTO t) {
@@ -695,13 +695,13 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
         RoleAssignmentSearchVO roleAssignmentSearchVO = new RoleAssignmentSearchVO();
         Map<String, Object> searchParamMap = null;
-        String param = null;
+        List<String> paramList = null;
         // 处理搜索参数
         if (!StringUtils.isEmpty(params)) {
             Map maps = gson.fromJson(params, Map.class);
             searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
-            param = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
-            roleAssignmentSearchVO.setParam(new String[]{param});
+            paramList = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
+            roleAssignmentSearchVO.setParam(paramList.toArray(new String[0]));
             if (searchParamMap != null) {
                 if (searchParamMap.get("loginName") != null) {
                     String loginName = TypeUtil.objToString(searchParamMap.get("loginName"));
@@ -722,7 +722,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         List<DevopsUserPermissionVO> members;
         if(!devopsEnvironmentDTO.getSkipCheckPermission()) {
             // 根据搜索参数查询数据库中所有的环境权限分配数据
-            List<DevopsEnvUserPermissionDTO> permissions = devopsEnvUserPermissionMapper.listUserEnvPermissionByOption(envId, searchParamMap, param);
+            List<DevopsEnvUserPermissionDTO> permissions = devopsEnvUserPermissionMapper.listUserEnvPermissionByOption(envId, searchParamMap, paramList);
             members = permissions
                     .stream()
                     .map(p -> ConvertUtils.convertObject(p, DevopsUserPermissionVO.class))
@@ -765,9 +765,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         if (!StringUtils.isEmpty(params)) {
             Map maps = gson.fromJson(params, Map.class);
             Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
-            String param = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
+            List<String> paramList = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
 
-            roleAssignmentSearchVO.setParam(new String[]{param});
+            roleAssignmentSearchVO.setParam(paramList.toArray(new String[0]));
             if (searchParamMap.get("loginName") != null) {
                 String loginName = TypeUtil.objToString(searchParamMap.get("loginName"));
                 roleAssignmentSearchVO.setLoginName(loginName);
@@ -827,7 +827,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Saga(code = SagaTopicCodeConstants.DEVOPS_UPDATE_ENV_PERMISSION, description = "更新环境的权限")
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public Boolean updateEnvUserPermission(DevopsEnvPermissionUpdateVO devopsEnvPermissionUpdateVO) {
+    public void updateEnvUserPermission(DevopsEnvPermissionUpdateVO devopsEnvPermissionUpdateVO) {
         DevopsEnvironmentDTO preEnvironmentDTO = devopsEnvironmentMapper.selectByPrimaryKey(devopsEnvPermissionUpdateVO.getEnvId());
 
         DevopsEnvUserPayload userPayload = new DevopsEnvUserPayload();
@@ -839,7 +839,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         // 判断更新的情况
         if (preEnvironmentDTO.getSkipCheckPermission()) {
             if (devopsEnvPermissionUpdateVO.getSkipCheckPermission()) {
-                return Boolean.FALSE;
+                return;
             } else {
                 // 添加权限
                 List<IamUserDTO> addIamUsers = iamService.listUsersByIds(devopsEnvPermissionUpdateVO.getUserIds());
@@ -889,7 +889,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_UPDATE_ENV_PERMISSION),
                 builder -> {
                 });
-        return true;
     }
 
 
@@ -928,8 +927,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         iamUserDTOS.addAll(allOwnerUsersPage.getList());
         List<IamUserDTO> returnUserDTOList = null;
 
-        //没有任何项目成员和项目所有者
-        if (iamUserDTOS.isEmpty()) {
+        //没有项目所有者
+        if (allOwnerUsersPage.getList().isEmpty()) {
             return ConvertUtils.convertPage(allMemberWithOtherUsersPage, UserVO.class);
         } else {
             returnUserDTOList = iamUserDTOS.stream()
@@ -970,6 +969,10 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Transactional(rollbackFor = Exception.class)
     public void deleteDeactivatedEnvironment(Long envId) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = baseQueryById(envId);
+        if (devopsEnvironmentDTO.getActive() != null && devopsEnvironmentDTO.getActive()) {
+            throw new CommonException("error.env.is.active.and.delete.forbidden");
+        }
+
         // 删除环境对应的实例
         appServiceInstanceService.baseListByEnvId(envId).forEach(instanceE ->
                 devopsEnvCommandService.baseListByObject(HelmObjectKind.INSTANCE.toValue(), instanceE.getId()).forEach(t -> devopsEnvCommandService.baseDeleteByEnvCommandId(t)));
@@ -1183,5 +1186,4 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     public List<DevopsEnvironmentDTO> baseListByIds(List<Long> envIds) {
         return devopsEnvironmentMapper.listByIds(envIds);
     }
-
 }
