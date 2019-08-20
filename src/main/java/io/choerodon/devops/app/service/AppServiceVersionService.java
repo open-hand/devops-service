@@ -29,8 +29,8 @@ public interface AppServiceVersionService {
     /**
      * 根据参数和页数在应用下查询应用所有版本
      *
-     * @param appServiceId        应用Id
-     * @param version         查询参数
+     * @param appServiceId 应用Id
+     * @param version      查询参数
      * @return List
      */
     List<AppServiceVersionRespVO> listByAppServiceId(Long appServiceId, String version);
@@ -182,4 +182,13 @@ public interface AppServiceVersionService {
      * @return 应用服务版本
      */
     AppServiceVersionDTO queryServiceVersionByAppServiceId(Long appServiceId, String share);
+
+    /**
+     * 根据应用服务ID和共享规则去查询应用服务的版本列表
+     *
+     * @param appServiceId
+     * @param share
+     * @return
+     */
+    List<AppServiceVersionVO> queryServiceVersionByAppServiceIdAndShare(Long appServiceId, Boolean share);
 }

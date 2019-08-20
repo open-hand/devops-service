@@ -1973,6 +1973,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
 
         if (appServiceVersionDTO != null) {
+            appServiceGroupInfoVO.setVersionId(appServiceVersionDTO.getId());
             appServiceGroupInfoVO.setVersion(appServiceVersionDTO.getVersion());
         }
         return appServiceGroupInfoVO;

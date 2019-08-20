@@ -48,10 +48,10 @@ public class AppServiceVersionController {
     /**
      * 分页查询服务版本
      *
-     * @param projectId   项目id
-     * @param pageRequest 分页参数
-     * @param appServiceId       服务Id，选填的用于进行筛选记录的字段
-     * @param searchParam 查询参数
+     * @param projectId    项目id
+     * @param pageRequest  分页参数
+     * @param appServiceId 服务Id，选填的用于进行筛选记录的字段
+     * @param searchParam  查询参数
      * @return ApplicationVersionRespVO
      */
     @Permission(type = ResourceType.PROJECT,
@@ -79,8 +79,8 @@ public class AppServiceVersionController {
      * 服务下查询服务所有版本
      *
      * @param projectId    项目id
-     * @param appServiceId        服务Id
-     * @param version  查询参数
+     * @param appServiceId 服务Id
+     * @param version      查询参数
      * @return List
      */
     @ApiOperation(value = "服务下查询服务所有版本")
@@ -104,8 +104,8 @@ public class AppServiceVersionController {
     /**
      * 项目下查询服务所有已部署版本
      *
-     * @param projectId 项目id
-     * @param appServiceId     服务Id
+     * @param projectId    项目id
+     * @param appServiceId 服务Id
      * @return List
      */
     @ApiOperation(value = "项目下查询服务所有已部署版本")
@@ -126,9 +126,9 @@ public class AppServiceVersionController {
     /**
      * 查询部署在某个环境的服务版本
      *
-     * @param projectId 项目id
-     * @param appServiceId     服务Id
-     * @param envId     环境Id
+     * @param projectId    项目id
+     * @param appServiceId 服务Id
+     * @param envId        环境Id
      * @return List
      */
     @Permission(type = ResourceType.PROJECT,
@@ -151,7 +151,7 @@ public class AppServiceVersionController {
     /**
      * 根据服务版本ID查询，可升级的服务版本
      *
-     * @param projectId    项目ID
+     * @param projectId           项目ID
      * @param appServiceServiceId 服务版本ID
      * @return ApplicationVersionRespVO
      */
@@ -173,8 +173,8 @@ public class AppServiceVersionController {
     /**
      * 项目下查询服务最新的版本和各环境下部署的版本
      *
-     * @param projectId 项目ID
-     * @param appServiceId     服务ID
+     * @param projectId    项目ID
+     * @param appServiceId 服务ID
      * @return DeployVersionVO
      */
     @Permission(type = ResourceType.PROJECT,
@@ -196,7 +196,7 @@ public class AppServiceVersionController {
     /**
      * 根据版本id获取版本values
      *
-     * @param projectId    项目ID
+     * @param projectId 项目ID
      * @param versionId 服务版本ID
      * @return String
      */
@@ -219,7 +219,7 @@ public class AppServiceVersionController {
     /**
      * 根据版本id查询版本信息
      *
-     * @param projectId     项目ID
+     * @param projectId  项目ID
      * @param versionIds 服务版本ID
      * @return ApplicationVersionRespVO
      */
@@ -242,9 +242,9 @@ public class AppServiceVersionController {
     /**
      * 根据分支名查询版本
      *
-     * @param projectId 项目ID
-     * @param branch    分支
-     * @param appServiceId     服务Id
+     * @param projectId    项目ID
+     * @param branch       分支
+     * @param appServiceId 服务Id
      * @return ApplicationVersionRespVO
      */
     @Permission(type = ResourceType.PROJECT,
@@ -295,8 +295,8 @@ public class AppServiceVersionController {
     /**
      * 根据服务ID查询最新生成版本
      *
-     * @param projectId 项目id
-     * @param appServiceId     服务id
+     * @param projectId    项目id
+     * @param appServiceId 服务id
      * @return 最新版本
      */
     @Permission(type = ResourceType.PROJECT,
@@ -317,9 +317,9 @@ public class AppServiceVersionController {
     /**
      * 根据服务和版本号查询服务版本
      *
-     * @param projectId 项目ID
-     * @param appServiceId     服务Id
-     * @param version   版本
+     * @param projectId    项目ID
+     * @param appServiceId 服务Id
+     * @param version      版本
      * @return ApplicationVersionRespVO
      */
     @Permission(type = ResourceType.PROJECT,
@@ -352,11 +352,26 @@ public class AppServiceVersionController {
             @ApiParam(value = "分页参数")
             @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
             @ApiParam(value = "查询参数")
-            @RequestParam(value = "version",required = false) String version) {
+            @RequestParam(value = "version", required = false) String version) {
         return Optional.ofNullable(
                 appServiceVersionService.pageShareVersionByAppId(appServiceId, pageRequest, version))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.remote.application.versions.get"));
     }
 
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "项目下查询共享服务的所有共享版本")
+    @GetMapping(value = "/share/versions")
+    public ResponseEntity<List<AppServiceVersionVO>> ListAppServiceVersionByShareAndAppSerivceId(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "服务Id", required = true)
+            @RequestParam(value = "app_service_id") Long appServiceId,
+            @ApiParam(value = "共享形式", required = true)
+            @RequestParam(value = "share", required = true) Boolean share) {
+        return Optional.ofNullable(
+                appServiceVersionService.queryServiceVersionByAppServiceIdAndShare(appServiceId, share))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.remote.application.versions.get"));
+    }
 }

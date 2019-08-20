@@ -10,7 +10,16 @@ public class AppServiceGroupInfoVO {
     private String code;
     private Long appId;
     private String type;
+    private Long versionId;
     private String version;
+
+    public Long getVersionId() {
+        return versionId;
+    }
+
+    public void setVersionId(Long versionId) {
+        this.versionId = versionId;
+    }
 
     public String getType() {
         return type;
