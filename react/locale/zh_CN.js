@@ -344,6 +344,7 @@ const appService = {
   'c7ncd.appService.role.member': '项目成员',
   'c7ncd.appService.role.owner': '项目所有者',
   'c7ncd.appService.project.all': '组织下所有项目',
+  'c7ncd.appService.platform.failed': '列表中存在名称或编码重复的应用服务，请修改后再导入！',
 };
 
 // 文档地址前缀

@@ -34,6 +34,7 @@ const AppService = withRouter(observer((props) => {
     importDs,
     importTableDs,
     AppStore,
+    versionOptions,
   } = useAppServiceStore();
 
   function refresh() {
@@ -157,7 +158,17 @@ const AppService = withRouter(observer((props) => {
       drawer: true,
       style: modalStyle2,
       title: <FormattedMessage id={`${intlPrefix}.import`} />,
-      children: <ImportForm dataSet={importDs} tableDs={importTableDs} record={importDs.current} AppStore={AppStore} projectId={id} intlPrefix={intlPrefix} prefixCls={prefixCls} refresh={refresh} />,
+      children: <ImportForm
+        dataSet={importDs}
+        tableDs={importTableDs}
+        record={importDs.current}
+        AppStore={AppStore}
+        projectId={id}
+        intlPrefix={intlPrefix}
+        prefixCls={prefixCls}
+        refresh={refresh}
+        versionOptions={versionOptions}
+      />,
       okText: formatMessage({ id: 'import' }),
       onCancel: () => handleCancel(importDs),
     });
