@@ -27,6 +27,9 @@ public class AppServiceShareRuleVO {
     @ApiModelProperty("共享到指定项目,项目名称")
     private String projectName;
 
+    @ApiModelProperty("共享到指定应用,应用名称")
+    private String appName;
+
     public String getProjectName() {
         return projectName;
     }
@@ -81,5 +84,13 @@ public class AppServiceShareRuleVO {
 
     public void setProjectId(Long projectId) {
         this.projectId = projectId;
+    }
+
+    public String getAppName() {
+        return appName;
+    }
+
+    public void setAppName(String appName) {
+        this.appName = appName;
     }
 }
