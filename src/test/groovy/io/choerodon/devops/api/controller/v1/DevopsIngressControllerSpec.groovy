@@ -24,8 +24,6 @@ import io.choerodon.devops.infra.handler.ClusterConnectionHandler
 import io.choerodon.devops.infra.mapper.*
 import io.choerodon.devops.infra.util.FileUtil
 import io.choerodon.devops.infra.util.GitUtil
-import io.choerodon.websocket.helper.EnvListener
-import io.choerodon.websocket.helper.EnvSession
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
@@ -83,9 +81,9 @@ class DevopsIngressControllerSpec extends Specification {
     @Autowired
     @Qualifier("mockGitUtil")
     private GitUtil gitUtil
-    @Autowired
-    @Qualifier("mockEnvListener")
-    private EnvListener envListener
+//    @Autowired
+//    @Qualifier("mockEnvListener")
+//    private EnvListener envListener
 
     @Autowired
     private IamService iamRepository
@@ -323,8 +321,8 @@ class DevopsIngressControllerSpec extends Specification {
         headers.setContentType(MediaType.valueOf("application/jsonUTF-8"))
         HttpEntity<String> strEntity = new HttpEntity<String>(infra, headers)
 
-        Map<String, EnvSession> envs = new HashMap<>()
-        EnvSession envSession = new EnvSession()
+//        Map<String, EnvSession> envs = new HashMap<>()
+//        EnvSession envSession = new EnvSession()
         envSession.setVersion("0.10.0")
         envSession.setClusterId(1L)
         envs.put("testenv", envSession)

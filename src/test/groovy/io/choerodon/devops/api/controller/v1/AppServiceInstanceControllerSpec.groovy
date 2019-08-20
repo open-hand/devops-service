@@ -30,9 +30,6 @@ import io.choerodon.devops.infra.mapper.*
 import io.choerodon.devops.infra.util.FileUtil
 import io.choerodon.devops.infra.util.GitUtil
 import io.choerodon.devops.infra.util.JsonYamlConversionUtil
-import io.choerodon.websocket.Msg
-import io.choerodon.websocket.helper.CommandSender
-import io.choerodon.websocket.helper.EnvListener
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
@@ -65,15 +62,15 @@ class AppServiceInstanceControllerSpec extends Specification {
     @Autowired
     @Qualifier("mockClusterConnectionHandler")
     private ClusterConnectionHandler envUtil
-    @Autowired
-    @Qualifier("mockEnvListener")
-    private EnvListener envListener
+//    @Autowired
+//    @Qualifier("mockEnvListener")
+//    private EnvListener envListener
     @Autowired
     @Qualifier("mockGitUtil")
     private GitUtil gitUtil
-    @Autowired
-    @Qualifier("mockCommandSender")
-    private CommandSender commandSender
+//    @Autowired
+//    @Qualifier("mockCommandSender")
+//    private CommandSender commandSender
 
     @Autowired
     private TestRestTemplate restTemplate
@@ -924,7 +921,7 @@ class AppServiceInstanceControllerSpec extends Specification {
 
     def "Restart"() {
         given: 'mock commandSender'
-        commandSender.sendMsg(_ as Msg) >> null
+//        commandSender.sendMsg(_ as Msg) >> null
 
         when: '实例重新部署'
         restTemplate.put("/v1/projects/1/app_instances/1/restart", null)

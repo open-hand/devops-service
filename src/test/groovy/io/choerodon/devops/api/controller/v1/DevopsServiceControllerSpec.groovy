@@ -20,7 +20,7 @@ import io.choerodon.devops.infra.handler.ClusterConnectionHandler
 import io.choerodon.devops.infra.mapper.*
 import io.choerodon.devops.infra.util.FileUtil
 import io.choerodon.devops.infra.util.GitUtil
-import io.choerodon.websocket.helper.EnvListener
+//import io.choerodon.websocket.helper.EnvListener
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
@@ -82,9 +82,9 @@ class DevopsServiceControllerSpec extends Specification {
     @Autowired
     @Qualifier("mockGitUtil")
     private GitUtil gitUtil
-    @Autowired
-    @Qualifier("mockEnvListener")
-    private EnvListener envListener
+//    @Autowired
+//    @Qualifier("mockEnvListener")
+//    private EnvListener envListener
 
     @Shared
     DevopsEnvCommandDTO devopsEnvCommandDO = new DevopsEnvCommandDTO()

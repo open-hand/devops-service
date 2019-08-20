@@ -17,7 +17,6 @@ import io.choerodon.devops.infra.feign.BaseServiceClient
 import io.choerodon.devops.infra.feign.GitlabServiceClient
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler
 import io.choerodon.devops.infra.mapper.*
-import io.choerodon.websocket.helper.CommandSender
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
@@ -84,7 +83,7 @@ class GitlabWebHookControllerSpec extends Specification {
     
     private BaseServiceClient iamServiceClient = Mockito.mock(BaseServiceClient)
     private GitlabServiceClient mockGitlabServiceClient = Mockito.mock(GitlabServiceClient)
-    private CommandSender mockCommandSender = Mockito.mock(CommandSender)
+//    private CommandSender mockCommandSender = Mockito.mock(CommandSender)
 
     @Shared
     private AppServiceDTO applicationDO = new AppServiceDTO()
