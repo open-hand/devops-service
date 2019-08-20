@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.util;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.github.pagehelper.PageInfo;
@@ -35,11 +36,12 @@ public class PageInfoUtil {
             } else {
                 size = pageRequest.getSize();
             }
+            result.setList(queryAll ? all : all.subList(fromIndex, fromIndex + result.getSize()));
         } else {
             size = 0;
+            result.setList(new ArrayList<>());
         }
         result.setSize(queryAll ? all.size() : size);
-        result.setList(queryAll ? all : all.subList(fromIndex, fromIndex + result.getSize()));
         return result;
     }
 }
