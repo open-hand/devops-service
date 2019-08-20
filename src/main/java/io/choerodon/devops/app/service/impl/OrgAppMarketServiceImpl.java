@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import io.choerodon.devops.api.validator.HarborMarketVOValidator;
 import org.eclipse.jgit.api.Git;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -171,6 +172,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
 
     @Override
     public String createHarborRepository(HarborMarketVO harborMarketVO) {
+        HarborMarketVOValidator.checkEmailAndPassword(harborMarketVO);
         return harborService.createHarborForAppMarket(harborMarketVO);
     }
 
