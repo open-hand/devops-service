@@ -187,7 +187,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         FileUtil.unZipFiles(file, unZipPath);
         File zipDirectory = new File(unZipPath);
 
-        DevopsProjectDTO projectDTO = devopsProjectService.baseQueryByProjectId(appMarketDownloadVO.getAppId());
+        DevopsProjectDTO projectDTO = devopsProjectService.queryByAppId(appMarketDownloadVO.getAppId());
 
         ApplicationDTO applicationDTO = baseServiceClientOperator.queryAppById(appMarketDownloadVO.getAppId());
         String groupPath = String.format(SITE_APP_GROUP_NAME_FORMAT, applicationDTO.getCode());

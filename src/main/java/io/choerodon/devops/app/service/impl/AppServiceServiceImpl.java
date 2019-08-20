@@ -16,6 +16,26 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
+import io.kubernetes.client.JSON;
+import org.apache.commons.io.filefilter.IOFileFilter;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.ListBranchCommand;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.Ref;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import retrofit2.Call;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -55,25 +75,6 @@ import io.choerodon.devops.infra.mapper.AppServiceMapper;
 import io.choerodon.devops.infra.mapper.AppServiceUserRelMapper;
 import io.choerodon.devops.infra.mapper.UserAttrMapper;
 import io.choerodon.devops.infra.util.*;
-import io.kubernetes.client.JSON;
-import org.apache.commons.io.filefilter.IOFileFilter;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.ListBranchCommand;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.Ref;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
-import retrofit2.Call;
-import retrofit2.Response;
-import retrofit2.Retrofit;
 
 
 /**
@@ -148,8 +149,6 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Autowired
     private UserAttrService userAttrService;
     @Autowired
-    private ProjectService projectService;
-    @Autowired
     private GitlabGroupMemberService gitlabGroupMemberService;
     @Autowired
     private DevopsProjectService devopsProjectService;
@@ -163,16 +162,9 @@ public class AppServiceServiceImpl implements AppServiceService {
     private DevopsConfigService devopsConfigService;
     @Autowired
     private DevopsBranchService devopsBranchService;
-    @Autowired
-    private GitlabGroupService gitlabGroupService;
-    @Autowired
-    private AppServiceVersionValueService appServiceVersionValueService;
-    @Autowired
-    private AppServiceVersionReadmeService appServiceVersionReadmeService;
+
     @Autowired
     private AppServiceVersionService appServiceVersionService;
-    @Autowired
-    private ChartUtil chartUtil;
 
     @Autowired
     DevopsSagaHandler devopsSagaHandler;
@@ -192,7 +184,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         ApplicationValidator.checkApplicationService(appServiceReqVO.getCode());
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         // 查询创建应用服务所在的gitlab应用组
-        DevopsProjectDTO devopsProjectDTO = projectService.queryById(projectId);
+        DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
         MemberDTO memberDTO = gitlabGroupMemberService.queryByUserId(
                 TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()),
                 TypeUtil.objToInteger(userAttrVO.getGitlabUserId()));
@@ -709,7 +701,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         appServiceDTO.setChartConfigId(appServiceImportVO.getChartConfigId());
 
         // 查询创建应用所在的gitlab应用组
-        DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(appServiceDTO.getAppId());
+        DevopsProjectDTO devopsProjectDTO = devopsProjectService.queryByAppId(appServiceDTO.getAppId());
         MemberDTO memberDTO = gitlabGroupMemberService.queryByUserId(
                 TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()),
                 TypeUtil.objToInteger(userAttrVO.getGitlabUserId()));

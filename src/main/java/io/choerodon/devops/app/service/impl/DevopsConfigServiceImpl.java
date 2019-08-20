@@ -68,6 +68,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
     @Autowired
     private AppServiceService appServiceService;
 
+    @Override
     public void operate(Long resourceId, String resourceType, List<DevopsConfigVO> devopsConfigVOS) {
 
         devopsConfigVOS.forEach(devopsConfigVO -> {

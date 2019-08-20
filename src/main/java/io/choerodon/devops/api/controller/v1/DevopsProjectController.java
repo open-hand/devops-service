@@ -3,7 +3,8 @@ package io.choerodon.devops.api.controller.v1;
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.app.service.ProjectService;
+import io.choerodon.devops.app.service.DevopsProjectService;
+
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +25,7 @@ public class DevopsProjectController {
 
 
     @Autowired
-    private ProjectService projectService;
+    private DevopsProjectService devopsProjectService;
 
     /**
      * 查询项目Gitlab Group是否创建成功
@@ -39,7 +40,7 @@ public class DevopsProjectController {
     public ResponseEntity<Boolean> queryProjectGroupReady(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId) {
-        return new ResponseEntity<>(projectService.queryProjectGitlabGroupReady(projectId), HttpStatus.OK);
+        return new ResponseEntity<>(devopsProjectService.queryProjectGitlabGroupReady(projectId), HttpStatus.OK);
 
     }
 }
