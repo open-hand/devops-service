@@ -39,5 +39,9 @@ export default function useStore() {
         Choerodon.handleResponseError(e);
       }
     },
+
+    batchCheck(projectId, listCode, listName) {
+      return axios.post(`/devops/v1/projects/${projectId}/app_service/batch_check`, JSON.stringify({ listCode, listName }));
+    },
   }));
 }
