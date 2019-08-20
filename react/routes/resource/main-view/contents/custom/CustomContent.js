@@ -8,9 +8,10 @@ import TimePopover from '../../../../../components/timePopover';
 import { useResourceStore } from '../../../stores';
 import { useCustomStore } from './stores';
 import Modals from './modals';
+import CustomForm from './modals/form-view';
+import { useMainStore } from '../../stores';
 
 import './index.less';
-import CustomForm from './modals/form-view';
 
 const { Column } = Table;
 
@@ -23,8 +24,8 @@ const CustomContent = observer(() => {
   const {
     customDs,
     intl: { formatMessage },
-    customStore,
   } = useCustomStore();
+  const { customStore } = useMainStore();
 
   const [showModal, setShowModal] = useState(false);
 
@@ -69,7 +70,7 @@ const CustomContent = observer(() => {
 
   function closeModal(isLoad) {
     setShowModal(false);
-    isLoad && customDs.query();
+    isLoad && refresh();
   }
 
   function handleDelete() {

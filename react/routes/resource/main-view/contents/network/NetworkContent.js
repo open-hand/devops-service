@@ -17,6 +17,7 @@ import Modals from './modals';
 import EditNetwork from './modals/network-edit';
 
 import './index.less';
+import { useMainStore } from '../../stores';
 
 const { Column } = Table;
 
@@ -27,8 +28,11 @@ const NetworkContent = observer(() => {
     resourceStore: { getSelectedMenu: { parentId } },
   } = useResourceStore();
   const {
-    networkDs,
     networkStore,
+  } = useMainStore();
+  const {
+    networkDs,
+    // networkStore,
     intl: { formatMessage },
   } = useNetworkStore();
 

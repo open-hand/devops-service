@@ -1,6 +1,6 @@
 import { useLocalStore } from 'mobx-react-lite';
 import { axios } from '@choerodon/master';
-import { handlePromptError } from '../../../../../../utils';
+import { handlePromptError } from '../../../../utils';
 
 export default function useStore() {
   return useLocalStore(() => ({
@@ -13,7 +13,7 @@ export default function useStore() {
     },
 
     async loadSingleData(projectId, id) {
-      const res = await axios.get(`/devops/v1/projects/${projectId}/config_maps/${id}`);
+      const res = await axios.get(`/devops/v1/projects/${projectId}/secret/${id}?to_decode=true`);
       if (handlePromptError(res)) {
         this.setSingleData(res);
       }
@@ -21,11 +21,11 @@ export default function useStore() {
     },
 
     postKV(projectId, data) {
-      return axios.post(`/devops/v1/projects/${projectId}/config_maps`, JSON.stringify(data));
+      return axios.put(`/devops/v1/projects/${projectId}/secret`, JSON.stringify(data));
     },
 
     checkName(projectId, envId, name) {
-      return axios(`/devops/v1/projects/${projectId}/config_maps/check_name?envId=${envId}&name=${name}`);
+      return axios(`/devops/v1/projects/${projectId}/secret/${envId}/check_name?secret_name=${name}`);
     },
   }));
 }
