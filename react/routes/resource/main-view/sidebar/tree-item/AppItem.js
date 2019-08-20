@@ -2,7 +2,7 @@ import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { observer } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
-import { Action } from '@choerodon/master';
+import { Action, Permission } from '@choerodon/master';
 import { Icon } from 'choerodon-ui/pro';
 import { handlePromptError } from '../../../../../utils';
 import { useResourceStore } from '../../../stores';
@@ -42,7 +42,9 @@ function AppItem({ name, record, intl: { formatMessage }, intlPrefix }) {
   return <Fragment>
     <Icon type="widgets" />
     {name}
-    {getSuffix()}
+    <Permission service={['devops-service.devops-env-app-service.delete']}>
+      {getSuffix()}
+    </Permission>
   </Fragment>;
 }
 

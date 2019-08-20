@@ -17,7 +17,7 @@ const AppContent = lazy(() => import('./contents/application'));
 const IstContent = lazy(() => import('./contents/instance'));
 
 // 资源视图
-const ResourceEnvContent = lazy(() => import('./contents/resource-environment'));
+const ResourceEnvContent = lazy(() => import('./contents/resource-env'));
 const NetworkContent = lazy(() => import('./contents/network'));
 const IngressContent = lazy(() => import('./contents/ingress'));
 const CertContent = lazy(() => import('./contents/certificate'));
