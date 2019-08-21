@@ -94,6 +94,18 @@ public interface DevopsClusterService {
      */
     List<ProjectReqVO> listClusterProjects(Long projectId, Long clusterId);
 
+
+    /**
+     * 分页查询集群下已有权限的项目列表
+     *
+     * @param projectId   项目id
+     * @param clusterId   集群id
+     * @param pageRequest 分页参数
+     * @param params      查询参数
+     * @return List
+     */
+    PageInfo<ProjectReqVO> pageRelatedProjects(Long projectId, Long clusterId, PageRequest pageRequest, String params);
+
     /**
      * 删除集群
      *

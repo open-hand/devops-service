@@ -142,27 +142,53 @@ public class DevopsClusterController {
     }
 
 
+//    /**
+//     * 查询集群下已有权限的项目列表
+//     *
+//     * @param projectId 项目id
+//     * @return List
+//     */
+//    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_ADMINISTRATOR})
+//    @ApiOperation(value = "查询集群下已有权限的项目列表")
+//    @GetMapping("/list_cluster_projects/{cluster_id}")
+//    public ResponseEntity<List<ProjectReqVO>> listClusterProjects(
+//            @ApiParam(value = "项目ID", required = true)
+//            @PathVariable(value = "project_id") Long projectId,
+//            @ApiParam(value = "集群Id")
+//            @PathVariable(value = "cluster_id") Long clusterId) {
+//        return Optional.ofNullable(devopsClusterService.listClusterProjects(projectId, clusterId))
+//                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+//                .orElseThrow(() -> new CommonException("error.project.query"));
+//    }
+
     /**
-     * 查询集群下已有权限的项目列表
+     * 分页查询集群下已有权限的项目列表
      *
-     * @param projectId 项目id
-     * @return List
+     * @param projectId   项目id
+     * @param clusterId   集群id
+     * @param pageRequest 分页参数
+     * @param params      查询参数
+     * @return page
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_ADMINISTRATOR})
-    @ApiOperation(value = "查询集群下已有权限的项目列表")
-    @GetMapping("/list_cluster_projects/{cluster_id}")
-    public ResponseEntity<List<ProjectReqVO>> listClusterProjects(
+    @ApiOperation(value = "分页查询集群下已有权限的项目列表")
+    @PostMapping("/{cluster_id}/permission/page_related")
+    public ResponseEntity<PageInfo<ProjectReqVO>> pageRelatedProjects(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群Id")
-            @PathVariable(value = "cluster_id") Long clusterId) {
-        return Optional.ofNullable(devopsClusterService.listClusterProjects(projectId, clusterId))
+            @PathVariable(value = "cluster_id") Long clusterId,
+            @ApiParam(value = "分页参数")
+            @ApiIgnore PageRequest pageRequest,
+            @ApiParam(value = "模糊搜索参数")
+            @RequestBody(required = false) String params) {
+        return Optional.ofNullable(devopsClusterService.pageRelatedProjects(projectId, clusterId, pageRequest, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.project.query"));
     }
 
     /**
-     * 列出组织下所有与该集群未分配权限的项目
+     * 查询组织下所有与该集群未分配权限的项目
      *
      * @param projectId 项目ID
      * @param clusterId 集群ID
@@ -170,7 +196,7 @@ public class DevopsClusterController {
      * @return 与该集群未分配权限的项目
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "列出组织下所有与该集群未分配权限的项目")
+    @ApiOperation(value = "查询组织下所有与该集群未分配权限的项目")
     @PostMapping(value = "/{cluster_id}/permission/list_non_related")
     public ResponseEntity<List<ProjectReqVO>> listAllNonRelatedProjects(
             @ApiParam(value = "项目id", required = true)
@@ -179,9 +205,7 @@ public class DevopsClusterController {
             @PathVariable(value = "cluster_id") Long clusterId,
             @ApiParam(value = "查询参数")
             @RequestBody String params) {
-        return Optional.ofNullable(devopsClusterService.listNonRelatedProjects(projectId, clusterId, params))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.get.env.non.related.users"));
+        return new ResponseEntity<>(devopsClusterService.listNonRelatedProjects(projectId, clusterId, params), HttpStatus.OK);
     }
 
     /**

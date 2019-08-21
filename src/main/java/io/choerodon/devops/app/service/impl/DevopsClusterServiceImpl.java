@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 
 @Service
@@ -56,6 +57,8 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     private DevopsClusterProPermissionService devopsClusterProPermissionService;
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
+    @Autowired
+    private DevopsProjectService devopsProjectService;
 
 
     @Override
@@ -251,6 +254,56 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
                     ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsClusterProPermissionDTO.getProjectId());
                     return new ProjectReqVO(devopsClusterProPermissionDTO.getProjectId(), projectDTO.getName(), projectDTO.getCode(), null);
                 }).collect(Collectors.toList());
+    }
+
+    @Override
+    public PageInfo<ProjectReqVO> pageRelatedProjects(Long projectId, Long clusterId, PageRequest pageRequest, String params) {
+        DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(clusterId);
+        if (devopsClusterDTO == null) {
+            throw new CommonException("error.cluster.not.exist", clusterId);
+        }
+
+        // 如果跳过权限检查
+        if (Boolean.TRUE.equals(devopsClusterDTO.getSkipCheckProjectPermission())) {
+            return devopsProjectService.pageProjects(projectId, pageRequest, params);
+        } else {
+            // 如果没有跳过权限检查
+            Map<String, Object> map = TypeUtil.castMapParams(params);
+            List<String> paramList = TypeUtil.cast(map.get(TypeUtil.PARAMS));
+            if (CollectionUtils.isEmpty(paramList)) {
+                // 如果不搜索
+                PageInfo<DevopsClusterProPermissionDTO> relationPage = PageHelper.startPage(
+                        pageRequest.getPage(), pageRequest.getSize())
+                        .doSelectPageInfo(() -> devopsClusterProPermissionService.baseListByClusterId(clusterId));
+                return ConvertUtils.convertPage(relationPage, permission -> {
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(permission.getProjectId());
+                    return new ProjectReqVO(permission.getProjectId(), projectDTO.getName(), projectDTO.getCode());
+                });
+            } else {
+                // 如果要搜索，需要手动在程序内分页
+                ProjectDTO iamProjectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+
+                PageInfo<ProjectDTO> filteredProjects = baseServiceClientOperator.pageProjectByOrgId(
+                        iamProjectDTO.getOrganizationId(),
+                        pageRequest.getPage(), pageRequest.getSize(), null,
+                        paramList.toArray(new String[0]));
+
+                // 数据库中的有权限的项目
+                List<Long> permissions = devopsClusterProPermissionService.baseListByClusterId(clusterId)
+                        .stream()
+                        .map(DevopsClusterProPermissionDTO::getProjectId)
+                        .collect(Collectors.toList());
+
+                // 过滤出在数据库中有权限的项目信息
+                List<ProjectReqVO> allMatched = filteredProjects.getList()
+                        .stream()
+                        .filter(p -> permissions.contains(p.getId()))
+                        .map(p -> ConvertUtils.convertObject(p, ProjectReqVO.class))
+                        .collect(Collectors.toList());
+
+                return PageInfoUtil.createPageFromList(allMatched, pageRequest);
+            }
+        }
     }
 
     public boolean isConnect(List<Long> connectedEnvList, List<Long> updatedEnvList, Long id) {

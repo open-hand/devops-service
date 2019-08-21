@@ -701,7 +701,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             Map maps = gson.fromJson(params, Map.class);
             searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
             paramList = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
-            roleAssignmentSearchVO.setParam(paramList.toArray(new String[0]));
+            roleAssignmentSearchVO.setParam(paramList == null ? null : paramList.toArray(new String[0]));
             if (searchParamMap != null) {
                 if (searchParamMap.get("loginName") != null) {
                     String loginName = TypeUtil.objToString(searchParamMap.get("loginName"));
@@ -720,7 +720,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 new PageRequest(0, 0), roleAssignmentSearchVO, ownerId, projectId, false);
 
         List<DevopsUserPermissionVO> members;
-        if(!devopsEnvironmentDTO.getSkipCheckPermission()) {
+        if (!devopsEnvironmentDTO.getSkipCheckPermission()) {
             // 根据搜索参数查询数据库中所有的环境权限分配数据
             List<DevopsEnvUserPermissionDTO> permissions = devopsEnvUserPermissionMapper.listUserEnvPermissionByOption(envId, searchParamMap, paramList);
             members = permissions
@@ -767,7 +767,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
             List<String> paramList = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
 
-            roleAssignmentSearchVO.setParam(paramList.toArray(new String[0]));
+            roleAssignmentSearchVO.setParam(paramList == null ? null : paramList.toArray(new String[0]));
             if (searchParamMap.get("loginName") != null) {
                 String loginName = TypeUtil.objToString(searchParamMap.get("loginName"));
                 roleAssignmentSearchVO.setLoginName(loginName);
@@ -898,7 +898,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             Map maps = gson.fromJson(searchParams, Map.class);
             Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
             List<String> param = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
-            roleAssignmentSearchVO.setParam(param.toArray(new String[0]));
+            roleAssignmentSearchVO.setParam(param == null ? null : param.toArray(new String[0]));
             if (searchParamMap.get("loginName") != null) {
                 String loginName = TypeUtil.objToString(searchParamMap.get("loginName"));
                 String subLogin = loginName.substring(1, loginName.length() - 1);
@@ -1003,7 +1003,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(devopsEnvironmentDTO.getClusterId());
         if (devopsClusterDTO.getNamespaces() != null) {
             List<String> namespaces = JSONArray.parseArray(devopsClusterDTO.getNamespaces(), String.class);
-            if(namespaces.contains(devopsEnvironmentDTO.getCode())) {
+            if (namespaces.contains(devopsEnvironmentDTO.getCode())) {
                 namespaces.remove(devopsEnvironmentDTO.getCode());
             }
             devopsClusterDTO.setNamespaces((String) JSONArray.toJSON(namespaces));
