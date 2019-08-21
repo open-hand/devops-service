@@ -1,4 +1,4 @@
-import React, { Fragment, useRef, useMemo, lazy, Suspense, useEffect } from 'react';
+import React, { Fragment, useRef, useMemo, lazy, Suspense } from 'react';
 import { observer } from 'mobx-react-lite';
 import isEmpty from 'lodash/isEmpty';
 import classnames from 'classnames';
@@ -61,6 +61,7 @@ const MainView = observer(() => {
     },
   } = useResourceStore();
   const { mainStore } = useMainStore();
+  // useRef 总是返回不变的对象，不会因为 current 指向改变而改变
   const rootRef = useRef(null);
 
   const { menuType } = getSelectedMenu;
