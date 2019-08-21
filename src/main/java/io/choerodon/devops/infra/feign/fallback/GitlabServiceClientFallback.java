@@ -386,4 +386,9 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     public ResponseEntity<Boolean> checkEmail(String email) {
         return null;
     }
+
+    @Override
+    public ResponseEntity<String> getAdminToken() {
+        return null;
+    }
 }
