@@ -1,7 +1,6 @@
 /* eslint-disable no-restricted-syntax, no-underscore-dangle */
 import { observable, action, computed } from 'mobx';
 import { store, axios } from '@choerodon/master';
-import { storage } from '../../../utils';
 
 const REFRESH_INTERVAL = 1000 * 10;
 const REFRESH_AGE = 7 * 24 * 60 * 60 * 1000;
@@ -29,7 +28,7 @@ class DevopsStore {
   @action setAutoFlag(data) {
     const autoPage = Object.assign(this.isAuto, data);
     this.isAuto = autoPage;
-    storage.setAge(REFRESH_AGE).set('autorefresh', autoPage);
+    // storage.setAge(REFRESH_AGE).set('autorefresh', autoPage);
   }
 
   @action setTimer(fn) {
@@ -56,7 +55,8 @@ class DevopsStore {
    */
   initAutoRefresh(name, callback) {
     if (_isEmpty(this.isAuto)) {
-      const saveAutoFlags = storage.get('autorefresh');
+      // const saveAutoFlags = storage.get('autorefresh');
+      const saveAutoFlags = false;
       let flags = null;
       if (!_isEmpty(saveAutoFlags)) {
         flags = saveAutoFlags;

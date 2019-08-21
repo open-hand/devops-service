@@ -1,5 +1,3 @@
-// pipeline
-
 .c7ncd-pipeline-execute {
   display: inline-block;
   margin-left: 8px;
@@ -9,6 +7,11 @@
 .c7ncd-pipeline-search {
   width: 360px;
   margin: 0 20px 20px 0;
+  &-one {
+    width: 360px;
+    margin: 0 20px 20px 0;
+    vertical-align: top;
+  }
 
   .c7n-select-selection--multiple .c7n-select-selection__choice {
     background: none;
@@ -22,5 +25,18 @@
     &:nth-last-child(2):after {
       content: none;
     }
+  }
+}
+
+.c7ncd-pipeline-status-a {
+  margin-left: 8px;
+  color: black;
+  &:link {
+    text-decoration: none;
+    color: black;
+  }
+  &:hover {
+    text-decoration: underline;
+    color: #3f51b5;
   }
 }

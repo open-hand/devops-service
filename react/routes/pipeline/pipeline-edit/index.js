@@ -5,15 +5,15 @@ import { injectIntl, FormattedMessage } from 'react-intl';
 import { Button, Icon, Form, Input, Select, Radio } from 'choerodon-ui';
 import { Content, Header, Page } from '@choerodon/master';
 import _ from 'lodash';
+import Sidebar from 'choerodon-ui/lib/modal/Sidebar';
 import StageCard from '../components/stageCard';
 import StageCreateModal from '../components/stageCreateModal';
 import { STAGE_FLOW_AUTO, STAGE_FLOW_MANUAL, TRIGGER_TYPE_AUTO, TRIGGER_TYPE_MANUAL } from '../components/Constants';
 import InterceptMask from '../../../components/interceptMask';
 import EmptyPage from '../components/emptyPage';
-
 import './index.less';
 import '../../main.scss';
-import Sidebar from 'choerodon-ui/lib/modal/Sidebar';
+
 
 const { Item: FormItem } = Form;
 const { Option } = Select;
@@ -49,13 +49,7 @@ export default class PipelineEdit extends Component {
       AppState: {
         currentMenuType: { id },
       },
-      match: {
-        params,
-      },
     } = this.props;
-
-    PipelineCreateStore.loadDetail(id, params.id);
-    PipelineCreateStore.loadUser(id);
   }
 
   componentWillUnmount() {
@@ -70,10 +64,8 @@ export default class PipelineEdit extends Component {
     PipelineCreateStore.setPipeline([]);
   }
 
-  onSubmit = (e) => {
-    e.preventDefault();
+  onSubmit = () => {
     this.setState({ promptDisplay: false });
-
     const {
       PipelineCreateStore,
       form: { validateFieldsAndScroll },
@@ -82,15 +74,16 @@ export default class PipelineEdit extends Component {
           id: projectId,
         },
       },
+      refreshTable,
     } = this.props;
-    const { objectVersionNumber, id } = PipelineCreateStore.getPipeline;
+    const { objectVersionNumber, id, name, triggerType } = PipelineCreateStore.getPipeline;
 
-    validateFieldsAndScroll(async (err, { name, triggerType, users }) => {
+    validateFieldsAndScroll(async (err, { users }) => {
       if (!err) {
-        const { getStageList, getTaskList } = PipelineCreateStore;
-        const pipelineStageDTOS = _.map(getStageList, item => ({
+        const { getStageList, getTaskList, getPipeline } = PipelineCreateStore;
+        const pipelineStageVOs = _.map(getStageList, (item) => ({
           ...item,
-          pipelineTaskDTOS: getTaskList[item.tempId] || null,
+          pipelineTaskVOs: getTaskList[item.tempId] || null,
         }));
         this.setState({ submitLoading: true });
         const result = await PipelineCreateStore
@@ -99,8 +92,8 @@ export default class PipelineEdit extends Component {
             objectVersionNumber,
             name,
             triggerType,
-            pipelineUserRelDTOS: triggerType === STAGE_FLOW_MANUAL ? _.map(users, item => Number(item)) : null,
-            pipelineStageDTOS,
+            pipelineUserRels: triggerType === STAGE_FLOW_MANUAL ? _.map(users, (item) => Number(item)) : null,
+            pipelineStageVOs,
           })
           .catch((e) => {
             this.setState({ submitLoading: false });
@@ -110,6 +103,7 @@ export default class PipelineEdit extends Component {
         if (result && result.failed) {
           Choerodon.prompt(result.message);
         } else {
+          refreshTable();
           this.goBack();
         }
       }
@@ -143,6 +137,14 @@ export default class PipelineEdit extends Component {
 
   goBack = () => {
     const { PipelineCreateStore } = this.props;
+    PipelineCreateStore.setUser([]);
+    PipelineCreateStore.clearStageList();
+    PipelineCreateStore.setStageIndex(0);
+    PipelineCreateStore.clearTaskList();
+    PipelineCreateStore.clearTaskSettings();
+    PipelineCreateStore.clearTaskIndex();
+    PipelineCreateStore.setTrigger(STAGE_FLOW_AUTO);
+    PipelineCreateStore.setPipeline([]);
     PipelineCreateStore.setEditVisible(false);
   };
 
@@ -170,7 +172,6 @@ export default class PipelineEdit extends Component {
   }
 
   render() {
-    console.log(1);
     const {
       location: {
         pathname,
@@ -197,62 +198,34 @@ export default class PipelineEdit extends Component {
     
     const user = _.map(getUser, ({ id, realName, loginName }) => (
       <Option key={id} value={String(id)}>{realName || loginName}</Option>));
-    const initUser = _.map(getPipeline.pipelineUserRelDTOS, item => String(item));
-    // { /* <Page
-    //   className="c7n-region c7n-pipeline-creat"
-    //   service={[
-    //     'devops-service.pipeline.update',
-    //     'devops-service.pipeline.getAllUsers',
-    //     'devops-service.application.pageByOptions',
-    //     'devops-service.devops-environment.listByProjectIdAndActive',
-    //     'devops-service.application-instance.getByAppIdAndEnvId',
-    //     'devops-service.pipeline-value.queryByAppIdAndEnvId',
-    //     'devops-service.pipeline-value.queryById',
-    //     'devops-service.pipeline.queryById',
-    //   ]}
-    // > */ }
+    const initUser = _.map(getPipeline.pipelineUserRels, (item) => String(item));
+
     return (
       <Sidebar
         className="c7n-region c7n-pipeline-creat"
-        title={<FormattedMessage id="branch.create" />}
+        title={formatMessage({ id: 'pipeline.header.edit' }) + getPipeline.name}
         visible={visible}
         onOk={this.onSubmit}
         onCancel={this.goBack}
         okText={<FormattedMessage id="save" />}
         cancelText={<FormattedMessage id="cancel" />}
         confirmLoading={submitLoading}
+        service={[
+          'devops-service.pipeline.update',
+          'devops-service.pipeline.getAllUsers',
+          'devops-service.application.pageByOptions',
+          'devops-service.devops-environment.listByProjectIdAndActive',
+          'devops-service.application-instance.getByAppIdAndEnvId',
+          'devops-service.pipeline-value.queryByAppIdAndEnvId',
+          'devops-service.pipeline-value.queryById',
+          'devops-service.pipeline.queryById',
+        ]}
       >
         { _.isNull(getPipeline) ? <EmptyPage /> : <Fragment>
-          <Prompt when={promptDisplay} message={formatMessage({ id: 'pipeline.before.leave' })} />
-          <Header
-            title={<FormattedMessage id="pipeline.header.edit" />}
-            backPath={`${pathname.replace(/\/edit\/\d*/, '')}${search}`}
-          />
-          <Content>
+          <Content className="c7n-pipeline-content">
             <Form
               layout="vertical"
-              onSubmit={this.onSubmit}
             >
-              <FormItem
-                className="c7n-select_512"
-                {...formItemLayout}
-              >
-                {getFieldDecorator('name', {
-                  rules: [{
-                    required: true,
-                    message: formatMessage({ id: 'required' }),
-                  }],
-                  initialValue: getPipeline.name,
-                })(
-                  <Input
-                    disabled
-                    className="c7n-select_512"
-                    label={<FormattedMessage id="name" />}
-                    type="text"
-                    maxLength={30}
-                  />,
-                )}
-              </FormItem>
               <FormItem
                 className="c7n-select_512 c7ncd-formitem-bottom"
                 {...formItemLayout}
@@ -260,14 +233,17 @@ export default class PipelineEdit extends Component {
                 {getFieldDecorator('triggerType', {
                   initialValue: getPipeline.triggerType,
                 })(
-                  <RadioGroup label={formatMessage({ id: 'pipeline.trigger' })} onChange={this.changeTriggerType}>
-                    <Radio value={STAGE_FLOW_AUTO}>
-                      <FormattedMessage id="pipeline.trigger.auto" />
-                    </Radio>
-                    <Radio value={STAGE_FLOW_MANUAL}>
-                      <FormattedMessage id="pipeline.trigger.manual" />
-                    </Radio>
-                  </RadioGroup>,
+                  <div>
+                    <span className="radio-label"><FormattedMessage id="pipeline.trigger" />:</span>
+                    <RadioGroup value={PipelineCreateStore.trigger} onChange={this.changeTriggerType}>
+                      <Radio value={STAGE_FLOW_AUTO} disabled={getPipeline.triggerType}>
+                        <FormattedMessage id="pipeline.trigger.auto" />
+                      </Radio>
+                      <Radio value={STAGE_FLOW_MANUAL} disabled={getPipeline.triggerType}>
+                        <FormattedMessage id="pipeline.trigger.manual" />
+                      </Radio>
+                    </RadioGroup>
+                  </div>
                 )}
               </FormItem>
               {showUserSelector && <FormItem
@@ -288,11 +264,10 @@ export default class PipelineEdit extends Component {
                     optionFilterProp="children"
                     label={formatMessage({ id: 'pipeline.trigger.member' })}
                     loading={getLoading.user}
-                    getPopupContainer={triggerNode => triggerNode.parentNode}
+                    getPopupContainer={(triggerNode) => triggerNode.parentNode}
                     filterOption={(input, option) => option.props.children
                       .toLowerCase()
-                      .indexOf(input.toLowerCase()) >= 0
-                  }
+                      .indexOf(input.toLowerCase()) >= 0}
                   >
                     {user}
                   </Select>,
@@ -311,7 +286,7 @@ export default class PipelineEdit extends Component {
                 <Icon type="error" className="c7ncd-pipeline-error-icon" />
                 <span className="c7ncd-pipeline-error-msg">{formatMessage({ id: 'pipeline.create.error-2' })}</span>
               </div>}
-              <FormItem
+              {/* <FormItem
                 {...formItemLayout}
               >
                 <Button
@@ -331,7 +306,7 @@ export default class PipelineEdit extends Component {
                 >
                   <FormattedMessage id="cancel" />
                 </Button>
-              </FormItem>
+              </FormItem> */}
             </Form>
             <InterceptMask visible={submitLoading || getDetailLoading} />
           </Content>

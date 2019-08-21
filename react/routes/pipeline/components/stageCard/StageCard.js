@@ -7,7 +7,7 @@ import PipelineCreateStore from '../../stores/PipelineCreateStore';
 import TaskCreate from '../taskCreate';
 import StageTitle from '../stageTitle';
 import StageCreateModal from '../stageCreateModal';
-import Tips from "../../../../components/Tips/Tips";
+import Tips from '../../../../components/Tips/Tips';
 import {
   TASK_SERIAL,
   TASK_PARALLEL,
@@ -71,7 +71,7 @@ export default class StageCard extends Component {
 
   openTaskRemove(id, name, isHead) {
     this.setState({ showTaskDelete: true, taskId: id, taskName: name, isRemoveHead: isHead });
-  };
+  }
 
   closeTaskRemove = () => {
     this.setState({ showTaskDelete: false, taskId: null, taskName: '', isRemoveHead: false });
@@ -116,7 +116,6 @@ export default class StageCard extends Component {
       stageId,
       intl: { formatMessage },
     } = this.props;
-
     return _.map(PipelineCreateStore.getTaskList[stageId], ({ name, type, index, isHead }) => {
       const isTaskTypeError = isHead && type === TASK_TYPE_MANUAL && PipelineCreateStore.getTrigger === TRIGGER_TYPE_AUTO;
       return <div
@@ -207,7 +206,7 @@ export default class StageCard extends Component {
               value={_.toString(TASK_PARALLEL)}
             >
               <Tooltip
-                title={!!hasManualTask ? formatMessage({ id: 'pipeline.task.type.change' }) : ''}
+                title={hasManualTask ? formatMessage({ id: 'pipeline.task.type.change' }) : ''}
                 placement="right"
               >
                 <span><FormattedMessage id="pipeline.task.parallel" /></span>
@@ -281,5 +280,4 @@ export default class StageCard extends Component {
       </div>
     );
   }
-
 }

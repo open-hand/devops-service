@@ -2050,6 +2050,7 @@ const zhCN = {
   'pipeline.search': '快速搜索',
   'pipeline.search.creator': '我创建的',
   'pipeline.search.executor': '我能执行的',
+  'pipeline.search.manager': '我能管理的',
   'pipeline.process.status': '流程状态 - ',
   'pipeline.deploy.env': '部署环境',
 
