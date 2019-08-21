@@ -129,7 +129,7 @@ public class SagaHandler {
                 projectPayload.getOrganizationCode() + "-" + projectPayload.getProjectCode()
         );
         loggerInfo(harborPayload);
-        harborService.createHarbor(harborPayload);
+        harborService.createHarborForProject(harborPayload);
         return msg;
     }
 

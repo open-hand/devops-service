@@ -55,27 +55,35 @@ public class HarborServiceImpl implements HarborService {
     private String password;
 
     @Override
-    public void createHarbor(HarborPayload harborPayload) {
+    public void createHarborForProject(HarborPayload harborPayload) {
+        //获取当前项目的harbor设置,如果有自定义的取自定义，没自定义取组织层的harbor配置
+        DevopsConfigVO devopsConfigVO = devopsConfigService.dtoToVo(devopsConfigService.queryRealConfig(harborPayload.getProjectId(), ResourceLevel.PROJECT.value(), HARBOR));
+        harborConfigurationProperties.setUsername(devopsConfigVO.getConfig().getUserName());
+        harborConfigurationProperties.setPassword(devopsConfigVO.getConfig().getPassword());
+        harborConfigurationProperties.setBaseUrl(devopsConfigVO.getConfig().getUrl());
+
+        ConfigurationProperties configurationProperties = new ConfigurationProperties(harborConfigurationProperties);
+        configurationProperties.setType(HARBOR);
+        Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
+        HarborClient harborClient = retrofit.create(HarborClient.class);
+        createHarbor(harborClient,harborPayload.getProjectCode());
+    }
+
+
+
+
+    @Override
+    public void createHarbor(HarborClient harborClient, String projectCode) {
         //创建harbor仓库
         try {
-            //获取当前项目的harbor设置,如果有自定义的取自定义，没自定义取组织层的harbor配置
-            DevopsConfigVO devopsConfigVO = devopsConfigService.dtoToVo(devopsConfigService.queryRealConfig(harborPayload.getProjectId(), ResourceLevel.PROJECT.value(), HARBOR));
-            harborConfigurationProperties.setUsername(devopsConfigVO.getConfig().getUserName());
-            harborConfigurationProperties.setPassword(devopsConfigVO.getConfig().getPassword());
-            harborConfigurationProperties.setBaseUrl(devopsConfigVO.getConfig().getUrl());
-
-            ConfigurationProperties configurationProperties = new ConfigurationProperties(harborConfigurationProperties);
-            configurationProperties.setType(HARBOR);
-            Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
-            HarborClient harborClient = retrofit.create(HarborClient.class);
             Response<Void> result = null;
             LOGGER.info(harborConfigurationProperties.getParams());
             if (harborConfigurationProperties.getParams() == null || harborConfigurationProperties.getParams().equals("")) {
-                result = harborClient.insertProject(new Project(harborPayload.getProjectCode(), 1)).execute();
+                result = harborClient.insertProject(new Project(projectCode, 1)).execute();
             } else {
                 Map<String, String> params = new HashMap<>();
                 params = gson.fromJson(harborConfigurationProperties.getParams(), params.getClass());
-                result = harborClient.insertProject(params, new Project(harborPayload.getProjectCode(), 1)).execute();
+                result = harborClient.insertProject(params, new Project(projectCode, 1)).execute();
             }
             if (result.raw().code() != 201) {
                 throw new CommonException(result.message());

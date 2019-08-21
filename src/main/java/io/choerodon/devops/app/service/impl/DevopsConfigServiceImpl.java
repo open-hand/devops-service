@@ -15,9 +15,12 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.ConfigVO;
 import io.choerodon.devops.api.vo.DefaultConfigVO;
 import io.choerodon.devops.api.vo.DevopsConfigVO;
+import io.choerodon.devops.app.eventhandler.payload.HarborPayload;
+import io.choerodon.devops.app.eventhandler.payload.OrganizationRegisterEventPayload;
 import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.app.service.DevopsConfigService;
 import io.choerodon.devops.app.service.DevopsProjectService;
+import io.choerodon.devops.app.service.HarborService;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
 import io.choerodon.devops.infra.config.HarborConfigurationProperties;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
@@ -68,6 +71,9 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
     @Autowired
     private AppServiceService appServiceService;
 
+    @Autowired
+    private HarborService harborService;
+
     @Override
     public void operate(Long resourceId, String resourceType, List<DevopsConfigVO> devopsConfigVOS) {
 
@@ -78,6 +84,33 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                 //自定义的harbor类型,不管是新建还是更新，当传进来有harbor project时都要检验project是否是私有
                 if (devopsConfigVO.getType().equals(HARBOR) && devopsConfigVO.getConfig().getProject() != null) {
                     checkRegistryProjectIsPrivate(devopsConfigVO);
+                }
+                if (devopsConfigVO.getType().equals(HARBOR)) {
+                    appServiceService.checkHarbor(devopsConfigVO.getConfig().getUrl(), devopsConfigVO.getConfig().getUserName(), devopsConfigVO.getConfig().getPassword(), devopsConfigVO.getConfig().getProject(), devopsConfigVO.getConfig().getEmail());
+                    if (devopsConfigVO.getConfig().getProject() != null) {
+                        checkRegistryProjectIsPrivate(devopsConfigVO);
+                    } else if (devopsConfigVO.getConfig().getProject() == null && !resourceType.equals(ResourceLevel.ORGANIZATION.value())) {
+                        harborConfigurationProperties.setUsername(devopsConfigVO.getConfig().getUserName());
+                        harborConfigurationProperties.setPassword(devopsConfigVO.getConfig().getPassword());
+                        harborConfigurationProperties.setBaseUrl(devopsConfigVO.getConfig().getUrl());
+                        ConfigurationProperties configurationProperties = new ConfigurationProperties(harborConfigurationProperties);
+                        configurationProperties.setType(HARBOR);
+                        Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
+                        HarborClient harborClient = retrofit.create(HarborClient.class);
+
+                        ProjectDTO projectDTO = null;
+                        OrganizationDTO organizationDTO = null;
+                        if(resourceType.equals(ResourceLevel.PROJECT.value())) {
+                             projectDTO = baseServiceClientOperator.queryIamProjectById(resourceId);
+                             organizationDTO =  baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+                        }else {
+                            AppServiceDTO appServiceDTO = appServiceService.baseQuery(resourceId);
+                            Long projectId = devopsProjectService.queryProjectIdByAppId(appServiceDTO.getAppId());
+                             projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+                             organizationDTO =  baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+                        }
+                        harborService.createHarbor(harborClient,organizationDTO.getCode()+"-"+projectDTO.getCode());
+                    }
                 }
                 //根据配置所在的资源层级，查询出数据库中是否存在，存在则更新，不存在则新建
                 DevopsConfigDTO devopsConfigDTO = baseQueryByResourceAndType(resourceId, resourceType, devopsConfigVO.getType());
