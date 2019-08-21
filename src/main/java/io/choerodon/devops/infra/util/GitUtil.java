@@ -280,7 +280,7 @@ public class GitUtil {
     /**
      * Git克隆
      */
-    public Git cloneAppMarket(String name, String tag, String remoteUrl) {
+    public Git cloneAppMarket(String name, String tag, String remoteUrl,String adminToken) {
         Git git = null;
         String workingDirectory = getWorkingDirectory(name);
         File localPathFile = new File(workingDirectory);
@@ -289,6 +289,7 @@ public class GitUtil {
             Git.cloneRepository()
                     .setURI(remoteUrl)
                     .setDirectory(localPathFile)
+                    .setCredentialsProvider(StringUtils.isEmpty(adminToken) ? null : new UsernamePasswordCredentialsProvider("", adminToken))
                     .call();
             FileUtil.deleteDirectory(new File(localPathFile + GIT_SUFFIX));
         } catch (GitAPIException e) {
