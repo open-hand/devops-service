@@ -12,7 +12,7 @@ import org.apache.ibatis.annotations.Param;
  * Description:
  */
 public interface PipelineAppServiceDeployMapper extends Mapper<PipelineAppServiceDeployDTO> {
-    PipelineAppServiceDeployDTO queryById(@Param("appDeployId") Long appDeployId);
+    PipelineAppServiceDeployDTO queryById(@Param("appServiceDeployId") Long appServiceDeployId);
 
     void updateInstanceId(@Param("instanceId") Long instanceId);
 

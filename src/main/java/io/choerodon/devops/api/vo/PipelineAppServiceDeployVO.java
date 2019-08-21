@@ -21,7 +21,6 @@ public class PipelineAppServiceDeployVO {
     private String appServiceName;
     private String envName;
     private Long objectVersionNumber;
-    private Long appServiceDeployId;
 
     public Long getId() {
         return id;
@@ -127,11 +126,4 @@ public class PipelineAppServiceDeployVO {
         this.stageId = stageId;
     }
 
-    public Long getAppServiceDeployId() {
-        return appServiceDeployId;
-    }
-
-    public void setAppServiceDeployId(Long appServiceDeployId) {
-        this.appServiceDeployId = appServiceDeployId;
-    }
 }

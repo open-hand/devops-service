@@ -8,6 +8,6 @@
     FROM
     devops_pipeline_task dpt
     WHERE
-    dpt.app_deploy_id = #{appDeployId}
+    dpt.app_service_deploy_id = #{appServiceDeployId}
 </select>
 </mapper>

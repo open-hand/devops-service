@@ -14,7 +14,7 @@ public class PipelineTaskVO {
     private String type;
     private List<Long> taskUserRels;
     private Integer isCountersigned;
-    private Long appDeployId;
+    private Long appServiceDeployId;
     private PipelineAppServiceDeployVO pipelineAppServiceDeployVO;
     private Long stageId;
     private Long projectId;
@@ -61,12 +61,12 @@ public class PipelineTaskVO {
         this.isCountersigned = isCountersigned;
     }
 
-    public Long getAppDeployId() {
-        return appDeployId;
+    public Long getAppServiceDeployId() {
+        return appServiceDeployId;
     }
 
-    public void setAppDeployId(Long appDeployId) {
-        this.appDeployId = appDeployId;
+    public void setAppServiceDeployId(Long appServiceDeployId) {
+        this.appServiceDeployId = appServiceDeployId;
     }
 
     public Long getStageId() {

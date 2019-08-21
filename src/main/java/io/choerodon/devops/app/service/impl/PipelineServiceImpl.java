@@ -286,8 +286,8 @@ public class PipelineServiceImpl implements PipelineService {
                 .peek(stage -> {
                     List<PipelineTaskVO> pipelineTaskVOS = ConvertUtils.convertList(pipelineTaskService.baseQueryTaskByStageId(stage.getId()), PipelineTaskVO.class);
                     pipelineTaskVOS = pipelineTaskVOS.stream().peek(task -> {
-                        if (task.getAppDeployId() != null) {
-                            task.setPipelineAppServiceDeployVO(ConvertUtils.convertObject(pipelineAppDeployService.baseQueryById(task.getAppDeployId()), PipelineAppServiceDeployVO.class));
+                        if (task.getAppServiceDeployId() != null) {
+                            task.setPipelineAppServiceDeployVO(deployDtoToVo(pipelineAppDeployService.baseQueryById(task.getAppServiceDeployId())));
                         } else {
                             task.setTaskUserRels(userRelationshipService.baseListByOptions(null, null, task.getId()).stream().map(PipelineUserRelationshipDTO::getUserId).collect(Collectors.toList()));
                         }
@@ -1027,7 +1027,7 @@ public class PipelineServiceImpl implements PipelineService {
     private void createOrUpdateTask(PipelineTaskVO taskDTO, Long stageId, Long projectId) {
         if (taskDTO.getId() != null) {
             if (AUTO.equals(taskDTO.getType())) {
-                taskDTO.setAppDeployId(pipelineAppDeployService.baseUpdate(ConvertUtils.convertObject(taskDTO.getPipelineAppServiceDeployVO(), PipelineAppServiceDeployDTO.class)).getId());
+                taskDTO.setAppServiceDeployId(pipelineAppDeployService.baseUpdate(ConvertUtils.convertObject(taskDTO.getPipelineAppServiceDeployVO(), PipelineAppServiceDeployDTO.class)).getId());
             }
             Long taskId = pipelineTaskService.baseUpdateTask(ConvertUtils.convertObject(taskDTO, PipelineTaskDTO.class)).getId();
             if (MANUAL.equals(taskDTO.getType())) {
@@ -1160,9 +1160,9 @@ public class PipelineServiceImpl implements PipelineService {
         t.setProjectId(projectId);
         t.setStageId(stageId);
         if (AUTO.equals(t.getType())) {
-            PipelineAppServiceDeployDTO appDeployDTO = ConvertUtils.convertObject(t.getPipelineAppServiceDeployVO(), PipelineAppServiceDeployDTO.class);
+            PipelineAppServiceDeployDTO appDeployDTO = deployVoToDto(t.getPipelineAppServiceDeployVO());
             appDeployDTO.setProjectId(projectId);
-            t.setAppDeployId(pipelineAppDeployService.baseCreate(appDeployDTO).getId());
+            t.setAppServiceDeployId(pipelineAppDeployService.baseCreate(appDeployDTO).getId());
         }
         Long taskId = pipelineTaskService.baseCreateTask(ConvertUtils.convertObject(t, PipelineTaskDTO.class)).getId();
         if (MANUAL.equals(t.getType())) {
@@ -1557,6 +1557,25 @@ public class PipelineServiceImpl implements PipelineService {
         PipelineDTO devopsPipelineDTO = new PipelineDTO();
         devopsPipelineDTO.setProjectId(projectId);
         return pipelineMapper.select(devopsPipelineDTO);
+    }
+
+    private PipelineAppServiceDeployVO deployDtoToVo(PipelineAppServiceDeployDTO appServiceDeployDTO) {
+        PipelineAppServiceDeployVO appServiceDeployVO = new PipelineAppServiceDeployVO();
+        BeanUtils.copyProperties(appServiceDeployDTO, appServiceDeployVO);
+        if (appServiceDeployDTO.getTriggerVersion() != null && !appServiceDeployDTO.getTriggerVersion().isEmpty()) {
+            List<String> triggerVersion = Arrays.asList(appServiceDeployDTO.getTriggerVersion().split(","));
+            appServiceDeployVO.setTriggerVersion(triggerVersion);
+        }
+        return appServiceDeployVO;
+    }
+
+    private PipelineAppServiceDeployDTO deployVoToDto(PipelineAppServiceDeployVO appServiceDeployVO) {
+        PipelineAppServiceDeployDTO appServiceDeployDTO = new PipelineAppServiceDeployDTO();
+        BeanUtils.copyProperties(appServiceDeployVO,appServiceDeployDTO);
+        if (appServiceDeployVO.getTriggerVersion() != null && !appServiceDeployVO.getTriggerVersion().isEmpty()) {
+            appServiceDeployDTO.setTriggerVersion(String.join(",", appServiceDeployVO.getTriggerVersion()));
+        }
+        return appServiceDeployDTO;
     }
 }
 

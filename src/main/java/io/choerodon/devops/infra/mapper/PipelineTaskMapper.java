@@ -11,5 +11,5 @@ import org.apache.ibatis.annotations.Param;
  */
 public interface PipelineTaskMapper extends Mapper<PipelineTaskDTO> {
 
-    PipelineTaskDTO queryByAppDeployId(@Param("appDeployId") Long appDeployId);
+    PipelineTaskDTO queryByAppDeployId(@Param("appServiceDeployId") Long appServiceDeployId);
 }
