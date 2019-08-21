@@ -762,24 +762,24 @@ class DevopsEnvironmentControllerSpec extends Specification {
         envSyncStatusDTO.getAgentSyncCommit() == devopsEnvCommitDTO.getCommitSha()
     }
 
-    def "分页查询项目下用户权限(page_by_options)"() {
-        given: '初始化param参数'
-        def url = rootUrl + "/page_by_options?page={page}&size={size}&env_id={env_id}"
-        Map<String, Object> map = new HashMap<>()
-        map.put("project_id", projectId)
-        map.put("env_id", devopsEnvironmentDO.getId())
-        map.put("page", 1)
-        map.put("size", 10)
-
-        String params = "{\"searchParam\": {},\"params\": []}"
-
-        when: '分页查询项目下用户权限'
-        def page = restTemplate.postForObject(url, params, PageInfo.class, map)
-
-        then: '返回值'
-        page != null
-        page.getList().size() > 0
-    }
+//    def "分页查询项目下用户权限(page_by_options)"() {
+//        given: '初始化param参数'
+//        def url = rootUrl + "/page_by_options?page={page}&size={size}&env_id={env_id}"
+//        Map<String, Object> map = new HashMap<>()
+//        map.put("project_id", projectId)
+//        map.put("env_id", devopsEnvironmentDO.getId())
+//        map.put("page", 1)
+//        map.put("size", 10)
+//
+//        String params = "{\"searchParam\": {},\"params\": []}"
+//
+//        when: '分页查询项目下用户权限'
+//        def page = restTemplate.postForObject(url, params, PageInfo.class, map)
+//
+//        then: '返回值'
+//        page != null
+//        page.getList().size() > 0
+//    }
 
     def "分页查询环境下用户权限(pageEnvUserPermissions)"() {
         given: '准备'
@@ -836,23 +836,23 @@ class DevopsEnvironmentControllerSpec extends Specification {
         devopsEnvUserPermissionMapper.selectOne(devopsEnvUserPermissionDO) == null
     }
 
-    def "ListAllUserPermission"() {
-        given: '准备'
-        def url = rootUrl + "/{env_id}/list_all"
-        Map<String, Object> map = new HashMap<>()
-        map.put("project_id", projectId)
-        map.put("env_id", devopsEnvironmentDO.getId())
-        map.put("user_id", devopsEnvUserPermissionDO.getIamUserId())
-
-        when: '发送请求'
-        def list = restTemplate.getForObject(url, List.class, map)
-
-        then: '校验结果'
-        list != null
-        list.size() == 2
-        list.get(0)["loginName"] == "test1"
-        list.get(1)["loginName"] == "test2"
-    }
+//    def "ListAllUserPermission"() {
+//        given: '准备'
+//        def url = rootUrl + "/{env_id}/list_all"
+//        Map<String, Object> map = new HashMap<>()
+//        map.put("project_id", projectId)
+//        map.put("env_id", devopsEnvironmentDO.getId())
+//        map.put("user_id", devopsEnvUserPermissionDO.getIamUserId())
+//
+//        when: '发送请求'
+//        def list = restTemplate.getForObject(url, List.class, map)
+//
+//        then: '校验结果'
+//        list != null
+//        list.size() == 2
+//        list.get(0)["loginName"] == "test1"
+//        list.get(1)["loginName"] == "test2"
+//    }
 
     def "UpdateEnvUserPermission"() {
         given: "准备"
