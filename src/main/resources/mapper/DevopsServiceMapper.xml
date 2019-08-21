@@ -274,13 +274,13 @@
     </select>
 
 
-    <update id="updateLables">
+    <update id="updateLabelsToNull">
         UPDATE devops_service ds
         SET ds.labels = null
         WHERE ds.id = #{serviceId}
     </update>
 
-    <update id="updateEndPoint">
+    <update id="updateEndPointToNull">
         UPDATE devops_service ds
         SET ds.end_points = null
         WHERE ds.id = #{serviceId}

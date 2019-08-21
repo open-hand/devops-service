@@ -524,7 +524,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     public void baseUpdate(DevopsServiceDTO devopsServiceDTO) {
         DevopsServiceDTO oldDevopsServiceDTO = devopsServiceMapper.selectByPrimaryKey(devopsServiceDTO.getId());
         if (devopsServiceDTO.getLabels() == null) {
-            devopsServiceMapper.setLabelsToNull(devopsServiceDTO.getId());
+            devopsServiceMapper.updateLabelsToNull(devopsServiceDTO.getId());
         }
         if (devopsServiceDTO.getExternalIp() == null) {
             devopsServiceMapper.setExternalIpNull(devopsServiceDTO.getId());
@@ -537,13 +537,13 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
     @Override
     public void baseUpdateLabels(Long id) {
-        devopsServiceMapper.setLabelsToNull(id);
+        devopsServiceMapper.updateLabelsToNull(id);
     }
 
 
     @Override
     public void baseUpdateEndPoint(Long id) {
-        devopsServiceMapper.setEndPointToNull(id);
+        devopsServiceMapper.updateEndPointToNull(id);
     }
 
     @Override
