@@ -288,11 +288,11 @@ public class AppServiceServiceImpl implements AppServiceService {
         devopsConfigService.operate(appServiceId, APP_SERVICE, devopsConfigVOS);
 
         if (appServiceUpdateDTO.getHarbor() != null) {
-            DevopsConfigDTO harborConfig = devopsConfigService.queryRealConfig(appServiceId,ResourceLevel.PROJECT.value(),HARBOR);
+            DevopsConfigDTO harborConfig = devopsConfigService.queryRealConfig(appServiceId,APP_SERVICE,HARBOR);
             appServiceDTO.setHarborConfigId(harborConfig.getId());
         }
         if (appServiceUpdateDTO.getChart() != null) {
-            DevopsConfigDTO chartConfig = devopsConfigService.queryRealConfig(appServiceId,ResourceLevel.PROJECT.value(),CHART);
+            DevopsConfigDTO chartConfig = devopsConfigService.queryRealConfig(appServiceId,APP_SERVICE,CHART);
             appServiceDTO.setChartConfigId(chartConfig.getId());
         }
 

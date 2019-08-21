@@ -77,7 +77,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
     @Override
     public void operate(Long resourceId, String resourceType, List<DevopsConfigVO> devopsConfigVOS) {
 
-        devopsConfigVOS.forEach(devopsConfigVO -> {
+        devopsConfigVOS.stream().filter(devopsConfigVO -> devopsConfigVO!=null).forEach(devopsConfigVO -> {
             //根据每个配置的默认还是自定义执行不同逻辑
             if (devopsConfigVO.getCustom()) {
 
