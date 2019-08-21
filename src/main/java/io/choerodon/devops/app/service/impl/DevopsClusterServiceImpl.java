@@ -1,21 +1,11 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import io.kubernetes.client.JSON;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
@@ -30,6 +20,12 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
 import io.choerodon.devops.infra.util.*;
+import io.kubernetes.client.JSON;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 
 @Service
@@ -190,6 +186,32 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
         devopsClusterRepDTOPage.setList(fromClusterE2ClusterWithNodesDTO(devopsClusterRepVOPageInfo.getList(), projectId));
         return devopsClusterRepDTOPage;
+    }
+
+    @Override
+    public List<ProjectReqVO> listNonRelatedProjects(Long projectId, Long clusterId, String params) {
+        Map<String, Object> searchMap = TypeUtil.castMapParams(params);
+        List<String> paramList = TypeUtil.cast(searchMap.get(TypeUtil.PARAMS));
+
+        ProjectDTO iamProjectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+
+        // 查出组织下所有符合条件的项目
+        PageInfo<ProjectDTO> filteredProjects = baseServiceClientOperator.pageProjectByOrgId(
+                iamProjectDTO.getOrganizationId(), 0, 0, null,
+                paramList == null ? null : paramList.toArray(new String[0]));
+
+        // 查出数据库中已经分配权限的项目
+        List<Long> permitted = devopsClusterProPermissionService.baseListByClusterId(clusterId)
+                .stream()
+                .map(DevopsClusterProPermissionDTO::getProjectId)
+                .collect(Collectors.toList());
+
+        // 将已经分配权限的项目过滤
+        return filteredProjects.getList()
+                .stream()
+                .filter(p -> !permitted.contains(p.getId()))
+                .map(p -> new ProjectReqVO(p.getId(), p.getName(), p.getCode()))
+                .collect(Collectors.toList());
     }
 
     @Override

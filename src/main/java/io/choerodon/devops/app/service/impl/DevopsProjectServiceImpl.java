@@ -123,9 +123,8 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
 
         PageInfo<ProjectDTO> projectDTOPageInfo = baseServiceClientOperator.pageProjectByOrgId(
                 iamProjectDTO.getOrganizationId(),
-                pageRequest.getPage(), pageRequest.getSize(),
-                null,
-                paramList.toArray(new String[0]));
+                pageRequest.getPage(), pageRequest.getSize(), null,
+                paramList == null ? null : paramList.toArray(new String[0]));
         return ConvertUtils.convertPage(projectDTOPageInfo, ProjectReqVO.class);
     }
 }

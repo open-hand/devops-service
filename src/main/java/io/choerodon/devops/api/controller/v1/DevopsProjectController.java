@@ -62,7 +62,7 @@ public class DevopsProjectController {
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "模糊搜索参数")
-            @RequestBody String params) {
+            @RequestBody(required = false) String params) {
         return Optional.ofNullable(devopsProjectService.pageProjects(projectId, pageRequest, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.project.query"));

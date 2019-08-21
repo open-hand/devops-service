@@ -2,7 +2,6 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
-import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.*;
@@ -59,6 +58,16 @@ public interface DevopsClusterService {
      */
     PageInfo<ClusterWithNodesVO> pageClusters(Long projectId, Boolean doPage, PageRequest pageRequest, String params);
 
+
+    /**
+     * 列出组织下所有与该集群未分配权限的项目
+     *
+     * @param projectId 项目ID
+     * @param clusterId 集群ID
+     * @param params    搜索参数
+     * @return 与该集群未分配权限的项目
+     */
+    List<ProjectReqVO> listNonRelatedProjects(Long projectId, Long clusterId, String params);
 
     /**
      * 查询项目下的集群以及所有节点信息

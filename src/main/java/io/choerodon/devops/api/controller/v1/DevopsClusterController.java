@@ -161,6 +161,29 @@ public class DevopsClusterController {
                 .orElseThrow(() -> new CommonException("error.project.query"));
     }
 
+    /**
+     * 列出组织下所有与该集群未分配权限的项目
+     *
+     * @param projectId 项目ID
+     * @param clusterId 集群ID
+     * @param params    搜索参数
+     * @return 与该集群未分配权限的项目
+     */
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "列出组织下所有与该集群未分配权限的项目")
+    @PostMapping(value = "/{cluster_id}/permission/list_non_related")
+    public ResponseEntity<List<ProjectReqVO>> listAllNonRelatedMembers(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "集群id", required = true)
+            @PathVariable(value = "cluster_id") Long clusterId,
+            @ApiParam(value = "查询参数")
+            @RequestBody String params) {
+        return Optional.ofNullable(devopsClusterService.listNonRelatedProjects(projectId, clusterId, params))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.get.env.non.related.users"));
+    }
+
 
     /**
      * 查询shell脚本
