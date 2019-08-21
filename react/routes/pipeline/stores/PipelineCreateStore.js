@@ -21,8 +21,8 @@ class PipelineCreateStore {
       tempId: INIT_INDEX,
       stageName: '阶段一',
       triggerType: TRIGGER_TYPE_AUTO,
-      pipelineTaskVOS: null,
-      stageUserRelDTOS: null,
+      pipelineTaskVOs: null,
+      stageUserRels: null,
       isParallel: TASK_SERIAL,
     },
   ];
@@ -166,8 +166,8 @@ class PipelineCreateStore {
         tempId: INIT_INDEX,
         stageName: '阶段一',
         triggerType: TRIGGER_TYPE_AUTO,
-        pipelineTaskVOS: null,
-        stageUserRelDTOS: null,
+        pipelineTaskVOs: null,
+        stageUserRels: null,
         isParallel: TASK_SERIAL,
       },
     ];
@@ -244,7 +244,7 @@ class PipelineCreateStore {
 
     const newTaskList = _.filter(
       this.taskList[stage],
-      item => item.Layout !== id,
+      (item) => item.Layout !== id,
     );
 
     if (isHead && newTaskList[0]) {
@@ -358,20 +358,20 @@ class PipelineCreateStore {
   }
 
   @action initPipeline(data) {
-    const { pipelineStageVOS, triggerType } = data;
+    const { pipelineStageVOs, triggerType } = data;
     const taskList = {};
     let stageIndex = INIT_INDEX;
     const taskIndex = { 0: INIT_INDEX };
 
-    const stageList = _.map(pipelineStageVOS, ({ pipelineTaskVOS, ...item }) => {
+    const stageList = _.map(pipelineStageVOs, ({ pipelineTaskVOs, ...item }) => {
       let index = 1;
-      const tasks = _.map(pipelineTaskVOS, task => ({
+      const tasks = _.map(pipelineTaskVOs, (task) => ({
         ...task,
         isHead: stageIndex === INIT_INDEX && index === 1,
         index: index++,
       }));
 
-      const stage = { ...item, tempId: ++stageIndex, pipelineTaskVOS: tasks };
+      const stage = { ...item, tempId: ++stageIndex, pipelineTaskVOs: tasks };
       taskList[stageIndex] = tasks;
       taskIndex[stageIndex] = index;
       return stage;
@@ -410,7 +410,7 @@ class PipelineCreateStore {
     const taskList = _.values(this.taskList).slice();
     let hasName = false;
     for (let i = 0, len = taskList.length; i < len; i++) {
-      const task = _.find(taskList[i], ({ appDeployDTOS }) => appDeployDTOS && appDeployDTOS.instanceName === name);
+      const task = _.find(taskList[i], ({ pipelineAppServiceDeployVO }) => pipelineAppServiceDeployVO && pipelineAppServiceDeployVO.instanceName === name);
       if (task) {
         hasName = true;
         break;
@@ -419,7 +419,7 @@ class PipelineCreateStore {
 
     return hasName
       ? Promise.resolve({ failed: true })
-      : axios.get(`/devops/v1/projects/${projectId}/app_instances/check_name?instance_name=${name}&env_id=${envId}`);
+      : axios.get(`/devops/v1/projects/${projectId}/app_service_instances/check_name?instance_name=${name}&env_id=${envId}`);
   }
 
   async loadEnvData(projectId) {
@@ -434,7 +434,7 @@ class PipelineCreateStore {
     const data = handleProptError(response);
     if (data) {
       // 让连接的环境排在前面
-      this.setEnvData(_.sortBy(data, value => Number(!value.connect)));
+      this.setEnvData(_.sortBy(data, (value) => Number(!value.connect)));
     }
   }
 
@@ -463,7 +463,7 @@ class PipelineCreateStore {
     this.setLoading('instance', true);
     const response = await axios
       .get(
-        `/devops/v1/projects/${projectId}/app_instances/getByAppIdAndEnvId?envId=${envId}&appId=${appId}`,
+        `/devops/v1/projects/${projectId}/app_service_instances/list_running_and_failed?env_id=${envId}&app_service_id=${appId}`,
       )
       .catch((e) => {
         this.setLoading('instance', false);
@@ -487,7 +487,7 @@ class PipelineCreateStore {
     this.setLoading('config', true);
     const response = await axios
       .get(
-        `/devops/v1/projects/${projectId}/pipeline_value/list?app_service_id=${appId}&env_id=${envId}`,
+        `/devops/v1/projects/${projectId}/deploy_value/list_by_env_and_app?app_service_id=${appId}&env_id=${envId}`,
       )
       .catch((e) => {
         this.setLoading('config', false);
@@ -510,7 +510,7 @@ class PipelineCreateStore {
     this.setLoading('value', true);
     const response = await axios
       .get(
-        `/devops/v1/projects/${projectId}/pipeline_value?value_id=${valueId}`,
+        `/devops/v1/projects/${projectId}/deploy_value?value_id=${valueId}`,
       )
       .catch((e) => {
         this.setLoading('value', false);
@@ -529,7 +529,7 @@ class PipelineCreateStore {
    * @param data
    * @returns {Promise<void>}
    */
-  editConfigValue = (projectId, data) => axios.post(`/devops/v1/projects/${projectId}/pipeline_value`, JSON.stringify(data));
+  editConfigValue = (projectId, data) => axios.post(`/devops/v1/projects/${projectId}/deploy_value`, JSON.stringify(data));
 
   /**
    * 项目所有者和项目成员
@@ -559,8 +559,8 @@ class PipelineCreateStore {
    * data 属性：
    *  - name
    *  - triggerType 触发方式，值为 'auto' 和 'manual'
-   *  - pipelineUserRelDTOS 触发人员，id的数组格式，如果 triggerType 是 'auto'， 则值为null
-   *  - pipelineStageVOS 阶段信息，数组
+   *  - pipelineUserRels 触发人员，id的数组格式，如果 triggerType 是 'auto'， 则值为null
+   *  - pipelineStageVOs 阶段信息，数组
    */
   createPipeline(projectId, data) {
     return axios.post(
@@ -604,6 +604,13 @@ class PipelineCreateStore {
   @action
   setEditVisible(value) {
     this.editVisible = value;
+  }
+
+  @observable editId = null;
+
+  @action
+  setEditId(value) {
+    this.editId = value;
   }
 }
 

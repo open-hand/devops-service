@@ -89,14 +89,14 @@ export default class TaskCreate extends Component {
 
     if (p.test(value)) {
       PipelineCreateStore.checkInstanceName(id, value, envId)
-        .then(data => {
+        .then((data) => {
           if (data && data.failed) {
             callback(formatMessage({ id: 'checkNameExist' }));
           } else {
             callback();
           }
         })
-        .catch(error => {
+        .catch((error) => {
           callback(formatMessage({ id: 'checkNameFail' }));
         });
     } else {
@@ -113,9 +113,8 @@ export default class TaskCreate extends Component {
       form: { setFields },
     } = this.props;
     const { getTaskList, getStageList } = PipelineCreateStore;
-    const { appDeployDTOS, type } = _.find(getTaskList[stageId], ['Layout.less.less', taskId]) || {};
-    const { applicationId, envId, instanceId, valueId, instanceName } = appDeployDTOS || {};
-
+    const { pipelineAppServiceDeployVO, type } = _.find(getTaskList[stageId], ['Layout.less.less', taskId]) || {};
+    const { applicationId, envId, instanceId, valueId, instanceName } = pipelineAppServiceDeployVO || {};
     this.setState({
       initIstName: instanceName,
     });
@@ -180,7 +179,7 @@ export default class TaskCreate extends Component {
     PipelineCreateStore.setConfigList('');
   }
 
-  handleSubmit = e => {
+  handleSubmit = (e) => {
     e.preventDefault();
     const {
       form: { validateFields },
@@ -203,14 +202,14 @@ export default class TaskCreate extends Component {
     }) => {
       if (!err) {
         const { isHead } = this.state;
-        let appDeployDTOS = null;
+        let pipelineAppServiceDeployVO = null;
         if (type === TASK_TYPE_DEPLOY) {
           let istName = instanceName;
           if (instanceId) {
             istName = _.find(PipelineCreateStore.getInstance, ['id', String(instanceId)]).code;
           }
 
-          appDeployDTOS = {
+          pipelineAppServiceDeployVO = {
             applicationId,
             triggerVersion,
             envId,
@@ -219,12 +218,12 @@ export default class TaskCreate extends Component {
             valueId,
           };
         }
-        const taskUserRelDTOS = type === TASK_TYPE_MANUAL ? _.map(users, item => Number(item)) : null;
+        const taskUserRels = type === TASK_TYPE_MANUAL ? _.map(users, (item) => Number(item)) : null;
         const data = {
           type,
           name,
-          appDeployDTOS,
-          taskUserRelDTOS,
+          pipelineAppServiceDeployVO,
+          taskUserRels,
           isCountersigned: auditMode[isCountersigned || 'orSign'],
           isHead,
         };
@@ -257,7 +256,7 @@ export default class TaskCreate extends Component {
 
     this.props.form.setFields({
       type: {
-        value: value,
+        value,
         errors: null,
       },
     });
@@ -271,7 +270,7 @@ export default class TaskCreate extends Component {
    * 选择部署模式
    * @param e
    */
-  handleChangeMode = e => {
+  handleChangeMode = (e) => {
     const { appId } = this.state;
     const mode = e.target.value;
     const app = appId ? _.find(PipelineCreateStore.getAppData, ['id', appId]) : null;
@@ -284,7 +283,7 @@ export default class TaskCreate extends Component {
    * 清空部属配置选择器的已选项
    */
   clearConfigFiled() {
-    this.props.form.setFieldsValue({ 'valueId': '' });
+    this.props.form.setFieldsValue({ valueId: '' });
   }
 
   handleChangeEnv = (id) => {
@@ -314,8 +313,8 @@ export default class TaskCreate extends Component {
     } = this.props;
     const { appId: selectApp, envId: selectEnv } = this.state;
     const { getTaskList } = PipelineCreateStore;
-    const { appDeployDTOS } = _.find(getTaskList[stageId], ['Layout.less.less', taskId]) || {};
-    const { applicationId, envId, instanceId, valueId } = appDeployDTOS || {};
+    const { pipelineAppServiceDeployVO } = _.find(getTaskList[stageId], ['Layout.less.less', taskId]) || {};
+    const { applicationId, envId, instanceId, valueId } = pipelineAppServiceDeployVO || {};
     const { code } = _.find(PipelineCreateStore.getAppData, ['id', selectApp]) || {};
     const initIstName = code ? `${code}-${uuidv1().substring(0, 5)}` : uuidv1().substring(0, 30);
 
@@ -326,7 +325,7 @@ export default class TaskCreate extends Component {
           mode: MODE_TYPE_UPDATE,
         });
       } else {
-        setFieldsValue({ 'instanceName': initIstName });
+        setFieldsValue({ instanceName: initIstName });
         this.setState({ mode: MODE_TYPE_NEW });
       }
       setFieldsValue({
@@ -336,7 +335,7 @@ export default class TaskCreate extends Component {
     } else {
       this.setState({ value: '', initIstId: undefined, mode: MODE_TYPE_NEW, initIstName });
       if (getFieldsValue(['instanceName'])) {
-        setFieldsValue({ 'instanceName': initIstName });
+        setFieldsValue({ instanceName: initIstName });
       }
       this.clearConfigFiled();
     }
@@ -393,8 +392,8 @@ export default class TaskCreate extends Component {
           <span
             className="c7n-config-tip-text"
           >
-          {formatMessage({ id: 'pipeline.config.value.tips' })}
-        </span>
+            {formatMessage({ id: 'pipeline.config.value.tips' })}
+          </span>
           <Button
             icon="mode_edit"
             type="primary"
@@ -404,7 +403,7 @@ export default class TaskCreate extends Component {
           </Button>
         </div>
         <YamlEditor
-          readOnly={true}
+          readOnly
           value={value}
         />
       </div>
@@ -438,7 +437,7 @@ export default class TaskCreate extends Component {
     this.setState({ editLoading: true });
     configData.value = configValue;
     PipelineCreateStore.editConfigValue(id, configData)
-      .then(data => {
+      .then((data) => {
         this.setState({ editLoading: false });
         if (data && data.failed) {
           Choerodon.prompt(data.message);
@@ -447,7 +446,7 @@ export default class TaskCreate extends Component {
           this.closeEditValue();
         }
       })
-      .catch(err => {
+      .catch((err) => {
         this.setState({ editLoading: false });
         Choerodon.handleResponseError(err);
       });
@@ -461,7 +460,7 @@ export default class TaskCreate extends Component {
     } = this.props;
     PipelineCreateStore.loadEnvData(id);
     PipelineCreateStore.loadAppData(id);
-  };
+  }
 
   loadInstanceData(envId, appId) {
     const {
@@ -531,27 +530,25 @@ export default class TaskCreate extends Component {
       initIstName,
     } = this.state;
 
-    const { appDeployDTOS, type, name: taskName, isCountersigned, taskUserRelDTOS } =
-    _.find(getTaskList[stageId], ['Layout.less.less', taskId]) || {};
-    const { instanceId, applicationId, triggerVersion, envId, valueId } =
-    appDeployDTOS || {};
-
-    /*********** 生成选择器的选项 **********/
+    const { pipelineAppServiceDeployVO, type, name: taskName, isCountersigned, taskUserRels } = _.find(getTaskList[stageId], ['index', taskId]) || {};
+    const { instanceId, applicationId, triggerVersion, envId, valueId } = pipelineAppServiceDeployVO || {};
+    /** ********* 生成选择器的选项 ********* */
     const appOptions = _.map(getAppData, ({ id, name }) => (<Option key={id} value={id}>
-        {name}
-      </Option>
+      {name}
+    </Option>
     ));
 
     const envOptions = _.map(getEnvData, ({ id, connect, permission, name }) => (<Option
       key={id}
       value={id}
-      disabled={!(connect && permission)}
+      disabled={!permission}
     >
       <span className={classnames({
         'c7ncd-status': true,
         'c7ncd-status-success': connect,
         'c7ncd-status-disconnect': !connect,
-      })} />
+      })}
+      />
       {name}
     </Option>));
 
@@ -563,9 +560,9 @@ export default class TaskCreate extends Component {
     const configOptions = _.map(getConfigList, ({ id, name }) => (<Option key={id} value={id}>
       <span>{name}</span>
     </Option>));
-    /************ end ***************/
+    /** ********** end ************** */
 
-    const initUsers = _.map(taskUserRelDTOS, item => String(item));
+    const initUsers = _.map(taskUserRels, (item) => String(item));
     let initSign;
     if (typeof isCountersigned === 'number') {
       initSign = isCountersigned ? AUDIT_MODE_SING : AUDIT_MODE_ORSING;
@@ -602,11 +599,9 @@ export default class TaskCreate extends Component {
               onChange={this.handleChangeApp}
               loading={getLoading.app}
               filter
-              filterOption={(input, option) =>
-                option.props.children
-                  .toLowerCase()
-                  .indexOf(input.toLowerCase()) >= 0
-              }
+              filterOption={(input, option) => option.props.children
+                .toLowerCase()
+                .indexOf(input.toLowerCase()) >= 0}
             >
               {appOptions}
             </Select>,
@@ -625,7 +620,7 @@ export default class TaskCreate extends Component {
                 label={formatMessage({ id: 'pipeline.task.version' })}
                 allowClear
               >
-                {_.map(VERSION_TYPE, item => (
+                {_.map(VERSION_TYPE, (item) => (
                   <Option key={item} value={item}>{item}</Option>
                 ))}
               </Select>,
@@ -652,11 +647,9 @@ export default class TaskCreate extends Component {
               onChange={this.handleChangeEnv}
               loading={getLoading.env}
               filter
-              filterOption={(input, option) =>
-                option.props.children[1]
-                  .toLowerCase()
-                  .indexOf(input.toLowerCase()) >= 0
-              }
+              filterOption={(input, option) => option.props.children[1]
+                .toLowerCase()
+                .indexOf(input.toLowerCase()) >= 0}
             >
               {envOptions}
             </Select>,
@@ -689,8 +682,8 @@ export default class TaskCreate extends Component {
               <span
                 className="c7n-pipeline-replace-tip-text"
               >
-                    {formatMessage({ id: 'pipeline.task.instance.tips' })}
-                  </span>
+                {formatMessage({ id: 'pipeline.task.instance.tips' })}
+              </span>
             </Radio>
           </RadioGroup>
         </Fragment>
@@ -737,17 +730,14 @@ export default class TaskCreate extends Component {
                 filter
                 optionFilterProp="children"
                 label={formatMessage({ id: 'pipeline.task.instance.replace' })}
-                filterOption={(input, option) =>
-                  option.props.children
-                    .toLowerCase()
-                    .indexOf(input.toLowerCase()) >= 0
-                }
+                filterOption={(input, option) => option.props.children
+                  .toLowerCase()
+                  .indexOf(input.toLowerCase()) >= 0}
               >
                 {instanceOptions}
-              </Select>)
-            }
-          </FormItem>)
-        }
+              </Select>
+            )}
+          </FormItem>)}
         <div className="c7n-pipeline-config">
           <Tips type="title" data="pipeline.task.config.title" />
         </div>
@@ -773,15 +763,14 @@ export default class TaskCreate extends Component {
               filter
               filterOption={(input, option) => option.props.children.props.children
                 .toLowerCase()
-                .indexOf(input.toLowerCase()) >= 0
-              }
+                .indexOf(input.toLowerCase()) >= 0}
               dropdownClassName="c7n-pipeline-config-select"
               footer={
                 <Button type="primary">
                   <Link
                     className="c7ncd-more-btn"
                     to={{
-                      pathname: `/devops/deployment-config`,
+                      pathname: '/devops/deployment-config',
                       search: `?type=${menuType}&id=${projectId}&name=${projectName}&organizationId=${organizationId}`,
                       state: {
                         appId,
@@ -820,11 +809,9 @@ export default class TaskCreate extends Component {
               optionFilterProp="children"
               className="c7n-select_512"
               label={<FormattedMessage id="pipeline.task.auditor" />}
-              filterOption={(input, option) =>
-                option.props.children
-                  .toLowerCase()
-                  .indexOf(input.toLowerCase()) >= 0
-              }
+              filterOption={(input, option) => option.props.children
+                .toLowerCase()
+                .indexOf(input.toLowerCase()) >= 0}
             >
               {userOptions}
             </Select>,
@@ -846,7 +833,7 @@ export default class TaskCreate extends Component {
                 <Select
                   className="c7n-select_512"
                   label={<FormattedMessage id="pipeline.task.auditMode" />}
-                  getPopupContainer={triggerNode => triggerNode.parentNode}
+                  getPopupContainer={(triggerNode) => triggerNode.parentNode}
                 >
                   <Option value={AUDIT_MODE_SING}>
                     <FormattedMessage id="pipeline.audit.sign" />
@@ -858,8 +845,7 @@ export default class TaskCreate extends Component {
               )}
             </FormItem>
             <Tips type="form" data="pipeline.task.auditMode.tips" />
-          </div>)
-        }
+          </div>)}
       </Fragment>
       : null;
 
@@ -902,7 +888,7 @@ export default class TaskCreate extends Component {
               })(
                 <Select
                   label={formatMessage({ id: 'pipeline.task.type' })}
-                  getPopupContainer={triggerNode => triggerNode.parentNode}
+                  getPopupContainer={(triggerNode) => triggerNode.parentNode}
                   onChange={this.changeTaskType}
                 >
                   <Option value={TASK_TYPE_DEPLOY}>
@@ -919,8 +905,7 @@ export default class TaskCreate extends Component {
                           <FormattedMessage id="pipeline.task.parallel.disabled-1" />
                           <FormattedMessage id="pipeline.task.parallel.disabled-2" />
                         </div>)
-                        : ''
-                      }
+                        : ''}
                       placement="right"
                     >
                       <span><FormattedMessage id="pipeline.mode.manual" /></span>
@@ -977,8 +962,7 @@ export default class TaskCreate extends Component {
               handleEnableNext={this.handleEnableNext}
             />
           </div>
-        </Modal>)
-      }
+        </Modal>)}
     </Fragment>);
   }
 }

@@ -2,46 +2,62 @@
 
 .c7n-pipeline-creat {
 
-  .@{c7n-prefix}-modal-body{
+  .@{c7n-prefix}-modal-body {
     overflow: hidden;
   }
 
+  .c7n-pipeline-content {
+    padding: 0;
+
+    .radio-label {
+      margin-right: 0.25rem;
+      height: 0.15rem;
+      font-size: 0.12rem;
+      font-family: PingFangSC;
+      font-weight: 500;
+      color: rgba(0, 0, 0, 1);
+      line-height: 0.15rem;
+    }
+  }
+
   .c7ncd-formitem-bottom {
-    margin-bottom: 12px;
+    margin-bottom: 0.12rem;
   }
 
   .c7ncd-pipeline-btn_cancel {
-    margin-left: 12px;
+    margin-left: 0.12rem;
   }
 
   .c7ncd-pipeline-main {
-    margin-bottom: 32px;
-    padding: 24px 0;
+    margin-bottom: 0.32rem;
+    padding: 0.24rem 0;
     width: 100%;
-    border: 1px solid #e3e3e3;
+    border: 0.01rem solid #e3e3e3;
     background: #fff;
     overflow-x: auto;
     overflow-y: hidden;
 
     .c7ncd-pipeline-scroll {
       display: inline-flex;
-      padding: 0 14px;
+      padding: 0 0.14rem;
       min-width: 100%;
     }
   }
 
   .c7ncd-pipeline-error {
-    margin-bottom: 32px;
+    margin-bottom: 0.32rem;
+
     .c7ncd-pipeline-error-icon {
       color: #f44336;
-      font-size: 16px;
+      font-size: 0.16rem;
       vertical-align: text-bottom;
-      padding-right: 5px;
+      padding-right: 0.05rem;
     }
+
     .c7ncd-pipeline-error-msg {
-      font-size: 12px;
+      font-size: 0.12rem;
       color: rgba(0, 0, 0, 0.65);
-      line-height: 20px;
+      line-height: 0.2rem;
     }
   }
 }

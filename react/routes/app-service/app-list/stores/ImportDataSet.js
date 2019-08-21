@@ -4,12 +4,12 @@ import omit from 'lodash/omit';
 import getTablePostData from '../../../../utils/getTablePostData';
 
 function getRequestData(appServiceList) {
-  const res = map(appServiceList, ({ id, name, code, type, versionId }) => ({
+  const res = map(appServiceList, ({ id, name, code, type, version }) => ({
     appServiceId: id,
     appName: name,
     appCode: code,
     type,
-    versionId,
+    versionId: version.id,
   }));
   return res;
 }

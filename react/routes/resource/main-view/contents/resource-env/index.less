@@ -1,0 +1,113 @@
+.c7ncd-deployment-re {
+  &-items {
+    display: flex;
+    flex-wrap: wrap;
+    margin-right: -0.2rem;
+  }
+
+  &-item {
+    flex: 1;
+    display: flex;
+    margin-right: .16rem;
+    margin-bottom: .2rem;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  &-item-static {
+    flex: 1;
+    display: flex;
+    margin-right: .16rem;
+    margin-bottom: .1rem;
+    min-width: 1.36rem;
+    line-height: .4rem;
+
+    &-icon {
+      flex: 0 0 .24rem;
+      margin-right: .08rem;
+      line-height: .4rem;
+      font-size: .24rem;
+    }
+
+    &-number {
+      margin-right: .1rem;
+      flex: 0 0 .2rem;
+      font-size: .2rem;
+      font-weight: 500;
+    }
+
+    &-name {
+      flex: 1;
+      white-space: nowrap;
+    }
+  }
+
+  &-status {
+    margin-bottom: .16rem;
+    width: .4rem;
+    height: .4rem;
+    border: 2px solid;
+    border-radius: .09rem;
+    text-align: center;
+    line-height: .36rem;
+    font-size: .16rem;
+    font-weight: 600;
+
+    &_runningInstanceCount {
+      color: rgba(0, 191, 165, 1);
+      background: rgba(0, 191, 165, .2);
+    }
+
+    &_operatingInstanceCount {
+      color: rgba(77, 144, 254, 1);
+      background: rgba(77, 144, 254, .2);
+    }
+
+    &_stoppedInstanceCount {
+      color: rgba(0, 0, 0, .36);
+      background: rgba(0, 0, 0, .04);
+    }
+
+    &_failedInstanceCount {
+      color: rgba(244, 67, 54, 1);
+      background: rgba(244, 67, 54, .2);
+    }
+  }
+
+  &-text {
+    line-height: .18rem;
+  }
+
+  &-card-wrap {
+    display: flex;
+    margin-bottom: .16rem;
+  }
+
+  &-card {
+    background: #fff;
+    box-shadow: 0 0.01rem 0.05rem 0 rgba(0, 0, 0, 0.12), 0 0.02rem 0.02rem 0 rgba(0, 0, 0, 0.14), 0 0.04rem 0.08rem 0 rgba(36, 66, 48, 0.06);
+    border-radius: 0.02rem;
+    padding: 0.16rem 0.2rem;
+
+    &_left {
+      flex: 3;
+      margin-right: .18rem;
+
+      .c7ncd-deployment-re-items {
+        padding-left: .2rem;
+      }
+    }
+
+    &_right {
+      flex: 2;
+    }
+
+    &-title {
+      margin-bottom: .28rem;
+      font-size: .16rem;
+      font-weight: 500;
+      color: #000;
+      line-height: .22rem;
+    }
+  }
+}

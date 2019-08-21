@@ -2,8 +2,8 @@ import React, { Fragment, useState, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import { FormattedMessage } from 'react-intl';
 import { Tooltip, Icon, Progress } from 'choerodon-ui/pro';
+import { Spin } from 'choerodon-ui';
 import _ from 'lodash';
-import LoadingBar from '../../../../../../components/loadingBar';
 import Operation from './op-record';
 import { useResourceStore } from '../../../../stores';
 import { useInstanceStore } from '../stores';
@@ -115,7 +115,9 @@ const Cases = observer(() => {
 
   return (
     <div className={`${prefixCls}-instance-cases`}>
-      {loading ? <LoadingBar display /> : getContent()}
+      <Spin spinning={loading}>
+        { getContent()}
+      </Spin>
     </div>
   );
 });

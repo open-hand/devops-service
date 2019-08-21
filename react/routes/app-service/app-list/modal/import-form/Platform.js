@@ -3,7 +3,7 @@ import { Action } from '@choerodon/master';
 import { Table, Modal } from 'choerodon-ui/pro';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
-import { Button } from 'choerodon-ui';
+import { Button, Icon } from 'choerodon-ui';
 import EditForm from './EditForm';
 import SourceTable from './SourceTable';
 
@@ -15,11 +15,7 @@ const modalStyle = {
 };
 
 const Platform = injectIntl(observer((props) => {
-  const { tableDs, intl: { formatMessage }, intlPrefix, prefixCls } = props;
-
-  useEffect(() => {
-    tableDs.query();
-  }, []);
+  const { tableDs, intl: { formatMessage }, intlPrefix, prefixCls, versionOptions, projectId } = props;
 
   function openModal() {
     Modal.open({
@@ -38,11 +34,33 @@ const Platform = injectIntl(observer((props) => {
       key: modalKey2,
       drawer: true,
       title: formatMessage({ id: `${intlPrefix}.edit` }),
-      children: <EditForm record={tableDs.current} />,
+      children: <EditForm
+        record={tableDs.current}
+        versionOptions={versionOptions}
+        projectId={projectId}
+      />,
       style: modalStyle,
       okText: formatMessage({ id: 'save' }),
       onCancel: handleCancelEdit,
     });
+  }
+
+  function renderName({ value, record }) {
+    return (
+      <span>
+        {value}
+        {record.get('nameFailed') && <Icon type="info" className={`${prefixCls}-import-platform-failed`} />}
+      </span>
+    );
+  }
+
+  function renderCode({ value, record }) {
+    return (
+      <span>
+        {value}
+        {record.get('codeFailed') && <Icon type="info" className={`${prefixCls}-import-platform-failed`} />}
+      </span>
+    );
   }
 
   function handleCancelEdit() {
@@ -97,13 +115,13 @@ const Platform = injectIntl(observer((props) => {
         <FormattedMessage id={`${intlPrefix}.add`} />
       </Button>
       <Table dataSet={tableDs} filter={selectedFilter}>
-        <Column name="name" />
+        <Column name="name" renderer={renderName} />
         <Column renderer={renderAction} width="0.7rem" />
-        <Column name="code" />
+        <Column name="code" renderer={renderCode} />
         <Column name="appName" />
         <Column name="share" renderer={renderShare} />
         <Column name="type" renderer={renderType} />
-        <Column name="version" renderer={renderType} />
+        <Column name="version" />
       </Table>
     </div>
   );

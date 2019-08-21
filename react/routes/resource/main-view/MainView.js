@@ -17,7 +17,7 @@ const AppContent = lazy(() => import('./contents/application'));
 const IstContent = lazy(() => import('./contents/instance'));
 
 // 资源视图
-const ResourceEnvContent = lazy(() => import('./contents/resource-environment'));
+const ResourceEnvContent = lazy(() => import('./contents/resource-env'));
 const NetworkContent = lazy(() => import('./contents/network'));
 const IngressContent = lazy(() => import('./contents/ingress'));
 const CertContent = lazy(() => import('./contents/certificate'));
@@ -73,7 +73,7 @@ const MainView = observer(() => {
       [INGRESS_GROUP]: <IngressContent />,
       [CERT_GROUP]: <CertContent />,
       [MAP_GROUP]: <KeyValueContent contentType={MAP_GROUP} />,
-      [CIPHER_GROUP]: <KeyValueContent contentTypeg={CIPHER_GROUP} />,
+      [CIPHER_GROUP]: <KeyValueContent contentType={CIPHER_GROUP} />,
       [CUSTOM_GROUP]: <CustomContent />,
       [IST_GROUP]: <IstListContent />,
       [CUSTOM_ITEM]: <CustomDetail />,

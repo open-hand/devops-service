@@ -280,6 +280,18 @@ const deployment = {
   'c7ncd.deployment.target.port': '目标端口',
   'c7ncd.deployment.change.number': '更改次数',
   'c7ncd.deployment.port.number': '端口号',
+  'c7ncd.deployment.status.runningInstanceCount': '运行中',
+  'c7ncd.deployment.status.operatingInstanceCount': '处理中',
+  'c7ncd.deployment.status.stoppedInstanceCount': '已停止',
+  'c7ncd.deployment.status.failedInstanceCount': '失败',
+  'c7ncd.deployment.resource.instanceCount': '实例',
+  'c7ncd.deployment.resource.serviceCount': '网络',
+  'c7ncd.deployment.resource.ingressCount': '域名',
+  'c7ncd.deployment.resource.certificationCount': '证书',
+  'c7ncd.deployment.resource.configMapCount': '配置映射',
+  'c7ncd.deployment.resource.secretCount': '密文',
+  'c7ncd.deployment.resource.deploy': '部署资源',
+  'c7ncd.deployment.resource.dosage': '用量排行',
 };
 
 const appService = {
@@ -329,6 +341,10 @@ const appService = {
   'c7ncd.appService.source.false': '市场下载',
   'c7ncd.appService.test.failed': '连接失败',
   'c7ncd.appService.test.success': '连接成功',
+  'c7ncd.appService.role.member': '项目成员',
+  'c7ncd.appService.role.owner': '项目所有者',
+  'c7ncd.appService.project.all': '组织下所有项目',
+  'c7ncd.appService.platform.failed': '列表中存在名称或编码重复的应用服务，请修改后再导入！',
 };
 
 // 文档地址前缀
@@ -2034,6 +2050,7 @@ const zhCN = {
   'pipeline.search': '快速搜索',
   'pipeline.search.creator': '我创建的',
   'pipeline.search.executor': '我能执行的',
+  'pipeline.search.manager': '我能管理的',
   'pipeline.process.status': '流程状态 - ',
   'pipeline.deploy.env': '部署环境',
 

@@ -11,6 +11,8 @@ class HandleMapStore {
   
   @observable CodeManagerAppTag;
 
+  @observable CodeManagerCiPipelineManage;
+
   @action
   setCodeQuality(obj) {
     this.CodeQuality = obj;
@@ -29,6 +31,11 @@ class HandleMapStore {
   @action
   setCodeManagerAppTag(obj) {
     this.CodeManagerAppTag = obj;
+  }
+
+  @action
+  setCodeManagerCiPipelineManage(obj) {
+    this.CodeManagerCiPipelineManage = obj;
   }
 }
 

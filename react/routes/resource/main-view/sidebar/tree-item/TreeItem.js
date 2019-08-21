@@ -10,6 +10,11 @@ import { useResourceStore } from '../../../stores';
 import { useMainStore } from '../../stores';
 
 import './index.less';
+import NetworkItem from './NetworkItem';
+import CustomItem from './CustomItem';
+import CertItem from './CertItem';
+import IngressItem from './IngressItem';
+import ConfigItem from './ConfigItem';
 
 function getName(name, search, prefixCls) {
   const index = toUpper(name).indexOf(toUpper(search));
@@ -99,6 +104,11 @@ const TreeItem = observer(({ record, search }) => {
     const type = record.get('itemType');
     const isExpand = record.isExpanded;
     const isGroup = record.get('isGroup');
+    const param = {
+      record,
+      name,
+      intlPrefix,
+    };
 
     if (isGroup) {
       return <Fragment>
@@ -114,14 +124,25 @@ const TreeItem = observer(({ record, search }) => {
         break;
       }
       case SERVICES_ITEM:
-      case INGRESS_ITEM:
-      case CERT_ITEM:
-      case MAP_ITEM:
-      case CIPHER_ITEM:
-      case CUSTOM_ITEM: {
-        treeItem = getIconItem(type);
+        treeItem = <NetworkItem {...param} />;
         break;
-      }
+      case INGRESS_ITEM:
+        treeItem = <IngressItem
+          {...param}
+        />;
+        break;
+      case CERT_ITEM:
+        treeItem = <CertItem {...param} />;
+        break;
+      case MAP_ITEM:
+        treeItem = <ConfigItem {...param} />;
+        break;
+      case CIPHER_ITEM:
+        treeItem = <ConfigItem {...param} />;
+        break;
+      case CUSTOM_ITEM:
+        treeItem = <CustomItem {...param} />;
+        break;
       case IST_ITEM: {
         treeItem = <InstanceItem
           record={record}

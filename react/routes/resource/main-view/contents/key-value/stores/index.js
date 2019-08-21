@@ -4,8 +4,8 @@ import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
 import TableDataSet from './TableDataSet';
 import { useResourceStore } from '../../../../stores';
-import useConfigMapStore from './useConfigMapStore';
-import useSecretStore from './useSecretStore';
+import useConfigMapStore from '../../../stores/useConfigMapStore';
+import useSecretStore from '../../../stores/useSecretStore';
 
 const TYPE = {
   group_configMaps: 'configMap',

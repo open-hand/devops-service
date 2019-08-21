@@ -8,6 +8,7 @@ import { useResourceStore } from '../../../../stores';
 import { useModalStore } from './stores';
 import { useCustomStore } from '../stores';
 import CustomForm from './form-view';
+import { useMainStore } from '../../../stores';
 
 const modalStyle = {
   width: '26%',
@@ -22,8 +23,8 @@ const CustomModals = observer(() => {
   } = useResourceStore();
   const {
     customDs,
-    customStore,
   } = useCustomStore();
+  const { customStore } = useMainStore();
   const {
     permissions,
     AppState: { currentMenuType: { projectId } },

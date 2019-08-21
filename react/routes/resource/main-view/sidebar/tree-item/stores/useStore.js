@@ -14,11 +14,7 @@ export default function useStore() {
       );
     },
     removeService(projectId, envId, appServiceIds) {
-      const data = {
-        envId,
-        appServiceIds,
-      };
-      return axios.delete(`/devops/v1/projects/${projectId}/env/app_services/batch_delete`, JSON.stringify(data));
+      return axios.delete(`/devops/v1/projects/${projectId}/env/app_services?env_id=${envId}&app_service_id=${appServiceIds}`);
     },
   }));
 }

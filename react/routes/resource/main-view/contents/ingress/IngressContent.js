@@ -16,9 +16,11 @@ import { useIngressStore } from './stores';
 import Modals from './modals';
 import MouserOverWrapper from '../../../../../components/MouseOverWrapper';
 import StatusTags from '../../../../../components/status-tag';
+import DomainModal from '../application/modals/domain';
+import { useMainStore } from '../../stores';
 
 import './index.less';
-import DomainModal from '../application/modals/domain';
+
 
 const serviceStyle = {
   minWidth: 40,
@@ -39,8 +41,8 @@ const IngressContent = observer(() => {
   const {
     ingressDs,
     intl: { formatMessage },
-    ingressStore,
   } = useIngressStore();
+  const { ingressStore } = useMainStore();
 
   const [showModal, setShowModal] = useState(false);
 

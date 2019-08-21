@@ -4,9 +4,8 @@ import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react';
 import _ from 'lodash';
 import TimeAgo from 'timeago-react';
-import { Tooltip, Button, Icon, Popover } from 'choerodon-ui';
+import { Tooltip, Button, Icon, Popover, Spin } from 'choerodon-ui';
 import { formatDate } from '../../../../../../utils';
-import LoadingBar from '../../../../../../components/loadingBar';
 import Store from '../stores';
 import Pods from './pods';
 import DetailsSidebar from './sidebar';
@@ -47,6 +46,11 @@ export default class Details extends Component {
     isDisabled: false,
   };
 
+  componentWillUnmount() {
+    const { detailsStore } = this.context;
+    detailsStore.setResources({});
+  }
+
   changeTargetCount = (count) => {
     const { detailsStore } = this.context;
     detailsStore.setTargetCount(count);
@@ -54,7 +58,7 @@ export default class Details extends Component {
 
   /**
    * 打开Deployment详情侧边栏，并加载数据
-   * @param {string} type
+   * @param type
    * @param {*} id
    * @param {*} name
    */
@@ -78,9 +82,16 @@ export default class Details extends Component {
   getDeployContent = (podType) => {
     const {
       detailsStore,
-      istStore: { getDetail: { status, connect } },
+      baseDs,
       instanceId,
     } = this.context;
+    let status;
+    let connect;
+    const record = baseDs.current;
+    if (record) {
+      status = record.get('status');
+      connect = record.get('connect');
+    }
     const { isDisabled } = this.state;
     const {
       getResources,
@@ -217,7 +228,7 @@ export default class Details extends Component {
 
   /**
    * PVC service ingress 三个没有pod圈
-   * @param {string} type
+   * @param type
    */
   getNoPodContent = (type) => {
     const {
@@ -348,19 +359,21 @@ export default class Details extends Component {
 
     return (
       <Fragment>
-        {!getLoading ? <div className="c7n-deploy-expanded">
-          {_.map(contentList, ({ main, title }) => (main && main.length ? <Fragment key={title}>
-            <div className="c7n-deploy-expanded-title">
-              <span>{title}</span>
-            </div>
-            {main}
-          </Fragment> : null))}
-          {!hasContent ? (
-            <div className="c7n-deploy-expanded-empty">
-              <FormattedMessage id="ist.expand.empty" />
-            </div>
-          ) : null}
-        </div> : <LoadingBar display />}
+        <Spin spinning={getLoading}>
+          <div className="c7n-deploy-expanded">
+            {_.map(contentList, ({ main, title }) => (main && main.length ? <Fragment key={title}>
+              <div className="c7n-deploy-expanded-title">
+                <span>{title}</span>
+              </div>
+              {main}
+            </Fragment> : null))}
+            {!hasContent ? (
+              <div className="c7n-deploy-expanded-empty">
+                <FormattedMessage id="ist.expand.empty" />
+              </div>
+            ) : null}
+          </div>
+        </Spin>
         {visible && <DetailsSidebar
           visible={visible}
           onClose={this.hideSidebar}

@@ -8,10 +8,11 @@ import { observer } from 'mobx-react-lite';
 import pick from 'lodash/pick';
 import TimePopover from '../../../components/timePopover';
 import { useAppServiceStore } from './stores';
-import CreateForm from './modal/creat-form';
+import CreateForm from '../modals/creat-form';
 import ImportForm from './modal/import-form';
-import { handlePromptError } from '../../../utils';
 import StatusTag from '../components/status-tag';
+
+import './index.less';
 
 const { Column } = Table;
 const modalKey1 = Modal.key();
@@ -33,6 +34,7 @@ const AppService = withRouter(observer((props) => {
     importDs,
     importTableDs,
     AppStore,
+    versionOptions,
   } = useAppServiceStore();
 
   function refresh() {
@@ -46,16 +48,16 @@ const AppService = withRouter(observer((props) => {
         pathname,
       },
     } = props;
-    const appId = record.get('id');
-    return (
+    const canLink = !record.get('fail') && record.get('synchro');
+    return (canLink ? (
       <Link
         to={{
-          pathname: `${pathname}/detail/${appId}`,
+          pathname: `${pathname}/detail/${record.get('id')}`,
           search,
         }}
       >
-        <span className={`${intlPrefix}.table.name`}>{value}</span>
-      </Link>
+        <span className={`${prefixCls}-table-name`}>{value}</span>
+      </Link>) : <span>{value}</span>
     );
   }
 
@@ -156,7 +158,17 @@ const AppService = withRouter(observer((props) => {
       drawer: true,
       style: modalStyle2,
       title: <FormattedMessage id={`${intlPrefix}.import`} />,
-      children: <ImportForm dataSet={importDs} tableDs={importTableDs} record={importDs.current} AppStore={AppStore} projectId={id} intlPrefix={intlPrefix} prefixCls={prefixCls} refresh={refresh} />,
+      children: <ImportForm
+        dataSet={importDs}
+        tableDs={importTableDs}
+        record={importDs.current}
+        AppStore={AppStore}
+        projectId={id}
+        intlPrefix={intlPrefix}
+        prefixCls={prefixCls}
+        refresh={refresh}
+        versionOptions={versionOptions}
+      />,
       okText: formatMessage({ id: 'import' }),
       onCancel: () => handleCancel(importDs),
     });
