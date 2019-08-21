@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service;
 
 import io.choerodon.devops.api.vo.HarborMarketVO;
 import io.choerodon.devops.app.eventhandler.payload.HarborPayload;
+import io.choerodon.devops.infra.feign.HarborClient;
 
 /**
  * Created with IntelliJ IDEA.
@@ -11,7 +12,10 @@ import io.choerodon.devops.app.eventhandler.payload.HarborPayload;
  * Description:
  */
 public interface HarborService {
-    void createHarbor(HarborPayload harborPayload);
+
+    void createHarborForProject(HarborPayload harborPayload);
+
+    void createHarbor(HarborClient harborClient, String projectCode);
 
     String createHarborForAppMarket(HarborMarketVO harborMarketVO);
 

@@ -283,15 +283,18 @@ public class AppServiceServiceImpl implements AppServiceService {
         AppServiceDTO appServiceDTO = ConvertUtils.convertObject(appServiceUpdateDTO, AppServiceDTO.class);
         Long appServiceId = appServiceUpdateDTO.getId();
         List<DevopsConfigVO> devopsConfigVOS = new ArrayList<>();
+        devopsConfigVOS.add(appServiceUpdateDTO.getHarbor());
+        devopsConfigVOS.add(appServiceUpdateDTO.getChart());
+        devopsConfigService.operate(appServiceId, APP_SERVICE, devopsConfigVOS);
+
         if (appServiceUpdateDTO.getHarbor() != null) {
-            devopsConfigVOS.add(appServiceUpdateDTO.getHarbor());
-            appServiceDTO.setHarborConfigId(appServiceUpdateDTO.getHarbor().getId());
+            DevopsConfigDTO harborConfig = devopsConfigService.queryRealConfig(appServiceId,ResourceLevel.PROJECT.value(),HARBOR);
+            appServiceDTO.setHarborConfigId(harborConfig.getId());
         }
         if (appServiceUpdateDTO.getChart() != null) {
-            devopsConfigVOS.add(appServiceUpdateDTO.getChart());
-            appServiceDTO.setChartConfigId(appServiceUpdateDTO.getChart().getId());
+            DevopsConfigDTO chartConfig = devopsConfigService.queryRealConfig(appServiceId,ResourceLevel.PROJECT.value(),CHART);
+            appServiceDTO.setChartConfigId(chartConfig.getId());
         }
-        devopsConfigService.operate(appServiceId, APP_SERVICE, devopsConfigVOS);
 
 
         AppServiceDTO oldAppServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
@@ -873,11 +876,9 @@ public class AppServiceServiceImpl implements AppServiceService {
                 if (projectResponse.body() == null) {
                     throw new CommonException("error.harbor.project.permission");
                 } else {
-                    if (project != null) {
-                        List<ProjectDetail> projects = (projectResponse.body()).stream().filter(a -> (a.getName().equals(configurationProperties.getProject()))).collect(Collectors.toList());
-                        if (projects.isEmpty()) {
-                            throw new CommonException("error.harbor.project.permission");
-                        }
+                    List<ProjectDetail> projects = (projectResponse.body()).stream().filter(a -> (a.getName().equals(configurationProperties.getProject()))).collect(Collectors.toList());
+                    if (projects.isEmpty()) {
+                        throw new CommonException("error.harbor.project.permission");
                     }
                 }
             } catch (IOException e) {
