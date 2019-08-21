@@ -193,36 +193,42 @@
           AND env.is_failed = FALSE;
     </select>
 
+    <!-- 此方法不需要在mapper接口中有 -->
     <select id="listServices" resultType="io.choerodon.devops.api.vo.DevopsResourceBasicInfoVO">
         SELECT t.id, t.`name`
         FROM devops_service t
         WHERE t.env_id = #{envId};
     </select>
 
+    <!-- 此方法不需要在mapper接口中有 -->
     <select id="listIngresses" resultType="io.choerodon.devops.api.vo.DevopsResourceBasicInfoVO">
         SELECT t.id, t.`name`
         FROM devops_ingress t
         WHERE t.env_id = #{envId};
     </select>
 
+    <!-- 此方法不需要在mapper接口中有 -->
     <select id="listSecrets" resultType="io.choerodon.devops.api.vo.DevopsResourceBasicInfoVO">
         SELECT t.id, t.`name`
         FROM devops_secret t
         WHERE t.env_id = #{envId};
     </select>
 
+    <!-- 此方法不需要在mapper接口中有 -->
     <select id="listConfigMaps" resultType="io.choerodon.devops.api.vo.DevopsResourceBasicInfoVO">
         SELECT t.id, t.`name`
         FROM devops_config_map t
         WHERE t.env_id = #{envId};
     </select>
 
+    <!-- 此方法不需要在mapper接口中有 -->
     <select id="listCustomizeResources" resultType="io.choerodon.devops.api.vo.DevopsResourceBasicInfoVO">
         SELECT t.id, t.`name`
         FROM devops_customize_resource t
         WHERE t.env_id = #{envId};
     </select>
 
+    <!-- 此方法不需要在mapper接口中有 -->
     <select id="listCertifications" resultType="io.choerodon.devops.api.vo.DevopsResourceBasicInfoVO">
         SELECT t.id, t.`name`
         FROM devops_certification t
