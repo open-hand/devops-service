@@ -474,6 +474,6 @@ public interface GitlabServiceClient {
     @GetMapping("/v1/users/email/check")
     ResponseEntity<Boolean> checkEmail(@RequestParam(value = "email") String email);
 
-    @GetMapping("/v1/confings/getAdminToken")
+    @GetMapping("/v1/confings/get_admin_token")
     ResponseEntity<String> getAdminToken();
 }
