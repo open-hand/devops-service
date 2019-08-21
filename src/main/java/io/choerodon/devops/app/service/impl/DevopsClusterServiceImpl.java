@@ -215,6 +215,14 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     }
 
     @Override
+    public void deletePermissionOfProject(Long clusterId, Long projectId) {
+        DevopsClusterProPermissionDTO permission = new DevopsClusterProPermissionDTO();
+        permission.setClusterId(clusterId);
+        permission.setProjectId(projectId);
+        devopsClusterProPermissionService.baseDeletePermission(permission);
+    }
+
+    @Override
     public List<DevopsClusterBasicInfoVO> queryClustersAndNodes(Long projectId) {
         DevopsClusterDTO devopsClusterDTO = new DevopsClusterDTO();
         devopsClusterDTO.setProjectId(projectId);

@@ -131,7 +131,7 @@ public class DevopsClusterController {
      * @param code      集群code
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_ADMINISTRATOR})
-    @ApiOperation(value = "校验集群名唯一性")
+    @ApiOperation(value = "校验集群code唯一性")
     @GetMapping(value = "/check_code")
     public void checkCode(
             @ApiParam(value = "项目Id", required = true)
@@ -172,7 +172,7 @@ public class DevopsClusterController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "列出组织下所有与该集群未分配权限的项目")
     @PostMapping(value = "/{cluster_id}/permission/list_non_related")
-    public ResponseEntity<List<ProjectReqVO>> listAllNonRelatedMembers(
+    public ResponseEntity<List<ProjectReqVO>> listAllNonRelatedProjects(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群id", required = true)
@@ -182,6 +182,28 @@ public class DevopsClusterController {
         return Optional.ofNullable(devopsClusterService.listNonRelatedProjects(projectId, clusterId, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.get.env.non.related.users"));
+    }
+
+    /**
+     * 删除集群下该项目的权限
+     *
+     * @param projectId       项目id
+     * @param clusterId       集群id
+     * @param projectToDelete 要删除权限的项目id
+     * @return NO_CONTENT
+     */
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "删除集群下该项目的权限")
+    @DeleteMapping(value = "/{cluster_id}/permission")
+    public ResponseEntity deletePermissionOfProject(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "集群id", required = true)
+            @PathVariable(value = "cluster_id") Long clusterId,
+            @ApiParam(value = "要删除权限的项目id", required = true)
+            @RequestParam(value = "delete_project_id") Long projectToDelete) {
+        devopsClusterService.deletePermissionOfProject(clusterId, projectToDelete);
+        return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
 
