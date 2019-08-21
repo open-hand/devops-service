@@ -3,6 +3,8 @@ package io.choerodon.devops.api.controller.v1;
 import java.util.List;
 import java.util.Optional;
 
+import javax.validation.Valid;
+
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.domain.PageRequest;
@@ -206,6 +208,27 @@ public class DevopsClusterController {
             @ApiParam(value = "查询参数")
             @RequestBody String params) {
         return new ResponseEntity<>(devopsClusterService.listNonRelatedProjects(projectId, clusterId, params), HttpStatus.OK);
+    }
+
+    /**
+     * 集群下为项目分配权限
+     *
+     * @param clusterId                       集群id
+     * @param devopsClusterPermissionUpdateVO 权限分配信息
+     */
+    @Permission(type = ResourceType.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "集群下为项目分配权限")
+    @PostMapping(value = "/{cluster_id}/permission")
+    public ResponseEntity updateEnvUserPermission(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "集群id", required = true)
+            @PathVariable(value = "cluster_id") Long clusterId,
+            @ApiParam(value = "权限分配信息")
+            @RequestBody @Valid DevopsClusterPermissionUpdateVO devopsClusterPermissionUpdateVO) {
+        devopsClusterService.assignPermission(clusterId, devopsClusterPermissionUpdateVO);
+        return new ResponseEntity(HttpStatus.OK);
     }
 
     /**

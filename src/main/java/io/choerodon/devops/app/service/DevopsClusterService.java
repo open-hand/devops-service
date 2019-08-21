@@ -70,6 +70,14 @@ public interface DevopsClusterService {
     List<ProjectReqVO> listNonRelatedProjects(Long projectId, Long clusterId, String params);
 
     /**
+     * 分配权限
+     *
+     * @param clusterId                       集群id
+     * @param devopsClusterPermissionUpdateVO 集群权限信息
+     */
+    void assignPermission(Long clusterId, DevopsClusterPermissionUpdateVO devopsClusterPermissionUpdateVO);
+
+    /**
      * 删除该项目对该集群的权限
      *
      * @param clusterId 集群id

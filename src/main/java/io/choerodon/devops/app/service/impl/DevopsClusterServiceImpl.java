@@ -217,6 +217,62 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
+    @Override
+    public void assignPermission(Long clusterId, DevopsClusterPermissionUpdateVO update) {
+        DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(clusterId);
+        if (devopsClusterDTO == null) {
+            throw new CommonException("error.cluster.not.exist", clusterId);
+        }
+
+        if (devopsClusterDTO.getSkipCheckProjectPermission()) {
+            if (update.getSkipCheckPermission()) {
+                // 原来跳过，现在也跳过，不处理
+                return;
+            } else {
+                // 原来跳过，现在不跳过，先更新字段，然后插入关联关系
+                updateSkipPermissionCheck(
+                        update.getClusterId(),
+                        update.getSkipCheckPermission(),
+                        update.getObjectVersionNumber());
+
+                devopsClusterProPermissionService.batchInsertIgnore(
+                        update.getClusterId(),
+                        update.getProjectIds());
+            }
+        } else {
+            // 原来不跳过，现在跳过，更新集群权限字段，再删除所有数据库中与该集群有关的关联关系
+            if (update.getSkipCheckPermission()) {
+                updateSkipPermissionCheck(
+                        update.getClusterId(),
+                        update.getSkipCheckPermission(),
+                        update.getObjectVersionNumber());
+
+                devopsClusterProPermissionService.baseDeleteByClusterId(update.getClusterId());
+            } else {
+                // 原来不跳过，现在也不跳过，批量添加权限
+                devopsClusterProPermissionService.batchInsertIgnore(
+                        update.getClusterId(),
+                        update.getProjectIds());
+            }
+        }
+    }
+
+    /**
+     * 更新集群的权限校验字段
+     *
+     * @param clusterId           集群id
+     * @param skipCheckPermission 是否跳过权限校验
+     * @param objectVersionNumber 版本号
+     */
+    private void updateSkipPermissionCheck(Long clusterId, Boolean skipCheckPermission, Long objectVersionNumber) {
+        DevopsClusterDTO toUpdate = new DevopsClusterDTO();
+        toUpdate.setId(clusterId);
+        toUpdate.setObjectVersionNumber(objectVersionNumber);
+        toUpdate.setSkipCheckProjectPermission(skipCheckPermission);
+        devopsClusterMapper.updateByPrimaryKeySelective(toUpdate);
+    }
+
     @Override
     public void deletePermissionOfProject(Long clusterId, Long projectId) {
         DevopsClusterProPermissionDTO permission = new DevopsClusterProPermissionDTO();
