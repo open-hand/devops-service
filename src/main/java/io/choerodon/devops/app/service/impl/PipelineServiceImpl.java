@@ -287,6 +287,10 @@ public class PipelineServiceImpl implements PipelineService {
                     List<PipelineTaskVO> pipelineTaskVOS = ConvertUtils.convertList(pipelineTaskService.baseQueryTaskByStageId(stage.getId()), PipelineTaskVO.class);
                     pipelineTaskVOS = pipelineTaskVOS.stream().peek(task -> {
                         if (task.getAppServiceDeployId() != null) {
+                            PipelineAppServiceDeployDTO appServiceDeployDTO = pipelineAppDeployService.baseQueryById(task.getAppServiceDeployId());
+                            if (appServiceDeployDTO == null) {
+                                throw new CommonException("error.get.pipeline.deploy");
+                            }
                             task.setPipelineAppServiceDeployVO(deployDtoToVo(pipelineAppDeployService.baseQueryById(task.getAppServiceDeployId())));
                         } else {
                             task.setTaskUserRels(userRelationshipService.baseListByOptions(null, null, task.getId()).stream().map(PipelineUserRelationshipDTO::getUserId).collect(Collectors.toList()));
@@ -1547,7 +1551,7 @@ public class PipelineServiceImpl implements PipelineService {
         PipelineDTO pipelineDO = new PipelineDTO();
         pipelineDO.setProjectId(projectId);
         pipelineDO.setName(name);
-        if (pipelineMapper.select(pipelineDO).size() > 0) {
+        if (!pipelineMapper.select(pipelineDO).isEmpty()) {
             throw new CommonException("error.pipeline.name.exit");
         }
     }
@@ -1571,7 +1575,7 @@ public class PipelineServiceImpl implements PipelineService {
 
     private PipelineAppServiceDeployDTO deployVoToDto(PipelineAppServiceDeployVO appServiceDeployVO) {
         PipelineAppServiceDeployDTO appServiceDeployDTO = new PipelineAppServiceDeployDTO();
-        BeanUtils.copyProperties(appServiceDeployVO,appServiceDeployDTO);
+        BeanUtils.copyProperties(appServiceDeployVO, appServiceDeployDTO);
         if (appServiceDeployVO.getTriggerVersion() != null && !appServiceDeployVO.getTriggerVersion().isEmpty()) {
             appServiceDeployDTO.setTriggerVersion(String.join(",", appServiceDeployVO.getTriggerVersion()));
         }
