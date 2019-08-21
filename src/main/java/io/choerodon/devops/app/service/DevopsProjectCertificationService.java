@@ -17,6 +17,17 @@ public interface DevopsProjectCertificationService {
      */
     void assignPermission(ProjectCertificationPermissionUpdateVO permissionUpdateVO);
 
+    /**
+     * 分页查询证书下已有权限的项目列表
+     *
+     * @param projectId   项目id
+     * @param certId      证书id
+     * @param pageRequest 分页参数
+     * @param params      查询参数
+     * @return List
+     */
+    PageInfo<ProjectReqVO> pageRelatedProjects(Long projectId, Long certId, PageRequest pageRequest, String params);
+
     void create(Long projectId, MultipartFile key, MultipartFile cert, ProjectCertificationVO projectCertificationVO);
 
     void update(Long certId, ProjectCertificationVO projectCertificationVO);

@@ -10,8 +10,8 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.vo.ProjectCertificationVO;
 import io.choerodon.devops.api.vo.ProjectCertificationPermissionUpdateVO;
+import io.choerodon.devops.api.vo.ProjectCertificationVO;
 import io.choerodon.devops.api.vo.ProjectReqVO;
 import io.choerodon.devops.app.service.DevopsProjectCertificationService;
 import io.choerodon.swagger.annotation.CustomPageRequest;
@@ -112,27 +112,75 @@ public class ProjectCertificationController {
         devopsProjectCertificationService.checkName(projectId, name);
     }
 
+//    /**
+//     * TODO 先注释，发版前删除
+//     * 分页查询项目列表
+//     *
+//     * @param projectId 项目id
+//     * @return Page
+//     */
+//    @Permission(type = ResourceType.PROJECT,
+//            roles = {InitRoleCode.PROJECT_OWNER})
+//    @ApiOperation(value = "分页查询项目列表")
+//    @CustomPageRequest
+//    @PostMapping("/page_projects")
+//    public ResponseEntity<PageInfo<ProjectReqVO>> pageProjects(
+//            @ApiParam(value = "项目ID", required = true)
+//            @PathVariable(value = "project_id") Long projectId,
+//            @ApiParam(value = "分页参数")
+//            @ApiIgnore PageRequest pageRequest,
+//            @ApiParam(value = "证书Id")
+//            @RequestParam(required = false) Long certId,
+//            @ApiParam(value = "模糊搜索参数")
+//            @RequestBody String[] params) {
+//        return Optional.ofNullable(devopsProjectCertificationService.pageProjects(projectId, certId, pageRequest, params))
+//                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+//                .orElseThrow(() -> new CommonException("error.project.query"));
+//    }
+
+//    /**
+//     * TODO 先注释，发版前删除
+//     * 查询已有权限的项目列表
+//     *
+//     * @param projectId 项目id
+//     * @return List
+//     */
+//    @Permission(type = ResourceType.PROJECT,
+//            roles = {InitRoleCode.PROJECT_OWNER})
+//    @ApiOperation(value = "查询已有权限的项目列表")
+//    @GetMapping("/list_cert_projects/{cert_id}")
+//    public ResponseEntity<List<ProjectReqVO>> listCertProjects(
+//            @ApiParam(value = "项目ID", required = true)
+//            @PathVariable(value = "project_id") Long projectId,
+//            @ApiParam(value = "证书Id")
+//            @PathVariable(value = "cert_id") Long certId) {
+//        return Optional.ofNullable(devopsProjectCertificationService.listCertProjects(certId))
+//                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+//                .orElseThrow(() -> new CommonException("error.project.query"));
+//    }
+
     /**
-     * 分页查询项目列表
+     * 分页查询证书下已有权限的项目列表
      *
-     * @param projectId 项目id
-     * @return Page
+     * @param projectId   项目id
+     * @param certId      证书id
+     * @param pageRequest 分页参数
+     * @param params      查询参数
+     * @return page
      */
-    @Permission(type = ResourceType.PROJECT,
-            roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "分页查询项目列表")
-    @CustomPageRequest
-    @PostMapping("/page_projects")
-    public ResponseEntity<PageInfo<ProjectReqVO>> pageProjects(
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_ADMINISTRATOR})
+    @ApiOperation(value = "分页查询证书下已有权限的项目列表")
+    @PostMapping("/{cert_id}/permission/page_related")
+    public ResponseEntity<PageInfo<ProjectReqVO>> pageRelatedProjects(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "证书Id")
+            @PathVariable(value = "cert_id") Long certId,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageRequest,
-            @ApiParam(value = "证书Id")
-            @RequestParam(required = false) Long certId,
             @ApiParam(value = "模糊搜索参数")
-            @RequestBody String[] params) {
-        return Optional.ofNullable(devopsProjectCertificationService.pageProjects(projectId, certId, pageRequest, params))
+            @RequestBody(required = false) String params) {
+        return Optional.ofNullable(devopsProjectCertificationService.pageRelatedProjects(projectId, certId, pageRequest, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.project.query"));
     }

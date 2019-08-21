@@ -339,9 +339,10 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
                 // 如果要搜索，需要手动在程序内分页
                 ProjectDTO iamProjectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
 
+                // 手动查出所有组织下的项目
                 PageInfo<ProjectDTO> filteredProjects = baseServiceClientOperator.pageProjectByOrgId(
                         iamProjectDTO.getOrganizationId(),
-                        pageRequest.getPage(), pageRequest.getSize(), null,
+                        0, 0, null,
                         paramList.toArray(new String[0]));
 
                 // 数据库中的有权限的项目

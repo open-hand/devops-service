@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -14,26 +15,22 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.ProjectCertificationPermissionUpdateVO;
 import io.choerodon.devops.api.vo.ProjectCertificationVO;
 import io.choerodon.devops.api.vo.ProjectReqVO;
-import io.choerodon.devops.app.service.CertificationService;
-import io.choerodon.devops.app.service.DevopsCertificationProRelationshipService;
-import io.choerodon.devops.app.service.DevopsProjectCertificationService;
-import io.choerodon.devops.app.service.IamService;
+import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.CertificationDTO;
 import io.choerodon.devops.infra.dto.CertificationFileDTO;
 import io.choerodon.devops.infra.dto.DevopsCertificationProRelationshipDTO;
+import io.choerodon.devops.infra.dto.DevopsClusterProPermissionDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCertificationMapper;
-import io.choerodon.devops.infra.util.FileUtil;
-import io.choerodon.devops.infra.util.GenerateUUID;
-import io.choerodon.devops.infra.util.SslUtil;
-import io.choerodon.devops.infra.util.TypeUtil;
+import io.choerodon.devops.infra.util.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
@@ -51,6 +48,8 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
     private DevopsCertificationMapper devopsCertificationMapper;
+    @Autowired
+    private DevopsProjectService devopsProjectService;
 
     @Transactional(propagation = Propagation.REQUIRED)
     @Override
@@ -93,6 +92,57 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
                 devopsCertificationProRelationshipService.batchInsertIgnore(
                         update.getCertificationId(),
                         update.getProjectIds());
+            }
+        }
+    }
+
+    @Override
+    public PageInfo<ProjectReqVO> pageRelatedProjects(Long projectId, Long certId, PageRequest pageRequest, String params) {
+        CertificationDTO certificationDTO = certificationService.baseQueryById(certId);
+        if (certificationDTO == null) {
+            throw new CommonException("error.certification.not.exist", certId);
+        }
+
+        // 如果跳过权限检查
+        if (Boolean.TRUE.equals(certificationDTO.getSkipCheckProjectPermission())) {
+            return devopsProjectService.pageProjects(projectId, pageRequest, params);
+        } else {
+            // 如果没有跳过权限检查
+            Map<String, Object> map = TypeUtil.castMapParams(params);
+            List<String> paramList = TypeUtil.cast(map.get(TypeUtil.PARAMS));
+            if (CollectionUtils.isEmpty(paramList)) {
+                // 如果不搜索，在数据库中进行分页
+                PageInfo<DevopsClusterProPermissionDTO> relationPage = PageHelper.startPage(
+                        pageRequest.getPage(), pageRequest.getSize())
+                        .doSelectPageInfo(() -> devopsCertificationProRelationshipService.baseListByCertificationId(certId));
+                return ConvertUtils.convertPage(relationPage, permission -> {
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(permission.getProjectId());
+                    return new ProjectReqVO(permission.getProjectId(), projectDTO.getName(), projectDTO.getCode());
+                });
+            } else {
+                // 如果要搜索，需要手动在程序内分页
+                ProjectDTO iamProjectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+
+                // 手动查出所有组织下的项目
+                PageInfo<ProjectDTO> filteredProjects = baseServiceClientOperator.pageProjectByOrgId(
+                        iamProjectDTO.getOrganizationId(),
+                        0, 0, null,
+                        paramList.toArray(new String[0]));
+
+                // 数据库中的有权限的项目
+                List<Long> permissions = devopsCertificationProRelationshipService.baseListByCertificationId(certId)
+                        .stream()
+                        .map(DevopsCertificationProRelationshipDTO::getProjectId)
+                        .collect(Collectors.toList());
+
+                // 过滤出在数据库中有权限的项目信息
+                List<ProjectReqVO> allMatched = filteredProjects.getList()
+                        .stream()
+                        .filter(p -> permissions.contains(p.getId()))
+                        .map(p -> ConvertUtils.convertObject(p, ProjectReqVO.class))
+                        .collect(Collectors.toList());
+
+                return PageInfoUtil.createPageFromList(allMatched, pageRequest);
             }
         }
     }
