@@ -30,6 +30,8 @@ public class AppServiceShareRuleVO {
     @ApiModelProperty("共享到指定应用,应用名称")
     private String appName;
 
+    private Long objectVersionNumber;
+
     public String getProjectName() {
         return projectName;
     }
@@ -92,5 +94,13 @@ public class AppServiceShareRuleVO {
 
     public void setAppName(String appName) {
         this.appName = appName;
+    }
+
+    public Long getObjectVersionNumber() {
+        return objectVersionNumber;
+    }
+
+    public void setObjectVersionNumber(Long objectVersionNumber) {
+        this.objectVersionNumber = objectVersionNumber;
     }
 }
