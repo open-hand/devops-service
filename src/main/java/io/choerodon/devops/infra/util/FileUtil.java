@@ -6,7 +6,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
@@ -22,7 +21,9 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.KeyPair;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
+import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.apache.commons.compress.utils.IOUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
@@ -945,6 +946,99 @@ public class FileUtil {
         options.setAllowReadOnlyProperties(true);
         Yaml newYaml = new Yaml(options);
         return newYaml;
+    }
+
+    /**
+     * 归档
+     *
+     * @param entry
+     * @return
+     * @throws IOException
+     */
+    public static String archive(String entry, String outputFilePath) throws IOException {
+        File file = new File(entry);
+
+        TarArchiveOutputStream tos = new TarArchiveOutputStream(new FileOutputStream(outputFilePath + ".tar"));
+        String base = file.getName();
+        if (file.isDirectory()) {
+            archiveDir(file, tos, base);
+        } else {
+            archiveHandle(tos, file, base);
+        }
+
+        tos.close();
+        return file.getAbsolutePath() + ".tar";
+    }
+
+    /**
+     * 递归处理，准备好路径
+     *
+     * @param file
+     * @param tos
+     * @throws IOException
+     */
+    private static void archiveDir(File file, TarArchiveOutputStream tos, String basePath) throws IOException {
+        File[] listFiles = file.listFiles();
+        for (File fi : listFiles) {
+            if (fi.isDirectory()) {
+                archiveDir(fi, tos, basePath + File.separator + fi.getName());
+            } else {
+                archiveHandle(tos, fi, basePath);
+            }
+        }
+    }
+
+    /**
+     * 具体归档处理（文件）
+     *
+     * @param tos
+     * @param fi
+     * @throws IOException
+     */
+    private static void archiveHandle(TarArchiveOutputStream tos, File fi, String basePath) throws IOException {
+        TarArchiveEntry tEntry = new TarArchiveEntry(basePath + File.separator + fi.getName());
+        tEntry.setSize(fi.length());
+
+        tos.putArchiveEntry(tEntry);
+
+        try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(fi))) {
+
+            byte[] buffer = new byte[1024];
+            int read = -1;
+            while ((read = bis.read(buffer)) != -1) {
+                tos.write(buffer, 0, read);
+            }
+            bis.close();
+        }
+        tos.closeArchiveEntry();//这里必须写，否则会失败
+    }
+
+    /**
+     * 把tar包压缩成gz
+     *
+     * @param path
+     * @return
+     * @throws IOException
+     */
+    public static String compressArchive(String path, String fileName) throws IOException {
+        try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(path));
+             GzipCompressorOutputStream gcos = new GzipCompressorOutputStream(new BufferedOutputStream(new FileOutputStream(fileName + ".tgz")))) {
+            byte[] buffer = new byte[1024];
+            int read = -1;
+            while ((read = bis.read(buffer)) != -1) {
+                gcos.write(buffer, 0, read);
+            }
+        }
+        return fileName + ".tgz";
+    }
+
+    public static void toTgz(String inputFilePath, String outputFilePath) {
+        try {
+            String tarFilePath = archive(inputFilePath, outputFilePath);
+            compressArchive(tarFilePath, inputFilePath);
+        } catch (IOException e) {
+            throw new CommonException("error.package.tgz");
+        }
     }
 
 }

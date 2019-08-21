@@ -35,7 +35,6 @@ public class OrgAppMarketController {
     @Autowired
     private OrgAppMarketService orgAppMarketService;
 
-
     @Permission(type = ResourceType.SITE, permissionWithin = true)
     @ApiOperation(value = "查询所有应用服务")
     @GetMapping("/list_app_services")
@@ -70,20 +69,6 @@ public class OrgAppMarketController {
     }
 
     /**
-     * @param appMarketUploadVO
-     * @return
-     */
-    @Permission(type = ResourceType.SITE, permissionWithin = true)
-    @ApiOperation(value = "打包并上传文件")
-    @PostMapping("/upload")
-    public ResponseEntity upload(
-            @ApiParam(value = "应用信息", required = true)
-            @RequestBody AppMarketUploadVO appMarketUploadVO) {
-        orgAppMarketService.upload(appMarketUploadVO);
-        return new ResponseEntity(HttpStatus.NO_CONTENT);
-    }
-
-    /**
      * @param appServiceId
      * @return
      */
@@ -100,7 +85,6 @@ public class OrgAppMarketController {
     }
 
     /**
-     *
      * @param harborMarketVO
      * @return
      */
@@ -108,7 +92,7 @@ public class OrgAppMarketController {
     @ApiOperation(value = "创建harbor仓库")
     @PostMapping("/harbor_repo")
     public ResponseEntity<String> createHarborRepository(
-            @ApiParam(value = "应用信息",required = true)
+            @ApiParam(value = "应用信息", required = true)
             @RequestBody HarborMarketVO harborMarketVO) {
         return Optional.ofNullable(
                 orgAppMarketService.createHarborRepository(harborMarketVO))
@@ -117,7 +101,20 @@ public class OrgAppMarketController {
     }
 
     /**
-     *
+     * @param appMarketUploadVO
+     * @return
+     */
+    @Permission(type = ResourceType.SITE, permissionWithin = true)
+    @ApiOperation(value = "打包并上传文件")
+    @PostMapping("/upload")
+    public ResponseEntity uploadAPP(
+            @ApiParam(value = "应用信息", required = true)
+            @RequestBody AppMarketUploadVO appMarketUploadVO) {
+        orgAppMarketService.uploadAPP(appMarketUploadVO);
+        return new ResponseEntity(HttpStatus.NO_CONTENT);
+    }
+
+    /**
      * @param applicationPayload
      * @return
      */
@@ -125,13 +122,10 @@ public class OrgAppMarketController {
     @ApiOperation(value = "应用下载")
     @PostMapping("/download")
     public ResponseEntity downLoadApp(
-            @ApiParam(value = "应用信息",required = true)
+            @ApiParam(value = "应用信息", required = true)
             @RequestBody AppMarketDownloadPayload applicationPayload) {
         orgAppMarketService.downLoadApp(applicationPayload);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
-
-
-
 }
 

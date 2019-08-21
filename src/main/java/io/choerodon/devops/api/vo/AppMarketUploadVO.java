@@ -33,6 +33,9 @@ public class AppMarketUploadVO {
     @ApiModelProperty("SAAS平台getaway URL")
     private String saasGetawayUrl;
 
+    @ApiModelProperty("应用版本")
+    private String appVersion;
+
     public String getAppCode() {
         return appCode;
     }
@@ -87,5 +90,13 @@ public class AppMarketUploadVO {
 
     public void setSaasGetawayUrl(String saasGetawayUrl) {
         this.saasGetawayUrl = saasGetawayUrl;
+    }
+
+    public String getAppVersion() {
+        return appVersion;
+    }
+
+    public void setAppVersion(String appVersion) {
+        this.appVersion = appVersion;
     }
 }
