@@ -141,29 +141,6 @@ public class DevopsClusterController {
         devopsClusterService.checkCode(projectId, code);
     }
 
-    /**
-     * 分页查询项目列表
-     *
-     * @param projectId 项目id
-     * @return Page
-     */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_ADMINISTRATOR})
-    @ApiOperation(value = "分页查询项目列表")
-    @CustomPageRequest
-    @PostMapping("/page_projects")
-    public ResponseEntity<PageInfo<ProjectReqVO>> pageProjects(
-            @ApiParam(value = "项目ID", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "分页参数")
-            @ApiIgnore PageRequest pageRequest,
-            @ApiParam(value = "集群Id")
-            @RequestParam(required = false) Long clusterId,
-            @ApiParam(value = "模糊搜索参数")
-            @RequestBody String[] params) {
-        return Optional.ofNullable(devopsClusterService.pageProjects(projectId, clusterId, pageRequest, params))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.project.query"));
-    }
 
     /**
      * 查询集群下已有权限的项目列表

@@ -141,32 +141,6 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     }
 
     @Override
-    public PageInfo<ProjectReqVO> pageProjects(Long projectId, Long clusterId, PageRequest pageRequest,
-                                               String[] params) {
-        ProjectDTO iamProjectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-
-        PageInfo<ProjectDTO> projectDTOPageInfo = baseServiceClientOperator
-                .pageProjectByOrgId(iamProjectDTO.getOrganizationId(), pageRequest.getPage(), pageRequest.getSize(), null, params);
-        PageInfo<ProjectReqVO> projectReqVOPageInfo = ConvertUtils.convertPage(projectDTOPageInfo, ProjectReqVO.class);
-        List<ProjectReqVO> projectDTOS = new ArrayList<>();
-        if (!projectDTOPageInfo.getList().isEmpty()) {
-            List<Long> projectIds;
-            if (clusterId != null) {
-                projectIds = devopsClusterProPermissionService.baseListByClusterId(clusterId).stream()
-                        .map(DevopsClusterProPermissionDTO::getProjectId).collect(Collectors.toList());
-            } else {
-                projectIds = new ArrayList<>();
-            }
-            projectDTOPageInfo.getList().forEach(projectDO -> {
-                ProjectReqVO projectDTO = new ProjectReqVO(projectDO.getId(), projectDO.getName(), projectDO.getCode(), projectIds.contains(projectDO.getId()));
-                projectDTOS.add(projectDTO);
-            });
-        }
-        projectReqVOPageInfo.setList(projectDTOS);
-        return projectReqVOPageInfo;
-    }
-
-    @Override
     public String queryShell(Long clusterId) {
         DevopsClusterRepVO devopsClusterRepVO = getDevopsClusterStatus(clusterId);
         InputStream inputStream;

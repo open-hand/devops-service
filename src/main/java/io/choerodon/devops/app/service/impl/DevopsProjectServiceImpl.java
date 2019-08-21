@@ -1,10 +1,19 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.List;
+import java.util.Map;
+
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.ProjectReqVO;
 import io.choerodon.devops.app.eventhandler.payload.ProjectPayload;
 import io.choerodon.devops.app.service.DevopsProjectService;
 import io.choerodon.devops.infra.dto.DevopsProjectDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsProjectMapper;
+import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.TypeUtil;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +26,8 @@ import org.springframework.stereotype.Service;
 public class DevopsProjectServiceImpl implements DevopsProjectService {
     @Autowired
     private DevopsProjectMapper devopsProjectMapper;
+    @Autowired
+    private BaseServiceClientOperator baseServiceClientOperator;
 
     @Override
     public boolean queryProjectGitlabGroupReady(Long projectId) {
@@ -101,5 +112,20 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
         DevopsProjectDTO devopsProjectDTO = new DevopsProjectDTO();
         devopsProjectDTO.setAppId(appId);
         return devopsProjectMapper.selectOne(devopsProjectDTO).getIamProjectId();
+    }
+
+    @Override
+    public PageInfo<ProjectReqVO> pageProjects(Long projectId, PageRequest pageRequest, String searchParams) {
+        Map<String, Object> searchMap = TypeUtil.castMapParams(searchParams);
+        List<String> paramList = TypeUtil.cast(searchMap.get(TypeUtil.PARAMS));
+
+        ProjectDTO iamProjectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+
+        PageInfo<ProjectDTO> projectDTOPageInfo = baseServiceClientOperator.pageProjectByOrgId(
+                iamProjectDTO.getOrganizationId(),
+                pageRequest.getPage(), pageRequest.getSize(),
+                null,
+                paramList.toArray(new String[0]));
+        return ConvertUtils.convertPage(projectDTOPageInfo, ProjectReqVO.class);
     }
 }

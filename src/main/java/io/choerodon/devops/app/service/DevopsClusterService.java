@@ -36,16 +36,6 @@ public interface DevopsClusterService {
      */
     void checkName(Long projectId, String name);
 
-    /**
-     * 分页查询项目列表
-     *
-     * @param projectId   项目id
-     * @param clusterId   集群id
-     * @param pageRequest 分页参数
-     * @param params      查询参数
-     * @return 项目信息
-     */
-    PageInfo<ProjectReqVO> pageProjects(Long projectId, Long clusterId, PageRequest pageRequest, String[] params);
 
     String queryShell(Long clusterId);
 
