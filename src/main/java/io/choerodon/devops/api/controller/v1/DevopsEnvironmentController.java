@@ -53,21 +53,22 @@ public class DevopsEnvironmentController {
     }
 
     /**
+     * 先注释掉，发版前删除
      * 项目下查询环境
      *
      * @param projectId 项目id
      * @return List
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "项目下查询存在网络环境")
-    @GetMapping(value = "/list_by_deployed")
-    public ResponseEntity<List<DevopsEnviromentRepVO>> listByDeployed(
-            @ApiParam(value = "项目id", required = true)
-            @PathVariable(value = "project_id") Long projectId) {
-        return Optional.ofNullable(devopsEnvironmentService.listDeployed(projectId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.service.environment.get"));
-    }
+//    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+//    @ApiOperation(value = "项目下查询存在网络环境")
+//    @GetMapping(value = "/list_by_deployed")
+//    public ResponseEntity<List<DevopsEnviromentRepVO>> listByDeployed(
+//            @ApiParam(value = "项目id", required = true)
+//            @PathVariable(value = "project_id") Long projectId) {
+//        return Optional.ofNullable(devopsEnvironmentService.listDeployed(projectId))
+//                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+//                .orElseThrow(() -> new CommonException("error.service.environment.get"));
+//    }
 
 
     /**
@@ -339,6 +340,7 @@ public class DevopsEnvironmentController {
     }
 
     /**
+     * 先注释掉，发版前删除
      * 分页查询项目下用户权限
      *
      * @param projectId   项目id
@@ -346,25 +348,25 @@ public class DevopsEnvironmentController {
      * @param envId       环境id
      * @return page
      */
-    @Permission(type = ResourceType.PROJECT,
-            roles = {InitRoleCode.PROJECT_OWNER})
-    @CustomPageRequest
-    @ApiOperation(value = "分页查询项目下用户权限")
-    @PostMapping(value = "/page_by_options")
-    public ResponseEntity<PageInfo<DevopsEnvUserVO>> listUserPermissionByEnvId(
-            @ApiParam(value = "项目id", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "分页参数")
-            @ApiIgnore PageRequest pageRequest,
-            @ApiParam(value = "查询参数")
-            @RequestBody(required = false) String params,
-            @ApiParam(value = "环境id")
-            @RequestParam(value = "env_id", required = false) Long envId) {
-        return Optional.ofNullable(devopsEnvironmentService
-                .listUserPermissionByEnvId(projectId, pageRequest, params, envId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.env.user.permission.get"));
-    }
+//    @Permission(type = ResourceType.PROJECT,
+//            roles = {InitRoleCode.PROJECT_OWNER})
+//    @CustomPageRequest
+//    @ApiOperation(value = "分页查询项目下用户权限")
+//    @PostMapping(value = "/page_by_options")
+//    public ResponseEntity<PageInfo<DevopsEnvUserVO>> listUserPermissionByEnvId(
+//            @ApiParam(value = "项目id", required = true)
+//            @PathVariable(value = "project_id") Long projectId,
+//            @ApiParam(value = "分页参数")
+//            @ApiIgnore PageRequest pageRequest,
+//            @ApiParam(value = "查询参数")
+//            @RequestBody(required = false) String params,
+//            @ApiParam(value = "环境id")
+//            @RequestParam(value = "env_id", required = false) Long envId) {
+//        return Optional.ofNullable(devopsEnvironmentService
+//                .listUserPermissionByEnvId(projectId, pageRequest, params, envId))
+//                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+//                .orElseThrow(() -> new CommonException("error.env.user.permission.get"));
+//    }
 
 
     /**
@@ -442,25 +444,26 @@ public class DevopsEnvironmentController {
     }
 
     /**
+     * 先注释掉，发版前删除
      * 获取环境下所有用户权限（获取所有有环境权限的项目下项目成员）
      *
      * @param projectId 项目id
      * @param envId     环境id
      * @return baseList
      */
-    @Permission(type = ResourceType.PROJECT,
-            roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "获取环境下所有用户权限")
-    @GetMapping(value = "/{env_id}/list_all")
-    public ResponseEntity<List<DevopsEnvUserVO>> listAllUserPermission(
-            @ApiParam(value = "项目id", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "环境id", required = true)
-            @PathVariable(value = "env_id") Long envId) {
-        return Optional.ofNullable(devopsEnvironmentService.listAllUserPermission(envId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.env.user.permission.get"));
-    }
+//    @Permission(type = ResourceType.PROJECT,
+//            roles = {InitRoleCode.PROJECT_OWNER})
+//    @ApiOperation(value = "获取环境下所有用户权限")
+//    @GetMapping(value = "/{env_id}/list_all")
+//    public ResponseEntity<List<DevopsEnvUserVO>> listAllUserPermission(
+//            @ApiParam(value = "项目id", required = true)
+//            @PathVariable(value = "project_id") Long projectId,
+//            @ApiParam(value = "环境id", required = true)
+//            @PathVariable(value = "env_id") Long envId) {
+//        return Optional.ofNullable(devopsEnvironmentService.listAllUserPermission(envId))
+//                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+//                .orElseThrow(() -> new CommonException("error.env.user.permission.get"));
+//    }
 
     /**
      * 环境下为用户分配权限
