@@ -1,10 +1,11 @@
 package io.choerodon.devops.infra.feign;
 
-import java.util.Map;
+import java.util.List;
 
+import okhttp3.MultipartBody;
+import okhttp3.ResponseBody;
 import retrofit2.Call;
-import retrofit2.http.POST;
-import retrofit2.http.QueryMap;
+import retrofit2.http.*;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -13,7 +14,10 @@ import retrofit2.http.QueryMap;
  */
 public interface MarketServiceClient {
 
-    @POST("v1/market_applications/url")
-    Call<Void> uploadFile(@QueryMap Map<String, String> map);
+    @Multipart
+    @POST("v1/market_applications/upload")
+    Call<Void> uploadFile(@Query("app_version") String appVersion, @Query("image_url") String imageUrl, @Part List<MultipartBody.Part> list);
 
+    @GET
+    Call<ResponseBody> downloadFile();
 }

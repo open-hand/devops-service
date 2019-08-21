@@ -14,6 +14,12 @@ public class AppServiceVersionDownloadPayload {
     @ApiModelProperty("镜像地址")
     private String image;
 
+    @ApiModelProperty("源码文件地址")
+    private String repoFilePath;
+
+    @ApiModelProperty("chart文件地址")
+    private String chartFilePath;
+
     public String getVersion() {
         return version;
     }
@@ -30,4 +36,19 @@ public class AppServiceVersionDownloadPayload {
         this.image = image;
     }
 
+    public String getRepoFilePath() {
+        return repoFilePath;
+    }
+
+    public void setRepoFilePath(String repoFilePath) {
+        this.repoFilePath = repoFilePath;
+    }
+
+    public String getChartFilePath() {
+        return chartFilePath;
+    }
+
+    public void setChartFilePath(String chartFilePath) {
+        this.chartFilePath = chartFilePath;
+    }
 }
