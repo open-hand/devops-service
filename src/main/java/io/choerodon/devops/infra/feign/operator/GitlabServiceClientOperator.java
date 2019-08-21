@@ -775,4 +775,13 @@ public class GitlabServiceClientOperator {
             throw new CommonException(e);
         }
     }
+
+    public String getAdminToken(){
+        try {
+            return gitlabServiceClient.getAdminToken().getBody();
+        }catch (FeignException e){
+            throw new CommonException(e);
+        }
+
+    }
 }

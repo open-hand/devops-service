@@ -1635,7 +1635,9 @@ public class AppServiceServiceImpl implements AppServiceService {
             String accessToken = getToken(appServiceDTO.getGitlabProjectId(), applicationDir, userAttrDTO);
 
             AppServiceVersionDTO applicationVersion = appServiceVersionService.baseQuery(importInternalVO.getVersionId());
-            Git git = gitUtil.cloneAppMarket(applicationDir, applicationVersion.getVersion(), applicationVersion.getRepository());
+            //获取admin的token
+            String adminToken = gitlabServiceClientOperator.getAdminToken();
+            Git git = gitUtil.cloneAppMarket(applicationDir, applicationVersion.getVersion(), applicationVersion.getRepository(),adminToken);
             //push 到远程仓库
             String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
 
