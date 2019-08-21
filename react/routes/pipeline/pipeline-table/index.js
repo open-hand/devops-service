@@ -400,11 +400,6 @@ export default class Pipeline extends Component {
     const filterItem = (collection, predicate) => _.filter(collection, (item) => (Array.isArray(predicate) ? !_.includes(predicate, item) : item !== predicate));
 
     const action = {
-      detail: {
-        service: ['devops-service.pipeline.listRecords'],
-        text: formatMessage({ id: 'pipeline.action.detail' }),
-        action: this.linkToRecord.bind(this, id),
-      },
       execute: {
         service: ['devops-service.pipeline.execute'],
         text: formatMessage({ id: 'pipeline.action.run' }),
@@ -617,7 +612,9 @@ export default class Pipeline extends Component {
           rowKey={(record) => record.id}
         />
       </Content>
-      <PipelineCreate visible={pipelineCreateStore.createVisible} pipelineCreateStore={pipelineCreateStore} />
+      {
+        pipelineCreateStore.createVisible ? <PipelineCreate visible={pipelineCreateStore.createVisible} pipelineCreateStore={pipelineCreateStore} /> : null
+      }
       { 
         pipelineCreateStore.editId ? <PipelineEdit visible={pipelineCreateStore.editVisible} PipelineCreateStore={pipelineCreateStore} refreshTable={this.handleRefresh} /> : null
       }
