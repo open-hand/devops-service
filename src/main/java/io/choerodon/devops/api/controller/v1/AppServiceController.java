@@ -452,12 +452,12 @@ public class AppServiceController {
             @ApiParam(value = "harbor用户名", required = true)
             @RequestParam String userName,
             @ApiParam(value = "harbor密码", required = true)
-            @RequestParam String passWord,
-            @ApiParam(value = "harborProject", required = true)
+            @RequestParam String password,
+            @ApiParam(value = "harborProject", required = false)
             @RequestParam String project,
             @ApiParam(value = "harbor邮箱", required = true)
             @RequestParam String email) {
-        applicationServiceService.checkHarbor(url, userName, passWord, project, email);
+        applicationServiceService.checkHarbor(url, userName, password, project, email);
     }
 
 
