@@ -118,12 +118,12 @@ public interface DevopsGitService {
      * 查看所有合并请求
      *
      * @param projectId
-     * @param applicationId
+     * @param appServiceId
      * @param state
      * @param pageRequest
      * @return
      */
-    MergeRequestTotalVO listMergeRequest(Long projectId, Long applicationId, String state, PageRequest pageRequest);
+    MergeRequestTotalVO listMergeRequest(Long projectId, Long appServiceId, String state, PageRequest pageRequest);
 
     /**
      * 分页获取标签列表

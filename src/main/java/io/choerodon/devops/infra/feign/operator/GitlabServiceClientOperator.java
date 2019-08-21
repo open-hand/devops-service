@@ -107,7 +107,7 @@ public class GitlabServiceClientOperator {
     public MemberDTO queryGroupMember(Integer groupId, Integer userId) {
         MemberDTO memberDTO = gitlabServiceClient.queryGroupMember(
                 groupId, userId).getBody();
-        if (memberDTO.getUserId() == null) {
+        if (memberDTO.getId() == null) {
             return null;
         }
         return memberDTO;
@@ -753,7 +753,7 @@ public class GitlabServiceClientOperator {
     public MemberDTO getProjectMember(Integer projectId, Integer userId) {
         MemberDTO memberDTO = gitlabServiceClient.getProjectMember(
                 projectId, userId).getBody();
-        if (memberDTO.getUserId() == null) {
+        if (memberDTO.getId() == null) {
             return null;
         }
         return memberDTO;

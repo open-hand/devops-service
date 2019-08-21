@@ -97,12 +97,12 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                     devopsProjectDTO = devopsProjectService.baseQueryByProjectId(gitlabGroupMemberVO.getResourceId());
                     memberDTO = gitlabServiceClientOperator.queryGroupMember(
                             TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()), gitlabUserId);
-                    if (memberDTO != null && memberDTO.getUserId() != null) {
+                    if (memberDTO != null && memberDTO.getId() != null) {
                         deleteGitlabRole(memberDTO, devopsProjectDTO, gitlabUserId, false);
                     }
                     memberDTO = gitlabServiceClientOperator.queryGroupMember(
                             TypeUtil.objToInteger(devopsProjectDTO.getDevopsEnvGroupId()), gitlabUserId);
-                    if (memberDTO != null && memberDTO.getUserId() != null) {
+                    if (memberDTO != null && memberDTO.getId() != null) {
                         deleteGitlabRole(memberDTO, devopsProjectDTO, gitlabUserId, true);
                     }
 
@@ -128,7 +128,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
         // 删除角色时同时清除应用的gitlab的权限和在devops的应用-用户权限分配记录
         applicationDTOS.forEach(app -> {
             MemberDTO projectMember = gitlabServiceClientOperator.getProjectMember(app.getGitlabProjectId(), gitlabUserId);
-            if (projectMember != null && projectMember.getUserId() != null) {
+            if (projectMember != null && projectMember.getId() != null) {
                 gitlabServiceClientOperator.deleteProjectMember(app.getGitlabProjectId(), gitlabUserId);
             }
         });
@@ -154,7 +154,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                 .filter(env -> env.getSynchro() != Boolean.FALSE)
                 .forEach(env -> {
                     MemberDTO projectMember = gitlabServiceClientOperator.getProjectMember(env.getGitlabEnvProjectId().intValue(), gitlabUserId);
-                    if (projectMember != null && projectMember.getUserId() != null) {
+                    if (projectMember != null && projectMember.getId() != null) {
                         gitlabServiceClientOperator.deleteProjectMember(env.getGitlabEnvProjectId().intValue(), gitlabUserId);
                     }
                 });
@@ -279,7 +279,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                         .collect(Collectors.toList());
                 gitlabProjectIds.forEach(e -> {
                     MemberDTO projectMember = gitlabServiceClientOperator.getProjectMember(e, gitlabUserId);
-                    if (projectMember != null && projectMember.getUserId() != null) {
+                    if (projectMember != null && projectMember.getId() != null) {
                         gitlabServiceClientOperator.deleteProjectMember(e, gitlabUserId);
                     }
                 });
@@ -333,7 +333,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                         }
                         // 当项目不存在用户权限纪录时(防止失败重试时报成员已存在异常)，添加gitlab用户权限
                         MemberDTO gitlabMemberDTO = gitlabServiceClientOperator.getProjectMember(gitlabProjectId, gitlabUserId);
-                        if (gitlabMemberDTO == null || gitlabMemberDTO.getUserId() == null) {
+                        if (gitlabMemberDTO == null || gitlabMemberDTO.getId() == null) {
                             gitlabServiceClientOperator.createProjectMember(gitlabProjectId, new MemberDTO(gitlabUserId, 30, ""));
                         }
                     }
@@ -373,7 +373,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                         }
                         // 当项目不存在用户权限纪录时(防止失败重试时报成员已存在异常)，添加gitlab用户权限
                         MemberDTO gitlabMemberDTO = gitlabServiceClientOperator.getProjectMember(gitlabProjectId.intValue(), gitlabUserId);
-                        if (gitlabMemberDTO == null || gitlabMemberDTO.getUserId() == null) {
+                        if (gitlabMemberDTO == null || gitlabMemberDTO.getId() == null) {
                             gitlabServiceClientOperator.createProjectMember(gitlabProjectId.intValue(), new MemberDTO(gitlabUserId, AccessLevel.MASTER.value, ""));
                         }
                     }
@@ -395,7 +395,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
             case MASTER:
             case OWNER:
                 MemberDTO requestMember = new MemberDTO();
-                requestMember.setUserId((TypeUtil.objToInteger(userAttrDTO.getGitlabUserId())));
+                requestMember.setId((TypeUtil.objToInteger(userAttrDTO.getGitlabUserId())));
                 requestMember.setAccessLevel(level.toValue());
                 requestMember.setExpiresAt("");
                 if (memberDTO == null) {
