@@ -36,22 +36,22 @@ public class ProjectCertificationController {
     /**
      * 项目下创建证书
      *
-     * @param projectCertificationId 项目Id
+     * @param projectId              项目Id
      * @param projectCertificationVO 证书信息
      */
-    @Permission(type = ResourceType.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下创建证书")
     @PostMapping
     public ResponseEntity create(
             @ApiParam(value = "项目Id", required = true)
-            @PathVariable(value = "project_id") Long projectCertificationId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "证书信息", required = true)
             @ModelAttribute ProjectCertificationVO projectCertificationVO,
             @ApiParam(value = "key文件")
             @RequestParam(value = "key", required = false) MultipartFile key,
             @ApiParam(value = "cert文件")
             @RequestParam(value = "cert", required = false) MultipartFile cert) {
-        devopsProjectCertificationService.create(projectCertificationId, key, cert, projectCertificationVO);
+        devopsProjectCertificationService.create(projectId, key, cert, projectCertificationVO);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -61,7 +61,7 @@ public class ProjectCertificationController {
      * @param project_id             项目Id
      * @param projectCertificationVO 证书项目关联对象
      */
-    @Permission(type = ResourceType.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "更新证书下的项目")
     @PutMapping()
     public ResponseEntity update(
@@ -78,15 +78,15 @@ public class ProjectCertificationController {
     /**
      * 查询单个证书信息
      *
-     * @param projectCertificationId 项目Id
-     * @param certId                 证书Id
+     * @param projectId 项目Id
+     * @param certId    证书Id
      */
-    @Permission(type = ResourceType.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "查询单个证书信息")
     @GetMapping("/{cert_id}")
     public ResponseEntity<ProjectCertificationVO> query(
             @ApiParam(value = "项目Id", required = true)
-            @PathVariable(value = "project_id") Long projectCertificationId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "证书Id")
             @PathVariable(value = "cert_id") Long certId) {
         return Optional.ofNullable(devopsProjectCertificationService.queryCert(certId))
@@ -97,41 +97,41 @@ public class ProjectCertificationController {
     /**
      * 校验证书名唯一性
      *
-     * @param projectCertificationId 项目id
-     * @param name                   证书name
+     * @param projectId 项目id
+     * @param name      证书name
      */
-    @Permission(type = ResourceType.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "校验证书名唯一性")
     @GetMapping(value = "/check_name")
     public void checkName(
             @ApiParam(value = "项目Id", required = true)
-            @PathVariable(value = "project_id") Long projectCertificationId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "证书name", required = true)
             @RequestParam String name) {
-        devopsProjectCertificationService.checkName(projectCertificationId, name);
+        devopsProjectCertificationService.checkName(projectId, name);
     }
 
     /**
      * 分页查询项目列表
      *
-     * @param projectCertificationId 项目id
+     * @param projectId 项目id
      * @return Page
      */
-    @Permission(type = ResourceType.ORGANIZATION,
-            roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
+    @Permission(type = ResourceType.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "分页查询项目列表")
     @CustomPageRequest
     @PostMapping("/page_projects")
     public ResponseEntity<PageInfo<ProjectReqVO>> pageProjects(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable(value = "project_id") Long projectCertificationId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "证书Id")
             @RequestParam(required = false) Long certId,
             @ApiParam(value = "模糊搜索参数")
             @RequestBody String[] params) {
-        return Optional.ofNullable(devopsProjectCertificationService.pageProjects(projectCertificationId, certId, pageRequest, params))
+        return Optional.ofNullable(devopsProjectCertificationService.pageProjects(projectId, certId, pageRequest, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.project.query"));
     }
@@ -139,16 +139,16 @@ public class ProjectCertificationController {
     /**
      * 查询已有权限的项目列表
      *
-     * @param projectCertificationId 项目id
+     * @param projectId 项目id
      * @return List
      */
-    @Permission(type = ResourceType.ORGANIZATION,
-            roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
+    @Permission(type = ResourceType.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "查询已有权限的项目列表")
     @GetMapping("/list_cert_projects/{cert_id}")
     public ResponseEntity<List<ProjectReqVO>> listCertProjects(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable(value = "project_id") Long projectCertificationId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "证书Id")
             @PathVariable(value = "cert_id") Long certId) {
         return Optional.ofNullable(devopsProjectCertificationService.listCertProjects(certId))
@@ -160,22 +160,22 @@ public class ProjectCertificationController {
     /**
      * 项目证书列表查询
      *
-     * @param projectCertificationId 项目ID
+     * @param projectId 项目ID
      * @return Page
      */
-    @Permission(type = ResourceType.ORGANIZATION,
-            roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
+    @Permission(type = ResourceType.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目证书列表查询")
     @CustomPageRequest
     @PostMapping("/page_cert")
     public ResponseEntity<PageInfo<ProjectCertificationVO>> pageOrgCert(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable(value = "project_id") Long projectCertificationId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "查询参数")
             @RequestBody String params) {
-        return Optional.ofNullable(devopsProjectCertificationService.pageCerts(projectCertificationId, pageRequest, params))
+        return Optional.ofNullable(devopsProjectCertificationService.pageCerts(projectId, pageRequest, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.cert.query"));
     }
@@ -183,18 +183,18 @@ public class ProjectCertificationController {
     /**
      * 删除证书
      *
-     * @param projectCertificationId 项目ID
-     * @param certId                 证书Id
+     * @param projectId 项目ID
+     * @param certId    证书Id
      * @return String
      */
-    @Permission(type = ResourceType.ORGANIZATION,
-            roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
+    @Permission(type = ResourceType.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "删除证书")
     @CustomPageRequest
     @DeleteMapping("/{cert_id}")
     public ResponseEntity<String> deleteOrgCert(
             @ApiParam(value = "组织ID", required = true)
-            @PathVariable(value = "project_id") Long projectCertificationId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "证书Id")
             @PathVariable(value = "cert_id") Long certId) {
         devopsProjectCertificationService.deleteCert(certId);
