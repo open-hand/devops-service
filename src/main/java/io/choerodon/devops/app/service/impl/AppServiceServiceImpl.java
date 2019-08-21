@@ -16,26 +16,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
-import io.kubernetes.client.JSON;
-import org.apache.commons.io.filefilter.IOFileFilter;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.ListBranchCommand;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.Ref;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
-import retrofit2.Call;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -75,6 +55,25 @@ import io.choerodon.devops.infra.mapper.AppServiceMapper;
 import io.choerodon.devops.infra.mapper.AppServiceUserRelMapper;
 import io.choerodon.devops.infra.mapper.UserAttrMapper;
 import io.choerodon.devops.infra.util.*;
+import io.kubernetes.client.JSON;
+import org.apache.commons.io.filefilter.IOFileFilter;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.ListBranchCommand;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.Ref;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
+import retrofit2.Call;
+import retrofit2.Response;
+import retrofit2.Retrofit;
 
 
 /**
@@ -207,18 +206,19 @@ public class AppServiceServiceImpl implements AppServiceService {
         devOpsAppServicePayload.setAppServiceId(appServiceDTO.getId());
         devOpsAppServicePayload.setIamProjectId(appServiceDTO.getAppId());
 
-        producer.apply(
-                StartSagaBuilder
-                        .newBuilder()
-                        .withLevel(ResourceLevel.PROJECT)
-                        .withRefType("")
-                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_APPLICATION_SERVICE)
-                        .withPayloadAndSerialize(devOpsAppServicePayload)
-                        .withRefId("")
-                        .withSourceId(projectId),
-                builder -> {
-                });
-        sendCreateAppServiceInfo(appServiceDTO, projectId);
+//        producer.apply(
+//                StartSagaBuilder
+//                        .newBuilder()
+//                        .withLevel(ResourceLevel.PROJECT)
+//                        .withRefType("")
+//                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_APPLICATION_SERVICE)
+//                        .withPayloadAndSerialize(devOpsAppServicePayload)
+//                        .withRefId("")
+//                        .withSourceId(projectId),
+//                builder -> {
+//                });
+        operationApplication(devOpsAppServicePayload);
+//        sendCreateAppServiceInfo(appServiceDTO, projectId);
         return ConvertUtils.convertObject(baseQueryByCode(appServiceDTO.getCode(), appServiceDTO.getAppId()), AppServiceRepVO.class);
     }
 
@@ -2155,7 +2155,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                         gitlabGroupMemberService.delete(devOpsAppServicePayload.getGroupId(), TypeUtil.objToInteger(e));
                     }
                     MemberDTO projectMemberDTO = gitlabGroupMemberService.queryByUserId(devOpsAppServicePayload.getGitlabProjectId(), TypeUtil.objToInteger(e));
-                    if (projectMemberDTO == null || projectMemberDTO.getUserId() == null) {
+                    if (projectMemberDTO == null || projectMemberDTO.getId() == null) {
                         gitlabServiceClientOperator.createProjectMember(devOpsAppServicePayload.getGitlabProjectId(),
                                 new MemberDTO(TypeUtil.objToInteger(e), 30, ""));
                     }
@@ -2175,11 +2175,11 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     private void updateGitlabMemberPermission(DevOpsAppServicePayload devOpsAppServicePayload, Integer gitlabUserId) {
         MemberDTO memberDTO = gitlabGroupMemberService.queryByUserId(devOpsAppServicePayload.getGroupId(), TypeUtil.objToInteger(gitlabUserId));
-        if (memberDTO.getUserId() != null) {
+        if (memberDTO != null) {
             gitlabGroupMemberService.delete(devOpsAppServicePayload.getGroupId(), TypeUtil.objToInteger(gitlabUserId));
         }
         MemberDTO gitlabMemberDTO = gitlabServiceClientOperator.getProjectMember(devOpsAppServicePayload.getGitlabProjectId(), TypeUtil.objToInteger(gitlabUserId));
-        if (gitlabMemberDTO == null || gitlabMemberDTO.getUserId() == null) {
+        if (gitlabMemberDTO == null || gitlabMemberDTO.getId() == null) {
             gitlabServiceClientOperator.createProjectMember(devOpsAppServicePayload.getGitlabProjectId(),
                     new MemberDTO(TypeUtil.objToInteger(gitlabUserId), 30, ""));
         }

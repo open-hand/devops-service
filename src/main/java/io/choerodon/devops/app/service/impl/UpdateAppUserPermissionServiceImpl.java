@@ -82,7 +82,7 @@ public class UpdateAppUserPermissionServiceImpl extends UpdateUserPermissionServ
 
                 addGitlabUserIds = allMemberGitlabIdsWithoutOwner.stream()
                         .filter(e -> !gitlabServiceClientOperator.listMemberByProject(gitlabProjectId).stream()
-                                .map(MemberDTO::getUserId).collect(Collectors.toList()).contains(e))
+                                .map(MemberDTO::getId).collect(Collectors.toList()).contains(e))
                         .collect(Collectors.toList());
 
                 super.updateGitlabUserPermission("app", gitlabGroupId, gitlabProjectId, addGitlabUserIds, new ArrayList<>());

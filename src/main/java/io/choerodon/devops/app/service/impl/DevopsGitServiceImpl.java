@@ -307,18 +307,18 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
 
     @Override
-    public MergeRequestTotalVO listMergeRequest(Long projectId, Long applicationId, String state, PageRequest pageRequest) {
-        applicationService.baseCheckApp(projectId, applicationId);
-        AppServiceDTO applicationDTO = new AppServiceDTO();
-        if (applicationDTO.getGitlabProjectId() == null) {
+    public MergeRequestTotalVO listMergeRequest(Long projectId, Long appServiceId, String state, PageRequest pageRequest) {
+        applicationService.baseCheckApp(projectId, appServiceId);
+        AppServiceDTO appServiceDTO = applicationService.baseQuery(appServiceId);
+        if (appServiceDTO.getGitlabProjectId() == null) {
             throw new CommonException("error.gitlabProjectId.not.exists");
         }
 
         //查询某个应用代码仓库各种状态合并请求的数量
-        DevopsMergeRequestDTO devopsMergeRequestDTO = devopsMergeRequestService.baseCountMergeRequest(applicationDTO.getGitlabProjectId());
+        DevopsMergeRequestDTO devopsMergeRequestDTO = devopsMergeRequestService.baseCountMergeRequest(appServiceDTO.getGitlabProjectId());
 
         PageInfo<DevopsMergeRequestDTO> devopsMergeRequestDTOPageInfo = devopsMergeRequestService
-                .basePageByOptions(applicationDTO.getGitlabProjectId(), state, pageRequest);
+                .basePageByOptions(appServiceDTO.getGitlabProjectId(), state, pageRequest);
 
         List<MergeRequestVO> pageContent = new ArrayList<>();
         List<DevopsMergeRequestDTO> devopsMergeRequestDTOS = devopsMergeRequestDTOPageInfo.getList();

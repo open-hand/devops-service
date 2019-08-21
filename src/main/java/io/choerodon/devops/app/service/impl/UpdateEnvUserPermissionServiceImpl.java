@@ -111,7 +111,7 @@ public class UpdateEnvUserPermissionServiceImpl extends UpdateUserPermissionServ
                 // 获取项目下所有项目成员的gitlabUserIds，过滤掉项目所有者
                 allMemberGitlabIdsWithoutOwner = getAllGitlabMemberWithoutOwner(devopsEnvUserPayload.getIamProjectId());
                 List<Integer> currentGitlabProjectMember = gitlabServiceClientOperator.listMemberByProject(gitlabProjectId).stream()
-                        .map(MemberDTO::getUserId).collect(Collectors.toList());
+                        .map(MemberDTO::getId).collect(Collectors.toList());
 
                 addGitlabUserIds = allMemberGitlabIdsWithoutOwner.stream()
                         .filter(e -> !currentGitlabProjectMember.contains(e))

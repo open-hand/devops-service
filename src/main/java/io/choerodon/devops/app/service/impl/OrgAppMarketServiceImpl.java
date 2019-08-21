@@ -226,9 +226,9 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             //2. 第一次下载创建应用服务
             //2. 分配所在gitlab group 用户权限
             MemberDTO memberDTO = gitlabServiceClientOperator.queryGroupMember(gitlabGroupId, TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
-            if (memberDTO.getUserId() == null || !memberDTO.getAccessLevel().equals(AccessLevel.OWNER.value)) {
+            if (memberDTO.getId() == null || !memberDTO.getAccessLevel().equals(AccessLevel.OWNER.value)) {
                 memberDTO = new MemberDTO();
-                memberDTO.setUserId(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+                memberDTO.setId(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
                 memberDTO.setAccessLevel(AccessLevel.OWNER.value);
                 gitlabServiceClientOperator.createGroupMember(gitlabGroupId, memberDTO);
             }

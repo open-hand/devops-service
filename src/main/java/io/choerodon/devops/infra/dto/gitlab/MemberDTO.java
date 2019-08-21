@@ -8,31 +8,31 @@ import javax.validation.constraints.NotNull;
 public class MemberDTO {
 
     @NotNull
-    private Integer userId;
+    private Integer id;
     @NotNull
     private Integer accessLevel;
     private String expiresAt;
 
     public MemberDTO(@NotNull Integer userId, @NotNull Integer accessLevel, String expiresAt) {
-        this.userId = userId;
+        this.id = userId;
         this.accessLevel = accessLevel;
         this.expiresAt = expiresAt;
     }
 
     public MemberDTO(@NotNull Integer userId, @NotNull Integer accessLevel) {
-        this.userId = userId;
+        this.id = userId;
         this.accessLevel = accessLevel;
     }
 
     public MemberDTO() {
     }
 
-    public Integer getUserId() {
-        return userId;
+    public Integer getId() {
+        return id;
     }
 
-    public void setUserId(Integer userId) {
-        this.userId = userId;
+    public void setId(Integer id) {
+        this.id = id;
     }
 
     public Integer getAccessLevel() {
