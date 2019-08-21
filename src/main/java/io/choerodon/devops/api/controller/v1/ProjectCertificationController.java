@@ -2,26 +2,27 @@ package io.choerodon.devops.api.controller.v1;
 
 import java.util.List;
 import java.util.Optional;
+import javax.validation.Valid;
 
 import com.github.pagehelper.PageInfo;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import springfox.documentation.annotations.ApiIgnore;
-
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.ProjectCertificationVO;
+import io.choerodon.devops.api.vo.ProjectCertificationPermissionUpdateVO;
 import io.choerodon.devops.api.vo.ProjectReqVO;
 import io.choerodon.devops.app.service.DevopsProjectCertificationService;
 import io.choerodon.swagger.annotation.CustomPageRequest;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import springfox.documentation.annotations.ApiIgnore;
 
 /**
  * 泛域名证书
@@ -221,6 +222,27 @@ public class ProjectCertificationController {
         return Optional.ofNullable(devopsProjectCertificationService.pageCerts(projectId, pageRequest, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.cert.query"));
+    }
+
+    /**
+     * 证书下为项目分配权限
+     *
+     * @param certId             证书id
+     * @param permissionUpdateVO 权限分配信息
+     */
+    @Permission(type = ResourceType.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "证书下为项目分配权限")
+    @PostMapping(value = "/{cert_id}/permission")
+    public ResponseEntity assignPermission(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "证书id", required = true)
+            @PathVariable(value = "cert_id") Long certId,
+            @ApiParam(value = "权限分配信息")
+            @RequestBody @Valid ProjectCertificationPermissionUpdateVO permissionUpdateVO) {
+        devopsProjectCertificationService.assignPermission(permissionUpdateVO);
+        return new ResponseEntity(HttpStatus.OK);
     }
 
     /**

@@ -72,10 +72,9 @@ public interface DevopsClusterService {
     /**
      * 分配权限
      *
-     * @param clusterId                       集群id
      * @param devopsClusterPermissionUpdateVO 集群权限信息
      */
-    void assignPermission(Long clusterId, DevopsClusterPermissionUpdateVO devopsClusterPermissionUpdateVO);
+    void assignPermission(DevopsClusterPermissionUpdateVO devopsClusterPermissionUpdateVO);
 
     /**
      * 删除该项目对该集群的权限

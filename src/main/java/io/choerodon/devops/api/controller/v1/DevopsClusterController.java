@@ -2,7 +2,6 @@ package io.choerodon.devops.api.controller.v1;
 
 import java.util.List;
 import java.util.Optional;
-
 import javax.validation.Valid;
 
 import com.github.pagehelper.PageInfo;
@@ -220,14 +219,14 @@ public class DevopsClusterController {
             roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "集群下为项目分配权限")
     @PostMapping(value = "/{cluster_id}/permission")
-    public ResponseEntity updateEnvUserPermission(
+    public ResponseEntity assignPermission(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群id", required = true)
             @PathVariable(value = "cluster_id") Long clusterId,
             @ApiParam(value = "权限分配信息")
             @RequestBody @Valid DevopsClusterPermissionUpdateVO devopsClusterPermissionUpdateVO) {
-        devopsClusterService.assignPermission(clusterId, devopsClusterPermissionUpdateVO);
+        devopsClusterService.assignPermission(devopsClusterPermissionUpdateVO);
         return new ResponseEntity(HttpStatus.OK);
     }
 

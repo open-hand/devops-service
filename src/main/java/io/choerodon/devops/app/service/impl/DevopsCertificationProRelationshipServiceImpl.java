@@ -8,6 +8,8 @@ import io.choerodon.devops.infra.dto.DevopsCertificationProRelationshipDTO;
 import io.choerodon.devops.infra.mapper.DevopsCertificationProRelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author zmf
@@ -41,5 +43,22 @@ public class DevopsCertificationProRelationshipServiceImpl implements DevopsCert
         DevopsCertificationProRelationshipDTO devopsCertificationProRelationshipDTO = new DevopsCertificationProRelationshipDTO();
         devopsCertificationProRelationshipDTO.setCertId(certificationId);
         devopsCertificationProRelMapper.delete(devopsCertificationProRelationshipDTO);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    @Override
+    public void batchInsertIgnore(final Long certId, final List<Long> projectIds) {
+        if (projectIds == null) {
+            return;
+        }
+
+        DevopsCertificationProRelationshipDTO permission = new DevopsCertificationProRelationshipDTO();
+        permission.setCertId(certId);
+        projectIds.forEach(p -> {
+            permission.setProjectId(p);
+            if (devopsCertificationProRelMapper.selectByPrimaryKey(permission) != null) {
+                devopsCertificationProRelMapper.insert(permission);
+            }
+        });
     }
 }

@@ -9,14 +9,9 @@ import java.util.stream.Collectors;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
-
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.ProjectCertificationPermissionUpdateVO;
 import io.choerodon.devops.api.vo.ProjectCertificationVO;
 import io.choerodon.devops.api.vo.ProjectReqVO;
 import io.choerodon.devops.app.service.CertificationService;
@@ -29,15 +24,20 @@ import io.choerodon.devops.infra.dto.DevopsCertificationProRelationshipDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.mapper.DevopsCertificationMapper;
 import io.choerodon.devops.infra.util.FileUtil;
 import io.choerodon.devops.infra.util.GenerateUUID;
 import io.choerodon.devops.infra.util.SslUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class DevopsProjectCertificationServiceImpl implements DevopsProjectCertificationService {
-
-
     private static final String FILE_SEPARATOR = System.getProperty("file.separator");
 
     private Gson gson = new Gson();
@@ -49,6 +49,68 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
     private CertificationService certificationService;
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
+    @Autowired
+    private DevopsCertificationMapper devopsCertificationMapper;
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    @Override
+    public void assignPermission(ProjectCertificationPermissionUpdateVO update) {
+        CertificationDTO certificationDTO = certificationService.baseQueryById(update.getCertificationId());
+        if (certificationDTO == null) {
+            throw new CommonException("error.certification.not.exist", update.getCertificationId());
+        }
+
+        if (certificationDTO.getProjectId() == null) {
+            throw new CommonException("error.not.project.certification", update.getCertificationId());
+        }
+
+        if (certificationDTO.getSkipCheckProjectPermission()) {
+            if (update.getSkipCheckPermission()) {
+                // 原来跳过，现在也跳过，不处理
+                return;
+            } else {
+                // 原来跳过，现在不跳过，先更新字段，然后插入关联关系
+                updateSkipPermissionCheck(
+                        update.getCertificationId(),
+                        update.getSkipCheckPermission(),
+                        update.getObjectVersionNumber());
+
+                devopsCertificationProRelationshipService.batchInsertIgnore(
+                        update.getCertificationId(),
+                        update.getProjectIds());
+            }
+        } else {
+            // 原来不跳过，现在跳过，更新证书权限字段，再删除所有数据库中与该证书有关的关联关系
+            if (update.getSkipCheckPermission()) {
+                updateSkipPermissionCheck(
+                        update.getCertificationId(),
+                        update.getSkipCheckPermission(),
+                        update.getObjectVersionNumber());
+
+                devopsCertificationProRelationshipService.baseDeleteByCertificationId(update.getCertificationId());
+            } else {
+                // 原来不跳过，现在也不跳过，批量添加权限
+                devopsCertificationProRelationshipService.batchInsertIgnore(
+                        update.getCertificationId(),
+                        update.getProjectIds());
+            }
+        }
+    }
+
+    /**
+     * 更新证书的权限校验字段
+     *
+     * @param certId              证书id
+     * @param skipCheckPermission 是否跳过权限校验
+     * @param objectVersionNumber 版本号
+     */
+    private void updateSkipPermissionCheck(Long certId, Boolean skipCheckPermission, Long objectVersionNumber) {
+        CertificationDTO toUpdate = new CertificationDTO();
+        toUpdate.setId(certId);
+        toUpdate.setObjectVersionNumber(objectVersionNumber);
+        toUpdate.setSkipCheckProjectPermission(skipCheckPermission);
+        devopsCertificationMapper.updateByPrimaryKeySelective(toUpdate);
+    }
 
     @Override
     @Transactional

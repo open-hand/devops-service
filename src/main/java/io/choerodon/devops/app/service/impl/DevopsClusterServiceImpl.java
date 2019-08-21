@@ -219,10 +219,10 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
     @Transactional
     @Override
-    public void assignPermission(Long clusterId, DevopsClusterPermissionUpdateVO update) {
-        DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(clusterId);
+    public void assignPermission(DevopsClusterPermissionUpdateVO update) {
+        DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(update.getClusterId());
         if (devopsClusterDTO == null) {
-            throw new CommonException("error.cluster.not.exist", clusterId);
+            throw new CommonException("error.cluster.not.exist", update.getClusterId());
         }
 
         if (devopsClusterDTO.getSkipCheckProjectPermission()) {

@@ -3,13 +3,19 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 
 import com.github.pagehelper.PageInfo;
-import org.springframework.web.multipart.MultipartFile;
-
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.ProjectCertificationVO;
+import io.choerodon.devops.api.vo.ProjectCertificationPermissionUpdateVO;
 import io.choerodon.devops.api.vo.ProjectReqVO;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface DevopsProjectCertificationService {
+    /**
+     * 分配权限
+     *
+     * @param permissionUpdateVO 权限信息
+     */
+    void assignPermission(ProjectCertificationPermissionUpdateVO permissionUpdateVO);
 
     void create(Long projectId, MultipartFile key, MultipartFile cert, ProjectCertificationVO projectCertificationVO);
 
