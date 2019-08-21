@@ -5,7 +5,9 @@ import java.util.Map;
 import javax.validation.Valid;
 
 import com.github.pagehelper.PageInfo;
+
 import io.choerodon.devops.infra.dto.iam.*;
+
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -145,9 +147,9 @@ public interface BaseServiceClient {
     ResponseEntity<ProjectDTO> queryProjectByAppId(@PathVariable("id") Long id);
 
     @GetMapping(value = "/v1/applications/{id}")
-    ResponseEntity<ApplicationDTO> queryAppById(@PathVariable(value = "id")Long id);
+    ResponseEntity<ApplicationDTO> queryAppById(@PathVariable(value = "id") Long id);
 
-    @PutMapping(value="/v1/projects/{project_id}/publish_apps/{id}/fail")
+    @PutMapping(value = "/v1/projects/{project_id}/publish_apps/{id}/fail")
     ResponseEntity<Boolean> publishFail(@PathVariable("project_id") Long projectId,
                                         @PathVariable("id") Long id,
                                         @RequestParam("errorCode") String errorCode);

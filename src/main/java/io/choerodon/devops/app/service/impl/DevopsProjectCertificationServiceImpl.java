@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.github.pagehelper.PageInfo;
@@ -27,9 +28,11 @@ import io.choerodon.devops.infra.dto.CertificationFileDTO;
 import io.choerodon.devops.infra.dto.DevopsCertificationProRelationshipDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.util.FileUtil;
 import io.choerodon.devops.infra.util.GenerateUUID;
 import io.choerodon.devops.infra.util.SslUtil;
+import io.choerodon.devops.infra.util.TypeUtil;
 
 @Service
 public class DevopsProjectCertificationServiceImpl implements DevopsProjectCertificationService {
@@ -44,6 +47,8 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
     private IamService iamService;
     @Autowired
     private CertificationService certificationService;
+    @Autowired
+    private BaseServiceClientOperator baseServiceClientOperator;
 
     @Override
     @Transactional
@@ -144,6 +149,28 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
     }
 
     @Override
+    public List<ProjectReqVO> listNonRelatedMembers(Long projectId, Long certId, String params) {
+        //查询出该项目所属组织下的所有项目
+        Map<String, Object> searchMap = TypeUtil.castMapParams(params);
+        List<String> paramList = TypeUtil.cast(searchMap.get(TypeUtil.PARAMS));
+        ProjectDTO iamProjectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(iamProjectDTO.getOrganizationId());
+        PageInfo<ProjectDTO> projectDTOPageInfo = baseServiceClientOperator.listProject(organizationDTO.getId(), new PageRequest(0, 0), paramList == null ? null : paramList.toArray(new String[0]));
+
+        //查询已经分配权限的项目
+        List<Long> permitted = devopsCertificationProRelationshipService.baseListByCertificationId(certId)
+                .stream()
+                .map(DevopsCertificationProRelationshipDTO::getProjectId)
+                .collect(Collectors.toList());
+
+        //把组织下有权限的项目过滤掉再返回
+        return projectDTOPageInfo.getList().stream()
+                .filter(i -> !permitted.contains(i.getId()))
+                .map(i -> new ProjectReqVO(i.getId(), i.getName(), i.getCode(), null))
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public void deleteCert(Long certId) {
         List<CertificationDTO> certificationDTOS = certificationService.baseListByOrgCertId(certId);
         if (certificationDTOS.isEmpty()) {
@@ -155,9 +182,17 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
     }
 
     @Override
+    public void deletePermissionOfProject(Long projectId, Long certId) {
+        DevopsCertificationProRelationshipDTO devopsCertificationProRelationshipDTO = new DevopsCertificationProRelationshipDTO();
+        devopsCertificationProRelationshipDTO.setProjectId(projectId);
+        devopsCertificationProRelationshipDTO.setCertId(certId);
+        devopsCertificationProRelationshipService.baseDelete(devopsCertificationProRelationshipDTO);
+    }
+
+    @Override
     public PageInfo<ProjectReqVO> pageProjects(Long projectId, Long certId, PageRequest pageRequest,
                                                String[] params) {
-        ProjectDTO currentProjectDTO=iamService.queryIamProject(projectId);
+        ProjectDTO currentProjectDTO = iamService.queryIamProject(projectId);
         PageInfo<ProjectDTO> projectDTOPageInfo = iamService
                 .queryProjectByOrgId(currentProjectDTO.getOrganizationId(), pageRequest.getPage(), pageRequest.getSize(), null, params);
         PageInfo<ProjectReqVO> pageProjectDTOS = new PageInfo<>();
@@ -184,7 +219,7 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
 
     @Override
     public PageInfo<ProjectCertificationVO> pageCerts(Long projectId, PageRequest pageRequest,
-                                                  String params) {
+                                                      String params) {
         PageInfo<CertificationDTO> certificationDTOS = certificationService
                 .basePage(projectId, null, pageRequest, params);
         PageInfo<ProjectCertificationVO> orgCertificationDTOS = new PageInfo<>();
