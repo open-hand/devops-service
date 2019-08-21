@@ -199,4 +199,14 @@ class ProjectCertificationControllerSpec extends Specification {
         devopsCertificationMapper.selectAll().size() == 0
         devopsCertificationProRelMapper.selectAll().size() == 0
     }
+
+    // TODO 该接口通知李浩完成
+    //列出项目下所有与该证书未分配权限的项目成员
+    def "ListAllNonRelatedMembers"() {
+    }
+
+    // TODO 该接口通知李浩完成
+    //删除项目在该证书下的权限
+    def "DeletePermissionOfProject"() {
+    }
 }

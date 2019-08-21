@@ -156,6 +156,49 @@ public class ProjectCertificationController {
                 .orElseThrow(() -> new CommonException("error.project.query"));
     }
 
+    /**
+     * 列出项目下所有与该证书未分配权限的项目
+     *
+     * @param projectId 项目ID
+     * @param certId    证书ID
+     * @param params    搜索参数
+     * @return 所有与该证书未分配权限的项目
+     */
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "列出项目下所有与该证书未分配权限的项目")
+    @PostMapping(value = "/{cert_id}/permission/list_non_related")
+    public ResponseEntity<List<ProjectReqVO>> listAllNonRelatedMembers(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "证书id", required = true)
+            @PathVariable(value = "cert_id") Long certId,
+            @ApiParam(value = "查询参数")
+            @RequestBody(required = false) String params) {
+        return Optional.ofNullable(devopsProjectCertificationService.listNonRelatedMembers(projectId, certId, params))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.get.cert.non.related.project"));
+    }
+
+
+    /**
+     * 删除项目在该证书下的权限
+     *
+     * @param projectId 项目id
+     * @param certId    证书id
+     */
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "删除项目在该证书下的权限")
+    @DeleteMapping(value = "/{cert_id}/permission")
+    public ResponseEntity deletePermissionOfProject(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "证书id", required = true)
+            @PathVariable(value = "cert_id") Long certId,
+            @ApiParam(value = "关联的项目ID", required = true)
+            @RequestParam(value = "related_project_id") Long relatedProjectId) {
+        devopsProjectCertificationService.deletePermissionOfProject(relatedProjectId, certId);
+        return new ResponseEntity(HttpStatus.NO_CONTENT);
+    }
 
     /**
      * 项目证书列表查询
