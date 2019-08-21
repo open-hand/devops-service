@@ -1,18 +1,22 @@
 import React, { createContext, useContext } from 'react';
 import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
-import PipelineStore from '../pipeline-table/stores';
+import useStore from './useStore';
 
 const Store = createContext();
 
+export function useTreeStore() {
+  return useContext(Store);
+}
 
-const StoreProvider = injectIntl(inject('AppState')(
+export const StoreProvider = injectIntl(inject('AppState')(
   (props) => {
     const { children } = props;
+    const treeItemStore = useStore();
 
     const value = {
       ...props,
-      PipelineStore,
+      treeItemStore,
     };
     return (
       <Store.Provider value={value}>
@@ -21,5 +25,3 @@ const StoreProvider = injectIntl(inject('AppState')(
     );
   },
 ));
-
-export default StoreProvider;

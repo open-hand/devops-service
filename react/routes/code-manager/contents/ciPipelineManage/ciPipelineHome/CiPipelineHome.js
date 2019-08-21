@@ -52,9 +52,6 @@ class CiPipelineHome extends Component {
     const { intl: { formatMessage } } = this.props;
     const appData = DevPipelineStore.getAppData;
     const appId = DevPipelineStore.getSelectApp;
-    if (appData && appData.length && appId) {
-      DevopsStore.initAutoRefresh('ci', this.handleRefresh);
-    }
     const titleName = _.find(appData, ['id', appId]) ? _.find(appData, ['id', appId]).name : name;
     return (
       <Page

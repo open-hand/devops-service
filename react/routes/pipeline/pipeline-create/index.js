@@ -10,6 +10,7 @@ import StageCreateModal from '../components/stageCreateModal';
 import { STAGE_FLOW_AUTO, STAGE_FLOW_MANUAL, TRIGGER_TYPE_AUTO, TRIGGER_TYPE_MANUAL } from '../components/Constants';
 import InterceptMask from '../../../components/interceptMask';
 import Tips from '../../../components/Tips/Tips';
+import PipelineCreateStore from '../stores/PipelineCreateStore';
 
 import './index.less';
 import '../../main.scss';
@@ -46,7 +47,6 @@ export default class PipelineCreate extends Component {
 
   checkName = _.debounce((rule, value, callback) => {
     const {
-      PipelineCreateStore,
       intl: { formatMessage },
       AppState: {
         currentMenuType: { id: projectId },
@@ -78,7 +78,6 @@ export default class PipelineCreate extends Component {
 
   componentDidMount() {
     const {
-      PipelineCreateStore,
       AppState: {
         currentMenuType: { id },
       },
@@ -89,7 +88,6 @@ export default class PipelineCreate extends Component {
   }
 
   componentWillUnmount() {
-    const { PipelineCreateStore } = this.props;
     PipelineCreateStore.setUser([]);
     PipelineCreateStore.clearStageList();
     PipelineCreateStore.setStageIndex(0);
@@ -104,7 +102,6 @@ export default class PipelineCreate extends Component {
     this.setState({ promptDisplay: false });
 
     const {
-      PipelineCreateStore,
       form: { validateFieldsAndScroll },
       AppState: {
         currentMenuType: {
@@ -116,17 +113,17 @@ export default class PipelineCreate extends Component {
     validateFieldsAndScroll(async (err, { name, triggerType, users }) => {
       if (!err) {
         const { getStageList, getTaskList } = PipelineCreateStore;
-        const pipelineStageDTOS = _.map(getStageList, item => ({
+        const pipelineStageVOs = _.map(getStageList, (item) => ({
           ...item,
-          pipelineTaskDTOS: getTaskList[item.tempId] || null,
+          pipelineTaskVOs: getTaskList[item.tempId] || null,
         }));
         this.setState({ submitLoading: true });
         const result = await PipelineCreateStore
           .createPipeline(projectId, {
             name,
             triggerType,
-            pipelineUserRelDTOS: triggerType === STAGE_FLOW_MANUAL ? _.map(users, item => Number(item)) : null,
-            pipelineStageDTOS,
+            pipelineUserRels: triggerType === STAGE_FLOW_MANUAL ? _.map(users, (item) => Number(item)) : null,
+            pipelineStageVOs,
           })
           .catch((ex) => {
             this.setState({ submitLoading: false });
@@ -143,7 +140,6 @@ export default class PipelineCreate extends Component {
   };
 
   changeTriggerType = (e) => {
-    const { PipelineCreateStore } = this.props;
     const triggerType = e.target.value;
     this.setState({ triggerType });
     PipelineCreateStore.setTrigger(triggerType);
@@ -168,12 +164,11 @@ export default class PipelineCreate extends Component {
   };
 
   goBack = () => {
-    const { PipelineCreateStore } = this.props;
     PipelineCreateStore.setCreateVisible(false);
   };
 
   get renderPipelineDom() {
-    const { PipelineCreateStore: { getStageList } } = this.props;
+    const { getStageList } = PipelineCreateStore;
     if (getStageList.length === 1) {
       const [{ tempId, stageName }] = getStageList;
       return <StageCard
@@ -208,7 +203,6 @@ export default class PipelineCreate extends Component {
       },
       intl: { formatMessage },
       form: { getFieldDecorator },
-      PipelineCreateStore,
       visible,
     } = this.props;
     const {
@@ -228,29 +222,10 @@ export default class PipelineCreate extends Component {
     const user = _.map(getUser, ({ id, realName, loginName }) => (
       <Option key={id} value={String(id)}>{realName || loginName}</Option>));
 
-    // <Page
-    //   className="c7n-region c7n-pipeline-creat"
-    //   service={[
-    //     'devops-service.pipeline.create',
-    //     'devops-service.pipeline.getAllUsers',
-    //     'devops-service.pipeline.checkName',
-    //     'devops-service.application.pageByOptions',
-    //     'devops-service.devops-environment.listByProjectIdAndActive',
-    //     'devops-service.application-instance.getByAppIdAndEnvId',
-    //     'devops-service.pipeline-value.queryByAppIdAndEnvId',
-    //     'devops-service.pipeline-value.queryById',
-    //   ]}
-    // >
-    /* <Prompt when={promptDisplay} message={formatMessage({ id: 'pipeline.before.leave' })} />
-      <Header
-        title={<FormattedMessage id="pipeline.header.create" />}
-        backPath={`${pathname.replace(/\/create/, '')}${search}`}
-      /> */
-
     return (
       <Sidebar
         className="c7n-region c7n-pipeline-creat"
-        title={<FormattedMessage id="branch.create" />}
+        title={<FormattedMessage id="pipeline.header.create" />}
         visible={visible}
         onOk={this.onSubmit}
         onCancel={this.goBack}
@@ -258,10 +233,9 @@ export default class PipelineCreate extends Component {
         cancelText={<FormattedMessage id="cancel" />}
         confirmLoading={submitLoading}
       >
-        <Content>
+        <Content className="c7n-pipeline-content">
           <Form
             layout="vertical"
-            onSubmit={this.onSubmit}
           >
             <FormItem
               className="c7n-select_512"
@@ -291,17 +265,17 @@ export default class PipelineCreate extends Component {
               {getFieldDecorator('triggerType', {
                 initialValue: STAGE_FLOW_AUTO,
               })(
-                <RadioGroup
-                  label={<Tips type="title" data="pipeline.trigger" />}
-                  onChange={this.changeTriggerType}
-                >
-                  <Radio value={STAGE_FLOW_AUTO}>
-                    <FormattedMessage id="pipeline.trigger.auto" />
-                  </Radio>
-                  <Radio value={STAGE_FLOW_MANUAL}>
-                    <FormattedMessage id="pipeline.trigger.manual" />
-                  </Radio>
-                </RadioGroup>,
+                <div>
+                  <span className="radio-label"><FormattedMessage id="pipeline.trigger" />:</span>
+                  <RadioGroup onChange={this.changeTriggerType}>
+                    <Radio value={STAGE_FLOW_AUTO}>
+                      <FormattedMessage id="pipeline.trigger.auto" />
+                    </Radio>
+                    <Radio value={STAGE_FLOW_MANUAL}>
+                      <FormattedMessage id="pipeline.trigger.manual" />
+                    </Radio>
+                  </RadioGroup>
+                </div>
               )}
             </FormItem>
             {triggerType === STAGE_FLOW_MANUAL && <FormItem
@@ -321,11 +295,10 @@ export default class PipelineCreate extends Component {
                   optionFilterProp="children"
                   label={formatMessage({ id: 'pipeline.trigger.member' })}
                   loading={getLoading.user}
-                  getPopupContainer={triggerNode => triggerNode.parentNode}
+                  getPopupContainer={(triggerNode) => triggerNode.parentNode}
                   filterOption={(input, option) => option.props.children
                     .toLowerCase()
-                    .indexOf(input.toLowerCase()) >= 0
-                }
+                    .indexOf(input.toLowerCase()) >= 0}
                 >
                   {user}
                 </Select>,
@@ -346,25 +319,7 @@ export default class PipelineCreate extends Component {
             </div>}
             <FormItem
               {...formItemLayout}
-            >
-              {/* <Button
-                disabled={getIsDisabled || !getCanSubmit}
-                type="primary"
-                funcType="raised"
-                htmlType="submit"
-                loading={submitLoading}
-              >
-                <FormattedMessage id="create" />
-              </Button>
-              <Button
-                disabled={submitLoading}
-                funcType="raised"
-                className="c7ncd-pipeline-btn_cancel"
-                onClick={this.goBack}
-              >
-                <FormattedMessage id="cancel" />
-              </Button> */}
-            </FormItem>
+            />
           </Form>
           <InterceptMask visible={submitLoading} />
         </Content>

@@ -2,9 +2,10 @@ import React, { Component } from 'react';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import PropTypes from 'prop-types';
 import _ from 'lodash';
+import Sidebar from 'choerodon-ui/lib/modal/Sidebar';
 import { Button, Modal, Form, Input, Select, Radio } from 'choerodon-ui';
+import { Content } from '@choerodon/master';
 import { STAGE_FLOW_MANUAL, STAGE_FLOW_AUTO } from '../Constants';
-
 import '../../../main.scss';
 import './StageCreateModal.scss';
 
@@ -62,7 +63,7 @@ export default class StageCreateModal extends Component {
         const data = {
           stageName,
           triggerType,
-          stageUserRelDTOS: users ? _.map(users, item => Number(item)) : null,
+          stageUserRels: users ? _.map(users, (item) => Number(item)) : null,
         };
         if (_.isEmpty(stage)) {
           const currentIndex = store.getStageIndex + 1;
@@ -87,7 +88,7 @@ export default class StageCreateModal extends Component {
       stage: {
         stageName,
         triggerType,
-        stageUserRelDTOS,
+        stageUserRels,
       },
       prevId,
       visible,
@@ -101,17 +102,20 @@ export default class StageCreateModal extends Component {
       <Option key={id} value={String(id)}>{realName || loginName}</Option>));
 
     let initUsers;
-    if (stageUserRelDTOS) {
-      initUsers = _.map(stageUserRelDTOS.slice(), item => String(item));
+    if (stageUserRels) {
+      initUsers = _.map(stageUserRels.slice(), (item) => String(item));
     }
 
-    return <Modal
+    return <Sidebar
       visible={visible}
       title={formatMessage({ id: `pipeline.stage.${createOrEdit}` })}
-      closable={false}
-      footer={null}
+      width={400}
+      onOk={this.onSubmit}
+      onCancel={onClose}
+      okText={<FormattedMessage id={createOrEdit} />}
+      cancelText={<FormattedMessage id="cancel" />}
     >
-      <div className="c7n-padding-top_8">
+      <Content style={{ height: '100%' }}>
         <Form layout="vertical">
           <FormItem
             {...formItemLayout}
@@ -163,18 +167,16 @@ export default class StageCreateModal extends Component {
                 mode="multiple"
                 optionFilterProp="children"
                 label={formatMessage({ id: 'pipeline.flow.member' })}
-                getPopupContainer={triggerNode => triggerNode.parentNode}
-                filterOption={(input, option) =>
-                  option.props.children
-                    .toLowerCase()
-                    .indexOf(input.toLowerCase()) >= 0
-                }
+                // getPopupContainer={(triggerNode) => triggerNode.parentNode}
+                filterOption={(input, option) => option.props.children
+                  .toLowerCase()
+                  .indexOf(input.toLowerCase()) >= 0}
               >
                 {user}
               </Select>,
             )}
           </FormItem>}
-          <FormItem
+          {/* <FormItem
             className="c7ncd-stage-modal-btn"
             {...formItemLayout}
           >
@@ -188,9 +190,10 @@ export default class StageCreateModal extends Component {
             >
               <FormattedMessage id={createOrEdit} />
             </Button>
-          </FormItem>
+          </FormItem> */}
         </Form>
-      </div>
-    </Modal>;
+      </Content>
+      
+    </Sidebar>;
   }
 }

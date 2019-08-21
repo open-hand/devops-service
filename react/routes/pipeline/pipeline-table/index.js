@@ -11,10 +11,11 @@ import UserInfo from '../../../components/userInfo';
 import { handleCheckerProptError } from '../../../utils';
 import { FAST_SEARCH } from '../components/Constants';
 import PipelineCreate from '../pipeline-create';
-import PipelineCreateStore from '../stores';
+import PipelineEdit from '../pipeline-edit';
+import pipelineCreateStore from '../stores/PipelineCreateStore';
+import PipelineStore from './stores';
 
 import './index.scss';
-import pipelineCreateStore from '../stores/PipelineCreateStore';
 
 
 const { Option } = Select;
@@ -50,7 +51,7 @@ export default class Pipeline extends Component {
     executeLoading: false,
     executeEnv: null,
     searchData: null,
-    envIds: null,
+    envId: null,
   };
 
   componentDidMount() {
@@ -63,7 +64,6 @@ export default class Pipeline extends Component {
 
   loadAllData = (page) => {
     const {
-      PipelineStore,
       AppState: {
         currentMenuType: {
           projectId,
@@ -93,14 +93,13 @@ export default class Pipeline extends Component {
 
   tableChange = ({ current, pageSize }, filters, sorter, param) => {
     const {
-      PipelineStore,
       AppState: {
         currentMenuType: {
           id: projectId,
         },
       },
     } = this.props;
-    const { searchData, envIds } = this.state;
+    const { searchData, envId } = this.state;
 
     const realSorter = _.isEmpty(sorter) ? null : sorter;
     this.setState({
@@ -115,12 +114,8 @@ export default class Pipeline extends Component {
       current,
       pageSize,
       realSorter,
-      {
-        searchParam: filters,
-        param: param.toString(),
-      },
       searchData,
-      envIds,
+      envId,
     );
   };
 
@@ -130,14 +125,13 @@ export default class Pipeline extends Component {
    */
   loadData = (toPage) => {
     const {
-      PipelineStore,
       AppState: {
         currentMenuType: {
           id: projectId,
         },
       },
     } = this.props;
-    const { page, pageSize, param, filters, sorter, searchData, envIds } = this.state;
+    const { page, pageSize, param, filters, sorter, searchData, envId } = this.state;
     const currentPage = toPage || page;
     const {
       getPageInfo: {
@@ -150,12 +144,8 @@ export default class Pipeline extends Component {
       currentPage,
       pageSize || storePageSize,
       sorter,
-      {
-        searchParam: filters,
-        param: param.toString(),
-      },
       searchData,
-      envIds,
+      envId,
     );
   };
 
@@ -178,7 +168,6 @@ export default class Pipeline extends Component {
 
   handleDelete = async () => {
     const {
-      PipelineStore,
       AppState: {
         currentMenuType: { id: projectId },
       },
@@ -198,19 +187,29 @@ export default class Pipeline extends Component {
     this.setState({ deleteLoading: false });
   };
 
+  handleClickName = (e, id) => {
+    e.preventDefault();
+    this.linkToEdit(id);
+  }
+
   /** ************* 启用、停用 **************** */
 
-  renderStatus = (record) => {
+  renderStatus = (record, data) => {
     const { intl: { formatMessage } } = this.props;
-    return <StatusTags
-      name={formatMessage({ id: record ? 'active' : 'stop' })}
-      color={record ? '#00bfa5' : '#cecece'}
-    />;
+    const id = data.id;
+    return <div>
+      <StatusTags
+        name={formatMessage({ id: record ? 'active' : 'stop' })}
+        color={record ? '#00bfa5' : '#cecece'}
+        
+      />
+      <a className="c7ncd-pipeline-status-a" onClick={(e) => { this.handleClickName(e, id); }}>{data.name}</a>
+    </div>;
   };
 
   makeStatusInvalid = async () => {
     const {
-      PipelineStore,
+      
       AppState: {
         currentMenuType: { id: projectId },
       },
@@ -233,7 +232,7 @@ export default class Pipeline extends Component {
 
   async makeStatusActive(id) {
     const {
-      PipelineStore,
+      
       AppState: {
         currentMenuType: { id: projectId },
       },
@@ -269,7 +268,7 @@ export default class Pipeline extends Component {
    */
   executeFun = async () => {
     const {
-      PipelineStore,
+      
       AppState: {
         currentMenuType: { id: projectId },
       },
@@ -299,7 +298,6 @@ export default class Pipeline extends Component {
    */
   async openExecuteCheck(id, name) {
     const {
-      PipelineStore,
       AppState: {
         currentMenuType: { id: projectId },
       },
@@ -333,7 +331,15 @@ export default class Pipeline extends Component {
    * 跳转到创建页面
    */
   showCreate = () => {
-    PipelineCreateStore.setCreateVisible(true);
+    const {
+      AppState: {
+        currentMenuType: {
+          projectId,
+        },
+      },
+    } = this.props;
+    pipelineCreateStore.loadUser(projectId);
+    pipelineCreateStore.setCreateVisible(true);
   };
 
   /**
@@ -363,6 +369,17 @@ export default class Pipeline extends Component {
    * @param id
    */
   linkToEdit(id) {
+    const {
+      AppState: {
+        currentMenuType: {
+          projectId,
+        },
+      },
+    } = this.props;
+    pipelineCreateStore.loadUser(projectId);
+    pipelineCreateStore.setEditId(id);
+    pipelineCreateStore.loadDetail(projectId, id);
+    
     pipelineCreateStore.setEditVisible(true);
   }
 
@@ -439,7 +456,6 @@ export default class Pipeline extends Component {
     const { columnKey, order } = sorter || {};
 
     return [{
-      width: 90,
       title: <FormattedMessage id="status" />,
       key: 'isEnabled',
       dataIndex: 'isEnabled',
@@ -448,6 +464,11 @@ export default class Pipeline extends Component {
       filters: [],
       filteredValue: filters.isEnabled || [],
       render: this.renderStatus,
+    }, {
+      key: 'action',
+      align: 'right',
+      width: 60,
+      render: this.renderAction,
     }, {
       title: <FormattedMessage id="pipeline.trigger" />,
       key: 'triggerType',
@@ -476,11 +497,6 @@ export default class Pipeline extends Component {
       sorter: true,
       sortOrder: columnKey === 'lastUpdateDate' && order,
       render: renderDate,
-    }, {
-      key: 'action',
-      align: 'right',
-      width: 60,
-      render: this.renderAction,
     }];
   }
 
@@ -488,20 +504,19 @@ export default class Pipeline extends Component {
     const {
       AppState: {
         currentMenuType: {
-          // name,
           type,
           id: projectId,
           organizationId,
         },
       },
       intl: { formatMessage },
-      PipelineStore: {
-        getListData,
-        getPageInfo,
-        getLoading,
-        getEnvData,
-      },
     } = this.props;
+    const { 
+      getListData,
+      getPageInfo,
+      getLoading,
+      getEnvData,
+    } = PipelineStore;
     const {
       param,
       showDelete,
@@ -552,7 +567,7 @@ export default class Pipeline extends Component {
           <FormattedMessage id="refresh" />
         </Button>
       </Header>
-      <Breadcrumb title="流水线" />
+      <Breadcrumb />
       <Content>
         <Select
           mode="multiple"
@@ -574,14 +589,11 @@ export default class Pipeline extends Component {
           }
         </Select>
         <Select
-          mode="multiple"
-          className="c7ncd-pipeline-search"
+          className="c7ncd-pipeline-search-one"
           label={formatMessage({ id: 'pipeline.deploy.env' })}
-          optionFilterProp="children"
-          filter
+          onChange={(value) => this.handleSearch(value, 'envId')}
           allowClear
           choiceRemove={false}
-          onChange={(value) => this.handleSearch(value, 'envIds')}
           filterOption={(input, option) => option.props.children
             .toLowerCase()
             .indexOf(input.toLowerCase()) >= 0}
@@ -596,9 +608,8 @@ export default class Pipeline extends Component {
           ))}
         </Select>
         <Table
-          filterBarPlaceholder={formatMessage({ id: 'filter' })}
+          filterBar={false}
           loading={getLoading || executeLoading}
-          filters={param || []}
           onChange={this.tableChange}
           columns={this.getColumns}
           pagination={getPageInfo}
@@ -606,10 +617,10 @@ export default class Pipeline extends Component {
           rowKey={(record) => record.id}
         />
       </Content>
-
-      <PipelineCreate visible={PipelineCreateStore.createVisible} PipelineCreateStore={PipelineCreateStore} />
-
-
+      <PipelineCreate visible={pipelineCreateStore.createVisible} pipelineCreateStore={pipelineCreateStore} />
+      { 
+        pipelineCreateStore.editId ? <PipelineEdit visible={pipelineCreateStore.editVisible} PipelineCreateStore={pipelineCreateStore} refreshTable={this.handleRefresh} /> : null
+      }
       {showDelete && (<Modal
         visible={showDelete}
         title={`${formatMessage({ id: 'pipeline.delete' })}“${deleteName}”`}
@@ -702,5 +713,5 @@ function renderDate(record) {
 }
 
 function renderUser({ createUserRealName, createUserName, createUserUrl }) {
-  return <UserInfo avatar={createUserUrl} name={createUserRealName} id={createUserName} />;
+  return <UserInfo avatar={createUserUrl || ''} name={createUserRealName || ''} id={createUserName || ''} />;
 }
