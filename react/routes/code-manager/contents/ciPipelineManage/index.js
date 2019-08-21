@@ -9,12 +9,9 @@ import CiPipelineStore from './stores';
 import DevPipelineStore from '../../stores/DevPipelineStore';
 import DevopsStore from '../../stores/DevopsStore';
 import CiPipelineTable from './CiPipelineTable.js';
-
+import handleMapStore from '../../main-view/store/handleMapStore';
 import '../../../main.scss';
 import './index.less';
-
-const { Option, OptGroup } = Select;
-const { AppState } = stores;
 
 @injectIntl
 @withRouter
@@ -25,6 +22,10 @@ class CiPipelineHome extends Component {
     super(props);
     this.state = {
     };
+    handleMapStore.setCodeManagerCiPipelineManage({
+      refresh: this.handleRefresh,
+      select: this.handleChange,
+    });
   }
 
   componentDidMount() {
@@ -52,14 +53,9 @@ class CiPipelineHome extends Component {
   }
 
   render() {
-    const { name } = AppState.currentMenuType;
     const { intl: { formatMessage } } = this.props;
     const appData = DevPipelineStore.getAppData;
     const appId = DevPipelineStore.getSelectApp;
-    if (appData && appData.length && appId) {
-      DevopsStore.initAutoRefresh('ci', this.handleRefresh);
-    }
-    const titleName = _.find(appData, ['id', appId]) ? _.find(appData, ['id', appId]).name : name;
     return (
       <Page
         className="c7n-ciPipeline"
@@ -71,46 +67,6 @@ class CiPipelineHome extends Component {
         ]}
       >
         {appData && appData.length && appId ? <Fragment>
-          {/* <Header title={<FormattedMessage id="ciPipeline.head" />}>
-          <Select
-            filter
-            className="c7n-header-select"
-            dropdownClassName="c7n-header-select_drop"
-            placeholder={formatMessage({ id: 'ist.noApp' })}
-            value={appData && appData.length ? DevPipelineStore.getSelectApp : undefined}
-            disabled={appData.length === 0}
-            filterOption={(input, option) => option.props.children.props.children.props.children
-              .toLowerCase().indexOf(input.toLowerCase()) >= 0}
-            onChange={this.handleChange.bind(this)}
-          >
-            <OptGroup label={formatMessage({ id: 'recent' })} key="recent">
-              {
-                _.map(DevPipelineStore.getRecentApp, app => (
-                  <Option
-                    key={`recent-${app.id}`}
-                    value={app.id}
-                    disabled={!app.permission}
-                  >
-                    <Tooltip title={app.code}><span className="c7n-ib-width_100">{app.name}</span></Tooltip>
-                  </Option>))
-              }
-            </OptGroup>
-            <OptGroup label={formatMessage({ id: 'deploy.app' })} key="app">
-              {
-                _.map(appData, (app, index) => (
-                  <Option
-                    value={app.id}
-                    key={index}
-                    disabled={!app.permission}
-                  >
-                    <Tooltip title={app.code}><span className="c7n-ib-width_100">{app.name}</span></Tooltip>
-                  </Option>))
-              }
-            </OptGroup>
-          </Select>
-          <RefreshBtn name="ci" onFresh={this.handleRefresh} />
-        </Header> */}
-          {/* code={appData.length ? 'ciPipeline.app' : 'ciPipeline'} values={{ name: titleName }} */}
           <Content className="c7n-content">
             <CiPipelineTable store={CiPipelineStore} loading={CiPipelineStore.loading} />
           </Content></Fragment> : null}

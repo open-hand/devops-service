@@ -84,23 +84,22 @@ class PipelineStore {
     return this.envData.slice();
   }
 
-  async loadListData(projectId, page, size, sort, param, searchData, envIds) {
+  async loadListData(projectId, page, size, sort, searchData, envId) {
     this.setLoading(true);
-    let searchPath = '';
-    let envPath = '';
+    const searchObj = {};
     if (searchData && searchData.length) {
       _.forEach(searchData, (item) => {
-        searchPath += `&${item}=true`;
+        searchObj[item] = true;
       });
     }
-    if (envIds && envIds.length) {
-      envPath = `&envIds=${envIds.join()}`;
+    if (envId) {
+      searchObj.envId = envId;
     }
     const sortPath = sort ? `&sort=${sort.field || sort.columnKey},${SORTER_MAP[sort.order] || 'desc'}` : '';
     const data = await axios
       .post(
-        `/devops/v1/projects/${projectId}/pipeline/page_by_options?page=${page}&size=${size}${sortPath}${searchPath}${envPath}`,
-        JSON.stringify(param),
+        `/devops/v1/projects/${projectId}/pipeline/page_by_options?page=${page}&size=${size}${sortPath}`,
+        JSON.stringify(searchObj),
       )
       .catch((e) => {
         this.setLoading(false);
@@ -198,14 +197,14 @@ class PipelineStore {
   async loadExeRecord(projectId, id) {
     const data = await axios
       .get(`/devops/v1/projects/${projectId}/pipeline/${id}/list`)
-      .catch(e => Choerodon.handleResponseError(e));
+      .catch((e) => Choerodon.handleResponseError(e));
     const result = handleProptError(data);
     if (result) {
       this.setRecordDate(result);
     }
   }
 
-  loadEnvData = projectId => axios
+  loadEnvData = (projectId) => axios
     .get(`/devops/v1/projects/${projectId}/envs/list_by_active?active=true`)
     .then((data) => {
       if (handlePromptError(data)) {

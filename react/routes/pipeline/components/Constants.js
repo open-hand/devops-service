@@ -18,7 +18,7 @@ const AUDIT_MODE_ORSING = 'orSign';
 const TASK_PARALLEL = 1;
 const TASK_SERIAL = 0;
 
-const FAST_SEARCH = ['creator', 'executor'];
+const FAST_SEARCH = ['creator', 'executor', 'manager'];
 
 export {
   STAGE_FLOW_AUTO,
