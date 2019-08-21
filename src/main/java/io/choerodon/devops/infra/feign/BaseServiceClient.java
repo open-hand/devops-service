@@ -147,4 +147,8 @@ public interface BaseServiceClient {
     @GetMapping(value = "/v1/applications/{id}")
     ResponseEntity<ApplicationDTO> queryAppById(@PathVariable(value = "id")Long id);
 
+    @PutMapping(value="/v1/projects/{project_id}/publish_apps/{id}/fail")
+    ResponseEntity<Boolean> publishFail(@PathVariable("project_id") Long projectId,
+                                        @PathVariable("id") Long id,
+                                        @RequestParam("errorCode") String errorCode);
 }
