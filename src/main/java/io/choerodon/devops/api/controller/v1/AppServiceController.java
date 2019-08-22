@@ -437,7 +437,7 @@ public class AppServiceController {
      *
      * @param url      harbor地址
      * @param userName harbor用户名
-     * @param passWord harbor密码
+     * @param password harbor密码
      * @param project  harbor项目
      * @param email    harbor邮箱
      */
@@ -453,8 +453,8 @@ public class AppServiceController {
             @RequestParam String userName,
             @ApiParam(value = "harbor密码", required = true)
             @RequestParam String password,
-            @ApiParam(value = "harborProject", required = false)
-            @RequestParam String project,
+            @ApiParam(value = "harborProject")
+            @RequestParam(required = false) String project,
             @ApiParam(value = "harbor邮箱", required = true)
             @RequestParam String email) {
         applicationServiceService.checkHarbor(url, userName, password, project, email);
