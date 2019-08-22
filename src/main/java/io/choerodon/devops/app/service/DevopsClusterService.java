@@ -2,7 +2,6 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
-import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.*;
@@ -36,16 +35,6 @@ public interface DevopsClusterService {
      */
     void checkName(Long projectId, String name);
 
-    /**
-     * 分页查询项目列表
-     *
-     * @param projectId   项目id
-     * @param clusterId   集群id
-     * @param pageRequest 分页参数
-     * @param params      查询参数
-     * @return 项目信息
-     */
-    PageInfo<ProjectReqVO> pageProjects(Long projectId, Long clusterId, PageRequest pageRequest, String[] params);
 
     String queryShell(Long clusterId);
 
@@ -71,6 +60,31 @@ public interface DevopsClusterService {
 
 
     /**
+     * 列出组织下所有与该集群未分配权限的项目
+     *
+     * @param projectId 项目ID
+     * @param clusterId 集群ID
+     * @param params    搜索参数
+     * @return 与该集群未分配权限的项目
+     */
+    List<ProjectReqVO> listNonRelatedProjects(Long projectId, Long clusterId, String params);
+
+    /**
+     * 分配权限
+     *
+     * @param devopsClusterPermissionUpdateVO 集群权限信息
+     */
+    void assignPermission(DevopsClusterPermissionUpdateVO devopsClusterPermissionUpdateVO);
+
+    /**
+     * 删除该项目对该集群的权限
+     *
+     * @param clusterId 集群id
+     * @param projectId 项目id
+     */
+    void deletePermissionOfProject(Long clusterId, Long projectId);
+
+    /**
      * 查询项目下的集群以及所有节点信息
      *
      * @param projectId 项目id
@@ -86,6 +100,18 @@ public interface DevopsClusterService {
      * @return 项目
      */
     List<ProjectReqVO> listClusterProjects(Long projectId, Long clusterId);
+
+
+    /**
+     * 分页查询集群下已有权限的项目列表
+     *
+     * @param projectId   项目id
+     * @param clusterId   集群id
+     * @param pageRequest 分页参数
+     * @param params      查询参数
+     * @return List
+     */
+    PageInfo<ProjectReqVO> pageRelatedProjects(Long projectId, Long clusterId, PageRequest pageRequest, String params);
 
     /**
      * 删除集群

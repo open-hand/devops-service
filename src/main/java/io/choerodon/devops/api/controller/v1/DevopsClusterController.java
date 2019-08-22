@@ -2,6 +2,7 @@ package io.choerodon.devops.api.controller.v1;
 
 import java.util.List;
 import java.util.Optional;
+import javax.validation.Valid;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.annotation.Permission;
@@ -131,7 +132,7 @@ public class DevopsClusterController {
      * @param code      集群code
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_ADMINISTRATOR})
-    @ApiOperation(value = "校验集群名唯一性")
+    @ApiOperation(value = "校验集群code唯一性")
     @GetMapping(value = "/check_code")
     public void checkCode(
             @ApiParam(value = "项目Id", required = true)
@@ -141,47 +142,114 @@ public class DevopsClusterController {
         devopsClusterService.checkCode(projectId, code);
     }
 
+
+//    /**
+//     * 查询集群下已有权限的项目列表
+//     *
+//     * @param projectId 项目id
+//     * @return List
+//     */
+//    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_ADMINISTRATOR})
+//    @ApiOperation(value = "查询集群下已有权限的项目列表")
+//    @GetMapping("/list_cluster_projects/{cluster_id}")
+//    public ResponseEntity<List<ProjectReqVO>> listClusterProjects(
+//            @ApiParam(value = "项目ID", required = true)
+//            @PathVariable(value = "project_id") Long projectId,
+//            @ApiParam(value = "集群Id")
+//            @PathVariable(value = "cluster_id") Long clusterId) {
+//        return Optional.ofNullable(devopsClusterService.listClusterProjects(projectId, clusterId))
+//                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+//                .orElseThrow(() -> new CommonException("error.project.query"));
+//    }
+
     /**
-     * 分页查询项目列表
+     * 分页查询集群下已有权限的项目列表
      *
-     * @param projectId 项目id
-     * @return Page
+     * @param projectId   项目id
+     * @param clusterId   集群id
+     * @param pageRequest 分页参数
+     * @param params      查询参数
+     * @return page
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_ADMINISTRATOR})
-    @ApiOperation(value = "分页查询项目列表")
-    @CustomPageRequest
-    @PostMapping("/page_projects")
-    public ResponseEntity<PageInfo<ProjectReqVO>> pageProjects(
+    @ApiOperation(value = "分页查询集群下已有权限的项目列表")
+    @PostMapping("/{cluster_id}/permission/page_related")
+    public ResponseEntity<PageInfo<ProjectReqVO>> pageRelatedProjects(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "集群Id")
+            @PathVariable(value = "cluster_id") Long clusterId,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageRequest,
-            @ApiParam(value = "集群Id")
-            @RequestParam(required = false) Long clusterId,
             @ApiParam(value = "模糊搜索参数")
-            @RequestBody String[] params) {
-        return Optional.ofNullable(devopsClusterService.pageProjects(projectId, clusterId, pageRequest, params))
+            @RequestBody(required = false) String params) {
+        return Optional.ofNullable(devopsClusterService.pageRelatedProjects(projectId, clusterId, pageRequest, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.project.query"));
     }
 
     /**
-     * 查询集群下已有权限的项目列表
+     * 查询组织下所有与该集群未分配权限的项目
      *
-     * @param projectId 项目id
-     * @return List
+     * @param projectId 项目ID
+     * @param clusterId 集群ID
+     * @param params    搜索参数
+     * @return 与该集群未分配权限的项目
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_ADMINISTRATOR})
-    @ApiOperation(value = "查询集群下已有权限的项目列表")
-    @GetMapping("/list_cluster_projects/{cluster_id}")
-    public ResponseEntity<List<ProjectReqVO>> listClusterProjects(
-            @ApiParam(value = "项目ID", required = true)
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "查询组织下所有与该集群未分配权限的项目")
+    @PostMapping(value = "/{cluster_id}/permission/list_non_related")
+    public ResponseEntity<List<ProjectReqVO>> listAllNonRelatedProjects(
+            @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "集群Id")
-            @PathVariable(value = "cluster_id") Long clusterId) {
-        return Optional.ofNullable(devopsClusterService.listClusterProjects(projectId, clusterId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.project.query"));
+            @ApiParam(value = "集群id", required = true)
+            @PathVariable(value = "cluster_id") Long clusterId,
+            @ApiParam(value = "查询参数")
+            @RequestBody(required = false) String params) {
+        return new ResponseEntity<>(devopsClusterService.listNonRelatedProjects(projectId, clusterId, params), HttpStatus.OK);
+    }
+
+    /**
+     * 集群下为项目分配权限
+     *
+     * @param clusterId                       集群id
+     * @param devopsClusterPermissionUpdateVO 权限分配信息
+     */
+    @Permission(type = ResourceType.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "集群下为项目分配权限")
+    @PostMapping(value = "/{cluster_id}/permission")
+    public ResponseEntity assignPermission(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "集群id", required = true)
+            @PathVariable(value = "cluster_id") Long clusterId,
+            @ApiParam(value = "权限分配信息")
+            @RequestBody @Valid DevopsClusterPermissionUpdateVO devopsClusterPermissionUpdateVO) {
+        devopsClusterService.assignPermission(devopsClusterPermissionUpdateVO);
+        return new ResponseEntity(HttpStatus.OK);
+    }
+
+    /**
+     * 删除集群下该项目的权限
+     *
+     * @param projectId       项目id
+     * @param clusterId       集群id
+     * @param projectToDelete 要删除权限的项目id
+     * @return NO_CONTENT
+     */
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "删除集群下该项目的权限")
+    @DeleteMapping(value = "/{cluster_id}/permission")
+    public ResponseEntity deletePermissionOfProject(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "集群id", required = true)
+            @PathVariable(value = "cluster_id") Long clusterId,
+            @ApiParam(value = "要删除权限的项目id", required = true)
+            @RequestParam(value = "delete_project_id") Long projectToDelete) {
+        devopsClusterService.deletePermissionOfProject(clusterId, projectToDelete);
+        return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
 

@@ -1,21 +1,11 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import io.kubernetes.client.JSON;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
@@ -30,6 +20,13 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
 import io.choerodon.devops.infra.util.*;
+import io.kubernetes.client.JSON;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 
 @Service
@@ -60,6 +57,8 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     private DevopsClusterProPermissionService devopsClusterProPermissionService;
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
+    @Autowired
+    private DevopsProjectService devopsProjectService;
 
 
     @Override
@@ -141,32 +140,6 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     }
 
     @Override
-    public PageInfo<ProjectReqVO> pageProjects(Long projectId, Long clusterId, PageRequest pageRequest,
-                                               String[] params) {
-        ProjectDTO iamProjectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-
-        PageInfo<ProjectDTO> projectDTOPageInfo = baseServiceClientOperator
-                .pageProjectByOrgId(iamProjectDTO.getOrganizationId(), pageRequest.getPage(), pageRequest.getSize(), null, params);
-        PageInfo<ProjectReqVO> projectReqVOPageInfo = ConvertUtils.convertPage(projectDTOPageInfo, ProjectReqVO.class);
-        List<ProjectReqVO> projectDTOS = new ArrayList<>();
-        if (!projectDTOPageInfo.getList().isEmpty()) {
-            List<Long> projectIds;
-            if (clusterId != null) {
-                projectIds = devopsClusterProPermissionService.baseListByClusterId(clusterId).stream()
-                        .map(DevopsClusterProPermissionDTO::getProjectId).collect(Collectors.toList());
-            } else {
-                projectIds = new ArrayList<>();
-            }
-            projectDTOPageInfo.getList().forEach(projectDO -> {
-                ProjectReqVO projectDTO = new ProjectReqVO(projectDO.getId(), projectDO.getName(), projectDO.getCode(), projectIds.contains(projectDO.getId()));
-                projectDTOS.add(projectDTO);
-            });
-        }
-        projectReqVOPageInfo.setList(projectDTOS);
-        return projectReqVOPageInfo;
-    }
-
-    @Override
     public String queryShell(Long clusterId) {
         DevopsClusterRepVO devopsClusterRepVO = getDevopsClusterStatus(clusterId);
         InputStream inputStream;
@@ -219,6 +192,105 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     }
 
     @Override
+    public List<ProjectReqVO> listNonRelatedProjects(Long projectId, Long clusterId, String params) {
+        DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(clusterId);
+        if (devopsClusterDTO == null) {
+            throw new CommonException("error.cluster.not.exist", clusterId);
+        }
+        if (Boolean.TRUE.equals(devopsClusterDTO.getSkipCheckProjectPermission())) {
+            return Collections.emptyList();
+        }
+
+
+        Map<String, Object> searchMap = TypeUtil.castMapParams(params);
+        List<String> paramList = TypeUtil.cast(searchMap.get(TypeUtil.PARAMS));
+
+        ProjectDTO iamProjectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+
+        // 查出组织下所有符合条件的项目
+        PageInfo<ProjectDTO> filteredProjects = baseServiceClientOperator.pageProjectByOrgId(
+                iamProjectDTO.getOrganizationId(), 0, 0, null,
+                paramList == null ? null : paramList.toArray(new String[0]));
+
+        // 查出数据库中已经分配权限的项目
+        List<Long> permitted = devopsClusterProPermissionService.baseListByClusterId(clusterId)
+                .stream()
+                .map(DevopsClusterProPermissionDTO::getProjectId)
+                .collect(Collectors.toList());
+
+        // 将已经分配权限的项目过滤
+        return filteredProjects.getList()
+                .stream()
+                .filter(p -> !permitted.contains(p.getId()))
+                .map(p -> new ProjectReqVO(p.getId(), p.getName(), p.getCode()))
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    @Override
+    public void assignPermission(DevopsClusterPermissionUpdateVO update) {
+        DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(update.getClusterId());
+        if (devopsClusterDTO == null) {
+            throw new CommonException("error.cluster.not.exist", update.getClusterId());
+        }
+
+        if (devopsClusterDTO.getSkipCheckProjectPermission()) {
+            if (update.getSkipCheckPermission()) {
+                // 原来跳过，现在也跳过，不处理
+                return;
+            } else {
+                // 原来跳过，现在不跳过，先更新字段，然后插入关联关系
+                updateSkipPermissionCheck(
+                        update.getClusterId(),
+                        update.getSkipCheckPermission(),
+                        update.getObjectVersionNumber());
+
+                devopsClusterProPermissionService.batchInsertIgnore(
+                        update.getClusterId(),
+                        update.getProjectIds());
+            }
+        } else {
+            // 原来不跳过，现在跳过，更新集群权限字段，再删除所有数据库中与该集群有关的关联关系
+            if (update.getSkipCheckPermission()) {
+                updateSkipPermissionCheck(
+                        update.getClusterId(),
+                        update.getSkipCheckPermission(),
+                        update.getObjectVersionNumber());
+
+                devopsClusterProPermissionService.baseDeleteByClusterId(update.getClusterId());
+            } else {
+                // 原来不跳过，现在也不跳过，批量添加权限
+                devopsClusterProPermissionService.batchInsertIgnore(
+                        update.getClusterId(),
+                        update.getProjectIds());
+            }
+        }
+    }
+
+    /**
+     * 更新集群的权限校验字段
+     *
+     * @param clusterId           集群id
+     * @param skipCheckPermission 是否跳过权限校验
+     * @param objectVersionNumber 版本号
+     */
+    private void updateSkipPermissionCheck(Long clusterId, Boolean skipCheckPermission, Long objectVersionNumber) {
+        DevopsClusterDTO toUpdate = new DevopsClusterDTO();
+        toUpdate.setId(clusterId);
+        toUpdate.setObjectVersionNumber(objectVersionNumber);
+        toUpdate.setSkipCheckProjectPermission(skipCheckPermission);
+        devopsClusterMapper.updateByPrimaryKeySelective(toUpdate);
+    }
+
+    @Override
+    public void deletePermissionOfProject(Long clusterId, Long projectId) {
+        DevopsClusterProPermissionDTO permission = new DevopsClusterProPermissionDTO();
+        permission.setClusterId(clusterId);
+        permission.setProjectId(projectId);
+        devopsClusterProPermissionService.baseDeletePermission(permission);
+    }
+
+    @Override
     public List<DevopsClusterBasicInfoVO> queryClustersAndNodes(Long projectId) {
         DevopsClusterDTO devopsClusterDTO = new DevopsClusterDTO();
         devopsClusterDTO.setProjectId(projectId);
@@ -247,6 +319,57 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
                     ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsClusterProPermissionDTO.getProjectId());
                     return new ProjectReqVO(devopsClusterProPermissionDTO.getProjectId(), projectDTO.getName(), projectDTO.getCode(), null);
                 }).collect(Collectors.toList());
+    }
+
+    @Override
+    public PageInfo<ProjectReqVO> pageRelatedProjects(Long projectId, Long clusterId, PageRequest pageRequest, String params) {
+        DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(clusterId);
+        if (devopsClusterDTO == null) {
+            throw new CommonException("error.cluster.not.exist", clusterId);
+        }
+
+        // 如果跳过权限检查
+        if (Boolean.TRUE.equals(devopsClusterDTO.getSkipCheckProjectPermission())) {
+            return devopsProjectService.pageProjects(projectId, pageRequest, params);
+        } else {
+            // 如果没有跳过权限检查
+            Map<String, Object> map = TypeUtil.castMapParams(params);
+            List<String> paramList = TypeUtil.cast(map.get(TypeUtil.PARAMS));
+            if (CollectionUtils.isEmpty(paramList)) {
+                // 如果不搜索
+                PageInfo<DevopsClusterProPermissionDTO> relationPage = PageHelper.startPage(
+                        pageRequest.getPage(), pageRequest.getSize())
+                        .doSelectPageInfo(() -> devopsClusterProPermissionService.baseListByClusterId(clusterId));
+                return ConvertUtils.convertPage(relationPage, permission -> {
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(permission.getProjectId());
+                    return new ProjectReqVO(permission.getProjectId(), projectDTO.getName(), projectDTO.getCode());
+                });
+            } else {
+                // 如果要搜索，需要手动在程序内分页
+                ProjectDTO iamProjectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+
+                // 手动查出所有组织下的项目
+                PageInfo<ProjectDTO> filteredProjects = baseServiceClientOperator.pageProjectByOrgId(
+                        iamProjectDTO.getOrganizationId(),
+                        0, 0, null,
+                        paramList.toArray(new String[0]));
+
+                // 数据库中的有权限的项目
+                List<Long> permissions = devopsClusterProPermissionService.baseListByClusterId(clusterId)
+                        .stream()
+                        .map(DevopsClusterProPermissionDTO::getProjectId)
+                        .collect(Collectors.toList());
+
+                // 过滤出在数据库中有权限的项目信息
+                List<ProjectReqVO> allMatched = filteredProjects.getList()
+                        .stream()
+                        .filter(p -> permissions.contains(p.getId()))
+                        .map(p -> ConvertUtils.convertObject(p, ProjectReqVO.class))
+                        .collect(Collectors.toList());
+
+                return PageInfoUtil.createPageFromList(allMatched, pageRequest);
+            }
+        }
     }
 
     public boolean isConnect(List<Long> connectedEnvList, List<Long> updatedEnvList, Long id) {
