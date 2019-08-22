@@ -6,6 +6,15 @@ public class DevopsEnvGroupEnvsVO {
     private Long devopsEnvGroupId;
     private String devopsEnvGroupName;
     private List<DevopsEnviromentRepVO> devopsEnviromentRepDTOs;
+    private boolean active;
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
+    }
 
     public Long getDevopsEnvGroupId() {
         return devopsEnvGroupId;
