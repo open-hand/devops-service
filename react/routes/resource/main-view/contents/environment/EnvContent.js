@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { Tabs, Spin } from 'choerodon-ui';
 import { useEnvironmentStore } from './stores';
 import { useResourceStore } from '../../../stores';
-import StatusDot from '../../components/status-dot';
+import StatusDot from '../../../../../components/status-dot';
 import PrefixTitle from '../../components/prefix-title';
 import Modals from './modals';
 

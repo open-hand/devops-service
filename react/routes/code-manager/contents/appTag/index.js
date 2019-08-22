@@ -6,12 +6,12 @@ import { Content, Header, Page, Permission, stores } from '@choerodon/master';
 import { Button, Select, Modal, Form, Icon, Collapse, Avatar, Pagination, Tooltip } from 'choerodon-ui';
 import ReactMarkdown from 'react-markdown';
 import _ from 'lodash';
-import LoadingBar from '../../../../components/loadingBar';
+import Loading from '../../../../components/loading';
 import TimePopover from '../../../../components/timePopover';
 import DevPipelineStore from '../../stores/DevPipelineStore';
 import handleMapStore from '../../main-view/store/handleMapStore';
 import AppTagStore from './stores';
-import '../../../main.scss';
+import '../../../main.less';
 import './style/AppTag.scss';
 import AppTagCreate from './AppTagCreate';
 import AppTagEdit from './AppTagEdit';
@@ -372,7 +372,7 @@ class AppTag extends Component {
           {/* <Content code={appData.length ? 'apptag.app' : 'apptag'} values={{ name: titleName }}> */}
           <Content className="c7n-tag-content">
             {/* <div className="c7n-tag-table"><FormattedMessage id="apptag.table" /></div> */}
-            {loading || _.isNull(loading) ? <LoadingBar display /> : <Fragment>
+            {loading || _.isNull(loading) ? <Loading display /> : <Fragment>
               {tagList.length ? <Fragment>
                 <Collapse bordered={false}>{tagList}</Collapse>
                 <div className="c7n-tag-pagin">

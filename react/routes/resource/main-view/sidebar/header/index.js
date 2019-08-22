@@ -23,7 +23,6 @@ const SidebarHeader = () => {
     runInAction(() => {
       resourceStore.changeViewType(choose);
       resourceStore.setSelectedMenu({});
-      resourceStore.setNoHeader(true);
       resourceStore.setExpandedKeys([]);
       resourceStore.setSearchValue('');
     });

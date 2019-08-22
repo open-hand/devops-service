@@ -33,7 +33,7 @@ export default function useStore() {
 
     async loadUsers(projectId, envId) {
       try {
-        const res = await axios.get(`/devops/v1/projects/${projectId}/envs/${envId}/permission/list_non_related`);
+        const res = await axios.post(`/devops/v1/projects/${projectId}/envs/${envId}/permission/list_non_related`);
         if (handlePromptError(res)) {
           this.setUsers(res);
         }

@@ -18,7 +18,7 @@ import _ from 'lodash';
 import AppName from '../../../../../../../../components/appName';
 import Tips from '../../../../../../../../components/Tips/Tips';
 
-import '../../../../../../../main.scss';
+import '../../../../../../../main.less';
 import './index.scss';
 
 /**
@@ -387,7 +387,7 @@ export default class Index extends Component {
     }
 
     setFieldsValue({
-      [type]: _.filter(keys, key => key !== k),
+      [type]: _.filter(keys, (key) => key !== k),
     }, () => validateFields(list, { force: true }));
   };
 
@@ -562,18 +562,18 @@ export default class Index extends Component {
 
     const localApp = _.filter(
       store.getApp,
-      item => item.projectId === Number(projectId)
+      (item) => item.projectId === Number(projectId)
     );
     const storeApp = _.filter(
       store.getApp,
-      item => item.projectId !== Number(projectId)
+      (item) => item.projectId !== Number(projectId)
     );
     const ist = store.getIst;
 
     // 生成多组 port
     getFieldDecorator('portKeys', { initialValue: [0] });
     const portKeys = getFieldValue('portKeys');
-    const portItems = _.map(portKeys, k => (
+    const portItems = _.map(portKeys, (k) => (
       <div key={`port-${k}`} className="network-port-wrap">
         {configType !== 'ClusterIP' && (
           <FormItem
@@ -660,7 +660,7 @@ export default class Index extends Component {
               <Select
                 label={<FormattedMessage id="ist.deploy.ports.protocol" />}
               >
-                {_.map(['TCP', 'UDP'], item => (
+                {_.map(['TCP', 'UDP'], (item) => (
                   <Option value={item} key={item}>
                     {item}
                   </Option>
@@ -682,7 +682,7 @@ export default class Index extends Component {
     // endPoints生成多组 port
     getFieldDecorator('endPoints');
     const endPoints = getFieldValue('endPoints');
-    const targetPortItems = _.map(endPoints, k => (
+    const targetPortItems = _.map(endPoints, (k) => (
       <div key={`endPoints-${k}`} className="network-port-wrap">
         <FormItem
           className="network-panel-form network-port-form"
@@ -721,7 +721,7 @@ export default class Index extends Component {
     // 生成多组 target
     getFieldDecorator('targetKeys');
     const targetKeys = getFieldValue('targetKeys');
-    const targetItems = _.map(targetKeys, k => (
+    const targetItems = _.map(targetKeys, (k) => (
       <div key={`target-${k}`} className="network-port-wrap">
         <FormItem
           className="c7n-select_150 network-panel-form network-port-form"
@@ -786,7 +786,7 @@ export default class Index extends Component {
 
     const istOption = ist.length
       ? _.map(
-        _.filter(ist, item => item && !_.includes(initIst, item.id)),
+        _.filter(ist, (item) => item && !_.includes(initIst, item.id)),
         ({ id, code }) => (
           <Option key={id} value={id}>
             {code}
@@ -822,7 +822,7 @@ export default class Index extends Component {
                 <RadioGroup
                   name="target"
                   disabled={!selectEnv}
-                  onChange={e => this.handleTypeChange(e, 'targetKeys')}
+                  onChange={(e) => this.handleTypeChange(e, 'targetKeys')}
                 >
                   <Radio value="instance">
                     <FormattedMessage id="network.target.instance" />
@@ -860,24 +860,22 @@ export default class Index extends Component {
                       disabled={!envId}
                       onSelect={this.handleAppSelect}
                       label={<FormattedMessage id="network.form.app" />}
-                      getPopupContainer={triggerNode => triggerNode.parentNode
-                      }
+                      getPopupContainer={(triggerNode) => triggerNode.parentNode}
                       filterOption={(input, option) => option.props.children.props.children.props.children.props.name
                         .toLowerCase()
-                        .indexOf(input.toLowerCase()) >= 0
-                      }
+                        .indexOf(input.toLowerCase()) >= 0}
                     >
                       <OptGroup
                         label={<FormattedMessage id="project" />}
                         key="project"
                       >
-                        {_.map(localApp, node => this.makeAppGroup(node))}
+                        {_.map(localApp, (node) => this.makeAppGroup(node))}
                       </OptGroup>
                       <OptGroup
                         label={<FormattedMessage id="market" />}
                         key="markert"
                       >
-                        {_.map(storeApp, node => this.makeAppGroup(node))}
+                        {_.map(storeApp, (node) => this.makeAppGroup(node))}
                       </OptGroup>
                     </Select>
                   )}
@@ -909,12 +907,10 @@ export default class Index extends Component {
                       notFoundContent={formatMessage({
                         id: 'network.form.instance.disable',
                       })}
-                      getPopupContainer={triggerNode => triggerNode.parentNode
-                      }
+                      getPopupContainer={(triggerNode) => triggerNode.parentNode}
                       filterOption={(input, option) => option.props.children
                         .toLowerCase()
-                        .indexOf(input.toLowerCase()) >= 0
-                      }
+                        .indexOf(input.toLowerCase()) >= 0}
                     >
                       {initIstOption}
                     </Select>
@@ -955,15 +951,12 @@ export default class Index extends Component {
                   })(
                     <Select
                       mode="tags"
-                      ref={node => this.ipSelectRef(node, 'targetIps')}
+                      ref={(node) => this.ipSelectRef(node, 'targetIps')}
                       disabled={!selectEnv}
                       label={<FormattedMessage id="network.target.ip" />}
-                      onInputKeyDown={e => this.handleInputKeyDown(e, 'targetIps')
-                      }
-                      choiceRender={(liNode, value) => this.handleChoiceRender(liNode, value, 'targetIp')
-                      }
-                      onChoiceRemove={value => this.handleChoiceRemove(value, 'targetIp')
-                      }
+                      onInputKeyDown={(e) => this.handleInputKeyDown(e, 'targetIps')}
+                      choiceRender={(liNode, value) => this.handleChoiceRender(liNode, value, 'targetIp')}
+                      onChoiceRemove={(value) => this.handleChoiceRemove(value, 'targetIp')}
                       filterOption={false}
                       notFoundContent={false}
                       showNotFindInputItem={false}
@@ -1006,7 +999,7 @@ export default class Index extends Component {
                 <RadioGroup
                   name="config"
                   disabled={!selectEnv}
-                  onChange={e => this.handleTypeChange(e, 'portKeys')}
+                  onChange={(e) => this.handleTypeChange(e, 'portKeys')}
                 >
                   <Radio value="ClusterIP">ClusterIP</Radio>
                   <Radio value="NodePort">NodePort</Radio>

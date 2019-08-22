@@ -11,7 +11,7 @@ import YamlEditor from '../../../../../../../components/yamlEditor';
 import InterceptMask from '../../../../../../../components/interceptMask/InterceptMask';
 import { handlePromptError } from '../../../../../../../utils';
 
-import '../../../../../../main.scss';
+import '../../../../../../main.less';
 import './index.less';
 
 const { Sidebar } = Modal;

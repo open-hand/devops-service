@@ -1,5 +1,5 @@
 /* stylelint-disable no-descending-specificity */
-$WIDTH512: 512px;
+@WIDTH512: 512px;
 
 .c7n-formItem_180 {
   width: 180px;
@@ -14,15 +14,15 @@ $WIDTH512: 512px;
 // 选择器宽度
 .c7n-select {
   &_512 {
-    width: $WIDTH512;
+    width: @WIDTH512;
   }
 
   &_480 {
-    width: $WIDTH512 - 32px;
+    width: @WIDTH512 - 32px;
   }
 
   &_160 {
-    width: ($WIDTH512 - 32px) /3;
+    width: (@WIDTH512 - 32px) /3;
   }
 }
 

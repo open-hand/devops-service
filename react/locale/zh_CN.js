@@ -347,6 +347,10 @@ const appService = {
   'c7ncd.appService.platform.failed': '列表中存在名称或编码重复的应用服务，请修改后再导入！',
 };
 
+const envrionment = {
+  'c7ncd.env.group.default': '默认分组',
+};
+
 // 文档地址前缀
 const docServer = 'http://v0-18.choerodon.io/zh/docs';
 // 界面标题描述统一管理
@@ -2154,6 +2158,7 @@ const zhCN = {
   ...deployment,
   ...appService,
   ...pageDetail,
+  ...envrionment,
 };
 
 export default zhCN;

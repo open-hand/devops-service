@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { observer } from 'mobx-react-lite';
 import toUpper from 'lodash/toUpper';
 import { Icon } from 'choerodon-ui/pro';
-import StatusDot from '../../../../resource/main-view/components/status-dot';
+import StatusDot from '../../../../../components/status-dot';
 import InstanceItem from './InstanceItem';
 import AppItem from './AppItem';
 import { useClusterStore } from '../../../stores';

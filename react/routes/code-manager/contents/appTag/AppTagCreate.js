@@ -8,7 +8,7 @@ import MdEditor from '../../../../components/MdEditor';
 import Tips from '../../../../components/Tips/Tips';
 import InterceptMask from '../../../../components/interceptMask/InterceptMask';
 
-import '../../../main.scss';
+import '../../../main.less';
 import './style/AppTagCreate.scss';
 
 const { AppState } = stores;
