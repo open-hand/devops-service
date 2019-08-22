@@ -1,7 +1,7 @@
 import { observable, action, computed } from 'mobx';
 import _ from 'lodash';
 import { axios, store, stores } from '@choerodon/master';
-import { handleProptError } from '../../../../../utils';
+import { handlePromptError } from '../../../../../utils';
 
 const { AppState } = stores;
 
@@ -128,10 +128,10 @@ class MergeRequestStore {
     if (key === 'all') {
       axios.get(`/devops/v1/projects/${projectId}/app_service/${appId}/git/list_merge_request?page=${page}&size=${size}`)
         .then((res) => {
-          const response = handleProptError(res);
+          const response = handlePromptError(res);
           if (response) {
-            const { pageResult, closeCount, mergeCount, openCount, totalCount } = response;
-            const { pageNum, total, list, pageSize } = pageResult;
+            const { mergeRequestVOPageInfo, closeCount, mergeCount, openCount, totalCount } = res;
+            const { pageNum, total, list, pageSize } = mergeRequestVOPageInfo;
             this.setPageInfo({
               current: pageNum,
               pageSize,
@@ -156,10 +156,10 @@ class MergeRequestStore {
       // 针对opened和assignee的数据不分页处理，原因是前端从opened中分离assignee数据，会导致分页数据都显示opened的
       axios.get(`/devops/v1/projects/${projectId}/app_service/${appId}/git/list_merge_request?state=${key}&page=${page}&size=${key === 'opened' ? 30 : size}`)
         .then((res) => {
-          const response = handleProptError(res);
+          const response = handlePromptError(res);
           if (response) {
-            const { pageResult, closeCount, mergeCount, openCount, totalCount } = response;
-            const { pageNum, total, list, pageSize } = pageResult;
+            const { mergeRequestVOPageInfo, closeCount, mergeCount, openCount, totalCount } = res;
+            const { pageNum, total, list, pageSize } = mergeRequestVOPageInfo;
             this.setPageInfo({
               current: pageNum,
               pageSize,
@@ -167,7 +167,7 @@ class MergeRequestStore {
             }, key);
             this.setMerge(list, key);
             if (key === 'opened') {
-              const assignee = pageResult
+              const assignee = mergeRequestVOPageInfo
                 ? _.filter(list, (a) => a.assignee && a.assignee.id === userId) : [];
               this.setAssignee(assignee);
               this.setAssigneeCount(assignee.length);
@@ -190,7 +190,7 @@ class MergeRequestStore {
 
   loadApps(projectId) {
     return axios.get(`/devops/v1/projects/${projectId}/apps`)
-      .then((datas) => handleProptError(datas));
+      .then((datas) => { if (handlePromptError(datas)) { return datas; } });
   }
 
   loadUser = () => axios.get('iam/v1/users/self').then((data) => {
