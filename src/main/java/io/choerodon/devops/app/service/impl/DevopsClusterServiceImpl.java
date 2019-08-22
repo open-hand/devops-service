@@ -193,6 +193,15 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
     @Override
     public List<ProjectReqVO> listNonRelatedProjects(Long projectId, Long clusterId, String params) {
+        DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(clusterId);
+        if (devopsClusterDTO == null) {
+            throw new CommonException("error.cluster.not.exist", clusterId);
+        }
+        if (Boolean.TRUE.equals(devopsClusterDTO.getSkipCheckProjectPermission())) {
+            return Collections.emptyList();
+        }
+
+
         Map<String, Object> searchMap = TypeUtil.castMapParams(params);
         List<String> paramList = TypeUtil.cast(searchMap.get(TypeUtil.PARAMS));
 

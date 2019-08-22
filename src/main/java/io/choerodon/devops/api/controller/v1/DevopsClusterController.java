@@ -205,7 +205,7 @@ public class DevopsClusterController {
             @ApiParam(value = "集群id", required = true)
             @PathVariable(value = "cluster_id") Long clusterId,
             @ApiParam(value = "查询参数")
-            @RequestBody String params) {
+            @RequestBody(required = false) String params) {
         return new ResponseEntity<>(devopsClusterService.listNonRelatedProjects(projectId, clusterId, params), HttpStatus.OK);
     }
 

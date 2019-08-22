@@ -56,7 +56,7 @@ public class DevopsCertificationProRelationshipServiceImpl implements DevopsCert
         permission.setCertId(certId);
         projectIds.forEach(p -> {
             permission.setProjectId(p);
-            if (devopsCertificationProRelMapper.selectByPrimaryKey(permission) != null) {
+            if (devopsCertificationProRelMapper.selectOne(permission) == null) {
                 devopsCertificationProRelMapper.insert(permission);
             }
         });

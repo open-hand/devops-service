@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service.impl;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -112,7 +113,7 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
             List<String> paramList = TypeUtil.cast(map.get(TypeUtil.PARAMS));
             if (CollectionUtils.isEmpty(paramList)) {
                 // 如果不搜索，在数据库中进行分页
-                PageInfo<DevopsClusterProPermissionDTO> relationPage = PageHelper.startPage(
+                PageInfo<DevopsCertificationProRelationshipDTO> relationPage = PageHelper.startPage(
                         pageRequest.getPage(), pageRequest.getSize())
                         .doSelectPageInfo(() -> devopsCertificationProRelationshipService.baseListByCertificationId(certId));
                 return ConvertUtils.convertPage(relationPage, permission -> {
@@ -262,6 +263,15 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
 
     @Override
     public List<ProjectReqVO> listNonRelatedMembers(Long projectId, Long certId, String params) {
+        CertificationDTO certificationDTO = certificationService.baseQueryById(certId);
+        if (certificationDTO == null) {
+            throw new CommonException("error.certification.not.exist", certId);
+        }
+
+        if (Boolean.TRUE.equals(certificationDTO.getSkipCheckProjectPermission())) {
+            return Collections.emptyList();
+        }
+
         //查询出该项目所属组织下的所有项目
         Map<String, Object> searchMap = TypeUtil.castMapParams(params);
         List<String> paramList = TypeUtil.cast(searchMap.get(TypeUtil.PARAMS));

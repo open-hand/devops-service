@@ -37,7 +37,7 @@ public class DevopsClusterProPermissionServiceImpl implements DevopsClusterProPe
         permission.setClusterId(clusterId);
         projectIds.forEach(p -> {
             permission.setProjectId(p);
-            if (devopsClusterProPermissionMapper.selectByPrimaryKey(permission) != null) {
+            if (devopsClusterProPermissionMapper.selectOne(permission) == null) {
                 devopsClusterProPermissionMapper.insert(permission);
             }
         });
