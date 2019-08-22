@@ -82,7 +82,7 @@ public class HarborServiceImpl implements HarborService {
                 params = gson.fromJson(harborConfigurationProperties.getParams(), params.getClass());
                 result = harborClient.insertProject(params, new Project(projectCode, 1)).execute();
             }
-            if (result.raw().code() != 201) {
+            if (result.raw().code() != 201 && result.raw().code() != 409) {
                 throw new CommonException(result.message());
             }
         } catch (IOException e) {
