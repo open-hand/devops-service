@@ -24,6 +24,7 @@ import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator
 import io.choerodon.devops.infra.mapper.AppServiceMapper
 import io.choerodon.devops.infra.mapper.DevopsProjectMapper
 import io.choerodon.devops.infra.mapper.UserAttrMapper
+import io.choerodon.devops.infra.util.CustomContextUtil
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -92,7 +93,7 @@ class SagaHandlerNewSpec extends Specification {
 
         if (isToInit) {
 
-            DemoEnvSetupSagaHandler.beforeInvoke("admin", 1L, 1L)
+            CustomContextUtil.setUserContext("admin", 1L, 1L)
 
             DependencyInjectUtil.setAttribute(iamRepository, "baseServiceClient", iamServiceClient)
             DependencyInjectUtil.setAttribute(gitlabRepository, "gitlabServiceClient", gitlabServiceClient)

@@ -19,7 +19,6 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.kubernetes.C7nCertification;
 import io.choerodon.devops.api.vo.kubernetes.C7nHelmRelease;
-import io.choerodon.devops.app.eventhandler.DemoEnvSetupSagaHandler;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.BranchSagaPayLoad;
 import io.choerodon.devops.app.service.*;
@@ -391,7 +390,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         Long userId = userAttrService.baseQueryUserIdByGitlabUserId(TypeUtil.objToLong(pushWebHookVO.getUserId()));
         IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(userId);
 
-        DemoEnvSetupSagaHandler.beforeInvoke(iamUserDTO.getLoginName(),userId, iamUserDTO.getOrganizationId());
+        CustomContextUtil.setUserContext(iamUserDTO.getLoginName(),userId, iamUserDTO.getOrganizationId());
 
 
         pushWebHookVO.setToken(token);

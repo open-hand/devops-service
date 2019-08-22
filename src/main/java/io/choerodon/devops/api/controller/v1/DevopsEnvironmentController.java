@@ -11,7 +11,6 @@ import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.app.service.DevopsEnvPodService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
@@ -31,9 +30,6 @@ public class DevopsEnvironmentController {
 
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
-
-    @Autowired
-    private DevopsEnvPodService devopsEnvPodService;
 
     /**
      * 项目下创建环境
@@ -236,28 +232,6 @@ public class DevopsEnvironmentController {
 
 
     /**
-     * 按资源用量列出环境下Pod信息
-     *
-     * @param envId 环境id
-     * @param sort  排序条件
-     * @return 环境下相关资源的数量
-     */
-    @Permission(type = ResourceType.PROJECT,
-            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "按资源用量列出环境下Pod信息")
-    @GetMapping("/{env_id}/pod_ranking")
-    public ResponseEntity<List<DevopsEnvPodInfoVO>> queryEnvPodInfo(
-            @ApiParam(value = "环境id", required = true)
-            @PathVariable(value = "env_id") Long envId,
-            @ApiParam(value = "排序方式")
-            @RequestParam(value = "sort", required = false, defaultValue = "memory") String sort) {
-        return Optional.ofNullable(devopsEnvPodService.queryEnvPodInfo(envId, sort))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.pod.ranking.query"));
-    }
-
-
-    /**
      * 项目下更新环境
      *
      * @param projectId                  项目id
@@ -443,14 +417,14 @@ public class DevopsEnvironmentController {
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
-    /**
-     * 先注释掉，发版前删除
-     * 获取环境下所有用户权限（获取所有有环境权限的项目下项目成员）
-     *
-     * @param projectId 项目id
-     * @param envId     环境id
-     * @return baseList
-     */
+//    /**
+//     * TODO 先注释掉，发版前删除
+//     * 获取环境下所有用户权限（获取所有有环境权限的项目下项目成员）
+//     *
+//     * @param projectId 项目id
+//     * @param envId     环境id
+//     * @return baseList
+//     */
 //    @Permission(type = ResourceType.PROJECT,
 //            roles = {InitRoleCode.PROJECT_OWNER})
 //    @ApiOperation(value = "获取环境下所有用户权限")

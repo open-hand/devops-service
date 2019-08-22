@@ -94,9 +94,6 @@ class DemoEnvSetupSagaHandlerSpec extends Specification {
 
     def setup() {
         if (isToInit) {
-
-            DemoEnvSetupSagaHandler.beforeInvoke("admin", 1L, 1L)
-
             DependencyInjectUtil.setAttribute(iamRepository, "baseServiceClient", iamServiceClient)
             DependencyInjectUtil.setAttribute(gitlabRepository, "gitlabServiceClient", gitlabServiceClient)
             DependencyInjectUtil.setAttribute(gitlabGroupMemberRepository, "gitlabServiceClientOperator", gitlabServiceClientOperator)
