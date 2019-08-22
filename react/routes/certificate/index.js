@@ -1,5 +1,9 @@
 import React from 'react';
+import { StoreProvider } from './stores';
+import List from './List';
 
-export default function Certificate() {
-  return <div>certificate</div>;
-}
+export default (props) => (
+  <StoreProvider {...props}>
+    <List />
+  </StoreProvider>
+);

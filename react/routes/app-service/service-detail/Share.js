@@ -31,6 +31,14 @@ const Share = (props) => {
     shareDs.query();
   }
 
+  function renderProjectName({ value, record }) {
+    if (value && record.get('projectId')) {
+      return <span>{value}</span>;
+    } else {
+      return <FormattedMessage id={`${intlPrefix}.project.all`} />;
+    }
+  }
+
   function renderAction() {
     const actionData = [
       {
@@ -116,7 +124,7 @@ const Share = (props) => {
           <Column name="versionType" />
           <Column renderer={renderAction} />
           <Column name="version" />
-          <Column name="shareLevel" />
+          <Column name="projectName" renderer={renderProjectName} />
         </Table>
       </Content>
     </TabPage>

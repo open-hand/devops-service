@@ -351,6 +351,26 @@ const envrionment = {
   'c7ncd.env.group.default': '默认分组',
 };
 
+const certificate = {
+  'c7ncd.certificate.name': '证书名称',
+  'c7ncd.certificate.domain': '域名地址',
+  'c7ncd.certificate.create': '创建证书',
+  'c7ncd.certificate.permission': '权限管理',
+  'c7ncd.certificate.permission.delete': '删除权限',
+  'c7ncd.certificate.project': '项目',
+  'c7ncd.certificate.project.all': '组织下所有项目',
+  'c7ncd.certificate.project.some': '组织下特定项目',
+  'c7ncd.certificate.project.add': '添加项目',
+  'c7ncd.certificate.share': '证书公开范围',
+  'c7ncd.certificate.project.name': '项目名称',
+  'c7ncd.certificate.project.code': '项目编码',
+  'c7ncd.certificate.upload': '上传证书',
+  'c7ncd.certificate.domain.failed': '由小写字母，数字，\'-\'或\'.\'组成，以字母、数字开始和结束',
+  'c7ncd.certificate.upload.mode': '切换上传模式',
+  'c7ncd.certificate.add': '添加证书文件',
+  'c7ncd.certificate.add.tip': '您需在此添加对应的文件内容，目前只支持base64格式的证书内容',
+};
+
 // 文档地址前缀
 const docServer = 'http://v0-18.choerodon.io/zh/docs';
 // 界面标题描述统一管理
@@ -2159,6 +2179,7 @@ const zhCN = {
   ...appService,
   ...pageDetail,
   ...envrionment,
+  ...certificate,
 };
 
 export default zhCN;
