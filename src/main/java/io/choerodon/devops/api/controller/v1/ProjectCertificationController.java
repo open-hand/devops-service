@@ -268,7 +268,7 @@ public class ProjectCertificationController {
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "查询参数")
-            @RequestBody String params) {
+            @RequestBody(required = false) String params) {
         return Optional.ofNullable(devopsProjectCertificationService.pageCerts(projectId, pageRequest, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.cert.query"));

@@ -24,7 +24,7 @@
         LEFT JOIN devops_env_command cmd on dc.command_id = cmd.id
         WHERE 1=1
         <if test="projectId != null">
-            AND de.project_id = #{projectId}
+            AND dc.project_id = #{projectId}
         </if>
         <if test="envId != null">
             AND dc.env_id = #{envId}
@@ -83,8 +83,8 @@
 
     <select id="listAllOrgCertification" resultType="io.choerodon.devops.infra.dto.CertificationDTO">
         SELECT
-            cert.id, cert.name, cert.organization_id, cert.object_version_number
+            cert.id, cert.name, cert.project_id, cert.object_version_number
         FROM devops_certification cert
-        WHERE cert.organization_id IS NOT NULL;
+        WHERE cert.project_id IS NOT NULL;
     </select>
 </mapper>
