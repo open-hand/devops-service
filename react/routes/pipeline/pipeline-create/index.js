@@ -13,7 +13,7 @@ import Tips from '../../../components/Tips/Tips';
 import PipelineCreateStore from '../stores/PipelineCreateStore';
 
 import './index.less';
-import '../../main.scss';
+import '../../main.less';
 
 const { Item: FormItem } = Form;
 const { Option } = Select;

@@ -8,7 +8,7 @@ import _ from 'lodash';
 import InterceptMask from '../../../../../../../components/interceptMask/InterceptMask';
 import NetworkForm from './networkForm';
 
-import '../../../../../../main.scss';
+import '../../../../../../main.less';
 import './index.scss';
 import { handlePromptError } from '../../../../../../../utils';
 
@@ -53,7 +53,7 @@ class CreateNetwork extends Component {
           config,
           values,
         } = data;
-        const appIst = appInstance ? _.map(appInstance, item => item) : null;
+        const appIst = appInstance ? _.map(appInstance, (item) => item) : null;
         const ports = [];
         const label = {};
         const endPoints = {};
@@ -86,8 +86,8 @@ class CreateNetwork extends Component {
         // 造成需要点击两次才能提交。属于不当操作造成，暂未做处理
         if (endps && endps.length && targetIps) {
           endPoints[targetIps.join(',')] = _.map(
-            _.filter(endps, item => item || item === 0),
-            item => ({
+            _.filter(endps, (item) => item || item === 0),
+            (item) => ({
               name: null,
               port: Number(targetport[item]),
             })
@@ -155,7 +155,7 @@ class CreateNetwork extends Component {
           width={415}
         >
           <NetworkForm
-            wrappedComponentRef={form => this.formRef = form}
+            wrappedComponentRef={(form) => this.formRef = form}
             envId={envId}
             store={store}
           />

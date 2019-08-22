@@ -5,7 +5,7 @@ import { Modal, Form, Select, Tooltip } from 'choerodon-ui';
 import { stores, Content } from '@choerodon/master';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import _ from 'lodash';
-import '../../../../main.scss';
+import '../../../../main.less';
 import '../branch-create/index.scss';
 import '../index.scss';
 import MouserOverWrapper from '../../../../../components/MouseOverWrapper';

@@ -6,7 +6,7 @@ import { Button, Tooltip, Radio, Input, Form, Select, Icon } from 'choerodon-ui'
 import _ from 'lodash';
 import PropTypes from 'prop-types';
 
-import '../../../../../../../main.scss';
+import '../../../../../../../main.less';
 import './index.scss';
 
 const { Item: FormItem } = Form;
@@ -242,7 +242,7 @@ export default class Index extends Component {
     if (pattern.test(value)) {
       const paths = getFieldValue('paths');
       const fields = [];
-      _.forEach(paths, item => fields.push(`path[${item}]`));
+      _.forEach(paths, (item) => fields.push(`path[${item}]`));
       this.triggerPathCheck();
       callback();
     } else {
@@ -319,7 +319,7 @@ export default class Index extends Component {
       return;
     }
     setFieldsValue({
-      paths: _.filter(keys, key => key !== k),
+      paths: _.filter(keys, (key) => key !== k),
     });
     this.setState({ pathCountChange: true });
   };
@@ -333,7 +333,7 @@ export default class Index extends Component {
     } = this.props;
     const paths = getFieldValue('paths');
     const fields = [];
-    _.forEach(paths, item => fields.push(`path[${item}]`));
+    _.forEach(paths, (item) => fields.push(`path[${item}]`));
     validateFields(fields, { force: true });
     this.setState({ pathCountChange: false });
   };
@@ -354,7 +354,7 @@ export default class Index extends Component {
         const {
           config: { ports },
         } = item;
-        _.forEach(ports, p => portArr.push(p.port));
+        _.forEach(ports, (p) => portArr.push(p.port));
       }
     });
     setFieldsValue({ [`port[${index}]`]: '' });
@@ -451,7 +451,7 @@ export default class Index extends Component {
     getFieldDecorator('paths', { initialValue: initPaths });
     const paths = getFieldValue('paths');
     // 是否还存在校验未通过的path值
-    const pathsError = getFieldsError(_.map(paths, item => `path[${item}]`));
+    const pathsError = getFieldsError(_.map(paths, (item) => `path[${item}]`));
     let hasPathError = true;
     _.forEach(pathsError, (pv, pk) => {
       if (pv[0]) {
@@ -488,7 +488,7 @@ export default class Index extends Component {
           id,
         } = item;
         const port = [];
-        _.forEach(ports, p => port.push(p.port));
+        _.forEach(ports, (p) => port.push(p.port));
         portWithNetwork[id] = port;
       });
       // 生成端口选项
@@ -544,7 +544,7 @@ export default class Index extends Component {
               initialValue: networkOption.length ? initNetwork : undefined,
             })(
               <Select
-                getPopupContainer={triggerNode => triggerNode.parentNode}
+                getPopupContainer={(triggerNode) => triggerNode.parentNode}
                 disabled={!selectEnv}
                 filter
                 label={formatMessage({ id: 'domain.column.network' })}
@@ -556,8 +556,7 @@ export default class Index extends Component {
                 optionLabelProp="children"
                 filterOption={(input, option) => option.props.children[1].props.children
                   .toLowerCase()
-                  .indexOf(input.toLowerCase()) >= 0
-                }
+                  .indexOf(input.toLowerCase()) >= 0}
               >
                 {delNetOption}
                 {networkOption}
@@ -582,7 +581,7 @@ export default class Index extends Component {
               initialValue: initPort,
             })(
               <Select
-                getPopupContainer={triggerNode => triggerNode.parentNode}
+                getPopupContainer={(triggerNode) => triggerNode.parentNode}
                 disabled={!getFieldValue(`network[${k}]`)}
                 label={formatMessage({ id: 'domain.column.port' })}
                 showSearch
@@ -590,7 +589,7 @@ export default class Index extends Component {
                 size="default"
                 optionLabelProp="children"
               >
-                {_.map(portOption, item => (
+                {_.map(portOption, (item) => (
                   <Option key={item} value={item}>
                     {item}
                   </Option>
@@ -712,16 +711,14 @@ export default class Index extends Component {
                 notFoundContent={
                   <FormattedMessage id="domain.cert.none" />
                 }
-                getPopupContainer={triggerNode => triggerNode.parentNode
-                }
+                getPopupContainer={(triggerNode) => triggerNode.parentNode}
                 filterOption={(input, option) => option.props.children
                   .toLowerCase()
-                  .indexOf(input.toLowerCase()) >= 0
-                }
+                  .indexOf(input.toLowerCase()) >= 0}
                 filter
                 showSearch
               >
-                {_.map(getCertificates, item => (
+                {_.map(getCertificates, (item) => (
                   <Option value={item.id} key={item.id}>
                     {item.certName}
                   </Option>

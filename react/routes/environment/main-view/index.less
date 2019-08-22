@@ -1,0 +1,21 @@
+.c7ncd-env {
+  &-wrap {
+    position: relative;
+    display: flex;
+    height: 100%;
+    width: 100%;
+  }
+
+  &-main {
+    flex: 1;
+    padding: .15rem .2rem;
+    min-width: 2rem;
+    height: 100%;
+    background: #fff;
+    overflow: auto;
+  }
+
+  &-animate {
+    transition: width 0.05s ease-out, height 0.05s ease-out, background 0.05s ease-out, opacity 0.05s ease-out, transform 0.05s ease-out;
+  }
+}

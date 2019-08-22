@@ -1,14 +1,17 @@
 import React from 'react';
+import { observer } from 'mobx-react-lite';
 import { Page } from '@choerodon/master';
-import DeploymentHeader from './header';
+import CustomHeader from '../../components/custom-header';
 import MainView from './main-view';
 import { useResourceStore } from './stores';
 
-export default function Resource() {
+function Resource() {
   const { permissions } = useResourceStore();
 
   return <Page service={permissions}>
-    <DeploymentHeader />
+    <CustomHeader show />
     <MainView />
   </Page>;
 }
+
+export default observer(Resource);

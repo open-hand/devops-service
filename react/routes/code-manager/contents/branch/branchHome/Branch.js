@@ -5,7 +5,6 @@ import { Button, Tooltip, Modal, Table, Popover, Select, Icon } from 'choerodon-
 import { Content, Header, Page, Permission, stores } from '@choerodon/master';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import _ from 'lodash';
-import '../../main.scss';
 import './Branch.scss';
 import BranchCreate from '../branchCreate';
 import TimePopover from '../../../../components/timePopover';
@@ -15,6 +14,8 @@ import '../index.scss';
 import MouserOverWrapper from '../../../components/MouseOverWrapper';
 import DevPipelineStore from '../../code-manager/devPipeline';
 import StatusIcon from '../../../components/StatusIcon/StatusIcon';
+
+import '../../main.less';
 
 const { AppState } = stores;
 const { Option, OptGroup } = Select;

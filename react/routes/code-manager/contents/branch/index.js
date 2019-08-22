@@ -14,7 +14,7 @@ import DevPipelineStore from '../../stores/DevPipelineStore';
 import StatusIcon from '../../../../components/StatusIcon/StatusIcon';
 import BranchStore from './stores';
 import handleMapStore from '../../main-view/store/handleMapStore';
-import '../../../main.scss';
+import '../../../main.less';
 import './Branch.scss';
 import './index.scss';
 
