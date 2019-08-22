@@ -1,20 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.google.gson.Gson;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.DevopsConfigVO;
@@ -29,6 +15,19 @@ import io.choerodon.devops.infra.dto.harbor.ProjectDetail;
 import io.choerodon.devops.infra.dto.harbor.Role;
 import io.choerodon.devops.infra.feign.HarborClient;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created with IntelliJ IDEA.
@@ -66,10 +65,8 @@ public class HarborServiceImpl implements HarborService {
         configurationProperties.setType(HARBOR);
         Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
         HarborClient harborClient = retrofit.create(HarborClient.class);
-        createHarbor(harborClient,harborPayload.getProjectCode());
+        createHarbor(harborClient, harborPayload.getProjectCode());
     }
-
-
 
 
     @Override
@@ -110,12 +107,12 @@ public class HarborServiceImpl implements HarborService {
             HarborClient harborClient = retrofit.create(HarborClient.class);
             //2. 创建项目
             Response<Void> projectResult = harborClient.insertProject(new Project(harborMarketVO.getProjectCode(), 0)).execute();
-            if (projectResult.raw().code() != 201) {
+            if (projectResult.raw().code() != 201 && projectResult.raw().code() != 409) {
                 throw new CommonException("error.create.harbor.project", projectResult.message());
             }
             //3.创建用户
             Response<Void> userResult = harborClient.insertUser(harborMarketVO.getUser()).execute();
-            if (userResult.raw().code() != 201) {
+            if (userResult.raw().code() != 201 && userResult.raw().code() != 409) {
                 throw new CommonException("error.create.harbor.user", userResult.message());
             }
             //4.分配权限
@@ -127,7 +124,7 @@ public class HarborServiceImpl implements HarborService {
                 role.setUsername(harborMarketVO.getUser().getUsername());
                 role.setRoles(Arrays.asList(1));
                 Response<Void> roleResult = harborClient.setProjectMember(projectId, role).execute();
-                if (roleResult.raw().code() != 200) {
+                if (roleResult.raw().code() != 200 && roleResult.raw().code() != 409) {
                     throw new CommonException("error.create.harbor.role", roleResult.message());
                 }
             }
