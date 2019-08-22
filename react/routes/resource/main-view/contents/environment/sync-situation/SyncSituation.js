@@ -113,7 +113,7 @@ const SyncSituation = observer(() => {
               <Tooltip title={<FormattedMessage id={`${intlPrefix}.environment.retry`} />}>
                 <Button
                   icon="replay"
-                  color="blue"
+                  color="primary"
                   funcType="flat"
                   onClick={showRetry}
                 />

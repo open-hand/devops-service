@@ -12,7 +12,7 @@ import { STAGE_FLOW_AUTO, STAGE_FLOW_MANUAL, TRIGGER_TYPE_AUTO, TRIGGER_TYPE_MAN
 import InterceptMask from '../../../components/interceptMask';
 import EmptyPage from '../components/emptyPage';
 import './index.less';
-import '../../main.scss';
+import '../../main.less';
 
 
 const { Item: FormItem } = Form;
@@ -195,7 +195,7 @@ export default class PipelineEdit extends Component {
     const showUserSelector = triggerType
       ? (triggerType === STAGE_FLOW_MANUAL)
       : (getPipeline.triggerType === STAGE_FLOW_MANUAL);
-    
+
     const user = _.map(getUser, ({ id, realName, loginName }) => (
       <Option key={id} value={String(id)}>{realName || loginName}</Option>));
     const initUser = _.map(getPipeline.pipelineUserRels, (item) => String(item));

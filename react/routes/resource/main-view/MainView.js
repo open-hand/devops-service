@@ -1,15 +1,13 @@
-import React, { Fragment, useRef, useMemo, lazy, Suspense, useEffect } from 'react';
+import React, { Fragment, useRef, useMemo, lazy, Suspense } from 'react';
 import { observer } from 'mobx-react-lite';
 import isEmpty from 'lodash/isEmpty';
-import classnames from 'classnames';
-import Draggable from 'react-draggable';
 import Sidebar from './sidebar';
-import LoadingBar from '../../../components/loadingBar';
+import DragBar from '../../../components/drag-bar';
+import Loading from '../../../components/loading';
 import { useResourceStore } from '../stores';
 import { useMainStore } from './stores';
-import { useResize, X_AXIS_WIDTH, X_AXIS_WIDTH_MAX } from './useResize';
 
-import './styles/index.less';
+import './index.less';
 
 // 实例视图
 const EnvContent = lazy(() => import('./contents/environment'));
@@ -61,6 +59,7 @@ const MainView = observer(() => {
     },
   } = useResourceStore();
   const { mainStore } = useMainStore();
+  // useRef 总是返回不变的对象，不会因为 current 指向改变而改变
   const rootRef = useRef(null);
 
   const { menuType } = getSelectedMenu;
@@ -84,57 +83,23 @@ const MainView = observer(() => {
       [SERVICES_ITEM]: <ServiceDetail />,
     };
     return cmMaps[menuType]
-      ? <Suspense fallback={<div>loading</div>}>{cmMaps[menuType]}</Suspense>
-      : <div>加载中</div>;
+      ? <Suspense fallback={<Loading display />}>{cmMaps[menuType]}</Suspense>
+      : <Loading display />;
   }, [menuType, getViewType]);
-
-  const {
-    isDragging,
-    bounds,
-    resizeNav,
-    draggable,
-    handleUnsetDrag,
-    handleStartDrag,
-    handleDrag,
-  } = useResize(rootRef, mainStore);
-
-  const dragPrefixCls = `${prefixCls}-draggers`;
-  const draggableClass = useMemo(() => classnames({
-    [`${dragPrefixCls}-handle`]: true,
-    [`${dragPrefixCls}-handle-dragged`]: isDragging,
-  }), [isDragging]);
-
-  const dragRight = resizeNav.x >= X_AXIS_WIDTH_MAX ? X_AXIS_WIDTH_MAX : bounds.width - X_AXIS_WIDTH;
 
   return (<div
     ref={rootRef}
     className={`${prefixCls}-wrap`}
   >
-    {draggable && (
-      <Fragment>
-        <Draggable
-          axis="x"
-          position={resizeNav}
-          bounds={{
-            left: X_AXIS_WIDTH,
-            right: dragRight,
-            top: 0,
-            bottom: 0,
-          }}
-          onStart={handleStartDrag}
-          onDrag={handleDrag}
-          onStop={handleUnsetDrag}
-        >
-          <div className={draggableClass} />
-        </Draggable>
-        {isDragging && <div className={`${dragPrefixCls}-blocker`} />}
-      </Fragment>
-    )}
+    <DragBar
+      parentRef={rootRef}
+      store={mainStore}
+    />
     <Fragment>
       <Sidebar />
-      {!isEmpty(getSelectedMenu) ? <div className={`${prefixCls}-main ${dragPrefixCls}-animate`}>
+      {!isEmpty(getSelectedMenu) ? <div className={`${prefixCls}-main ${prefixCls}-animate`}>
         {content}
-      </div> : <LoadingBar display />}
+      </div> : <Loading display />}
     </Fragment>
   </div>);
 });

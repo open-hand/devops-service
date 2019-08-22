@@ -1,4 +1,4 @@
-import React, { Fragment, useState, useMemo } from 'react';
+import React, { Fragment, useState, useMemo, useRef, useEffect } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import { Popover, Icon, Button } from 'choerodon-ui';
@@ -17,6 +17,7 @@ const ICON_TYPE_MAPPING = {
 };
 
 const OpRecord = observer(({ handleClick, active }) => {
+  const rowRef = useRef(null);
   const {
     prefixCls,
     intlPrefix,
@@ -27,6 +28,15 @@ const OpRecord = observer(({ handleClick, active }) => {
   } = useInstanceStore();
   const [cardActive, setCardActive] = useState('');
   const podKeys = useMemo(() => (['type', 'createTime', 'status', 'loginName', 'realName', 'userImage', 'podEventVO']), []);
+
+  // useEffect(() => {
+  //   const { current } = rowRef;
+  //   console.log(current);
+  //   if (current) {
+  //     const { offsetWidth } = current;
+  //     console.log(offsetWidth);
+  //   }
+  // });
 
   function getPopoverContent({ status, createTime, realName, loginName, userImage, index }) {
     return <Fragment>
@@ -61,7 +71,7 @@ const OpRecord = observer(({ handleClick, active }) => {
     }
 
     return (
-      <div className="cases-record-detail">
+      <div ref={rowRef} className="cases-record-detail">
         {casesDs.map((record, index) => {
           const [
             type,
@@ -81,6 +91,7 @@ const OpRecord = observer(({ handleClick, active }) => {
           };
           return (
             <Popover
+              getPopupContainer={(triggerNode) => triggerNode.parentNode}
               content={getPopoverContent({
                 createTime,
                 status,
@@ -119,23 +130,23 @@ const OpRecord = observer(({ handleClick, active }) => {
       <span className="cases-record-title">
         {formatMessage({ id: `${intlPrefix}.instance.cases.record` })}
       </span>
-      <Button
-        ghost
-        className={`${prefixCls}-cases-record-arrow`}
-        funcType="flat"
-        shape="circle"
-        type="primary"
-        icon="navigate_before"
-      />
+      {/* <Button */}
+      {/*  ghost */}
+      {/*  className={`${prefixCls}-cases-record-arrow`} */}
+      {/*  funcType="flat" */}
+      {/*  shape="circle" */}
+      {/*  type="primary" */}
+      {/*  icon="navigate_before" */}
+      {/* /> */}
       {renderOperation}
-      <Button
-        ghost
-        className={`${prefixCls}-cases-record-arrow`}
-        funcType="flat"
-        shape="circle"
-        type="primary"
-        icon="navigate_next"
-      />
+      {/* <Button */}
+      {/*  ghost */}
+      {/*  className={`${prefixCls}-cases-record-arrow`} */}
+      {/*  funcType="flat" */}
+      {/*  shape="circle" */}
+      {/*  type="primary" */}
+      {/*  icon="navigate_next" */}
+      {/* /> */}
     </div>
   );
 });

@@ -13,7 +13,7 @@ import './index.less';
 const FormItem = Form.Item;
 const { Option } = Select;
 
-const Permission = observer(({ modal, form, store, tree, onOk, intlPrefix, prefixCls, intl: { formatMessage } }) => {
+const Permission = observer(({ modal, form, store, onOk, intlPrefix, prefixCls, intl: { formatMessage } }) => {
   const { getFieldDecorator } = form;
   const { getUsers } = store;
   const [isSkip, setIsSkip] = useState(true);
@@ -36,9 +36,7 @@ const Permission = observer(({ modal, form, store, tree, onOk, intlPrefix, prefi
 
     try {
       const res = await onOk(users);
-      if (!res || !handlePromptError(res)) return false;
-
-      tree.query();
+      if (!handlePromptError(res, false)) return false;
     } catch (e) {
       Choerodon.handleResponseError(e);
       return false;

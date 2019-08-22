@@ -1,15 +1,11 @@
 import React from 'react';
-import { observer } from 'mobx-react';
 import PropTypes from 'prop-types';
 import { Progress } from 'choerodon-ui';
 import classNames from 'classnames';
-import './LoadingBar.scss';
 
-const LoadingBarRequiredProps = {
-  display: PropTypes.bool,
-};
+import './index.less';
 
-function LoadingBar({ display = false }) {
+function Loading({ display = false }) {
   const spinClass = classNames({
     'spin-hidden': !display,
     'spin-container': display,
@@ -21,5 +17,8 @@ function LoadingBar({ display = false }) {
   );
 }
 
-LoadingBar.propTypes = LoadingBarRequiredProps;
-export default observer(LoadingBar);
+Loading.propTypes = {
+  display: PropTypes.bool,
+};
+
+export default Loading;

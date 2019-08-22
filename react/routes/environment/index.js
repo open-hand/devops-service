@@ -1,5 +1,9 @@
 import React from 'react';
+import { StoreProvider } from './stores';
+import Environment from './Environment';
 
-export default function Environment() {
-  return <div>environment</div>;
-}
+export default (props) => (
+  <StoreProvider {...props}>
+    <Environment />
+  </StoreProvider>
+);

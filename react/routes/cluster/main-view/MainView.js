@@ -4,8 +4,8 @@ import isEmpty from 'lodash/isEmpty';
 import classnames from 'classnames';
 import Draggable from 'react-draggable';
 import Sidebar from './sidebar';
-import LoadingBar from '../../../components/loadingBar';
+import LoadingBar from '../../../components/loading';
 
 export default observer((props) => {
-    
+
 });

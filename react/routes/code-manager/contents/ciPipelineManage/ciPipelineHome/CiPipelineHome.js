@@ -5,13 +5,14 @@ import { Tooltip, Select } from 'choerodon-ui';
 import { Content, Header, Page, stores } from '@choerodon/master';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import _ from 'lodash';
-import '../../main.scss';
 import '../index.scss';
 import CiPipelineStore from '../stores';
 import DevPipelineStore from '../../../devPipeline/DevPipelineStore';
 import RefreshBtn from '../../../../../components/refreshBtn';
 import DevopsStore from '../../../stores/DevopsStore';
 import CiPipelineTable from '../CiPipelineTable.js.js';
+
+import '../../main.less';
 
 const { Option, OptGroup } = Select;
 const { AppState } = stores;

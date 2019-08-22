@@ -10,7 +10,7 @@ import DevPipelineStore from '../../stores/DevPipelineStore';
 import DevopsStore from '../../stores/DevopsStore';
 import CiPipelineTable from './CiPipelineTable.js';
 import handleMapStore from '../../main-view/store/handleMapStore';
-import '../../../main.scss';
+import '../../../main.less';
 import './index.less';
 
 @injectIntl

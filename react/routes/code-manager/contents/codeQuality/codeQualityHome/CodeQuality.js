@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React, { Component, Fragment } from 'react';
 import { observer, inject } from 'mobx-react';
 import { withRouter, Link } from 'react-router-dom';
@@ -5,14 +6,14 @@ import { injectIntl, FormattedMessage } from 'react-intl';
 import { Page, Header, Content } from '@choerodon/master';
 import { Select, Button, Tooltip, Icon, Card } from 'choerodon-ui';
 import _ from 'lodash';
-import LoadingBar from '../../../../components/loadingBar/LoadingBar';
+import Loading from '../../../../components/loading';
 import DevPipelineStore from '../../../stores/DevPipelineStore';
 import Percentage from '../../../../components/percentage/Percentage';
 import Rating from '../../../../components/rating/Rating';
 import { QUALITY_LIST, OBJECT_TYPE } from '../components/Constants';
 
 import './CodeQuality.scss';
-import '../../main.scss';
+import '../../main.less';
 
 const { Option, OptGroup } = Select;
 
@@ -226,7 +227,7 @@ class CodeQuality extends Component {
             </Button>
           </Header>
           <Content code="codeQuality" values={{ name: titleName }}>
-            {getLoading ? <LoadingBar display /> : this.getDetail()}
+            {getLoading ? <Loading display /> : this.getDetail()}
           </Content>
         </Fragment> : null}
       </Page>

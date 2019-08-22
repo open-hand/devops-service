@@ -1,4 +1,4 @@
-import React, { Fragment, useCallback, useState, useEffect } from 'react/index';
+import React, { Fragment, useCallback, useState, useEffect } from 'react';
 import { Form, TextField, Select, Upload } from 'choerodon-ui/pro';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
