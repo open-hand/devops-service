@@ -5,7 +5,7 @@ import { Modal, Form, Radio, Input, Select, Tooltip } from 'choerodon-ui';
 import { Content, stores } from '@choerodon/master';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import _ from 'lodash';
-import '../../../../main.scss';
+import '../../../../main.less';
 import './index.scss';
 import '../index.scss';
 import MouserOverWrapper from '../../../../../components/MouseOverWrapper';
@@ -420,7 +420,7 @@ class BranchCreate extends Component {
                     label={intl.formatMessage({ id: 'branch.tag' })}
                     key="more"
                   >
-                    {tags.list.map((s) => (s.release 
+                    {tags.list.map((s) => (s.release
                       ? <Option value={s.release.tagName} key={s.release.tagName}>
                         <i className="icon icon-local_offer c7n-branch-formItem-icon" />
                         {s.release.tagName}

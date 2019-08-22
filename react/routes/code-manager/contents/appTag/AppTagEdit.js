@@ -5,7 +5,7 @@ import { Content, stores } from '@choerodon/master';
 import { Modal } from 'choerodon-ui';
 
 import MdEditor from '../../../../components/MdEditor';
-import '../../../main.scss';
+import '../../../main.less';
 import InterceptMask from '../../../../components/interceptMask/InterceptMask';
 
 const { AppState } = stores;

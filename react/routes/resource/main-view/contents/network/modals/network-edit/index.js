@@ -21,7 +21,7 @@ import AppName from '../../../../../../../components/appName';
 import InterceptMask from '../../../../../../../components/interceptMask/InterceptMask';
 import Tips from '../../../../../../../components/Tips/Tips';
 
-import '../../../../../../main.scss';
+import '../../../../../../main.less';
 import '../network-create/networkForm/index.scss';
 import './index.scss';
 import { handlePromptError } from '../../../../../../../utils';
@@ -153,7 +153,7 @@ class EditNetwork extends Component {
         _pushUnRecordIp(_externalIps, _unInputIp);
         _pushUnRecordIp(_targetIps, _unInputEndIp);
 
-        const appIst = instances ? _.map(instances, item => item) : null;
+        const appIst = instances ? _.map(instances, (item) => item) : null;
         const ports = [];
         const label = {};
         const endPoints = {};
@@ -183,8 +183,8 @@ class EditNetwork extends Component {
 
         if (endps && endps.length && _targetIps) {
           endPoints[_targetIps.join(',')] = _.map(
-            _.filter(endps, item => item || item === 0),
-            item => ({
+            _.filter(endps, (item) => item || item === 0),
+            (item) => ({
               name: null,
               port: Number(targetport[item]),
             })
@@ -204,8 +204,8 @@ class EditNetwork extends Component {
           type,
         } = network;
 
-        const oldIst = _.map(oldAppInstance, item => item.code);
-        const oldPortId = _.map(oldPorts, item => ({
+        const oldIst = _.map(oldAppInstance, (item) => item.code);
+        const oldPortId = _.map(oldPorts, (item) => ({
           nodePort: item.nodePort ? _.toNumber(item.nodePort) : null,
           port: item.port ? _.toNumber(item.port) : null,
           targetPort: item.targetPort ? _.toNumber(item.targetPort) : null,
@@ -490,7 +490,7 @@ class EditNetwork extends Component {
     }
 
     setFieldsValue({
-      [type]: _.filter(keys, key => key !== k),
+      [type]: _.filter(keys, (key) => key !== k),
     }, () => validateFields(list, { force: true }));
   };
 
@@ -883,11 +883,11 @@ class EditNetwork extends Component {
     const { getFieldDecorator, getFieldValue } = form;
     const localApp = _.filter(
       store.getApp,
-      item => item.projectId === Number(projectId)
+      (item) => item.projectId === Number(projectId)
     );
     const storeApp = _.filter(
       store.getApp,
-      item => item.projectId !== Number(projectId)
+      (item) => item.projectId !== Number(projectId)
     );
     let portWidthSingle = '240';
     let portWidthMut = 'portL';
@@ -898,7 +898,7 @@ class EditNetwork extends Component {
 
     // 生成多组 port
     const { ports, externalIps } = config;
-    const trustIps = _.filter(externalIps, item => item);
+    const trustIps = _.filter(externalIps, (item) => item);
     const initIp = trustIps.length ? trustIps : undefined;
     const initPort = [0];
     const nPort = [];
@@ -1012,7 +1012,7 @@ class EditNetwork extends Component {
               <Select
                 label={<FormattedMessage id="ist.deploy.ports.protocol" />}
               >
-                {_.map(['TCP', 'UDP'], item => (
+                {_.map(['TCP', 'UDP'], (item) => (
                   <Option value={item} key={item}>
                     {item}
                   </Option>
@@ -1094,7 +1094,7 @@ class EditNetwork extends Component {
     }
     getFieldDecorator('targetKeys', { initialValue: initLabels });
     const targetKeys = getFieldValue('targetKeys');
-    const targetItems = _.map(targetKeys, k => (
+    const targetItems = _.map(targetKeys, (k) => (
       <div key={`target-${k}`} className="network-port-wrap">
         <FormItem
           className="c7n-select_150 network-panel-form network-port-form"
@@ -1160,7 +1160,7 @@ class EditNetwork extends Component {
     const ist = store.getIst;
     // 将默认的选项过滤
     const istOption = _.map(
-      _.filter(ist, item => !_.includes(initIst, item.code)),
+      _.filter(ist, (item) => !_.includes(initIst, item.code)),
       (item) => {
         const { id, code } = item;
         return (
@@ -1176,9 +1176,9 @@ class EditNetwork extends Component {
       }
     );
 
-    const localAppOptions = _.map(localApp, node => this.makeAppGroup(node));
+    const localAppOptions = _.map(localApp, (node) => this.makeAppGroup(node));
 
-    const storeAppOptions = _.map(storeApp, node => this.makeAppGroup(node));
+    const storeAppOptions = _.map(storeApp, (node) => this.makeAppGroup(node));
 
     return (
       <div className="c7n-region">
@@ -1231,7 +1231,7 @@ class EditNetwork extends Component {
                   <RadioGroup
                     name="target"
                     disabled={!envId}
-                    onChange={e => this.handleTypeChange(e, 'targetKeys')}
+                    onChange={(e) => this.handleTypeChange(e, 'targetKeys')}
                   >
                     <Radio value="instance">
                       <FormattedMessage id="network.target.instance" />
@@ -1270,12 +1270,10 @@ class EditNetwork extends Component {
                         disabled={!envId}
                         onSelect={this.handleAppSelect}
                         label={<FormattedMessage id="network.form.app" />}
-                        getPopupContainer={triggerNode => triggerNode.parentNode
-                        }
+                        getPopupContainer={(triggerNode) => triggerNode.parentNode}
                         filterOption={(input, option) => option.props.children.props.children.props.children.props.name
                           .toLowerCase()
-                          .indexOf(input.toLowerCase()) >= 0
-                        }
+                          .indexOf(input.toLowerCase()) >= 0}
                       >
                         <OptGroup
                           label={<FormattedMessage id="project" />}
@@ -1322,13 +1320,11 @@ class EditNetwork extends Component {
                         notFoundContent={intl.formatMessage({
                           id: 'network.form.instance.disable',
                         })}
-                        getPopupContainer={triggerNode => triggerNode.parentNode
-                        }
+                        getPopupContainer={(triggerNode) => triggerNode.parentNode}
                         choiceRender={this.handleRenderInstance}
                         filterOption={(input, option) => option.props.children.props.children
                           .toLowerCase()
-                          .indexOf(input.toLowerCase()) >= 0
-                        }
+                          .indexOf(input.toLowerCase()) >= 0}
                       >
                         {initIstOption}
                         {istOption}
@@ -1371,15 +1367,12 @@ class EditNetwork extends Component {
                     })(
                       <Select
                         mode="tags"
-                        ref={node => this.ipSelectRef(node, 'targetIps')}
+                        ref={(node) => this.ipSelectRef(node, 'targetIps')}
                         disabled={!envId}
                         label={<FormattedMessage id="network.target.ip" />}
-                        onInputKeyDown={e => this.handleInputKeyDown(e, 'targetIps')
-                        }
-                        choiceRender={(liNode, value) => this.handleChoiceRender(liNode, value, 'targetIp')
-                        }
-                        onChoiceRemove={value => this.handleChoiceRemove(value, 'targetIp')
-                        }
+                        onInputKeyDown={(e) => this.handleInputKeyDown(e, 'targetIps')}
+                        choiceRender={(liNode, value) => this.handleChoiceRender(liNode, value, 'targetIp')}
+                        onChoiceRemove={(value) => this.handleChoiceRemove(value, 'targetIp')}
                         filterOption={false}
                         notFoundContent={false}
                         showNotFindInputItem={false}
@@ -1420,7 +1413,7 @@ class EditNetwork extends Component {
                   <RadioGroup
                     name="config"
                     disabled={!envId}
-                    onChange={e => this.handleTypeChange(e, 'portKeys')}
+                    onChange={(e) => this.handleTypeChange(e, 'portKeys')}
                   >
                     <Radio value="ClusterIP">ClusterIP</Radio>
                     <Radio value="NodePort">NodePort</Radio>

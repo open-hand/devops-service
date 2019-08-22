@@ -6,7 +6,7 @@ import { Page, Header, Content } from '@choerodon/master';
 import { Select, Button, Tooltip, Icon, Card } from 'choerodon-ui';
 import _ from 'lodash';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
-import LoadingBar from '../../../../components/loadingBar/LoadingBar';
+import Loading from '../../../../components/loading';
 import DevPipelineStore from '../../stores/DevPipelineStore';
 import Percentage from '../../../../components/percentage/Percentage';
 import Rating from '../../../../components/rating/Rating';
@@ -15,7 +15,7 @@ import CodeQualityStore from './stores';
 import handleMapStore from '../../main-view/store/handleMapStore';
 
 import './index.less';
-import '../../../main.scss';
+import '../../../main.less';
 
 const { Option, OptGroup } = Select;
 @injectIntl
@@ -185,7 +185,7 @@ class CodeQuality extends Component {
       >
         {getAppData && getAppData.length && getSelectApp ? <Fragment>
           <Content className="c7n-codeQuality-content">
-            {getLoading ? <LoadingBar display /> : this.getDetail()}
+            {getLoading ? <Loading display /> : this.getDetail()}
           </Content>
         </Fragment> : null}
       </Page>

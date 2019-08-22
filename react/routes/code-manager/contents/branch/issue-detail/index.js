@@ -7,7 +7,7 @@ import _ from 'lodash';
 import './index.scss';
 import '../index.scss';
 import IssueDescription from './IssueDescription';
-import LoadingBar from '../../../../../components/loadingBar';
+import Loading from '../../../../../components/loading';
 import TimePopover from '../../../../../components/timePopover';
 
 const Sidebar = Modal.Sidebar;
@@ -185,7 +185,7 @@ class IssueDetail extends Component {
         okCancel={false}
         onOk={this.handleClose}
       >
-        { !issue ? <LoadingBar display /> : <div className="c7n-branch-issue">
+        { !issue ? <Loading display /> : <div className="c7n-branch-issue">
           <section className="branch-issue-name">
             <h2 className="issue-num">{issue.issueNum} </h2>
             <p className="issue-summary">{issue.summary}</p>

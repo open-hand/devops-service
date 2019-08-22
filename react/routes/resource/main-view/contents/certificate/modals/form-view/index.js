@@ -19,7 +19,7 @@ import Tips from '../../../../../../../components/Tips/Tips';
 import InterceptMask from '../../../../../../../components/interceptMask/InterceptMask';
 import { handlePromptError } from '../../../../../../../utils';
 
-import '../../../../../../main.scss';
+import '../../../../../../main.less';
 import './index.less';
 
 const { Sidebar } = Modal;
@@ -125,7 +125,7 @@ export default class CertificateCreate extends Component {
 
         if (_data.type === CERT_TYPE_CHOOSE) {
           _data.type = CERT_TYPE_REQUEST;
-          _data.domains = _.map(_data.domains, item => `${item}${suffix}`);
+          _data.domains = _.map(_data.domains, (item) => `${item}${suffix}`);
         } else if (_data.type === CERT_TYPE_UPLOAD && uploadMode) {
           const { key, cert } = data;
 
@@ -243,7 +243,7 @@ export default class CertificateCreate extends Component {
     if (keys.length === 1) return;
 
     setFieldsValue({
-      domainArr: _.filter(keys, key => key !== k),
+      domainArr: _.filter(keys, (key) => key !== k),
     });
     setFieldsValue({
       [`domains[${k}]`]: undefined,
@@ -341,8 +341,7 @@ export default class CertificateCreate extends Component {
               onChange={this.handleCertSelect}
               filterOption={(input, option) => option.props.children
                 .toLowerCase()
-                .indexOf(input.toLowerCase()) >= 0
-              }
+                .indexOf(input.toLowerCase()) >= 0}
               filter
             >
               {certOptions}
@@ -401,7 +400,7 @@ export default class CertificateCreate extends Component {
     const domainArr = getFieldValue('domainArr');
     const isDomainGroup = domainArr.length > 1;
 
-    const domainItems = _.map(domainArr, k => (
+    const domainItems = _.map(domainArr, (k) => (
       <div
         key={`domains-${k}`}
         className="creation-panel-group c7n-form-domains"

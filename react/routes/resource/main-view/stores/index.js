@@ -34,7 +34,6 @@ export const StoreProvider = injectIntl(inject('AppState')(
         PADDING_COLOR: '#fbb100',
       },
       mainStore,
-
       networkStore,
       customStore,
       ingressStore,

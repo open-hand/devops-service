@@ -6,7 +6,7 @@ import Sidebar from 'choerodon-ui/lib/modal/Sidebar';
 import { Button, Modal, Form, Input, Select, Radio } from 'choerodon-ui';
 import { Content } from '@choerodon/master';
 import { STAGE_FLOW_MANUAL, STAGE_FLOW_AUTO } from '../Constants';
-import '../../../main.scss';
+import '../../../main.less';
 import './StageCreateModal.scss';
 
 const { Item: FormItem } = Form;
@@ -193,7 +193,7 @@ export default class StageCreateModal extends Component {
           </FormItem> */}
         </Form>
       </Content>
-      
+
     </Sidebar>;
   }
 }

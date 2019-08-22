@@ -2,7 +2,7 @@ import React, { Fragment, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { observer } from 'mobx-react-lite';
 import { Icon, Tooltip } from 'choerodon-ui';
-import StatusDot from '../../components/status-dot';
+import StatusDot from '../../../../../components/status-dot';
 import PrefixTitle from '../../components/prefix-title';
 import Modals from './modals';
 import { useResourceStore } from '../../../stores';
@@ -87,6 +87,7 @@ const Content = observer(() => {
         const count = record ? record.get(item) : 0;
         const name = formatMessage({ id: `${intlPrefix}.status.${item}` });
         return <ItemNumberByStatus
+          key={item}
           code={item}
           name={name}
           count={count}
@@ -98,6 +99,7 @@ const Content = observer(() => {
       const count = record ? record.get(item) : 0;
       const name = formatMessage({ id: `${intlPrefix}.resource.${item}` });
       return <ItemNumberByResource
+        key={item}
         code={item}
         name={name}
         count={count}

@@ -11,7 +11,7 @@ import Tips from '../../../../components/Tips/Tips';
 import CiPipelineStore from './stores';
 
 
-import '../../../main.scss';
+import '../../../main.less';
 import './index.less';
 
 const ICONS = {

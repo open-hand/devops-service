@@ -13,7 +13,7 @@ import MergeRequestStore from './stores';
 import handleMapStore from '../../main-view/store/handleMapStore';
 
 import './index.scss';
-import '../../../main.scss';
+import '../../../main.less';
 
 const { AppState } = stores;
 const { Option, OptGroup } = Select;

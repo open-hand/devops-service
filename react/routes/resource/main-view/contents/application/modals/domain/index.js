@@ -8,7 +8,7 @@ import _ from 'lodash';
 import InterceptMask from '../../../../../../../components/interceptMask/InterceptMask';
 import DomainForm from './domainForm';
 
-import '../../../../../../main.scss';
+import '../../../../../../main.less';
 import './index.scss';
 
 const { Sidebar } = Modal;
