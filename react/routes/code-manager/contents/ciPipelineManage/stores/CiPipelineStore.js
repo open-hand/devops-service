@@ -29,7 +29,7 @@ class CiPipelineStore {
 
   loadPipelines(spin, appId, page = 1, size = this.pagination.pageSize, projectId = AppState.currentMenuType.id) {
     spin && this.setLoading(true);
-    return axios.get(`/devops/v1/projects/${projectId}/pipeline/page_by_options?app_id=${appId}&page=${page}&size=${size}`)
+    return axios.get(`/devops/v1/projects/${projectId}/pipeline/page_by_options?app_service_id=${appId}&page=${page}&size=${size}`)
       .then((res) => {
         const response = handleProptError(res);
         if (response) {

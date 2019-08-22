@@ -201,7 +201,6 @@ export default class Pipeline extends Component {
       <StatusTags
         name={formatMessage({ id: record ? 'active' : 'stop' })}
         color={record ? '#00bfa5' : '#cecece'}
-        
       />
       <a className="c7ncd-pipeline-status-a" onClick={(e) => { this.handleClickName(e, id); }}>{data.name}</a>
     </div>;
