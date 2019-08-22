@@ -9,9 +9,13 @@ import io.choerodon.asgard.saga.consumer.MockHttpServletRequest;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.devops.app.eventhandler.constants.SagaTaskCodeConstants;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
+import io.choerodon.devops.app.eventhandler.payload.ApplicationEventPayload;
 import io.choerodon.devops.app.eventhandler.payload.GitlabGroupPayload;
 import io.choerodon.devops.app.eventhandler.payload.OrganizationRegisterEventPayload;
+import io.choerodon.devops.app.service.ApplicationService;
 import io.choerodon.devops.app.service.DevopsDemoEnvInitService;
+import io.choerodon.devops.app.service.GitlabGroupService;
+import io.choerodon.devops.infra.util.ConvertUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +39,10 @@ public class DemoEnvSetupSagaHandler {
 
     @Autowired
     private DevopsDemoEnvInitService devopsDemoEnvInitService;
+    @Autowired
+    private GitlabGroupService gitlabGroupService;
+    @Autowired
+    private ApplicationService applicationService;
 
     /**
      * saga原有的用户上下文
@@ -50,7 +58,7 @@ public class DemoEnvSetupSagaHandler {
             sagaCode = SagaTopicCodeConstants.REGISTER_ORG,
             maxRetryCount = 3,
             seq = 90)
-    private OrganizationRegisterEventPayload handleCreateGroupsForDemoProject(String payload) {
+    private String handleCreateGroupsForDemoProject(String payload) {
         logInfoPayload(SagaTaskCodeConstants.REGISTER_DEVOPS_INIT_PROJCET, payload);
         OrganizationRegisterEventPayload registerInfo = gson.fromJson(payload, OrganizationRegisterEventPayload.class);
         GitlabGroupPayload gitlabGroupPayload = new GitlabGroupPayload();
@@ -62,9 +70,18 @@ public class DemoEnvSetupSagaHandler {
         gitlabGroupPayload.setUserId(registerInfo.getUser().getId());
         gitlabGroupPayload.setUserName(registerInfo.getUser().getLoginName());
 
-//        gitlabGroupService.createGroup(gitlabGroupPayload, "");
-//        gitlabGroupService.createGroup(gitlabGroupPayload, "-gitops");
-        return registerInfo;
+        // 创建环境gitlab组
+        gitlabGroupService.createEnvGroup(gitlabGroupPayload);
+
+        // 创建应用gitlab组
+        ApplicationEventPayload applicationEventPayload = ConvertUtils.convertObject(registerInfo.getApplication(), ApplicationEventPayload.class);
+        applicationEventPayload.setOrganizationCode(registerInfo.getOrganization().getCode());
+        applicationEventPayload.setOrganizationName(registerInfo.getOrganization().getName());
+        applicationEventPayload.setProjectId(registerInfo.getProject().getId());
+        applicationEventPayload.setUserId(registerInfo.getUser().getId());
+
+        applicationService.handleApplicationCreation(applicationEventPayload);
+        return payload;
     }
 
 
