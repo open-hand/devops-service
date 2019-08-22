@@ -23,11 +23,22 @@ public class CustomContextUtil {
     private CustomContextUtil() {
     }
 
-    public static void setUserId(Long uesrId) {
+    public static void setUserContext(Long userId) {
+        setUserContext("unknown", userId, 1L);
+    }
+
+    /**
+     * 设置用户上下文，谨慎使用
+     *
+     * @param loginName 登录名
+     * @param userId    用户id
+     * @param orgId     组织id
+     */
+    public static void setUserContext(String loginName, Long userId, Long orgId) {
         try {
-            CustomUserDetails customUserDetails = DetailsHelper.getUserDetails() == null ? new CustomUserDetails("unknown", "unknown", Collections.emptyList()) : DetailsHelper.getUserDetails();
-            customUserDetails.setUserId(uesrId);
-            customUserDetails.setOrganizationId(1L);
+            CustomUserDetails customUserDetails = DetailsHelper.getUserDetails() == null ? new CustomUserDetails(loginName, "unknown", Collections.emptyList()) : DetailsHelper.getUserDetails();
+            customUserDetails.setUserId(userId);
+            customUserDetails.setOrganizationId(orgId);
             customUserDetails.setLanguage("zh_CN");
             customUserDetails.setTimeZone("CCT");
             Authentication user = new UsernamePasswordAuthenticationToken("default", "N/A", Collections.emptyList());

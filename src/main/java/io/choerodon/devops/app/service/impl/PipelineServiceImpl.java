@@ -33,7 +33,6 @@ import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.iam.UserVO;
-import io.choerodon.devops.app.eventhandler.DemoEnvSetupSagaHandler;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
@@ -358,7 +357,7 @@ public class PipelineServiceImpl implements PipelineService {
         //获取数据
         PipelineTaskRecordDTO taskRecordDTO = pipelineTaskRecordService.baseQueryRecordById(taskRecordId);
         Long pipelineRecordId = pipelineStageRecordService.baseQueryById(stageRecordId).getPipelineRecordId();
-        CustomContextUtil.setUserId(taskRecordDTO.getCreatedBy());
+        CustomContextUtil.setUserContext(taskRecordDTO.getCreatedBy());
         AppServiceVersionDTO appServiceServiceE = getDeployVersion(pipelineRecordId, stageRecordId, taskRecordDTO);
         //保存记录
         taskRecordDTO.setStatus(WorkFlowStatus.RUNNING.toValue());
@@ -807,7 +806,7 @@ public class PipelineServiceImpl implements PipelineService {
     @Override
     public void executeAutoDeploy(Long pipelineId) {
         PipelineDTO pipelineDTO = baseQueryById(pipelineId);
-        CustomContextUtil.setUserId(pipelineDTO.getCreatedBy());
+        CustomContextUtil.setUserContext(pipelineDTO.getCreatedBy());
         PipelineRecordDTO pipelineRecordDTO = new PipelineRecordDTO(pipelineId, pipelineDTO.getTriggerType(), pipelineDTO.getProjectId(), WorkFlowStatus.RUNNING.toValue(), pipelineDTO.getName());
         String uuid = GenerateUUID.generateUUID();
         pipelineRecordDTO.setBusinessKey(uuid);
@@ -1416,7 +1415,7 @@ public class PipelineServiceImpl implements PipelineService {
 
                     @Override
                     public void onComplete() {
-                        DemoEnvSetupSagaHandler.beforeInvoke(loginName, userId, orgId);
+                        CustomContextUtil.setUserContext(loginName, userId, orgId);
                         try {
                             workFlowServiceOperator.create(projectId, devopsPipelineDTO);
                         } catch (Exception e) {
@@ -1446,7 +1445,7 @@ public class PipelineServiceImpl implements PipelineService {
 
                     @Override
                     public void onComplete() {
-                        DemoEnvSetupSagaHandler.beforeInvoke(loginName, userId, orgId);
+                        CustomContextUtil.setUserContext(loginName, userId, orgId);
                         try {
                             workFlowServiceOperator.approveUserTask(projectId, businessKey);
                         } catch (Exception e) {

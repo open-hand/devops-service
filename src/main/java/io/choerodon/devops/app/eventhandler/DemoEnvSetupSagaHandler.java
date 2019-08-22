@@ -12,7 +12,6 @@ import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.GitlabGroupPayload;
 import io.choerodon.devops.app.eventhandler.payload.OrganizationRegisterEventPayload;
 import io.choerodon.devops.app.service.DevopsDemoEnvInitService;
-import io.choerodon.devops.app.service.GitlabGroupService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,9 +34,12 @@ public class DemoEnvSetupSagaHandler {
     private final Gson gson = new Gson();
 
     @Autowired
-    private GitlabGroupService gitlabGroupService;
-    @Autowired
     private DevopsDemoEnvInitService devopsDemoEnvInitService;
+
+    /**
+     * saga原有的用户上下文
+     */
+    private ThreadLocal<Authentication> preAuthentication = new ThreadLocal<>();
 
 
     /**
@@ -67,9 +69,11 @@ public class DemoEnvSetupSagaHandler {
 
 
     /**
-     * 设置Demo流程的用户上下文
+     * 设置组织注册流程的用户上下文
      */
-    public static void beforeInvoke(String loginName, Long userId, Long orgId) {
+    private void beforeInvoke(String loginName, Long userId, Long orgId) {
+        preAuthentication.set(SecurityContextHolder.getContext().getAuthentication());
+
         CustomUserDetails customUserDetails = new CustomUserDetails(loginName, "unknown", Collections.emptyList());
         customUserDetails.setUserId(userId);
         customUserDetails.setOrganizationId(orgId);
@@ -83,6 +87,7 @@ public class DemoEnvSetupSagaHandler {
         OAuth2AuthenticationDetails oAuth2AuthenticationDetails = new OAuth2AuthenticationDetails(new MockHttpServletRequest());
         oAuth2AuthenticationDetails.setDecodedDetails(customUserDetails);
         authentication.setDetails(oAuth2AuthenticationDetails);
+
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
@@ -97,10 +102,11 @@ public class DemoEnvSetupSagaHandler {
     }
 
     /**
-     * 清空当前用户上下文
+     * 重置为saga原有的用户上下文
      */
-    public static void afterInvoke() {
-        SecurityContextHolder.clearContext();
+    private void afterInvoke() {
+        SecurityContextHolder.getContext().setAuthentication(preAuthentication.get());
+        preAuthentication.remove();
     }
 
     /**
