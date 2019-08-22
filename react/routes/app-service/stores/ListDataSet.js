@@ -6,14 +6,12 @@ import forEach from 'lodash/forEach';
 function handleUpdate({ record, name, value }) {
   switch (name) {
     case 'harborType':
-      forEach(['url', 'userName', 'password', 'email', 'project'], (item) => {
+      forEach(['url', 'userName', 'password', 'email'], (item) => {
         record.getField(item).set('required', value === 'custom');
       });
-      record.set('harbor', { type: 'harbor', custom: value === 'custom', id: record.get('id'), config: {} });
       break;
     case 'chartType':
       record.getField('chartUrl').set('required', value === 'custom');
-      record.set('chart', { type: 'chart', custom: value === 'custom', id: record.get('id'), config: {} });
       break;
     case 'url' || 'userName' || 'password' || 'email' || 'project':
       record.set('harborStatus', '');
@@ -27,7 +25,7 @@ function handleUpdate({ record, name, value }) {
 }
 
 function getRequestData(data, res) {
-  const { id, chartUrl, harborType, chartType } = data;
+  const { chartUrl, harborType, chartType } = data;
   if (harborType === 'custom') {
     if (isEmpty(res.harbor)) {
       res.chart = {
@@ -37,18 +35,23 @@ function getRequestData(data, res) {
         config: {},
       };
     }
+    res.harbor.custom = true;
     res.harbor.config = pick(data, ['url', 'userName', 'password', 'email', 'project']);
+  } else {
+    res.harbor = null;
   }
   if (chartType === 'custom') {
     if (isEmpty(res.chart)) {
       res.chart = {
         id: res.id,
         type: 'chart',
-        custom: true,
         config: {},
       };
     }
+    res.chart.custom = true;
     res.chart.config.url = chartUrl;
+  } else {
+    res.chart = null;
   }
 }
 
@@ -153,5 +156,9 @@ export default ((intlPrefix, formatMessage, projectId) => {
       update: handleUpdate,
       create: handleCreate,
     },
+    queryFields: [
+      { name: 'name', type: 'string', label: formatMessage({ id: `${intlPrefix}.name` }) },
+      { name: 'code', type: 'string', label: formatMessage({ id: `${intlPrefix}.code` }) },
+    ],
   });
 });

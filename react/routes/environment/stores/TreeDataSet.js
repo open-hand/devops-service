@@ -23,8 +23,6 @@ export default (projectId, store) => ({
       handleSelect(record, store);
     },
     unSelect: ({ record }) => {
-      // 禁用取消选中
-      // 实际上依然会取消只是又重新选中
       record.isSelected = true;
     },
     load: ({ dataSet }) => {

@@ -69,7 +69,7 @@ export default class CertUploader extends PureComponent {
       const { file: { name }, fileList } = value;
       if (!fileList.length) {
         callback(formatMessage({ id: `ctf.${type}.required` }));
-      } else if(fileList.length > 1) {
+      } else if (fileList.length > 1) {
         callback(formatMessage({ id: 'file.type.multiple' }));
       } else if (!name.endsWith(`.${type}`)) {
         callback(formatMessage({ id: 'file.type.error' }));
@@ -119,7 +119,7 @@ export default class CertUploader extends PureComponent {
     return <div className="c7ncd-cert-upload">
       <div className="c7ncd-cert-upload-item">
         <h4><FormattedMessage id="ctf.certFile" /></h4>
-        <FormItem{...formItemLayout}>
+        <FormItem {...formItemLayout}>
           {getFieldDecorator('cert', {
             rules: [{
               validator: this.checkCrtFile,
@@ -129,8 +129,9 @@ export default class CertUploader extends PureComponent {
               {...uploadProps}
               disabled={crtDisabled}
               onChange={this.fileChange}
-              beforeUpload={file => this.beforeUpload(file, 'crt')}
+              beforeUpload={(file) => this.beforeUpload(file, 'crt')}
               onRemove={this.removeCert}
+              accept=".crt"
             >
               <div className={crtUploadClass}>
                 {uploadBtn}
@@ -141,7 +142,7 @@ export default class CertUploader extends PureComponent {
       </div>
       <div className="c7ncd-cert-upload-item">
         <h4><FormattedMessage id="ctf.keyFile" /></h4>
-        <FormItem{...formItemLayout}>
+        <FormItem {...formItemLayout}>
           {getFieldDecorator('key', {
             rules: [{
               validator: this.checkKeyFile,
@@ -150,8 +151,9 @@ export default class CertUploader extends PureComponent {
             <Upload
               {...uploadProps}
               disabled={keyDisabled}
-              beforeUpload={file => this.beforeUpload(file, 'key')}
+              beforeUpload={(file) => this.beforeUpload(file, 'key')}
               onRemove={this.removeKey}
+              accept=".key"
             >
               <div className={keyUploadClass}>
                 {uploadBtn}
@@ -161,5 +163,5 @@ export default class CertUploader extends PureComponent {
         </FormItem>
       </div>
     </div>;
-  };
+  }
 }

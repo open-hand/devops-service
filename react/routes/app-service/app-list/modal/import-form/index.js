@@ -5,7 +5,7 @@ import { observer } from 'mobx-react-lite';
 import reduce from 'lodash/reduce';
 import pickBy from 'lodash/pickBy';
 import forEach from 'lodash/forEach';
-import indexOf from 'lodash/indexOf';
+import includes from 'lodash/includes';
 import isEmpty from 'lodash/isEmpty';
 import PlatForm from './Platform';
 
@@ -36,15 +36,14 @@ const ImportForm = injectIntl(observer((props) => {
             setHasFailed(false);
             record.set('appServiceList', lists);
           } else {
-            // handleRepeat(repeatName.concat(res.listName), repeatName.concat(res.listName));
             const selectedRecords = tableDs.filter((item) => item.get('selected') && item.get('appId'));
             forEach(selectedRecords, (item) => {
-              if (indexOf(repeatName.concat(res.listName), item.get('name')) > -1) {
+              if (includes(repeatName.concat(res.listName), item.get('name'))) {
                 item.set('nameFailed', true);
               } else {
                 item.set('nameFailed', false);
               }
-              if (indexOf(repeatCode.concat(res.listCode), item.get('code')) > -1) {
+              if (includes(repeatCode.concat(res.listCode), item.get('code'))) {
                 item.set('codeFailed', true);
               } else {
                 item.set('codeFailed', false);
@@ -87,10 +86,6 @@ const ImportForm = injectIntl(observer((props) => {
     const repeatCode = Object.keys(pickBy(repeatData.code, (value) => value.length > 1) || {});
 
     return { listCode, listName, repeatName, repeatCode };
-  }
-
-  function handleRepeat(nameData, codeData) {
-
   }
 
   return (
