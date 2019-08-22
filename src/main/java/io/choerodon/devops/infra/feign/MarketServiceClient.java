@@ -18,6 +18,6 @@ public interface MarketServiceClient {
     @POST("v1/market_applications/upload")
     Call<Void> uploadFile(@Query("app_version") String appVersion, @Query("image_url") String imageUrl, @Part List<MultipartBody.Part> list);
 
-    @GET
-    Call<ResponseBody> downloadFile();
+    @GET("{fileName}")
+    Call<ResponseBody> downloadFile(@Path("fileName") String fileName);
 }

@@ -4,7 +4,14 @@ import java.util.List;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import io.choerodon.asgard.saga.annotation.SagaTask;
+import io.choerodon.devops.api.vo.AppMarketUploadVO;
 import io.choerodon.devops.api.vo.GitlabGroupMemberVO;
 import io.choerodon.devops.api.vo.GitlabUserRequestVO;
 import io.choerodon.devops.api.vo.GitlabUserVO;
@@ -13,11 +20,6 @@ import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.*;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.util.TypeUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 
 /**
@@ -42,6 +44,8 @@ public class SagaHandler {
     private GitlabUserService gitlabUserService;
     @Autowired
     private ApplicationService applicationService;
+    @Autowired
+    private OrgAppMarketService orgAppMarketService;
 
 
     private void loggerInfo(Object o) {
@@ -250,4 +254,32 @@ public class SagaHandler {
         return payload;
     }
 
+    /**
+     * 应用上传
+     */
+    @SagaTask(code = SagaTaskCodeConstants.APIM_UPLOAD_APP,
+            description = "应用上传",
+            sagaCode = SagaTopicCodeConstants.APIM_UPLOAD_APP,
+            maxRetryCount = 3, seq = 1)
+    public String uploadApp(String payload) {
+        AppMarketUploadVO appMarketUploadVO = gson.fromJson(payload, AppMarketUploadVO.class);
+        loggerInfo(appMarketUploadVO);
+        orgAppMarketService.uploadAPP(appMarketUploadVO);
+        return payload;
+    }
+
+
+    /**
+     * 应用下载
+     */
+    @SagaTask(code = SagaTaskCodeConstants.APIM_DOWNLOAD_APP,
+            description = "应用下载",
+            sagaCode = SagaTopicCodeConstants.APIM_DOWNLOAD_APP,
+            maxRetryCount = 3, seq = 1)
+    public String downloadApp(String payload) {
+        AppMarketDownloadPayload appMarketDownloadPayload = gson.fromJson(payload, AppMarketDownloadPayload.class);
+        loggerInfo(appMarketDownloadPayload);
+        orgAppMarketService.downLoadApp(appMarketDownloadPayload);
+        return payload;
+    }
 }

@@ -12,8 +12,14 @@ import io.choerodon.devops.infra.dto.harbor.User;
  * Description:
  */
 public class AppMarketUploadVO {
+    @ApiModelProperty("市场应用Id")
+    private Long mktAppId;
+
     @ApiModelProperty("应用Id")
     private Long appId;
+
+    @ApiModelProperty("projectId")
+    private Long projectId;
 
     @ApiModelProperty("应用code")
     private String appCode;
@@ -35,6 +41,14 @@ public class AppMarketUploadVO {
 
     @ApiModelProperty("应用版本")
     private String appVersion;
+
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
+    }
 
     public String getAppCode() {
         return appCode;
@@ -98,5 +112,13 @@ public class AppMarketUploadVO {
 
     public void setAppVersion(String appVersion) {
         this.appVersion = appVersion;
+    }
+
+    public Long getMktAppId() {
+        return mktAppId;
+    }
+
+    public void setMktAppId(Long mktAppId) {
+        this.mktAppId = mktAppId;
     }
 }

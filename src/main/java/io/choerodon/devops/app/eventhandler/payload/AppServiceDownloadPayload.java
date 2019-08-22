@@ -23,7 +23,7 @@ public class AppServiceDownloadPayload {
     private String appServiceType;
 
     @ApiModelProperty("应用服务版本")
-    private List<AppServiceVersionDownloadPayload> appServiceVersionDownloadVOS;
+    private List<AppServiceVersionDownloadPayload> appServiceVersionDownloadPayloads;
 
     public String getAppServiceName() {
         return appServiceName;
@@ -49,12 +49,12 @@ public class AppServiceDownloadPayload {
         this.appServiceType = appServiceType;
     }
 
-    public List<AppServiceVersionDownloadPayload> getAppServiceVersionDownloadVOS() {
-        return appServiceVersionDownloadVOS;
+    public List<AppServiceVersionDownloadPayload> getAppServiceVersionDownloadPayloads() {
+        return appServiceVersionDownloadPayloads;
     }
 
-    public void setAppServiceVersionDownloadVOS(List<AppServiceVersionDownloadPayload> appServiceVersionDownloadVOS) {
-        this.appServiceVersionDownloadVOS = appServiceVersionDownloadVOS;
+    public void setAppServiceVersionDownloadPayloads(List<AppServiceVersionDownloadPayload> appServiceVersionDownloadPayloads) {
+        this.appServiceVersionDownloadPayloads = appServiceVersionDownloadPayloads;
     }
 
     public Long getAppId() {

@@ -8,8 +8,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.github.pagehelper.PageInfo;
-import io.choerodon.devops.infra.dto.iam.*;
-import io.choerodon.devops.infra.feign.BaseServiceClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +24,8 @@ import io.choerodon.devops.api.vo.iam.RoleSearchVO;
 import io.choerodon.devops.api.vo.iam.RoleVO;
 import io.choerodon.devops.api.vo.iam.UserWithRoleVO;
 import io.choerodon.devops.api.vo.kubernetes.ProjectCreateDTO;
+import io.choerodon.devops.infra.dto.iam.*;
+import io.choerodon.devops.infra.feign.BaseServiceClient;
 import io.choerodon.devops.infra.util.FeignParamUtils;
 
 /**
@@ -282,7 +282,7 @@ public class BaseServiceClientOperator {
     public PageInfo<ProjectDTO> listProject(Long organizationId, PageRequest pageRequest, String[] params) {
         try {
             ResponseEntity<PageInfo<ProjectDTO>> projectDTOResponseEntity = baseServiceClient
-                    .listProject(organizationId,  FeignParamUtils.encodePageRequest(pageRequest), null, null, null, true, null, params);
+                    .listProject(organizationId, FeignParamUtils.encodePageRequest(pageRequest), null, null, null, true, null, params);
             return projectDTOResponseEntity.getBody();
         } catch (FeignException e) {
             LOGGER.error("error.create.iam.project");
@@ -301,19 +301,27 @@ public class BaseServiceClientOperator {
         }
     }
 
-    public ProjectDTO queryProjectByAppId(Long id){
-        try{
+    public ProjectDTO queryProjectByAppId(Long id) {
+        try {
             return baseServiceClient.queryProjectByAppId(id).getBody();
-        }catch(Exception e){
+        } catch (Exception e) {
             return null;
         }
     }
 
-    public ApplicationDTO queryAppById(Long id){
-        try{
+    public ApplicationDTO queryAppById(Long id) {
+        try {
             return baseServiceClient.queryAppById(id).getBody();
-        }catch (Exception e){
+        } catch (Exception e) {
             return null;
+        }
+    }
+
+    public void publishFail(Long projectId, Long mktAppId, String code) {
+        try {
+            baseServiceClient.publishFail(projectId, mktAppId, code).getBody();
+        } catch (Exception e) {
+            throw new CommonException("error.insert.failed.message", e.getMessage());
         }
     }
 }

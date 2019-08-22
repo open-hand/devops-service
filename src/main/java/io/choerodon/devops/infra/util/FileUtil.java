@@ -967,7 +967,7 @@ public class FileUtil {
         }
 
         tos.close();
-        return file.getAbsolutePath() + ".tar";
+        return outputFilePath + ".tar";
     }
 
     /**
@@ -1035,9 +1035,10 @@ public class FileUtil {
     public static void toTgz(String inputFilePath, String outputFilePath) {
         try {
             String tarFilePath = archive(inputFilePath, outputFilePath);
-            compressArchive(tarFilePath, inputFilePath);
+            compressArchive(tarFilePath, outputFilePath);
+            deleteFile(tarFilePath);
         } catch (IOException e) {
-            throw new CommonException("error.package.tgz");
+            throw new CommonException("error.package.tgz", e.getMessage());
         }
     }
 
