@@ -105,7 +105,7 @@ public class OrgAppMarketController {
      * @return
      */
     @Permission(type = ResourceType.SITE, permissionWithin = true)
-    @ApiOperation(value = "打包并上传文件")
+    @ApiOperation(value = "应用上传")
     @PostMapping("/upload")
     public ResponseEntity uploadAPP(
             @ApiParam(value = "应用信息", required = true)

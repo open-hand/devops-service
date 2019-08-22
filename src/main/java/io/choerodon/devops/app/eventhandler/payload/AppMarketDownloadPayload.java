@@ -18,14 +18,11 @@ public class AppMarketDownloadPayload {
     @ApiModelProperty("应用Id")
     private Long appId;
 
-    @ApiModelProperty("文件下载地址")
-    private String filePath;
-
     @ApiModelProperty("harbor用户")
     private User user;
 
     @ApiModelProperty("应用服务")
-    private List<AppServiceDownloadPayload> appServiceMarketDownloadVOS;
+    private List<AppServiceDownloadPayload> appServiceDownloadPayloads;
 
     public Long getAppId() {
         return appId;
@@ -43,20 +40,12 @@ public class AppMarketDownloadPayload {
         this.iamUserId = iamUserId;
     }
 
-    public String getFilePath() {
-        return filePath;
+    public List<AppServiceDownloadPayload> getAppServiceDownloadPayloads() {
+        return appServiceDownloadPayloads;
     }
 
-    public void setFilePath(String filePath) {
-        this.filePath = filePath;
-    }
-
-    public List<AppServiceDownloadPayload> getAppServiceMarketDownloadVOS() {
-        return appServiceMarketDownloadVOS;
-    }
-
-    public void setAppServiceMarketDownloadVOS(List<AppServiceDownloadPayload> appServiceMarketDownloadVOS) {
-        this.appServiceMarketDownloadVOS = appServiceMarketDownloadVOS;
+    public void setAppServiceDownloadPayloads(List<AppServiceDownloadPayload> appServiceDownloadPayloads) {
+        this.appServiceDownloadPayloads = appServiceDownloadPayloads;
     }
 
     public User getUser() {
