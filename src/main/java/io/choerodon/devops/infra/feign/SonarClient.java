@@ -49,4 +49,6 @@ public interface SonarClient {
     @GET("api/components/search_projects?ps=50")
     Call<Projects> listProject();
 
+    @GET("api/users/current")
+    Call<Void> getUser();
 }

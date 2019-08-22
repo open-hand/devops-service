@@ -206,19 +206,18 @@ public class AppServiceServiceImpl implements AppServiceService {
         devOpsAppServicePayload.setAppServiceId(appServiceDTO.getId());
         devOpsAppServicePayload.setIamProjectId(appServiceDTO.getAppId());
 
-//        producer.apply(
-//                StartSagaBuilder
-//                        .newBuilder()
-//                        .withLevel(ResourceLevel.PROJECT)
-//                        .withRefType("")
-//                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_APPLICATION_SERVICE)
-//                        .withPayloadAndSerialize(devOpsAppServicePayload)
-//                        .withRefId("")
-//                        .withSourceId(projectId),
-//                builder -> {
-//                });
-        operationApplication(devOpsAppServicePayload);
-//        sendCreateAppServiceInfo(appServiceDTO, projectId);
+        producer.apply(
+                StartSagaBuilder
+                        .newBuilder()
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withRefType("")
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_APPLICATION_SERVICE)
+                        .withPayloadAndSerialize(devOpsAppServicePayload)
+                        .withRefId("")
+                        .withSourceId(projectId),
+                builder -> {
+                });
+        sendCreateAppServiceInfo(appServiceDTO, projectId);
         return ConvertUtils.convertObject(baseQueryByCode(appServiceDTO.getCode(), appServiceDTO.getAppId()), AppServiceRepVO.class);
     }
 
@@ -923,8 +922,17 @@ public class AppServiceServiceImpl implements AppServiceService {
         SonarClient sonarClient = RetrofitHandler.getSonarClient(sonarqubeUrl, SONAR, userName, password);
         String key = String.format(SONAR_KEY, organization.getCode(), projectDTO.getCode(), appServiceDTO.getCode());
         sonarqubeUrl = sonarqubeUrl.endsWith("/") ? sonarqubeUrl : sonarqubeUrl + "/";
-        try {
 
+        //校验sonarqube地址是否正确
+        try {
+            sonarClient.getUser().execute();
+        } catch (IOException e) {
+            if (e.getCause().getMessage().equals("Connection refused: connect")) {
+                throw new CommonException("error.connect.sonarqube.fail");
+            }
+        }
+
+        try {
             //初始化查询参数
             Map<String, String> queryContentMap = new HashMap<>();
             queryContentMap.put("additionalFields", "metrics,periods");
@@ -2222,6 +2230,16 @@ public class AppServiceServiceImpl implements AppServiceService {
         List<String> projectKeys = new ArrayList<>();
         if (!sonarqubeUrl.equals("")) {
             SonarClient sonarClient = RetrofitHandler.getSonarClient(sonarqubeUrl, SONAR, userName, password);
+
+            //校验sonarqube地址是否正确
+            try {
+                sonarClient.getUser().execute();
+            } catch (IOException e) {
+                if (e.getCause().getMessage().equals("Connection refused: connect")) {
+                    throw new CommonException("error.connect.sonarqube.fail");
+                }
+            }
+
             try {
                 Response<Projects> projectsResponse = sonarClient.listProject().execute();
                 if (projectsResponse != null && projectsResponse.raw().code() == 200) {
