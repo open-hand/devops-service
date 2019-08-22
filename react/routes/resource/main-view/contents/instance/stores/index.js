@@ -27,6 +27,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
           menuId,
           parentId,
         },
+        getViewType,
       },
       intlPrefix,
     } = useResourceStore();
@@ -42,8 +43,17 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const casesDs = useMemo(() => new DataSet(CasesDataSet()), []);
     const podsDs = useMemo(() => {
       const [envId, appId] = parentId.split('-');
-      return new DataSet(PodsDataset({ intl, intlPrefix, projectId: id, envId, appId, id: menuId }));
-    }, [id, parentId, menuId]);
+
+      return new DataSet(PodsDataset({
+        intl,
+        intlPrefix,
+        projectId: id,
+        envId,
+        appId: getViewType === 'instance' ? appId : '',
+        id: menuId,
+      }));
+    }, [id, parentId, menuId, getViewType]);
+
     const tabKey = istStore.getTabKey;
 
     useEffect(() => {
