@@ -131,6 +131,7 @@ export default class CertUploader extends PureComponent {
               onChange={this.fileChange}
               beforeUpload={file => this.beforeUpload(file, 'crt')}
               onRemove={this.removeCert}
+              accept=".crt"
             >
               <div className={crtUploadClass}>
                 {uploadBtn}
@@ -152,6 +153,7 @@ export default class CertUploader extends PureComponent {
               disabled={keyDisabled}
               beforeUpload={file => this.beforeUpload(file, 'key')}
               onRemove={this.removeKey}
+              accept=".key"
             >
               <div className={keyUploadClass}>
                 {uploadBtn}
