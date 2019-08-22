@@ -95,7 +95,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
     @Override
     public void initialDemoEnv(OrganizationRegisterEventPayload organizationRegisterEventPayload) {
         Long projectId = organizationRegisterEventPayload.getProject().getId();
-        // 1. 创建应用
+        // 1. 创建服务
         AppServiceReqVO app = demoDataVO.getApplicationInfo();
         app.setIsSkipCheckPermission(Boolean.TRUE);
 

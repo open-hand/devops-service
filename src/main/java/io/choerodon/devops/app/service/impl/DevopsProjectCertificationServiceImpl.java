@@ -1,10 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.github.pagehelper.PageHelper;
@@ -199,7 +196,7 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
         certificationDTO.setName(projectCertificationVO.getName());
         certificationDTO.setProjectId(projectId);
         certificationDTO.setSkipCheckProjectPermission(true);
-        certificationDTO.setDomains(projectCertificationVO.getDomain());
+        certificationDTO.setDomains(gson.toJson(Arrays.asList(projectCertificationVO.getDomain())));
         certificationDTO.setCertificationFileId(certificationService.baseStoreCertFile(new CertificationFileDTO(projectCertificationVO.getCertValue(), projectCertificationVO.getKeyValue())));
         certificationService.baseCreate(certificationDTO);
     }
