@@ -10,7 +10,9 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.infra.dto.RepositoryFileDTO;
 import io.choerodon.devops.infra.dto.gitlab.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
+import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.GitUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 import org.slf4j.Logger;
@@ -476,13 +478,17 @@ public class GitlabServiceClientOperator {
     }
 
 
-    public PageInfo<TagDTO> pageTag(Integer gitlabProjectId, String path, Integer page, String params, Integer size, Integer userId) {
-        MemberDTO memberDTO = getProjectMember(
-                gitlabProjectId,
-                userId);
-        if (memberDTO == null) {
-            throw new CommonException("error.user.not.the.pro.authority");
+    public PageInfo<TagDTO> pageTag(ProjectDTO projectDTO, Integer gitlabProjectId, String path, Integer page, String params, Integer size, Integer userId) {
+
+        if (!baseServiceClientOperator.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectDTO)) {
+            MemberDTO memberDTO = getProjectMember(
+                    gitlabProjectId,
+                    userId);
+            if (memberDTO == null) {
+                throw new CommonException("error.user.not.in.project");
+            }
         }
+
         List<TagDTO> tagTotalList = listTag(gitlabProjectId, userId);
         PageInfo<TagDTO> tagsPage = new PageInfo<>();
         List<TagDTO> tagList = tagTotalList.stream()
@@ -515,7 +521,7 @@ public class GitlabServiceClientOperator {
     }
 
     private Boolean filterTag(TagDTO tagDTO, String params) {
-        Integer index = -1;
+        Integer index = 0;
         if (!StringUtils.isEmpty(params)) {
             Map<String, Object> maps = TypeUtil.castMapParams(params);
             List<String> paramList = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
@@ -539,7 +545,7 @@ public class GitlabServiceClientOperator {
         } else {
             return true;
         }
-        return index > 0;
+        return index >= 0;
     }
 
     private Integer getTagName(Integer index, TagDTO tagDTO, Map<String, Object> mapSearch) {
@@ -751,6 +757,7 @@ public class GitlabServiceClientOperator {
 
 
     public MemberDTO getProjectMember(Integer projectId, Integer userId) {
+
         MemberDTO memberDTO = gitlabServiceClient.getProjectMember(
                 projectId, userId).getBody();
         if (memberDTO.getId() == null) {

@@ -71,4 +71,9 @@ public class SonarClientFallback implements SonarClient {
         return null;
     }
 
+    @Override
+    public Call<Void> getUser() {
+        return null;
+    }
+
 }

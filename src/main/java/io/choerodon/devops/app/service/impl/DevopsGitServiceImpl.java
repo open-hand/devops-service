@@ -351,7 +351,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         String path = String.format("%s%s%s-%s/%s",
                 gitlabUrl, urlSlash, organizationDTO.getCode(), projectDTO.getCode(), applicationDTO.getCode());
-        return ConvertUtils.convertPage(gitlabServiceClientOperator.pageTag(applicationDTO.getGitlabProjectId(), path, page, params, size, getGitlabUserId()), TagVO.class);
+        return ConvertUtils.convertPage(gitlabServiceClientOperator.pageTag(projectDTO,applicationDTO.getGitlabProjectId(), path, page, params, size, getGitlabUserId()), TagVO.class);
     }
 
     @Override
