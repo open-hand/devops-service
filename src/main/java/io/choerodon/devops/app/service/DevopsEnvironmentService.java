@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 
 import com.github.pagehelper.PageInfo;
+
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.eventhandler.payload.EnvGitlabProjectPayload;
@@ -40,6 +41,14 @@ public interface DevopsEnvironmentService {
      * @return List
      */
     List<DevopsEnviromentRepVO> listByProjectIdAndActive(Long projectId, Boolean active);
+
+    /**
+     * 项目下环境配置树形目录
+     *
+     * @param projectId
+     * @return
+     */
+    List<DevopsEnvGroupEnvsVO> listByProjectIdTree(Long projectId);
 
     /**
      * 项目下查询环境

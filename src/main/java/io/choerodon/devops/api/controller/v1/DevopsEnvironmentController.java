@@ -562,4 +562,23 @@ public class DevopsEnvironmentController {
             @PathVariable(value = "env_id") Long envId) {
         devopsEnvironmentService.retryGitOps(envId);
     }
+
+    /**
+     * 项目下环境配置树形目录
+     *
+     * @param projectId 项目id
+     * @return List
+     */
+    @Permission(type = ResourceType.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "项目下查询环境")
+    @GetMapping(value = "/env_tree_menu")
+    public ResponseEntity<List<DevopsEnvGroupEnvsVO>> listByActive(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId) {
+        return Optional.ofNullable(devopsEnvironmentService.listByProjectIdTree(projectId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.environment.get"));
+    }
 }

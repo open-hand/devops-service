@@ -6,6 +6,13 @@ import java.util.stream.Collectors;
 import com.alibaba.fastjson.JSONArray;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -37,12 +44,6 @@ import io.choerodon.devops.infra.mapper.DevopsEnvFileErrorMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvUserPermissionMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
 import io.choerodon.devops.infra.util.*;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 /**
  * Created by younger on 2018/4/9.
@@ -240,6 +241,74 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 devopsEnvGroupEnvsDTO.setDevopsEnvGroupId(devopsEnvGroupE.getId());
                 devopsEnvGroupEnvsDTO.setDevopsEnvGroupName(devopsEnvGroupE.getName());
                 devopsEnvGroupEnvsDTOS.add(devopsEnvGroupEnvsDTO);
+            }
+        });
+        return devopsEnvGroupEnvsDTOS;
+    }
+
+    @Override
+    public List<DevopsEnvGroupEnvsVO> listByProjectIdTree(Long projectId) {
+        DevopsEnvGroupEnvsVO devopsEnvGroupEnvsDTO = new DevopsEnvGroupEnvsVO();
+        List<DevopsEnvGroupEnvsVO> devopsEnvGroupEnvsDTOS = new ArrayList<>();
+        // 获得环境列表(包含激活与不激活)
+        List<Long> connectedClusterList = clusterConnectionHandler.getConnectedEnvList();
+        List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedEnvList();
+        List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = baseListByProjectId(projectId)
+                .stream()
+                .peek(t -> setEnvStatus(connectedClusterList, upgradeClusterList, t))
+                .collect(Collectors.toList());
+        // 没有环境列表则返回空列表
+        if (devopsEnvironmentDTOS.isEmpty()) {
+            return devopsEnvGroupEnvsDTOS;
+        }
+        List<DevopsEnviromentRepVO> devopsEnvironmentRepDTOS = ConvertUtils.convertList(devopsEnvironmentDTOS, DevopsEnviromentRepVO.class);
+        //选出未激活的环境列表
+        devopsEnvGroupEnvsDTO.setDevopsEnviromentRepDTOs(devopsEnvironmentRepDTOS
+                .stream()
+                .filter(i -> !i.getActive())
+                .collect(Collectors.toList()));
+        devopsEnvGroupEnvsDTO.setActive(false);
+        devopsEnvGroupEnvsDTOS.add(devopsEnvGroupEnvsDTO);
+
+        List<DevopsEnvGroupDTO> devopsEnvGroupES = devopsEnvGroupService.baseListByProjectId(projectId);
+        devopsEnvironmentRepDTOS
+                .stream()
+                .filter(DevopsEnviromentRepVO::getActive)
+                .forEach(devopsEnvironmentRepDTO -> {
+                    DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(devopsEnvironmentRepDTO.getClusterId());
+                    devopsEnvironmentRepDTO.setClusterName(devopsClusterDTO == null ? null : devopsClusterDTO.getName());
+                    if (devopsEnvironmentRepDTO.getDevopsEnvGroupId() == null) {
+                        devopsEnvironmentRepDTO.setDevopsEnvGroupId(0L);
+                    }
+                });
+        //按环境分组环境列表
+        Map<Long, List<DevopsEnviromentRepVO>> resultMaps = devopsEnvironmentRepDTOS
+                .stream()
+                .filter(DevopsEnviromentRepVO::getActive)
+                .collect(Collectors.groupingBy(DevopsEnviromentRepVO::getDevopsEnvGroupId));
+        List<Long> envGroupIds = new ArrayList<>();
+        //有环境的分组
+        resultMaps.forEach((key, value) -> {
+            envGroupIds.add(key);
+            DevopsEnvGroupEnvsVO devopsEnvGroupEnvsDTO1 = new DevopsEnvGroupEnvsVO();
+            DevopsEnvGroupDTO devopsEnvGroupDTO = new DevopsEnvGroupDTO();
+            if (key != 0) {
+                devopsEnvGroupDTO = devopsEnvGroupService.baseQuery(key);
+            }
+            devopsEnvGroupEnvsDTO1.setDevopsEnvGroupId(devopsEnvGroupDTO.getId());
+            devopsEnvGroupEnvsDTO1.setDevopsEnvGroupName(devopsEnvGroupDTO.getName());
+            devopsEnvGroupEnvsDTO1.setDevopsEnviromentRepDTOs(value);
+            devopsEnvGroupEnvsDTO1.setActive(true);
+            devopsEnvGroupEnvsDTOS.add(devopsEnvGroupEnvsDTO1);
+        });
+        //没有环境的分组
+        devopsEnvGroupES.forEach(devopsEnvGroupE -> {
+            if (!envGroupIds.contains(devopsEnvGroupE.getId())) {
+                DevopsEnvGroupEnvsVO devopsEnvGroupEnvsDTO2 = new DevopsEnvGroupEnvsVO();
+                devopsEnvGroupEnvsDTO2.setDevopsEnvGroupId(devopsEnvGroupE.getId());
+                devopsEnvGroupEnvsDTO2.setDevopsEnvGroupName(devopsEnvGroupE.getName());
+                devopsEnvGroupEnvsDTO2.setActive(true);
+                devopsEnvGroupEnvsDTOS.add(devopsEnvGroupEnvsDTO2);
             }
         });
         return devopsEnvGroupEnvsDTOS;
