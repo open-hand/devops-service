@@ -6,8 +6,20 @@ export default ({ intl, intlPrefix, projectId, envId, appId, id }) => ({
   transport: {
     read: ({ data }) => {
       const postData = getTablePostData(data);
+      const param = appId ? `&app_service_id=${appId}` : '';
+
+      /**
+       *
+       * 查询 pod 详情时，参数env_id和 app_service_id
+       *
+       *  全为空时，查询实例相关的所有pods
+       *
+       *  其他情况相当于按条件筛选
+       *
+       * */
+
       return {
-        url: `devops/v1/projects/${projectId}/pods/page_by_options?env_id=${envId}&app_service_id=${appId}&instance_id=${id}`,
+        url: `devops/v1/projects/${projectId}/pods/page_by_options?env_id=${envId}&instance_id=${id}${param}`,
         method: 'post',
         data: postData,
       };
