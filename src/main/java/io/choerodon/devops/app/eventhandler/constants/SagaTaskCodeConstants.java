@@ -178,6 +178,17 @@ public class SagaTaskCodeConstants {
     public static final String IAM_DISABLE_USER = "devopsDisableUser";
 
     /**
+     * 应用上传
+     */
+    public static final String APIM_UPLOAD_APP = "apimUploadApplication";
+
+    /**
+     * 应用下载
+     */
+    public static final String APIM_DOWNLOAD_APP = "apimDownloadApplication";
+
+
+    /**
      * 在gitlab更新环境的权限
      */
     public static final String DEVOPS_UPDATE_ENV_PERMISSION = "devops-update-env-permission";

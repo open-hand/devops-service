@@ -24,14 +24,19 @@ import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
+import io.choerodon.asgard.saga.producer.StartSagaBuilder;
+import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.validator.ApplicationValidator;
 import io.choerodon.devops.api.validator.HarborMarketVOValidator;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.AppMarketDownloadPayload;
 import io.choerodon.devops.app.eventhandler.payload.AppServiceDownloadPayload;
 import io.choerodon.devops.app.eventhandler.payload.AppServiceVersionDownloadPayload;
+import io.choerodon.devops.app.eventhandler.payload.DevOpsAppServicePayload;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
 import io.choerodon.devops.infra.dto.*;
@@ -91,6 +96,8 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
 
     @Autowired
     private AppServiceMapper appServiceMapper;
+    @Autowired
+    private TransactionalProducer producer;
     @Autowired
     private AppServiceVersionService appServiceVersionService;
     @Autowired
@@ -225,6 +232,26 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             Boolean isFirst = appServiceDTO == null;
             if (appServiceDTO == null) {
                 appServiceDTO = createGitlabProject(downloadPayload, TypeUtil.objToInteger(projectDTO.getDevopsAppGroupId()), userAttrDTO.getGitlabUserId());
+
+                //创建saga payload
+                DevOpsAppServicePayload devOpsAppServicePayload = new DevOpsAppServicePayload();
+                devOpsAppServicePayload.setPath(appServiceDTO.getCode());
+                devOpsAppServicePayload.setUserId(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+                devOpsAppServicePayload.setGroupId(TypeUtil.objToInteger(projectDTO.getDevopsAppGroupId()));
+                devOpsAppServicePayload.setSkipCheckPermission(appServiceDTO.getIsSkipCheckPermission());
+                devOpsAppServicePayload.setAppServiceId(appServiceDTO.getId());
+                devOpsAppServicePayload.setIamProjectId(appServiceDTO.getAppId());
+                producer.apply(
+                        StartSagaBuilder
+                                .newBuilder()
+                                .withLevel(ResourceLevel.SITE)
+                                .withRefType("application")
+                                .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_APPLICATION_SERVICE)
+                                .withPayloadAndSerialize(devOpsAppServicePayload)
+                                .withRefId(applicationDTO.getId()+"")
+                                .withSourceId(applicationDTO.getId()),
+                        builder -> {
+                        });
             }
             String applicationDir = APPLICATION + System.currentTimeMillis();
             String accessToken = appServiceService.getToken(appServiceDTO.getGitlabProjectId(), applicationDir, userAttrDTO);
