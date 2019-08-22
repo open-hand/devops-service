@@ -45,10 +45,10 @@ public interface DevopsEnvironmentService {
     /**
      * 项目下环境配置树形目录
      *
-     * @param projectId
-     * @return
+     * @param projectId 项目id
+     * @return 按组划分的环境
      */
-    List<DevopsEnvGroupEnvsVO> listByProjectIdTree(Long projectId);
+    List<DevopsEnvGroupEnvsVO> listEnvTreeMenu(Long projectId);
 
     /**
      * 项目下查询环境
