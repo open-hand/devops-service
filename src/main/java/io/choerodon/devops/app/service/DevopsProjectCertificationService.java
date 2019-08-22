@@ -30,7 +30,8 @@ public interface DevopsProjectCertificationService {
 
     void create(Long projectId, MultipartFile key, MultipartFile cert, ProjectCertificationVO projectCertificationVO);
 
-    void update(Long certId, ProjectCertificationVO projectCertificationVO);
+    // TODO 发版前删除
+//    void update(Long certId, ProjectCertificationVO projectCertificationVO);
 
     void checkName(Long projectId, String name);
 

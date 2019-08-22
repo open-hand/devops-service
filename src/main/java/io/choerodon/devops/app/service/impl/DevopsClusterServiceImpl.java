@@ -27,6 +27,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 
 @Service
@@ -69,9 +70,9 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         DevopsClusterDTO devopsClusterDTO = ConvertUtils.convertObject(devopsClusterReqVO, DevopsClusterDTO.class);
         devopsClusterDTO.setToken(GenerateUUID.generateUUID());
         devopsClusterDTO.setProjectId(projectId);
+        devopsClusterDTO.setSkipCheckProjectPermission(true);
         devopsClusterDTO = baseCreateCluster(devopsClusterDTO);
 
-        devopsClusterDTO.setSkipCheckProjectPermission(true);
 
         IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(GitUserNameUtil.getUserId().longValue());
 
@@ -92,43 +93,11 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
     @Override
     @Transactional
-    public void updateCluster(Long clusterId, DevopsClusterReqVO devopsClusterReqVO) {
-        List<Long> projects = devopsClusterReqVO.getProjects();
-        Boolean skipCheckPro = devopsClusterReqVO.getSkipCheckProjectPermission();
-        List<Long> addProjects = new ArrayList<>();
-        DevopsClusterDTO devopsClusterDTO = baseQuery(clusterId);
-
-        //以前不跳过项目权限校验,但是现在跳过，清空集群对应的项目集群校验表
-        if (skipCheckPro && !devopsClusterDTO.getSkipCheckProjectPermission()) {
-            devopsClusterProPermissionService.baseDeleteByClusterId(clusterId);
-        } else {
-            //操作集群项目权限校验表记录
-            List<Long> projectIds = devopsClusterProPermissionService.baseListByClusterId(clusterId)
-                    .stream().map(DevopsClusterProPermissionDTO::getProjectId).collect(Collectors.toList());
-
-            projects.forEach(projectId -> {
-                if (!projectIds.contains(projectId)) {
-                    addProjects.add(projectId);
-                } else {
-                    projectIds.remove(projectId);
-                }
-            });
-            addProjects.forEach(addProject -> {
-                DevopsClusterProPermissionDTO devopsClusterProPermissionDTO = new DevopsClusterProPermissionDTO();
-                devopsClusterProPermissionDTO.setClusterId(clusterId);
-                devopsClusterProPermissionDTO.setProjectId(addProject);
-                devopsClusterProPermissionService.baseInsertPermission(devopsClusterProPermissionDTO);
-            });
-            projectIds.forEach(deleteProject -> {
-                DevopsClusterProPermissionDTO devopsClusterProPermissionDTO = new DevopsClusterProPermissionDTO();
-                devopsClusterProPermissionDTO.setClusterId(clusterId);
-                devopsClusterProPermissionDTO.setProjectId(deleteProject);
-                devopsClusterProPermissionService.baseDeletePermission(devopsClusterProPermissionDTO);
-            });
+    public void updateCluster(Long clusterId, DevopsClusterUpdateVO devopsClusterUpdateVO) {
+        if (StringUtils.isEmpty(devopsClusterUpdateVO.getName())) {
+            devopsClusterUpdateVO.setName(null);
         }
-        devopsClusterDTO = ConvertUtils.convertObject(devopsClusterReqVO, DevopsClusterDTO.class);
-        devopsClusterDTO.setId(clusterId);
-        baseUpdate(devopsClusterDTO);
+        baseUpdate(ConvertUtils.convertObject(devopsClusterUpdateVO, DevopsClusterDTO.class));
     }
 
     @Override
@@ -372,24 +341,16 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         }
     }
 
-    public boolean isConnect(List<Long> connectedEnvList, List<Long> updatedEnvList, Long id) {
+    private boolean isConnect(List<Long> connectedEnvList, List<Long> updatedEnvList, Long id) {
         if (connectedEnvList.contains(id)) {
-            if (updatedEnvList.contains(id)) {
-                return true;
-            } else {
-                return false;
-            }
+            return updatedEnvList.contains(id);
         }
         return false;
     }
 
-    public boolean isUpdated(List<Long> connectedEnvList, List<Long> updatedEnvList, Long id) {
+    private boolean isUpdated(List<Long> connectedEnvList, List<Long> updatedEnvList, Long id) {
         if (connectedEnvList.contains(id)) {
-            if (updatedEnvList.contains(id)) {
-                return false;
-            } else {
-                return true;
-            }
+            return !updatedEnvList.contains(id);
         }
         return false;
     }

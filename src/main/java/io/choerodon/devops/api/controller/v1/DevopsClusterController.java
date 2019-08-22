@@ -45,7 +45,7 @@ public class DevopsClusterController {
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群信息", required = true)
-            @RequestBody DevopsClusterReqVO devopsClusterReqVO) {
+            @RequestBody @Valid DevopsClusterReqVO devopsClusterReqVO) {
         return Optional.ofNullable(devopsClusterService.createCluster(projectId, devopsClusterReqVO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.devops.cluster.insert"));
@@ -54,8 +54,8 @@ public class DevopsClusterController {
     /**
      * 更新集群
      *
-     * @param projectId          项目Id
-     * @param devopsClusterReqVO 集群对象
+     * @param projectId             项目Id
+     * @param devopsClusterUpdateVO 集群对象
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_ADMINISTRATOR})
     @ApiOperation(value = "更新集群")
@@ -66,8 +66,8 @@ public class DevopsClusterController {
             @ApiParam(value = "集群Id")
             @RequestParam Long clusterId,
             @ApiParam(value = "集群对象")
-            @RequestBody DevopsClusterReqVO devopsClusterReqVO) {
-        devopsClusterService.updateCluster(clusterId, devopsClusterReqVO);
+            @RequestBody @Valid DevopsClusterUpdateVO devopsClusterUpdateVO) {
+        devopsClusterService.updateCluster(clusterId, devopsClusterUpdateVO);
     }
 
     /**

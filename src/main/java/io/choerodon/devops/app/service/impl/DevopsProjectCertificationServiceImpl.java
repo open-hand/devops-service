@@ -205,44 +205,17 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
     }
 
 
-    @Override
-    @Transactional
-    public void update(Long certId, ProjectCertificationVO projectCertificationVO) {
-        List<Long> projects = projectCertificationVO.getProjects();
-        Boolean skipCheckPro = projectCertificationVO.getSkipCheckProjectPermission();
-        List<Long> addProjects = new ArrayList<>();
-        CertificationDTO certificationDTO = certificationService.baseQueryById(certId);
-        //以前不跳过项目权限校验,但是现在跳过，情况集群对应的项目集群校验表
-        if (skipCheckPro && !certificationDTO.getSkipCheckProjectPermission()) {
-            devopsCertificationProRelationshipService.baseDeleteByCertificationId(certId);
-        } else {
-            //操作集群项目权限校验表记录
-            List<Long> projectIds = devopsCertificationProRelationshipService.baseListByCertificationId(certId)
-                    .stream().map(DevopsCertificationProRelationshipDTO::getProjectId).collect(Collectors.toList());
-
-            projects.forEach(projectId -> {
-                if (!projectIds.contains(projectId)) {
-                    addProjects.add(projectId);
-                } else {
-                    projectIds.remove(projectId);
-                }
-            });
-            addProjects.forEach(addProject -> {
-                DevopsCertificationProRelationshipDTO devopsCertificationProRelationshipDTO = new DevopsCertificationProRelationshipDTO();
-                devopsCertificationProRelationshipDTO.setCertId(certId);
-                devopsCertificationProRelationshipDTO.setProjectId(addProject);
-                devopsCertificationProRelationshipService.baseInsertRelationship(devopsCertificationProRelationshipDTO);
-            });
-            projectIds.forEach(deleteProject -> {
-                DevopsCertificationProRelationshipDTO devopsCertificationProRelationshipDTO = new DevopsCertificationProRelationshipDTO();
-                devopsCertificationProRelationshipDTO.setCertId(certId);
-                devopsCertificationProRelationshipDTO.setProjectId(deleteProject);
-                devopsCertificationProRelationshipService.baseDelete(devopsCertificationProRelationshipDTO);
-            });
-        }
-        certificationDTO.setSkipCheckProjectPermission(projectCertificationVO.getSkipCheckProjectPermission());
-        certificationService.baseUpdateSkipProjectPermission(certificationDTO);
-    }
+    // TODO 发版前删除
+//    @Override
+//    @Transactional
+//    public void update(Long certId, ProjectCertificationVO projectCertificationVO) {
+//        Boolean skipCheckPro = projectCertificationVO.getSkipCheckProjectPermission();
+//        List<Long> addProjects = new ArrayList<>();
+//        CertificationDTO certificationDTO = certificationService.baseQueryById(certId);
+//
+//        certificationDTO.setSkipCheckProjectPermission(projectCertificationVO.getSkipCheckProjectPermission());
+//        certificationService.baseUpdateSkipProjectPermission(certificationDTO);
+//    }
 
 
     @Override
@@ -352,7 +325,7 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
             certificationDTOS.getList().forEach(certificationDTO -> {
                 List<String> stringList = gson.fromJson(certificationDTO.getDomains(), new TypeToken<List<String>>() {
                 }.getType());
-                ProjectCertificationVO orgCertificationVO = new ProjectCertificationVO(certificationDTO.getId(), certificationDTO.getName(), stringList.get(0), certificationDTO.getSkipCheckProjectPermission());
+                ProjectCertificationVO orgCertificationVO = new ProjectCertificationVO(certificationDTO.getId(), certificationDTO.getName(), stringList.get(0), certificationDTO.getSkipCheckProjectPermission(), certificationDTO.getObjectVersionNumber());
                 orgCertifications.add(orgCertificationVO);
             });
         }
@@ -365,6 +338,6 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
         CertificationDTO certificationDTO = certificationService.baseQueryById(certId);
         List<String> stringList = gson.fromJson(certificationDTO.getDomains(), new TypeToken<List<String>>() {
         }.getType());
-        return new ProjectCertificationVO(certificationDTO.getId(), certificationDTO.getName(), stringList.get(0), certificationDTO.getSkipCheckProjectPermission());
+        return new ProjectCertificationVO(certificationDTO.getId(), certificationDTO.getName(), stringList.get(0), certificationDTO.getSkipCheckProjectPermission(), certificationDTO.getObjectVersionNumber());
     }
 }

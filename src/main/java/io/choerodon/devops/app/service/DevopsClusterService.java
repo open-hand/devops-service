@@ -22,10 +22,10 @@ public interface DevopsClusterService {
     /**
      * 更新集群
      *
-     * @param clusterId          集群id
-     * @param devopsClusterReqVO 集群信息
+     * @param clusterId             集群id
+     * @param devopsClusterUpdateVO 集群信息
      */
-    void updateCluster(Long clusterId, DevopsClusterReqVO devopsClusterReqVO);
+    void updateCluster(Long clusterId, DevopsClusterUpdateVO devopsClusterUpdateVO);
 
     /**
      * 校验集群名唯一性

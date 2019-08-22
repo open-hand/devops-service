@@ -3,19 +3,40 @@ package io.choerodon.devops.api.vo;
 import io.swagger.annotations.ApiModelProperty;
 
 public class DevopsClusterRepVO {
-
+    @ApiModelProperty("集群id")
     private Long id;
+
+    @ApiModelProperty("集群名称")
     private String name;
+
+    @ApiModelProperty("是否跳过权限校验")
     private Boolean skipCheckProjectPermission;
+
+    @ApiModelProperty("集群code")
     private String code;
+
+    @ApiModelProperty("是否连接")
     private Boolean connect;
+
     @ApiModelProperty(value = "是否需要升级")
     private Boolean upgrade;
+
+    @ApiModelProperty("升级信息")
     private String upgradeMessage;
+
+    @ApiModelProperty("集群描述")
     private String description;
+
+    @ApiModelProperty("集群token")
     private String token;
+
     private String choerodonId;
+
+    @ApiModelProperty("创建者id")
     private Long createBy;
+
+    @ApiModelProperty("纪录版本字段")
+    private Long objectVersionNumber;
 
     public Long getId() {
         return id;
@@ -105,5 +126,13 @@ public class DevopsClusterRepVO {
 
     public void setChoerodonId(String choerodonId) {
         this.choerodonId = choerodonId;
+    }
+
+    public Long getObjectVersionNumber() {
+        return objectVersionNumber;
+    }
+
+    public void setObjectVersionNumber(Long objectVersionNumber) {
+        this.objectVersionNumber = objectVersionNumber;
     }
 }

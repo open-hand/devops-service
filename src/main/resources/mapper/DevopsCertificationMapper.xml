@@ -16,7 +16,8 @@
         cmd.`status` commandStatus,
         cmd.command_type commandType,
         cmd.error error,
-        dc.status
+        dc.status,
+        dc.skip_check_project_permission
         FROM
         devops_certification dc
         LEFT JOIN devops_env AS de ON env_id = de.id

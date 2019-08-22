@@ -1,14 +1,20 @@
 package io.choerodon.devops.api.vo;
 
-import java.util.List;
+import javax.validation.constraints.NotNull;
+
+import io.swagger.annotations.ApiModelProperty;
 
 public class DevopsClusterReqVO {
-
+    @ApiModelProperty("集群名称 / 必需")
+    @NotNull(message = "error.name.null")
     private String name;
+
+    @ApiModelProperty("集群编码 / 必需")
+    @NotNull(message = "error.code.null")
     private String code;
+
+    @ApiModelProperty("集群描述 / 非必需")
     private String description;
-    private List<Long> projects;
-    private Boolean skipCheckProjectPermission;
 
     public String getName() {
         return name;
@@ -16,22 +22,6 @@ public class DevopsClusterReqVO {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public List<Long> getProjects() {
-        return projects;
-    }
-
-    public void setProjects(List<Long> projects) {
-        this.projects = projects;
-    }
-
-    public Boolean getSkipCheckProjectPermission() {
-        return skipCheckProjectPermission;
-    }
-
-    public void setSkipCheckProjectPermission(Boolean skipCheckProjectPermission) {
-        this.skipCheckProjectPermission = skipCheckProjectPermission;
     }
 
     public String getCode() {
