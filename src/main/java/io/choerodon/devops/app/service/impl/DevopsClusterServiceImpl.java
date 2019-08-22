@@ -204,14 +204,14 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         }
 
         if (devopsClusterDTO.getSkipCheckProjectPermission()) {
-            if (update.getSkipCheckPermission()) {
+            if (update.getSkipCheckProjectPermission()) {
                 // 原来跳过，现在也跳过，不处理
                 return;
             } else {
                 // 原来跳过，现在不跳过，先更新字段，然后插入关联关系
                 updateSkipPermissionCheck(
                         update.getClusterId(),
-                        update.getSkipCheckPermission(),
+                        update.getSkipCheckProjectPermission(),
                         update.getObjectVersionNumber());
 
                 devopsClusterProPermissionService.batchInsertIgnore(
@@ -220,10 +220,10 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
             }
         } else {
             // 原来不跳过，现在跳过，更新集群权限字段，再删除所有数据库中与该集群有关的关联关系
-            if (update.getSkipCheckPermission()) {
+            if (update.getSkipCheckProjectPermission()) {
                 updateSkipPermissionCheck(
                         update.getClusterId(),
-                        update.getSkipCheckPermission(),
+                        update.getSkipCheckProjectPermission(),
                         update.getObjectVersionNumber());
 
                 devopsClusterProPermissionService.baseDeleteByClusterId(update.getClusterId());

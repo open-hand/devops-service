@@ -21,7 +21,7 @@ public class ProjectCertificationPermissionUpdateVO {
 
     @ApiModelProperty("是否跳过权限校验 / 必需")
     @NotNull(message = "error.is.skip.permission.check.null")
-    private Boolean isSkipCheckPermission;
+    private Boolean skipCheckProjectPermission;
 
     @ApiModelProperty("集群的版本号, 如果更新了'isSkipCheckPermission'字段则必填")
     private Long objectVersionNumber;
@@ -42,12 +42,12 @@ public class ProjectCertificationPermissionUpdateVO {
         this.projectIds = projectIds;
     }
 
-    public Boolean getSkipCheckPermission() {
-        return isSkipCheckPermission;
+    public Boolean getSkipCheckProjectPermission() {
+        return skipCheckProjectPermission;
     }
 
-    public void setSkipCheckPermission(Boolean skipCheckPermission) {
-        isSkipCheckPermission = skipCheckPermission;
+    public void setSkipCheckProjectPermission(Boolean skipCheckProjectPermission) {
+        this.skipCheckProjectPermission = skipCheckProjectPermission;
     }
 
     public Long getObjectVersionNumber() {
