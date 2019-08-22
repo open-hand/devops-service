@@ -339,15 +339,15 @@ public class DevopsEnvironmentController {
                 .orElseThrow(() -> new CommonException("error.env.sync.get"));
     }
 
-    /**
-     * 先注释掉，发版前删除
-     * 分页查询项目下用户权限
-     *
-     * @param projectId   项目id
-     * @param pageRequest 分页参数
-     * @param envId       环境id
-     * @return page
-     */
+//    /**
+//     * TODO 先注释掉，发版前删除
+//     * 分页查询项目下用户权限
+//     *
+//     * @param projectId   项目id
+//     * @param pageRequest 分页参数
+//     * @param envId       环境id
+//     * @return page
+//     */
 //    @Permission(type = ResourceType.PROJECT,
 //            roles = {InitRoleCode.PROJECT_OWNER})
 //    @CustomPageRequest
@@ -570,14 +570,13 @@ public class DevopsEnvironmentController {
      * @return List
      */
     @Permission(type = ResourceType.PROJECT,
-            roles = {InitRoleCode.PROJECT_OWNER,
-                    InitRoleCode.PROJECT_MEMBER})
+            roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下查询环境")
     @GetMapping(value = "/env_tree_menu")
     public ResponseEntity<List<DevopsEnvGroupEnvsVO>> listByActive(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId) {
-        return Optional.ofNullable(devopsEnvironmentService.listByProjectIdTree(projectId))
+        return Optional.ofNullable(devopsEnvironmentService.listEnvTreeMenu(projectId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.environment.get"));
     }

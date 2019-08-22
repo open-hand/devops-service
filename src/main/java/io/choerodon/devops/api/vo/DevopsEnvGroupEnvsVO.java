@@ -2,10 +2,19 @@ package io.choerodon.devops.api.vo;
 
 import java.util.List;
 
+import io.swagger.annotations.ApiModelProperty;
+
 public class DevopsEnvGroupEnvsVO {
+    @ApiModelProperty("环境组id / 为空则表示是默认分组")
     private Long devopsEnvGroupId;
+
+    @ApiModelProperty("环境组名")
     private String devopsEnvGroupName;
+
+    @ApiModelProperty("环境组内的环境")
     private List<DevopsEnviromentRepVO> devopsEnviromentRepDTOs;
+
+    @ApiModelProperty("组内的环境是否启用")
     private boolean active;
 
     public boolean isActive() {

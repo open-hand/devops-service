@@ -247,7 +247,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     @Override
-    public List<DevopsEnvGroupEnvsVO> listByProjectIdTree(Long projectId) {
+    public List<DevopsEnvGroupEnvsVO> listEnvTreeMenu(Long projectId) {
         DevopsEnvGroupEnvsVO devopsEnvGroupEnvsDTO = new DevopsEnvGroupEnvsVO();
         List<DevopsEnvGroupEnvsVO> devopsEnvGroupEnvsDTOS = new ArrayList<>();
         // 获得环境列表(包含激活与不激活)

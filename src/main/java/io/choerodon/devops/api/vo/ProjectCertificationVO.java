@@ -1,28 +1,42 @@
 package io.choerodon.devops.api.vo;
 
-import java.util.List;
+import javax.validation.constraints.NotNull;
+
+import io.swagger.annotations.ApiModelProperty;
 
 public class ProjectCertificationVO {
-
+    @ApiModelProperty("证书id")
     private Long id;
+
+    @ApiModelProperty("证书名称")
+    @NotNull(message = "error.name.null")
     private String name;
+
+    @ApiModelProperty("key文件内容")
     private String keyValue;
+
+    @ApiModelProperty("cert文件内容")
     private String certValue;
+
+    @ApiModelProperty("域名")
+    @NotNull(message = "error.domain.null")
     private String domain;
-    private List<Long> projects;
+
+    @ApiModelProperty("是否跳过权限校验")
     private Boolean skipCheckProjectPermission;
 
+    @ApiModelProperty("纪录版本字段")
+    private Long objectVersionNumber;
 
     public ProjectCertificationVO() {
-
-
     }
 
-    public ProjectCertificationVO(Long id, String name, String domain, Boolean skipCheckProjectPermission) {
+    public ProjectCertificationVO(Long id, String name, String domain, Boolean skipCheckProjectPermission, Long objectVersionNumber) {
         this.id = id;
         this.name = name;
         this.domain = domain;
         this.skipCheckProjectPermission = skipCheckProjectPermission;
+        this.objectVersionNumber = objectVersionNumber;
     }
 
     public String getName() {
@@ -49,14 +63,6 @@ public class ProjectCertificationVO {
         this.certValue = certValue;
     }
 
-    public List<Long> getProjects() {
-        return projects;
-    }
-
-    public void setProjects(List<Long> projects) {
-        this.projects = projects;
-    }
-
     public Boolean getSkipCheckProjectPermission() {
         return skipCheckProjectPermission;
     }
@@ -79,5 +85,13 @@ public class ProjectCertificationVO {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getObjectVersionNumber() {
+        return objectVersionNumber;
+    }
+
+    public void setObjectVersionNumber(Long objectVersionNumber) {
+        this.objectVersionNumber = objectVersionNumber;
     }
 }

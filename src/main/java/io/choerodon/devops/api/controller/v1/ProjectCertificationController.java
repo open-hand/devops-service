@@ -47,7 +47,7 @@ public class ProjectCertificationController {
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "证书信息", required = true)
-            @ModelAttribute ProjectCertificationVO projectCertificationVO,
+            @ModelAttribute @Valid ProjectCertificationVO projectCertificationVO,
             @ApiParam(value = "key文件")
             @RequestParam(value = "key", required = false) MultipartFile key,
             @ApiParam(value = "cert文件")
@@ -56,25 +56,26 @@ public class ProjectCertificationController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    /**
-     * 更新证书下的项目
-     *
-     * @param project_id             项目Id
-     * @param projectCertificationVO 证书项目关联对象
-     */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "更新证书下的项目")
-    @PutMapping()
-    public ResponseEntity update(
-            @ApiParam(value = "项目ID", required = true)
-            @PathVariable(value = "project_id") Long project_id,
-            @ApiParam(value = "证书ID")
-            @PathVariable Long certId,
-            @ApiParam(value = "证书组织关联对象")
-            @RequestBody ProjectCertificationVO projectCertificationVO) {
-        devopsProjectCertificationService.update(certId, projectCertificationVO);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
+//    /**
+//     * TODO 发版前删除
+//     * 更新证书
+//     *
+//     * @param project_id             项目Id
+//     * @param projectCertificationVO 项目层证书信息
+//     */
+//    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+//    @ApiOperation(value = "更新证书")
+//    @PutMapping()
+//    public ResponseEntity update(
+//            @ApiParam(value = "项目ID", required = true)
+//            @PathVariable(value = "project_id") Long project_id,
+//            @ApiParam(value = "证书ID")
+//            @PathVariable Long certId,
+//            @ApiParam(value = "项目层证书信息")
+//            @RequestBody ProjectCertificationVO projectCertificationVO) {
+//        devopsProjectCertificationService.update(certId, projectCertificationVO);
+//        return new ResponseEntity<>(HttpStatus.OK);
+//    }
 
     /**
      * 查询单个证书信息
@@ -168,7 +169,7 @@ public class ProjectCertificationController {
      * @param params      查询参数
      * @return page
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_ADMINISTRATOR})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "分页查询证书下已有权限的项目列表")
     @PostMapping("/{cert_id}/permission/page_related")
     public ResponseEntity<PageInfo<ProjectReqVO>> pageRelatedProjects(
@@ -185,25 +186,26 @@ public class ProjectCertificationController {
                 .orElseThrow(() -> new CommonException("error.project.query"));
     }
 
-    /**
-     * 查询已有权限的项目列表
-     *
-     * @param projectId 项目id
-     * @return List
-     */
-    @Permission(type = ResourceType.PROJECT,
-            roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "查询已有权限的项目列表")
-    @GetMapping("/list_cert_projects/{cert_id}")
-    public ResponseEntity<List<ProjectReqVO>> listCertProjects(
-            @ApiParam(value = "项目ID", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "证书Id")
-            @PathVariable(value = "cert_id") Long certId) {
-        return Optional.ofNullable(devopsProjectCertificationService.listCertProjects(certId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.project.query"));
-    }
+//    /**
+//     * TODO 发版前删除
+//     * 查询已有权限的项目列表
+//     *
+//     * @param projectId 项目id
+//     * @return List
+//     */
+//    @Permission(type = ResourceType.PROJECT,
+//            roles = {InitRoleCode.PROJECT_OWNER})
+//    @ApiOperation(value = "查询已有权限的项目列表")
+//    @GetMapping("/list_cert_projects/{cert_id}")
+//    public ResponseEntity<List<ProjectReqVO>> listCertProjects(
+//            @ApiParam(value = "项目ID", required = true)
+//            @PathVariable(value = "project_id") Long projectId,
+//            @ApiParam(value = "证书Id")
+//            @PathVariable(value = "cert_id") Long certId) {
+//        return Optional.ofNullable(devopsProjectCertificationService.listCertProjects(certId))
+//                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+//                .orElseThrow(() -> new CommonException("error.project.query"));
+//    }
 
     /**
      * 列出项目下所有与该证书未分配权限的项目
