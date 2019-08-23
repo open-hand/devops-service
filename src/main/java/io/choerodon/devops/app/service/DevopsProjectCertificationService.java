@@ -18,7 +18,7 @@ public interface DevopsProjectCertificationService {
     void assignPermission(ProjectCertificationPermissionUpdateVO permissionUpdateVO);
 
     /**
-     * 分页查询证书下已有权限的项目列表
+     * 分页查询在数据中和证书已经有关联关系的项目列表
      *
      * @param projectId   项目id
      * @param certId      证书id

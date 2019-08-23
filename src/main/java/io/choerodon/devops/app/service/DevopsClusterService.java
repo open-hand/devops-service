@@ -103,7 +103,7 @@ public interface DevopsClusterService {
 
 
     /**
-     * 分页查询集群下已有权限的项目列表
+     * 分页查询组织下在数据库中已有关联关系项目列表
      *
      * @param projectId   项目id
      * @param clusterId   集群id
