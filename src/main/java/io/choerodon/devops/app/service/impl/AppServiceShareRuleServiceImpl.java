@@ -85,4 +85,9 @@ public class AppServiceShareRuleServiceImpl implements AppServiceShareRuleServic
         return appServiceShareRuleVO;
     }
 
+    @Override
+    public void delete(Long ruleId) {
+        appServiceShareRuleMapper.deleteByPrimaryKey(ruleId);
+    }
+
 }

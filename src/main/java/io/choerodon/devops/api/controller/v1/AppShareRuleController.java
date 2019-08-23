@@ -35,7 +35,7 @@ public class AppShareRuleController {
     /**
      * 创建服务共享规则
      *
-     * @param projectId              项目id
+     * @param projectId             项目id
      * @param appServiceShareRuleVO 服务共享规则
      * @return Long
      */
@@ -87,7 +87,7 @@ public class AppShareRuleController {
      * @param ruleId
      * @return
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,InitRoleCode.PROJECT_MEMBER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "服务共享规则")
     @GetMapping(value = "/{rule_id}")
     public ResponseEntity<AppServiceShareRuleVO> query(
@@ -101,5 +101,20 @@ public class AppShareRuleController {
                 .orElseThrow(() -> new CommonException("error.share.rule.query"));
     }
 
-
+    /**
+     * 删除单个服务共享规则详情
+     * @param projectId
+     * @param ruleId
+     * @return
+     */
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "删除服务共享规则")
+    @DeleteMapping(value = "/{rule_id}")
+    public ResponseEntity delete(@ApiParam(value = "项目Id", required = true)
+                                 @PathVariable(value = "project_id") Long projectId,
+                                 @ApiParam(value = "规则Id", required = true)
+                                 @PathVariable(value = "rule_id") Long ruleId) {
+        applicationShareService.delete(ruleId);
+        return new ResponseEntity(HttpStatus.NO_CONTENT);
+    }
 }
