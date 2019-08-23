@@ -6,14 +6,14 @@ import { Action, Permission } from '@choerodon/master';
 import { Icon } from 'choerodon-ui/pro';
 import { handlePromptError } from '../../../../../utils';
 import { useResourceStore } from '../../../stores';
-import { useTreeStore } from './stores';
+import { useTreeItemStore } from './stores';
 
 function AppItem({ name, record, intl: { formatMessage }, intlPrefix }) {
   const {
     treeDs,
     AppState: { currentMenuType: { id } },
   } = useResourceStore();
-  const { treeItemStore } = useTreeStore();
+  const { treeItemStore } = useTreeItemStore();
 
   async function handleClick() {
     if (!record) return;
