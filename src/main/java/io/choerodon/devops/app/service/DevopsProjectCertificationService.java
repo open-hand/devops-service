@@ -18,7 +18,7 @@ public interface DevopsProjectCertificationService {
     void assignPermission(ProjectCertificationPermissionUpdateVO permissionUpdateVO);
 
     /**
-     * 分页查询证书下已有权限的项目列表
+     * 分页查询在数据中和证书已经有关联关系的项目列表
      *
      * @param projectId   项目id
      * @param certId      证书id
@@ -37,6 +37,14 @@ public interface DevopsProjectCertificationService {
 
     List<ProjectReqVO> listCertProjects(Long certId);
 
+    /**
+     * 列出组织下所有项目中在数据库中没有权限关联关系的项目(不论当前数据库中是否跳过权限检查)
+     *
+     * @param projectId 项目id
+     * @param certId    证书
+     * @param params    查询参数
+     * @return 组织下所有项目中在数据库中没有权限关联关系的项目
+     */
     List<ProjectReqVO> listNonRelatedMembers(Long projectId, Long certId, String params);
 
     void deleteCert(Long certId);

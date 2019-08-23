@@ -101,47 +101,41 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
             throw new CommonException("error.certification.not.exist", certId);
         }
 
-        // 如果跳过权限检查
-        if (Boolean.TRUE.equals(certificationDTO.getSkipCheckProjectPermission())) {
-            return devopsProjectService.pageProjects(projectId, pageRequest, params);
+        Map<String, Object> map = TypeUtil.castMapParams(params);
+        List<String> paramList = TypeUtil.cast(map.get(TypeUtil.PARAMS));
+        if (CollectionUtils.isEmpty(paramList)) {
+            // 如果不搜索，在数据库中进行分页
+            PageInfo<DevopsCertificationProRelationshipDTO> relationPage = PageHelper.startPage(
+                    pageRequest.getPage(), pageRequest.getSize())
+                    .doSelectPageInfo(() -> devopsCertificationProRelationshipService.baseListByCertificationId(certId));
+            return ConvertUtils.convertPage(relationPage, permission -> {
+                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(permission.getProjectId());
+                return new ProjectReqVO(permission.getProjectId(), projectDTO.getName(), projectDTO.getCode());
+            });
         } else {
-            // 如果没有跳过权限检查
-            Map<String, Object> map = TypeUtil.castMapParams(params);
-            List<String> paramList = TypeUtil.cast(map.get(TypeUtil.PARAMS));
-            if (CollectionUtils.isEmpty(paramList)) {
-                // 如果不搜索，在数据库中进行分页
-                PageInfo<DevopsCertificationProRelationshipDTO> relationPage = PageHelper.startPage(
-                        pageRequest.getPage(), pageRequest.getSize())
-                        .doSelectPageInfo(() -> devopsCertificationProRelationshipService.baseListByCertificationId(certId));
-                return ConvertUtils.convertPage(relationPage, permission -> {
-                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(permission.getProjectId());
-                    return new ProjectReqVO(permission.getProjectId(), projectDTO.getName(), projectDTO.getCode());
-                });
-            } else {
-                // 如果要搜索，需要手动在程序内分页
-                ProjectDTO iamProjectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+            // 如果要搜索，需要手动在程序内分页
+            ProjectDTO iamProjectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
 
-                // 手动查出所有组织下的项目
-                PageInfo<ProjectDTO> filteredProjects = baseServiceClientOperator.pageProjectByOrgId(
-                        iamProjectDTO.getOrganizationId(),
-                        0, 0, null,
-                        paramList.toArray(new String[0]));
+            // 手动查出所有组织下的项目
+            PageInfo<ProjectDTO> filteredProjects = baseServiceClientOperator.pageProjectByOrgId(
+                    iamProjectDTO.getOrganizationId(),
+                    0, 0, null,
+                    paramList.toArray(new String[0]));
 
-                // 数据库中的有权限的项目
-                List<Long> permissions = devopsCertificationProRelationshipService.baseListByCertificationId(certId)
-                        .stream()
-                        .map(DevopsCertificationProRelationshipDTO::getProjectId)
-                        .collect(Collectors.toList());
+            // 数据库中的有权限的项目
+            List<Long> permissions = devopsCertificationProRelationshipService.baseListByCertificationId(certId)
+                    .stream()
+                    .map(DevopsCertificationProRelationshipDTO::getProjectId)
+                    .collect(Collectors.toList());
 
-                // 过滤出在数据库中有权限的项目信息
-                List<ProjectReqVO> allMatched = filteredProjects.getList()
-                        .stream()
-                        .filter(p -> permissions.contains(p.getId()))
-                        .map(p -> ConvertUtils.convertObject(p, ProjectReqVO.class))
-                        .collect(Collectors.toList());
+            // 过滤出在数据库中有权限的项目信息
+            List<ProjectReqVO> allMatched = filteredProjects.getList()
+                    .stream()
+                    .filter(p -> permissions.contains(p.getId()))
+                    .map(p -> ConvertUtils.convertObject(p, ProjectReqVO.class))
+                    .collect(Collectors.toList());
 
-                return PageInfoUtil.createPageFromList(allMatched, pageRequest);
-            }
+            return PageInfoUtil.createPageFromList(allMatched, pageRequest);
         }
     }
 
@@ -236,10 +230,6 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
         CertificationDTO certificationDTO = certificationService.baseQueryById(certId);
         if (certificationDTO == null) {
             throw new CommonException("error.certification.not.exist", certId);
-        }
-
-        if (Boolean.TRUE.equals(certificationDTO.getSkipCheckProjectPermission())) {
-            return Collections.emptyList();
         }
 
         //查询出该项目所属组织下的所有项目

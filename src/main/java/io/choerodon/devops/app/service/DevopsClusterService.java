@@ -60,12 +60,12 @@ public interface DevopsClusterService {
 
 
     /**
-     * 列出组织下所有与该集群未分配权限的项目
+     * 列出组织下所有项目中在数据库中没有权限关联关系的项目(不论当前数据库中是否跳过权限检查)
      *
      * @param projectId 项目ID
      * @param clusterId 集群ID
      * @param params    搜索参数
-     * @return 与该集群未分配权限的项目
+     * @return 组织下所有项目中在数据库中没有权限关联关系的项目
      */
     List<ProjectReqVO> listNonRelatedProjects(Long projectId, Long clusterId, String params);
 
@@ -103,7 +103,7 @@ public interface DevopsClusterService {
 
 
     /**
-     * 分页查询集群下已有权限的项目列表
+     * 分页查询组织下在数据库中已有关联关系项目列表
      *
      * @param projectId   项目id
      * @param clusterId   集群id
