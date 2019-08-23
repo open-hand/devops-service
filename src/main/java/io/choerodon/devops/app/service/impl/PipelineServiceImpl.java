@@ -112,7 +112,8 @@ public class PipelineServiceImpl implements PipelineService {
     public PageInfo<PipelineVO> pageByOptions(Long projectId, PipelineSearchVO pipelineSearchVO, PageRequest pageRequest) {
         ProjectDTO projectDTO = iamService.queryIamProject(projectId);
         Long userId = DetailsHelper.getUserDetails().getUserId();
-        List<PipelineVO> pipelineVOS = ConvertUtils.convertList(pipelineMapper.listByOptions(projectId, pipelineSearchVO, userId, pageRequest.getSort().toSql()), PipelineVO.class);
+        String sortSql = pageRequest.getSort() != null ? pageRequest.getSort().toSql() : null;
+        List<PipelineVO> pipelineVOS = ConvertUtils.convertList(pipelineMapper.listByOptions(projectId, pipelineSearchVO, userId, sortSql), PipelineVO.class);
         List<PipelineVO> pipelineVOList;
         Boolean projectOwner = iamService.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectDTO);
         if (pipelineSearchVO != null && pipelineSearchVO.getManager() != null && pipelineSearchVO.getManager()) {
@@ -201,13 +202,13 @@ public class PipelineServiceImpl implements PipelineService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public PipelineReqVO create(Long projectId, PipelineReqVO pipelineReqVO) {
-        PipelineDTO pipelineE = ConvertUtils.convertObject(pipelineReqVO, PipelineDTO.class);
-        pipelineE.setProjectId(projectId);
+        PipelineDTO pipelineDTO = ConvertUtils.convertObject(pipelineReqVO, PipelineDTO.class);
+        pipelineDTO.setProjectId(projectId);
         checkName(projectId, pipelineReqVO.getName());
-        pipelineE = baseCreate(projectId, pipelineE);
-        createUserRel(pipelineReqVO.getPipelineUserRels(), pipelineE.getId(), null, null);
+        pipelineDTO = baseCreate(projectId, pipelineDTO);
+        createUserRel(pipelineReqVO.getPipelineUserRels(), pipelineDTO.getId(), null, null);
 
-        Long pipelineId = pipelineE.getId();
+        Long pipelineId = pipelineDTO.getId();
         List<PipelineStageDTO> pipelineStageES = ConvertUtils.convertList(pipelineReqVO.getPipelineStageVOs(), PipelineStageDTO.class)
                 .stream().map(t -> {
                     t.setPipelineId(pipelineId);
