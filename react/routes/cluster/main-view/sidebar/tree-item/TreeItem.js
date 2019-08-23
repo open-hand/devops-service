@@ -59,6 +59,8 @@ const TreeItem = observer(({ record, search }) => {
       MAP_ITEM,
       CIPHER_ITEM,
       CUSTOM_ITEM,
+      CLU_ITEM,
+      NODE_ITEM,
     },
   } = useClusterStore();
   const { podColor } = useClusterMainStore();
@@ -91,6 +93,7 @@ const TreeItem = observer(({ record, search }) => {
       [MAP_ITEM]: 'compare_arrows',
       [CIPHER_ITEM]: 'vpn_key',
       [CUSTOM_ITEM]: 'filter_b_and_w',
+      [NODE_ITEM]: 'vpn_key',
     };
     const iconType = iconMappings[type];
     return <Fragment>
@@ -108,6 +111,19 @@ const TreeItem = observer(({ record, search }) => {
       connect={connect}
       synchronize={synchronize}
     />;
+  }
+
+  function getCluIcon() {
+    const connect = record.get('connect');
+    return <EnvironmentItem
+      name={name}
+      connect={connect}
+      synchronize={false}
+    />; 
+  }
+
+  function getNodeItem() {
+
   }
 
   function getItem() {
@@ -143,6 +159,12 @@ const TreeItem = observer(({ record, search }) => {
       }
       case APP_ITEM:
         treeItem = <AppItem name={name} />;
+        break;
+      case CLU_ITEM:
+        treeItem = getCluIcon();
+        break;
+      case NODE_ITEM:
+        treeItem = getIconItem(type);
         break;
       default:
         treeItem = null;

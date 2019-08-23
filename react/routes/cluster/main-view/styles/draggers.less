@@ -1,0 +1,42 @@
+@import '~choerodon-ui/lib/style/themes/default';
+
+.@{c7ncd-deployment}-draggers {
+  &-animate {
+    transition: width 0.05s ease-out, height 0.05s ease-out, background 0.05s ease-out, opacity 0.05s ease-out, transform 0.05s ease-out;
+  }
+
+  &-blocker {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 15;
+    height: 100vh;
+    width: 100vw;
+  }
+
+  &-handle {
+    z-index: 10;
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    transition: color 0.2s linear, background-position 0.2s linear, background-size 0.2s linear, background 0.2s linear;
+    cursor: col-resize;
+    height: 100%;
+    width: 10px;
+    margin-left: 0;
+
+    &:hover {
+      border-right: 0.02rem solid @primary-color;
+      opacity: .68;
+    }
+  }
+
+  &-handle-dragged {
+    border-right: 0.02rem solid @primary-color;
+    opacity: .68;
+  }
+}

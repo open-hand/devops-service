@@ -5,8 +5,8 @@ import pick from 'lodash/pick';
 import map from 'lodash/map';
 import { itemTypeMappings, viewTypeMappings, RES_TYPES, ENV_KEYS } from './mappings';
 
-const { IST_VIEW_TYPE, RES_VIEW_TYPE } = viewTypeMappings;
-const { ENV_ITEM, APP_ITEM, IST_ITEM } = itemTypeMappings;
+const { IST_VIEW_TYPE, RES_VIEW_TYPE, CLU_VIEW_TYPE } = viewTypeMappings;
+const { ENV_ITEM, APP_ITEM, IST_ITEM, CLU_ITEM, NODE_ITEM } = itemTypeMappings;
 
 function formatResource(value, expandsKeys) {
   if (isEmpty(value)) return [];
@@ -55,6 +55,45 @@ function formatResource(value, expandsKeys) {
   return flatted;
 }
 
+function formatCluster(value, expandsKeys) {
+  if (isEmpty(value)) return [];
+
+  const flatted = [];
+
+  function flatData(data, prevKey = '', itemType = CLU_ITEM) {
+    for (let i = 0; i < data.length; i++) {
+      const node = data[i];
+      let key;
+      let peerNode = null;
+      if (Object.prototype.toString.call(node) !== '[object String]') {
+        peerNode = omit(node, ['nodes']); 
+        key = prevKey ? `${prevKey}-${node.id}` : String(node.id);
+      } else {
+        key = prevKey ? `${prevKey}-${node}` : String(node);
+      }
+
+      flatted.push({
+        ...peerNode,
+        name: node.name || node.code || node,
+        expand: expandsKeys.includes(key),
+        parentId: prevKey || '0',
+        itemType,
+        key,
+      });
+      const children = node.nodes;
+
+      if (!isEmpty(children)) {
+        const type = node.apps ? APP_ITEM : IST_ITEM;
+        flatData(children, key, NODE_ITEM);
+      }
+    }
+  }
+
+  flatData(value);
+
+  return flatted;
+}
+
 function formatInstance(value, expandsKeys) {
   if (isEmpty(value)) return [];
 
@@ -96,10 +135,12 @@ function handleSelect(record, store) {
   store.setSelectedMenu({ menuId, menuType, parentId, key });
 }
 
+
 export default (store, type) => {
   const formatMaps = {
     [IST_VIEW_TYPE]: formatInstance,
     [RES_VIEW_TYPE]: formatResource,
+    [CLU_VIEW_TYPE]: formatCluster,
   };
   return {
     paging: false,

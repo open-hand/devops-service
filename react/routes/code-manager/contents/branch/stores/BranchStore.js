@@ -199,7 +199,7 @@ class BranchStore {
       axios
         .post(`/devops/v1/projects/${projectId}/app_service/${DevPipelineStore.selectedApp}/git/page_branch_by_options?page=${page}&size=${size}&sort=${sort.field},${sort.order}`, JSON.stringify(postData))
         .then((data) => {
-          this.changeLoading(false);
+          this.changeLoading(false);  
           const res = handleProptError(data);
           if (res) {
             this.setBranchList(data.list);
