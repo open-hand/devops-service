@@ -2,7 +2,7 @@ package io.choerodon.devops.app.service.impl;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.List;
+import java.util.Collections;
 import java.util.Objects;
 import java.util.UUID;
 import javax.annotation.PostConstruct;
@@ -97,7 +97,6 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
         Long projectId = organizationRegisterEventPayload.getProject().getId();
         // 1. 创建服务
         AppServiceReqVO app = demoDataVO.getApplicationInfo();
-        app.setIsSkipCheckPermission(Boolean.TRUE);
 
         AppServiceRepVO applicationRepDTO = createDemoApp(projectId, app);
 
@@ -164,7 +163,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
 
         applicationDTO.setActive(true);
         applicationDTO.setSynchro(false);
-        applicationDTO.setIsSkipCheckPermission(applicationReqDTO.getIsSkipCheckPermission());
+        applicationDTO.setSkipCheckPermission(Boolean.TRUE);
 
         // 查询创建应用所在的gitlab应用组
         DevopsProjectDTO devopsProjectDTO = devopsProjectService.queryByAppId(applicationDTO.getAppId());
@@ -181,8 +180,8 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
         devOpsAppServicePayload.setOrganizationId(organization.getId());
         devOpsAppServicePayload.setUserId(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         devOpsAppServicePayload.setGroupId(TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()));
-        devOpsAppServicePayload.setUserIds(applicationReqDTO.getUserIds());
-        devOpsAppServicePayload.setSkipCheckPermission(applicationReqDTO.getIsSkipCheckPermission());
+        devOpsAppServicePayload.setUserIds(Collections.emptyList());
+        devOpsAppServicePayload.setSkipCheckPermission(Boolean.TRUE);
 
         //设置仓库Id
 //        List<DevopsConfigVO> harborConfig = projectConfigService.listByIdAndType(null, "harbor");
@@ -199,12 +198,6 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
 
         devOpsAppServicePayload.setAppServiceId(applicationDTO.getId());
         devOpsAppServicePayload.setIamProjectId(projectId);
-
-        // 如果不跳过权限检查
-        List<Long> userIds = applicationReqDTO.getUserIds();
-        if (!applicationReqDTO.getIsSkipCheckPermission() && userIds != null && !userIds.isEmpty()) {
-            userIds.forEach(e -> appServiceUserPermissionService.baseCreate(e, appServiceId));
-        }
 
         String input = gson.toJson(devOpsAppServicePayload);
 

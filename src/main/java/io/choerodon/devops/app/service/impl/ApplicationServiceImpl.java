@@ -191,7 +191,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         devOpsAppServicePayload.setPath(newAppService.getCode());
         devOpsAppServicePayload.setUserId(gitlabUserId);
         devOpsAppServicePayload.setGroupId(groupId);
-        devOpsAppServicePayload.setSkipCheckPermission(newAppService.getIsSkipCheckPermission());
+        devOpsAppServicePayload.setSkipCheckPermission(newAppService.getSkipCheckPermission());
         devOpsAppServicePayload.setAppServiceId(newAppService.getId());
         devOpsAppServicePayload.setIamProjectId(newAppService.getAppId());
         return devOpsAppServicePayload;
@@ -221,7 +221,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         appServiceDTO.setType(originalAppService.getType());
         appServiceDTO.setActive(true);
         appServiceDTO.setSynchro(false);
-        appServiceDTO.setIsSkipCheckPermission(true);
+        appServiceDTO.setSkipCheckPermission(true);
         appServiceDTO.setHarborConfigId(devopsConfigMapper.queryDefaultConfig("harbor").getId());
         appServiceDTO.setChartConfigId(devopsConfigMapper.queryDefaultConfig("chart").getId());
 

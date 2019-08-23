@@ -18,6 +18,7 @@ public class DevopsEnviromentRepVO {
     private Boolean permission;
     private Boolean isSynchro;
     private Boolean isFailed;
+    private Boolean skipCheckPermission;
 
     public Long getId() {
         return id;
@@ -121,5 +122,21 @@ public class DevopsEnviromentRepVO {
 
     public void setGitlabEnvProjectId(Long gitlabEnvProjectId) {
         this.gitlabEnvProjectId = gitlabEnvProjectId;
+    }
+
+    public Boolean getConnected() {
+        return isConnected;
+    }
+
+    public void setConnected(Boolean connected) {
+        isConnected = connected;
+    }
+
+    public Boolean getSkipCheckPermission() {
+        return skipCheckPermission;
+    }
+
+    public void setSkipCheckPermission(Boolean skipCheckPermission) {
+        this.skipCheckPermission = skipCheckPermission;
     }
 }

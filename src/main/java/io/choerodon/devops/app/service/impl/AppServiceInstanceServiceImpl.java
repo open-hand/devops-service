@@ -1240,7 +1240,7 @@ public class  AppServiceInstanceServiceImpl implements AppServiceInstanceService
             applicationDTO.setName(name);
             applicationDTO.setActive(true);
             applicationDTO.setSynchro(true);
-            applicationDTO.setIsSkipCheckPermission(true);
+            applicationDTO.setSkipCheckPermission(true);
             applicationDTO.setHarborConfigId(harborConfigDTO.getId());
             applicationDTO.setChartConfigId(chartConfigDTO.getId());
             return applicationService.baseCreate(applicationDTO);

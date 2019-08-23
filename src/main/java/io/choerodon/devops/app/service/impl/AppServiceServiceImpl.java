@@ -192,11 +192,6 @@ public class AppServiceServiceImpl implements AppServiceService {
         appServiceDTO = baseCreate(appServiceDTO);
         Long appServiceId = appServiceDTO.getId();
 
-        // 如果不跳过权限检查
-        List<Long> userIds = appServiceReqVO.getUserIds();
-        if (!appServiceReqVO.getIsSkipCheckPermission() && userIds != null && !userIds.isEmpty()) {
-            userIds.forEach(e -> appServiceUserPermissionService.baseCreate(e, appServiceId));
-        }
 
         //创建saga payload
         DevOpsAppServicePayload devOpsAppServicePayload = new DevOpsAppServicePayload();
@@ -204,8 +199,8 @@ public class AppServiceServiceImpl implements AppServiceService {
         devOpsAppServicePayload.setOrganizationId(projectDTO.getOrganizationId());
         devOpsAppServicePayload.setUserId(TypeUtil.objToInteger(userAttrVO.getGitlabUserId()));
         devOpsAppServicePayload.setGroupId(TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()));
-        devOpsAppServicePayload.setUserIds(userIds);
-        devOpsAppServicePayload.setSkipCheckPermission(appServiceDTO.getIsSkipCheckPermission());
+        devOpsAppServicePayload.setUserIds(Collections.emptyList());
+        devOpsAppServicePayload.setSkipCheckPermission(appServiceDTO.getSkipCheckPermission());
         devOpsAppServicePayload.setAppServiceId(appServiceDTO.getId());
         devOpsAppServicePayload.setIamProjectId(appServiceDTO.getAppId());
 
@@ -248,7 +243,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                     + organizationDTO.getCode() + "-" + projectDTO.getCode() + "/"
                     + appServiceDTO.getCode() + ".git");
         }
-        if (appServiceDTO.getIsSkipCheckPermission()) {
+        if (appServiceDTO.getSkipCheckPermission()) {
             appServiceRepVO.setPermission(true);
         } else {
             appServiceRepVO.setPermission(false);
@@ -719,7 +714,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         appServiceDTO.setAppId(appId);
         appServiceDTO.setActive(true);
         appServiceDTO.setSynchro(false);
-        appServiceDTO.setIsSkipCheckPermission(appServiceImportVO.getIsSkipCheckPermission());
+        appServiceDTO.setSkipCheckPermission(Boolean.TRUE);
         appServiceDTO.setHarborConfigId(appServiceImportVO.getHarborConfigId());
         appServiceDTO.setChartConfigId(appServiceImportVO.getChartConfigId());
 
@@ -734,14 +729,9 @@ public class AppServiceServiceImpl implements AppServiceService {
             throw new CommonException("error.user.not.owner");
         }
 
-        // 创建应用
+        // 创建应用服务
         appServiceDTO = baseCreate(appServiceDTO);
         Long appServiceId = appServiceDTO.getId();
-        // 如果不跳过权限检查
-        List<Long> userIds = appServiceImportVO.getUserIds();
-        if (!appServiceImportVO.getIsSkipCheckPermission() && userIds != null && !userIds.isEmpty()) {
-            userIds.forEach(e -> appServiceUserPermissionService.baseCreate(e, appServiceId));
-        }
 
         //创建saga payload
         DevOpsAppServicePayload devOpsAppServicePayload = new DevOpsAppServicePayload();
@@ -749,8 +739,8 @@ public class AppServiceServiceImpl implements AppServiceService {
         devOpsAppServicePayload.setOrganizationId(projectDTO.getOrganizationId());
         devOpsAppServicePayload.setUserId(TypeUtil.objToInteger(userAttrVO.getGitlabUserId()));
         devOpsAppServicePayload.setGroupId(TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()));
-        devOpsAppServicePayload.setUserIds(userIds);
-        devOpsAppServicePayload.setSkipCheckPermission(appServiceDTO.getIsSkipCheckPermission());
+        devOpsAppServicePayload.setUserIds(Collections.emptyList());
+        devOpsAppServicePayload.setSkipCheckPermission(appServiceDTO.getSkipCheckPermission());
         devOpsAppServicePayload.setAppServiceId(appServiceDTO.getId());
         devOpsAppServicePayload.setIamProjectId(appServiceDTO.getAppId());
 
@@ -1509,7 +1499,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         devOpsUserPayload.setGitlabProjectId(appServiceDTO.getGitlabProjectId());
 
         //原先是否跳过权限检查
-        boolean skip = appServiceDTO.getIsSkipCheckPermission();
+        boolean skip = appServiceDTO.getSkipCheckPermission();
         if (skip) {
             if (applicationPermissionVO.getSkipCheckPermission()) {
                 //原来跳过权限检查，现在也跳过权限检查
@@ -1517,7 +1507,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             } else {
                 //原来跳过权限检查，现在不跳过权限检查
                 appServiceDTO.setId(appServiceId);
-                appServiceDTO.setIsSkipCheckPermission(false);
+                appServiceDTO.setSkipCheckPermission(false);
                 appServiceMapper.updateByPrimaryKeySelective(appServiceDTO);
                 applicationPermissionVO.getUserIds().forEach(u -> {
                     appServiceUserPermissionService.baseCreate(u, appServiceId);
@@ -1529,7 +1519,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             if (applicationPermissionVO.getSkipCheckPermission()) {
                 //原来不跳过权限检查，现在跳过权限检查
                 appServiceDTO.setId(appServiceId);
-                appServiceDTO.setIsSkipCheckPermission(true);
+                appServiceDTO.setSkipCheckPermission(true);
                 appServiceMapper.updateByPrimaryKeySelective(appServiceDTO);
                 appServiceUserPermissionService.baseDeleteByAppServiceId(appServiceId);
                 devOpsUserPayload.setOption(2);
@@ -1806,7 +1796,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     public List<AppServiceDTO> baseListByProjectIdAndSkipCheck(Long projectId) {
         AppServiceDTO appServiceDTO = new AppServiceDTO();
         appServiceDTO.setAppId(devopsProjectService.queryAppIdByProjectId(projectId));
-        appServiceDTO.setIsSkipCheckPermission(true);
+        appServiceDTO.setSkipCheckPermission(true);
         return appServiceMapper.select(appServiceDTO);
     }
 
@@ -1895,7 +1885,8 @@ public class AppServiceServiceImpl implements AppServiceService {
         appServiceDTO.setActive(true);
         appServiceDTO.setSynchro(false);
         appServiceDTO.setAppId(appId);
-        appServiceDTO.setIsSkipCheckPermission(appServiceReqVO.getIsSkipCheckPermission());
+        // 创建服务默认跳过权限校验
+        appServiceDTO.setSkipCheckPermission(Boolean.TRUE);
         appServiceDTO.setHarborConfigId(appServiceReqVO.getHarborConfigId());
         appServiceDTO.setChartConfigId(appServiceReqVO.getChartConfigId());
         return appServiceDTO;

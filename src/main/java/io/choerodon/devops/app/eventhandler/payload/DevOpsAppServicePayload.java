@@ -15,7 +15,7 @@ public class DevOpsAppServicePayload {
     private Long organizationId;
     private Long appServiceId;
     private List<Long> userIds;
-    private Boolean isSkipCheckPermission;
+    private Boolean skipCheckPermission;
     private Long iamProjectId;
 
     public Integer getUserId() {
@@ -83,11 +83,11 @@ public class DevOpsAppServicePayload {
     }
 
     public Boolean getSkipCheckPermission() {
-        return isSkipCheckPermission;
+        return skipCheckPermission;
     }
 
     public void setSkipCheckPermission(Boolean skipCheckPermission) {
-        isSkipCheckPermission = skipCheckPermission;
+        this.skipCheckPermission = skipCheckPermission;
     }
 
     public Long getIamProjectId() {

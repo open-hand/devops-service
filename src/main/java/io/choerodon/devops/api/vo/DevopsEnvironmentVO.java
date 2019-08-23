@@ -14,7 +14,7 @@ public class DevopsEnvironmentVO {
     private String description;
     private Long devopsEnvGroupId;
     private List<Long> userIds;
-    private Boolean isSkipCheckPermission;
+    private Boolean skipCheckPermission;
 
     public Long getProjectId() {
         return projectId;
@@ -73,10 +73,10 @@ public class DevopsEnvironmentVO {
     }
 
     public Boolean getSkipCheckPermission() {
-        return isSkipCheckPermission;
+        return skipCheckPermission;
     }
 
     public void setSkipCheckPermission(Boolean skipCheckPermission) {
-        isSkipCheckPermission = skipCheckPermission;
+        this.skipCheckPermission = skipCheckPermission;
     }
 }

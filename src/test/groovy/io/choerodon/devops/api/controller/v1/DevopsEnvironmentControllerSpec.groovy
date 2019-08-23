@@ -274,7 +274,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         appServiceDTO.setGitlabProjectId(11)
         appServiceDTO.setFailed(Boolean.FALSE)
         appServiceDTO.setSynchro(Boolean.TRUE)
-        appServiceDTO.setIsSkipCheckPermission(Boolean.TRUE)
+        appServiceDTO.setSkipCheckPermission(Boolean.TRUE)
         appServiceMapper.insertSelective(appServiceDTO)
 
         appServiceInstanceDTO.setId(1L)

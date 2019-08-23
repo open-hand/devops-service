@@ -15,7 +15,7 @@ public class DevopsEnvironmentInfoVO {
     private Boolean synchronize;
     private Long clusterId;
     private String clusterName;
-    private Boolean isSkipCheckPermission;
+    private Boolean skipCheckPermission;
     private String description;
     private Long objectVersionNumber;
     /**
@@ -88,11 +88,11 @@ public class DevopsEnvironmentInfoVO {
     }
 
     public Boolean getSkipCheckPermission() {
-        return isSkipCheckPermission;
+        return skipCheckPermission;
     }
 
     public void setSkipCheckPermission(Boolean skipCheckPermission) {
-        isSkipCheckPermission = skipCheckPermission;
+        this.skipCheckPermission = skipCheckPermission;
     }
 
     public Long getObjectVersionNumber() {
