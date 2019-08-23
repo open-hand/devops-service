@@ -238,7 +238,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                 devOpsAppServicePayload.setPath(appServiceDTO.getCode());
                 devOpsAppServicePayload.setUserId(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
                 devOpsAppServicePayload.setGroupId(TypeUtil.objToInteger(projectDTO.getDevopsAppGroupId()));
-                devOpsAppServicePayload.setSkipCheckPermission(appServiceDTO.getIsSkipCheckPermission());
+                devOpsAppServicePayload.setSkipCheckPermission(appServiceDTO.getSkipCheckPermission());
                 devOpsAppServicePayload.setAppServiceId(appServiceDTO.getId());
                 devOpsAppServicePayload.setIamProjectId(appServiceDTO.getAppId());
                 producer.apply(
@@ -269,7 +269,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         appServiceDTO.setType(downloadPayload.getAppServiceType());
         appServiceDTO.setCode(downloadPayload.getAppServiceCode());
         appServiceDTO.setActive(true);
-        appServiceDTO.setIsSkipCheckPermission(true);
+        appServiceDTO.setSkipCheckPermission(true);
         //2. 第一次下载创建应用服务
         //2. 分配所在gitlab group 用户权限
         MemberDTO memberDTO = gitlabServiceClientOperator.queryGroupMember(gitlabGroupId, TypeUtil.objToInteger(gitlabUserId));

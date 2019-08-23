@@ -274,7 +274,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         appServiceDTO.setGitlabProjectId(11)
         appServiceDTO.setFailed(Boolean.FALSE)
         appServiceDTO.setSynchro(Boolean.TRUE)
-        appServiceDTO.setIsSkipCheckPermission(Boolean.TRUE)
+        appServiceDTO.setSkipCheckPermission(Boolean.TRUE)
         appServiceMapper.insertSelective(appServiceDTO)
 
         appServiceInstanceDTO.setId(1L)
@@ -495,16 +495,16 @@ class DevopsEnvironmentControllerSpec extends Specification {
     def "Create"() {
         given: "准备"
         isToInit = false
-        DevopsEnvironmentVO devopsEnvironmentVO = new DevopsEnvironmentVO()
-        devopsEnvironmentVO.setClusterId(1L)
-        devopsEnvironmentVO.setCode("testCodeChange")
-        devopsEnvironmentVO.setName("testNameChange")
+        DevopsEnvironmentReqVO devopsEnvironmentReqVO = new DevopsEnvironmentReqVO()
+        devopsEnvironmentReqVO.setClusterId(1L)
+        devopsEnvironmentReqVO.setCode("testCodeChange")
+        devopsEnvironmentReqVO.setName("testNameChange")
 
         and: 'mock envUtil'
         GitConfigVO gitConfigDTO = new GitConfigVO()
         gitUtil.getGitConfig(_ as Long) >> gitConfigDTO
         when: '项目下创建环境'
-        restTemplate.postForObject(rootUrl, devopsEnvironmentVO, Void.class, projectId)
+        restTemplate.postForObject(rootUrl, devopsEnvironmentReqVO, Void.class, projectId)
 
         then: '返回值'
         devopsEnvironmentMapper.selectAll().size() == 3

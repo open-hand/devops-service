@@ -1,7 +1,6 @@
 package io.choerodon.devops.api.controller.v1
 
 import com.github.pagehelper.PageInfo
-import io.choerodon.core.domain.Page
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.DeployVersionVO
@@ -165,7 +164,7 @@ class AppServiceVersionControllerSpec extends Specification {
         applicationDO.setCode("app_code")
         applicationDO.setAppId(project_id)
         applicationDO.setGitlabProjectId(1)
-        applicationDO.setIsSkipCheckPermission(true)
+        applicationDO.setSkipCheckPermission(true)
 
         applicationVersionDO.setId(init_id)
         applicationVersionDO.setValueId(1L)

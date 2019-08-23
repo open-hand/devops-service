@@ -1,7 +1,5 @@
 package io.choerodon.devops.api.vo;
 
-import java.util.List;
-
 /**
  * Created by younger on 2018/3/28.
  */
@@ -14,8 +12,6 @@ public class AppServiceReqVO {
     private String type;
     private Long harborConfigId;
     private Long chartConfigId;
-    private List<Long> userIds;
-    private Boolean isSkipCheckPermission;
 
     public Long getId() {
         return id;
@@ -47,22 +43,6 @@ public class AppServiceReqVO {
 
     public void setProjectId(Long projectId) {
         this.projectId = projectId;
-    }
-
-    public List<Long> getUserIds() {
-        return userIds;
-    }
-
-    public void setUserIds(List<Long> userIds) {
-        this.userIds = userIds;
-    }
-
-    public Boolean getIsSkipCheckPermission() {
-        return isSkipCheckPermission;
-    }
-
-    public void setIsSkipCheckPermission(Boolean skipCheckPermission) {
-        isSkipCheckPermission = skipCheckPermission;
     }
 
     public String getType() {

@@ -155,9 +155,10 @@ public interface BaseServiceClient {
                                         @RequestParam("errorCode") String errorCode);
 
     @GetMapping(value = "/v1/organizations/{organization_id}/projects/projects_with_applications")
-    ResponseEntity<PageInfo<ProjectDTO>> pagingProjectByOptions(@PathVariable("organization_id") Long organizationId,
-                                                                @RequestParam(value = "doPage", defaultValue = "false") Boolean doPage,
-                                                                @RequestParam("page") int page,
-                                                                @RequestParam("size") int size,
-                                                                @RequestParam(required = false) String[] params);
+    ResponseEntity<PageInfo<ProjectDTO>> pagingProjectByOptions(
+            @PathVariable("organization_id") Long organizationId,
+            @RequestParam(value = "doPage", defaultValue = "false") Boolean doPage,
+            @RequestParam("page") int page,
+            @RequestParam("size") int size,
+            @RequestParam(value = "params", required = false) String[] params);
 }

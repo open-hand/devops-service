@@ -126,20 +126,20 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Override
     @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_ENV, description = "创建环境", inputSchema = "{}")
     @Transactional(rollbackFor = Exception.class)
-    public void create(Long projectId, DevopsEnvironmentVO devopsEnvironmentVO) {
-        DevopsEnvironmentDTO devopsEnvironmentDTO = ConvertUtils.convertObject(devopsEnvironmentVO, DevopsEnvironmentDTO.class);
+    public void create(Long projectId, DevopsEnvironmentReqVO devopsEnvironmentReqVO) {
+        DevopsEnvironmentDTO devopsEnvironmentDTO = ConvertUtils.convertObject(devopsEnvironmentReqVO, DevopsEnvironmentDTO.class);
         // 创建环境时默认跳过权限校验
         devopsEnvironmentDTO.setSkipCheckPermission(Boolean.TRUE);
         devopsEnvironmentDTO.setProjectId(projectId);
 
-        checkCode(projectId, devopsEnvironmentVO.getClusterId(), devopsEnvironmentVO.getCode());
+        checkCode(projectId, devopsEnvironmentReqVO.getClusterId(), devopsEnvironmentReqVO.getCode());
         devopsEnvGroupService.checkGroupIdInProject(devopsEnvironmentDTO.getDevopsEnvGroupId(), projectId);
 
         devopsEnvironmentDTO.setActive(true);
         devopsEnvironmentDTO.setConnected(false);
         devopsEnvironmentDTO.setSynchro(false);
         devopsEnvironmentDTO.setFailed(false);
-        devopsEnvironmentDTO.setClusterId(devopsEnvironmentVO.getClusterId());
+        devopsEnvironmentDTO.setClusterId(devopsEnvironmentReqVO.getClusterId());
         devopsEnvironmentDTO.setToken(GenerateUUID.generateUUID());
         devopsEnvironmentDTO.setProjectId(projectId);
         ProjectDTO projectDTO = iamService.queryIamProject(projectId);
@@ -160,7 +160,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         }
 
         List<String> sshKeys = FileUtil.getSshKey(
-                organizationDTO.getCode() + "/" + projectDTO.getCode() + "/" + devopsEnvironmentVO.getCode());
+                organizationDTO.getCode() + "/" + projectDTO.getCode() + "/" + devopsEnvironmentReqVO.getCode());
         devopsEnvironmentDTO.setEnvIdRsa(sshKeys.get(0));
         devopsEnvironmentDTO.setEnvIdRsaPub(sshKeys.get(1));
         Long envId = baseCreate(devopsEnvironmentDTO).getId();
@@ -169,13 +169,13 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         EnvGitlabProjectPayload gitlabProjectPayload = new EnvGitlabProjectPayload();
         gitlabProjectPayload.setGroupId(TypeUtil.objToInteger(devopsProjectDTO.getDevopsEnvGroupId()));
         gitlabProjectPayload.setUserId(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
-        gitlabProjectPayload.setPath(devopsEnvironmentVO.getCode());
+        gitlabProjectPayload.setPath(devopsEnvironmentReqVO.getCode());
         gitlabProjectPayload.setOrganizationId(null);
         gitlabProjectPayload.setType(ENV);
         IamUserDTO iamUserDTO = iamService.queryUserByUserId(userAttrDTO.getIamUserId());
         gitlabProjectPayload.setLoginName(iamUserDTO.getLoginName());
         gitlabProjectPayload.setRealName(iamUserDTO.getRealName());
-        gitlabProjectPayload.setClusterId(devopsEnvironmentVO.getClusterId());
+        gitlabProjectPayload.setClusterId(devopsEnvironmentReqVO.getClusterId());
         gitlabProjectPayload.setIamProjectId(projectId);
         gitlabProjectPayload.setSkipCheckPermission(devopsEnvironmentDTO.getSkipCheckPermission());
 
@@ -191,7 +191,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 builder -> {
                 }
         );
-        agentCommandService.initEnv(devopsEnvironmentDTO, devopsEnvironmentVO.getClusterId());
+        agentCommandService.initEnv(devopsEnvironmentDTO, devopsEnvironmentReqVO.getClusterId());
     }
 
 

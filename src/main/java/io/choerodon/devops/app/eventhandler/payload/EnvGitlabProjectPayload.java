@@ -4,13 +4,13 @@ package io.choerodon.devops.app.eventhandler.payload;
  * @author zmf
  */
 public class EnvGitlabProjectPayload extends GitlabProjectPayload {
-    private Boolean isSkipCheckPermission;
+    private Boolean skipCheckPermission;
 
     public Boolean getSkipCheckPermission() {
-        return isSkipCheckPermission;
+        return skipCheckPermission;
     }
 
     public void setSkipCheckPermission(Boolean skipCheckPermission) {
-        isSkipCheckPermission = skipCheckPermission;
+        this.skipCheckPermission = skipCheckPermission;
     }
 }

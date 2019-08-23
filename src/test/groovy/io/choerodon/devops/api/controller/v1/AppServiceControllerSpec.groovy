@@ -281,7 +281,7 @@ class AppServiceControllerSpec extends Specification {
         List<AppServiceUserRelDTO> permissionResult = appUserPermissionMapper.selectAll()
         AppServiceDTO appResult = appServiceMapper.selectByPrimaryKey(1L)
         permissionResult.size() == 0
-        appResult.getIsSkipCheckPermission()
+        appResult.getSkipCheckPermission()
 
         when: '以前跳过权限检查，现在不跳过，该应用加入权限表记录'
         appServiceUpdateDTO.setIsSkipCheckPermission(false)
@@ -294,7 +294,7 @@ class AppServiceControllerSpec extends Specification {
         AppServiceDTO appResult1 = appServiceMapper.selectByPrimaryKey(1L)
         permissionResult1.size() == 1
         permissionResult1.get(0).getAppId() == 1L
-        !appResult1.getIsSkipCheckPermission()
+        !appResult1.getSkipCheckPermission()
 
         when: '以前不跳过权限检查，现在也不跳过，该应用下有权限记录表'
         appServiceUpdateDTO.setIsSkipCheckPermission(false)
@@ -304,7 +304,7 @@ class AppServiceControllerSpec extends Specification {
         AppServiceDTO appResult2 = appServiceMapper.selectByPrimaryKey(1L)
         permissionResult2.size() == 1
         permissionResult2.get(0).getAppId() == 1L
-        !appResult2.getIsSkipCheckPermission()
+        !appResult2.getSkipCheckPermission()
 
         when: '以前不跳过权限检查，现在跳过，该应用下无权限记录表'
         appServiceUpdateDTO.setIsSkipCheckPermission(true)
@@ -313,7 +313,7 @@ class AppServiceControllerSpec extends Specification {
         List<AppServiceUserRelDTO> permissionResult3 = appUserPermissionMapper.selectAll()
         AppServiceDTO appResult3 = appServiceMapper.selectByPrimaryKey(1L)
         permissionResult3.size() == 0
-        appResult3.getIsSkipCheckPermission()
+        appResult3.getSkipCheckPermission()
     }
 
     // 停用应用
@@ -361,7 +361,7 @@ class AppServiceControllerSpec extends Specification {
         appServiceDTO.setType("normal")
         appServiceDTO.setGitlabProjectId(1)
         appServiceDTO.setAppTemplateId(1L)
-        appServiceDTO.setIsSkipCheckPermission(true)
+        appServiceDTO.setSkipCheckPermission(true)
         appServiceMapper.insert(appServiceDTO)
     }
 

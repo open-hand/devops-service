@@ -35,6 +35,7 @@ public class AppServiceRepVO {
     private String createLoginName;
     private String updateUserName;
     private String updateLoginName;
+    private Boolean skipCheckPermission;
 
     public DevopsConfigVO getHarbor() {
         return harbor;
@@ -234,5 +235,13 @@ public class AppServiceRepVO {
 
     public void setUpdateLoginName(String updateLoginName) {
         this.updateLoginName = updateLoginName;
+    }
+
+    public Boolean getSkipCheckPermission() {
+        return skipCheckPermission;
+    }
+
+    public void setSkipCheckPermission(Boolean skipCheckPermission) {
+        this.skipCheckPermission = skipCheckPermission;
     }
 }

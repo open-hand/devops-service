@@ -21,9 +21,9 @@ public class DevopsEnvPermissionUpdateVO {
 
     @ApiModelProperty("是否跳过权限校验 / 必需")
     @NotNull(message = "error.is.skip.permission.check.null")
-    private Boolean isSkipCheckPermission;
+    private Boolean skipCheckPermission;
 
-    @ApiModelProperty("环境的版本号, 如果更新了'isSkipCheckPermission'字段则必填")
+    @ApiModelProperty("环境的版本号, 如果更新了'skipCheckPermission'字段则必填")
     private Long objectVersionNumber;
 
     public Long getEnvId() {
@@ -43,11 +43,11 @@ public class DevopsEnvPermissionUpdateVO {
     }
 
     public Boolean getSkipCheckPermission() {
-        return isSkipCheckPermission;
+        return skipCheckPermission;
     }
 
     public void setSkipCheckPermission(Boolean skipCheckPermission) {
-        isSkipCheckPermission = skipCheckPermission;
+        this.skipCheckPermission = skipCheckPermission;
     }
 
     public Long getObjectVersionNumber() {
