@@ -55,6 +55,7 @@ public class AgentCommandServiceImpl implements AgentCommandService {
     private static final String AGENT_INIT = "agent_init";
     private static final String ENV_DELETE = "env_delete";
     private static final String ENV_CREATE = "env_create";
+    private static final String RESOURCE_DESCRIBE = "resource_describe";
     private static final String HELM_RELEASE_UPGRADE = "helm_release_upgrade";
     private static final String OPERATE_POD_COUNT = "operate_pod_count";
     private static final String OPERATE_DOCKER_REGISTRY_SECRET = "operate_docker_registry_secret";
@@ -270,6 +271,20 @@ public class AgentCommandServiceImpl implements AgentCommandService {
         agentMsgVO.setType(type);
         try {
             agentMsgVO.setPayload(mapper.writeValueAsString(pipeRequest));
+        } catch (IOException e) {
+            throw new CommonException(ERROR_PAYLOAD_ERROR, e);
+        }
+        sendToWebsocket(clusterId, agentMsgVO);
+    }
+
+
+    @Override
+    public void startDescribeConnection(String key, DescribeResourceVO describeResourceVO, Long clusterId) {
+        AgentMsgVO agentMsgVO = new AgentMsgVO();
+        agentMsgVO.setKey(key);
+        agentMsgVO.setType(RESOURCE_DESCRIBE);
+        try {
+            agentMsgVO.setPayload(mapper.writeValueAsString(describeResourceVO));
         } catch (IOException e) {
             throw new CommonException(ERROR_PAYLOAD_ERROR, e);
         }

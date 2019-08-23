@@ -69,7 +69,7 @@ public class DevopsReceiveRedisMessageListener extends ReceiveRedisMessageListen
                             }
                         }
                     }
-                } else if (type.equals("AgentExec")) {
+                } else if (type.equals("AgentExec")||type.equals("Describe")) {
                     JavaType javaType = OBJECT_MAPPER.getTypeFactory().constructParametricType(WebSocketReceivePayload.class, String.class);
                     WebSocketReceivePayload<String> webSocketReceivePayload = OBJECT_MAPPER.readValue((String) message, javaType);
                     Set<WebSocketSession> webSocketSessions = defaultRelationshipDefining.getWebSocketSessionsByKey(key);
