@@ -114,7 +114,11 @@ const Platform = injectIntl(observer((props) => {
       >
         <FormattedMessage id={`${intlPrefix}.add`} />
       </Button>
-      <Table dataSet={tableDs} filter={selectedFilter}>
+      <Table
+        dataSet={tableDs}
+        filter={selectedFilter}
+        queryBar="none"
+      >
         <Column name="name" renderer={renderName} />
         <Column renderer={renderAction} width="0.7rem" />
         <Column name="code" renderer={renderCode} />

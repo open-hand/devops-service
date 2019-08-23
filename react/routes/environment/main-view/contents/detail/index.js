@@ -1,5 +1,5 @@
 import React from 'react';
 
 export default function Detail() {
-  return <div>detail</div>;
+  return <div>Detail</div>;
 }

@@ -1,4 +1,4 @@
-import React, { Fragment, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import {
@@ -31,26 +31,26 @@ const CreateForm = ({ intl: { formatMessage }, form, store, projectId, modal, re
   const [uploadMode, setUploadMode] = useState(false);
   const { getFieldDecorator, validateFieldsAndScroll } = form;
 
-  /**
-   * 校验证书名称唯一性
-   */
-  const checkName = debounce(async (rule, value, callback) => {
-    if (value) {
-      try {
-        const res = await store.checkCertName(projectId, value);
-        if (res && res.failed) {
-          callback(formatMessage({ id: 'checkNameExist' }));
-        } else {
-          callback();
+  const checkName = useMemo(() => (
+    debounce(async (rule, value, callback) => {
+      if (value) {
+        try {
+          const res = await store.checkCertName(projectId, value);
+          if (res && res.failed) {
+            callback(formatMessage({ id: 'checkNameExist' }));
+          } else {
+            callback();
+          }
+        } catch (e) {
+          callback(formatMessage({ id: 'checkNameFailed' }));
+          Choerodon.handleResponseError(e);
         }
-      } catch (e) {
-        callback(formatMessage({ id: 'checkNameFailed' }));
-        Choerodon.handleResponseError(e);
+      } else {
+        callback();
       }
-    } else {
-      callback();
-    }
-  }, 1000);
+    }, 1000)
+  ), []);
+
 
   /**
    * 域名格式检查
@@ -58,14 +58,14 @@ const CreateForm = ({ intl: { formatMessage }, form, store, projectId, modal, re
    * @param value
    * @param callback
    */
-  const checkDomain = (rule, value, callback) => {
+  function checkDomain(rule, value, callback) {
     const p = /^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)+)$/;
     if (p.test(value)) {
       callback();
     } else {
       callback(formatMessage({ id: `${intlPrefix}.domain.failed` }));
     }
-  };
+  }
 
   modal.handleOk(async () => {
     const res = await validateFieldsAndScroll(async (err, data) => {

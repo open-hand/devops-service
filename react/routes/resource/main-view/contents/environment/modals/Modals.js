@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Modal } from 'choerodon-ui/pro';
-import HeaderButtons from '../../../components/header-buttons';
+import HeaderButtons from '../../../../../../components/header-buttons';
 import EnvDetail from './env-detail';
 import LinkService from './link-service';
 import Permission from './permission';

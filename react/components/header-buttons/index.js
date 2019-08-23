@@ -9,18 +9,18 @@ import { Button } from 'choerodon-ui/pro';
 
 import './index.less';
 
-const HeaderButtons = ({ items }) => {
+const HeaderButtons = ({ items, children }) => {
   const displayBtn = useMemo(() => items.filter(({ display }) => display), [items]);
 
   const btnNodes = useMemo(() => {
     const btnGroups = map(groupBy(displayBtn, 'group'), (value, index) => {
-      const Split = <div key={index} className="c7ncd-deployment-header-split" />;
+      const Split = <div key={index} className="c7ncd-header-split" />;
 
       const btns = map(value, ({ name, handler, permissions, display, ...props }) => {
         const btn = <Button
           {...props}
           key={name}
-          className="c7ncd-deployment-header-btn"
+          className="c7ncd-header-btn"
           funcType="flat"
           onClick={handler}
         >
@@ -37,9 +37,10 @@ const HeaderButtons = ({ items }) => {
     return initial(flatten(btnGroups));
   }, [displayBtn]);
 
-  return displayBtn.length ? <div className="c7ncd-deployment-header-btns">
+  return displayBtn.length ? <div className="c7ncd-header-btns">
     <Header>
       {btnNodes}
+      {children}
     </Header>
   </div> : null;
 };

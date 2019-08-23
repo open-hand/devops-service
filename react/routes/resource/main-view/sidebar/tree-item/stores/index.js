@@ -5,7 +5,7 @@ import useStore from './useStore';
 
 const Store = createContext();
 
-export function useTreeStore() {
+export function useTreeItemStore() {
   return useContext(Store);
 }
 
