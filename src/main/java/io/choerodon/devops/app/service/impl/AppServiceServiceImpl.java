@@ -11,12 +11,31 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+import io.kubernetes.client.JSON;
+import org.apache.commons.io.filefilter.IOFileFilter;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.ListBranchCommand;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.Ref;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
+import retrofit2.Call;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -57,27 +76,6 @@ import io.choerodon.devops.infra.mapper.AppServiceUserRelMapper;
 import io.choerodon.devops.infra.mapper.UserAttrMapper;
 import io.choerodon.devops.infra.util.*;
 
-import com.sun.org.apache.bcel.internal.generic.ARETURN;
-import io.kubernetes.client.JSON;
-import org.apache.commons.io.filefilter.IOFileFilter;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.ListBranchCommand;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.Ref;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
-import retrofit2.Call;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-
 
 /**
  * Created by younger on 2018/3/28.
@@ -100,6 +98,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     private static final String SONAR = "sonar";
     private static final String MEMBER = "member";
     private static final String OWNER = "owner";
+    private static final String NORMAL = "normal";
     private static final String PROJECT_OWNER = "role/project/default/project-owner";
     private static final String PROJECT_MEMBER = "role/project/default/project-member";
     private static final ConcurrentMap<Long, String> templateDockerfileMap = new ConcurrentHashMap<>();
@@ -187,10 +186,10 @@ public class AppServiceServiceImpl implements AppServiceService {
         if (memberDTO == null || !memberDTO.getAccessLevel().equals(AccessLevel.OWNER.value)) {
             throw new CommonException("error.user.not.owner");
         }
-
         AppServiceDTO appServiceDTO = getApplicationServiceDTO(projectId, appServiceReqVO);
+        //默认权限为项目下所有
+        appServiceDTO.setIsSkipCheckPermission(true);
         appServiceDTO = baseCreate(appServiceDTO);
-
 
         //创建saga payload
         DevOpsAppServicePayload devOpsAppServicePayload = new DevOpsAppServicePayload();
@@ -198,8 +197,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         devOpsAppServicePayload.setOrganizationId(projectDTO.getOrganizationId());
         devOpsAppServicePayload.setUserId(TypeUtil.objToInteger(userAttrVO.getGitlabUserId()));
         devOpsAppServicePayload.setGroupId(TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()));
-        devOpsAppServicePayload.setUserIds(Collections.emptyList());
-        devOpsAppServicePayload.setSkipCheckPermission(appServiceDTO.getSkipCheckPermission());
+        devOpsAppServicePayload.setSkipCheckPermission(true);
         devOpsAppServicePayload.setAppServiceId(appServiceDTO.getId());
         devOpsAppServicePayload.setIamProjectId(appServiceDTO.getAppId());
 

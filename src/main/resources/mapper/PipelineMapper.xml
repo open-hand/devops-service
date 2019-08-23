@@ -19,7 +19,14 @@
                 <include refid="manageSql"/>
             </otherwise>
         </choose>
-      ORDER By  #{sort}
+        <if test="sort!=null and sort!=''">
+            ORDER By ${sort}
+        </if>
+        <if test="sort==null or sort==''">
+            ORDER BY
+            is_enabled DESC,
+            id DESC
+        </if>
     </select>
 
     <sql id="sqlparamEnvId">
