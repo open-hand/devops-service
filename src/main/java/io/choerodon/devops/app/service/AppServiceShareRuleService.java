@@ -16,4 +16,6 @@ public interface AppServiceShareRuleService {
 
     AppServiceShareRuleVO query(Long projectId, Long ruleId);
 
+    void delete(Long ruleId);
+
 }
