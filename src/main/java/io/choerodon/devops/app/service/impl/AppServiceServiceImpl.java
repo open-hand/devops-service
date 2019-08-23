@@ -1718,9 +1718,9 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public AppServiceDTO baseQueryByCode(String code, Long projectId) {
+    public AppServiceDTO baseQueryByCode(String code, Long appId) {
         AppServiceDTO applicationDTO = new AppServiceDTO();
-        applicationDTO.setAppId(devopsProjectService.queryAppIdByProjectId(projectId));
+        applicationDTO.setAppId(appId);
         applicationDTO.setCode(code);
         return appServiceMapper.selectOne(applicationDTO);
     }
@@ -2108,7 +2108,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             List<Long> appServiceIds = appServiceUserRelMapper.select(appUserPermissionDO).stream()
                     .map(AppServiceUserRelDTO::getAppServiceId).collect(Collectors.toList());
 
-            resultDTOList.stream().filter(e -> e != null && !e.getPermission()).forEach(e -> {
+            resultDTOList.stream().filter(e -> e != null && e.getPermission()!=null&& !e.getPermission()).forEach(e -> {
                 if (appServiceIds.contains(e.getId())) {
                     e.setPermission(true);
                 }
