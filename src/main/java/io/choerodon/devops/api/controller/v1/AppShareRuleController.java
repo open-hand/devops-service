@@ -107,7 +107,7 @@ public class AppShareRuleController {
      * @param ruleId
      * @return
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "删除服务共享规则")
     @DeleteMapping(value = "/{rule_id}")
     public ResponseEntity delete(@ApiParam(value = "项目Id", required = true)
