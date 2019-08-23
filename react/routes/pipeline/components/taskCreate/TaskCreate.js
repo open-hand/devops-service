@@ -113,8 +113,8 @@ export default class TaskCreate extends Component {
       form: { setFields },
     } = this.props;
     const { getTaskList, getStageList } = PipelineCreateStore;
-    const { pipelineAppServiceDeployVO, type } = _.find(getTaskList[stageId], ['Layout.less.less', taskId]) || {};
-    const { applicationId, envId, instanceId, valueId, instanceName } = pipelineAppServiceDeployVO || {};
+    const { pipelineAppServiceDeployVO, type } = _.find(getTaskList[stageId], ['index', taskId]) || {};
+    const { appServiceId, envId, instanceId, valueId, instanceName } = pipelineAppServiceDeployVO || {};
     this.setState({
       initIstName: instanceName,
     });
@@ -129,11 +129,10 @@ export default class TaskCreate extends Component {
     if (!(type === TASK_TYPE_MANUAL)) {
       this.loadingOptionsData();
     }
-
-    if (applicationId && envId) {
-      this.setState({ envId, appId: applicationId });
-      this.loadInstanceData(envId, applicationId);
-      this.loadConfigValue(envId, applicationId);
+    if (appServiceId && envId) {
+      this.setState({ envId, appId: appServiceId });
+      this.loadInstanceData(envId, appServiceId);
+      this.loadConfigValue(envId, appServiceId);
     }
 
     valueId && this.handleChangeConfig(valueId);
@@ -191,7 +190,7 @@ export default class TaskCreate extends Component {
     validateFields((err, {
       type,
       name,
-      applicationId,
+      appServiceId,
       triggerVersion,
       envId,
       instanceName,
@@ -210,7 +209,7 @@ export default class TaskCreate extends Component {
           }
 
           pipelineAppServiceDeployVO = {
-            applicationId,
+            appServiceId,
             triggerVersion,
             envId,
             instanceId,
@@ -314,11 +313,11 @@ export default class TaskCreate extends Component {
     const { appId: selectApp, envId: selectEnv } = this.state;
     const { getTaskList } = PipelineCreateStore;
     const { pipelineAppServiceDeployVO } = _.find(getTaskList[stageId], ['Layout.less.less', taskId]) || {};
-    const { applicationId, envId, instanceId, valueId } = pipelineAppServiceDeployVO || {};
+    const { appServiceId, envId, instanceId, valueId } = pipelineAppServiceDeployVO || {};
     const { code } = _.find(PipelineCreateStore.getAppData, ['id', selectApp]) || {};
     const initIstName = code ? `${code}-${uuidv1().substring(0, 5)}` : uuidv1().substring(0, 30);
 
-    if (selectApp === applicationId && selectEnv === envId) {
+    if (selectApp === appServiceId && selectEnv === envId) {
       if (instanceId) {
         this.setState({
           initIstId: String(instanceId) || undefined,
@@ -531,7 +530,7 @@ export default class TaskCreate extends Component {
     } = this.state;
 
     const { pipelineAppServiceDeployVO, type, name: taskName, isCountersigned, taskUserRels } = _.find(getTaskList[stageId], ['index', taskId]) || {};
-    const { instanceId, applicationId, triggerVersion, envId, valueId } = pipelineAppServiceDeployVO || {};
+    const { instanceId, appServiceId, triggerVersion, envId, valueId } = pipelineAppServiceDeployVO || {};
     /** ********* 生成选择器的选项 ********* */
     const appOptions = _.map(getAppData, ({ id, name }) => (<Option key={id} value={id}>
       {name}
@@ -584,14 +583,14 @@ export default class TaskCreate extends Component {
           className="c7n-select_512"
           {...formItemLayout}
         >
-          {getFieldDecorator('applicationId', {
+          {getFieldDecorator('appServiceId', {
             rules: [
               {
                 required: true,
                 message: formatMessage({ id: 'required' }),
               },
             ],
-            initialValue: appOptions.length ? applicationId : undefined,
+            initialValue: appOptions.length ? appServiceId : undefined,
           })(
             <Select
               label={formatMessage({ id: 'app' })}
@@ -665,7 +664,7 @@ export default class TaskCreate extends Component {
             className="c7n-pipeline-radio"
           >
             <Radio
-              disabled={instanceId && selectEnvId === envId && appId === applicationId}
+              disabled={instanceId && selectEnvId === envId && appId === appServiceId}
               value={MODE_TYPE_NEW}
             >
               <FormattedMessage id="pipeline.task.instance.create" />
@@ -755,7 +754,7 @@ export default class TaskCreate extends Component {
             initialValue: configOptions.length ? valueId : undefined,
           })(
             <Select
-              disabled={!(getFieldValue('applicationId') && getFieldValue('envId'))}
+              disabled={!(getFieldValue('appServiceId') && getFieldValue('envId'))}
               label={formatMessage({ id: 'pipeline.task.config' })}
               optionFilterProp="children"
               onChange={this.handleChangeConfig}

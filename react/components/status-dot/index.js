@@ -43,8 +43,8 @@ const StatusDot = memo(({ connect, synchronize, active, size }) => {
 });
 
 StatusDot.propTypes = {
-  connect: PropTypes.bool.isRequired,
-  synchronize: PropTypes.bool.isRequired,
+  connect: PropTypes.bool,
+  synchronize: PropTypes.bool,
   active: PropTypes.bool,
   size: PropTypes.string,
 };

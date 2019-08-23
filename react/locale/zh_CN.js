@@ -349,6 +349,7 @@ const appService = {
 
 const envrionment = {
   'c7ncd.env.group.default': '默认分组',
+  'c7ncd.env.group.stopped': '环境配置停用区',
 };
 
 const certificate = {
@@ -812,6 +813,27 @@ const pageDetail = {
   'notification.edit.title': '修改项目"{name}"中的通知',
   'notification.edit.description': '您可在此修改该通知内的环境，触发事件，通知方式以及通知对象。',
   'notification.edit.link': `${docServer}/user-guide/system-configuration/project/devops-notifications`,
+};
+
+
+const cluster = {
+  'c7ncd.cluster.node.list': '节点列表',
+  'c7ncd.cluster.permission.assign': '权限分配',
+  'c7ncd.cluster.node.status': '状态',
+  'c7ncd.cluster.node.ip': '节点',
+  'c7ncd.cluster.node.type': '类型',
+  'c7ncd.cluster.node.cpu': 'CPU分配',
+  'c7ncd.cluster.node.memory': '内存分配',
+  'c7ncd.cluster.modal.create': '创建集群',
+  'c7ncd.cluster.modal.permission': '权限管理',
+  'c7ncd.cluster.name': '集群名称',
+  'c7ncd.cluster.code': '集群编码',
+  'c7ncd.cluster.dec': '集群描述',
+  'c7ncd.cluster.project': '项目',
+  'c7ncd.cluster.add.project': '添加项目',
+  'c7ncd.cluster.project.all': '组织下所有项目',
+  'c7ncd.cluster.project.part': '组织下特定项目',
+  'c7ncd.cluster.visibility': '集群公开范围',
 };
 
 const zhCN = {
@@ -2180,6 +2202,7 @@ const zhCN = {
   ...pageDetail,
   ...envrionment,
   ...certificate,
+  ...cluster,
 };
 
 export default zhCN;

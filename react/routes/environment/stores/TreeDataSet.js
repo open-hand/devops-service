@@ -1,13 +1,48 @@
 import forEach from 'lodash/forEach';
+import last from 'lodash/last';
+import remove from 'lodash/remove';
+
+/**
+ * 通过DataSet创建Record
+ * @param data
+ * @param dataSet
+ */
+function createRecord(data, dataSet, expandedKeys) {
+  forEach(data, ({
+    devopsEnvGroupId: id,
+    devopsEnvGroupName: name,
+    devopsEnviromentRepDTOs: envs,
+    active,
+  }) => {
+    const groupKey = `group-${active ? 'active' : 'stopped'}-${id}`;
+    dataSet.create({
+      id,
+      name,
+      active,
+      key: groupKey,
+      itemType: 'group',
+      parentId: '',
+      expand: expandedKeys.includes(groupKey),
+    });
+
+    forEach(envs, ({ id: envId, ...rest }) => {
+      const key = `${groupKey}-${envId}`;
+      dataSet.create({
+        ...rest,
+        key,
+        parentId: groupKey,
+        itemType: 'detail',
+        expand: false,
+      });
+    });
+  });
+}
 
 function handleSelect(record, store) {
-  // if (record) {
-  //   const menuId = record.get('id');
-  //   const menuType = record.get('itemType');
-  //   const parentId = record.get('parentId');
-  //   const key = record.get('key');
-  //   store.setSelectedMenu({ menuId, menuType, parentId, key });
-  // }
+  if (record) {
+    const data = record.toData();
+    store.setSelectedMenu(data);
+  }
 }
 
 export default (projectId, store) => ({
@@ -26,34 +61,29 @@ export default (projectId, store) => ({
       record.isSelected = true;
     },
     load: ({ dataSet }) => {
-      // NOTE: 数据加载完后转换为树的数据格式
-      const data = dataSet.toData();
-      dataSet.removeAll();
-      forEach(data, ({ devopsEnvGroupId: id, devopsEnvGroupName: name, devopsEnviromentRepDTOs: envs }) => {
-        const groupKey = `group-${id}`;
-        // 每条数据应是DataSet通过create创建的Record
-        dataSet.create({
-          id,
-          name,
-          key: groupKey,
-          type: 'group',
-          parentId: '',
-        });
+      const expandedKeys = store.getExpandedKeys;
+      /**
+       * NOTE: 数据加载完后转换为树的数据格式
+       * 按照顺序创建Record，停用的排在下
+       */
+      const groups = dataSet.toData();
+      if (last(groups).active) {
+        const stoppedGroup = remove(groups, ({ active }) => !active);
+        groups.push(...stoppedGroup);
+      }
 
-        forEach(envs, ({ id: envId, ...rest }) => {
-          dataSet.create({
-            ...rest,
-            key: `${groupKey}-${envId}`,
-            parentId: groupKey,
-            type: 'detail',
-          });
-        });
-      });
+      // 移除原始数据（临时）
+      dataSet.removeAll();
+
+      createRecord(groups, dataSet, expandedKeys);
+
+      const first = dataSet.get(0);
+      handleSelect(first, store);
     },
   },
   transport: {
     read: {
-      url: `/devops/v1/projects/${projectId}/envs/list_by_groups?active=true`,
+      url: `/devops/v1/projects/${projectId}/envs/env_tree_menu`,
       method: 'get',
     },
   },

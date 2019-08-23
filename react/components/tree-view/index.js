@@ -39,10 +39,20 @@ const TreeView = observer(({ ds, store, nodesRender, searchAble }) => {
     'c7ncd-menu-wrap': true,
     'c7ncd-menu-scroll': searchAble,
   }), [searchAble]);
+
   const nodeRenderer = useCallback(({ record }) => nodesRender(record, store.getSearchValue),
-    [nodesRender, store.getSearchValue]);
-  const handleSearch = useCallback((value) => {
-    ds.reset();
+    [store.getSearchValue]);
+
+  function handleSearch(value) {
+    /**
+     *
+     * 如果在 DataSet 的 load 方法中对原始数据进行了修改
+     * 那么就不能使用 ds.reset(); 进行重置，因为该方法是基于 originalData 的
+     * 应该手动将各记录重置
+     *
+     * */
+    ds.map((record) => record.reset());
+
     const treeData = ds.data;
     const realValue = value || '';
     const expandedKeys = [];
@@ -63,11 +73,11 @@ const TreeView = observer(({ ds, store, nodesRender, searchAble }) => {
     const uniqKeys = new Set(expandedKeys);
     store.setExpandedKeys([...uniqKeys]);
     store.setSearchValue(realValue);
-  }, [ds, store]);
+  }
 
-  const handleExpanded = useCallback((keys) => {
+  function handleExpanded(keys) {
     store.setExpandedKeys(keys);
-  }, [store]);
+  }
 
   return (
     <Fragment>

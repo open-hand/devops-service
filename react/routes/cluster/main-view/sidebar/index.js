@@ -10,7 +10,7 @@ import './index.less';
 const TreeMenu = observer(() => {
   const {
     treeDs,
-    resourceStore,
+    clusterStore,
   } = useClusterStore();
   const { mainStore } = useClusterMainStore();
 
@@ -22,7 +22,7 @@ const TreeMenu = observer(() => {
 
     if (recordList.length) {
       const selectedRecord = treeDs.find((record) => record.isSelected);
-      const { key: selectedKey } = resourceStore.getSelectedMenu;
+      const { key: selectedKey } = clusterStore.getSelectedMenu;
 
       // 记录中没有选中项或者选中项和store中保存的项不匹配
       if (!selectedRecord || selectedRecord.get('key') !== selectedKey) {
@@ -39,14 +39,14 @@ const TreeMenu = observer(() => {
             const itemType = first.get('itemType');
             const parentId = first.get('parentId');
             const key = first.get('key');
-            resourceStore.setSelectedMenu({
+            clusterStore.setSelectedMenu({
               menuId: selectedId,
               menuType: itemType,
               parentId,
               key,
             });
           } else {
-            resourceStore.setSelectedMenu({});
+            clusterStore.setSelectedMenu({});
           }
         }
       }
@@ -56,7 +56,7 @@ const TreeMenu = observer(() => {
   return <nav style={bounds} className="c7ncd-deployment-sidebar">
     <TreeView
       ds={treeDs}
-      store={resourceStore}
+      store={clusterStore}
       nodesRender={nodeRenderer}
     />
   </nav>;

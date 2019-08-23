@@ -18,6 +18,7 @@ export default function EnvironmentItem({ name, connect, synchronize, active }) 
 
 EnvironmentItem.propTypes = {
   name: PropTypes.any,
+  active: PropTypes.bool,
   connect: PropTypes.bool,
   synchronize: PropTypes.bool,
 };
