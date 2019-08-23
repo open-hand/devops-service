@@ -555,7 +555,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
             return;
         }
         ApplicationInstanceE instanceE = applicationInstanceRepository.selectByCode(releaseName, envId);
-        if (instanceE != null) {
+        if (instanceE != null && !instanceE.getStatus().equals(InstanceStatus.RUNNING.getStatus())) {
             instanceE.setStatus(instanceStatus);
             applicationInstanceRepository.update(instanceE);
             DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
@@ -907,8 +907,10 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                 .queryByEnvIdAndResource(envId, applicationInstanceE.getId(), "C7NHelmRelease");
         if (updateEnvCommandStatus(resourceCommit, applicationInstanceE.getCommandId(),
                 devopsEnvFileResourceE, C7NHELMRELEASE_KIND, applicationInstanceE.getCode(), null, errorDevopsFiles)) {
-            applicationInstanceE.setStatus(InstanceStatus.FAILED.getStatus());
-            applicationInstanceRepository.update(applicationInstanceE);
+            if(!applicationInstanceE.getStatus().equals(InstanceStatus.RUNNING.getStatus())) {
+                applicationInstanceE.setStatus(InstanceStatus.FAILED.getStatus());
+                applicationInstanceRepository.update(applicationInstanceE);
+            }
         }
     }
 
