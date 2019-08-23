@@ -24,7 +24,6 @@ import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
-import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.base.domain.PageRequest;
@@ -32,7 +31,8 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.validator.ApplicationValidator;
 import io.choerodon.devops.api.validator.HarborMarketVOValidator;
-import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.ConfigVO;
+import io.choerodon.devops.api.vo.HarborMarketVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.*;
 import io.choerodon.devops.app.service.*;
@@ -220,8 +220,6 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @Saga(code = SagaTopicCodeConstants.DEVOPS_DOWNLOAD_APPLICATION,
-            description = "下载应用创建应用服务", inputSchema = "{}")
     public void downLoadApp(AppMarketDownloadPayload appMarketDownloadVO) {
         //创建应用
         ApplicationEventPayload applicationEventPayload = new ApplicationEventPayload();
@@ -246,16 +244,14 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                 DevOpsAppServiceSyncPayload appServiceSyncPayload = new DevOpsAppServiceSyncPayload();
                 BeanUtils.copyProperties(appServiceDTO, appServiceSyncPayload);
                 producer.apply(
-                        StartSagaBuilder
-                                .newBuilder()
+                        StartSagaBuilder.newBuilder()
+                                .withSourceId(applicationDTO.getId())
+                                .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_APPLICATION_SERVICE_EVENT)
                                 .withLevel(ResourceLevel.SITE)
-                                .withRefType("app")
-                                .withSagaCode(SagaTopicCodeConstants.DEVOPS_DOWNLOAD_APPLICATION)
-                                .withPayloadAndSerialize(appServiceSyncPayload)
-                                .withRefId(applicationDTO.getId() + "")
-                                .withSourceId(applicationDTO.getId()),
+                                .withPayloadAndSerialize(appServiceSyncPayload),
                         builder -> {
-                        });
+                        }
+                );
             }
             String applicationDir = APPLICATION + System.currentTimeMillis();
             String accessToken = appServiceService.getToken(appServiceDTO.getGitlabProjectId(), applicationDir, userAttrDTO);

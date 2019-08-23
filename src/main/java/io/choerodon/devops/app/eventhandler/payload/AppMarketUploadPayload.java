@@ -42,6 +42,9 @@ public class AppMarketUploadPayload {
     @ApiModelProperty("应用版本")
     private String appVersion;
 
+    @ApiModelProperty("更新发布应用版本")
+    private Boolean updateVersion;
+
     public Long getProjectId() {
         return projectId;
     }
@@ -120,5 +123,13 @@ public class AppMarketUploadPayload {
 
     public void setMktAppId(Long mktAppId) {
         this.mktAppId = mktAppId;
+    }
+
+    public Boolean getUpdateVersion() {
+        return updateVersion;
+    }
+
+    public void setUpdateVersion(Boolean updateVersion) {
+        this.updateVersion = updateVersion;
     }
 }

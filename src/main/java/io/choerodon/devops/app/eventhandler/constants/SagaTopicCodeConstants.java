@@ -218,11 +218,6 @@ public class SagaTopicCodeConstants {
      */
     public static final String DEVOPS_UPDATE_ENV_PERMISSION = "devops-update-env-permission";
 
-    /**
-     * 下载应用创建应用服务
-     */
-    public static final String DEVOPS_DOWNLOAD_APPLICATION = "devops-download-application";
-
 
     private SagaTopicCodeConstants() {
     }
