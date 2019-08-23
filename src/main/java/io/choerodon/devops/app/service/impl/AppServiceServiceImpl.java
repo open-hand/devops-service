@@ -49,6 +49,7 @@ import io.choerodon.devops.app.eventhandler.DevopsSagaHandler;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.DevOpsAppImportServicePayload;
 import io.choerodon.devops.app.eventhandler.payload.DevOpsAppServicePayload;
+import io.choerodon.devops.app.eventhandler.payload.DevOpsAppServiceSyncPayload;
 import io.choerodon.devops.app.eventhandler.payload.DevOpsUserPayload;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
@@ -762,12 +763,14 @@ public class AppServiceServiceImpl implements AppServiceService {
             inputSchemaClass = io.choerodon.devops.infra.dto.AppServiceDTO.class)
     @Override
     public void sendCreateAppServiceInfo(AppServiceDTO appServiceDTO, Long projectId) {
+        DevOpsAppServiceSyncPayload appServiceSyncPayload = new DevOpsAppServiceSyncPayload();
+        BeanUtils.copyProperties(appServiceDTO, appServiceSyncPayload);
         producer.apply(
                 StartSagaBuilder.newBuilder()
                         .withSourceId(projectId)
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_APPLICATION_SERVICE_EVENT)
                         .withLevel(ResourceLevel.PROJECT)
-                        .withPayloadAndSerialize(appServiceDTO),
+                        .withPayloadAndSerialize(appServiceSyncPayload),
                 builder -> {
                 }
         );

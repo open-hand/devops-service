@@ -1,4 +1,4 @@
-package io.choerodon.devops.api.vo;
+package io.choerodon.devops.app.eventhandler.payload;
 
 import java.util.List;
 
@@ -9,7 +9,7 @@ import io.swagger.annotations.ApiModelProperty;
  * Date:  17:24 2019/8/7
  * Description:
  */
-public class AppServiceUploadVO {
+public class AppServiceUploadPayload {
     @ApiModelProperty("应用服务Id")
     private Long appServiceId;
 
@@ -23,7 +23,7 @@ public class AppServiceUploadVO {
     private String harborUrl;
 
     @ApiModelProperty("应用服务版本")
-    private List<AppServiceVersionUploadVO> appServiceVersionUploadVOS;
+    private List<AppServiceVersionUploadPayload> appServiceVersionUploadPayloads;
 
     public Long getAppServiceId() {
         return appServiceId;
@@ -57,11 +57,11 @@ public class AppServiceUploadVO {
         this.appServiceName = appServiceName;
     }
 
-    public List<AppServiceVersionUploadVO> getAppServiceVersionUploadVOS() {
-        return appServiceVersionUploadVOS;
+    public List<AppServiceVersionUploadPayload> getAppServiceVersionUploadPayloads() {
+        return appServiceVersionUploadPayloads;
     }
 
-    public void setAppServiceVersionUploadVOS(List<AppServiceVersionUploadVO> appServiceVersionUploadVOS) {
-        this.appServiceVersionUploadVOS = appServiceVersionUploadVOS;
+    public void setAppServiceVersionUploadPayloads(List<AppServiceVersionUploadPayload> appServiceVersionUploadPayloads) {
+        this.appServiceVersionUploadPayloads = appServiceVersionUploadPayloads;
     }
 }

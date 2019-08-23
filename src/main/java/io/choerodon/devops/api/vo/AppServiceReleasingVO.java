@@ -3,6 +3,8 @@ package io.choerodon.devops.api.vo;
 import java.util.Date;
 import java.util.List;
 
+import io.choerodon.devops.app.eventhandler.payload.AppServiceVersionUploadPayload;
+
 
 /**
  * Created by ernst on 2018/5/12.
@@ -14,7 +16,7 @@ public class AppServiceReleasingVO {
     private String name;
     private String code;
     private String publishLevel;
-    private List<AppServiceVersionUploadVO> appServiceVersions;
+    private List<AppServiceVersionUploadPayload> appServiceVersions;
     private String imgUrl;
     private String category;
     private String description;
@@ -90,11 +92,11 @@ public class AppServiceReleasingVO {
         this.publishLevel = publishLevel;
     }
 
-    public List<AppServiceVersionUploadVO> getAppServiceVersions() {
+    public List<AppServiceVersionUploadPayload> getAppServiceVersions() {
         return appServiceVersions;
     }
 
-    public void setAppServiceVersions(List<AppServiceVersionUploadVO> appServiceVersions) {
+    public void setAppServiceVersions(List<AppServiceVersionUploadPayload> appServiceVersions) {
         this.appServiceVersions = appServiceVersions;
     }
 

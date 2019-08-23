@@ -16,9 +16,9 @@ import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.AppMarketUploadVO;
-import io.choerodon.devops.api.vo.AppServiceUploadVO;
-import io.choerodon.devops.api.vo.AppServiceVersionUploadVO;
+import io.choerodon.devops.app.eventhandler.payload.AppMarketUploadPayload;
+import io.choerodon.devops.app.eventhandler.payload.AppServiceUploadPayload;
+import io.choerodon.devops.app.eventhandler.payload.AppServiceVersionUploadPayload;
 import io.choerodon.devops.api.vo.HarborMarketVO;
 import io.choerodon.devops.app.eventhandler.payload.AppMarketDownloadPayload;
 import io.choerodon.devops.app.service.OrgAppMarketService;
@@ -38,7 +38,7 @@ public class OrgAppMarketController {
     @Permission(type = ResourceType.SITE, permissionWithin = true)
     @ApiOperation(value = "查询所有应用服务")
     @GetMapping("/list_app_services")
-    public ResponseEntity<List<AppServiceUploadVO>> listAllAppServices() {
+    public ResponseEntity<List<AppServiceUploadPayload>> listAllAppServices() {
         return Optional.ofNullable(
                 orgAppMarketService.listAllAppServices())
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
@@ -55,7 +55,7 @@ public class OrgAppMarketController {
     @ApiOperation(value = "根据应用Id，获取应用服务和应用服务版本")
     @CustomPageRequest
     @PostMapping("/page_app_services")
-    public ResponseEntity<PageInfo<AppServiceUploadVO>> pageByAppId(
+    public ResponseEntity<PageInfo<AppServiceUploadPayload>> pageByAppId(
             @ApiParam(value = "应用Id", required = true)
             @RequestParam(value = "app_id") Long appId,
             @ApiParam(value = "分页参数")
@@ -75,7 +75,7 @@ public class OrgAppMarketController {
     @Permission(type = ResourceType.SITE, permissionWithin = true)
     @ApiOperation(value = "根据应用服务ID查询所对应的应用版本")
     @GetMapping("/list_versions/{app_service_id}")
-    public ResponseEntity<List<AppServiceVersionUploadVO>> listVersionsByAppServiceId(
+    public ResponseEntity<List<AppServiceVersionUploadPayload>> listVersionsByAppServiceId(
             @ApiParam(value = "应用服务Id")
             @PathVariable(value = "app_service_id") Long appServiceId) {
         return Optional.ofNullable(
@@ -109,7 +109,7 @@ public class OrgAppMarketController {
     @PostMapping("/upload")
     public ResponseEntity uploadAPP(
             @ApiParam(value = "应用信息", required = true)
-            @RequestBody AppMarketUploadVO appMarketUploadVO) {
+            @RequestBody AppMarketUploadPayload appMarketUploadVO) {
         orgAppMarketService.uploadAPP(appMarketUploadVO);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }

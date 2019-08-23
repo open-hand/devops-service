@@ -211,7 +211,7 @@ public class SagaTopicCodeConstants {
     /**
      * 应用下载
      */
-    public static final String APIM_DOWNLOAD_APP = "base-download-applicatio";
+    public static final String APIM_DOWNLOAD_APP = "base-download-application";
 
     /**
      * 更新环境的权限
