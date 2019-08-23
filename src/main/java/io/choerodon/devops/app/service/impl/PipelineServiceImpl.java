@@ -120,22 +120,22 @@ public class PipelineServiceImpl implements PipelineService {
             pipelineVOList = pipelineVOS.stream().filter(t -> {
                 List<Long> pipelineEnvIds = getAllAppDeploy(t.getId()).stream().map(PipelineAppServiceDeployDTO::getEnvId).collect(Collectors.toList());
                 return checkPipelineEnvPermission(pipelineEnvIds, projectOwner);
-            }).peek(t -> {
-                IamUserDTO iamUserDTO = iamService.queryUserByUserId(t.getCreatedBy());
-                t.setCreateUserName(iamUserDTO.getLoginName());
-                t.setCreateUserUrl(iamUserDTO.getImageUrl());
-                t.setEdit(true);
             }).collect(Collectors.toList());
         } else {
-            pipelineVOList = pipelineVOS.stream().peek(t -> {
-                IamUserDTO iamUserDTO = iamService.queryUserByUserId(t.getCreatedBy());
-                t.setCreateUserName(iamUserDTO.getLoginName());
-                t.setCreateUserUrl(iamUserDTO.getImageUrl());
-                List<Long> pipelineEnvIds = getAllAppDeploy(t.getId()).stream().map(PipelineAppServiceDeployDTO::getEnvId).collect(Collectors.toList());
-                t.setEdit(checkPipelineEnvPermission(pipelineEnvIds, projectOwner));
-            }).collect(Collectors.toList());
+            pipelineVOList = pipelineVOS;
         }
-        return PageInfoUtil.createPageFromList(pipelineVOList, pageRequest);
+
+        PageInfo<PipelineVO> pageInfo = PageInfoUtil.createPageFromList(pipelineVOList, pageRequest);
+
+        pageInfo.setList(pageInfo.getList().stream().peek(t -> {
+            IamUserDTO iamUserDTO = iamService.queryUserByUserId(t.getCreatedBy());
+            t.setCreateUserName(iamUserDTO.getLoginName());
+            t.setCreateUserUrl(iamUserDTO.getImageUrl());
+            List<Long> pipelineEnvIds = getAllAppDeploy(t.getId()).stream().map(PipelineAppServiceDeployDTO::getEnvId).collect(Collectors.toList());
+            t.setEdit(checkPipelineEnvPermission(pipelineEnvIds, projectOwner));
+        }).collect(Collectors.toList()));
+
+        return pageInfo;
     }
 
     @Override
