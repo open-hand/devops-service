@@ -45,6 +45,9 @@ public class ProjectDTO extends BaseDTO {
     @ApiModelProperty(value = "项目类型(非开源，一对多)")
     private List<ProjectCategoryDTO> categories;
 
+    @ApiModelProperty(value = "应用")
+    private ApplicationDTO applicationDTO;
+
     private String typeName;
     private String organizationName;
     private String createUserName;
@@ -197,4 +200,11 @@ public class ProjectDTO extends BaseDTO {
         this.programName = programName;
     }
 
+    public ApplicationDTO getApplicationDTO() {
+        return applicationDTO;
+    }
+
+    public void setApplicationDTO(ApplicationDTO applicationDTO) {
+        this.applicationDTO = applicationDTO;
+    }
 }

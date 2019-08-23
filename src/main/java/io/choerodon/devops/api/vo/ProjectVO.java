@@ -6,6 +6,7 @@ package io.choerodon.devops.api.vo;
 public class ProjectVO {
     private Long id;
     private String name;
+    private String appName;
     private Long organizationId;
     private String code;
     private DevopsProjectVO devopsProjectVO;
@@ -40,6 +41,14 @@ public class ProjectVO {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getAppName() {
+        return appName;
+    }
+
+    public void setAppName(String appName) {
+        this.appName = appName;
     }
 
     public String getCode() {

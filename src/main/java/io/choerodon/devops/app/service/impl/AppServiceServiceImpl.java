@@ -1579,7 +1579,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             paramsArr = new String[1];
             paramsArr[0] = params;
         }
-        PageInfo<ProjectVO> pageInfo = ConvertUtils.convertPage(baseServiceClientOperator.listProject(organizationId, new PageRequest(0, 0), paramsArr), ProjectVO.class);
+        PageInfo<ProjectVO> pageInfo = ConvertUtils.convertPage(baseServiceClientOperator.pagingProjectByOptions(organizationId, 1,20, paramsArr), this::dtoToProjectVO);
         return pageInfo.getList().stream().filter(t -> !t.getId().equals(projectId)).collect(Collectors.toList());
     }
 
@@ -2292,4 +2292,10 @@ public class AppServiceServiceImpl implements AppServiceService {
         return devopsUserPermissionVO;
     }
 
+    private ProjectVO dtoToProjectVO(ProjectDTO projectDTO){
+        ProjectVO projectVO=new ProjectVO();
+        BeanUtils.copyProperties(projectDTO, projectVO);
+        projectVO.setAppName(projectDTO.getApplicationDTO().getName());
+        return projectVO;
+    }
 }
