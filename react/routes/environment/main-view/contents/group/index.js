@@ -1,5 +1,9 @@
 import React from 'react';
+import { StoreProvider } from './stores';
+import Group from './Group';
 
-export default function Group() {
-  return <div>group</div>;
-}
+export default (props) => (
+  <StoreProvider {...props}>
+    <Group />
+  </StoreProvider>
+);

@@ -4,17 +4,21 @@ import remove from 'lodash/remove';
 
 /**
  * 通过DataSet创建Record
- * @param data
- * @param dataSet
  */
-function createRecord(data, dataSet, expandedKeys) {
+function createRecord({ data, dataSet, expandedKeys, formatMessage, intlPrefix }) {
   forEach(data, ({
     devopsEnvGroupId: id,
-    devopsEnvGroupName: name,
+    devopsEnvGroupName,
     devopsEnviromentRepDTOs: envs,
     active,
   }) => {
     const groupKey = `group-${active ? 'active' : 'stopped'}-${id}`;
+    let name = devopsEnvGroupName || '';
+
+    if (!name && !id) {
+      name = formatMessage({ id: `${intlPrefix}.group.${active ? 'default' : 'stopped'}` });
+    }
+
     dataSet.create({
       id,
       name,
@@ -45,7 +49,7 @@ function handleSelect(record, store) {
   }
 }
 
-export default (projectId, store) => ({
+export default (projectId, store, formatMessage, intlPrefix) => ({
   autoQuery: true,
   paging: false,
   dataKey: null,
@@ -64,18 +68,29 @@ export default (projectId, store) => ({
       const expandedKeys = store.getExpandedKeys;
       /**
        * NOTE: 数据加载完后转换为树的数据格式
-       * 按照顺序创建Record，停用的排在下
+       * 按照顺序创建Record，默认分组在最上，停用的排在最下
        */
       const groups = dataSet.toData();
-      if (last(groups).active) {
+      if (last(groups) && last(groups).active) {
         const stoppedGroup = remove(groups, ({ active }) => !active);
         groups.push(...stoppedGroup);
+      }
+
+      if (groups[0] && groups[0].devopsEnvGroupId) {
+        const defaultGroup = remove(groups, ({ active, devopsEnvGroupId }) => active && !devopsEnvGroupId);
+        groups.unshift(...defaultGroup);
       }
 
       // 移除原始数据（临时）
       dataSet.removeAll();
 
-      createRecord(groups, dataSet, expandedKeys);
+      createRecord({
+        data: groups,
+        dataSet,
+        expandedKeys,
+        formatMessage,
+        intlPrefix,
+      });
 
       const first = dataSet.get(0);
       handleSelect(first, store);

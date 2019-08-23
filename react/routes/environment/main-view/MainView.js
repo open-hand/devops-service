@@ -19,24 +19,23 @@ const MainView = observer(() => {
       getSelectedMenu,
     },
     itemType: {
-      ENV_ITEM,
+      DETAIL_ITEM,
       GROUP_ITEM,
     },
   } = useEnvironmentStore();
   const { mainStore } = useMainStore();
-  const rootRef = useRef(null);
+  const rootRef = useRef();
 
-  // const { menuType } = getSelectedMenu;
-  const menuType = 'group';
+  const { itemType } = getSelectedMenu;
   const content = useMemo(() => {
     const cmMaps = {
       [GROUP_ITEM]: <Group />,
-      [ENV_ITEM]: <Detail />,
+      [DETAIL_ITEM]: <Detail />,
     };
-    return cmMaps[menuType]
-      ? <Suspense fallback={<Loading display />}>{cmMaps[menuType]}</Suspense>
+    return cmMaps[itemType]
+      ? <Suspense fallback={<Loading display />}>{cmMaps[itemType]}</Suspense>
       : <Loading display />;
-  }, [menuType]);
+  }, [itemType]);
 
   return (<div
     ref={rootRef}
@@ -48,7 +47,7 @@ const MainView = observer(() => {
     />
     <Fragment>
       <Sidebar />
-      {isEmpty(getSelectedMenu) ? <div className={`${prefixCls}-main ${prefixCls}-animate`}>
+      {!isEmpty(getSelectedMenu) ? <div className={`${prefixCls}-main ${prefixCls}-animate`}>
         {content}
       </div> : <Loading display />}
     </Fragment>

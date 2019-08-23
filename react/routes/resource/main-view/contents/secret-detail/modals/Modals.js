@@ -4,7 +4,7 @@ import { Modal } from 'choerodon-ui/pro';
 import { Button } from 'choerodon-ui';
 import { FormattedMessage } from 'react-intl';
 import Detail from './secret-detail';
-import HeaderButtons from '../../../components/header-buttons';
+import HeaderButtons from '../../../../../../components/header-buttons';
 import { useResourceStore } from '../../../../stores';
 import { useModalStore } from './stores';
 import { useCustomDetailStore } from '../stores';

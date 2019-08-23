@@ -353,6 +353,13 @@ const appService = {
 const envrionment = {
   'c7ncd.env.group.default': '默认分组',
   'c7ncd.env.group.stopped': '环境配置停用区',
+  'c7ncd.env.modal.group.delete': '删除分组',
+  'c7ncd.env.modal.group.modify': '修改分组',
+  'c7ncd.env.modal.detail.modify': '修改环境',
+  'c7ncd.env.modal.detail.delete': '删除环境',
+  'c7ncd.env.modal.detail.start': '启用环境',
+  'c7ncd.env.modal.detail.stop': '停用环境',
+  'c7ncd.env.cluster': '连接集群',
 };
 
 const certificate = {

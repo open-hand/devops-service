@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Modal } from 'choerodon-ui/pro';
 import { handlePromptError } from '../../../../../../utils';
-import HeaderButtons from '../../../components/header-buttons';
+import HeaderButtons from '../../../../../../components/header-buttons';
 import DetailsModal from './details';
 import ValueModalContent from './values/Config';
 import UpgradeModalContent from './values/Upgrade';
