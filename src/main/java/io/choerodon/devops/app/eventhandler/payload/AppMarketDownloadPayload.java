@@ -18,6 +18,12 @@ public class AppMarketDownloadPayload {
     @ApiModelProperty("应用Id")
     private Long appId;
 
+    @ApiModelProperty("应用name")
+    private String name;
+
+    @ApiModelProperty("应用name")
+    private String code;
+
     @ApiModelProperty("harbor用户")
     private User user;
 
@@ -54,5 +60,21 @@ public class AppMarketDownloadPayload {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
     }
 }

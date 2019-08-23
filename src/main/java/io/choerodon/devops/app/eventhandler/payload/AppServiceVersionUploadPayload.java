@@ -1,4 +1,4 @@
-package io.choerodon.devops.api.vo;
+package io.choerodon.devops.app.eventhandler.payload;
 
 /**
  * Creator: Runge
@@ -6,7 +6,7 @@ package io.choerodon.devops.api.vo;
  * Time: 15:48
  * Description:
  */
-public class AppServiceVersionUploadVO {
+public class AppServiceVersionUploadPayload {
     private Long id;
     private String version;
 

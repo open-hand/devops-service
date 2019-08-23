@@ -1,4 +1,4 @@
-package io.choerodon.devops.api.vo;
+package io.choerodon.devops.app.eventhandler.payload;
 
 import java.util.List;
 
@@ -11,7 +11,7 @@ import io.choerodon.devops.infra.dto.harbor.User;
  * Date:  10:59 2019/8/8
  * Description:
  */
-public class AppMarketUploadVO {
+public class AppMarketUploadPayload {
     @ApiModelProperty("市场应用Id")
     private Long mktAppId;
 
@@ -25,7 +25,7 @@ public class AppMarketUploadVO {
     private String appCode;
 
     @ApiModelProperty("应用服务")
-    private List<AppServiceUploadVO> appServiceUploadVOS;
+    private List<AppServiceUploadPayload> appServiceUploadPayloads;
 
     @ApiModelProperty("状态: deploy_only,download_only,all")
     private String status;
@@ -82,12 +82,12 @@ public class AppMarketUploadVO {
         this.appId = appId;
     }
 
-    public List<AppServiceUploadVO> getAppServiceUploadVOS() {
-        return appServiceUploadVOS;
+    public List<AppServiceUploadPayload> getAppServiceUploadPayloads() {
+        return appServiceUploadPayloads;
     }
 
-    public void setAppServiceUploadVOS(List<AppServiceUploadVO> appServiceUploadVOS) {
-        this.appServiceUploadVOS = appServiceUploadVOS;
+    public void setAppServiceUploadPayloads(List<AppServiceUploadPayload> appServiceUploadPayloads) {
+        this.appServiceUploadPayloads = appServiceUploadPayloads;
     }
 
     public String getStatus() {

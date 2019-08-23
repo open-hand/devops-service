@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.asgard.saga.annotation.SagaTask;
-import io.choerodon.devops.api.vo.AppMarketUploadVO;
+import io.choerodon.devops.app.eventhandler.payload.AppMarketUploadPayload;
 import io.choerodon.devops.api.vo.GitlabGroupMemberVO;
 import io.choerodon.devops.api.vo.GitlabUserRequestVO;
 import io.choerodon.devops.api.vo.GitlabUserVO;
@@ -262,7 +262,7 @@ public class SagaHandler {
             sagaCode = SagaTopicCodeConstants.APIM_UPLOAD_APP,
             maxRetryCount = 3, seq = 1)
     public String uploadApp(String payload) {
-        AppMarketUploadVO appMarketUploadVO = gson.fromJson(payload, AppMarketUploadVO.class);
+        AppMarketUploadPayload appMarketUploadVO = gson.fromJson(payload, AppMarketUploadPayload.class);
         loggerInfo(appMarketUploadVO);
         orgAppMarketService.uploadAPP(appMarketUploadVO);
         return payload;

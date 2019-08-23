@@ -211,12 +211,17 @@ public class SagaTopicCodeConstants {
     /**
      * 应用下载
      */
-    public static final String APIM_DOWNLOAD_APP = "base-download-applicatio";
+    public static final String APIM_DOWNLOAD_APP = "base-download-application";
 
     /**
      * 更新环境的权限
      */
     public static final String DEVOPS_UPDATE_ENV_PERMISSION = "devops-update-env-permission";
+
+    /**
+     * 下载应用创建应用服务
+     */
+    public static final String DEVOPS_DOWNLOAD_APPLICATION = "devops-download-application";
 
 
     private SagaTopicCodeConstants() {

@@ -5,9 +5,9 @@ import java.util.List;
 import com.github.pagehelper.PageInfo;
 
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.devops.api.vo.AppMarketUploadVO;
-import io.choerodon.devops.api.vo.AppServiceUploadVO;
-import io.choerodon.devops.api.vo.AppServiceVersionUploadVO;
+import io.choerodon.devops.app.eventhandler.payload.AppMarketUploadPayload;
+import io.choerodon.devops.app.eventhandler.payload.AppServiceUploadPayload;
+import io.choerodon.devops.app.eventhandler.payload.AppServiceVersionUploadPayload;
 import io.choerodon.devops.api.vo.HarborMarketVO;
 import io.choerodon.devops.app.eventhandler.payload.AppMarketDownloadPayload;
 
@@ -24,22 +24,22 @@ public interface OrgAppMarketService {
      * @param params
      * @return
      */
-    PageInfo<AppServiceUploadVO> pageByAppId(Long appId,
-                                             PageRequest pageRequest,
-                                             String params);
+    PageInfo<AppServiceUploadPayload> pageByAppId(Long appId,
+                                                  PageRequest pageRequest,
+                                                  String params);
 
     /**
      * 查询所有应用服务
      * @return
      */
-    List<AppServiceUploadVO> listAllAppServices();
+    List<AppServiceUploadPayload> listAllAppServices();
 
     /**
      * 根据appServiceId 查询所有服务版本
      * @param appServiceId
      * @return
      */
-    List<AppServiceVersionUploadVO> listServiceVersionsByAppServiceId(Long appServiceId);
+    List<AppServiceVersionUploadPayload> listServiceVersionsByAppServiceId(Long appServiceId);
 
     /**
      * 创建harbor仓库
@@ -52,7 +52,7 @@ public interface OrgAppMarketService {
      * 应用上传
      * @param marketUploadVO
      */
-    void uploadAPP(AppMarketUploadVO marketUploadVO);
+    void uploadAPP(AppMarketUploadPayload marketUploadVO);
 
     /**
      * 应用下载

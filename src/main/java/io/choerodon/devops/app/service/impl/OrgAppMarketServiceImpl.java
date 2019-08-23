@@ -24,6 +24,7 @@ import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
+import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.base.domain.PageRequest;
@@ -33,10 +34,7 @@ import io.choerodon.devops.api.validator.ApplicationValidator;
 import io.choerodon.devops.api.validator.HarborMarketVOValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
-import io.choerodon.devops.app.eventhandler.payload.AppMarketDownloadPayload;
-import io.choerodon.devops.app.eventhandler.payload.AppServiceDownloadPayload;
-import io.choerodon.devops.app.eventhandler.payload.AppServiceVersionDownloadPayload;
-import io.choerodon.devops.app.eventhandler.payload.DevOpsAppServicePayload;
+import io.choerodon.devops.app.eventhandler.payload.*;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
 import io.choerodon.devops.infra.dto.*;
@@ -122,11 +120,13 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
     private AppServiceVersionReadmeService appServiceVersionReadmeService;
     @Autowired
     private DevopsProjectService devopsProjectService;
+    @Autowired
+    private ApplicationService applicationService;
 
     @Override
-    public PageInfo<AppServiceUploadVO> pageByAppId(Long appId,
-                                                    PageRequest pageRequest,
-                                                    String params) {
+    public PageInfo<AppServiceUploadPayload> pageByAppId(Long appId,
+                                                         PageRequest pageRequest,
+                                                         String params) {
         Map<String, Object> mapParams = TypeUtil.castMapParams(params);
         List<String> paramList = TypeUtil.cast(mapParams.get(TypeUtil.PARAMS));
         PageInfo<AppServiceDTO> appServiceDTOPageInfo = PageHelper.startPage(
@@ -134,16 +134,16 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                 pageRequest.getSize(),
                 PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> appServiceMapper.listByAppId(appId, TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)), paramList));
 
-        PageInfo<AppServiceUploadVO> appServiceMarketVOPageInfo = ConvertUtils.convertPage(appServiceDTOPageInfo, this::dtoToMarketVO);
-        List<AppServiceUploadVO> list = appServiceMarketVOPageInfo.getList();
-        list.forEach(appServiceMarketVO -> appServiceMarketVO.setAppServiceVersionUploadVOS(
-                ConvertUtils.convertList(appServiceVersionService.baseListByAppServiceId(appServiceMarketVO.getAppServiceId()), AppServiceVersionUploadVO.class)));
+        PageInfo<AppServiceUploadPayload> appServiceMarketVOPageInfo = ConvertUtils.convertPage(appServiceDTOPageInfo, this::dtoToMarketVO);
+        List<AppServiceUploadPayload> list = appServiceMarketVOPageInfo.getList();
+        list.forEach(appServiceMarketVO -> appServiceMarketVO.setAppServiceVersionUploadPayloads(
+                ConvertUtils.convertList(appServiceVersionService.baseListByAppServiceId(appServiceMarketVO.getAppServiceId()), AppServiceVersionUploadPayload.class)));
         appServiceMarketVOPageInfo.setList(list);
         return appServiceMarketVOPageInfo;
     }
 
     @Override
-    public List<AppServiceUploadVO> listAllAppServices() {
+    public List<AppServiceUploadPayload> listAllAppServices() {
         List<AppServiceDTO> appServiceDTOList = appServiceMapper.selectAll();
         return ConvertUtils.convertList(appServiceDTOList, this::dtoToMarketVO);
     }
@@ -155,13 +155,14 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
     }
 
     @Override
-    public List<AppServiceVersionUploadVO> listServiceVersionsByAppServiceId(Long appServiceId) {
+    public List<AppServiceVersionUploadPayload> listServiceVersionsByAppServiceId(Long appServiceId) {
         List<AppServiceVersionDTO> appServiceVersionDTOList = appServiceVersionService.baseListByAppServiceId(appServiceId);
-        return ConvertUtils.convertList(appServiceVersionDTOList, AppServiceVersionUploadVO.class);
+        return ConvertUtils.convertList(appServiceVersionDTOList, AppServiceVersionUploadPayload.class);
     }
 
     @Override
-    public void uploadAPP(AppMarketUploadVO marketUploadVO) {
+    @Transactional(rollbackFor = Exception.class)
+    public void uploadAPP(AppMarketUploadPayload marketUploadVO) {
         //创建根目录 应用
         String appFilePath = gitUtil.getWorkingDirectory(APPLICATION + System.currentTimeMillis());
         FileUtil.createDirectory(appFilePath);
@@ -173,7 +174,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                 case DOWNLOAD_ONLY: {
                     String appRepoFilePath = String.format(APP_FILE_PATH_FORMAT, appFilePath, File.separator, REPO, File.separator, marketUploadVO.getAppCode());
                     //clone 并压缩源代码
-                    marketUploadVO.getAppServiceUploadVOS().forEach(appServiceMarketVO -> packageRepo(appServiceMarketVO, appRepoFilePath, marketUploadVO.getIamUserId()));
+                    marketUploadVO.getAppServiceUploadPayloads().forEach(appServiceMarketVO -> packageRepo(appServiceMarketVO, appRepoFilePath, marketUploadVO.getIamUserId()));
                     String outputFilePath = String.format(APP_OUT_FILE_FORMAT, appFile.getParent(), File.separator, REPO, marketUploadVO.getAppCode(), System.currentTimeMillis(), ZIP);
                     toZip(outputFilePath, appRepoFilePath);
                     zipFileList.add(outputFilePath);
@@ -181,7 +182,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                 }
                 case DEPLOY_ONLY: {
                     String appChartFilePath = String.format(APP_FILE_PATH_FORMAT, appFilePath, File.separator, CHART, File.separator, marketUploadVO.getAppCode());
-                    marketUploadVO.getAppServiceUploadVOS().forEach(appServiceMarketVO -> packageChart(appServiceMarketVO, appChartFilePath));
+                    marketUploadVO.getAppServiceUploadPayloads().forEach(appServiceMarketVO -> packageChart(appServiceMarketVO, appChartFilePath));
 
                     String outputFilePath = String.format(APP_OUT_FILE_FORMAT, appFile.getParent(), File.separator, CHART, marketUploadVO.getAppCode(), System.currentTimeMillis(), ZIP);
                     toZip(outputFilePath, appChartFilePath);
@@ -192,7 +193,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                     String appRepoFilePath = String.format(APP_FILE_PATH_FORMAT, appFilePath, File.separator, REPO, File.separator, marketUploadVO.getAppCode());
                     String appChartFilePath = String.format(APP_FILE_PATH_FORMAT, appFilePath, File.separator, CHART, File.separator, marketUploadVO.getAppCode());
 
-                    marketUploadVO.getAppServiceUploadVOS().forEach(appServiceMarketVO -> {
+                    marketUploadVO.getAppServiceUploadPayloads().forEach(appServiceMarketVO -> {
                         packageRepo(appServiceMarketVO, appRepoFilePath, marketUploadVO.getIamUserId());
                         packageChart(appServiceMarketVO, appChartFilePath);
                     });
@@ -219,7 +220,15 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @Saga(code = SagaTopicCodeConstants.DEVOPS_DOWNLOAD_APPLICATION,
+            description = "下载应用创建应用服务", inputSchema = "{}")
     public void downLoadApp(AppMarketDownloadPayload appMarketDownloadVO) {
+        //创建应用
+        ApplicationEventPayload applicationEventPayload = new ApplicationEventPayload();
+        BeanUtils.copyProperties(appMarketDownloadVO, applicationEventPayload);
+        applicationEventPayload.setId(appMarketDownloadVO.getAppId());
+        applicationService.handleApplicationCreation(applicationEventPayload);
+
         DevopsProjectDTO projectDTO = devopsProjectService.queryByAppId(appMarketDownloadVO.getAppId());
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(appMarketDownloadVO.getIamUserId());
 
@@ -234,21 +243,16 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                 appServiceDTO = createGitlabProject(downloadPayload, TypeUtil.objToInteger(projectDTO.getDevopsAppGroupId()), userAttrDTO.getGitlabUserId());
 
                 //创建saga payload
-                DevOpsAppServicePayload devOpsAppServicePayload = new DevOpsAppServicePayload();
-                devOpsAppServicePayload.setPath(appServiceDTO.getCode());
-                devOpsAppServicePayload.setUserId(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
-                devOpsAppServicePayload.setGroupId(TypeUtil.objToInteger(projectDTO.getDevopsAppGroupId()));
-                devOpsAppServicePayload.setSkipCheckPermission(appServiceDTO.getSkipCheckPermission());
-                devOpsAppServicePayload.setAppServiceId(appServiceDTO.getId());
-                devOpsAppServicePayload.setIamProjectId(appServiceDTO.getAppId());
+                DevOpsAppServiceSyncPayload appServiceSyncPayload = new DevOpsAppServiceSyncPayload();
+                BeanUtils.copyProperties(appServiceDTO, appServiceSyncPayload);
                 producer.apply(
                         StartSagaBuilder
                                 .newBuilder()
                                 .withLevel(ResourceLevel.SITE)
-                                .withRefType("application")
-                                .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_APPLICATION_SERVICE)
-                                .withPayloadAndSerialize(devOpsAppServicePayload)
-                                .withRefId(applicationDTO.getId()+"")
+                                .withRefType("app")
+                                .withSagaCode(SagaTopicCodeConstants.DEVOPS_DOWNLOAD_APPLICATION)
+                                .withPayloadAndSerialize(appServiceSyncPayload)
+                                .withRefId(applicationDTO.getId() + "")
                                 .withSourceId(applicationDTO.getId()),
                         builder -> {
                         });
@@ -366,7 +370,6 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
      * @param file                     chart文件
      * @return
      */
-    @Transactional(rollbackFor = Exception.class)
     private void chartResolver(AppServiceVersionDownloadPayload appServiceVersionPayload, Long appServiceId, String appServiceCode, File file, AppServiceVersionDTO versionDTO) {
         String unZipPath = String.format(APP_TEMP_PATH_FORMAT, file.getParentFile().getAbsolutePath(), File.separator, System.currentTimeMillis());
         FileUtil.createDirectory(unZipPath);
@@ -424,7 +427,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
      * @param appFilePath
      * @param iamUserId
      */
-    private void packageRepo(AppServiceUploadVO appServiceMarketVO, String appFilePath, Long iamUserId) {
+    private void packageRepo(AppServiceUploadPayload appServiceMarketVO, String appFilePath, Long iamUserId) {
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceMarketVO.getAppServiceId());
         ApplicationDTO applicationDTO = baseServiceClientOperator.queryAppById(appServiceDTO.getAppId());
         OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(applicationDTO.getOrganizationId());
@@ -438,7 +441,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         String newToken = appServiceService.getToken(appServiceDTO.getGitlabProjectId(), appFilePath, userAttrDTO);
         appServiceDTO.setRepoUrl(repoUrl + organizationDTO.getCode()
                 + "-" + applicationDTO.getCode() + "/" + appServiceDTO.getCode() + GIT);
-        appServiceMarketVO.getAppServiceVersionUploadVOS().forEach(appServiceMarketVersionVO -> {
+        appServiceMarketVO.getAppServiceVersionUploadPayloads().forEach(appServiceMarketVersionVO -> {
             AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQuery(appServiceMarketVersionVO.getId());
             //2. 创建目录 应用服务版本
 
@@ -458,7 +461,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
      * @param appServiceMarketVO
      * @param appFilePath
      */
-    private void packageChart(AppServiceUploadVO appServiceMarketVO, String appFilePath) {
+    private void packageChart(AppServiceUploadPayload appServiceMarketVO, String appFilePath) {
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceMarketVO.getAppServiceId());
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getAppId());
         OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
@@ -466,7 +469,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         //1.创建目录 应用服务仓库
         FileUtil.createDirectory(appFilePath, appServiceDTO.getCode());
         String appServiceChartPath = String.format(APP_TEMP_PATH_FORMAT, appFilePath, File.separator, appServiceDTO.getCode());
-        appServiceMarketVO.getAppServiceVersionUploadVOS().forEach(appServiceMarketVersionVO -> {
+        appServiceMarketVO.getAppServiceVersionUploadPayloads().forEach(appServiceMarketVersionVO -> {
             //2.下载chart
             AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQuery(appServiceMarketVersionVO.getId());
             chartUtil.downloadChart(appServiceVersionDTO, organizationDTO, projectDTO, appServiceDTO, appServiceChartPath);
@@ -526,15 +529,15 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         }
     }
 
-    private Map<String, String> pushImageForUpload(AppMarketUploadVO appMarketUploadVO) {
+    private Map<String, String> pushImageForUpload(AppMarketUploadPayload appMarketUploadVO) {
         Map<String, String> iamgeMap = new HashMap<>();
 
         //获取push_image 脚本目录
         String shellPath = new File(this.getClass().getResource(SHELL).getPath()).getAbsolutePath();
         // 创建images
-        appMarketUploadVO.getAppServiceUploadVOS().forEach(appServiceMarketVO -> {
+        appMarketUploadVO.getAppServiceUploadPayloads().forEach(appServiceMarketVO -> {
             StringBuilder stringBuilder = new StringBuilder();
-            appServiceMarketVO.getAppServiceVersionUploadVOS().forEach(t -> {
+            appServiceMarketVO.getAppServiceVersionUploadPayloads().forEach(t -> {
                 stringBuilder.append(appServiceVersionService.baseQuery(t.getId()).getImage());
                 stringBuilder.append(System.getProperty(LINE));
                 iamgeMap.put(String.format("%s-%s", appServiceMarketVO.getAppServiceCode(), t.getVersion()), String.format("%s:%s", appServiceMarketVO.getHarborUrl(), t.getVersion()));
@@ -614,7 +617,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         }
     }
 
-    private void fileUpload(List<String> zipFileList, AppMarketUploadVO appMarketUploadVO, Map map) {
+    private void fileUpload(List<String> zipFileList, AppMarketUploadPayload appMarketUploadVO, Map map) {
         List<MultipartBody.Part> files = new ArrayList<>();
         zipFileList.forEach(f -> {
             File file = new File(f);
@@ -669,8 +672,8 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         }
     }
 
-    private AppServiceUploadVO dtoToMarketVO(AppServiceDTO applicationDTO) {
-        AppServiceUploadVO appServiceMarketVO = new AppServiceUploadVO();
+    private AppServiceUploadPayload dtoToMarketVO(AppServiceDTO applicationDTO) {
+        AppServiceUploadPayload appServiceMarketVO = new AppServiceUploadPayload();
         appServiceMarketVO.setAppServiceId(applicationDTO.getId());
         appServiceMarketVO.setAppServiceCode(applicationDTO.getCode());
         appServiceMarketVO.setAppServiceName(applicationDTO.getName());
