@@ -34,18 +34,19 @@ public class DevopsEnvironmentController {
     /**
      * 项目下创建环境
      *
-     * @param projectId           项目id
-     * @param devopsEnvironmentVO 环境信息
+     * @param projectId              项目id
+     * @param devopsEnvironmentReqVO 环境信息
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下创建环境")
     @PostMapping
-    public void create(
+    public ResponseEntity create(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "服务信息", required = true)
-            @RequestBody DevopsEnvironmentVO devopsEnvironmentVO) {
-        devopsEnvironmentService.create(projectId, devopsEnvironmentVO);
+            @ApiParam(value = "环境信息", required = true)
+            @RequestBody @Valid DevopsEnvironmentReqVO devopsEnvironmentReqVO) {
+        devopsEnvironmentService.create(projectId, devopsEnvironmentReqVO);
+        return new ResponseEntity(HttpStatus.OK);
     }
 
     /**

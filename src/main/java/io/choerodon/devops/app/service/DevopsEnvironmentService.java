@@ -18,11 +18,10 @@ public interface DevopsEnvironmentService {
     /**
      * 项目下创建环境
      *
-     * @param projectId           项目Id
-     * @param devopsEnviromentDTO 环境信息
-     * @return String
+     * @param projectId              项目Id
+     * @param devopsEnvironmentReqVO 环境信息
      */
-    void create(Long projectId, DevopsEnvironmentVO devopsEnviromentDTO);
+    void create(Long projectId, DevopsEnvironmentReqVO devopsEnvironmentReqVO);
 
     /**
      * 项目下环境流水线查询环境

@@ -495,16 +495,16 @@ class DevopsEnvironmentControllerSpec extends Specification {
     def "Create"() {
         given: "准备"
         isToInit = false
-        DevopsEnvironmentVO devopsEnvironmentVO = new DevopsEnvironmentVO()
-        devopsEnvironmentVO.setClusterId(1L)
-        devopsEnvironmentVO.setCode("testCodeChange")
-        devopsEnvironmentVO.setName("testNameChange")
+        DevopsEnvironmentReqVO devopsEnvironmentReqVO = new DevopsEnvironmentReqVO()
+        devopsEnvironmentReqVO.setClusterId(1L)
+        devopsEnvironmentReqVO.setCode("testCodeChange")
+        devopsEnvironmentReqVO.setName("testNameChange")
 
         and: 'mock envUtil'
         GitConfigVO gitConfigDTO = new GitConfigVO()
         gitUtil.getGitConfig(_ as Long) >> gitConfigDTO
         when: '项目下创建环境'
-        restTemplate.postForObject(rootUrl, devopsEnvironmentVO, Void.class, projectId)
+        restTemplate.postForObject(rootUrl, devopsEnvironmentReqVO, Void.class, projectId)
 
         then: '返回值'
         devopsEnvironmentMapper.selectAll().size() == 3
