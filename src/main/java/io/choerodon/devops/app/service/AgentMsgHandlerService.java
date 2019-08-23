@@ -78,6 +78,4 @@ public interface AgentMsgHandlerService {
     void handleConfigUpdate(String key, String msg, Long clusterId);
 
     void operateDockerRegistrySecretResp(String key, String msg, Long clusterId);
-
-    void handlePodRealTimeData(String payload);
 }

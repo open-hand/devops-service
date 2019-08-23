@@ -1658,10 +1658,5 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         }
         devopsRegistrySecretService.baseUpdate(devopsRegistrySecretDTO);
     }
-
-    @Override
-    public void handlePodRealTimeData(String payload) {
-        agentPodService.handleRealTimePodData(JSONArray.parseArray(payload, AgentPodInfoVO.class));
-    }
 }
 

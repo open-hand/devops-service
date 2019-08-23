@@ -190,7 +190,6 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         AppServiceDTO appServiceDTO = getApplicationServiceDTO(projectId, appServiceReqVO);
         appServiceDTO = baseCreate(appServiceDTO);
-        Long appServiceId = appServiceDTO.getId();
 
 
         //创建saga payload
@@ -227,7 +226,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         AppServiceRepVO appServiceRepVO = dtoToRepVo(appServiceDTO);
         List<DevopsConfigVO> devopsConfigVOS = devopsConfigService.queryByResourceId(appServiceId, APP_SERVICE);
         if (!devopsConfigVOS.isEmpty()) {
-            devopsConfigVOS.stream().forEach(devopsConfigVO -> {
+            devopsConfigVOS.forEach(devopsConfigVO -> {
                 if (devopsConfigVO.getType().equals(HARBOR)) {
                     appServiceRepVO.setHarbor(devopsConfigVO);
                 }
@@ -242,11 +241,6 @@ public class AppServiceServiceImpl implements AppServiceService {
             appServiceRepVO.setRepoUrl(gitlabUrl + urlSlash
                     + organizationDTO.getCode() + "-" + projectDTO.getCode() + "/"
                     + appServiceDTO.getCode() + ".git");
-        }
-        if (appServiceDTO.getSkipCheckPermission()) {
-            appServiceRepVO.setPermission(true);
-        } else {
-            appServiceRepVO.setPermission(false);
         }
         return appServiceRepVO;
     }
