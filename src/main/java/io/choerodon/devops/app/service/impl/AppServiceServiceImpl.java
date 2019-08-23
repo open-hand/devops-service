@@ -71,6 +71,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import retrofit2.Call;
 import retrofit2.Response;
@@ -272,8 +273,26 @@ public class AppServiceServiceImpl implements AppServiceService {
         AppServiceDTO appServiceDTO = ConvertUtils.convertObject(appServiceUpdateDTO, AppServiceDTO.class);
         Long appServiceId = appServiceUpdateDTO.getId();
         List<DevopsConfigVO> devopsConfigVOS = new ArrayList<>();
-        devopsConfigVOS.add(appServiceUpdateDTO.getHarbor());
-        devopsConfigVOS.add(appServiceUpdateDTO.getChart());
+
+        DevopsConfigVO harbor = new DevopsConfigVO();
+        DevopsConfigVO chart = new DevopsConfigVO();
+        if (ObjectUtils.isEmpty(appServiceUpdateDTO.getHarbor())) {
+            harbor.setCustom(false);
+            harbor.setType(HARBOR);
+            devopsConfigVOS.add(harbor);
+        } else {
+            devopsConfigVOS.add(appServiceUpdateDTO.getHarbor());
+        }
+
+        if (ObjectUtils.isEmpty(appServiceUpdateDTO.getChart())) {
+            chart.setCustom(false);
+            chart.setType(CHART);
+            devopsConfigVOS.add(chart);
+        } else {
+            devopsConfigVOS.add(appServiceUpdateDTO.getChart());
+        }
+
+
         devopsConfigService.operate(appServiceId, APP_SERVICE, devopsConfigVOS);
 
         if (appServiceUpdateDTO.getHarbor() != null) {
