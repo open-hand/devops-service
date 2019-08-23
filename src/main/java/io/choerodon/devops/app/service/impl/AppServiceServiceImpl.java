@@ -11,6 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
@@ -55,6 +56,8 @@ import io.choerodon.devops.infra.mapper.AppServiceMapper;
 import io.choerodon.devops.infra.mapper.AppServiceUserRelMapper;
 import io.choerodon.devops.infra.mapper.UserAttrMapper;
 import io.choerodon.devops.infra.util.*;
+
+import com.sun.org.apache.bcel.internal.generic.ARETURN;
 import io.kubernetes.client.JSON;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.eclipse.jgit.api.Git;
@@ -287,11 +290,11 @@ public class AppServiceServiceImpl implements AppServiceService {
         devopsConfigService.operate(appServiceId, APP_SERVICE, devopsConfigVOS);
 
         if (appServiceUpdateDTO.getHarbor() != null) {
-            DevopsConfigDTO harborConfig = devopsConfigService.queryRealConfig(appServiceId,APP_SERVICE,HARBOR);
+            DevopsConfigDTO harborConfig = devopsConfigService.queryRealConfig(appServiceId, APP_SERVICE, HARBOR);
             appServiceDTO.setHarborConfigId(harborConfig.getId());
         }
         if (appServiceUpdateDTO.getChart() != null) {
-            DevopsConfigDTO chartConfig = devopsConfigService.queryRealConfig(appServiceId,APP_SERVICE,CHART);
+            DevopsConfigDTO chartConfig = devopsConfigService.queryRealConfig(appServiceId, APP_SERVICE, CHART);
             appServiceDTO.setChartConfigId(chartConfig.getId());
         }
 
@@ -1446,9 +1449,13 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
 
 
+        Set<Long> ownerIds = allProjectOwners.stream().map(devopsUserPermissionVO -> devopsUserPermissionVO.getIamUserId()).collect(Collectors.toSet());
+        //去除项目成员中的项目所有者成员
+        List<DevopsUserPermissionVO> MemberWithoutOwners = allProjectMembers.stream().filter(e -> !ownerIds.contains(e.getIamUserId())).collect(Collectors.toList());
+
         //合并项目所有者和项目成员
-        Set<DevopsUserPermissionVO> userPermissionVOS = new HashSet<>(allProjectMembers);
-        userPermissionVOS.addAll(allProjectOwners);
+        List<DevopsUserPermissionVO> userPermissionVOS = new ArrayList<>(allProjectOwners);
+        userPermissionVOS.addAll(MemberWithoutOwners);
 
         //没有任何项目成员和项目所有者
         if (userPermissionVOS.isEmpty()) {
@@ -1579,7 +1586,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             paramsArr = new String[1];
             paramsArr[0] = params;
         }
-        PageInfo<ProjectVO> pageInfo = ConvertUtils.convertPage(baseServiceClientOperator.pagingProjectByOptions(organizationId, 1,20, paramsArr), this::dtoToProjectVO);
+        PageInfo<ProjectVO> pageInfo = ConvertUtils.convertPage(baseServiceClientOperator.pagingProjectByOptions(organizationId, 1, 20, paramsArr), this::dtoToProjectVO);
         return pageInfo.getList().stream().filter(t -> !t.getId().equals(projectId)).collect(Collectors.toList());
     }
 
@@ -1645,7 +1652,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             AppServiceVersionDTO applicationVersion = appServiceVersionService.baseQuery(importInternalVO.getVersionId());
             //获取admin的token
             String adminToken = gitlabServiceClientOperator.getAdminToken();
-            Git git = gitUtil.cloneAppMarket(applicationDir, applicationVersion.getVersion(), applicationVersion.getRepository(),adminToken);
+            Git git = gitUtil.cloneAppMarket(applicationDir, applicationVersion.getVersion(), applicationVersion.getRepository(), adminToken);
             //push 到远程仓库
             String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
 
@@ -2108,7 +2115,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             List<Long> appServiceIds = appServiceUserRelMapper.select(appUserPermissionDO).stream()
                     .map(AppServiceUserRelDTO::getAppServiceId).collect(Collectors.toList());
 
-            resultDTOList.stream().filter(e -> e != null && e.getPermission()!=null&& !e.getPermission()).forEach(e -> {
+            resultDTOList.stream().filter(e -> e != null && e.getPermission() != null && !e.getPermission()).forEach(e -> {
                 if (appServiceIds.contains(e.getId())) {
                     e.setPermission(true);
                 }
@@ -2292,8 +2299,8 @@ public class AppServiceServiceImpl implements AppServiceService {
         return devopsUserPermissionVO;
     }
 
-    private ProjectVO dtoToProjectVO(ProjectDTO projectDTO){
-        ProjectVO projectVO=new ProjectVO();
+    private ProjectVO dtoToProjectVO(ProjectDTO projectDTO) {
+        ProjectVO projectVO = new ProjectVO();
         BeanUtils.copyProperties(projectDTO, projectVO);
         projectVO.setAppName(projectDTO.getApplicationDTO().getName());
         return projectVO;
