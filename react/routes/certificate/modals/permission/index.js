@@ -18,6 +18,7 @@ const modalStyle = {
 
 export default injectIntl(observer(({
   record,
+  dataSet,
   allProjectDs,
   permissionProjectDs,
   optionsDs,
@@ -25,6 +26,8 @@ export default injectIntl(observer(({
   intlPrefix,
   prefixCls,
   intl: { formatMessage },
+  modal,
+  refresh,
 }) => {
   useEffect(() => {
     permissionProjectDs.transport.read.url = `/devops/v1/projects/${projectId}/certs/${record.get('id')}/permission/page_related`;
@@ -35,7 +38,13 @@ export default injectIntl(observer(({
 
   useEffect(() => {
     permissionProjectDs.transport.create = ({ data }) => {
-      const res = map(data, 'id');
+      const res = {
+        objectVersionNumber: record.get('objectVersionNumber'),
+        certificationId: record.get('id'),
+        skipCheckProjectPermission: false,
+        projectIds: map(data, 'project'),
+      };
+
       return ({
         url: `/devops/v1/projects/${projectId}/certs/${record.get('id')}/permission`,
         method: 'post',
@@ -43,6 +52,18 @@ export default injectIntl(observer(({
       });
     };
   }, []);
+
+  modal.handleOk(async () => {
+    try {
+      if (await dataSet.submit() !== false) {
+        refresh();
+      } else {
+        return false;
+      }
+    } catch (e) {
+      return false;
+    }
+  });
 
   function openModal() {
     Modal.open({

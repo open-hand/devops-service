@@ -17,6 +17,7 @@ export default function StatusTag({ name, color, colorCode, style, ellipsis, err
     unready: 'rgba(0,0,0,0.20)',
     deleted: 'rgba(0,0,0,0.36)',
     finished: '#00bf96',
+    pendingcheck: '#ffb100',
   }), []);
   const defaultColor = 'rgba(0, 0, 0, 0.28)';
 

@@ -56,12 +56,14 @@ export default ((intlPrefix, formatMessage, projectId) => {
       switch (value) {
         case 'platform':
           record.getField('repositoryUrl').set('required', false);
+          record.getField('type').set('required', false);
           record.getField('name').set('required', false);
           record.getField('code').set('required', false);
           record.getField('accessToken').set('required', false);
           break;
         case 'github':
           record.getField('repositoryUrl').set('required', true);
+          record.getField('type').set('required', true);
           record.getField('name').set('required', true);
           record.getField('code').set('required', true);
           record.getField('accessToken').set('required', false);
@@ -71,6 +73,7 @@ export default ((intlPrefix, formatMessage, projectId) => {
           break;
         case 'gitlab':
           record.getField('repositoryUrl').set('required', true);
+          record.getField('type').set('required', true);
           record.getField('name').set('required', true);
           record.getField('code').set('required', true);
           record.getField('accessToken').set('required', true);
@@ -107,6 +110,7 @@ export default ((intlPrefix, formatMessage, projectId) => {
     fields: [
       { name: 'name', type: 'string', label: formatMessage({ id: `${intlPrefix}.name` }) },
       { name: 'code', type: 'string', label: formatMessage({ id: `${intlPrefix}.code` }) },
+      { name: 'type', type: 'string', defaultValue: 'normal', label: formatMessage({ id: `${intlPrefix}.type` }) },
       { name: 'platformType', type: 'string', label: formatMessage({ id: `${intlPrefix}.import.type` }), defaultValue: 'platform' },
       { name: 'repositoryUrl', type: 'url' },
       { name: 'accessToken', type: 'string', label: formatMessage({ id: `${intlPrefix}.token` }) },

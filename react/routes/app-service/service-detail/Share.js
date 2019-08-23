@@ -101,7 +101,7 @@ const Share = (props) => {
   }
 
   function handleDelete() {
-    shareDs.current.delete();
+    shareDs.delete(shareDs.current);
   }
 
   return (
@@ -117,6 +117,12 @@ const Share = (props) => {
             <FormattedMessage id={`${intlPrefix}.share.rule.add`} />
           </Button>
         </Permission>
+        <Button
+          icon="refresh"
+          onClick={refresh}
+        >
+          <FormattedMessage id="refresh" />
+        </Button>
       </HeaderButtons>
       <Breadcrumb title="服务详情" />
       <Content>

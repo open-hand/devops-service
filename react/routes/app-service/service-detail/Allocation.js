@@ -30,6 +30,10 @@ const Allocation = observer((props) => {
     permissionStore,
   } = useServiceDetailStore();
 
+  function refresh() {
+    permissionDs.query();
+  }
+
   function renderTime({ value }) {
     return <TimePopover content={value} />;
   }
@@ -87,6 +91,12 @@ const Allocation = observer((props) => {
             <FormattedMessage id={`${intlPrefix}.permission.manage`} />
           </Button>
         </Permission>
+        <Button
+          icon="refresh"
+          onClick={refresh}
+        >
+          <FormattedMessage id="refresh" />
+        </Button>
       </HeaderButtons>
       <Breadcrumb title="服务详情" />
       <Content>

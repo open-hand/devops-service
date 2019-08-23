@@ -17,13 +17,24 @@ const Version = (props) => {
     versionDs,
   } = useServiceDetailStore();
 
+  function refresh() {
+    versionDs.query();
+  }
+
   function renderTime({ value }) {
     return <TimePopover content={value} />;
   }
 
   return (
     <TabPage>
-      <HeaderButtons />
+      <HeaderButtons>
+        <Button
+          icon="refresh"
+          onClick={refresh}
+        >
+          <FormattedMessage id="refresh" />
+        </Button>
+      </HeaderButtons>
       <Breadcrumb title="服务详情" />
       <Content>
         <Table dataSet={versionDs}>

@@ -68,6 +68,13 @@ const HeaderButtons = observer(({ children }) => {
     return <FormattedMessage id={`${intlPrefix}.${active}`} />;
   }
 
+  async function changeActive() {
+    const { current } = detailDs;
+    if (await AppStore.changeActive(id, current.get('id'), !current.get('active')) !== false) {
+      detailDs.query();
+    }
+  }
+
 
   return (
     <Header>
@@ -86,11 +93,11 @@ const HeaderButtons = observer(({ children }) => {
       >
         <Button
           icon="remove_circle_outline"
+          onClick={changeActive}
         >
           {getActiveText()}
         </Button>
       </Permission>
-      {children}
       <Permission
         service={['devops-service.app-service.query']}
       >
@@ -101,6 +108,7 @@ const HeaderButtons = observer(({ children }) => {
           <FormattedMessage id={`${intlPrefix}.detail`} />
         </Button>
       </Permission>
+      {children}
     </Header>
   );
 });

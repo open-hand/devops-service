@@ -56,6 +56,8 @@ const commonField = {
   port: '端口',
   protocol: '协议',
   import: '导入',
+  executor: '执行者',
+  startUp: '启动',
 
   // 状态描述
   null: '无',
@@ -70,6 +72,7 @@ const commonField = {
   failed: '失败',
   deleted: '已删除',
   creating: '创建中',
+  pendingcheck: '待审核',
 
   // public
   detail: '详情',
@@ -370,6 +373,25 @@ const certificate = {
   'c7ncd.certificate.upload.mode': '切换上传模式',
   'c7ncd.certificate.add': '添加证书文件',
   'c7ncd.certificate.add.tip': '您需在此添加对应的文件内容，目前只支持base64格式的证书内容',
+};
+
+const deploy = {
+  'c7ncd.deploy.type': '部署类型',
+  'c7ncd.deploy.env': '部署环境',
+  'c7ncd.deploy.time': '运行时间',
+  'c7ncd.deploy.result': '运行结果',
+  'c7ncd.deploy.pipeline.type': '流水线触发方式',
+  'c7ncd.deploy.pipeline.name': '流水线名称',
+  'c7ncd.deploy.trigger.manual': '手动触发',
+  'c7ncd.deploy.trigger.auto': '自动触发',
+  'c7ncd.deploy.number': '编号',
+  'c7ncd.deploy.manual': '手动部署',
+  'c7ncd.deploy.auto': '自动部署',
+  'c7ncd.deploy.start': '启动部署流程',
+  'c7ncd.deploy.detail.title': '部署"{name}"的详情',
+  'c7ncd.deploy.service': '部署服务',
+  'c7ncd.deploy.version': '部署版本',
+  'c7ncd.deploy.instance': '生成实例',
 };
 
 // 文档地址前缀
@@ -2203,6 +2225,7 @@ const zhCN = {
   ...envrionment,
   ...certificate,
   ...cluster,
+  ...deploy,
 };
 
 export default zhCN;
