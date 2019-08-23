@@ -815,6 +815,27 @@ const pageDetail = {
   'notification.edit.link': `${docServer}/user-guide/system-configuration/project/devops-notifications`,
 };
 
+
+const cluster = {
+  'c7ncd.cluster.node.list': '节点列表',
+  'c7ncd.cluster.permission.assign': '权限分配',
+  'c7ncd.cluster.node.status': '状态',
+  'c7ncd.cluster.node.ip': '节点',
+  'c7ncd.cluster.node.type': '类型',
+  'c7ncd.cluster.node.cpu': 'CPU分配',
+  'c7ncd.cluster.node.memory': '内存分配',
+  'c7ncd.cluster.modal.create': '创建集群',
+  'c7ncd.cluster.modal.permission': '权限管理',
+  'c7ncd.cluster.name': '集群名称',
+  'c7ncd.cluster.code': '集群编码',
+  'c7ncd.cluster.dec': '集群描述',
+  'c7ncd.cluster.project': '项目',
+  'c7ncd.cluster.add.project': '添加项目',
+  'c7ncd.cluster.project.all': '组织下所有项目',
+  'c7ncd.cluster.project.part': '组织下特定项目',
+  'c7ncd.cluster.visibility': '集群公开范围',
+};
+
 const zhCN = {
   // 刷新
   'refresh.manual': '手动刷新',
@@ -2181,6 +2202,7 @@ const zhCN = {
   ...pageDetail,
   ...envrionment,
   ...certificate,
+  ...cluster,
 };
 
 export default zhCN;

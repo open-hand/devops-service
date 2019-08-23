@@ -144,43 +144,11 @@ class DevPipelineStore {
             } else {
               this.setSelectApp(result[0].id);
             }
-            switch (type) {
-              case 'branch':
-                BranchStore.loadBranchList({ projectId });
-                break;
-              case 'tag':
-                AppTagStore.queryTagData(projectId, 1, 10);
-                break;
-              case 'merge':
-                MergeRequestStore.loadMergeRquest(this.selectedApp);
-                MergeRequestStore.loadUrl(projectId, this.selectedApp);
-                break;
-              case 'ci':
-                CiPipelineStore.loadPipelines(true, this.selectedApp);
-                break;
-              case 'quality':
-                CodeQualityStore.loadData(projectId, this.selectedApp);
-                break;
-              case 'all':
-                AppTagStore.queryTagData(projectId, 1, 10);
-                MergeRequestStore.loadMergeRquest(this.selectedApp, 'opened', 1, 5);
-                MergeRequestStore.loadMergeRquest(this.selectedApp, 'merged', 1, 5);
-                MergeRequestStore.loadUrl(projectId, this.selectedApp);
-                CiPipelineStore.loadPipelines(true, this.selectedApp);
-                CodeQualityStore.loadData(projectId, this.selectedApp);
-                break;
-              default:
-                break;
+            if (!(BranchStore.getBranchList && BranchStore.branchList.length > 0)) {
+              BranchStore.loadBranchList({ projectId });
             }
-            AppTagStore.setDefaultAppName(result[0].name);
           } else {
             this.setSelectApp(null);
-            AppTagStore.setLoading(false);
-            CiPipelineStore.setLoading(false);
-            MergeRequestStore.setLoading(false);
-            // DevConsoleStore.setBranchLoading(false);
-            CodeQualityStore.changeLoading(false);
-            DeploymentPipelineStore.judgeRole('app');
           }
         }
       }).catch((err) => Choerodon.handleResponseError(err));

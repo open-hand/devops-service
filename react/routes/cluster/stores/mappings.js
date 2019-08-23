@@ -15,11 +15,14 @@ export const itemTypeMappings = {
   CIPHER_GROUP: 'group_secrets',
   CUSTOM_GROUP: 'group_customResources',
   IST_GROUP: 'group_instances',
+  CLU_ITEM: 'cluster',
+  NODE_ITEM: 'node',
 };
 
 export const viewTypeMappings = {
   IST_VIEW_TYPE: 'instance',
   RES_VIEW_TYPE: 'resource',
+  CLU_VIEW_TYPE: 'cluster',
 };
 
 export const RES_TYPES = ['instances', 'services', 'ingresses', 'certifications', 'configMaps', 'secrets', 'customResources'];
