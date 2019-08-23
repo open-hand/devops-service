@@ -238,10 +238,6 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
             throw new CommonException("error.certification.not.exist", certId);
         }
 
-        if (Boolean.TRUE.equals(certificationDTO.getSkipCheckProjectPermission())) {
-            return Collections.emptyList();
-        }
-
         //查询出该项目所属组织下的所有项目
         Map<String, Object> searchMap = TypeUtil.castMapParams(params);
         List<String> paramList = TypeUtil.cast(searchMap.get(TypeUtil.PARAMS));

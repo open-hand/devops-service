@@ -189,12 +189,12 @@ public class DevopsClusterController {
     }
 
     /**
-     * 查询组织下所有与该集群未分配权限的项目
+     * 列出组织下所有项目中在数据库中没有权限关联关系的项目(不论当前数据库中是否跳过权限检查)
      *
      * @param projectId 项目ID
      * @param clusterId 集群ID
      * @param params    搜索参数
-     * @return 与该集群未分配权限的项目
+     * @return 列出组织下所有项目中在数据库中没有权限关联关系的项目
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "查询组织下所有与该集群未分配权限的项目")

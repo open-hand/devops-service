@@ -37,6 +37,14 @@ public interface DevopsProjectCertificationService {
 
     List<ProjectReqVO> listCertProjects(Long certId);
 
+    /**
+     * 列出组织下所有项目中在数据库中没有权限关联关系的项目(不论当前数据库中是否跳过权限检查)
+     *
+     * @param projectId 项目id
+     * @param certId    证书
+     * @param params    查询参数
+     * @return 组织下所有项目中在数据库中没有权限关联关系的项目
+     */
     List<ProjectReqVO> listNonRelatedMembers(Long projectId, Long certId, String params);
 
     void deleteCert(Long certId);

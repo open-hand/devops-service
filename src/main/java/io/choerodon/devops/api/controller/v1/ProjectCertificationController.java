@@ -208,7 +208,7 @@ public class ProjectCertificationController {
 //    }
 
     /**
-     * 列出项目下所有与该证书未分配权限的项目
+     * 列出组织下所有项目中在数据库中没有权限关联关系的项目(不论当前数据库中是否跳过权限检查)
      *
      * @param projectId 项目ID
      * @param certId    证书ID
@@ -216,7 +216,7 @@ public class ProjectCertificationController {
      * @return 所有与该证书未分配权限的项目
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "列出项目下所有与该证书未分配权限的项目")
+    @ApiOperation(value = "列出组织下所有项目中在数据库中没有权限关联关系的项目")
     @PostMapping(value = "/{cert_id}/permission/list_non_related")
     public ResponseEntity<List<ProjectReqVO>> listAllNonRelatedMembers(
             @ApiParam(value = "项目id", required = true)
