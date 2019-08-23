@@ -116,13 +116,13 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     }
 
     @Override
-    public PageInfo<DevopsServiceVO> pageByInstance(Long projectId, Long instanceId, PageRequest pageRequest, Long appServiceId) {
+    public PageInfo<DevopsServiceVO> pageByInstance(Long projectId, Long instanceId, PageRequest pageRequest, Long appServiceId, String searchParam) {
         PageInfo<DevopsServiceVO> devopsServiceByPage = ConvertUtils.convertPage(basePageByOptions(
                 projectId, null, instanceId, pageRequest, null, appServiceId), this::queryDtoToVo);
         if (!devopsServiceByPage.getList().isEmpty()) {
             devopsServiceByPage.getList().forEach(devopsServiceVO -> {
                 PageInfo<DevopsIngressVO> devopsIngressVOPageInfo = devopsIngressService
-                        .basePageByOptions(projectId, null, devopsServiceVO.getId(), new PageRequest(0, 100), "");
+                        .basePageByOptions(projectId, null, devopsServiceVO.getId(), new PageRequest(0, 100), null);
                 devopsServiceVO.setDevopsIngressVOS(devopsIngressVOPageInfo.getList());
             });
         }

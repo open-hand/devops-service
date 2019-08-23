@@ -199,7 +199,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         devOpsAppServicePayload.setGroupId(TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()));
         devOpsAppServicePayload.setSkipCheckPermission(true);
         devOpsAppServicePayload.setAppServiceId(appServiceDTO.getId());
-        devOpsAppServicePayload.setIamProjectId(appServiceDTO.getAppId());
+        devOpsAppServicePayload.setIamProjectId(projectId);
 
         producer.apply(
                 StartSagaBuilder
@@ -734,7 +734,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         devOpsAppServicePayload.setUserIds(Collections.emptyList());
         devOpsAppServicePayload.setSkipCheckPermission(appServiceDTO.getSkipCheckPermission());
         devOpsAppServicePayload.setAppServiceId(appServiceDTO.getId());
-        devOpsAppServicePayload.setIamProjectId(appServiceDTO.getAppId());
+        devOpsAppServicePayload.setIamProjectId(projectId);
 
         producer.applyAndReturn(
                 StartSagaBuilder

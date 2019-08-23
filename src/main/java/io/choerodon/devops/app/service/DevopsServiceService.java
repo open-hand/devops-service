@@ -97,13 +97,12 @@ public interface DevopsServiceService {
     DevopsServiceVO query(Long id);
 
     /**
-     *
      * 分页查询网络（包含网络对应域名）
      *
-     * @param projectId   项目id
-     * @param envId       环境id
-     * @param pageRequest 分页参数
-     * @param searchParam 查询参数
+     * @param projectId    项目id
+     * @param envId        环境id
+     * @param pageRequest  分页参数
+     * @param searchParam  查询参数
      * @param appServiceId 应用服务id（如果有就是查询应用下的网络域名）
      * @return Page of DevopsServiceVO
      */
@@ -122,13 +121,14 @@ public interface DevopsServiceService {
     /**
      * 查询实例下关联的网络域名（不包含chart）
      *
-     * @param projectId   项目id
-     * @param instanceId  实例Id
-     * @param pageRequest 分页参数
-     * @param appServiceId       应用id
+     * @param projectId    项目id
+     * @param instanceId   实例Id
+     * @param pageRequest  分页参数
+     * @param appServiceId 应用id
+     * @param searchParam  查询参数
      * @return Page of DevopsServiceVO
      */
-    PageInfo<DevopsServiceVO> pageByInstance(Long projectId, Long instanceId, PageRequest pageRequest, Long appServiceId);
+    PageInfo<DevopsServiceVO> pageByInstance(Long projectId, Long instanceId, PageRequest pageRequest, Long appServiceId, String searchParam);
 
     void createServiceBySaga(ServiceSagaPayLoad serviceSagaPayLoad);
 

@@ -744,8 +744,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     public PageInfo<DevopsIngressVO> basePageByOptions(Long projectId, Long envId, Long serviceId, PageRequest pageRequest, String params) {
         List<DevopsIngressVO> devopsIngressVOS = new ArrayList<>();
 
-        Map<String, Object> maps = gson.fromJson(params, new TypeToken<Map<String, Object>>() {
-        }.getType());
+        Map<String, Object> maps = TypeUtil.castMapParams(params);
 
         Sort sort = pageRequest.getSort();
         String sortResult = "";
@@ -765,7 +764,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
         PageInfo<DevopsIngressDTO> devopsIngressDTOPageInfo =
                 PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), sortResult).doSelectPageInfo(
-                        () -> devopsIngressMapper.listIngressByOptions(projectId, envId, serviceId, maps == null ? null : TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)), maps == null ? null : TypeUtil.cast(maps.get(TypeUtil.PARAMS))));
+                        () -> devopsIngressMapper.listIngressByOptions(projectId, envId, serviceId, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)), TypeUtil.cast(maps.get(TypeUtil.PARAMS))));
         devopsIngressDTOPageInfo.getList().forEach(t -> {
             DevopsIngressVO devopsIngressVO =
                     new DevopsIngressVO(t.getId(), t.getDomain(), t.getName(),
