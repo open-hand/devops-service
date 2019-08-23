@@ -324,4 +324,12 @@ public class BaseServiceClientOperator {
             throw new CommonException("error.insert.failed.message", e.getMessage());
         }
     }
+
+    public PageInfo<ProjectDTO> pagingProjectByOptions(Long organizationId, int page, int size, String[] params) {
+        try {
+            return baseServiceClient.pagingProjectByOptions(organizationId, false, page, size, params).getBody();
+        } catch (Exception e) {
+            return null;
+        }
+    }
 }

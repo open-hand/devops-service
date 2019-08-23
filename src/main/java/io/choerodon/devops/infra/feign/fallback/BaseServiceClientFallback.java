@@ -164,4 +164,7 @@ public class BaseServiceClientFallback implements BaseServiceClient {
 
     @Override
     public ResponseEntity<Boolean> publishFail(Long projectId,Long id,String errorCode) { throw new CommonException("error.publishFail.status.get"); }
+
+    @Override
+    public ResponseEntity<PageInfo<ProjectDTO>> pagingProjectByOptions(Long organizationId, Boolean doPage, int page,int size, String[] params) { throw new CommonException("error.project.get"); }
 }
