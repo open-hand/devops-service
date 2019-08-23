@@ -420,7 +420,7 @@ public interface AppServiceService {
      *
      * @return List<AppServiceGroupVO>
      */
-    List<AppServiceGroupVO> ListAppServiceGroup();
+    List<AppServiceGroupVO> ListAppServiceGroup(Long projectId);
 
     String getToken(Integer gitlabProjectId, String applicationDir, UserAttrDTO userAttrDTO);
 }

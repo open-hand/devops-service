@@ -1913,10 +1913,14 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public List<AppServiceGroupVO> ListAppServiceGroup() {
+    public List<AppServiceGroupVO> ListAppServiceGroup(Long projectId) {
         // 分别获取组织共享和市场下载的应用服务集合
         List<AppServiceDTO> organizationShareApps = appServiceMapper.queryOrganizationShareApps();
         List<AppServiceDTO> marketDownloadApps = appServiceMapper.queryMarketDownloadApps();
+        // 查询当前项目可选的项目共享Apps
+        List<AppServiceDTO> projectShareApps = appServiceMapper.ListShareProjectApps(projectId);
+        // 加入组织共享集合中
+        organizationShareApps.addAll(projectShareApps);
         List<AppServiceGroupVO> appServiceGroupList = new ArrayList<AppServiceGroupVO>();
         if (!organizationShareApps.isEmpty()) {
             // 获取organizationShareApps中appid的集合
