@@ -349,6 +349,7 @@ const appService = {
 
 const envrionment = {
   'c7ncd.env.group.default': '默认分组',
+  'c7ncd.env.group.stopped': '环境配置停用区',
 };
 
 const certificate = {

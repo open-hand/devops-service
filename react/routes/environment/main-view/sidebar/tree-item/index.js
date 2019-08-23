@@ -1,29 +1,9 @@
 import React, { Fragment, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { observer } from 'mobx-react-lite';
-import StatusDot from '../../../../../components/status-dot';
 import EnvItem from '../../../../../components/env-item';
 import TreeItemName from '../../../../../components/treeitem-name';
 import { useEnvironmentStore } from '../../../stores';
-
-const EnvironmentItem = ({ name, connect, synchronize }) => {
-  const getPrefix = useMemo(() => <StatusDot
-    connect={connect}
-    synchronize={synchronize}
-    size="small"
-  />, [connect, synchronize]);
-
-  return <Fragment>
-    {getPrefix}
-    {name}
-  </Fragment>;
-};
-
-EnvironmentItem.propTypes = {
-  name: PropTypes.any,
-  connect: PropTypes.bool,
-  synchronize: PropTypes.bool,
-};
 
 const TreeItem = observer(({ record, search }) => {
   const {
@@ -38,7 +18,7 @@ const TreeItem = observer(({ record, search }) => {
 
   function getEnvItem(name) {
     const connect = record.get('connect');
-    const synchronize = record.get('synchronize');
+    const synchronize = record.get('synchro');
     const active = record.get('active');
 
     return <EnvItem
@@ -51,10 +31,13 @@ const TreeItem = observer(({ record, search }) => {
 
   function getItem() {
     let itemName = record.get('name') || '';
-    const type = record.get('type');
+    const type = record.get('itemType');
+    const active = record.get('active');
+
     if (!itemName && type === GROUP_ITEM) {
-      itemName = formatMessage({ id: `${intlPrefix}.group.default` });
+      itemName = formatMessage({ id: `${intlPrefix}.group.${active ? 'default' : 'stopped'}` });
     }
+
     const name = <TreeItemName name={itemName} search={search} />;
 
     if (type === DETAIL_ITEM) {
