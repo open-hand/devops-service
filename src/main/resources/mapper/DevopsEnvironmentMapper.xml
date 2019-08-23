@@ -193,6 +193,22 @@
           AND env.is_failed = FALSE;
     </select>
 
+    <select id="listByProjectIdAndGroupIdAndActive"
+            resultType="io.choerodon.devops.infra.dto.DevopsEnvironmentDTO">
+        SELECT *
+        FROM devops_env env
+        WHERE env.project_id = #{projectId}
+        <if test="groupId ==null">
+            AND
+            env.devops_env_group_id IS NULL
+        </if>
+        <if test="groupId !=null">
+            AND
+            env.devops_env_group_id = #{groupId}
+        </if>
+        AND env.is_active = #{active}
+    </select>
+
     <!-- 此方法不需要在mapper接口中有 -->
     <select id="listServices" resultType="io.choerodon.devops.api.vo.DevopsResourceBasicInfoVO">
         SELECT t.id, t.`name`

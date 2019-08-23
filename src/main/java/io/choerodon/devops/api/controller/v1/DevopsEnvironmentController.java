@@ -5,6 +5,14 @@ import java.util.Optional;
 import javax.validation.Valid;
 
 import com.github.pagehelper.PageInfo;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import springfox.documentation.annotations.ApiIgnore;
+
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.enums.ResourceType;
@@ -13,13 +21,6 @@ import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.swagger.annotation.CustomPageRequest;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
 
 /**
  * Created by younger on 2018/4/9.
@@ -552,6 +553,30 @@ public class DevopsEnvironmentController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId) {
         return Optional.ofNullable(devopsEnvironmentService.listEnvTreeMenu(projectId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.environment.get"));
+    }
+
+    /**
+     * 项目下根据分组查看环境详情
+     *
+     * @param projectId 项目id
+     * @param groupId   分组id
+     * @param active    是否可用
+     * @return List
+     */
+    @Permission(type = ResourceType.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "项目下查询环境")
+    @GetMapping(value = "/list_by_group")
+    public ResponseEntity<List<DevopsEnviromentRepVO>> listByGroupAndActive(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "分组id")
+            @RequestParam(value = "group_id", required = false) Long groupId,
+            @ApiParam(value = "是否启用", required = true)
+            @RequestParam(value = "active") Boolean active) {
+        return Optional.ofNullable(devopsEnvironmentService.listByGroupAndActive(projectId, groupId, active))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.environment.get"));
     }

@@ -315,6 +315,17 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     @Override
+    public List<DevopsEnviromentRepVO> listByGroupAndActive(Long projectId, Long groupId, Boolean active) {
+        List<Long> connectedClusterList = clusterConnectionHandler.getConnectedEnvList();
+        List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedEnvList();
+        List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = devopsEnvironmentMapper.listByProjectIdAndGroupIdAndActive(projectId, groupId, active)
+                .stream()
+                .peek(t -> setEnvStatus(connectedClusterList, upgradeClusterList, t))
+                .collect(Collectors.toList());
+        return ConvertUtils.convertList(devopsEnvironmentDTOS, DevopsEnviromentRepVO.class);
+    }
+
+    @Override
     public List<DevopsEnviromentRepVO> listByProjectIdAndActive(Long projectId, Boolean active) {
 
         // 查询当前用户的环境权限

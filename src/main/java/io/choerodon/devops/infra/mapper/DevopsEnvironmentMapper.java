@@ -6,7 +6,6 @@ import io.choerodon.devops.api.vo.DevopsEnvResourceCountVO;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
-import org.springframework.web.bind.annotation.PathVariable;
 
 /**
  * Created by younger on 2018/4/9.
@@ -59,4 +58,13 @@ public interface DevopsEnvironmentMapper extends Mapper<DevopsEnvironmentDTO> {
     DevopsEnvResourceCountVO queryEnvResourceCount(@Param("envId") Long envId);
 
     List<DevopsEnvironmentDTO> listByIds(@Param("envIds") List<Long> envIds);
+
+    /**
+     * 查询指定分组的相关环境
+     * @param projectId 项目id
+     * @param groupId   分组id
+     * @param active    是否可用
+     * @return
+     */
+    List<DevopsEnvironmentDTO> listByProjectIdAndGroupIdAndActive(@Param("projectId") Long projectId, @Param("groupId") Long groupId, @Param("active") Boolean active);
 }
