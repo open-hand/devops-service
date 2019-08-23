@@ -402,7 +402,7 @@ public class PipelineController {
     }
 
     /**
-     * 获取所有项目成员和项目所有者
+     * 停止流水线
      *
      * @param projectId 项目id
      * @return

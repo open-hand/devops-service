@@ -116,6 +116,7 @@ public class DevopsExecAndLogSocketHandler {
             for (int i = 0; i < webSocketSessions.size(); i++) {
                 WebSocketSession session = webSocketSessions.get(i);
                 if(session!=webSocketSession) {
+                    webSocketHelper.removeKeyContact(session, registerKey);
                     closeSession(session);
                 }
             }
@@ -131,6 +132,7 @@ public class DevopsExecAndLogSocketHandler {
                 channels.forEach(channel -> messageSender.sendRedis(channel, closeAgentSessionPayLoad));
             }
         }
+        webSocketHelper.removeKeyContact(webSocketSession, registerKey);
         closeSession(webSocketSession);
     }
 
