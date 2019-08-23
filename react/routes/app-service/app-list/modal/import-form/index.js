@@ -116,6 +116,14 @@ const ImportForm = injectIntl(observer((props) => {
         <Form record={record} style={{ width: '3.6rem' }}>
           <TextField name="repositoryUrl" />
           {record.get('platformType') === 'gitlab' && <TextField name="accessToken" />}
+          <Select name="type" clearButton={false}>
+            <Option value="normal">
+              {formatMessage({ id: `${intlPrefix}.type.normal` })}
+            </Option>
+            <Option value="test">
+              {formatMessage({ id: `${intlPrefix}.type.test` })}
+            </Option>
+          </Select>
           <TextField name="name" />
           <TextField name="code" />
         </Form>

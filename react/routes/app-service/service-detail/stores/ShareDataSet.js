@@ -48,7 +48,6 @@ export default ((intlPrefix, formatMessage, projectId, id) => ({
       };
     },
     create: ({ data: [data] }) => {
-      const { version, shareLevel } = data;
       data.appServiceId = id;
       formatData(data);
       return ({
@@ -66,6 +65,11 @@ export default ((intlPrefix, formatMessage, projectId, id) => ({
         data,
       });
     },
+
+    destroy: ({ data: [data] }) => ({
+      url: `/devops/v1/projects/${projectId}/app_service_share/${data.id}`,
+      method: 'delete',
+    }),
   },
   fields: [
     { name: 'versionType', type: 'string', label: formatMessage({ id: `${intlPrefix}.version.type` }) },

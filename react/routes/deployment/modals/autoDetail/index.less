@@ -1,0 +1,88 @@
+@import "./components/status";
+
+.c7n-pipeline-detail {
+  .c7ncd-pipeline-detail-select {
+    margin-bottom: 32px;
+    width: 300px;
+  }
+
+  .c7ncd-pipeline-detail-msg {
+    margin-bottom: 16px;
+
+    .c7ncd-pipeline-detail-item {
+      display: inline-block;
+      font-size: 14px;
+      margin-right: 86px;
+
+      .c7ncd-pipeline-detail-label {
+        margin-right: 6px;
+        color: rgba(0, 0, 0, 0.54);
+      }
+    }
+
+    .c7ncd-pipeline-manual-stop {
+      float: right;
+    }
+  }
+
+  .c7ncd-pipeline-main {
+    margin-bottom: 32px;
+    padding: 24px 0;
+    width: 100%;
+    border: 1px solid #e3e3e3;
+    background: #fff;
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    .c7ncd-pipeline-scroll {
+      display: inline-flex;
+      padding: 0 14px;
+      min-width: 100%;
+    }
+  }
+
+  .c7ncd-pipeline-detail-stage {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    flex: 0 0 272px;
+    padding: 0 5px;
+  }
+
+  .c7ncd-pipeline-status-tag {
+    padding: 0 6px;
+    text-align: center;
+    font-size: 12px;
+    line-height: 20px;
+
+    &_running {
+      color: @running;
+      background: @bk_running;
+      border: 1px solid @running;
+    }
+
+    &_pendingcheck {
+      color: @pendingcheck;
+      background: @bk_pendingcheck;
+      border: 1px solid @pendingcheck;
+    }
+
+    &_success {
+      color: @success;
+      background: @bk_success;
+      border: 1px solid @success;
+    }
+
+    &_failed {
+      color: @failed;
+      background: @bk_failed;
+      border: 1px solid @failed;
+    }
+
+    &_stop {
+      color: @stop;
+      background: @bk_stop;
+      border: 1px solid @stop;
+    }
+  }
+}

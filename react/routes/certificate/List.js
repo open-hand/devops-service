@@ -40,20 +40,19 @@ const AppService = withRouter(observer((props) => {
   }
 
   function renderActions() {
-    const actionData = {
-      edit: {
+    const actionData = [
+      {
         service: [],
         text: formatMessage({ id: `${intlPrefix}.permission` }),
         action: openPermission,
       },
-      delete: {
+      {
         service: [],
         text: formatMessage({ id: 'delete' }),
         action: handleDelete,
       },
-
-    };
-    return (<Action data={Object.values(actionData)} />);
+    ];
+    return (<Action data={actionData} />);
   }
 
   function openCreate() {
@@ -83,6 +82,7 @@ const AppService = withRouter(observer((props) => {
       drawer: true,
       title: <FormattedMessage id={`${intlPrefix}.permission`} />,
       children: <PermissionManage
+        dataSet={detailDs}
         record={detailDs.current}
         allProjectDs={allProjectDs}
         permissionProjectDs={permissionProjectDs}
@@ -90,6 +90,7 @@ const AppService = withRouter(observer((props) => {
         projectId={id}
         intlPrefix={intlPrefix}
         prefixCls={prefixCls}
+        refresh={refresh}
       />,
       onCancel: handleCancel,
     });

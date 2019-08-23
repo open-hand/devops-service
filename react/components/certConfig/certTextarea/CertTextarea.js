@@ -26,7 +26,6 @@ export function CertTextarea(propsForm, formatMessage) {
 
   return <Fragment>
     <FormItem
-      className="c7n-select_480"
       {...formItemLayout}
       label={<FormattedMessage id="certificate.cert.content" />}
     >
@@ -45,7 +44,6 @@ export function CertTextarea(propsForm, formatMessage) {
       )}
     </FormItem>
     <FormItem
-      className="c7n-select_480"
       {...formItemLayout}
       label={<FormattedMessage id="certificate.key.content" />}
     >

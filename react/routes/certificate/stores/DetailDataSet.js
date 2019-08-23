@@ -1,3 +1,5 @@
+import map from 'lodash/map';
+
 export default ((intlPrefix, formatMessage, projectId) => ({
   autoQuery: false,
   selection: false,
@@ -6,11 +8,19 @@ export default ((intlPrefix, formatMessage, projectId) => ({
     read: {
       method: 'get',
     },
-    update: ({ data: [data] }) => ({
-      url: `/v1/projects/${projectId}/certs/${data.id}/permission`,
-      method: 'put',
-      data,
-    }),
+    update: ({ data: [data] }) => {
+      const res = {
+        certificationId: data.id,
+        projectIds: [],
+        skipCheckProjectPermission: data.skipCheckProjectPermission,
+        objectVersionNumber: data.objectVersionNumber,
+      };
+      return ({
+        url: `/devops/v1/projects/${projectId}/certs/${data.id}/permission`,
+        method: 'post',
+        data: res,
+      });
+    },
     destroy: ({ data: [data] }) => ({
       url: `/devops/v1/projects/${projectId}/certs/${data.id}`,
       method: 'delete',
