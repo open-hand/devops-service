@@ -54,7 +54,10 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
         });
 
         //查询环境
-        List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = devopsEnvironmentService.baseListByIds(new ArrayList<>(envIds));
+        List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = new ArrayList<>();
+        if (!envIds.isEmpty()) {
+            devopsEnvironmentDTOS.addAll(devopsEnvironmentService.baseListByIds(new ArrayList<>(envIds)));
+        }
 
         PageInfo<DevopsDeployRecordVO> devopsDeployRecordVOPageInfo = ConvertUtils.convertPage(devopsDeployRecordDTOPageInfo, DevopsDeployRecordVO.class);
 
@@ -85,8 +88,9 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
         Map<String, Object> maps = TypeUtil.castMapParams(params);
         return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(
                 () -> devopsDeployRecordMapper.listByProjectId(projectId,
-                        TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
-                        TypeUtil.cast(maps.get(TypeUtil.PARAMS)))
+                        TypeUtil.cast(maps.get(TypeUtil.PARAMS)),
+                        TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM))
+                )
         );
     }
 
