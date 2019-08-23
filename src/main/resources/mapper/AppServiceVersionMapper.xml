@@ -11,6 +11,7 @@
         devops_app_service_version dav
         WHERE
         dav.app_service_id = #{appServiceId}
+        AND dav.repository IS NOT NULL
         <if test='searchParam != null'>
             <if test='searchParam.version != null and searchParam.version.length > 0'>
                 AND
@@ -33,6 +34,7 @@
         devops_app_service_version dav
         WHERE
         dav.app_service_id = #{appServiceId}
+        AND dav.repository IS NOT NULL
     </select>
 
     <select id="listApplicationVersion" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
@@ -49,6 +51,7 @@
         devops_app_service da
         RIGHT JOIN devops_app_service_version dav ON da.id = dav.app_service_id
         WHERE da.app_id = #{projectId}
+        AND dav.repository IS NOT NULL
         <if test='appServiceId != null'>
             AND da.id= #{appServiceId}
         </if>
@@ -95,6 +98,7 @@
         LEFT JOIN devops_app_service_share_rule dam on dam.app_service_id = da.id
         WHERE
         da.app_id = #{projectId}
+        AND dap.repository IS NOT NULL
         OR (
         da.app_id IN
         <foreach collection="projectIds" item="project" open="(" separator="," close=")">
@@ -113,6 +117,7 @@
             dav.app_service_id = #{appServiceId}
         AND dav.version LIKE CONCAT(CONCAT('%', #{ref}))
         AND dav.`commit` = #{commit}
+        AND dav.repository IS NOT NULL
     </select>
 
     <select id="listByAppIdAndEnvId" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
@@ -126,6 +131,7 @@
         devops_app_service_version dav
         WHERE
         da.id = dai.app_service_id
+        AND dav.repository IS NOT NULL
         AND de.id = dai.env_id
         AND dai.`status` = 'running'
         AND dai.app_service_version_id = dav.id
@@ -157,6 +163,7 @@
         devops_app_service_version dav
         WHERE
         dav.app_service_id = #{appServiceId}
+        AND dav.repository IS NOT NULL
         <if test="version != null">
             AND
             dav.version LIKE CONCAT(CONCAT('%', #{version, jdbcType=VARCHAR}),'%')
@@ -176,6 +183,7 @@
         JOIN devops_env de ON de.id = dai.env_id
         WHERE
         de.project_id = #{projectId}
+        AND dav.repository IS NOT NULL
         AND dav.app_service_id = #{appServiceId}
         ORDER BY
         dav.id DESC
@@ -188,6 +196,7 @@
         dav.creation_date
         from devops_app_service_version dav
         where dav.app_service_id = #{applicationId}
+        AND dav.repository IS NOT NULL
         and dav.is_publish=1
     </select>
 
@@ -200,6 +209,7 @@
         AND da.id = dav.app_service_id
         WHERE
         dav.app_service_id = #{applicationId}
+        AND dav.repository IS NOT NULL
     </select>
 
     <select id="listUpgradeVersion" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
@@ -240,6 +250,7 @@
         FROM
         devops_app_service_version dav
         where 1=1
+        AND dav.repository IS NOT NULL
         <if test="appServiceServiceIds != null">
             AND dav.id in
             <foreach collection="appServiceServiceIds" item="appServiceServiceIds" index="index"
@@ -256,6 +267,7 @@
         devops_app_service_version
         WHERE
         app_service_id = #{appServiceId} and commit is not null and version LIKE CONCAT(CONCAT('%', #{branch, jdbcType=VARCHAR}),'%')
+        AND devops_app_service_version.repository IS NOT NULL
         order by id desc limit
         10
     </select>

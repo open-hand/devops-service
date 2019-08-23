@@ -374,7 +374,7 @@
         </foreach>
         AND (
         dasr.share_level = 'organization'
-        OR dasr.app_id = #{appId}
+        OR dasr.project_id = #{projectId}
         )
         <if test='params != null and params.size > 0'>
             AND
