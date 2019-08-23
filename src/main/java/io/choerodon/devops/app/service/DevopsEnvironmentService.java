@@ -33,6 +33,16 @@ public interface DevopsEnvironmentService {
     List<DevopsEnvGroupEnvsVO> listDevopsEnvGroupEnvs(Long projectId, Boolean active);
 
     /**
+     * 项目下根据分组查看环境详情
+     *
+     * @param projectId 项目id
+     * @param groupId   分组id
+     * @param active    是否可用
+     * @return
+     */
+    List<DevopsEnviromentRepVO> listByGroupAndActive(Long projectId, Long groupId, Boolean active);
+
+    /**
      * 项目下查询环境
      *
      * @param projectId 项目id
