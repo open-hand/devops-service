@@ -102,7 +102,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         DevopsProjectDTO devopsProjectDTO = devopsProjectMapper.selectByPrimaryKey(newAppId);
 
         //创建saga payload
-        final DevOpsAppServicePayload payload = createPayload(newAppService, TypeUtil.objToInteger(userAttrVO.getGitlabUserId()), TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()));
+        final DevOpsAppServicePayload payload = createPayload(newAppService, TypeUtil.objToInteger(userAttrVO.getGitlabUserId()), TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()), projectId);
 
         // 创建服务对应的代码仓库
         try {
@@ -184,16 +184,17 @@ public class ApplicationServiceImpl implements ApplicationService {
      * @param newAppService 应用服务信息
      * @param gitlabUserId  gitlab用户id
      * @param groupId       组id
+     * @param projectId     项目ID
      * @return payload
      */
-    private DevOpsAppServicePayload createPayload(AppServiceDTO newAppService, Integer gitlabUserId, Integer groupId) {
+    private DevOpsAppServicePayload createPayload(AppServiceDTO newAppService, Integer gitlabUserId, Integer groupId, Long projectId) {
         DevOpsAppServicePayload devOpsAppServicePayload = new DevOpsAppServicePayload();
         devOpsAppServicePayload.setPath(newAppService.getCode());
         devOpsAppServicePayload.setUserId(gitlabUserId);
         devOpsAppServicePayload.setGroupId(groupId);
         devOpsAppServicePayload.setSkipCheckPermission(newAppService.getSkipCheckPermission());
         devOpsAppServicePayload.setAppServiceId(newAppService.getId());
-        devOpsAppServicePayload.setIamProjectId(newAppService.getAppId());
+        devOpsAppServicePayload.setIamProjectId(projectId);
         return devOpsAppServicePayload;
     }
 

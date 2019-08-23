@@ -250,8 +250,10 @@ public class DevopsServiceController {
             @RequestParam(value = "app_service_id", required = false) Long appServiceId,
             @ApiParam(value = "分页参数")
             @SortDefault(value = "id", direction = Sort.Direction.DESC)
-            @ApiIgnore PageRequest pageRequest) {
-        return Optional.ofNullable(devopsServiceService.pageByInstance(projectId, instanceId, pageRequest, appServiceId))
+            @ApiIgnore PageRequest pageRequest,
+            @ApiParam(value = "查询参数")
+            @RequestBody(required = false) String searchParam) {
+        return Optional.ofNullable(devopsServiceService.pageByInstance(projectId, instanceId, pageRequest, appServiceId, searchParam))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_APP_K8S_SERVICE_QUERY));
     }
