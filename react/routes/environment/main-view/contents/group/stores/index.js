@@ -5,6 +5,7 @@ import { injectIntl } from 'react-intl';
 import { DataSet } from 'choerodon-ui/pro';
 import { useEnvironmentStore } from '../../../../stores';
 import TableDataSet from './TableDataSet';
+import GroupCreateDataSet from './GroupCreateDataSet';
 
 const Store = createContext();
 
@@ -18,18 +19,22 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const {
       intlPrefix,
       envStore: {
-        getSelectedMenu: { id },
+        getSelectedMenu: { id, active },
       },
     } = useEnvironmentStore();
-    const groupDs = useMemo(() => new DataSet(TableDataSet({ projectId, id, formatMessage, intlPrefix })), [id, projectId]);
+    const groupDs = useMemo(() => new DataSet(TableDataSet({ formatMessage, intlPrefix })), []);
+    const groupFormDs = useMemo(() => new DataSet(GroupCreateDataSet({ formatMessage, intlPrefix, projectId })), [projectId]);
 
-    // useEffect(() => {
-    //   // detailDs.transport.read.url=
-    // }, []);
+    useEffect(() => {
+      const param = typeof id === 'number' && id ? `&group_id=${id}` : '';
+      groupDs.transport.read.url = `/devops/v1/projects/${projectId}/envs/list_by_group?active=${active}${param}`;
+      groupDs.query();
+    }, [id, projectId, active]);
 
     const value = {
       ...props,
       groupDs,
+      groupFormDs,
     };
     return (
       <Store.Provider value={value}>

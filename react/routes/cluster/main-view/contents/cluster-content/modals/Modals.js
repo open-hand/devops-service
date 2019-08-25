@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Modal } from 'choerodon-ui/pro';
-import HeaderButtons from '../../../../../resource/main-view/components/header-buttons';
+import HeaderButtons from '../../../../../../components/header-buttons';
 import { useClusterContentStore } from '../stores';
 import { useClusterStore } from '../../../../stores';
 import { useModalStore } from './stores';
@@ -44,7 +44,7 @@ const ClusterModals = observer(() => {
   const { menuId } = clusterStore.getSelectedMenu;
 
   function linkServices(data) {
-    
+
   }
 
   function permissionUpdate(data) {

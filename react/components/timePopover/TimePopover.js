@@ -1,20 +1,11 @@
 /**
  * hover 显示时间
  */
-import React from 'react';
-import { observer } from 'mobx-react';
+import React, { memo } from 'react';
+import PropTypes from 'prop-types';
 import { Tooltip } from 'choerodon-ui';
 import TimeAgo from 'timeago-react';
-import PropTypes from 'prop-types';
 import { formatDate } from '../../utils';
-
-const TimePopoverRequiredProps = {
-  content: PropTypes.oneOfType([
-    PropTypes.string,
-    PropTypes.number,
-  ]),
-  style: PropTypes.object,
-};
 
 function TimePopover({ content, style }) {
   const timestamp = content && typeof content === 'string'
@@ -35,5 +26,12 @@ function TimePopover({ content, style }) {
   );
 }
 
-TimePopover.propTypes = TimePopoverRequiredProps;
-export default observer(TimePopover);
+TimePopover.propTypes = {
+  content: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.number,
+  ]),
+  style: PropTypes.object,
+};
+
+export default memo(TimePopover);
