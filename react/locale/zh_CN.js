@@ -351,8 +351,11 @@ const appService = {
 };
 
 const envrionment = {
+  'c7ncd.env.create': '创建环境',
   'c7ncd.env.group.default': '默认分组',
+  'c7ncd.env.group.name': '分组名称',
   'c7ncd.env.group.stopped': '环境配置停用区',
+  'c7ncd.env.group.create': '创建分组',
   'c7ncd.env.modal.group.delete': '删除分组',
   'c7ncd.env.modal.group.modify': '修改分组',
   'c7ncd.env.modal.detail.modify': '修改环境',

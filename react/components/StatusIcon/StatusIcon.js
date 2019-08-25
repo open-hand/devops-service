@@ -20,7 +20,7 @@ function StatusIcon(props) {
     'c7n-status-deleted': status === 'deleted',
   });
   switch (status) {
-    case 'failed':
+    case 'failed': {
       const msg = error ? `: ${error}` : '';
       statusDom = (
         <Tooltip title={`failed ${msg}`}>
@@ -28,6 +28,7 @@ function StatusIcon(props) {
         </Tooltip>
       );
       break;
+    }
     case 'operating':
       statusDom = (
         <Tooltip title={formatMessage({ id: 'ist_operating' })}>

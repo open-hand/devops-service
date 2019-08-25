@@ -6,6 +6,20 @@ import { Tooltip } from 'choerodon-ui/pro';
 
 import './index.less';
 
+export function getEnvStatus(connect, synchronize, active) {
+  if (active) {
+    if (!synchronize) {
+      return 'operating';
+    } else if (connect) {
+      return 'running';
+    } else {
+      return 'disconnect';
+    }
+  } else {
+    return 'stopped';
+  }
+}
+
 const StatusDot = memo(({ connect, synchronize, active, size }) => {
   /**
    *
@@ -15,18 +29,7 @@ const StatusDot = memo(({ connect, synchronize, active, size }) => {
    * [active: false]                      已停用 #rgba(0,0,0,.26)
    */
 
-  let status;
-  if (active) {
-    if (!synchronize) {
-      status = 'operating';
-    } else if (connect) {
-      status = 'running';
-    } else {
-      status = 'disconnect';
-    }
-  } else {
-    status = 'stopped';
-  }
+  const status = getEnvStatus(connect, synchronize, active);
 
   const styled = classnames({
     'c7ncd-env-status': true,

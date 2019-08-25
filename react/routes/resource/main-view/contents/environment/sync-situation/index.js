@@ -1,13 +1,15 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { FormattedMessage } from 'react-intl';
 import { Table } from 'choerodon-ui/pro';
 import MouserOverWrapper from '../../../../../../components/MouseOverWrapper';
-import TimePopover from '../../../../../../components/timePopover';
+import TimePopover from '../../../../../../components/time-popover';
 import SyncSituation from './SyncSituation';
 import { useResourceStore } from '../../../../stores';
 import { useEnvironmentStore } from '../stores';
 
 import './index.less';
+
+const { Column } = Table;
 
 export default function Situation() {
   const {
@@ -16,46 +18,39 @@ export default function Situation() {
   } = useResourceStore();
   const { gitopsLogDs } = useEnvironmentStore();
 
-  const columns = useMemo(() => ([
-    {
-      name: 'error',
-      renderer: ({ value }) => (
-        <MouserOverWrapper text={value || ''} width={0.5}>
-          {value}
-        </MouserOverWrapper>
-      ),
-    },
-    {
-      name: 'filePath',
-      renderer: ({ record }) => (
-        <a
-          href={record.data.fileUrl}
-          target="_blank"
-          rel="nofollow me noopener noreferrer"
-        >
-          <span>{record.data.filePath}</span>
-        </a>
-      ),
-    },
-    {
-      name: 'commit',
-      renderer: ({ record }) => (
-        <a
-          href={record.data.commitUrl}
-          target="_blank"
-          rel="nofollow me noopener noreferrer"
-        >
-          <span>{record.data.commit}</span>
-        </a>
-      ),
-    },
-    {
-      name: 'errorTime',
-      width: 80,
-      sortable: true,
-      renderer: ({ value }) => <TimePopover content={value} />,
-    },
-  ]), []);
+  function renderMsg({ value }) {
+    return <MouserOverWrapper text={value || ''} width={0.5}>
+      {value}
+    </MouserOverWrapper>;
+  }
+
+  function renderFileLink({ record }) {
+    const url = record.get('fileUrl');
+    const path = record.get('filePath');
+    return <a
+      href={url}
+      target="_blank"
+      rel="nofollow me noopener noreferrer"
+    >
+      <span>{path}</span>
+    </a>;
+  }
+
+  function renderCommit({ record }) {
+    const url = record.get('commitUrl');
+    const commit = record.get('commit');
+    return <a
+      href={url}
+      target="_blank"
+      rel="nofollow me noopener noreferrer"
+    >
+      <span>{commit}</span>
+    </a>;
+  }
+
+  function renderTime({ value }) {
+    return <TimePopover datetime={value} />;
+  }
 
   return (
     <div className={`${prefixCls}-environment-sync`}>
@@ -67,8 +62,12 @@ export default function Situation() {
         dataSet={gitopsLogDs}
         border={false}
         queryBar="none"
-        columns={columns}
-      />
+      >
+        <Column name="error" renderer={renderMsg} />
+        <Column name="filePath" renderer={renderFileLink} />
+        <Column name="commit" renderer={renderCommit} />
+        <Column name="errorTime" sortable renderer={renderTime} />
+      </Table>
     </div>
   );
 }

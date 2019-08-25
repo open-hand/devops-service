@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Action } from '@choerodon/master';
 import { Table } from 'choerodon-ui/pro';
-import StatusIcon from '../../../../../components/StatusIcon';
+import StatusTag from '../../../../../components/status-tag';
+import { getEnvStatus } from '../../../../../components/status-dot';
 import { useEnvironmentStore } from '../../../stores';
 import { useEnvGroupStore } from './stores';
 import Modals from './modals';
@@ -20,29 +21,35 @@ const Group = observer(() => {
   } = useEnvironmentStore();
   const {
     groupDs,
+    intl: { formatMessage },
   } = useEnvGroupStore();
 
   function refresh() {
   }
 
+  function handleDelete() {
+  }
+
   function renderName({ value, record }) {
+    const active = record.get('active');
+    const connect = record.get('connect');
+    const synchronize = record.get('synchro');
+    const status = getEnvStatus(connect, synchronize, active);
     return (
-      <StatusIcon
-        name={value}
-        width={0.2}
-        status={record.get('status') || ''}
-        error={record.get('error') || ''}
-      />
+      <Fragment>
+        <StatusTag
+          colorCode={status}
+          name={formatMessage({ id: status })}
+        />
+        {value}
+      </Fragment>
     );
   }
 
-  function renderAppName({ value, record }) {
-  }
-
-  function renderPods({ record }) {
-  }
-
-  function handleDelete() {
+  function renderActions({ record }) {
+    const groupId = record.get('id');
+    const actionData = [];
+    return (<Action data={actionData} />);
   }
 
   return (
@@ -54,8 +61,9 @@ const Group = observer(() => {
         queryBar="none"
       >
         <Column name="name" renderer={renderName} />
-        <Column name="versionName" />
-        <Column name="appServiceName" renderer={renderAppName} />
+        <Column renderer={renderActions} width="0.7rem" />
+        <Column name="description" />
+        <Column name="clusterName" />
       </Table>
       <Modals />
     </div>

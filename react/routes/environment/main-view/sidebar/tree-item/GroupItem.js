@@ -1,32 +1,52 @@
-import React, { Fragment } from 'react';
+import React, { Fragment, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { observer } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
+import { Form, Modal, TextField } from 'choerodon-ui/pro';
 import { Action, Permission } from '@choerodon/master';
 import TreeItemName from '../../../../../components/treeitem-name';
-import { handlePromptError } from '../../../../../utils';
 import { useEnvironmentStore } from '../../../stores';
 import { useTreeItemStore } from './stores';
 
+const modalKey = Modal.key();
+
 function GroupItem({ record, search, intl: { formatMessage }, intlPrefix }) {
+  const modalStyle = useMemo(() => ({
+    width: 380,
+  }), []);
   const {
     treeDs,
     AppState: { currentMenuType: { id } },
   } = useEnvironmentStore();
+  const { groupFormDs } = useTreeItemStore();
 
-  async function handleClick() {
-    // if (!record) return;
-    //
-    // const envId = record.get('parentId');
-    // const appId = record.get('id');
-    // try {
-    // const result = await treeItemStore.removeService(id, envId, [appId]);
-    //   if (handlePromptError(result, false)) {
-    //     treeDs.query();
-    //   }
-    // } catch (error) {
-    //   Choerodon.handleResponseError(error);
-    // }
+  async function handleCreate() {
+    try {
+      if ((await groupFormDs.create()) !== false) {
+        treeDs.query();
+      } else {
+        return false;
+      }
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function handleClick() {
+    Modal.open({
+      key: modalKey,
+      title: formatMessage({ id: `${intlPrefix}.group.create` }),
+      children: <Form dataSet={groupFormDs}>
+        <TextField name="name" />
+      </Form>,
+      drawer: true,
+      onOk: handleCreate,
+      style: modalStyle,
+    });
+  }
+
+  function handleDelete() {
+    treeDs.query();
   }
 
   function getName() {
@@ -45,7 +65,7 @@ function GroupItem({ record, search, intl: { formatMessage }, intlPrefix }) {
     }, {
       service: [],
       text: formatMessage({ id: `${intlPrefix}.modal.group.delete` }),
-      action: handleClick,
+      action: handleDelete,
     }];
     return <Action placement="bottomRight" data={actionData} />;
   }
