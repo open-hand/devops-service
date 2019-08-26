@@ -2,12 +2,27 @@ import React, { useEffect } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import { Select, Form } from 'choerodon-ui/pro';
+import { handlePromptError } from '../../../../../utils';
 
 import './index.less';
 
 const { Option } = Select;
 
-export default observer(({ record, versionOptions, levelOptions, projectId, formatMessage, appServiceId, intlPrefix }) => {
+export default observer(({ record, versionOptions, levelOptions, projectId, store, formatMessage, appServiceId, intlPrefix }) => {
+  useEffect(() => {
+    async function loadShareById() {
+      try {
+        const res = await store.loadShareById(projectId, record.get('id'));
+        if (handlePromptError(res)) {
+          record.set('objectVersionNumber', res.objectVersionNumber);
+        }
+      } catch (e) {
+        Choerodon.handleResponseError(e);
+      }
+    }
+    loadShareById();
+  }, []);
+
   useEffect(() => {
     async function createOption() {
       await levelOptions.query();

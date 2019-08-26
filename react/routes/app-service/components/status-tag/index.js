@@ -1,10 +1,11 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { injectIntl, FormattedMessage } from 'react-intl';
+import StatusTags from '../../../../components/status-tag';
 
 import './index.less';
 
-const StatusTags = injectIntl(({ intl: { formatMessage }, active, fail, synchro }) => {
+const Status = injectIntl(({ intl: { formatMessage }, active, fail, synchro }) => {
   let msg = '';
   let color = '';
   if (fail) {
@@ -20,17 +21,19 @@ const StatusTags = injectIntl(({ intl: { formatMessage }, active, fail, synchro 
     msg = 'stop';
     color = '#cecece';
   }
+
   return (
-    <div className="c7ncd-appService-status-tag" style={{ backgroundColor: color }}>
-      <span className="c7ncd-appService-status-tag-text">{formatMessage({ id: msg })}</span>
-    </div>
+    <StatusTags
+      name={formatMessage({ id: msg })}
+      colorCode={msg}
+    />
   );
 });
 
-StatusTags.propTypes = {
+Status.propTypes = {
   active: PropTypes.bool.isRequired,
   fail: PropTypes.bool.isRequired,
   synchro: PropTypes.bool.isRequired,
 };
 
-export default StatusTags;
+export default Status;
