@@ -12,7 +12,7 @@ import DevPipelineStore from '../../stores/DevPipelineStore';
 import handleMapStore from '../../main-view/store/handleMapStore';
 import AppTagStore from './stores';
 import '../../../main.less';
-import './style/AppTag.scss';
+import './style/AppTag.less';
 import AppTagCreate from './AppTagCreate';
 import AppTagEdit from './AppTagEdit';
 

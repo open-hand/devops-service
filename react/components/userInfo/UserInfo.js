@@ -1,7 +1,7 @@
 import React, { PureComponent, Fragment } from 'react';
 import PropTypes from 'prop-types';
 
-import './UserInfo.scss';
+import './UserInfo.less';
 
 class UserInfo extends PureComponent {
   static propTypes = {
@@ -30,7 +30,7 @@ class UserInfo extends PureComponent {
         </Fragment>)}
       </div>
     );
-  };
+  }
 }
 
 export default UserInfo;

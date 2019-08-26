@@ -1,6 +1,6 @@
 import React from 'react';
 
-import './InterceptMask.scss';
+import './InterceptMask.less';
 
 export default function InterceptMask(props) {
   const { visible } = props;

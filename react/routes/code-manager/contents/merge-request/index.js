@@ -12,7 +12,7 @@ import Tips from '../../../../components/Tips';
 import MergeRequestStore from './stores';
 import handleMapStore from '../../main-view/store/handleMapStore';
 
-import './index.scss';
+import './index.less';
 import '../../../main.less';
 
 const { AppState } = stores;

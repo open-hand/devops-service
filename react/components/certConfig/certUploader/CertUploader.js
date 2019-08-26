@@ -11,7 +11,7 @@ import {
 import { injectIntl, FormattedMessage } from 'react-intl';
 import classnames from 'classnames';
 
-import './CertUploader.scss';
+import './CertUploader.less';
 
 const { Item: FormItem } = Form;
 const formItemLayout = {
