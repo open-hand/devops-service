@@ -13,10 +13,10 @@ import './index.less';
 const FormItem = Form.Item;
 const { Option } = Select;
 
-const Permission = observer(({ modal, form, store, onOk, intlPrefix, prefixCls, intl: { formatMessage } }) => {
+const Permission = observer(({ modal, form, store, onOk, skipPermission, refresh, intlPrefix, prefixCls, intl: { formatMessage } }) => {
   const { getFieldDecorator } = form;
   const { getUsers } = store;
-  const [isSkip, setIsSkip] = useState(true);
+  const [isSkip, setIsSkip] = useState(skipPermission);
 
   modal.handleOk(async () => {
     let users = null;
@@ -37,6 +37,7 @@ const Permission = observer(({ modal, form, store, onOk, intlPrefix, prefixCls, 
     try {
       const res = await onOk(users);
       if (!handlePromptError(res, false)) return false;
+      refresh();
     } catch (e) {
       Choerodon.handleResponseError(e);
       return false;

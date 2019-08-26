@@ -107,4 +107,43 @@
       }
     }
   }
+
+  .service-detail-pod {
+
+    &-list {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 .4rem;
+      display: flex;
+      align-items: center;
+    }
+
+    &-item {
+      border-right: 1px dashed rgba(0, 0, 0, 0.12);
+      padding: 0 .2rem;
+      font-size: .12rem;
+      line-height: .2rem;
+
+      &:last-child {
+        border-right: none;
+      }
+
+      &:first-child {
+        padding: 0 .2rem 0 0;
+      }
+
+      &-key {
+        color: rgba(0, 0, 0, 0.65);
+      }
+
+      &-name {
+        font-weight: 500;
+        display: block;
+      }
+    }
+
+    &-echarts {
+      display: flex;
+    }
+  }
 }

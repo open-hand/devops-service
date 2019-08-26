@@ -124,6 +124,8 @@ const EnvModals = observer(() => {
         onOk={addUsers}
         intlPrefix={intlPrefix}
         prefixCls={prefixCls}
+        skipPermission={baseInfoDs.current.get('skipCheckPermission')}
+        refresh={refresh}
       />,
       afterClose: () => {
         modalStore.setUsers([]);

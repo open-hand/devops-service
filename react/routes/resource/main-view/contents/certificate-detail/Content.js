@@ -4,7 +4,7 @@ import { observer } from 'mobx-react-lite';
 import { Icon } from 'choerodon-ui';
 import map from 'lodash/map';
 import { useResourceStore } from '../../../stores';
-import { useCustomDetailStore } from './stores';
+import { useCertDetailStore } from './stores';
 import Modals from './modals';
 
 import './index.less';
@@ -18,7 +18,7 @@ const Content = observer(() => {
   const {
     detailDs,
     intl: { formatMessage },
-  } = useCustomDetailStore();
+  } = useCertDetailStore();
 
   const record = detailDs.current;
   if (!record) return <span>loading</span>;

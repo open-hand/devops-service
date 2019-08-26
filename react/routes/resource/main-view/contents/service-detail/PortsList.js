@@ -23,7 +23,7 @@ const PortsList = observer(() => {
       </div>
       <div className="detail-content-section-detail">
         {map(record.get('config').ports, ({ port, targetPort, protocol }) => (
-          <ul className="service-detail-port-list">
+          <ul className="service-detail-port-list" key={port}>
             <li className="service-detail-port-item">
               <span className="service-detail-port-item-text">{port}</span>
               <FormattedMessage id="port" />
