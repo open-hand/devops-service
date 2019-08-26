@@ -1,6 +1,6 @@
 import { observable, action, computed } from 'mobx';
 import { axios, store } from '@choerodon/master';
-import { handleProptError } from '../../../../../utils';
+import { handlePromptError } from '../../../../../utils';
 
 @store('CodeQualityStore')
 class CodeQualityStore {
@@ -33,9 +33,9 @@ class CodeQualityStore {
     this.changeLoading(true);
     return axios.get(`/devops/v1/projects/${projectId}/app_service/${appId}/sonarqube`)
       .then((data) => {
-        const res = handleProptError(data);
+        const res = handlePromptError(data);
         if (res) {
-          this.setData(res);
+          this.setData(data);
         }
         this.changeLoading(false);
       });

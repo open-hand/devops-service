@@ -10,7 +10,7 @@ import 'codemirror/addon/lint/lint.css';
 import './theme-chd.css';
 import CodeMirror from './editor/CodeMirror';
 import 'codemirror/addon/lint/lint.js';
-import './index.scss';
+import './index.less';
 import './yaml-lint';
 import './yaml-mode';
 import './merge';

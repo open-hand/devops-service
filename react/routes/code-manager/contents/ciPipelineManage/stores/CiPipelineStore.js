@@ -1,6 +1,6 @@
 import { observable, action, computed } from 'mobx';
 import { axios, store, stores } from '@choerodon/master';
-import { handleProptError } from '../../../../../utils';
+import { handlePromptError } from '../../../../../utils';
 
 const { AppState } = stores;
 const HEIGHT = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
@@ -31,7 +31,7 @@ class CiPipelineStore {
     spin && this.setLoading(true);
     return axios.get(`/devops/v1/projects/${projectId}/pipeline/page_by_options?app_service_id=${appId}&page=${page}&size=${size}`)
       .then((res) => {
-        const response = handleProptError(res);
+        const response = handlePromptError(res);
         if (response) {
           this.setPagination({
             current: res.pageNum,
@@ -49,7 +49,7 @@ class CiPipelineStore {
     this.setLoading(true);
     return axios.get(`/devops/v1/projects/${projectId}/pipeline/page_by_options?app_id=${appId}&branch=${branch}&page=${page}&size=${size}`)
       .then((res) => {
-        const response = handleProptError(res);
+        const response = handlePromptError(res);
         if (response) {
           this.setPagination({
             current: res.pageNum,
@@ -65,12 +65,24 @@ class CiPipelineStore {
 
   cancelPipeline(gitlabProjectId, pipelineId) {
     return axios.post(`/devops/v1/projects/${AppState.currentMenuType.id}/gitlab_projects/${gitlabProjectId}/pipelines/${pipelineId}/cancel`)
-      .then((datas) => handleProptError(datas));
+      .then((datas) => {
+        const result = handlePromptError(datas);
+        if (result) {
+          return datas;
+        }
+        return result;
+      });
   }
 
   retryPipeline(gitlabProjectId, pipelineId) {
     return axios.post(`/devops/v1/projects/${AppState.currentMenuType.id}/gitlab_projects/${gitlabProjectId}/pipelines/${pipelineId}/retry`)
-      .then((datas) => handleProptError(datas));
+      .then((datas) => {
+        const result = handlePromptError(datas);
+        if (result) {
+          return datas;
+        }
+        return result;
+      });
   }
 
   @action setCiPipelines(data) {

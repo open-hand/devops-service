@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { FormattedMessage } from 'react-intl';
 import _ from 'lodash';
-import './Codemirror.scss';
+import './Codemirror.less';
 
 function normalizeLineEndings(str) {
   if (!str) return str;
@@ -47,16 +47,16 @@ class CodeMirror extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     if (
-      this.codeMirror &&
-      this.props.value !== undefined &&
-      this.props.value !== prevProps.value &&
-      normalizeLineEndings(this.codeMirror.getValue()) !==
-      normalizeLineEndings(this.props.value)
+      this.codeMirror
+      && this.props.value !== undefined
+      && this.props.value !== prevProps.value
+      && normalizeLineEndings(this.codeMirror.getValue())
+      !== normalizeLineEndings(this.props.value)
     ) {
       this.codeMirror.setValue(this.props.value);
     }
     if (typeof this.props.options === 'object') {
-      for (let optionName in this.props.options) {
+      for (const optionName in this.props.options) {
         if (this.props.options.hasOwnProperty(optionName)) {
           this.setOptionIfChanged(optionName, this.props.options[optionName]);
         }
@@ -131,7 +131,7 @@ class CodeMirror extends React.Component {
 
   get getLegends() {
     const LEGEND_TYPE = ['new', 'delete', 'modify', 'error'];
-    return _.map(LEGEND_TYPE, item => (
+    return _.map(LEGEND_TYPE, (item) => (
       <span
         key={item}
         className={`c7ncd-editor-legend-item c7ncd-editor-legend_${item}`}
@@ -166,7 +166,7 @@ class CodeMirror extends React.Component {
         <div>
           <textarea
             className="hidden-textarea"
-            ref={ref => (this.textareaNode = ref)}
+            ref={(ref) => (this.textareaNode = ref)}
             defaultValue={this.props.value}
             autoComplete="off"
           />

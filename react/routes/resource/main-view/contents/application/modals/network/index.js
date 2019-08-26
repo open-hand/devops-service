@@ -9,7 +9,7 @@ import InterceptMask from '../../../../../../../components/interceptMask/Interce
 import NetworkForm from './networkForm';
 
 import '../../../../../../main.less';
-import './index.scss';
+import './index.less';
 
 const { Sidebar } = Modal;
 

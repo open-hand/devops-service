@@ -7,7 +7,7 @@ import _ from 'lodash';
 import PropTypes from 'prop-types';
 
 import '../../../../../../../main.less';
-import './index.scss';
+import './index.less';
 
 const { Item: FormItem } = Form;
 const { Group: RadioGroup } = Radio;

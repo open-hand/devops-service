@@ -1,7 +1,7 @@
 /* eslint-disable */
 import { observable, action, computed } from 'mobx';
 import { axios, store, stores } from '@choerodon/master';
-import { handleProptError } from '../../../../../utils';
+import { handlePromptError } from '../../../../../utils';
 import DevPipelineStore from '../../../stores/DevPipelineStore';
 import { branchList, issuesList, tagList } from './mock';
 
@@ -130,13 +130,12 @@ class BranchStore {
     return axios.get(`/agile/v1/projects/${proId}/issues/summary?issueId=${issueId}&onlyActiveSprint=${onlyActiveSprint}&self=true&issueNum=${issueNum}&content=${search}`)
       .then((data) => {
         this.setIssueLoading(false);
-        const res = handleProptError(data);
-        if (res) {
+        if (handlePromptError(data)) {
           this.setIssue(data.list);
         } else {
           this.setIssue(issuesList.list);
         }
-        return res;
+        return data;
       });
   };
 
@@ -147,8 +146,7 @@ class BranchStore {
     return axios.get(`/agile/v1/projects/${proId}/issues/${id}?organizationId=${orgId}`)
       .then((datas) => {
         this.changeLoading(false);
-        const res = handleProptError(datas);
-        if (res) {
+        if (handlePromptError(datas)) {
           this.setIssueDto(datas);
         }
       });
@@ -157,8 +155,7 @@ class BranchStore {
 
   loadIssueTimeById =(proId, id) => axios.get(`/agile/v1/projects/${proId}/work_log/issue/${id}`)
     .then((datas) => {
-      const res = handleProptError(datas);
-      if (res) {
+      if (handlePromptError(datas)) {
         this.setIssueTime(datas);
       }
     });
@@ -175,8 +172,7 @@ class BranchStore {
     param: '' } }) => {
     axios.post(`/devops/v1/projects/${projectId}/app_service/${DevPipelineStore.selectedApp}/git/page_branch_by_options?page=${page}&size=${size}&sort=${sort.field},${sort.order}`, JSON.stringify(postData))
       .then((data) => {
-        const res = handleProptError(data);
-        if (res) {
+        if (handlePromptError(data)) {
           this.setBranchData(data);
         } else {
           this.setBranchData(branchList);
@@ -200,14 +196,10 @@ class BranchStore {
         .post(`/devops/v1/projects/${projectId}/app_service/${DevPipelineStore.selectedApp}/git/page_branch_by_options?page=${page}&size=${size}&sort=${sort.field},${sort.order}`, JSON.stringify(postData))
         .then((data) => {
           this.changeLoading(false);  
-          const res = handleProptError(data);
-          if (res) {
+          if (handlePromptError(data)) {
             this.setBranchList(data.list);
             const pages = { current: data.pageNum, pageSize: size, total: data.total };
             this.setPageInfo(pages);
-          } else {
-            // 模拟数据
-            this.setBranchList(branchList.list);
           }
         });
     }
@@ -215,8 +207,7 @@ class BranchStore {
 
   loadTagData = (projectId, page = 1, sizes = 10, postData = { searchParam: {}, param: '' }) => axios.post(`/devops/v1/projects/${projectId}/app_service/${DevPipelineStore.selectedApp}/git/page_tags_by_options?page=1&size=${sizes}`, JSON.stringify(postData))
     .then((data) => {
-      const res = handleProptError(data);
-      if (res) {
+      if (handlePromptError(data)) {
         this.setTagData(data);
       } else {
         this.setTagData(tagList);
@@ -227,7 +218,7 @@ class BranchStore {
     .then((branch) => {
       this.setIssueInitValue(null);
       this.setIssueDto(null);
-      const res = handleProptError(branch);
+      const res = handlePromptError(branch);
       if (!branch.issueId) {
         const types = ['feature', 'release', 'bugfix', 'master', 'hotfix'];
         axios.get(`/agile/v1/projects/${AppState.currentMenuType.id}/project_info`)
@@ -254,20 +245,29 @@ class BranchStore {
 
   updateBranchByName = (projectId, appId, postData) => axios.put(`/devops/v1/projects/${projectId}/app_service/${appId}/git/branch`, postData)
     .then((datas) => {
-      const res = handleProptError(datas);
-      return res;
+      const result = handlePromptError(datas)
+      if(result){
+        return datas;
+      };
+      return result;
     });
 
   createBranch =(projectId, appId, postData) => axios.post(`/devops/v1/projects/${projectId}/app_service/${appId}/git/branch`, postData)
     .then((datas) => {
-      const res = handleProptError(datas);
-      return res;
+      const result = handlePromptError(datas)
+      if(result){
+        return datas;
+      };
+      return result;
     });
 
   deleteData = (proId = AppState.currentMenuType.id, appId, name) => axios.delete(`/devops/v1/projects/${proId}/app_service/${appId}/git/branch?branch_name=${name}`)
     .then((datas) => {
-      const res = handleProptError(datas);
-      return res;
+      const result = handlePromptError(datas)
+      if(result){
+        return datas;
+      };
+      return result;
     });
 
   checkName = (projectId = AppState.currentMenuType.projectId, appId, name) => axios.get(`/devops/v1/projects/${projectId}/app_service/${appId}/git/check_branch_name?branch_name=${name}`)

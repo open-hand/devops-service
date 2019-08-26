@@ -5,7 +5,7 @@ import { Tooltip, Select } from 'choerodon-ui';
 import { Content, Header, Page, stores } from '@choerodon/master';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import _ from 'lodash';
-import '../index.scss';
+import '../index.less';
 import CiPipelineStore from '../stores';
 import DevPipelineStore from '../../../devPipeline/DevPipelineStore';
 import RefreshBtn from '../../../../../components/refreshBtn';

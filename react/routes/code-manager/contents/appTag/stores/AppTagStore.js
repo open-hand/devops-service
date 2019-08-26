@@ -1,6 +1,6 @@
 import { observable, action, computed } from 'mobx';
 import { axios, store } from '@choerodon/master';
-import { handleProptError } from '../../../../../utils';
+import { handlePromptError } from '../../../../../utils';
 import DevPipelineStore from '../../../stores/DevPipelineStore';
 
 @store('AppTagStore')
@@ -56,9 +56,8 @@ class AppTagStore {
       axios.post(`/devops/v1/projects/${projectId}/app_service/${DevPipelineStore.selectedApp}/git/page_tags_by_options?page=${page}&size=${sizes}`, JSON.stringify(postData))
         .then((data) => {
           this.setLoading(false);
-          const result = handleProptError(data);
-          if (result) {
-            const { list, total, pageNum, pageSize } = result;
+          if (handlePromptError(data)) {
+            const { list, total, pageNum, pageSize } = data;
             this.setTagData(list);
             this.setPageInfo({ current: pageNum, pageSize, total });
           }
@@ -82,9 +81,8 @@ class AppTagStore {
    */
   queryBranchData = ({ projectId, sorter = { field: 'createDate', order: 'asc' }, postData = { searchParam: {}, param: '' }, size = 3 }) => {
     axios.post(`/devops/v1/projects/${projectId}/app_service/${DevPipelineStore.selectedApp}/git/page_branch_by_options?page=1&size=${size}`, JSON.stringify(postData)).then((data) => {
-      const result = handleProptError(data);
-      if (result) {
-        this.setBranchData(result);
+      if (handlePromptError(data)) {
+        this.setBranchData(data);
       }
     }).catch((err) => Choerodon.handleResponseError(err));
   };
