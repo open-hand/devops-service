@@ -20,7 +20,6 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
 import io.choerodon.devops.infra.util.*;
-import io.kubernetes.client.JSON;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -42,7 +41,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     @Value("${agent.repoUrl}")
     private String agentRepoUrl;
 
-    private JSON json = new JSON();
+    private static final String UPGRADE_MESSAGE = "Version is too low, please upgrade!";
 
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
@@ -58,8 +57,6 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     private DevopsClusterProPermissionService devopsClusterProPermissionService;
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
-    @Autowired
-    private DevopsProjectService devopsProjectService;
 
 
     @Override
@@ -150,9 +147,9 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedEnvList();
         devopsClusterRepVOPageInfo.getList().forEach(devopsClusterRepVO -> {
             devopsClusterRepVO.setConnect(isConnect(connectedEnvList, updatedEnvList, devopsClusterRepVO.getId()));
-            devopsClusterRepVO.setUpgrade(isUpdated(connectedEnvList, updatedEnvList, devopsClusterRepVO.getId()));
+            devopsClusterRepVO.setUpgrade(isToUpgrade(connectedEnvList, updatedEnvList, devopsClusterRepVO.getId()));
             if (devopsClusterRepVO.getUpgrade()) {
-                devopsClusterRepVO.setUpgradeMessage("Version is too low, please upgrade!");
+                devopsClusterRepVO.setUpgradeMessage(UPGRADE_MESSAGE);
             }
         });
 
@@ -200,10 +197,9 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         }
 
         if (devopsClusterDTO.getSkipCheckProjectPermission()) {
-            if (update.getSkipCheckProjectPermission()) {
-                // 原来跳过，现在也跳过，不处理
-                return;
-            } else {
+            // 原来跳过，现在也跳过，不处理
+
+            if (!update.getSkipCheckProjectPermission()) {
                 // 原来跳过，现在不跳过，先更新字段，然后插入关联关系
                 updateSkipPermissionCheck(
                         update.getClusterId(),
@@ -266,9 +262,9 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
         devopsClusterBasicInfoVOList.forEach(devopsClusterBasicInfoVO -> {
             devopsClusterBasicInfoVO.setConnect(isConnect(connectedEnvList, updatedEnvList, devopsClusterBasicInfoVO.getId()));
-            devopsClusterBasicInfoVO.setUpgrade(isUpdated(connectedEnvList, updatedEnvList, devopsClusterBasicInfoVO.getId()));
+            devopsClusterBasicInfoVO.setUpgrade(isToUpgrade(connectedEnvList, updatedEnvList, devopsClusterBasicInfoVO.getId()));
             if (devopsClusterBasicInfoVO.getUpgrade()) {
-                devopsClusterBasicInfoVO.setUpgradeMessage("Version is too low, please upgrade!");
+                devopsClusterBasicInfoVO.setUpgradeMessage(UPGRADE_MESSAGE);
             }
         });
         devopsClusterBasicInfoVOList.forEach(devopsClusterBasicInfoVO ->
@@ -331,16 +327,24 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         }
     }
 
-    private boolean isConnect(List<Long> connectedEnvList, List<Long> updatedEnvList, Long id) {
-        if (connectedEnvList.contains(id)) {
-            return updatedEnvList.contains(id);
+    private boolean isConnect(List<Long> connectedEnvList, List<Long> updatedEnvList, Long clusterId) {
+        if (connectedEnvList.contains(clusterId)) {
+            return updatedEnvList.contains(clusterId);
         }
         return false;
     }
 
-    private boolean isUpdated(List<Long> connectedEnvList, List<Long> updatedEnvList, Long id) {
-        if (connectedEnvList.contains(id)) {
-            return !updatedEnvList.contains(id);
+    /**
+     * 集群是否需要升级
+     *
+     * @param connectedEnvList 已连接的集群id
+     * @param updatedEnvList   up-to-date的集群id
+     * @param clusterId        待判断的集群id
+     * @return true 如果需要升级
+     */
+    private boolean isToUpgrade(List<Long> connectedEnvList, List<Long> updatedEnvList, Long clusterId) {
+        if (connectedEnvList.contains(clusterId)) {
+            return !updatedEnvList.contains(clusterId);
         }
         return false;
     }
@@ -364,7 +368,17 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
     @Override
     public DevopsClusterRepVO query(Long clusterId) {
-        return ConvertUtils.convertObject(baseQuery(clusterId), DevopsClusterRepVO.class);
+        DevopsClusterRepVO result = ConvertUtils.convertObject(baseQuery(clusterId), DevopsClusterRepVO.class);
+        if (result == null) {
+            return null;
+        }
+        List<Long> connectedList = clusterConnectionHandler.getConnectedEnvList();
+        List<Long> upToDateList = clusterConnectionHandler.getUpdatedEnvList();
+        result.setConnect(isConnect(connectedList, upToDateList, clusterId));
+        result.setUpgrade(isToUpgrade(connectedList, upToDateList, clusterId));
+        result.setUpgradeMessage(result.getUpgrade() ? UPGRADE_MESSAGE : null);
+
+        return result;
     }
 
     @Override
@@ -527,9 +541,9 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedEnvList();
 
         devopsClusterRepVO.setConnect(isConnect(connectedEnvList, updatedEnvList, devopsClusterRepVO.getId()));
-        devopsClusterRepVO.setUpgrade(isUpdated(connectedEnvList, updatedEnvList, devopsClusterRepVO.getId()));
+        devopsClusterRepVO.setUpgrade(isToUpgrade(connectedEnvList, updatedEnvList, devopsClusterRepVO.getId()));
         if (devopsClusterRepVO.getUpgrade()) {
-            devopsClusterRepVO.setUpgradeMessage("Version is too low, please upgrade!");
+            devopsClusterRepVO.setUpgradeMessage(UPGRADE_MESSAGE);
         }
         return devopsClusterRepVO;
     }
