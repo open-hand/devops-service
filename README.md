@@ -1,4 +1,6 @@
-# DevOps Service   
+简体中文 | [English](./README.en_US.md)
+
+# DevOps Service
 
 `DevOps Service` DevOps Service是Choerodon平台实现持续交付的基础. 当前版本为: `0.19.0`
 
@@ -13,20 +15,22 @@ DevOps Service通过自主整合的DevOps工具链，集成相关的开源工具
 - `应用服务版本管理`：对`持续集成`（Continuous Integration）过程中产生的可以直接在`Kubernetes`集群中进行部署的服务版本进行管理
 - `代码管理及版本控制`：对服务的代码进行版本控制和管理
 - `分支管理`：能够对服务的`Git`分支进行相应的操作
+- `代码质量监测`：在`CI`过程中进行代码质量数据收集，集成`sonarqube`对代码质量进行监测
 - `持续集成概览`：查看服务的持续集成过程
-- `部署管理`：对持续集成所产生的服务版本进行部署
+- `部署管理`：对持续集成所产生的服务版本通过`GitOps`进行部署
 - `持续部署流水线管理`：使用工作流实现持续部署
 - `资源管理`：对部署的资源（如：网络，域名，密文等）进行管理
 - `集群管理`：管理`Kubernetes`集群
 
 ## 前置要求
-- [JAVA](https://www.java.com/en/)
-- [Harbor](https://vmware.github.io/harbor/cn/)
-- [Kubernetes](https://kubernetes.io/)
-- [Helm](https://helm.sh/)
-- [Sonarqube](https://www.sonarqube.org/)
-- [MySQL](https://www.mysql.com)
-- [Redis](https://redis.io/)
+- [JAVA](https://www.java.com/en/)：`DevOps Service`基于Java8进行开发
+- [GitLab](https://about.gitlab.com/)：`DevOps Service`使用`GitLab`进行代码的托管。同时，通过基于`GitLab Runner`实现持续集成以完成代码编译，单元测试执行，代码质量分析，docker镜像生成，helm chart打包，服务版本发布等自动化过程
+- [Harbor](https://vmware.github.io/harbor/cn/)：企业级Docker registry 服务，用于存放服务版本所对应的docker镜像
+- [Kubernetes](https://kubernetes.io/)：容器编排管理工具，用于部署服务版本所对应的helm chart包
+- [ChartMuseum](https://chartmuseum.com/)：Helm Chart仓库，用于存放服务版本所对应的helm chart包
+- [Sonarqube](https://www.sonarqube.org/)：管理代码质量的开放平台，用于管理服务的代码质量
+- [MySQL](https://www.mysql.com)：主流数据库之一，用于`DevOps Service`的数据持久化
+- [Redis](https://redis.io/)：内存数据库，用于数据缓存和部分非持久化数据存储
 
 ## 服务依赖
 
@@ -126,14 +130,11 @@ DevOps Service通过自主整合的DevOps工具链，集成相关的开源工具
         enabled: true # 启用任务调度消费端
         thread-num: 1 # 任务调度消费线程数
         poll-interval-ms: 1000 # 拉取间隔，默认1000毫秒
-    websocket:
-      max-redis-msg-listener-concurrency: 500
-      security: false
   agent:
     version: "0.5.0" # devops-service此版本所预期的 choerodon-agent 的版本
     serviceUrl: "agent.example.com" # 用于 choerodon-agent 连接 devops-service 的地址
-    certManagerUrl: "agent.example.com"
-    repoUrl: "helm.example.com" # agent仓库地址
+    certManagerUrl: "agent.example.com" # 存放CertManager的地址，用于安装
+    repoUrl: "helm.example.com" # 存放agent的地址，用于安装
   eureka:
     instance:
       preferIpAddress: true

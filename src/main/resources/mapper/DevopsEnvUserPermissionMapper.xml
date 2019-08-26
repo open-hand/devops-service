@@ -10,7 +10,8 @@
         deup.iam_user_id,
         deup.real_name,
         deup.env_id,
-        deup.is_permitted
+        deup.is_permitted,
+        deup.creation_date
         FROM devops_env_user_permission deup
         WHERE
         deup.env_id = #{envId}

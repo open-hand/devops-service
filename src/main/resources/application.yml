@@ -39,14 +39,11 @@ choerodon:
       enabled: true # 启用任务调度消费端
       thread-num: 1 # 任务调度消费线程数
       poll-interval-ms: 1000 # 拉取间隔，默认1000毫秒
-  websocket:
-    max-redis-msg-listener-concurrency: 500
-    security: false
 agent:
   version: "0.5.0" # devops-service此版本所预期的 choerodon-agent 的版本
   serviceUrl: "agent.example.com" # 用于 choerodon-agent 连接 devops-service 的地址
-  certManagerUrl: "agent.example.com"
-  repoUrl: "helm.example.com" # agent仓库地址
+  certManagerUrl: "agent.example.com" # 存放CertManager的地址，用于安装
+  repoUrl: "helm.example.com" # 存放agent的地址，用于安装
 eureka:
   instance:
     preferIpAddress: true
