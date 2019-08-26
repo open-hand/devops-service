@@ -14,7 +14,7 @@ const modalKey3 = Modal.key();
 
 const ClusterModals = observer(() => {
   const modalStyle = useMemo(() => ({
-    width: 380,
+    width: 500,
   }), []);
   const {
     intlPrefix,
@@ -69,12 +69,20 @@ const ClusterModals = observer(() => {
       PermissionDs.query();
     }
   }
+  function resreshTree() {
+    treeDs.query();
+  }
+
+  function refreshPermission() {
+    ClusterDetailDs.query();
+    PermissionDs.query();
+  }
 
   function openCreate() {
     Modal.open({
       key: modalKey1,
       title: formatMessage({ id: `${intlPrefix}.modal.create` }),
-      children: <CreateCluster prefixCls={prefixCls} intlPrefix={intlPrefix} formatMessage={formatMessage} />,
+      children: <CreateCluster afterOk={resreshTree} prefixCls={prefixCls} intlPrefix={intlPrefix} formatMessage={formatMessage} modalStore={modalStore} projectId={projectId} />,
       drawer: true,
       style: modalStyle,
       okText: formatMessage({ id: 'save' }),
@@ -89,6 +97,7 @@ const ClusterModals = observer(() => {
       drawer: true,
       style: modalStyle,
       children: <PermissionManage
+        refreshPermission={refreshPermission}
         projectList={arr}
         onOk={permissionUpdate}
         clusterDetail={ClusterDetailDs.current}
@@ -96,8 +105,6 @@ const ClusterModals = observer(() => {
         prefixCls={prefixCls}
         formatMessage={formatMessage}
       />,
-      afterClose: () => {
-      },
     });
   }
 

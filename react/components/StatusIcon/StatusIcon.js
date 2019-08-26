@@ -63,7 +63,8 @@ function StatusIcon(props) {
         width={width || 0.15}
         className="c7n-status-text"
       >
-        <a className={statusClass} onClick={handleClick}>{name}</a>
+        {!handleAtagClick ? <span>{name}</span>
+          : <a className={statusClass} onClick={handleClick}>{name}</a>}
       </MouseOverWrapper>
       {statusDom}
     </React.Fragment>
