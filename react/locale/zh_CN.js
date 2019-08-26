@@ -402,6 +402,10 @@ const deploy = {
   'c7ncd.deploy.service': '部署服务',
   'c7ncd.deploy.version': '部署版本',
   'c7ncd.deploy.instance': '生成实例',
+  'c7ncd.deploy.view.instance': '查看实例',
+  'c7ncd.deploy.failed': '强制失败',
+  'c7ncd.deploy.check': '审核',
+  'c7ncd.deploy.retry': '重试',
 };
 
 // 文档地址前缀

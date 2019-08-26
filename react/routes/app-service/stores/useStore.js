@@ -43,5 +43,9 @@ export default function useStore() {
     batchCheck(projectId, listCode, listName) {
       return axios.post(`/devops/v1/projects/${projectId}/app_service/batch_check`, JSON.stringify({ listCode, listName }));
     },
+
+    loadShareById(projectId, id) {
+      return axios.get(`/devops/v1/projects/${projectId}/app_service_share/${id}`);
+    },
   }));
 }
