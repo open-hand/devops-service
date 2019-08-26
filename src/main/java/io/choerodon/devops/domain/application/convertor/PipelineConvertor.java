@@ -1,11 +1,12 @@
 package io.choerodon.devops.domain.application.convertor;
 
+import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Component;
+
 import io.choerodon.core.convertor.ConvertorI;
 import io.choerodon.devops.api.dto.PipelineDTO;
 import io.choerodon.devops.domain.application.entity.PipelineE;
 import io.choerodon.devops.infra.dataobject.PipelineDO;
-import org.springframework.beans.BeanUtils;
-import org.springframework.stereotype.Component;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -18,9 +19,9 @@ public class PipelineConvertor implements ConvertorI<PipelineE, PipelineDO, Pipe
     public PipelineE doToEntity(PipelineDO pipelineDO) {
         PipelineE pipelineE = new PipelineE();
         BeanUtils.copyProperties(pipelineDO, pipelineE);
-        if (pipelineDO.getExecute() > 0) {
+        if (pipelineDO.getExecute() != null && pipelineDO.getExecute() > 0) {
             pipelineE.setExecute(true);
-        }else {
+        } else {
             pipelineE.setExecute(false);
         }
         return pipelineE;
