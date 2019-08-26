@@ -8,53 +8,6 @@ import { itemTypeMappings, viewTypeMappings, RES_TYPES, ENV_KEYS } from './mappi
 const { IST_VIEW_TYPE, RES_VIEW_TYPE, CLU_VIEW_TYPE } = viewTypeMappings;
 const { ENV_ITEM, APP_ITEM, IST_ITEM, CLU_ITEM, NODE_ITEM } = itemTypeMappings;
 
-function formatResource(value, expandsKeys) {
-  if (isEmpty(value)) return [];
-
-  const flatted = [];
-  for (let i = 0; i < value.length; i++) {
-    const node = value[i];
-    const envInfo = pick(node, ENV_KEYS);
-    const envId = envInfo.id;
-    const envKey = String(envId);
-
-    flatted.push({
-      ...envInfo,
-      key: envKey,
-      itemType: ENV_ITEM,
-      expand: expandsKeys.includes(envKey),
-      parentId: '0',
-    });
-
-    for (let j = 0; j < RES_TYPES.length; j++) {
-      const childType = RES_TYPES[j];
-      const child = node[childType];
-      const groupKey = `${envId}-${childType}`;
-      const group = {
-        id: j,
-        name: childType,
-        key: groupKey,
-        isGroup: true,
-        itemType: `group_${childType}`,
-        parentId: String(envId),
-        expand: expandsKeys.includes(groupKey),
-      };
-
-      const items = map(child, (item) => ({
-        ...item,
-        name: childType === 'instances' ? item.code : item.name,
-        key: `${envId}-${item.id}-${childType}`,
-        itemType: childType,
-        parentId: `${envId}-${childType}`,
-        expand: false,
-      }));
-      flatted.push(group, ...items);
-    }
-  }
-
-  return flatted;
-}
-
 function formatCluster(value, expandsKeys) {
   if (isEmpty(value)) return [];
 
@@ -94,52 +47,19 @@ function formatCluster(value, expandsKeys) {
   return flatted;
 }
 
-function formatInstance(value, expandsKeys) {
-  if (isEmpty(value)) return [];
-
-  const flatted = [];
-
-  function flatData(data, prevKey = '', itemType = ENV_ITEM) {
-    for (let i = 0; i < data.length; i++) {
-      const node = data[i];
-      const peerNode = omit(node, ['apps', 'instances']);
-      const key = prevKey ? `${prevKey}-${node.id}` : String(node.id);
-
-      flatted.push({
-        ...peerNode,
-        name: node.name || node.code,
-        expand: expandsKeys.includes(key),
-        parentId: prevKey || '0',
-        itemType,
-        key,
-      });
-      const children = node.apps || node.instances;
-
-      if (!isEmpty(children)) {
-        const type = node.apps ? APP_ITEM : IST_ITEM;
-        flatData(children, key, type);
-      }
-    }
-  }
-
-  flatData(value);
-
-  return flatted;
-}
 
 function handleSelect(record, store) {
   const menuId = record.get('id');
   const menuType = record.get('itemType');
   const parentId = record.get('parentId');
   const key = record.get('key');
-  store.setSelectedMenu({ menuId, menuType, parentId, key });
+  const name = record.get('name');
+  store.setSelectedMenu({ menuId, menuType, parentId, key, name });
 }
 
 
 export default (store, type) => {
   const formatMaps = {
-    [IST_VIEW_TYPE]: formatInstance,
-    [RES_VIEW_TYPE]: formatResource,
     [CLU_VIEW_TYPE]: formatCluster,
   };
   return {
