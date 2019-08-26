@@ -11,8 +11,8 @@ export const FailBack = () => <TitleWrap>
   <Progress type="loading" size="small" />
 </TitleWrap>;
 
-export default function PrefixTitle({ children }) {
-  return children
+export default function PageTitle({ children }) {
+  return !children
     ? <FailBack />
     : <TitleWrap>
       {children}

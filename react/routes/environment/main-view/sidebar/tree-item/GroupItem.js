@@ -5,10 +5,12 @@ import { injectIntl } from 'react-intl';
 import { Form, Modal, TextField } from 'choerodon-ui/pro';
 import { Action, Permission } from '@choerodon/master';
 import TreeItemName from '../../../../../components/treeitem-name';
+import { handlePromptError } from '../../../../../utils';
 import { useEnvironmentStore } from '../../../stores';
 import { useTreeItemStore } from './stores';
 
 const modalKey = Modal.key();
+const confirmKey = Modal.key();
 
 function GroupItem({ record, search, intl: { formatMessage }, intlPrefix }) {
   const modalStyle = useMemo(() => ({
@@ -16,13 +18,14 @@ function GroupItem({ record, search, intl: { formatMessage }, intlPrefix }) {
   }), []);
   const {
     treeDs,
+    envStore,
     AppState: { currentMenuType: { id } },
   } = useEnvironmentStore();
   const { groupFormDs } = useTreeItemStore();
 
-  async function handleCreate() {
+  async function handleUpdate() {
     try {
-      if ((await groupFormDs.create()) !== false) {
+      if ((await groupFormDs.submit()) !== false) {
         treeDs.query();
       } else {
         return false;
@@ -33,20 +36,49 @@ function GroupItem({ record, search, intl: { formatMessage }, intlPrefix }) {
   }
 
   function handleClick() {
+    const groupId = record.get('id');
+    const name = record.get('name');
+    groupFormDs.transport.submit = ({ data: [data] }) => ({
+      url: `/devops/v1/projects/${id}/env_groups`,
+      method: 'put',
+      data: {
+        id: groupId,
+        name: data.name,
+      },
+    });
+    if (!groupFormDs.length) {
+      groupFormDs.create({ name });
+    }
     Modal.open({
       key: modalKey,
-      title: formatMessage({ id: `${intlPrefix}.group.create` }),
+      title: formatMessage({ id: `${intlPrefix}.group.edit` }),
       children: <Form dataSet={groupFormDs}>
         <TextField name="name" />
       </Form>,
       drawer: true,
-      onOk: handleCreate,
+      onOk: handleUpdate,
       style: modalStyle,
     });
   }
 
-  function handleDelete() {
-    treeDs.query();
+  async function handleDelete() {
+    const groupId = record.get('id');
+    try {
+      const result = await envStore.deleteGroup(id, groupId);
+      handlePromptError(result, false);
+    } finally {
+      treeDs.query();
+    }
+  }
+
+  function confirmDelete() {
+    const name = record.get('name');
+    Modal.open({
+      key: confirmKey,
+      title: formatMessage({ id: `${intlPrefix}.group.delete` }, { name }),
+      children: <div>{formatMessage({ id: `${intlPrefix}.group.delete.warn` })}</div>,
+      onOk: handleDelete,
+    });
   }
 
   function getName() {
@@ -65,7 +97,7 @@ function GroupItem({ record, search, intl: { formatMessage }, intlPrefix }) {
     }, {
       service: [],
       text: formatMessage({ id: `${intlPrefix}.modal.group.delete` }),
-      action: handleDelete,
+      action: confirmDelete,
     }];
     return <Action placement="bottomRight" data={actionData} />;
   }
