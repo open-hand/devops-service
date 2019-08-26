@@ -1,7 +1,7 @@
 import React, { Fragment, lazy, Suspense, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Tabs } from 'choerodon-ui';
-import PrefixTitle from '../../components/prefix-title';
+import PageTitle from '../../../../../components/page-title';
 import PodCircle from '../../components/pod-circle';
 import Modals from './modals';
 import { useResourceStore } from '../../../stores';
@@ -46,7 +46,7 @@ const InstanceContent = observer(() => {
     istStore.setTabKey(key);
   }
 
-  const title = useMemo(() => {
+  function getTitle() {
     const record = baseDs.current;
     if (record) {
       const code = record.get('code');
@@ -67,21 +67,17 @@ const InstanceContent = observer(() => {
             stroke: PADDING_COLOR,
           }]}
         />
-        <span className={`${prefixCls}-title-text`}>{code}</span>
+        <span className="c7ncd-page-title-text">{code}</span>
       </Fragment>;
     }
     return null;
-  }, [baseDs.current]);
+  }
 
   return (
     <div className={`${prefixCls}-instance`}>
-      <Modals />
-      <PrefixTitle
-        prefixCls={prefixCls}
-        fallback={!title}
-      >
-        {title}
-      </PrefixTitle>
+      <PageTitle>
+        {getTitle()}
+      </PageTitle>
       <Tabs
         className={`${prefixCls}-environment-tabs`}
         animated={false}
@@ -113,6 +109,7 @@ const InstanceContent = observer(() => {
           </Suspense>
         </TabPane>
       </Tabs>
+      <Modals />
     </div>
   );
 });

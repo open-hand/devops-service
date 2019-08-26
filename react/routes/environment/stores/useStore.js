@@ -1,4 +1,5 @@
 import { useLocalStore } from 'mobx-react-lite';
+import { axios } from '@choerodon/master';
 
 export default function useStore() {
   return useLocalStore(() => ({
@@ -24,6 +25,10 @@ export default function useStore() {
     },
     get getSearchValue() {
       return this.searchValue;
+    },
+
+    deleteGroup(projectId, groupId) {
+      return axios.delete(`/devops/v1/projects/${projectId}/env_groups/${groupId}`);
     },
   }));
 }

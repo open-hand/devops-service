@@ -33,6 +33,7 @@ function createRecord({ data, dataSet, expandedKeys, formatMessage, intlPrefix }
       const key = `${groupKey}-${envId}`;
       dataSet.create({
         ...rest,
+        id: envId,
         key,
         parentId: groupKey,
         itemType: 'detail',

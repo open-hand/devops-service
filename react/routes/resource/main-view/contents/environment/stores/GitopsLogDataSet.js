@@ -1,5 +1,4 @@
 export default ({ formatMessage, intlPrefix }) => ({
-  autoQuery: true,
   selection: false,
   pageSize: 10,
   transport: {

@@ -3,12 +3,10 @@ import { inject } from 'mobx-react';
 import { observer } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
 import { DataSet } from 'choerodon-ui/pro';
-import BaseInfoDataSet from './BaseInfoDataSet';
-import PermissionsDataSet from './PermissionsDataSet';
-import GitopsLogDataSet from './GitopsLogDataSet';
-import GitopsSyncDataSet from './GitopsSyncDataSet';
-import RetryDataSet from './RetryDataSet';
 import { useEnvironmentStore } from '../../../../stores';
+import { RetryDataSet, GitopsLogDataSet, GitopsSyncDataSet } from './SyncDataSet';
+import PermissionsDataSet from './PermissionsDataSet';
+import ConfigDataSet from './ConfigDataSet';
 import useStore from './useStore';
 
 const Store = createContext();
@@ -19,55 +17,73 @@ export function useDetailStore() {
 
 export const StoreProvider = injectIntl(inject('AppState')(
   observer((props) => {
-    const { intl: { formatMessage }, AppState: { currentMenuType: { id } }, children } = props;
-    const { intlPrefix, resourceStore } = useEnvironmentStore();
-    const { getSelectedMenu: { menuId } } = resourceStore;
+    const prefixCls = 'c7ncd-deployment';
+    const intlPrefix = 'c7ncd.deployment';
+    const { intl: { formatMessage }, AppState: { currentMenuType: { id: projectId } }, children } = props;
+    const {
+      intlPrefix: currentIntlPrefix,
+      envStore: { getSelectedMenu: { id } },
+    } = useEnvironmentStore();
 
     const tabs = useMemo(() => ({
       SYNC_TAB: 'sync',
+      CONFIG_TAB: 'config',
       ASSIGN_TAB: 'assign',
     }), []);
-    const envStore = useStore(tabs);
-    const baseInfoDs = useMemo(() => new DataSet(BaseInfoDataSet()), []);
+    const detailStore = useStore(tabs);
     const permissionsDs = useMemo(() => new DataSet(PermissionsDataSet({
       formatMessage,
       intlPrefix,
-      projectId: id,
-      id: menuId,
-    })), [id, menuId]);
+      projectId,
+      id,
+    })), [projectId, id]);
+    const configDs = useMemo(() => new DataSet(ConfigDataSet({
+      formatMessage,
+      intlPrefix: currentIntlPrefix,
+      projectId,
+      id,
+    })), [projectId, id]);
     const gitopsLogDs = useMemo(() => new DataSet(GitopsLogDataSet({ formatMessage, intlPrefix })), []);
     const gitopsSyncDs = useMemo(() => new DataSet(GitopsSyncDataSet()), []);
     const retryDs = useMemo(() => new DataSet(RetryDataSet()), []);
 
+    useEffect(() => {
+      retryDs.transport.read.url = `/devops/v1/projects/${projectId}/envs/${id}/retry`;
+    }, [projectId, id]);
+
+    const tabKey = detailStore.getTabKey;
 
     useEffect(() => {
-      retryDs.transport.read.url = `/devops/v1/projects/${id}/envs/${menuId}/retry`;
-      baseInfoDs.transport.read.url = `/devops/v1/projects/${id}/envs/${menuId}/info`;
-      baseInfoDs.query();
-    }, [id, menuId]);
-
-    const tabKey = envStore.getTabKey;
-
-    useEffect(() => {
-      if (tabKey === tabs.SYNC_TAB) {
-        gitopsSyncDs.transport.read.url = `/devops/v1/projects/${id}/envs/${menuId}/status`;
-        gitopsSyncDs.query();
-        gitopsLogDs.transport.read.url = `/devops/v1/projects/${id}/envs/${menuId}/error_file/page_by_env`;
-        gitopsLogDs.query();
-      } else if (tabKey === tabs.ASSIGN_TAB) {
-        permissionsDs.query();
+      switch (tabKey) {
+        case tabs.SYNC_TAB: {
+          gitopsSyncDs.transport.read.url = `/devops/v1/projects/${projectId}/envs/${id}/status`;
+          gitopsSyncDs.query();
+          gitopsLogDs.transport.read.url = `/devops/v1/projects/${projectId}/envs/${id}/error_file/page_by_env`;
+          gitopsLogDs.query();
+          break;
+        }
+        case tabs.CONFIG_TAB:
+          configDs.query();
+          break;
+        case tabs.ASSIGN_TAB:
+          permissionsDs.query();
+          break;
+        default:
       }
-    }, [id, menuId, tabKey]);
+    }, [projectId, id, tabKey]);
 
     const value = {
       ...props,
+      prefixCls,
+      intlPrefix,
+      currentIntlPrefix,
       tabs,
-      baseInfoDs,
       permissionsDs,
+      configDs,
       gitopsLogDs,
       gitopsSyncDs,
       retryDs,
-      envStore,
+      detailStore,
     };
     return (
       <Store.Provider value={value}>

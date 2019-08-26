@@ -6,6 +6,7 @@ import { useEnvironmentStore } from '../../../../stores';
 import { useEnvGroupStore } from '../stores';
 
 const groupKey = Modal.key();
+const envKey = Modal.key();
 
 const AppModals = observer(() => {
   const modalStyle = useMemo(() => ({
@@ -40,6 +41,19 @@ const AppModals = observer(() => {
   function openGroupModal() {
     Modal.open({
       key: groupKey,
+      title: formatMessage({ id: `${intlPrefix}.group.create` }),
+      children: <Form dataSet={groupFormDs}>
+        <TextField name="name" />
+      </Form>,
+      drawer: true,
+      onOk: handleCreate,
+      style: modalStyle,
+    });
+  }
+
+  function openEnvModal() {
+    Modal.open({
+      key: envKey,
       title: formatMessage({ id: `${intlPrefix}.group.create` }),
       children: <Form dataSet={groupFormDs}>
         <TextField name="name" />
