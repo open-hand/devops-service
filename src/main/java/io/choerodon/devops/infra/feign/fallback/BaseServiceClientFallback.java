@@ -2,6 +2,7 @@ package io.choerodon.devops.infra.feign.fallback;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.validation.Valid;
 
 import com.github.pagehelper.PageInfo;
@@ -167,4 +168,7 @@ public class BaseServiceClientFallback implements BaseServiceClient {
 
     @Override
     public ResponseEntity<PageInfo<ProjectDTO>> pagingProjectByOptions(Long organizationId, Boolean doPage, int page,int size, String[] params) { throw new CommonException("error.project.get"); }
+
+    @Override
+    public ResponseEntity completeDownloadApplication(Long publishAppVersionId, Set<Long> serviceVersionIds) { throw new CommonException("error.application.download"); }
 }
