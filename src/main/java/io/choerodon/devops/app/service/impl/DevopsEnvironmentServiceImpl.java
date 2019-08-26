@@ -62,20 +62,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private static final String PROJECT_OWNER = "role/project/default/project-owner";
     private static final String PROJECT_MEMBER = "role/project/default/project-member";
 
-    @Value("${agent.version}")
-    private String agentExpectVersion;
-
-    @Value("${agent.serviceUrl}")
-    private String agentServiceUrl;
-
-    @Value("${agent.repoUrl}")
-    private String agentRepoUrl;
-
     @Value("${services.gateway.url}")
     private String gatewayUrl;
-
-    @Value("${services.gitlab.sshUrl}")
-    private String gitlabSshUrl;
 
     @Value("${services.gitlab.url}")
     private String gitlabUrl;

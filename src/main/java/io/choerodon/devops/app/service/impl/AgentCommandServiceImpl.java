@@ -59,7 +59,7 @@ public class AgentCommandServiceImpl implements AgentCommandService {
     private static final String HELM_RELEASE_UPGRADE = "helm_release_upgrade";
     private static final String OPERATE_POD_COUNT = "operate_pod_count";
     private static final String OPERATE_DOCKER_REGISTRY_SECRET = "operate_docker_registry_secret";
-    Pattern pattern = Pattern.compile("^[-\\+]?[\\d]*$");
+    private Pattern pattern = Pattern.compile("^[-\\+]?[\\d]*$");
     private ObjectMapper mapper = new ObjectMapper();
 
 
