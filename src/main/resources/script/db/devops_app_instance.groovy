@@ -51,4 +51,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_instance.groovy') {
             column(name: 'value_id', type: 'BIGINT UNSIGNED', remarks: 'devops deploy value id', afterColumn: 'env_id')
         }
     }
+
+    changeSet(id: '2019-08-26-drop-constraint', author: 'younger') {
+        dropUniqueConstraint(tableName: 'devops_app_instance',
+                constraintName: 'uk_code')
+
+    }
 }
