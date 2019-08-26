@@ -195,8 +195,12 @@
 
     <select id="listByProjectIdAndGroupIdAndActive"
             resultType="io.choerodon.devops.infra.dto.DevopsEnvironmentDTO">
-        SELECT *
+        SELECT
+        env.*,
+        dc.name as cluster_name
         FROM devops_env env
+        join devops_cluster dc
+        on env.cluster_id = dc.id
         WHERE env.project_id = #{projectId}
         <if test="groupId ==null">
             AND

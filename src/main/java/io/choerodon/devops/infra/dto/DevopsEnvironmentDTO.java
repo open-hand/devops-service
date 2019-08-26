@@ -35,6 +35,16 @@ public class DevopsEnvironmentDTO extends BaseDTO {
     private Boolean connected;
     @Transient
     private Boolean permission;
+    @Transient
+    private String clusterName;
+
+    public String getClusterName() {
+        return clusterName;
+    }
+
+    public void setClusterName(String clusterName) {
+        this.clusterName = clusterName;
+    }
 
     public Boolean getPermission() {
         return permission;
