@@ -7,6 +7,7 @@ import { useNetworkDetailStore } from './stores';
 import Modals from './modals';
 import PortsList from './PortsList';
 import LoadList from './LoadList';
+import PodList from './PodList';
 
 import './index.less';
 
@@ -34,11 +35,7 @@ const ServiceDetail = observer(() => {
       <ul className={`${prefixCls}-service-detail-content`}>
         <li><PortsList /></li>
         <li><LoadList /></li>
-        <li>
-          <div className={`${prefixCls}-detail-content-section-title`}>
-            <FormattedMessage id={`${intlPrefix}.pods`} />
-          </div>
-        </li>
+        <li><PodList /></li>
       </ul>
     </div>
   );

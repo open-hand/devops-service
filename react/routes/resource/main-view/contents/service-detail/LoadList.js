@@ -25,7 +25,7 @@ const PortsList = observer(() => {
         </div>
         <div className="detail-content-section-detail">
           {map(record.get('target').instances, ({ code, status, podCount, podRunningCount, lastUpdateDate, objectVersionNumber }) => (
-            <ul className="service-detail-load-list">
+            <ul className="service-detail-load-list" key={code}>
               <li className="service-detail-load-item">
                 <span className="service-detail-load-item-code">{code}</span>
                 <span className="service-detail-load-item-key">

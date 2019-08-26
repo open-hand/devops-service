@@ -20,6 +20,22 @@ export default function useStore() {
       return this.singleData;
     },
 
+    labels: [],
+    setLabels(data) {
+      this.labels = data;
+    },
+    get getLabels() {
+      return this.labels;
+    },
+
+    ports: [],
+    setPorts(data) {
+      this.ports = data;
+    },
+    get getPorts() {
+      return this.ports;
+    },
+
     async loadDataById(projectId, id) {
       try {
         const res = axios.get(`/devops/v1/projects/${projectId}/service/${id}`);
@@ -54,6 +70,28 @@ export default function useStore() {
 
     updateData(projectId, id, data) {
       return axios.put(`/devops/v1/projects/${projectId}/service/${id}`, JSON.stringify(data));
+    },
+
+    async loadLabels(projectId, envId, appServiceId) {
+      try {
+        const res = axios.get(`/devops/v1/projects/${projectId}/env/app_services/list_label?env_id=${envId}&app_service_id=${appServiceId}`);
+        if (handlePromptError(res)) {
+          this.setLabels(res);
+        }
+      } catch (e) {
+        Choerodon.handleResponseError(e);
+      }
+    },
+
+    async loadPorts(projectId, envId, appServiceId) {
+      try {
+        const res = axios.get(`/devops/v1/projects/${projectId}/env/app_services/list_port?env_id=${envId}&app_service_id=${appServiceId}`);
+        if (handlePromptError(res)) {
+          this.setPorts(res);
+        }
+      } catch (e) {
+        Choerodon.handleResponseError(e);
+      }
     },
   }));
 }

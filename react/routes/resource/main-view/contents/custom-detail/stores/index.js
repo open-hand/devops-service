@@ -1,7 +1,8 @@
-import React, { createContext, useContext, useMemo } from 'react';
+import React, { createContext, useContext, useEffect, useMemo } from 'react';
 import { DataSet } from 'choerodon-ui/pro';
 import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
+import { observer } from 'mobx-react-lite';
 import { useResourceStore } from '../../../../stores';
 import DetailDataSet from './DetailDataSet';
 
@@ -12,17 +13,19 @@ export function useCustomDetailStore() {
 }
 
 export const StoreProvider = injectIntl(inject('AppState')(
-  (props) => {
+  observer((props) => {
     const { AppState: { currentMenuType: { id } }, children } = props;
     const {
       intlPrefix,
       intl: { formatMessage },
       resourceStore: { getSelectedMenu: { menuId } },
     } = useResourceStore();
-    const detailDs = useMemo(() => new DataSet(DetailDataSet({
-      projectId: id,
-      id: menuId,
-    })), [id, menuId]);
+    const detailDs = useMemo(() => new DataSet(DetailDataSet()), []);
+
+    useEffect(() => {
+      detailDs.transport.read.url = `/devops/v1/projects/${id}/customize_resource/${menuId}`;
+      detailDs.query();
+    }, [id, menuId]);
 
     const value = {
       ...props,
@@ -34,5 +37,5 @@ export const StoreProvider = injectIntl(inject('AppState')(
         {children}
       </Store.Provider>
     );
-  }
+  })
 ));

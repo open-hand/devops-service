@@ -1,11 +1,10 @@
-export default ({ projectId, id }) => ({
-  autoQuery: true,
+export default () => ({
+  autoQuery: false,
   selection: false,
   paging: false,
   dataKey: null,
   transport: {
     read: {
-      url: `/devops/v1/projects/${projectId}/ingress/${id}/detail`,
       method: 'get',
     },
   },

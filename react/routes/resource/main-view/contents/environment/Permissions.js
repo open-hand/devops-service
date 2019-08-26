@@ -1,6 +1,7 @@
 import React from 'react';
 import { Permission, Action } from '@choerodon/master';
 import { Table } from 'choerodon-ui/pro';
+import { FormattedMessage } from 'react-intl';
 import TimePopover from '../../../../../components/timePopover';
 import { useEnvironmentStore } from './stores';
 
@@ -22,11 +23,15 @@ export default function Permissions() {
         },
       },
     ];
-    return (<Action data={actionData} />);
+    return record.get('role') === 'member' && <Action data={actionData} />;
   }
 
   function renderDate({ value }) {
-    return <TimePopover content={value} />;
+    return value && <TimePopover content={value} />;
+  }
+
+  function renderRole({ value }) {
+    return value && <FormattedMessage id={value} />;
   }
 
   return (
@@ -38,8 +43,8 @@ export default function Permissions() {
       <Column name="realName" />
       <Column renderer={renderActions} />
       <Column name="loginName" />
-      <Column name="role" />
-      <Column name="createDate" renderer={renderDate} />
+      <Column name="role" renderer={renderRole} />
+      <Column name="creationDate" renderer={renderDate} />
     </Table>
   );
 }

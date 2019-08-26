@@ -367,11 +367,12 @@ export default class FormView extends Component {
       intl: { formatMessage },
       form: { getFieldDecorator },
       id,
+      title,
     } = this.props;
     const { data } = this.state;
 
 
-    return (<Form className="c7n-sidebar-form" layout="vertical">
+    return (<Form className={title === 'configMap' ? 'c7n-sidebar-form' : ''} layout="vertical">
       <FormItem
         {...formItemLayout}
       >
@@ -437,17 +438,17 @@ export default class FormView extends Component {
       const baseColumns = [{
         title: 'key',
         dataIndex: 'key',
-        width: 230,
+        width: title === 'configMap' ? '25%' : 230,
         editable: true,
       }, {
         title: '',
-        width: 60,
+        width: title === 'configMap' ? '5%' : 60,
         className: 'icon-equal',
         align: 'center',
         dataIndex: 'temp',
       }, {
         title,
-        width: 230,
+        width: title === 'configMap' ? '100%' : 230,
         dataIndex: 'value',
         editable: true,
       }, {
@@ -621,6 +622,7 @@ export default class FormView extends Component {
           visible={visible}
           title={<FormattedMessage id={titleCode} />}
           confirmLoading={submitting}
+          width={title === 'configMap' ? null : 380}
           footer={[
             <Button
               disabled={disableBtn}
@@ -642,11 +644,7 @@ export default class FormView extends Component {
             </Button>,
           ]}
         >
-          <Content
-            code={titleCode}
-            values={{ name: titleName }}
-            className="c7n-ctf-create sidebar-content"
-          >
+          <div>
             {this.getFormContent()}
 
             <div className="c7n-sidebar-from-title">
@@ -673,7 +671,7 @@ export default class FormView extends Component {
             </div>
 
             <InterceptMask visible={submitting} />
-          </Content>
+          </div>
         </Sidebar>
       </div>
     );
