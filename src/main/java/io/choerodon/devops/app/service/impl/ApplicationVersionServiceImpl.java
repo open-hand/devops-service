@@ -3,13 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.github.pagehelper.PageInfo;
@@ -26,44 +20,14 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.dto.ApplicationVersionAndCommitDTO;
-import io.choerodon.devops.api.dto.ApplicationVersionRepDTO;
-import io.choerodon.devops.api.dto.DeployEnvVersionDTO;
-import io.choerodon.devops.api.dto.DeployInstanceVersionDTO;
-import io.choerodon.devops.api.dto.DeployVersionDTO;
+import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.app.service.ApplicationVersionService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.PipelineService;
-import io.choerodon.devops.domain.application.entity.ApplicationE;
-import io.choerodon.devops.domain.application.entity.ApplicationInstanceE;
-import io.choerodon.devops.domain.application.entity.ApplicationVersionE;
-import io.choerodon.devops.domain.application.entity.ApplicationVersionValueE;
-import io.choerodon.devops.domain.application.entity.DevopsEnvCommandE;
-import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
-import io.choerodon.devops.domain.application.entity.DevopsGitlabCommitE;
-import io.choerodon.devops.domain.application.entity.DevopsProjectConfigE;
-import io.choerodon.devops.domain.application.entity.PipelineAppDeployE;
-import io.choerodon.devops.domain.application.entity.PipelineE;
-import io.choerodon.devops.domain.application.entity.PipelineTaskE;
-import io.choerodon.devops.domain.application.entity.ProjectE;
-import io.choerodon.devops.domain.application.entity.UserAttrE;
+import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.handler.DevopsCiInvalidException;
-import io.choerodon.devops.domain.application.repository.ApplicationInstanceRepository;
-import io.choerodon.devops.domain.application.repository.ApplicationRepository;
-import io.choerodon.devops.domain.application.repository.ApplicationVersionRepository;
-import io.choerodon.devops.domain.application.repository.ApplicationVersionValueRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvCommandRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
-import io.choerodon.devops.domain.application.repository.DevopsGitlabCommitRepository;
-import io.choerodon.devops.domain.application.repository.DevopsProjectConfigRepository;
-import io.choerodon.devops.domain.application.repository.DevopsProjectRepository;
-import io.choerodon.devops.domain.application.repository.IamRepository;
-import io.choerodon.devops.domain.application.repository.PipelineAppDeployRepository;
-import io.choerodon.devops.domain.application.repository.PipelineRepository;
-import io.choerodon.devops.domain.application.repository.PipelineStageRepository;
-import io.choerodon.devops.domain.application.repository.PipelineTaskRepository;
-import io.choerodon.devops.domain.application.repository.UserAttrRepository;
+import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.infra.common.util.ChartUtil;
 import io.choerodon.devops.infra.common.util.FileUtil;
@@ -218,23 +182,27 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
                         .filter(Objects::nonNull)
                         .map(PipelineTaskE::getStageId)
                         .distinct().collect(Collectors.toList());
-                List<Long> pipelineList = stageList.stream()
-                        .map(stageId -> stageRepository.queryById(stageId).getPipelineId())
-                        .distinct().collect(Collectors.toList());
-                List<PipelineE> pipelineES = new ArrayList<>();
-                pipelineList.forEach(pipelineId -> {
-                    PipelineE pipelineE = pipelineRepository.queryById(pipelineId);
-                    if (pipelineE.getIsEnabled() == 1 && "auto".equals(pipelineE.getTriggerType())) {
-                        pipelineES.add(pipelineE);
+                if (!stageList.isEmpty()) {
+                    List<Long> pipelineList = stageList.stream()
+                            .map(stageId -> stageRepository.queryById(stageId).getPipelineId())
+                            .distinct().collect(Collectors.toList());
+                    List<PipelineE> pipelineES = new ArrayList<>();
+                    if (!pipelineList.isEmpty()) {
+                        pipelineList.forEach(pipelineId -> {
+                            PipelineE pipelineE = pipelineRepository.queryById(pipelineId);
+                            if (pipelineE.getIsEnabled() == 1 && "auto".equals(pipelineE.getTriggerType())) {
+                                pipelineES.add(pipelineE);
+                            }
+                        });
+                        pipelineES.forEach(pipelineE -> {
+                            if (pipelineService.checkDeploy(pipelineE.getProjectId(), pipelineE.getId()).getVersions()) {
+                                LOGGER.info("autoDeploy: versionId:{}, version:{} pipelineId:{}", insertApplicationVersionE.getId(), insertApplicationVersionE.getVersion(), pipelineE.getId());
+                                pipelineService.executeAutoDeploy(pipelineE.getId());
+                            }
+                        });
                     }
-                });
+                }
 
-                pipelineES.forEach(pipelineE -> {
-                    if (pipelineService.checkDeploy(pipelineE.getProjectId(), pipelineE.getId()).getVersions()) {
-                        LOGGER.info("autoDeploy: versionId:{}, version:{} pipelineId:{}", insertApplicationVersionE.getId(), insertApplicationVersionE.getVersion(), pipelineE.getId());
-                        pipelineService.executeAutoDeploy(pipelineE.getId());
-                    }
-                });
             }
         }
     }
