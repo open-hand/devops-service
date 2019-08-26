@@ -18,6 +18,7 @@ import io.choerodon.devops.infra.dto.iam.ProjectDTO
 import io.choerodon.devops.infra.enums.AccessLevel
 import io.choerodon.devops.infra.feign.BaseServiceClient
 import io.choerodon.devops.infra.feign.GitlabServiceClient
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator
 import io.choerodon.devops.infra.mapper.AppServiceMapper
 import io.choerodon.devops.infra.mapper.DevopsBranchMapper
@@ -58,24 +59,21 @@ class IssueControllerSpec extends Specification {
     @Autowired
     private DevopsBranchMapper devopsBranchMapper
     @Autowired
-    private AppServiceService applicationRepository
+    private AppServiceService appServiceService
     @Autowired
     private DevopsMergeRequestMapper devopsMergeRequestMapper
     @Autowired
-    private DevopsMergeRequestService devopsMergeRequestRepository
+    private DevopsMergeRequestService devopsMergeRequestService
     @Autowired
-    private DevopsGitService devopsGitRepository
+    private DevopsGitService devopsGitService
     @Autowired
     private AppServiceMapper applicationMapper
+    @Autowired
+    private BaseServiceClientOperator baseServiceClientOperator
+    @Autowired
+    private GitlabServiceClientOperator gitlabServiceClientOperator
 
-    @Autowired
-    private IamService iamRepository
-    @Autowired
-    private GitlabServiceClientOperator gitlabRepository
-    @Autowired
-    private GitlabGroupMemberService gitlabGroupMemberRepository
-
-    BaseServiceClient iamServiceClient = Mockito.mock(BaseServiceClient.class)
+    BaseServiceClient baseServiceClient = Mockito.mock(BaseServiceClient.class)
     GitlabServiceClient gitlabServiceClient = Mockito.mock(GitlabServiceClient.class)
 
     @Shared
@@ -147,24 +145,21 @@ class IssueControllerSpec extends Specification {
     }
 
     def setup() {
-        DependencyInjectUtil.setAttribute(iamRepository, "baseServiceClient", iamServiceClient)
-        DependencyInjectUtil.setAttribute(gitlabRepository, "gitlabServiceClient", gitlabServiceClient)
-        DependencyInjectUtil.setAttribute(gitlabProjectRepository, "gitlabServiceClient", gitlabServiceClient)
-        DependencyInjectUtil.setAttribute(gitlabGroupMemberRepository, "gitlabServiceClient", gitlabServiceClient)
-        DependencyInjectUtil.setAttribute(devopsGitRepository, "gitlabServiceClient", gitlabServiceClient)
+        DependencyInjectUtil.setAttribute(baseServiceClientOperator, "baseServiceClient", baseServiceClient)
+        DependencyInjectUtil.setAttribute(gitlabServiceClientOperator, "gitlabServiceClient", gitlabServiceClient)
 
         ProjectDTO projectDO = new ProjectDTO()
         projectDO.setId(1L)
         projectDO.setCode("pro")
         projectDO.setOrganizationId(1L)
         ResponseEntity<ProjectDTO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
-        Mockito.doReturn(responseEntity).when(iamServiceClient).queryIamProject(1L)
+        Mockito.doReturn(responseEntity).when(baseServiceClient).queryIamProject(1L)
 
         OrganizationDTO organizationDO = new OrganizationDTO()
         organizationDO.setId(1L)
         organizationDO.setCode("org")
         ResponseEntity<OrganizationDTO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
-        Mockito.doReturn(responseEntity1).when(iamServiceClient).queryOrganizationById(1L)
+        Mockito.doReturn(responseEntity1).when(baseServiceClient).queryOrganizationById(1L)
 
         List<IamUserDTO> addIamUserList = new ArrayList<>()
         IamUserDTO userDO = new IamUserDTO()
@@ -174,7 +169,7 @@ class IssueControllerSpec extends Specification {
         userDO.setImageUrl("imageURL")
         addIamUserList.add(userDO)
         ResponseEntity<List<IamUserDTO>> responseEntity2 = new ResponseEntity<>(addIamUserList, HttpStatus.OK)
-        Mockito.when(iamServiceClient.listUsersByIds(any(Long[].class))).thenReturn(responseEntity2)
+        Mockito.when(baseServiceClient.listUsersByIds(any(Long[].class))).thenReturn(responseEntity2)
 
         List<CommitDTO> commitDOS1 = new ArrayList<>()
         CommitDTO commitDO = new CommitDTO()
@@ -200,7 +195,7 @@ class IssueControllerSpec extends Specification {
         projectWithRoleDTOList.add(projectWithRoleDTO)
         PageInfo<ProjectWithRoleVO> projectWithRoleDTOPage = new PageInfo<>(projectWithRoleDTOList)
         ResponseEntity<PageInfo<ProjectWithRoleVO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
-        Mockito.doReturn(pageResponseEntity).when(iamServiceClient).listProjectWithRole(anyLong(), anyInt(), anyInt())
+        Mockito.doReturn(pageResponseEntity).when(baseServiceClient).listProjectWithRole(anyLong(), anyInt(), anyInt())
 
         ResponseEntity<List<CommitDTO>> responseEntity5 = new ResponseEntity<>(commitDOS, HttpStatus.OK)
         Mockito.when(gitlabServiceClient.getCommits(anyInt(), anyString(), anyString())).thenReturn(responseEntity5)
@@ -208,14 +203,14 @@ class IssueControllerSpec extends Specification {
 
     def "GetCommitsByIssueId"() {
         given: '初始化数据'
-        devopsBranchMapper.insert(devopsBranchDO)
-        devopsBranchMapper.insert(devopsBranchDO1)
-        applicationMapper.insert(applicationDO)
-        devopsMergeRequestMapper.insert(devopsMergeRequestDO)
-        devopsMergeRequestMapper.insert(devopsMergeRequestDO1)
+//        devopsBranchMapper.insert(devopsBranchDO)
+//        devopsBranchMapper.insert(devopsBranchDO1)
+//        applicationMapper.insert(applicationDO)
+//        devopsMergeRequestMapper.insert(devopsMergeRequestDO)
+//        devopsMergeRequestMapper.insert(devopsMergeRequestDO1)
 
         when: '根据issueId获取issue关联的commit列表'
-        def list = restTemplate.getForObject("/v1/project/1/issue/1/commit/baseList", List.class)
+        def list = restTemplate.getForObject("/v1/project/1/issue/1/commit/list", List.class)
 
         then: '校验返回值'
         list.get(0)["branchName"] == "branch"
@@ -233,7 +228,7 @@ class IssueControllerSpec extends Specification {
 
     def "CountCommitAndMergeRequest"() {
         when: '根据issueId获取issue关联的mergerequest和commit数量'
-        def issueDTO = restTemplate.getForObject("/v1/project/1/issue/1/commit_and_merge_request/count", IssueVO.class)
+        def issueDTO = restTemplate.getForObject("/v1/project/1/issue/1/merge_request/list", IssueVO.class)
 
         then: '校验返回值'
         issueDTO["branchCount"] == 2

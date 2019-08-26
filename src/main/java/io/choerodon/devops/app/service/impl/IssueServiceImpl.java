@@ -6,7 +6,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import io.choerodon.core.convertor.ConvertHelper;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.CustomMergeRequestVO;
 import io.choerodon.devops.api.vo.DevopsBranchVO;
@@ -18,10 +21,7 @@ import io.choerodon.devops.infra.dto.DevopsGitlabCommitDTO;
 import io.choerodon.devops.infra.dto.DevopsMergeRequestDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.mapper.AppServiceMapper;
-
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import io.choerodon.devops.infra.util.ConvertUtils;
 
 /**
  * Creator: chenwei
@@ -91,7 +91,7 @@ public class IssueServiceImpl implements IssueService {
             devopsGitlabCommitES = devopsGitlabCommitES.stream().filter(devopsGitlabCommitE ->
                     !devopsGitlabCommitE.getCommitSha().equals(devopsBranchDO.getCheckoutCommit()))
                     .collect(Collectors.toList());
-            DevopsBranchVO devopsBranchVO = ConvertHelper.convert(devopsBranchDO, DevopsBranchVO.class);
+            DevopsBranchVO devopsBranchVO = ConvertUtils.convertObject(devopsBranchDO, DevopsBranchVO.class);
             devopsBranchVO.setCommits(devopsGitlabCommitES);
             AppServiceDTO applicationDTO = applicationService.baseQuery(devopsBranchDO.getAppServiceId());
             devopsBranchVO.setAppServiceName(applicationDTO.getName());

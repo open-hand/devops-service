@@ -24,17 +24,16 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 class ProjectPipelineControllerSpec extends Specification {
     @Autowired
     private TestRestTemplate restTemplate
-
     @Autowired
-    private GitlabServiceClientOperator gitlabProjectRepository
+    private GitlabServiceClientOperator gitlabServiceClientOperator
 
     GitlabServiceClient gitlabServiceClient = Mockito.mock(GitlabServiceClient.class)
 
     def setup() {
-        DependencyInjectUtil.setAttribute(gitlabProjectRepository, "gitlabServiceClient", gitlabServiceClient)
+        DependencyInjectUtil.setAttribute(gitlabServiceClientOperator, "gitlabServiceClient", gitlabServiceClient)
 
         ResponseEntity<Boolean> responseEntity = new ResponseEntity<>(true, HttpStatus.OK)
-        Mockito.doReturn(responseEntity).when(gitlabServiceClient).retry(1, 1, 1)
+        Mockito.doReturn(responseEntity).when(gitlabServiceClient).retryPipeline(1, 1, 1)
     }
 
     def "Retry"() {
@@ -47,7 +46,7 @@ class ProjectPipelineControllerSpec extends Specification {
 
     def "Cancel"() {
         when: 'Cancel jobs in a pipeline'
-        def result = restTemplate.postForObject("/v1/projects/1/gitlab_projects/1/pipelines/1/cancelPipeline", null, Boolean.class)
+        def result = restTemplate.postForObject("/v1/projects/1/gitlab_projects/1/pipelines/1/cancel", null, Boolean.class)
 
         then: '校验返回值'
         result
