@@ -1,10 +1,8 @@
-import { axios } from '@choerodon/master';
 import getTablePostData from '../../../utils/getTablePostData';
 
 export default ((intlPrefix, formatMessage, projectId) => ({
   autoQuery: true,
   selection: false,
-  paging: false,
   transport: {
     read: ({ data }) => {
       const postData = getTablePostData(data);
@@ -12,7 +10,7 @@ export default ((intlPrefix, formatMessage, projectId) => ({
       return ({
         url: `/devops/v1/projects/${projectId}/deploy_record/page_by_options`,
         method: 'post',
-        // data: postData,
+        data: postData,
       });
     },
   },

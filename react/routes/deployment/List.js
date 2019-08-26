@@ -29,7 +29,7 @@ const statusTagsStyle = {
   marginRight: 8,
 };
 
-const AppService = withRouter(observer((props) => {
+const Deployment = withRouter(observer((props) => {
   const {
     intl: { formatMessage },
     AppState: { currentMenuType: { id } },
@@ -75,6 +75,7 @@ const AppService = withRouter(observer((props) => {
         children: <AutoDetail
           dataSet={detailDs}
           id={listDs.current.get('deployId')}
+          projectId={id}
           pipelineStore={pipelineStore}
           record={detailDs.current}
           intlPrefix={intlPrefix}
@@ -141,7 +142,33 @@ const AppService = withRouter(observer((props) => {
   }
 
   function renderActions({ record }) {
-    const actionData = [];
+    let actionData = [];
+
+    if (record.get('deployType') === 'auto') {
+      switch (record.get('deployStatus')) {
+        case 'failed':
+          actionData = [{
+            text: formatMessage({ id: `${intlPrefix}.retry` }),
+          }];
+          break;
+        case 'running':
+          actionData = [{
+            text: formatMessage({ id: `${intlPrefix}.failed` }),
+          }];
+          break;
+        case 'pendingcheck':
+          actionData = [{
+            text: formatMessage({ id: `${intlPrefix}.check` }),
+          }];
+          break;
+        default:
+          break;
+      }
+    } else {
+      actionData = [{
+        text: formatMessage({ id: `${intlPrefix}.view.instance` }),
+      }];
+    }
     return (<Action data={actionData} />);
   }
 
@@ -195,4 +222,4 @@ const AppService = withRouter(observer((props) => {
   );
 }));
 
-export default AppService;
+export default Deployment;

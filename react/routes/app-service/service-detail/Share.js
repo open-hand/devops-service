@@ -25,6 +25,7 @@ const Share = (props) => {
     shareLevelDs,
     params: { id },
     AppState: { currentMenuType: { projectId } },
+    AppStore,
   } = useServiceDetailStore();
 
   function refresh() {
@@ -69,6 +70,7 @@ const Share = (props) => {
         formatMessage={formatMessage}
         projectId={projectId}
         appServiceId={id}
+        store={AppStore}
       />,
       drawer: true,
       style: modalStyle,
