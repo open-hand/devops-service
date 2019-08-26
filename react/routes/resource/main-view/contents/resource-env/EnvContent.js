@@ -7,6 +7,7 @@ import PrefixTitle from '../../components/prefix-title';
 import Modals from './modals';
 import { useResourceStore } from '../../../stores';
 import { useREStore } from './stores';
+import DosageTable from './DosageTable';
 
 import './index.less';
 
@@ -147,9 +148,7 @@ const Content = observer(() => {
           <div className={`${prefixCls}-re-items`}>{getCounts('status')}</div>
         </div>
       </div>
-      <div className={`${prefixCls}-re-card`}>
-        <div className={`${prefixCls}-re-card-title`}>{formatMessage({ id: `${intlPrefix}.resource.dosage` })}</div>
-      </div>
+      <DosageTable />
     </div>
   );
 });

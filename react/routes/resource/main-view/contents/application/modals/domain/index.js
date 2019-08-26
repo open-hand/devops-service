@@ -159,6 +159,7 @@ class CreateDomain extends Component {
           onCancel={this.handleClose.bind(this, false)}
           onOk={this.handleSubmit}
           confirmLoading={submitting}
+          width={380}
         >
           <DomainForm
             wrappedComponentRef={(form) => {

@@ -6,6 +6,7 @@ import { DataSet } from 'choerodon-ui/pro';
 import BaseInfoDataSet from './BaseInfoDataSet';
 import ResourceCountDataSet from './ResourceCountDataSet';
 import { useResourceStore } from '../../../../stores';
+import TableDataSet from './TableDataSet';
 
 const Store = createContext();
 
@@ -15,10 +16,11 @@ export function useREStore() {
 
 export const StoreProvider = injectIntl(inject('AppState')(
   observer((props) => {
-    const { AppState: { currentMenuType: { id } }, children } = props;
-    const { resourceStore: { getSelectedMenu: { menuId } } } = useResourceStore();
+    const { AppState: { currentMenuType: { id } }, intl: { formatMessage }, children } = props;
+    const { resourceStore: { getSelectedMenu: { menuId } }, intlPrefix } = useResourceStore();
     const baseInfoDs = useMemo(() => new DataSet(BaseInfoDataSet()), []);
     const resourceCountDs = useMemo(() => new DataSet(ResourceCountDataSet()), []);
+    const tableDs = useMemo(() => new DataSet(TableDataSet(formatMessage, intlPrefix)), []);
 
     useEffect(() => {
       baseInfoDs.transport.read.url = `/devops/v1/projects/${id}/envs/${menuId}/info`;
@@ -31,6 +33,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
       ...props,
       baseInfoDs,
       resourceCountDs,
+      tableDs,
     };
     return (
       <Store.Provider value={value}>

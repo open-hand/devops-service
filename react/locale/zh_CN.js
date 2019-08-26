@@ -58,6 +58,8 @@ const commonField = {
   import: '导入',
   executor: '执行者',
   startUp: '启动',
+  owner: '项目所有者',
+  member: '项目成员',
 
   // 状态描述
   null: '无',
@@ -295,6 +297,12 @@ const deployment = {
   'c7ncd.deployment.resource.secretCount': '密文',
   'c7ncd.deployment.resource.deploy': '部署资源',
   'c7ncd.deployment.resource.dosage': '用量排行',
+  'c7ncd.deployment.sort.memory': '按内存使用排行',
+  'c7ncd.deployment.sort.cpu': '按CPU使用排行',
+  'c7ncd.deployment.used.memory': '内存使用量',
+  'c7ncd.deployment.used.cpu': 'CPU使用量',
+  'c7ncd.deployment.registry': '镜像',
+  'c7ncd.deployment.node': '节点',
 };
 
 const appService = {

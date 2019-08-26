@@ -10,7 +10,7 @@ import { useCustomDetailStore } from '../stores';
 import Detail from './custom-detail';
 
 const modalStyle = {
-  width: '26%',
+  width: 380,
 };
 const modalKey1 = Modal.key();
 
@@ -19,33 +19,27 @@ const CustomModals = observer(() => {
     intlPrefix,
     prefixCls,
     intl: { formatMessage },
-    resourceStore,
   } = useResourceStore();
   const {
     detailDs,
   } = useCustomDetailStore();
   const {
     permissions,
-    AppState: { currentMenuType: { projectId } },
   } = useModalStore();
-  const { parentId } = resourceStore.getSelectedMenu;
 
   function refresh() {
     detailDs.query();
   }
 
   function openDetail() {
-    const detailModal = Modal.open({
+    Modal.open({
       key: modalKey1,
       title: formatMessage({ id: `${intlPrefix}.custom-resource.detail` }),
       children: <Detail record={detailDs.current} intlPrefix={intlPrefix} prefixCls={prefixCls} formatMessage={formatMessage} />,
       drawer: true,
       style: modalStyle,
-      footer: (
-        <Button funcType="raised" type="primary" onClick={() => detailModal.close()}>
-          <FormattedMessage id="close" />
-        </Button>
-      ),
+      okText: formatMessage({ id: 'close' }),
+      okCancel: false,
     });
   }
 

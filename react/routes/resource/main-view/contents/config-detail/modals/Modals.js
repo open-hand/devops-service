@@ -6,7 +6,7 @@ import { FormattedMessage } from 'react-intl';
 import HeaderButtons from '../../../../../../components/header-buttons';
 import { useResourceStore } from '../../../../stores';
 import { useModalStore } from './stores';
-import { useCustomDetailStore } from '../stores';
+import { useConfigDetailStore } from '../stores';
 import Detail from './config-detail';
 
 const modalStyle = {
@@ -20,34 +20,27 @@ const CustomModals = observer(() => {
     intlPrefix,
     prefixCls,
     intl: { formatMessage },
-    resourceStore,
   } = useResourceStore();
   const {
     detailDs,
-  } = useCustomDetailStore();
+  } = useConfigDetailStore();
   const {
     permissions,
-    AppState: { currentMenuType: { projectId } },
   } = useModalStore();
-  const { parentId } = resourceStore.getSelectedMenu;
-
 
   function refresh() {
     detailDs.query();
   }
 
   function openDetail() {
-    const detailModal = Modal.open({
+    Modal.open({
       key: modalKey1,
       title: formatMessage({ id: `${intlPrefix}.config-map.detail` }),
       children: <Detail record={detailDs.current} intlPrefix={intlPrefix} prefixCls={prefixCls} formatMessage={formatMessage} />,
       drawer: true,
       style: modalStyle,
-      footer: (
-        <Button funcType="raised" type="primary" onClick={() => detailModal.close()}>
-          <FormattedMessage id="close" />
-        </Button>
-      ),
+      okText: formatMessage({ id: 'close' }),
+      okCancel: false,
     });
   }
 
