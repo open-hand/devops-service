@@ -1,12 +1,12 @@
 spring:
   datasource:
-    password: sa
-    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=Mysql;TRACE_LEVEL_SYSTEM_OUT=2;
-    username: sa
+#    password: sa
+#    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=Mysql;TRACE_LEVEL_SYSTEM_OUT=2;
+#    username: sa
   # 使用本地docker里的mysql
-#      username: root
-#      password:
-#      url: jdbc:mysql://localhost:3306/devops_service?useUnicode=true&characterEncoding=utf-8&useSSL=false
+      username: root
+      password: root
+      url: jdbc:mysql://localhost:3306/devops_service?useUnicode=true&characterEncoding=utf-8&useSSL=false
   autoconfigure:
     exclude:
     - org.springframework.boot.autoconfigure.liquibase.LiquibaseAutoConfiguration
@@ -30,9 +30,10 @@ eureka:
     enabled: false
 services:
   harbor:
-    baseUrl: "https://registry.saas.test.com"
+    baseUrl: "https://registry.saas.hand-china.com"
     username: "admin"
-    password: "Handhand123"
+    password: "Handhand1357"
+    insecureSkipTlsVerify: false
   helm:
     url: "http://helm-charts.staging.saas.test.com"
   gitlab:

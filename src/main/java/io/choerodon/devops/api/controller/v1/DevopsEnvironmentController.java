@@ -442,6 +442,27 @@ public class DevopsEnvironmentController {
 //    }
 
     /**
+     * 获取环境下所有用户权限（获取所有有环境权限的项目下项目成员）
+     *
+     * @param projectId 项目id
+     * @param envId     环境id
+     * @return baseList
+     */
+    @Permission(type = ResourceType.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "获取环境下所有用户权限")
+    @GetMapping(value = "/{env_id}/list_all")
+    public ResponseEntity<List<DevopsEnvUserVO>> listAllUserPermission(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "环境id", required = true)
+            @PathVariable(value = "env_id") Long envId) {
+        return Optional.ofNullable(devopsEnvironmentService.listAllUserPermission(envId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.env.user.permission.get"));
+    }
+
+    /**
      * 环境下为用户分配权限
      *
      * @param envId                       环境id

@@ -2,7 +2,6 @@ package io.choerodon.devops.api.controller.v1
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.pagehelper.PageInfo
-import io.choerodon.core.domain.Page
 import io.choerodon.core.exception.CommonException
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.devops.DependencyInjectUtil

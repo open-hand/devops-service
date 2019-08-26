@@ -13,11 +13,12 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.ProjectCertificationPermissionUpdateVO;
 import io.choerodon.devops.api.vo.ProjectCertificationVO;
 import io.choerodon.devops.api.vo.ProjectReqVO;
-import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.app.service.CertificationService;
+import io.choerodon.devops.app.service.DevopsCertificationProRelationshipService;
+import io.choerodon.devops.app.service.DevopsProjectCertificationService;
 import io.choerodon.devops.infra.dto.CertificationDTO;
 import io.choerodon.devops.infra.dto.CertificationFileDTO;
 import io.choerodon.devops.infra.dto.DevopsCertificationProRelationshipDTO;
-import io.choerodon.devops.infra.dto.DevopsClusterProPermissionDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
@@ -39,15 +40,11 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
     @Autowired
     private DevopsCertificationProRelationshipService devopsCertificationProRelationshipService;
     @Autowired
-    private IamService iamService;
+    private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
     private CertificationService certificationService;
     @Autowired
-    private BaseServiceClientOperator baseServiceClientOperator;
-    @Autowired
     private DevopsCertificationMapper devopsCertificationMapper;
-    @Autowired
-    private DevopsProjectService devopsProjectService;
 
     @Transactional(propagation = Propagation.REQUIRED)
     @Override
@@ -155,10 +152,10 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void create(Long projectId, MultipartFile key, MultipartFile cert, ProjectCertificationVO projectCertificationVO) {
         //如果是选择上传文件方式
-        OrganizationDTO organizationDTO = iamService.queryOrganizationById(projectId);
+        OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectId);
         String path = String.format("tmp%s%s%s%s", FILE_SEPARATOR, organizationDTO.getCode(), FILE_SEPARATOR, GenerateUUID.generateUUID().substring(0, 5));
         String certFileName;
         String keyFileName;
@@ -190,7 +187,7 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
         certificationDTO.setName(projectCertificationVO.getName());
         certificationDTO.setProjectId(projectId);
         certificationDTO.setSkipCheckProjectPermission(true);
-        certificationDTO.setDomains(gson.toJson(Arrays.asList(projectCertificationVO.getDomain())));
+        certificationDTO.setDomains(gson.toJson(Collections.singletonList(projectCertificationVO.getDomain())));
         certificationDTO.setCertificationFileId(certificationService.baseStoreCertFile(new CertificationFileDTO(projectCertificationVO.getCertValue(), projectCertificationVO.getKeyValue())));
         certificationService.baseCreate(certificationDTO);
     }
@@ -220,7 +217,7 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
     public List<ProjectReqVO> listCertProjects(Long certId) {
         return devopsCertificationProRelationshipService.baseListByCertificationId(certId).stream()
                 .map(devopsCertificationProRelE -> {
-                    ProjectDTO projectDTO = iamService.queryIamProject(devopsCertificationProRelE.getProjectId());
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsCertificationProRelE.getProjectId());
                     return new ProjectReqVO(devopsCertificationProRelE.getProjectId(), projectDTO.getName(), projectDTO.getCode(), null);
                 }).collect(Collectors.toList());
     }
@@ -274,9 +271,9 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
     @Override
     public PageInfo<ProjectReqVO> pageProjects(Long projectId, Long certId, PageRequest pageRequest,
                                                String[] params) {
-        ProjectDTO currentProjectDTO = iamService.queryIamProject(projectId);
-        PageInfo<ProjectDTO> projectDTOPageInfo = iamService
-                .queryProjectByOrgId(currentProjectDTO.getOrganizationId(), pageRequest.getPage(), pageRequest.getSize(), null, params);
+        ProjectDTO currentProjectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        PageInfo<ProjectDTO> projectDTOPageInfo = baseServiceClientOperator
+                .pageProjectByOrgId(currentProjectDTO.getOrganizationId(), pageRequest.getPage(), pageRequest.getSize(), null, params);
         PageInfo<ProjectReqVO> pageProjectDTOS = new PageInfo<>();
         List<ProjectReqVO> projectDTOS = new ArrayList<>();
         if (!projectDTOPageInfo.getList().isEmpty()) {
