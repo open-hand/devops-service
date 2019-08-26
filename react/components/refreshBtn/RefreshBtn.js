@@ -1,9 +1,9 @@
-import React, { Component } from "react";
-import { injectIntl, FormattedMessage } from "react-intl";
-import PropTypes from "prop-types";
-import { Switch, Button } from "choerodon-ui";
-import DevopsStore from "../../stores/DevopsStore";
-import "./index.scss";
+import React, { Component } from 'react';
+import { injectIntl, FormattedMessage } from 'react-intl';
+import PropTypes from 'prop-types';
+import { Switch, Button } from 'choerodon-ui';
+import DevopsStore from '../../stores/DevopsStore';
+import './index.less';
 
 @injectIntl
 export default class RefreshBtn extends Component {
@@ -12,7 +12,7 @@ export default class RefreshBtn extends Component {
     onFresh: PropTypes.func.isRequired,
   };
 
-  onChange = e => {
+  onChange = (e) => {
     const { onFresh, name } = this.props;
 
     DevopsStore.clearTimer();

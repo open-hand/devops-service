@@ -4,7 +4,7 @@ import { FormattedMessage } from 'react-intl';
 import { Icon, Tooltip } from 'choerodon-ui';
 import classnames from 'classnames';
 import _ from 'lodash';
-import { timeConvert } from '../../../../../../utils/utils';
+import { timeConvert } from '../../../../../../utils';
 import { STAGE_FLOW_MANUAL, STATUS_ICON } from '../Constants';
 
 import './index.less';

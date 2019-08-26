@@ -4,7 +4,7 @@ import { observer } from 'mobx-react';
 import { Card, Button, Icon } from 'choerodon-ui';
 import { stores, Header, Content } from '@choerodon/master';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import './DepPipelineEmpty.scss';
+import './DepPipelineEmpty.less';
 import EnvPipelineStore from '../../routes/env-pipeline/stores';
 import DeploymentPipelineStore from '../../stores/project/deploymentPipeline';
 

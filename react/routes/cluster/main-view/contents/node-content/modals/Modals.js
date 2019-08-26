@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
-import HeaderButtons from '../../../../../resource/main-view/components/header-buttons';
+import HeaderButtons from '../../../../../../components/header-buttons';
 import { useClusterStore } from '../../../../stores';
 import { useNodeContentStore } from '../stores';
 

@@ -9,7 +9,7 @@ import Tips from '../../../../components/Tips/Tips';
 import InterceptMask from '../../../../components/interceptMask/InterceptMask';
 
 import '../../../main.less';
-import './style/AppTagCreate.scss';
+import './style/AppTagCreate.less';
 
 const { AppState } = stores;
 const { Option, OptGroup } = Select;

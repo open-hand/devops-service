@@ -12,7 +12,7 @@ import Percentage from '../../../../components/percentage/Percentage';
 import Rating from '../../../../components/rating/Rating';
 import { QUALITY_LIST, OBJECT_TYPE } from '../components/Constants';
 
-import './CodeQuality.scss';
+import './CodeQuality.less';
 import '../../main.less';
 
 const { Option, OptGroup } = Select;

@@ -7,7 +7,7 @@ import { Button, Modal, Form, Input, Select, Radio } from 'choerodon-ui';
 import { Content } from '@choerodon/master';
 import { STAGE_FLOW_MANUAL, STAGE_FLOW_AUTO } from '../Constants';
 import '../../../main.less';
-import './StageCreateModal.scss';
+import './StageCreateModal.less';
 
 const { Item: FormItem } = Form;
 const { Option } = Select;

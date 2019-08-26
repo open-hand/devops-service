@@ -11,7 +11,7 @@ import * as fit from 'xterm/lib/addons/fit/fit';
 import * as attach from 'xterm/lib/addons/attach/attach';
 
 import 'xterm/dist/xterm.css';
-import './Term.scss';
+import './Term.less';
 
 // 添加插件
 Terminal.applyAddon(fit);
@@ -29,6 +29,7 @@ export default class Term extends PureComponent {
   };
 
   term = null;
+
   socket = null;
 
   resizeScreen = _.debounce(() => {

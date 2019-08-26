@@ -22,8 +22,8 @@ import InterceptMask from '../../../../../../../components/interceptMask/Interce
 import Tips from '../../../../../../../components/Tips/Tips';
 
 import '../../../../../../main.less';
-import '../network-create/networkForm/index.scss';
-import './index.scss';
+import '../network-create/networkForm/index.less';
+import './index.less';
 import { handlePromptError } from '../../../../../../../utils';
 
 const { AppState } = stores;

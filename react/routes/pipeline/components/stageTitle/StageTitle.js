@@ -4,7 +4,7 @@ import { FormattedMessage } from 'react-intl';
 import { Button } from 'choerodon-ui';
 import classnames from 'classnames';
 
-import './StageTitle.scss';
+import './StageTitle.less';
 
 export default class StageTitle extends PureComponent {
   static propTypes = {

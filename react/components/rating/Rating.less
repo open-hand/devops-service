@@ -1,9 +1,9 @@
 .c7ncd-rating-wrap {
-  $A: #00bfa5;
-  $B: #4d90fe;
-  $C: #ffb100;
-  $D: #ff7043;
-  $E: #f44336;
+  @A: #00bfa5;
+  @B: #4d90fe;
+  @C: #ffb100;
+  @D: #ff7043;
+  @E: #f44336;
 
   .c7ncd-rating-letter {
     border-radius: 50%;
@@ -13,28 +13,28 @@
     background-color: #5266d4;
 
     &-A {
-      background-color: $A;
+      background-color: @A;
     }
 
     &-B {
-      background-color: $B;
+      background-color: @B;
     }
 
     &-C {
-      background-color: $C;
+      background-color: @C;
     }
 
     &-D {
-      background-color: $D;
+      background-color: @D;
     }
 
     &-E {
-      background-color: $E;
+      background-color: @E;
     }
   }
 
   .c7ncd-rating-pie {
-    border: 2px solid $A;
+    border: 2px solid @A;
     border-radius: 50%;
     display: inline-flex;
     justify-content: center;
@@ -46,32 +46,32 @@
     }
 
     &-B {
-      border-color: $B;
+      border-color: @B;
 
       &:after {
         width: 4px;
         height: 4px;
-        background-color: $B;
+        background-color: @B;
       }
     }
 
     &-C {
-      border-color: $C;
+      border-color: @C;
 
       &:after {
         width: 8px;
         height: 8px;
-        background-color: $C;
+        background-color: @C;
       }
     }
 
     &-D {
-      border-color: $D;
+      border-color: @D;
 
       &:after {
         width: 12px;
         height: 12px;
-        background-color: $D;
+        background-color: @D;
       }
     }
   }

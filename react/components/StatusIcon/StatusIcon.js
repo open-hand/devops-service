@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import { Tooltip, Progress, Icon } from 'choerodon-ui';
 import classnames from 'classnames';
 import MouseOverWrapper from '../MouseOverWrapper';
-import './StatusIcon.scss';
+import './StatusIcon.less';
 
 function StatusIcon(props) {
   const {

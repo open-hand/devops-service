@@ -22,7 +22,7 @@ import {
   TRIGGER_TYPE_AUTO,
 } from '../Constants';
 
-import './TaskCreate.scss';
+import './TaskCreate.less';
 
 const { Sidebar } = Modal;
 const { Item: FormItem } = Form;
