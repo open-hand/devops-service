@@ -6,8 +6,8 @@ then
 fi
 #java -Dspring.datasource.url="jdbc:mysql://192.168.16.215:3306/devops_service?useUnicode=true&characterEncoding=utf-8&useSSL=false" \
 java -Dspring.datasource.url="jdbc:mysql://localhost:3306/devops_service?useUnicode=true&characterEncoding=utf-8&useSSL=false" \
- -Dspring.datasource.username=root \
- -Dspring.datasource.password=root \
+ -Dspring.datasource.username=choerodon \
+ -Dspring.datasource.password=choerodon \
  -Ddata.drop=false -Ddata.init=true \
  -Ddata.dir=src/main/resources \
  -jar choerodon_temp/choerodon-tool-liquibase.jar

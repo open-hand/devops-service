@@ -70,8 +70,6 @@ public class  AppServiceInstanceServiceImpl implements AppServiceInstanceService
     public static final String APP_SERVICE = "appService";
     private static Gson gson = new Gson();
 
-    @Value("${agent.version}")
-    private String agentExpectVersion;
     @Value("${services.helm.url}")
     private String helmUrl;
     @Value("${services.gitlab.url}")

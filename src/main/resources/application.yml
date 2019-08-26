@@ -4,7 +4,7 @@ spring:
     username: choerodon
     password: choerodon
     hikari:
-      maximum-pool-size: 15
+      maximum-pool-size: 15 # 数据库连接池连接数
   redis:
     host: localhost
   http:
@@ -14,22 +14,19 @@ spring:
       enabled: true
 services:
   harbor:
-    baseUrl: "harbor.example.com"
-    username: "123456"
-    password: "123456"
+    baseUrl: "harbor.example.com" # harbor地址
+    username: "123456" # harbor用户名
+    password: "123456" # 对应harbor用户名的密码
     insecureSkipTlsVerify: false
   gitlab:
-    url: "gitlab.example.com"
-    sshUrl: "gitlab.example.com"
-    password: 12345678
-    projectLimit: 100
+    url: "gitlab.example.com" # gitlab地址
+    sshUrl: "gitlab.example.com" # 用于ssh操作的gitlab地址
+    password: 12345678 # gitlab创建用户的默认密码，不能少于8位
+    projectLimit: 100 # gitlab用户可以创建的项目的数量限制
   helm:
-    url: "helm.example.com"
+    url: "helm.example.com" # 存放helm chart包的仓库地址
   gateway:
-    url: "http://api.example.com"
-template:
-  url: https://github.com/choerodon/choerodon-devops-templates.git
-  version: 0.13.0
+    url: "http://api.example.com" # 网关地址
 choerodon:
   saga:
     consumer:
@@ -46,10 +43,10 @@ choerodon:
     max-redis-msg-listener-concurrency: 500
     security: false
 agent:
-  version: "0.5.0"
-  serviceUrl: "agent.example.com"
+  version: "0.5.0" # devops-service此版本所预期的 choerodon-agent 的版本
+  serviceUrl: "agent.example.com" # 用于 choerodon-agent 连接 devops-service 的地址
   certManagerUrl: "agent.example.com"
-  repoUrl: "helm.example.com"
+  repoUrl: "helm.example.com" # agent仓库地址
 eureka:
   instance:
     preferIpAddress: true

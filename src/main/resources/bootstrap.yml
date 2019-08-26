@@ -23,4 +23,3 @@ management:
     web:
       exposure:
         include: '*'
-

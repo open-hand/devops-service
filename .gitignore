@@ -30,7 +30,6 @@ nbdist/
 .nb-gradle/
 application-default.*
 init-local-database.sh
-init-database.sh
 values_yaml.spec
 
 ### macos junk file
