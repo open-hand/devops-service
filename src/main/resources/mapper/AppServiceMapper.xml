@@ -414,4 +414,28 @@
             AND db.iam_project_id IS NULL
             AND db.app_id IS NOT NULL
     </select>
+
+    <select id="ListShareProjectApps"  resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
+      SELECT DISTINCT
+        das.id,
+        das.app_id,
+        das.`name`,
+        das.CODE,
+        das.type
+    FROM
+        devops_app_service das
+        LEFT JOIN (
+    SELECT
+        dassr.app_service_id,
+        dasr.project_id
+    FROM
+        devops_app_service_share_rule dassr
+        LEFT JOIN devops_app_service_share_resource dasr ON dassr.id = dasr.share_id
+    WHERE
+        dassr.share_level = 'project'
+        AND dasr.project_id = #{projectId}
+        ) bb ON das.id = bb.app_service_id
+    WHERE
+        bb.app_service_id IS NOT NULL
+    </select>
 </mapper>

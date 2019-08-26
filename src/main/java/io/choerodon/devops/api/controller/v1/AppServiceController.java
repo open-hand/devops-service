@@ -663,7 +663,7 @@ public class AppServiceController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId) {
         return Optional.ofNullable(
-                applicationServiceService.ListAppServiceGroup())
+                applicationServiceService.ListAppServiceGroup(projectId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.list.app.group.error"));
     }
