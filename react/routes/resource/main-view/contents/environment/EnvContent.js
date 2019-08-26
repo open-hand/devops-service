@@ -1,13 +1,11 @@
-import React, { Fragment, lazy, Suspense, useMemo } from 'react';
+import React, { Fragment, lazy, Suspense } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Tabs, Spin } from 'choerodon-ui';
 import { useEnvironmentStore } from './stores';
 import { useResourceStore } from '../../../stores';
 import StatusDot from '../../../../../components/status-dot';
-import PrefixTitle from '../../components/prefix-title';
+import PageTitle from '../../../../../components/page-title';
 import Modals from './modals';
-
-import './index.less';
 
 const { TabPane } = Tabs;
 
@@ -33,7 +31,7 @@ const EnvContent = observer(() => {
     envStore.setTabKey(key);
   }
 
-  const title = useMemo(() => {
+  function getTitle() {
     const record = baseInfoDs.current;
     if (record) {
       const name = record.get('name');
@@ -45,21 +43,16 @@ const EnvContent = observer(() => {
           connect={connect}
           synchronize={synchronize}
         />
-        <span className={`${prefixCls}-title-text`}>{name}</span>
+        <span className="c7ncd-page-title-text">{name}</span>
       </Fragment>;
     }
     return null;
-  }, [baseInfoDs.current]);
-
+  }
   return (
     <div className={`${prefixCls}-environment`}>
-      <Modals />
-      <PrefixTitle
-        prefixCls={prefixCls}
-        fallback={!title}
-      >
-        {title}
-      </PrefixTitle>
+      <PageTitle>
+        {getTitle()}
+      </PageTitle>
       <Tabs
         animated={false}
         activeKey={envStore.getTabKey}
@@ -82,6 +75,7 @@ const EnvContent = observer(() => {
           </Suspense>
         </TabPane>
       </Tabs>
+      <Modals />
     </div>
   );
 });

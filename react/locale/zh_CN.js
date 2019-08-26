@@ -163,6 +163,7 @@ const deployment = {
   'c7ncd.deployment.viewer.instance': '实例视图',
   'c7ncd.deployment.viewer.resource': '资源视图',
   'c7ncd.deployment.environment.tabs.sync': 'GitOps日志',
+  'c7ncd.deployment.environment.tabs.config': '部署配置',
   'c7ncd.deployment.environment.tabs.assignPermissions': '已分配权限人员',
   'c7ncd.deployment.environment.error.logs': '错误日志',
   'c7ncd.deployment.environment.error.info': '错误信息',
@@ -364,6 +365,9 @@ const envrionment = {
   'c7ncd.env.group.name': '分组名称',
   'c7ncd.env.group.stopped': '环境配置停用区',
   'c7ncd.env.group.create': '创建分组',
+  'c7ncd.env.group.edit': '修改分组',
+  'c7ncd.env.group.delete': '删除分组“{name}”',
+  'c7ncd.env.group.delete.warn': '当你点击确认后，该分组下的环境将追加至默认流水线末尾！',
   'c7ncd.env.modal.group.delete': '删除分组',
   'c7ncd.env.modal.group.modify': '修改分组',
   'c7ncd.env.modal.detail.modify': '修改环境',
@@ -371,6 +375,7 @@ const envrionment = {
   'c7ncd.env.modal.detail.start': '启用环境',
   'c7ncd.env.modal.detail.stop': '停用环境',
   'c7ncd.env.cluster': '连接集群',
+  'c7ncd.env.config.app': '服务',
 };
 
 const certificate = {
