@@ -221,6 +221,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void downLoadApp(AppMarketDownloadPayload appMarketDownloadVO) {
+        Set<Long> appServiceVersionIds=new HashSet<>();
         //创建应用
         ApplicationEventPayload applicationEventPayload = new ApplicationEventPayload();
         BeanUtils.copyProperties(appMarketDownloadVO, applicationEventPayload);
@@ -255,11 +256,13 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             }
             String applicationDir = APPLICATION + System.currentTimeMillis();
             String accessToken = appServiceService.getToken(appServiceDTO.getGitlabProjectId(), applicationDir, userAttrDTO);
-            createAppServiceVersion(downloadPayload, appServiceDTO, groupPath, isFirst, accessToken);
+            appServiceVersionIds.addAll(createAppServiceVersion(downloadPayload, appServiceDTO, groupPath, isFirst, accessToken));
         });
         if (appMarketDownloadVO.getUser() != null) {
             pushImageForDownload(appMarketDownloadVO);
         }
+        baseServiceClientOperator.completeDownloadApplication(appMarketDownloadVO.getAppVersionId(), appServiceVersionIds);
+
     }
 
     private AppServiceDTO createGitlabProject(AppServiceDownloadPayload downloadPayload, Integer gitlabGroupId, Long gitlabUserId) {
@@ -292,8 +295,9 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         return appServiceDTO;
     }
 
-    private void createAppServiceVersion(AppServiceDownloadPayload downloadPayload, AppServiceDTO appServiceDTO, String groupPath, Boolean isFirst, String accessToken) {
+    private Set<Long> createAppServiceVersion(AppServiceDownloadPayload downloadPayload, AppServiceDTO appServiceDTO, String groupPath, Boolean isFirst, String accessToken) {
         Long appServiceId = appServiceDTO.getId();
+        Set<Long> serviceVersionIds=new HashSet<>();
         downloadPayload.getAppServiceVersionDownloadPayloads().forEach(appServiceVersionPayload -> {
             AppServiceVersionDTO versionDTO = new AppServiceVersionDTO();
             Git git = null;
@@ -301,15 +305,17 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             if (appServiceVersionPayload.getChartFilePath() != null && !appServiceVersionPayload.getChartFilePath().isEmpty()) {
                 String chartFilePath = String.format("%s%s", gitUtil.getWorkingDirectory(APPLICATION + System.currentTimeMillis()), TGZ);
                 fileDownload(appServiceVersionPayload.getChartFilePath(), chartFilePath);
-                chartResolver(appServiceVersionPayload, appServiceId, downloadPayload.getAppServiceCode(), new File(chartFilePath), versionDTO);
+                AppServiceVersionDTO appServiceVersionDTO = chartResolver(appServiceVersionPayload, appServiceId, downloadPayload.getAppServiceCode(), new File(chartFilePath), versionDTO);
+                serviceVersionIds.add(appServiceVersionDTO.getId());
             }
             if (appServiceVersionPayload.getRepoFilePath() != null && !appServiceVersionPayload.getRepoFilePath().isEmpty()) {
                 String repoFilePath = String.format("%s%s", gitUtil.getWorkingDirectory(APPLICATION + System.currentTimeMillis()), ZIP);
                 fileDownload(appServiceVersionPayload.getRepoFilePath(), repoFilePath);
-                gitResolver(appServiceVersionPayload, isFirst, groupPath, new File(repoFilePath), downloadPayload, accessToken, versionDTO, appServiceId);
-
+                AppServiceVersionDTO appServiceVersionDTO = gitResolver(appServiceVersionPayload, isFirst, groupPath, new File(repoFilePath), downloadPayload, accessToken, versionDTO, appServiceId);
+                serviceVersionIds.add(appServiceVersionDTO.getId());
             }
         });
+        return serviceVersionIds;
     }
 
     /**
@@ -322,7 +328,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
      * @param accessToken
      * @return
      */
-    private void gitResolver(AppServiceVersionDownloadPayload appServiceVersionPayload,
+    private AppServiceVersionDTO gitResolver(AppServiceVersionDownloadPayload appServiceVersionPayload,
                              Boolean isFirst,
                              String groupPath,
                              File file,
@@ -355,6 +361,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQueryByAppIdAndVersion(appServiceId, appServiceVersionPayload.getVersion());
         appServiceVersionDTO.setCommit(gitUtil.getFirstCommit(git));
         appServiceVersionService.baseUpdate(appServiceVersionDTO);
+        return versionDTO;
     }
 
     /**
@@ -366,13 +373,14 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
      * @param file                     chart文件
      * @return
      */
-    private void chartResolver(AppServiceVersionDownloadPayload appServiceVersionPayload, Long appServiceId, String appServiceCode, File file, AppServiceVersionDTO versionDTO) {
+    private AppServiceVersionDTO chartResolver(AppServiceVersionDownloadPayload appServiceVersionPayload, Long appServiceId, String appServiceCode, File file, AppServiceVersionDTO versionDTO) {
         String unZipPath = String.format(APP_TEMP_PATH_FORMAT, file.getParentFile().getAbsolutePath(), File.separator, System.currentTimeMillis());
         FileUtil.createDirectory(unZipPath);
         FileUtil.unTarGZ(file, unZipPath);
         File zipDirectory = new File(String.format(APP_TEMP_PATH_FORMAT, unZipPath, File.separator, appServiceCode));
         helmUrl = helmUrl.endsWith("/") ? helmUrl : helmUrl + "/";
         versionDTO.setAppServiceId(appServiceId);
+        AppServiceVersionDTO appServiceVersionDTO=null;
         //解析 解压过后的文件
         if (zipDirectory.exists() && zipDirectory.isDirectory()) {
 
@@ -398,7 +406,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                 versionReadmeDTO.setReadme(FileUtil.getReadme(unZipPath));
                 versionDTO.setReadmeValueId(appServiceVersionReadmeService.baseCreate(versionReadmeDTO).getId());
                 //创建version
-                appServiceVersionService.baseCreate(versionDTO);
+                appServiceVersionDTO = appServiceVersionService.baseCreate(versionDTO);
             }
         } else {
             FileUtil.deleteDirectory(zipDirectory);
@@ -414,6 +422,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
 
         versionDTO.setRepository(String.format("%s/%s/%s", harborUrl, MARKET_PRO, appServiceCode));
         appServiceVersionService.baseUpdate(versionDTO);
+        return appServiceVersionDTO;
     }
 
     /**

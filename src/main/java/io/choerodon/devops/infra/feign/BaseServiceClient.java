@@ -2,10 +2,12 @@ package io.choerodon.devops.infra.feign;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.validation.Valid;
 
 import com.github.pagehelper.PageInfo;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -153,10 +155,13 @@ public interface BaseServiceClient {
                                         @RequestParam("errorCode") String errorCode);
 
     @GetMapping(value = "/v1/organizations/{organization_id}/projects/projects_with_applications")
-    ResponseEntity<PageInfo<ProjectDTO>> pagingProjectByOptions(
-            @PathVariable("organization_id") Long organizationId,
-            @RequestParam(value = "doPage", defaultValue = "false") Boolean doPage,
-            @RequestParam("page") int page,
-            @RequestParam("size") int size,
-            @RequestParam(value = "params", required = false) String[] params);
+    ResponseEntity<PageInfo<ProjectDTO>> pagingProjectByOptions(@PathVariable("organization_id") Long organizationId,
+                                                                @RequestParam(value = "doPage", defaultValue = "false") Boolean doPage,
+                                                                @RequestParam("page") int page,
+                                                                @RequestParam("size") int size,
+                                                                @RequestParam(value = "params", required = false) String[] params);
+
+    @PostMapping(value = "/v1/applications/{publish_app_version_id}/complete_downloading")
+    ResponseEntity completeDownloadApplication(@PathVariable("publish_app_version_id") Long publishAppVersionId,
+                                               @RequestBody Set<Long> serviceVersionIds);
 }

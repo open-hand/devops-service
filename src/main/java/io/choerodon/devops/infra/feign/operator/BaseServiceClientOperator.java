@@ -5,6 +5,7 @@ import static io.choerodon.core.iam.InitRoleCode.PROJECT_OWNER;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.github.pagehelper.PageInfo;
@@ -330,6 +331,14 @@ public class BaseServiceClientOperator {
             return baseServiceClient.pagingProjectByOptions(organizationId, false, page, size, params).getBody();
         } catch (Exception e) {
             return null;
+        }
+    }
+
+    public void completeDownloadApplication(Long publishAppVersionId, Set<Long> serviceVersionIds){
+        try {
+            baseServiceClient.completeDownloadApplication(publishAppVersionId, serviceVersionIds);
+        } catch (Exception e) {
+            throw new CommonException("error.application.download.message", e.getMessage());
         }
     }
 }

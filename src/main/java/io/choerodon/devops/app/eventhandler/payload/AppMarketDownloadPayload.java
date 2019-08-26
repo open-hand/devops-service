@@ -27,6 +27,9 @@ public class AppMarketDownloadPayload {
     @ApiModelProperty("harbor用户")
     private User user;
 
+    @ApiModelProperty("Pass端应用版本id")
+    Long appVersionId;
+
     @ApiModelProperty("应用服务")
     private List<AppServiceDownloadPayload> appServiceDownloadPayloads;
 
@@ -76,5 +79,13 @@ public class AppMarketDownloadPayload {
 
     public void setCode(String code) {
         this.code = code;
+    }
+
+    public Long getAppVersionId() {
+        return appVersionId;
+    }
+
+    public void setAppVersionId(Long appVersionId) {
+        this.appVersionId = appVersionId;
     }
 }
