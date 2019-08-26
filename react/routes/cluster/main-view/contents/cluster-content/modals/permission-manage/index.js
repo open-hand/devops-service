@@ -13,7 +13,7 @@ import './index.less';
 const FormItem = Form.Item;
 const { Option } = Select;
 
-const Permission = observer(({ modal, form, tree, onOk, projectList, intlPrefix, prefixCls, formatMessage, clusterDetail }) => {
+const Permission = observer(({ refreshPermission, modal, form, tree, onOk, projectList, intlPrefix, prefixCls, formatMessage, clusterDetail }) => {
   const defaultSkip = clusterDetail.get('skipCheckProjectPermission');
   const { getFieldDecorator } = form;
   const [isSkip, setIsSkip] = useState(defaultSkip);
@@ -22,11 +22,11 @@ const Permission = observer(({ modal, form, tree, onOk, projectList, intlPrefix,
     let projects = null;
     form.validateFields((err, values) => {
       if (!err) {
-        const selectedProjects = omit(values, ['keys', 'skipCheckPermission']);
-        const skipCheckPermission = values.skipCheckPermission;
+        const selectedProjects = omit(values, ['keys', 'skipCheckProjectPermission']);
+        const skipCheckProjectPermission = values.skipCheckProjectPermission;
         const projectIds = Object.values(selectedProjects);
         projects = {
-          skipCheckPermission,
+          skipCheckProjectPermission,
           projectIds,
         };
       }
@@ -35,7 +35,12 @@ const Permission = observer(({ modal, form, tree, onOk, projectList, intlPrefix,
     if (!projects.projectIds) return false;
     try {
       const res = await onOk(projects);
-      if (!res || !handlePromptError(res)) return false;
+      if (handlePromptError(res, false)) {
+        refreshPermission();
+        return true;
+      } else {
+        return false;
+      }
     } catch (e) {
       Choerodon.handleResponseError(e);
       return false;
@@ -79,7 +84,7 @@ const Permission = observer(({ modal, form, tree, onOk, projectList, intlPrefix,
       <Form>
         <div className={`${prefixCls}-modal-selectbox`}>
           <FormItem>
-            {getFieldDecorator('skipCheckPermission', { initialValue: isSkip })(<SelectBox
+            {getFieldDecorator('skipCheckProjectPermission', { initialValue: isSkip })(<SelectBox
               onChange={handleChange}
             >
               <Option value>

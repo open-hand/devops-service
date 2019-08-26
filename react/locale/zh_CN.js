@@ -870,6 +870,15 @@ const cluster = {
   'c7ncd.cluster.project.all': '组织下所有项目',
   'c7ncd.cluster.project.part': '组织下特定项目',
   'c7ncd.cluster.visibility': '集群公开范围',
+  'c7ncd.cluster.activate.header': '激活集群',
+  'c7ncd.cluster.activate.title': '复制集群"{clsName}"的指令',  
+  'c7ncd.cluster.activate.coped': '已复制',
+  'c7ncd.cluster.activate.desc': '复制下文代码至Kubernetes运行，与平台建立链接',
+  'c7ncd.cluster.check.failed':
+    '只能由小写字母、数字、"-"组成，且以小写字母开头，不能以"-"结尾',
+  'c7ncd.cluster.check.exist': '已存在',
+  'c7ncd.cluster.check.error': '校验出错',
+
 };
 
 const zhCN = {
