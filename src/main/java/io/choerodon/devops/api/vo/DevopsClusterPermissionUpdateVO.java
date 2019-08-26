@@ -20,7 +20,7 @@ public class DevopsClusterPermissionUpdateVO {
     private List<Long> projectIds;
 
     @ApiModelProperty("是否跳过权限校验 / 必需")
-    @NotNull(message = "error.is.skip.permission.check.null")
+    @NotNull(message = "error.skip.check.project.permission.null")
     private Boolean skipCheckProjectPermission;
 
     @ApiModelProperty("集群的版本号, 如果更新了'skipCheckProjectPermission'字段则必填")
