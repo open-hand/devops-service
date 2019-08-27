@@ -698,12 +698,14 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         devopsServiceVO.setTarget(devopsServiceTargetVO);
 
         //获得pod实时信息
-        List<PodLiveInfoVO> podLiveInfoVOS = devopsServiceQueryDTO.getInstances()
-                .stream()
-                .map(instanceInfoVO -> getPodLiveInfoVOs(instanceInfoVO.getId(), envId))
-                .collect(Collectors.toList());
+        if (devopsServiceQueryDTO.getInstances() != null) {
+            List<PodLiveInfoVO> podLiveInfoVOS = devopsServiceQueryDTO.getInstances()
+                    .stream()
+                    .map(instanceInfoVO -> getPodLiveInfoVOs(instanceInfoVO.getId(), envId))
+                    .collect(Collectors.toList());
 
-        devopsServiceVO.setPodLiveInfos(podLiveInfoVOS);
+            devopsServiceVO.setPodLiveInfos(podLiveInfoVOS);
+        }
 
         // service的dnsName为${serviceName.namespace}
         devopsServiceVO.setDns(devopsServiceVO.getName() + "." + devopsServiceQueryDTO.getEnvCode());
