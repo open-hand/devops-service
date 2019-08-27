@@ -79,9 +79,9 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
     private static final String GIT = ".git";
     private static final String TGZ = ".tgz";
     private static final String VALUES = "values.yaml";
-    private static final String DEPLOY_ONLY = "deploy_only";
-    private static final String DOWNLOAD_ONLY = "download_only";
-    private static final String ALL = "all";
+    private static final String DEPLOY_ONLY = "mkt_deploy_only";
+    private static final String DOWNLOAD_ONLY = "mkt_code_only";
+    private static final String ALL = "mkt_code_deploy";
     private static final String MARKET = "market";
     private static final String LINE = "line.separator";
     private static final String SHELL = "/shell";
