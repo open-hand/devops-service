@@ -2,14 +2,13 @@ import React, { Fragment, useState, useMemo } from 'react';
 import { Input, Tooltip } from 'choerodon-ui';
 import CopyToBoard from 'react-copy-to-clipboard';
 import _ from 'lodash';
-import { handlePromptError } from '../../../../../../../utils';
 
 import './index.less';
 
 const { TextArea } = Input;
 
 const ActivateCluster = (props) => {
-  const { formatMessage, intlPrefix, modal, cmd } = props;
+  const { formatMessage, cmd } = props;
   const [copyMsg, setCopyMsg] = useState('');
 
   const mouseEnter = () => {

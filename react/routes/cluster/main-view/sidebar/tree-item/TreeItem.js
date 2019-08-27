@@ -3,9 +3,7 @@ import PropTypes from 'prop-types';
 import { observer } from 'mobx-react-lite';
 import toUpper from 'lodash/toUpper';
 import { Icon } from 'choerodon-ui/pro';
-import StatusDot from '../../../../../components/status-dot';
-import InstanceItem from './InstanceItem';
-import AppItem from './AppItem';
+import ClusterItem from './ClusterItem';
 import { useClusterStore } from '../../../stores';
 import { useClusterMainStore } from '../../stores';
 
@@ -26,39 +24,12 @@ function getName(name, search, prefixCls) {
   </span>;
 }
 
-const EnvironmentItem = ({ name, connect, synchronize }) => {
-  const getPrefix = useMemo(() => <StatusDot
-    connect={connect}
-    synchronize={synchronize}
-    size="small"
-  />, [connect, synchronize]);
-
-  return <Fragment>
-    {getPrefix}
-    {name}
-  </Fragment>;
-};
-
-EnvironmentItem.propTypes = {
-  name: PropTypes.any,
-  connect: PropTypes.bool,
-  synchronize: PropTypes.bool,
-};
 
 const TreeItem = observer(({ record, search }) => {
   const {
     prefixCls,
     intlPrefix,
     itemType: {
-      ENV_ITEM,
-      APP_ITEM,
-      IST_ITEM,
-      SERVICES_ITEM,
-      INGRESS_ITEM,
-      CERT_ITEM,
-      MAP_ITEM,
-      CIPHER_ITEM,
-      CUSTOM_ITEM,
       CLU_ITEM,
       NODE_ITEM,
     },
@@ -70,30 +41,10 @@ const TreeItem = observer(({ record, search }) => {
     return getName(itemName, search, prefixCls);
   }, [record, search]);
 
-  function getInstance() {
-    const podRunningCount = record.get('podRunningCount');
-    const podCount = record.get('podCount');
-    const podUnlinkCount = podCount - podRunningCount;
-
-    return record.get('id') ? <InstanceItem
-      record={record}
-      name={name}
-      intlPrefix={intlPrefix}
-      running={podRunningCount}
-      unlink={podUnlinkCount}
-      podColor={podColor}
-    /> : null;
-  }
 
   function getIconItem(type) {
     const iconMappings = {
-      [SERVICES_ITEM]: 'router',
-      [INGRESS_ITEM]: 'language',
-      [CERT_ITEM]: 'class',
-      [MAP_ITEM]: 'compare_arrows',
-      [CIPHER_ITEM]: 'vpn_key',
-      [CUSTOM_ITEM]: 'filter_b_and_w',
-      [NODE_ITEM]: 'vpn_key',
+      [NODE_ITEM]: 'adjust',
     };
     const iconType = iconMappings[type];
     return <Fragment>
@@ -102,29 +53,11 @@ const TreeItem = observer(({ record, search }) => {
     </Fragment>;
   }
 
-  function getEnvIcon() {
-    const connect = record.get('connect');
-    const synchronize = record.get('synchronize');
-
-    return <EnvironmentItem
-      name={name}
-      connect={connect}
-      synchronize={synchronize}
-    />;
-  }
 
   function getCluIcon() {
-    const connect = record.get('connect');
-    return <EnvironmentItem
-      name={name}
-      connect={connect}
-      synchronize={false}
-    />; 
+    return <ClusterItem name={name} record={record} intlPrefix={intlPrefix} />; 
   }
 
-  function getNodeItem() {
-
-  }
 
   function getItem() {
     const type = record.get('itemType');
@@ -140,26 +73,6 @@ const TreeItem = observer(({ record, search }) => {
 
     let treeItem;
     switch (type) {
-      case ENV_ITEM: {
-        treeItem = getEnvIcon();
-        break;
-      }
-      case SERVICES_ITEM:
-      case INGRESS_ITEM:
-      case CERT_ITEM:
-      case MAP_ITEM:
-      case CIPHER_ITEM:
-      case CUSTOM_ITEM: {
-        treeItem = getIconItem(type);
-        break;
-      }
-      case IST_ITEM: {
-        treeItem = getInstance();
-        break;
-      }
-      case APP_ITEM:
-        treeItem = <AppItem name={name} />;
-        break;
       case CLU_ITEM:
         treeItem = getCluIcon();
         break;
@@ -183,5 +96,6 @@ TreeItem.propTypes = {
 TreeItem.defaultProps = {
   record: {},
 };
+
 
 export default TreeItem;
