@@ -344,11 +344,11 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
         if (isCreate) {
             Long configMapId = baseCreate(devopsConfigMapDTO).getId();
             if (appServiceId != null) {
-                DevopsApplicationResourceDTO devopsApplicationResourceDTO = new DevopsApplicationResourceDTO();
-                devopsApplicationResourceDTO.setAppServiceId(appServiceId);
-                devopsApplicationResourceDTO.setResourceType(ObjectType.CONFIGMAP.getType());
-                devopsApplicationResourceDTO.setResourceId(configMapId);
-                devopsApplicationResourceService.baseCreate(devopsApplicationResourceDTO);
+                DevopsAppServiceResourceDTO devopsAppServiceResourceDTO = new DevopsAppServiceResourceDTO();
+                devopsAppServiceResourceDTO.setAppServiceId(appServiceId);
+                devopsAppServiceResourceDTO.setResourceType(ObjectType.CONFIGMAP.getType());
+                devopsAppServiceResourceDTO.setResourceId(configMapId);
+                devopsApplicationResourceService.baseCreate(devopsAppServiceResourceDTO);
             }
             devopsEnvCommandDTO.setObjectId(configMapId);
             devopsConfigMapDTO.setId(configMapId);

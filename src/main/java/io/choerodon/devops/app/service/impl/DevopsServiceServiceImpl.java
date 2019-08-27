@@ -181,11 +181,11 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             if (devopsServiceReqVO.getEndPoints().size() != 0) {
                 throw new CommonException("error.app.create.endpoints.service");
             }
-            DevopsApplicationResourceDTO devopsApplicationResourceDTO = new DevopsApplicationResourceDTO();
-            devopsApplicationResourceDTO.setAppServiceId(devopsServiceReqVO.getAppServiceId());
-            devopsApplicationResourceDTO.setResourceType(ObjectType.SERVICE.getType());
-            devopsApplicationResourceDTO.setResourceId(devopsServiceDTO.getId());
-            devopsApplicationResourceService.baseCreate(devopsApplicationResourceDTO);
+            DevopsAppServiceResourceDTO devopsAppServiceResourceDTO = new DevopsAppServiceResourceDTO();
+            devopsAppServiceResourceDTO.setAppServiceId(devopsServiceReqVO.getAppServiceId());
+            devopsAppServiceResourceDTO.setResourceType(ObjectType.SERVICE.getType());
+            devopsAppServiceResourceDTO.setResourceId(devopsServiceDTO.getId());
+            devopsApplicationResourceService.baseCreate(devopsAppServiceResourceDTO);
         }
 
         //在gitops库处理service文件

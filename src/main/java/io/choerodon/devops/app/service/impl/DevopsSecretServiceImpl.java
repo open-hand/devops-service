@@ -1,6 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -214,7 +213,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
             Long secretId = baseCreate(devopsSecretDTO).getId();
             //创建应用资源关系
             if (appServiceId != null) {
-                DevopsApplicationResourceDTO applicationResourceDTO = new DevopsApplicationResourceDTO();
+                DevopsAppServiceResourceDTO applicationResourceDTO = new DevopsAppServiceResourceDTO();
                 applicationResourceDTO.setAppServiceId(appServiceId);
                 applicationResourceDTO.setResourceType(ObjectType.SERVICE.getType());
                 applicationResourceDTO.setResourceId(secretId);
