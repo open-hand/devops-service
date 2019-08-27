@@ -213,7 +213,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             zipFileList.forEach(FileUtil::deleteFile);
             FileUtil.deleteDirectory(appFile);
         } catch (CommonException e) {
-            baseServiceClientOperator.publishFail(marketUploadVO.getProjectId(), marketUploadVO.getAppId(), e.getCode());
+            baseServiceClientOperator.publishFail(marketUploadVO.getProjectId(), marketUploadVO.getMktAppId(), e.getCode());
             throw new CommonException(e.getCode());
         }
     }
