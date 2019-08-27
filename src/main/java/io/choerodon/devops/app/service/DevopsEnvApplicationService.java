@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service;
 
 import java.util.List;
+import java.util.Map;
 
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.iam.DevopsEnvMessageVO;
@@ -35,7 +36,7 @@ public interface DevopsEnvApplicationService {
      * @param appServiceId
      * @return
      */
-    List<DevopsEnvLabelVO> listLabelByAppAndEnvId(Long envId, Long appServiceId);
+    List<Map<String,String>> listLabelByAppAndEnvId(Long envId, Long appServiceId);
 
     /**
      * 查询应用在环境下的所有端口

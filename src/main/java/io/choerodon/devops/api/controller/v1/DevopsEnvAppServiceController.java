@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.controller.v1;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -92,7 +93,7 @@ public class DevopsEnvAppServiceController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询服务在环境下的所有label")
     @GetMapping("/list_label")
-    public ResponseEntity<List<DevopsEnvLabelVO>> listLabelByAppAndEnvId(
+    public ResponseEntity<List<Map<String,String>>> listLabelByAppAndEnvId(
             @ApiParam(value = "环境id", required = true)
             @RequestParam(value = "env_id") Long envId,
             @ApiParam(value = "服务id", required = true)
