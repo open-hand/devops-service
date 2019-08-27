@@ -27,7 +27,6 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.util.*;
 import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.*;
-import org.checkerframework.checker.units.qual.A;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -832,12 +831,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         DevopsSecretDTO devopsSecretDTO = devopsSecretService.baseQueryByEnvIdAndName(envId, objects[1]);
         devopsEnvFileResourceDTO = devopsEnvFileResourceService
                 .baseQueryByEnvIdAndResourceId(envId, devopsSecretDTO.getId(), ObjectType.SECRET.getType());
-        if (updateEnvCommandStatus(resourceCommitVO, devopsSecretDTO.getCommandId(), devopsEnvFileResourceDTO,
-                SECRET_KIND, devopsSecretDTO.getName(), CommandStatus.SUCCESS.getStatus(), envFileErrorFiles)) {
-            devopsSecretDTO.setStatus(SecretStatus.FAILED.getStatus());
-        } else {
-            devopsSecretDTO.setStatus(SecretStatus.SUCCESS.getStatus());
-        }
+        updateEnvCommandStatus(resourceCommitVO, devopsSecretDTO.getCommandId(), devopsEnvFileResourceDTO,
+                SECRET_KIND, devopsSecretDTO.getName(), CommandStatus.SUCCESS.getStatus(), envFileErrorFiles);
         devopsSecretService.baseUpdate(devopsSecretDTO);
     }
 

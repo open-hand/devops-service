@@ -25,7 +25,7 @@ public class DevopsSecretDTO extends BaseDTO {
     private Long commandId;
 
     @Transient
-    private String status;
+    private String commandStatus;
     @Transient
     private String commandType;
     @Transient
@@ -94,12 +94,12 @@ public class DevopsSecretDTO extends BaseDTO {
         this.commandId = commandId;
     }
 
-    public String getStatus() {
-        return status;
+    public String getCommandStatus() {
+        return commandStatus;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
+    public void setCommandStatus(String commandStatus) {
+        this.commandStatus = commandStatus;
     }
 
     public String getCommandType() {
