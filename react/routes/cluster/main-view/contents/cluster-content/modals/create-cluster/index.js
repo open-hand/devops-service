@@ -1,8 +1,9 @@
+/* eslint-disable no-undef */
 import React, { Fragment, useState, useMemo } from 'react';
 import { Input, Form, Row, Col } from 'choerodon-ui';
+import { observer } from 'mobx-react-lite';
 import _ from 'lodash';
 import { Modal } from 'choerodon-ui/pro';
-
 import { handlePromptError } from '../../../../../../../utils';
 import ActivateCluster from '../activate-cluster';
 
@@ -17,18 +18,42 @@ const formDataModal = {
 
 const ActivateClusterModalKey = Modal.key();
 
-const CreateCluster = (props) => {
-  const [formData, setFormData] = useState(formDataModal);
-  const { resreshTree, projectId, modalStore, formatMessage, intlPrefix, modal, form } = props;
+const CreateCluster = observer((props) => {
+  const { isEdit,
+    resreshTree,
+    afterOk,
+    mainStore,
+    projectId,
+    formatMessage, 
+    intlPrefix,
+    modal,
+    record,
+    form } = props;
+
   const { getFieldDecorator, validateFields } = form;
+  const [formData, setFormData] = useState(record ? record.toData() : formDataModal);
   modal.handleOk(() => {
     validateFields(async (err, values) => {
       if (!err) {
-        const res = await modalStore.createCluster({ projectId, ...formData });
-        if (handlePromptError(res, true)) {
-          openActivate(res);
-          resreshTree();
-          modal.close();
+        if (!isEdit) {
+          const res = await mainStore.createCluster({ projectId, ...formData });
+          if (handlePromptError(res, true)) {
+            openActivate(res);
+            afterOk();
+            modal.close();
+          }
+        } else {
+        // 更新集群
+          const data = {
+            projectId,
+            ...formData,
+            clusterId: formData.id,
+          };
+          const res = await mainStore.updateCluster(data);
+          if (handlePromptError(res, false)) {
+            afterOk();
+            modal.close();
+          }
         }
       }
     });
@@ -56,7 +81,7 @@ const CreateCluster = (props) => {
     Modal.open({
       key: ActivateClusterModalKey,
       title: formatMessage({ id: `${intlPrefix}.activate.header` }),
-      children: <ActivateCluster cmd={cmd} intlPrefix={intlPrefix} formatMessage={formatMessage} modalStore={modalStore} projectId={projectId} />,
+      children: <ActivateCluster cmd={cmd} intlPrefix={intlPrefix} formatMessage={formatMessage} />,
       drawer: true,
       style: {
         width: 500,
@@ -68,8 +93,10 @@ const CreateCluster = (props) => {
 
   const checkName = useMemo(() => _.debounce((rule, value, callback) => {
     const pa = /^[a-z]([-a-z0-9]*[a-z0-9])?$/;
-    if (value && pa.test(value)) {
-      modalStore.checkClusterName({ projectId, clusterName: value })
+    if (record && value === record.get('name')) {
+      callback();
+    } else if (value && pa.test(value)) {
+      mainStore.checkClusterName({ projectId, clusterName: value })
         .then((res) => {
           if (res && res.failed) {
             callback(`名称${formatMessage({ id: `${intlPrefix}.check.exist` })}`);
@@ -89,8 +116,10 @@ const CreateCluster = (props) => {
   []);
   const checkCode = useMemo(() => _.debounce((rule, value, callback) => {
     const pa = /^[a-z]([-a-z0-9]*[a-z0-9])?$/;
-    if (value && pa.test(value)) {
-      modalStore.checkClusterCode({ projectId, clusterCode: value })
+    if (record && value === record.get('code')) {
+      callback();
+    } else if (value && pa.test(value)) {
+      mainStore.checkClusterCode({ projectId, clusterCode: value })
         .then((res) => {
           if (res && res.failed) {
             callback(`编码${formatMessage({ id: `${intlPrefix}.check.exist` })}`);
@@ -122,7 +151,8 @@ const CreateCluster = (props) => {
               {
                 validator: checkName,
               },
-            ], 
+            ],
+            initialValue: isEdit ? record.get('name') : '',
           })(
             <Input maxLength={30} placeholder={formatMessage({ id: `${intlPrefix}.name` })} onChange={handleNameChange} />
           )} </FormItem>
@@ -137,13 +167,20 @@ const CreateCluster = (props) => {
                 validator: checkCode,
               },
             ],
+            initialValue: isEdit ? record.get('code') : '',
           })(
-            <Input maxLength={10} placeholder={formatMessage({ id: `${intlPrefix}.code` })} onChange={handleCodeChange} />
+            <Input readOnly={isEdit} maxLength={10} placeholder={formatMessage({ id: `${intlPrefix}.code` })} onChange={handleCodeChange} />
           )} </FormItem>
-        <FormItem><TextArea placeholder={formatMessage({ id: `${intlPrefix}.dec` })} onChange={handleDescriptionChange} /> </FormItem>
+        <FormItem>
+          {getFieldDecorator('description', {
+            initialValue: isEdit ? record.get('description') : '',
+          })(
+            <TextArea placeholder={formatMessage({ id: `${intlPrefix}.dec` })} onChange={handleDescriptionChange} />
+          )}
+        </FormItem>
       </Form>
     </Fragment>);
-};
+});
 
 
 export default Form.create({})(CreateCluster);

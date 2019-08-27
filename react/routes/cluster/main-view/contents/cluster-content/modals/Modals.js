@@ -4,6 +4,7 @@ import { Modal } from 'choerodon-ui/pro';
 import HeaderButtons from '../../../../../../components/header-buttons';
 import { useClusterContentStore } from '../stores';
 import { useClusterStore } from '../../../../stores';
+import { useClusterMainStore } from '../../../stores';
 import { useModalStore } from './stores';
 import CreateCluster from './create-cluster';
 import PermissionManage from './permission-manage';
@@ -36,6 +37,8 @@ const ClusterModals = observer(() => {
     NodeListDs,
     ClusterDetailDs,
   } = useClusterContentStore();
+
+  const { mainStore } = useClusterMainStore();
   const {
     modalStore,
     NonPermissionDs,
@@ -82,7 +85,7 @@ const ClusterModals = observer(() => {
     Modal.open({
       key: modalKey1,
       title: formatMessage({ id: `${intlPrefix}.modal.create` }),
-      children: <CreateCluster afterOk={resreshTree} prefixCls={prefixCls} intlPrefix={intlPrefix} formatMessage={formatMessage} modalStore={modalStore} projectId={projectId} />,
+      children: <CreateCluster afterOk={resreshTree} prefixCls={prefixCls} intlPrefix={intlPrefix} formatMessage={formatMessage} mainStore={mainStore} projectId={projectId} />,
       drawer: true,
       style: modalStyle,
       okText: formatMessage({ id: 'save' }),

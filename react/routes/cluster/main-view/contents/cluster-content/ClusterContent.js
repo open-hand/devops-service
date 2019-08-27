@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { Tabs, Spin } from 'choerodon-ui';
 import { useClusterContentStore } from './stores';
 import Modals from './modals';
-import PrefixTitle from '../../../../resource/main-view/components/prefix-title';
+import PageTitle from '../../../../../components/page-title';
 import StatusDot from '../../../../../components/status-dot';
 
 
@@ -27,34 +27,39 @@ export default observer((props) => {
   const handleChange = (key) => {
     contentStore.setTabKey(key);
   };
-
+  
   const title = useMemo(() => {
     const record = ClusterDetailDs.current;
     if (record) {
       const name = record.get('name');
-      const connect = record.get('connect');
-      const upgrade = record.get('upgrade');
+      const getStatus = () => {
+        const connect = record.get('connect');
+        const upgrade = record.get('upgrade');
+        if (upgrade) {
+          return ['disconnect'];
+        } else if (connect) {
+          return ['running', 'connect'];
+        }
+        return ['disconnect'];
+      };
 
       return <Fragment>
         <StatusDot
-          connect={connect}
-          synchronize={upgrade}
+          getStatus={getStatus}
         />
-        <span className="c7ncd-deployment-title-text">{name}</span>
+        <span className="c7ncd-page-title-text">{name}</span>
       </Fragment>;
     }
     return null;
   }, [ClusterDetailDs.current]);
+  
 
   return (
     <div>
       <Modals />
-      <PrefixTitle
-        prefixCls="c7ncd-deployment"
-        fallback={!title}
-      >
+      <PageTitle>
         {title}
-      </PrefixTitle>
+      </PageTitle>
       <Tabs
         animated={false}
         activeKey={contentStore.getTabKey}

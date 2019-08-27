@@ -891,7 +891,9 @@ const cluster = {
     '只能由小写字母、数字、"-"组成，且以小写字母开头，不能以"-"结尾',
   'c7ncd.cluster.check.exist': '已存在',
   'c7ncd.cluster.check.error': '校验出错',
-
+  'c7ncd.cluster.action.edit': '修改集群',
+  'c7ncd.cluster.action.delete': '删除集群',
+  'c7ncd.cluster.action.delete.msg': '您确认删除该集群吗',
 };
 
 const zhCN = {

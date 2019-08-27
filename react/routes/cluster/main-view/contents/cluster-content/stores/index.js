@@ -4,10 +4,10 @@ import { observer } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
 import { DataSet } from 'choerodon-ui/pro';
 import { useClusterStore } from '../../../../stores';
+import { useClusterMainStore } from '../../../stores';
 import useStore from './useStore';
 import NodeListDataSet from './NodeListDataSet';
 import PermissionDataSet from './PermissionDataSet';
-import ClusterDetailDataSet from './ClusterDetailDataSet';
 import getTablePostData from '../../../../../../utils/getTablePostData';
 
 const Store = createContext();
@@ -24,11 +24,12 @@ export const StoreProvider = injectIntl(inject('AppState')(
       ASSIGN_TAB: 'assign',
     }), []);
     const { intl: { formatMessage }, AppState: { currentMenuType: { id } }, children } = props;
+    const { ClusterDetailDs } = useClusterMainStore();
     const { intlPrefix, clusterStore } = useClusterStore();
     const { getSelectedMenu: { menuId } } = clusterStore;
     const NodeListDs = useMemo(() => new DataSet(NodeListDataSet({ formatMessage, intlPrefix, id })), []);
     const PermissionDs = useMemo(() => new DataSet(PermissionDataSet({ formatMessage, intlPrefix, id })), []);
-    const ClusterDetailDs = useMemo(() => new DataSet(ClusterDetailDataSet({ formatMessage, intlPrefix, id })), []);
+    
     const contentStore = useStore(tabs);
     const tabkey = contentStore.getTabKey;
     useEffect(() => {
@@ -51,10 +52,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
         PermissionDs.query();
       }
     }, [id, menuId, tabkey]);
-    useEffect(() => {
-      ClusterDetailDs.transport.read.url = `devops/v1/projects/${id}/clusters/${menuId}`;
-      ClusterDetailDs.query();
-    }, [id, menuId]);
+    
 
     const value = {
       ...props,
