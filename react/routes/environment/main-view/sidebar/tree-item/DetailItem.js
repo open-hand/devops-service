@@ -34,7 +34,11 @@ function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
   }
 
   function getSuffix() {
+    const synchronize = record.get('synchro');
     const active = record.get('active');
+
+    if (!synchronize && active) return null;
+
     const actionData = [{
       service: [],
       text: formatMessage({ id: `${intlPrefix}.modal.detail.${active ? 'stop' : 'start'}` }),
@@ -49,9 +53,7 @@ function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
 
   return <Fragment>
     {getName()}
-    <Permission service={[]}>
-      {getSuffix()}
-    </Permission>
+    {getSuffix()}
   </Fragment>;
 }
 

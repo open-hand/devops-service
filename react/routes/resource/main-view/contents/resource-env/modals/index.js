@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Modal } from 'choerodon-ui/pro';
 import HeaderButtons from '../../../../../../components/header-buttons';
-import EnvDetail from '../../environment/modals/env-detail';
+import EnvDetail from '../../../../../../components/env-detail';
 import { useResourceStore } from '../../../../stores';
 import { useREStore } from '../stores';
 
@@ -31,12 +31,7 @@ const REModals = observer(() => {
     Modal.open({
       key: Modal.key(),
       title: formatMessage({ id: `${intlPrefix}.modal.env-detail` }),
-      children: <EnvDetail
-        record={baseInfoDs.current}
-        intlPrefix={intlPrefix}
-        prefixCls={prefixCls}
-        formatMessage={formatMessage}
-      />,
+      children: <EnvDetail record={baseInfoDs.current} />,
       drawer: true,
       style: modalStyle,
       okCancel: false,

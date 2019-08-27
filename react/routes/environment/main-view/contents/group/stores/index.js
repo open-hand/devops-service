@@ -5,7 +5,6 @@ import { injectIntl } from 'react-intl';
 import { DataSet } from 'choerodon-ui/pro';
 import { useEnvironmentStore } from '../../../../stores';
 import TableDataSet from './TableDataSet';
-import GroupFormDataSet from './GroupFormDataSet';
 
 const Store = createContext();
 
@@ -23,7 +22,6 @@ export const StoreProvider = injectIntl(inject('AppState')(
       },
     } = useEnvironmentStore();
     const groupDs = useMemo(() => new DataSet(TableDataSet({ formatMessage, intlPrefix })), []);
-    const groupFormDs = useMemo(() => new DataSet(GroupFormDataSet({ formatMessage, intlPrefix, projectId })), [projectId]);
 
     useEffect(() => {
       const param = typeof id === 'number' && id ? `&group_id=${id}` : '';
@@ -34,7 +32,6 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const value = {
       ...props,
       groupDs,
-      groupFormDs,
     };
     return (
       <Store.Provider value={value}>

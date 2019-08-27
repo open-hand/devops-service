@@ -361,6 +361,7 @@ const appService = {
 
 const envrionment = {
   'c7ncd.env.create': '创建环境',
+  'c7ncd.env.create.config': '创建部署配置',
   'c7ncd.env.group.default': '默认分组',
   'c7ncd.env.group.name': '分组名称',
   'c7ncd.env.group.stopped': '环境配置停用区',
@@ -375,7 +376,13 @@ const envrionment = {
   'c7ncd.env.modal.detail.start': '启用环境',
   'c7ncd.env.modal.detail.stop': '停用环境',
   'c7ncd.env.cluster': '连接集群',
+  'c7ncd.env.name': '环境名称',
+  'c7ncd.env.status': '环境状态',
+  'c7ncd.env.code': '环境编码',
+  'c7ncd.env.description': '环境描述',
   'c7ncd.env.config.app': '服务',
+  'c7ncd.env.sync.empty': '目前部署同步正常，暂无错误信息',
+
 };
 
 const certificate = {
@@ -884,7 +891,7 @@ const cluster = {
   'c7ncd.cluster.project.part': '组织下特定项目',
   'c7ncd.cluster.visibility': '集群公开范围',
   'c7ncd.cluster.activate.header': '激活集群',
-  'c7ncd.cluster.activate.title': '复制集群"{clsName}"的指令',  
+  'c7ncd.cluster.activate.title': '复制集群"{clsName}"的指令',
   'c7ncd.cluster.activate.coped': '已复制',
   'c7ncd.cluster.activate.desc': '复制下文代码至Kubernetes运行，与平台建立链接',
   'c7ncd.cluster.check.failed':
