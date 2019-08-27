@@ -24,7 +24,7 @@ function CustomItem({
   }
 
   function deleteItem() {
-    treeDs.remove(record);
+    treeDs.delete(record);
   }
 
   function openModal() {
@@ -50,7 +50,7 @@ function CustomItem({
   }
 
   return <Fragment>
-    <Icon type="router" />
+    <Icon type="filter_b_and_w" />
     {name}
     {getSuffix()}
     {showModal && <CustomForm
