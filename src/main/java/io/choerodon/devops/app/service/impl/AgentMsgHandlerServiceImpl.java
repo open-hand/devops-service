@@ -254,7 +254,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             if (devopsEnvCommandDTO != null) {
                 devopsEnvCommandDTO.setStatus(CommandStatus.SUCCESS.getStatus());
                 devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
-                AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQueryByAppIdAndVersion(appServiceInstanceDTO.getId(), releasePayloadVO.getChartVersion());
+                AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQueryByAppIdAndVersion(appServiceInstanceDTO.getAppServiceId(), releasePayloadVO.getChartVersion());
                 appServiceInstanceDTO.setAppServiceVersionId(appServiceVersionDTO.getId());
                 appServiceInstanceDTO.setStatus(InstanceStatus.RUNNING.getStatus());
                 appServiceInstanceService.baseUpdate(appServiceInstanceDTO);
