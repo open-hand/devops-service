@@ -209,6 +209,11 @@ public class SagaTopicCodeConstants {
     public static final String APIM_UPLOAD_APP = "base-publish-market-app";
 
     /**
+     * 应用上传，修复版本
+     */
+    public static final String APIM_UPLOAD_APP_FIX_VERSION = "base-publish-market-app-fix-version";
+
+    /**
      * 应用下载
      */
     public static final String APIM_DOWNLOAD_APP = "base-download-application";

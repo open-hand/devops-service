@@ -183,6 +183,11 @@ public class SagaTaskCodeConstants {
     public static final String APIM_UPLOAD_APP = "apimUploadApplication";
 
     /**
+     * 应用上传，修复版本
+     */
+    public static final String APIM_UPLOAD_APP_FIX_VERSION = "apimUploadApplicationFixVersion";
+
+    /**
      * 应用下载
      */
     public static final String APIM_DOWNLOAD_APP = "apimDownloadApplication";

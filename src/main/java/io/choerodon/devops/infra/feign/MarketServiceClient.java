@@ -16,7 +16,15 @@ public interface MarketServiceClient {
 
     @Multipart
     @POST("v1/market_applications/upload")
-    Call<Void> uploadFile(@Query("app_version") String appVersion, @Query("image_url") String imageUrl, @Part List<MultipartBody.Part> list);
+    Call<Boolean> uploadFile(@Query("app_version") String appVersion, @Part List<MultipartBody.Part> list, @Part String imageUrl);
+
+    @Multipart
+    @POST("v1/market_applications/published/versionFix")
+    Call<Boolean> updateAppPublishInfoFix(@Query("app_code") String code,
+                                          @Query("version") String version,
+                                          @Part String marketApplicationVOStr,
+                                          @Part List<MultipartBody.Part> list,
+                                          @Part String imageUrl);
 
     @GET("{fileName}")
     Call<ResponseBody> downloadFile(@Path("fileName") String fileName);
