@@ -42,36 +42,35 @@ public class HandlerCustomResourceServiceImpl implements HandlerObjectFileRelati
 
     @Override
     public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceDTO> beforeSync, List<DevopsCustomizeResourceVO> devopsCustomizeResources, List<V1Endpoints> v1Endpoints, Long envId, Long projectId, String path, Long userId) {
-        List<DevopsCustomizeResourceDTO> beforeDevopsCustomResource = beforeSync.stream()
+        List<DevopsCustomizeResourceVO> beforeDevopsCustomResource = beforeSync.stream()
                 .filter(devopsEnvFileResourceVO -> devopsEnvFileResourceVO.getResourceType().equals(ResourceType.CUSTOM.getType()))
                 .map(devopsEnvFileResourceVO -> {
-                    io.choerodon.devops.infra.dto.DevopsCustomizeResourceDTO devopsCustomizeResourceDTO = devopsCustomizeResourceService
+                    DevopsCustomizeResourceDTO devopsCustomizeResourceDTO = devopsCustomizeResourceService
                             .baseQuery(devopsEnvFileResourceVO.getResourceId());
                     if (devopsCustomizeResourceDTO == null) {
                         devopsEnvFileResourceService
                                 .baseDeleteByEnvIdAndResourceId(envId, devopsEnvFileResourceVO.getResourceId(), ResourceType.CUSTOM.getType());
                         return null;
                     }
-                    return devopsCustomizeResourceDTO;
+                    return ConvertUtils.convertObject(devopsCustomizeResourceDTO,DevopsCustomizeResourceVO.class);
                 }).collect(Collectors.toList());
 
-        //比较已存在实例和新增要处理的configMap,获取新增configMap，更新configMap，删除configMap
         List<DevopsCustomizeResourceVO> customizeResourceDTOS = new ArrayList<>();
         List<DevopsCustomizeResourceVO> updateDevopsCustomizeResourceVODTOs = new ArrayList<>();
-        devopsCustomizeResources.forEach(devopsCustomizeResourceDTO -> {
-            if (beforeDevopsCustomResource.contains(devopsCustomizeResourceDTO)) {
-                updateDevopsCustomizeResourceVODTOs.add(devopsCustomizeResourceDTO);
-                beforeDevopsCustomResource.remove(devopsCustomizeResourceDTO);
+        devopsCustomizeResources.forEach(devopsCustomizeResourceVO -> {
+            if (beforeDevopsCustomResource.contains(devopsCustomizeResourceVO)) {
+                updateDevopsCustomizeResourceVODTOs.add(devopsCustomizeResourceVO);
+                beforeDevopsCustomResource.remove(devopsCustomizeResourceVO);
             } else {
-                customizeResourceDTOS.add(devopsCustomizeResourceDTO);
+                customizeResourceDTOS.add(devopsCustomizeResourceVO);
             }
         });
 
-        //新增configMap
+        //新增自定义资源
         addDevopsCustomResource(objectPath, projectId, envId, customizeResourceDTOS, path, userId);
-        //更新configMap
+        //更新自定义资源
         updateDevopsCustomResource(objectPath, projectId, envId, updateDevopsCustomizeResourceVODTOs, path, userId);
-        //删除configMap,和文件对象关联关系
+        //删除自定义资源
         beforeDevopsCustomResource.forEach(devopsCustomizeResourceE -> {
             io.choerodon.devops.infra.dto.DevopsCustomizeResourceDTO oldDevopsCustomizeResourceVODTO = devopsCustomizeResourceService.queryByEnvIdAndKindAndName(envId, devopsCustomizeResourceE.getK8sKind(), devopsCustomizeResourceE.getName());
             if (oldDevopsCustomizeResourceVODTO != null) {
