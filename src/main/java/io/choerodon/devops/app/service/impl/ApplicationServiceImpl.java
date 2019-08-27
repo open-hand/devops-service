@@ -2,6 +2,9 @@ package io.choerodon.devops.app.service.impl;
 
 import java.io.File;
 import java.util.List;
+import java.util.Set;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import io.choerodon.devops.api.vo.UserAttrVO;
 import io.choerodon.devops.app.eventhandler.payload.ApplicationEventPayload;
@@ -11,20 +14,24 @@ import io.choerodon.devops.app.service.ApplicationService;
 import io.choerodon.devops.app.service.GitlabGroupService;
 import io.choerodon.devops.app.service.UserAttrService;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
+import io.choerodon.devops.infra.dto.AppServiceVersionDTO;
 import io.choerodon.devops.infra.dto.DevopsProjectDTO;
 import io.choerodon.devops.infra.dto.gitlab.GitlabProjectDTO;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.AppServiceMapper;
+import io.choerodon.devops.infra.mapper.AppServiceVersionMapper;
 import io.choerodon.devops.infra.mapper.DevopsConfigMapper;
 import io.choerodon.devops.infra.mapper.DevopsProjectMapper;
 import io.choerodon.devops.infra.util.*;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 /**
  * @author zmf
@@ -49,6 +56,8 @@ public class ApplicationServiceImpl implements ApplicationService {
     private DevopsProjectMapper devopsProjectMapper;
     @Autowired
     private AppServiceMapper appServiceMapper;
+    @Autowired
+    private AppServiceVersionMapper appServiceVersionMapper;
 
     @Override
     public void handleApplicationCreation(ApplicationEventPayload payload) {
@@ -57,20 +66,26 @@ public class ApplicationServiceImpl implements ApplicationService {
         // 创建gitlab应用组
         gitlabGroupService.createApplicationGroup(payload);
 
-        // TODO 此处目前只支持选择项目层的应用作为模板，后续等待saga数据以支持平台层的应用作为模板
+        // sourceId不为空说明选择了应用作为模板
         if (payload.getSourceId() != null) {
-            copyProjectAppServices(payload.getSourceId(), payload.getId(), payload.getProjectId());
+            if (payload.getServiceVersionIds() == null) {
+                // 以组织下的应用作为模板
+                copyServicesFromProjectApp(payload.getSourceId(), payload.getId(), payload.getProjectId());
+            } else {
+                // 以平台上下载的应用作为模板
+                copyServicesFromSiteApp(payload.getSourceId(), payload.getId(), payload.getProjectId(), payload.getServiceVersionIds());
+            }
         }
     }
 
     /**
-     * 将原有应用的服务拷贝到新的服务下
+     * 将原有组织层应用的服务拷贝到新的服务下
      *
      * @param originAppId 原服务ID（模板应用ID）
      * @param newAppId    新建应用ID
      * @param projectId   项目id
      */
-    private void copyProjectAppServices(Long originAppId, Long newAppId, Long projectId) {
+    private void copyServicesFromProjectApp(Long originAppId, Long newAppId, Long projectId) {
         // 查询原应用下的所有服务
         AppServiceDTO search = new AppServiceDTO();
         search.setAppId(originAppId);
@@ -80,7 +95,39 @@ public class ApplicationServiceImpl implements ApplicationService {
         originalAppServices.forEach(service -> {
             final String workingDir = gitUtil.getWorkingDirectory("application-service-copy-" + GenerateUUID.generateUUID());
             try {
-                copyAppService(newAppId, service, projectId, workingDir);
+                copyAppService(newAppId, service, projectId, workingDir, null);
+            } catch (Exception e) {
+                FileUtil.deleteDirectory(new File(workingDir));
+                logger.warn("Failed to create application service from original application service with code '{}' and id {}", service.getCode(), service.getId());
+            }
+        });
+    }
+
+    /**
+     * 将原有平台应用的服务拷贝到新的服务下
+     *
+     * @param originAppId       原服务ID（模板应用ID）
+     * @param newAppId          新建应用ID
+     * @param projectId         项目id
+     * @param serviceVersionIds 当前作为模板的应用版本的服务的版本ID
+     */
+    private void copyServicesFromSiteApp(Long originAppId, Long newAppId, Long projectId, Set<Long> serviceVersionIds) {
+        // 查询对应应用服务版本id的所有应用服务
+        serviceVersionIds.forEach(id -> {
+            AppServiceVersionDTO version = appServiceVersionMapper.selectByPrimaryKey(id);
+            if (version == null) {
+                logger.info("No service version with id {} exists. Creation from it canceled. The original application id is {}", id, originAppId);
+                return;
+            }
+            AppServiceDTO service = appServiceMapper.selectByPrimaryKey(version.getAppServiceId());
+            if (service == null) {
+                logger.info("The corresponding app service can't be found of version id {}. The original application id is {}", id, originAppId);
+                return;
+            }
+
+            final String workingDir = gitUtil.getWorkingDirectory("application-service-copy-" + GenerateUUID.generateUUID());
+            try {
+                copyAppService(newAppId, service, projectId, workingDir, version.getCommit());
             } catch (Exception e) {
                 FileUtil.deleteDirectory(new File(workingDir));
                 logger.warn("Failed to create application service from original application service with code '{}' and id {}", service.getCode(), service.getId());
@@ -95,8 +142,14 @@ public class ApplicationServiceImpl implements ApplicationService {
      * @param originalAppService 原有的应用下某个服务的信息
      * @param projectId          项目ID
      * @param workingDir         本地仓库的目录
+     * @param resetCommitSha     在拉取原有代码到本地后，是否切换到指定的commit
      */
-    private void copyAppService(final Long newAppId, final AppServiceDTO originalAppService, final Long projectId, String workingDir) {
+    private void copyAppService(
+            @Nonnull final Long newAppId,
+            @Nonnull final AppServiceDTO originalAppService,
+            @Nonnull final Long projectId,
+            @Nonnull final String workingDir,
+            @Nullable final String resetCommitSha) {
         final AppServiceDTO newAppService = createDatabaseRecord(newAppId, originalAppService);
         final UserAttrVO userAttrVO = userAttrService.queryByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         DevopsProjectDTO devopsProjectDTO = devopsProjectMapper.selectByPrimaryKey(newAppId);
@@ -127,15 +180,26 @@ public class ApplicationServiceImpl implements ApplicationService {
         // 将原先服务的MASTER分支最新代码克隆到本地
         final File workingDirFile = new File(workingDir);
         GitlabProjectDTO originalGitlabProjectDTO = gitlabServiceClientOperator.queryProjectById(originalAppService.getGitlabProjectId());
-        gitUtil.cloneRepository(workingDir, originalGitlabProjectDTO.getHttpUrlToRepo(), originalAccessToken, "master");
+        Git localOriginalRepo = gitUtil.cloneRepository(workingDir, originalGitlabProjectDTO.getHttpUrlToRepo(), originalAccessToken, "master");
 
-        // 删除所有commits
+        // 切换到指定commit
+        if (!StringUtils.isEmpty(resetCommitSha)) {
+            try {
+                localOriginalRepo.reset().setMode(ResetCommand.ResetType.HARD).setRef(resetCommitSha).call();
+            } catch (GitAPIException e) {
+                logger.warn("Failed to checkout to the certain commit of service with id {}, the commit sha is {}", originalAppService.getId(), resetCommitSha);
+                FileUtil.deleteDirectory(workingDirFile);
+            }
+        }
+
+
+        // 删除所有commits纪录
         File gitDir = new File(workingDir, ".git");
         if (gitDir.exists() && gitDir.isDirectory()) {
             FileUtil.deleteDirectory(gitDir);
         }
 
-        // 本独初始化提交
+        // 本地初始化提交
         Git git;
         try {
             git = Git.init().setGitDir(workingDirFile).call();

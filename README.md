@@ -35,23 +35,14 @@ DevOps Service通过自主整合的DevOps工具链，集成相关的开源工具
 ## 服务依赖
 
 * `go-register-server`: 注册中心，在线上环境代替本地的`eureka-server`
-
 * `iam-service`：用户服务，与用户有关的操作依赖与此服务
-
 * `api-gateway`: 网关服务
-
 * `oauth-server`: 授权服务
-
 * `manager-service`: 管理服务
-
 * `asgard-service` : 事务一致性服务
-
 * `notify-service` : 通知服务
-
 * `gitlab-service`：gitlab服务
-
 * `workflow-service`：工作流服务
-
 * `agile-service`：敏捷服务，查询与分支有关的敏捷Issue需要依赖此服务
 
 ## 服务配置
