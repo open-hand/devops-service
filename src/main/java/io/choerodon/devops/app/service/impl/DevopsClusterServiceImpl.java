@@ -386,7 +386,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         PageInfo<DevopsEnvPodDTO> devopsEnvPodDTOPageInfo = basePageQueryPodsByNodeName(clusterId, nodeName, pageRequest, searchParam);
         PageInfo<DevopsClusterPodVO> clusterPodDTOPage = ConvertUtils.convertPage(devopsEnvPodDTOPageInfo, DevopsClusterPodVO.class);
 
-        clusterPodDTOPage.setList(devopsEnvPodDTOPageInfo.getList().stream().map(this::podE2ClusterPodDTO).collect(Collectors.toList()));
+        clusterPodDTOPage.setList(devopsEnvPodDTOPageInfo.getList().stream().map(this::pod2ClusterPodDTO).collect(Collectors.toList()));
         return clusterPodDTOPage;
     }
 
@@ -494,19 +494,20 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     }
 
     /**
-     * pod entity to cluster pod vo
+     * pod dto to cluster pod vo
      *
-     * @param devopsEnvPodDTO pod entity
+     * @param devopsEnvPodDTO pod dto
      * @return the cluster pod vo
      */
-    private DevopsClusterPodVO podE2ClusterPodDTO(DevopsEnvPodDTO devopsEnvPodDTO) {
+    private DevopsClusterPodVO pod2ClusterPodDTO(final DevopsEnvPodDTO devopsEnvPodDTO) {
         DevopsClusterPodVO devopsClusterPodVO = new DevopsClusterPodVO();
         BeanUtils.copyProperties(devopsEnvPodDTO, devopsClusterPodVO);
+
         DevopsEnvPodVO devopsEnvPodVO = ConvertUtils.convertObject(devopsEnvPodDTO, DevopsEnvPodVO.class);
-        devopsEnvPodService.setContainers(devopsEnvPodVO);
+        devopsEnvPodService.fillContainers(devopsEnvPodVO);
 
         devopsClusterPodVO.setContainersForLogs(
-                devopsEnvPodDTO.getContainers()
+                devopsEnvPodVO.getContainers()
                         .stream()
                         .map(container -> new DevopsEnvPodContainerLogVO(devopsEnvPodDTO.getName(), container.getName()))
                         .collect(Collectors.toList())
