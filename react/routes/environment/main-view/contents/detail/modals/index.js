@@ -1,14 +1,13 @@
-/* eslint-disable */
 import React, { useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Modal } from 'choerodon-ui/pro';
 import HeaderButtons from '../../../../../../components/header-buttons';
-import EnvDetail from './env-detail';
-import LinkService from './link-service';
-import Permission from './permission';
+import EnvDetail from '../../../../../../components/env-detail';
+// import LinkService from './link-service';
+// import Permission from './permission';
 import { useEnvironmentStore } from '../../../../stores';
-// import { useEnvironmentStore } from '../stores';
-import { useModalStore } from './stores';
+import { useDetailStore } from '../stores';
+// import { useModalStore } from './stores';
 
 const modalKey1 = Modal.key();
 const modalKey2 = Modal.key();
@@ -19,52 +18,42 @@ const EnvModals = observer(() => {
     width: 380,
   }), []);
   const {
-    envStore: {
+    treeDs,
+    envStore: { getSelectedMenu },
+  } = useEnvironmentStore();
+  const {
+    intl: { formatMessage },
+    currentIntlPrefix,
+    intlPrefix,
+    detailStore: {
       getTabKey,
     },
     tabs: {
       SYNC_TAB,
+      CONFIG_TAB,
       ASSIGN_TAB,
     },
     permissionsDs,
     gitopsLogDs,
     gitopsSyncDs,
-    baseInfoDs,
-  } = useEnvironmentStore();
-  const {
-    modalStore,
-  } = useModalStore();
-
-  const { menuId } = resourceStore.getSelectedMenu;
-
-  function linkServices(data) {
-    return modalStore.addService(projectId, menuId, data);
-  }
-
-  function addUsers(data) {
-    const record = baseInfoDs.current;
-    if (record) {
-      const objectVersionNumber = record.get('objectVersionNumber');
-      const users = {
-        projectId,
-        envId: menuId,
-        objectVersionNumber,
-        ...data,
-      };
-      return modalStore.addUsers(users);
-    }
-
-    return false;
-  }
+    configDs,
+  } = useDetailStore();
 
   function refresh() {
-    baseInfoDs.query();
-    const tabKey = getTabKey;
-    if (tabKey === SYNC_TAB) {
-      gitopsSyncDs.query();
-      gitopsLogDs.query();
-    } else if (tabKey === ASSIGN_TAB) {
-      permissionsDs.query();
+    treeDs.query();
+    switch (getTabKey) {
+      case SYNC_TAB: {
+        gitopsSyncDs.query();
+        gitopsLogDs.query();
+        break;
+      }
+      case CONFIG_TAB:
+        configDs.query();
+        break;
+      case ASSIGN_TAB:
+        permissionsDs.query();
+        break;
+      default:
     }
   }
 
@@ -72,12 +61,7 @@ const EnvModals = observer(() => {
     Modal.open({
       key: modalKey1,
       title: formatMessage({ id: `${intlPrefix}.modal.env-detail` }),
-      children: <EnvDetail
-        record={baseInfoDs.current}
-        intlPrefix={intlPrefix}
-        prefixCls={prefixCls}
-        formatMessage={formatMessage}
-      />,
+      children: <EnvDetail record={getSelectedMenu} isRecord={false} />,
       drawer: true,
       style: modalStyle,
       okCancel: false,
@@ -86,52 +70,62 @@ const EnvModals = observer(() => {
   }
 
   function openLinkService() {
-    modalStore.loadServices(projectId, menuId);
-    Modal.open({
-      key: modalKey2,
-      title: formatMessage({ id: `${intlPrefix}.modal.link-service` }),
-      style: modalStyle,
-      drawer: true,
-      children: <LinkService
-        store={modalStore}
-        tree={treeDs}
-        onOk={linkServices}
-        intlPrefix={intlPrefix}
-        prefixCls={prefixCls}
-      />,
-      afterClose: () => {
-        modalStore.setServices([]);
-      },
-    });
+    // modalStore.loadServices(projectId, menuId);
+    // Modal.open({
+    //   key: modalKey2,
+    //   title: formatMessage({ id: `${intlPrefix}.modal.link-service` }),
+    //   style: modalStyle,
+    //   drawer: true,
+    //   children: <LinkService
+    //     store={modalStore}
+    //     tree={treeDs}
+    //     onOk={linkServices}
+    //     intlPrefix={intlPrefix}
+    //     prefixCls={prefixCls}
+    //   />,
+    //   afterClose: () => {
+    //     modalStore.setServices([]);
+    //   },
+    // });
   }
 
   function openPermission() {
-    modalStore.loadUsers(projectId, menuId);
-    Modal.open({
-      key: modalKey3,
-      title: formatMessage({ id: `${intlPrefix}.modal.permission` }),
-      drawer: true,
-      style: modalStyle,
-      children: <Permission
-        store={modalStore}
-        onOk={addUsers}
-        intlPrefix={intlPrefix}
-        prefixCls={prefixCls}
-      />,
-      afterClose: () => {
-        modalStore.setUsers([]);
-      },
-    });
+    // modalStore.loadUsers(projectId, menuId);
+    // Modal.open({
+    //   key: modalKey3,
+    //   title: formatMessage({ id: `${intlPrefix}.modal.permission` }),
+    //   drawer: true,
+    //   style: modalStyle,
+    //   children: <Permission
+    //     store={modalStore}
+    //     onOk={addUsers}
+    //     intlPrefix={intlPrefix}
+    //     prefixCls={prefixCls}
+    //   />,
+    //   afterClose: () => {
+    //     modalStore.setUsers([]);
+    //   },
+    // });
   }
 
   function getButtons() {
+    const { active, synchro } = getSelectedMenu;
+    const disabled = !active || !synchro;
     return [{
-      name: formatMessage({ id: `${intlPrefix}.modal.link-service` }),
-      icon: 'relate',
+      name: formatMessage({ id: `${currentIntlPrefix}.create` }),
+      icon: 'playlist_add',
       handler: openLinkService,
       display: true,
       group: 1,
     }, {
+      disabled,
+      name: formatMessage({ id: `${currentIntlPrefix}.create.config` }),
+      icon: 'playlist_add',
+      handler: openPermission,
+      display: true,
+      group: 1,
+    }, {
+      disabled,
       name: formatMessage({ id: `${intlPrefix}.modal.permission` }),
       icon: 'authority',
       handler: openPermission,
@@ -142,7 +136,7 @@ const EnvModals = observer(() => {
       icon: 'find_in_page',
       handler: openEnvDetail,
       display: true,
-      group: 1,
+      group: 2,
     }, {
       name: formatMessage({ id: 'refresh' }),
       icon: 'refresh',

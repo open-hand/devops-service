@@ -2,7 +2,9 @@ import React, { useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Modal, Form, TextField } from 'choerodon-ui/pro';
 import HeaderButtons from '../../../../../../components/header-buttons';
+import EnvCreateForm from '../../../modals/EnvCreateForm';
 import { useEnvironmentStore } from '../../../../stores';
+import { useMainStore } from '../../../stores';
 import { useEnvGroupStore } from '../stores';
 
 const groupKey = Modal.key();
@@ -19,7 +21,10 @@ const AppModals = observer(() => {
     envStore,
     treeDs,
   } = useEnvironmentStore();
-  const { groupDs, groupFormDs } = useEnvGroupStore();
+  const { envFormDs, groupFormDs } = useMainStore();
+  const {
+    groupDs,
+  } = useEnvGroupStore();
 
   function refresh() {
     groupDs.query();
@@ -38,6 +43,10 @@ const AppModals = observer(() => {
     }
   }
 
+  async function handleEnvCreate() {
+    // console.log(envFormDs.data);
+  }
+
   function openGroupModal() {
     Modal.open({
       key: groupKey,
@@ -54,12 +63,10 @@ const AppModals = observer(() => {
   function openEnvModal() {
     Modal.open({
       key: envKey,
-      title: formatMessage({ id: `${intlPrefix}.group.create` }),
-      children: <Form dataSet={groupFormDs}>
-        <TextField name="name" />
-      </Form>,
+      title: formatMessage({ id: `${intlPrefix}.create` }),
+      children: <EnvCreateForm dataSet={envFormDs} />,
       drawer: true,
-      onOk: handleCreate,
+      onOk: handleEnvCreate,
       style: modalStyle,
     });
   }
@@ -68,7 +75,7 @@ const AppModals = observer(() => {
     return [{
       name: formatMessage({ id: `${intlPrefix}.create` }),
       icon: 'playlist_add',
-      handler: refresh,
+      handler: openEnvModal,
       display: true,
       group: 1,
     }, {
