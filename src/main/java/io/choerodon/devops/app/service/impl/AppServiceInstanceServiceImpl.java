@@ -406,7 +406,7 @@ public class  AppServiceInstanceServiceImpl implements AppServiceInstanceService
         String secretCode = getSecret(applicationDTO, null, devopsEnvironmentDTO);
 
         AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQuery(appServiceDeployVO.getAppServiceVersionId());
-        FileUtil.checkYamlFormat(appServiceDeployVO.getValues());
+//        FileUtil.checkYamlFormat(appServiceDeployVO.getValues());
         String deployValue = getReplaceResult(versionValue,
                 appServiceDeployVO.getValues()).getDeltaYaml().trim();
         agentCommandService.deployTestApp(applicationDTO, appServiceVersionDTO, appServiceDeployVO.getInstanceName(), secretCode, appServiceDeployVO.getEnvironmentId(), deployValue);

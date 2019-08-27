@@ -7,6 +7,7 @@ import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import io.choerodon.devops.infra.mapper.DevopsProjectMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -96,7 +97,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
-    private DevopsEnvResourceDetailMapper devopsEnvResourceDetailMapper;
+    private DevopsProjectService devopsProjectService;
     @Autowired
     private DevopsEnvPodMapper devopsEnvPodMapper;
     @Autowired
@@ -142,7 +143,28 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
     @Override
     public DevopsServiceVO query(Long id) {
-        return queryDtoToVo(devopsServiceMapper.queryById(id));
+
+        List<DevopsServiceInstanceDTO> devopsServiceAppInstanceDTOS = devopsServiceInstanceService.baseListByServiceId(id);
+        //网络多实例中存在删除实例时，给应用信息赋值
+        if (!devopsServiceAppInstanceDTOS.isEmpty()) {
+            for (DevopsServiceInstanceDTO devopsServiceAppInstanceDTO : devopsServiceAppInstanceDTOS) {
+                AppServiceInstanceDTO applicationInstanceDTO = appServiceInstanceService.baseQuery(devopsServiceAppInstanceDTO.getInstanceId());
+                if (applicationInstanceDTO != null) {
+                    AppServiceDTO appServiceDTO = applicationService.baseQuery(applicationInstanceDTO.getAppServiceId());
+                    DevopsServiceQueryDTO devopsServiceQueryDTO = baseQueryById(id);
+                    devopsServiceQueryDTO.setAppServiceId(appServiceDTO.getId());
+                    devopsServiceQueryDTO.setAppServiceName(appServiceDTO.getName());
+                    devopsServiceQueryDTO.setAppServiceProjectId(devopsProjectService.queryProjectIdByAppId(appServiceDTO.getAppId()));
+                    return queryDtoToVo(devopsServiceQueryDTO);
+                }
+            }
+        }
+        DevopsServiceQueryDTO devopsServiceQueryDTO = baseQueryById(id);
+        if(devopsServiceQueryDTO!=null) {
+            return queryDtoToVo(baseQueryById(id));
+        }else {
+            return null;
+        }
     }
 
     @Override
