@@ -973,7 +973,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                                       AppServiceInstanceDTO appServiceInstanceDTO) {
         if (appServiceInstanceDTO != null) {
             devopsEnvResourceDTO.setInstanceId(appServiceInstanceDTO.getId());
-            devopsEnvResourceDTO.setDevopsEnvCommandId(appServiceInstanceDTO.getCommandId());
+            devopsEnvResourceDTO.setCommandId(appServiceInstanceDTO.getCommandId());
         }
         if (oldDevopsEnvResourceDTO == null) {
             devopsEnvResourceDTO.setResourceDetailId(
