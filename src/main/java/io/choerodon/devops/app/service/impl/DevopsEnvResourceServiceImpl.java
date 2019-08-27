@@ -259,9 +259,8 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
                 }
             }
             instanceEventVO.setPodEventVO(podEventVOS);
-            if (!instanceEventVO.getPodEventVO().isEmpty()) {
-                instanceEventVOS.add(instanceEventVO);
-            }
+            instanceEventVOS.add(instanceEventVO);
+
         });
         return instanceEventVOS;
     }
