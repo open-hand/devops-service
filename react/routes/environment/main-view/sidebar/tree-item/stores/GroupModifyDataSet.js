@@ -19,7 +19,16 @@ export default ({ formatMessage, intlPrefix, id }) => {
 
   return {
     paging: false,
-    transport: {},
+    transport: {
+      submit: ({ data: [data] }) => ({
+        url: `/devops/v1/projects/${id}/env_groups`,
+        method: 'put',
+        data: {
+          id: data.id,
+          name: data.name,
+        },
+      }),
+    },
     fields: [
       {
         name: 'name',
@@ -28,6 +37,10 @@ export default ({ formatMessage, intlPrefix, id }) => {
         type: 'string',
         label: formatMessage({ id: `${intlPrefix}.group.name` }),
         validator: nameValidator,
+      },
+      {
+        name: 'id',
+        type: 'number',
       },
     ],
   };

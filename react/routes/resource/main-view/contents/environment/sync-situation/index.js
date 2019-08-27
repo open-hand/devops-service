@@ -1,5 +1,4 @@
 import React from 'react';
-import { FormattedMessage } from 'react-intl';
 import { Table } from 'choerodon-ui/pro';
 import MouserOverWrapper from '../../../../../../components/MouseOverWrapper';
 import TimePopover from '../../../../../../components/time-popover';
@@ -15,6 +14,7 @@ export default function Situation() {
   const {
     prefixCls,
     intlPrefix,
+    intl: { formatMessage },
   } = useResourceStore();
   const { gitopsLogDs } = useEnvironmentStore();
 
@@ -56,9 +56,12 @@ export default function Situation() {
     <div className={`${prefixCls}-environment-sync`}>
       <SyncSituation />
       <div className={`${prefixCls}-environment-sync-table-title`}>
-        <FormattedMessage id={`${intlPrefix}.environment.error.logs`} />
+        {formatMessage({ id: `${intlPrefix}.environment.error.logs` })}
       </div>
       <Table
+        locale={{
+          emptyText: formatMessage({ id: 'c7ncd.env.sync.empty' }),
+        }}
         dataSet={gitopsLogDs}
         border={false}
         queryBar="none"

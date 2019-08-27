@@ -38,16 +38,8 @@ function GroupItem({ record, search, intl: { formatMessage }, intlPrefix }) {
   function handleClick() {
     const groupId = record.get('id');
     const name = record.get('name');
-    groupFormDs.transport.submit = ({ data: [data] }) => ({
-      url: `/devops/v1/projects/${id}/env_groups`,
-      method: 'put',
-      data: {
-        id: groupId,
-        name: data.name,
-      },
-    });
     if (!groupFormDs.length) {
-      groupFormDs.create({ name });
+      groupFormDs.create({ name, id: groupId });
     }
     Modal.open({
       key: modalKey,

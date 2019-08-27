@@ -1,10 +1,8 @@
 import React from 'react';
-import { FormattedMessage } from 'react-intl';
 import { Table } from 'choerodon-ui/pro';
 import MouserOverWrapper from '../../../../../../components/MouseOverWrapper';
 import TimePopover from '../../../../../../components/time-popover';
 import SyncSituation from './Situation';
-import { useEnvironmentStore } from '../../../../stores';
 import { useDetailStore } from '../stores';
 
 import './index.less';
@@ -16,6 +14,7 @@ export default function Situation() {
     prefixCls,
     intlPrefix,
     gitopsLogDs,
+    intl: { formatMessage },
   } = useDetailStore();
 
   function renderMsg({ value }) {
@@ -56,9 +55,12 @@ export default function Situation() {
     <div className={`${prefixCls}-environment-sync`}>
       <SyncSituation />
       <div className={`${prefixCls}-environment-sync-table-title`}>
-        <FormattedMessage id={`${intlPrefix}.environment.error.logs`} />
+        {formatMessage({ id: `${intlPrefix}.environment.error.logs` })}
       </div>
       <Table
+        locale={{
+          emptyText: formatMessage({ id: 'c7ncd.env.sync.empty' }),
+        }}
         dataSet={gitopsLogDs}
         border={false}
         queryBar="none"

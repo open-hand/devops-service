@@ -36,7 +36,7 @@ export default ({ formatMessage, intlPrefix, projectId, id }) => ({
       label: formatMessage({ id: `${intlPrefix}.environment.permission.role` }),
     },
     {
-      name: 'createDate',
+      name: 'creationDate',
       type: 'dateTime',
       label: formatMessage({ id: `${intlPrefix}.environment.permission.addTime` }),
     },
