@@ -11,11 +11,12 @@ export function useTreeStore() {
 
 export const StoreProvider = injectIntl(inject('AppState')(
   (props) => {
-    const { children } = props;
+    const { children, AppState: { currentMenuType: { projectId } } } = props;
     const treeItemStore = useStore();
 
     const value = {
       ...props,
+      projectId,
       treeItemStore,
     };
     return (
