@@ -15,6 +15,7 @@ import io.choerodon.devops.infra.dto.DevopsEnvGroupDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.mapper.DevopsEnvGroupMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -61,8 +62,8 @@ public class DevopsEnvGroupServiceImpl implements DevopsEnvGroupService {
     }
 
     @Override
-    public Boolean checkName(String name, Long projectId) {
-        return baseCheckUniqueInProject(name, projectId);
+    public Boolean checkName(String name, Long projectId, Long groupId) {
+        return baseCheckUniqueInProject(groupId, name, projectId);
     }
 
     @Override

@@ -42,7 +42,7 @@ public interface DevopsEnvGroupService {
      * @param projectId
      * @return
      */
-    Boolean checkName(String name, Long projectId);
+    Boolean checkName(String name, Long projectId,Long groupId);
 
 
     /**
