@@ -9,6 +9,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import io.choerodon.devops.infra.enums.SecretStatus;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -26,7 +27,6 @@ import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.CommandStatus;
 import io.choerodon.devops.infra.enums.HelmObjectKind;
 import io.choerodon.devops.infra.enums.ObjectType;
-import io.choerodon.devops.infra.enums.SecretStatus;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
@@ -119,9 +119,9 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     @Override
     public DevopsSecretDTO voToDto(SecretReqVO secretReqVO) {
         DevopsSecretDTO devopsSecretDTO = new DevopsSecretDTO();
-        BeanUtils.copyProperties(secretReqVO,devopsSecretDTO);
+        BeanUtils.copyProperties(secretReqVO, devopsSecretDTO);
         Map<String, String> encodedSecretMaps = new HashMap<>();
-        if (!secretReqVO.getValue().isEmpty()){
+        if (!secretReqVO.getValue().isEmpty()) {
             for (Map.Entry<String, String> e : secretReqVO.getValue().entrySet()) {
                 if (!e.getKey().equals(".dockerconfigjson")) {
                     encodedSecretMaps.put(e.getKey(), Base64Util.getBase64EncodedString(e.getValue()));
@@ -137,7 +137,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     @Override
     public SecretRespVO dtoToRespVo(DevopsSecretDTO devopsSecretDTO) {
         SecretRespVO secretRespVO = new SecretRespVO();
-        BeanUtils.copyProperties(devopsSecretDTO,secretRespVO);
+        BeanUtils.copyProperties(devopsSecretDTO, secretRespVO);
         Map<String, String> secretMaps = gson
                 .fromJson(devopsSecretDTO.getValue(), new TypeToken<Map<String, String>>() {
                 }.getType());
@@ -145,14 +145,14 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         for (Map.Entry<String, String> e : secretRespVO.getValue().entrySet()) {
             if (!e.getKey().equals(".dockerconfigjson")) {
                 secretMaps.put(e.getKey(), Base64Util.getBase64DecodedString(e.getValue()));
-            }else {
-                secretMaps.put(e.getKey(),e.getValue());
+            } else {
+                secretMaps.put(e.getKey(), e.getValue());
             }
         }
         List<String> key = new ArrayList<>();
         secretMaps.forEach((key1, value) -> key.add(key1));
         secretRespVO.setKey(key);
-        secretRespVO.setCommandStatus(devopsSecretDTO.getStatus());
+        secretRespVO.setCommandStatus(devopsSecretDTO.getCommandStatus());
         secretRespVO.setLastUpdateDate(devopsSecretDTO.getLastUpdateDate());
         secretRespVO.setValue(secretMaps);
         return secretRespVO;
@@ -161,7 +161,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     @Override
     public SecretReqVO dtoToReqVo(DevopsSecretDTO devopsSecretDTO) {
         SecretReqVO secretReqVO = new SecretReqVO();
-        BeanUtils.copyProperties(devopsSecretDTO,secretReqVO);
+        BeanUtils.copyProperties(devopsSecretDTO, secretReqVO);
         Map<String, String> secretMaps = gson
                 .fromJson(devopsSecretDTO.getValue(), new TypeToken<Map<String, String>>() {
                 }.getType());
@@ -185,7 +185,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         DevopsSecretDTO devopsSecretDTO = voToDto(secretReqVO);
 
         devopsSecretDTO.setValueMap(secretReqVO.getValue());
-        devopsSecretDTO.setStatus(SecretStatus.OPERATING.getStatus());
+        devopsSecretDTO.setCommandStatus(SecretStatus.OPERATING.getStatus());
 
         return devopsSecretDTO;
     }
@@ -256,7 +256,6 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         devopsEnvCommandDTO.setObjectId(secretId);
         DevopsSecretDTO devopsSecretDTO = baseQuery(secretId);
         devopsSecretDTO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());
-        devopsSecretDTO.setStatus(SecretStatus.OPERATING.getStatus());
         baseUpdate(devopsSecretDTO);
 
         //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
@@ -333,7 +332,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         Long secretId = baseCreate(devopsSecretDTO).getId();
         DevopsEnvCommandDTO devopsEnvCommandDTO = new DevopsEnvCommandDTO();
         devopsEnvCommandDTO.setCommandType(CREATE);
-        devopsEnvCommandDTO.setStatus(devopsSecretDTO.getStatus());
+        devopsEnvCommandDTO.setStatus(devopsSecretDTO.getCommandStatus());
         devopsEnvCommandDTO.setObjectId(secretId);
         devopsEnvCommandDTO.setObject(SECRET);
         devopsEnvCommandDTO.setCreatedBy(userId);
@@ -462,9 +461,9 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
 
     @Override
     public PageInfo<DevopsSecretDTO> basePageByOption(Long envId, PageRequest pageRequest, String params, Long appServiceId) {
-        Map maps = gson.fromJson(params, Map.class);
-        Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
-        List<String> paramList = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
+        Map<String, Object> paramsMap = TypeUtil.castMapParams(params);
+        Map<String, Object> searchParamMap = TypeUtil.cast(paramsMap.get(TypeUtil.SEARCH_PARAM));
+        List<String> paramList = TypeUtil.cast(paramsMap.get(TypeUtil.PARAMS));
         return PageHelper
                 .startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> devopsSecretMapper.listByOption(envId, searchParamMap, paramList, appServiceId));
     }
