@@ -14,11 +14,9 @@ spring:
     - org.springframework.cloud.client.discovery.simple.SimpleDiscoveryClientAutoConfiguration
     - org.springframework.cloud.client.discovery.composite.CompositeDiscoveryClientAutoConfiguration
     - org.springframework.cloud.client.discovery.noop.NoopDiscoveryClientAutoConfiguration
-    - io.choerodon.websocket.SocketHelperAutoConfiguration
   h2:
     console:
       enabled: true
-
 hystrix:
   stream:
     queue:
