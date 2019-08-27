@@ -2,7 +2,7 @@ package io.choerodon.devops.infra.mapper;
 
 import java.util.List;
 
-import io.choerodon.devops.infra.dto.DevopsApplicationResourceDTO;
+import io.choerodon.devops.infra.dto.DevopsAppServiceResourceDTO;
 import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -10,7 +10,7 @@ import org.apache.ibatis.annotations.Param;
  * @author lizongwei
  * @date 2019/7/3
  */
-public interface DevopsAppServiceResourceMapper extends Mapper<DevopsApplicationResourceDTO> {
+public interface DevopsAppServiceResourceMapper extends Mapper<DevopsAppServiceResourceDTO> {
     /**
      * 查询传入的id在关系表中存在的id有哪些
      *

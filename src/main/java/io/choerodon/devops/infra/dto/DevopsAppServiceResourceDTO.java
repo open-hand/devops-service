@@ -6,8 +6,8 @@ import javax.persistence.Table;
  * @author lizongwei
  * @date 2019/7/3
  */
-@Table(name = "devops_app_resource")
-public class DevopsApplicationResourceDTO {
+@Table(name = "devops_app_service_resource")
+public class DevopsAppServiceResourceDTO {
 
     private Long appServiceId;
     private String resourceType;
