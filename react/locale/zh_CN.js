@@ -60,6 +60,7 @@ const commonField = {
   startUp: '启动',
   owner: '项目所有者',
   member: '项目成员',
+  all: '全部',
 
   // 状态描述
   null: '无',

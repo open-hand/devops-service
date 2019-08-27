@@ -9,7 +9,7 @@ export default function useStore() {
       this.ist = data;
     },
     get getIst() {
-      return this.ist.splice();
+      return this.ist.slice();
     },
 
     singleData: {},
@@ -33,12 +33,12 @@ export default function useStore() {
       this.ports = data;
     },
     get getPorts() {
-      return this.ports;
+      return this.ports.slice();
     },
 
     async loadDataById(projectId, id) {
       try {
-        const res = axios.get(`/devops/v1/projects/${projectId}/service/${id}`);
+        const res = await axios.get(`/devops/v1/projects/${projectId}/service/${id}`);
         if (handlePromptError(res)) {
           this.setSingleData(res);
           this.loadInstance(projectId, res.envId, res.appServiceId);
@@ -74,7 +74,7 @@ export default function useStore() {
 
     async loadLabels(projectId, envId, appServiceId) {
       try {
-        const res = axios.get(`/devops/v1/projects/${projectId}/env/app_services/list_label?env_id=${envId}&app_service_id=${appServiceId}`);
+        const res = await axios.get(`/devops/v1/projects/${projectId}/env/app_services/list_label?env_id=${envId}&app_service_id=${appServiceId}`);
         if (handlePromptError(res)) {
           this.setLabels(res);
         }
@@ -85,7 +85,7 @@ export default function useStore() {
 
     async loadPorts(projectId, envId, appServiceId) {
       try {
-        const res = axios.get(`/devops/v1/projects/${projectId}/env/app_services/list_port?env_id=${envId}&app_service_id=${appServiceId}`);
+        const res = await axios.get(`/devops/v1/projects/${projectId}/env/app_services/list_port?env_id=${envId}&app_service_id=${appServiceId}`);
         if (handlePromptError(res)) {
           this.setPorts(res);
         }
