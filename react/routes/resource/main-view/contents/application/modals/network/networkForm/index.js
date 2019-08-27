@@ -7,7 +7,6 @@ import {
   Form,
   Select,
   Input,
-  Modal,
   Popover,
   Icon,
   Radio,
@@ -15,29 +14,10 @@ import {
 import uuidv1 from 'uuid/v1';
 import classnames from 'classnames';
 import _ from 'lodash';
-import AppName from '../../../../../../../../components/appName';
-import Tips from '../../../../../../../../components/Tips/Tips';
 
 import '../../../../../../../main.less';
 import './index.less';
 
-/**
- * 生成网络名
- * @param opt
- * @returns {string}
- */
-function createNetworkName(opt) {
-  let initName = opt.key;
-  if (initName.length > 23) {
-    // 初始网络名长度限制
-    initName = initName.slice(0, 23);
-  }
-  initName = `${initName}-${uuidv1()
-    .slice(0, 6)}`;
-  return initName;
-}
-
-const { Sidebar } = Modal;
 const { Item: FormItem } = Form;
 const { Option, OptGroup } = Select;
 const { Group: RadioGroup } = Radio;
@@ -86,6 +66,7 @@ export default class CreateNetwork extends Component {
       store,
       envId,
       appServiceId,
+      intl: { formatMessage },
     } = this.props;
     store.loadInstance(projectId, envId, appServiceId)
       .then((data) => {
@@ -97,16 +78,18 @@ export default class CreateNetwork extends Component {
             _.forEach(data, (item) => {
               const { id: istIds, code } = item;
               initIstOption.push(
-                <Option key={istIds} value={code}>
+                <Option key={istIds} value={[code]}>
                   {code}
                 </Option>,
               );
             });
-            initIstOption.unshift(
-              <Option key="all_instance" value="all_instance">
-                全部
-              </Option>
-            );
+            if (data.length > 1) {
+              initIstOption.unshift(
+                <Option key="all_instance" value={['all_instance']}>
+                  {formatMessage({ id: 'all' })}
+                </Option>
+              );
+            }
           }
           this.setState({
             initIst,
@@ -394,12 +377,17 @@ export default class CreateNetwork extends Component {
   /**
    * 每当节点端口、端口、目标端口、关键字等输入改变，强制校验，消除重复的报错信息
    */
-  changeValue = _.debounce((type) => {
+  changeValue = _.debounce((type, keyFiled, valueFiled, value) => {
     const {
       form: {
         validateFields,
+        getFieldValue,
       },
     } = this.props;
+
+    if (type === 'keywords') {
+      this.selectLabel(value, keyFiled, valueFiled);
+    }
 
     validateFields([type], { force: true });
   }, 400);
@@ -469,14 +457,22 @@ export default class CreateNetwork extends Component {
     }
   };
 
+  selectLabel = (value, keyFiled, valueFiled) => {
+    const { form: { setFieldsValue, validateFields } } = this.props;
+    if (_.includes(value, '__')) {
+      setFieldsValue({
+        [keyFiled]: value.split('__')[0],
+        [valueFiled]: value.split('__')[1],
+      });
+      validateFields(['keywords'], { force: true });
+    }
+  };
+
   render() {
     const {
       form: {
         getFieldDecorator,
         getFieldValue,
-      },
-      AppState: {
-        currentMenuType: { name: menuName, projectId },
       },
       intl: { formatMessage },
       store,
@@ -493,6 +489,13 @@ export default class CreateNetwork extends Component {
     } = this.state;
 
     const ist = store.getIst;
+    const keyOption = [];
+    _.forEach(store.getLabels, (item) => {
+      const data = _.map(item, (value, key) => (
+        <Option key={`${key}__${value}__${uuidv1()}`}>{key}:{value}</Option>
+      ));
+      keyOption.push(...data);
+    });
 
     // 生成多组 port
     getFieldDecorator('portKeys', { initialValue: [0] });
@@ -565,9 +568,10 @@ export default class CreateNetwork extends Component {
               onChange={this.changeValue.bind(this, 'tport')}
               disabled={!selectEnv}
               label={<FormattedMessage id="network.config.targetPort" />}
+              dropdownMatchSelectWidth={false}
             >
-              {_.map(store.getPorts, ({ portValue }) => (
-                <Option key={portValue} value={portValue}>{portValue}</Option>
+              {_.map(store.getPorts, ({ resourceName, portValue }) => (
+                <Option key={portValue}>{resourceName}: {portValue}</Option>
               ))}
             </Select>,
           )}
@@ -671,13 +675,12 @@ export default class CreateNetwork extends Component {
             <Select
               mode="combobox"
               className="network-select-instance"
-              onChange={this.changeValue.bind(this, 'keywords')}
+              onChange={(value) => this.changeValue('keywords', `keywords[${k}]`, `values[${k}]`, value)}
               disabled={!selectEnv}
               label={<FormattedMessage id="network.config.keyword" />}
+              dropdownMatchSelectWidth={false}
             >
-              {_.map(store.getLabels, ({ key, value }) => (
-                <Option key={key} value={key}>{key}:{value}</Option>
-              ))}
+              {keyOption}
             </Select>,
           )}
         </FormItem>
@@ -702,11 +705,11 @@ export default class CreateNetwork extends Component {
             <Select
               mode="combobox"
               disabled={!selectEnv}
+              onChange={(value) => this.changeValue('keywords', `keywords[${k}]`, `values[${k}]`, value)}
               label={<FormattedMessage id="network.config.value" />}
+              dropdownMatchSelectWidth={false}
             >
-              {_.map(store.getLabels, ({ key, value }) => (
-                <Option key={key} value={value}>{key}:{value}</Option>
-              ))}
+              {keyOption}
             </Select>,
           )}
         </FormItem>
@@ -719,18 +722,6 @@ export default class CreateNetwork extends Component {
         )}
       </div>
     ));
-
-    const istOption = ist.length
-      ? _.map(
-        _.filter(ist, (item) => item && !_.includes(initIst, item.id)),
-        ({ id, code }) => (
-          <Option key={id} value={id}>
-            {code}
-          </Option>
-        ),
-      )
-      : [];
-
     const formClass = classnames({
       'c7n-network-form-wrap': true,
       'c7n-network-form-column': isInstancePage,
@@ -738,6 +729,30 @@ export default class CreateNetwork extends Component {
 
     return (
       <Form layout="vertical" className={formClass}>
+        <FormItem
+          className="network-form-name"
+          {...formItemLayout}
+        >
+          {getFieldDecorator('name', {
+            initialValue: initName,
+            rules: [
+              {
+                required: true,
+                message: formatMessage({ id: 'required' }),
+              },
+              {
+                validator: this.checkName,
+              },
+            ],
+          })(
+            <Input
+              disabled={!selectEnv}
+              maxLength={30}
+              type="text"
+              label={<FormattedMessage id="network.form.name" />}
+            />,
+          )}
+        </FormItem>
         <div
           className={`network-panel-title ${
             !selectEnv ? 'network-panel-title_disabled' : ''
@@ -888,30 +903,6 @@ export default class CreateNetwork extends Component {
             </Button>
           </div>
         </div>
-        <FormItem
-          className="network-form-name"
-          {...formItemLayout}
-        >
-          {getFieldDecorator('name', {
-            initialValue: initName,
-            rules: [
-              {
-                required: true,
-                message: formatMessage({ id: 'required' }),
-              },
-              {
-                validator: this.checkName,
-              },
-            ],
-          })(
-            <Input
-              disabled={!selectEnv}
-              maxLength={30}
-              type="text"
-              label={<FormattedMessage id="network.form.name" />}
-            />,
-          )}
-        </FormItem>
       </Form>
     );
   }

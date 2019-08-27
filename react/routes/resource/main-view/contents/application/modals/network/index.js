@@ -10,6 +10,7 @@ import NetworkForm from './networkForm';
 
 import '../../../../../../main.less';
 import './index.less';
+import { handlePromptError } from '../../../../../../../utils';
 
 const { Sidebar } = Modal;
 
@@ -29,6 +30,7 @@ class CreateNetwork extends Component {
       AppState: { currentMenuType: { projectId } },
       store,
       appServiceId,
+      envId,
     } = this.props;
     this.setState({ submitting: true });
 
@@ -37,7 +39,6 @@ class CreateNetwork extends Component {
         const {
           name,
           appInstance,
-          envId,
           endPoints: endps,
           targetIps,
           targetport,
@@ -52,7 +53,10 @@ class CreateNetwork extends Component {
           config,
           values,
         } = data;
-        const appIst = appInstance === 'all_instance' ? _.map(store.getIst, (item) => item) : [appInstance];
+        let appIst;
+        if (!_.isEmpty(appInstance)) {
+          appIst = appInstance[0] === 'all_instance' ? _.map(store.getIst, (item) => item.code) : appInstance;
+        }
         const ports = [];
         const label = {};
         const endPoints = {};
@@ -109,7 +113,7 @@ class CreateNetwork extends Component {
           .createNetwork(projectId, network)
           .then((res) => {
             this.setState({ submitting: false });
-            if (res) {
+            if (handlePromptError(res)) {
               this.handleClose();
             }
           })
@@ -124,13 +128,15 @@ class CreateNetwork extends Component {
   };
 
   handleClose = (isload = true) => {
-    const { onClose } = this.props;
+    const { onClose, store } = this.props;
+    store.setIst([]);
+    store.setLabels([]);
+    store.setPorts([]);
     onClose(isload);
   };
 
   render() {
     const {
-      AppState: { currentMenuType: { name: menuName } },
       visible,
       envId,
       store,
