@@ -24,7 +24,7 @@ public interface DevopsEnvPodService {
      */
     PageInfo<DevopsEnvPodVO> pageByOptions(Long projectId, Long envId, Long appServiceId, Long instanceId, PageRequest pageRequest, String searchParam);
 
-    void setContainers(DevopsEnvPodVO devopsEnvPodVO);
+    void fillContainers(DevopsEnvPodVO devopsEnvPodVO);
 
     DevopsEnvPodDTO baseQueryById(Long id);
 

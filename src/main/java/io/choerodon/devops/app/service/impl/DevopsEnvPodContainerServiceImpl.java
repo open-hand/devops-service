@@ -34,7 +34,7 @@ public class DevopsEnvPodContainerServiceImpl implements DevopsEnvPodContainerSe
             throw new CommonException("error.pod.notExist");
         }
         DevopsEnvPodVO devopsEnvPodVO = ConvertUtils.convertObject(devopsEnvPodDTO, DevopsEnvPodVO.class);
-        devopsEnvPodService.setContainers(devopsEnvPodVO);
+        devopsEnvPodService.fillContainers(devopsEnvPodVO);
         return devopsEnvPodVO.getContainers()
                 .stream()
                 .map(containerDTO -> new DevopsEnvPodContainerLogVO(devopsEnvPodDTO.getName(), containerDTO.getName()))
