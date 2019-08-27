@@ -769,17 +769,18 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         //设置实时CPU、内存信息
         List<AgentPodInfoVO> agentPodInfoVOS = agentPodInfoService.queryAllPodSnapshots(devopsEnvPodDTO.getName(), devopsEnvPodDTO.getNamespace());
 
-        List<String> cpuUsedList = agentPodInfoVOS.stream().map(AgentPodInfoVO::getCpuUsed).collect(Collectors.toList());
-        List<String> memoryUsedList = agentPodInfoVOS.stream().map(AgentPodInfoVO::getMemoryUsed).collect(Collectors.toList());
-        List<Date> timeList = agentPodInfoVOS.stream().map(AgentPodInfoVO::getSnapshotTime).collect(Collectors.toList());
+        if(!agentPodInfoVOS.isEmpty()) {
+            List<String> cpuUsedList = agentPodInfoVOS.stream().map(AgentPodInfoVO::getCpuUsed).collect(Collectors.toList());
+            List<String> memoryUsedList = agentPodInfoVOS.stream().map(AgentPodInfoVO::getMemoryUsed).collect(Collectors.toList());
+            List<Date> timeList = agentPodInfoVOS.stream().map(AgentPodInfoVO::getSnapshotTime).collect(Collectors.toList());
 
-        podLiveInfoVO.setCpuUsedList(cpuUsedList);
-        podLiveInfoVO.setMemoryUsedList(memoryUsedList);
-        podLiveInfoVO.setTimeList(timeList);
-        podLiveInfoVO.setNodeIp(agentPodInfoVOS.get(0).getNodeIp());
-        podLiveInfoVO.setNodeName(agentPodInfoVOS.get(0).getNodeName());
-        podLiveInfoVO.setPodIp(agentPodInfoVOS.get(0).getPodIp());
-
+            podLiveInfoVO.setCpuUsedList(cpuUsedList);
+            podLiveInfoVO.setMemoryUsedList(memoryUsedList);
+            podLiveInfoVO.setTimeList(timeList);
+            podLiveInfoVO.setNodeIp(agentPodInfoVOS.get(0).getNodeIp());
+            podLiveInfoVO.setNodeName(agentPodInfoVOS.get(0).getNodeName());
+            podLiveInfoVO.setPodIp(agentPodInfoVOS.get(0).getPodIp());
+        }
         return podLiveInfoVO;
     }
 
