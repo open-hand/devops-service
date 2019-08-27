@@ -21,6 +21,15 @@ public class PodLiveInfoVO {
     private List<String> cpuUsedList;
     private List<String> memoryUsedList;
     private List<Date> timeList;
+    private Date creationDate;
+
+    public Date getCreationDate() {
+        return creationDate;
+    }
+
+    public void setCreationDate(Date creationDate) {
+        this.creationDate = creationDate;
+    }
 
     public void setPodName(String podName) {
         this.podName = podName;

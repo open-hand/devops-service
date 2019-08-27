@@ -726,6 +726,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             return null;
         }
         podLiveInfoVO.setPodId(devopsEnvPodDTO.getId());
+        podLiveInfoVO.setCreationDate(devopsEnvPodDTO.getCreationDate());
 
         //反序列化json
         V1Pod v1Pod = json.deserialize(devopsEnvPodDTO.getMessage(), V1Pod.class);
@@ -737,7 +738,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             return containerVO;
         }).collect(Collectors.toList());
 
-        //设置podName,namespace,containers
+        //设置podName,containers
         podLiveInfoVO.setPodName(v1Pod.getMetadata().getName());
         podLiveInfoVO.setContainers(containerVOS);
 
@@ -751,6 +752,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         podLiveInfoVO.setCpuUsedList(cpuUsedList);
         podLiveInfoVO.setMemoryUsedList(memoryUsedList);
         podLiveInfoVO.setTimeList(timeList);
+        podLiveInfoVO.setNodeIp(agentPodInfoVOS.get(0).getNodeIp());
+        podLiveInfoVO.setNodeName(agentPodInfoVOS.get(0).getNodeName());
+        podLiveInfoVO.setPodIp(agentPodInfoVOS.get(0).getPodIp());
 
         return podLiveInfoVO;
     }
