@@ -9,7 +9,7 @@ import InterceptMask from '../../../../../../../components/interceptMask/Interce
 import NetworkForm from './networkForm';
 
 import '../../../../../../main.less';
-import './index.scss';
+import './index.less';
 
 const { Sidebar } = Modal;
 
@@ -52,7 +52,7 @@ class CreateNetwork extends Component {
           config,
           values,
         } = data;
-        const appIst = appInstance ? _.map(appInstance, (item) => item) : null;
+        const appIst = appInstance === 'all_instance' ? _.map(store.getIst, (item) => item) : [appInstance];
         const ports = [];
         const label = {};
         const endPoints = {};
@@ -151,6 +151,7 @@ class CreateNetwork extends Component {
           onOk={this.handleSubmit}
           onCancel={this.handleClose.bind(this, false)}
           confirmLoading={submitting}
+          width={415}
         >
           <NetworkForm
             wrappedComponentRef={(form) => {

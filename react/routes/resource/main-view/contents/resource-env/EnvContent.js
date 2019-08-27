@@ -3,10 +3,11 @@ import PropTypes from 'prop-types';
 import { observer } from 'mobx-react-lite';
 import { Icon, Tooltip } from 'choerodon-ui';
 import StatusDot from '../../../../../components/status-dot';
-import PrefixTitle from '../../components/prefix-title';
+import PageTitle from '../../../../../components/page-title';
 import Modals from './modals';
 import { useResourceStore } from '../../../stores';
 import { useREStore } from './stores';
+import DosageTable from './DosageTable';
 
 import './index.less';
 
@@ -108,7 +109,7 @@ const Content = observer(() => {
     });
   }
 
-  const title = useMemo(() => {
+  function getTitle() {
     const record = baseInfoDs.current;
     if (record) {
       const name = record.get('name');
@@ -120,21 +121,18 @@ const Content = observer(() => {
           connect={connect}
           synchronize={synchronize}
         />
-        <span className={`${prefixCls}-title-text`}>{name}</span>
+        <span className="c7ncd-page-title-text">{name}</span>
       </Fragment>;
     }
     return null;
-  }, [baseInfoDs.current]);
+  }
 
   return (
     <div className={`${prefixCls}-re`}>
       <Modals />
-      <PrefixTitle
-        prefixCls={prefixCls}
-        fallback={!title}
-      >
-        {title}
-      </PrefixTitle>
+      <PageTitle>
+        {getTitle()}
+      </PageTitle>
       <div className={`${prefixCls}-re-card-wrap`}>
         <div className={`${prefixCls}-re-card ${prefixCls}-re-card_left`}>
           <div className={`${prefixCls}-re-card-title`}>{formatMessage({ id: `${intlPrefix}.resource.deploy` })}</div>
@@ -147,9 +145,7 @@ const Content = observer(() => {
           <div className={`${prefixCls}-re-items`}>{getCounts('status')}</div>
         </div>
       </div>
-      <div className={`${prefixCls}-re-card`}>
-        <div className={`${prefixCls}-re-card-title`}>{formatMessage({ id: `${intlPrefix}.resource.dosage` })}</div>
-      </div>
+      <DosageTable />
     </div>
   );
 });

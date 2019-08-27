@@ -7,7 +7,7 @@ import _ from 'lodash';
 import PropTypes from 'prop-types';
 
 import '../../../../../../../main.less';
-import './index.scss';
+import './index.less';
 
 const { Item: FormItem } = Form;
 const { Group: RadioGroup } = Radio;
@@ -613,7 +613,6 @@ export default class Index extends Component {
     return (
       <Form layout="vertical" className="c7ncd-application-domain-modal">
         <FormItem
-          className="c7n-domain-formItem c7n-select_512"
           {...formItemLayout}
         >
           {getFieldDecorator('name', {
@@ -642,7 +641,7 @@ export default class Index extends Component {
         </div>
         <div className="c7n-creation-radio">
           <FormItem
-            className="c7n-select_512 creation-radio-form"
+            className="creation-radio-form"
             label={<FormattedMessage id="ctf.target.type" />}
             {...formItemLayout}
           >
@@ -665,7 +664,7 @@ export default class Index extends Component {
           </FormItem>
         </div>
         <FormItem
-          className="c7n-select_480 creation-form-item"
+          className="creation-form-item"
           {...formItemLayout}
         >
           {getFieldDecorator('domain', {
@@ -693,7 +692,7 @@ export default class Index extends Component {
         </FormItem>
         {protocol === 'secret' && (
           <FormItem
-            className="c7n-select_480 creation-form-item"
+            className="creation-form-item"
             {...formItemLayout}
           >
             {getFieldDecorator('certId', {
@@ -705,7 +704,6 @@ export default class Index extends Component {
               ],
             })(
               <Select
-                className="c7n-select_512"
                 optionFilterProp="children"
                 label={<FormattedMessage id="domain.form.cert" />}
                 notFoundContent={

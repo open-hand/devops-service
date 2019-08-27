@@ -1,5 +1,4 @@
 export default () => ({
-  autoQuery: true,
   selection: false,
   paging: false,
   dataKey: null,

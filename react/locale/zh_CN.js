@@ -58,6 +58,8 @@ const commonField = {
   import: '导入',
   executor: '执行者',
   startUp: '启动',
+  owner: '项目所有者',
+  member: '项目成员',
 
   // 状态描述
   null: '无',
@@ -161,6 +163,7 @@ const deployment = {
   'c7ncd.deployment.viewer.instance': '实例视图',
   'c7ncd.deployment.viewer.resource': '资源视图',
   'c7ncd.deployment.environment.tabs.sync': 'GitOps日志',
+  'c7ncd.deployment.environment.tabs.config': '部署配置',
   'c7ncd.deployment.environment.tabs.assignPermissions': '已分配权限人员',
   'c7ncd.deployment.environment.error.logs': '错误日志',
   'c7ncd.deployment.environment.error.info': '错误信息',
@@ -295,6 +298,12 @@ const deployment = {
   'c7ncd.deployment.resource.secretCount': '密文',
   'c7ncd.deployment.resource.deploy': '部署资源',
   'c7ncd.deployment.resource.dosage': '用量排行',
+  'c7ncd.deployment.sort.memory': '按内存使用排行',
+  'c7ncd.deployment.sort.cpu': '按CPU使用排行',
+  'c7ncd.deployment.used.memory': '内存使用量',
+  'c7ncd.deployment.used.cpu': 'CPU使用量',
+  'c7ncd.deployment.registry': '镜像',
+  'c7ncd.deployment.node': '节点',
 };
 
 const appService = {
@@ -356,6 +365,9 @@ const envrionment = {
   'c7ncd.env.group.name': '分组名称',
   'c7ncd.env.group.stopped': '环境配置停用区',
   'c7ncd.env.group.create': '创建分组',
+  'c7ncd.env.group.edit': '修改分组',
+  'c7ncd.env.group.delete': '删除分组“{name}”',
+  'c7ncd.env.group.delete.warn': '当你点击确认后，该分组下的环境将追加至默认流水线末尾！',
   'c7ncd.env.modal.group.delete': '删除分组',
   'c7ncd.env.modal.group.modify': '修改分组',
   'c7ncd.env.modal.detail.modify': '修改环境',
@@ -363,6 +375,7 @@ const envrionment = {
   'c7ncd.env.modal.detail.start': '启用环境',
   'c7ncd.env.modal.detail.stop': '停用环境',
   'c7ncd.env.cluster': '连接集群',
+  'c7ncd.env.config.app': '服务',
 };
 
 const certificate = {
@@ -402,6 +415,10 @@ const deploy = {
   'c7ncd.deploy.service': '部署服务',
   'c7ncd.deploy.version': '部署版本',
   'c7ncd.deploy.instance': '生成实例',
+  'c7ncd.deploy.view.instance': '查看实例',
+  'c7ncd.deploy.failed': '强制失败',
+  'c7ncd.deploy.check': '审核',
+  'c7ncd.deploy.retry': '重试',
 };
 
 // 文档地址前缀
@@ -866,6 +883,15 @@ const cluster = {
   'c7ncd.cluster.project.all': '组织下所有项目',
   'c7ncd.cluster.project.part': '组织下特定项目',
   'c7ncd.cluster.visibility': '集群公开范围',
+  'c7ncd.cluster.activate.header': '激活集群',
+  'c7ncd.cluster.activate.title': '复制集群"{clsName}"的指令',  
+  'c7ncd.cluster.activate.coped': '已复制',
+  'c7ncd.cluster.activate.desc': '复制下文代码至Kubernetes运行，与平台建立链接',
+  'c7ncd.cluster.check.failed':
+    '只能由小写字母、数字、"-"组成，且以小写字母开头，不能以"-"结尾',
+  'c7ncd.cluster.check.exist': '已存在',
+  'c7ncd.cluster.check.error': '校验出错',
+
 };
 
 const zhCN = {

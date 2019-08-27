@@ -48,8 +48,26 @@ const Group = observer(() => {
 
   function renderActions({ record }) {
     const groupId = record.get('id');
-    const actionData = [];
-    return (<Action data={actionData} />);
+    const active = record.get('active');
+    const synchronize = record.get('synchro');
+    const actionData = active ? [{
+      service: [],
+      text: formatMessage({ id: 'edit' }),
+      // action: handleClick,
+    }, {
+      service: [],
+      text: formatMessage({ id: 'stop' }),
+      // action: confirmDelete,
+    }] : [{
+      service: [],
+      text: formatMessage({ id: 'active' }),
+      // action: handleClick,
+    }, {
+      service: [],
+      text: formatMessage({ id: 'delete' }),
+      // action: confirmDelete,
+    }];
+    return synchronize || !active ? (<Action data={actionData} />) : null;
   }
 
   return (

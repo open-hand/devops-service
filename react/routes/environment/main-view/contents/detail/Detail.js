@@ -1,68 +1,57 @@
-import React, { Fragment, lazy, Suspense, useMemo } from 'react';
+import React, { Fragment, lazy, Suspense } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Tabs, Spin } from 'choerodon-ui';
-import { useDetailStore } from './stores';
 import { useEnvironmentStore } from '../../../stores';
+import { useDetailStore } from './stores';
 import StatusDot from '../../../../../components/status-dot';
-import PrefixTitle from '../../components/prefix-title';
+import PageTitle from '../../../../../components/page-title';
 // import Modals from './modals';
-
-import './index.less';
 
 const { TabPane } = Tabs;
 
-const SyncSituation = lazy(() => import('./sync-situation'));
+const SyncSituation = lazy(() => import('./sync'));
+const Config = lazy(() => import('./DeployConfig'));
 const Permissions = lazy(() => import('./Permissions'));
 
 const EnvContent = observer(() => {
   const {
-    prefixCls,
-    intlPrefix,
+    envStore: {
+      getSelectedMenu: {
+        active,
+        name,
+        connect,
+        synchro,
+      },
+    },
   } = useEnvironmentStore();
   const {
+    intlPrefix,
     intl: { formatMessage },
-    baseInfoDs,
     tabs: {
       SYNC_TAB,
+      CONFIG_TAB,
       ASSIGN_TAB,
     },
-    envStore,
+    detailStore,
   } = useDetailStore();
 
   function handleChange(key) {
-    envStore.setTabKey(key);
+    detailStore.setTabKey(key);
   }
 
-  const title = useMemo(() => {
-    const record = baseInfoDs.current;
-    if (record) {
-      const name = record.get('name');
-      const connect = record.get('connect');
-      const synchronize = record.get('synchronize');
-
-      return <Fragment>
+  return (
+    <Fragment>
+      <PageTitle>
         <StatusDot
           connect={connect}
-          synchronize={synchronize}
+          synchronize={synchro}
+          active={active}
         />
-        <span className={`${prefixCls}-title-text`}>{name}</span>
-      </Fragment>;
-    }
-    return null;
-  }, [baseInfoDs.current]);
-
-  return (
-    <div className={`${prefixCls}-environment`}>
-      {/* <Modals /> */}
-      <PrefixTitle
-        prefixCls={prefixCls}
-        fallback={!title}
-      >
-        {title}
-      </PrefixTitle>
+        <span className="c7ncd-page-title-text">{name}</span>
+      </PageTitle>
       <Tabs
         animated={false}
-        activeKey={envStore.getTabKey}
+        activeKey={detailStore.getTabKey}
         onChange={handleChange}
       >
         <TabPane
@@ -74,6 +63,14 @@ const EnvContent = observer(() => {
           </Suspense>
         </TabPane>
         <TabPane
+          key={CONFIG_TAB}
+          tab={formatMessage({ id: `${intlPrefix}.environment.tabs.config` })}
+        >
+          <Suspense fallback={<Spin />}>
+            <Config />
+          </Suspense>
+        </TabPane>
+        <TabPane
           key={ASSIGN_TAB}
           tab={formatMessage({ id: `${intlPrefix}.environment.tabs.assignPermissions` })}
         >
@@ -82,7 +79,8 @@ const EnvContent = observer(() => {
           </Suspense>
         </TabPane>
       </Tabs>
-    </div>
+      {/* <Modals /> */}
+    </Fragment>
   );
 });
 

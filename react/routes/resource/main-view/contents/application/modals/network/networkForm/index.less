@@ -1,5 +1,4 @@
-.c7n-network-create {
-
+.c7n-network-form-wrap {
   .network-radio-wrap {
     position: relative;
     padding-left: 73px;
@@ -46,11 +45,6 @@
 
   .network-panel {
     margin-bottom: 32px;
-    padding: 16px;
-    width: 512px;
-    min-height: 150px;
-    box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.20), 0 0 0 1px rgba(0, 0, 0, 0.12), 0 2px 2px -1px rgba(0, 0, 0, 0.12);
-    border-radius: 2px;
 
     .network-panel-form {
       margin-bottom: 12px;
@@ -58,7 +52,6 @@
 
     .network-port-wrap {
       display: flex;
-      justify-content: space-between;
 
       .c7n-select {
         &_entryS {
@@ -69,28 +62,9 @@
           width: 209px;
         }
 
-        &_portL {
-          width: 219px;
-        }
-
-        &_portS {
-          width: 140px;
-        }
-
-        &_240 {
-          width: 232px;
-        }
-
-        &_150 {
-          width: 149px;
-        }
-
-        &_110 {
-          width: 110px;
-        }
-
-        &_portXS {
-          width: 100px;
+        &_80 {
+          width: .8rem;
+          margin-right: .08rem;
         }
       }
 
@@ -125,10 +99,6 @@
     }
   }
 
-  .network-form-name {
-    margin-bottom: 0;
-  }
-
   // 改变选择器多选时选中项的背景色
   .network-select-instance {
     &.c7n-select-multiple {
@@ -149,4 +119,9 @@
   .ip-check-error {
     background-color: #d50000 !important;
   }
+}
+
+.c7n-network-form-column {
+  display: flex;
+  flex-direction: column-reverse;
 }

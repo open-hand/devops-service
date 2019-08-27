@@ -95,12 +95,12 @@ const AppService = withRouter(observer((props) => {
         action: openEdit,
       },
       stop: {
-        service: [],
+        service: ['devops-service.app-service.updateActive'],
         text: formatMessage({ id: 'stop' }),
         action: () => changeActive(false),
       },
       run: {
-        service: [],
+        service: ['devops-service.app-service.updateActive'],
         text: formatMessage({ id: 'active' }),
         action: () => changeActive(true),
       },
@@ -193,7 +193,7 @@ const AppService = withRouter(observer((props) => {
     <Page>
       <Header title={<FormattedMessage id="app.head" />}>
         <Permission
-          service={['devops-service.application-service.create']}
+          service={['devops-service.app-service.create']}
         >
           <Button
             icon="playlist_add"
@@ -203,7 +203,7 @@ const AppService = withRouter(observer((props) => {
           </Button>
         </Permission>
         <Permission
-          service={['devops-service.application-service.importApp']}
+          service={['devops-service.app-service.importApp']}
         >
           <Button
             icon="playlist_add"

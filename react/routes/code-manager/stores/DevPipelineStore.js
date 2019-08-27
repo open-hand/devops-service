@@ -2,7 +2,7 @@ import { observable, action, computed } from 'mobx';
 import { axios, store, stores } from '@choerodon/master';
 import _ from 'lodash';
 import moment from 'moment';
-import { handleProptError } from '../../../utils';
+import { handlePromptError } from '../../../utils';
 import AppTagStore from '../contents/appTag/stores';
 import BranchStore from '../contents/branch/stores';
 import MergeRequestStore from '../contents/merge-request/stores';
@@ -129,8 +129,8 @@ class DevPipelineStore {
     this.setPreProId(projectId);
     axios.get(`/devops/v1/projects/${projectId}/app_service/list_by_active`)
       .then((data) => {
-        const res = handleProptError(data);
-        if (res) {
+        if (handlePromptError(data)) {
+          const res = data;
           const appSort = _.concat(_.filter(res, ['permission', true]), _.filter(res, ['permission', false]));
           const result = _.filter(appSort, ['permission', true]);
           this.setAppData(appSort);

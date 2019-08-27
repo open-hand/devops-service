@@ -15,7 +15,7 @@ import {
   TRIGGER_TYPE_AUTO,
 } from '../Constants';
 
-import './StageCard.scss';
+import './StageCard.less';
 
 const { Option } = Select;
 

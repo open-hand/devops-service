@@ -5,7 +5,7 @@ import ReactCodeMirror from 'react-codemirror';
 import ReactMarkdown from 'react-markdown';
 import { Tabs, Button } from 'choerodon-ui';
 import 'codemirror/lib/codemirror.css';
-import './MdEditor.scss';
+import './MdEditor.less';
 import './preview.css';
 
 require('codemirror/mode/markdown/markdown');
@@ -56,13 +56,13 @@ class MdEditor extends Component {
    * 切换tab页
    * @param e
    */
-  handleTabChange = e => this.setState({ tabKey: e });
+  handleTabChange = (e) => this.setState({ tabKey: e });
 
   /**
    * 编辑框尺寸
    * @param flag
    */
-  handleBoxSize = flag => {
+  handleBoxSize = (flag) => {
     this.setState({ isExpand: flag }, () => {
       const editor = this.mdEditor.getCodeMirror();
       editor.setSize('100%', editor.getDoc().height);
@@ -89,7 +89,7 @@ class MdEditor extends Component {
           <TabPane tab={formatMessage({ id: 'write' })} key="write">
             <div className="c7n-md-placeholder">{formatMessage({ id: 'md.placeholder' })}</div>
             <ReactCodeMirror
-              ref={cm => {
+              ref={(cm) => {
                 this.mdEditor = cm;
               }}
               options={this.options}

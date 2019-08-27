@@ -4,7 +4,7 @@ import { Content, Header } from '@choerodon/master';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { withRouter } from 'react-router-dom';
 
-import './EmptyPage.scss';
+import './EmptyPage.less';
 
 @injectIntl
 @withRouter

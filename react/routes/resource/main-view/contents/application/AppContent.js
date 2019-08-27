@@ -1,9 +1,9 @@
-import React, { Fragment, lazy, Suspense, useMemo } from 'react';
+import React, { Fragment, lazy, Suspense } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Tabs, Icon } from 'choerodon-ui';
 import { useApplicationStore } from './stores';
 import { useResourceStore } from '../../../stores';
-import PrefixTitle from '../../components/prefix-title';
+import PageTitle from '../../../../../components/page-title';
 import Modals from './modals';
 
 import './index.less';
@@ -33,27 +33,22 @@ const AppContent = observer(() => {
     appStore.setTabKey(key);
   }
 
-  const title = useMemo(() => {
+  function getTitle() {
     const record = baseInfoDs.current;
     if (record) {
       const name = record.get('name');
       return <Fragment>
         <Icon type="widgets" />
-        <span className={`${prefixCls}-title-text`}>{name}</span>
+        <span className="c7ncd-page-title-text">{name}</span>
       </Fragment>;
     }
     return null;
-  }, [baseInfoDs.current]);
-
+  }
   return (
     <div className={`${prefixCls}-application`}>
-      <Modals />
-      <PrefixTitle
-        prefixCls={prefixCls}
-        fallback={!title}
-      >
-        {title}
-      </PrefixTitle>
+      <PageTitle>
+        {getTitle()}
+      </PageTitle>
       <Tabs
         className={`${prefixCls}-application-tabs`}
         animated={false}
@@ -85,6 +80,7 @@ const AppContent = observer(() => {
           </Suspense>
         </TabPane>
       </Tabs>
+      <Modals />
     </div>
   );
 });

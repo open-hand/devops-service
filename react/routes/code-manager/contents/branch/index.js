@@ -15,8 +15,8 @@ import StatusIcon from '../../../../components/StatusIcon/StatusIcon';
 import BranchStore from './stores';
 import handleMapStore from '../../main-view/store/handleMapStore';
 import '../../../main.less';
-import './Branch.scss';
-import './index.scss';
+import './Branch.less';
+import './index.less';
 
 const { AppState } = stores;
 const { Option, OptGroup } = Select;

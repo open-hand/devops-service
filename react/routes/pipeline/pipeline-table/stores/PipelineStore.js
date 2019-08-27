@@ -1,7 +1,7 @@
 import { observable, action, computed } from 'mobx';
 import { axios, store } from '@choerodon/master';
 import _ from 'lodash';
-import { handleProptError, handlePromptError } from '../../../../utils';
+import { handlePromptError } from '../../../../utils';
 
 const SORTER_MAP = {
   ascend: 'asc',
@@ -106,7 +106,7 @@ class PipelineStore {
         Choerodon.handleResponseError(e);
       });
 
-    const result = handleProptError(data);
+    const result = handlePromptError(data);
     if (result) {
       const { pageNum, total, pageSize, list } = result;
 
@@ -187,7 +187,7 @@ class PipelineStore {
         Choerodon.handleResponseError(e);
       });
 
-    const result = handleProptError(data);
+    const result = handlePromptError(data);
     if (result) {
       this.setDetail(result);
     }
@@ -198,7 +198,7 @@ class PipelineStore {
     const data = await axios
       .get(`/devops/v1/projects/${projectId}/pipeline/${id}/list`)
       .catch((e) => Choerodon.handleResponseError(e));
-    const result = handleProptError(data);
+    const result = handlePromptError(data);
     if (result) {
       this.setRecordDate(result);
     }

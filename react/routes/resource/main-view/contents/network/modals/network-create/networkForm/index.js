@@ -19,7 +19,7 @@ import AppName from '../../../../../../../../components/appName';
 import Tips from '../../../../../../../../components/Tips/Tips';
 
 import '../../../../../../../main.less';
-import './index.scss';
+import './index.less';
 
 /**
  * 生成网络名

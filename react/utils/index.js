@@ -78,10 +78,35 @@ function getTimeLeft(now, end) {
   return `剩余 ${days} 天`;
 }
 
+/**
+ * 将毫秒数转为时分秒格式
+ * @param time 毫秒数
+ */
+function timeConvert(time) {
+  if (!time || typeof time !== 'number') {
+    return;
+  }
+  // 毫秒转为秒
+  const now = time / 1000;
+  const sec = Math.floor((now % 60) % 60);
+  const min = Math.floor(now / 60) % 60;
+  const hour = Math.floor(now / 3600);
+
+  let result = `${sec}s`;
+  if (hour > 0) {
+    result = `${hour}h ${min}m ${sec}s`;
+  } else if (hour <= 0 && min > 0) {
+    result = `${min}m ${sec}s`;
+  }
+
+  return result;
+}
+
 export {
   handleProptError,
   formatDate,
   getTimeLeft,
+  timeConvert,
   handleCheckerProptError,
   handlePromptError,
 };

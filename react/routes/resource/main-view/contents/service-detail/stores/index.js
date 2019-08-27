@@ -1,7 +1,8 @@
-import React, { createContext, useContext, useMemo } from 'react';
+import React, { createContext, useContext, useEffect, useMemo } from 'react';
 import { DataSet } from 'choerodon-ui/pro';
 import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
+import { observer } from 'mobx-react-lite';
 import BaseInfoDataSet from './BaseInfoDataSet';
 import { useResourceStore } from '../../../../stores';
 
@@ -12,14 +13,20 @@ export function useNetworkDetailStore() {
 }
 
 export const StoreProvider = injectIntl(inject('AppState')(
-  (props) => {
+  observer((props) => {
     const { AppState: { currentMenuType: { id } }, children } = props;
     const {
       intlPrefix,
       intl: { formatMessage },
       resourceStore: { getSelectedMenu: { menuId } },
     } = useResourceStore();
-    const baseInfoDs = useMemo(() => new DataSet(BaseInfoDataSet(id, menuId)), [id, menuId]);
+    const baseInfoDs = useMemo(() => new DataSet(BaseInfoDataSet()), []);
+
+    useEffect(() => {
+      // baseInfoDs.transport.read.url = `/devops/v1/projects/${id}/service/${menuId}`;
+      baseInfoDs.transport.read.url = `/devops/v1/projects/${id}/service/398`;
+      baseInfoDs.query();
+    }, [id, menuId]);
 
     const value = {
       ...props,
@@ -31,5 +38,5 @@ export const StoreProvider = injectIntl(inject('AppState')(
         {children}
       </Store.Provider>
     );
-  }
+  })
 ));

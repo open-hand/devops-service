@@ -15,9 +15,8 @@ export default ({ formatMessage, intlPrefix, projectId, id }) => ({
       };
     },
     destroy: ({ data: [data] }) => ({
-      url: `/devops/v1/projects/${projectId}/envs/${id}/permission/${data.iamUserId}`,
+      url: `/devops/v1/projects/${projectId}/envs/${id}/permission?user_id=${data.iamUserId}`,
       method: 'delete',
-      data,
     }),
   },
   fields: [
@@ -37,7 +36,7 @@ export default ({ formatMessage, intlPrefix, projectId, id }) => ({
       label: formatMessage({ id: `${intlPrefix}.environment.permission.role` }),
     },
     {
-      name: 'createDate',
+      name: 'creationDate',
       type: 'dateTime',
       label: formatMessage({ id: `${intlPrefix}.environment.permission.addTime` }),
     },

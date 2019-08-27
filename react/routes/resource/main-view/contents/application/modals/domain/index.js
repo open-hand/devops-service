@@ -9,7 +9,7 @@ import InterceptMask from '../../../../../../../components/interceptMask/Interce
 import DomainForm from './domainForm';
 
 import '../../../../../../main.less';
-import './index.scss';
+import './index.less';
 
 const { Sidebar } = Modal;
 
@@ -159,6 +159,7 @@ class CreateDomain extends Component {
           onCancel={this.handleClose.bind(this, false)}
           onOk={this.handleSubmit}
           confirmLoading={submitting}
+          width={380}
         >
           <DomainForm
             wrappedComponentRef={(form) => {

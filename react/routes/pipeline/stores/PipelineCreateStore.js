@@ -3,7 +3,7 @@
 import { observable, action, computed, set, remove } from 'mobx';
 import { axios, store } from '@choerodon/master';
 import _ from 'lodash';
-import { handleProptError } from '../../../utils';
+import { handlePromptError } from '../../../utils';
 import {
   STAGE_FLOW_AUTO,
   TASK_SERIAL,
@@ -431,7 +431,7 @@ class PipelineCreateStore {
         Choerodon.handleResponseError(e);
       });
     this.setLoading('env', false);
-    const data = handleProptError(response);
+    const data = handlePromptError(response);
     if (data) {
       // 让连接的环境排在前面
       this.setEnvData(_.sortBy(data, (value) => Number(!value.connect)));
@@ -453,7 +453,7 @@ class PipelineCreateStore {
         Choerodon.handleResponseError(e);
       });
     this.setLoading('app', false);
-    const data = handleProptError(response);
+    const data = handlePromptError(response);
     if (data) {
       this.setAppDate(data.list);
     }
@@ -470,7 +470,7 @@ class PipelineCreateStore {
         Choerodon.handleResponseError(e);
       });
     this.setLoading('instance', false);
-    const res = handleProptError(response);
+    const res = handlePromptError(response);
     if (res) {
       this.setInstances(res);
     }
@@ -494,7 +494,7 @@ class PipelineCreateStore {
         Choerodon.handleResponseError(e);
       });
     this.setLoading('config', false);
-    const res = handleProptError(response);
+    const res = handlePromptError(response);
     if (res) {
       this.setConfigList(res);
     }
@@ -517,7 +517,7 @@ class PipelineCreateStore {
         Choerodon.handleResponseError(e);
       });
     this.setLoading('value', false);
-    const data = handleProptError(response);
+    const data = handlePromptError(response);
     if (data) {
       return data;
     }
@@ -545,7 +545,7 @@ class PipelineCreateStore {
         Choerodon.handleResponseError(e);
       });
     this.setLoading('user', false);
-    const res = handleProptError(response);
+    const res = handlePromptError(response);
     if (res) {
       this.setUser(res);
     }
@@ -583,7 +583,7 @@ class PipelineCreateStore {
         Choerodon.handleResponseError(e);
       });
     this.setDetailLoading(false);
-    const res = handleProptError(response);
+    const res = handlePromptError(response);
     if (res) {
       this.setPipeline(res);
       this.initPipeline(res);

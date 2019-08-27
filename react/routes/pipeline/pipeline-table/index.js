@@ -15,7 +15,7 @@ import PipelineEdit from '../pipeline-edit';
 import pipelineCreateStore from '../stores/PipelineCreateStore';
 import PipelineStore from './stores';
 
-import './index.scss';
+import './index.less';
 
 
 const { Option } = Select;
