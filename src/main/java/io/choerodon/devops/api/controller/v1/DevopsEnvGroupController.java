@@ -98,7 +98,7 @@ public class DevopsEnvGroupController {
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "校验环境组名唯一性")
-    @GetMapping(value = "/checkName")
+    @GetMapping(value = "/check_name")
     public ResponseEntity<Boolean> checkName(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
