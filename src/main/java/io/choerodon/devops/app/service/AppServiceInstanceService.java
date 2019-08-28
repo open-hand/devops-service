@@ -31,8 +31,8 @@ public interface AppServiceInstanceService {
      * 分页查询环境下实例信息（基本信息）
      *
      * @param projectId 项目id
-     * @param envId 环境id
-     * @param params 查询参数
+     * @param envId     环境id
+     * @param params    查询参数
      * @return 环境下实例基本信息
      */
     PageInfo<AppServiceInstanceInfoVO> pageInstanceInfoByOptions(Long projectId, Long envId, PageRequest pageRequest, String params);
@@ -40,12 +40,12 @@ public interface AppServiceInstanceService {
     /**
      * 分页查询应用部署
      *
-     * @param projectId   项目id
-     * @param pageRequest 分页参数
-     * @param envId       环境Id
-     * @param versionId   版本Id
-     * @param appServiceId       应用Id
-     * @param params      模糊查询参数
+     * @param projectId    项目id
+     * @param pageRequest  分页参数
+     * @param envId        环境Id
+     * @param versionId    版本Id
+     * @param appServiceId 应用Id
+     * @param params       模糊查询参数
      * @return page of devopsEnvPreviewInstanceDTO
      */
 
@@ -55,8 +55,8 @@ public interface AppServiceInstanceService {
     /**
      * 查询应用部署
      *
-     * @param projectId 项目id
-     * @param appServiceId     应用id
+     * @param projectId    项目id
+     * @param appServiceId 应用id
      * @return page of ApplicationInstanceOverViewVO
      */
     List<AppServiceInstanceOverViewVO> listApplicationInstanceOverView(Long projectId, Long appServiceId);
@@ -90,10 +90,10 @@ public interface AppServiceInstanceService {
     /**
      * 查询运行中的实例
      *
-     * @param projectId    项目id
+     * @param projectId           项目id
      * @param appServiceId        应用id
      * @param appServiceServiceId 应用版本id
-     * @param envId        环境id
+     * @param envId               环境id
      * @return baseList of RunningInstanceVO
      */
     List<RunningInstanceVO> listRunningInstance(Long projectId, Long appServiceId, Long appServiceServiceId, Long envId);
@@ -101,9 +101,9 @@ public interface AppServiceInstanceService {
     /**
      * 环境下某应用运行中或失败的实例
      *
-     * @param projectId 项目id
-     * @param appServiceId     应用id
-     * @param envId     环境id
+     * @param projectId    项目id
+     * @param appServiceId 应用id
+     * @param envId        环境id
      * @return baseList of AppInstanceCodeDTO
      */
     List<RunningInstanceVO> listByAppIdAndEnvId(Long projectId, Long appServiceId, Long envId);
@@ -200,11 +200,11 @@ public interface AppServiceInstanceService {
     /**
      * 获取部署时长报表
      *
-     * @param projectId 项目id
-     * @param envId     环境id
-     * @param appServiceIds    应用id
-     * @param startTime 开始时间
-     * @param endTime   结束时间
+     * @param projectId     项目id
+     * @param envId         环境id
+     * @param appServiceIds 应用id
+     * @param startTime     开始时间
+     * @param endTime       结束时间
      * @return List
      */
     DeployTimeVO listDeployTime(Long projectId, Long envId, Long[] appServiceIds, Date startTime, Date endTime);
@@ -212,11 +212,11 @@ public interface AppServiceInstanceService {
     /**
      * 获取部署次数报表
      *
-     * @param projectId 项目id
-     * @param envIds    环境id
-     * @param appServiceId     应用id
-     * @param startTime 开始时间
-     * @param endTime   结束时间
+     * @param projectId    项目id
+     * @param envIds       环境id
+     * @param appServiceId 应用id
+     * @param startTime    开始时间
+     * @param endTime      结束时间
      * @return List
      */
     DeployFrequencyVO listDeployFrequency(Long projectId, Long[] envIds, Long appServiceId, Date startTime, Date endTime);
@@ -224,11 +224,11 @@ public interface AppServiceInstanceService {
     /**
      * 获取部署次数报表table
      *
-     * @param projectId 项目id
-     * @param envIds    环境id
-     * @param appServiceId     应用id
-     * @param startTime 开始时间
-     * @param endTime   结束时间
+     * @param projectId    项目id
+     * @param envIds       环境id
+     * @param appServiceId 应用id
+     * @param startTime    开始时间
+     * @param endTime      结束时间
      * @return Page
      */
     PageInfo<DeployDetailTableVO> pageDeployFrequencyTable(Long projectId, PageRequest pageRequest, Long[] envIds, Long appServiceId, Date startTime, Date endTime);
@@ -236,11 +236,11 @@ public interface AppServiceInstanceService {
     /**
      * 获取部署时长报表table
      *
-     * @param projectId 项目id
-     * @param envId     环境id
-     * @param appServiceIds    应用id
-     * @param startTime 开始时间
-     * @param endTime   结束时间
+     * @param projectId     项目id
+     * @param envId         环境id
+     * @param appServiceIds 应用id
+     * @param startTime     开始时间
+     * @param endTime       结束时间
      * @return List
      */
     PageInfo<DeployDetailTableVO> pageDeployTimeTable(Long projectId, PageRequest pageRequest, Long[] appServiceIds, Long envId, Date startTime, Date endTime);
@@ -297,8 +297,8 @@ public interface AppServiceInstanceService {
     /**
      * 获取预览 Value
      *
-     * @param instanceValueVO yaml
-     * @param appServiceServiceId    版本Id
+     * @param instanceValueVO     yaml
+     * @param appServiceServiceId 版本Id
      * @return InstanceValueVO
      */
     InstanceValueVO queryPreviewValues(InstanceValueVO instanceValueVO, Long appServiceServiceId);

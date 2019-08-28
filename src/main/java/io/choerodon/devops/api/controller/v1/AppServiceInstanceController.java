@@ -42,7 +42,7 @@ public class AppServiceInstanceController {
     /**
      * 根据实例id获取实例信息
      *
-     * @param projectId     项目id
+     * @param projectId  项目id
      * @param instanceId 实例id
      * @return 实例信息
      */
@@ -80,7 +80,7 @@ public class AppServiceInstanceController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiIgnore
-            @ApiParam(value =  "分页参数") PageRequest pageRequest,
+            @ApiParam(value = "分页参数") PageRequest pageRequest,
             @ApiParam(value = "环境ID")
             @RequestParam(value = "env_id") Long envId,
             @ApiParam(value = "查询参数")
@@ -176,7 +176,7 @@ public class AppServiceInstanceController {
      * 根据实例id和deployment name获取更多部署详情(Json格式)
      *
      * @param projectId      项目id
-     * @param instanceId  实例id
+     * @param instanceId     实例id
      * @param deploymentName deployment name
      * @return 部署详情
      */
@@ -198,7 +198,7 @@ public class AppServiceInstanceController {
      * 根据实例id获取更多daemonSet详情(Json格式)
      *
      * @param projectId     项目id
-     * @param instanceId 实例id
+     * @param instanceId    实例id
      * @param daemonSetName daemonSet name
      * @return daemonSet详情
      */
@@ -220,7 +220,7 @@ public class AppServiceInstanceController {
      * 根据实例id获取更多statefulSet详情(Json格式)
      *
      * @param projectId       项目id
-     * @param instanceId   实例id
+     * @param instanceId      实例id
      * @param statefulSetName statefulSet name
      * @return statefulSet详情
      */
@@ -242,7 +242,7 @@ public class AppServiceInstanceController {
      * 根据实例id和deployment name获取更多部署详情(Yaml格式)
      *
      * @param projectId      项目id
-     * @param instanceId  实例id
+     * @param instanceId     实例id
      * @param deploymentName deployment name
      * @return 部署详情
      */
@@ -264,7 +264,7 @@ public class AppServiceInstanceController {
      * 根据实例id获取更多daemonSet详情(Yaml格式)
      *
      * @param projectId     项目id
-     * @param instanceId 实例id
+     * @param instanceId    实例id
      * @param daemonSetName daemonSet name
      * @return daemonSet详情
      */
@@ -286,7 +286,7 @@ public class AppServiceInstanceController {
      * 根据实例id获取更多statefulSet详情(Yaml格式)
      *
      * @param projectId       项目id
-     * @param instanceId   实例id
+     * @param instanceId      实例id
      * @param statefulSetName statefulSet name
      * @return statefulSet详情
      */
@@ -307,9 +307,9 @@ public class AppServiceInstanceController {
     /**
      * 获取升级Value
      *
-     * @param projectId     项目id
+     * @param projectId  项目id
      * @param instanceId 实例id
-     * @param version_id  版本Id
+     * @param versionId  版本Id
      * @return InstanceValueVO
      */
     @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT,
@@ -323,8 +323,8 @@ public class AppServiceInstanceController {
             @ApiParam(value = "部署ID", required = true)
             @PathVariable(value = "instance_id") Long instanceId,
             @ApiParam(value = "版本Id", required = true)
-            @PathVariable(value = "version_id") Long version_id) {
-        return Optional.ofNullable(appServiceInstanceService.queryUpgradeValue(instanceId, version_id))
+            @PathVariable(value = "version_id") Long versionId) {
+        return Optional.ofNullable(appServiceInstanceService.queryUpgradeValue(instanceId, versionId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.instance.value.get"));
     }
@@ -332,10 +332,10 @@ public class AppServiceInstanceController {
     /**
      * 查询服务部署时value
      *
-     * @param projectId    项目id
-     * @param type         部署类型
-     * @param instanceId   实例Id
-     * @param versionId 版本id
+     * @param projectId  项目id
+     * @param type       部署类型
+     * @param instanceId 实例Id
+     * @param versionId  版本id
      * @return InstanceValueVO
      */
     @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
@@ -399,7 +399,7 @@ public class AppServiceInstanceController {
     /**
      * 部署服务
      *
-     * @param projectId           项目id
+     * @param projectId          项目id
      * @param appServiceDeployVO 部署信息
      * @return ApplicationInstanceVO
      */
@@ -423,7 +423,7 @@ public class AppServiceInstanceController {
      *
      * @param projectId    项目id
      * @param appServiceId 服务id
-     * @param versionId 服务版本id
+     * @param versionId    服务版本id
      * @param envId        环境id
      * @return baseList of AppInstanceCodeDTO
      */
@@ -473,8 +473,8 @@ public class AppServiceInstanceController {
     /**
      * 获取部署实例release相关对象
      *
-     * @param projectId     项目id
-     * @param instance_id 实例id
+     * @param projectId  项目id
+     * @param instanceId 实例id
      * @return DevopsEnvResourceDTO
      */
     @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT,
@@ -485,8 +485,8 @@ public class AppServiceInstanceController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "实例ID", required = true)
-            @PathVariable(value = "instance_id") Long instance_id) {
-        return Optional.ofNullable(appServiceInstanceService.listResourcesInHelmRelease(instance_id))
+            @PathVariable(value = "instance_id") Long instanceId) {
+        return Optional.ofNullable(appServiceInstanceService.listResourcesInHelmRelease(instanceId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.resource.query"));
     }
@@ -494,8 +494,8 @@ public class AppServiceInstanceController {
     /**
      * 获取部署实例Event事件
      *
-     * @param projectId     项目id
-     * @param instance_id 实例id
+     * @param projectId   项目id
+     * @param instanceId 实例id
      * @return List
      */
     @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT,
@@ -506,8 +506,8 @@ public class AppServiceInstanceController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "实例ID", required = true)
-            @PathVariable(value = "instance_id") Long instance_id) {
-        return Optional.ofNullable(devopsEnvResourceService.listInstancePodEvent(instance_id))
+            @PathVariable(value = "instance_id") Long instanceId) {
+        return Optional.ofNullable(devopsEnvResourceService.listInstancePodEvent(instanceId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.event.query"));
     }
@@ -771,7 +771,7 @@ public class AppServiceInstanceController {
     /**
      * 部署自动化测试服务
      *
-     * @param projectId           项目id
+     * @param projectId          项目id
      * @param appServiceDeployVO 部署信息
      * @return ApplicationInstanceVO
      */

@@ -151,7 +151,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
         devopsEnvironmentMapper.select(devopsEnvironmentDTO)
                 .stream()
                 .peek(env -> devopsEnvUserPermissionService.baseDelete(env.getId(), userId))
-                .filter(env -> env.getSynchro() != Boolean.FALSE)
+                .filter(env -> !env.getSynchro().equals(Boolean.FALSE))
                 .forEach(env -> {
                     MemberDTO projectMember = gitlabServiceClientOperator.getProjectMember(env.getGitlabEnvProjectId().intValue(), gitlabUserId);
                     if (projectMember != null && projectMember.getId() != null) {

@@ -7,7 +7,6 @@ import io.choerodon.devops.infra.enums.HelmType;
 import io.choerodon.devops.infra.enums.InstanceStatus;
 import io.choerodon.devops.infra.util.KeyParseUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.websocket.receive.MessageHandler;
 import io.choerodon.websocket.receive.TextMessageHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,17 +29,13 @@ public class AgentGitOpsMessageHandler implements TextMessageHandler<AgentMsgVO>
     @Override
     public void handle(WebSocketSession webSocketSession, String type, String key, AgentMsgVO msg) {
         HelmType helmType = HelmType.forValue(String.valueOf(msg.getType()));
-        if(helmType==null) {
-            logger.info("找不到指令啊" + msg.getType());
+        if (helmType == null) {
+            logger.info("找不到指令啊 {}", msg.getType());
             return;
         }
-        logger.info("收到了这个指令嘿嘿:" + helmType.toString());
+        logger.info("收到了这个指令嘿嘿:{}", helmType);
         //设置集群id
         msg.setClusterId(key.split(":")[1]);
-
-        if (helmType == null) {
-            return;
-        }
         if (logger.isDebugEnabled()) {
             logger.debug(msg.toString());
         }

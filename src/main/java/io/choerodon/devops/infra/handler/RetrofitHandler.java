@@ -26,14 +26,15 @@ public class RetrofitHandler {
 
     public static final Logger LOGGER = LoggerFactory.getLogger(RetrofitHandler.class);
 
+    private RetrofitHandler() {
+    }
+
     /**
      * Retrofit 设置
      *
      * @param configurationProperties 插件配置信息
      * @return retrofit
      */
-
-
     public static Retrofit initRetrofit(ConfigurationProperties configurationProperties) {
 
         String credentials = configurationProperties.getUsername() + ":"

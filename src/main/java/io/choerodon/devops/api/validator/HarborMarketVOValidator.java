@@ -11,8 +11,8 @@ import java.util.regex.Pattern;
  * @description:
  */
 public class HarborMarketVOValidator {
-    private static final String EMAIL_PATTERN = "^[a-zA-Z0-9_.-]+@[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)*\\.[a-zA-Z0-9]{2,6}$";
-    private static final String PASSWORD_PATTERN = "^(?![a-z0-9\\W]+$)(?![A-Za-z\\W]+$)(?![A-Z0-9\\W]+$)[a-zA-Z0-9\\W]{8,}$";
+    private static final Pattern EMAIL = Pattern.compile("^[a-zA-Z0-9_.-]+@[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)*\\.[a-zA-Z0-9]{2,6}$");
+    private static final Pattern PASSWORD = Pattern.compile("^(?![a-z0-9\\W]+$)(?![A-Za-z\\W]+$)(?![A-Z0-9\\W]+$)[a-zA-Z0-9\\W]{8,}$");
 
     private HarborMarketVOValidator() {
     }
@@ -21,10 +21,10 @@ public class HarborMarketVOValidator {
      * 检查应用的name和code是否符合标准
      */
     public static void checkEmailAndPassword(HarborMarketVO harborMarketVO) {
-        if (!Pattern.matches(EMAIL_PATTERN, harborMarketVO.getUser().getEmail())) {
+        if (!EMAIL.matcher(harborMarketVO.getUser().getEmail()).matches()) {
             throw new CommonException("error.harbor.user.email.notMatch");
         }
-        if (!Pattern.matches(PASSWORD_PATTERN, harborMarketVO.getUser().getPassword())) {
+        if (!PASSWORD.matcher(harborMarketVO.getUser().getPassword()).matches()) {
             throw new CommonException("error.harbor.user.password.notMatch");
         }
     }

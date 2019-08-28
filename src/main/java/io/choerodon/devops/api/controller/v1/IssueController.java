@@ -11,6 +11,7 @@ import io.choerodon.devops.api.vo.CustomMergeRequestVO;
 import io.choerodon.devops.api.vo.DevopsBranchVO;
 import io.choerodon.devops.api.vo.IssueVO;
 import io.choerodon.devops.app.service.IssueService;
+
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +36,7 @@ public class IssueController {
      * @param issueId issueID
      * @return commit列表
      */
-    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据issueId获取issue关联的commit列表")
     @GetMapping("/commit/list")
     public ResponseEntity<List<DevopsBranchVO>> getCommitsByIssueId(
@@ -55,7 +56,7 @@ public class IssueController {
      * @param issueId issueID
      * @return 返回mergerequest列表
      */
-    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据issueId获取issue关联的mergerequest列表")
     @GetMapping("/merge_request/list")
     public ResponseEntity<List<CustomMergeRequestVO>> getMergeRequestsByIssueId(
@@ -75,7 +76,7 @@ public class IssueController {
      * @param issueId issueID
      * @return 返回mergerequest和commit数量
      */
-    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据issueId获取issue关联的mergerequest和commit数量")
     @GetMapping("/commit_and_merge_request/count")
     public ResponseEntity<IssueVO> countCommitAndMergeRequest(

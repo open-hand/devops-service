@@ -2,7 +2,6 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
-import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.infra.dto.DevopsNotificationUserRelDTO;
 
 /**

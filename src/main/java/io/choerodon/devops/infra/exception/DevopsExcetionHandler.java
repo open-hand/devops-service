@@ -1,10 +1,7 @@
 package io.choerodon.devops.infra.exception;
 
-import io.choerodon.core.exception.ExceptionResponse;
-import io.choerodon.core.oauth.CustomUserDetails;
-import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
-import io.choerodon.resource.handler.ControllerExceptionHandler;
+import java.util.Locale;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,14 +11,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import java.util.Locale;
+import io.choerodon.core.exception.ExceptionResponse;
+import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.core.oauth.DetailsHelper;
 
 /**
  * @author zmf
  */
 @ControllerAdvice
 public class DevopsExcetionHandler {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ControllerExceptionHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsExcetionHandler.class);
 
     @Autowired
     private MessageSource messageSource;

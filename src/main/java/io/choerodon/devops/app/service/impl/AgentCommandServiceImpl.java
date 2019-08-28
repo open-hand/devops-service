@@ -50,6 +50,7 @@ public class AgentCommandServiceImpl implements AgentCommandService {
     private static final String ERROR_PAYLOAD_ERROR = "error.payload.error";
     private static final String KEY_FORMAT = "cluster:%d.release:%s";
     private static final String CLUSTER_FORMAT = "cluster:%s";
+    private static final String CLUSTER = "cluster:";
 
     private static final String AGENT_INIT = "agent_init";
     private static final String ENV_DELETE = "env_delete";
@@ -93,7 +94,7 @@ public class AgentCommandServiceImpl implements AgentCommandService {
     @Override
     public void sendCommand(DevopsEnvironmentDTO devopsEnvironmentDTO) {
         AgentMsgVO msg = new AgentMsgVO();
-        msg.setKey("cluster:" + devopsEnvironmentDTO.getClusterId() + ".env:" + devopsEnvironmentDTO.getCode() + ".envId:" + devopsEnvironmentDTO.getId());
+        msg.setKey(CLUSTER + devopsEnvironmentDTO.getClusterId() + ".env:" + devopsEnvironmentDTO.getCode() + ".envId:" + devopsEnvironmentDTO.getId());
         msg.setType("git_ops_sync");
         msg.setPayload("");
         sendToWebsocket(devopsEnvironmentDTO.getClusterId(), msg);
@@ -156,7 +157,7 @@ public class AgentCommandServiceImpl implements AgentCommandService {
             String msgPayload = mapper.writeValueAsString(msg);
 
             //0.18.0到0.19.0 为了agent的平滑升级，所以不能以通用的新Msg方式发送，继续用以前的Msg格式发送
-            brokerKeySessionMapper.getSessionsByKey("cluster:" + devopsClusterDTO.getId()).stream().filter(session -> session != null).forEach((session) -> {
+            brokerKeySessionMapper.getSessionsByKey(CLUSTER + devopsClusterDTO.getId()).stream().filter(Objects::nonNull).forEach(session -> {
                 if (session.isOpen()) {
                     synchronized (session) {
                         try {
@@ -182,14 +183,14 @@ public class AgentCommandServiceImpl implements AgentCommandService {
                 "cert-manager",
                 "0.1.0",
                 null, "choerodon-cert-manager", null);
-        msg.setKey(String.format("cluster:%d.release:%s",
+        msg.setKey(String.format(KEY_FORMAT,
                 clusterId,
                 "choerodon-cert-manager"));
         msg.setType(HelmType.CERT_MANAGER_INSTALL.toValue());
         try {
             msg.setPayload(mapper.writeValueAsString(payload));
         } catch (IOException e) {
-            throw new CommonException("error.payload.error", e);
+            throw new CommonException(ERROR_PAYLOAD_ERROR, e);
         }
         sendToWebsocket(clusterId, msg);
     }
@@ -214,7 +215,7 @@ public class AgentCommandServiceImpl implements AgentCommandService {
 
     @Override
 
-    public void operateSecret(Long clusterId, String namespace, String secretName, ConfigVO configVO, String Type) {
+    public void operateSecret(Long clusterId, String namespace, String secretName, ConfigVO configVO, String type) {
         AgentMsgVO msg = new AgentMsgVO();
         SecretPayLoad secretPayLoad = new SecretPayLoad();
         secretPayLoad.setEmail(configVO.getEmail());
@@ -248,7 +249,7 @@ public class AgentCommandServiceImpl implements AgentCommandService {
         try {
             msg.setPayload(JSONArray.toJSONString(commands));
         } catch (Exception e) {
-            throw new CommonException("error.payload.error", e);
+            throw new CommonException(ERROR_PAYLOAD_ERROR, e);
         }
         sendToWebsocket(clusterId, msg);
     }
@@ -257,7 +258,7 @@ public class AgentCommandServiceImpl implements AgentCommandService {
 
     public void startOrStopInstance(String payload, String name, String type, String namespace, Long commandId, Long envId, Long clusterId) {
         AgentMsgVO msg = new AgentMsgVO();
-        msg.setKey("cluster:" + clusterId + ".env:" + namespace + ".envId:" + envId + ".release:" + name);
+        msg.setKey(CLUSTER + clusterId + ".env:" + namespace + ".envId:" + envId + ".release:" + name);
         msg.setType(type);
         msg.setPayload(payload);
         msg.setCommandId(commandId);
@@ -387,10 +388,10 @@ public class AgentCommandServiceImpl implements AgentCommandService {
 
     private void sendToWebsocket(Long clusterId, AgentMsgVO msg) {
         SendMessagePayload<AgentMsgVO> webSocketSendPayload = new SendMessagePayload<>();
-        webSocketSendPayload.setKey("cluster:" + clusterId);
+        webSocketSendPayload.setKey(CLUSTER + clusterId);
         webSocketSendPayload.setType("agent");
         webSocketSendPayload.setData(msg);
-        webSocketHelper.sendMessageByKey("cluster:" + clusterId, webSocketSendPayload);
+        webSocketHelper.sendMessageByKey(CLUSTER + clusterId, webSocketSendPayload);
     }
 
 }

@@ -44,7 +44,9 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
     public static final String DEVOPS_DELETE_INSTANCE_4_SMS = "devopsDeleteInstance4Sms";
     public static final Gson gson = new Gson();
     private static final String PROJECT_OWNER = "role/project/default/project-owner";
-    private static final Long timeout = 600L;
+    private static final Long TIMEOUT = 600L;
+    private static final String MOBILE = "mobile";
+
     @Autowired
     private DevopsNotificationMapper devopsNotificationMapper;
     @Autowired
@@ -217,7 +219,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         //生成验证码，存放在redis
         String resendKey = String.format("choerodon:devops:env:%s:%s:%s", devopsEnvironmentDTO.getCode(), objectType, objectCode);
         String captcha = String.valueOf(new Random().nextInt(899999) + 100000);
-        redisTemplate.opsForValue().set(resendKey, captcha, timeout, TimeUnit.SECONDS);
+        redisTemplate.opsForValue().set(resendKey, captcha, TIMEOUT, TimeUnit.SECONDS);
 
 
         //生成发送消息需要的模板对象
@@ -243,7 +245,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         params.put("instance", objectCode);
         if (devopsNotificationDTO.getNotifyObject().equals(TriggerObject.HANDLER.getObject())) {
             NoticeSendDTO.User user = new NoticeSendDTO.User();
-            params.put("mobile", userES.get(0).getPhone());
+            params.put(MOBILE, userES.get(0).getPhone());
             user.setEmail(GitUserNameUtil.getEmail());
             user.setId(GitUserNameUtil.getUserId().longValue());
             notifyVO.setTargetUsers(Arrays.asList(user));
@@ -256,7 +258,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
                             ownerId, devopsEnvironmentDTO.getProjectId(), false);
             List<NoticeSendDTO.User> users = new ArrayList<>();
             if (!allOwnerUsersPage.getList().isEmpty()) {
-                params.put("mobile", StringUtils.join(allOwnerUsersPage.getList().stream().map(userDTO -> {
+                params.put(MOBILE, StringUtils.join(allOwnerUsersPage.getList().stream().map(userDTO -> {
                     NoticeSendDTO.User user = new NoticeSendDTO.User();
                     user.setEmail(userDTO.getEmail());
                     user.setId(userDTO.getId());
@@ -268,7 +270,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         } else {
             List<Long> userIds = devopsNotificationUserRelService.baseListByNotificationId(devopsNotificationDTO.getId()).stream().map(DevopsNotificationUserRelDTO::getUserId).collect(Collectors.toList());
             List<NoticeSendDTO.User> users = new ArrayList<>();
-            params.put("mobile", StringUtils.join(baseServiceClientOperator.listUsersByIds(userIds).stream().map(userDTO -> {
+            params.put(MOBILE, StringUtils.join(baseServiceClientOperator.listUsersByIds(userIds).stream().map(userDTO -> {
                 NoticeSendDTO.User user = new NoticeSendDTO.User();
                 user.setEmail(userDTO.getEmail());
                 user.setId(userDTO.getId());

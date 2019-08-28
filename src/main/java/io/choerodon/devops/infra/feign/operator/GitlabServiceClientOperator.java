@@ -784,10 +784,10 @@ public class GitlabServiceClientOperator {
         }
     }
 
-    public String getAdminToken(){
+    public String getAdminToken() {
         try {
             return gitlabServiceClient.getAdminToken().getBody();
-        }catch (FeignException e){
+        } catch (FeignException e) {
             throw new CommonException(e);
         }
 

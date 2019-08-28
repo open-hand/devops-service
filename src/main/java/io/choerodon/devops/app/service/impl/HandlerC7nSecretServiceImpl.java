@@ -14,7 +14,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.validator.DevopsSecretValidator;
 import io.choerodon.devops.api.vo.SecretReqVO;
@@ -146,7 +145,7 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
                 SecretReqVO secretReqVO = getSecretReqDTO(c7nSecret, envId, "update");
                 secretReqVO.setId(devopsSecretDTO.getId());
                 if (secretReqVO.getValue().equals(devopsSecretService.dtoToReqVo(devopsSecretDTO).getValue())) {
-                        isNotChange = true;
+                    isNotChange = true;
                 }
 
                 DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsSecretDTO.getCommandId());

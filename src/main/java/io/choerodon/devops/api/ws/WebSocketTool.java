@@ -11,6 +11,8 @@ import org.springframework.web.socket.WebSocketSession;
  */
 public class WebSocketTool {
 
+    private WebSocketTool() {
+    }
 
     public static Map<String, Object> getAttribute(WebSocketSession webSocketSession) {
         Map<String, Object> attribute = new HashMap<>();
@@ -23,6 +25,7 @@ public class WebSocketTool {
 
     /**
      * 解决shell里面前端遇到\r不能换行的问题。目前解决方案是将返回结果中除了首尾部的\r替换成\r\n
+     *
      * @param a
      * @param index
      * @return

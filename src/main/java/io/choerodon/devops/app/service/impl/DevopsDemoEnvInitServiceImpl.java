@@ -1,7 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.UUID;
@@ -9,9 +9,18 @@ import javax.annotation.PostConstruct;
 
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StreamUtils;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.validator.ApplicationValidator;
-import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.AppServiceRepVO;
+import io.choerodon.devops.api.vo.AppServiceReqVO;
+import io.choerodon.devops.api.vo.DemoDataVO;
 import io.choerodon.devops.api.vo.kubernetes.MockMultipartFile;
 import io.choerodon.devops.app.eventhandler.DevopsSagaHandler;
 import io.choerodon.devops.app.eventhandler.payload.DevOpsAppServicePayload;
@@ -26,17 +35,11 @@ import io.choerodon.devops.infra.dto.gitlab.MergeRequestDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.AccessLevel;
-import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.util.StreamUtils;
 
 /**
  * 为搭建Demo环境初始化项目中的一些数据，包含应用，分支，提交，版本，应用市场等
@@ -85,7 +88,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
     @PostConstruct
     public void loadData() {
         try {
-            String content = StreamUtils.copyToString(this.getClass().getClassLoader().getResourceAsStream(demoDataFilePath), Charset.forName("UTF-8"));
+            String content = StreamUtils.copyToString(this.getClass().getClassLoader().getResourceAsStream(demoDataFilePath), StandardCharsets.UTF_8);
             demoDataVO = JSONObject.parseObject(content, DemoDataVO.class);
         } catch (Exception e) {
             logger.error("Load content of demo data failed. exception is: {}", e);
@@ -208,7 +211,6 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
     }
 
 
-
     /**
      * add a new commit to the certain branch
      *
@@ -243,7 +245,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
      * @param projectId     the project id
      * @param applicationId the application id
      * @return the version
-//     */
+     */
 //    private AppMarketVersionVO getApplicationVersion(Long projectId, Long applicationId) {
 //        PageRequest pageRequest = new PageRequest(0, 1);
 //        PageInfo<ApplicationVersionRespVO> versions = applicationVersionService.pageByOptions(projectId, applicationId, pageRequest, null);

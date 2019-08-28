@@ -2,7 +2,6 @@ package io.choerodon.devops.api.vo;
 
 import java.util.Date;
 import java.util.List;
-import javax.persistence.Transient;
 
 /**
  * Pod实时信息

@@ -2,6 +2,13 @@ package io.choerodon.devops.app.service.impl;
 
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.ConfigVO;
 import io.choerodon.devops.app.service.IamService;
@@ -12,12 +19,6 @@ import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.HarborClient;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import retrofit2.Response;
-import retrofit2.Retrofit;
 
 /**
  * @author zongw.lee@gmail.com

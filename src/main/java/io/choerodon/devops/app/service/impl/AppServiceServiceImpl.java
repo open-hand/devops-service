@@ -105,6 +105,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     private static final String PROJECT_MEMBER = "role/project/default/project-member";
     private static final ConcurrentMap<Long, String> templateDockerfileMap = new ConcurrentHashMap<>();
     private static final String APP_SERVICE = "appService";
+    private static final String ERROR_USER_NOT_OWNER = "error.user.not.owner";
+    private static final String METRICS = "metrics";
     private static final IOFileFilter filenameFilter = new IOFileFilter() {
 
         @Override
@@ -186,7 +188,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()),
                 TypeUtil.objToInteger(userAttrVO.getGitlabUserId()));
         if (memberDTO == null || !memberDTO.getAccessLevel().equals(AccessLevel.OWNER.value)) {
-            throw new CommonException("error.user.not.owner");
+            throw new CommonException(ERROR_USER_NOT_OWNER);
         }
         AppServiceDTO appServiceDTO = getApplicationServiceDTO(projectId, appServiceReqVO);
         //默认权限为项目下所有
@@ -738,7 +740,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         // 校验用户的gitlab权限
         if (memberDTO == null || !memberDTO.getAccessLevel().equals(AccessLevel.OWNER.toValue())) {
-            throw new CommonException("error.user.not.owner");
+            throw new CommonException(ERROR_USER_NOT_OWNER);
         }
 
         // 创建应用服务
@@ -851,7 +853,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         configurationProperties.setPassword(password);
         configurationProperties.setInsecureSkipTlsVerify(false);
         configurationProperties.setProject(project);
-        configurationProperties.setType("harbor");
+        configurationProperties.setType(HARBOR);
         Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
         HarborClient harborClient = retrofit.create(HarborClient.class);
         Call<User> getUser = harborClient.getCurrentUser();
@@ -898,7 +900,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     public Boolean checkChart(String url) {
         ConfigurationProperties configurationProperties = new ConfigurationProperties();
         configurationProperties.setBaseUrl(url);
-        configurationProperties.setType("chart");
+        configurationProperties.setType(CHART);
         Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
         ChartClient chartClient = retrofit.create(ChartClient.class);
         chartClient.getHealth();
@@ -1244,7 +1246,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         queryMap.put("component", key);
         queryMap.put("ps", "1000");
         if (ISSUE.equals(type)) {
-            queryMap.put("metrics", "bugs,code_smells,vulnerabilities");
+            queryMap.put(METRICS, "bugs,code_smells,vulnerabilities");
             try {
                 Response<SonarTables> sonarTablesResponse = sonarClient.getSonarTables(queryMap).execute();
                 if (sonarTablesResponse.raw().code() != 200) {
@@ -1291,7 +1293,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             }
         }
         if (COVERAGE.equals(type)) {
-            queryMap.put("metrics", "lines_to_cover,uncovered_lines,coverage");
+            queryMap.put(METRICS, "lines_to_cover,uncovered_lines,coverage");
             try {
                 Response<SonarTables> sonarTablesResponse = sonarClient.getSonarTables(queryMap).execute();
                 if (sonarTablesResponse.raw().code() != 200) {
@@ -1342,7 +1344,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             }
         }
         if (DUPLICATE.equals(type)) {
-            queryMap.put("metrics", "ncloc,duplicated_lines,duplicated_lines_density");
+            queryMap.put(METRICS, "ncloc,duplicated_lines,duplicated_lines_density");
             try {
                 Response<SonarTables> sonarTablesResponse = sonarClient.getSonarTables(queryMap).execute();
                 if (sonarTablesResponse.raw().code() != 200) {
@@ -1396,9 +1398,8 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         Long organizationId = baseServiceClientOperator.queryIamProjectById(projectId).getOrganizationId();
         List<Long> appServiceIds = new ArrayList<>();
-        baseServiceClientOperator.listIamProjectByOrgId(organizationId, null, null).forEach(proId -> {
-                    baseListAll(projectId).forEach(appServiceDTO -> appServiceIds.add(appServiceDTO.getId()));
-                }
+        baseServiceClientOperator.listIamProjectByOrgId(organizationId, null, null).forEach(proId ->
+                baseListAll(projectId).forEach(appServiceDTO -> appServiceIds.add(appServiceDTO.getId()))
         );
         PageInfo<AppServiceDTO> applicationServiceDTOPageInfo = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> appServiceMapper.listShareApplicationService(appServiceIds, projectId, TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS))));
         return ConvertUtils.convertPage(applicationServiceDTOPageInfo, AppServiceRepVO.class);
@@ -1453,13 +1454,13 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
 
 
-        Set<Long> ownerIds = allProjectOwners.stream().map(devopsUserPermissionVO -> devopsUserPermissionVO.getIamUserId()).collect(Collectors.toSet());
+        Set<Long> ownerIds = allProjectOwners.stream().map(DevopsEnvUserVO::getIamUserId).collect(Collectors.toSet());
         //去除项目成员中的项目所有者成员
-        List<DevopsUserPermissionVO> MemberWithoutOwners = allProjectMembers.stream().filter(e -> !ownerIds.contains(e.getIamUserId())).collect(Collectors.toList());
+        List<DevopsUserPermissionVO> memberWithoutOwners = allProjectMembers.stream().filter(e -> !ownerIds.contains(e.getIamUserId())).collect(Collectors.toList());
 
         //合并项目所有者和项目成员
         List<DevopsUserPermissionVO> userPermissionVOS = new ArrayList<>(allProjectOwners);
-        userPermissionVOS.addAll(MemberWithoutOwners);
+        userPermissionVOS.addAll(memberWithoutOwners);
 
         //没有任何项目成员和项目所有者
         if (userPermissionVOS.isEmpty()) {
@@ -1634,7 +1635,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                     TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()),
                     TypeUtil.objToInteger(userAttrVO.getGitlabUserId()));
             if (memberDTO == null || !memberDTO.getAccessLevel().equals(AccessLevel.OWNER.value)) {
-                throw new CommonException("error.user.not.owner");
+                throw new CommonException(ERROR_USER_NOT_OWNER);
             }
 
             //创建gitlab 应用
@@ -1933,15 +1934,15 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public List<AppServiceGroupVO> ListAppServiceGroup(Long projectId) {
+    public List<AppServiceGroupVO> listAppServiceGroup(Long projectId) {
         // 分别获取组织共享和市场下载的应用服务集合
         List<AppServiceDTO> organizationShareApps = appServiceMapper.queryOrganizationShareApps();
         List<AppServiceDTO> marketDownloadApps = appServiceMapper.queryMarketDownloadApps();
         // 查询当前项目可选的项目共享Apps
-        List<AppServiceDTO> projectShareApps = appServiceMapper.ListShareProjectApps(projectId);
+        List<AppServiceDTO> projectShareApps = appServiceMapper.listShareProjectApps(projectId);
         // 加入组织共享集合中
         organizationShareApps.addAll(projectShareApps);
-        List<AppServiceGroupVO> appServiceGroupList = new ArrayList<AppServiceGroupVO>();
+        List<AppServiceGroupVO> appServiceGroupList = new ArrayList<>();
         if (!organizationShareApps.isEmpty()) {
             // 获取organizationShareApps中appid的集合
             Set<Long> organizationShareAppIdList = getAppIds(organizationShareApps);
@@ -1982,9 +1983,9 @@ public class AppServiceServiceImpl implements AppServiceService {
      * @return List<AppServiceGroupVO>
      */
     private List<AppServiceGroupVO> groupMerging(Set<Long> ids, List<AppServiceDTO> appServiceList, Boolean share) {
-        List<AppServiceGroupVO> list = new ArrayList<AppServiceGroupVO>();
+        List<AppServiceGroupVO> list = new ArrayList<>();
         Map<Long, List<AppServiceGroupInfoVO>> collect = appServiceList.stream()
-                .map(appServiceDTO -> dtoToGroupInfoVO(appServiceDTO))
+                .map(this::dtoToGroupInfoVO)
                 .map(appServiceGroupInfoVO -> getVersion(appServiceGroupInfoVO, share))
                 .collect(Collectors.groupingBy(AppServiceGroupInfoVO::getAppId));
         // 遍历ids集合
@@ -2032,9 +2033,9 @@ public class AppServiceServiceImpl implements AppServiceService {
      */
     private Set<Long> getAppIds(List<AppServiceDTO> appServiceList) {
         Set<Long> appIds = new HashSet<>();
-        appServiceList.stream().forEach(appServiceDTO -> {
-            appIds.add(appServiceDTO.getAppId());
-        });
+        appServiceList.stream().forEach(appServiceDTO ->
+                appIds.add(appServiceDTO.getAppId())
+        );
         return appIds;
     }
 
@@ -2269,8 +2270,8 @@ public class AppServiceServiceImpl implements AppServiceService {
         for (AppServiceDTO t : applicationDTOS) {
             if (t.getGitlabProjectId() != null) {
                 t.setRepoUrl(
-                        gitlabUrl + urlSlash + organizationDTO.getCode() + "-" + projectDTO.getCode() + "/" +
-                                t.getCode() + ".git");
+                        gitlabUrl + urlSlash + organizationDTO.getCode() + "-" + projectDTO.getCode() + "/"
+                                + t.getCode() + ".git");
                 String key = String.format(SONAR_KEY, organizationDTO.getCode(), projectDTO.getCode(), t.getCode());
                 if (!projectKeys.isEmpty() && projectKeys.contains(key)) {
                     t.setSonarUrl(sonarqubeUrl);

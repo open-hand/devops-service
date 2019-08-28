@@ -415,7 +415,7 @@
             AND db.app_id IS NOT NULL
     </select>
 
-    <select id="ListShareProjectApps"  resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
+    <select id="listShareProjectApps"  resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
       SELECT DISTINCT
         das.id,
         das.app_id,

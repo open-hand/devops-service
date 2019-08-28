@@ -9,14 +9,20 @@ import java.util.Map;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
+import retrofit2.Call;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.ConfigVO;
 import io.choerodon.devops.api.vo.DefaultConfigVO;
 import io.choerodon.devops.api.vo.DevopsConfigVO;
-import io.choerodon.devops.app.eventhandler.payload.HarborPayload;
-import io.choerodon.devops.app.eventhandler.payload.OrganizationRegisterEventPayload;
 import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.app.service.DevopsConfigService;
 import io.choerodon.devops.app.service.DevopsProjectService;
@@ -35,13 +41,6 @@ import io.choerodon.devops.infra.handler.RetrofitHandler;
 import io.choerodon.devops.infra.mapper.DevopsConfigMapper;
 import io.choerodon.devops.infra.util.PageRequestUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.ObjectUtils;
-import retrofit2.Call;
-import retrofit2.Response;
-import retrofit2.Retrofit;
 
 /**
  * @author zongw.lee@gmail.com
@@ -55,6 +54,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
     private static final String CUSTOM = "custom";
     private static final Gson gson = new Gson();
     public static final String APP_SERVICE = "appService";
+    private static final String USER_PREFIX = "user%s%s";
 
     @Autowired
     private DevopsConfigMapper devopsConfigMapper;
@@ -100,16 +100,16 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
 
                         ProjectDTO projectDTO = null;
                         OrganizationDTO organizationDTO = null;
-                        if(resourceType.equals(ResourceLevel.PROJECT.value())) {
-                             projectDTO = baseServiceClientOperator.queryIamProjectById(resourceId);
-                             organizationDTO =  baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-                        }else {
+                        if (resourceType.equals(ResourceLevel.PROJECT.value())) {
+                            projectDTO = baseServiceClientOperator.queryIamProjectById(resourceId);
+                            organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+                        } else {
                             AppServiceDTO appServiceDTO = appServiceService.baseQuery(resourceId);
                             Long projectId = devopsProjectService.queryProjectIdByAppId(appServiceDTO.getAppId());
-                             projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-                             organizationDTO =  baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+                            projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+                            organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
                         }
-                        harborService.createHarbor(harborClient,organizationDTO.getCode()+"-"+projectDTO.getCode());
+                        harborService.createHarbor(harborClient, organizationDTO.getCode() + "-" + projectDTO.getCode());
                     }
                 }
                 //根据配置所在的资源层级，查询出数据库中是否存在，存在则更新，不存在则新建
@@ -171,7 +171,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
         if (harborPrivate) {
             //设置为私有后将harbor项目设置为私有
             DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
-            String username = devopsProjectDTO.getHarborProjectUserName() == null ? String.format("user%s%s", organizationDTO.getId(), projectId) : devopsProjectDTO.getHarborProjectUserName();
+            String username = devopsProjectDTO.getHarborProjectUserName() == null ? String.format(USER_PREFIX, organizationDTO.getId(), projectId) : devopsProjectDTO.getHarborProjectUserName();
             String email = devopsProjectDTO.getHarborProjectUserEmail() == null ? String.format("%s@choerodon.com", username) : devopsProjectDTO.getHarborProjectUserEmail();
             String password = devopsProjectDTO.getHarborProjectUserPassword() == null ? String.format("%sA", username) : devopsProjectDTO.getHarborProjectUserPassword();
             User user = new User(username, email, password, username);
@@ -251,13 +251,13 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                         throw new CommonException(systemInfoResponse.errorBody().string());
                     }
                     if (systemInfoResponse.body().getHarborVersion().equals("v1.4.0")) {
-                        Response<List<User>> users = harborClient.listUser(String.format("user%s%s", organizationDTO.getId(), projectId)).execute();
+                        Response<List<User>> users = harborClient.listUser(String.format(USER_PREFIX, organizationDTO.getId(), projectId)).execute();
                         if (users.raw().code() != 200) {
                             throw new CommonException(users.errorBody().string());
                         }
                         harborClient.deleteLowVersionMember(projects.body().get(0).getProjectId(), users.body().get(0).getUserId().intValue()).execute();
                     } else {
-                        Response<List<ProjectMember>> projectMembers = harborClient.getProjectMembers(projects.body().get(0).getProjectId(), String.format("user%s%s", organizationDTO.getId(), projectId)).execute();
+                        Response<List<ProjectMember>> projectMembers = harborClient.getProjectMembers(projects.body().get(0).getProjectId(), String.format(USER_PREFIX, organizationDTO.getId(), projectId)).execute();
                         if (projectMembers.raw().code() != 200) {
                             throw new CommonException(projectMembers.errorBody().string());
                         }
@@ -351,6 +351,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
     public Boolean baseCheckByName(DevopsConfigDTO devopsConfigDTO) {
         return ObjectUtils.isEmpty(devopsConfigMapper.selectOne(devopsConfigDTO));
     }
+
     @Override
     public DevopsConfigDTO baseUpdate(DevopsConfigDTO devopsConfigDTO) {
         if (devopsConfigMapper.updateByPrimaryKeySelective(devopsConfigDTO) != 1) {
@@ -371,10 +372,12 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
         paramDO.setName(name);
         return devopsConfigMapper.selectOne(paramDO);
     }
+
     @Override
     public DevopsConfigDTO baseCheckByName(String name) {
         return devopsConfigMapper.queryByNameWithNoProject(name);
     }
+
     @Override
     public PageInfo<DevopsConfigDTO> basePageByOptions(Long projectId, PageRequest pageRequest, String params) {
         Map<String, Object> mapParams = TypeUtil.castMapParams(params);
@@ -384,6 +387,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                         TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
                         TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)), PageRequestUtil.checkSortIsEmpty(pageRequest)));
     }
+
     @Override
     public void baseDelete(Long id) {
         if (devopsConfigMapper.deleteByPrimaryKey(id) != 1) {
@@ -395,6 +399,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
     public List<DevopsConfigDTO> baseListByIdAndType(Long projectId, String type) {
         return devopsConfigMapper.listByIdAndType(projectId, type);
     }
+
     @Override
     public void baseCheckByName(Long projectId, String name) {
         DevopsConfigDTO devopsConfigDTO = new DevopsConfigDTO();

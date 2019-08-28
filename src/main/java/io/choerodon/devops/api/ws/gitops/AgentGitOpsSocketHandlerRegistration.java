@@ -41,6 +41,7 @@ import org.springframework.web.socket.server.HandshakeFailureException;
 public class AgentGitOpsSocketHandlerRegistration implements SocketHandlerRegistration {
 
     private static final String CLUSTER_SESSION = "cluster-sessions-catch";
+    private static final String CLUSTER_ID = "clusterID";
     private static final Logger logger = LoggerFactory.getLogger(AgentGitOpsSocketHandlerRegistration.class);
     private ConcurrentHashMap<String, Map<String, Object>> attributes = new ConcurrentHashMap<>();
     private Set<WebSocketSession> webSocketSessions = new HashSet<>();
@@ -75,7 +76,7 @@ public class AgentGitOpsSocketHandlerRegistration implements SocketHandlerRegist
 
         //校验ws连接参数是否正确
         String key = request.getParameter("key");
-        String clusterId = request.getParameter("clusterId");
+        String clusterId = request.getParameter(CLUSTER_ID);
         String token = request.getParameter("token");
         String version = request.getParameter("version");
         if (key == null || key.trim().isEmpty()) {
@@ -123,13 +124,13 @@ public class AgentGitOpsSocketHandlerRegistration implements SocketHandlerRegist
 
 
         ClusterSessionVO clusterSession = new ClusterSessionVO();
-        clusterSession.setClusterId(TypeUtil.objToLong(attribute.get("clusterId")));
+        clusterSession.setClusterId(TypeUtil.objToLong(attribute.get(CLUSTER_ID)));
         clusterSession.setVersion(TypeUtil.objToString(attribute.get("version")));
         clusterSession.setRegisterKey(registerKey);
         redisTemplate.opsForHash().put(CLUSTER_SESSION, clusterSession.getRegisterKey(), clusterSession);
 
         //连接成功之后,如果agent版本不匹配则提示升级agent,匹配则返回集群下关联环境的ssh信息
-        Long clusterId = (TypeUtil.objToLong(attribute.get("clusterId")));
+        Long clusterId = (TypeUtil.objToLong(attribute.get(CLUSTER_ID)));
         List<Long> notUpgraded = clusterConnectionHandler.getUpdatedEnvList();
         if (!notUpgraded.contains(clusterId)) {
             DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);

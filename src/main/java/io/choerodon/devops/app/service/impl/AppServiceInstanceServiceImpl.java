@@ -13,6 +13,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -55,8 +56,9 @@ import org.springframework.transaction.annotation.Transactional;
  * Created by Zenger on 2018/4/12.
  */
 @Service
-public class  AppServiceInstanceServiceImpl implements AppServiceInstanceService {
+public class AppServiceInstanceServiceImpl implements AppServiceInstanceService {
 
+    private static final String MASTER = "master";
     public static final String CREATE = "create";
     public static final String UPDATE = "update";
     public static final String CHOERODON = "choerodon-test";
@@ -153,8 +155,8 @@ public class  AppServiceInstanceServiceImpl implements AppServiceInstanceService
     public PageInfo<AppServiceInstanceInfoVO> pageInstanceInfoByOptions(Long projectId, Long envId, PageRequest pageRequest, String params) {
         Map<String, Object> maps = TypeUtil.castMapParams(params);
         return ConvertUtils.convertPage(PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest))
-                .doSelectPageInfo(() -> appServiceInstanceMapper.listInstanceInfoByEnvAndOptions(
-                        envId, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)), TypeUtil.cast(maps.get(TypeUtil.PARAMS)))),
+                        .doSelectPageInfo(() -> appServiceInstanceMapper.listInstanceInfoByEnvAndOptions(
+                                envId, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)), TypeUtil.cast(maps.get(TypeUtil.PARAMS)))),
                 AppServiceInstanceInfoVO.class);
     }
 
@@ -682,7 +684,7 @@ public class  AppServiceInstanceServiceImpl implements AppServiceInstanceService
      * 为环境和应用创建关联关系如果不存在
      *
      * @param appServiceId 应用id
-     * @param envId 环境id
+     * @param envId        环境id
      */
     private void createEnvAppRelationShipIfNon(Long appServiceId, Long envId) {
         DevopsEnvAppServiceDTO devopsEnvAppServiceDTO = new DevopsEnvAppServiceDTO();
@@ -862,7 +864,7 @@ public class  AppServiceInstanceServiceImpl implements AppServiceInstanceService
         if (devopsEnvFileResourceDTO == null) {
             baseDelete(instanceId);
             baseDeleteInstanceRelInfo(instanceId);
-            if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), "master",
+            if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER,
                     RELEASE_PREFIX + appServiceInstanceDTO.getCode() + YAML_SUFFIX)) {
                 gitlabServiceClientOperator.deleteFile(
                         TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
@@ -873,7 +875,7 @@ public class  AppServiceInstanceServiceImpl implements AppServiceInstanceService
             return;
         } else {
             //如果文件对象对应关系存在，但是gitops文件不存在，也直接删掉资源
-            if (!gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), "master",
+            if (!gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER,
                     devopsEnvFileResourceDTO.getFilePath())) {
                 baseDelete(instanceId);
                 baseDeleteInstanceRelInfo(instanceId);
@@ -886,7 +888,7 @@ public class  AppServiceInstanceServiceImpl implements AppServiceInstanceService
         List<DevopsEnvFileResourceDTO> devopsEnvFileResourceES = devopsEnvFileResourceService
                 .baseQueryByEnvIdAndPath(devopsEnvironmentDTO.getId(), devopsEnvFileResourceDTO.getFilePath());
         if (devopsEnvFileResourceES.size() == 1) {
-            if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), "master",
+            if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER,
                     devopsEnvFileResourceDTO.getFilePath())) {
                 gitlabServiceClientOperator.deleteFile(
                         TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
@@ -945,7 +947,7 @@ public class  AppServiceInstanceServiceImpl implements AppServiceInstanceService
 
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
         List<Long> envIds = devopsEnvironmentService.baseListByClusterId(devopsEnvironmentDTO.getClusterId()).stream().map(DevopsEnvironmentDTO::getId).collect(Collectors.toList());
-        if(appServiceInstanceMapper.checkCodeExist(code,envIds)) {
+        if (appServiceInstanceMapper.checkCodeExist(code, envIds)) {
             throw new CommonException("error.app.instance.name.already.exist");
         }
         pipelineAppDeployService.baseCheckName(code, envId);
@@ -988,6 +990,7 @@ public class  AppServiceInstanceServiceImpl implements AppServiceInstanceService
         return appServiceInstanceMapper.selectOne(appServiceInstanceDTO);
     }
 
+    @Override
     public AppServiceInstanceDTO baseCreate(AppServiceInstanceDTO appServiceInstanceDTO) {
         if (appServiceInstanceMapper.insert(appServiceInstanceDTO) != 1) {
             throw new CommonException("error.application.instance.create");
@@ -995,29 +998,35 @@ public class  AppServiceInstanceServiceImpl implements AppServiceInstanceService
         return appServiceInstanceDTO;
     }
 
+    @Override
     public AppServiceInstanceDTO baseQuery(Long id) {
         return appServiceInstanceMapper.selectByPrimaryKey(id);
     }
 
+    @Override
     public List<AppServiceInstanceDTO> baseListByOptions(Long projectId, Long appServiceId, Long appServiceVersionId, Long envId) {
         return appServiceInstanceMapper.listApplicationInstanceCode(
                 projectId, envId, appServiceVersionId, appServiceId);
     }
 
+    @Override
     public List<AppServiceInstanceDTO> baseListByAppIdAndEnvId(Long projectId, Long appServiceId, Long envId) {
         return appServiceInstanceMapper.listRunningAndFailedInstance(
                 projectId, envId, appServiceId);
     }
 
+    @Override
     public int baseCountByOptions(Long envId, Long appServiceId, String appServiceInstanceCode) {
         return appServiceInstanceMapper.countByOptions(envId, appServiceId, appServiceInstanceCode);
     }
 
+    @Override
     public String baseQueryValueByEnvIdAndAppId(Long
                                                         envId, Long appServiceId) {
         return appServiceInstanceMapper.queryValueByEnvIdAndAppId(envId, appServiceId);
     }
 
+    @Override
     public void baseUpdate(AppServiceInstanceDTO appServiceInstanceDTO) {
         appServiceInstanceDTO.setObjectVersionNumber(
                 appServiceInstanceMapper.selectByPrimaryKey(appServiceInstanceDTO.getId()).getObjectVersionNumber());
@@ -1035,6 +1044,7 @@ public class  AppServiceInstanceServiceImpl implements AppServiceInstanceService
                 .select(appServiceInstanceDTO);
     }
 
+    @Override
     public List<AppServiceInstanceOverViewDTO> baseListApplicationInstanceOverView(Long projectId, Long appServiceId, List<Long> envIds) {
         if (envIds != null && envIds.isEmpty()) {
             envIds = null;
@@ -1052,17 +1062,20 @@ public class  AppServiceInstanceServiceImpl implements AppServiceInstanceService
         return appServiceInstanceMapper.queryByInstanceId(instanceId);
     }
 
+    @Override
     public void baseDelete(Long id) {
         appServiceInstanceMapper.deleteByPrimaryKey(id);
     }
 
 
+    @Override
     public List<DeployDTO> baseListDeployTime(Long projectId, Long envId, Long[] appServiceIds, Date startTime, Date endTime) {
         return appServiceInstanceMapper
                 .listDeployTime(projectId, envId, appServiceIds, new java.sql.Date(startTime.getTime()),
                         new java.sql.Date(endTime.getTime()));
     }
 
+    @Override
     public List<DeployDTO> baselistDeployFrequency(Long projectId, Long[] envIds, Long appServiceId,
                                                    Date startTime, Date endTime) {
         return appServiceInstanceMapper
@@ -1070,6 +1083,7 @@ public class  AppServiceInstanceServiceImpl implements AppServiceInstanceService
                         new java.sql.Date(endTime.getTime()));
     }
 
+    @Override
     public PageInfo<DeployDTO> basePageDeployFrequencyTable(Long projectId, PageRequest pageRequest, Long[] envIds, Long appServiceId,
                                                             Date startTime, Date endTime) {
         return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() ->
@@ -1078,6 +1092,7 @@ public class  AppServiceInstanceServiceImpl implements AppServiceInstanceService
                                 new java.sql.Date(endTime.getTime())));
     }
 
+    @Override
     public PageInfo<DeployDTO> basePageDeployTimeTable(Long projectId, PageRequest pageRequest, Long envId, Long[] appServiceIds,
                                                        Date startTime, Date endTime) {
         return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() ->
@@ -1108,12 +1123,12 @@ public class  AppServiceInstanceServiceImpl implements AppServiceInstanceService
     }
 
 
-
-
+    @Override
     public String baseGetInstanceResourceDetailJson(Long instanceId, String resourceName, ResourceType resourceType) {
         return appServiceInstanceMapper.getInstanceResourceDetailJson(instanceId, resourceName, resourceType.getType());
     }
 
+    @Override
     public void baseDeleteInstanceRelInfo(Long instanceId) {
         appServiceInstanceMapper.deleteInstanceRelInfo(instanceId);
     }
@@ -1386,11 +1401,11 @@ public class  AppServiceInstanceServiceImpl implements AppServiceInstanceService
 
 
     private AppServiceInstanceDTO restartDeploy(DevopsEnvironmentDTO
-                                                         devopsEnvironmentDTO, AppServiceDTO
-                                                         applicationDTO, AppServiceVersionDTO
+                                                        devopsEnvironmentDTO, AppServiceDTO
+                                                        applicationDTO, AppServiceVersionDTO
                                                         appServiceVersionDTO, AppServiceInstanceDTO
                                                         appServiceInstanceDTO, DevopsEnvCommandValueDTO
-                                                         devopsEnvCommandValueDTO, String secretCode) {
+                                                        devopsEnvCommandValueDTO, String secretCode) {
         DevopsEnvCommandDTO devopsEnvCommandDTO;
         baseUpdate(appServiceInstanceDTO);
         appServiceInstanceDTO = baseQuery(appServiceInstanceDTO.getId());
@@ -1405,7 +1420,7 @@ public class  AppServiceInstanceServiceImpl implements AppServiceInstanceService
 
     private String getSecret(AppServiceDTO appServiceDTO, String secretCode, DevopsEnvironmentDTO devopsEnvironmentDTO) {
         //如果应用绑定了私有镜像库,则处理secret
-        DevopsConfigDTO devopsConfigDTO = devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE,HARBOR);
+        DevopsConfigDTO devopsConfigDTO = devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, HARBOR);
         if (devopsConfigDTO != null) {
             ConfigVO configVO = gson.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class);
             if (configVO.getPrivate() != null) {

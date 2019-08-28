@@ -1,7 +1,5 @@
 package io.choerodon.devops.api.ws;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
@@ -31,7 +29,7 @@ public class AgentExecAndLogSocketHandler {
     @Autowired
     WebSocketHelper webSocketHelper;
     @Autowired
-    RedisTemplate<String, Object>  redisTemplate;
+    RedisTemplate<String, Object> redisTemplate;
 
     public boolean beforeHandshake(ServerHttpRequest serverHttpRequest, ServerHttpResponse serverHttpResponse) {
         ServletServerHttpRequest servletRequest = (ServletServerHttpRequest) serverHttpRequest;
@@ -55,7 +53,6 @@ public class AgentExecAndLogSocketHandler {
         //将websocketSession和关联的key做关联
         webSocketHelper.subscribe(registerKey, webSocketSession);
     }
-
 
 
 }

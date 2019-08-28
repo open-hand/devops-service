@@ -1,6 +1,5 @@
 package io.choerodon.devops.app.service;
 
-import io.choerodon.devops.app.eventhandler.payload.ProjectPayload;
 import io.choerodon.devops.infra.dto.DevopsProjectDTO;
 
 /**

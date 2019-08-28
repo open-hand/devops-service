@@ -25,7 +25,7 @@ public class AppServiceUserPermissionServiceImpl implements AppServiceUserPermis
     private BaseServiceClientOperator baseServiceClientOperator;
 
 
-@Override
+    @Override
     public void baseCreate(Long userId, Long appServiceId) {
         appServiceUserRelMapper.insert(new AppServiceUserRelDTO(userId, appServiceId));
     }

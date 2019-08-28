@@ -1,6 +1,6 @@
 package io.choerodon.devops.infra.message;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
@@ -12,7 +12,7 @@ public class ResourceBundleHandler {
 
     private ResourceBundleHandler() {
 
-        this.bundle = ResourceBundle.getBundle("messages/messages",Locale.SIMPLIFIED_CHINESE);
+        this.bundle = ResourceBundle.getBundle("messages/messages", Locale.SIMPLIFIED_CHINESE);
     }
 
     public static ResourceBundleHandler getInstance() {
@@ -20,8 +20,8 @@ public class ResourceBundleHandler {
         return ResourceBundleHandlerHolder.resourceBundleHandler;
     }
 
-    public String getValue(String key) throws UnsupportedEncodingException {
-        return new String(bundle.getString(key).getBytes("ISO-8859-1"), "UTF8");
+    public String getValue(String key) {
+        return new String(bundle.getString(key).getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
     }
 
     private static class ResourceBundleHandlerHolder {

@@ -95,7 +95,7 @@ public class ClusterConnectionHandler {
      * @param clusterId 环境ID
      */
     public void checkEnvConnection(Long clusterId) {
-        Map<String, ClusterSessionVO> clusterSessions = (Map<String,ClusterSessionVO>)(Map)redisTemplate.opsForHash().entries(CLUSTER_SESSION);
+        Map<String, ClusterSessionVO> clusterSessions = (Map<String, ClusterSessionVO>) (Map) redisTemplate.opsForHash().entries(CLUSTER_SESSION);
 
         boolean envConnected = clusterSessions.entrySet().stream()
                 .anyMatch(t -> clusterId.equals(t.getValue().getClusterId())
@@ -111,7 +111,7 @@ public class ClusterConnectionHandler {
      * @return 环境链接列表
      */
     public List<Long> getConnectedEnvList() {
-        Map<String, ClusterSessionVO> clusterSessions = (Map<String,ClusterSessionVO>)(Map)redisTemplate.opsForHash().entries(CLUSTER_SESSION);
+        Map<String, ClusterSessionVO> clusterSessions = (Map<String, ClusterSessionVO>) (Map) redisTemplate.opsForHash().entries(CLUSTER_SESSION);
         return clusterSessions.entrySet().stream()
                 .map(t -> t.getValue().getClusterId())
                 .collect(Collectors.toCollection(ArrayList::new));
@@ -123,7 +123,7 @@ public class ClusterConnectionHandler {
      * @return 环境更新列表
      */
     public List<Long> getUpdatedEnvList() {
-        Map<String, ClusterSessionVO> clusterSessions = (Map<String,ClusterSessionVO>)(Map)redisTemplate.opsForHash().entries(CLUSTER_SESSION);
+        Map<String, ClusterSessionVO> clusterSessions = (Map<String, ClusterSessionVO>) (Map) redisTemplate.opsForHash().entries(CLUSTER_SESSION);
         return clusterSessions.entrySet().stream()
                 .filter(t -> compareVersion(t.getValue().getVersion() == null ? "0" : t.getValue().getVersion(), agentExpectVersion) != 1)
                 .map(t -> t.getValue().getClusterId())

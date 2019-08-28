@@ -184,6 +184,12 @@ public class IamUserDTO {
 
     @Override
     public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (this.getClass() != obj.getClass()) {
+            return false;
+        }
         IamUserDTO s = (IamUserDTO) obj;
         return id.equals(s.id) && loginName.equals(s.loginName);
     }

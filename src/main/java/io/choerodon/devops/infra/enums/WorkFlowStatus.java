@@ -1,9 +1,9 @@
 package io.choerodon.devops.infra.enums;
 
+import java.util.HashMap;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-
-import java.util.HashMap;
 
 /**
  * Creator: ChangpingShi0213@gmail.com

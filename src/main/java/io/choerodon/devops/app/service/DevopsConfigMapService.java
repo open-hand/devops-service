@@ -11,7 +11,7 @@ import io.choerodon.devops.infra.dto.DevopsConfigMapDTO;
 
 public interface DevopsConfigMapService {
 
-    void createOrUpdate(Long projectId, Boolean IsSync, DevopsConfigMapVO devopsConfigMapVO);
+    void createOrUpdate(Long projectId, Boolean isSync, DevopsConfigMapVO devopsConfigMapVO);
 
     void deleteByGitOps(Long configMapId);
 

@@ -212,11 +212,11 @@ public class BaseServiceClientOperator {
 
         List<IamUserDTO> list = this.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, 0), new RoleAssignmentSearchVO(), memberId,
                 projectId, false).getList();
-        List<Long> memberIds = list.stream().filter(userDTO -> userDTO.getEnabled()).map(IamUserDTO::getId).collect(Collectors.toList());
+        List<Long> memberIds = list.stream().filter(IamUserDTO::getEnabled).map(IamUserDTO::getId).collect(Collectors.toList());
         // 项目下所有项目所有者
         this.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, 0), new RoleAssignmentSearchVO(), ownerId,
 
-                projectId, false).getList().stream().filter(userDTO -> userDTO.getEnabled()).forEach(t -> {
+                projectId, false).getList().stream().filter(IamUserDTO::getEnabled).forEach(t -> {
             if (!memberIds.contains(t.getId())) {
                 list.add(t);
             }

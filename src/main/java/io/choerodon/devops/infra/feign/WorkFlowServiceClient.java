@@ -1,15 +1,11 @@
 package io.choerodon.devops.infra.feign;
 
-import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
-import io.choerodon.devops.infra.feign.fallback.WorkFlowServiceClientFallback;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
+
+import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
+import io.choerodon.devops.infra.feign.fallback.WorkFlowServiceClientFallback;
 
 /**
  * Creator: ChangpingShi0213@gmail.com

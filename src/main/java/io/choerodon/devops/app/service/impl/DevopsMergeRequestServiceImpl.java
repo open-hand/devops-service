@@ -44,18 +44,16 @@ public class DevopsMergeRequestServiceImpl implements DevopsMergeRequestService 
         DevopsMergeRequestDTO devopsMergeRequestDTO = new DevopsMergeRequestDTO();
         devopsMergeRequestDTO.setGitlabProjectId(gitlabProjectId.longValue());
         devopsMergeRequestDTO.setState(state);
-        PageInfo<DevopsMergeRequestDTO> devopsMergeRequestDTOPageInfo = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() ->
+        return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() ->
                 devopsMergeRequestMapper.select(devopsMergeRequestDTO));
-        return devopsMergeRequestDTOPageInfo;
     }
 
     @Override
     public List<DevopsMergeRequestDTO> baseQueryByGitlabProjectId(Integer gitlabProjectId) {
         DevopsMergeRequestDTO devopsMergeRequestDTO = new DevopsMergeRequestDTO();
         devopsMergeRequestDTO.setGitlabProjectId(gitlabProjectId.longValue());
-        List<DevopsMergeRequestDTO> devopsMergeRequestDTOS = devopsMergeRequestMapper
+        return devopsMergeRequestMapper
                 .select(devopsMergeRequestDTO);
-        return devopsMergeRequestDTOS;
     }
 
     @Override

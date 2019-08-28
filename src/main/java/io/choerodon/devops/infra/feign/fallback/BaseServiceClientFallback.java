@@ -27,10 +27,10 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class BaseServiceClientFallback implements BaseServiceClient {
-
+    private static final String ERROR_PROJECT_GET="error.project.get";
     @Override
     public ResponseEntity<ProjectDTO> queryIamProject(Long projectId) {
-        throw new CommonException("error.project.get");
+        throw new CommonException(ERROR_PROJECT_GET);
     }
 
     @Override
@@ -65,7 +65,7 @@ public class BaseServiceClientFallback implements BaseServiceClient {
 
     @Override
     public ResponseEntity<PageInfo<ProjectDTO>> queryProjectByOrgId(Long id, int page, int size, String name, String[] params) {
-        throw new CommonException("error.project.get");
+        throw new CommonException(ERROR_PROJECT_GET);
     }
 
     @Override
@@ -144,7 +144,7 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
-    public ResponseEntity<PageInfo<ProjectDTO>> listProject(Long organizationId,   Map<String, Object> pageRequest, String name, String code, String typeName, Boolean enabled, String category, String[] params) {
+    public ResponseEntity<PageInfo<ProjectDTO>> listProject(Long organizationId, Map<String, Object> pageRequest, String name, String code, String typeName, Boolean enabled, String category, String[] params) {
         return null;
     }
 
@@ -154,21 +154,27 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
-    public ResponseEntity<ProjectDTO> queryProjectByAppId(Long id){
-        throw new CommonException("error.project.get");
+    public ResponseEntity<ProjectDTO> queryProjectByAppId(Long id) {
+        throw new CommonException(ERROR_PROJECT_GET);
     }
 
     @Override
-    public ResponseEntity<ApplicationDTO> queryAppById(Long id){
+    public ResponseEntity<ApplicationDTO> queryAppById(Long id) {
         throw new CommonException("error.application.get");
     }
 
     @Override
-    public ResponseEntity<Boolean> publishFail(Long projectId,Long id,String errorCode) { throw new CommonException("error.publishFail.status.get"); }
+    public ResponseEntity<Boolean> publishFail(Long projectId, Long id, String errorCode) {
+        throw new CommonException("error.publishFail.status.get");
+    }
 
     @Override
-    public ResponseEntity<PageInfo<ProjectDTO>> pagingProjectByOptions(Long organizationId, Boolean doPage, int page,int size, String[] params) { throw new CommonException("error.project.get"); }
+    public ResponseEntity<PageInfo<ProjectDTO>> pagingProjectByOptions(Long organizationId, Boolean doPage, int page, int size, String[] params) {
+        throw new CommonException(ERROR_PROJECT_GET);
+    }
 
     @Override
-    public ResponseEntity completeDownloadApplication(Long publishAppVersionId, Set<Long> serviceVersionIds) { throw new CommonException("error.application.download"); }
+    public ResponseEntity completeDownloadApplication(Long publishAppVersionId, Set<Long> serviceVersionIds) {
+        throw new CommonException("error.application.download");
+    }
 }

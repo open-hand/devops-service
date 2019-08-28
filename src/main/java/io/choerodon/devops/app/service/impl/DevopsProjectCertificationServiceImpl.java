@@ -8,6 +8,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.ProjectCertificationPermissionUpdateVO;
@@ -24,6 +25,7 @@ import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCertificationMapper;
 import io.choerodon.devops.infra.util.*;
+
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -35,6 +37,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 public class DevopsProjectCertificationServiceImpl implements DevopsProjectCertificationService {
     private static final String FILE_SEPARATOR = System.getProperty("file.separator");
+    private static final String ERROR_CERTIFICATION_NOT_EXIST = "error.certification.not.exist";
 
     private Gson gson = new Gson();
     @Autowired
@@ -51,7 +54,7 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
     public void assignPermission(ProjectCertificationPermissionUpdateVO update) {
         CertificationDTO certificationDTO = certificationService.baseQueryById(update.getCertificationId());
         if (certificationDTO == null) {
-            throw new CommonException("error.certification.not.exist", update.getCertificationId());
+            throw new CommonException(ERROR_CERTIFICATION_NOT_EXIST, update.getCertificationId());
         }
 
         if (certificationDTO.getProjectId() == null) {
@@ -95,7 +98,7 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
     public PageInfo<ProjectReqVO> pageRelatedProjects(Long projectId, Long certId, PageRequest pageRequest, String params) {
         CertificationDTO certificationDTO = certificationService.baseQueryById(certId);
         if (certificationDTO == null) {
-            throw new CommonException("error.certification.not.exist", certId);
+            throw new CommonException(ERROR_CERTIFICATION_NOT_EXIST, certId);
         }
 
         Map<String, Object> map = TypeUtil.castMapParams(params);
@@ -226,7 +229,7 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
     public List<ProjectReqVO> listNonRelatedMembers(Long projectId, Long certId, String params) {
         CertificationDTO certificationDTO = certificationService.baseQueryById(certId);
         if (certificationDTO == null) {
-            throw new CommonException("error.certification.not.exist", certId);
+            throw new CommonException(ERROR_CERTIFICATION_NOT_EXIST, certId);
         }
 
         //查询出该项目所属组织下的所有项目

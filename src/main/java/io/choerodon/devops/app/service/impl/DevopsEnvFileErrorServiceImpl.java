@@ -11,7 +11,6 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsEnvFileErrorVO;
 import io.choerodon.devops.app.service.DevopsEnvFileErrorService;
@@ -33,7 +32,7 @@ public class DevopsEnvFileErrorServiceImpl implements DevopsEnvFileErrorService 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public DevopsEnvFileErrorDTO baseCreateOrUpdate(DevopsEnvFileErrorDTO devopsEnvFileErrorDTO) {
-        DevopsEnvFileErrorDTO newDevopsEnvFileErrorDTO = devopsEnvFileErrorMapper.selectOne(new DevopsEnvFileErrorDTO(devopsEnvFileErrorDTO.getEnvId(),devopsEnvFileErrorDTO.getFilePath()));
+        DevopsEnvFileErrorDTO newDevopsEnvFileErrorDTO = devopsEnvFileErrorMapper.selectOne(new DevopsEnvFileErrorDTO(devopsEnvFileErrorDTO.getEnvId(), devopsEnvFileErrorDTO.getFilePath()));
         if (newDevopsEnvFileErrorDTO != null) {
             newDevopsEnvFileErrorDTO.setCommit(devopsEnvFileErrorDTO.getCommit());
             newDevopsEnvFileErrorDTO.setError(devopsEnvFileErrorDTO.getError());

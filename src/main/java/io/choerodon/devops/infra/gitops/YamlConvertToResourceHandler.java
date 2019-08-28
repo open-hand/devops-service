@@ -2,9 +2,10 @@ package io.choerodon.devops.infra.gitops;
 
 import java.util.Map;
 
+import io.kubernetes.client.JSON;
+
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.kubernetes.client.JSON;
 
 public class YamlConvertToResourceHandler<T> {
 

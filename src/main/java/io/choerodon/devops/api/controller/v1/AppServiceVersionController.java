@@ -362,13 +362,13 @@ public class AppServiceVersionController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下查询共享服务的所有共享版本")
     @GetMapping(value = "/{app_service_id}/list_share_versions")
-    public ResponseEntity<List<AppServiceVersionVO>> ListAppServiceVersionByShareAndAppSerivceId(
+    public ResponseEntity<List<AppServiceVersionVO>> listAppServiceVersionByShareAndAppSerivceId(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "服务Id", required = true)
-            @PathVariable(value = "app_service_id",required = true) Long appServiceId,
+            @PathVariable(value = "app_service_id", required = true) Long appServiceId,
             @ApiParam(value = "共享形式")
-            @RequestParam(required = false,value = "share") String share) {
+            @RequestParam(required = false, value = "share") String share) {
         return Optional.ofNullable(
                 appServiceVersionService.queryServiceVersionByAppServiceIdAndShare(appServiceId, share))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))

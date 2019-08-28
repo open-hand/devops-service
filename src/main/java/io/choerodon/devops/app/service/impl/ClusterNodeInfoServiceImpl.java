@@ -2,12 +2,19 @@ package io.choerodon.devops.app.service.impl;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.AgentNodeInfoVO;
@@ -17,13 +24,6 @@ import io.choerodon.devops.app.service.DevopsClusterService;
 import io.choerodon.devops.infra.dto.DevopsClusterDTO;
 import io.choerodon.devops.infra.util.K8sUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 /**
  * @author zmf
@@ -189,6 +189,7 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
                 .orElse(null);
     }
 
+    @Override
     public List<String> queryNodeName(Long projectId, Long clusterId) {
         String rediskey = getRedisClusterKey(clusterId, projectId);
 
@@ -199,7 +200,7 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
                 .range(rediskey, 0, total - 1)
                 .stream()
                 .map(node -> JSONObject.parseObject(node, ClusterNodeInfoVO.class))
-                .map(node -> node.getNodeName())
+                .map(ClusterNodeInfoVO::getNodeName)
                 .collect(Collectors.toList());
 
     }

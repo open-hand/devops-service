@@ -9,6 +9,18 @@ import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
+import io.kubernetes.client.models.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
+import org.yaml.snakeyaml.Yaml;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -35,21 +47,10 @@ import io.choerodon.devops.infra.enums.CommandStatus;
 import io.choerodon.devops.infra.enums.GitOpsObjectError;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.infra.feign.operator.AgileServiceClientOperator;
-import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.message.ResourceBundleHandler;
 import io.choerodon.devops.infra.util.*;
-import io.kubernetes.client.models.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.interceptor.TransactionAspectSupport;
-import org.yaml.snakeyaml.Yaml;
 
 /**
  * Creator: Runge
@@ -350,7 +351,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         String path = String.format("%s%s%s-%s/%s",
                 gitlabUrl, urlSlash, organizationDTO.getCode(), projectDTO.getCode(), applicationDTO.getCode());
-        return ConvertUtils.convertPage(gitlabServiceClientOperator.pageTag(projectDTO,applicationDTO.getGitlabProjectId(), path, page, params, size, getGitlabUserId()), TagVO.class);
+        return ConvertUtils.convertPage(gitlabServiceClientOperator.pageTag(projectDTO, applicationDTO.getGitlabProjectId(), path, page, params, size, getGitlabUserId()), TagVO.class);
     }
 
     @Override
@@ -385,12 +386,12 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Override
     @Saga(code = SagaTopicCodeConstants.DEVOPS_SYNC_GITOPS, description = "devops同步gitops库相关操作", inputSchemaClass = PushWebHookVO.class)
     public void fileResourceSyncSaga(PushWebHookVO pushWebHookVO, String token) {
-        LOGGER.info(String.format("````````````````````````````` %s", pushWebHookVO.getCheckoutSha()));
+        LOGGER.info("````````````````````````````` {}", pushWebHookVO.getCheckoutSha());
 
         Long userId = userAttrService.baseQueryUserIdByGitlabUserId(TypeUtil.objToLong(pushWebHookVO.getUserId()));
         IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(userId);
 
-        CustomContextUtil.setUserContext(iamUserDTO.getLoginName(),userId, iamUserDTO.getOrganizationId());
+        CustomContextUtil.setUserContext(iamUserDTO.getLoginName(), userId, iamUserDTO.getOrganizationId());
 
 
         pushWebHookVO.setToken(token);
@@ -410,7 +411,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 .baseQueryByEnvIdAndCommit(devopsEnvironmentDTO.getId(), pushWebHookVO.getCheckoutSha());
         devopsEnvironmentDTO.setSagaSyncCommit(devopsEnvCommitDTO.getId());
         devopsEnvironmentService.baseUpdateSagaSyncEnvCommit(devopsEnvironmentDTO);
-        LOGGER.info(String.format("update devopsCommit successfully: %s", pushWebHookVO.getCheckoutSha()));
+        LOGGER.info("update devopsCommit successfully: {}", pushWebHookVO.getCheckoutSha());
 
         producer.apply(
                 StartSagaBuilder
@@ -829,6 +830,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             DevopsBranchDTO devopsBranchDTO = devopsBranchService.baseQueryByAppAndBranchName(appServiceId, branchName);
             if (devopsBranchDTO == null) {
                 createBranchSync(pushWebHookVO, appServiceId);
+                return;
             }
 
 
@@ -940,8 +942,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                     userId.intValue());
             String branchName = pushWebHookVO.getRef().replaceFirst(REF_HEADS, "");
 
-            boolean branchExist = devopsBranchService.baseQueryByAppAndBranchName(appServiceId, branchName) != null;
-            if (!branchExist) {
+            if (devopsBranchService.baseQueryByAppAndBranchName(appServiceId, branchName) == null) {
                 DevopsBranchDTO devopsBranchDTO = new DevopsBranchDTO();
                 devopsBranchDTO.setUserId(userId);
                 devopsBranchDTO.setAppServiceId(appServiceId);

@@ -2,8 +2,6 @@ package io.choerodon.devops.api.ws.exec.agent;
 
 import io.choerodon.devops.api.ws.exec.ExecMessageHandler;
 import io.choerodon.websocket.receive.BinaryMessageHandler;
-import io.choerodon.websocket.receive.MessageHandler;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.BinaryMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -13,12 +11,12 @@ import org.springframework.web.socket.WebSocketSession;
  */
 
 @Component
-public class AgentExecMessageHandler implements BinaryMessageHandler{
+public class AgentExecMessageHandler implements BinaryMessageHandler {
 
     @Override
     public void handle(WebSocketSession webSocketSession, BinaryMessage message) {
         ExecMessageHandler execMessageHandler = new ExecMessageHandler();
-        execMessageHandler.handle(webSocketSession,message);
+        execMessageHandler.handle(webSocketSession, message);
     }
 
     @Override

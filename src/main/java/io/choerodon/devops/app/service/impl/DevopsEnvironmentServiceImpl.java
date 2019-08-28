@@ -61,6 +61,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private static final String ENV = "ENV";
     private static final String PROJECT_OWNER = "role/project/default/project-owner";
     private static final String PROJECT_MEMBER = "role/project/default/project-member";
+    private static final String ERROR_CODE_EXIST = "error.code.exist";
+    private static final String LOGIN_NAME = "loginName";
+    private static final String REAL_NAME = "realName";
 
     @Value("${services.gateway.url}")
     private String gatewayUrl;
@@ -555,7 +558,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         if (devopsClusterDTO.getNamespaces() != null) {
             JSONArray.parseArray(devopsClusterDTO.getNamespaces(), String.class).forEach(namespace -> {
                 if (namespace.equals(code)) {
-                    throw new CommonException("error.code.exist");
+                    throw new CommonException(ERROR_CODE_EXIST);
                 }
             });
         }
@@ -771,12 +774,12 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             paramList = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
             roleAssignmentSearchVO.setParam(paramList == null ? null : paramList.toArray(new String[0]));
             if (searchParamMap != null) {
-                if (searchParamMap.get("loginName") != null) {
-                    String loginName = TypeUtil.objToString(searchParamMap.get("loginName"));
+                if (searchParamMap.get(LOGIN_NAME) != null) {
+                    String loginName = TypeUtil.objToString(searchParamMap.get(LOGIN_NAME));
                     roleAssignmentSearchVO.setLoginName(loginName);
                 }
-                if (searchParamMap.get("realName") != null) {
-                    String realName = TypeUtil.objToString(searchParamMap.get("realName"));
+                if (searchParamMap.get(REAL_NAME) != null) {
+                    String realName = TypeUtil.objToString(searchParamMap.get(REAL_NAME));
                     roleAssignmentSearchVO.setRealName(realName);
                 }
             }
@@ -836,13 +839,13 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             List<String> paramList = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
 
             roleAssignmentSearchVO.setParam(paramList == null ? null : paramList.toArray(new String[0]));
-            if (searchParamMap.get("loginName") != null) {
-                String loginName = TypeUtil.objToString(searchParamMap.get("loginName"));
+            if (searchParamMap.get(LOGIN_NAME) != null) {
+                String loginName = TypeUtil.objToString(searchParamMap.get(LOGIN_NAME));
                 roleAssignmentSearchVO.setLoginName(loginName);
             }
 
-            if (searchParamMap.get("realName") != null) {
-                String realName = TypeUtil.objToString(searchParamMap.get("realName"));
+            if (searchParamMap.get(REAL_NAME) != null) {
+                String realName = TypeUtil.objToString(searchParamMap.get(REAL_NAME));
                 roleAssignmentSearchVO.setRealName(realName);
             }
         }
@@ -967,13 +970,13 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
             List<String> param = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
             roleAssignmentSearchVO.setParam(param == null ? null : param.toArray(new String[0]));
-            if (searchParamMap.get("loginName") != null) {
-                String loginName = TypeUtil.objToString(searchParamMap.get("loginName"));
+            if (searchParamMap.get(LOGIN_NAME) != null) {
+                String loginName = TypeUtil.objToString(searchParamMap.get(LOGIN_NAME));
                 String subLogin = loginName.substring(1, loginName.length() - 1);
                 roleAssignmentSearchVO.setLoginName(subLogin);
             }
-            if (searchParamMap.get("realName") != null) {
-                String realName = TypeUtil.objToString(searchParamMap.get("realName"));
+            if (searchParamMap.get(REAL_NAME) != null) {
+                String realName = TypeUtil.objToString(searchParamMap.get(REAL_NAME));
                 String subReal = realName.substring(1, realName.length() - 1);
                 roleAssignmentSearchVO.setRealName(subReal);
             }
@@ -1169,12 +1172,12 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         environmentDTO.setClusterId(devopsEnvironmentDTO.getClusterId());
         environmentDTO.setCode(devopsEnvironmentDTO.getCode());
         if (!devopsEnvironmentMapper.select(environmentDTO).isEmpty()) {
-            throw new CommonException("error.code.exist");
+            throw new CommonException(ERROR_CODE_EXIST);
         }
         environmentDTO.setClusterId(null);
         environmentDTO.setProjectId(devopsEnvironmentDTO.getProjectId());
         if (!devopsEnvironmentMapper.select(environmentDTO).isEmpty()) {
-            throw new CommonException("error.code.exist");
+            throw new CommonException(ERROR_CODE_EXIST);
         }
     }
 

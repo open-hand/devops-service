@@ -30,7 +30,6 @@ public class AppServiceDTO extends BaseDTO {
     private String type;
     private Boolean isSkipCheckPermission;
     private String imgUrl;
-//    private String repository;
 
     @Transient
     private String publishLevel;

@@ -1,7 +1,5 @@
 package io.choerodon.devops.api.vo;
 
-import java.util.List;
-
 /**
  * Created by younger on 2018/4/10.
  */
