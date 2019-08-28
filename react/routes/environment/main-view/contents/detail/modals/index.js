@@ -8,8 +8,8 @@ import Permission from '../../../../../resource/main-view/contents/environment/m
 import { useEnvironmentStore } from '../../../../stores';
 import { useMainStore } from '../../../stores';
 import { useDetailStore } from '../stores';
-import EnvCreateForm from '../../../modals/EnvCreateForm';
-import GroupCreateForm from '../../../modals/GroupCreateForm';
+import EnvCreateForm from '../../../modals/env-form';
+import GroupForm from '../../../modals/GroupForm';
 import useStore from './useStore';
 
 import './index.less';
@@ -31,11 +31,7 @@ const EnvModals = observer(() => {
     envStore: { getSelectedMenu },
     AppState: { currentMenuType: { id: projectId } },
   } = useEnvironmentStore();
-  const {
-    envFormDs,
-    groupFormDs,
-    clusterDs,
-  } = useMainStore();
+  const { groupFormDs } = useMainStore();
   const {
     intl: { formatMessage },
     intlPrefix,
@@ -73,24 +69,25 @@ const EnvModals = observer(() => {
   }
 
   function openEnvModal() {
-    clusterDs.query();
     Modal.open({
       key: envKey,
       title: formatMessage({ id: `${currentIntlPrefix}.create` }),
-      children: <EnvCreateForm dataSet={envFormDs} clusterDs={clusterDs} />,
+      children: <EnvCreateForm intlPrefix={currentIntlPrefix} />,
       drawer: true,
       style: modalStyle,
     });
   }
 
   function openGroupModal() {
-    groupFormDs.reset();
     Modal.open({
       key: groupKey,
       title: formatMessage({ id: `${currentIntlPrefix}.group.create` }),
-      children: <GroupCreateForm dataSet={groupFormDs} treeDs={treeDs} />,
+      children: <GroupForm dataSet={groupFormDs} treeDs={treeDs} />,
       drawer: true,
       style: modalStyle,
+      afterClose: () => {
+        groupFormDs.current.reset();
+      },
     });
   }
 

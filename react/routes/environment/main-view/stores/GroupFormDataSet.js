@@ -17,9 +17,10 @@ export default ({ formatMessage, intlPrefix, projectId }) => {
   };
 
   return {
+    autoCreate: true,
     paging: false,
     transport: {
-      create: ({ data: [data] }) => ({
+      submit: ({ data: [data] }) => ({
         url: `/devops/v1/projects/${projectId}/env_groups?name=${data.name}`,
         method: 'post',
         data: null,

@@ -18,6 +18,7 @@ export default ({ formatMessage, intlPrefix, id }) => {
   };
 
   return {
+    autoCreate: true,
     paging: false,
     transport: {
       submit: ({ data: [data] }) => ({

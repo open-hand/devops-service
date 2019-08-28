@@ -377,6 +377,7 @@ const envrionment = {
   'c7ncd.env.modal.detail.start': '启用环境',
   'c7ncd.env.modal.detail.stop': '停用环境',
   'c7ncd.env.cluster': '连接集群',
+  'c7ncd.env.cluster.select': '选择集群',
   'c7ncd.env.name': '环境名称',
   'c7ncd.env.status': '环境状态',
   'c7ncd.env.code': '环境编码',
