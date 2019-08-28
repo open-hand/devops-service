@@ -335,7 +335,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
         }
     }
 
-
+    @Override
     public DevopsConfigDTO baseCreate(DevopsConfigDTO devopsConfigDTO) {
         if (devopsConfigMapper.insert(devopsConfigDTO) != 1) {
             throw new CommonException("error.devops.project.config.create");
@@ -347,10 +347,11 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
      * @param devopsConfigDTO
      * @return true为不存在同名值  false存在
      */
+    @Override
     public Boolean baseCheckByName(DevopsConfigDTO devopsConfigDTO) {
         return ObjectUtils.isEmpty(devopsConfigMapper.selectOne(devopsConfigDTO));
     }
-
+    @Override
     public DevopsConfigDTO baseUpdate(DevopsConfigDTO devopsConfigDTO) {
         if (devopsConfigMapper.updateByPrimaryKeySelective(devopsConfigDTO) != 1) {
             throw new CommonException("error.devops.project.config.update");
@@ -363,18 +364,18 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
         return devopsConfigMapper.selectByPrimaryKey(id);
     }
 
-
+    @Override
     public DevopsConfigDTO baseQueryByName(Long projectId, String name) {
         DevopsConfigDTO paramDO = new DevopsConfigDTO();
         paramDO.setProjectId(projectId);
         paramDO.setName(name);
         return devopsConfigMapper.selectOne(paramDO);
     }
-
+    @Override
     public DevopsConfigDTO baseCheckByName(String name) {
         return devopsConfigMapper.queryByNameWithNoProject(name);
     }
-
+    @Override
     public PageInfo<DevopsConfigDTO> basePageByOptions(Long projectId, PageRequest pageRequest, String params) {
         Map<String, Object> mapParams = TypeUtil.castMapParams(params);
 
@@ -383,7 +384,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                         TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
                         TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)), PageRequestUtil.checkSortIsEmpty(pageRequest)));
     }
-
+    @Override
     public void baseDelete(Long id) {
         if (devopsConfigMapper.deleteByPrimaryKey(id) != 1) {
             throw new CommonException("error.devops.project.config.delete");
@@ -394,7 +395,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
     public List<DevopsConfigDTO> baseListByIdAndType(Long projectId, String type) {
         return devopsConfigMapper.listByIdAndType(projectId, type);
     }
-
+    @Override
     public void baseCheckByName(Long projectId, String name) {
         DevopsConfigDTO devopsConfigDTO = new DevopsConfigDTO();
         devopsConfigDTO.setProjectId(projectId);
@@ -427,6 +428,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
         }
     }
 
+    @Override
     public Boolean baseCheckUsed(Long checkIsUsed) {
         return devopsConfigMapper.checkIsUsed(checkIsUsed).isEmpty();
     }
@@ -437,6 +439,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
         return devopsConfigMapper.select(devopsConfigDTO);
     }
 
+    @Override
     public DevopsConfigVO dtoToVo(DevopsConfigDTO devopsConfigDTO) {
         DevopsConfigVO devopsConfigVO = new DevopsConfigVO();
         BeanUtils.copyProperties(devopsConfigDTO, devopsConfigVO);
@@ -445,6 +448,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
         return devopsConfigVO;
     }
 
+    @Override
     public DevopsConfigDTO voToDto(DevopsConfigVO devopsConfigVO) {
         DevopsConfigDTO devopsConfigDTO = new DevopsConfigDTO();
         BeanUtils.copyProperties(devopsConfigVO, devopsConfigDTO);

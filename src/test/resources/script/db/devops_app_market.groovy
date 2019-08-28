@@ -106,4 +106,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_market.groovy') {
     changeSet(author: 'li jinyan', id: '2019-08-14-drop-column'){
         dropColumn(columnName: "app_id", tableName: "devops_app_service_share_rule")
     }
+
+    changeSet(author: 'scp', id: '2019-08-19-add-column') {
+        addColumn(tableName: 'devops_app_service_share_rule') {
+            column(name: 'project_id', type: 'BIGINT UNSIGNED', remarks: '共享到特定项目', afterColumn: "version")
+        }
+    }
 }

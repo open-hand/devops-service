@@ -5,15 +5,13 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import io.choerodon.mybatis.entity.BaseDTO;
-
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  14:18 2019/6/28
  * Description:
  */
 @Table(name = "devops_app_service_share_resource")
-public class AppServiceShareResourceDTO extends BaseDTO {
+public class AppServiceShareResourceDTO {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
