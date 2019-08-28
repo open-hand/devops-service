@@ -9,6 +9,7 @@ import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.websocket.connect.SocketHandlerRegistration;
 import io.choerodon.websocket.helper.WebSocketHelper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.http.server.ServletServerHttpRequest;
@@ -23,6 +24,7 @@ import org.springframework.web.socket.WebSocketSession;
 @Component
 public class AgentLogSocketHandlerRegistration  implements SocketHandlerRegistration {
 
+    @Lazy
     @Autowired
     WebSocketHelper webSocketHelper;
     @Autowired

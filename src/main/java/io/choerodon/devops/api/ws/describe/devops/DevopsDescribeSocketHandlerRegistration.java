@@ -13,6 +13,7 @@ import io.choerodon.websocket.helper.WebSocketHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.http.server.ServletServerHttpRequest;
@@ -32,6 +33,7 @@ public class DevopsDescribeSocketHandlerRegistration implements SocketHandlerReg
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsDescribeSocketHandlerRegistration.class);
 
     @Autowired
+    @Lazy
     WebSocketHelper webSocketHelper;
 
     @Autowired

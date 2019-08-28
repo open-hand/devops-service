@@ -27,7 +27,7 @@ public class AgentExecAndLogSocketHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(AgentExecAndLogSocketHandler.class);
 
-
+    @Lazy
     @Autowired
     WebSocketHelper webSocketHelper;
     @Autowired
