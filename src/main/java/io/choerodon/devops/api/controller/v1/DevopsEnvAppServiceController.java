@@ -10,7 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import retrofit2.http.Path;
 
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.enums.ResourceType;
@@ -22,7 +21,7 @@ import io.choerodon.devops.app.service.DevopsEnvApplicationService;
 
 /**
  * @author lizongwei
- * @date 2019/7/1
+ * @since 2019/7/1
  */
 @RestController
 @RequestMapping(value = "/v1/projects/{project_id}/env/app_services")
@@ -50,7 +49,7 @@ public class DevopsEnvAppServiceController {
         validator.checkAppIdsExist(devopsEnvAppServiceVO.getAppServiceIds());
         return Optional.ofNullable(devopsEnvApplicationService.batchCreate(devopsEnvAppServiceVO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.env.app.create"));
+                .orElseThrow(() -> new CommonException("error.env.service.create"));
     }
 
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
@@ -80,7 +79,7 @@ public class DevopsEnvAppServiceController {
             @RequestParam(value = "env_id") Long envId) {
         return Optional.ofNullable(devopsEnvApplicationService.listAppByEnvId(envId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.env.app.query"));
+                .orElseThrow(() -> new CommonException("error.env.service.query"));
     }
 
     /**
@@ -93,14 +92,14 @@ public class DevopsEnvAppServiceController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询服务在环境下的所有label")
     @GetMapping("/list_label")
-    public ResponseEntity<List<Map<String,String>>> listLabelByAppAndEnvId(
+    public ResponseEntity<List<Map<String, String>>> listLabelByAppAndEnvId(
             @ApiParam(value = "环境id", required = true)
             @RequestParam(value = "env_id") Long envId,
             @ApiParam(value = "服务id", required = true)
             @RequestParam(value = "app_service_id") Long appServiceId) {
         return Optional.ofNullable(devopsEnvApplicationService.listLabelByAppAndEnvId(envId, appServiceId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.env.app.label.query"));
+                .orElseThrow(() -> new CommonException("error.env.service.label.query"));
     }
 
 
@@ -121,7 +120,7 @@ public class DevopsEnvAppServiceController {
             @RequestParam(value = "app_service_id") Long appServiceId) {
         return Optional.ofNullable(devopsEnvApplicationService.listPortByAppAndEnvId(envId, appServiceId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.env.app.port.query"));
+                .orElseThrow(() -> new CommonException("error.env.service.port.query"));
     }
 
 
@@ -140,8 +139,6 @@ public class DevopsEnvAppServiceController {
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)
             @RequestParam(value = "env_id") Long envId) {
-        return Optional.ofNullable(devopsEnvApplicationService.listNonRelatedAppService(projectId, envId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.env.app.query"));
+        return new ResponseEntity<>(devopsEnvApplicationService.listNonRelatedAppService(projectId, envId), HttpStatus.OK);
     }
 }
