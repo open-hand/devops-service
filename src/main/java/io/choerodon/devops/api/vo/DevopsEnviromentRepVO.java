@@ -19,6 +19,15 @@ public class DevopsEnviromentRepVO {
     private Boolean isSynchro;
     private Boolean isFailed;
     private Boolean skipCheckPermission;
+    private Boolean objectVersionNumber;
+
+    public Boolean getObjectVersionNumber() {
+        return objectVersionNumber;
+    }
+
+    public void setObjectVersionNumber(Boolean objectVersionNumber) {
+        this.objectVersionNumber = objectVersionNumber;
+    }
 
     public Long getId() {
         return id;
