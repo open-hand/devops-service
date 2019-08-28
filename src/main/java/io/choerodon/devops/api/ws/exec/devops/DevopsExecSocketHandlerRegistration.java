@@ -1,7 +1,7 @@
 package io.choerodon.devops.api.ws.exec.devops;
 
 import io.choerodon.devops.api.ws.DevopsExecAndLogSocketHandler;
-import io.choerodon.websocket.helper.SocketHandlerRegistration;
+import io.choerodon.websocket.connect.SocketHandlerRegistration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;

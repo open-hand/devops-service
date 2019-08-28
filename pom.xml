@@ -24,6 +24,16 @@
         <choerodon.mainClass>io.choerodon.devops.DevopsServiceApplication</choerodon.mainClass>
     </properties>
 
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>Choerodon Release</id>
+            <name>Choerodon Release Repository</name>
+            <url>https://nexus.choerodon.com.cn/repository/choerodon-release</url>
+        </pluginRepository>
+    </pluginRepositories>
+
+
     <dependencies>
 
         <dependency>
