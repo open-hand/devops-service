@@ -41,7 +41,7 @@ import org.springframework.web.socket.server.HandshakeFailureException;
 public class AgentGitOpsSocketHandlerRegistration implements SocketHandlerRegistration {
 
     private static final String CLUSTER_SESSION = "cluster-sessions-catch";
-    private static final String CLUSTER_ID = "clusterID";
+    private static final String CLUSTER_ID = "clusterId";
     private static final Logger logger = LoggerFactory.getLogger(AgentGitOpsSocketHandlerRegistration.class);
     private ConcurrentHashMap<String, Map<String, Object>> attributes = new ConcurrentHashMap<>();
     private Set<WebSocketSession> webSocketSessions = new HashSet<>();
