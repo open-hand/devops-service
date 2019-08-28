@@ -98,7 +98,8 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         Set<String> resources = check(projectId, devopsNotificationVO.getEnvId());
 
         //判断通知设置事件是否已存在
-        List<String> events = devopsNotificationVO.getNotifyTriggerEvent();
+        List<String> events = new ArrayList<>();
+        events.addAll(devopsNotificationVO.getNotifyTriggerEvent());
         events.removeAll(Arrays.asList(oldNotificationDTO.getNotifyTriggerEvent().split(",")));
         if (!events.isEmpty()) {
             events.forEach(event -> {
