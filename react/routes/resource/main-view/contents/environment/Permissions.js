@@ -11,6 +11,7 @@ export default function Permissions() {
   const {
     intl: { formatMessage },
     permissionsDs: tableDs,
+    baseInfoDs,
   } = useEnvironmentStore();
 
   function renderActions({ record }) {
@@ -23,7 +24,7 @@ export default function Permissions() {
         },
       },
     ];
-    return record.get('role') === 'member' && <Action data={actionData} />;
+    return record.get('role') === 'member' && !baseInfoDs.current.get('skipCheckPermission') && <Action data={actionData} />;
   }
 
   function renderDate({ value }) {

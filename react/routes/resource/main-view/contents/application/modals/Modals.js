@@ -85,14 +85,17 @@ const AppModals = observer(() => {
 
   function closeKeyValue(isLoad) {
     setShowKeyValue(false);
+    isLoad && refresh();
   }
 
   function closeDomain(isLoad) {
     setShowDomain(false);
+    isLoad && refresh();
   }
 
-  function closeNetwok(isLoad) {
+  function closeNetwork(isLoad) {
     setShowNetwork(false);
+    isLoad && refresh();
   }
 
   function getButtons() {
@@ -162,7 +165,7 @@ const AppModals = observer(() => {
         appServiceId={menuId}
         visible={showNetwork}
         store={networkStore}
-        onClose={closeNetwok}
+        onClose={closeNetwork}
       />
     )}
   </div>);

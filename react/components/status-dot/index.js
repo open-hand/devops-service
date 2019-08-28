@@ -7,20 +7,18 @@ import { Tooltip } from 'choerodon-ui/pro';
 import './index.less';
 
 export function getEnvStatus(connect, synchronize, active) {
-  if (active) {
-    if (!synchronize) {
-      return 'operating';
-    } else if (connect) {
-      return 'running';
-    } else {
-      return 'disconnect';
-    }
-  } else {
+  if (active === false) {
     return 'stopped';
+  } else if (!synchronize) {
+    return 'operating';
+  } else if (connect) {
+    return 'running';
+  } else {
+    return 'disconnect';
   }
 }
 
-const StatusDot = memo(({ connect, synchronize, active, size }) => {
+const StatusDot = memo(({ connect, synchronize, active, size, getStatus }) => {
   /**
    *
    * [connect: true, synchronize: true]   已连接 #0bc2a8
@@ -28,8 +26,13 @@ const StatusDot = memo(({ connect, synchronize, active, size }) => {
    * [synchronize: false]                 处理中 #4d90fe
    * [active: false]                      已停用 #rgba(0,0,0,.26)
    */
-
-  const status = getEnvStatus(connect, synchronize, active);
+  let status;
+  let text;
+  if (getStatus && typeof getStatus === 'function') {
+    [status, text] = getStatus();
+  } else {
+    status = getEnvStatus(connect, synchronize, active);
+  }
 
   const styled = classnames({
     'c7ncd-env-status': true,
@@ -39,7 +42,7 @@ const StatusDot = memo(({ connect, synchronize, active, size }) => {
   const dot = <i className={styled} />;
   return status ? <Tooltip
     placement="top"
-    title={<FormattedMessage id={status} />}
+    title={<FormattedMessage id={text || status} />}
   >
     {dot}
   </Tooltip> : dot;
@@ -50,6 +53,7 @@ StatusDot.propTypes = {
   synchronize: PropTypes.bool,
   active: PropTypes.bool,
   size: PropTypes.string,
+  getStatus: PropTypes.func,
 };
 
 StatusDot.defaultProps = {

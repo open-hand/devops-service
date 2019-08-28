@@ -2,7 +2,10 @@ import React, { useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Modal, Form, TextField } from 'choerodon-ui/pro';
 import HeaderButtons from '../../../../../../components/header-buttons';
+import EnvCreateForm from '../../../modals/EnvCreateForm';
+import GroupCreateForm from '../../../modals/GroupCreateForm';
 import { useEnvironmentStore } from '../../../../stores';
+import { useMainStore } from '../../../stores';
 import { useEnvGroupStore } from '../stores';
 
 const groupKey = Modal.key();
@@ -19,47 +22,32 @@ const AppModals = observer(() => {
     envStore,
     treeDs,
   } = useEnvironmentStore();
-  const { groupDs, groupFormDs } = useEnvGroupStore();
+  const { envFormDs, groupFormDs, clusterDs } = useMainStore();
+  const { groupDs } = useEnvGroupStore();
 
   function refresh() {
     groupDs.query();
     treeDs.query();
   }
 
-  async function handleCreate() {
-    try {
-      if ((await groupFormDs.submit()) !== false) {
-        treeDs.query();
-      } else {
-        return false;
-      }
-    } catch (e) {
-      return false;
-    }
-  }
-
   function openGroupModal() {
+    groupFormDs.reset();
     Modal.open({
       key: groupKey,
       title: formatMessage({ id: `${intlPrefix}.group.create` }),
-      children: <Form dataSet={groupFormDs}>
-        <TextField name="name" />
-      </Form>,
+      children: <GroupCreateForm dataSet={groupFormDs} treeDs={treeDs} />,
       drawer: true,
-      onOk: handleCreate,
       style: modalStyle,
     });
   }
 
   function openEnvModal() {
+    clusterDs.query();
     Modal.open({
       key: envKey,
-      title: formatMessage({ id: `${intlPrefix}.group.create` }),
-      children: <Form dataSet={groupFormDs}>
-        <TextField name="name" />
-      </Form>,
+      title: formatMessage({ id: `${intlPrefix}.create` }),
+      children: <EnvCreateForm dataSet={envFormDs} clusterDs={clusterDs} />,
       drawer: true,
-      onOk: handleCreate,
       style: modalStyle,
     });
   }
@@ -68,7 +56,7 @@ const AppModals = observer(() => {
     return [{
       name: formatMessage({ id: `${intlPrefix}.create` }),
       icon: 'playlist_add',
-      handler: refresh,
+      handler: openEnvModal,
       display: true,
       group: 1,
     }, {

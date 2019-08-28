@@ -32,7 +32,7 @@ function CertItem({
   }
 
   return <Fragment>
-    <Icon type="router" />
+    <Icon type="class" />
     {name}
     {getSuffix()}
   </Fragment>;

@@ -5,6 +5,7 @@ import { injectIntl } from 'react-intl';
 import { Form, Modal, TextField } from 'choerodon-ui/pro';
 import { Action, Permission } from '@choerodon/master';
 import TreeItemName from '../../../../../components/treeitem-name';
+import GroupCreateForm from '../../modals/GroupCreateForm';
 import { handlePromptError } from '../../../../../utils';
 import { useEnvironmentStore } from '../../../stores';
 import { useTreeItemStore } from './stores';
@@ -23,40 +24,17 @@ function GroupItem({ record, search, intl: { formatMessage }, intlPrefix }) {
   } = useEnvironmentStore();
   const { groupFormDs } = useTreeItemStore();
 
-  async function handleUpdate() {
-    try {
-      if ((await groupFormDs.submit()) !== false) {
-        treeDs.query();
-      } else {
-        return false;
-      }
-    } catch (e) {
-      return false;
-    }
-  }
-
   function handleClick() {
     const groupId = record.get('id');
     const name = record.get('name');
-    groupFormDs.transport.submit = ({ data: [data] }) => ({
-      url: `/devops/v1/projects/${id}/env_groups`,
-      method: 'put',
-      data: {
-        id: groupId,
-        name: data.name,
-      },
-    });
     if (!groupFormDs.length) {
-      groupFormDs.create({ name });
+      groupFormDs.create({ name, id: groupId });
     }
     Modal.open({
       key: modalKey,
       title: formatMessage({ id: `${intlPrefix}.group.edit` }),
-      children: <Form dataSet={groupFormDs}>
-        <TextField name="name" />
-      </Form>,
+      children: <GroupCreateForm dataSet={groupFormDs} treeDs={treeDs} />,
       drawer: true,
-      onOk: handleUpdate,
       style: modalStyle,
     });
   }

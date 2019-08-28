@@ -131,7 +131,6 @@ const NetworkContent = observer(() => {
                     <Popover
                       arrowPointAtCenter
                       placement="bottomRight"
-                      getPopupContainer={(triggerNode) => triggerNode.parentNode}
                       content={<Fragment>{item}</Fragment>}
                     >
                       <Icon type="expand_more" className="net-expend-icon" />
@@ -231,7 +230,6 @@ const NetworkContent = observer(() => {
         <Popover
           arrowPointAtCenter
           placement="bottomRight"
-          getPopupContainer={(triggerNode) => triggerNode.parentNode}
           content={content}
         >
           <Icon type="expand_more" className="net-expend-icon" />

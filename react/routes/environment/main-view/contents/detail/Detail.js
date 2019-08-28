@@ -5,7 +5,7 @@ import { useEnvironmentStore } from '../../../stores';
 import { useDetailStore } from './stores';
 import StatusDot from '../../../../../components/status-dot';
 import PageTitle from '../../../../../components/page-title';
-// import Modals from './modals';
+import Modals from './modals';
 
 const { TabPane } = Tabs;
 
@@ -79,7 +79,7 @@ const EnvContent = observer(() => {
           </Suspense>
         </TabPane>
       </Tabs>
-      {/* <Modals /> */}
+      <Modals />
     </Fragment>
   );
 });

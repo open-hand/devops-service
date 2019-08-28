@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { Fragment, memo } from 'react';
 import PropTypes from 'prop-types';
 import { Tooltip } from 'choerodon-ui';
 import TimeAgo from 'timeago-react';
@@ -15,8 +15,8 @@ function TimePopover({ datetime, placement }) {
     time = null;
   }
 
-  return (
-    <Tooltip
+  return <Fragment>
+    {time ? <Tooltip
       placement={placement}
       title={formatDate(time)}
     >
@@ -24,15 +24,11 @@ function TimePopover({ datetime, placement }) {
         datetime={time}
         locale={Choerodon.getMessage('zh_CN', 'en')}
       />
-    </Tooltip>
-  );
+    </Tooltip> : null}
+  </Fragment>;
 }
 
 TimePopover.propTypes = {
-  datetime: PropTypes.oneOfType([
-    PropTypes.string,
-    PropTypes.number,
-  ]).isRequired,
   placement: PropTypes.string,
 };
 

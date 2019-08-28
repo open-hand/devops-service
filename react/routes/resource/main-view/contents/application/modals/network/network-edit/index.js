@@ -17,9 +17,9 @@ import {
   Tooltip,
 } from 'choerodon-ui';
 import { stores, Content } from '@choerodon/master';
+import uuidv1 from 'uuid/v1';
 import AppName from '../../../../../../../../components/appName';
 import InterceptMask from '../../../../../../../../components/interceptMask/InterceptMask';
-import Tips from '../../../../../../../../components/Tips/Tips';
 
 import './index.less';
 
@@ -105,7 +105,7 @@ class EditNetwork extends Component {
   handleSubmit = (e) => {
     e.preventDefault();
 
-    const { form, store, netId } = this.props;
+    const { form, store, netId, appServiceId, envId } = this.props;
     const { network } = this.state;
     const { id } = AppState.currentMenuType;
 
@@ -129,9 +129,7 @@ class EditNetwork extends Component {
       if (!err && enableSubmit) {
         const {
           name,
-          appId,
           appInstance,
-          envId,
           endPoints: endps,
           targetIps,
           targetport,
@@ -152,7 +150,10 @@ class EditNetwork extends Component {
         _pushUnRecordIp(_externalIps, _unInputIp);
         _pushUnRecordIp(_targetIps, _unInputEndIp);
 
-        const appIst = appInstance ? _.map(appInstance, (item) => item) : null;
+        let appIst;
+        if (!_.isEmpty(appInstance)) {
+          appIst = appInstance[0] === 'all_instance' ? _.map(store.getIst, (item) => item.code) : appInstance;
+        }
         const ports = [];
         const label = {};
         const endPoints = {};
@@ -192,9 +193,9 @@ class EditNetwork extends Component {
 
         const {
           name: oldName,
-          appId: oldAppId,
+          appServiceId: oldAppId,
           target: {
-            appInstance: oldAppInstance,
+            instances: oldAppInstance,
             labels: oldLabel,
             endPoints: oldEndPoints,
           },
@@ -214,7 +215,7 @@ class EditNetwork extends Component {
         const oldNetwork = {
           name: oldName,
           appId: oldAppId || null,
-          appInstance: oldIst.length ? oldIst : null,
+          instances: oldIst.length ? oldIst : null,
           envId: oldEnvId,
           externalIp: oldIps,
           ports: oldPortId,
@@ -224,8 +225,8 @@ class EditNetwork extends Component {
         };
         const newNetwork = {
           name,
-          appId: appId || null,
-          appInstance: appIst,
+          appId: appServiceId || null,
+          instances: appIst,
           envId,
           externalIp: _externalIps.length ? _externalIps.join(',') : null,
           ports,
@@ -260,6 +261,9 @@ class EditNetwork extends Component {
   handleClose = (isload = true) => {
     const { onClose, store } = this.props;
     store.setSingleData([]);
+    store.setIst([]);
+    store.setLabels([]);
+    store.setPorts([]);
     onClose(isload);
   };
 
@@ -268,22 +272,25 @@ class EditNetwork extends Component {
       store,
       netId,
       form: { setFieldsValue },
+      envId,
+      appServiceId,
+      intl: { formatMessage },
     } = this.props;
     const { id } = AppState.currentMenuType;
     store.loadDataById(id, netId)
       .then((data) => {
         if (data) {
-          const { name, type, appServiceId, target, config, envId, envName } = data;
+          const { name, type, target, config, envName } = data;
           const targetKeys = target && target.labels
             ? 'param'
             : target && target.endPoints
               ? 'endPoints'
               : 'instance';
-          let appInstance = [];
+          let instances = [];
           let labels = {};
           let endPoints = {};
           target && ({
-            appInstance,
+            instances,
             labels,
             endPoints,
           } = target);
@@ -291,8 +298,8 @@ class EditNetwork extends Component {
           // 将默认选项直接生成，避免加载带来的异步问题
           const initIstOption = [];
           const deletedInstance = [];
-          if (appInstance && appInstance.length) {
-            _.forEach(appInstance, (item) => {
+          if (instances && instances.length) {
+            _.forEach(instances, (item) => {
               const { id: istId, code, instanceStatus } = item;
               initIst.push(code);
               initIstOption.push(
@@ -313,8 +320,14 @@ class EditNetwork extends Component {
                 deletedInstance.push(code);
               }
             });
+            if (instances.length > 1) {
+              initIstOption.unshift(
+                <Option key="all_instance" value="all_instance">
+                  {formatMessage({ id: 'all' })}
+                </Option>
+              );
+            }
           }
-          setFieldsValue({ envId: envId || [] });
           this.setState({
             initApp: appServiceId,
             labels: labels || {},
@@ -339,6 +352,8 @@ class EditNetwork extends Component {
           });
         }
       });
+    store.loadInstance(id, envId, appServiceId);
+    store.loadLabels(id, envId, appServiceId);
   };
 
   /**
@@ -406,10 +421,6 @@ class EditNetwork extends Component {
         labels: {},
         endPoints: {},
       });
-      const app = store.getApp;
-      if (!(app && app.length)) {
-        store.loadApp(id, Number(envId));
-      }
       if (oldTargetKeys === 'instance') {
         this.setState({
           initApp,
@@ -531,43 +542,6 @@ class EditNetwork extends Component {
   }, 400);
 
   /**
-   * 选择应用, 加载实例, 生成初始网络名
-   * @param value
-   * @param options
-   */
-  handleAppSelect = (value, options) => {
-    const {
-      store,
-      form: {
-        getFieldValue,
-        resetFields,
-      },
-    } = this.props;
-    const {
-      oldAppData: {
-        initApp,
-        initIst,
-        initIstOption,
-      },
-    } = this.state;
-    const { id } = AppState.currentMenuType;
-    const envId = getFieldValue('envId');
-    if (initApp === value) {
-      this.setState({
-        initIst,
-        initIstOption,
-      });
-    } else {
-      this.setState({
-        initIst: [],
-        initIstOption: [],
-      });
-    }
-    resetFields(['appInstance']);
-    store.loadInstance(id, envId, Number(value));
-  };
-
-  /**
    * 生成app选项组
    * @param node
    * @returns {*}
@@ -613,7 +587,7 @@ class EditNetwork extends Component {
     const { intl, store, form } = this.props;
     const { id } = AppState.currentMenuType;
     const pattern = /^[a-z]([-a-z0-9]*[a-z0-9])?$/;
-    const envId = form.getFieldValue('envId');
+    const envId = form.envId;
     if (value && !pattern.test(value)) {
       callback(intl.formatMessage({ id: 'network.name.check.failed' }));
     } else if (value && pattern.test(value)) {
@@ -873,7 +847,7 @@ class EditNetwork extends Component {
   };
 
   render() {
-    const { visible, form, intl, store } = this.props;
+    const { visible, form, intl, store, envId } = this.props;
     const {
       submitting,
       targetKeys: targetType,
@@ -881,30 +855,20 @@ class EditNetwork extends Component {
       initName,
       initIst,
       initIstOption,
-      initApp,
       labels,
       config,
-      envId,
-      envName,
       endPoints: endPointsData,
     } = this.state;
-    const { name: menuName, id: projectId } = AppState.currentMenuType;
+    const { projectId } = AppState.currentMenuType;
     const { getFieldDecorator, getFieldValue } = form;
-    // const { envId, envName } = store.getSingleData;
-    const localApp = _.filter(
-      store.getApp,
-      (item) => item.projectId === Number(projectId),
-    );
-    const storeApp = _.filter(
-      store.getApp,
-      (item) => item.projectId !== Number(projectId),
-    );
-    let portWidthSingle = '240';
-    let portWidthMut = 'portL';
-    if (configType !== 'ClusterIP') {
-      portWidthSingle = configType === 'LoadBalancer' ? '150' : '110';
-      portWidthMut = configType === 'LoadBalancer' ? 'portS' : 'portXS';
-    }
+
+    const keyOption = [];
+    _.forEach(store.getLabels, (item) => {
+      const data = _.map(item, (value, key) => (
+        <Option key={`${key}__${value}__${uuidv1()}`}>{key}:{value}</Option>
+      ));
+      keyOption.push(...data);
+    });
 
     // 生成多组 port
     const { ports, externalIps } = config;
@@ -935,8 +899,7 @@ class EditNetwork extends Component {
       <div key={`port-${k}`} className="network-port-wrap">
         {configType !== 'ClusterIP' ? (
           <FormItem
-            className={`c7n-select_${
-              portKeys.length > 1 ? portWidthMut : portWidthSingle} network-panel-form network-port-form`}
+            className="c7n-select_80 network-panel-form network-port-form"
             {...formItemLayout}
           >
             {getFieldDecorator(`nport[${k}]`, {
@@ -957,8 +920,7 @@ class EditNetwork extends Component {
           </FormItem>
         ) : null}
         <FormItem
-          className={`c7n-select_${
-            portKeys.length > 1 ? portWidthMut : portWidthSingle} network-panel-form network-port-form`}
+          className="c7n-select_80 network-panel-form network-port-form"
           {...formItemLayout}
         >
           {getFieldDecorator(`port[${k}]`, {
@@ -976,15 +938,14 @@ class EditNetwork extends Component {
             <Input
               type="text"
               maxLength={5}
-              disabled={!getFieldValue('envId')}
+              disabled={!envId}
               onChange={this.changeValue.bind(this, 'port')}
               label={<FormattedMessage id="network.config.port" />}
             />,
           )}
         </FormItem>
         <FormItem
-          className={`c7n-select_${
-            portKeys.length > 1 ? portWidthMut : portWidthSingle} network-panel-form network-port-form`}
+          className="c7n-select_80 network-panel-form network-port-form"
           {...formItemLayout}
         >
           {getFieldDecorator(`tport[${k}]`, {
@@ -1002,7 +963,7 @@ class EditNetwork extends Component {
             <Input
               type="text"
               maxLength={5}
-              disabled={!getFieldValue('envId')}
+              disabled={!envId}
               onChange={this.changeValue.bind(this, 'tport')}
               label={<FormattedMessage id="network.config.targetPort" />}
             />,
@@ -1010,8 +971,7 @@ class EditNetwork extends Component {
         </FormItem>
         {configType === 'NodePort' ? (
           <FormItem
-            className={`c7n-select_${
-              portKeys.length > 1 ? portWidthMut : portWidthSingle} network-panel-form network-port-form`}
+            className="c7n-select_80 network-panel-form network-port-form"
             {...formItemLayout}
           >
             {getFieldDecorator(`protocol[${k}]`, {
@@ -1024,7 +984,6 @@ class EditNetwork extends Component {
               initialValue: protocol[k],
             })(
               <Select
-                className="c7n-select_110"
                 label={<FormattedMessage id="ist.deploy.ports.protocol" />}
               >
                 {_.map(['TCP', 'UDP'], (item) => (
@@ -1065,7 +1024,7 @@ class EditNetwork extends Component {
     const targetPortItems = _.map(endPoints, (k, index) => (
       <div key={`endPoints-${k}`} className="network-port-wrap">
         <FormItem
-          className="c7n-select_480 network-panel-form network-port-form"
+          className="network-panel-form network-port-form"
           {...formItemLayout}
         >
           {getFieldDecorator(`targetport[${k}]`, {
@@ -1080,13 +1039,18 @@ class EditNetwork extends Component {
             ],
             initialValue: targetport[k],
           })(
-            <Input
-              type="text"
+            <Select
+              mode="combobox"
               maxLength={5}
-              disabled={!getFieldValue('envId')}
               onChange={this.changeValue.bind(this, 'targetport')}
+              disabled={!envId}
               label={<FormattedMessage id="network.config.targetPort" />}
-            />,
+              dropdownMatchSelectWidth={false}
+            >
+              {_.map(store.getPorts, ({ resourceName, portValue }) => (
+                <Option key={portValue}>{resourceName}: {portValue}</Option>
+              ))}
+            </Select>,
           )}
         </FormItem>
         {endPoints.length > 1 ? (
@@ -1128,13 +1092,15 @@ class EditNetwork extends Component {
               },
             ],
           })(
-            <Input
-              type="text"
-              disabled={!getFieldValue('envId')}
-              onChange={this.changeValue.bind(this, 'keywords')}
+            <Select
+              mode="combobox"
+              onChange={(value) => this.changeValue('keywords', `keywords[${k}]`, `values[${k}]`, value)}
+              disabled={!envId}
               label={<FormattedMessage id="network.config.keyword" />}
-              suffix={<Tips type="form" data="network.label.key.rule" />}
-            />,
+              dropdownMatchSelectWidth={false}
+            >
+              {keyOption}
+            </Select>,
           )}
         </FormItem>
         <Icon className="network-group-icon" type="drag_handle" />
@@ -1155,12 +1121,15 @@ class EditNetwork extends Component {
               },
             ],
           })(
-            <Input
-              type="text"
-              disabled={!getFieldValue('envId')}
+            <Select
+              mode="combobox"
+              disabled={!envId}
+              onChange={(value) => this.changeValue('keywords', `keywords[${k}]`, `values[${k}]`, value)}
               label={<FormattedMessage id="network.config.value" />}
-              suffix={<Tips type="form" data="network.label.value.rule" />}
-            />,
+              dropdownMatchSelectWidth={false}
+            >
+              {keyOption}
+            </Select>,
           )}
         </FormItem>
         {targetKeys.length > 1 ? (
@@ -1193,10 +1162,6 @@ class EditNetwork extends Component {
       },
     );
 
-    const localAppOptions = _.map(localApp, (node) => this.makeAppGroup(node));
-
-    const storeAppOptions = _.map(storeApp, (node) => this.makeAppGroup(node));
-
     return (
       <div className="c7n-region">
         <Sidebar
@@ -1216,7 +1181,7 @@ class EditNetwork extends Component {
           >
             <Form layout="vertical">
               <FormItem
-                className="c7n-select_512 network-form-name"
+                className="network-form-name"
                 {...formItemLayout}
               >
                 {getFieldDecorator('name', {
@@ -1241,7 +1206,7 @@ class EditNetwork extends Component {
               </div>
               <div className="network-radio-wrap">
                 <FormItem
-                  className="c7n-select_512 network-radio-form"
+                  className="network-radio-form"
                   label={<FormattedMessage id="chooseType" />}
                   {...formItemLayout}
                 >
@@ -1250,7 +1215,7 @@ class EditNetwork extends Component {
                   })(
                     <RadioGroup
                       name="target"
-                      disabled={!getFieldValue('envId')}
+                      disabled={!envId}
                       onChange={(e) => this.handleTypeChange(e, 'targetKeys')}
                     >
                       <Radio value="instance">
@@ -1266,7 +1231,7 @@ class EditNetwork extends Component {
               <div className="network-panel">
                 {targetType === 'instance' && (
                   <FormItem
-                    className="c7n-select_480 network-panel-form"
+                    className="network-panel-form"
                     {...formItemLayout}
                   >
                     {getFieldDecorator('appInstance', {
@@ -1285,10 +1250,10 @@ class EditNetwork extends Component {
                       <Select
                         filter
                         mode="multiple"
-                        className="c7n-select_480 network-select-instance"
+                        className="network-select-instance"
                         optionFilterProp="children"
                         optionLabelProp="children"
-                        disabled={!getFieldValue('envId')}
+                        disabled={!envId}
                         label={
                           <FormattedMessage id="network.target.instance" />
                         }
@@ -1312,7 +1277,7 @@ class EditNetwork extends Component {
                   <Fragment>
                     {targetItems}
                     <Button
-                      disabled={!getFieldValue('envId')}
+                      disabled={!envId}
                       type="primary"
                       funcType="flat"
                       onClick={() => this.addGroup('targetKeys')}
@@ -1325,7 +1290,7 @@ class EditNetwork extends Component {
               </div>
               <div
                 className={`network-panel-title ${
-                  !getFieldValue('envId') ? 'network-panel-title_disabled' : ''}`}
+                  !envId ? 'network-panel-title_disabled' : ''}`}
               >
                 <Icon type="router" />
                 <FormattedMessage id="network.config" />
@@ -1333,14 +1298,14 @@ class EditNetwork extends Component {
               <div className="network-radio-wrap">
                 <div
                   className={`network-radio-label ${
-                    !getFieldValue('envId')
+                    !envId
                       ? 'network-radio-label_disabled'
                       : ''}`}
                 >
                   <FormattedMessage id="chooseType" />
                 </div>
                 <FormItem
-                  className="c7n-select_512 network-radio-form"
+                  className="network-radio-form"
                   {...formItemLayout}
                 >
                   {getFieldDecorator('config', {
@@ -1348,7 +1313,7 @@ class EditNetwork extends Component {
                   })(
                     <RadioGroup
                       name="config"
-                      disabled={!getFieldValue('envId')}
+                      disabled={!envId}
                       onChange={(e) => this.handleTypeChange(e, 'portKeys')}
                     >
                       <Radio value="ClusterIP">ClusterIP</Radio>
@@ -1362,7 +1327,7 @@ class EditNetwork extends Component {
                 {configType === 'ClusterIP' ? (
                   <Fragment>
                     <FormItem
-                      className="c7n-select_480 network-panel-form"
+                      className="network-panel-form"
                       {...formItemLayout}
                     >
                       {getFieldDecorator('externalIps', {
@@ -1376,8 +1341,7 @@ class EditNetwork extends Component {
                         <Select
                           mode="tags"
                           ref={this.ipSelectRef}
-                          disabled={!getFieldValue('envId')}
-                          className="c7n-select_512"
+                          disabled={!envId}
                           label={<FormattedMessage id="network.config.ip" />}
                           onInputKeyDown={this.handleInputKeyDown}
                           choiceRender={this.handleChoiceRender}
@@ -1394,7 +1358,7 @@ class EditNetwork extends Component {
                   </Fragment>
                 ) : (portItems)}
                 <Button
-                  disabled={!getFieldValue('envId')}
+                  disabled={!envId}
                   type="primary"
                   funcType="flat"
                   onClick={() => this.addGroup('portKeys')}

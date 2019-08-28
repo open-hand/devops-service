@@ -1,83 +1,104 @@
-/* eslint-disable */
 import React, { useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
+import { Action } from '@choerodon/master';
 import { Modal } from 'choerodon-ui/pro';
 import HeaderButtons from '../../../../../../components/header-buttons';
-import EnvDetail from './env-detail';
-import LinkService from './link-service';
-import Permission from './permission';
+import EnvDetail from '../../../../../../components/env-detail';
+import Permission from '../../../../../resource/main-view/contents/environment/modals/permission';
 import { useEnvironmentStore } from '../../../../stores';
-// import { useEnvironmentStore } from '../stores';
-import { useModalStore } from './stores';
+import { useMainStore } from '../../../stores';
+import { useDetailStore } from '../stores';
+import EnvCreateForm from '../../../modals/EnvCreateForm';
+import GroupCreateForm from '../../../modals/GroupCreateForm';
+import useStore from './useStore';
 
-const modalKey1 = Modal.key();
-const modalKey2 = Modal.key();
-const modalKey3 = Modal.key();
+import './index.less';
+
+const detailKey = Modal.key();
+const envKey = Modal.key();
+const groupKey = Modal.key();
+const permissionKey = Modal.key();
 
 const EnvModals = observer(() => {
+  const modalStore = useStore();
   const modalStyle = useMemo(() => ({
     width: 380,
   }), []);
   const {
-    envStore: {
+    treeDs,
+    intlPrefix: currentIntlPrefix,
+    prefixCls: currentPrefixCls,
+    envStore: { getSelectedMenu },
+    AppState: { currentMenuType: { id: projectId } },
+  } = useEnvironmentStore();
+  const {
+    envFormDs,
+    groupFormDs,
+    clusterDs,
+  } = useMainStore();
+  const {
+    intl: { formatMessage },
+    intlPrefix,
+    prefixCls,
+    detailStore: {
       getTabKey,
     },
     tabs: {
       SYNC_TAB,
+      CONFIG_TAB,
       ASSIGN_TAB,
     },
     permissionsDs,
     gitopsLogDs,
     gitopsSyncDs,
-    baseInfoDs,
-  } = useEnvironmentStore();
-  const {
-    modalStore,
-  } = useModalStore();
-
-  const { menuId } = resourceStore.getSelectedMenu;
-
-  function linkServices(data) {
-    return modalStore.addService(projectId, menuId, data);
-  }
-
-  function addUsers(data) {
-    const record = baseInfoDs.current;
-    if (record) {
-      const objectVersionNumber = record.get('objectVersionNumber');
-      const users = {
-        projectId,
-        envId: menuId,
-        objectVersionNumber,
-        ...data,
-      };
-      return modalStore.addUsers(users);
-    }
-
-    return false;
-  }
+    configDs,
+  } = useDetailStore();
 
   function refresh() {
-    baseInfoDs.query();
-    const tabKey = getTabKey;
-    if (tabKey === SYNC_TAB) {
-      gitopsSyncDs.query();
-      gitopsLogDs.query();
-    } else if (tabKey === ASSIGN_TAB) {
-      permissionsDs.query();
+    treeDs.query();
+    switch (getTabKey) {
+      case SYNC_TAB: {
+        gitopsSyncDs.query();
+        gitopsLogDs.query();
+        break;
+      }
+      case CONFIG_TAB:
+        configDs.query();
+        break;
+      case ASSIGN_TAB:
+        permissionsDs.query();
+        break;
+      default:
     }
+  }
+
+  function openEnvModal() {
+    clusterDs.query();
+    Modal.open({
+      key: envKey,
+      title: formatMessage({ id: `${currentIntlPrefix}.create` }),
+      children: <EnvCreateForm dataSet={envFormDs} clusterDs={clusterDs} />,
+      drawer: true,
+      style: modalStyle,
+    });
+  }
+
+  function openGroupModal() {
+    groupFormDs.reset();
+    Modal.open({
+      key: groupKey,
+      title: formatMessage({ id: `${currentIntlPrefix}.group.create` }),
+      children: <GroupCreateForm dataSet={groupFormDs} treeDs={treeDs} />,
+      drawer: true,
+      style: modalStyle,
+    });
   }
 
   function openEnvDetail() {
     Modal.open({
-      key: modalKey1,
-      title: formatMessage({ id: `${intlPrefix}.modal.env-detail` }),
-      children: <EnvDetail
-        record={baseInfoDs.current}
-        intlPrefix={intlPrefix}
-        prefixCls={prefixCls}
-        formatMessage={formatMessage}
-      />,
+      key: detailKey,
+      title: formatMessage({ id: `${currentIntlPrefix}.modal.env-detail` }),
+      children: <EnvDetail record={getSelectedMenu} isRecord={false} />,
       drawer: true,
       style: modalStyle,
       okCancel: false,
@@ -85,30 +106,22 @@ const EnvModals = observer(() => {
     });
   }
 
-  function openLinkService() {
-    modalStore.loadServices(projectId, menuId);
-    Modal.open({
-      key: modalKey2,
-      title: formatMessage({ id: `${intlPrefix}.modal.link-service` }),
-      style: modalStyle,
-      drawer: true,
-      children: <LinkService
-        store={modalStore}
-        tree={treeDs}
-        onOk={linkServices}
-        intlPrefix={intlPrefix}
-        prefixCls={prefixCls}
-      />,
-      afterClose: () => {
-        modalStore.setServices([]);
-      },
-    });
+  async function addUsers(data) {
+    const { id, objectVersionNumber } = getSelectedMenu;
+    const users = {
+      projectId,
+      envId: id,
+      objectVersionNumber,
+      ...data,
+    };
+    return modalStore.addUsers(users);
   }
 
   function openPermission() {
-    modalStore.loadUsers(projectId, menuId);
+    const { id, skipCheckPermission } = getSelectedMenu;
+    modalStore.loadUsers(projectId, id);
     Modal.open({
-      key: modalKey3,
+      key: permissionKey,
       title: formatMessage({ id: `${intlPrefix}.modal.permission` }),
       drawer: true,
       style: modalStyle,
@@ -117,6 +130,8 @@ const EnvModals = observer(() => {
         onOk={addUsers}
         intlPrefix={intlPrefix}
         prefixCls={prefixCls}
+        skipPermission={skipCheckPermission}
+        refresh={refresh}
       />,
       afterClose: () => {
         modalStore.setUsers([]);
@@ -125,13 +140,23 @@ const EnvModals = observer(() => {
   }
 
   function getButtons() {
+    const { active, synchro } = getSelectedMenu;
+    const disabled = !active || !synchro;
     return [{
-      name: formatMessage({ id: `${intlPrefix}.modal.link-service` }),
-      icon: 'relate',
-      handler: openLinkService,
+      name: formatMessage({ id: `${currentIntlPrefix}.create` }),
+      icon: 'playlist_add',
+      handler: openEnvModal,
       display: true,
       group: 1,
     }, {
+      disabled,
+      name: formatMessage({ id: `${currentIntlPrefix}.create.config` }),
+      icon: 'playlist_add',
+      handler: openPermission,
+      display: true,
+      group: 1,
+    }, {
+      disabled,
       name: formatMessage({ id: `${intlPrefix}.modal.permission` }),
       icon: 'authority',
       handler: openPermission,
@@ -142,7 +167,7 @@ const EnvModals = observer(() => {
       icon: 'find_in_page',
       handler: openEnvDetail,
       display: true,
-      group: 1,
+      group: 2,
     }, {
       name: formatMessage({ id: 'refresh' }),
       icon: 'refresh',
@@ -152,7 +177,21 @@ const EnvModals = observer(() => {
     }];
   }
 
-  return <HeaderButtons items={getButtons()} />;
+  function getOtherBtn() {
+    const actionData = [{
+      text: formatMessage({ id: `${currentIntlPrefix}.group.create` }),
+      action: openGroupModal,
+    },
+    {
+      text: formatMessage({ id: `${currentIntlPrefix}.resource.setting` }),
+      action: openGroupModal,
+    }];
+    return <Action data={actionData} />;
+  }
+
+  return <HeaderButtons items={getButtons()}>
+    <div className={`${currentPrefixCls}-other-btn`}>{getOtherBtn()}</div>
+  </HeaderButtons>;
 });
 
 export default EnvModals;

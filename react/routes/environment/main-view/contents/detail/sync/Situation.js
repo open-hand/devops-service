@@ -9,9 +9,15 @@ import {
   Modal,
 } from 'choerodon-ui/pro';
 import { Popover } from 'choerodon-ui';
+import { useEnvironmentStore } from '../../../../stores';
 import { useDetailStore } from '../stores';
 
 const SyncSituation = observer(() => {
+  const {
+    envStore: {
+      getSelectedMenu: { active, synchro },
+    },
+  } = useEnvironmentStore();
   const {
     prefixCls,
     intlPrefix,
@@ -45,7 +51,7 @@ const SyncSituation = observer(() => {
         <FormattedMessage id={`${intlPrefix}.environment.executed.des`} />
       </p>
     </Fragment>
-  ), [intlPrefix]);
+  ), []);
 
   /**
    * 打开重试弹窗
@@ -109,6 +115,7 @@ const SyncSituation = observer(() => {
             >
               <Tooltip title={<FormattedMessage id={`${intlPrefix}.environment.retry`} />}>
                 <Button
+                  disabled={!active || !synchro}
                   icon="replay"
                   color="primary"
                   funcType="flat"

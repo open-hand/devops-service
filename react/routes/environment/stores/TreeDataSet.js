@@ -82,8 +82,9 @@ export default (projectId, store, formatMessage, intlPrefix) => ({
         groups.unshift(...defaultGroup);
       }
 
-      // 移除原始数据（临时）
+      // 移除原始数据
       dataSet.removeAll();
+      dataSet.destroyed = [];
 
       createRecord({
         data: groups,
@@ -92,9 +93,6 @@ export default (projectId, store, formatMessage, intlPrefix) => ({
         formatMessage,
         intlPrefix,
       });
-
-      const first = dataSet.get(0);
-      handleSelect(first, store);
     },
   },
   transport: {
@@ -102,5 +100,8 @@ export default (projectId, store, formatMessage, intlPrefix) => ({
       url: `/devops/v1/projects/${projectId}/envs/env_tree_menu`,
       method: 'get',
     },
+    // destroyed: ({ data: [data] }) => {
+    //
+    // },
   },
 });
