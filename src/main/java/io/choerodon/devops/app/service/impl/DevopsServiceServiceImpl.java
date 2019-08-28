@@ -1040,7 +1040,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                         .withRefType("env")
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_SERVICE),
                 builder -> builder
-                        .withPayloadAndSerialize(serviceSagaPayLoad)
+                        .withJson(gson.toJson(serviceSagaPayLoad))
                         .withRefId(devopsEnvironmentDTO.getId().toString()));
     }
 
