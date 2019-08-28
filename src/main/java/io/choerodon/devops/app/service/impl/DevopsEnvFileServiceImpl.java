@@ -59,7 +59,7 @@ public class DevopsEnvFileServiceImpl implements DevopsEnvFileService {
         String gitlabProjectPath = getGitlabUrl(envId);
         PageInfo<DevopsEnvFileErrorDTO> devopsEnvFileErrorDTOPageInfo = devopsEnvFileErrorService.basePageByEnvId(envId, pageRequest);
         PageInfo<DevopsEnvFileErrorVO> devopsEnvFileErrorVOPageInfo = ConvertUtils.convertPage(devopsEnvFileErrorDTOPageInfo, this::dtoToVo);
-        devopsEnvFileErrorVOPageInfo.getList().stream().forEach(devopsEnvFileErrorVO -> setCommitAndFileUrl(devopsEnvFileErrorVO, gitlabProjectPath));
+        devopsEnvFileErrorVOPageInfo.getList().forEach(devopsEnvFileErrorVO -> setCommitAndFileUrl(devopsEnvFileErrorVO, gitlabProjectPath));
         return devopsEnvFileErrorVOPageInfo;
     }
 
