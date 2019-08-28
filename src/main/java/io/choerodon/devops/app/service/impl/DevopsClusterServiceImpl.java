@@ -382,12 +382,12 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     }
 
     @Override
-    public PageInfo<DevopsClusterPodVO> pagePodsByNodeName(Long clusterId, String nodeName, PageRequest pageRequest, String searchParam) {
+    public PageInfo<DevopsEnvPodVO> pagePodsByNodeName(Long clusterId, String nodeName, PageRequest pageRequest, String searchParam) {
         PageInfo<DevopsEnvPodDTO> devopsEnvPodDTOPageInfo = basePageQueryPodsByNodeName(clusterId, nodeName, pageRequest, searchParam);
-        PageInfo<DevopsClusterPodVO> clusterPodDTOPage = ConvertUtils.convertPage(devopsEnvPodDTOPageInfo, DevopsClusterPodVO.class);
+        PageInfo<DevopsEnvPodVO> envPodVOPageInfo = ConvertUtils.convertPage(devopsEnvPodDTOPageInfo, DevopsEnvPodVO.class);
 
-        clusterPodDTOPage.setList(devopsEnvPodDTOPageInfo.getList().stream().map(this::pod2ClusterPodDTO).collect(Collectors.toList()));
-        return clusterPodDTOPage;
+        envPodVOPageInfo.setList(devopsEnvPodDTOPageInfo.getList().stream().map(this::podDTO2VO).collect(Collectors.toList()));
+        return envPodVOPageInfo;
     }
 
     @Override
@@ -499,20 +499,17 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
      * @param devopsEnvPodDTO pod dto
      * @return the cluster pod vo
      */
-    private DevopsClusterPodVO pod2ClusterPodDTO(final DevopsEnvPodDTO devopsEnvPodDTO) {
-        DevopsClusterPodVO devopsClusterPodVO = new DevopsClusterPodVO();
-        BeanUtils.copyProperties(devopsEnvPodDTO, devopsClusterPodVO);
-
+    private DevopsEnvPodVO podDTO2VO(final DevopsEnvPodDTO devopsEnvPodDTO) {
         DevopsEnvPodVO devopsEnvPodVO = ConvertUtils.convertObject(devopsEnvPodDTO, DevopsEnvPodVO.class);
         devopsEnvPodService.fillContainers(devopsEnvPodVO);
 
-        devopsClusterPodVO.setContainersForLogs(
+        devopsEnvPodVO.setContainersForLogs(
                 devopsEnvPodVO.getContainers()
                         .stream()
                         .map(container -> new DevopsEnvPodContainerLogVO(devopsEnvPodDTO.getName(), container.getName()))
                         .collect(Collectors.toList())
         );
-        return devopsClusterPodVO;
+        return devopsEnvPodVO;
     }
 
     /**
