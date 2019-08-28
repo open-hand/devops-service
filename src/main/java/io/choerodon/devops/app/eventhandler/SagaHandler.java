@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.asgard.saga.annotation.SagaTask;
-import io.choerodon.devops.app.eventhandler.payload.AppMarketUploadPayload;
 import io.choerodon.devops.api.vo.GitlabGroupMemberVO;
 import io.choerodon.devops.api.vo.GitlabUserRequestVO;
 import io.choerodon.devops.api.vo.GitlabUserVO;
@@ -265,6 +264,20 @@ public class SagaHandler {
         AppMarketUploadPayload appMarketUploadVO = gson.fromJson(payload, AppMarketUploadPayload.class);
         loggerInfo(appMarketUploadVO);
         orgAppMarketService.uploadAPP(appMarketUploadVO);
+        return payload;
+    }
+
+    /**
+     * 应用上传,修复版本
+     */
+    @SagaTask(code = SagaTaskCodeConstants.APIM_UPLOAD_APP_FIX_VERSION,
+            description = "应用上传,修复版本",
+            sagaCode = SagaTopicCodeConstants.APIM_UPLOAD_APP_FIX_VERSION,
+            maxRetryCount = 3, seq = 1)
+    public String uploadAppFixVersion(String payload) {
+        AppMarketFixVersionPayload fixVersionPayload = gson.fromJson(payload, AppMarketFixVersionPayload.class);
+        loggerInfo(fixVersionPayload);
+        orgAppMarketService.uploadAPPFixVersion(fixVersionPayload);
         return payload;
     }
 

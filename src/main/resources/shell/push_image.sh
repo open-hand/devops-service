@@ -1,6 +1,6 @@
 #!/bin/bash
 echo '------------------------------------------'
-echo 'sh push_image.sh [new_url] [new_username] [new_password] [old_username] [old_password] [images_path]\n'
+echo 'sh push_image.sh [new_url] [new_username] [new_password] [old_username] [old_password]\n'
 echo '>>>     harbor_url 需要带上项目路径'
 echo '------------------------------------------\n'
 if [ x$1 != x ] ;then
@@ -23,17 +23,16 @@ else
     exit 0
 fi
 lastch=`echo $1 | awk '{print substr($0,length,1)}'`
-harobr_url=$1
-if [  "$lastch" != "/" ] ;then
-   harobr_url="$1/"
-fi
+harobr_url="$1:"
+dos2unix images
 cat images | while read line
 	do
-		if [$#>3]; then
-		docker login -u $4 -p $5 ${line}
+	echo ${line}
+		if [$#>3];then
+		docker login -u $4 -p $5  ${line}
 		fi
 		docker pull ${line}
-		newline="$harobr_url${line##*/}"
+		newline="$harobr_url${line#*:}"
 		docker login -u $2 -p $3 $1
 		docker tag $line $newline
 		docker push $newline

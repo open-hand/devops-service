@@ -634,8 +634,8 @@ public class AppServiceController {
     public ResponseEntity<List<ProjectVO>> listProjects(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "应用服务Id")
-            @PathVariable(value = "organization_id", required = false) Long organizationId,
+            @ApiParam(value = "应用服务Id", required = true)
+            @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "查询参数", required = true)
             @RequestParam(value = "params", required = false) String params) {
         return Optional.ofNullable(

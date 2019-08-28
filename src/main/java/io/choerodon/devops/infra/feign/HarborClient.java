@@ -49,4 +49,8 @@ public interface HarborClient {
 
     @GET("api/projects/{project_id}/members")
     Call<List<ProjectMember>> getProjectMembers(@Path("project_id")Integer projectId, @Query("entityname") String entityname);
+
+    @POST("/projects/{project_id}/robots")
+    Call<List<ProjectMember>> createRobots(@Body Project harborProject);
+
 }

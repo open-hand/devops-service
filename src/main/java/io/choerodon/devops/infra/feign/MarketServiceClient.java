@@ -4,6 +4,7 @@ import java.util.List;
 
 import okhttp3.MultipartBody;
 import okhttp3.ResponseBody;
+import org.springframework.http.ResponseEntity;
 import retrofit2.Call;
 import retrofit2.http.*;
 
@@ -16,7 +17,15 @@ public interface MarketServiceClient {
 
     @Multipart
     @POST("v1/market_applications/upload")
-    Call<Void> uploadFile(@Query("app_version") String appVersion, @Query("image_url") String imageUrl, @Part List<MultipartBody.Part> list);
+    Call<ResponseEntity<Boolean>> uploadFile(@Query("app_version") String appVersion, @Part List<MultipartBody.Part> list, @Part("imageUrl") String imageUrl);
+
+    @Multipart
+    @POST("v1/market_applications/published/versionFix")
+    Call<ResponseEntity<Boolean>> updateAppPublishInfoFix(@Query("app_code") String code,
+                                                          @Query("version") String version,
+                                                          @Part("marketApplicationVOStr") String marketApplicationVOStr,
+                                                          @Part List<MultipartBody.Part> list,
+                                                          @Part("imageUrl") String imageUrl);
 
     @GET("{fileName}")
     Call<ResponseBody> downloadFile(@Path("fileName") String fileName);

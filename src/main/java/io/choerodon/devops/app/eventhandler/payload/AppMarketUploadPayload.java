@@ -30,9 +30,6 @@ public class AppMarketUploadPayload {
     @ApiModelProperty("状态: deploy_only,download_only,all")
     private String status;
 
-    @ApiModelProperty("Iam用户Id")
-    private Long iamUserId;
-
     @ApiModelProperty("Harbor用户")
     private User user;
 
@@ -67,14 +64,6 @@ public class AppMarketUploadPayload {
 
     public void setUser(User user) {
         this.user = user;
-    }
-
-    public Long getIamUserId() {
-        return iamUserId;
-    }
-
-    public void setIamUserId(Long iamUserId) {
-        this.iamUserId = iamUserId;
     }
 
     public Long getAppId() {

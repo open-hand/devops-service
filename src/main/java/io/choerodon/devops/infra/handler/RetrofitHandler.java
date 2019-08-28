@@ -9,7 +9,6 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-import io.choerodon.devops.infra.config.ConfigurationProperties;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -19,6 +18,8 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.infra.config.ConfigurationProperties;
+import io.choerodon.devops.infra.feign.MarketServiceClient;
 import io.choerodon.devops.infra.feign.SonarClient;
 
 public class RetrofitHandler {
@@ -144,6 +145,15 @@ public class RetrofitHandler {
         configurationProperties.setInsecureSkipTlsVerify(true);
         Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
         return retrofit.create(SonarClient.class);
+    }
+
+    public static MarketServiceClient getMarketServiceClient(String getawayUrl, String type) {
+        ConfigurationProperties configurationProperties = new ConfigurationProperties();
+        configurationProperties.setBaseUrl(getawayUrl);
+        configurationProperties.setInsecureSkipTlsVerify(false);
+        configurationProperties.setType(type);
+        Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
+        return retrofit.create(MarketServiceClient.class);
     }
 
 }

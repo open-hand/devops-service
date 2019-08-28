@@ -16,11 +16,8 @@ import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.app.eventhandler.payload.AppMarketUploadPayload;
-import io.choerodon.devops.app.eventhandler.payload.AppServiceUploadPayload;
-import io.choerodon.devops.app.eventhandler.payload.AppServiceVersionUploadPayload;
+import io.choerodon.devops.app.eventhandler.payload.*;
 import io.choerodon.devops.api.vo.HarborMarketVO;
-import io.choerodon.devops.app.eventhandler.payload.AppMarketDownloadPayload;
 import io.choerodon.devops.app.service.OrgAppMarketService;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 
@@ -111,6 +108,20 @@ public class OrgAppMarketController {
             @ApiParam(value = "应用信息", required = true)
             @RequestBody AppMarketUploadPayload appMarketUploadVO) {
         orgAppMarketService.uploadAPP(appMarketUploadVO);
+        return new ResponseEntity(HttpStatus.NO_CONTENT);
+    }
+
+    /**
+     * @param appMarketFixVersionPayload
+     * @return
+     */
+    @Permission(type = ResourceType.SITE, permissionWithin = true)
+    @ApiOperation(value = "应用上传 版本修复")
+    @PostMapping("/upload_fix_version")
+    public ResponseEntity uploadAPPFixVersion(
+            @ApiParam(value = "应用信息", required = true)
+            @RequestBody AppMarketFixVersionPayload appMarketFixVersionPayload) {
+        orgAppMarketService.uploadAPPFixVersion(appMarketFixVersionPayload);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 

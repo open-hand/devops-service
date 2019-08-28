@@ -5,11 +5,8 @@ import java.util.List;
 import com.github.pagehelper.PageInfo;
 
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.devops.app.eventhandler.payload.AppMarketUploadPayload;
-import io.choerodon.devops.app.eventhandler.payload.AppServiceUploadPayload;
-import io.choerodon.devops.app.eventhandler.payload.AppServiceVersionUploadPayload;
+import io.choerodon.devops.app.eventhandler.payload.*;
 import io.choerodon.devops.api.vo.HarborMarketVO;
-import io.choerodon.devops.app.eventhandler.payload.AppMarketDownloadPayload;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -53,6 +50,12 @@ public interface OrgAppMarketService {
      * @param marketUploadVO
      */
     void uploadAPP(AppMarketUploadPayload marketUploadVO);
+
+    /**
+     * 应用上传 新增修复版本
+     * @param appMarketFixVersionPayload
+     */
+    void uploadAPPFixVersion(AppMarketFixVersionPayload appMarketFixVersionPayload);
 
     /**
      * 应用下载
