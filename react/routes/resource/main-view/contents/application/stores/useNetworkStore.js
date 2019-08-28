@@ -36,16 +36,16 @@ export default function useStore() {
       return this.ports.slice();
     },
 
-    async loadDataById(projectId, id) {
-      try {
-        const res = await axios.get(`/devops/v1/projects/${projectId}/service/${id}`);
-        if (handlePromptError(res)) {
-          this.setSingleData(res);
-          this.loadInstance(projectId, res.envId, res.appServiceId);
-        }
-      } catch (e) {
-        Choerodon.handleResponseError(e);
-      }
+    loadDataById(projectId, id) {
+      return axios.get(`/devops/v1/projects/${projectId}/service/${id}`)
+        .then((res) => {
+          if (handlePromptError(res)) {
+            this.setSingleData(res);
+            // this.loadInstance(projectId, res.envId, res.appServiceId);
+            return res;
+          }
+          return false;
+        });
     },
 
     async loadInstance(projectId, envId, appId) {

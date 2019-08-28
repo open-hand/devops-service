@@ -24,7 +24,7 @@ function NetworkItem({
   }
 
   function deleteItem() {
-    treeDs.remove(record);
+    treeDs.delete(record);
   }
 
   function openModal() {

@@ -28,4 +28,5 @@ export default ({ formatMessage, intlPrefix, projectId, envId }) => ({
     { name: 'validFrom', type: 'string' },
     { name: 'validUntil', type: 'string' },
   ],
+  queryFields: [],
 });

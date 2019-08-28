@@ -7,7 +7,7 @@ import {
   Icon,
   Popover,
 } from 'choerodon-ui';
-import { Table } from 'choerodon-ui/pro';
+import { Table, Modal } from 'choerodon-ui/pro';
 import _ from 'lodash';
 import classnames from 'classnames';
 import MouserOverWrapper from '../../../../../../components/MouseOverWrapper/MouserOverWrapper';
@@ -15,9 +15,10 @@ import StatusIcon from '../../../../../../components/StatusIcon';
 import { useResourceStore } from '../../../../stores';
 import { useApplicationStore } from '../stores';
 import DomainModal from '../modals/domain';
-// import EditNetwork from '../../../../../network/network-edit';
+import EditNetwork from '../modals/network/network-edit';
 
 import './index.less';
+import { handlePromptError } from '../../../../../../utils';
 
 const { Column } = Table;
 
@@ -27,6 +28,7 @@ const Networking = observer(() => {
     intlPrefix,
     resourceStore: { getSelectedMenu: { menuId, parentId } },
     intl: { formatMessage },
+    AppState: { currentMenuType: { id } },
   } = useResourceStore();
   const {
     netDs,
@@ -76,16 +78,16 @@ const Networking = observer(() => {
     const port = [];
     const len = endPoints ? 2 : 1;
     if (instances && instances.length) {
-      _.forEach(instances, ({ id: itemId, code, instanceStatus }) => {
+      _.forEach(instances, ({ id: itemId, code, status }) => {
         const targetClass = classnames({
           'net-target-item': true,
-          'net-target-item-failed': instanceStatus !== 'operating' && instanceStatus !== 'running',
+          'net-target-item-failed': status !== 'operating' && status !== 'running',
         });
         if (code) {
           node.push(
             <div className={targetClass} key={itemId}>
               <Tooltip
-                title={formatMessage({ id: instanceStatus || `${intlPrefix}.application.net.deleted` })}
+                title={formatMessage({ id: status || `${intlPrefix}.application.net.deleted` })}
                 placement="top"
               >
                 {code}
@@ -131,7 +133,6 @@ const Networking = observer(() => {
                     <Popover
                       arrowPointAtCenter
                       placement="bottomRight"
-                      getPopupContainer={(triggerNode) => triggerNode.parentNode}
                       content={<Fragment>{item}</Fragment>}
                     >
                       <Icon type="expand_more" className="net-expend-icon" />
@@ -231,7 +232,6 @@ const Networking = observer(() => {
         <Popover
           arrowPointAtCenter
           placement="bottomRight"
-          getPopupContainer={(triggerNode) => triggerNode.parentNode}
           content={content}
         >
           <Icon type="expand_more" className="net-expend-icon" />
@@ -240,21 +240,47 @@ const Networking = observer(() => {
     );
   }
 
-  function renderAction({ record }) {
+  function renderAction() {
     const buttons = [
       {
         service: [],
         text: formatMessage({ id: 'edit' }),
-        action: () => showNetwork(true),
+        action: openNetworkEdit,
       },
       {
         service: [],
         text: formatMessage({ id: 'delete' }),
-        // action: () => handleDelete(record),
+        action: handleDelete,
       },
     ];
 
     return (<Action data={buttons} />);
+  }
+
+  function handleDelete() {
+    netDs.delete(netDs.current);
+  }
+
+  function openIngressDelete(itemId) {
+    Modal.open({
+      key: Modal.key(),
+      title: formatMessage({ id: `${intlPrefix}.delete.ingress` }),
+      children: <FormattedMessage id={`${intlPrefix}.delete.ingress.tips`} />,
+      onOk: () => handleIngressDelete(itemId),
+    });
+  }
+
+  async function handleIngressDelete(itemId) {
+    try {
+      const res = await domainStore.deleteIngress(id, itemId);
+      if (handlePromptError(res, false)) {
+        netDs.query();
+      } else {
+        return false;
+      }
+    } catch (e) {
+      return false;
+    }
   }
 
   function openDomainEdit(itemId) {
@@ -268,13 +294,17 @@ const Networking = observer(() => {
     isLoad && refresh();
   }
 
+  function openNetworkEdit() {
+    setShowNetwork(true);
+  }
+
   function closeNetworkEdit(isLoad) {
-    showNetwork(false);
+    setShowNetwork(false);
     isLoad && refresh();
   }
 
   function renderExpandedRow({ record }) {
-    const devopsIngressDTOS = record.get('devopsIngressDTOS');
+    const devopsIngressDTOS = record.get('devopsIngressVOS');
     const button = {
       shape: 'circle',
       size: 'small',
@@ -291,7 +321,7 @@ const Networking = observer(() => {
           {
             service: [],
             text: formatMessage({ id: 'delete' }),
-            // action: () => handleIngressDelete(record),
+            action: () => openIngressDelete(itemId),
           },
         ];
         return (
@@ -353,14 +383,16 @@ const Networking = observer(() => {
           onClose={closeDomainEdit}
         />
       )}
-      {/* showNetwork && (
+      {showNetwork && (
         <EditNetwork
-          netId={tableDs.current.get('id')}
+          netId={netDs.current.get('id')}
+          envId={parentId}
+          appServiceId={menuId}
           visible={showNetwork}
           store={networkStore}
           onClose={closeNetworkEdit}
         />
-      ) */}
+      )}
     </div>
   );
 });

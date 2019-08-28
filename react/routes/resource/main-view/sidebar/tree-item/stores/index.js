@@ -41,8 +41,8 @@ export const StoreProvider = injectIntl(inject('AppState')(
           [SERVICES_ITEM]: `/devops/v1/projects/${id}/service/${data.id}`,
           [INGRESS_ITEM]: `/devops/v1/projects/${id}/ingress/${data.id}`,
           [CERT_ITEM]: `/devops/v1/projects/${id}/certifications?cert_id=${data.id}`,
-          [MAP_ITEM]: `/devops/v1/projects/${id}/config_maps/page_by_options?env_id=${envId}/${data.id}`,
-          [CIPHER_ITEM]: `/devops/v1/projects/${id}/secret/page_by_options?env_id=${envId}/${data.id}`,
+          [MAP_ITEM]: `/devops/v1/projects/${id}/config_maps/${data.id}`,
+          [CIPHER_ITEM]: `/devops/v1/projects/${id}/secret/${envId}/${data.id}`,
           [CUSTOM_ITEM]: `/devops/v1/projects/${id}/customize_resource?resource_id=${data.id}`,
         };
         return ({

@@ -305,6 +305,8 @@ const deployment = {
   'c7ncd.deployment.used.cpu': 'CPU使用量',
   'c7ncd.deployment.registry': '镜像',
   'c7ncd.deployment.node': '节点',
+  'c7ncd.deployment.delete.ingress': '删除域名',
+  'c7ncd.deployment.delete.ingress.tips': '确定要删除该域名吗？',
 };
 
 const appService = {
@@ -430,6 +432,15 @@ const deploy = {
   'c7ncd.deploy.failed': '强制失败',
   'c7ncd.deploy.check': '审核',
   'c7ncd.deploy.retry': '重试',
+  'c7ncd.deploy.failed.tips': '确定要将此流程置为失败状态？强制失败后，您可继续重试当前流程。',
+  'c7ncd.deploy.retry.tips': '确定重新执行该流程吗？',
+  'c7ncd.deploy.app': '服务',
+  'c7ncd.deploy.app.version': '服务版本',
+  'c7ncd.deploy.instance.name': '实例名称',
+  'c7ncd.deploy.config': '部署配置',
+  'c7ncd.deploy.resource': '资源配置',
+  'c7ncd.deploy.network': '网络配置',
+  'c7ncd.deploy.ingress': '域名配置',
 };
 
 // 文档地址前缀

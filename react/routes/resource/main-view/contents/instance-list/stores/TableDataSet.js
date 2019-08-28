@@ -31,4 +31,5 @@ export default ({ formatMessage, intlPrefix, projectId, envId }) => ({
     { name: 'error', type: 'string' },
     { name: 'projectId', type: 'number' },
   ],
+  queryFields: [],
 });

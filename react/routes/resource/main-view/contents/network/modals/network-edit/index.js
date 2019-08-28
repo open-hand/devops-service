@@ -290,14 +290,14 @@ class EditNetwork extends Component {
         const deletedInstance = [];
         if (instances && instances.length) {
           _.forEach(instances, (item) => {
-            const { id: istId, code, instanceStatus } = item;
+            const { id: istId, code, status } = item;
             initIst.push(code);
             initIstOption.push(
               <Option key={istId} value={code}>
                 <Tooltip
                   title={
-                    instanceStatus ? (
-                      <FormattedMessage id={instanceStatus} />
+                    status ? (
+                      <FormattedMessage id={status} />
                     ) : (
                       <FormattedMessage id="network.ist.deleted" />
                     )
@@ -308,7 +308,7 @@ class EditNetwork extends Component {
                 </Tooltip>
               </Option>
             );
-            if (instanceStatus !== 'running') {
+            if (status !== 'running') {
               deletedInstance.push(code);
             }
           });

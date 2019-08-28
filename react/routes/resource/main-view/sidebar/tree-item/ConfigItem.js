@@ -24,7 +24,7 @@ function ConfigItem({
   }
 
   function deleteItem() {
-    treeDs.remove(record);
+    treeDs.delete(record);
   }
 
   function openModal() {
