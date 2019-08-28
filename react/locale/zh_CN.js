@@ -382,6 +382,7 @@ const envrionment = {
   'c7ncd.env.description': '环境描述',
   'c7ncd.env.config.app': '服务',
   'c7ncd.env.sync.empty': '目前部署同步正常，暂无错误信息',
+  'c7ncd.env.resource.setting': '资源安全设置',
 
 };
 

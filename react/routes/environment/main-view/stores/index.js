@@ -5,6 +5,7 @@ import { DataSet } from 'choerodon-ui/pro';
 import { useEnvironmentStore } from '../../stores';
 import EnvFormDataSet from './EnvFormDataSet';
 import GroupFormDataSet from './GroupFormDataSet';
+import ClusterDataSet from './ClusterDataSet';
 import useStore from './useStore';
 
 const Store = createContext();
@@ -22,14 +23,16 @@ export const StoreProvider = injectIntl(inject('AppState')(
       children,
     } = props;
     const mainStore = useStore();
-    const envFormDs = useMemo(() => new DataSet(EnvFormDataSet({ formatMessage, intlPrefix, projectId })), []);
+    const envFormDs = useMemo(() => new DataSet(EnvFormDataSet({ formatMessage, intlPrefix, projectId })), [projectId]);
     const groupFormDs = useMemo(() => new DataSet(GroupFormDataSet({ formatMessage, intlPrefix, projectId })), [projectId]);
+    const clusterDs = useMemo(() => new DataSet(ClusterDataSet(projectId)), [projectId]);
 
     const value = {
       ...props,
       mainStore,
       envFormDs,
       groupFormDs,
+      clusterDs,
     };
     return (
       <Store.Provider value={value}>

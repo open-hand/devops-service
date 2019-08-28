@@ -100,5 +100,8 @@ export default (projectId, store, formatMessage, intlPrefix) => ({
       url: `/devops/v1/projects/${projectId}/envs/env_tree_menu`,
       method: 'get',
     },
+    // destroyed: ({ data: [data] }) => {
+    //
+    // },
   },
 });
