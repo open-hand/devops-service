@@ -67,12 +67,6 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
             devopsEnvPodVO.setConnect(updatedEnvList.contains(devopsEnvironmentDTO.getClusterId()));
             //给pod设置containers
             fillContainers(devopsEnvPodVO);
-            devopsEnvPodVO.setContainersForLogs(
-                    devopsEnvPodVO.getContainers()
-                            .stream()
-                            .map(container -> new DevopsEnvPodContainerLogVO(devopsEnvPodDTO.getName(), container.getName()))
-                            .collect(Collectors.toList())
-            );
             return devopsEnvPodVO;
         }).collect(Collectors.toList()));
 

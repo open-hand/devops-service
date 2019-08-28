@@ -28,7 +28,6 @@ public class DevopsEnvPodVO {
     private List<ContainerVO> containers;
     private String nodeName;
     private Long restartCount;
-    private List<DevopsEnvPodContainerLogVO> containersForLogs;
 
     public Long getId() {
         return id;
@@ -204,13 +203,5 @@ public class DevopsEnvPodVO {
 
     public void setInstanceId(Long instanceId) {
         this.instanceId = instanceId;
-    }
-
-    public List<DevopsEnvPodContainerLogVO> getContainersForLogs() {
-        return containersForLogs;
-    }
-
-    public void setContainersForLogs(List<DevopsEnvPodContainerLogVO> containersForLogs) {
-        this.containersForLogs = containersForLogs;
     }
 }

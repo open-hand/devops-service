@@ -502,13 +502,6 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     private DevopsEnvPodVO podDTO2VO(final DevopsEnvPodDTO devopsEnvPodDTO) {
         DevopsEnvPodVO devopsEnvPodVO = ConvertUtils.convertObject(devopsEnvPodDTO, DevopsEnvPodVO.class);
         devopsEnvPodService.fillContainers(devopsEnvPodVO);
-
-        devopsEnvPodVO.setContainersForLogs(
-                devopsEnvPodVO.getContainers()
-                        .stream()
-                        .map(container -> new DevopsEnvPodContainerLogVO(devopsEnvPodDTO.getName(), container.getName()))
-                        .collect(Collectors.toList())
-        );
         return devopsEnvPodVO;
     }
 
