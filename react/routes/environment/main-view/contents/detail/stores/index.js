@@ -76,7 +76,6 @@ export const StoreProvider = injectIntl(inject('AppState')(
       ...props,
       prefixCls,
       intlPrefix,
-      currentIntlPrefix,
       tabs,
       permissionsDs,
       configDs,

@@ -3,6 +3,7 @@ import { Action } from '@choerodon/master';
 import { Table, Modal } from 'choerodon-ui/pro';
 import TimePopover from '../../../../../components/time-popover';
 import UserInfo from '../../../../../components/userInfo';
+import { useEnvironmentStore } from '../../../stores';
 import { useDetailStore } from './stores';
 
 const { Column } = Table;
@@ -10,15 +11,17 @@ const modalKey = Modal.key();
 
 export default function DeployConfig() {
   const {
+    intlPrefix,
+  } = useEnvironmentStore();
+  const {
     intl: { formatMessage },
     configDs,
-    currentIntlPrefix,
   } = useDetailStore();
 
   function openModal() {
     Modal.open({
       key: modalKey,
-      title: formatMessage({ id: `${currentIntlPrefix}.modal.env-detail` }),
+      title: formatMessage({ id: `${intlPrefix}.modal.env-detail` }),
       children: <div>hello</div>,
       okText: formatMessage({ id: 'close' }),
     });
