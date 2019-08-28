@@ -1011,11 +1011,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         //操作网络数据库操作
         Long serviceId;
         if (isCreate) {
-<<<<<<< HEAD
-            Long serviceId = baseCreate(devopsServiceDTO).getId();
-=======
             serviceId = devopsServiceDTO.getId();
->>>>>>> [FIX]修改应用服务关联应用资源
             devopsEnvCommandDTO.setObjectId(serviceId);
             devopsServiceDTO.setId(serviceId);
             devopsServiceDTO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());
