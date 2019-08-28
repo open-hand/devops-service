@@ -7,16 +7,16 @@ import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import io.choerodon.devops.infra.mapper.DevopsProjectMapper;
+import io.kubernetes.client.JSON;
+import io.kubernetes.client.custom.IntOrString;
+import io.kubernetes.client.models.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
-import io.kubernetes.client.JSON;
-import io.kubernetes.client.custom.IntOrString;
-import io.kubernetes.client.models.*;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
@@ -32,13 +32,12 @@ import io.choerodon.devops.app.eventhandler.payload.ServiceSagaPayLoad;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.*;
-import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 import io.choerodon.devops.infra.gitops.ResourceFileCheckHandler;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsEnvPodMapper;
-import io.choerodon.devops.infra.mapper.DevopsEnvResourceDetailMapper;
 import io.choerodon.devops.infra.mapper.DevopsServiceMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
@@ -160,9 +159,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             }
         }
         DevopsServiceQueryDTO devopsServiceQueryDTO = baseQueryById(id);
-        if(devopsServiceQueryDTO!=null) {
+        if (devopsServiceQueryDTO != null) {
             return queryDtoToVo(baseQueryById(id));
-        }else {
+        } else {
             return null;
         }
     }
@@ -190,17 +189,21 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         //初始化V1Service对象
         V1Service v1Service = initV1Service(
                 devopsServiceReqVO,
-                gson.fromJson(devopsServiceDTO.getAnnotations(), Map.class));
+                gson.fromJson(devopsServiceDTO.getAnnotations(), new TypeToken<Map<String, String>>() {
+                }.getType()));
         V1Endpoints v1Endpoints = null;
         if (devopsServiceReqVO.getEndPoints() != null) {
             v1Endpoints = initV1EndPoints(devopsServiceReqVO);
         }
 
+        // 先创建网络纪录
+        baseCreate(devopsServiceDTO);
+
         //创建应用资源关系
         if (devopsServiceReqVO.getAppServiceId() != null) {
 
             // 应用下不能创建endpoints类型网络
-            if (devopsServiceReqVO.getEndPoints().size() != 0) {
+            if (!CollectionUtils.isEmpty(devopsServiceReqVO.getEndPoints())) {
                 throw new CommonException("error.app.create.endpoints.service");
             }
             DevopsAppServiceResourceDTO devopsAppServiceResourceDTO = new DevopsAppServiceResourceDTO();
@@ -279,7 +282,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             //初始化V1Service对象
             V1Service v1Service = initV1Service(
                     devopsServiceReqVO,
-                    gson.fromJson(devopsServiceDTO.getAnnotations(), Map.class));
+                    gson.fromJson(devopsServiceDTO.getAnnotations(), new TypeToken<Map<String, String>>() {
+                    }.getType()));
             if (devopsServiceReqVO.getEndPoints() != null) {
                 v1Endpoints = initV1EndPoints(devopsServiceReqVO);
             }
@@ -507,8 +511,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
     @Override
     public List<DevopsServiceQueryDTO> baseListRunningService(Long envId) {
-        List<DevopsServiceQueryDTO> devopsServiceQueryDTOList = devopsServiceMapper.listRunningService(envId);
-        return devopsServiceQueryDTOList;
+        return devopsServiceMapper.listRunningService(envId);
     }
 
     @Override
@@ -769,7 +772,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         //设置实时CPU、内存信息
         List<AgentPodInfoVO> agentPodInfoVOS = agentPodInfoService.queryAllPodSnapshots(devopsEnvPodDTO.getName(), devopsEnvPodDTO.getNamespace());
 
-        if(!agentPodInfoVOS.isEmpty()) {
+        if (!agentPodInfoVOS.isEmpty()) {
             List<String> cpuUsedList = agentPodInfoVOS.stream().map(AgentPodInfoVO::getCpuUsed).collect(Collectors.toList());
             List<String> memoryUsedList = agentPodInfoVOS.stream().map(AgentPodInfoVO::getMemoryUsed).collect(Collectors.toList());
             List<Date> timeList = agentPodInfoVOS.stream().map(AgentPodInfoVO::getSnapshotTime).collect(Collectors.toList());
@@ -985,9 +988,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
         //操作网络数据库操作
         if (isCreate) {
-            Long serviceId = baseCreate(devopsServiceDTO).getId();
+            Long serviceId = devopsServiceDTO.getId();
             devopsEnvCommandDTO.setObjectId(serviceId);
-            devopsServiceDTO.setId(serviceId);
             devopsServiceDTO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());
             baseUpdate(devopsServiceDTO);
             if (beforeDevopsServiceAppInstanceDTOS != null) {

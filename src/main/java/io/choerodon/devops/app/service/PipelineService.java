@@ -57,8 +57,6 @@ public interface PipelineService {
 
     List<PipelineVO> listPipelineDTO(Long projectId);
 
-    List<UserVO> listAllUsers(Long projectId);
-
     void updateStatus(Long pipelineRecordId, Long stageRecordId, String status, String errorInfo);
 
     CheckAuditVO checkAudit(Long projectId, PipelineUserRecordRelationshipVO userRecordRelDTO);

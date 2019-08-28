@@ -13,24 +13,35 @@ import io.choerodon.devops.infra.dto.PortMapVO;
  * Created by Zenger on 2018/4/13.
  */
 public class DevopsServiceReqVO {
-
-    @NotNull
+    @ApiModelProperty("环境ID / 必填")
+    @NotNull(message = "error.env.id.null")
     private Long envId;
+
+    @ApiModelProperty("应用服务ID / 选填，用于创建与应用服务关联关系")
     private Long appServiceId;
-    @NotNull
-    @Size(min = 1, max = 64, message = "error.name.size")
+
+    @ApiModelProperty("网络名称 / 必填，长度1-30")
+    @NotNull(message = "error.name.null")
+    @Size(min = 1, max = 30, message = "error.service.name.size")
     private String name;
-    private String externalIp;
-    @NotNull
+
+    @ApiModelProperty("配置类型 / 必填")
+    @NotNull(message = "error.type.null")
     private String type;
-    @NotNull
+
+    private String externalIp;
+
+    @ApiModelProperty("端口数据 / 必填")
+    @NotNull(message = "error.ports.null")
     private List<PortMapVO> ports;
 
+    @ApiModelProperty("目标对象为Endpoints，相应的信息")
     private Map<String, List<EndPointPortVO>> endPoints;
 
-    @ApiModelProperty("实例code")
+    @ApiModelProperty("目标对象为实例，实例的Code")
     private List<String> instances;
 
+    @ApiModelProperty("目标对象为标签，标签键值对")
     private Map<String, String> label;
 
     public Long getEnvId() {

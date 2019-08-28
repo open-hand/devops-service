@@ -4,9 +4,13 @@ import java.util.List;
 import java.util.Map;
 
 import com.github.pagehelper.PageInfo;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.ProjectReqVO;
+import io.choerodon.devops.api.vo.iam.UserVO;
 import io.choerodon.devops.app.eventhandler.payload.ProjectPayload;
 import io.choerodon.devops.app.service.DevopsProjectService;
 import io.choerodon.devops.infra.dto.DevopsProjectDTO;
@@ -15,9 +19,6 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsProjectMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.TypeUtil;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 /**
  * Created by Sheep on 2019/7/15.
@@ -126,5 +127,10 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
                 pageRequest.getPage(), pageRequest.getSize(), null,
                 paramList == null ? null : paramList.toArray(new String[0]));
         return ConvertUtils.convertPage(projectDTOPageInfo, ProjectReqVO.class);
+    }
+
+    @Override
+    public List<UserVO> listAllOwnerAndMembers(Long projectId) {
+        return ConvertUtils.convertList(baseServiceClientOperator.getAllMember(projectId), UserVO.class);
     }
 }
