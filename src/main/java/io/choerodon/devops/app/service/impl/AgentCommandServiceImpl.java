@@ -72,6 +72,7 @@ public class AgentCommandServiceImpl implements AgentCommandService {
     @Lazy
     private WebSocketHelper webSocketHelper;
     @Autowired
+    @Lazy
     private BrokerKeySessionMapper brokerKeySessionMapper;
 
 

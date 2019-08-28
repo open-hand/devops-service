@@ -42,8 +42,6 @@ public class DevopsExecAndLogSocketHandler {
     @Autowired
     private AgentCommandService agentCommandService;
     @Autowired
-    private BrokerKeySessionMapper brokerKeySessionMapper;
-    @Autowired
     private MessageSender messageSender;
 
 
