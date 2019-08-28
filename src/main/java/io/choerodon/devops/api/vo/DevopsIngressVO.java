@@ -1,9 +1,6 @@
 package io.choerodon.devops.api.vo;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 import io.swagger.annotations.ApiModelProperty;
 
@@ -36,6 +33,8 @@ public class DevopsIngressVO extends DevopsResourceDataInfoVO{
     private Map<String, String> annotations;
     @ApiModelProperty("实例名称数组")
     private List<String> instances;
+
+    private Set<Long> appServiceIds;
 
     public DevopsIngressVO() {
         this.pathList = new ArrayList<>();
@@ -206,6 +205,14 @@ public class DevopsIngressVO extends DevopsResourceDataInfoVO{
 
     public void setInstances(List<String> instances) {
         this.instances = instances;
+    }
+
+    public Set<Long> getAppServiceIds() {
+        return appServiceIds;
+    }
+
+    public void setAppServiceIds(Set<Long> appServiceIds) {
+        this.appServiceIds = appServiceIds;
     }
 
     @Override

@@ -1,9 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.github.pagehelper.PageHelper;
@@ -11,16 +8,6 @@ import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-import io.kubernetes.client.JSON;
-import io.kubernetes.client.custom.IntOrString;
-import io.kubernetes.client.models.*;
-
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -37,8 +24,8 @@ import io.choerodon.devops.app.eventhandler.payload.IngressSagaPayload;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.*;
-import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 import io.choerodon.devops.infra.gitops.ResourceFileCheckHandler;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
@@ -50,6 +37,15 @@ import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.ResourceCreatorInfoUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
+import io.kubernetes.client.JSON;
+import io.kubernetes.client.custom.IntOrString;
+import io.kubernetes.client.models.*;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 @Component
 public class DevopsIngressServiceImpl implements DevopsIngressService {
@@ -117,8 +113,11 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
 
         // 校验port是否属于该网络
+        Set<Long> appServiceIds = new HashSet<>();
+
         devopsIngressVO.getPathList().forEach(devopsIngressPathDTO -> {
             DevopsServiceDTO devopsServiceDTO = devopsServiceMapper.selectByPrimaryKey(devopsIngressPathDTO.getServiceId());
+            appServiceIds.add(devopsServiceDTO.getAppServiceId());
             if (dealWithPorts(devopsServiceDTO.getPorts()).stream().map(PortMapVO::getPort).noneMatch(port -> port.equals(devopsIngressPathDTO.getServicePort()))) {
                 throw new CommonException(ERROR_SERVICE_NOT_CONTAIN_PORT);
             }
@@ -143,7 +142,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
         // 在gitops库处理ingress文件
         operateEnvGitLabFile(
-                TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), false, v1beta1Ingress, true, null, devopsIngressDO, userAttrDTO, devopsEnvCommandDTO, devopsIngressVO.getAppServiceId());
+                TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), false, v1beta1Ingress, true, null, devopsIngressDO, userAttrDTO, devopsEnvCommandDTO, appServiceIds);
     }
 
 
@@ -193,6 +192,13 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         devopsIngressDO.setId(ingressId);
         devopsIngressDO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());
         baseUpdate(devopsIngressDO);
+
+
+        //处理应用服务关联域名信息
+        if (devopsIngressVO.getAppServiceId() != null) {
+            devopsApplicationResourceService.handleAppServiceResource(new ArrayList<>(devopsIngressVO.getAppServiceIds()), ingressId, ObjectType.INGRESS.getType());
+        }
+
     }
 
     @Override
@@ -219,9 +225,11 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         resourceFileCheckHandler.check(devopsEnvironmentDTO, id, devopsIngressVO.getName(), INGRESS);
 
 
+        Set<Long> appServiceIds = new HashSet<>();
         // 校验port是否属于该网络
         devopsIngressVO.getPathList().forEach(devopsIngressPathDTO -> {
             DevopsServiceDTO devopsServiceDTO = devopsServiceMapper.selectByPrimaryKey(devopsIngressPathDTO.getServiceId());
+            appServiceIds.add(devopsServiceDTO.getAppServiceId());
             if (dealWithPorts(devopsServiceDTO.getPorts()).stream()
                     .map(PortMapVO::getPort).noneMatch(port -> port.equals(devopsIngressPathDTO.getServicePort()))) {
                 throw new CommonException(ERROR_SERVICE_NOT_CONTAIN_PORT);
@@ -258,7 +266,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
         //在gitops库处理ingress文件
         operateEnvGitLabFile(
-                TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), deleteCert, v1beta1Ingress, false, path, devopsIngressDO, userAttrDTO, devopsEnvCommandDTO, null);
+                TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), deleteCert, v1beta1Ingress, false, path, devopsIngressDO, userAttrDTO, devopsEnvCommandDTO,appServiceIds);
     }
 
     /**
@@ -300,6 +308,11 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         devopsEnvCommandDTO.setCreatedBy(userId);
         devopsIngressDO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());
         baseUpdateIngressAndIngressPath(devopsIngressDO);
+
+        //处理应用服务关联域名信息
+        if (devopsIngressVO.getAppServiceId() != null) {
+            devopsApplicationResourceService.handleAppServiceResource(new ArrayList<>(devopsIngressVO.getAppServiceIds()), id, ObjectType.INGRESS.getType());
+        }
     }
 
 
@@ -544,28 +557,28 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
                                       DevopsIngressDTO devopsIngressDTO,
                                       UserAttrDTO userAttrDTO,
                                       DevopsEnvCommandDTO devopsEnvCommandDTO,
-                                      Long appServiceId) {
+                                      Set<Long> appServiceIds) {
 
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsIngressDTO.getEnvId());
 
+        Long ingressId;
         //操作域名数据库
         if (isCreate) {
-            Long ingressId = baseCreateIngressAndPath(devopsIngressDTO).getId();
-            if (appServiceId != null) {
-                DevopsAppServiceResourceDTO resourceDTO = new DevopsAppServiceResourceDTO();
-                resourceDTO.setAppServiceId(appServiceId);
-                resourceDTO.setResourceType(ObjectType.INSTANCE.getType());
-                resourceDTO.setResourceId(ingressId);
-                devopsApplicationResourceService.baseCreate(resourceDTO);
-            }
+            ingressId = baseCreateIngressAndPath(devopsIngressDTO).getId();
             devopsEnvCommandDTO.setObjectId(ingressId);
             devopsIngressDTO.setId(ingressId);
             devopsIngressDTO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());
             baseUpdate(devopsIngressDTO);
         } else {
+            ingressId = devopsIngressDTO.getId();
             devopsEnvCommandDTO.setObjectId(devopsIngressDTO.getId());
             devopsIngressDTO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());
             baseUpdateIngressAndIngressPath(devopsIngressDTO);
+        }
+
+        //处理应用服务关联域名信息
+        if (!appServiceIds.isEmpty()) {
+            devopsApplicationResourceService.handleAppServiceResource(new ArrayList<>(appServiceIds), ingressId, ObjectType.INGRESS.getType());
         }
 
         ResourceConvertToYamlHandler<V1beta1Ingress> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
@@ -788,7 +801,6 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     public DevopsIngressDTO baseQuery(Long ingressId) {
         return devopsIngressMapper.selectByPrimaryKey(ingressId);
     }
-
 
 
     private void setIngressDTOCert(Long certId, DevopsIngressVO devopsIngressVO) {

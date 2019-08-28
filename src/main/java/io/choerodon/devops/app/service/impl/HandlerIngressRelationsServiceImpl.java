@@ -1,8 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -192,6 +190,7 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
 
     private DevopsIngressVO getDevopsIngressDTO(V1beta1Ingress v1beta1Ingress,
                                                 Long envId, String filePath) {
+        Set<Long> appServiceIds = new HashSet<>();
         DevopsIngressVO devopsIngressVO = new DevopsIngressVO();
         devopsIngressVO.setDomain(v1beta1Ingress.getSpec().getRules().get(0).getHost()
         );
@@ -218,6 +217,7 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
             String serviceName = backend.getServiceName();
             DevopsServiceDTO devopsServiceDTO = devopsServiceService.baseQueryByNameAndEnvId(
                     serviceName, envId);
+
             Long servicePort = null;
             IntOrString backendServicePort = backend.getServicePort();
             if (backendServicePort.isInteger() || pattern.matcher(TypeUtil.objToString(backendServicePort)).matches()) {
@@ -227,6 +227,7 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
                     List<PortMapVO> listPorts = gson.fromJson(devopsServiceDTO.getPorts(), new TypeToken<ArrayList<PortMapVO>>() {
                     }.getType());
                     servicePort = listPorts.get(0).getPort();
+                    appServiceIds.add(devopsServiceDTO.getAppServiceId());
                 }
             }
             DevopsIngressPathVO devopsIngressPathVO = new DevopsIngressPathVO();
@@ -237,6 +238,7 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
             devopsIngressPathVOS.add(devopsIngressPathVO);
         }
         devopsIngressVO.setPathList(devopsIngressPathVOS);
+        devopsIngressVO.setAppServiceIds(appServiceIds);
         return devopsIngressVO;
     }
 

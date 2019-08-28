@@ -13,6 +13,16 @@ public class DevopsAppServiceResourceDTO {
     private String resourceType;
     private Long resourceId;
 
+
+    public DevopsAppServiceResourceDTO(){}
+
+
+    public DevopsAppServiceResourceDTO(Long appServiceId,String resourceType,Long resourceId){
+        this.appServiceId = appServiceId;
+        this.resourceType = resourceType;
+        this.resourceId = resourceId;
+    }
+
     public Long getAppServiceId() {
         return appServiceId;
     }
