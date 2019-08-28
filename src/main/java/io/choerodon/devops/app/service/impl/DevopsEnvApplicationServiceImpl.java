@@ -22,6 +22,7 @@ import io.kubernetes.client.models.V1ContainerPort;
 import io.kubernetes.client.models.V1beta2Deployment;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author lizongwei
@@ -37,6 +38,7 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
     @Autowired
     private DevopsEnvAppServiceMapper devopsEnvAppServiceMapper;
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public List<DevopsEnvApplicationVO> batchCreate(DevopsEnvAppServiceVO devopsEnvAppServiceVO) {
         return Stream.of(devopsEnvAppServiceVO.getAppServiceIds())
@@ -46,6 +48,7 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
                 .collect(Collectors.toList());
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void delete(Long envId, Long appServiceId) {
         DevopsEnvAppServiceDTO devopsEnvAppServiceDTO = new DevopsEnvAppServiceDTO(appServiceId, envId);
