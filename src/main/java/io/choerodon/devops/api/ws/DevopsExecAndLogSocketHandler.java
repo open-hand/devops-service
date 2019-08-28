@@ -15,6 +15,7 @@ import io.choerodon.websocket.send.relationship.BrokerKeySessionMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.http.server.ServletServerHttpRequest;
@@ -36,11 +37,10 @@ public class DevopsExecAndLogSocketHandler {
 
 
     @Autowired
+    @Lazy
     private WebSocketHelper webSocketHelper;
     @Autowired
     private AgentCommandService agentCommandService;
-    @Autowired
-    private BrokerKeySessionMapper brokerKeySessionMapper;
     @Autowired
     private MessageSender messageSender;
 

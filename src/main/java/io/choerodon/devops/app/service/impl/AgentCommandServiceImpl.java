@@ -69,8 +69,10 @@ public class AgentCommandServiceImpl implements AgentCommandService {
     @Autowired
     private GitUtil gitUtil;
     @Autowired
+    @Lazy
     private WebSocketHelper webSocketHelper;
     @Autowired
+    @Lazy
     private BrokerKeySessionMapper brokerKeySessionMapper;
 
 

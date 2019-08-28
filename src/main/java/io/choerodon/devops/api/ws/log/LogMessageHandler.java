@@ -13,6 +13,7 @@ import io.choerodon.websocket.send.SendBinaryMessagePayload;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.BinaryMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -25,7 +26,6 @@ public class LogMessageHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(LogMessageHandler.class);
     public static final String AGENT_LOG = "AgentLog";
-
 
     private WebSocketHelper webSocketHelper;
 
