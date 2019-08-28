@@ -8,6 +8,7 @@ import io.choerodon.devops.api.vo.DevopsServiceVO
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO
 import io.choerodon.devops.api.vo.iam.RoleVO
 import io.choerodon.devops.app.service.*
+import io.choerodon.devops.app.service.impl.DevopsServiceServiceImpl
 import io.choerodon.devops.infra.dto.*
 import io.choerodon.devops.infra.dto.gitlab.MemberDTO
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO
@@ -16,10 +17,13 @@ import io.choerodon.devops.infra.enums.AccessLevel
 import io.choerodon.devops.infra.feign.BaseServiceClient
 import io.choerodon.devops.infra.feign.GitlabServiceClient
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator
+import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler
 import io.choerodon.devops.infra.mapper.*
 import io.choerodon.devops.infra.util.FileUtil
 import io.choerodon.devops.infra.util.GitUtil
+import io.kubernetes.client.models.V1Service
+
 //import io.choerodon.websocket.helper.EnvListener
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
@@ -96,16 +100,17 @@ class DevopsServiceControllerSpec extends Specification {
     AppServiceInstanceDTO applicationInstanceDO = new AppServiceInstanceDTO()
     @Shared
     DevopsEnvironmentDTO devopsEnvironmentDO = new DevopsEnvironmentDTO()
-
+    @Autowired
+    DevopsServiceServiceImpl devopsServiceService
     @Autowired
     private IamService iamRepository
     @Autowired
     private GitlabServiceClientOperator gitlabRepository
     @Autowired
     private GitlabGroupMemberService gitlabGroupMemberRepository
-
+    ResourceConvertToYamlHandler<V1Service> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>()
     BaseServiceClient iamServiceClient = Mockito.mock(BaseServiceClient.class)
-    GitlabServiceClient gitlabServiceClient = Mockito.mock(GitlabServiceClient.class)
+    GitlabServiceClientOperator gitlabServiceClientOperator = Mockito.mock(GitlabServiceClientOperator.class)
 
     def setupSpec() {
         FileUtil.copyFile("src/test/gitops/org/pro/env/test-svc.yaml", "gitops/org/pro/env")
@@ -139,10 +144,8 @@ class DevopsServiceControllerSpec extends Specification {
 
     def setup() {
         DependencyInjectUtil.setAttribute(iamRepository, "baseServiceClient", iamServiceClient)
-        DependencyInjectUtil.setAttribute(gitlabProjectRepository, "gitlabServiceClient", gitlabServiceClient)
-        DependencyInjectUtil.setAttribute(gitlabRepository, "gitlabServiceClient", gitlabServiceClient)
-        DependencyInjectUtil.setAttribute(gitlabGroupMemberRepository, "gitlabServiceClient", gitlabServiceClient)
-
+        DependencyInjectUtil.setAttribute(gitlabGroupMemberRepository, "gitlabServiceClientOperator", gitlabServiceClientOperator)
+        DependencyInjectUtil.setAttribute(devopsServiceService, "gitlabServiceClientOperator", gitlabServiceClientOperator)
         ProjectDTO projectDO = new ProjectDTO()
         projectDO.setId(1L)
         projectDO.setCode("pro")
@@ -158,8 +161,8 @@ class DevopsServiceControllerSpec extends Specification {
 
         MemberDTO memberDO = new MemberDTO()
         memberDO.setAccessLevel(AccessLevel.OWNER.toValue())
-        ResponseEntity<MemberDTO> responseEntity2 = new ResponseEntity<>(memberDO, HttpStatus.OK)
-        Mockito.when(gitlabServiceClient.queryGroupMember(anyInt(), anyInt())).thenReturn(responseEntity2)
+
+        Mockito.when(gitlabServiceClientOperator.queryGroupMember(anyInt(), anyInt())).thenReturn(memberDO)
 
         List<RoleVO> roleDTOList = new ArrayList<>()
         RoleVO roleDTO = new RoleVO()
@@ -176,9 +179,7 @@ class DevopsServiceControllerSpec extends Specification {
 
         RepositoryFileDTO repositoryFile = new RepositoryFileDTO()
         repositoryFile.setFilePath("testFilePath")
-        ResponseEntity<RepositoryFileDTO> responseEntity3 = new ResponseEntity<>(repositoryFile, HttpStatus.OK)
-        Mockito.when(gitlabServiceClient.createFile(anyInt(), anyString(), anyString(), anyString(), anyInt())).thenReturn(responseEntity3)
-        Mockito.when(gitlabServiceClient.updateFile(anyInt(), anyString(), anyString(), anyString(), anyInt())).thenReturn(responseEntity3)
+
     }
 
     def "CheckName"() {
@@ -190,10 +191,10 @@ class DevopsServiceControllerSpec extends Specification {
         devopsServiceAppInstanceMapper.insert(devopsServiceAppInstanceDO)
 
         when: '检查网络唯一性'
-        def exist = restTemplate.getForObject("/v1/projects/1/service/check?envId=1&name=svc", Boolean.class)
+        def exist = restTemplate.getForEntity("/v1/projects/{project_id}/service/check_name?env_id=1&name=svc", Boolean.class, 1L)
 
         then: '校验返回值'
-        exist
+        exist.getBody() == true
     }
 
     def "Create"() {
@@ -207,7 +208,7 @@ class DevopsServiceControllerSpec extends Specification {
 
         DevopsServiceReqVO devopsServiceReqDTO = new DevopsServiceReqVO()
         devopsServiceReqDTO.setPorts()
-        devopsServiceReqDTO.setAppId(1L)
+        devopsServiceReqDTO.setAppServiceId(1L)
         devopsServiceReqDTO.setEnvId(1L)
         devopsServiceReqDTO.setType("ClusterIP")
         devopsServiceReqDTO.setName("svcsvc")
@@ -217,10 +218,10 @@ class DevopsServiceControllerSpec extends Specification {
         envUtil.checkEnvConnection(_ as Long) >> null
 
         when: '部署网络'
-        def result = restTemplate.postForObject("/v1/projects/1/service", devopsServiceReqDTO, Boolean.class)
+        def result = restTemplate.postForEntity("/v1/projects/{project_id}/service", devopsServiceReqDTO, Boolean.class, 1L)
 
         then: '校验返回值'
-        result
+        result.getStatusCode().is2xxSuccessful()
     }
 
     def "Update"() {
@@ -235,11 +236,11 @@ class DevopsServiceControllerSpec extends Specification {
         List<String> appInstances = new ArrayList<>()
         appInstances.add(applicationInstanceDO.getCode())
         DevopsServiceReqVO newDevopsServiceReqDTO = new DevopsServiceReqVO()
-        newDevopsServiceReqDTO.setAppId(1L)
+        newDevopsServiceReqDTO.setAppServiceId(1L)
         newDevopsServiceReqDTO.setEnvId(1L)
         newDevopsServiceReqDTO.setType("ClusterIP")
         newDevopsServiceReqDTO.setName("svcsvc")
-        newDevopsServiceReqDTO.setAppInstance(appInstances)
+        newDevopsServiceReqDTO.setInstances(appInstances)
         newDevopsServiceReqDTO.setPorts(portMapES)
         newDevopsServiceReqDTO.setExternalIp("1.2.1.1")
 
@@ -259,22 +260,19 @@ class DevopsServiceControllerSpec extends Specification {
     def "Delete"() {
         given: 'mock envUtil'
         envUtil.checkEnvConnection(_ as Long) >> null
-
-        ResponseEntity responseEntity = new ResponseEntity<>(HttpStatus.OK)
-        Mockito.when(gitlabServiceClient.deleteFile(anyInt(), anyString(), anyString(), anyInt())).thenReturn(responseEntity)
-
+        Mockito.doReturn(true).when(gitlabServiceClientOperator).getFile(anyInt(), anyString(), anyString())
         when: '删除网络'
-        restTemplate.delete("/v1/projects/1/service/{id}", id)
+        ResponseEntity entity = restTemplate.exchange("/v1/projects/1/service/{id}", HttpMethod.DELETE, null, Object.class, 1L)
 
         then: '校验返回值'
-        devopsEnvCommandRepository.baseQueryByObject("service", id).getCommandType() == "delete"
+        entity.getStatusCode().is2xxSuccessful()
     }
 
     def "ListByEnvId"() {
         given: '初始化网络DO类'
         DevopsServiceDTO devopsServiceDO = new DevopsServiceDTO()
         devopsServiceDO.setEnvId(1L)
-        devopsServiceDO.setAppId(1L)
+        devopsServiceDO.setAppServiceId(1L)
         devopsServiceDO.setName("svcsvc2")
         devopsServiceDO.setStatus("running")
         devopsServiceDO.setPorts("[{\"port\":7777}]")
@@ -284,23 +282,31 @@ class DevopsServiceControllerSpec extends Specification {
         devopsServiceMapper.insert(devopsServiceDO)
 
         when: '分页查询网络列表'
-        def list = restTemplate.getForObject("/v1/projects/1/service?envId=1", List.class)
+        def entity = restTemplate.getForEntity("/v1/projects/1/service/list_by_env?env_id=1", List.class)
 
         then: '校验返回值'
-        list.size() == 1
+        entity.getBody().size() == 1
     }
 
     def "Query"() {
         when: '查询单个网络'
-        def dto = restTemplate.getForObject("/v1/projects/1/service/{id}", DevopsServiceVO.class, id)
+        def entity = restTemplate.getForEntity("/v1/projects/1/service/{id}", DevopsServiceVO.class, id)
 
         then: '校验返回值'
-        dto != null
+        entity.getBody() != null
     }
 
-    def "ListByEnv"() {
+    def "queryByName"() {
+        when: '根据网络名查询网络'
+        def entity = restTemplate.getForEntity("/v1/projects/1/service/query_by_name?env_id=1&name=svcsvc2", DevopsServiceVO.class)
+        then: '校验返回值'
+        entity.getStatusCode().is2xxSuccessful()
+        entity.getBody() != null
+    }
+
+    def "pageByEnv"() {
         given: '设置请求头'
-        String infra = "{\"searchParam\":{\"name\":[\"svc\"]}}"
+        String infra = "{\"params\":[],\"searchParam\":{\"name\":\"svc\"}}"
 
         HttpHeaders headers = new HttpHeaders()
         headers.setContentType(MediaType.valueOf("application/jsonUTF-8"))
@@ -312,12 +318,31 @@ class DevopsServiceControllerSpec extends Specification {
         envUtil.getConnectedEnvList() >> envList
         envUtil.getUpdatedEnvList() >> envList
 
-        when: '环境总览网络查询'
-        def page = restTemplate.postForObject("/v1/projects/1/service/1/listByEnv", strEntity, PageInfo.class)
+        when: '环境总览分页查询网络'
+        def entity = restTemplate.postForEntity("/v1/projects/1/service/{env_id}/page_by_env", strEntity, PageInfo.class, 1L)
 
         then: '校验返回值'
-        page.getTotal() == 2
+        entity.getStatusCode().is2xxSuccessful()
+        entity.getBody().getList().size() == 2
 
+    }
+
+    def "pageByInstance"() {
+        given: '设置请求头'
+        String infra = "{\"params\":[],\"searchParam\":{}}"
+
+        HttpHeaders headers = new HttpHeaders()
+        headers.setContentType(MediaType.valueOf("application/jsonUTF-8"))
+        HttpEntity<String> strEntity = new HttpEntity<String>(infra, headers)
+
+        when: '查询实例下关联的网络域名（不包含chart）'
+        def entity = restTemplate.postForEntity("/v1/projects/1/service/page_by_instance?instance_id=1&app_service_id=1&page=1&size=10", strEntity, PageInfo.class)
+
+        then: '校验返回值'
+        entity.getStatusCode().is2xxSuccessful()
+        entity.getBody().getList() != null
+
+        and: '清理数据'
         // 删除envCommand
         List<DevopsEnvCommandDTO> list = devopsEnvCommandMapper.selectAll()
         if (list != null && !list.isEmpty()) {
@@ -362,4 +387,5 @@ class DevopsServiceControllerSpec extends Specification {
         }
         FileUtil.deleteDirectory(new File("gitops"))
     }
+
 }

@@ -15,10 +15,12 @@ import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO
 import io.choerodon.devops.infra.dto.DevopsSecretDTO
 import io.choerodon.devops.infra.dto.RepositoryFileDTO
 import io.choerodon.devops.infra.dto.gitlab.MemberDTO
+import io.choerodon.devops.infra.dto.iam.IamUserDTO
 import io.choerodon.devops.infra.dto.iam.ProjectDTO
 import io.choerodon.devops.infra.enums.AccessLevel
 import io.choerodon.devops.infra.feign.BaseServiceClient
 import io.choerodon.devops.infra.feign.GitlabServiceClient
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler
 import io.choerodon.devops.infra.mapper.DevopsEnvFileResourceMapper
@@ -78,25 +80,25 @@ class DevopsSecretControllerSpec extends Specification {
     @Autowired
     private GitlabGroupMemberService gitlabGroupMemberRepository
 
-    BaseServiceClient iamServiceClient = Mockito.mock(BaseServiceClient.class)
+    BaseServiceClient baseServiceClient = Mockito.mock(BaseServiceClient.class)
     GitlabServiceClient gitlabServiceClient = Mockito.mock(GitlabServiceClient.class)
     GitlabServiceClientOperator gitlabServiceClientOperator = Mockito.mock(GitlabServiceClientOperator.class)
-
+    BaseServiceClientOperator baseServiceClientOperator = Mockito.mock(BaseServiceClientOperator)
     @Shared
     private DevopsEnvironmentDTO devopsEnvironmentDO = new DevopsEnvironmentDTO()
     @Shared
     private DevopsEnvFileResourceDTO devopsEnvFileResourceDO = new DevopsEnvFileResourceDTO()
 
     def setup() {
-        DependencyInjectUtil.setAttribute(iamRepository, "baseServiceClient", iamServiceClient)
+        DependencyInjectUtil.setAttribute(iamRepository, "baseServiceClient", baseServiceClient)
         DependencyInjectUtil.setAttribute(gitlabRepository, "gitlabServiceClient", gitlabServiceClient)
         DependencyInjectUtil.setAttribute(gitlabGroupMemberRepository, "gitlabServiceClientOperator", gitlabServiceClientOperator)
-
+        DependencyInjectUtil.setAttribute(devopsSecretServiceImpl, "baseServiceClientOperator", baseServiceClientOperator)
         ProjectDTO projectDO = new ProjectDTO()
         projectDO.setName("pro")
         projectDO.setOrganizationId(1L)
         ResponseEntity<ProjectDTO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
-        Mockito.when(iamServiceClient.queryIamProject(anyLong())).thenReturn(responseEntity)
+        Mockito.when(baseServiceClient.queryIamProject(anyLong())).thenReturn(responseEntity)
 
         List<RoleVO> roleDTOList = new ArrayList<>()
         RoleVO roleDTO = new RoleVO()
@@ -109,7 +111,7 @@ class DevopsSecretControllerSpec extends Specification {
         projectWithRoleDTOList.add(projectWithRoleDTO)
         PageInfo<ProjectWithRoleVO> projectWithRoleDTOPage = new PageInfo<>(projectWithRoleDTOList)
         ResponseEntity<PageInfo<ProjectWithRoleVO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
-        Mockito.doReturn(pageResponseEntity).when(iamServiceClient).listProjectWithRole(anyLong(), anyInt(), anyInt())
+        Mockito.doReturn(pageResponseEntity).when(baseServiceClient).listProjectWithRole(anyLong(), anyInt(), anyInt())
 
         MemberDTO memberDO = new MemberDTO()
         memberDO.setAccessLevel(AccessLevel.OWNER.toValue())
@@ -123,6 +125,11 @@ class DevopsSecretControllerSpec extends Specification {
 
         Mockito.when(gitlabServiceClient.updateFile(anyInt(), anyString(), anyString(), anyString(), anyInt())).thenReturn(responseEntity2)
 
+        IamUserDTO iamUserDTO = new IamUserDTO();
+        iamUserDTO.setId(1L)
+        iamUserDTO.setRealName("aa")
+
+        Mockito.doReturn(iamUserDTO).when(baseServiceClientOperator).queryUserByUserId(1L)
     }
 
     def setupSpec() {
@@ -183,8 +190,8 @@ class DevopsSecretControllerSpec extends Specification {
         given: '查询参数'
         String params = "{\"searchParam\":{},\"param\":\"\"}"
 
-        when: '分页插叙'
-        def page = restTemplate.postForEntity(MAPPING + "/1/list_by_option?page=0&size=10", params, PageInfo.class, 1L)
+        when: '分页查询'
+        def page = restTemplate.postForEntity(MAPPING + "/page_by_options?page=0&size=10", params, PageInfo.class, 1L)
 
         then: '校验结果'
         page.getBody().getList().get(0)["name"] == "secret"

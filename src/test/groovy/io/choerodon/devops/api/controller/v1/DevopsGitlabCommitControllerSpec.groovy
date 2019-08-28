@@ -103,12 +103,12 @@ class DevopsGitlabCommitControllerSpec extends Specification {
         applicationMapper.insert(applicationDO)
         devopsGitlabCommitMapper.insert(devopsGitlabCommitDO)
         and: '构造mock返回值'
-        IamUserDTO iamUserDTO=new IamUserDTO();
+        IamUserDTO iamUserDTO = new IamUserDTO();
         iamUserDTO.setId(1L)
         iamUserDTO.setRealName("aa")
-        List<IamUserDTO> iamUserDTOList=new ArrayList<>();
+        List<IamUserDTO> iamUserDTOList = new ArrayList<>();
         iamUserDTOList.add(iamUserDTO);
-        ResponseEntity< List<IamUserDTO>> entity=new ResponseEntity<>(iamUserDTOList,HttpStatus.OK);
+        ResponseEntity<List<IamUserDTO>> entity = new ResponseEntity<>(iamUserDTOList, HttpStatus.OK);
         Mockito.doReturn(entity).when(iamServiceClient).listUsersByIds(anyLong())
         when: '获取应用下的代码提交'
         def devopsGitlabCommit = restTemplate.postForObject("/v1/projects/1/commits?start_date=2015/10/12&end_date=3018/10/18", [1], DevopsGitlabCommitVO.class)

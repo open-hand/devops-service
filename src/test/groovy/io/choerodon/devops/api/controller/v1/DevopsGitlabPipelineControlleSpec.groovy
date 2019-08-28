@@ -56,7 +56,7 @@ class DevopsGitlabPipelineControlleSpec extends Specification {
     @Shared
     AppServiceDTO applicationDO = new AppServiceDTO()
     @Shared
-    DevopsGitlabCommitDTO devopsGitlabCommitDTO=new DevopsGitlabCommitDTO()
+    DevopsGitlabCommitDTO devopsGitlabCommitDTO = new DevopsGitlabCommitDTO()
     @Shared
     DevopsGitlabPipelineDTO devopsGitlabPipelineDO = new DevopsGitlabPipelineDTO()
 
