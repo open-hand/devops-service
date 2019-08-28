@@ -586,7 +586,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
                         .withRefType("env")
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_INGRESS),
                 builder -> builder
-                        .withPayloadAndSerialize(ingressSagaPayload)
+                        .withJson(gson.toJson(ingressSagaPayload))
                         .withRefId(devopsEnvironmentDTO.getId().toString()));
 
 
