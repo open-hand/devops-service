@@ -5,7 +5,7 @@ import { injectIntl } from 'react-intl';
 import { Form, Modal, TextField } from 'choerodon-ui/pro';
 import { Action, Permission } from '@choerodon/master';
 import TreeItemName from '../../../../../components/treeitem-name';
-import GroupCreateForm from '../../modals/GroupCreateForm';
+import GroupForm from '../../modals/GroupForm';
 import { handlePromptError } from '../../../../../utils';
 import { useEnvironmentStore } from '../../../stores';
 import { useTreeItemStore } from './stores';
@@ -27,13 +27,13 @@ function GroupItem({ record, search, intl: { formatMessage }, intlPrefix }) {
   function handleClick() {
     const groupId = record.get('id');
     const name = record.get('name');
-    if (!groupFormDs.length) {
-      groupFormDs.create({ name, id: groupId });
-    }
+    const current = groupFormDs.current;
+    current.set('name', name);
+    current.set('id', groupId);
     Modal.open({
       key: modalKey,
       title: formatMessage({ id: `${intlPrefix}.group.edit` }),
-      children: <GroupCreateForm dataSet={groupFormDs} treeDs={treeDs} />,
+      children: <GroupForm dataSet={groupFormDs} treeDs={treeDs} />,
       drawer: true,
       style: modalStyle,
     });
