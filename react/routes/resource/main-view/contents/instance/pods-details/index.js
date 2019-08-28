@@ -28,7 +28,6 @@ const PodDetail = memo(() => {
     const status = record.get('status');
     const wrapStyle = {
       width: 54,
-      verticalAlign: 'bottom',
     };
 
     const statusMap = {
@@ -129,10 +128,10 @@ const PodDetail = memo(() => {
       className={`${prefixCls}-instance-pods`}
     >
       <Column name="name" renderer={renderName} />
-      <Column renderer={renderAction} />
+      <Column renderer={renderAction} width="0.7rem" />
       <Column name="containers" renderer={renderContainers} />
       <Column name="ip" />
-      <Column name="creationDate" renderer={renderDate} />
+      <Column name="creationDate" renderer={renderDate} width="1rem" />
     </Table>
   );
 });

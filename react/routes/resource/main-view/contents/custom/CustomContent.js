@@ -83,7 +83,7 @@ const CustomContent = observer(() => {
       <Table
         dataSet={customDs}
         border={false}
-        queryBar="none"
+        queryBar="bar"
       >
         <Column name="name" renderer={renderName} />
         <Column renderer={renderAction} width="0.7rem" />

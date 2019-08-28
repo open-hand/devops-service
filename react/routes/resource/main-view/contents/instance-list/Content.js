@@ -67,7 +67,7 @@ const Content = observer(() => {
       <Table
         dataSet={istListDs}
         border={false}
-        queryBar="none"
+        queryBar="bar"
       >
         <Column name="code" renderer={renderName} />
         <Column name="versionName" />

@@ -113,7 +113,7 @@ const CertContent = observer(() => {
       <Table
         dataSet={certificateDs}
         border={false}
-        queryBar="none"
+        queryBar="bar"
       >
         <Column name="certName" renderer={renderName} />
         <Column renderer={renderAction} width="0.7rem" />

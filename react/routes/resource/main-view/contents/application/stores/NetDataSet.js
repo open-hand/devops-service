@@ -13,6 +13,10 @@ export default ({ formatMessage, intlPrefix, projectId, id }) => ({
         data: postData,
       });
     },
+    destroy: ({ data: [data] }) => ({
+      url: `/devops/v1/projects/${projectId}/service/${data.id}`,
+      method: 'delete',
+    }),
   },
   fields: [
     { name: 'id', type: 'number' },
