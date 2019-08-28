@@ -27,4 +27,5 @@ export default ({ formatMessage, intlPrefix, projectId, envId }) => ({
     { name: 'domain', type: 'string', label: formatMessage({ id: 'address' }) },
     { name: 'pathList', type: 'object', label: formatMessage({ id: 'path' }) },
   ],
+  queryFields: [],
 });

@@ -9,15 +9,19 @@ import { useDeployStore } from './stores';
 import StatusTag from '../../components/status-tag';
 import TimePopover from '../../components/timePopover/TimePopover';
 import UserInfo from '../../components/userInfo';
+import { handlePromptError } from '../../utils';
 import Process from './modals/process';
 import ManualDetail from './modals/manualDetail';
 import AutoDetail from './modals/autoDetail';
+import Deploy from './modals/deploy';
 
 import './index.less';
 
 const { Column } = Table;
 const modalKey1 = Modal.key();
 const modalKey2 = Modal.key();
+const modalKey3 = Modal.key();
+const modalKey4 = Modal.key();
 const modalStyle1 = {
   width: 380,
 };
@@ -40,6 +44,9 @@ const Deployment = withRouter(observer((props) => {
     detailDs,
     deployStore,
     pipelineStore,
+    manualDeployDs,
+    networkStore,
+    ingressStore,
   } = useDeployStore();
 
   function refresh() {
@@ -106,8 +113,63 @@ const Deployment = withRouter(observer((props) => {
     });
   }
 
+  function openOperatingModal(operatingType) {
+    Modal.open({
+      key: modalKey3,
+      title: formatMessage({ id: `${intlPrefix}.${operatingType}` }),
+      children: <FormattedMessage id={`${intlPrefix}.${operatingType}.tips`} />,
+      onOk: () => handleOperating(operatingType),
+    });
+  }
+
+  async function handleOperating(operatingType) {
+    try {
+      let result = null;
+      if (operatingType === 'failed') {
+        result = await pipelineStore.manualStop(id, listDs.current.get('deployId'));
+      } else if (operatingType === 'retry') {
+        result = await pipelineStore.retry(id, listDs.current.get('deployId'));
+      }
+      if (handlePromptError(result, false)) {
+        refresh();
+      } else {
+        return false;
+      }
+    } catch (e) {
+      Choerodon.handleResponseError(e);
+      return false;
+    }
+  }
+
+  function openDeploy() {
+    Modal.open({
+      key: modalKey4,
+      style: modalStyle2,
+      drawer: true,
+      title: formatMessage({ id: `${intlPrefix}.manual` }),
+      children: <Deploy
+        store={deployStore}
+        refresh={refresh}
+        projectId={id}
+        intlPrefix={intlPrefix}
+        prefixCls={prefixCls}
+        record={manualDeployDs.create()}
+        networkStore={networkStore}
+        ingressStore={ingressStore}
+      />,
+      okText: formatMessage({ id: 'deployment' }),
+    });
+  }
+
   function renderNumber({ value }) {
-    return <span onClick={openDetail} className={`${prefixCls}-table-number`}>{value}</span>;
+    return (
+      <span
+        onClick={openDetail}
+        className={`${prefixCls}-table-number`}
+      >
+        #{value}
+      </span>
+    );
   }
 
   function renderDeployType({ value }) {
@@ -148,16 +210,21 @@ const Deployment = withRouter(observer((props) => {
       switch (record.get('deployStatus')) {
         case 'failed':
           actionData = [{
+            service: [],
             text: formatMessage({ id: `${intlPrefix}.retry` }),
+            action: () => openOperatingModal('retry'),
           }];
           break;
         case 'running':
           actionData = [{
+            service: [],
             text: formatMessage({ id: `${intlPrefix}.failed` }),
+            action: () => openOperatingModal('failed'),
           }];
           break;
         case 'pendingcheck':
           actionData = [{
+            service: [],
             text: formatMessage({ id: `${intlPrefix}.check` }),
           }];
           break;
@@ -180,6 +247,7 @@ const Deployment = withRouter(observer((props) => {
         >
           <Button
             icon="jsfiddle"
+            onClick={openDeploy}
           >
             <FormattedMessage id={`${intlPrefix}.manual`} />
           </Button>
@@ -208,7 +276,7 @@ const Deployment = withRouter(observer((props) => {
           queryBar="bar"
           className={`${prefixCls}-table`}
         >
-          <Column name="deployId" renderer={renderNumber} />
+          <Column name="deployId" renderer={renderNumber} align="left" />
           <Column renderer={renderActions} width="0.7rem" />
           <Column name="deployType" renderer={renderDeployType} />
           <Column name="deployStatus" renderer={renderDeployStatus} />

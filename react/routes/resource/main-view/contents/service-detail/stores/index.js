@@ -23,8 +23,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const baseInfoDs = useMemo(() => new DataSet(BaseInfoDataSet()), []);
 
     useEffect(() => {
-      // baseInfoDs.transport.read.url = `/devops/v1/projects/${id}/service/${menuId}`;
-      baseInfoDs.transport.read.url = `/devops/v1/projects/${id}/service/398`;
+      baseInfoDs.transport.read.url = `/devops/v1/projects/${id}/service/${menuId}`;
       baseInfoDs.query();
     }, [id, menuId]);
 

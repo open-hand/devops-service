@@ -129,7 +129,7 @@ const IngressContent = observer(() => {
       <Table
         dataSet={ingressDs}
         border={false}
-        queryBar="none"
+        queryBar="bar"
       >
         <Column name="name" renderer={renderName} />
         <Column renderer={renderAction} width="0.7rem" />

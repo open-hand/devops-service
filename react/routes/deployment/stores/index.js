@@ -7,6 +7,9 @@ import PipelineDataSet from './PipelineDataSet';
 import DetailDataSet from './DetailDataSet';
 import useStore from './useStore';
 import usePipelineStore from './usePipelineStore';
+import ManualDeployDataSet from './ManualDeployDataSet';
+import useNetworkStore from './useNetworkStore';
+import useDomainStore from '../../resource/main-view/contents/application/stores/useDomainStore';
 
 const Store = createContext();
 
@@ -25,9 +28,12 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const listDs = useMemo(() => new DataSet(ListDataSet(intlPrefix, formatMessage, projectId)), [projectId]);
     const pipelineDs = useMemo(() => new DataSet(PipelineDataSet(intlPrefix, formatMessage, projectId)), [projectId]);
     const detailDs = useMemo(() => new DataSet(DetailDataSet()), []);
+    const manualDeployDs = useMemo(() => new DataSet(ManualDeployDataSet(intlPrefix, formatMessage)), []);
 
     const deployStore = useStore();
     const pipelineStore = usePipelineStore();
+    const networkStore = useNetworkStore();
+    const ingressStore = useDomainStore();
 
     const value = {
       ...props,
@@ -38,6 +44,9 @@ export const StoreProvider = injectIntl(inject('AppState')(
       detailDs,
       deployStore,
       pipelineStore,
+      manualDeployDs,
+      networkStore,
+      ingressStore,
     };
     return (
       <Store.Provider value={value}>

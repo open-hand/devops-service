@@ -36,7 +36,6 @@ export default class Index extends Component {
       portInNetwork: {},
       protocol: 'normal',
       pathCountChange: false,
-      selectEnv: props.envId,
       singleData: {},
     };
     this.pathKeys = 1;
@@ -117,18 +116,18 @@ export default class Index extends Component {
       intl: { formatMessage },
       AppState: { currentMenuType: { projectId } },
       DomainStore,
+      envId,
     } = this.props;
     const {
-      selectEnv,
       singleData: { name },
     } = this.state;
     const p = /^([a-z0-9]([-a-z0-9]?[a-z0-9])*)$/;
     if (name && name === value) {
       callback();
     } else if (p.test(value)) {
-      if (selectEnv) {
+      if (envId) {
         DomainStore
-          .checkName(projectId, value, selectEnv)
+          .checkName(projectId, value, envId)
           .then((data) => {
             if (data) {
               callback();
@@ -159,9 +158,9 @@ export default class Index extends Component {
       intl: { formatMessage },
       type,
       DomainStore,
+      envId,
     } = this.props;
     const {
-      selectEnv,
       singleData: { id },
     } = this.state;
     if (value) {
@@ -179,7 +178,7 @@ export default class Index extends Component {
               checkPromise = DomainStore.checkPath(
                 projectId,
                 domain,
-                selectEnv,
+                envId,
                 encodeURIComponent(value),
                 id,
               );
@@ -187,7 +186,7 @@ export default class Index extends Component {
               checkPromise = DomainStore.checkPath(
                 projectId,
                 domain,
-                selectEnv,
+                envId,
                 encodeURIComponent(value),
               );
             }
@@ -399,8 +398,9 @@ export default class Index extends Component {
       form: { isModifiedField, resetFields },
       AppState: { currentMenuType: { projectId } },
       DomainStore,
+      envId,
     } = this.props;
-    const { protocol, selectEnv } = this.state;
+    const { protocol } = this.state;
 
     const value = e.target ? e.target.value : e;
     const type = p || protocol;
@@ -409,8 +409,8 @@ export default class Index extends Component {
       resetFields('certId');
     }
 
-    if (type === 'secret' && selectEnv) {
-      DomainStore.loadCertByEnv(projectId, selectEnv, value);
+    if (type === 'secret' && envId) {
+      DomainStore.loadCertByEnv(projectId, envId, value);
     }
   };
 
@@ -423,14 +423,13 @@ export default class Index extends Component {
       },
       intl: { formatMessage },
       type,
-      isInstancePage,
       DomainStore,
+      envId,
     } = this.props;
     const {
       portInNetwork,
       protocol,
       deletedService,
-      selectEnv,
       singleData: {
         pathList,
         name,
@@ -545,7 +544,7 @@ export default class Index extends Component {
             })(
               <Select
                 getPopupContainer={(triggerNode) => triggerNode.parentNode}
-                disabled={!selectEnv}
+                disabled={!envId}
                 filter
                 label={formatMessage({ id: 'domain.column.network' })}
                 showSearch
@@ -630,7 +629,7 @@ export default class Index extends Component {
           })(
             <Input
               autoFocus={type === 'create'}
-              disabled={!selectEnv}
+              disabled={!envId}
               maxLength={40}
               label={formatMessage({ id: 'domain.column.name' })}
             />,
@@ -649,7 +648,7 @@ export default class Index extends Component {
               initialValue: protocol,
             })(
               <RadioGroup
-                disabled={!selectEnv}
+                disabled={!envId}
                 name="type"
                 onChange={this.handleTypeChange}
               >
@@ -681,7 +680,7 @@ export default class Index extends Component {
             initialValue: domain || '',
           })(
             <Input
-              disabled={!selectEnv}
+              disabled={!envId}
               maxLength={50}
               type="text"
               label={formatMessage({ id: 'domain.form.domain' })}

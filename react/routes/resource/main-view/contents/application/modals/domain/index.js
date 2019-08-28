@@ -41,6 +41,7 @@ class CreateDomain extends Component {
       store,
       id,
       type,
+      envId,
       appServiceId,
     } = this.props;
     this.setState({ submitting: true });
@@ -49,7 +50,6 @@ class CreateDomain extends Component {
         const {
           domain,
           name,
-          envId,
           certId,
           paths,
           path,
@@ -87,7 +87,7 @@ class CreateDomain extends Component {
           postData.domainId = id;
           promise = store.updateData(projectId, id, postData);
         }
-        this.handleResponse(promise, envId);
+        this.handleResponse(promise);
       } else {
         this.setState({ submitting: false });
       }
@@ -98,7 +98,7 @@ class CreateDomain extends Component {
    * 处理创建修改域名请求返回的数据
    * @param promise
    */
-  handleResponse = (promise, envId) => {
+  handleResponse = (promise) => {
     if (promise) {
       promise
         .then((data) => {

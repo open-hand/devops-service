@@ -19,7 +19,7 @@ function CertItem({
   }
 
   function deleteItem() {
-    treeDs.remove(record);
+    treeDs.delete(record);
   }
 
   function getSuffix() {
