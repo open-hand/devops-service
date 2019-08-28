@@ -573,7 +573,7 @@ public class DevopsEnvironmentController {
             roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下查询环境")
     @GetMapping(value = "/env_tree_menu")
-    public ResponseEntity<List<DevopsEnvGroupEnvsVO>> listByActive(
+    public ResponseEntity<List<DevopsEnvGroupEnvsVO>> listEnvTreeMenu(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId) {
         return Optional.ofNullable(devopsEnvironmentService.listEnvTreeMenu(projectId))
