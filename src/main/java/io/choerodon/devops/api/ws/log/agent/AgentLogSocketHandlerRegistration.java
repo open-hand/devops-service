@@ -6,7 +6,7 @@ import javax.servlet.http.HttpServletRequest;
 import io.choerodon.devops.api.ws.AgentExecAndLogSocketHandler;
 import io.choerodon.devops.api.ws.WebSocketTool;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.websocket.helper.SocketHandlerRegistration;
+import io.choerodon.websocket.connect.SocketHandlerRegistration;
 import io.choerodon.websocket.helper.WebSocketHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.server.ServerHttpRequest;

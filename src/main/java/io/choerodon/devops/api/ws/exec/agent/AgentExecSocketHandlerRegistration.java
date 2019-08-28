@@ -1,7 +1,7 @@
 package io.choerodon.devops.api.ws.exec.agent;
 
 import io.choerodon.devops.api.ws.AgentExecAndLogSocketHandler;
-import io.choerodon.websocket.helper.SocketHandlerRegistration;
+import io.choerodon.websocket.connect.SocketHandlerRegistration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
@@ -36,5 +36,6 @@ public class AgentExecSocketHandlerRegistration implements SocketHandlerRegistra
 
     @Override
     public void afterConnectionClosed(WebSocketSession webSocketSession, CloseStatus closeStatus) {
+        System.out.println("收到断开agent连接的消息了");
     }
 }
