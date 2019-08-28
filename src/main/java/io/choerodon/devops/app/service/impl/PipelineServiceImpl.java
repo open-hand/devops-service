@@ -32,7 +32,6 @@ import io.choerodon.core.notify.NoticeSendDTO;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.api.vo.iam.UserVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
@@ -777,11 +776,6 @@ public class PipelineServiceImpl implements PipelineService {
     @Override
     public List<PipelineVO> listPipelineDTO(Long projectId) {
         return ConvertUtils.convertList(baseQueryByProjectId(projectId), PipelineVO.class);
-    }
-
-    @Override
-    public List<UserVO> listAllUsers(Long projectId) {
-        return ConvertUtils.convertList(iamService.getAllMember(projectId), UserVO.class);
     }
 
     @Override

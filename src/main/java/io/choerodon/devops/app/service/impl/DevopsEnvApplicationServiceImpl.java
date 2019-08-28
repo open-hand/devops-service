@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -21,6 +22,7 @@ import io.kubernetes.client.models.V1ContainerPort;
 import io.kubernetes.client.models.V1beta2Deployment;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author lizongwei
@@ -36,6 +38,7 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
     @Autowired
     private DevopsEnvAppServiceMapper devopsEnvAppServiceMapper;
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public List<DevopsEnvApplicationVO> batchCreate(DevopsEnvAppServiceVO devopsEnvAppServiceVO) {
         return Stream.of(devopsEnvAppServiceVO.getAppServiceIds())
@@ -45,6 +48,7 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
                 .collect(Collectors.toList());
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void delete(Long envId, Long appServiceId) {
         DevopsEnvAppServiceDTO devopsEnvAppServiceDTO = new DevopsEnvAppServiceDTO(appServiceId, envId);
@@ -62,18 +66,15 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
     }
 
     @Override
-    public List<DevopsEnvLabelVO> listLabelByAppAndEnvId(Long envId, Long appServiceId) {
+    public List<Map<String, String>> listLabelByAppAndEnvId(Long envId, Long appServiceId) {
         List<DevopsEnvMessageVO> devopsEnvMessageVOS = baseListResourceByEnvAndApp(envId, appServiceId);
-        List<DevopsEnvLabelVO> devopsEnvLabelVOS = new ArrayList<>();
+        List<Map<String, String>> listLabel = new ArrayList<>();
         devopsEnvMessageVOS.forEach(devopsEnvMessageVO -> {
-            DevopsEnvLabelVO devopsEnvLabelVO = new DevopsEnvLabelVO();
-            devopsEnvLabelVO.setResourceName(devopsEnvMessageVO.getResourceName());
             V1beta2Deployment v1beta2Deployment = json.deserialize(
                     devopsEnvMessageVO.getDetail(), V1beta2Deployment.class);
-            devopsEnvLabelVO.setLabels(v1beta2Deployment.getSpec().getSelector().getMatchLabels());
-            devopsEnvLabelVOS.add(devopsEnvLabelVO);
+            listLabel.add(v1beta2Deployment.getSpec().getSelector().getMatchLabels());
         });
-        return devopsEnvLabelVOS;
+        return listLabel;
     }
 
     @Override

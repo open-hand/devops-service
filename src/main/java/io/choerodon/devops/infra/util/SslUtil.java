@@ -14,6 +14,7 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
 import io.choerodon.core.exception.CommonException;
+
 import org.apache.commons.codec.binary.Base64;
 import org.bouncycastle.asn1.pkcs.RSAPrivateKey;
 import org.bouncycastle.util.io.pem.PemObject;
@@ -26,6 +27,10 @@ import org.slf4j.LoggerFactory;
  */
 public class SslUtil {
 
+    private SslUtil() {
+
+    }
+
     private static final Logger logger = LoggerFactory.getLogger(SslUtil.class);
 
 
@@ -33,7 +38,6 @@ public class SslUtil {
 
     private static final Charset DEFAULT_CHARSET = Charset.forName(DEFAULT_ENCODING);
 
-    private static final String KEY_ALGORITHM = "RSA";
     /**
      * 默认是RSA/NONE/PKCS1Padding
      */
@@ -56,25 +60,17 @@ public class SslUtil {
 
 
     public static PublicKey getPublicKey(File cert) {
-        FileInputStream in = null;
-        try {
+        try (FileInputStream fin = new FileInputStream(cert);) {
             CertificateFactory cf = CertificateFactory.getInstance("X.509");
-            in = new FileInputStream(cert);
-            Certificate crt = cf.generateCertificate(in);
+            Certificate crt = cf.generateCertificate(fin);
             PublicKey publicKey = crt.getPublicKey();
             return publicKey;
         } catch (CertificateException e) {
             logger.info(e.getMessage(), e);
         } catch (FileNotFoundException e) {
             logger.info(e.getMessage(), e);
-        } finally {
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (IOException e) {
-                    logger.info(e.getMessage(), e);
-                }
-            }
+        } catch (IOException e) {
+            logger.info(e.getMessage(), e);
         }
         return null;
     }
@@ -82,9 +78,8 @@ public class SslUtil {
 
     public static PrivateKey getPrivateKey(File key) {
         PrivateKey privKey = null;
-        PemReader pemReader = null;
-        try {
-            pemReader = new PemReader(new FileReader(key));
+        try (PemReader pemReader = new PemReader(new FileReader(key));) {
+
             PemObject pemObject = pemReader.readPemObject();
             byte[] pemContent = pemObject.getContent();
             //支持从PKCS#1或PKCS#8 格式的私钥文件中提取私钥
@@ -104,15 +99,6 @@ public class SslUtil {
         } catch (Exception e) {
             logger.info(e.getMessage(), e);
             return null;
-        } finally {
-            try {
-                if (pemReader != null) {
-                    pemReader.close();
-                }
-            } catch (IOException e) {
-                logger.info(e.getMessage(), e);
-                return null;
-            }
         }
     }
 
@@ -126,8 +112,7 @@ public class SslUtil {
      */
     public static byte[] encrypt(PublicKey key, byte[] plainBytes) {
 
-        ByteArrayOutputStream out = null;
-        try {
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream();) {
             Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM);
             cipher.init(Cipher.ENCRYPT_MODE, key);
 
@@ -135,7 +120,7 @@ public class SslUtil {
             if (inputLen <= MAX_ENCRYPT_BLOCK) {
                 return cipher.doFinal(plainBytes);
             }
-            out = new ByteArrayOutputStream();
+
             int offSet = 0;
             byte[] cache;
             int i = 0;
@@ -160,19 +145,12 @@ public class SslUtil {
         } catch (InvalidKeyException e) {
             logger.info(e.getMessage(), e);
             return null;
-        } catch (IllegalBlockSizeException e) {
+        } catch (IllegalBlockSizeException | IOException e) {
             logger.info(e.getMessage(), e);
             return null;
         } catch (BadPaddingException e) {
             logger.info(e.getMessage(), e);
             return null;
-        } finally {
-            try {
-                if (out != null) out.close();
-            } catch (Exception e2) {
-                logger.info(e2.getMessage(), e2);
-                return null;
-            }
         }
     }
 
@@ -197,8 +175,7 @@ public class SslUtil {
      */
     public static String decrypt(PrivateKey key, byte[] encodedText) {
 
-        ByteArrayOutputStream out = null;
-        try {
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream();) {
             Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM);
             cipher.init(Cipher.DECRYPT_MODE, key);
             int inputLen = encodedText.length;
@@ -207,7 +184,7 @@ public class SslUtil {
                 return new String(cipher.doFinal(encodedText), DEFAULT_CHARSET);
             }
 
-            out = new ByteArrayOutputStream();
+
             int offSet = 0;
             byte[] cache;
             int i = 0;
@@ -232,19 +209,12 @@ public class SslUtil {
         } catch (InvalidKeyException e) {
             logger.info(e.getMessage(), e);
             return null;
-        } catch (IllegalBlockSizeException e) {
+        } catch (IllegalBlockSizeException | IOException e) {
             logger.info(e.getMessage(), e);
             return null;
         } catch (BadPaddingException e) {
             logger.info(e.getMessage(), e);
             return null;
-        } finally {
-            try {
-                if (out != null) out.close();
-            } catch (Exception e2) {
-                logger.info(e2.getMessage(), e2);
-                return null;
-            }
         }
     }
 

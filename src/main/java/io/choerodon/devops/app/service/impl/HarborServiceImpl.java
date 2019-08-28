@@ -1,6 +1,20 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import com.google.gson.Gson;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.DevopsConfigVO;
@@ -15,19 +29,6 @@ import io.choerodon.devops.infra.dto.harbor.ProjectDetail;
 import io.choerodon.devops.infra.dto.harbor.Role;
 import io.choerodon.devops.infra.feign.HarborClient;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Created with IntelliJ IDEA.
@@ -131,7 +132,8 @@ public class HarborServiceImpl implements HarborService {
         } catch (IOException e) {
             throw new CommonException(e);
         }
-        return String.format("%s/%s", baseUrl, harborMarketVO.getProjectCode());
+        String[] repoUrl = baseUrl.split("//");
+        return String.format("%s%s", repoUrl[1], harborMarketVO.getProjectCode());
     }
 
 }

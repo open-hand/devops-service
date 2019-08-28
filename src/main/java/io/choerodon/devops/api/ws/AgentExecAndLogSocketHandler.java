@@ -10,6 +10,7 @@ import io.choerodon.websocket.helper.WebSocketHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
@@ -26,7 +27,7 @@ public class AgentExecAndLogSocketHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(AgentExecAndLogSocketHandler.class);
 
-
+    @Lazy
     @Autowired
     WebSocketHelper webSocketHelper;
     @Autowired
@@ -49,9 +50,10 @@ public class AgentExecAndLogSocketHandler {
         //解析参数列表，并存储
         Map<String, Object> attribute = WebSocketTool.getAttribute(webSocketSession);
 
-        String registerKey = TypeUtil.objToString(attribute.get("key"));
+        String registerKey = "from_agent:" + TypeUtil.objToString(attribute.get("key"));
+
         //将websocketSession和关联的key做关联
-        webSocketHelper.contact(webSocketSession,registerKey);
+        webSocketHelper.subscribe(registerKey, webSocketSession);
     }
 
 

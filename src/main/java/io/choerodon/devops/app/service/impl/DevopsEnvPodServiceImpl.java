@@ -9,12 +9,17 @@ import java.util.stream.Collectors;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
+import io.kubernetes.client.JSON;
+import io.kubernetes.client.models.V1Pod;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.domain.Sort;
-import io.choerodon.devops.api.vo.AgentPodInfoVO;
-import io.choerodon.devops.api.vo.ContainerVO;
-import io.choerodon.devops.api.vo.DevopsEnvPodInfoVO;
-import io.choerodon.devops.api.vo.DevopsEnvPodVO;
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.AgentPodService;
 import io.choerodon.devops.app.service.DevopsEnvPodService;
 import io.choerodon.devops.app.service.DevopsEnvResourceService;
@@ -28,13 +33,6 @@ import io.choerodon.devops.infra.util.ArrayUtil;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.K8sUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.kubernetes.client.JSON;
-import io.kubernetes.client.models.V1Pod;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 /**
  * Created by Zenger on 2018/4/17.
@@ -68,7 +66,7 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
             devopsEnvPodVO.setClusterId(devopsEnvironmentDTO.getClusterId());
             devopsEnvPodVO.setConnect(updatedEnvList.contains(devopsEnvironmentDTO.getClusterId()));
             //给pod设置containers
-            setContainers(devopsEnvPodVO);
+            fillContainers(devopsEnvPodVO);
             return devopsEnvPodVO;
         }).collect(Collectors.toList()));
 
@@ -76,7 +74,7 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
     }
 
     @Override
-    public void setContainers(DevopsEnvPodVO devopsEnvPodVO) {
+    public void fillContainers(DevopsEnvPodVO devopsEnvPodVO) {
 
         //解析pod的yaml内容获取container的信息
         String message = devopsEnvResourceService.getResourceDetailByNameAndTypeAndInstanceId(devopsEnvPodVO.getInstanceId(), devopsEnvPodVO.getName(), ResourceType.POD);

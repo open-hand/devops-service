@@ -16,11 +16,12 @@ import io.choerodon.devops.infra.dto.DevopsClusterDTO;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.util.KeyParseUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.websocket.helper.SocketHandlerRegistration;
+import io.choerodon.websocket.connect.SocketHandlerRegistration;
 import io.choerodon.websocket.helper.WebSocketHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
@@ -52,6 +53,7 @@ public class AgentGitOpsSocketHandlerRegistration implements SocketHandlerRegist
     private DevopsClusterService devopsClusterService;
 
     @Autowired
+    @Lazy
     private WebSocketHelper webSocketHelper;
 
     @Autowired
@@ -117,7 +119,7 @@ public class AgentGitOpsSocketHandlerRegistration implements SocketHandlerRegist
         String registerKey = TypeUtil.objToString(attribute.get("key"));
 
         //将websocketSession和关联的key做关联
-        webSocketHelper.contact(webSocketSession, registerKey);
+        webSocketHelper.subscribe(registerKey, webSocketSession);
 
 
         ClusterSessionVO clusterSession = new ClusterSessionVO();
@@ -143,8 +145,7 @@ public class AgentGitOpsSocketHandlerRegistration implements SocketHandlerRegist
         Map<String, Object> attribute = attributes.get(webSocketSession.getId());
         String registerKey = TypeUtil.objToString(attribute.get("key"));
 
-        //移除各种关联关系
-        webSocketHelper.removeKeyContact(webSocketSession, registerKey);
+        //移除关联关系
         redisTemplate.opsForHash().delete(CLUSTER_SESSION, registerKey);
         try {
             webSocketSession.close();

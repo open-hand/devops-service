@@ -11,6 +11,7 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO
 import io.choerodon.devops.infra.dto.iam.ProjectDTO
 import io.choerodon.devops.infra.feign.BaseServiceClient
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator
 import io.choerodon.devops.infra.mapper.AppServiceMapper
 import io.choerodon.devops.infra.mapper.DevopsGitlabCommitMapper
 import org.mockito.Mockito
@@ -25,6 +26,7 @@ import spock.lang.Specification
 import spock.lang.Stepwise
 import spock.lang.Subject
 
+import static org.mockito.ArgumentMatchers.anyLong
 import static org.mockito.Matchers.any
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
@@ -49,8 +51,11 @@ class DevopsGitlabCommitControllerSpec extends Specification {
 
     @Autowired
     private IamService iamRepository
+    @Autowired
+    private BaseServiceClientOperator baseServiceClientOperator
 
     BaseServiceClient iamServiceClient = Mockito.mock(BaseServiceClient)
+
 
     def setupSpec() {
         applicationDO.setId(1L)
@@ -70,7 +75,7 @@ class DevopsGitlabCommitControllerSpec extends Specification {
 
     def setup() {
         DependencyInjectUtil.setAttribute(iamRepository, "baseServiceClient", iamServiceClient)
-
+        DependencyInjectUtil.setAttribute(baseServiceClientOperator, "baseServiceClient", iamServiceClient)
         ProjectDTO projectDO = new ProjectDTO()
         projectDO.setId(1L)
         projectDO.setCode("pro")
@@ -97,7 +102,14 @@ class DevopsGitlabCommitControllerSpec extends Specification {
         given: '初始化参数'
         applicationMapper.insert(applicationDO)
         devopsGitlabCommitMapper.insert(devopsGitlabCommitDO)
-
+        and: '构造mock返回值'
+        IamUserDTO iamUserDTO = new IamUserDTO();
+        iamUserDTO.setId(1L)
+        iamUserDTO.setRealName("aa")
+        List<IamUserDTO> iamUserDTOList = new ArrayList<>();
+        iamUserDTOList.add(iamUserDTO);
+        ResponseEntity<List<IamUserDTO>> entity = new ResponseEntity<>(iamUserDTOList, HttpStatus.OK);
+        Mockito.doReturn(entity).when(iamServiceClient).listUsersByIds(anyLong())
         when: '获取应用下的代码提交'
         def devopsGitlabCommit = restTemplate.postForObject("/v1/projects/1/commits?start_date=2015/10/12&end_date=3018/10/18", [1], DevopsGitlabCommitVO.class)
 

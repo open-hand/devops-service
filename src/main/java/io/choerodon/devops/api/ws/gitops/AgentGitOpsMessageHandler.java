@@ -8,6 +8,7 @@ import io.choerodon.devops.infra.enums.InstanceStatus;
 import io.choerodon.devops.infra.util.KeyParseUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.websocket.receive.MessageHandler;
+import io.choerodon.websocket.receive.TextMessageHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +20,7 @@ import org.springframework.web.socket.WebSocketSession;
  */
 
 @Component
-public class AgentGitOpsMessageHandler implements MessageHandler<AgentMsgVO> {
+public class AgentGitOpsMessageHandler implements TextMessageHandler<AgentMsgVO> {
 
     private static final Logger logger = LoggerFactory.getLogger(AgentGitOpsMessageHandler.class);
 

@@ -144,7 +144,7 @@ public interface DevopsClusterService {
      * @param searchParam 查询参数
      * @return pods
      */
-    PageInfo<DevopsClusterPodVO> pagePodsByNodeName(Long clusterId, String nodeName, PageRequest pageRequest, String searchParam);
+    PageInfo<DevopsEnvPodVO> pagePodsByNodeName(Long clusterId, String nodeName, PageRequest pageRequest, String searchParam);
 
 
     /**

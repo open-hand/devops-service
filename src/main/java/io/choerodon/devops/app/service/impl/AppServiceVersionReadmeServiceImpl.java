@@ -16,6 +16,7 @@ public class AppServiceVersionReadmeServiceImpl implements AppServiceVersionRead
     @Autowired
     private AppServiceVersionReadmeMapper appServiceVersionReadmeMapper;
 
+    @Override
     public AppServiceVersionReadmeDTO baseCreate(AppServiceVersionReadmeDTO appServiceVersionReadmeDTO) {
         if (appServiceVersionReadmeMapper.insert(appServiceVersionReadmeDTO) != 1) {
             throw new CommonException("error.insert.version.readme");

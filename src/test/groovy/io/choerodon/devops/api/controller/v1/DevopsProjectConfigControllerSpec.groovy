@@ -1,18 +1,28 @@
 package io.choerodon.devops.api.controller.v1
 
 import com.github.pagehelper.PageInfo
+import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.ConfigVO
+import io.choerodon.devops.api.vo.DefaultConfigVO
 import io.choerodon.devops.api.vo.DevopsConfigVO
 import io.choerodon.devops.app.service.DevopsConfigService
 import io.choerodon.devops.infra.dto.DevopsConfigDTO
+import io.choerodon.devops.infra.dto.DevopsProjectDTO
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO
+import io.choerodon.devops.infra.dto.iam.ProjectDTO
+import io.choerodon.devops.infra.feign.BaseServiceClient
 import io.choerodon.devops.infra.feign.HarborClient
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator
+import io.choerodon.devops.infra.mapper.DevopsProjectMapper
 import io.choerodon.devops.infra.util.ConvertUtils
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.context.annotation.Import
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Stepwise
@@ -40,96 +50,93 @@ class DevopsProjectConfigControllerSpec extends Specification {
     @Shared
     Long project_id = 1L
 
+    @Shared
+    List<DevopsConfigVO> list = new ArrayList<>()
+    @Shared
+    DevopsConfigVO chartDTO = new DevopsConfigVO()
+    @Shared
+    DevopsConfigVO harborDTO = new DevopsConfigVO()
+    @Autowired
+    private BaseServiceClientOperator baseServiceClientOperator
+    @Autowired
+    private DevopsProjectMapper devopsProjectMapper
+
+    BaseServiceClient baseServiceClient = Mockito.mock(BaseServiceClient)
+
+    def setup() {
+        DependencyInjectUtil.setAttribute(baseServiceClientOperator, "baseServiceClient", baseServiceClient)
+
+        chartDTO.setName("test")
+        chartDTO.setType("chart")
+        chartDTO.setProjectId(project_id)
+        chartDTO.setCustom(true)
+        ConfigVO chartConfig = new ConfigVO()
+        chartConfig.setUrl("http://ads.com")
+        chartDTO.setConfig(chartConfig)
+
+
+        harborDTO.setName("test1")
+        harborDTO.setType("harbor")
+        harborDTO.setProjectId(project_id)
+        harborDTO.setCustom(true)
+        ConfigVO harborConfig = new ConfigVO()
+        harborConfig.setEmail("zhuang.chang@hand-china.com")
+        harborConfig.setPassword("Handhand1357")
+        harborConfig.setPrivate(true)
+        harborConfig.setUrl("https://registry.saas.hand-china.com")
+        harborConfig.setUserName("admin")
+        harborDTO.setConfig(harborConfig)
+
+        list.add(chartDTO)
+        list.add(harborDTO)
+
+        ProjectDTO projectDTO = new ProjectDTO()
+        projectDTO.setId(1L)
+        projectDTO.setCode("aads")
+        projectDTO.setOrganizationId(1L)
+        ResponseEntity<ProjectDTO> projectEntity = new ResponseEntity<>(projectDTO, HttpStatus.OK)
+        Mockito.doReturn(projectEntity).when(baseServiceClient).queryIamProject(1L)
+
+        OrganizationDTO organizationDTO = new OrganizationDTO()
+        organizationDTO.setCode("organization")
+        organizationDTO.setId(1L)
+        ResponseEntity<OrganizationDTO> organizationEntity = new ResponseEntity<>(organizationDTO, HttpStatus.OK)
+        Mockito.doReturn(organizationEntity).when(baseServiceClient).queryOrganizationById(1L)
+    }
     //创建配置
     def "Create"() {
-        DevopsConfigVO devopsProjectConfigDTO = new DevopsConfigVO()
-        devopsProjectConfigDTO.setName("test")
-        devopsProjectConfigDTO.setType("chart")
-        devopsProjectConfigDTO.setProjectId(project_id)
-        ConfigVO projectConfigDTO = new ConfigVO()
-        projectConfigDTO.setEmail("test")
-        projectConfigDTO.setPassword("test")
-        projectConfigDTO.setPrivate(true)
-        projectConfigDTO.setProject("test")
-        projectConfigDTO.setUrl("http://chart.choerodon.com.cn")
-        projectConfigDTO.setUserName("test")
-        devopsProjectConfigDTO.setConfig(projectConfigDTO)
+        given: '初始化数据'
+
 
         when: '创建配置'
-        def entity = restTemplate.postForEntity(MAPPING, devopsProjectConfigDTO, DevopsConfigVO.class, project_id)
+        def entity = restTemplate.postForEntity(MAPPING, list, null, project_id)
 
         then:
-        entity.getBody().getName().equals("test")
+        entity.getStatusCode().is2xxSuccessful()
     }
 
-    //校验名字是否存在
-    def "CheckName"() {
-        when: '创建应用校验名称是否存在'
-        def entity = restTemplate.getForEntity(MAPPING + "/check_name?name=test", Object, 1L)
+    def "query"() {
+        given:
+        DevopsProjectDTO projectDTO = new DevopsProjectDTO()
+        projectDTO.setAppId(1L)
+        projectDTO.setDevopsAppGroupId(1L)
+        projectDTO.setDevopsEnvGroupId(1L)
+        projectDTO.setHarborProjectIsPrivate(true)
+        projectDTO.setIamProjectId(1L)
+        devopsProjectMapper.insert(projectDTO)
 
-        then: '名字存在抛出异常'
-        entity.getBody()["failed"] == true
-    }
-
-    //更新配置
-    def "Update"() {
-        DevopsConfigDTO devopsConfigDTO = devopsProjectConfigRepository.baseQuery(3L)
-        DevopsConfigVO devopsConfigVO = ConvertUtils.convertObject(devopsConfigDTO, DevopsConfigVO.class)
-        devopsConfigVO.setName("testnew")
-
-        when:
-        restTemplate.put(MAPPING, devopsConfigVO, project_id)
-
+        when: '查询配置'
+        def entity = restTemplate.getForEntity(MAPPING, List.class, project_id)
         then:
-        devopsProjectConfigRepository.baseQuery(3L).getName() == "testnew"
-
+        entity.getStatusCode().is2xxSuccessful()
     }
 
-    //分页查询配置
-    def "PageByOptions"() {
-        when:
-        def page = restTemplate.postForObject(MAPPING + "/list_by_options", null, PageInfo.class, 1L)
-
+    def "queryProjectDefaultConfig"() {
+        when: '查询默认配置'
+        def entity = restTemplate.getForEntity(MAPPING + "/default_config", DefaultConfigVO.class, project_id)
         then:
-        page.getTotal() == 3
+        entity.getStatusCode().is2xxSuccessful()
+        entity.getBody() != null
     }
 
-    //根据id查询配置
-    def "QueryByPrimaryKey"() {
-        when:
-        def object = restTemplate.getForObject(MAPPING + "/{project_config_id}", DevopsConfigVO.class, 1, 3)
-
-        then:
-        object.getName() == "testnew"
-    }
-
-    //根据类型查询配置列表
-    def "QueryByIdAndType"() {
-        when:
-        def list = restTemplate.getForObject(MAPPING + "/type?type=chart", List.class, 1)
-
-        then:
-        list.size() == 2
-
-    }
-
-    //检查配置是否被使用过
-    def "CheckIsUsed"() {
-
-        when:
-        def bool = restTemplate.getForObject(MAPPING + "/{project_config_id}/check", Boolean.class, 1, 3)
-
-        then:
-        bool
-    }
-
-    //删除配置
-    def "DeleteByProjectConfigId"() {
-        when:
-        restTemplate.delete(MAPPING + "/{project_config_id}", 1, 3)
-
-        then:
-        devopsProjectConfigRepository.baseQuery(3) == null
-
-    }
 }

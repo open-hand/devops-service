@@ -9,6 +9,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.DevopsEnvGroupVO;
 import io.choerodon.devops.app.service.DevopsEnvGroupService;
+
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -97,13 +98,15 @@ public class DevopsEnvGroupController {
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "校验环境组名唯一性")
-    @GetMapping(value = "/checkName")
+    @GetMapping(value = "/check_name")
     public ResponseEntity<Boolean> checkName(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境组名", required = true)
-            @RequestParam String name) {
-        return Optional.ofNullable(devopsEnvGroupService.checkName(name, projectId))
+            @RequestParam String name,
+            @ApiParam(value = "环境组id", required = false)
+            @RequestParam(value = "group_id", required = false) Long groupId) {
+        return Optional.ofNullable(devopsEnvGroupService.checkName(name, projectId, groupId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.env.group.get"));
     }

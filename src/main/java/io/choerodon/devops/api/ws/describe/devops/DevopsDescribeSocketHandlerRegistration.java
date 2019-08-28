@@ -8,11 +8,12 @@ import io.choerodon.devops.api.vo.DescribeResourceVO;
 import io.choerodon.devops.api.ws.WebSocketTool;
 import io.choerodon.devops.app.service.AgentCommandService;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.websocket.helper.SocketHandlerRegistration;
+import io.choerodon.websocket.connect.SocketHandlerRegistration;
 import io.choerodon.websocket.helper.WebSocketHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.http.server.ServletServerHttpRequest;
@@ -31,11 +32,13 @@ public class DevopsDescribeSocketHandlerRegistration implements SocketHandlerReg
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsDescribeSocketHandlerRegistration.class);
 
+    @Autowired
+    @Lazy
+    WebSocketHelper webSocketHelper;
 
     @Autowired
-    WebSocketHelper webSocketHelper;
-    @Autowired
     AgentCommandService agentCommandService;
+
 
     @Override
     public String path() {
@@ -74,31 +77,24 @@ public class DevopsDescribeSocketHandlerRegistration implements SocketHandlerReg
 
     @Override
     public void afterConnectionEstablished(WebSocketSession webSocketSession) {
+
         //解析参数列表，并存储
-
-
         Map<String, Object> attribute = WebSocketTool.getAttribute(webSocketSession);
 
         String registerKey = TypeUtil.objToString(attribute.get("key"));
-        //将websocketSession和关联的key做关联
-        webSocketHelper.contact(webSocketSession, registerKey);
 
         //通知agent建立与前端同样的ws连接
         DescribeResourceVO describeResourceVO = new DescribeResourceVO(attribute.get("kind").toString(), attribute.get("name").toString(), attribute.get("env").toString(), attribute.get("describeId").toString());
         Long clusterId = TypeUtil.objToLong(registerKey.split("\\.")[0].split(":")[1]);
         agentCommandService.startDescribeConnection(registerKey, describeResourceVO, clusterId);
 
-
+        //将websocketSession和关联的key做关联
+        webSocketHelper.subscribe("from_devops:" + registerKey, webSocketSession);
     }
 
     @Override
 
     public void afterConnectionClosed(WebSocketSession webSocketSession, CloseStatus closeStatus) {
-        Map<String, Object> attribute = WebSocketTool.getAttribute(webSocketSession);
-        String registerKey = TypeUtil.objToString(attribute.get("key"));
-
-        webSocketHelper.removeKeyContact(webSocketSession, registerKey);
-
         try {
             webSocketSession.close();
         } catch (IOException e) {

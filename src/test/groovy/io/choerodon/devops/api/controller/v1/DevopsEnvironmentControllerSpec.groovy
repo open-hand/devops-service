@@ -57,7 +57,6 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 class DevopsEnvironmentControllerSpec extends Specification {
     @Shared
     private String rootUrl = "/v1/projects/{project_id}/envs"
-
     @Autowired
     private TestRestTemplate restTemplate
     @Autowired
@@ -431,7 +430,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
 
         // mock 查询用户在gitlab的角色
         MemberDTO memberDO = new MemberDTO()
-        memberDO.setUserId(userAttrDTO.getGitlabUserId().intValue())
+        memberDO.setId(userAttrDTO.getGitlabUserId().intValue())
         memberDO.setAccessLevel(AccessLevel.OWNER.toValue())
         ResponseEntity<MemberDTO> responseEntity2 = new ResponseEntity<>(memberDO, HttpStatus.OK)
         Mockito.when(gitlabServiceClient.queryGroupMember(anyInt(), anyInt())).thenReturn(responseEntity2)
@@ -510,7 +509,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         devopsEnvironmentMapper.selectAll().size() == 3
     }
 
-    def "实例视图查询环境及其下服务及实例(listEnvTree)"() {
+    def "listEnvTree"() {
         given: "准备数据"
         def url = rootUrl + "/ins_tree_menu"
 
@@ -532,7 +531,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         response.isEmpty()
     }
 
-    def "资源视图查询项目下环境及其下各种资源的基本信息(listResourceEnvTree)"() {
+    def "listResourceEnvTree"() {
         given: "准备数据"
         def url = rootUrl + "/resource_tree_menu"
 
@@ -632,7 +631,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         dto.getCode() == devopsEnvironmentDO.getCode()
     }
 
-    def "实例视图查询单个环境信息(queryEnvInfo)"() {
+    def "queryEnvInfo"() {
         given: '准备'
         def url = rootUrl + "/{environment_id}/info"
         Map<String, Object> urlParams = new HashMap<>()
@@ -647,7 +646,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         dto.getSkipCheckPermission() == devopsEnvironmentDO.getSkipCheckPermission()
     }
 
-    def "查询环境下相关资源的数量(queryEnvResourceCount)"() {
+    def "queryEnvResourceCount"() {
         given: '准备'
         def url = rootUrl + "/{env_id}/resource_count"
         Map<String, Object> urlParams = new HashMap<>()
@@ -662,33 +661,33 @@ class DevopsEnvironmentControllerSpec extends Specification {
         dto.getInstanceCount() == 1
     }
 
-    def "按资源用量列出环境下Pod信息（queryEnvPodInfo）"() {
-        given: '准备'
-        def url = rootUrl + "/{env_id}/pod_ranking?sort={sort}"
-        Map<String, Object> urlParams = new HashMap<>()
-        urlParams.put("project_id", projectId)
-        urlParams.put("env_id", devopsEnvironmentDO.getId())
-        urlParams.put("sort", "memory")
-
-        when: '按默认（按内存倒序）请求Pod'
-        def response = JSONArray.parseArray(restTemplate.getForObject(url, String.class, urlParams), DevopsEnvPodInfoVO.class)
-
-        then: '返回值'
-        response != null
-        response.size() == 2
-        response.get(0).getName() == devopsEnvPodDTO2.getName()
-        response.get(1).getName() == devopsEnvPodDTO.getName()
-
-        when: '按CPU倒序请求Pod'
-        urlParams.put("sort", "cpu")
-        response = JSONArray.parseArray(restTemplate.getForObject(url, String.class, urlParams), DevopsEnvPodInfoVO.class)
-
-        then: '返回值'
-        response != null
-        response.size() == 2
-        response.get(0).getName() == devopsEnvPodDTO.getName()
-        response.get(1).getName() == devopsEnvPodDTO2.getName()
-    }
+//    def "queryEnvPodInfo"() {
+//        given: '准备'
+//        def url = rootUrl + "/{env_id}/pod_ranking?sort={sort}"
+//        Map<String, Object> urlParams = new HashMap<>()
+//        urlParams.put("project_id", projectId)
+//        urlParams.put("env_id", devopsEnvironmentDO.getId())
+//        urlParams.put("sort", "memory")
+//
+//        when: '按默认（按内存倒序）请求Pod'
+//        def response = JSONArray.parseArray(restTemplate.getForObject(url, String.class, urlParams), DevopsEnvPodInfoVO.class)
+//
+//        then: '返回值'
+//        response != null
+//        response.size() == 2
+//        response.get(0).getName() == devopsEnvPodDTO2.getName()
+//        response.get(1).getName() == devopsEnvPodDTO.getName()
+//
+//        when: '按CPU倒序请求Pod'
+//        urlParams.put("sort", "cpu")
+//        response = JSONArray.parseArray(restTemplate.getForObject(url, String.class, urlParams), DevopsEnvPodInfoVO.class)
+//
+//        then: '返回值'
+//        response != null
+//        response.size() == 2
+//        response.get(0).getName() == devopsEnvPodDTO.getName()
+//        response.get(1).getName() == devopsEnvPodDTO2.getName()
+//    }
 
     def "Update"() {
         given: '初始化环境更新DTO对象'
@@ -733,7 +732,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         noExceptionThrown()
     }
 
-    def "项目下查询有正在运行实例的环境(ListByProjectId)"() {
+    def "ListByProjectId"() {
         given: '初始化应用实例DO对象'
         def url = rootUrl + "/list_by_instance?app_service_id={app_service_id}"
         Map<String, Object> map = new HashMap<>()
@@ -781,7 +780,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
 //        page.getList().size() > 0
 //    }
 
-    def "分页查询环境下用户权限(pageEnvUserPermissions)"() {
+    def "pageEnvUserPermissions"() {
         given: '准备'
 
         def url = rootUrl + "/{env_id}/permission/page_by_options?page={page}&size={size}"
@@ -801,7 +800,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         page.getList().size() == 4
     }
 
-    def "列出项目下所有与该环境未分配权限的项目成员(listAllNonRelatedMembers)"() {
+    def "listAllNonRelatedMembers"() {
         given: '准备'
 
         def url = rootUrl + "/{env_id}/permission/list_non_related"
@@ -820,7 +819,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         list.get(0).getIamUserId() == 5L
     }
 
-    def "删除该用户在该环境下的权限(deletePermissionOfUser)"() {
+    def "deletePermissionOfUser"() {
         given: '准备'
         def url = rootUrl + "/{env_id}/permission?user_id={user_id}"
         Map<String, Object> map = new HashMap<>()

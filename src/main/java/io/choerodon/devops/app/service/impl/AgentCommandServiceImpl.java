@@ -25,18 +25,17 @@ import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.util.FileUtil;
 import io.choerodon.devops.infra.util.GitUtil;
 import io.choerodon.websocket.helper.WebSocketHelper;
-import io.choerodon.websocket.relationship.RelationshipDefining;
-import io.choerodon.websocket.send.WebSocketSendPayload;
+import io.choerodon.websocket.send.SendMessagePayload;
+import io.choerodon.websocket.send.relationship.BrokerKeySessionMapper;
 import io.codearte.props2yaml.Props2YAML;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 import org.springframework.web.socket.TextMessage;
-import org.springframework.web.socket.WebSocketSession;
 
 
 /**
@@ -70,9 +69,12 @@ public class AgentCommandServiceImpl implements AgentCommandService {
     @Autowired
     private GitUtil gitUtil;
     @Autowired
+    @Lazy
     private WebSocketHelper webSocketHelper;
     @Autowired
-    private RelationshipDefining relationshipDefining;
+    @Lazy
+    private BrokerKeySessionMapper brokerKeySessionMapper;
+
 
     @Value("${services.helm.url}")
     private String helmUrl;
@@ -154,10 +156,8 @@ public class AgentCommandServiceImpl implements AgentCommandService {
             String msgPayload = mapper.writeValueAsString(msg);
 
             //0.18.0到0.19.0 为了agent的平滑升级，所以不能以通用的新Msg方式发送，继续用以前的Msg格式发送
-            relationshipDefining.getWebSocketSessionsByKey("cluster:"+ devopsClusterDTO.getId()).stream().filter(session -> session != null).forEach((session) -> {
-                if (!session.isOpen()) {
-                    relationshipDefining.removeWebSocketSessionContact(session);
-                } else {
+            brokerKeySessionMapper.getSessionsByKey("cluster:" + devopsClusterDTO.getId()).stream().filter(session -> session != null).forEach((session) -> {
+                if (session.isOpen()) {
                     synchronized (session) {
                         try {
                             TextMessage textMessage = new TextMessage(msgPayload);
@@ -386,11 +386,11 @@ public class AgentCommandServiceImpl implements AgentCommandService {
     }
 
     private void sendToWebsocket(Long clusterId, AgentMsgVO msg) {
-        WebSocketSendPayload<AgentMsgVO> webSocketSendPayload = new WebSocketSendPayload<>();
+        SendMessagePayload<AgentMsgVO> webSocketSendPayload = new SendMessagePayload<>();
         webSocketSendPayload.setKey("cluster:" + clusterId);
         webSocketSendPayload.setType("agent");
         webSocketSendPayload.setData(msg);
-        webSocketHelper.sendMessage("cluster:" + clusterId, webSocketSendPayload);
+        webSocketHelper.sendMessageByKey("cluster:" + clusterId, webSocketSendPayload);
     }
 
 }

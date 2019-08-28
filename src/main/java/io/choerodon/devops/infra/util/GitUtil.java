@@ -59,10 +59,6 @@ public class GitUtil {
     IamService iamService;
     private String classPath;
     private String sshKey;
-    @Value("${template.url}")
-    private String repoUrl;
-    @Value("${template.version}")
-    private String version;
     @Value("${services.gitlab.sshUrl}")
     private String gitlabSshUrl;
 
@@ -297,29 +293,6 @@ public class GitUtil {
         }
         return git;
     }
-
-    private Git cloneGitHubTemplate(String type, String localPathFile, String version) {
-        Git git = null;
-        try {
-            if (!new File(TEMPLATE).exists()) {
-                Git.cloneRepository()
-                        .setURI(repoUrl)
-                        .setCloneSubmodules(true)
-                        .setBranch(version)
-                        .setDirectory(new File(TEMPLATE))
-                        .call();
-            }
-            if (new File(TEMPLATE + "/" + type + GIT_SUFFIX).exists()) {
-                FileUtil.deleteFile(new File(TEMPLATE + "/" + type + GIT_SUFFIX));
-            }
-            FileUtil.copyDir(new File(TEMPLATE + "/" + type), new File(localPathFile));
-            git = Git.init().setDirectory(new File(localPathFile)).call();
-        } catch (GitAPIException e) {
-            throw new CommonException(ERROR_GIT_CLONE, e);
-        }
-        return git;
-    }
-
 
     /**
      * 克隆公开仓库的或者根据access token克隆私库的代码所有分支

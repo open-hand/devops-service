@@ -1,8 +1,10 @@
 package io.choerodon.devops.app.eventhandler.payload;
 
+import java.util.Set;
+
 /**
  * @author zongw.lee@gmail.com
- * @date 2019/8/7
+ * @since 2019/8/7
  */
 public class ApplicationEventPayload {
     private Long id;
@@ -26,6 +28,11 @@ public class ApplicationEventPayload {
     private Long projectId;
 
     private Long userId;
+
+    /**
+     * 如果这个值不为空，则当前应用选择某个特定版本的平台层应用作为模板，这是该特定版本每个服务的版本ID，对应`devops_app_service_version`表
+     */
+    private Set<Long> serviceVersionIds;
 
     public Long getId() {
         return id;
@@ -113,5 +120,13 @@ public class ApplicationEventPayload {
 
     public void setUserId(Long userId) {
         this.userId = userId;
+    }
+
+    public Set<Long> getServiceVersionIds() {
+        return serviceVersionIds;
+    }
+
+    public void setServiceVersionIds(Set<Long> serviceVersionIds) {
+        this.serviceVersionIds = serviceVersionIds;
     }
 }

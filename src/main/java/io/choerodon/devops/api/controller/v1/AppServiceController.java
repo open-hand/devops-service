@@ -183,7 +183,7 @@ public class AppServiceController {
             @RequestParam(value = "active", required = false) Boolean isActive,
             @ApiParam(value = "服务是否存在版本")
             @RequestParam(value = "has_version", required = false) Boolean hasVersion,
-            @ApiParam(value = "服务是否存在版本")
+            @ApiParam(value = "服务是否市场导入")
             @RequestParam(value = "app_market", required = false) Boolean appMarket,
             @ApiParam(value = "服务类型")
             @RequestParam(value = "type", required = false) String type,

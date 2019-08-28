@@ -7,6 +7,7 @@ import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import io.choerodon.devops.infra.mapper.DevopsProjectMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -96,7 +97,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
-    private DevopsEnvResourceDetailMapper devopsEnvResourceDetailMapper;
+    private DevopsProjectService devopsProjectService;
     @Autowired
     private DevopsEnvPodMapper devopsEnvPodMapper;
     @Autowired
@@ -142,7 +143,28 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
     @Override
     public DevopsServiceVO query(Long id) {
-        return queryDtoToVo(devopsServiceMapper.queryById(id));
+
+        List<DevopsServiceInstanceDTO> devopsServiceAppInstanceDTOS = devopsServiceInstanceService.baseListByServiceId(id);
+        //网络多实例中存在删除实例时，给应用信息赋值
+        if (!devopsServiceAppInstanceDTOS.isEmpty()) {
+            for (DevopsServiceInstanceDTO devopsServiceAppInstanceDTO : devopsServiceAppInstanceDTOS) {
+                AppServiceInstanceDTO applicationInstanceDTO = appServiceInstanceService.baseQuery(devopsServiceAppInstanceDTO.getInstanceId());
+                if (applicationInstanceDTO != null) {
+                    AppServiceDTO appServiceDTO = applicationService.baseQuery(applicationInstanceDTO.getAppServiceId());
+                    DevopsServiceQueryDTO devopsServiceQueryDTO = baseQueryById(id);
+                    devopsServiceQueryDTO.setAppServiceId(appServiceDTO.getId());
+                    devopsServiceQueryDTO.setAppServiceName(appServiceDTO.getName());
+                    devopsServiceQueryDTO.setAppServiceProjectId(devopsProjectService.queryProjectIdByAppId(appServiceDTO.getAppId()));
+                    return queryDtoToVo(devopsServiceQueryDTO);
+                }
+            }
+        }
+        DevopsServiceQueryDTO devopsServiceQueryDTO = baseQueryById(id);
+        if(devopsServiceQueryDTO!=null) {
+            return queryDtoToVo(baseQueryById(id));
+        }else {
+            return null;
+        }
     }
 
     @Override
@@ -178,14 +200,14 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         if (devopsServiceReqVO.getAppServiceId() != null) {
 
             // 应用下不能创建endpoints类型网络
-            if (devopsServiceReqVO.getEndPoints().size() != 0) {
+            if (devopsServiceReqVO.getEndPoints() != null) {
                 throw new CommonException("error.app.create.endpoints.service");
             }
-            DevopsApplicationResourceDTO devopsApplicationResourceDTO = new DevopsApplicationResourceDTO();
-            devopsApplicationResourceDTO.setAppServiceId(devopsServiceReqVO.getAppServiceId());
-            devopsApplicationResourceDTO.setResourceType(ObjectType.SERVICE.getType());
-            devopsApplicationResourceDTO.setResourceId(devopsServiceDTO.getId());
-            devopsApplicationResourceService.baseCreate(devopsApplicationResourceDTO);
+            DevopsAppServiceResourceDTO devopsAppServiceResourceDTO = new DevopsAppServiceResourceDTO();
+            devopsAppServiceResourceDTO.setAppServiceId(devopsServiceReqVO.getAppServiceId());
+            devopsAppServiceResourceDTO.setResourceType(ObjectType.SERVICE.getType());
+            devopsAppServiceResourceDTO.setResourceId(devopsServiceDTO.getId());
+            devopsApplicationResourceService.baseCreate(devopsAppServiceResourceDTO);
         }
 
         //在gitops库处理service文件
@@ -698,12 +720,14 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         devopsServiceVO.setTarget(devopsServiceTargetVO);
 
         //获得pod实时信息
-        List<PodLiveInfoVO> podLiveInfoVOS = devopsServiceQueryDTO.getInstances()
-                .stream()
-                .map(instanceInfoVO -> getPodLiveInfoVOs(instanceInfoVO.getId(), envId))
-                .collect(Collectors.toList());
+        if (devopsServiceQueryDTO.getInstances() != null) {
+            List<PodLiveInfoVO> podLiveInfoVOS = devopsServiceQueryDTO.getInstances()
+                    .stream()
+                    .map(instanceInfoVO -> getPodLiveInfoVOs(instanceInfoVO.getId(), envId))
+                    .collect(Collectors.toList());
 
-        devopsServiceVO.setPodLiveInfos(podLiveInfoVOS);
+            devopsServiceVO.setPodLiveInfos(podLiveInfoVOS);
+        }
 
         // service的dnsName为${serviceName.namespace}
         devopsServiceVO.setDns(devopsServiceVO.getName() + "." + devopsServiceQueryDTO.getEnvCode());
@@ -726,6 +750,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             return null;
         }
         podLiveInfoVO.setPodId(devopsEnvPodDTO.getId());
+        podLiveInfoVO.setCreationDate(devopsEnvPodDTO.getCreationDate());
 
         //反序列化json
         V1Pod v1Pod = json.deserialize(devopsEnvPodDTO.getMessage(), V1Pod.class);
@@ -737,21 +762,25 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             return containerVO;
         }).collect(Collectors.toList());
 
-        //设置podName,namespace,containers
+        //设置podName,containers
         podLiveInfoVO.setPodName(v1Pod.getMetadata().getName());
         podLiveInfoVO.setContainers(containerVOS);
 
         //设置实时CPU、内存信息
         List<AgentPodInfoVO> agentPodInfoVOS = agentPodInfoService.queryAllPodSnapshots(devopsEnvPodDTO.getName(), devopsEnvPodDTO.getNamespace());
 
-        List<String> cpuUsedList = agentPodInfoVOS.stream().map(AgentPodInfoVO::getCpuUsed).collect(Collectors.toList());
-        List<String> memoryUsedList = agentPodInfoVOS.stream().map(AgentPodInfoVO::getMemoryUsed).collect(Collectors.toList());
-        List<Date> timeList = agentPodInfoVOS.stream().map(AgentPodInfoVO::getSnapshotTime).collect(Collectors.toList());
+        if(!agentPodInfoVOS.isEmpty()) {
+            List<String> cpuUsedList = agentPodInfoVOS.stream().map(AgentPodInfoVO::getCpuUsed).collect(Collectors.toList());
+            List<String> memoryUsedList = agentPodInfoVOS.stream().map(AgentPodInfoVO::getMemoryUsed).collect(Collectors.toList());
+            List<Date> timeList = agentPodInfoVOS.stream().map(AgentPodInfoVO::getSnapshotTime).collect(Collectors.toList());
 
-        podLiveInfoVO.setCpuUsedList(cpuUsedList);
-        podLiveInfoVO.setMemoryUsedList(memoryUsedList);
-        podLiveInfoVO.setTimeList(timeList);
-
+            podLiveInfoVO.setCpuUsedList(cpuUsedList);
+            podLiveInfoVO.setMemoryUsedList(memoryUsedList);
+            podLiveInfoVO.setTimeList(timeList);
+            podLiveInfoVO.setNodeIp(agentPodInfoVOS.get(0).getNodeIp());
+            podLiveInfoVO.setNodeName(agentPodInfoVOS.get(0).getNodeName());
+            podLiveInfoVO.setPodIp(agentPodInfoVOS.get(0).getPodIp());
+        }
         return podLiveInfoVO;
     }
 
@@ -1009,7 +1038,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                         .withRefType("env")
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_SERVICE),
                 builder -> builder
-                        .withPayloadAndSerialize(serviceSagaPayLoad)
+                        .withJson(gson.toJson(serviceSagaPayLoad))
                         .withRefId(devopsEnvironmentDTO.getId().toString()));
     }
 

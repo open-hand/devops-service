@@ -1,16 +1,20 @@
 package io.choerodon.devops.api.controller.v1;
 
+import java.util.List;
 import java.util.Optional;
 
 import com.github.pagehelper.PageInfo;
+
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.ProjectReqVO;
+import io.choerodon.devops.api.vo.iam.UserVO;
 import io.choerodon.devops.app.service.DevopsProjectService;
 import io.choerodon.swagger.annotation.CustomPageRequest;
+
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,5 +70,22 @@ public class DevopsProjectController {
         return Optional.ofNullable(devopsProjectService.pageProjects(projectId, pageRequest, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.project.query"));
+    }
+
+    /**
+     * 列出项目下的所有项目所有者和项目成员
+     *
+     * @param projectId 项目id
+     * @return 项目所有者和项目成员
+     */
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "获取所有项目成员和项目所有者")
+    @GetMapping(value = "/users/list_users")
+    public ResponseEntity<List<UserVO>> getAllUsers(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId) {
+        return Optional.ofNullable(devopsProjectService.listAllOwnerAndMembers(projectId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.users.all.list"));
     }
 }

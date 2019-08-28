@@ -35,7 +35,6 @@
         </if>
         AND da.is_active = 1
         AND dgc.app_service_id = da.id
-        AND da.project_id = #{projectId}
         <if test="startDate != null">
             AND dgc.commit_date >= CONCAT('','${startDate}',' 00:00:00')
         </if>

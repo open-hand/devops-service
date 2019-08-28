@@ -59,12 +59,12 @@ public class DevopsClusterController {
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_ADMINISTRATOR})
     @ApiOperation(value = "更新集群")
-    @PutMapping
+    @PutMapping("{cluster_id}")
     public void update(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群Id")
-            @RequestParam Long clusterId,
+            @PathVariable("cluster_id") Long clusterId,
             @ApiParam(value = "集群对象")
             @RequestBody @Valid DevopsClusterUpdateVO devopsClusterUpdateVO) {
         devopsClusterService.updateCluster(clusterId, devopsClusterUpdateVO);
@@ -367,7 +367,7 @@ public class DevopsClusterController {
     @ApiOperation(value = "分页查询节点下的Pod")
     @CustomPageRequest
     @PostMapping(value = "/page_node_pods")
-    public ResponseEntity<PageInfo<DevopsClusterPodVO>> pageQueryPodsByNodeName(
+    public ResponseEntity<PageInfo<DevopsEnvPodVO>> pageQueryPodsByNodeName(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群id", required = true)

@@ -32,24 +32,16 @@ DevOps Service integrated several open source tools to automate the process of `
 - [Redis](https://redis.io/): In-memory database for data caching and partial non-persistent data storage
 
 ## Dependencies
+
 * `go-register-server`: Register server, in place of `eureka-server`
-
 * `iam-service`：Iam service
-
 * `api-gateway`: Gateway service
-
 * `oauth-server`: Oauth service
-
 * `manager-service`: Manager service
-
 * `asgard-service` : Transaction consistency service
-
 * `notify-service` : Notify service
-
 * `gitlab-service`：Service to communicate with gitlab
-
 * `workflow-service`：Workflow service
-
 * `agile-service`：Agile service
 
 ## Service Configuration
