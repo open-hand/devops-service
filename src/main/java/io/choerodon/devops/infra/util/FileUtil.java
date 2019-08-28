@@ -225,16 +225,13 @@ public class FileUtil {
             destDir = tarFile.getParent();
         }
         destDir = destDir.endsWith(File.separator) ? destDir : destDir + File.separator;
-        FileInputStream inputStream = null;
-        try {
-            inputStream = new FileInputStream(tarFile);
+
+        try(FileInputStream inputStream = new FileInputStream(tarFile)) {
             unTar(new GzipCompressorInputStream(inputStream), destDir);
         } catch (IOException e) {
             if (logger.isDebugEnabled()) {
                 logger.debug(e.getMessage());
             }
-        } finally {
-            IOUtils.closeQuietly(inputStream);
         }
     }
 
@@ -795,11 +792,7 @@ public class FileUtil {
         res.setHeader("Content-Disposition", "attachment;filename=" + filePath);
         File file = new File(filePath);
         res.setHeader("Content-Length", "" + file.length());
-        BufferedInputStream bis = null;
-        OutputStream os = null;
-        try {
-            os = res.getOutputStream();
-            bis = new BufferedInputStream(new FileInputStream(file));
+        try(BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file)); OutputStream os = res.getOutputStream()) {
             byte[] buff = new byte[bis.available()];
             int count = bis.read(buff);
             if (count > 0) {
@@ -808,17 +801,6 @@ public class FileUtil {
             }
         } catch (IOException e) {
             throw new CommonException(e);
-        } finally {
-            try {
-                if (os != null) {
-                    os.close();
-                }
-                if (bis != null) {
-                    bis.close();
-                }
-            } catch (IOException e) {
-                throw new CommonException(e);
-            }
         }
 
     }
