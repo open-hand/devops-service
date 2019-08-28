@@ -29,6 +29,9 @@ import io.choerodon.swagger.annotation.CustomPageRequest;
 @RequestMapping(value = "/v1/projects/{project_id}/envs")
 public class DevopsEnvironmentController {
 
+    private static final String ERROR_ENVIRONMENT_GET = "error.environment.get";
+    private static final String ERROR_ENVIRONMENT_QUERY = "error.environment.query";
+
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
 
@@ -120,7 +123,7 @@ public class DevopsEnvironmentController {
             @RequestParam(value = "active") Boolean active) {
         return Optional.ofNullable(devopsEnvironmentService.listByProjectIdAndActive(projectId, active))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.environment.get"));
+                .orElseThrow(() -> new CommonException(ERROR_ENVIRONMENT_GET));
     }
 
     /**
@@ -141,7 +144,7 @@ public class DevopsEnvironmentController {
             @RequestParam Boolean active) {
         return Optional.ofNullable(devopsEnvironmentService.listDevopsEnvGroupEnvs(projectId, active))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.environment.get"));
+                .orElseThrow(() -> new CommonException(ERROR_ENVIRONMENT_GET));
     }
 
     /**
@@ -185,7 +188,7 @@ public class DevopsEnvironmentController {
             @PathVariable(value = "environment_id") Long environmentId) {
         return Optional.ofNullable(devopsEnvironmentService.query(environmentId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.environment.query"));
+                .orElseThrow(() -> new CommonException(ERROR_ENVIRONMENT_QUERY));
     }
 
 
@@ -207,7 +210,7 @@ public class DevopsEnvironmentController {
             @PathVariable(value = "environment_id") Long environmentId) {
         return Optional.ofNullable(devopsEnvironmentService.queryInfoById(environmentId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.environment.query"));
+                .orElseThrow(() -> new CommonException(ERROR_ENVIRONMENT_QUERY));
     }
 
 
@@ -229,7 +232,7 @@ public class DevopsEnvironmentController {
             @PathVariable(value = "env_id") Long envId) {
         return Optional.ofNullable(devopsEnvironmentService.queryEnvResourceCount(envId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.environment.query"));
+                .orElseThrow(() -> new CommonException(ERROR_ENVIRONMENT_QUERY));
     }
 
 
@@ -539,7 +542,7 @@ public class DevopsEnvironmentController {
             @RequestParam(value = "code") String code) {
         return Optional.ofNullable(devopsEnvironmentService.queryByCode(projectId, code))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.environment.query"));
+                .orElseThrow(() -> new CommonException(ERROR_ENVIRONMENT_QUERY));
     }
 
 
@@ -575,7 +578,7 @@ public class DevopsEnvironmentController {
             @PathVariable(value = "project_id") Long projectId) {
         return Optional.ofNullable(devopsEnvironmentService.listEnvTreeMenu(projectId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.environment.get"));
+                .orElseThrow(() -> new CommonException(ERROR_ENVIRONMENT_GET));
     }
 
     /**
@@ -599,6 +602,6 @@ public class DevopsEnvironmentController {
             @RequestParam(value = "active") Boolean active) {
         return Optional.ofNullable(devopsEnvironmentService.listByGroupAndActive(projectId, groupId, active))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.environment.get"));
+                .orElseThrow(() -> new CommonException(ERROR_ENVIRONMENT_GET));
     }
 }

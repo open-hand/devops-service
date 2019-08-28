@@ -1,12 +1,11 @@
 package io.choerodon.devops.api.ws.exec.devops;
 
-import io.choerodon.devops.api.ws.exec.ExecMessageHandler;
-import io.choerodon.websocket.receive.BinaryMessageHandler;
-import io.choerodon.websocket.receive.MessageHandler;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.BinaryMessage;
 import org.springframework.web.socket.WebSocketSession;
+
+import io.choerodon.devops.api.ws.exec.ExecMessageHandler;
+import io.choerodon.websocket.receive.BinaryMessageHandler;
 
 /**
  * Created by Sheep on 2019/7/26.
@@ -18,7 +17,7 @@ public class DevopsExecMessageHandler implements BinaryMessageHandler {
     @Override
     public void handle(WebSocketSession webSocketSession, BinaryMessage message) {
         ExecMessageHandler execMessageHandler = new ExecMessageHandler();
-        execMessageHandler.handle(webSocketSession,message);
+        execMessageHandler.handle(webSocketSession, message);
     }
 
     @Override

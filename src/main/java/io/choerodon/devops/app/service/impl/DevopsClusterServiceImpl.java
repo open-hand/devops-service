@@ -43,6 +43,8 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
     private static final String UPGRADE_MESSAGE = "Version is too low, please upgrade!";
 
+    private static final String ERROR_CLUSTER_NOT_EXIST = "error.cluster.not.exist";
+
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
@@ -161,7 +163,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     public List<ProjectReqVO> listNonRelatedProjects(Long projectId, Long clusterId, String params) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(clusterId);
         if (devopsClusterDTO == null) {
-            throw new CommonException("error.cluster.not.exist", clusterId);
+            throw new CommonException(ERROR_CLUSTER_NOT_EXIST, clusterId);
         }
 
         Map<String, Object> searchMap = TypeUtil.castMapParams(params);
@@ -193,7 +195,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     public void assignPermission(DevopsClusterPermissionUpdateVO update) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(update.getClusterId());
         if (devopsClusterDTO == null) {
-            throw new CommonException("error.cluster.not.exist", update.getClusterId());
+            throw new CommonException(ERROR_CLUSTER_NOT_EXIST, update.getClusterId());
         }
 
         if (devopsClusterDTO.getSkipCheckProjectPermission()) {
@@ -286,7 +288,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     public PageInfo<ProjectReqVO> pageRelatedProjects(Long projectId, Long clusterId, PageRequest pageRequest, String params) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(clusterId);
         if (devopsClusterDTO == null) {
-            throw new CommonException("error.cluster.not.exist", clusterId);
+            throw new CommonException(ERROR_CLUSTER_NOT_EXIST, clusterId);
         }
 
         Map<String, Object> map = TypeUtil.castMapParams(params);

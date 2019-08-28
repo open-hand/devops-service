@@ -39,6 +39,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
     public static final String DELETE_TYPE = "delete";
     public static final String CONFIGMAP = "ConfigMap";
     public static final String CONFIG_MAP_PREFIX = "configMap-";
+    private static final String MASTER = "master";
     private Gson gson = new Gson();
 
 
@@ -213,7 +214,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
         if (devopsEnvFileResourceDTO == null) {
             baseDelete(configMapId);
             devopsApplicationResourceService.baseDeleteByResourceIdAndType(configMapId, ObjectType.CONFIGMAP.getType());
-            if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), "master",
+            if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER,
                     CONFIG_MAP_PREFIX + devopsConfigMapDTO.getName() + ".yaml")) {
                 gitlabServiceClientOperator.deleteFile(
                         TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
@@ -223,7 +224,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
             }
             return;
         } else {
-            if (!gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), "master",
+            if (!gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER,
                     devopsEnvFileResourceDTO.getFilePath())) {
                 baseDelete(configMapId);
                 devopsApplicationResourceService.baseDeleteByResourceIdAndType(configMapId, ObjectType.CONFIGMAP.getType());
@@ -235,7 +236,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
 
         //如果对象所在文件只有一个对象，则直接删除文件,否则把对象从文件中去掉，更新文件
         if (devopsEnvFileResourceDTOS.size() == 1) {
-            if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), "master",
+            if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER,
                     devopsEnvFileResourceDTO.getFilePath())) {
                 gitlabServiceClientOperator.deleteFile(
                         TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),

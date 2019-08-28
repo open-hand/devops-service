@@ -9,30 +9,31 @@ import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
 import com.zaxxer.hikari.util.UtilityElf;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import io.choerodon.devops.api.vo.kubernetes.CheckLog;
 import io.choerodon.devops.api.vo.kubernetes.ProjectCreateDTO;
-import io.choerodon.devops.app.service.DevopsBranchService;
 import io.choerodon.devops.app.service.DevopsCheckLogService;
 import io.choerodon.devops.app.service.DevopsDeployRecordService;
 import io.choerodon.devops.app.service.DevopsEnvApplicationService;
 import io.choerodon.devops.infra.dto.*;
-import io.choerodon.devops.infra.dto.gitlab.BranchDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectCategoryDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.OrgServiceClientOperator;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.ConvertUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 
 @Service
 public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsCheckLogServiceImpl.class);
+    private static final  String SUCCESS="success";
+    private static final String FAILED="failed";
     private static final ExecutorService executorService = new ThreadPoolExecutor(0, 1,
             0L, TimeUnit.MILLISECONDS,
             new LinkedBlockingQueue<>(), new UtilityElf.DefaultThreadFactory("devops-upgrade", false));
@@ -189,7 +190,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                         "Sync environment application relationship,envId: %s, appServiceId: %s", v.getEnvId(), v.getAppServiceId()));
                 try {
                     devopsEnvApplicationService.baseCreate(v);
-                    checkLog.setResult("success");
+                    checkLog.setResult(SUCCESS);
                 } catch (Exception e) {
                     checkLog.setResult("fail");
                     LOGGER.info(e.getMessage(), e);
@@ -218,9 +219,9 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                         appServiceShareRuleDTO.setVersion(versionDTO.getVersion());
                         appServiceShareRuleDTO.setAppServiceId(versionDTO.getAppServiceId());
                         if (applicationShareMapper.insert(appServiceShareRuleDTO) != 1) {
-                            checkLog.setResult("failed");
+                            checkLog.setResult(FAILED);
                         } else {
-                            checkLog.setResult("success");
+                            checkLog.setResult(SUCCESS);
                         }
                         logs.add(checkLog);
                     });
@@ -235,17 +236,11 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             List<DevopsDeployRecordDTO> devopsDeployRecordDTOS = devopsEnvCommandMapper.listAllInstanceCommand()
                     .stream()
                     .filter(devopsEnvCommandDTO -> devopsEnvCommandDTO.getProjectId() != null)
-                    .map(devopsEnvCommandDTO -> {
-                        DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(devopsEnvCommandDTO.getProjectId(), "manual", devopsEnvCommandDTO.getId(), devopsEnvCommandDTO.getEnvId().toString(), devopsEnvCommandDTO.getCreationDate());
-                        return devopsDeployRecordDTO;
-                    }).collect(Collectors.toList());
+                    .map(devopsEnvCommandDTO -> new DevopsDeployRecordDTO(devopsEnvCommandDTO.getProjectId(), "manual", devopsEnvCommandDTO.getId(), devopsEnvCommandDTO.getEnvId().toString(), devopsEnvCommandDTO.getCreationDate())).collect(Collectors.toList());
 
 
             //流水线内部署实例的记录
-            devopsDeployRecordDTOS.addAll(pipelineRecordMapper.listAllPipelineRecordAndEnv(null).stream().map(pipelineRecordDTO -> {
-                DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(pipelineRecordDTO.getProjectId(), "auto", pipelineRecordDTO.getId(), pipelineRecordDTO.getEnv(), pipelineRecordDTO.getCreationDate());
-                return devopsDeployRecordDTO;
-            }).collect(Collectors.toList()));
+            devopsDeployRecordDTOS.addAll(pipelineRecordMapper.listAllPipelineRecordAndEnv(null).stream().map(pipelineRecordDTO -> new DevopsDeployRecordDTO(pipelineRecordDTO.getProjectId(), "auto", pipelineRecordDTO.getId(), pipelineRecordDTO.getEnv(), pipelineRecordDTO.getCreationDate())).collect(Collectors.toList()));
 
             devopsDeployRecordDTOS.stream().sorted(Comparator.comparing(DevopsDeployRecordDTO::getDeployTime)).forEach(devopsDeployRecordDTO -> devopsDeployRecordService.baseCreate(devopsDeployRecordDTO));
 
@@ -284,9 +279,9 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                                 "Sync cluster migration to the project,clusterId: %s, organizationId: %s", cluster.getId(), organizationId));
                         if (projectDTO != null) {
                             cluster.setProjectId(projectDTO.getId());
-                            checkLog.setResult(devopsClusterMapper.updateByPrimaryKeySelective(cluster) != 1 ? "failed" : "success");
+                            checkLog.setResult(devopsClusterMapper.updateByPrimaryKeySelective(cluster) != 1 ? FAILED : SUCCESS);
                         } else {
-                            checkLog.setResult("failed");
+                            checkLog.setResult(FAILED);
                         }
                         checkLogs.add(checkLog);
                     });
@@ -299,9 +294,9 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                         checkLog.setContent(String.format("Migrate organization certification to the project, org-cert-id: %s, organizationId: %s", cert.getId(), organizationId));
                         if (projectDTO != null) {
                             cert.setProjectId(projectDTO.getId());
-                            checkLog.setResult(devopsCertificationMapper.updateByPrimaryKeySelective(cert) != 1 ? "failed" : "success");
+                            checkLog.setResult(devopsCertificationMapper.updateByPrimaryKeySelective(cert) != 1 ? FAILED : SUCCESS);
                         } else {
-                            checkLog.setResult("failed");
+                            checkLog.setResult(FAILED);
                         }
                         checkLogs.add(checkLog);
                     });

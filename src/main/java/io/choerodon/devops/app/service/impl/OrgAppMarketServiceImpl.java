@@ -53,7 +53,6 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
 import io.choerodon.devops.infra.mapper.AppServiceMapper;
-import io.choerodon.devops.infra.thread.CommandWaitForThread;
 import io.choerodon.devops.infra.util.*;
 
 /**
@@ -63,7 +62,7 @@ import io.choerodon.devops.infra.util.*;
  */
 @Component
 public class OrgAppMarketServiceImpl implements OrgAppMarketService {
-    public static final Logger LOGGER = LoggerFactory.getLogger(CommandWaitForThread.class);
+    public static final Logger LOGGER = LoggerFactory.getLogger(OrgAppMarketServiceImpl.class);
     private static final Gson gson = new Gson();
 
     private static final String APPLICATION = "application";
@@ -78,6 +77,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
     private static final String APP_OUT_FILE_FORMAT = "%s%s%s-%s-%s%s";
     private static final String APP_FILE_PATH_FORMAT = "%s%s%s%s%s";
     private static final String APP_TEMP_PATH_FORMAT = "%s%s%s";
+    private static final String APP_REPOSITORY_PATH_FORMAT = "%s/%s";
     private static final String ZIP = ".zip";
     private static final String GIT = ".git";
     private static final String TGZ = ".tgz";
@@ -369,7 +369,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         String repositoryUrl = repoUrl + groupPath + "/" + downloadPayload.getAppServiceCode() + GIT;
         String unZipFilePath = gitUtil.getWorkingDirectory(REPO + System.currentTimeMillis());
         FileUtil.unZipFiles(file, unZipFilePath);
-        unZipFilePath = String.format("%s%s%s", unZipFilePath, File.separator, appServiceVersionPayload.getVersion());
+        unZipFilePath = String.format(APP_TEMP_PATH_FORMAT, unZipFilePath, File.separator, appServiceVersionPayload.getVersion());
         if (isFirst) {
             git = gitUtil.initGit(new File(unZipFilePath));
         } else {
@@ -442,7 +442,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         }
 
         String newTgzFile = gitUtil.getWorkingDirectory(CHART + System.currentTimeMillis());
-        FileUtil.toTgz(String.format("%s%s%s", unZipPath, File.separator, appServiceCode), newTgzFile);
+        FileUtil.toTgz(String.format(APP_TEMP_PATH_FORMAT, unZipPath, File.separator, appServiceCode), newTgzFile);
         chartUtil.uploadChart(MARKET, DOWNLOADED_APP, new File(newTgzFile + TGZ));
         FileUtil.deleteFile(file);
         FileUtil.deleteDirectory(new File(unZipPath));
@@ -466,7 +466,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
 
         //1.创建目录 应用服务仓库
         FileUtil.createDirectory(appFilePath, appServiceDTO.getCode());
-        String appServiceRepositoryPath = String.format("%s/%s", appFilePath, appServiceDTO.getCode());
+        String appServiceRepositoryPath = String.format(APP_REPOSITORY_PATH_FORMAT, appFilePath, appServiceDTO.getCode());
 
         String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
         String token = gitlabServiceClientOperator.getAdminToken();
@@ -477,7 +477,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             //2. 创建目录 应用服务版本
 
             FileUtil.createDirectory(appServiceRepositoryPath, appServiceVersionDTO.getVersion());
-            String appServiceVersionPath = String.format("%s/%s", appServiceRepositoryPath, appServiceVersionDTO.getVersion());
+            String appServiceVersionPath = String.format(APP_REPOSITORY_PATH_FORMAT, appServiceRepositoryPath, appServiceVersionDTO.getVersion());
 
             //3.clone源码,checkout到版本所在commit，并删除.git文件
             gitUtil.cloneAndCheckout(appServiceVersionPath, appServiceDTO.getRepoUrl(), token, appServiceVersionDTO.getCommit());
@@ -537,7 +537,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             if (!appMarkets.isEmpty() && appMarkets.size() == 1) {
                 Map<String, String> params = new HashMap<>();
                 String image = appServiceVersionDTO.getImage().replace(":" + appServiceVersionDTO.getVersion(), "");
-                params.put(image, String.format("%s/%s", harborUrl, appServiceVersionDTO.getVersion()));
+                params.put(image, String.format(APP_REPOSITORY_PATH_FORMAT, harborUrl, appServiceVersionDTO.getVersion()));
                 FileUtil.fileToInputStream(appMarkets.get(0), params);
             }
         } else {

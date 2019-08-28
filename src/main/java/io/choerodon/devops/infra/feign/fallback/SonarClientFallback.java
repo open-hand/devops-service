@@ -4,6 +4,7 @@ import java.util.Map;
 
 import io.choerodon.devops.api.vo.sonar.*;
 import io.choerodon.devops.infra.feign.SonarClient;
+
 import org.springframework.stereotype.Component;
 import retrofit2.Call;
 
@@ -54,7 +55,7 @@ public class SonarClientFallback implements SonarClient {
     }
 
     @Override
-    public Call<Void> updateDefaultVisibility(Map<String, String> maps){
+    public Call<Void> updateDefaultVisibility(Map<String, String> maps) {
         return null;
     }
 
@@ -64,7 +65,9 @@ public class SonarClientFallback implements SonarClient {
     }
 
     @Override
-    public Call<Void> removeGroupFromTemplate(Map<String, String> maps) {return null;}
+    public Call<Void> removeGroupFromTemplate(Map<String, String> maps) {
+        return null;
+    }
 
     @Override
     public Call<Projects> listProject() {

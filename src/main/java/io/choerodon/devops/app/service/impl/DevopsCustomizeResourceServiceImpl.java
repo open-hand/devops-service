@@ -280,6 +280,9 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
         } else if (UPDATE.equals(type)) {
             DevopsCustomizeResourceDTO devopsCustomizeResourceDTO = baseQuery(resourceId);
             devopsCustomizeResourceDTO.setLastUpdatedBy(userId);
+            if (kind == null) {
+                throw new CommonException("error.custom.resource.kind.null");
+            }
             if (!kind.equals(devopsCustomizeResourceDTO.getK8sKind())) {
                 throw new CommonException("error.custom.resource.kind.modify");
             }

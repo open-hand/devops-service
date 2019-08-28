@@ -38,7 +38,7 @@ import io.choerodon.devops.infra.util.*;
 
 @Service
 public class AppServiceVersionServiceImpl implements AppServiceVersionService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(PipelineServiceImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AppServiceVersionServiceImpl.class);
 
     private static final String DESTINATION_PATH = "devops";
     private static final String STORE_PATH = "stores";
@@ -82,8 +82,6 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     private AppServiceMapper appServiceMapper;
     @Autowired
     private DevopsConfigMapper devopsConfigMapper;
-    @Autowired
-    private MarketConnectInfoService marketConnectInfoService;
 
 
     private Gson gson = new Gson();
@@ -382,7 +380,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         List<AppServiceVersionDTO> versionList = appServiceVersionMapper.queryServiceVersionByAppServiceIdAndShare(appServiceId, share);
         List<AppServiceVersionVO> versionVoList = new ArrayList<>();
         if (!versionList.isEmpty()) {
-            versionVoList = versionList.stream().map(appServiceVersionDTO -> dtoToVo(appServiceVersionDTO)).collect(Collectors.toList());
+            versionVoList = versionList.stream().map(this::dtoToVo).collect(Collectors.toList());
         }
         return versionVoList;
     }

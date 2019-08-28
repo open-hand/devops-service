@@ -279,7 +279,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         AppServiceInstanceDTO appServiceInstanceDTO = new AppServiceInstanceDTO();
         try {
             for (Job job : jobs) {
-                 appServiceInstanceDTO = appServiceInstanceService
+                appServiceInstanceDTO = appServiceInstanceService
                         .baseQueryByCodeAndEnv(job.getReleaseName(), envId);
                 DevopsEnvResourceDTO newDevopsEnvResourceDTO =
                         devopsEnvResourceService.baseQueryOptions(
@@ -313,7 +313,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         try {
             Long envId = getEnvId(key, clusterId);
             if (envId == null) {
-                logger.info(ENV_NOT_EXIST, KeyParseUtil.getNamespace(key) + "clusterId: " + clusterId);
+                logger.info("{} {} clusterId:{}", ENV_NOT_EXIST, KeyParseUtil.getNamespace(key), clusterId);
                 return;
             }
 
@@ -789,7 +789,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         List<DevopsEnvFileErrorDTO> errorDevopsFiles = getEnvFileErrors(envId, gitOpsSyncDTO, devopsEnvironmentDTO);
 
         gitOpsSyncDTO.getMetadata().getFilesCommit().forEach(fileCommit -> {
-            if(fileCommit.getFile().endsWith(".yaml")||fileCommit.getFile().endsWith("yml")) {
+            if (fileCommit.getFile().endsWith(".yaml") || fileCommit.getFile().endsWith("yml")) {
                 DevopsEnvFileDTO devopsEnvFileDTO = devopsEnvFileService.baseQueryByEnvAndPath(devopsEnvironmentDTO.getId(), fileCommit.getFile());
                 devopsEnvFileDTO.setAgentCommit(fileCommit.getCommit());
                 devopsEnvFileService.baseUpdate(devopsEnvFileDTO);
@@ -878,6 +878,52 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             devopsServiceDTO.setStatus(ServiceStatus.RUNNING.getStatus());
         }
         devopsServiceService.baseUpdate(devopsServiceDTO);
+    }
+
+    private void syncService(DevopsServiceDTO devopsServiceDTO, String msg, AppServiceInstanceDTO appServiceInstanceDTO) {
+        V1Service v1Service = json.deserialize(msg, V1Service.class);
+        Map<String, String> lab = v1Service.getMetadata().getLabels();
+        if (lab.get(SERVICE_LABLE) != null && lab.get(SERVICE_LABLE).equals(SERVICE_KIND)) {
+            DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(
+                    appServiceInstanceDTO.getEnvId());
+            if (devopsServiceService.baseQueryByNameAndEnvId(
+                    v1Service.getMetadata().getName(), devopsEnvironmentDTO.getId()) == null) {
+                devopsServiceDTO.setEnvId(devopsEnvironmentDTO.getId());
+                devopsServiceDTO.setAppServiceId(appServiceInstanceDTO.getAppServiceId());
+                devopsServiceDTO.setName(v1Service.getMetadata().getName());
+                devopsServiceDTO.setType(v1Service.getSpec().getType());
+                devopsServiceDTO.setStatus(ServiceStatus.RUNNING.getStatus());
+                devopsServiceDTO.setPorts(gson.fromJson(
+                        gson.toJson(v1Service.getSpec().getPorts()),
+                        new TypeToken<ArrayList<PortMapVO>>() {
+                        }.getType()));
+                if (v1Service.getSpec().getExternalIPs() != null) {
+                    devopsServiceDTO.setExternalIp(String.join(",", v1Service.getSpec().getExternalIPs()));
+                }
+                devopsServiceDTO.setLabels(json.serialize(v1Service.getMetadata().getLabels()));
+                devopsServiceDTO.setAnnotations(json.serialize(v1Service.getMetadata().getAnnotations()));
+                devopsServiceDTO.setId(devopsServiceService.baseCreate(devopsServiceDTO).getId());
+
+                DevopsServiceInstanceDTO devopsServiceInstanceDTO = devopsServiceInstanceService
+                        .baseQueryByOptions(devopsServiceDTO.getId(), appServiceInstanceDTO.getId());
+                if (devopsServiceInstanceDTO == null) {
+                    devopsServiceInstanceDTO = new DevopsServiceInstanceDTO();
+                    devopsServiceInstanceDTO.setServiceId(devopsServiceDTO.getId());
+                    devopsServiceInstanceDTO.setInstanceId(appServiceInstanceDTO.getId());
+                    devopsServiceInstanceService.baseCreate(devopsServiceInstanceDTO);
+                }
+
+                DevopsEnvCommandDTO devopsEnvCommandDTO = new DevopsEnvCommandDTO();
+                devopsEnvCommandDTO.setObject(ObjectType.SERVICE.getType());
+                devopsEnvCommandDTO.setObjectId(devopsServiceDTO.getId());
+                devopsEnvCommandDTO.setCommandType(CommandType.CREATE.getType());
+                devopsEnvCommandDTO.setStatus(CommandStatus.SUCCESS.getStatus());
+                devopsEnvCommandService.baseCreate(devopsEnvCommandDTO);
+            }
+        } else {
+            devopsEnvResourceService.deleteByEnvIdAndKindAndName(appServiceInstanceDTO.getEnvId(),
+                    ResourceType.SERVICE.getType(), v1Service.getMetadata().getName());
+        }
     }
 
     private void syncIngress(Long envId, List<DevopsEnvFileErrorDTO> errorDevopsFiles, ResourceCommitVO resourceCommitVO, String[] objects) {
@@ -1042,54 +1088,6 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             logger.info(e.getMessage());
         }
     }
-
-
-    private void syncService(DevopsServiceDTO devopsServiceDTO, String msg, AppServiceInstanceDTO appServiceInstanceDTO) {
-        V1Service v1Service = json.deserialize(msg, V1Service.class);
-        Map<String, String> lab = v1Service.getMetadata().getLabels();
-        if (lab.get(SERVICE_LABLE) != null && lab.get(SERVICE_LABLE).equals(SERVICE_KIND)) {
-            DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(
-                    appServiceInstanceDTO.getEnvId());
-            if (devopsServiceService.baseQueryByNameAndEnvId(
-                    v1Service.getMetadata().getName(), devopsEnvironmentDTO.getId()) == null) {
-                devopsServiceDTO.setEnvId(devopsEnvironmentDTO.getId());
-                devopsServiceDTO.setAppServiceId(appServiceInstanceDTO.getAppServiceId());
-                devopsServiceDTO.setName(v1Service.getMetadata().getName());
-                devopsServiceDTO.setType(v1Service.getSpec().getType());
-                devopsServiceDTO.setStatus(ServiceStatus.RUNNING.getStatus());
-                devopsServiceDTO.setPorts(gson.fromJson(
-                        gson.toJson(v1Service.getSpec().getPorts()),
-                        new TypeToken<ArrayList<PortMapVO>>() {
-                        }.getType()));
-                if (v1Service.getSpec().getExternalIPs() != null) {
-                    devopsServiceDTO.setExternalIp(String.join(",", v1Service.getSpec().getExternalIPs()));
-                }
-                devopsServiceDTO.setLabels(json.serialize(v1Service.getMetadata().getLabels()));
-                devopsServiceDTO.setAnnotations(json.serialize(v1Service.getMetadata().getAnnotations()));
-                devopsServiceDTO.setId(devopsServiceService.baseCreate(devopsServiceDTO).getId());
-
-                DevopsServiceInstanceDTO devopsServiceInstanceDTO = devopsServiceInstanceService
-                        .baseQueryByOptions(devopsServiceDTO.getId(), appServiceInstanceDTO.getId());
-                if (devopsServiceInstanceDTO == null) {
-                    devopsServiceInstanceDTO = new DevopsServiceInstanceDTO();
-                    devopsServiceInstanceDTO.setServiceId(devopsServiceDTO.getId());
-                    devopsServiceInstanceDTO.setInstanceId(appServiceInstanceDTO.getId());
-                    devopsServiceInstanceService.baseCreate(devopsServiceInstanceDTO);
-                }
-
-                DevopsEnvCommandDTO devopsEnvCommandDTO = new DevopsEnvCommandDTO();
-                devopsEnvCommandDTO.setObject(ObjectType.SERVICE.getType());
-                devopsEnvCommandDTO.setObjectId(devopsServiceDTO.getId());
-                devopsEnvCommandDTO.setCommandType(CommandType.CREATE.getType());
-                devopsEnvCommandDTO.setStatus(CommandStatus.SUCCESS.getStatus());
-                devopsEnvCommandService.baseCreate(devopsEnvCommandDTO);
-            }
-        } else {
-            devopsEnvResourceService.deleteByEnvIdAndKindAndName(appServiceInstanceDTO.getEnvId(),
-                    ResourceType.SERVICE.getType(), v1Service.getMetadata().getName());
-        }
-    }
-
 
     private void syncPod(String msg, AppServiceInstanceDTO appServiceInstanceDTO) {
         V1Pod v1Pod = json.deserialize(msg, V1Pod.class);

@@ -9,13 +9,12 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import io.choerodon.devops.infra.enums.SecretStatus;
+import io.kubernetes.client.models.V1ObjectMeta;
+import io.kubernetes.client.models.V1Secret;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import io.kubernetes.client.models.V1ObjectMeta;
-import io.kubernetes.client.models.V1Secret;
 
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
@@ -27,8 +26,9 @@ import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.CommandStatus;
 import io.choerodon.devops.infra.enums.HelmObjectKind;
 import io.choerodon.devops.infra.enums.ObjectType;
-import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
+import io.choerodon.devops.infra.enums.SecretStatus;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 import io.choerodon.devops.infra.gitops.ResourceFileCheckHandler;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
@@ -51,6 +51,8 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     private static final String UPDATE = "update";
     private static final String DELETE = "delete";
     private static final String SECRET_KIND = "secret";
+    private static final String DOCKER_CONFIG_JSON = ".dockerconfigjson";
+    private static final String MASTER = "master";
 
     private Gson gson = new Gson();
 
@@ -123,7 +125,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         Map<String, String> encodedSecretMaps = new HashMap<>();
         if (!secretReqVO.getValue().isEmpty()) {
             for (Map.Entry<String, String> e : secretReqVO.getValue().entrySet()) {
-                if (!e.getKey().equals(".dockerconfigjson")) {
+                if (!e.getKey().equals(DOCKER_CONFIG_JSON)) {
                     encodedSecretMaps.put(e.getKey(), Base64Util.getBase64EncodedString(e.getValue()));
                 } else {
                     encodedSecretMaps.put(e.getKey(), e.getValue());
@@ -143,7 +145,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
                 }.getType());
         secretRespVO.setValue(secretMaps);
         for (Map.Entry<String, String> e : secretRespVO.getValue().entrySet()) {
-            if (!e.getKey().equals(".dockerconfigjson")) {
+            if (!e.getKey().equals(DOCKER_CONFIG_JSON)) {
                 secretMaps.put(e.getKey(), Base64Util.getBase64DecodedString(e.getValue()));
             } else {
                 secretMaps.put(e.getKey(), e.getValue());
@@ -267,7 +269,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         if (devopsEnvFileResourceDTO == null) {
             baseDelete(secretId);
             devopsApplicationResourceService.baseDeleteByResourceIdAndType(secretId, ObjectType.SECRET.getType());
-            if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), "master",
+            if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER,
                     "sct-" + devopsSecretDTO.getName() + ".yaml")) {
                 gitlabServiceClientOperator.deleteFile(
                         TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
@@ -277,7 +279,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
             }
             return true;
         } else {
-            if (!gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), "master",
+            if (!gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER,
                     devopsEnvFileResourceDTO.getFilePath())) {
                 baseDelete(secretId);
                 devopsApplicationResourceService.baseDeleteByResourceIdAndType(secretId, ObjectType.SECRET.getType());
@@ -290,7 +292,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
 
         // 如果对象所在文件只有一个对象，则直接删除文件,否则把对象从文件中去掉，更新文件
         if (devopsEnvFileResourceDTOS.size() == 1) {
-            if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), "master",
+            if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER,
                     devopsEnvFileResourceDTO.getFilePath())) {
                 gitlabServiceClientOperator.deleteFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
                         devopsEnvFileResourceDTO.getFilePath(), "DELETE FILE",
@@ -350,7 +352,9 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         clusterConnectionHandler.checkEnvConnection(devopsEnvironmentDTO.getClusterId());
 
         DevopsSecretDTO oldSecretDTO = baseQueryByEnvIdAndName(secretReqVO.getEnvId(), secretReqVO.getName());
-        if (oldSecretDTO.getValue().equals(secretReqVO.getValue())) {
+        oldSecretDTO.setValueMap(gson.fromJson(oldSecretDTO.getValue(), new TypeToken<Map<String, String>>() {
+        }.getType()));
+        if (oldSecretDTO.getValueMap().equals(secretReqVO.getValue())) {
             return;
         }
         // 处理secret对象
@@ -479,7 +483,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         Map<String, String> encodedSecretMaps = new HashMap<>();
         if (!secretReqVO.getValue().isEmpty()) {
             for (Map.Entry<String, String> e : secretReqVO.getValue().entrySet()) {
-                if (!e.getKey().equals(".dockerconfigjson")) {
+                if (!e.getKey().equals(DOCKER_CONFIG_JSON)) {
                     encodedSecretMaps.put(e.getKey(), Base64Util.getBase64EncodedString(e.getValue()));
                 } else {
                     encodedSecretMaps.put(e.getKey(), e.getValue());

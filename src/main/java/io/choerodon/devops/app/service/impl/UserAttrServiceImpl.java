@@ -3,7 +3,9 @@ package io.choerodon.devops.app.service.impl;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.choerodon.core.convertor.ConvertHelper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import io.choerodon.devops.api.vo.UserAttrVO;
 import io.choerodon.devops.app.service.UserAttrService;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
@@ -11,8 +13,6 @@ import io.choerodon.devops.infra.mapper.UserAttrMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 @Service
 public class UserAttrServiceImpl implements UserAttrService {
@@ -22,7 +22,7 @@ public class UserAttrServiceImpl implements UserAttrService {
 
     @Override
     public UserAttrVO queryByUserId(Long userId) {
-        return ConvertUtils.convertObject(baseQueryById(userId),UserAttrVO.class);
+        return ConvertUtils.convertObject(baseQueryById(userId), UserAttrVO.class);
     }
 
 

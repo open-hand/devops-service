@@ -2,16 +2,8 @@ package io.choerodon.devops.api.ws;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 
-import io.choerodon.devops.api.vo.PipeRequestVO;
-import io.choerodon.devops.app.service.AgentCommandService;
-import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.websocket.helper.WebSocketHelper;
-import io.choerodon.websocket.send.MessageSender;
-import io.choerodon.websocket.send.SendMessagePayload;
-import io.choerodon.websocket.send.relationship.BrokerKeySessionMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +15,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.server.HandshakeFailureException;
+
+import io.choerodon.devops.api.vo.PipeRequestVO;
+import io.choerodon.devops.app.service.AgentCommandService;
+import io.choerodon.devops.infra.util.TypeUtil;
+import io.choerodon.websocket.helper.WebSocketHelper;
+import io.choerodon.websocket.send.MessageSender;
 
 /**
  * Created by Sheep on 2019/7/25.
@@ -56,9 +54,6 @@ public class DevopsExecAndLogSocketHandler {
         String podName = request.getParameter("podName");
         String containerName = request.getParameter("containerName");
         String logId = request.getParameter("logId");
-        if (key == null || key.trim().isEmpty()) {
-            throw new HandshakeFailureException("Key is null");
-        }
         if (key == null || key.trim().isEmpty()) {
             throw new HandshakeFailureException("Key is null");
         }

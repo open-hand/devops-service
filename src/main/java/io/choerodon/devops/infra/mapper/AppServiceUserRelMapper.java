@@ -15,7 +15,7 @@ import org.apache.ibatis.annotations.Param;
  */
 
 public interface AppServiceUserRelMapper extends Mapper<AppServiceUserRelDTO> {
-        List<AppServiceUserRelDTO> listAllUserPermissionByAppId(@Param("appServiceId") Long appServiceId);
+    List<AppServiceUserRelDTO> listAllUserPermissionByAppId(@Param("appServiceId") Long appServiceId);
 
-        void deleteByUserIdWithAppIds(@Param("appServiceIds") List<Long> appServiceIds, @Param("userId") Long userId);
-    }
+    void deleteByUserIdWithAppIds(@Param("appServiceIds") List<Long> appServiceIds, @Param("userId") Long userId);
+}

@@ -1,7 +1,6 @@
 package io.choerodon.devops.api.vo;
 
 import java.util.Map;
-import java.util.Set;
 
 import io.swagger.annotations.ApiModelProperty;
 

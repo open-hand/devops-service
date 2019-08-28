@@ -1,9 +1,9 @@
 package io.choerodon.devops.app.eventhandler.payload;
 
+import io.kubernetes.client.models.V1beta1Ingress;
+
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.DevopsIngressDTO;
-import io.kubernetes.client.models.V1Endpoints;
-import io.kubernetes.client.models.V1beta1Ingress;
 
 /**
  * Created by Sheep on 2019/7/29.
@@ -18,9 +18,10 @@ public class IngressSagaPayload {
     private V1beta1Ingress v1beta1Ingress;
 
 
-    public IngressSagaPayload(){}
+    public IngressSagaPayload() {
+    }
 
-    public IngressSagaPayload(Long projectId,Long gitlabUserId){
+    public IngressSagaPayload(Long projectId, Long gitlabUserId) {
         this.projectId = projectId;
         this.gitlabUserId = gitlabUserId;
     }

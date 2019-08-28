@@ -61,6 +61,7 @@ public class PipelineServiceImpl implements PipelineService {
     private static final String AUTO = "auto";
     private static final String STAGE = "stage";
     private static final String TASK = "task";
+    private static  final String STAGE_NAME="stageName";
 
     private static final Gson gson = new Gson();
     @Autowired
@@ -240,9 +241,7 @@ public class PipelineServiceImpl implements PipelineService {
             List<PipelineTaskVO> taskDTOList = pipelineReqVO.getPipelineStageVOs().get(i).getPipelineTaskVOs();
             if (taskDTOList != null) {
                 removeTasks(taskDTOList, pipelineStageDTO.getId());
-                taskDTOList.stream().filter(Objects::nonNull).forEach(t -> {
-                    createOrUpdateTask(t, pipelineStageDTO.getId(), projectId);
-                });
+                taskDTOList.stream().filter(Objects::nonNull).forEach(t -> createOrUpdateTask(t, pipelineStageDTO.getId(), projectId));
             }
         }
         pipelineRecordService.baseUpdateWithEdited(pipelineId);
@@ -911,7 +910,7 @@ public class PipelineServiceImpl implements PipelineService {
             userList.add(user);
         });
         Map<String, Object> params = new HashMap<>();
-        params.put("stageName", stageName);
+        params.put(STAGE_NAME, stageName);
         IamUserDTO iamUserDTO = iamService.queryUserByUserId(GitUserNameUtil.getUserId().longValue());
         params.put("auditName", iamUserDTO.getLoginName());
         params.put("realName", iamUserDTO.getRealName());
@@ -1128,14 +1127,12 @@ public class PipelineServiceImpl implements PipelineService {
 
     private List<PipelineAppServiceDeployDTO> getAllAppDeploy(Long pipelineId) {
         List<PipelineAppServiceDeployDTO> appDeployEList = new ArrayList<>();
-        pipelineStageService.baseListByPipelineId(pipelineId).forEach(stageE -> {
-            pipelineTaskService.baseQueryTaskByStageId(stageE.getId()).forEach(taskE -> {
-                if (taskE.getAppServiceDeployId() != null) {
-                    PipelineAppServiceDeployDTO appServiceDeployDTO = appServiceDeployMapper.selectByPrimaryKey(taskE.getAppServiceDeployId());
-                    appDeployEList.add(appServiceDeployDTO);
-                }
-            });
-        });
+        pipelineStageService.baseListByPipelineId(pipelineId).forEach(stageE -> pipelineTaskService.baseQueryTaskByStageId(stageE.getId()).forEach(taskE -> {
+            if (taskE.getAppServiceDeployId() != null) {
+                PipelineAppServiceDeployDTO appServiceDeployDTO = appServiceDeployMapper.selectByPrimaryKey(taskE.getAppServiceDeployId());
+                appDeployEList.add(appServiceDeployDTO);
+            }
+        }));
         return appDeployEList;
     }
 
@@ -1244,7 +1241,7 @@ public class PipelineServiceImpl implements PipelineService {
                 });
             }
             HashMap<String, Object> params = new HashMap<>();
-            params.put("stageName", pipelineStageRecordService.baseQueryById(stageRecordId).getStageName());
+            params.put(STAGE_NAME, pipelineStageRecordService.baseQueryById(stageRecordId).getStageName());
             sendSiteMessage(recordE.getId(), PipelineNoticeType.PIPELINEAUDIT.toValue(), userList, params);
             updateStatus(recordE.getId(), null, WorkFlowStatus.PENDINGCHECK.toValue(), null);
         }
@@ -1293,7 +1290,7 @@ public class PipelineServiceImpl implements PipelineService {
                 });
             }
             HashMap<String, Object> params = new HashMap<>();
-            params.put("stageName", pipelineStageRecordService.baseQueryById(stageRecordId).getStageName());
+            params.put(STAGE_NAME, pipelineStageRecordService.baseQueryById(stageRecordId).getStageName());
             sendSiteMessage(pipelineRecordId, PipelineNoticeType.PIPELINEAUDIT.toValue(), userList, params);
         }
     }
@@ -1422,9 +1419,7 @@ public class PipelineServiceImpl implements PipelineService {
     }
 
     private void approveWorkFlow(Long projectId, String businessKey, String loginName, Long userId, Long orgId) {
-        Observable.create((ObservableOnSubscribe<String>) dtoObservableEmitter -> {
-            dtoObservableEmitter.onComplete();
-        }).subscribeOn(Schedulers.io())
+        Observable.create((ObservableOnSubscribe<String>) Emitter::onComplete).subscribeOn(Schedulers.io())
                 .subscribe(new Observer<String>() {
                     @Override
                     public void onSubscribe(Disposable d) {

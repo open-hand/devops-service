@@ -26,7 +26,7 @@ public class GitlabConfigurationPropertiesValidator implements Validator {
             logger.error("===============================================ERROR======================================================");
             logger.error("Error: The gitlab password in gitlab configuration must not be null and it's length should not less than 8");
             logger.error("===============================================ERROR======================================================");
-            errors.rejectValue("password", "error.password.length");
+            errors.rejectValue("services.gitlab.password", "error.password.length");
         }
     }
 

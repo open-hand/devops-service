@@ -4,19 +4,16 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.web.socket.BinaryMessage;
+import org.springframework.web.socket.WebSocketSession;
+
 import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.devops.api.ws.WebSocketTool;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.websocket.helper.WebSocketHelper;
-import io.choerodon.websocket.send.MessageSender;
 import io.choerodon.websocket.send.SendBinaryMessagePayload;
-import io.choerodon.websocket.send.relationship.BrokerKeySessionMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.web.socket.BinaryMessage;
-import org.springframework.web.socket.WebSocketSession;
 
 /**
  * Created by Sheep on 2019/8/19.
@@ -26,7 +23,6 @@ public class ExecMessageHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(ExecMessageHandler.class);
     public static final String AGENT_EXEC = "AgentExec";
-
 
 
     private WebSocketHelper webSocketHelper;
@@ -47,8 +43,8 @@ public class ExecMessageHandler {
         String registerKey = TypeUtil.objToString(attribute.get("key"));
 
         if (webSocketSession.getUri().getPath().equals("/devops/exec")) {
-             registerKey = "from_agent:" + registerKey;
-        }else {
+            registerKey = "from_agent:" + registerKey;
+        } else {
             registerKey = "from_devops:" + registerKey;
         }
 

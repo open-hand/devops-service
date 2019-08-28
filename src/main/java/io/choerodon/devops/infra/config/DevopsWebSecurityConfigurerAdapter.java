@@ -17,17 +17,18 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 @Order(1)
 public class DevopsWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapter {
 
+    private static  final String WEBHOOK_ALL="/webhook/**";
 
     @Override
     public void configure(WebSecurity web) throws Exception {
         web
                 .ignoring()
-                .antMatchers("/workflow/**", "/sonar/**", "/v1/**", "/ci", "/webhook/**", "/sonar/info", "/v2/api-docs", "/agent/**", "/ws/**", "/gitlab/email", "/webhook/**", "/v2/choerodon/**", "/choerodon/**", "/actuator/**", "/prometheus");
+                .antMatchers("/workflow/**", "/sonar/**", "/v1/**", "/ci", "/sonar/info", "/v2/api-docs", "/agent/**", "/ws/**", "/gitlab/email", WEBHOOK_ALL, "/v2/choerodon/**", "/choerodon/**", "/actuator/**", "/prometheus");
     }
 
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.authorizeRequests().antMatchers("/workflow/**", "/sonar/**", "/ci", "/webhook/**", "/sonar/info", "/v2/api-docs", "/agent/**", "/ws/**", "/gitlab/email").permitAll();
+        http.authorizeRequests().antMatchers("/workflow/**", "/sonar/info", "/sonar/**", "/ci", WEBHOOK_ALL, "/v2/api-docs", "/agent/**", "/ws/**", "/gitlab/email").permitAll();
     }
 }

@@ -2,6 +2,9 @@ package io.choerodon.devops.app.service.impl;
 
 
 import feign.FeignException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.eventhandler.payload.ApplicationEventPayload;
 import io.choerodon.devops.app.eventhandler.payload.GitlabGroupPayload;
@@ -13,8 +16,6 @@ import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.dto.gitlab.GroupDTO;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.util.TypeUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 /**
  * Created with IntelliJ IDEA.
@@ -73,7 +74,8 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
 
 
     private void setAppGroupNameAndPath(GroupDTO group, ApplicationEventPayload applicationEventPayload) {
-        String name, path;
+        String name;
+        String path;
 
         if (applicationEventPayload.getProjectId() != null) {
             // 项目下应用

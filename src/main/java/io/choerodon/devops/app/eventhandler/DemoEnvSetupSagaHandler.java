@@ -34,7 +34,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class DemoEnvSetupSagaHandler {
-    private static final Logger LOGGER = LoggerFactory.getLogger(SagaHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DemoEnvSetupSagaHandler.class);
     private final Gson gson = new Gson();
 
     @Autowired

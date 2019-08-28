@@ -40,6 +40,12 @@ public class DevopsUserPermissionVO extends DevopsEnvUserVO {
 
     @Override
     public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (this.getClass() != obj.getClass()) {
+            return false;
+        }
         DevopsUserPermissionVO s = (DevopsUserPermissionVO) obj;
         return super.getIamUserId().equals(s.getIamUserId());
     }

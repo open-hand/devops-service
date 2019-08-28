@@ -50,6 +50,7 @@ public class CertificationServiceImpl implements CertificationService {
 
     private static final String UPLOAD = "upload";
     private static final String CERT_PREFIX = "cert-";
+    private static final String MASTER = "master";
     private static final String FILE_SEPARATOR = System.getProperty("file.separator");
 
 
@@ -152,7 +153,8 @@ public class CertificationServiceImpl implements CertificationService {
         if (!isGitOps) {
             String envCode = devopsEnvironmentDTO.getCode();
 
-            String keyContent, certContent;
+            String keyContent;
+            String certContent;
             if (certificationFileDTO == null) {
                 keyContent = certificationDTO.getKeyValue();
                 certContent = certificationDTO.getCertValue();
@@ -264,7 +266,7 @@ public class CertificationServiceImpl implements CertificationService {
 
         if (devopsEnvFileResourceDTO == null) {
             baseDeleteById(certId);
-            if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), "master",
+            if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER,
                     CERT_PREFIX + certificationDTO.getName() + ".yaml")) {
                 gitlabServiceClientOperator.deleteFile(
                         TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
@@ -274,7 +276,7 @@ public class CertificationServiceImpl implements CertificationService {
             }
             return;
         } else {
-            if (!gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), "master",
+            if (!gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER,
                     devopsEnvFileResourceDTO.getFilePath())) {
                 baseDeleteById(certId);
                 devopsEnvFileResourceService.baseDeleteById(devopsEnvFileResourceDTO.getId());
@@ -289,7 +291,7 @@ public class CertificationServiceImpl implements CertificationService {
         if (devopsEnvFileResourceDTO.getFilePath() != null
                 && devopsEnvFileResourceService
                 .baseQueryByEnvIdAndPath(certEnvId, devopsEnvFileResourceDTO.getFilePath()).size() == 1) {
-            if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), "master",
+            if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER,
                     devopsEnvFileResourceDTO.getFilePath())) {
                 gitlabServiceClientOperator.deleteFile(
                         gitLabEnvProjectId,

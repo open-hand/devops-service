@@ -4,19 +4,16 @@ package io.choerodon.devops.api.ws.log;
 import java.nio.ByteBuffer;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.web.socket.BinaryMessage;
+import org.springframework.web.socket.WebSocketSession;
+
 import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.devops.api.ws.WebSocketTool;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.websocket.helper.WebSocketHelper;
-import io.choerodon.websocket.send.MessageSender;
 import io.choerodon.websocket.send.SendBinaryMessagePayload;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Component;
-import org.springframework.web.socket.BinaryMessage;
-import org.springframework.web.socket.WebSocketSession;
 
 /**
  * Created by Sheep on 2019/7/26.
@@ -47,7 +44,7 @@ public class LogMessageHandler {
 
         if (webSocketSession.getUri().getPath().equals("/devops/log")) {
             registerKey = "from_agent:" + registerKey;
-        }else {
+        } else {
             registerKey = "from_devops:" + registerKey;
         }
 

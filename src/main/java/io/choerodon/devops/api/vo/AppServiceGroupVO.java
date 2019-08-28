@@ -1,6 +1,5 @@
 package io.choerodon.devops.api.vo;
 
-import io.choerodon.devops.infra.dto.AppServiceDTO;
 
 import java.util.List;
 

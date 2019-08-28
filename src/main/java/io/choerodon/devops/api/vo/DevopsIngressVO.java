@@ -10,7 +10,7 @@ import io.swagger.annotations.ApiModelProperty;
  * Time: 14:56
  * Description:
  */
-public class DevopsIngressVO extends DevopsResourceDataInfoVO{
+public class DevopsIngressVO extends DevopsResourceDataInfoVO {
 
     private Long id;
     private Long appServiceId;
