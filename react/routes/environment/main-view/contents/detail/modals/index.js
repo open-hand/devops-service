@@ -10,6 +10,7 @@ import { useMainStore } from '../../../stores';
 import { useDetailStore } from '../stores';
 import EnvCreateForm from '../../../modals/env-form';
 import GroupForm from '../../../modals/GroupForm';
+import ResourceSetting from './resource-setting/notificationsHome';
 import useStore from './useStore';
 
 import './index.less';
@@ -18,6 +19,7 @@ const detailKey = Modal.key();
 const envKey = Modal.key();
 const groupKey = Modal.key();
 const permissionKey = Modal.key();
+const resourceKey = Modal.key();
 
 const EnvModals = observer(() => {
   const modalStore = useStore();
@@ -136,6 +138,20 @@ const EnvModals = observer(() => {
     });
   }
 
+  function resourceSetting() {
+    const { id } = getSelectedMenu;
+    Modal.open({
+      key: resourceKey,
+      title: formatMessage({ id: `${currentIntlPrefix}.resource.setting` }),
+      children: <ResourceSetting envId={id} />,
+      drawer: true,
+      style: {
+        width: 1030,
+      },
+    });
+  }
+
+
   function getButtons() {
     const { active, synchro } = getSelectedMenu;
     const disabled = !active || !synchro;
@@ -181,7 +197,7 @@ const EnvModals = observer(() => {
     },
     {
       text: formatMessage({ id: `${currentIntlPrefix}.resource.setting` }),
-      action: openGroupModal,
+      action: resourceSetting,
     }];
     return <Action data={actionData} />;
   }

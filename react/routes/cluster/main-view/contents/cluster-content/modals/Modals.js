@@ -45,11 +45,7 @@ const ClusterModals = observer(() => {
   } = useModalStore();
 
   const { menuId } = clusterStore.getSelectedMenu;
-
-  function linkServices(data) {
-
-  }
-
+  
   function permissionUpdate(data) {
     const record = ClusterDetailDs.current;
     if (record) {

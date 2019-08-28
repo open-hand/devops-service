@@ -539,7 +539,7 @@ class PipelineCreateStore {
   async loadUser(projectId) {
     this.setLoading('user', true);
     const response = await axios
-      .get(`/devops/v1/projects/${projectId}/pipeline/list_users`)
+      .get(`/devops/v1/projects/${projectId}/users/list_users`)
       .catch((e) => {
         this.setLoading('user', false);
         Choerodon.handleResponseError(e);

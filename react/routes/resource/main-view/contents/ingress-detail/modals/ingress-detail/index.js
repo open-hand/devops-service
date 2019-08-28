@@ -14,7 +14,7 @@ export default function ({ intlPrefix, record, prefixCls, formatMessage }) {
         </span>
         <span>{
             (record 
-            && record.get('creationDate')) || '-' 
+            && record.get('instances') && record.get('instances').join(',')) || '-' 
           }</span>
       </li>
       <li className="detail-item">
