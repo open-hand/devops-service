@@ -384,22 +384,6 @@ public class PipelineController {
                 .orElseThrow(() -> new CommonException("error.pipeline.all.list"));
     }
 
-    /**
-     * 获取所有项目成员和项目所有者
-     *
-     * @param projectId 项目id
-     * @return
-     */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "获取所有项目成员和项目所有者")
-    @GetMapping(value = "/list_users")
-    public ResponseEntity<List<UserVO>> getAllUsers(
-            @ApiParam(value = "项目id", required = true)
-            @PathVariable(value = "project_id") Long projectId) {
-        return Optional.ofNullable(pipelineService.listAllUsers(projectId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.users.all.list"));
-    }
 
     /**
      * 停止流水线
