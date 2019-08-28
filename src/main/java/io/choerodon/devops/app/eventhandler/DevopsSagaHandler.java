@@ -354,7 +354,7 @@ public class DevopsSagaHandler {
             seq = 1)
     public String devopsCreateIngress(String data) {
         IngressSagaPayload ingressSagaPayload = gson.fromJson(data, IngressSagaPayload.class);
-        devopsIngressService.createIngressBySaga(ingressSagaPayload);
+        devopsIngressService.operateIngressBySaga(ingressSagaPayload);
         return data;
     }
 }

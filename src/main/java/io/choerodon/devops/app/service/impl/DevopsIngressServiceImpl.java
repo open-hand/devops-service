@@ -581,11 +581,6 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
             devopsApplicationResourceService.handleAppServiceResource(new ArrayList<>(appServiceIds), ingressId, ObjectType.INGRESS.getType());
         }
 
-        ResourceConvertToYamlHandler<V1beta1Ingress> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
-        resourceConvertToYamlHandler.setType(ingress);
-        resourceConvertToYamlHandler.operationEnvGitlabFile(INGRESS_PREFIX + devopsIngressDTO.getName(), envGitLabProjectId, isCreate ? CREATE : UPDATE,
-                userAttrDTO.getGitlabUserId(), devopsIngressDTO.getId(), INGRESS, null, deleteCert, devopsIngressDTO.getEnvId(), path);
-
         IngressSagaPayload ingressSagaPayload = new IngressSagaPayload(devopsEnvironmentDTO.getProjectId(), userAttrDTO.getGitlabUserId());
         ingressSagaPayload.setDevopsIngressDTO(devopsIngressDTO);
         ingressSagaPayload.setCreated(isCreate);
@@ -606,11 +601,10 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     }
 
     @Override
-    public void createIngressBySaga(IngressSagaPayload ingressSagaPayload) {
+    public void operateIngressBySaga(IngressSagaPayload ingressSagaPayload) {
         try {
             //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
             String filePath = clusterConnectionHandler.handDevopsEnvGitRepository(ingressSagaPayload.getProjectId(), ingressSagaPayload.getDevopsEnvironmentDTO().getCode(), ingressSagaPayload.getDevopsEnvironmentDTO().getEnvIdRsa());
-
             //在gitops库处理instance文件
             ResourceConvertToYamlHandler<V1beta1Ingress> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
             resourceConvertToYamlHandler.setType(ingressSagaPayload.getV1beta1Ingress());

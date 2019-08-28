@@ -111,7 +111,7 @@ public interface DevopsIngressService {
      */
     PageInfo<DevopsIngressVO> pageByEnv(Long projectId, Long envId, PageRequest pageRequest, String params);
 
-    void createIngressBySaga(IngressSagaPayload ingressSagaPayload);
+    void operateIngressBySaga(IngressSagaPayload ingressSagaPayload);
 
     DevopsIngressDTO baseQuery(Long ingressId);
 
