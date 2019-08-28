@@ -59,7 +59,7 @@ function ConfigItem({
   }
 
   return <Fragment>
-    <Icon type="router" />
+    <Icon type={record.get('itemType') === MAP_ITEM ? 'compare_arrows' : 'vpn_key'} />
     {name}
     {getSuffix()}
     {showModal && <KeyValueModal

@@ -50,7 +50,7 @@ function IngressItem({
   }
 
   return <Fragment>
-    <Icon type="router" />
+    <Icon type="language" />
     {name}
     {getSuffix()}
     {showModal && (
