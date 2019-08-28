@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.dto;
 
+import java.util.Date;
 import java.util.List;
 import javax.persistence.*;
 
@@ -45,6 +46,18 @@ public class DevopsEnvPodDTO extends BaseDTO {
     private List<ContainerVO> containers;
     @Transient
     private String message;
+    @Transient
+    private Date creationDate;
+
+    @Override
+    public Date getCreationDate() {
+        return creationDate;
+    }
+
+    @Override
+    public void setCreationDate(Date creationDate) {
+        this.creationDate = creationDate;
+    }
 
     public String getMessage() {
         return message;

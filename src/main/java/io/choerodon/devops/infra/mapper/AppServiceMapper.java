@@ -29,7 +29,7 @@ public interface AppServiceMapper extends Mapper<AppServiceDTO> {
 
     List<AppServiceDTO> listCodeRepository(@Param("appId") Long appId,
                                            @Param("searchParam") Map<String, Object> searchParam,
-                                           @Param("param") String param,
+                                           @Param("params") List<String> param,
                                            @Param("isProjectOwner") Boolean isProjectOwner,
                                            @Param("userId") Long userId);
 

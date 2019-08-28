@@ -1,8 +1,7 @@
 package io.choerodon.devops.app.service.impl
 
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.app.eventhandler.payload.ProjectPayload
-import io.choerodon.devops.infra.dto.DevopsProjectDTO
+import io.choerodon.devops.app.service.DevopsProjectService
 import io.choerodon.devops.infra.mapper.DevopsProjectMapper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -22,12 +21,12 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @Import(IntegrationTestConfiguration)
-@Subject(ProjectServiceImpl)
+@Subject(DevopsProjectServiceImpl)
 @Stepwise
 class ProjectServiceImplSpec extends Specification {
 
     @Autowired
-    private ProjectServiceImpl projectService
+    private DevopsProjectService projectService
 
     @Autowired
     private DevopsProjectMapper devopsProjectMapper
