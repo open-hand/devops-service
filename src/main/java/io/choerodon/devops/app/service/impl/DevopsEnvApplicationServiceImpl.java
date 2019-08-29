@@ -72,7 +72,7 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
         devopsEnvMessageVOS.forEach(devopsEnvMessageVO -> {
             V1beta2Deployment v1beta2Deployment = json.deserialize(
                     devopsEnvMessageVO.getDetail(), V1beta2Deployment.class);
-            listLabel.add(v1beta2Deployment.getSpec().getSelector().getMatchLabels());
+            listLabel.add(v1beta2Deployment.getMetadata().getLabels());
         });
         return listLabel;
     }
