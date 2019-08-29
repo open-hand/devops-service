@@ -1048,19 +1048,10 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             devopsApplicationResourceService.handleAppServiceResource(Arrays.asList(devopsServiceDTO.getAppServiceId()), devopsServiceDTO.getId(), ObjectType.SERVICE.getType());
         }
 
-        //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-        String path = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getEnvIdRsa());
-
-        //处理文件
-        ResourceConvertToYamlHandler<V1Service> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
-        resourceConvertToYamlHandler.setType(service);
-        resourceConvertToYamlHandler.operationEnvGitlabFile(SERVICE_RREFIX + devopsServiceDTO.getName(), TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), isCreate ? CREATE : UPDATE,
-                userAttrDTO.getGitlabUserId(), devopsServiceDTO.getId(), SERVICE, v1Endpoints, false, devopsServiceDTO.getEnvId(), path);
-
         ServiceSagaPayLoad serviceSagaPayLoad = new ServiceSagaPayLoad(devopsEnvironmentDTO.getProjectId(), userAttrDTO.getGitlabUserId());
         serviceSagaPayLoad.setDevopsServiceDTO(devopsServiceDTO);
         serviceSagaPayLoad.setV1Service(service);
-        serviceSagaPayLoad.setCreated(serviceSagaPayLoad.getCreated());
+        serviceSagaPayLoad.setCreated(isCreate);
         serviceSagaPayLoad.setV1Endpoints(v1Endpoints);
         serviceSagaPayLoad.setDevopsEnvironmentDTO(devopsEnvironmentDTO);
 
@@ -1093,7 +1084,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                     serviceSagaPayLoad.getGitlabUserId(),
                     serviceSagaPayLoad.getDevopsServiceDTO().getId(), SERVICE, serviceSagaPayLoad.getV1Endpoints(), false, serviceSagaPayLoad.getDevopsEnvironmentDTO().getId(), filePath);
         } catch (Exception e) {
-            //有异常更新实例以及command的状态
+            //有异常更新网络以及command的状态
             DevopsServiceDTO devopsServiceDTO = baseQuery(serviceSagaPayLoad.getDevopsServiceDTO().getId());
             devopsServiceDTO.setStatus(CommandStatus.FAILED.getStatus());
             baseUpdate(devopsServiceDTO);

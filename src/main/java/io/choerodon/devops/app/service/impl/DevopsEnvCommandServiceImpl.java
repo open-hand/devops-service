@@ -50,14 +50,20 @@ public class DevopsEnvCommandServiceImpl implements DevopsEnvCommandService {
     }
 
     @Override
-    public DevopsEnvCommandDTO baseUpdate(DevopsEnvCommandDTO devopsEnvCommandDTO) {
+    public synchronized DevopsEnvCommandDTO baseUpdate(DevopsEnvCommandDTO devopsEnvCommandDTO) {
         DevopsEnvCommandDTO oldDevopsEnvCommandDO = devopsEnvCommandMapper
                 .selectByPrimaryKey(devopsEnvCommandDTO.getId());
         devopsEnvCommandDTO.setObjectVersionNumber(oldDevopsEnvCommandDO.getObjectVersionNumber());
         if (devopsEnvCommandMapper.updateByPrimaryKeySelective(devopsEnvCommandDTO) != 1) {
             throw new CommonException("error.env.command.update");
         }
+
         return devopsEnvCommandDTO;
+    }
+
+    @Override
+    public void baseUpdateSha(Long commandId, String sha) {
+         devopsEnvCommandMapper.updateSha(commandId, sha);
     }
 
     @Override

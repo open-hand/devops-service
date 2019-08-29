@@ -107,7 +107,7 @@ public class HandlerCustomResourceServiceImpl implements HandlerObjectFileRelati
 
                 //没发生改变,更新commit记录，更新文件对应关系记录
                 devopsEnvCommandDTO.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
-                devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
+                devopsEnvCommandService.baseUpdateSha(devopsEnvCommandDTO.getId(), devopsEnvCommandDTO.getSha());
                 DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
                         .baseQueryByEnvIdAndResourceId(envId, devopsCustomizeResourceDTO.getId(), ResourceType.CUSTOM.getType());
                 devopsEnvFileResourceService.updateOrCreateFileResource(objectPath,
@@ -142,7 +142,7 @@ public class HandlerCustomResourceServiceImpl implements HandlerObjectFileRelati
                 }
                 DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(oldDevopsCustomizeResourceDTO.getCommandId());
                 devopsEnvCommandDTO.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
-                devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
+                devopsEnvCommandService.baseUpdateSha(devopsEnvCommandDTO.getId(), devopsEnvCommandDTO.getSha());
 
                 devopsEnvFileResourceService.updateOrCreateFileResource(objectPath, envId, null, customResource.hashCode(), oldDevopsCustomizeResourceDTO.getId(),
                         ResourceType.CUSTOM.getType());

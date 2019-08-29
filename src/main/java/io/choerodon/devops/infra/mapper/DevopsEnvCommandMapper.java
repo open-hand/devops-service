@@ -17,4 +17,5 @@ public interface DevopsEnvCommandMapper extends Mapper<DevopsEnvCommandDTO> {
 
     List<DevopsEnvCommandDTO> listAllInstanceCommand();
 
+    void updateSha(@Param("id") Long commandId, @Param("sha") String sha);
 }

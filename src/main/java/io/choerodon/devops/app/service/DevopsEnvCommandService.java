@@ -20,6 +20,8 @@ public interface DevopsEnvCommandService {
 
     DevopsEnvCommandDTO baseUpdate(DevopsEnvCommandDTO devopsEnvCommandDTO);
 
+    void baseUpdateSha(Long commandId, String sha);
+
     DevopsEnvCommandDTO baseQuery(Long id);
 
     List<DevopsEnvCommandDTO> baseListByEnvId(Long envId);

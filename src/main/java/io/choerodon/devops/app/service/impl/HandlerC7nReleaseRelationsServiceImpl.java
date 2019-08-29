@@ -111,7 +111,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
                         }
 
                         devopsEnvCommandDTO.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
-                        devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
+                        devopsEnvCommandService.baseUpdateSha(devopsEnvCommandDTO.getId(), devopsEnvCommandDTO.getSha());
                         DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
                                 .baseQueryByEnvIdAndResourceId(envId, appServiceDeployVO.getInstanceId(), c7nHelmRelease.getKind());
                         devopsEnvFileResourceService.updateOrCreateFileResource(objectPath, envId,
@@ -165,7 +165,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
                         }
 
                         devopsEnvCommandDTO.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
-                        devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
+                        devopsEnvCommandService.baseUpdateSha(devopsEnvCommandDTO.getId(), devopsEnvCommandDTO.getSha());
 
                         devopsEnvFileResourceService.updateOrCreateFileResource(objectPath, envId, null, c7nHelmRelease.hashCode(), instanceId,
                                 c7nHelmRelease.getKind());

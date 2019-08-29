@@ -115,7 +115,7 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
                         DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsIngressDTO.getCommandId());
 
                         devopsEnvCommandDTO.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
-                        devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
+                        devopsEnvCommandService.baseUpdateSha(devopsEnvCommandDTO.getId(), devopsEnvCommandDTO.getSha());
 
                         devopsEnvFileResourceService.updateOrCreateFileResource(objectPath, envId, null, v1beta1Ingress.hashCode(), devopsIngressDTO.getId(),
                                 v1beta1Ingress.getKind());
@@ -161,7 +161,7 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
                         }
 
                         devopsEnvCommandDTO.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
-                        devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
+                        devopsEnvCommandService.baseUpdateSha(devopsEnvCommandDTO.getId(), devopsEnvCommandDTO.getSha());
                         DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
                                 .baseQueryByEnvIdAndResourceId(envId, devopsIngressDTO.getId(), v1beta1Ingress.getKind());
                         devopsEnvFileResourceService.updateOrCreateFileResource(objectPath,
