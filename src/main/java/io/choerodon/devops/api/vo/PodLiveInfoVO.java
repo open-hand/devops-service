@@ -3,6 +3,8 @@ package io.choerodon.devops.api.vo;
 import java.util.Date;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * Pod实时信息
  *
@@ -15,12 +17,39 @@ public class PodLiveInfoVO {
     private String podIp;
     private String nodeName;
     private String nodeIp;
-    private Long podId;
+    @JsonProperty("podId")
+    private Long id;
     private List<ContainerVO> containers;
     private List<String> cpuUsedList;
     private List<String> memoryUsedList;
     private List<Date> timeList;
     private Date creationDate;
+    private Long clusterId;
+    private String namespace;
+
+    public String getNamespace() {
+        return namespace;
+    }
+
+    public void setNamespace(String namespace) {
+        this.namespace = namespace;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Long getClusterId() {
+        return clusterId;
+    }
+
+    public void setClusterId(Long clusterId) {
+        this.clusterId = clusterId;
+    }
 
     public Date getCreationDate() {
         return creationDate;
@@ -60,14 +89,6 @@ public class PodLiveInfoVO {
 
     public String getNodeIp() {
         return nodeIp;
-    }
-
-    public Long getPodId() {
-        return podId;
-    }
-
-    public void setPodId(Long podId) {
-        this.podId = podId;
     }
 
     public List<ContainerVO> getContainers() {

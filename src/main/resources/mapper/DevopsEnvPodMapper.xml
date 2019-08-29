@@ -84,10 +84,16 @@
     </select>
 
     <select id="queryPodByEnvIdAndInstanceId" resultType="io.choerodon.devops.infra.dto.DevopsEnvPodDTO">
-        SELECT dep.id, dep.name, derd.message, dep.creation_date
+        SELECT dep.id,
+               dep.name,
+               dep.namespace,
+               derd.message,
+               dep.creation_date,
+               de.cluster_id
         FROM devops_env_pod dep
                  JOIN devops_env_resource der ON der.instance_id = dep.instance_id
                  JOIN devops_env_resource_detail derd ON der.resource_detail_id = derd.id
+                 JOIN devops_env de ON de.id = der.env_id
         WHERE der.instance_id = #{instanceId}
           AND der.env_id = #{envId}
           AND der.kind = 'Pod'
