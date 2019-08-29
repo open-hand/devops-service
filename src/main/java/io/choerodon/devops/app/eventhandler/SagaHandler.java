@@ -2,6 +2,7 @@ package io.choerodon.devops.app.eventhandler;
 
 import java.util.List;
 
+import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.slf4j.Logger;
@@ -48,7 +49,7 @@ public class SagaHandler {
 
 
     private void loggerInfo(Object o) {
-        LOGGER.info("data: {}", o);
+        LOGGER.info("data: {}", JSONObject.toJSONString(o));
     }
 
 
