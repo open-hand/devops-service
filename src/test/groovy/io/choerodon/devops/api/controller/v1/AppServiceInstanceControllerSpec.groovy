@@ -11,7 +11,6 @@ import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO
 import io.choerodon.devops.api.vo.iam.RoleVO
 import io.choerodon.devops.api.vo.kubernetes.InstanceValueVO
 import io.choerodon.devops.app.service.GitlabGroupMemberService
-import io.choerodon.devops.app.service.IamService
 import io.choerodon.devops.infra.dto.*
 import io.choerodon.devops.infra.dto.gitlab.GitLabUserDTO
 import io.choerodon.devops.infra.dto.gitlab.GitlabPipelineDTO
@@ -23,6 +22,7 @@ import io.choerodon.devops.infra.enums.AccessLevel
 import io.choerodon.devops.infra.enums.InstanceStatus
 import io.choerodon.devops.infra.feign.BaseServiceClient
 import io.choerodon.devops.infra.feign.GitlabServiceClient
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler
 import io.choerodon.devops.infra.mapper.*
@@ -105,6 +105,8 @@ class AppServiceInstanceControllerSpec extends Specification {
     private DevopsEnvFileResourceMapper devopsEnvFileResourceMapper
     @Autowired
     private DevopsEnvFileMapper devopsEnvFileMapper
+    @Autowired
+    private BaseServiceClientOperator baseServiceClientOperator
 
     @Shared
     Map<String, Object> searchParam = new HashMap<>()
@@ -137,7 +139,7 @@ class AppServiceInstanceControllerSpec extends Specification {
     @Shared
     AppServiceVersionDTO applicationVersionDO = new AppServiceVersionDTO()
     @Shared
-    AppServiceInstanceDTO applicationInstanceDO = new AppServiceInstanceDTO()
+    AppServiceInstanceDTO applicationInstanceDTO = new AppServiceInstanceDTO()
     @Shared
     DevopsEnvCommandValueDTO devopsEnvCommandValueDO = new DevopsEnvCommandValueDTO()
     @Shared
@@ -170,8 +172,6 @@ class AppServiceInstanceControllerSpec extends Specification {
     DevopsEnvFileDTO devopsEnvFileDO = new DevopsEnvFileDTO()
 
     @Autowired
-    private IamService iamRepository
-    @Autowired
     private GitlabServiceClientOperator gitlabRepository
     @Autowired
     private GitlabGroupMemberService gitlabGroupMemberRepository
@@ -181,8 +181,9 @@ class AppServiceInstanceControllerSpec extends Specification {
 
     def setupSpec() {
         Map<String, Object> params = new HashMap<>()
-        searchParam.put("searchParam", "")
-        searchParam.put("param", "")
+        params.put("code", "app")
+        searchParam.put("searchParam", params)
+        searchParam.put("param", [])
 
         // de
         devopsEnvironmentDO.setId(1L)
@@ -280,14 +281,14 @@ class AppServiceInstanceControllerSpec extends Specification {
         applicationDO.setGitlabProjectId(1)
 
         // dai
-        applicationInstanceDO.setId(1L)
-        applicationInstanceDO.setEnvId(1L)
-        applicationInstanceDO.setAppServiceId(1L)
-        applicationInstanceDO.setCommandId(1L)
-        applicationInstanceDO.setAppServiceVersionId(1L)
-        applicationInstanceDO.setStatus("running")
-        applicationInstanceDO.setCode("appInsCode")
-        applicationInstanceDO.setObjectVersionNumber(1L)
+        applicationInstanceDTO.setId(1L)
+        applicationInstanceDTO.setEnvId(1L)
+        applicationInstanceDTO.setAppServiceId(1L)
+        applicationInstanceDTO.setCommandId(1L)
+        applicationInstanceDTO.setAppServiceVersionId(1L)
+        applicationInstanceDTO.setStatus("running")
+        applicationInstanceDTO.setCode("appInsCode")
+        applicationInstanceDTO.setObjectVersionNumber(1L)
 
         // davv
         applicationVersionValueDO.setId(1L)
@@ -445,9 +446,8 @@ class AppServiceInstanceControllerSpec extends Specification {
     }
 
     def setup() {
-        DependencyInjectUtil.setAttribute(iamRepository, "baseServiceClient", baseServiceClient)
+        DependencyInjectUtil.setAttribute(baseServiceClientOperator, "baseServiceClient", baseServiceClient)
         DependencyInjectUtil.setAttribute(gitlabRepository, "gitlabServiceClient", gitlabServiceClient)
-        DependencyInjectUtil.setAttribute(gitlabGroupMemberRepository, "gitlabServiceClient", gitlabServiceClient)
 
         ProjectDTO projectDO = new ProjectDTO()
         projectDO.setName("testProject")
@@ -552,7 +552,7 @@ class AppServiceInstanceControllerSpec extends Specification {
         devopsEnvResourceMapper.insert(devopsEnvResourceDO8)
 
         applicationVersionMapper.insert(applicationVersionDO)
-        applicationInstanceMapper.insert(applicationInstanceDO)
+        applicationInstanceMapper.insert(applicationInstanceDTO)
 
         devopsEnvResourceDetailMapper.insert(devopsEnvResourceDetailDO)
         devopsEnvResourceDetailMapper.insert(devopsEnvResourceDetailDO2)
@@ -581,7 +581,7 @@ class AppServiceInstanceControllerSpec extends Specification {
         envUtil.getUpdatedEnvList() >> connectedEnvList
 
         when: '分页查询应用部署'
-        def page = restTemplate.postForObject("/v1/projects/1/app_instances/list_by_options?envId=1&appId=1&page=0&size=5", strEntity, PageInfo.class)
+        def page = restTemplate.postForObject(MAPPING+"/page_by_options?page=1&size=1", strEntity, PageInfo.class,1L)
 
         then: '校验返回值'
         page.getList().get(0)["code"] == "appInsCode"
@@ -907,9 +907,9 @@ class AppServiceInstanceControllerSpec extends Specification {
     }
 
     def "Start"() {
-        AppServiceInstanceDTO applicationInstanceDO1 = applicationInstanceMapper.selectByPrimaryKey(1L)
-        applicationInstanceDO1.setStatus(InstanceStatus.STOPPED.getStatus())
-        applicationInstanceMapper.updateByPrimaryKeySelective(applicationInstanceDO1)
+        AppServiceInstanceDTO applicationInstanceDTO1 = applicationInstanceMapper.selectByPrimaryKey(1L)
+        applicationInstanceDTO1.setStatus(InstanceStatus.STOPPED.getStatus())
+        applicationInstanceMapper.updateByPrimaryKeySelective(applicationInstanceDTO1)
 
         when: '实例重启'
         restTemplate.put("/v1/projects/1/app_instances/1/start", null)
@@ -1078,6 +1078,9 @@ class AppServiceInstanceControllerSpec extends Specification {
 
     // 清除测试数据
     def "cleanupData"() {
+        DependencyInjectUtil.restoreDefaultDependency(baseServiceClientOperator, "baseServiceClient")
+        DependencyInjectUtil.restoreDefaultDependency(gitlabRepository, "gitlabServiceClient")
+
         given:
         // 删除appInstance
         List<AppServiceInstanceDTO> list = applicationInstanceMapper.selectAll()

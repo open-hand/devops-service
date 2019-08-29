@@ -94,8 +94,6 @@ class AppServiceControllerSpec extends Specification {
     @Autowired
     private GitlabServiceClientOperator gitlabServiceClientOperator
     @Autowired
-    private GitlabGroupService gitlabGroupService
-    @Autowired
     private BaseServiceClientOperator baseServiceClientOperator
     @Autowired
     private DevopsProjectService projectService
@@ -105,7 +103,6 @@ class AppServiceControllerSpec extends Specification {
     TransactionalProducer producer = Mockito.mock(TransactionalProducer.class)
     BaseServiceClient baseServiceClient = Mockito.mock(BaseServiceClient.class)
     GitlabServiceClient gitlabServiceClient = Mockito.mock(GitlabServiceClient.class)
-    GitlabServiceClientOperator mockGitlabServiceClientOperator = Mockito.mock(GitlabServiceClientOperator.class)
 
     @Shared
     Map<String, Object> searchParam = new HashMap<>()
@@ -138,7 +135,6 @@ class AppServiceControllerSpec extends Specification {
 
         if (isToInit) {
             DependencyInjectUtil.setAttribute(gitlabServiceClientOperator, "gitlabServiceClient", gitlabServiceClient)
-            DependencyInjectUtil.setAttribute(gitlabGroupService, "gitlabServiceClientOperator", mockGitlabServiceClientOperator)
             DependencyInjectUtil.setAttribute(baseServiceClientOperator, "baseServiceClient", baseServiceClient)
 
             ProjectDTO projectDTO = new ProjectDTO()
@@ -171,7 +167,6 @@ class AppServiceControllerSpec extends Specification {
     def cleanup() {
         if (isToClean) {
             DependencyInjectUtil.restoreDefaultDependency(gitlabServiceClientOperator, "gitlabServiceClient")
-            DependencyInjectUtil.restoreDefaultDependency(gitlabGroupService, "gitlabServiceClientOperator")
             DependencyInjectUtil.restoreDefaultDependency(baseServiceClientOperator, "baseServiceClient")
 
 
