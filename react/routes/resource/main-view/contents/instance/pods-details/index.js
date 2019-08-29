@@ -1,4 +1,4 @@
-import React, { Fragment, memo, useCallback } from 'react';
+import React, { Fragment, memo, useState, useCallback } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { Action } from '@choerodon/master';
 import { Table } from 'choerodon-ui/pro';
@@ -9,6 +9,8 @@ import TimePopover from '../../../../../../components/timePopover/TimePopover';
 import StatusTags from '../../../../../../components/status-tag';
 import { useResourceStore } from '../../../../stores';
 import { useInstanceStore } from '../stores';
+import LogSiderbar from '../../../../../../components/log-siderbar';
+import TermSiderbar from '../../../../../../components/term-sidebar';
 
 import './index.less';
 
@@ -23,6 +25,10 @@ const PodDetail = memo(() => {
     intl,
     podsDs,
   } = useInstanceStore();
+  shellVisible;
+  const [visible, setVisible] = useState(false);
+  const [shellVisible, setShellVisible] = useState(false);
+  const [record, setRecord] = useState();
 
   function renderName({ value, record }) {
     const status = record.get('status');
@@ -109,30 +115,58 @@ const PodDetail = memo(() => {
       {
         service: [],
         text: intl.formatMessage({ id: `${intlPrefix}.instance.log` }),
-        // action: () => handleEdit(record),
+        action: () => {
+          setRecord(record.toData());
+          openLog();
+        },
       },
       {
         service: [],
         text: intl.formatMessage({ id: `${intlPrefix}.instance.term` }),
-        // action: () => handleDelete(record),
+        action: () => {
+          setRecord(record.toData());
+          openShell();
+        },
       },
     ];
     return <Action data={buttons} />;
   }
+  /**
+   * 控制Log侧边窗的可见性
+   */
+  function openLog() {
+    setVisible(true);
+  }
+  function closeLog() {
+    setVisible(false);
+  }
+  /**
+   * 控制Shell侧边窗的可见性
+   */
+  function openShell() {
+    setShellVisible(true);
+  }
+  function closeShell() {
+    setShellVisible(false);
+  }
 
   return (
-    <Table
-      dataSet={podsDs}
-      border={false}
-      queryBar="bar"
-      className={`${prefixCls}-instance-pods`}
-    >
-      <Column name="name" renderer={renderName} />
-      <Column renderer={renderAction} width="0.7rem" />
-      <Column name="containers" renderer={renderContainers} />
-      <Column name="ip" />
-      <Column name="creationDate" renderer={renderDate} width="1rem" />
-    </Table>
+    <Fragment>
+      <Table
+        dataSet={podsDs}
+        border={false}
+        queryBar="bar"
+        className={`${prefixCls}-instance-pods`}
+      >
+        <Column name="name" renderer={renderName} />
+        <Column renderer={renderAction} width="0.7rem" />
+        <Column name="containers" renderer={renderContainers} />
+        <Column name="ip" />
+        <Column name="creationDate" renderer={renderDate} width="1rem" />
+      </Table>
+      {visible && <LogSiderbar visible={visible} onClose={closeLog} record={record} />}
+      {shellVisible && <TermSiderbar visible={shellVisible} onClose={closeShell} record={record} />}
+    </Fragment>
   );
 });
 
