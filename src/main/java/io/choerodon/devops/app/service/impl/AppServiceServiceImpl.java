@@ -1597,6 +1597,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void importAppServiceInternal(Long projectId, List<ApplicationImportInternalVO> importInternalVOS) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         Long appId = devopsProjectService.queryAppIdByProjectId(projectId);
