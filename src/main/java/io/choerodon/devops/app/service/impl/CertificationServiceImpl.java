@@ -318,11 +318,9 @@ public class CertificationServiceImpl implements CertificationService {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         List<ProjectCertificationVO> projectCertificationVOS = new ArrayList<>();
         baseListByProject(projectId, projectDTO.getOrganizationId()).forEach(certificationDTO -> {
-            ProjectCertificationVO projectCertificationVO = new ProjectCertificationVO();
-            projectCertificationVO.setName(certificationDTO.getName());
+            List<String> domains = gson.fromJson(certificationDTO.getDomains(), new TypeToken<List<String>>() {}.getType());
+            ProjectCertificationVO projectCertificationVO = new ProjectCertificationVO(certificationDTO.getName(),domains.get(0));
             projectCertificationVO.setId(certificationDTO.getId());
-            List<String> domains = gson.fromJson(certificationDTO.getDomains(), new TypeToken<List<String>>() {
-            }.getType());
             projectCertificationVO.setDomain(domains.get(0));
             projectCertificationVOS.add(projectCertificationVO);
         });

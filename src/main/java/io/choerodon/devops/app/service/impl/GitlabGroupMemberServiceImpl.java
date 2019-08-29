@@ -394,10 +394,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
             case DEVELOPER:
             case MASTER:
             case OWNER:
-                MemberDTO requestMember = new MemberDTO();
-                requestMember.setId((TypeUtil.objToInteger(userAttrDTO.getGitlabUserId())));
-                requestMember.setAccessLevel(level.toValue());
-                requestMember.setExpiresAt("");
+                MemberDTO requestMember = new MemberDTO((TypeUtil.objToInteger(userAttrDTO.getGitlabUserId())),level.toValue(),"");
                 if (memberDTO == null) {
                     gitlabServiceClientOperator.createGroupMember(groupId, requestMember);
                 } else {
