@@ -28,7 +28,9 @@ public class ProjectCertificationVO {
     @ApiModelProperty("纪录版本字段")
     private Long objectVersionNumber;
 
-    public ProjectCertificationVO() {
+    public ProjectCertificationVO(String name, String domain) {
+        this.name = name;
+        this.domain = domain;
     }
 
     public ProjectCertificationVO(Long id, String name, String domain, Boolean skipCheckProjectPermission, Long objectVersionNumber) {
