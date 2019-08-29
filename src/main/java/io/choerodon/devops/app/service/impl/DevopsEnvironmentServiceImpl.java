@@ -189,10 +189,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Override
     public List<DevopsEnvGroupEnvsVO> listDevopsEnvGroupEnvs(Long projectId, Boolean active) {
         List<DevopsEnvGroupEnvsVO> devopsEnvGroupEnvsDTOS = new ArrayList<>();
-        List<Long> connectedClusterList = clusterConnectionHandler.getConnectedEnvList();
         List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedEnvList();
         List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = baseListByProjectIdAndActive(projectId, active).stream().peek(t ->
-                setEnvStatus(connectedClusterList, upgradeClusterList, t)
+                setEnvStatus(upgradeClusterList, t)
         )
                 .collect(Collectors.toList());
         List<DevopsEnviromentRepVO> devopsEnviromentRepDTOS = ConvertUtils.convertList(devopsEnvironmentDTOS, DevopsEnviromentRepVO.class);
@@ -242,11 +241,10 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         DevopsEnvGroupEnvsVO devopsEnvGroupEnvsDTO = new DevopsEnvGroupEnvsVO();
         List<DevopsEnvGroupEnvsVO> devopsEnvGroupEnvsDTOS = new ArrayList<>();
         // 获得环境列表(包含激活与不激活)
-        List<Long> connectedClusterList = clusterConnectionHandler.getConnectedEnvList();
         List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedEnvList();
         List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = baseListByProjectId(projectId)
                 .stream()
-                .peek(t -> setEnvStatus(connectedClusterList, upgradeClusterList, t))
+                .peek(t -> setEnvStatus(upgradeClusterList, t))
                 .collect(Collectors.toList());
         // 没有环境列表则返回空列表
         if (devopsEnvironmentDTOS.isEmpty()) {
@@ -307,11 +305,10 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     public List<DevopsEnviromentRepVO> listByGroupAndActive(Long projectId, Long groupId, Boolean active) {
-        List<Long> connectedClusterList = clusterConnectionHandler.getConnectedEnvList();
         List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedEnvList();
         List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = devopsEnvironmentMapper.listByProjectIdAndGroupIdAndActive(projectId, groupId, active)
                 .stream()
-                .peek(t -> setEnvStatus(connectedClusterList, upgradeClusterList, t))
+                .peek(t -> setEnvStatus(upgradeClusterList, t))
                 .collect(Collectors.toList());
         return ConvertUtils.convertList(devopsEnvironmentDTOS, DevopsEnviromentRepVO.class);
     }
@@ -329,11 +326,10 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         Boolean isProjectOwner = iamService
                 .isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectDTO);
 
-        List<Long> connectedClusterList = clusterConnectionHandler.getConnectedEnvList();
         List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedEnvList();
         List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = baseListByProjectIdAndActive(projectId, active).stream()
                 .filter(devopsEnvironmentE -> !devopsEnvironmentE.getFailed()).peek(t -> {
-                    setEnvStatus(connectedClusterList, upgradeClusterList, t);
+                    setEnvStatus(upgradeClusterList, t);
                     // 项目成员返回拥有对应权限的环境，项目所有者返回所有环境
                     setPermission(t, permissionEnvIds, isProjectOwner);
                 })
@@ -375,15 +371,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 return appVO;
             }).collect(Collectors.toList()));
 
-            if (connected) {
-                connectedEnvs.add(vo);
-            } else {
-                if (Boolean.TRUE.equals(vo.getSynchronize())) {
-                    unConnectedEnvs.add(vo);
-                } else {
-                    unSynchronizedEnvs.add(vo);
-                }
-            }
+            classifyEnv(connectedEnvs, unConnectedEnvs, unSynchronizedEnvs, vo, vo.getSynchronize(), vo.getConnect());
         });
 
         // 为了将环境按照状态排序: 连接（运行中） > 未连接 > 处理中（未同步完成的）
@@ -407,15 +395,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             boolean connected = upgradeClusterList.contains(e.getClusterId());
             vo.setConnect(connected);
 
-            if (connected) {
-                connectedEnvs.add(vo);
-            } else {
-                if (Boolean.TRUE.equals(vo.getSynchronize())) {
-                    unConnectedEnvs.add(vo);
-                } else {
-                    unSynchronizedEnvs.add(vo);
-                }
-            }
+            classifyEnv(connectedEnvs, unConnectedEnvs, unSynchronizedEnvs, vo, vo.getSynchronize(), vo.getConnect());
         });
 
         // 为了将环境按照状态排序: 连接（运行中） > 未连接 > 处理中（未同步完成的）
@@ -424,13 +404,40 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         return connectedEnvs;
     }
 
+
+    /**
+     * 将环境进行分类
+     *
+     * @param connectedEnvs      已连接
+     * @param unConnectedEnvs    未连接
+     * @param unSynchronizedEnvs 处理中
+     * @param toBeClassified     待分类的环境
+     * @param isSynchronized     是否同步
+     * @param connect            是否连接
+     */
+    private <C> void classifyEnv(List<C> connectedEnvs,
+                                 List<C> unConnectedEnvs,
+                                 List<C> unSynchronizedEnvs,
+                                 C toBeClassified,
+                                 Boolean isSynchronized,
+                                 Boolean connect) {
+        if (Boolean.TRUE.equals(isSynchronized)) {
+            if (Boolean.TRUE.equals(connect)) {
+                connectedEnvs.add(toBeClassified);
+            } else {
+                unConnectedEnvs.add(toBeClassified);
+            }
+        } else {
+            unSynchronizedEnvs.add(toBeClassified);
+        }
+    }
+
     @Override
     public Boolean updateActive(Long projectId, Long environmentId, Boolean active) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = baseQueryById(environmentId);
 
         List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedEnvList();
-        List<Long> connectedClusterList = clusterConnectionHandler.getConnectedEnvList();
-        setEnvStatus(connectedClusterList, upgradeClusterList, devopsEnvironmentDTO);
+        setEnvStatus(upgradeClusterList, devopsEnvironmentDTO);
         if (!active && devopsEnvironmentDTO.getConnected()) {
             devopsEnvironmentValidator.checkEnvCanDisabled(environmentId);
         }
@@ -515,7 +522,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         return ConvertUtils.convertObject(baseUpdate(toUpdate), DevopsEnvironmentUpdateVO.class);
     }
 
-    private void setEnvStatus(List<Long> connectedEnvList, List<Long> upgradeEnvList, DevopsEnvironmentDTO t) {
+    private void setEnvStatus(List<Long> upgradeEnvList, DevopsEnvironmentDTO t) {
         t.setConnected(upgradeEnvList.contains(t.getClusterId()));
     }
 
@@ -996,7 +1003,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         //合并项目所有者和项目成员
         Set<IamUserDTO> iamUserDTOS = new HashSet<>(allMemberWithOtherUsersPage.getList());
         iamUserDTOS.addAll(allOwnerUsersPage.getList());
-        List<IamUserDTO> returnUserDTOList = null;
+        List<IamUserDTO> returnUserDTOList;
 
         //没有项目所有者
         if (allOwnerUsersPage.getList().isEmpty()) {
@@ -1074,10 +1081,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(devopsEnvironmentDTO.getClusterId());
         if (devopsClusterDTO.getNamespaces() != null) {
             List<String> namespaces = JSONArray.parseArray(devopsClusterDTO.getNamespaces(), String.class);
-            if (namespaces.contains(devopsEnvironmentDTO.getCode())) {
-                namespaces.remove(devopsEnvironmentDTO.getCode());
-            }
-            devopsClusterDTO.setNamespaces((String) JSONArray.toJSON(namespaces));
+            namespaces.remove(devopsEnvironmentDTO.getCode());
+            devopsClusterDTO.setNamespaces((JSONArray.toJSONString(namespaces)));
             devopsClusterService.baseUpdate(devopsClusterDTO);
         }
 
