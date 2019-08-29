@@ -8,10 +8,11 @@ import Permission from '../../../../../resource/main-view/contents/environment/m
 import { useEnvironmentStore } from '../../../../stores';
 import { useMainStore } from '../../../stores';
 import { useDetailStore } from '../stores';
-import EnvCreateForm from '../../../modals/env-form';
-import GroupForm from '../../../modals/GroupForm';
 import ResourceSetting from './resource-setting/notificationsHome';
 import useStore from './useStore';
+import EnvCreateForm from '../../../modals/env-create';
+import GroupForm from '../../../modals/GroupForm';
+import DeployConfig from './deploy-config';
 
 import './index.less';
 
@@ -20,11 +21,15 @@ const envKey = Modal.key();
 const groupKey = Modal.key();
 const permissionKey = Modal.key();
 const resourceKey = Modal.key();
+const configKey = Modal.key();
 
 const EnvModals = observer(() => {
   const modalStore = useStore();
   const modalStyle = useMemo(() => ({
     width: 380,
+  }), []);
+  const configModalStyle = useMemo(() => ({
+    width: 'calc(100vw - 3.52rem)',
   }), []);
   const {
     treeDs,
@@ -74,7 +79,7 @@ const EnvModals = observer(() => {
     Modal.open({
       key: envKey,
       title: formatMessage({ id: `${currentIntlPrefix}.create` }),
-      children: <EnvCreateForm intlPrefix={currentIntlPrefix} />,
+      children: <EnvCreateForm intlPrefix={currentIntlPrefix} refresh={refresh} />,
       drawer: true,
       style: modalStyle,
     });
@@ -96,7 +101,7 @@ const EnvModals = observer(() => {
   function openEnvDetail() {
     Modal.open({
       key: detailKey,
-      title: formatMessage({ id: `${currentIntlPrefix}.modal.env-detail` }),
+      title: formatMessage({ id: `${intlPrefix}.modal.env-detail` }),
       children: <EnvDetail record={getSelectedMenu} isRecord={false} />,
       drawer: true,
       style: modalStyle,
@@ -152,6 +157,19 @@ const EnvModals = observer(() => {
   }
 
 
+  function openConfigModal() {
+    Modal.open({
+      key: configKey,
+      title: formatMessage({ id: `${currentIntlPrefix}.create.config` }),
+      children: <DeployConfig
+        intlPrefix={currentIntlPrefix}
+        prefixCls={currentPrefixCls}
+      />,
+      drawer: true,
+      style: configModalStyle,
+    });
+  }
+
   function getButtons() {
     const { active, synchro } = getSelectedMenu;
     const disabled = !active || !synchro;
@@ -165,7 +183,7 @@ const EnvModals = observer(() => {
       disabled,
       name: formatMessage({ id: `${currentIntlPrefix}.create.config` }),
       icon: 'playlist_add',
-      handler: openPermission,
+      handler: openConfigModal,
       display: true,
       group: 1,
     }, {

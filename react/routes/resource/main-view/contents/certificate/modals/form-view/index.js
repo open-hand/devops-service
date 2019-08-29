@@ -16,7 +16,7 @@ import {
 } from 'choerodon-ui';
 import CertConfig from '../../../../../../../components/certConfig';
 import Tips from '../../../../../../../components/Tips/Tips';
-import InterceptMask from '../../../../../../../components/interceptMask/InterceptMask';
+import InterceptMask from '../../../../../../../components/intercept-mask';
 import { handlePromptError } from '../../../../../../../utils';
 
 import '../../../../../../main.less';

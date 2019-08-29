@@ -6,7 +6,7 @@ import { Select, Modal, Form, Input, Icon } from 'choerodon-ui';
 import _ from 'lodash';
 import MdEditor from '../../../../components/MdEditor';
 import Tips from '../../../../components/Tips/Tips';
-import InterceptMask from '../../../../components/interceptMask/InterceptMask';
+import InterceptMask from '../../../../components/intercept-mask';
 
 import '../../../main.less';
 import './style/AppTagCreate.less';

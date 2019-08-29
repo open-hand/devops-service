@@ -18,7 +18,7 @@ import {
 } from 'choerodon-ui';
 import { stores, Content } from '@choerodon/master';
 import AppName from '../../../../../../../components/appName';
-import InterceptMask from '../../../../../../../components/interceptMask/InterceptMask';
+import InterceptMask from '../../../../../../../components/intercept-mask';
 import Tips from '../../../../../../../components/Tips/Tips';
 
 import '../../../../../../main.less';

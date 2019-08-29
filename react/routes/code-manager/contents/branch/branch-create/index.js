@@ -10,7 +10,7 @@ import './index.less';
 import '../index.less';
 import MouserOverWrapper from '../../../../../components/MouseOverWrapper';
 import DevPipelineStore from '../../../stores/DevPipelineStore';
-import InterceptMask from '../../../../../components/interceptMask/InterceptMask';
+import InterceptMask from '../../../../../components/intercept-mask';
 
 const { AppState } = stores;
 const Sidebar = Modal.Sidebar;

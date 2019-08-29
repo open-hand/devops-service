@@ -1,22 +1,87 @@
-import React, { Fragment } from 'react';
+import React, { Fragment, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { observer } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
-import { Action, Permission } from '@choerodon/master';
-import TreeItemName from '../../../../../components/treeitem-name';
+import { Action } from '@choerodon/master';
+import { Modal } from 'choerodon-ui/pro';
 import { handlePromptError } from '../../../../../utils';
+import TreeItemName from '../../../../../components/treeitem-name';
+import EnvItem from '../../../../../components/env-item';
+import EnvModifyForm from '../../modals/env-modify';
 import { useEnvironmentStore } from '../../../stores';
 import { useTreeItemStore } from './stores';
-import EnvItem from '../../../../../components/env-item';
+
+const formKey = Modal.key();
 
 function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
+  const modalStyle = useMemo(() => ({
+    width: 380,
+  }), []);
   const {
     treeDs,
-    AppState: { currentMenuType: { id } },
+    AppState: { currentMenuType: { id: projectId } },
+    envStore,
   } = useEnvironmentStore();
+  const { envItemStore } = useTreeItemStore();
 
-  async function handleClick() {
-    // console.log('click');
+  function refresh() {
+    treeDs.query();
+  }
+
+  async function handleDelete() {
+    const { getSelectedMenu: { id } } = envStore;
+    try {
+      const res = envItemStore.deleteEnv(projectId, id);
+      handlePromptError(res);
+    } catch (e) {
+      Choerodon.handleResponseError(e);
+    } finally {
+      refresh();
+    }
+  }
+
+  async function handleEffect(target) {
+    const { getSelectedMenu } = envStore;
+    try {
+      const res = envItemStore.effectEnv(projectId, getSelectedMenu.id, target);
+      handlePromptError(res);
+    } catch (e) {
+      Choerodon.handleResponseError(e);
+    } finally {
+      refresh();
+    }
+  }
+
+  function openModifyModal() {
+    Modal.open({
+      key: formKey,
+      title: formatMessage({ id: `${intlPrefix}.create` }),
+      children: <EnvModifyForm
+        intlPrefix={intlPrefix}
+        refresh={refresh}
+        envStore={envStore}
+      />,
+      drawer: true,
+      style: modalStyle,
+    });
+  }
+
+  function getSuffix() {
+    const synchronize = record.get('synchro');
+    const active = record.get('active');
+
+    if (!synchronize && active) return null;
+
+    const actionData = [{
+      service: [],
+      text: formatMessage({ id: `${intlPrefix}.modal.detail.${active ? 'stop' : 'start'}` }),
+      action: () => handleEffect(!active),
+    }, {
+      service: [],
+      text: formatMessage({ id: `${intlPrefix}.modal.detail.${active ? 'modify' : 'delete'}` }),
+      action: active ? openModifyModal : handleDelete,
+    }];
+    return <Action placement="bottomRight" data={actionData} />;
   }
 
   function getName() {
@@ -31,24 +96,6 @@ function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
       connect={connect}
       synchronize={synchronize}
     />;
-  }
-
-  function getSuffix() {
-    const synchronize = record.get('synchro');
-    const active = record.get('active');
-
-    if (!synchronize && active) return null;
-
-    const actionData = [{
-      service: [],
-      text: formatMessage({ id: `${intlPrefix}.modal.detail.${active ? 'stop' : 'start'}` }),
-      action: handleClick,
-    }, {
-      service: [],
-      text: formatMessage({ id: `${intlPrefix}.modal.detail.${active ? 'modify' : 'delete'}` }),
-      action: handleClick,
-    }];
-    return <Action placement="bottomRight" data={actionData} />;
   }
 
   return <Fragment>

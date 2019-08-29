@@ -8,7 +8,7 @@ import _ from 'lodash';
 import StageCard from '../components/stageCard';
 import StageCreateModal from '../components/stageCreateModal';
 import { STAGE_FLOW_AUTO, STAGE_FLOW_MANUAL, TRIGGER_TYPE_AUTO, TRIGGER_TYPE_MANUAL } from '../components/Constants';
-import InterceptMask from '../../../components/interceptMask';
+import InterceptMask from '../../../components/intercept-mask';
 import Tips from '../../../components/Tips/Tips';
 import PipelineCreateStore from '../stores/PipelineCreateStore';
 

@@ -8,8 +8,6 @@ import { useEnvironmentStore } from '../../../stores';
 import { useEnvGroupStore } from './stores';
 import Modals from './modals';
 
-// import './index.less';
-
 const { Column } = Table;
 
 const Group = observer(() => {

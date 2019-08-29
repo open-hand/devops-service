@@ -6,7 +6,7 @@ import { Modal } from 'choerodon-ui';
 
 import MdEditor from '../../../../components/MdEditor';
 import '../../../main.less';
-import InterceptMask from '../../../../components/interceptMask/InterceptMask';
+import InterceptMask from '../../../../components/intercept-mask';
 
 const { AppState } = stores;
 const { Sidebar } = Modal;

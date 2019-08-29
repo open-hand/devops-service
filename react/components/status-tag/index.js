@@ -20,6 +20,7 @@ export default function StatusTag({ name, color, colorCode, style, ellipsis, err
     pendingcheck: '#ffb100',
     active: '#00bf96',
     creating: '#4d90fe',
+    disconnect: '#ff9915',
   }), []);
   const defaultColor = 'rgba(0, 0, 0, 0.28)';
 

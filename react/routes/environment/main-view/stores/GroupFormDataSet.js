@@ -5,14 +5,14 @@ export default ({ formatMessage, intlPrefix, projectId }) => {
     try {
       const res = await axios.get(`/devops/v1/projects/${projectId}/env_groups/check_name?name=${value}`);
       if (res.failed) {
-        return '分组名重名校验失败，请稍后再试。';
+        return '分组名重名校验失败，请稍后再试';
       } else if (!res) {
         return '分组名重复。';
       } else {
         return true;
       }
     } catch (err) {
-      return '分组名重名校验失败，请稍后再试。';
+      return '分组名重名校验失败，请稍后再试';
     }
   };
 

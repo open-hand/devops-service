@@ -2,7 +2,7 @@ import React, { useState, Fragment } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Spin } from 'choerodon-ui';
 import YamlEditor from '../../../../../../../components/yamlEditor';
-import InterceptMask from '../../../../../../../components/interceptMask/InterceptMask';
+import InterceptMask from '../../../../../../../components/intercept-mask';
 import { handlePromptError } from '../../../../../../../utils';
 
 import './index.less';
