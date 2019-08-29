@@ -318,9 +318,9 @@ public class BaseServiceClientOperator {
         }
     }
 
-    public void publishFail(Long projectId, Long mktAppId, String code) {
+    public void publishFail(Long projectId, Long mktAppId, Long mktAppVersionId, String code, Boolean fixFlag) {
         try {
-            baseServiceClient.publishFail(projectId, mktAppId, code).getBody();
+            baseServiceClient.publishFail(projectId, mktAppId, mktAppVersionId, code, fixFlag).getBody();
         } catch (Exception e) {
             throw new CommonException("error.insert.failed.message", e.getMessage());
         }
@@ -334,7 +334,7 @@ public class BaseServiceClientOperator {
         }
     }
 
-    public void completeDownloadApplication(Long publishAppVersionId, Set<Long> serviceVersionIds){
+    public void completeDownloadApplication(Long publishAppVersionId, Set<Long> serviceVersionIds) {
         try {
             baseServiceClient.completeDownloadApplication(publishAppVersionId, serviceVersionIds);
         } catch (Exception e) {
