@@ -1,4 +1,4 @@
-import React, { Fragment, useMemo } from 'react';
+import React, { Fragment, useMemo, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import map from 'lodash/map';
@@ -7,6 +7,7 @@ import ReactEcharts from 'echarts-for-react';
 import { useResourceStore } from '../../../stores';
 import { useNetworkDetailStore } from './stores';
 import TimePopover from '../../../../../components/timePopover';
+import LogSiderbar from '../../../../../components/log-siderbar';
 
 const PodList = observer(() => {
   const {
@@ -19,8 +20,22 @@ const PodList = observer(() => {
   } = useNetworkDetailStore();
 
   const record = baseInfoDs.current;
+  
+  const [visible, setVisible] = useState(false);
+  const [data, setData] = useState();
 
-  function renderRegistry(containers) {
+  function openLog() {
+    setVisible(true);
+  }
+  function closeLog() {
+    setVisible(false);
+  }
+  function handleLogClick(index) {
+    setData({ ...record.get('podLiveInfos')[index], clusterId: 61, namespace: 'envtestenv' });
+    openLog();
+  }
+
+  function renderRegistry(containers, index) {
     const list = map(containers, ({ name, ready, registry }) => (
       <div key={name}>
         <div>
@@ -28,6 +43,9 @@ const PodList = observer(() => {
           <Button
             icon="find_in_page"
             shape="circle"
+            onClick={() => {
+              handleLogClick(index);
+            }}
           />
         </div>
         <div>
@@ -104,7 +122,7 @@ const PodList = observer(() => {
           podId,
           podIp,
           creationDate,
-        }) => (
+        }, index) => (
           <ul className="service-detail-pod-list" key={podId}>
             <li className="service-detail-pod-item">
               <span className="service-detail-pod-item-name">{podName}</span>
@@ -127,7 +145,7 @@ const PodList = observer(() => {
               </div>
             </li>
             <li className="service-detail-pod-item">
-              {renderRegistry(containers)}
+              {renderRegistry(containers, index)}
             </li>
             <li className="service-detail-pod-echarts">
               <ReactEcharts
@@ -142,6 +160,7 @@ const PodList = observer(() => {
           </ul>
         ))}
       </div>
+      {visible && <LogSiderbar visible={visible} onClose={closeLog} record={data} />}
     </Fragment>
   );
 });

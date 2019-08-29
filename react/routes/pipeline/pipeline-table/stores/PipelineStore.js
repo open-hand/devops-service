@@ -108,7 +108,7 @@ class PipelineStore {
 
     const result = handlePromptError(data);
     if (result) {
-      const { pageNum, total, pageSize, list } = result;
+      const { pageNum, total, pageSize, list } = data;
 
       const pageInfo = {
         current: pageNum,
