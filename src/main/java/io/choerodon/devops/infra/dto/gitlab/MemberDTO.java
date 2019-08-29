@@ -12,7 +12,6 @@ public class MemberDTO {
     @NotNull
     private Integer accessLevel;
     private String expiresAt;
-
     public MemberDTO(@NotNull Integer userId, @NotNull Integer accessLevel, String expiresAt) {
         this.id = userId;
         this.accessLevel = accessLevel;
@@ -23,7 +22,6 @@ public class MemberDTO {
         this.id = userId;
         this.accessLevel = accessLevel;
     }
-
     public Integer getId() {
         return id;
     }
