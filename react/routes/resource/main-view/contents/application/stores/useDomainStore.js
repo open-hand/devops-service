@@ -30,7 +30,7 @@ export default function useStore() {
 
     async loadNetwork(projectId, envId, appId) {
       try {
-        const res = axios.get(`/devops/v1/projects/${projectId}/service/list_by_env?env_id=${envId}&app_service_id=${appId}`);
+        const res = await axios.get(`/devops/v1/projects/${projectId}/service/list_by_env?env_id=${envId}&app_service_id=${appId}`);
         if (handlePromptError(res)) {
           this.setNetwork(res);
         }
@@ -39,15 +39,14 @@ export default function useStore() {
       }
     },
 
-    async loadDataById(projectId, id) {
-      try {
-        const res = await axios.get(`/devops/v1/projects/${projectId}/ingress/${id}`);
-        if (handlePromptError(res)) {
-          this.setSingleData(res);
-        }
-      } catch (e) {
-        Choerodon.handleResponseError(e);
-      }
+    loadDataById(projectId, id) {
+      return axios.get(`/devops/v1/projects/${projectId}/ingress/${id}`)
+        .then((res) => {
+          if (handlePromptError(res)) {
+            this.setSingleData(res);
+          }
+          return res;
+        });
     },
 
     async loadCertByEnv(projectId, envId, domain) {
@@ -75,6 +74,10 @@ export default function useStore() {
 
     addData(projectId, data) {
       return axios.post(`/devops/v1/projects/${projectId}/ingress`, JSON.stringify(data));
+    },
+
+    deleteIngress(projectId, id) {
+      return axios.delete(`/devops/v1/projects/${projectId}/ingress/${id}`);
     },
   }));
 }

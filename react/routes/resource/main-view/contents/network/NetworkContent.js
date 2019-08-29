@@ -76,16 +76,16 @@ const NetworkContent = observer(() => {
     const port = [];
     const len = endPoints ? 2 : 1;
     if (instances && instances.length) {
-      _.forEach(instances, ({ id: itemId, code, instanceStatus }) => {
+      _.forEach(instances, ({ id: itemId, code, status }) => {
         const targetClass = classnames({
           'net-target-item': true,
-          'net-target-item-failed': instanceStatus !== 'operating' && instanceStatus !== 'running',
+          'net-target-item-failed': status !== 'operating' && status !== 'running',
         });
         if (code) {
           node.push(
             <div className={targetClass} key={itemId}>
               <Tooltip
-                title={formatMessage({ id: instanceStatus || `${intlPrefix}.application.net.deleted` })}
+                title={formatMessage({ id: status || `${intlPrefix}.application.net.deleted` })}
                 placement="top"
               >
                 {code}
@@ -274,7 +274,7 @@ const NetworkContent = observer(() => {
       <Table
         dataSet={networkDs}
         border={false}
-        queryBar="none"
+        queryBar="bar"
       >
         <Column name="name" renderer={renderName} />
         <Column renderer={renderAction} width="0.7rem" />

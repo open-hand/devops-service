@@ -41,5 +41,6 @@ export default ({ formatMessage, itemType, projectId, envId }) => {
       { name: 'commandStatus', type: 'string' },
       { name: 'lastUpdateDate', type: 'string', label: formatMessage({ id: 'updateDate' }) },
     ],
+    queryFields: [],
   });
 };

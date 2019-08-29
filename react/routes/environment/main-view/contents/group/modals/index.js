@@ -2,8 +2,8 @@ import React, { useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Modal, Form, TextField } from 'choerodon-ui/pro';
 import HeaderButtons from '../../../../../../components/header-buttons';
-import EnvCreateForm from '../../../modals/EnvCreateForm';
-import GroupCreateForm from '../../../modals/GroupCreateForm';
+import EnvCreateForm from '../../../modals/env-form';
+import GroupForm from '../../../modals/GroupForm';
 import { useEnvironmentStore } from '../../../../stores';
 import { useMainStore } from '../../../stores';
 import { useEnvGroupStore } from '../stores';
@@ -22,7 +22,7 @@ const AppModals = observer(() => {
     envStore,
     treeDs,
   } = useEnvironmentStore();
-  const { envFormDs, groupFormDs, clusterDs } = useMainStore();
+  const { groupFormDs } = useMainStore();
   const { groupDs } = useEnvGroupStore();
 
   function refresh() {
@@ -31,22 +31,23 @@ const AppModals = observer(() => {
   }
 
   function openGroupModal() {
-    groupFormDs.reset();
     Modal.open({
       key: groupKey,
       title: formatMessage({ id: `${intlPrefix}.group.create` }),
-      children: <GroupCreateForm dataSet={groupFormDs} treeDs={treeDs} />,
+      children: <GroupForm dataSet={groupFormDs} treeDs={treeDs} />,
       drawer: true,
       style: modalStyle,
+      afterClose: () => {
+        groupFormDs.current.reset();
+      },
     });
   }
 
   function openEnvModal() {
-    clusterDs.query();
     Modal.open({
       key: envKey,
       title: formatMessage({ id: `${intlPrefix}.create` }),
-      children: <EnvCreateForm dataSet={envFormDs} clusterDs={clusterDs} />,
+      children: <EnvCreateForm intlPrefix={intlPrefix} />,
       drawer: true,
       style: modalStyle,
     });

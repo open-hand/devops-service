@@ -10,7 +10,7 @@ const { Column } = Table;
 export default function Permissions() {
   const {
     envStore: {
-      getSelectedMenu: { active },
+      getSelectedMenu: { active, skipCheckPermission },
     },
   } = useEnvironmentStore();
   const {
@@ -29,7 +29,7 @@ export default function Permissions() {
         },
       },
     ];
-    return role === 'member' ? <Action data={actionData} /> : null;
+    return role === 'member' && !skipCheckPermission ? <Action data={actionData} /> : null;
   }
 
   function renderDate({ value }) {

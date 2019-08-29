@@ -300,14 +300,14 @@ class EditNetwork extends Component {
           const deletedInstance = [];
           if (instances && instances.length) {
             _.forEach(instances, (item) => {
-              const { id: istId, code, instanceStatus } = item;
+              const { id: istId, code, status } = item;
               initIst.push(code);
               initIstOption.push(
-                <Option key={istId} value={code}>
+                <Option key={istId} value={[code]}>
                   <Tooltip
                     title={
-                      instanceStatus ? (
-                        <FormattedMessage id={instanceStatus} />
+                      status ? (
+                        <FormattedMessage id={status} />
                       ) : (<FormattedMessage id="network.ist.deleted" />)
                     }
                     placement="right"
@@ -316,13 +316,13 @@ class EditNetwork extends Component {
                   </Tooltip>
                 </Option>,
               );
-              if (instanceStatus !== 'running') {
+              if (status !== 'running') {
                 deletedInstance.push(code);
               }
             });
             if (instances.length > 1) {
               initIstOption.unshift(
-                <Option key="all_instance" value="all_instance">
+                <Option key="all_instance" value={['all_instance']}>
                   {formatMessage({ id: 'all' })}
                 </Option>
               );
@@ -354,6 +354,7 @@ class EditNetwork extends Component {
       });
     store.loadInstance(id, envId, appServiceId);
     store.loadLabels(id, envId, appServiceId);
+    store.loadPorts(id, envId, appServiceId);
   };
 
   /**
@@ -531,50 +532,29 @@ class EditNetwork extends Component {
   /**
    * 每当节点端口、端口、目标端口、关键字等输入改变，强制校验，消除重复的报错信息
    */
-  changeValue = _.debounce((type) => {
+  changeValue = _.debounce((type, keyFiled, valueFiled, value) => {
     const {
       form: {
         validateFields,
       },
     } = this.props;
 
+    if (type === 'keywords') {
+      this.selectLabel(value, keyFiled, valueFiled);
+    }
+
     validateFields([type], { force: true });
   }, 400);
 
-  /**
-   * 生成app选项组
-   * @param node
-   * @returns {*}
-   */
-  makeAppGroup = (node) => {
-    const { id, name, code, projectId } = node;
-    const { id: currentProject } = AppState.currentMenuType;
-    return (
-      <Option value={id} key={code}>
-        <Popover
-          placement="right"
-          content={
-            <Fragment>
-              <p>
-                <FormattedMessage id="app.name" />:<span>{name}</span>
-              </p>
-              <p>
-                <FormattedMessage id="app.code" />:<span>{code}</span>
-              </p>
-            </Fragment>
-          }
-        >
-          <div className="c7ncd-net-app">
-            <AppName
-              name={name}
-              showIcon
-              self={projectId === Number(currentProject)}
-              width="460px"
-            />
-          </div>
-        </Popover>
-      </Option>
-    );
+  selectLabel = (value, keyFiled, valueFiled) => {
+    const { form: { setFieldsValue, validateFields } } = this.props;
+    if (_.includes(value, '__')) {
+      setFieldsValue({
+        [keyFiled]: value.split('__')[0],
+        [valueFiled]: value.split('__')[1],
+      });
+      validateFields(['keywords'], { force: true });
+    }
   };
 
   /**
@@ -960,13 +940,18 @@ class EditNetwork extends Component {
               },
             ],
           })(
-            <Input
-              type="text"
+            <Select
+              mode="combobox"
               maxLength={5}
-              disabled={!envId}
               onChange={this.changeValue.bind(this, 'tport')}
+              disabled={!envId}
               label={<FormattedMessage id="network.config.targetPort" />}
-            />,
+              dropdownMatchSelectWidth={false}
+            >
+              {_.map(store.getPorts, ({ resourceName, portValue }) => (
+                <Option key={portValue}>{resourceName}: {portValue}</Option>
+              ))}
+            </Select>,
           )}
         </FormItem>
         {configType === 'NodePort' ? (
@@ -1173,11 +1158,10 @@ class EditNetwork extends Component {
           onOk={this.handleSubmit}
           onCancel={this.handleClose.bind(this, false)}
           confirmLoading={submitting}
+          width={415}
         >
           <Content
-            code="network.update"
-            values={{ name: initName }}
-            className="c7n-network-create sidebar-content"
+            className="c7n-network-form-wrap sidebar-content"
           >
             <Form layout="vertical">
               <FormItem
@@ -1204,30 +1188,28 @@ class EditNetwork extends Component {
               <div className="network-panel-title">
                 <FormattedMessage id="network.target" />
               </div>
-              <div className="network-radio-wrap">
-                <FormItem
-                  className="network-radio-form"
-                  label={<FormattedMessage id="chooseType" />}
-                  {...formItemLayout}
-                >
-                  {getFieldDecorator('target', {
-                    initialValue: targetType,
-                  })(
-                    <RadioGroup
-                      name="target"
-                      disabled={!envId}
-                      onChange={(e) => this.handleTypeChange(e, 'targetKeys')}
-                    >
-                      <Radio value="instance">
-                        <FormattedMessage id="network.target.instance" />
-                      </Radio>
-                      <Radio value="param">
-                        <FormattedMessage id="network.target.param" />
-                      </Radio>
-                    </RadioGroup>,
-                  )}
-                </FormItem>
-              </div>
+              <FormItem
+                className="network-radio-form"
+                label={<FormattedMessage id="chooseType" />}
+                {...formItemLayout}
+              >
+                {getFieldDecorator('target', {
+                  initialValue: targetType,
+                })(
+                  <RadioGroup
+                    name="target"
+                    disabled={!envId}
+                    onChange={(e) => this.handleTypeChange(e, 'targetKeys')}
+                  >
+                    <Radio value="instance">
+                      <FormattedMessage id="network.target.instance" />
+                    </Radio>
+                    <Radio value="param">
+                      <FormattedMessage id="network.target.param" />
+                    </Radio>
+                  </RadioGroup>,
+                )}
+              </FormItem>
               <div className="network-panel">
                 {targetType === 'instance' && (
                   <FormItem
@@ -1249,7 +1231,6 @@ class EditNetwork extends Component {
                     })(
                       <Select
                         filter
-                        mode="multiple"
                         className="network-select-instance"
                         optionFilterProp="children"
                         optionLabelProp="children"
@@ -1261,7 +1242,6 @@ class EditNetwork extends Component {
                           id: 'network.form.instance.disable',
                         })}
                         getPopupContainer={(triggerNode) => triggerNode.parentNode}
-                        choiceRender={this.handleRenderInstance}
                         filterOption={(input, option) => option.props.children.props.children
                           .toLowerCase()
                           .indexOf(input.toLowerCase()) >= 0}
@@ -1292,37 +1272,26 @@ class EditNetwork extends Component {
                 className={`network-panel-title ${
                   !envId ? 'network-panel-title_disabled' : ''}`}
               >
-                <Icon type="router" />
                 <FormattedMessage id="network.config" />
               </div>
-              <div className="network-radio-wrap">
-                <div
-                  className={`network-radio-label ${
-                    !envId
-                      ? 'network-radio-label_disabled'
-                      : ''}`}
-                >
-                  <FormattedMessage id="chooseType" />
-                </div>
-                <FormItem
-                  className="network-radio-form"
-                  {...formItemLayout}
-                >
-                  {getFieldDecorator('config', {
-                    initialValue: configType,
-                  })(
-                    <RadioGroup
-                      name="config"
-                      disabled={!envId}
-                      onChange={(e) => this.handleTypeChange(e, 'portKeys')}
-                    >
-                      <Radio value="ClusterIP">ClusterIP</Radio>
-                      <Radio value="NodePort">NodePort</Radio>
-                      <Radio value="LoadBalancer">LoadBalancer</Radio>
-                    </RadioGroup>,
-                  )}
-                </FormItem>
-              </div>
+              <FormItem
+                className="network-radio-form"
+                {...formItemLayout}
+              >
+                {getFieldDecorator('config', {
+                  initialValue: configType,
+                })(
+                  <RadioGroup
+                    name="config"
+                    disabled={!envId}
+                    onChange={(e) => this.handleTypeChange(e, 'portKeys')}
+                  >
+                    <Radio value="ClusterIP">ClusterIP</Radio>
+                    <Radio value="NodePort">NodePort</Radio>
+                    <Radio value="LoadBalancer">LoadBalancer</Radio>
+                  </RadioGroup>,
+                )}
+              </FormItem>
               <div className="network-panel">
                 {configType === 'ClusterIP' ? (
                   <Fragment>

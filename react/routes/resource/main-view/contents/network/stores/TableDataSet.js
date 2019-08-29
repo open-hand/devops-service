@@ -30,4 +30,5 @@ export default ({ formatMessage, intlPrefix, projectId, envId }) => ({
     { name: 'target', type: 'object' },
     { name: 'appId', type: 'number' },
   ],
+  queryFields: [],
 });
