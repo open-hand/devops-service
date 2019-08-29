@@ -16,6 +16,14 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+import io.kubernetes.client.JSON;
+import org.apache.commons.io.filefilter.IOFileFilter;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.ListBranchCommand;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.Ref;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,14 +33,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
-import io.kubernetes.client.JSON;
-import org.apache.commons.io.filefilter.IOFileFilter;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.ListBranchCommand;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.Ref;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
@@ -48,10 +48,7 @@ import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.sonar.*;
 import io.choerodon.devops.app.eventhandler.DevopsSagaHandler;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
-import io.choerodon.devops.app.eventhandler.payload.DevOpsAppImportServicePayload;
-import io.choerodon.devops.app.eventhandler.payload.DevOpsAppServicePayload;
-import io.choerodon.devops.app.eventhandler.payload.DevOpsAppServiceSyncPayload;
-import io.choerodon.devops.app.eventhandler.payload.DevOpsUserPayload;
+import io.choerodon.devops.app.eventhandler.payload.*;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
 import io.choerodon.devops.infra.config.HarborConfigurationProperties;
@@ -90,6 +87,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     public static final String NODELETED = "nodeleted";
     private static final String HARBOR = "harbor";
     private static final String CHART = "chart";
+    private static final String GIT = ".git";
     private static final String SONAR_KEY = "%s-%s:%s";
     private static final Pattern REPOSITORY_URL_PATTERN = Pattern.compile("^http.*\\.git");
     private static final String GITLAB_CI_FILE = ".gitlab-ci.yml";
@@ -1598,6 +1596,8 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @Saga(code = SagaTopicCodeConstants.DEVOPS_IMPORT_INTERNAL_APPLICATION_SERVICE,
+            description = "Devops创建应用服务", inputSchema = "{}")
     public void importAppServiceInternal(Long projectId, List<ApplicationImportInternalVO> importInternalVOS) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         Long appId = devopsProjectService.queryAppIdByProjectId(projectId);
@@ -1627,6 +1627,8 @@ public class AppServiceServiceImpl implements AppServiceService {
             appServiceDTO.setAppId(appId);
             appServiceDTO.setActive(true);
             appServiceDTO.setSynchro(false);
+            appServiceDTO.setIsSkipCheckPermission(true);
+            appServiceDTO.setType(NORMAL);
             appServiceDTO = baseCreate(appServiceDTO);
 
             // 查询创建应用所在的gitlab应用组
@@ -1639,33 +1641,68 @@ public class AppServiceServiceImpl implements AppServiceService {
                 throw new CommonException(ERROR_USER_NOT_OWNER);
             }
 
-            //创建gitlab 应用
+            AppServiceImportPayload appServiceImportPayload = new AppServiceImportPayload();
+            appServiceImportPayload.setAppServiceId(appServiceDTO.getId());
+            appServiceImportPayload.setGitlabGroupId(TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()));
+            appServiceImportPayload.setIamUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+            appServiceImportPayload.setVersionId(importInternalVO.getVersionId());
+            appServiceImportPayload.setOrgCode(organizationDTO.getCode());
+            appServiceImportPayload.setProCode(projectDTO.getCode());
+            appServiceImportPayload.setOldAppServiceId(importInternalVO.getAppServiceId());
+            producer.apply(
+                    StartSagaBuilder
+                            .newBuilder()
+                            .withLevel(ResourceLevel.PROJECT)
+                            .withRefType("")
+                            .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_APPLICATION_SERVICE)
+                            .withPayloadAndSerialize(appServiceImportPayload)
+                            .withRefId("")
+                            .withSourceId(projectId),
+                    builder -> {
+                    });
+        });
+    }
+
+    @Override
+    public void importAppServiceGitlab(AppServiceImportPayload appServiceImportPayload) {
+        AppServiceDTO oldAppServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceImportPayload.getOldAppServiceId());
+        ProjectDTO oldProjectDTO = baseServiceClientOperator.queryIamProjectById(oldAppServiceDTO.getAppId());
+        OrganizationDTO oldOrganizationDTO = baseServiceClientOperator.queryOrganizationById(oldProjectDTO.getOrganizationId());
+        AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQuery(appServiceImportPayload.getVersionId());
+
+        AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceImportPayload.getAppServiceId());
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(appServiceImportPayload.getIamUserId());
+        //创建gitlab 应用
+        if (appServiceDTO.getGitlabProjectId() == null) {
             GitlabProjectDTO gitlabProjectDTO = gitlabServiceClientOperator.createProject(
-                    TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()),
+                    appServiceImportPayload.getGitlabGroupId(),
                     appServiceDTO.getCode(),
-                    TypeUtil.objToInteger(userAttrVO.getGitlabUserId()), false);
+                    TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), false);
             appServiceDTO.setGitlabProjectId(gitlabProjectDTO.getId());
+            String applicationServiceToken = getApplicationToken(gitlabProjectDTO.getId(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+            appServiceDTO.setToken(applicationServiceToken);
             appServiceDTO.setSynchro(true);
             appServiceDTO.setFailed(false);
+            setProjectHook(appServiceDTO, gitlabProjectDTO.getId(), applicationServiceToken, TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
             appServiceDTO = baseUpdate(appServiceDTO);
+        }
 
-            //拉取代码
-            // 获取push代码所需的access token
-            UserAttrDTO userAttrDTO = userAttrService.baseQueryByGitlabUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-            String applicationDir = APPLICATION + System.currentTimeMillis();
-            String accessToken = getToken(appServiceDTO.getGitlabProjectId(), applicationDir, userAttrDTO);
+        //拉取代码
+        // 获取push代码所需的access token
+        String applicationDir = APPLICATION + System.currentTimeMillis();
+        String pushToken = getToken(appServiceDTO.getGitlabProjectId(), applicationDir, userAttrDTO);
 
-            AppServiceVersionDTO applicationVersion = appServiceVersionService.baseQuery(importInternalVO.getVersionId());
-            //获取admin的token
-            String adminToken = gitlabServiceClientOperator.getAdminToken();
-            Git git = gitUtil.cloneAppMarket(applicationDir, applicationVersion.getVersion(), applicationVersion.getRepository(), adminToken);
-            //push 到远程仓库
-            String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
+        String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
+        //获取admin的token
+        String pullToken = gitlabServiceClientOperator.getAdminToken();
+        String oldRepository = repoUrl + oldOrganizationDTO.getCode() + "-" + oldProjectDTO.getCode() + "/" + oldAppServiceDTO.getCode() + GIT;
+        String workingDirectory = gitUtil.cloneAppMarket(applicationDir, appServiceVersionDTO.getCommit(), oldRepository, pullToken);
+        Git git = gitUtil.initGit(new File(workingDirectory));
+        //push 到远程仓库
 
-            String repositoryUrl = repoUrl + organizationDTO.getCode() + "/" + projectDTO.getCode() + "/" + appServiceDTO.getCode() + ".git";
-            GitLabUserDTO gitLabUserDTO = gitlabServiceClientOperator.queryUserById(TypeUtil.objToInteger(userAttrDTO.getIamUserId()));
-            gitUtil.push(git, applicationDir, repositoryUrl, gitLabUserDTO.getUsername(), accessToken);
-        });
+        String repositoryUrl = repoUrl + appServiceImportPayload.getOrgCode() + "-" + appServiceImportPayload.getProCode() + "/" + appServiceDTO.getCode() + GIT;
+        GitLabUserDTO gitLabUserDTO = gitlabServiceClientOperator.queryUserById(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+        gitUtil.push(git, applicationDir, appServiceVersionDTO.getVersion(), repositoryUrl, gitLabUserDTO.getUsername(), pushToken);
     }
 
     @Override

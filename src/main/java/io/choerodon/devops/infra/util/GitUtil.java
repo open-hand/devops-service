@@ -276,22 +276,24 @@ public class GitUtil {
     /**
      * Git克隆
      */
-    public Git cloneAppMarket(String name, String tag, String remoteUrl,String adminToken) {
+    public String cloneAppMarket(String name, String commit, String remoteUrl, String adminToken) {
         Git git = null;
         String workingDirectory = getWorkingDirectory(name);
         File localPathFile = new File(workingDirectory);
         deleteDirectory(localPathFile);
         try {
-            Git.cloneRepository()
+            git = Git.cloneRepository()
                     .setURI(remoteUrl)
                     .setDirectory(localPathFile)
                     .setCredentialsProvider(StringUtils.isEmpty(adminToken) ? null : new UsernamePasswordCredentialsProvider("", adminToken))
                     .call();
+            git.checkout().setName(commit).call();
+            git.close();
             FileUtil.deleteDirectory(new File(localPathFile + GIT_SUFFIX));
-        } catch (GitAPIException e) {
+        } catch (Exception e) {
             throw new CommonException(ERROR_GIT_CLONE, e);
         }
-        return git;
+        return workingDirectory;
     }
 
     /**
@@ -412,12 +414,12 @@ public class GitUtil {
     /**
      * 将代码推到目标库
      */
-    public void push(Git git, String name, String repoUrl, String userName, String accessToken) {
+    public void push(Git git, String name, String commit, String repoUrl, String userName, String accessToken) {
         try {
             String[] url = repoUrl.split("://");
             git.add().addFilepattern(".").call();
             git.add().setUpdate(true).addFilepattern(".").call();
-            git.commit().setMessage("Render Variables[skip ci]").call();
+            git.commit().setMessage(commit).call();
             List<Ref> refs = git.branchList().call();
             PushCommand pushCommand = git.push();
             for (Ref ref : refs) {
