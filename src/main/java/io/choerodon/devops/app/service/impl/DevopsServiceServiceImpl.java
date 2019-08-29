@@ -7,17 +7,15 @@ import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import io.choerodon.devops.infra.mapper.DevopsProjectMapper;
+import io.kubernetes.client.JSON;
+import io.kubernetes.client.custom.IntOrString;
+import io.kubernetes.client.models.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
-import io.kubernetes.client.JSON;
-import io.kubernetes.client.custom.IntOrString;
-import io.kubernetes.client.models.*;
-
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
@@ -33,19 +31,17 @@ import io.choerodon.devops.app.eventhandler.payload.ServiceSagaPayLoad;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.*;
-import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 import io.choerodon.devops.infra.gitops.ResourceFileCheckHandler;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsEnvPodMapper;
-import io.choerodon.devops.infra.mapper.DevopsEnvResourceDetailMapper;
 import io.choerodon.devops.infra.mapper.DevopsServiceMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.ResourceCreatorInfoUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-
 
 
 /**
@@ -63,7 +59,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     public static final String SERVICE_RREFIX = "svc-";
     private static final String SERVICE_LABLE = "choerodon.io/network";
     private static final String SERVICE_LABLE_VALUE = "service";
-    private static final String MASTER="master";
+    private static final String MASTER = "master";
     private Gson gson = new Gson();
     private JSON json = new JSON();
     @Value("${services.gitlab.sshUrl}")
@@ -163,9 +159,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             }
         }
         DevopsServiceQueryDTO devopsServiceQueryDTO = baseQueryById(id);
-        if(devopsServiceQueryDTO!=null) {
+        if (devopsServiceQueryDTO != null) {
             return queryDtoToVo(baseQueryById(id));
-        }else {
+        } else {
             return null;
         }
     }
@@ -434,7 +430,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         baseDelete(id);
 
         //删除应用服务关联网络信息
-        devopsApplicationResourceService.baseDeleteByResourceIdAndType(id,ObjectType.SERVICE.getType());
+        devopsApplicationResourceService.baseDeleteByResourceIdAndType(id, ObjectType.SERVICE.getType());
 
 
     }
@@ -766,8 +762,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         if (devopsEnvPodDTO == null) {
             return null;
         }
-        podLiveInfoVO.setPodId(devopsEnvPodDTO.getId());
-        podLiveInfoVO.setCreationDate(devopsEnvPodDTO.getCreationDate());
+
+        BeanUtils.copyProperties(devopsEnvPodDTO,podLiveInfoVO);
 
         //反序列化json
         V1Pod v1Pod = json.deserialize(devopsEnvPodDTO.getMessage(), V1Pod.class);
@@ -786,7 +782,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         //设置实时CPU、内存信息
         List<AgentPodInfoVO> agentPodInfoVOS = agentPodInfoService.queryAllPodSnapshots(devopsEnvPodDTO.getName(), devopsEnvPodDTO.getNamespace());
 
-        if(!agentPodInfoVOS.isEmpty()) {
+        if (!agentPodInfoVOS.isEmpty()) {
             List<String> cpuUsedList = agentPodInfoVOS.stream().map(AgentPodInfoVO::getCpuUsed).collect(Collectors.toList());
             List<String> memoryUsedList = agentPodInfoVOS.stream().map(AgentPodInfoVO::getMemoryUsed).collect(Collectors.toList());
             List<Date> timeList = agentPodInfoVOS.stream().map(AgentPodInfoVO::getSnapshotTime).collect(Collectors.toList());
