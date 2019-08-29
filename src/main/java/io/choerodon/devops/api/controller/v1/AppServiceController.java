@@ -19,6 +19,7 @@ import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.app.eventhandler.payload.AppServiceImportPayload;
 import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.infra.enums.GitPlatformType;
 import io.choerodon.mybatis.annotation.SortDefault;

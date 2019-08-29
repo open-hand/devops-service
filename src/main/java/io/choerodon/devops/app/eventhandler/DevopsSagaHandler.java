@@ -361,4 +361,18 @@ public class DevopsSagaHandler {
         devopsIngressService.operateIngressBySaga(ingressSagaPayload);
         return data;
     }
+
+    /**
+     * devops导入内部应用服务
+     */
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_CREATE_INGRESS,
+            description = "devops创建域名",
+            sagaCode = SagaTopicCodeConstants.DEVOPS_CREATE_APPLICATION_SERVICE,
+            maxRetryCount = 3,
+            seq = 1)
+    public String importAppServiceGitlab(String data) {
+        AppServiceImportPayload appServiceImportPayload = gson.fromJson(data, AppServiceImportPayload.class);
+        appServiceService.importAppServiceGitlab(appServiceImportPayload);
+        return data;
+    }
 }
