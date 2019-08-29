@@ -43,7 +43,6 @@ export const StoreProvider = injectIntl(inject('AppState')(
 
     useEffect(() => {
       nonePermissionDs.transport.read.url = `/devops/v1/projects/${projectId}/app_service/${id}/list_non_permission_users`;
-      // shareVersionsDs.transport.read.url = `/devops/v1/projects/${projectId}/app_service_versions/list_app_services/${id}`;
       shareLevelDs.transport.read.url = `/devops/v1/projects/${projectId}/app_service/${organizationId}/list_projects`;
 
       detailDs.transport.read = {
@@ -51,7 +50,6 @@ export const StoreProvider = injectIntl(inject('AppState')(
         method: 'get',
       };
       detailDs.paging = false;
-      detailDs.dataKey = null;
       detailDs.query();
     }, [projectId, id]);
 

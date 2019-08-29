@@ -1192,6 +1192,7 @@ class EditNetwork extends Component {
           onCancel={this.handleClose.bind(this, false)}
           confirmLoading={submitting}
           className="c7ncd-deployment-network-form-wrap"
+          maskClosable={false}
           width={415}
         >
           <Form layout="vertical">
