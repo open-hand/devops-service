@@ -436,7 +436,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 TypeUtil.objToInteger(devOpsAppServicePayload.getGroupId()));
 
         AppServiceDTO appServiceDTO = baseQueryByCode(devOpsAppServicePayload.getPath(),
-                devopsProjectDTO.getIamProjectId());
+                devopsProjectDTO.getAppId());
 
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsProjectDTO.getIamProjectId());
         OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
