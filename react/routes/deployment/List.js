@@ -148,6 +148,7 @@ const Deployment = withRouter(observer((props) => {
       drawer: true,
       title: formatMessage({ id: `${intlPrefix}.manual` }),
       children: <Deploy
+        dataSet={manualDeployDs}
         store={deployStore}
         refresh={refresh}
         projectId={id}

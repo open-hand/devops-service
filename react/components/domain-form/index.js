@@ -1,12 +1,13 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component, Fragment } from 'react/index';
 import { observer, inject } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { Button, Tooltip, Radio, Input, Form, Select, Icon } from 'choerodon-ui';
 import _ from 'lodash';
 import PropTypes from 'prop-types';
+import classnames from 'classnames';
 
-import '../../../../../../../main.less';
+import '../../routes/main.less';
 import './index.less';
 
 const { Item: FormItem } = Form;
@@ -425,6 +426,7 @@ export default class Index extends Component {
       type,
       DomainStore,
       envId,
+      isDeployPage,
     } = this.props;
     const {
       portInNetwork,
@@ -609,8 +611,13 @@ export default class Index extends Component {
       );
     });
 
+    const formClass = classnames({
+      'c7ncd-application-domain-modal': true,
+      'c7ncd-domain-modal-deployPage': isDeployPage,
+    });
+
     return (
-      <Form layout="vertical" className="c7ncd-application-domain-modal">
+      <Form layout="vertical" className={formClass}>
         <FormItem
           {...formItemLayout}
         >
@@ -628,7 +635,6 @@ export default class Index extends Component {
             initialValue: name || '',
           })(
             <Input
-              autoFocus={type === 'create'}
               disabled={!envId}
               maxLength={40}
               label={formatMessage({ id: 'domain.column.name' })}

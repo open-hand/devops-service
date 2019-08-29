@@ -451,6 +451,7 @@ export default class CertificateCreate extends Component {
           onOk={this.handleSubmit}
           onCancel={this.handleClose}
           confirmLoading={submitting}
+          maskClosable={false}
           width={380}
         >
           <Content
