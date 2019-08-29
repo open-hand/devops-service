@@ -31,7 +31,7 @@ const PodList = observer(() => {
     setVisible(false);
   }
   function handleLogClick(index) {
-    setData({ ...record.get('podLiveInfos')[index], clusterId: 61, namespace: 'envtestenv' });
+    setData({ ...record.get('podLiveInfos')[index] });
     openLog();
   }
 
