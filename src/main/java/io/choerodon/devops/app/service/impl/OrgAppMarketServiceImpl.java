@@ -174,7 +174,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             //上传删除
             fileUpload(zipFileList, marketUploadVO, marketImageUrlVO);
         } catch (CommonException e) {
-            baseServiceClientOperator.publishFail(marketUploadVO.getProjectId(), marketUploadVO.getMktAppId(), e.getCode());
+            baseServiceClientOperator.publishFail(marketUploadVO.getProjectId(), marketUploadVO.getMktAppId(), marketUploadVO.getMktAppVersionId(), e.getCode(), false);
             throw new CommonException(e.getCode());
         } finally {
             FileUtil.deleteDirectory(new File(appFilePath));
@@ -192,7 +192,12 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             zipFileList.forEach(FileUtil::deleteFile);
             FileUtil.deleteDirectory(new File(appFilePath));
         } catch (CommonException e) {
-            baseServiceClientOperator.publishFail(appMarketFixVersionPayload.getFixVersionUploadPayload().getProjectId(), appMarketFixVersionPayload.getFixVersionUploadPayload().getMktAppId(), e.getCode());
+            baseServiceClientOperator.publishFail(
+                    appMarketFixVersionPayload.getFixVersionUploadPayload().getProjectId(),
+                    appMarketFixVersionPayload.getFixVersionUploadPayload().getMktAppId(),
+                    appMarketFixVersionPayload.getFixVersionUploadPayload().getMktAppVersionId(),
+                    e.getCode(),
+                    true);
             FileUtil.deleteDirectory(new File(appFilePath));
             throw new CommonException(e.getCode());
         }
@@ -594,12 +599,14 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             ConfigVO configVO = devopsConfigService.queryByResourceId(
                     appServiceService.baseQuery(appServiceMarketVO.getAppServiceId()).getChartConfigId(), "harbor")
                     .get(0).getConfig();
-            User user = new User();
-            BeanUtils.copyProperties(configVO, user);
-            user.setUsername(configVO.getUserName());
-
+            User oldUser = new User();
+            BeanUtils.copyProperties(configVO, oldUser);
+            oldUser.setUsername(configVO.getUserName());
+            User newUser = new User();
+            newUser.setUsername(appMarketUploadVO.getUser().getRobotName());
+            newUser.setPassword(appMarketUploadVO.getUser().getRobotToken());
             // 执行脚本
-//            callScript(SHELL, appServiceMarketVO.getHarborUrl(), appMarketUploadVO.getUser(), user);
+            callScript(SHELL, appServiceMarketVO.getHarborUrl(), newUser, oldUser);
             FileUtil.deleteFile(String.format(APP_TEMP_PATH_FORMAT, SHELL, File.separator, IMAGES));
         });
         marketImageUrlVO.setServiceImageVOS(imageVOList);
@@ -620,12 +627,15 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
 
             //获取新仓库配置
             ConfigVO configVO = gson.fromJson(devopsConfigService.baseQueryByName(null, HARBOR_NAME).getConfig(), ConfigVO.class);
-            User user = new User();
-            BeanUtils.copyProperties(configVO, user);
-            user.setUsername(configVO.getUserName());
+            User newUser = new User();
+            BeanUtils.copyProperties(configVO, newUser);
+            newUser.setUsername(configVO.getUserName());
+            User oldUser = new User();
+            oldUser.setUsername(appMarketDownloadVO.getUser().getRobotName());
+            oldUser.setPassword(appMarketDownloadVO.getUser().getRobotToken());
             harborUrl = harborUrl.endsWith("/") ? harborUrl : harborUrl + "/";
 
-//            callScript(new File(shellPath).getAbsolutePath(), String.format("%s%s", harborUrl, MARKET_PRO), user, appMarketDownloadVO.getUser());
+            callScript(new File(shellPath).getAbsolutePath(), String.format("%s%s", harborUrl, MARKET_PRO), newUser, oldUser);
             FileUtil.deleteFile(String.format(APP_TEMP_PATH_FORMAT, shellPath, File.separator, IMAGES));
         });
     }

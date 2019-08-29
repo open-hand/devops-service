@@ -164,7 +164,7 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
-    public ResponseEntity<Boolean> publishFail(Long projectId, Long id, String errorCode) {
+    public ResponseEntity<Boolean> publishFail(Long projectId, Long publishAppId, Long id, String errorCode, Boolean fixFlag) {
         throw new CommonException("error.publishFail.status.get");
     }
 

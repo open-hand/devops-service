@@ -148,10 +148,12 @@ public interface BaseServiceClient {
     @GetMapping(value = "/v1/applications/{id}")
     ResponseEntity<ApplicationDTO> queryAppById(@PathVariable(value = "id") Long id);
 
-    @PutMapping(value = "/v1/projects/{project_id}/publish_apps/{id}/fail")
+    @PutMapping(value = "/v1/projects/{project_id}/publish_apps/{publish_app_id}/versions/{id}/fail")
     ResponseEntity<Boolean> publishFail(@PathVariable("project_id") Long projectId,
+                                        @PathVariable("publish_app_id") Long publishAppId,
                                         @PathVariable("id") Long id,
-                                        @RequestParam("errorCode") String errorCode);
+                                        @RequestParam("error_code") String errorCode,
+                                        @RequestParam("fix_flag") Boolean fixFlag);
 
     @GetMapping(value = "/v1/organizations/{organization_id}/projects/projects_with_applications")
     ResponseEntity<PageInfo<ProjectDTO>> pagingProjectByOptions(@PathVariable("organization_id") Long organizationId,
