@@ -4,7 +4,7 @@ export default ((intlPrefix, formatMessage, projectId) => ({
   paging: false,
   transport: {
     create: ({ data: [data] }) => {
-      const res = omit(data, ['__id', '__status']);
+      const res = omit(data, ['__id', '__status', 'appServiceSource']);
 
       return ({
         url: `/devops/v1/projects/${projectId}/app_service_instances`,
@@ -24,5 +24,6 @@ export default ((intlPrefix, formatMessage, projectId) => ({
     { name: 'devopsIngressVO', type: 'object' },
     { name: 'type', type: 'string', defaultValue: 'create' },
     { name: 'isNotChange', type: 'boolean', defaultValue: false },
+    { name: 'appServiceSource', type: 'string', defaultValue: 'project', label: formatMessage({ id: `${intlPrefix}.source` }) },
   ],
 }));

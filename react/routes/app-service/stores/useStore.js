@@ -14,6 +14,22 @@ export default function useStore() {
       return this.appServiceId;
     },
 
+    appService: [],
+    setAppService(data) {
+      this.appService = data;
+    },
+    get getAppService() {
+      return this.appService.slice();
+    },
+
+    version: [],
+    setVersion(data) {
+      this.version = data;
+    },
+    get getVersion() {
+      return this.version.slice();
+    },
+
     loadAppById(projectId, id) {
       return axios.get(`/devops/v1/projects/${projectId}/app_service/${id}`);
     },
@@ -46,6 +62,28 @@ export default function useStore() {
 
     loadShareById(projectId, id) {
       return axios.get(`/devops/v1/projects/${projectId}/app_service_share/${id}`);
+    },
+
+    async loadAppService(projectId) {
+      try {
+        const res = await axios.post(`/devops/v1/projects/${projectId}/app_service/page_by_options?has_version=true&type=normal`);
+        if (handlePromptError(res)) {
+          this.setAppService(res.list);
+        }
+      } catch (e) {
+        Choerodon.handleResponseError(e);
+      }
+    },
+
+    async loadVersion(projectId, id) {
+      try {
+        const res = await axios.get(`/devops/v1/projects/${projectId}/app_service_versions/list_app_services/${id}`);
+        if (handlePromptError(res)) {
+          this.setVersion(res);
+        }
+      } catch (e) {
+        Choerodon.handleResponseError(e);
+      }
     },
   }));
 }

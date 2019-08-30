@@ -1,4 +1,4 @@
-import React, { useCallback, Fragment } from 'react';
+import React, { useCallback, Fragment, useState } from 'react';
 import { Page, Content, Header, Permission, Action, Breadcrumb } from '@choerodon/master';
 import { Table, Modal } from 'choerodon-ui/pro';
 import { Button } from 'choerodon-ui';
@@ -14,6 +14,7 @@ import Process from './modals/process';
 import ManualDetail from './modals/manualDetail';
 import AutoDetail from './modals/autoDetail';
 import Deploy from './modals/deploy';
+import PendingCheckModal from './modals/autoDetail/components/pendingCheckModal';
 
 import './index.less';
 
@@ -48,6 +49,8 @@ const Deployment = withRouter(observer((props) => {
     networkStore,
     ingressStore,
   } = useDeployStore();
+
+  const [showPendingCheck, serShowPendingCheck] = useState(false);
 
   function refresh() {
     listDs.query();
@@ -178,10 +181,12 @@ const Deployment = withRouter(observer((props) => {
   }
 
   function renderDeployStatus({ value }) {
+    const newValue = value === 'running' || value === 'operating' ? 'executing' : value;
+    const message = newValue === 'stop' ? 'terminated' : newValue;
     return (
       <StatusTag
-        colorCode={value}
-        name={formatMessage({ id: value })}
+        colorCode={newValue}
+        name={formatMessage({ id: message })}
         style={statusTagsStyle}
       />
     );
@@ -206,6 +211,7 @@ const Deployment = withRouter(observer((props) => {
 
   function renderActions({ record }) {
     let actionData = [];
+    const { execute } = record.get('pipelineDetailVO') || {};
 
     if (record.get('deployType') === 'auto') {
       switch (record.get('deployStatus')) {
@@ -224,10 +230,11 @@ const Deployment = withRouter(observer((props) => {
           }];
           break;
         case 'pendingcheck':
-          actionData = [{
+          execute && (actionData = [{
             service: [],
             text: formatMessage({ id: `${intlPrefix}.check` }),
-          }];
+            action: () => serShowPendingCheck(true),
+          }]);
           break;
         default:
           break;
@@ -286,6 +293,15 @@ const Deployment = withRouter(observer((props) => {
           <Column name="userName" renderer={renderExecutor} />
           <Column name="deployTime" renderer={renderTime} />
         </Table>
+        {showPendingCheck && (
+          <PendingCheckModal
+            id={listDs.current.get('deployId')}
+            name={listDs.current.get('pipelineName')}
+            checkData={listDs.current.get('pipelineDetailVO')}
+            onClose={this.closePendingCheck}
+            PipelineRecordStore={pipelineStore}
+          />
+        )}
       </Content>
     </Page>
   );

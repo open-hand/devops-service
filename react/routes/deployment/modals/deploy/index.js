@@ -1,5 +1,5 @@
 import React, { Fragment, useEffect, useState } from 'react';
-import { Form, Icon, Select, TextField } from 'choerodon-ui/pro';
+import { Form, Icon, Select, SelectBox, TextField } from 'choerodon-ui/pro';
 import { Button } from 'choerodon-ui';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
@@ -15,7 +15,7 @@ import './index.less';
 
 const { Option } = Select;
 
-export default injectIntl(observer(({ record, dataSet, store, projectId, networkStore, ingressStore, refresh, intlPrefix, prefixCls, modal }) => {
+export default injectIntl(observer(({ record, dataSet, store, projectId, networkStore, ingressStore, refresh, intlPrefix, prefixCls, modal, intl: { formatMessage } }) => {
   const [resourceIsExpand, setResourceIsExpand] = useState(false);
   const [netIsExpand, setNetIsExpand] = useState(false);
   const [ingressIsExpand, setIngressIsExpand] = useState(false);
@@ -174,7 +174,12 @@ export default injectIntl(observer(({ record, dataSet, store, projectId, network
   return (
     <div className={`${prefixCls}-manual-deploy`}>
       <Form record={record} columns={3}>
-        <Select name="appServiceId" searchable>
+        <SelectBox name="appServiceSource">
+          <Option value="project">{formatMessage({ id: `${intlPrefix}.source.project` })}</Option>
+          <Option value="organization">{formatMessage({ id: `${intlPrefix}.source.organization` })}</Option>
+          <Option value="market">{formatMessage({ id: `${intlPrefix}.source.market` })}</Option>
+        </SelectBox>
+        <Select name="appServiceId" searchable newLine>
           {map(store.getAppService, ({ id, name }) => (
             <Option value={id}>{name}</Option>
           ))}

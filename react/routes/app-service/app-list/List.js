@@ -62,7 +62,7 @@ const AppService = withRouter(observer((props) => {
   }
 
   function renderType({ value }) {
-    return <FormattedMessage id={`${intlPrefix}.type.${value}`} />;
+    return value && <FormattedMessage id={`${intlPrefix}.type.${value}`} />;
   }
 
   function renderDate({ value }) {

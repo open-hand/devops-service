@@ -76,6 +76,8 @@ const commonField = {
   deleted: '已删除',
   creating: '创建中',
   pendingcheck: '待审核',
+  executing: '执行中',
+  terminated: '已终止',
 
   // public
   detail: '详情',
@@ -310,6 +312,7 @@ const deployment = {
 };
 
 const appService = {
+  'c7ncd.appService': '应用服务',
   'c7ncd.appService.name': '服务名称',
   'c7ncd.appService.code': '服务编码',
   'c7ncd.appService.type': '服务类型',
@@ -360,6 +363,11 @@ const appService = {
   'c7ncd.appService.role.owner': '项目所有者',
   'c7ncd.appService.project.all': '组织下所有项目',
   'c7ncd.appService.platform.failed': '列表中存在名称或编码重复的应用服务，请修改后再导入！',
+  'c7ncd.appService.template': '服务模板',
+  'c7ncd.appService.service.source': '服务来源',
+  'c7ncd.appService.source.project': '项目应用服务',
+  'c7ncd.appService.source.organization': '组织共享',
+  'c7ncd.appService.source.market': '市场下载',
 };
 
 const envrionment = {
@@ -442,6 +450,10 @@ const deploy = {
   'c7ncd.deploy.resource': '资源配置',
   'c7ncd.deploy.network': '网络配置',
   'c7ncd.deploy.ingress': '域名配置',
+  'c7ncd.deploy.source': '服务来源',
+  'c7ncd.deploy.source.project': '项目应用服务',
+  'c7ncd.deploy.source.organization': '组织共享',
+  'c7ncd.deploy.source.market': '市场下载',
 };
 
 // 文档地址前缀

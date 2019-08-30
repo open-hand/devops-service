@@ -102,15 +102,15 @@ export default ((intlPrefix, formatMessage, projectId) => {
     selection: false,
     transport: {
       create: ({ data: [data] }) => {
-        const { type, code, name, imgUrl } = data;
+        const res = pick(data, ['type', 'code', 'name', 'imgUrl', 'templateId', 'versionId']);
         return ({
           url: `/devops/v1/projects/${projectId}/app_service`,
           method: 'post',
-          data: { type, code, name, imgUrl, isSkipCheckPermission: true },
+          data: { ...res, isSkipCheckPermission: true },
         });
       },
       update: ({ data: [data] }) => {
-        const res = pick(data, ['id', 'name', 'chart', 'harbor', 'objectVersionNumber']);
+        const res = pick(data, ['id', 'name', 'chart', 'harbor', 'objectVersionNumber', 'imgUrl']);
         getRequestData(data, res);
         return ({
           url: `/devops/v1/projects/${projectId}/app_service`,
@@ -151,6 +151,9 @@ export default ((intlPrefix, formatMessage, projectId) => {
       { name: 'chartType', type: 'string', defaultValue: 'default', label: formatMessage({ id: `${intlPrefix}.helm` }) },
       { name: 'harborType', type: 'string', defaultValue: 'default', label: formatMessage({ id: `${intlPrefix}.docker` }) },
       { name: 'oldName', type: 'string' },
+      { name: 'appServiceSource', type: 'string', label: formatMessage({ id: `${intlPrefix}.service.source` }) },
+      { name: 'templateId', type: 'number', label: formatMessage({ id: intlPrefix }) },
+      { name: 'versionId', type: 'number', label: formatMessage({ id: `${intlPrefix}.version` }) },
     ],
     events: {
       update: handleUpdate,

@@ -28,7 +28,6 @@ const PodDetail = memo(() => {
   shellVisible;
   const [visible, setVisible] = useState(false);
   const [shellVisible, setShellVisible] = useState(false);
-  const [record, setRecord] = useState();
 
   function renderName({ value, record }) {
     const status = record.get('status');
@@ -95,7 +94,6 @@ const PodDetail = memo(() => {
           <Popover
             arrowPointAtCenter
             placement="bottomRight"
-            getPopupContainer={(triggerNode) => triggerNode.parentNode}
             content={<Fragment>{node}</Fragment>}
             overlayClassName={`${prefixCls}-pods-popover`}
           >
@@ -110,23 +108,17 @@ const PodDetail = memo(() => {
     <TimePopover content={value} />
   ), []);
 
-  function renderAction({ record }) {
+  function renderAction() {
     const buttons = [
       {
         service: [],
         text: intl.formatMessage({ id: `${intlPrefix}.instance.log` }),
-        action: () => {
-          setRecord(record.toData());
-          openLog();
-        },
+        action: () => openLog(),
       },
       {
         service: [],
         text: intl.formatMessage({ id: `${intlPrefix}.instance.term` }),
-        action: () => {
-          setRecord(record.toData());
-          openShell();
-        },
+        action: () => openShell(),
       },
     ];
     return <Action data={buttons} />;
@@ -164,8 +156,8 @@ const PodDetail = memo(() => {
         <Column name="ip" />
         <Column name="creationDate" renderer={renderDate} width="1rem" />
       </Table>
-      {visible && <LogSiderbar visible={visible} onClose={closeLog} record={record} />}
-      {shellVisible && <TermSiderbar visible={shellVisible} onClose={closeShell} record={record} />}
+      {visible && <LogSiderbar visible={visible} onClose={closeLog} record={podsDs.current.toData()} />}
+      {shellVisible && <TermSiderbar visible={shellVisible} onClose={closeShell} record={podsDs.current.toData()} />}
     </Fragment>
   );
 });

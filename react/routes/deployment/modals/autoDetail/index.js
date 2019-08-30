@@ -71,7 +71,7 @@ export default class PipelineDetail extends Component {
     this.setState({
       showPendingCheck: true,
       checkData: {
-        checkType: type,
+        type,
         stageRecordId,
         taskRecordId,
         stageName,

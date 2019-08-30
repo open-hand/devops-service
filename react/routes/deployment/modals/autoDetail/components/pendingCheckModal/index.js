@@ -28,7 +28,7 @@ export default class PendingCheckModal extends Component {
       intl: { formatMessage },
       id,
       checkData: {
-        checkType,
+        type,
         stageRecordId,
         taskRecordId,
       },
@@ -37,7 +37,7 @@ export default class PendingCheckModal extends Component {
     const postData = {
       pipelineRecordId: id,
       userId,
-      type: checkType,
+      type,
       stageRecordId,
       taskRecordId,
     };
@@ -79,7 +79,7 @@ export default class PendingCheckModal extends Component {
       checkData: {
         stageRecordId,
         taskRecordId,
-        checkType,
+        type,
       },
       PipelineRecordStore,
     } = this.props;
@@ -87,7 +87,7 @@ export default class PendingCheckModal extends Component {
       pipelineRecordId: id,
       userId,
       isApprove: flag,
-      type: checkType,
+      type,
       stageRecordId,
       taskRecordId,
     };
@@ -137,7 +137,7 @@ export default class PendingCheckModal extends Component {
       intl: { formatMessage },
       name,
       checkData: {
-        checkType,
+        type,
         stageName,
       },
     } = this.props;
@@ -192,7 +192,7 @@ export default class PendingCheckModal extends Component {
         <div className="c7n-padding-top_8">
           {canCheck
             ? <FormattedMessage
-              id={`pipelineRecord.check.${checkType}.des`}
+              id={`pipelineRecord.check.${type}.des`}
               values={{ name, stage: stageName }}
             />
             : <span>{checkTips}</span>}

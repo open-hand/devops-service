@@ -1,5 +1,5 @@
 import React, { Fragment, useEffect } from 'react';
-import { Table, Modal, SelectBox, Form, Select } from 'choerodon-ui/pro';
+import { Form, Icon, Select } from 'choerodon-ui/pro';
 import { Button } from 'choerodon-ui';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
@@ -37,18 +37,23 @@ export default injectIntl(observer(({ dataSet, optionsDs, intlPrefix, prefixCls,
   return (
     <div className={`${prefixCls}-project-add`}>
       {map(dataSet.created, (record) => (
-        <div>
+        <div className={`${prefixCls}-project-add-item`}>
           <Form record={record}>
             <Select name="project" />
           </Form>
-          <Button icon="delete" onClick={() => handleDelete(record)} />
+          <Button
+            icon="delete"
+            shape="circle"
+            onClick={() => handleDelete(record)}
+            disabled={dataSet.created.length === 1}
+            className={`${prefixCls}-project-add-button`}
+          />
         </div>
       ))}
       <Button
         type="primary"
         icon="add"
         onClick={handleCreate}
-        className={`${prefixCls}-permission-wrap-button`}
       >
         <FormattedMessage id={`${intlPrefix}.project.add`} />
       </Button>

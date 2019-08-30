@@ -7,6 +7,7 @@ import { axios } from '@choerodon/master';
 import pick from 'lodash/pick';
 import isEmpty from 'lodash/isEmpty';
 import Settings from './Settings';
+import Source from './Source';
 import { handlePromptError } from '../../../../utils';
 
 import './index.less';
@@ -14,36 +15,66 @@ import './index.less';
 const { Option } = Select;
 
 const CreateForm = injectIntl(observer((props) => {
-  const { modal, dataSet, record, AppStore, projectId, intl: { formatMessage }, intlPrefix, prefixCls } = props;
+  const { modal, dataSet, record, AppStore, projectId, intl: { formatMessage }, intlPrefix, prefixCls, isDetailPage } = props;
   const isModify = record.status !== 'add';
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const res = await AppStore.loadAppById(projectId, record.get('id'));
+        if (handlePromptError(res)) {
+          handleRes(res);
+        }
+      } catch (e) {
+        Choerodon.handleResponseError(e);
+      }
+    }
+    if (isModify && !isDetailPage) {
+      loadData();
+    } else {
+      handleRes(record.toData());
+    }
+  }, []);
 
   modal.handleOk(async () => {
     if (isModify) {
       if (record.get('harborStatus') === 'failed' || record.get('chartStatus') === 'failed') return false;
       const harborTestFailed = record.get('harborType') === 'custom' && !isEmpty(record.get('harbor')) && !record.get('harborStatus') && !await handleTestHarbor();
       const chartTestFailed = record.get('chartType') === 'custom' && !isEmpty(record.get('chart')) && !record.get('chartStatus') && !await handleTestChart();
-      if (!harborTestFailed && !chartTestFailed) {
-        const res = await handleCreate();
-        return res;
+      if (!harborTestFailed && !chartTestFailed && (await dataSet.submit()) !== false) {
+        dataSet.query();
       } else {
         return false;
       }
+    } else if ((await dataSet.submit()) !== false) {
+      dataSet.query();
     } else {
-      const res = await handleCreate();
-      return res;
+      return false;
     }
   });
 
-  async function handleCreate() {
-    try {
-      if ((await dataSet.submit()) !== false) {
-        dataSet.query();
-        return true;
-      } else {
-        return false;
-      }
-    } catch (e) {
-      return false;
+  function handleRes(res) {
+    record.set('chart', res.chart);
+    record.set('harbor', res.harbor);
+    record.set('oldName', res.name);
+    record.set('objectVersionNumber', res.objectVersionNumber);
+    record.set('imgUrl', res.imgUrl);
+    if (!isEmpty(res.chart)) {
+      record.set('chartUrl', res.chart.config.url);
+      record.set('chartType', 'custom');
+    } else {
+      record.set('chartType', 'default');
+    }
+    if (!isEmpty(res.harbor)) {
+      const { url, userName, password, project, email } = res.harbor.config || {};
+      record.set('url', url);
+      record.set('userName', userName);
+      record.set('password', password);
+      record.set('email', email);
+      record.set('project', project);
+      record.set('harborType', 'custom');
+    } else {
+      record.set('harborType', 'default');
     }
   }
 
@@ -151,6 +182,7 @@ const CreateForm = injectIntl(observer((props) => {
       {!isModify && <TextField name="code" />}
       <TextField name="name" />
     </Form>
+    {!isModify && <Source {...props} />}
     {isModify && <Settings {...props} handleTestHarbor={handleTestHarbor} handleTestChart={handleTestChart} />}
   </div>);
 }));
