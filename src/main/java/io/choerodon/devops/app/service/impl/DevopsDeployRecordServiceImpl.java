@@ -7,26 +7,20 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.base.Joiner;
 import com.google.gson.Gson;
-import com.netflix.discovery.converters.Auto;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.DevopsDeployRecordVO;
-import io.choerodon.devops.api.vo.PipelineDetailVO;
-import io.choerodon.devops.api.vo.PipelineStageRecordVO;
-import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.app.service.DevopsDeployRecordService;
+import io.choerodon.devops.app.service.DevopsEnvironmentService;
+import io.choerodon.devops.app.service.PipelineService;
 import io.choerodon.devops.infra.dto.DevopsDeployRecordDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
-import io.choerodon.devops.infra.dto.PipelineTaskRecordDTO;
-import io.choerodon.devops.infra.dto.PipelineUserRecordRelationshipDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
-import io.choerodon.devops.infra.enums.WorkFlowStatus;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsDeployRecordMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.PageRequestUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -62,9 +56,6 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
                 envIds.add(TypeUtil.objToLong(env));
             }
         });
-
-
-
         //查询环境
         List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = new ArrayList<>();
         if (!envIds.isEmpty()) {
@@ -81,10 +72,22 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
         //设置环境信息以及用户信息
         devopsDeployRecordVOPageInfo.getList().forEach(devopsDeployRecordVO -> {
             if (devopsDeployRecordVO.getDeployType().equals("auto")) {
-                pipelineService.setPipelineRecordDetail(projectId,devopsDeployRecordVO);
+                pipelineService.setPipelineRecordDetail(projectId, devopsDeployRecordVO);
             }
             if (devopsDeployRecordVO.getEnv() != null) {
-                List<String> env = Arrays.asList(devopsDeployRecordVO.getEnv().split(",")).stream().map(s -> devopsEnvironmentDTOS.stream().filter(devopsEnvironmentDTO -> devopsEnvironmentDTO.getId().equals(TypeUtil.objToLong(s))).collect(Collectors.toList()).get(0).getName()).collect(Collectors.toList());
+                List<String> env = Arrays.asList(devopsDeployRecordVO.getEnv().split(","))
+                        .stream()
+                        .map(s -> {
+                            List<DevopsEnvironmentDTO> envs = devopsEnvironmentDTOS
+                                    .stream()
+                                    .filter(devopsEnvironmentDTO -> devopsEnvironmentDTO.getId().equals(TypeUtil.objToLong(s)))
+                                    .collect(Collectors.toList());
+                            if (!envs.isEmpty()) {
+                                return envs.get(0).getName();
+                            } else {
+                                return null;
+                            }
+                        }).collect(Collectors.toList());
                 devopsDeployRecordVO.setEnv(Joiner.on(",").join(env));
             }
             iamUserDTOS.forEach(iamUserDTO -> {

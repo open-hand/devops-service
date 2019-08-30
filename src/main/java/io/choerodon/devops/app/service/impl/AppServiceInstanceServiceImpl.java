@@ -70,6 +70,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     private static final String C7NHELM_RELEASE = "C7NHelmRelease";
     private static final String RELEASE_NAME = "ReleaseName";
     public static final String APP_SERVICE = "appService";
+    public static final String HELM_RELEASE = "C7NHelmRelease";
     private static Gson gson = new Gson();
 
     @Value("${services.helm.url}")
@@ -714,12 +715,18 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         } catch (Exception e) {
             //有异常更新实例以及command的状态
             AppServiceInstanceDTO appServiceInstanceDTO = baseQuery(instanceSagaPayload.getAppServiceDeployVO().getInstanceId());
-            appServiceInstanceDTO.setStatus(CommandStatus.FAILED.getStatus());
-            baseUpdate(appServiceInstanceDTO);
-            DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(appServiceInstanceDTO.getCommandId());
-            devopsEnvCommandDTO.setStatus(CommandStatus.FAILED.getStatus());
-            devopsEnvCommandDTO.setError("create or update gitOps file failed!");
-            devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
+            DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
+                    .baseQueryByEnvIdAndResourceId(instanceSagaPayload.getDevopsEnvironmentDTO().getId(), appServiceInstanceDTO.getId(), HELM_RELEASE);
+            String filePath = devopsEnvFileResourceDTO == null ? "release-" + appServiceInstanceDTO.getCode() + ".yaml" : devopsEnvFileResourceDTO.getFilePath();
+            if (!gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(instanceSagaPayload.getDevopsEnvironmentDTO().getGitlabEnvProjectId()), MASTER,
+                    filePath)) {
+                appServiceInstanceDTO.setStatus(CommandStatus.FAILED.getStatus());
+                baseUpdate(appServiceInstanceDTO);
+                DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(appServiceInstanceDTO.getCommandId());
+                devopsEnvCommandDTO.setStatus(CommandStatus.FAILED.getStatus());
+                devopsEnvCommandDTO.setError("create or update gitOps file failed!");
+                devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
+            }
         }
     }
 

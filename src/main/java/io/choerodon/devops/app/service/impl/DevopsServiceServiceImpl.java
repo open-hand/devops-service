@@ -7,16 +7,6 @@ import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import io.kubernetes.client.JSON;
-import io.kubernetes.client.custom.IntOrString;
-import io.kubernetes.client.models.*;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -42,6 +32,15 @@ import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.ResourceCreatorInfoUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
+import io.kubernetes.client.JSON;
+import io.kubernetes.client.custom.IntOrString;
+import io.kubernetes.client.models.*;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 
 /**
@@ -763,7 +762,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             return null;
         }
 
-        BeanUtils.copyProperties(devopsEnvPodDTO,podLiveInfoVO);
+        BeanUtils.copyProperties(devopsEnvPodDTO, podLiveInfoVO);
 
         //反序列化json
         V1Pod v1Pod = json.deserialize(devopsEnvPodDTO.getMessage(), V1Pod.class);
@@ -1082,12 +1081,18 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         } catch (Exception e) {
             //有异常更新网络以及command的状态
             DevopsServiceDTO devopsServiceDTO = baseQuery(serviceSagaPayLoad.getDevopsServiceDTO().getId());
-            devopsServiceDTO.setStatus(CommandStatus.FAILED.getStatus());
-            baseUpdate(devopsServiceDTO);
-            DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsServiceDTO.getCommandId());
-            devopsEnvCommandDTO.setStatus(CommandStatus.FAILED.getStatus());
-            devopsEnvCommandDTO.setError("create or update gitOps file failed!");
-            devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
+            DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
+                    .baseQueryByEnvIdAndResourceId(serviceSagaPayLoad.getDevopsEnvironmentDTO().getId(), devopsServiceDTO.getId(), SERVICE);
+            String filePath = devopsEnvFileResourceDTO == null ? "svc-" + devopsServiceDTO.getName() + ".yaml" : devopsEnvFileResourceDTO.getFilePath();
+            if (!gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(serviceSagaPayLoad.getDevopsEnvironmentDTO().getGitlabEnvProjectId()), MASTER,
+                    filePath)) {
+                devopsServiceDTO.setStatus(CommandStatus.FAILED.getStatus());
+                baseUpdate(devopsServiceDTO);
+                DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsServiceDTO.getCommandId());
+                devopsEnvCommandDTO.setStatus(CommandStatus.FAILED.getStatus());
+                devopsEnvCommandDTO.setError("create or update gitOps file failed!");
+                devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
+            }
         }
     }
 

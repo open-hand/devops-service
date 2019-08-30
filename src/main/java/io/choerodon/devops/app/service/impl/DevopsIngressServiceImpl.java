@@ -619,12 +619,18 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         } catch (Exception e) {
             //有异常更新实例以及command的状态
             DevopsIngressDTO devopsIngressDTO = baseQuery(ingressSagaPayload.getDevopsIngressDTO().getId());
-            devopsIngressDTO.setStatus(CommandStatus.FAILED.getStatus());
-            baseUpdate(devopsIngressDTO);
-            DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsIngressDTO.getCommandId());
-            devopsEnvCommandDTO.setStatus(CommandStatus.FAILED.getStatus());
-            devopsEnvCommandDTO.setError("create or update gitOps file failed!");
-            devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
+            DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
+                    .baseQueryByEnvIdAndResourceId(ingressSagaPayload.getDevopsEnvironmentDTO().getId(), devopsIngressDTO.getId(), INGRESS);
+            String filePath = devopsEnvFileResourceDTO == null ? "ing-" + devopsIngressDTO.getName() + ".yaml" : devopsEnvFileResourceDTO.getFilePath();
+            if (!gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(ingressSagaPayload.getDevopsEnvironmentDTO().getGitlabEnvProjectId()), MASTER,
+                    filePath)) {
+                devopsIngressDTO.setStatus(CommandStatus.FAILED.getStatus());
+                baseUpdate(devopsIngressDTO);
+                DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsIngressDTO.getCommandId());
+                devopsEnvCommandDTO.setStatus(CommandStatus.FAILED.getStatus());
+                devopsEnvCommandDTO.setError("create or update gitOps file failed!");
+                devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
+            }
         }
     }
 
