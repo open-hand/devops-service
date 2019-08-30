@@ -372,6 +372,7 @@ const appService = {
 
 const envrionment = {
   'c7ncd.env.create': '创建环境',
+  'c7ncd.env.config': '部署配置',
   'c7ncd.env.create.config': '创建部署配置',
   'c7ncd.env.modify.config': '修改部署配置',
   'c7ncd.env.group.default': '默认分组',

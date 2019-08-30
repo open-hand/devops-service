@@ -52,6 +52,9 @@ function GroupItem({ record, search, intl: { formatMessage }, intlPrefix }) {
   function confirmDelete() {
     const name = record.get('name');
     Modal.open({
+      movable: false,
+      closable: false,
+      header: true,
       key: confirmKey,
       title: formatMessage({ id: `${intlPrefix}.group.delete` }, { name }),
       children: <div>{formatMessage({ id: `${intlPrefix}.group.delete.warn` })}</div>,

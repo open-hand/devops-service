@@ -12,6 +12,7 @@ import { useEnvironmentStore } from '../../../stores';
 import { useTreeItemStore } from './stores';
 
 const formKey = Modal.key();
+const effectKey = Modal.key();
 
 function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
   const modalStyle = useMemo(() => ({
@@ -31,7 +32,7 @@ function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
   async function handleDelete() {
     const { getSelectedMenu: { id } } = envStore;
     try {
-      const res = envItemStore.deleteEnv(projectId, id);
+      const res = await envItemStore.deleteEnv(projectId, id);
       handlePromptError(res);
     } catch (e) {
       Choerodon.handleResponseError(e);
@@ -43,7 +44,7 @@ function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
   async function handleEffect(target) {
     const { getSelectedMenu } = envStore;
     try {
-      const res = envItemStore.effectEnv(projectId, getSelectedMenu.id, target);
+      const res = await envItemStore.effectEnv(projectId, getSelectedMenu.id, target);
       handlePromptError(res);
     } catch (e) {
       Choerodon.handleResponseError(e);
@@ -66,6 +67,42 @@ function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
     });
   }
 
+  async function openEffectModal() {
+    const { id, active } = envStore.getSelectedMenu;
+    let children;
+    let title;
+    let disabled = true;
+    try {
+      const res = await envItemStore.checkEffect(projectId, id);
+      if (handlePromptError(res) && !res.list.length) {
+        title = '确认停用';
+        children = '当你点击确认后，该环境将被停用！';
+        disabled = false;
+      } else {
+        title = '不可停用';
+        children = '该环境下已有实例，且此环境正在运行中，无法停用！';
+      }
+    } catch (e) {
+      title = '出错了';
+      children = '请稍后重试。';
+      Choerodon.handleResponseError(e);
+    }
+
+    Modal.open({
+      movable: false,
+      closable: false,
+      header: true,
+      key: effectKey,
+      title,
+      children,
+      onOk: () => handleEffect(!active),
+      okProps: {
+        disabled,
+      },
+    });
+  }
+
+
   function getSuffix() {
     const synchronize = record.get('synchro');
     const active = record.get('active');
@@ -75,7 +112,7 @@ function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
     const actionData = [{
       service: [],
       text: formatMessage({ id: `${intlPrefix}.modal.detail.${active ? 'stop' : 'start'}` }),
-      action: () => handleEffect(!active),
+      action: openEffectModal,
     }, {
       service: [],
       text: formatMessage({ id: `${intlPrefix}.modal.detail.${active ? 'modify' : 'delete'}` }),

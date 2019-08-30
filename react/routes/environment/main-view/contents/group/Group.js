@@ -1,31 +1,55 @@
-import React, { Fragment } from 'react';
+import React, { Fragment, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Action } from '@choerodon/master';
-import { Table } from 'choerodon-ui/pro';
+import { Modal, Table } from 'choerodon-ui/pro';
 import StatusTag from '../../../../../components/status-tag';
 import { getEnvStatus } from '../../../../../components/status-dot';
 import { useEnvironmentStore } from '../../../stores';
 import { useEnvGroupStore } from './stores';
 import Modals from './modals';
+import EnvModifyForm from '../../modals/env-modify';
 
 const { Column } = Table;
+const envKey = Modal.key;
 
 const Group = observer(() => {
+  const modalStyle = useMemo(() => ({
+    width: 380,
+  }), []);
   const {
     prefixCls,
     intlPrefix,
-    envStore: { getSelectedMenu: { id, name } },
+    envStore,
+    treeDs,
     AppState: { currentMenuType: { id: projectId } },
   } = useEnvironmentStore();
   const {
     groupDs,
     intl: { formatMessage },
   } = useEnvGroupStore();
+  const { getSelectedMenu: { id, name } } = envStore;
 
   function refresh() {
+    groupDs.query();
+    treeDs.query();
   }
 
   function handleDelete() {
+  }
+
+  function openModifyModal(record) {
+    Modal.open({
+      key: envKey,
+      title: formatMessage({ id: `${intlPrefix}.modify` }),
+      children: <EnvModifyForm
+        record={record}
+        intlPrefix={intlPrefix}
+        refresh={refresh}
+        envStore={envStore}
+      />,
+      drawer: true,
+      style: modalStyle,
+    });
   }
 
   function renderName({ value, record }) {
@@ -45,31 +69,30 @@ const Group = observer(() => {
   }
 
   function renderActions({ record }) {
-    const groupId = record.get('id');
+    const envId = record.get('id');
     const active = record.get('active');
     const synchronize = record.get('synchro');
+
+    if (!synchronize && active) return null;
+
     const actionData = active ? [{
-      service: [],
       text: formatMessage({ id: 'edit' }),
-      // action: handleClick,
+      action: () => openModifyModal(record),
     }, {
-      service: [],
       text: formatMessage({ id: 'stop' }),
       // action: confirmDelete,
     }] : [{
-      service: [],
       text: formatMessage({ id: 'active' }),
       // action: handleClick,
     }, {
-      service: [],
       text: formatMessage({ id: 'delete' }),
       // action: confirmDelete,
     }];
-    return synchronize || !active ? (<Action data={actionData} />) : null;
+    return <Action data={actionData} />;
   }
 
   return (
-    <div>
+    <Fragment>
       <h2>{name}</h2>
       <Table
         dataSet={groupDs}
@@ -82,7 +105,7 @@ const Group = observer(() => {
         <Column name="clusterName" />
       </Table>
       <Modals />
-    </div>
+    </Fragment>
   );
 });
 

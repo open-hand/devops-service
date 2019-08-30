@@ -1,4 +1,4 @@
-import React, { Fragment, useRef, useMemo, lazy, Suspense } from 'react';
+import React, { Fragment, useRef, lazy, Suspense } from 'react';
 import { observer } from 'mobx-react-lite';
 import isEmpty from 'lodash/isEmpty';
 import DragBar from '../../../components/drag-bar';
@@ -15,9 +15,7 @@ const Detail = lazy(() => import('./contents/detail'));
 const MainView = observer(() => {
   const {
     prefixCls,
-    envStore: {
-      getSelectedMenu,
-    },
+    envStore: { getSelectedMenu },
     itemType: {
       DETAIL_ITEM,
       GROUP_ITEM,
@@ -26,8 +24,8 @@ const MainView = observer(() => {
   const { mainStore } = useMainStore();
   const rootRef = useRef();
 
-  const { itemType } = getSelectedMenu;
-  const content = useMemo(() => {
+  function getContent() {
+    const { itemType } = getSelectedMenu;
     const cmMaps = {
       [GROUP_ITEM]: <Group />,
       [DETAIL_ITEM]: <Detail />,
@@ -35,7 +33,7 @@ const MainView = observer(() => {
     return cmMaps[itemType]
       ? <Suspense fallback={<Loading display />}>{cmMaps[itemType]}</Suspense>
       : <Loading display />;
-  }, [itemType]);
+  }
 
   return (<div
     ref={rootRef}
@@ -48,7 +46,7 @@ const MainView = observer(() => {
     <Fragment>
       <Sidebar />
       {!isEmpty(getSelectedMenu) ? <div className={`${prefixCls}-main ${prefixCls}-animate`}>
-        {content}
+        {getContent()}
       </div> : <Loading display />}
     </Fragment>
   </div>);

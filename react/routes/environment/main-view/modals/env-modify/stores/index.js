@@ -19,6 +19,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
       intl: { formatMessage },
       children,
       intlPrefix,
+      record,
       envStore: {
         getSelectedMenu: { id, itemType },
       },
@@ -27,11 +28,14 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const groupOptionDs = useMemo(() => new DataSet(GroupOptionDataSet(projectId)), [projectId]);
 
     useEffect(() => {
-      if (itemType === 'detail') {
-        formDs.transport.read.url = `/devops/v1/projects/${projectId}/envs/${id}`;
+      const isDetail = record || itemType === 'detail';
+      const envId = record ? record.get('id') : id;
+
+      if (isDetail && envId) {
+        formDs.transport.read.url = `/devops/v1/projects/${projectId}/envs/${envId}`;
         formDs.query();
       }
-    }, [id, itemType]);
+    }, [record, id, itemType]);
 
     const value = {
       ...props,

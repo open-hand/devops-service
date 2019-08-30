@@ -14,10 +14,17 @@
  * 要求 Record 中必须包含字段
  *   key 当前节点的标识
  *   parentId 父节点标识
+ *   itemType 节点类型
  *
  * */
 
 export default (dataSet, store) => {
+  const selectRecord = (record) => {
+    record.isSelected = true;
+    const data = record.toData();
+    store.setSelectedMenu(data);
+  };
+
   if (dataSet.length) {
     const selectedRecord = dataSet.find((record) => record.isSelected);
     const { key: selectedKey, parentId: selectedParentId } = store.getSelectedMenu;
@@ -28,16 +35,12 @@ export default (dataSet, store) => {
         nextSelected.isSelected = true;
       } else {
         const parent = dataSet.find((record) => record.get('key') === selectedParentId);
-        const parentData = dataSet.toData();
-        store.setSelectedMenu(parentData);
         if (parent) {
-          parent.isSelected = true;
+          selectRecord(parent);
         } else {
           const first = dataSet.get(0);
           if (first) {
-            first.isSelected = true;
-            const firstData = first.toData();
-            store.setSelectedMenu(firstData);
+            selectRecord(first);
           } else {
             store.setSelectedMenu({});
           }

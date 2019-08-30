@@ -1,9 +1,7 @@
 import { axios } from '@choerodon/master';
 
 export default ({ formatMessage, intlPrefix, projectId, store }) => {
-  const handleUpdate = ({ record, name, value }) => {
-    // console.log(name, value);
-    // console.log(record.get('value'));
+  const handleUpdate = ({ name, value }) => {
     if (name === 'appServiceId' && value) {
       if (value) {
         store.loadValue(projectId, value);
@@ -12,7 +10,7 @@ export default ({ formatMessage, intlPrefix, projectId, store }) => {
       }
     }
   };
-  const nameValidator = async (value, name, record) => {
+  const nameValidator = async (value) => {
     try {
       const res = await axios.get(`/devops/v1/projects/${projectId}/deploy_value/check_name?name=${value}`);
       if (res.failed) {
@@ -50,6 +48,9 @@ export default ({ formatMessage, intlPrefix, projectId, store }) => {
     }, {
       name: 'value',
       type: 'string',
+    }, {
+      name: 'envId',
+      type: 'number',
     }],
     transport: {
       submit: ({ data: [data] }) => ({

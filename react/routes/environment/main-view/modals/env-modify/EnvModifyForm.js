@@ -5,13 +5,15 @@ import { useFormStore } from './stores';
 
 const Option = Select.Option;
 
-function EnvCreateForm({ modal, refresh }) {
+function EnvModifyForm() {
   const {
     formDs,
     groupOptionDs,
+    modal,
+    refresh,
   } = useFormStore();
 
-  async function handleCreate() {
+  async function handleSubmit() {
     try {
       if ((await formDs.submit()) !== false) {
         refresh();
@@ -23,7 +25,7 @@ function EnvCreateForm({ modal, refresh }) {
     }
   }
 
-  modal.handleOk(handleCreate);
+  modal.handleOk(handleSubmit);
 
   function getGroupOption(record) {
     const id = record.get('id');
@@ -42,4 +44,4 @@ function EnvCreateForm({ modal, refresh }) {
   </Form>;
 }
 
-export default observer(EnvCreateForm);
+export default observer(EnvModifyForm);

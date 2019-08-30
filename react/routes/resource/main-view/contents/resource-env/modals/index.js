@@ -22,9 +22,9 @@ const REModals = observer(() => {
   } = useREStore();
 
   function refresh() {
-    treeDs.query();
     baseInfoDs.query();
     resourceCountDs.query();
+    treeDs.query();
   }
 
   function openEnvDetail() {

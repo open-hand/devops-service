@@ -8,21 +8,35 @@ import './index.less';
 
 const { Option } = Select;
 
-function DeployConfig({ modal }) {
+function DeployConfig() {
   const {
-    prefixCls,
     intl: { formatMessage },
+    intlPrefix,
+    prefixCls,
     formDs,
     appOptionDs,
     configStore: { getValue },
+    modal,
+    envId,
+    refresh,
+    parentStore,
   } = useFormStore();
   const [value, setValue] = useState('');
   const [isError, setValueError] = useState(false);
 
   async function handleSubmit() {
+    if (isError) return false;
+
+    const config = value || getValue || '';
+    const record = formDs.current;
+    if (record) {
+      record.set('value', config);
+      record.set('envId', envId);
+    }
     try {
       if ((await formDs.submit()) !== false) {
-        // refresh();
+        parentStore.setTabKey('config');
+        refresh();
       } else {
         return false;
       }
@@ -31,15 +45,7 @@ function DeployConfig({ modal }) {
     }
   }
 
-  function changeValue(data) {
-    setValue(value);
-    const record = formDs.current;
-    if (record) {
-      record.set('value', data);
-    }
-  }
-
-  // modal.handleOk(handleSubmit);
+  modal.handleOk(handleSubmit);
 
   function appOption(record) {
     const id = record.get('id');
@@ -56,7 +62,7 @@ function DeployConfig({ modal }) {
       readOnly={false}
       value={value || getValue}
       originValue={getValue}
-      onValueChange={changeValue}
+      onValueChange={setValue}
       handleEnableNext={setValueError}
     /> : null;
   }
@@ -67,7 +73,6 @@ function DeployConfig({ modal }) {
         <TextField name="name" />
         <TextArea name="description" resize="vertical" />
         <Select
-          allowClear={false}
           searchable={false}
           name="appServiceId"
         >
@@ -75,7 +80,7 @@ function DeployConfig({ modal }) {
         </Select>
       </Form>
     </div>
-    <h3>配置信息</h3>
+    <h3>{formatMessage({ id: `${intlPrefix}.config` })}</h3>
     {renderValue()}
   </Fragment>;
 }

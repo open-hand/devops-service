@@ -30,6 +30,7 @@ const EnvModals = observer(() => {
   }), []);
   const configModalStyle = useMemo(() => ({
     width: 'calc(100vw - 3.52rem)',
+    minWidth: '2rem',
   }), []);
   const {
     treeDs,
@@ -43,9 +44,7 @@ const EnvModals = observer(() => {
     intl: { formatMessage },
     intlPrefix,
     prefixCls,
-    detailStore: {
-      getTabKey,
-    },
+    detailStore,
     tabs: {
       SYNC_TAB,
       CONFIG_TAB,
@@ -58,7 +57,7 @@ const EnvModals = observer(() => {
   } = useDetailStore();
 
   function refresh() {
-    treeDs.query();
+    const { getTabKey } = detailStore;
     switch (getTabKey) {
       case SYNC_TAB: {
         gitopsSyncDs.query();
@@ -73,6 +72,7 @@ const EnvModals = observer(() => {
         break;
       default:
     }
+    treeDs.query();
   }
 
   function openEnvModal() {
@@ -156,12 +156,15 @@ const EnvModals = observer(() => {
     });
   }
 
-
   function openConfigModal() {
+    const { id } = getSelectedMenu;
     Modal.open({
       key: configKey,
       title: formatMessage({ id: `${currentIntlPrefix}.create.config` }),
       children: <DeployConfig
+        parentStore={detailStore}
+        refresh={refresh}
+        envId={id}
         intlPrefix={currentIntlPrefix}
         prefixCls={currentPrefixCls}
       />,
