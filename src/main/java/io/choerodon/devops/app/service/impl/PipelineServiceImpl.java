@@ -130,6 +130,7 @@ public class PipelineServiceImpl implements PipelineService {
         pageInfo.setList(pageInfo.getList().stream().peek(t -> {
             IamUserDTO iamUserDTO = iamService.queryUserByUserId(t.getCreatedBy());
             t.setCreateUserName(iamUserDTO.getLoginName());
+            t.setCreateUserRealName(iamUserDTO.getRealName());
             t.setCreateUserUrl(iamUserDTO.getImageUrl());
             List<Long> pipelineEnvIds = getAllAppDeploy(t.getId()).stream().map(PipelineAppServiceDeployDTO::getEnvId).collect(Collectors.toList());
             t.setEdit(checkPipelineEnvPermission(pipelineEnvIds, projectOwner));
