@@ -229,7 +229,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         logger.info("Initialize local commit");
         Git git;
         try {
-            git = Git.init().setGitDir(workingDirFile).call();
+            git = Git.init().setDirectory(workingDirFile).call();
             git.add().addFilepattern(".").call();
             git.commit().setMessage("[ADD] initial commit").call();
         } catch (GitAPIException e) {
