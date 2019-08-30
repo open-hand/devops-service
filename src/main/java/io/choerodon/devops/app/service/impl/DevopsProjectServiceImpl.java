@@ -92,11 +92,24 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
         }
     }
 
+    /**
+     * 插入或更新项目相关信息
+     * @param devopsProjectDTO 项目相关信息
+     */
     @Override
     public void baseUpdate(DevopsProjectDTO devopsProjectDTO) {
+        // 查询纪录是否存在
         DevopsProjectDTO oldDevopsProjectDTO = devopsProjectMapper.selectByPrimaryKey(devopsProjectDTO);
         if (oldDevopsProjectDTO == null) {
-            devopsProjectMapper.insertSelective(devopsProjectDTO);
+            try {
+                devopsProjectMapper.insertSelective(devopsProjectDTO);
+            } catch (Exception e) {
+                // 如果插入纪录失败则说明在，查询纪录为null之后有别的线程插入了数据
+                // 此时对此数据再进行一次更新操作
+                oldDevopsProjectDTO = devopsProjectMapper.selectByPrimaryKey(devopsProjectDTO);
+                devopsProjectDTO.setObjectVersionNumber(oldDevopsProjectDTO.getObjectVersionNumber());
+                devopsProjectMapper.updateByPrimaryKeySelective(devopsProjectDTO);
+            }
         } else {
             devopsProjectDTO.setObjectVersionNumber(oldDevopsProjectDTO.getObjectVersionNumber());
             devopsProjectMapper.updateByPrimaryKeySelective(devopsProjectDTO);
