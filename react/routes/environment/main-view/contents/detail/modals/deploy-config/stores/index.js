@@ -2,13 +2,13 @@ import React, { createContext, useContext, useMemo } from 'react';
 import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
 import { DataSet } from 'choerodon-ui/pro';
-import EnvFormDataSet from './EnvFormDataSet';
-import ClusterOptionDataSet from './ClusterOptionDataSet';
-import GroupOptionDataSet from './GroupOptionDataSet';
+import FormDataSet from './FormDataSet';
+import AppOptionDataSet from './AppOptionDataSet';
+import useStore from './useStore';
 
 const Store = createContext();
 
-export function useEnvFormStore() {
+export function useFormStore() {
   return useContext(Store);
 }
 
@@ -20,16 +20,16 @@ export const StoreProvider = injectIntl(inject('AppState')(
       children,
       intlPrefix,
     } = props;
-    const formDs = useMemo(() => new DataSet(EnvFormDataSet({ formatMessage, intlPrefix, projectId })), [projectId]);
-    const clusterOptionDs = useMemo(() => new DataSet(ClusterOptionDataSet(projectId)), [projectId]);
-    const groupOptionDs = useMemo(() => new DataSet(GroupOptionDataSet(projectId)), [projectId]);
+    const configStore = useStore();
+    const formDs = useMemo(() => new DataSet(FormDataSet({ formatMessage, intlPrefix, projectId, store: configStore })), [projectId]);
+    const appOptionDs = useMemo(() => new DataSet(AppOptionDataSet(projectId)), [projectId]);
 
     const value = {
       ...props,
       formDs,
       intlPrefix,
-      clusterOptionDs,
-      groupOptionDs,
+      appOptionDs,
+      configStore,
     };
     return (
       <Store.Provider value={value}>

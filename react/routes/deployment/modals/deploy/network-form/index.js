@@ -66,13 +66,13 @@ export default class CreateNetwork extends Component {
       intl: { formatMessage },
       store,
       AppState: { currentMenuType: { projectId } },
-      record,
+      envId,
     } = this.props;
     const pattern = /^[a-z]([-a-z0-9]*[a-z0-9])?$/;
     if (value && !pattern.test(value)) {
       callback(formatMessage({ id: 'network.name.check.failed' }));
     } else if (value && pattern.test(value)) {
-      store.checkNetWorkName(projectId, record.get('envId'), value)
+      store.checkNetWorkName(projectId, envId, value)
         .then((data) => {
           if (data) {
             callback();
@@ -350,6 +350,7 @@ export default class CreateNetwork extends Component {
       },
       intl: { formatMessage },
       store,
+      envId,
     } = this.props;
     const {
       portKeys: configType,
@@ -488,6 +489,7 @@ export default class CreateNetwork extends Component {
           })(
             <Input
               maxLength={30}
+              disabled={!envId}
               type="text"
               label={<FormattedMessage id="network.form.name" />}
             />,

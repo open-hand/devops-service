@@ -14,7 +14,7 @@ import {
 } from 'choerodon-ui';
 import _ from 'lodash';
 import classnames from 'classnames';
-import InterceptMask from '../../../../../../../components/interceptMask/InterceptMask';
+import InterceptMask from '../../../../../../../components/intercept-mask';
 import YamlEditor from '../../../../../../../components/yamlEditor/YamlEditor';
 import { handlePromptError } from '../../../../../../../utils';
 

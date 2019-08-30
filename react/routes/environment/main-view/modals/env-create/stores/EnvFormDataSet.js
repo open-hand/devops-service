@@ -6,15 +6,12 @@ export default ({ formatMessage, intlPrefix, projectId }) => {
     try {
       const res = await axios.get(`/devops/v1/projects/${projectId}/envs/check_code?cluster_id=${clusterId}&code=${value}`);
       if (res.failed) {
-        if (res.code === 'error.code.exist') {
-          return '环境编码重复。';
-        }
-        return '环境编码校验失败，请稍后再试。';
+        return res.message;
       } else {
         return true;
       }
     } catch (err) {
-      return '环境编码校验失败，请稍后再试。';
+      return '环境编码校验失败，请稍后再试';
     }
   };
 

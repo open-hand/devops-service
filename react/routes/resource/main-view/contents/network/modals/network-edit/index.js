@@ -18,7 +18,7 @@ import {
 } from 'choerodon-ui';
 import { stores, Content } from '@choerodon/master';
 import AppName from '../../../../../../../components/appName';
-import InterceptMask from '../../../../../../../components/interceptMask/InterceptMask';
+import InterceptMask from '../../../../../../../components/intercept-mask';
 import Tips from '../../../../../../../components/Tips/Tips';
 
 import '../../../../../../main.less';
@@ -1192,6 +1192,7 @@ class EditNetwork extends Component {
           onCancel={this.handleClose.bind(this, false)}
           confirmLoading={submitting}
           className="c7ncd-deployment-network-form-wrap"
+          maskClosable={false}
           width={415}
         >
           <Form layout="vertical">

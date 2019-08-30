@@ -26,23 +26,10 @@ const NodePodsTable = () => {
     </Fragment>;
   }; 
 
-  const renderPodName = ({ record }) => {
-    const name = record.get('name');
-    return <MouserOverWrapper text={name} width={0.2}>{name}</MouserOverWrapper>;
-  };
-
   const renderCreationDate = ({ record }) => {
     const creationDate = record.get('creationDate');
     return <TimePopover content={creationDate} />;
   };
-
-  const logData = [{
-    namespace: 'envtestenv',
-    podName: 'testlog-zzy-78c96bf788-lxmh5',
-    clusterId: 61,
-    containerName: 'testlog-zzy',
-    logId: '6e79892f-6e7a-4f23-8008-7ff404b09538',
-  }];
 
   function openLog() {
     setVisible(true);
@@ -78,7 +65,7 @@ const NodePodsTable = () => {
         {/* <Column header={formatMessage({ id: 'node.rTimes' })} name="node.rTimes" /> */}
         <Column header={formatMessage({ id: 'ciPipeline.createdAt' })} renderer={renderCreationDate} />
       </Table>
-      {visible && <LogSiderbar data={logData} visible={visible} onClose={closeLog} record={record} clusterId={parentId} />}
+      {visible && <LogSiderbar visible={visible} onClose={closeLog} record={record} clusterId={parentId} />}
     </Fragment>
   );
 };

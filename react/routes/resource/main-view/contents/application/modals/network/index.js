@@ -5,7 +5,7 @@ import { withRouter } from 'react-router-dom';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { Modal } from 'choerodon-ui';
 import _ from 'lodash';
-import InterceptMask from '../../../../../../../components/interceptMask/InterceptMask';
+import InterceptMask from '../../../../../../../components/intercept-mask';
 import NetworkForm from './networkForm';
 
 import '../../../../../../main.less';
@@ -157,6 +157,7 @@ class CreateNetwork extends Component {
           onOk={this.handleSubmit}
           onCancel={this.handleClose.bind(this, false)}
           confirmLoading={submitting}
+          maskClosable={false}
           width={415}
         >
           <NetworkForm

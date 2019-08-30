@@ -30,7 +30,6 @@ export default class LogSidebar extends Component {
     this.state = {
       following: true,
       fullScreen: false,
-      podName: '',
       containerName: '',
       logId: null,
     };
@@ -143,10 +142,12 @@ export default class LogSidebar extends Component {
    * 加载日志
    */
   loadLog = (isFollow = true) => {
-    const { record: { namespace, name: podName }, clusterId } = this.props;
+    const { record: { namespace, name } } = this.props;
+    const podName = name || this.props.record.podName;
+    const clusterId = this.props.clusterId || this.props.record.clusterId;
     const { logId, containerName, following } = this.state;
     const authToken = document.cookie.split('=')[1];
-    const url = `ws://devops-service-front.staging.saas.hand-china.com/devops/log?key=cluster:${clusterId}.log:${logId}&env=${namespace}&podName=${podName}&containerName=${containerName}&logId=${logId}&token=${authToken}`;
+    const url = `ws://POD_WEBSOCKET_URL/devops/log?key=cluster:${clusterId}.log:${logId}&env=${namespace}&podName=${podName}&containerName=${containerName}&logId=${logId}&token=${authToken}`;
 
     const logs = [];
     let oldLogs = [];
@@ -224,7 +225,7 @@ export default class LogSidebar extends Component {
 
   render() {
     const { visible, onClose, record: { containers } } = this.props;
-    const { following, fullScreen, containerName, podName } = this.state;
+    const { following, fullScreen, containerName } = this.state;
     const containerOptions = _.map(containers, (container) => {
       const { logId, name } = container;
       return (<Option key={logId} value={`${logId}+${name}`}>

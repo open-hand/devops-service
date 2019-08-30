@@ -1,8 +1,8 @@
 import React, { useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Modal, Form, TextField } from 'choerodon-ui/pro';
+import { Modal } from 'choerodon-ui/pro';
 import HeaderButtons from '../../../../../../components/header-buttons';
-import EnvCreateForm from '../../../modals/env-form';
+import EnvCreateForm from '../../../modals/env-create';
 import GroupForm from '../../../modals/GroupForm';
 import { useEnvironmentStore } from '../../../../stores';
 import { useMainStore } from '../../../stores';
@@ -17,9 +17,7 @@ const AppModals = observer(() => {
   }), []);
   const {
     intlPrefix,
-    prefixCls,
     intl: { formatMessage },
-    envStore,
     treeDs,
   } = useEnvironmentStore();
   const { groupFormDs } = useMainStore();
@@ -47,7 +45,7 @@ const AppModals = observer(() => {
     Modal.open({
       key: envKey,
       title: formatMessage({ id: `${intlPrefix}.create` }),
-      children: <EnvCreateForm intlPrefix={intlPrefix} />,
+      children: <EnvCreateForm intlPrefix={intlPrefix} refresh={refresh} />,
       drawer: true,
       style: modalStyle,
     });

@@ -19,7 +19,7 @@ import {
 import { stores, Content } from '@choerodon/master';
 import uuidv1 from 'uuid/v1';
 import AppName from '../../../../../../../../components/appName';
-import InterceptMask from '../../../../../../../../components/interceptMask/InterceptMask';
+import InterceptMask from '../../../../../../../../components/intercept-mask';
 
 import './index.less';
 
@@ -281,6 +281,7 @@ class EditNetwork extends Component {
       .then((data) => {
         if (data) {
           const { name, type, target, config, envName } = data;
+          // eslint-disable-next-line no-nested-ternary
           const targetKeys = target && target.labels
             ? 'param'
             : target && target.endPoints
@@ -1158,6 +1159,7 @@ class EditNetwork extends Component {
           onOk={this.handleSubmit}
           onCancel={this.handleClose.bind(this, false)}
           confirmLoading={submitting}
+          maskClosable={false}
           width={415}
         >
           <Content

@@ -5,21 +5,23 @@ import { injectIntl, FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import map from 'lodash/map';
 import find from 'lodash/find';
+import forEach from 'lodash/forEach';
 import uuidV1 from 'uuid/v1';
 import YamlEditor from '../../../../components/yamlEditor';
 import NetworkForm from './network-form';
-import DomainForm from '../../../resource/main-view/contents/application/modals/domain/domainForm';
+import DomainForm from '../../../../components/domain-form';
 
 import './index.less';
 
 const { Option } = Select;
 
-export default injectIntl(observer(({ record, store, projectId, networkStore, ingressStore, intlPrefix, prefixCls, modal }) => {
+export default injectIntl(observer(({ record, dataSet, store, projectId, networkStore, ingressStore, refresh, intlPrefix, prefixCls, modal }) => {
   const [resourceIsExpand, setResourceIsExpand] = useState(false);
   const [netIsExpand, setNetIsExpand] = useState(false);
   const [ingressIsExpand, setIngressIsExpand] = useState(false);
   const [netFormRef, setNetFormRef] = useState();
   const [ingressFormRef, setIngressFormRef] = useState();
+  const [hasYamlFailed, setHasYamlFailed] = useState(false);
 
   useEffect(() => {
     store.loadAppService(projectId);
@@ -32,27 +34,121 @@ export default injectIntl(observer(({ record, store, projectId, networkStore, in
       const data = find(store.getAppService, ['id', record.get('appServiceId')]) || {};
       record.set('instanceName', getRandomName(data.code));
     }
-    record.set('versionId', null);
+    record.get('appServiceVersionId') && record.set('appServiceVersionId', null);
   }, [record.get('appServiceId')]);
 
   useEffect(() => {
-    if (record.get('envId') && record.get('appServiceId')) {
-      store.loadConfig(projectId, record.get('envId'), record.get('appServiceId'));
-      networkStore.loadPorts(projectId, record.get('envId'), record.get('appServiceId'));
+    if (record.get('environmentId') && record.get('appServiceId')) {
+      store.loadConfig(projectId, record.get('environmentId'), record.get('appServiceId'));
+      networkStore.loadPorts(projectId, record.get('environmentId'), record.get('appServiceId'));
     }
-    record.get('configId', null);
-  }, [record.get('envId'), record.get('appServiceId')]);
+    record.get('valueId', null);
+  }, [record.get('environmentId'), record.get('appServiceId')]);
 
   useEffect(() => {
-    record.get('configId') && store.loadConfigValue(projectId, record.get('configId'));
-  }, [record.get('configId')]);
+    record.get('valueId') && store.loadConfigValue(projectId, record.get('valueId'));
+  }, [record.get('valueId')]);
 
   useEffect(() => {
     ChangeConfigValue(store.getConfigValue.value);
   }, [store.getConfigValue.value]);
 
   modal.handleOk(async () => {
-    // as
+    if (hasYamlFailed) return false;
+
+    let hasFailed = false;
+    const netForm = netFormRef.props.form;
+    const ingressForm = ingressFormRef.props.form;
+    if (netForm.getFieldValue('name') || netForm.getFieldValue('externalIps') || netForm.getFieldValue('port').join('') || netForm.getFieldValue('tport').join('') || (netForm.getFieldValue('nport') && netForm.getFieldValue('nport').join('')) || (netForm.getFieldValue('protocol') && netForm.getFieldValue('protocol').join(''))) {
+      netFormRef.props.form.validateFieldsAndScroll((err, data) => {
+        if (!err) {
+          const {
+            name,
+            externalIps,
+            portKeys,
+            port,
+            tport,
+            nport,
+            protocol,
+            config,
+          } = data;
+
+          const ports = [];
+          if (portKeys) {
+            forEach(portKeys, (item) => {
+              if (item || item === 0) {
+                const node = {
+                  port: Number(port[item]),
+                  targetPort: Number(tport[item]),
+                  nodePort: nport ? Number(nport[item]) : null,
+                };
+                config === 'NodePort' && (node.protocol = protocol[item]);
+                ports.push(node);
+              }
+            });
+          }
+
+          const network = {
+            name,
+            appServiceId: record.get('appServiceId'),
+            instances: [record.get('instanceName')],
+            envId: record.get('environmentId'),
+            externalIp: externalIps && externalIps.length ? externalIps.join(',') : null,
+            ports,
+            type: config,
+          };
+          record.set('devopsServiceReqVO', network);
+        } else {
+          hasFailed = true;
+        }
+      });
+    }
+    if (ingressForm.getFieldValue('domain') || ingressForm.getFieldValue('name') || ingressForm.getFieldValue('network').join('') || ingressForm.getFieldValue('port').join('') || ingressForm.getFieldValue('path').join('') !== '/') {
+      ingressFormRef.props.form.validateFieldsAndScroll((err, data) => {
+        if (!err) {
+          const {
+            domain,
+            name,
+            certId,
+            paths,
+            path,
+            network,
+            port,
+          } = data;
+
+          const pathList = [];
+          const networkList = ingressStore.getNetwork;
+          forEach(paths, (item) => {
+            const pt = path[item];
+            const serviceId = network[item];
+            const servicePort = port[item];
+            const serviceName = find(networkList, ['id', serviceId])[0].name;
+            pathList.push({
+              path: pt,
+              serviceId,
+              servicePort,
+              serviceName,
+            });
+          });
+
+          const ingress = {
+            domain,
+            name,
+            certId,
+            appServiceId: record.get('appServiceId'),
+            envId: record.get('environmentId'),
+            pathList,
+          };
+          record.set('devopsIngressVO', ingress);
+        } else {
+          hasFailed = true;
+        }
+      });
+    }
+    if (!hasFailed && await dataSet.submit() !== false) {
+      refresh();
+    }
+    return false;
   });
 
   function getRandomName(prefix) {
@@ -64,11 +160,15 @@ export default injectIntl(observer(({ record, store, projectId, networkStore, in
   }
 
   function ChangeConfigValue(value) {
-    record.set('configValue', value);
+    record.set('values', value);
   }
 
   function handleExpand(Operating) {
     Operating((pre) => !pre);
+  }
+
+  function handleEnableNext(flag) {
+    setHasYamlFailed(flag);
   }
 
   return (
@@ -79,18 +179,18 @@ export default injectIntl(observer(({ record, store, projectId, networkStore, in
             <Option value={id}>{name}</Option>
           ))}
         </Select>
-        <Select name="versionId" searchable>
+        <Select name="appServiceVersionId" searchable>
           {map(store.getVersion, ({ id, version }) => (
             <Option value={id}>{version}</Option>
           ))}
         </Select>
-        <Select name="envId" searchable newLine>
+        <Select name="environmentId" searchable newLine>
           {map(store.getEnv, ({ id, name }) => (
             <Option value={id}>{name}</Option>
           ))}
         </Select>
         <TextField name="instanceName" />
-        <Select name="configId" searchable colSpan={2} newLine>
+        <Select name="valueId" searchable colSpan={2} newLine>
           {map(store.getConfig, ({ id, name }) => (
             <Option value={id}>{name}</Option>
           ))}
@@ -100,8 +200,9 @@ export default injectIntl(observer(({ record, store, projectId, networkStore, in
           newLine
           readOnly={false}
           originValue={store.getConfigValue.value}
-          value={record.get('configValue') || store.getConfigValue.value}
+          value={record.get('values') || store.getConfigValue.value}
           onValueChange={ChangeConfigValue}
+          handleEnableNext={handleEnableNext}
         />
       </Form>
       <div className={`${prefixCls}-resource-config`}>
@@ -122,15 +223,15 @@ export default injectIntl(observer(({ record, store, projectId, networkStore, in
           >
             <Icon
               type={netIsExpand ? 'expand_less' : 'expand_more'}
-              className={`${prefixCls}-resource-config-icon`}
+              className={`${prefixCls}-resource-config-network-icon`}
             />
             <FormattedMessage id={`${intlPrefix}.network`} />
           </div>
-          <div className={netIsExpand ? '' : `${prefixCls}-resource-display`}>
+          <div className={netIsExpand ? `${prefixCls}-resource-content` : `${prefixCls}-resource-display`}>
             <NetworkForm
               wrappedComponentRef={(form) => setNetFormRef(form)}
               store={networkStore}
-              record={record}
+              envId={record.get('environmentId')}
             />
           </div>
           <div
@@ -139,16 +240,17 @@ export default injectIntl(observer(({ record, store, projectId, networkStore, in
           >
             <Icon
               type={ingressIsExpand ? 'expand_less' : 'expand_more'}
-              className={`${prefixCls}-resource-config-icon`}
+              className={`${prefixCls}-resource-config-network-icon`}
             />
             <FormattedMessage id={`${intlPrefix}.ingress`} />
           </div>
-          <div className={ingressIsExpand ? '' : `${prefixCls}-resource-display`}>
+          <div className={ingressIsExpand ? `${prefixCls}-resource-content` : `${prefixCls}-resource-display`}>
             <DomainForm
               wrappedComponentRef={(form) => setIngressFormRef(form)}
               type="create"
-              envId={record.get('envId')}
+              envId={record.get('environmentId')}
               DomainStore={ingressStore}
+              isDeployPage
             />
           </div>
         </div>

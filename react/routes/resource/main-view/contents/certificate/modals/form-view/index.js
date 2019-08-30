@@ -16,7 +16,7 @@ import {
 } from 'choerodon-ui';
 import CertConfig from '../../../../../../../components/certConfig';
 import Tips from '../../../../../../../components/Tips/Tips';
-import InterceptMask from '../../../../../../../components/interceptMask/InterceptMask';
+import InterceptMask from '../../../../../../../components/intercept-mask';
 import { handlePromptError } from '../../../../../../../utils';
 
 import '../../../../../../main.less';
@@ -451,6 +451,7 @@ export default class CertificateCreate extends Component {
           onOk={this.handleSubmit}
           onCancel={this.handleClose}
           confirmLoading={submitting}
+          maskClosable={false}
           width={380}
         >
           <Content

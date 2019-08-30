@@ -5,8 +5,8 @@ import { Modal } from 'choerodon-ui';
 import { injectIntl } from 'react-intl';
 import { Content } from '@choerodon/master';
 import _ from 'lodash';
-import InterceptMask from '../../../../../../../components/interceptMask/InterceptMask';
-import DomainForm from './domainForm';
+import DomainForm from '../../../../../../../components/domain-form';
+import InterceptMask from '../../../../../../../components/intercept-mask';
 
 import '../../../../../../main.less';
 import './index.less';
@@ -159,6 +159,7 @@ class CreateDomain extends Component {
           onCancel={this.handleClose.bind(this, false)}
           onOk={this.handleSubmit}
           confirmLoading={submitting}
+          maskClosable={false}
           width={380}
         >
           <DomainForm

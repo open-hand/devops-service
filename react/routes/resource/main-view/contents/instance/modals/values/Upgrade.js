@@ -4,7 +4,7 @@ import { Select, Button, Spin } from 'choerodon-ui';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import _ from 'lodash';
 import YamlEditor from '../../../../../../../components/yamlEditor';
-import InterceptMask from '../../../../../../../components/interceptMask/InterceptMask';
+import InterceptMask from '../../../../../../../components/intercept-mask';
 import { handlePromptError } from '../../../../../../../utils';
 
 import './index.less';

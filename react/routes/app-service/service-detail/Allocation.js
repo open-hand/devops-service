@@ -43,7 +43,7 @@ const Allocation = observer((props) => {
   }
 
   function renderAction({ record }) {
-    if (detailDs.current.get('permission') || record.get('role') === 'owner') return;
+    if (detailDs.current.get('skipCheckPermission') || record.get('role') === 'owner') return;
     const actionData = [{
       service: [],
       text: formatMessage({ id: 'delete' }),
@@ -53,7 +53,7 @@ const Allocation = observer((props) => {
   }
 
   function openDetail() {
-    permissionStore.setChecked(detailDs.current.get('permission'));
+    permissionStore.setChecked(detailDs.current.get('skipCheckPermission'));
     permissionStore.clearPermissionUsers();
     Modal.open({
       key: modalKey1,

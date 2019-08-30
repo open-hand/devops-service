@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { Form as ProForm, TextField, TextArea, Select as ProSelect } from 'choerodon-ui/pro';
 import { Select, Form } from 'choerodon-ui';
 import StatusDot from '../../../../../components/status-dot';
-import { useEnvFormStore } from './stores';
+import { useFormStore } from './stores';
 
 import './index.less';
 
@@ -11,19 +11,13 @@ const ProOption = ProSelect.Option;
 const Option = Select.Option;
 const FormItem = Form.Item;
 
-/**
- *
- * Select不是使用Pro组件，所以要再引入旧的Form，用于Select的表单化校验
- *
- * */
-
-function EnvCreateForm({ modal, form, treeDs }) {
+function EnvCreateForm({ modal, form, refresh }) {
   const {
     intl: { formatMessage },
     formDs,
     clusterOptionDs,
     groupOptionDs,
-  } = useEnvFormStore();
+  } = useFormStore();
 
   async function handleCreate() {
     let result = true;
@@ -36,7 +30,7 @@ function EnvCreateForm({ modal, form, treeDs }) {
 
     try {
       if ((await formDs.submit()) !== false) {
-        treeDs.query();
+        refresh();
       } else {
         return false;
       }
@@ -56,7 +50,7 @@ function EnvCreateForm({ modal, form, treeDs }) {
       <StatusDot
         active
         synchronize
-        size="small"
+        size="inner"
         connect={connect}
       />
       {name}
