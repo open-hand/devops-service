@@ -175,7 +175,7 @@ public class GitlabServiceClientOperator {
      * @return access token
      */
     @Nullable
-    public String createProjectToken(Integer gitlabProjectId, Integer userId) {
+    public String createProjectToken(Integer userId) {
         ResponseEntity<ImpersonationTokenDTO> impersonationToken;
         try {
             impersonationToken = gitlabServiceClient.createProjectToken(userId);

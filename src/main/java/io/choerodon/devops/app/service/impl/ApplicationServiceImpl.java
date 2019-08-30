@@ -186,12 +186,12 @@ public class ApplicationServiceImpl implements ApplicationService {
             return;
         }
 
-        // 创建拉取原有代码仓库代码的token
-        final String originalAccessToken = gitlabServiceClientOperator.createProjectToken(originalAppService.getGitlabProjectId(), TypeUtil.objToInteger(userAttrVO.getGitlabUserId()));
-        logger.info("OriginalAccessToken is {}", originalAccessToken);
+        // 创建用于拉取原有代码仓库代码和之后推送代码的token
+        final String accessToken = gitlabServiceClientOperator.createProjectToken(TypeUtil.objToInteger(userAttrVO.getGitlabUserId()));
+        logger.info("AccessToken is {}", accessToken);
 
         // 创建token失败
-        if (originalAccessToken == null) {
+        if (accessToken == null) {
             logger.warn("Failed to create access token for gitlab repository of the original repository for the new application service with id: {}", newAppService.getId());
             return;
         }
@@ -203,7 +203,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         GitlabProjectDTO originalGitlabProjectDTO = gitlabServiceClientOperator.queryProjectById(originalAppService.getGitlabProjectId());
         logger.info("The gitlab project dto is: {}", JSONObject.toJSONString(originalGitlabProjectDTO));
 
-        Git localOriginalRepo = gitUtil.cloneRepository(workingDir, originalGitlabProjectDTO.getHttpUrlToRepo(), originalAccessToken, "master");
+        Git localOriginalRepo = gitUtil.cloneRepository(workingDir, originalGitlabProjectDTO.getHttpUrlToRepo(), accessToken, "master");
         logger.info("After cloning");
 
         // 切换到指定commit
@@ -244,22 +244,11 @@ public class ApplicationServiceImpl implements ApplicationService {
         final GitlabProjectDTO newGitProject = gitlabServiceClientOperator.queryProjectById(originalAppService.getGitlabProjectId());
         logger.info("New gitlab project: {}", JSONObject.toJSONString(newGitProject));
 
-        // 创建推送代码token
-        final String newAccessToken = gitlabServiceClientOperator.createProjectToken(appServiceDTO.getGitlabProjectId(), TypeUtil.objToInteger(userAttrVO.getGitlabUserId()));
-        logger.info("New Access Token: ", newAccessToken);
-
-        // 创建token失败
-        if (newAccessToken == null) {
-            logger.warn("Failed to create access token for gitlab repository of the new application service with id: {}", appServiceDTO.getId());
-            FileUtil.deleteDirectory(workingDirFile);
-            return;
-        }
-
         logger.info("To push");
         try {
             git.push().setRemote(newGitProject.getHttpUrlToRepo())
                     .setPushAll()
-                    .setCredentialsProvider(new UsernamePasswordCredentialsProvider("", newAccessToken))
+                    .setCredentialsProvider(new UsernamePasswordCredentialsProvider("", accessToken))
                     .call();
         } catch (GitAPIException e) {
             logger.warn("Failed to push local git repository to the remote repository of application service with id: {}", newAppService.getId());
