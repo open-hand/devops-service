@@ -15,7 +15,7 @@ import {
   Checkbox,
   Tooltip,
 } from 'choerodon-ui';
-import InterceptMask from '../../../../../../../../components/interceptMask/InterceptMask';
+import InterceptMask from '../../../../../../../../components/intercept-mask';
 import {
   EVENT,
   TARGET_OPTIONS,

@@ -21,6 +21,7 @@ export default injectIntl(observer(({ record, dataSet, store, projectId, network
   const [ingressIsExpand, setIngressIsExpand] = useState(false);
   const [netFormRef, setNetFormRef] = useState();
   const [ingressFormRef, setIngressFormRef] = useState();
+  const [hasYamlFailed, setHasYamlFailed] = useState(false);
 
   useEffect(() => {
     store.loadAppService(projectId);
@@ -53,7 +54,9 @@ export default injectIntl(observer(({ record, dataSet, store, projectId, network
   }, [store.getConfigValue.value]);
 
   modal.handleOk(async () => {
-    let result = false;
+    if (hasYamlFailed) return false;
+
+    let hasFailed = false;
     const netForm = netFormRef.props.form;
     const ingressForm = ingressFormRef.props.form;
     if (netForm.getFieldValue('name') || netForm.getFieldValue('externalIps') || netForm.getFieldValue('port').join('') || netForm.getFieldValue('tport').join('') || (netForm.getFieldValue('nport') && netForm.getFieldValue('nport').join('')) || (netForm.getFieldValue('protocol') && netForm.getFieldValue('protocol').join(''))) {
@@ -95,7 +98,8 @@ export default injectIntl(observer(({ record, dataSet, store, projectId, network
             type: config,
           };
           record.set('devopsServiceReqVO', network);
-          result = true;
+        } else {
+          hasFailed = true;
         }
       });
     }
@@ -136,15 +140,15 @@ export default injectIntl(observer(({ record, dataSet, store, projectId, network
             pathList,
           };
           record.set('devopsIngressVO', ingress);
-          result = true;
+        } else {
+          hasFailed = true;
         }
       });
     }
-    if (await dataSet.submit() !== false) {
+    if (!hasFailed && await dataSet.submit() !== false) {
       refresh();
-      result = true;
     }
-    return result;
+    return false;
   });
 
   function getRandomName(prefix) {
@@ -161,6 +165,10 @@ export default injectIntl(observer(({ record, dataSet, store, projectId, network
 
   function handleExpand(Operating) {
     Operating((pre) => !pre);
+  }
+
+  function handleEnableNext(flag) {
+    setHasYamlFailed(flag);
   }
 
   return (
@@ -194,6 +202,7 @@ export default injectIntl(observer(({ record, dataSet, store, projectId, network
           originValue={store.getConfigValue.value}
           value={record.get('values') || store.getConfigValue.value}
           onValueChange={ChangeConfigValue}
+          handleEnableNext={handleEnableNext}
         />
       </Form>
       <div className={`${prefixCls}-resource-config`}>

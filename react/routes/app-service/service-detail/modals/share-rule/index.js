@@ -20,7 +20,7 @@ export default observer(({ record, versionOptions, levelOptions, projectId, stor
         Choerodon.handleResponseError(e);
       }
     }
-    loadShareById();
+    record.status !== 'add' && loadShareById();
   }, []);
 
   useEffect(() => {
