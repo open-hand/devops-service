@@ -16,11 +16,11 @@ import retrofit2.http.*;
 public interface MarketServiceClient {
 
     @Multipart
-    @POST("market-service/v1/market_applications/upload")
+    @POST("market/v1/market_applications/upload")
     Call<ResponseEntity<Boolean>> uploadFile(@Query("app_version") String appVersion, @Part List<MultipartBody.Part> list, @Part("imageUrl") String imageUrl);
 
     @Multipart
-    @POST("market-service/v1/market_applications/published/versionFix")
+    @POST("market/v1/market_applications/published/versionFix")
     Call<ResponseEntity<Boolean>> updateAppPublishInfoFix(@Query("app_code") String code,
                                                           @Query("version") String version,
                                                           @Part("marketApplicationVOStr") String marketApplicationVOStr,
