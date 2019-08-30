@@ -100,6 +100,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             } catch (Exception e) {
                 FileUtil.deleteDirectory(new File(workingDir));
                 logger.warn("Failed to create application service from original application service with code '{}' and id {}", service.getCode(), service.getId());
+                logger.warn("The exception is: ", e);
             }
         });
     }
@@ -196,6 +197,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                 localOriginalRepo.reset().setMode(ResetCommand.ResetType.HARD).setRef(resetCommitSha).call();
             } catch (GitAPIException e) {
                 logger.warn("Failed to checkout to the certain commit of service with id {}, the commit sha is {}", originalAppService.getId(), resetCommitSha);
+                logger.warn("The exception is: ", e);
                 FileUtil.deleteDirectory(workingDirFile);
             }
         }
@@ -215,6 +217,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             git.commit().setMessage("[ADD] initial commit").call();
         } catch (GitAPIException e) {
             logger.warn("Failed to operate local git repository for application service with id: {}", newAppService.getId());
+            logger.warn("The exception is: ", e);
             FileUtil.deleteDirectory(workingDirFile);
             return;
         }
@@ -239,6 +242,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                     .call();
         } catch (GitAPIException e) {
             logger.warn("Failed to push local git repository to the remote repository of application service with id: {}", newAppService.getId());
+            logger.warn("The exception is: ", e);
             FileUtil.deleteDirectory(workingDirFile);
             return;
         }

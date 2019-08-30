@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import io.choerodon.base.domain.PageRequest;
@@ -103,7 +104,7 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
      *
      * @param devopsProjectDTO 项目相关信息
      */
-    @Transactional
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     @Override
     public void baseUpdate(DevopsProjectDTO devopsProjectDTO) {
         // 查询纪录是否存在
