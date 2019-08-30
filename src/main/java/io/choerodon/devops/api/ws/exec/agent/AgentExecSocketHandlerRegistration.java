@@ -36,6 +36,5 @@ public class AgentExecSocketHandlerRegistration implements SocketHandlerRegistra
 
     @Override
     public void afterConnectionClosed(WebSocketSession webSocketSession, CloseStatus closeStatus) {
-        System.out.println("收到断开agent连接的消息了");
     }
 }

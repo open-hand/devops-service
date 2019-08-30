@@ -200,6 +200,11 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
     }
 
     @Override
+    public void baseDeleteById(Long id) {
+        devopsEnvPodMapper.deleteByPrimaryKey(id);
+    }
+
+    @Override
     public DevopsEnvPodDTO queryByNameAndEnvName(String name, String namespace) {
         DevopsEnvPodDTO devopsEnvPodDTO = new DevopsEnvPodDTO();
         devopsEnvPodDTO.setName(name);

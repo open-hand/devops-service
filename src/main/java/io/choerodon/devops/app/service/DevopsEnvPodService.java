@@ -40,6 +40,8 @@ public interface DevopsEnvPodService {
 
     void baseDeleteByName(String name, String namespace);
 
+    void baseDeleteById(Long id);
+
     DevopsEnvPodDTO queryByNameAndEnvName(String name, String namespace);
 
     /**

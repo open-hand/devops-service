@@ -58,6 +58,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     private static final Logger logger = LoggerFactory.getLogger(AgentMsgHandlerServiceImpl.class);
     private static final String RESOURCE_VERSION = "resourceVersion";
     private static final String ENV_NOT_EXIST = "env not exists: {}";
+    public static final String EVICTED = "Evicted";
     private static JSON json = new JSON();
     private static ObjectMapper objectMapper = new ObjectMapper();
     private ObjectMapper mapper = new ObjectMapper();
@@ -213,6 +214,10 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
 
     private void handleEnvPod(V1Pod v1Pod, AppServiceInstanceDTO appServiceInstanceDTO, String resourceVersion, DevopsEnvPodDTO devopsEnvPodDTO, Boolean flag, List<DevopsEnvPodDTO> devopsEnvPodDTOS) {
+
+
+
+
         if (devopsEnvPodDTOS == null || devopsEnvPodDTOS.isEmpty()) {
             devopsEnvPodDTO.setInstanceId(appServiceInstanceDTO.getId());
             devopsEnvPodService.baseCreate(devopsEnvPodDTO);
@@ -220,7 +225,11 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             for (DevopsEnvPodDTO pod : devopsEnvPodDTOS) {
                 if (pod.getName().equals(v1Pod.getMetadata().getName())
                         && pod.getNamespace().equals(v1Pod.getMetadata().getNamespace())) {
-                    if (!resourceVersion.equals(pod.getResourceVersion())) {
+                    if(v1Pod.getStatus().getPhase().equals(EVICTED)||v1Pod.getStatus().getReason().equals(EVICTED)) {
+                        devopsEnvPodService.baseDeleteById(pod.getId());
+                        devopsEnvResourceService.deleteByKindAndNameAndInstanceId(ResourceType.POD.getType(),pod.getName(),pod.getInstanceId());
+                    }
+                    else if (!resourceVersion.equals(pod.getResourceVersion())) {
                         devopsEnvPodDTO.setId(pod.getId());
                         devopsEnvPodDTO.setInstanceId(pod.getInstanceId());
                         devopsEnvPodDTO.setObjectVersionNumber(pod.getObjectVersionNumber());
