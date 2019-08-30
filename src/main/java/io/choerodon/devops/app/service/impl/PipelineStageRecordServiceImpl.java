@@ -50,6 +50,13 @@ public class PipelineStageRecordServiceImpl implements PipelineStageRecordServic
     }
 
     @Override
+    public List<PipelineStageRecordDTO> baseListByRecordId(Long pipelineRecordId) {
+        PipelineStageRecordDTO pipelineStageRecordDTO = new PipelineStageRecordDTO();
+        pipelineStageRecordDTO.setPipelineRecordId(pipelineRecordId);
+        return pipelineStageRecordMapper.select(pipelineStageRecordDTO);
+    }
+
+    @Override
     public PipelineStageRecordDTO baseUpdate(PipelineStageRecordDTO pipelineStageRecordDTO) {
         if (pipelineStageRecordMapper.updateByPrimaryKey(pipelineStageRecordDTO) != 1) {
             throw new CommonException("error.update.pipeline.stage.record");

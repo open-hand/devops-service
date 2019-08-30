@@ -158,37 +158,6 @@ public class PipelineController {
                 .orElseThrow(() -> new CommonException("error.pipeline.list"));
     }
 
-    /**
-     * 项目下获取流水线记录
-     *
-     * @param projectId   项目Id
-     * @param pageRequest 分页参数
-     * @param params      查询参数
-     * @return
-     */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "项目下获取流水线记录")
-    @CustomPageRequest
-    @PostMapping("/page_record")
-    public ResponseEntity<PageInfo<PipelineRecordVO>> pageRecords(
-            @ApiParam(value = "项目Id", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "流水线Id", required = false)
-            @RequestParam(value = "pipeline_id", required = false) Long pipelineId,
-            @ApiParam(value = "待审核", required = false)
-            @RequestParam(value = "pendingcheck", required = false) Boolean pendingcheck,
-            @ApiParam(value = "执行过", required = false)
-            @RequestParam(value = "executed", required = false) Boolean executed,
-            @ApiParam(value = "审核过", required = false)
-            @RequestParam(value = "reviewed", required = false) Boolean reviewed,
-            @ApiParam(value = "分页参数")
-            @ApiIgnore PageRequest pageRequest,
-            @ApiParam(value = "查询参数")
-            @RequestBody(required = false) String params) {
-        return Optional.ofNullable(pipelineService.listRecords(projectId, pipelineId, pageRequest, params, pendingcheck, executed, reviewed))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.pipeline.list.record"));
-    }
 
     /**
      * 执行流水线

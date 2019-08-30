@@ -39,6 +39,7 @@ WHERE
 	ddr.deploy_type = 'auto'
 	) t
 	where t.project_id=#{projectId}
+	ORDER BY t.id desc
 	<include refid="sqlparam"/>
     </select>
 

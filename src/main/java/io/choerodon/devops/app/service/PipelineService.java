@@ -8,6 +8,7 @@ import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.notify.NoticeSendDTO;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.infra.dto.DevopsDeployRecordDTO;
 import io.choerodon.devops.infra.dto.PipelineDTO;
 
 /**
@@ -17,8 +18,6 @@ import io.choerodon.devops.infra.dto.PipelineDTO;
  */
 public interface PipelineService {
     PageInfo<PipelineVO> pageByOptions(Long projectId, PipelineSearchVO pipelineSearchVO, PageRequest pageRequest);
-
-    PageInfo<PipelineRecordVO> listRecords(Long projectId, Long pipelineId, PageRequest pageRequest, String params, Boolean pendingcheck, Boolean executed, Boolean reviewed);
 
     PipelineReqVO create(Long projectId, PipelineReqVO pipelineReqVO);
 
@@ -79,4 +78,6 @@ public interface PipelineService {
     void baseCheckName(Long projectId, String name);
 
     List<PipelineDTO> baseQueryByProjectId(Long projectId);
+
+    void setPipelineRecordDetail(Long projectId, DevopsDeployRecordVO devopsDeployRecordVO);
 }

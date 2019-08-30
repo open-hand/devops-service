@@ -60,6 +60,12 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
     private AppServiceVersionService appServiceVersionService;
     @Autowired
     private DevopsGitlabPipelineMapper devopsGitlabPipelineMapper;
+    @Autowired
+    private TransactionalProducer transactionalProducer;
+
+
+
+
     @Override
     @Saga(code = DEVOPS_GITLAB_PIPELINE, description = "gitlab pipeline创建到数据库", inputSchemaClass = PipelineWebHookVO.class)
     public void create(PipelineWebHookVO pipelineWebHookVO, String token) {
@@ -80,9 +86,6 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
         }
     }
 
-    @Autowired
-    private TransactionalProducer transactionalProducer;
-
     @Override
     public void handleCreate(PipelineWebHookVO pipelineWebHookVO) {
         AppServiceDTO applicationDTO = applicationService.baseQueryByToken(pipelineWebHookVO.getToken());
@@ -96,8 +99,6 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
             gitlabUserId = TypeUtil.objToInteger(userAttrE.getGitlabUserId());
         }
         //查询pipeline最新阶段信息
-
-
         List<Stage> stages = new ArrayList<>();
         List<String> stageNames = new ArrayList<>();
         List<Integer> gitlabJobIds = gitlabServiceClientOperator.listJobs(applicationDTO.getGitlabProjectId(), TypeUtil.objToInteger(pipelineWebHookVO.getObjectAttributes().getId()), gitlabUserId)

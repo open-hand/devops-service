@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.vo;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by Sheep on 2019/7/29.
@@ -19,6 +20,8 @@ public class DevopsDeployRecordVO {
     private String userName;
     private String userImage;
     private Date deployTime;
+    private List<PipelineStageRecordVO> stageDTOList;
+    private PipelineDetailVO pipelineDetailVO;
 
 
     public Long getId() {
@@ -116,5 +119,21 @@ public class DevopsDeployRecordVO {
 
     public void setDeployCreatedBy(Long deployCreatedBy) {
         this.deployCreatedBy = deployCreatedBy;
+    }
+
+    public PipelineDetailVO getPipelineDetailVO() {
+        return pipelineDetailVO;
+    }
+
+    public void setPipelineDetailVO(PipelineDetailVO pipelineDetailVO) {
+        this.pipelineDetailVO = pipelineDetailVO;
+    }
+
+    public List<PipelineStageRecordVO> getStageDTOList() {
+        return stageDTOList;
+    }
+
+    public void setStageDTOList(List<PipelineStageRecordVO> stageDTOList) {
+        this.stageDTOList = stageDTOList;
     }
 }

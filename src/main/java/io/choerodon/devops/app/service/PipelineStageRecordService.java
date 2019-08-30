@@ -13,6 +13,8 @@ public interface PipelineStageRecordService {
 
     PipelineStageRecordDTO baseQueryById(Long recordId);
 
+    List<PipelineStageRecordDTO> baseListByRecordId(Long pipelineRecordId);
+
     PipelineStageRecordDTO baseCreateOrUpdate(PipelineStageRecordDTO pipelineStageRecordDTO);
 
     PipelineStageRecordDTO baseUpdate(PipelineStageRecordDTO pipelineStageRecordDTO);
