@@ -241,7 +241,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
         final AppServiceDTO appServiceDTO = appServiceService.baseQuery(payload.getAppServiceId());
         logger.info("Query app service: {}", JSONObject.toJSONString(appServiceDTO));
-        final GitlabProjectDTO newGitProject = gitlabServiceClientOperator.queryProjectById(originalAppService.getGitlabProjectId());
+        final GitlabProjectDTO newGitProject = gitlabServiceClientOperator.queryProjectById(appServiceDTO.getGitlabProjectId());
         logger.info("New gitlab project: {}", JSONObject.toJSONString(newGitProject));
 
         logger.info("To push");
