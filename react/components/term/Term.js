@@ -108,7 +108,10 @@ export default class Term extends PureComponent {
   runRealTerminal = () => {
     this.term.clear();
     this.term.setOption('disableStdin', false);
-    this.term.attach(this.socket);
+    this.term.attach(this.socket, false);
+    this.term.onData((data) => {
+      this.socket.send(new Blob([data], { type: 'text/plain' }));
+    });
     this.term._initialized = true;
   };
 
