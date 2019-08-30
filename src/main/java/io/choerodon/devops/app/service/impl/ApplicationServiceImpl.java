@@ -98,9 +98,10 @@ public class ApplicationServiceImpl implements ApplicationService {
 
         // 复制所有服务
         originalAppServices.forEach(service -> {
-            final String workingDir = gitUtil.getWorkingDirectory("application-service-copy-" + GenerateUUID.generateUUID());
+            final String dirName = "application-service-copy-" + GenerateUUID.generateUUID();
+            final String workingDir = gitUtil.getWorkingDirectory(dirName);
             try {
-                copyAppService(newAppId, service, projectId, workingDir, null);
+                copyAppService(newAppId, service, projectId, dirName, null);
             } catch (Exception e) {
                 FileUtil.deleteDirectory(new File(workingDir));
                 logger.warn("Failed to create application service from original application service with code '{}' and id {}", service.getCode(), service.getId());
@@ -131,10 +132,11 @@ public class ApplicationServiceImpl implements ApplicationService {
                 return;
             }
 
-            final String workingDir = gitUtil.getWorkingDirectory("application-service-copy-" + GenerateUUID.generateUUID());
+            final String dirName = "application-service-copy-" + GenerateUUID.generateUUID();
+            final String workingDir = gitUtil.getWorkingDirectory(dirName);
             logger.info("Working dir is: {}", workingDir);
             try {
-                copyAppService(newAppId, service, projectId, workingDir, version.getCommit());
+                copyAppService(newAppId, service, projectId, dirName, version.getCommit());
             } catch (Exception e) {
                 FileUtil.deleteDirectory(new File(workingDir));
                 logger.warn("Failed to create application service from original application service with code '{}' and id {}", service.getCode(), service.getId());
@@ -149,14 +151,14 @@ public class ApplicationServiceImpl implements ApplicationService {
      * @param newAppId           新的应用id
      * @param originalAppService 原有的应用下某个服务的信息
      * @param projectId          项目ID
-     * @param workingDir         本地仓库的目录
+     * @param dirName            目录的名称
      * @param resetCommitSha     在拉取原有代码到本地后，是否切换到指定的commit
      */
     private void copyAppService(
             @Nonnull final Long newAppId,
             @Nonnull final AppServiceDTO originalAppService,
             @Nonnull final Long projectId,
-            @Nonnull final String workingDir,
+            @Nonnull final String dirName,
             @Nullable final String resetCommitSha) {
         // 不为失败的或者处理中的原应用服务创建新应用服务
         if (Boolean.TRUE.equals(originalAppService.getFailed()) || !Boolean.TRUE.equals(originalAppService.getSynchro())) {
@@ -191,20 +193,21 @@ public class ApplicationServiceImpl implements ApplicationService {
         logger.info("AccessToken is {}", accessToken);
 
         // 创建token失败
-        if (accessToken == null) {
+        if (StringUtils.isEmpty(accessToken)) {
             logger.warn("Failed to create access token for gitlab repository of the original repository for the new application service with id: {}", newAppService.getId());
             return;
         }
 
         // 将原先服务的MASTER分支最新代码克隆到本地
+        final String workingDir = gitUtil.getWorkingDirectory(dirName);
         final File workingDirFile = new File(workingDir);
         logger.info("File is: {}", workingDirFile.getAbsolutePath());
 
         GitlabProjectDTO originalGitlabProjectDTO = gitlabServiceClientOperator.queryProjectById(originalAppService.getGitlabProjectId());
         logger.info("The gitlab project dto is: {}", JSONObject.toJSONString(originalGitlabProjectDTO));
 
-        Git localOriginalRepo = gitUtil.cloneRepository(workingDir, originalGitlabProjectDTO.getHttpUrlToRepo(), accessToken, "master");
-        logger.info("After cloning");
+        Git localOriginalRepo = gitUtil.cloneRepository(dirName, originalGitlabProjectDTO.getHttpUrlToRepo(), accessToken, "master");
+        logger.info("After cloning, the local repo dir is: {}", localOriginalRepo.getRepository().getDirectory().getAbsolutePath());
 
         // 切换到指定commit
         if (!StringUtils.isEmpty(resetCommitSha)) {
@@ -219,8 +222,8 @@ public class ApplicationServiceImpl implements ApplicationService {
 
 
         // 删除所有commits纪录
-        logger.info("Delete commits");
         File gitDir = new File(workingDir, ".git");
+        logger.info("Delete commits. The git directory is: {}", gitDir.getAbsolutePath());
         if (gitDir.exists() && gitDir.isDirectory()) {
             FileUtil.deleteDirectory(gitDir);
         }
@@ -230,6 +233,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         Git git;
         try {
             git = Git.init().setDirectory(workingDirFile).call();
+            logger.info("The local repo dir is: {}", git.getRepository().getDirectory().getAbsolutePath());
             git.add().addFilepattern(".").call();
             git.commit().setMessage("[ADD] initial commit").call();
         } catch (GitAPIException e) {
