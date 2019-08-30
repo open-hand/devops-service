@@ -604,4 +604,25 @@ public class DevopsEnvironmentController {
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_ENVIRONMENT_GET));
     }
+
+    /**
+     * 查询指定环境是否可删除
+     *
+     * @param projectId 项目id
+     * @param envId     环境id
+     * @return boolean
+     */
+    @Permission(type = ResourceType.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "查询指定环境是否可删除")
+    @GetMapping(value = "/{env_id}/delete_check")
+    public ResponseEntity<Boolean> deleteCheck(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "环境id")
+            @PathVariable(value = "env_id") Long envId) {
+        return Optional.ofNullable(devopsEnvironmentService.deleteCheck(projectId, envId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException(ERROR_ENVIRONMENT_GET));
+    }
 }

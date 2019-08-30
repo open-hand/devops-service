@@ -921,7 +921,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         Map<String, Object> map = new HashMap<>()
         map.put("project_id", projectId)
         map.put("code", devopsEnvironmentDO.getCode())
-        isToCleanup = true
+
 
         when: "查询"
         def response = restTemplate.getForObject(url, DevopsEnviromentRepVO.class, map)
@@ -930,5 +930,28 @@ class DevopsEnvironmentControllerSpec extends Specification {
         response != null
         response.getId() == devopsEnvironmentDO.getId()
         response.getCode() == devopsEnvironmentDO.getCode()
+    }
+
+    def "查询指定环境是否可删除"() {
+        given: "准备"
+        def url = rootUrl + "/{env_id}/delete_check"
+        isToCleanup = true
+
+        when: '有满足要求的资源数量不为0时'
+        def response = restTemplate.getForObject(url, Boolean.class, projectId, devopsEnvironmentDO.getId())
+        then:
+        !response
+
+        when: '所有满足要求的资源数量为0时'
+        appServiceInstanceDTO.setStatus(InstanceStatus.STOPPED.getStatus())
+        appServiceInstanceMapper.updateByPrimaryKey(appServiceInstanceDTO)
+        response = restTemplate.getForObject(url, Boolean.class, projectId, devopsEnvironmentDO.getId())
+
+        then:
+        response
+
+        //还原appServiceInstanceDTO的状态
+        appServiceInstanceDTO.setStatus(InstanceStatus.RUNNING.getStatus())
+        appServiceInstanceMapper.updateByPrimaryKey(appServiceInstanceDTO)
     }
 }

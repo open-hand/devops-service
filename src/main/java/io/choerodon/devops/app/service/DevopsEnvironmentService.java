@@ -251,6 +251,15 @@ public interface DevopsEnvironmentService {
      */
     void checkEnv(DevopsEnvironmentDTO devopsEnvironmentDTO, UserAttrDTO userAttrDTO);
 
+    /**
+     * 检查环境是否可以删除
+     *
+     * @param projectId 项目id
+     * @param envId     环境id
+     * @return
+     */
+    Boolean deleteCheck(Long projectId, Long envId);
+
 
     DevopsEnvironmentDTO baseCreate(DevopsEnvironmentDTO devopsEnvironmentDTO);
 

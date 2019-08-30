@@ -113,6 +113,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private DevopsGitService devopsGitService;
     @Autowired
     private ClusterConnectionHandler clusterConnectionHandler;
+    @Autowired
+    private PipelineAppDeployService pipelineAppDeployService;
 
     @Override
     @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_ENV, description = "创建环境", inputSchema = "{}")
@@ -1261,5 +1263,21 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Override
     public List<DevopsEnvironmentDTO> baseListByIds(List<Long> envIds) {
         return devopsEnvironmentMapper.listByIds(envIds);
+    }
+
+    @Override
+    public Boolean deleteCheck(Long projectId, Long envId) {
+        //pipeLineAppDeploy为空
+        boolean pipeLineAppDeployEmpty = pipelineAppDeployService.baseQueryByEnvId(envId).isEmpty();
+
+        DevopsEnvResourceCountVO devopsEnvResourceCountVO = devopsEnvironmentMapper.queryEnvResourceCount(envId);
+
+        return devopsEnvResourceCountVO.getRunningInstanceCount() == 0
+                && devopsEnvResourceCountVO.getServiceCount() == 0
+                && devopsEnvResourceCountVO.getIngressCount() == 0
+                && devopsEnvResourceCountVO.getCertificationCount() == 0
+                && devopsEnvResourceCountVO.getSecretCount() == 0
+                && devopsEnvResourceCountVO.getConfigMapCount() == 0
+                && pipeLineAppDeployEmpty;
     }
 }
