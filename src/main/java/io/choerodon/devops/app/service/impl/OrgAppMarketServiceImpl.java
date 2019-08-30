@@ -647,9 +647,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
      */
     private void callScript(String script, String harborUrl, User newUser, User oldUser) {
         try {
-            String cmd = String.format("cd %s \n" +
-                            " sh %s %s %s %s %s %s",
-                    script, PUSH_IAMGES, harborUrl, newUser.getUsername(), newUser.getPassword(), oldUser.getUsername(), oldUser.getPassword());
+            String cmd = String.format("sh /shell/%s %s %s %s %s %s", PUSH_IAMGES, harborUrl, newUser.getUsername(), newUser.getPassword(), oldUser.getUsername(), oldUser.getPassword());
             LOGGER.info(cmd);
             //执行脚本并等待脚本执行完成
             Process process = Runtime.getRuntime().exec(cmd);
@@ -670,7 +668,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             //阻塞执行线程直至脚本执行完成后返回
             process.waitFor();
         } catch (Exception e) {
-            throw new CommonException("error.exec.push.image");
+            throw new CommonException("error.exec.push.image",e.getMessage());
         }
     }
 
