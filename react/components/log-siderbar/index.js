@@ -147,7 +147,7 @@ export default class LogSidebar extends Component {
     const clusterId = this.props.clusterId || this.props.record.clusterId;
     const { logId, containerName, following } = this.state;
     const authToken = document.cookie.split('=')[1];
-    const url = `ws://POD_WEBSOCKET_URL/devops/log?key=cluster:${clusterId}.log:${logId}&env=${namespace}&podName=${podName}&containerName=${containerName}&logId=${logId}&token=${authToken}`;
+    const url = `POD_WEBSOCKET_URL/devops/log?key=cluster:${clusterId}.log:${logId}&env=${namespace}&podName=${podName}&containerName=${containerName}&logId=${logId}&token=${authToken}`;
     // const url = `ws://devops-service-front.staging.saas.hand-china.com/devops/log?key=cluster:${clusterId}.log:${logId}&env=${namespace}&podName=${podName}&containerName=${containerName}&logId=${logId}&token=${authToken}`;
     const logs = [];
     let oldLogs = [];

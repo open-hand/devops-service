@@ -45,7 +45,7 @@ export default class TermSidebar extends Component {
     
 
     const authToken = document.cookie.split('=')[1];
-    const url = `ws://POD_WEBSOCKET_URL/devops/exec?key=cluster:${clusterId}.exec:${logId}&env=${namespace}&podName=${podName}&containerName=${containerName}&logId=${logId}&token=${authToken}`;
+    const url = `POD_WEBSOCKET_URL/devops/exec?key=cluster:${clusterId}.exec:${logId}&env=${namespace}&podName=${podName}&containerName=${containerName}&logId=${logId}&token=${authToken}`;
     // const url = `ws://devops-service-front.staging.saas.hand-china.com/devops/exec?key=cluster:${clusterId}.exec:${logId}&env=${namespace}&podName=${podName}&containerName=${containerName}&logId=${logId}&token=${authToken}`;
     // const url = `ws://10.211.101.61:8060/devops/exec?key=cluster:${clusterId}.exec:${logId}&env=${namespace}&podName=${podName}&containerName=${containerName}&logId=${logId}&token=${authToken}`;
 
