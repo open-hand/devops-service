@@ -431,13 +431,12 @@ class PipelineCreateStore {
         Choerodon.handleResponseError(e);
       });
     this.setLoading('env', false);
-    const data = handlePromptError(response);
-    if (data) {
+    if (handlePromptError(response)) {
       // 让连接的环境排在前面
-      this.setEnvData(_.sortBy(data, (value) => Number(!value.connect)));
+      this.setEnvData(_.sortBy(response, (value) => Number(!value.connect)));
     }
   }
-
+  
   async loadAppData(projectId) {
     this.setLoading('app', true);
     const response = await axios
@@ -453,9 +452,8 @@ class PipelineCreateStore {
         Choerodon.handleResponseError(e);
       });
     this.setLoading('app', false);
-    const data = handlePromptError(response);
-    if (data) {
-      this.setAppDate(data.list);
+    if (handlePromptError(response)) {
+      this.setAppDate(response.list);
     }
   }
 
@@ -470,9 +468,8 @@ class PipelineCreateStore {
         Choerodon.handleResponseError(e);
       });
     this.setLoading('instance', false);
-    const res = handlePromptError(response);
-    if (res) {
-      this.setInstances(res);
+    if (handlePromptError(response)) {
+      this.setInstances(response);
     }
   }
 
@@ -494,9 +491,8 @@ class PipelineCreateStore {
         Choerodon.handleResponseError(e);
       });
     this.setLoading('config', false);
-    const res = handlePromptError(response);
-    if (res) {
-      this.setConfigList(res);
+    if (handlePromptError(response)) {
+      this.setConfigList(response);
     }
   }
 
@@ -517,9 +513,8 @@ class PipelineCreateStore {
         Choerodon.handleResponseError(e);
       });
     this.setLoading('value', false);
-    const data = handlePromptError(response);
-    if (data) {
-      return data;
+    if (handlePromptError(response)) {
+      return response;
     }
   }
 
@@ -545,9 +540,8 @@ class PipelineCreateStore {
         Choerodon.handleResponseError(e);
       });
     this.setLoading('user', false);
-    const res = handlePromptError(response);
-    if (res) {
-      this.setUser(res);
+    if (handlePromptError(response)) {
+      this.setUser(response);
     }
   }
 
@@ -583,13 +577,14 @@ class PipelineCreateStore {
         Choerodon.handleResponseError(e);
       });
     this.setDetailLoading(false);
-    const res = handlePromptError(response);
-    if (res) {
-      this.setPipeline(res);
-      this.initPipeline(res);
-      this.setTrigger(res.triggerType);
+    if (handlePromptError(response)) {
+      this.setPipeline(response);
+      this.initPipeline(response);
+      this.setTrigger(response.triggerType);
       this.checkCanSubmit();
+      return true;
     }
+    return false;
   }
 
   @observable createVisible = false;

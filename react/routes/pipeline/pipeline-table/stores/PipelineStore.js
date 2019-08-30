@@ -84,7 +84,7 @@ class PipelineStore {
     return this.envData.slice();
   }
 
-  async loadListData(projectId, page, size, sort, searchData, envId) {
+  async loadListData(projectId, page, size, sort, searchData, envId, triggerType) {
     this.setLoading(true);
     const searchObj = {};
     if (searchData && searchData.length) {
@@ -94,6 +94,9 @@ class PipelineStore {
     }
     if (envId) {
       searchObj.envId = envId;
+    }
+    if (triggerType) {
+      searchObj.triggerType = triggerType;
     }
     const sortPath = sort ? `&sort=${sort.field || sort.columnKey},${SORTER_MAP[sort.order] || 'desc'}` : '';
     const data = await axios

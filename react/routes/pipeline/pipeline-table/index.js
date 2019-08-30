@@ -25,6 +25,8 @@ const STATUS_ACTIVE = 1;
 const EXECUTE_PASS = 'pass';
 const EXECUTE_FAILED = 'failed';
 
+const TriggerType = ['auto', 'manual'];
+
 @injectIntl
 @withRouter
 @inject('AppState')
@@ -52,6 +54,7 @@ export default class Pipeline extends Component {
     executeEnv: null,
     searchData: null,
     envId: null,
+    triggerType: null,
   };
 
   componentDidMount() {
@@ -99,7 +102,7 @@ export default class Pipeline extends Component {
         },
       },
     } = this.props;
-    const { searchData, envId } = this.state;
+    const { searchData, envId, triggerType } = this.state;
 
     const realSorter = _.isEmpty(sorter) ? null : sorter;
     this.setState({
@@ -116,6 +119,7 @@ export default class Pipeline extends Component {
       realSorter,
       searchData,
       envId,
+      triggerType
     );
   };
 
@@ -131,7 +135,7 @@ export default class Pipeline extends Component {
         },
       },
     } = this.props;
-    const { page, pageSize, param, filters, sorter, searchData, envId } = this.state;
+    const { page, pageSize, param, filters, sorter, searchData, envId, triggerType } = this.state;
     const currentPage = toPage || page;
     const {
       getPageInfo: {
@@ -146,6 +150,7 @@ export default class Pipeline extends Component {
       sorter,
       searchData,
       envId,
+      triggerType
     );
   };
 
@@ -367,7 +372,7 @@ export default class Pipeline extends Component {
    * 打开编辑页面
    * @param id
    */
-  linkToEdit(id) {
+  async linkToEdit(id) {
     const {
       AppState: {
         currentMenuType: {
@@ -375,11 +380,12 @@ export default class Pipeline extends Component {
         },
       },
     } = this.props;
-    pipelineCreateStore.loadUser(projectId);
     pipelineCreateStore.setEditId(id);
-    pipelineCreateStore.loadDetail(projectId, id);
-    
-    pipelineCreateStore.setEditVisible(true);
+    const result = await pipelineCreateStore.loadDetail(projectId, id);
+    if (result) {
+      pipelineCreateStore.loadUser(projectId);
+      pipelineCreateStore.setEditVisible(true);
+    }
   }
 
   /**
@@ -387,7 +393,7 @@ export default class Pipeline extends Component {
    * @param value
    */
   handleSearch = (value, type) => {
-    this.setState({ [type]: value }, () => this.loadData(1));
+    this.setState({ [type]: value }, () => this.loadData());
   };
 
   renderAction = (record) => {
@@ -585,7 +591,7 @@ export default class Pipeline extends Component {
         <Select
           className="c7ncd-pipeline-search-one"
           label={formatMessage({ id: 'pipeline.deploy.env' })}
-          onChange={(value) => this.handleSearch(value, 'envId')}
+          onChange={(value) => this.setState({ envId: value }, () => this.loadData())}
           allowClear
           choiceRemove={false}
           filterOption={(input, option) => option.props.children
@@ -598,6 +604,22 @@ export default class Pipeline extends Component {
               value={id}
             >
               {envName}
+            </Option>
+          ))}
+        </Select>
+        <Select
+          className="c7ncd-pipeline-search-one"
+          label={formatMessage({ id: 'pipeline.trigger' })}
+          onChange={(value) => this.setState({ triggerType: value }, () => this.loadData())}
+          allowClear
+          choiceRemove={false}
+        >
+          {_.map(TriggerType, (value) => (
+            <Option
+              key={value}
+              value={value}
+            >
+              <FormattedMessage id={`c7ncd.deploy.trigger.${value}`} />
             </Option>
           ))}
         </Select>
@@ -709,5 +731,5 @@ function renderDate(record) {
 }
 
 function renderUser({ createUserRealName, createUserName, createUserUrl }) {
-  return <UserInfo avatar={createUserUrl || ''} name={createUserRealName || ''} id={createUserName || ''} />;
+  return <UserInfo avatar={createUserUrl || ''} name={createUserRealName || '1'} id={createUserName || ''} />;
 }

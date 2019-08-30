@@ -30,13 +30,13 @@ const PodList = observer(() => {
   function closeLog() {
     setVisible(false);
   }
-  function handleLogClick(index) {
-    setData({ ...record.get('podLiveInfos')[index] });
+  function handleLogClick(index, containerIndex) {
+    setData({ ...record.get('podLiveInfos')[index], containerIndex });
     openLog();
   }
 
   function renderRegistry(containers, index) {
-    const list = map(containers, ({ name, ready, registry }) => (
+    const list = map(containers, ({ name, ready, registry }, containerIndex) => (
       <div key={name}>
         <div>
           <span>{name}</span>
@@ -44,7 +44,7 @@ const PodList = observer(() => {
             icon="find_in_page"
             shape="circle"
             onClick={() => {
-              handleLogClick(index);
+              handleLogClick(index, containerIndex);
             }}
           />
         </div>
