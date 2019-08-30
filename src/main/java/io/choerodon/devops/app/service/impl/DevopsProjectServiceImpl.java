@@ -3,9 +3,13 @@ package io.choerodon.devops.app.service.impl;
 import java.util.List;
 import java.util.Map;
 
+import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
@@ -25,6 +29,8 @@ import io.choerodon.devops.infra.util.TypeUtil;
  */
 @Service
 public class DevopsProjectServiceImpl implements DevopsProjectService {
+    private Logger logger = LoggerFactory.getLogger(DevopsProjectServiceImpl.class);
+
     @Autowired
     private DevopsProjectMapper devopsProjectMapper;
     @Autowired
@@ -94,8 +100,10 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
 
     /**
      * 插入或更新项目相关信息
+     *
      * @param devopsProjectDTO 项目相关信息
      */
+    @Transactional
     @Override
     public void baseUpdate(DevopsProjectDTO devopsProjectDTO) {
         // 查询纪录是否存在
@@ -104,7 +112,9 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
             try {
                 devopsProjectMapper.insertSelective(devopsProjectDTO);
             } catch (Exception e) {
-                // 如果插入纪录失败则说明在，查询纪录为null之后有别的线程插入了数据
+                logger.info("An exception occurred when inserting into devops_project: {}", JSONObject.toJSONString(devopsProjectDTO));
+                logger.info("The exception is: ", e);
+                // 如果插入纪录失败则说明在查询纪录为null之后有别的线程插入了数据
                 // 此时对此数据再进行一次更新操作
                 oldDevopsProjectDTO = devopsProjectMapper.selectByPrimaryKey(devopsProjectDTO);
                 devopsProjectDTO.setObjectVersionNumber(oldDevopsProjectDTO.getObjectVersionNumber());
