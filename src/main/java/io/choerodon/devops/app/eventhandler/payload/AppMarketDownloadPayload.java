@@ -4,6 +4,7 @@ import java.util.List;
 
 import io.swagger.annotations.ApiModelProperty;
 
+import io.choerodon.devops.infra.dto.harbor.RobotUser;
 import io.choerodon.devops.infra.dto.harbor.User;
 
 /**
@@ -25,10 +26,10 @@ public class AppMarketDownloadPayload {
     private String code;
 
     @ApiModelProperty("harbor用户")
-    private User user;
+    private RobotUser user;
 
     @ApiModelProperty("Pass端应用版本id")
-    Long appVersionId;
+    private Long appVersionId;
 
     @ApiModelProperty("应用服务")
     private List<AppServiceDownloadPayload> appServiceDownloadPayloads;
@@ -57,11 +58,11 @@ public class AppMarketDownloadPayload {
         this.appServiceDownloadPayloads = appServiceDownloadPayloads;
     }
 
-    public User getUser() {
+    public RobotUser getUser() {
         return user;
     }
 
-    public void setUser(User user) {
+    public void setUser(RobotUser user) {
         this.user = user;
     }
 

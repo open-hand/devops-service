@@ -198,6 +198,13 @@ public class SagaTaskCodeConstants {
      */
     public static final String DEVOPS_UPDATE_ENV_PERMISSION = "devops-update-env-permission";
 
+
+    /**
+     * devops导入内部应用服务
+     */
+    public static final String DEVOPS_IMPORT_INTERNAL_APPLICATION_SERVICE = "devopsImportInternalAppService";
+
+
     private SagaTaskCodeConstants() {
     }
 }

@@ -48,6 +48,16 @@ public class DevopsEnvPodDTO extends BaseDTO {
     private String message;
     @Transient
     private Date creationDate;
+    @Transient
+    private Long clusterId;
+
+    public Long getClusterId() {
+        return clusterId;
+    }
+
+    public void setClusterId(Long clusterId) {
+        this.clusterId = clusterId;
+    }
 
     @Override
     public Date getCreationDate() {

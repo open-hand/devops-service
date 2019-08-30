@@ -1,17 +1,18 @@
 package io.choerodon.devops.api.controller.v1
 
+import com.alibaba.fastjson.JSONArray
 import com.github.pagehelper.PageInfo
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.app.service.IamService
+import io.choerodon.devops.api.vo.DevopsEnvFileErrorVO
+import io.choerodon.devops.app.service.DevopsEnvFileService
 import io.choerodon.devops.infra.dto.DevopsEnvFileErrorDTO
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO
 import io.choerodon.devops.infra.dto.iam.ProjectDTO
-import io.choerodon.devops.infra.feign.BaseServiceClient
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator
 import io.choerodon.devops.infra.mapper.DevopsEnvFileErrorMapper
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper
-import org.mockito.Mockito
 import org.powermock.api.mockito.PowerMockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -24,6 +25,7 @@ import spock.lang.Specification
 import spock.lang.Stepwise
 import spock.lang.Subject
 
+import static org.mockito.ArgumentMatchers.eq
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
 /**
@@ -37,6 +39,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @Subject(DevopsEnvFileErrorController)
 @Stepwise
 class DevopsEnvFileErrorControllerSpec extends Specification {
+    def rootUrl = "/v1/projects/{project_id}/envs/{env_id}/error_file"
 
     @Autowired
     private TestRestTemplate restTemplate
@@ -45,75 +48,98 @@ class DevopsEnvFileErrorControllerSpec extends Specification {
     @Autowired
     private DevopsEnvFileErrorMapper devopsEnvFileErrorMapper
 
-    @Autowired
-    private IamService iamRepository
+    BaseServiceClientOperator mockBaseServiceClient = PowerMockito.mock(BaseServiceClientOperator.class)
 
-    BaseServiceClient iamServiceClient = PowerMockito.mock(BaseServiceClient.class)
+    @Autowired
+    private DevopsEnvFileService devopsEnvFileService
+    @Shared
+    private DevopsEnvFileErrorDTO devopsEnvFileErrorDTO = new DevopsEnvFileErrorDTO()
+    @Shared
+    private DevopsEnvFileErrorDTO devopsEnvFileErrorDTO1 = new DevopsEnvFileErrorDTO()
+    @Shared
+    private DevopsEnvironmentDTO devopsEnvironmentDTO = new DevopsEnvironmentDTO()
 
     @Shared
-    Long project_id = 1L
+    private Long projectId = 1L
+    @Shared
+    private Long envId = 1L
+    @Shared
+    boolean isToInit = true
+    @Shared
+    boolean isToClean = false
 
     def setup() {
-        DependencyInjectUtil.setAttribute(iamRepository, "baseServiceClient", iamServiceClient)
-        ProjectDTO projectDTO = new ProjectDTO()
-        projectDTO.setId(1L)
-        projectDTO.setCode("pro")
-        projectDTO.setOrganizationId(1L)
-        ResponseEntity<ProjectDTO> responseEntity = new ResponseEntity<>(projectDTO, HttpStatus.OK)
-        PowerMockito.when(iamServiceClient.queryIamProject(1L)).thenReturn(responseEntity)
+        if (isToInit) {
+            DependencyInjectUtil.setAttribute(devopsEnvFileService, "baseServiceClientOperator", mockBaseServiceClient)
 
-        OrganizationDTO organizationDTO = new OrganizationDTO()
-        organizationDTO.setId(1L)
-        organizationDTO.setCode("org")
-        ResponseEntity<OrganizationDTO> responseEntity1 = new ResponseEntity<>(organizationDTO, HttpStatus.OK)
-        Mockito.doReturn(responseEntity1).when(iamServiceClient).queryOrganizationById(1L)
+            devopsEnvFileErrorDTO.setId(1L)
+            devopsEnvFileErrorDTO.setEnvId(1L)
+            devopsEnvFileErrorMapper.insert(devopsEnvFileErrorDTO)
+
+            devopsEnvFileErrorDTO.setId(2L)
+            devopsEnvFileErrorDTO1.setEnvId(1L)
+            devopsEnvFileErrorMapper.insert(devopsEnvFileErrorDTO1)
+
+            devopsEnvironmentDTO.setId(envId)
+            devopsEnvironmentDTO.setCode("env")
+            devopsEnvironmentDTO.setProjectId(projectId)
+            devopsEnvironmentDTO.setDevopsEnvGroupId(1L)
+            devopsEnvironmentMapper.insert(devopsEnvironmentDTO)
+
+            OrganizationDTO organizationDTO = new OrganizationDTO()
+            organizationDTO.setId(1L)
+            organizationDTO.setCode("org")
+            PowerMockito.when(mockBaseServiceClient.queryOrganizationById(eq(organizationDTO.getId()))).thenReturn(organizationDTO)
+
+            ProjectDTO projectDTO = new ProjectDTO()
+            projectDTO.setId(projectId)
+            projectDTO.setCode("pro")
+            projectDTO.setOrganizationId(organizationDTO.getId())
+            PowerMockito.when(mockBaseServiceClient.queryIamProjectById(eq(projectId))).thenReturn(projectDTO)
+        }
+    }
+
+    def cleanup() {
+        if (isToClean) {
+            DependencyInjectUtil.restoreDefaultDependency(devopsEnvFileService, "baseServiceClientOperator")
+
+            devopsEnvFileErrorMapper.delete(null)
+            devopsEnvironmentMapper.delete(null)
+        }
     }
 
     def "List"() {
-        given: '插入数据'
-        DevopsEnvFileErrorDTO devopsEnvFileErrorDTO = new DevopsEnvFileErrorDTO()
-        devopsEnvFileErrorDTO.setId(1L)
-        devopsEnvFileErrorDTO.setEnvId(1L)
-        devopsEnvFileErrorMapper.insert(devopsEnvFileErrorDTO)
-        DevopsEnvFileErrorDTO devopsEnvFileErrorDTO1 = new DevopsEnvFileErrorDTO()
-        devopsEnvFileErrorDTO.setId(2L)
-        devopsEnvFileErrorDTO1.setEnvId(1L)
-        devopsEnvFileErrorMapper.insert(devopsEnvFileErrorDTO1)
-
-        DevopsEnvironmentDTO devopsEnvironmentDTO = new DevopsEnvironmentDTO()
-        devopsEnvironmentDTO.setId(1L)
-        devopsEnvironmentDTO.setCode("env")
-        devopsEnvironmentDTO.setProjectId(1)
-        devopsEnvironmentDTO.setDevopsEnvGroupId(1L)
-        devopsEnvironmentMapper.insert(devopsEnvironmentDTO)
+        given: '准备'
+        isToInit = false
+        def url = rootUrl + "/list_by_env"
+        Map<String, Object> params = new HashMap<>()
+        params.put("project_id", projectId)
+        params.put("env_id", envId)
 
         when: '项目下查询环境文件错误列表'
-        def list = restTemplate.getForObject("/v1/projects/1/envs/1/error_file/baseList", List.class)
+        def list = JSONArray.parseArray(restTemplate.getForObject(url, String.class, params), DevopsEnvFileErrorVO)
 
         then: '校验返回结果'
+        list != null
         list.size() == 2
     }
 
     def "Page"() {
-        when: '项目下查询环境文件错误列表'
-        def page = restTemplate.getForObject("/v1/projects/1/envs/1/error_file/list_by_page", PageInfo.class)
+        given: '准备'
+        isToClean = true
+        def url = rootUrl + "/page_by_env?page={page}&size={size}"
+        Map<String, Object> params = new HashMap<>()
+        params.put("project_id", projectId)
+        params.put("env_id", envId)
+        params.put("page", 1)
+        params.put("size", 10)
+
+        when: '项目下分页查询环境文件错误'
+        def page = restTemplate.getForObject(url, PageInfo.class, params)
 
         then: '校验返回结果'
+        page != null
         page.getTotal() == 2
-
-        // 删除env
-        List<DevopsEnvironmentDTO> list = devopsEnvironmentMapper.selectAll()
-        if (list != null && !list.isEmpty()) {
-            for (DevopsEnvironmentDTO e : list) {
-                devopsEnvironmentMapper.delete(e)
-            }
-        }
-        // 删除envFileError
-        List<DevopsEnvFileErrorDTO> list1 = devopsEnvFileErrorMapper.selectAll()
-        if (list1 != null && !list1.isEmpty()) {
-            for (DevopsEnvFileErrorDTO e : list1) {
-                devopsEnvFileErrorMapper.delete(e)
-            }
-        }
+        page.getList().size() == 2
     }
 }

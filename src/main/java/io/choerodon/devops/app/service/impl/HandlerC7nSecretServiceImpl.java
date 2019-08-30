@@ -116,7 +116,7 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
                         .baseQuery(devopsSecretDTO.getCommandId());
 
                 devopsEnvCommandDTO.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
-                devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
+                devopsEnvCommandService.baseUpdateSha(devopsEnvCommandDTO.getId(), devopsEnvCommandDTO.getSha());
 
                 devopsEnvFileResourceService.updateOrCreateFileResource(objectPath, envId, null, c7nSecret.hashCode(), devopsSecretDTO.getId(),
                         c7nSecret.getKind());
@@ -158,7 +158,7 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
                 }
 
                 devopsEnvCommandDTO.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
-                devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
+                devopsEnvCommandService.baseUpdateSha(devopsEnvCommandDTO.getId(), devopsEnvCommandDTO.getSha());
                 DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
                         .baseQueryByEnvIdAndResourceId(envId, devopsSecretDTO.getId(), c7nSecret.getKind());
                 devopsEnvFileResourceService.updateOrCreateFileResource(objectPath, envId, devopsEnvFileResourceDTO,

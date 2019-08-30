@@ -4,6 +4,7 @@ import java.util.List;
 
 import io.swagger.annotations.ApiModelProperty;
 
+import io.choerodon.devops.infra.dto.harbor.RobotUser;
 import io.choerodon.devops.infra.dto.harbor.User;
 
 /**
@@ -14,6 +15,9 @@ import io.choerodon.devops.infra.dto.harbor.User;
 public class AppMarketUploadPayload {
     @ApiModelProperty("市场应用Id")
     private Long mktAppId;
+
+    @ApiModelProperty("市场应用版本Id")
+    private Long mktAppVersionId;
 
     @ApiModelProperty("应用Id")
     private Long appId;
@@ -31,7 +35,7 @@ public class AppMarketUploadPayload {
     private String status;
 
     @ApiModelProperty("Harbor用户")
-    private User user;
+    private RobotUser user;
 
     @ApiModelProperty("SAAS平台getaway URL")
     private String saasGetawayUrl;
@@ -58,11 +62,11 @@ public class AppMarketUploadPayload {
         this.appCode = appCode;
     }
 
-    public User getUser() {
+    public RobotUser getUser() {
         return user;
     }
 
-    public void setUser(User user) {
+    public void setUser(RobotUser user) {
         this.user = user;
     }
 
@@ -120,5 +124,13 @@ public class AppMarketUploadPayload {
 
     public void setUpdateVersion(Boolean updateVersion) {
         this.updateVersion = updateVersion;
+    }
+
+    public Long getMktAppVersionId() {
+        return mktAppVersionId;
+    }
+
+    public void setMktAppVersionId(Long mktAppVersionId) {
+        this.mktAppVersionId = mktAppVersionId;
     }
 }

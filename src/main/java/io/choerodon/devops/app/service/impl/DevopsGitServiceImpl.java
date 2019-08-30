@@ -9,18 +9,6 @@ import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
-import io.kubernetes.client.models.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.interceptor.TransactionAspectSupport;
-import org.yaml.snakeyaml.Yaml;
-
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -51,6 +39,17 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.message.ResourceBundleHandler;
 import io.choerodon.devops.infra.util.*;
+import io.kubernetes.client.models.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
+import org.yaml.snakeyaml.Yaml;
 
 /**
  * Creator: Runge
@@ -391,8 +390,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         Long userId = userAttrService.baseQueryUserIdByGitlabUserId(TypeUtil.objToLong(pushWebHookVO.getUserId()));
         IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(userId);
 
-        CustomContextUtil.setUserContext(iamUserDTO.getLoginName(), userId, iamUserDTO.getOrganizationId());
-
+        if (iamUserDTO != null) {
+            CustomContextUtil.setUserContext(iamUserDTO.getLoginName(), userId, iamUserDTO.getOrganizationId());
+        }
 
         pushWebHookVO.setToken(token);
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryByToken(pushWebHookVO.getToken());

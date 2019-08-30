@@ -33,17 +33,18 @@
 
     <!-- 此处的布尔字段因为目前缺少默认值，只能这样写条件 -->
     <select id="listNonRelatedApplications" resultType="io.choerodon.devops.api.vo.BaseApplicationServiceVO">
-        SELECT app.id, app.name
-        FROM devops_app_service app
+        SELECT app_service.id, app_service.name
+        FROM devops_app_service app_service
                  LEFT JOIN (
                            SELECT env_id, app_service_id
                            FROM devops_env_app_service env_app
                            WHERE env_app.env_id = #{envId}
-                           ) related_app ON app.id = related_app.app_service_id
-        WHERE app.app_id = #{projectId}
-          AND (app.is_failed IS NULL OR app.is_failed = FALSE)
-          AND app.is_active = TRUE
-          AND app.is_synchro = TRUE
+                           ) related_app ON app_service.id = related_app.app_service_id
+                 LEFT JOIN devops_project dp ON app_service.app_id = dp.app_id
+        WHERE dp.iam_project_id = #{projectId}
+          AND (app_service.is_failed IS NULL OR app_service.is_failed = FALSE)
+          AND app_service.is_active = TRUE
+          AND app_service.is_synchro = TRUE
           AND related_app.app_service_id IS NULL;
     </select>
 </mapper>

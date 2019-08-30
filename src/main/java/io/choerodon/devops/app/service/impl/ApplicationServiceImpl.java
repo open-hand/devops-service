@@ -6,6 +6,16 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.ResetCommand;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+
 import io.choerodon.devops.api.vo.UserAttrVO;
 import io.choerodon.devops.app.eventhandler.payload.ApplicationEventPayload;
 import io.choerodon.devops.app.eventhandler.payload.DevOpsAppServicePayload;
@@ -23,15 +33,6 @@ import io.choerodon.devops.infra.mapper.AppServiceVersionMapper;
 import io.choerodon.devops.infra.mapper.DevopsConfigMapper;
 import io.choerodon.devops.infra.mapper.DevopsProjectMapper;
 import io.choerodon.devops.infra.util.*;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.ResetCommand;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 /**
  * @author zmf
@@ -131,6 +132,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             } catch (Exception e) {
                 FileUtil.deleteDirectory(new File(workingDir));
                 logger.warn("Failed to create application service from original application service with code '{}' and id {}", service.getCode(), service.getId());
+                logger.warn("The exception is: {}", e);
             }
         });
     }
@@ -150,6 +152,11 @@ public class ApplicationServiceImpl implements ApplicationService {
             @Nonnull final Long projectId,
             @Nonnull final String workingDir,
             @Nullable final String resetCommitSha) {
+        // 不为失败的或者处理中的原应用服务创建新应用服务
+        if (Boolean.TRUE.equals(originalAppService.getFailed()) || !Boolean.TRUE.equals(originalAppService.getSynchro())) {
+            return;
+        }
+
         final AppServiceDTO newAppService = createDatabaseRecord(newAppId, originalAppService);
         final UserAttrVO userAttrVO = userAttrService.queryByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         DevopsProjectDTO devopsProjectDTO = devopsProjectMapper.selectByPrimaryKey(newAppId);
@@ -165,6 +172,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             appServiceDTO.setFailed(true);
             appServiceService.baseUpdate(appServiceDTO);
             logger.warn("Failed to create application service with id {}", appServiceDTO.getId());
+            logger.warn("The exception is: {}", e);
             return;
         }
 

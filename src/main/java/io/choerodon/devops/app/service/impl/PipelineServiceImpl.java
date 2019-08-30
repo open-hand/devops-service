@@ -61,7 +61,7 @@ public class PipelineServiceImpl implements PipelineService {
     private static final String AUTO = "auto";
     private static final String STAGE = "stage";
     private static final String TASK = "task";
-    private static  final String STAGE_NAME="stageName";
+    private static final String STAGE_NAME = "stageName";
 
     private static final Gson gson = new Gson();
     @Autowired
@@ -684,16 +684,14 @@ public class PipelineServiceImpl implements PipelineService {
             if (stageRecordDTO.getStatus().equals(WorkFlowStatus.PENDINGCHECK.toValue()) || stageRecordDTO.getStatus().equals(WorkFlowStatus.UNEXECUTED.toValue()) || stageRecordDTO.getStatus().equals(WorkFlowStatus.RUNNING.toValue())) {
                 recordDTOList.get(i).setExecutionTime(null);
             }
-            if (stageRecordDTO.getTriggerType().equals(MANUAL)) {
-                if (getNextStage(stageRecordDTO.getId()) != null) {
-                    stageRecordDTO.setUserDTOS(getStageAuditUsers(recordDTOList.get(i).getStageId(), recordDTOList.get(i + 1).getId()));
-                    if (recordDTOList.get(i).getStatus().equals(WorkFlowStatus.SUCCESS.toValue()) && recordDTOList.get(i + 1).getStatus().equals(WorkFlowStatus.UNEXECUTED.toValue())) {
-                        recordReqDTO.setType(STAGE);
-                        stageRecordDTO.setIndex(true);
-                        recordReqDTO.setStageRecordId(recordDTOList.get(i + 1).getId());
-                        recordReqDTO.setStageName(stageRecordDTO.getStageName());
-                        recordReqDTO.setExecute(checkRecordTriggerPermission(null, stageRecordDTO.getId()));
-                    }
+            if (stageRecordDTO.getTriggerType().equals(MANUAL) && getNextStage(stageRecordDTO.getId()) != null) {
+                stageRecordDTO.setUserDTOS(getStageAuditUsers(recordDTOList.get(i).getStageId(), recordDTOList.get(i + 1).getId()));
+                if (recordDTOList.get(i).getStatus().equals(WorkFlowStatus.SUCCESS.toValue()) && recordDTOList.get(i + 1).getStatus().equals(WorkFlowStatus.UNEXECUTED.toValue())) {
+                    recordReqDTO.setType(STAGE);
+                    stageRecordDTO.setIndex(true);
+                    recordReqDTO.setStageRecordId(recordDTOList.get(i + 1).getId());
+                    recordReqDTO.setStageName(stageRecordDTO.getStageName());
+                    recordReqDTO.setExecute(checkRecordTriggerPermission(null, stageRecordDTO.getId()));
                 }
             }
             List<PipelineTaskRecordVO> taskRecordDTOS = pipelineTaskRecordService.baseQueryByStageRecordId(stageRecordDTO.getId(), null).stream().map(r -> {
@@ -1219,7 +1217,7 @@ public class PipelineServiceImpl implements PipelineService {
             if (!isEmptyStage(nextStageRecordDTO.getId())) {
                 nextStageRecordDTO.setStatus(WorkFlowStatus.RUNNING.toValue());
                 List<PipelineTaskRecordDTO> list = pipelineTaskRecordService.baseQueryByStageRecordId(nextStageRecordDTO.getId(), null);
-                if (list != null && list.size() > 0) {
+                if (list != null && !list.isEmpty()) {
                     if (list.get(0).getTaskType().equals(MANUAL)) {
                         startNextTask(list.get(0), recordE.getId(), nextStageRecordDTO.getId());
                     }
@@ -1297,12 +1295,12 @@ public class PipelineServiceImpl implements PipelineService {
 
     private PipelineStageRecordDTO getNextStage(Long stageRecordId) {
         List<PipelineStageRecordDTO> list = pipelineStageRecordService.baseListByRecordAndStageId(pipelineStageRecordService.baseQueryById(stageRecordId).getPipelineRecordId(), null);
-        return list.stream().filter(t -> t.getId() > stageRecordId).findFirst().orElse(null);
+        return list.stream().filter(t -> t.getId() > stageRecordId).findFirst().orElse(new PipelineStageRecordDTO());
     }
 
     private PipelineTaskRecordDTO getNextTask(Long taskRecordId) {
         List<PipelineTaskRecordDTO> list = pipelineTaskRecordService.baseQueryByStageRecordId(pipelineTaskRecordService.baseQueryRecordById(taskRecordId).getStageRecordId(), null);
-        return list.stream().filter(t -> t.getId() > taskRecordId).findFirst().orElse(null);
+        return list.stream().filter(t -> t.getId() > taskRecordId).findFirst().orElse(new PipelineTaskRecordDTO());
     }
 
     private Boolean checkTriggerPermission(Long pipelineId) {

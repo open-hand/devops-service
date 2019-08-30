@@ -25,7 +25,7 @@ public class DevopsEnvAppServiceVO {
         return appServiceIds;
     }
 
-    public void getAppServiceIds(Long[] appServiceIds) {
+    public void setAppServiceIds(Long[] appServiceIds) {
         this.appServiceIds = appServiceIds;
     }
 }

@@ -36,6 +36,11 @@ public class SagaTopicCodeConstants {
     public static final String DEVOPS_CREATE_APPLICATION_SERVICE = "devops-create-application-service";
 
     /**
+     * Devopsn导入应用服务（内部）
+     */
+    public static final String DEVOPS_IMPORT_INTERNAL_APPLICATION_SERVICE = "devops-import-internal-application-service";
+
+    /**
      * Devops创建应用服务，发送saga到base-service
      */
     public static final String DEVOPS_CREATE_APPLICATION_SERVICE_EVENT = "devops-create-application-service-event";

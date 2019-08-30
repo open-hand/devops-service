@@ -105,7 +105,7 @@ public class HandlerConfigMapRelationsServiceImpl implements HandlerObjectFileRe
                             devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(newDevopsConfigMapDTO.getCommandId());
                         }
                         devopsEnvCommandDTO.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
-                        devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
+                        devopsEnvCommandService.baseUpdateSha(devopsEnvCommandDTO.getId(), devopsEnvCommandDTO.getSha());
                         DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
                                 .baseQueryByEnvIdAndResourceId(envId, devopsConfigMapDTO.getId(), configMap.getKind());
                         devopsEnvFileResourceService.updateOrCreateFileResource(objectPath,
@@ -147,7 +147,7 @@ public class HandlerConfigMapRelationsServiceImpl implements HandlerObjectFileRe
                         }
                         DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsConfigMapRespVO.getCommandId());
                         devopsEnvCommandDTO.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
-                        devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
+                        devopsEnvCommandService.baseUpdateSha(devopsEnvCommandDTO.getId(), devopsEnvCommandDTO.getSha());
 
                         devopsEnvFileResourceService.updateOrCreateFileResource(objectPath, envId, null, configMap.hashCode(), devopsConfigMapRespVO.getId(),
                                 configMap.getKind());
