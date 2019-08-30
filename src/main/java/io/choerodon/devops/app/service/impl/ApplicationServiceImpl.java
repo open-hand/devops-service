@@ -6,6 +6,7 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import com.alibaba.fastjson.JSONObject;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -14,6 +15,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.devops.api.vo.UserAttrVO;
@@ -60,6 +63,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Autowired
     private AppServiceVersionMapper appServiceVersionMapper;
 
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     @Override
     public void handleApplicationCreation(ApplicationEventPayload payload) {
         logger.info("Handle creation of application, msg: {}", payload);
@@ -128,6 +132,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             }
 
             final String workingDir = gitUtil.getWorkingDirectory("application-service-copy-" + GenerateUUID.generateUUID());
+            logger.info("Working dir is: {}", workingDir);
             try {
                 copyAppService(newAppId, service, projectId, workingDir, version.getCommit());
             } catch (Exception e) {
@@ -159,11 +164,15 @@ public class ApplicationServiceImpl implements ApplicationService {
         }
 
         final AppServiceDTO newAppService = createDatabaseRecord(newAppId, originalAppService);
+        logger.info("New app service is {}", JSONObject.toJSONString(newAppService));
         final UserAttrVO userAttrVO = userAttrService.queryByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        logger.info("User attribute vo is {}", JSONObject.toJSONString(userAttrVO));
         DevopsProjectDTO devopsProjectDTO = devopsProjectMapper.selectByPrimaryKey(newAppId);
+        logger.info("Project dto is {}", JSONObject.toJSONString(devopsProjectDTO));
 
         //创建saga payload
         final DevOpsAppServicePayload payload = createPayload(newAppService, TypeUtil.objToInteger(userAttrVO.getGitlabUserId()), TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()), projectId);
+        logger.info("Payload is {}", JSONObject.toJSONString(payload));
 
         // 创建服务对应的代码仓库
         try {
@@ -179,6 +188,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
         // 创建拉取原有代码仓库代码的token
         final String originalAccessToken = gitlabServiceClientOperator.createProjectToken(originalAppService.getGitlabProjectId(), TypeUtil.objToInteger(userAttrVO.getGitlabUserId()));
+        logger.info("OriginalAccessToken is {}", originalAccessToken);
 
         // 创建token失败
         if (originalAccessToken == null) {
@@ -227,6 +237,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
         // 创建推送代码token
         final String newAccessToken = gitlabServiceClientOperator.createProjectToken(appServiceDTO.getGitlabProjectId(), TypeUtil.objToInteger(userAttrVO.getGitlabUserId()));
+        logger.info("NewAccessToken is {}", newAccessToken);
 
         // 创建token失败
         if (newAccessToken == null) {
