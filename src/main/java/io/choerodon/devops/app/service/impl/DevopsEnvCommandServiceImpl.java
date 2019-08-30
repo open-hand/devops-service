@@ -50,7 +50,7 @@ public class DevopsEnvCommandServiceImpl implements DevopsEnvCommandService {
     }
 
     @Override
-    public synchronized DevopsEnvCommandDTO baseUpdate(DevopsEnvCommandDTO devopsEnvCommandDTO) {
+    public DevopsEnvCommandDTO baseUpdate(DevopsEnvCommandDTO devopsEnvCommandDTO) {
         DevopsEnvCommandDTO oldDevopsEnvCommandDO = devopsEnvCommandMapper
                 .selectByPrimaryKey(devopsEnvCommandDTO.getId());
         devopsEnvCommandDTO.setObjectVersionNumber(oldDevopsEnvCommandDO.getObjectVersionNumber());
