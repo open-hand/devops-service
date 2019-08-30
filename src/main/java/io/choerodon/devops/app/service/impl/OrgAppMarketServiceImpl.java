@@ -303,7 +303,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         //创建根目录 应用
         FileUtil.createDirectory(appFilePath);
         File appFile = new File(appFilePath);
-        MarketImageUrlVO marketImageUrlVO = new MarketImageUrlVO();
+        MarketImageUrlVO marketImageUrlVO = null;
         switch (marketUploadVO.getStatus()) {
             case DOWNLOAD_ONLY: {
                 String appRepoFilePath = String.format(APP_FILE_PATH_FORMAT, appFilePath, File.separator, REPO, File.separator, marketUploadVO.getAppCode());
@@ -682,7 +682,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             MultipartBody.Part body = MultipartBody.Part.createFormData("files", file.getName(), requestFile);
             files.add(body);
         });
-        String mapJson = marketImageUrlVO != null ? gson.toJson(marketImageUrlVO) : "";
+        String mapJson = marketImageUrlVO != null ? gson.toJson(marketImageUrlVO) : null;
         String getawayUrl = appMarketUploadVO.getSaasGetawayUrl().endsWith("/") ? appMarketUploadVO.getSaasGetawayUrl() : appMarketUploadVO.getSaasGetawayUrl() + "/";
         MarketServiceClient marketServiceClient = RetrofitHandler.getMarketServiceClient(getawayUrl, MARKET);
         try {
@@ -704,7 +704,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             files.add(body);
         });
 
-        String imageJson = marketImageUrlVO != null ? gson.toJson(marketImageUrlVO) : "";
+        String imageJson = marketImageUrlVO != null ? gson.toJson(marketImageUrlVO) : null;
         String appJson = gson.toJson(appMarketFixVersionPayload.getMarketApplicationVO());
         String getawayUrl = appMarketFixVersionPayload.getFixVersionUploadPayload().getSaasGetawayUrl().endsWith("/") ? appMarketFixVersionPayload.getFixVersionUploadPayload().getSaasGetawayUrl() : appMarketFixVersionPayload.getFixVersionUploadPayload() + "/";
         MarketServiceClient marketServiceClient = RetrofitHandler.getMarketServiceClient(getawayUrl, MARKET);
