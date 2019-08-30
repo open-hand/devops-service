@@ -72,8 +72,10 @@ class IssueControllerSpec extends Specification {
     private BaseServiceClientOperator baseServiceClientOperator
     @Autowired
     private GitlabServiceClientOperator gitlabServiceClientOperator
-
+    @Autowired
+    private IamService iamService
     BaseServiceClient baseServiceClient = Mockito.mock(BaseServiceClient.class)
+
     GitlabServiceClient gitlabServiceClient = Mockito.mock(GitlabServiceClient.class)
 
     @Shared
@@ -90,6 +92,8 @@ class IssueControllerSpec extends Specification {
     DevopsMergeRequestDTO devopsMergeRequestDO = new DevopsMergeRequestDTO()
     @Shared
     DevopsMergeRequestDTO devopsMergeRequestDO1 = new DevopsMergeRequestDTO()
+
+
     @Shared
     List<CommitDTO> commitDOS = new ArrayList<>()
     @Shared
@@ -147,7 +151,7 @@ class IssueControllerSpec extends Specification {
     def setup() {
         DependencyInjectUtil.setAttribute(baseServiceClientOperator, "baseServiceClient", baseServiceClient)
         DependencyInjectUtil.setAttribute(gitlabServiceClientOperator, "gitlabServiceClient", gitlabServiceClient)
-
+        DependencyInjectUtil.setAttribute(iamService,"baseServiceClient", baseServiceClient)
         ProjectDTO projectDO = new ProjectDTO()
         projectDO.setId(1L)
         projectDO.setCode("pro")
@@ -203,36 +207,36 @@ class IssueControllerSpec extends Specification {
 
     def "GetCommitsByIssueId"() {
         given: '初始化数据'
-//        devopsBranchMapper.insert(devopsBranchDO)
-//        devopsBranchMapper.insert(devopsBranchDO1)
-//        applicationMapper.insert(applicationDO)
-//        devopsMergeRequestMapper.insert(devopsMergeRequestDO)
-//        devopsMergeRequestMapper.insert(devopsMergeRequestDO1)
+        devopsBranchMapper.insert(devopsBranchDO)
+        devopsBranchMapper.insert(devopsBranchDO1)
+        applicationMapper.insert(applicationDO)
+        devopsMergeRequestMapper.insert(devopsMergeRequestDO)
+        devopsMergeRequestMapper.insert(devopsMergeRequestDO1)
 
         when: '根据issueId获取issue关联的commit列表'
-        def list = restTemplate.getForObject("/v1/project/1/issue/1/commit/list", List.class)
+        def entity = restTemplate.getForEntity("/v1/project/1/issue/1/commit/list", List.class)
 
         then: '校验返回值'
-        list.get(0)["branchName"] == "branch"
-        list.get(1)["branchName"] == "branch1"
+        entity.getBody().get(0)["branchName"] == "branch"
+        entity.getBody().get(1)["branchName"] == "branch1"
     }
 
     def "GetMergeRequestsByIssueId"() {
         when: '根据issueId获取issue关联的mergerequest列表'
-        def list = restTemplate.getForObject("/v1/project/1/issue/1/merge_request/baseList", List.class)
+        def entity = restTemplate.getForEntity("/v1/project/1/issue/1/merge_request/list", List.class)
 
         then: '校验返回值'
-        list.get(0)["sourceBranch"] == "branch"
-        list.get(1)["sourceBranch"] == "branch1"
+        entity.getBody().get(0)["sourceBranch"] == "branch"
+        entity.getBody().get(1)["sourceBranch"] == "branch1"
     }
 
     def "CountCommitAndMergeRequest"() {
         when: '根据issueId获取issue关联的mergerequest和commit数量'
-        def issueDTO = restTemplate.getForObject("/v1/project/1/issue/1/merge_request/list", IssueVO.class)
+        def entity = restTemplate.getForEntity("/v1/project/1/issue/1//commit_and_merge_request/count", IssueVO.class)
 
         then: '校验返回值'
-        issueDTO["branchCount"] == 2
-        issueDTO["mergeRequestStatus"] == "opened"
+        entity.getBody()["branchCount"] == 2
+        entity.getBody()["mergeRequestStatus"] == "opened"
 
         // 删除app
         List<AppServiceDTO> list = applicationMapper.selectAll()

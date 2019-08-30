@@ -9,7 +9,7 @@ public class SonarInfoVO {
     private String userName;
     private String password;
     private String url;
-
+    public SonarInfoVO(){}
     public SonarInfoVO(String userName, String password, String url) {
         this.userName = userName;
         this.password = password;

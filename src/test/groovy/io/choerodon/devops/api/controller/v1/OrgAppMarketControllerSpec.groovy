@@ -45,6 +45,15 @@ class OrgAppMarketControllerSpec extends Specification {
 
     }
 
+    def "listVersionsByAppServiceId"(){
+        given:
+        def app_id = 1L
+        when:
+        def entity = restTemplate.getForEntity(base_url + "/list_versions/{app_service_id}", List.class, app_id)
+        then:
+        entity.statusCode.is2xxSuccessful()
+    }
+
 //    def "Upload"() {
 //    }
 //
