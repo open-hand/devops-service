@@ -7,6 +7,7 @@ public class AppServiceUpdateDTO {
 
     private Long id;
     private String name;
+    private String imgUrl;
     private DevopsConfigVO harbor;
     private DevopsConfigVO chart;
 
@@ -42,5 +43,11 @@ public class AppServiceUpdateDTO {
         this.name = name;
     }
 
+    public String getImgUrl() {
+        return imgUrl;
+    }
 
+    public void setImgUrl(String imgUrl) {
+        this.imgUrl = imgUrl;
+    }
 }
