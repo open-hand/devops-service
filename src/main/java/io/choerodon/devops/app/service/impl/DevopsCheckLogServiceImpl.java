@@ -32,8 +32,8 @@ import io.choerodon.devops.infra.util.ConvertUtils;
 public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsCheckLogServiceImpl.class);
-    private static final  String SUCCESS="success";
-    private static final String FAILED="failed";
+    private static final String SUCCESS = "success";
+    private static final String FAILED = "failed";
     private static final ExecutorService executorService = new ThreadPoolExecutor(0, 1,
             0L, TimeUnit.MILLISECONDS,
             new LinkedBlockingQueue<>(), new UtilityElf.DefaultThreadFactory("devops-upgrade", false));
@@ -69,7 +69,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     @Autowired
     private DevopsCertificationMapper devopsCertificationMapper;
     @Autowired
-    private DevopsBranchMapper  devopsBranchMapper;
+    private DevopsBranchMapper devopsBranchMapper;
 
 
     @Override
@@ -136,7 +136,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 DevopsConfigDTO chartDefault = devopsConfigMapper.queryByNameWithNoProject("chart_default");
                 List<DevopsConfigDTO> addHarborConfigs = new ArrayList<>();
                 List<DevopsConfigDTO> addChartConfigs = new ArrayList<>();
-                appServiceMapper.selectAll().stream().forEach(appServiceDTO -> {
+                appServiceMapper.selectAll().forEach(appServiceDTO -> {
                     if (appServiceDTO.getHarborConfigId() != null && !appServiceDTO.getHarborConfigId().equals(harborDefault.getId())) {
                         DevopsConfigDTO devopsConfigDTO = devopsConfigMapper.selectByPrimaryKey(appServiceDTO.getHarborConfigId());
                         if (devopsConfigDTO == null) {
@@ -236,11 +236,16 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             List<DevopsDeployRecordDTO> devopsDeployRecordDTOS = devopsEnvCommandMapper.listAllInstanceCommand()
                     .stream()
                     .filter(devopsEnvCommandDTO -> devopsEnvCommandDTO.getProjectId() != null)
-                    .map(devopsEnvCommandDTO -> new DevopsDeployRecordDTO(devopsEnvCommandDTO.getProjectId(), "manual", devopsEnvCommandDTO.getId(), devopsEnvCommandDTO.getEnvId().toString(), devopsEnvCommandDTO.getCreationDate())).collect(Collectors.toList());
+                    .map(devopsEnvCommandDTO -> new DevopsDeployRecordDTO(devopsEnvCommandDTO.getProjectId(), "manual", devopsEnvCommandDTO.getId(), devopsEnvCommandDTO.getEnvId().toString(), devopsEnvCommandDTO.getCreationDate()))
+                    .collect(Collectors.toList());
 
 
             //流水线内部署实例的记录
-            devopsDeployRecordDTOS.addAll(pipelineRecordMapper.listAllPipelineRecordAndEnv(null).stream().map(pipelineRecordDTO -> new DevopsDeployRecordDTO(pipelineRecordDTO.getProjectId(), "auto", pipelineRecordDTO.getId(), pipelineRecordDTO.getEnv(), pipelineRecordDTO.getCreationDate())).collect(Collectors.toList()));
+            devopsDeployRecordDTOS.addAll(
+                    pipelineRecordMapper.listAllPipelineRecordAndEnv(null)
+                            .stream()
+                            .map(pipelineRecordDTO -> new DevopsDeployRecordDTO(pipelineRecordDTO.getProjectId(), "auto", pipelineRecordDTO.getId(), pipelineRecordDTO.getEnv(), pipelineRecordDTO.getCreationDate()))
+                            .collect(Collectors.toList()));
 
             devopsDeployRecordDTOS.stream().sorted(Comparator.comparing(DevopsDeployRecordDTO::getDeployTime)).forEach(devopsDeployRecordDTO -> devopsDeployRecordService.baseCreate(devopsDeployRecordDTO));
 
