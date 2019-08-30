@@ -198,8 +198,13 @@ public class ApplicationServiceImpl implements ApplicationService {
 
         // 将原先服务的MASTER分支最新代码克隆到本地
         final File workingDirFile = new File(workingDir);
+        logger.info("File is: {}", workingDirFile.getAbsolutePath());
+
         GitlabProjectDTO originalGitlabProjectDTO = gitlabServiceClientOperator.queryProjectById(originalAppService.getGitlabProjectId());
+        logger.info("The gitlab project dto is: {}", JSONObject.toJSONString(originalGitlabProjectDTO));
+
         Git localOriginalRepo = gitUtil.cloneRepository(workingDir, originalGitlabProjectDTO.getHttpUrlToRepo(), originalAccessToken, "master");
+        logger.info("After cloning");
 
         // 切换到指定commit
         if (!StringUtils.isEmpty(resetCommitSha)) {
@@ -214,12 +219,14 @@ public class ApplicationServiceImpl implements ApplicationService {
 
 
         // 删除所有commits纪录
+        logger.info("Delete commits");
         File gitDir = new File(workingDir, ".git");
         if (gitDir.exists() && gitDir.isDirectory()) {
             FileUtil.deleteDirectory(gitDir);
         }
 
         // 本地初始化提交
+        logger.info("Initialize local commit");
         Git git;
         try {
             git = Git.init().setGitDir(workingDirFile).call();
@@ -233,11 +240,13 @@ public class ApplicationServiceImpl implements ApplicationService {
         }
 
         final AppServiceDTO appServiceDTO = appServiceService.baseQuery(payload.getAppServiceId());
+        logger.info("Query app service: {}", JSONObject.toJSONString(appServiceDTO));
         final GitlabProjectDTO newGitProject = gitlabServiceClientOperator.queryProjectById(originalAppService.getGitlabProjectId());
+        logger.info("New gitlab project: {}", JSONObject.toJSONString(newGitProject));
 
         // 创建推送代码token
         final String newAccessToken = gitlabServiceClientOperator.createProjectToken(appServiceDTO.getGitlabProjectId(), TypeUtil.objToInteger(userAttrVO.getGitlabUserId()));
-        logger.info("NewAccessToken is {}", newAccessToken);
+        logger.info("New Access Token: ", newAccessToken);
 
         // 创建token失败
         if (newAccessToken == null) {
@@ -246,6 +255,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             return;
         }
 
+        logger.info("To push");
         try {
             git.push().setRemote(newGitProject.getHttpUrlToRepo())
                     .setPushAll()
@@ -259,9 +269,11 @@ public class ApplicationServiceImpl implements ApplicationService {
         }
 
         // 清理本地目录
+        logger.info("delete local directory: {}", workingDirFile.getAbsolutePath());
         FileUtil.deleteDirectory(workingDirFile);
 
         // 发送消息通知
+        logger.info("Send saga");
         appServiceService.sendCreateAppServiceInfo(newAppService, projectId);
     }
 
