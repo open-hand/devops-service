@@ -88,7 +88,6 @@ class DevopsNotificationControllerSpec extends Specification {
         when:
         def entity = restTemplate.postForEntity(BASE_URL, devopsEnvAppServiceVO, DevopsNotificationVO.class, 1L)
         then:
-//        devopsNotificationMapper.selectAll().size() == 1
         entity.body.getObjectVersionNumber() == 2L
     }
 
@@ -115,9 +114,9 @@ class DevopsNotificationControllerSpec extends Specification {
         devopsEnvAppServiceVO.setObjectVersionNumber(1L)
         devopsNotificationMapper.insertSelective(devopsEnvAppServiceVO)
         when:
-        def entiry = restTemplate.getForEntity(url, DevopsNotificationVO.class, 1L, 1L)
+        def entity = restTemplate.getForEntity(url, DevopsNotificationVO.class, 1L, 1L)
         then:
-        entiry.body.getId()==1L
+        entity.body.getId() == 1L
     }
 
     def "PageByOptions"() {
@@ -137,7 +136,7 @@ class DevopsNotificationControllerSpec extends Specification {
         map.put("page", 1)
         map.put("size", 10)
         map.put("project_id", 1L)
-        map.put("env_id", 1L)
+        map.put("env_id", 2L)
 
         String params = "{\"searchParam\": {},\"params\": []}"
         when:
@@ -153,9 +152,9 @@ class DevopsNotificationControllerSpec extends Specification {
         map.put("env_id", 1L)
         def url = BASE_URL + "/check?env_id={env_id}"
         when:
-        def entity = restTemplate.getForEntity(url, Set.class, 1L,1L)
+        def entity = restTemplate.getForEntity(url, Set.class, 1L, 1L)
         then:
-        entity.body.size()>0
+        entity.body.size() > 0
     }
 
     def "CheckDeleteResource"() {
@@ -180,14 +179,14 @@ class DevopsNotificationControllerSpec extends Specification {
         map.put("env_id", 1L)
         def url = BASE_URL + "/check_delete_resource?env_id={env_id}&object_type={object_type}"
         when:
-        def entity = restTemplate.getForEntity(url, ResourceCheckVO.class, 1L,1L,"test")
+        def entity = restTemplate.getForEntity(url, ResourceCheckVO.class, 1L, 1L, "email")
         then:
         entity.getStatusCode().'2xxSuccessful'
     }
 
     def "SendMessage"() {
         given:
-        DevopsIngressDTO devopsIngressDO=new DevopsIngressDTO()
+        DevopsIngressDTO devopsIngressDO = new DevopsIngressDTO()
         devopsIngressDO.setId(1L)
         devopsIngressDO.setEnvId(1L)
         devopsIngressDO.setCertId(1L)
@@ -209,7 +208,7 @@ class DevopsNotificationControllerSpec extends Specification {
         map.put("object_type", "ingress")
         def url = BASE_URL + "/send_message?env_id={env_id}&object_type={object_type}&notification_id={notification_id}&object_id={object_id}"
         when:
-        def entity = restTemplate.getForEntity(url, null,map)
+        def entity = restTemplate.getForEntity(url, null, map)
         then:
         entity.getStatusCode().'2xxSuccessful'
     }
@@ -218,11 +217,11 @@ class DevopsNotificationControllerSpec extends Specification {
         given:
         Map<String, Object> map = new HashMap<>()
         map.put("env_id", 1L)
-        map.put("objectType", "ingress")
+        map.put("object_type", "ingress")
         map.put("captcha", "ingress")
         map.put("object_id", 1L)
         map.put("project_id", 1L)
-        def url = BASE_URL + "/validate_captcha?env_id={env_id}&objectType={objectType}&object_id={object_id}&captcha={captcha}"
+        def url = BASE_URL + "/validate_captcha?env_id={env_id}&object_type={object_type}&object_id={object_id}&captcha={captcha}"
         when:
         def entity = restTemplate.getForEntity(url, null, map)
         then:

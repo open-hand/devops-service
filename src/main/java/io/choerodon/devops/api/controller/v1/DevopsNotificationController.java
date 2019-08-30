@@ -237,7 +237,7 @@ public class DevopsNotificationController {
             @ApiParam(value = "验证码")
             @RequestParam String captcha,
             @ApiParam(value = "资源对象类型")
-            @RequestParam String objectType) {
+            @RequestParam(value = "object_type") String objectType) {
         notificationService.validateCaptcha(envId, objectId, objectType, captcha);
     }
 }
