@@ -80,7 +80,7 @@ public interface AppServiceMapper extends Mapper<AppServiceDTO> {
 
     void updateChartConfigNullByServiceId(@Param("appServiceId") Long appServiceId);
 
-    List<AppServiceDTO> queryOrganizationShareApps();
+    List<AppServiceDTO> queryOrganizationShareApps(@Param("appServiceIds") List<Long> appServiceIds);
 
     List<AppServiceDTO> queryMarketDownloadApps();
 

@@ -386,7 +386,7 @@
     </select>
 
     <select id="queryOrganizationShareApps" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
-         SELECT DISTINCT
+        SELECT DISTINCT
             das.id,
             das.app_id,
             das.`name`,
@@ -395,8 +395,15 @@
         FROM
             devops_app_service das
             LEFT JOIN devops_app_service_share_rule b ON das.id = b.app_service_id
+            LEFT JOIN devops_app_service_version  dasv on dasv.app_service_id = b.app_service_id
         WHERE
-          das.app_id is not null and b.app_service_id is not null
+            das.app_id is not null and b.app_service_id is not null and dasv.version is not null
+        <if test='appServiceIds != null and appServiceIds.size > 0'>
+            AND
+            <foreach collection="appServiceIds" item="appServiceId" open="(" separator=" OR " close=")">
+                da.id = #{appServiceId}
+            </foreach>
+        </if>
     </select>
 
     <select id="queryMarketDownloadApps" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
