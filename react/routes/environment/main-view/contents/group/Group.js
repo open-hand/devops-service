@@ -76,15 +76,19 @@ const Group = observer(() => {
     if (!synchronize && active) return null;
 
     const actionData = active ? [{
+      service: [],
       text: formatMessage({ id: 'edit' }),
       action: () => openModifyModal(record),
     }, {
+      service: [],
       text: formatMessage({ id: 'stop' }),
       // action: confirmDelete,
     }] : [{
+      service: [],
       text: formatMessage({ id: 'active' }),
       // action: handleClick,
     }, {
+      service: [],
       text: formatMessage({ id: 'delete' }),
       // action: confirmDelete,
     }];
@@ -100,7 +104,7 @@ const Group = observer(() => {
         queryBar="none"
       >
         <Column name="name" renderer={renderName} />
-        <Column renderer={renderActions} width="0.7rem" />
+        <Column renderer={renderActions} width={70} />
         <Column name="description" />
         <Column name="clusterName" />
       </Table>

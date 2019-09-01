@@ -72,7 +72,9 @@ export const useResize = (rootRef, store) => {
       width: nextResize.x + MARGIN,
     };
 
-    setResizeNav(nextResize);
+    if (nextResize.x !== resizeNav.x) {
+      setResizeNav(nextResize);
+    }
     setDraggable(computedLeft > X_AXIS_WIDTH);
     store.setNavBounds(navBounds);
   }, [bounds.width, resizeNav]);

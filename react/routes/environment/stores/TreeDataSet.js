@@ -84,7 +84,6 @@ export default (projectId, store, formatMessage, intlPrefix) => ({
 
       // 移除原始数据
       dataSet.removeAll();
-      dataSet.destroyed = [];
 
       createRecord({
         data: groups,
