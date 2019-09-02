@@ -729,5 +729,5 @@ function renderDate(record) {
 }
 
 function renderUser({ createUserRealName, createUserName, createUserUrl }) {
-  return <UserInfo avatar={createUserUrl || ''} name={createUserRealName || '1'} id={createUserName || ''} />;
+  return <UserInfo avatar={createUserUrl || ''} name={createUserRealName || ''} id={createUserName || ''} />;
 }

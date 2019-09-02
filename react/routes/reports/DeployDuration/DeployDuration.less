@@ -1,0 +1,66 @@
+.c7n-report-screen {
+  display: flex;
+
+  .c7n-report-chart {
+    flex: 1;
+    padding: 9px 0 20px 0;
+
+    .c7n-report-viewport-mode {
+      display: inline-block;
+      margin-right: 60px;
+    }
+
+    .c7n-report-viewport-select {
+      display: inline-block;
+    }
+  }
+
+  .c7n-select_200 {
+    width: 200px;
+    margin-right: 20px;
+    &.margin-more {
+      margin-right: 60px;
+    }
+
+    .c7n-select-selection,
+    .c7n-select-selection--single {
+      min-height: 28px !important;
+      line-height: 24px !important;
+    }
+  }
+
+  .c7n-select_400 {
+    width: 399px;
+    margin-right: 20px;
+    &.margin-more {
+      margin-right: 60px;
+    }
+    &.c7n-select-multi-top {
+      &.c7n-select-multiple {
+        .c7n-select-selection--multiple {
+          .c7n-select-selection__rendered {
+            margin-top: 1px;
+          }
+        }
+      }
+    }
+
+    .c7n-select-selection__choice {
+      padding: 0 4px;
+      margin: 0 3px 3px 0;
+
+      .c7n-select-selection__choice__content {
+        max-width: 86px;
+      }
+
+      .c7n-select-selection__choice__remove {
+        margin-left: 2px;
+      }
+    }
+  }
+}
+
+.c7n-report-content,
+.c7n-report-table {
+  margin-top: 35px;
+}
