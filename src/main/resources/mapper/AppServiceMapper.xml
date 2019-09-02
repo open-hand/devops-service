@@ -49,6 +49,73 @@
         </if>
     </select>
 
+    <select id="ListProjectMembersAppService" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
+        SELECT
+          da.id,
+          da.app_id,
+          da.name,
+          da.code,
+          da.type,
+          da.is_active,
+          da.is_synchro,
+          da.gitlab_project_id,
+          da.uuid,
+          da.is_failed,
+          da.is_skip_check_permission,
+          da.creation_date
+        FROM
+            (
+        SELECT
+            das.*
+        FROM
+            devops_app_service_user_rel dasur
+            LEFT JOIN devops_app_service das ON dasur.app_service_id = das.id
+        WHERE
+            das.id IS NOT NULL
+            AND das.app_id = #{appId}
+            AND dasur.iam_user_id = #{userId}
+            AND das.is_skip_check_permission = 0 UNION
+        SELECT
+            *
+        FROM
+            devops_app_service
+        WHERE
+            app_id = #{appId}
+            AND is_skip_check_permission = 1
+            ) da
+        <where>
+        <if test="isActive != null">
+            <if test="isActive">
+                AND da.is_active = TRUE
+            </if>
+            <if test="!isActive">
+                AND da.is_active = FALSE
+            </if>
+        </if>
+        <if test="type != null">
+            AND da.type = #{type}
+        </if>
+        <if test="hasVersion != null">
+            <if test="hasVersion">
+                AND EXISTS ( SELECT 1 FROM devops_app_service_version dav WHERE dav.app_service_id = da.id )
+            </if>
+            <if test="!hasVersion">
+                AND NOT EXISTS ( SELECT 1 FROM devops_app_service_version dav WHERE dav.app_service_id = da.id )
+            </if>
+        </if>
+        <include refid="sqlparam"/>
+        </where>
+         <if test="index !=''">
+                ORDER BY da.is_active desc,
+                (
+                da.is_synchro = 1
+                AND da.gitlab_project_id IS NOT NULL
+                )
+                OR da.is_synchro = 0 DESC,
+                da.id desc
+          </if>
+
+    </select>
     <select id="listByAppId" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
         SELECT
         da.id,
