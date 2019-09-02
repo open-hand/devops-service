@@ -7,6 +7,7 @@ import { useEnvironmentStore } from '../../../../stores';
 import { RetryDataSet, GitopsLogDataSet, GitopsSyncDataSet } from './SyncDataSet';
 import PermissionsDataSet from './PermissionsDataSet';
 import ConfigDataSet from './ConfigDataSet';
+import ConfigFormDataSet from './ConfigFormDataSet';
 import useStore from './useStore';
 
 const Store = createContext();
@@ -46,6 +47,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const gitopsLogDs = useMemo(() => new DataSet(GitopsLogDataSet({ formatMessage, intlPrefix })), []);
     const gitopsSyncDs = useMemo(() => new DataSet(GitopsSyncDataSet()), []);
     const retryDs = useMemo(() => new DataSet(RetryDataSet()), []);
+    const configFormDs = useMemo(() => new DataSet(ConfigFormDataSet({ formatMessage, intlPrefix, projectId, store: detailStore })), [projectId]);
 
     useEffect(() => {
       retryDs.transport.read.url = `/devops/v1/projects/${projectId}/envs/${id}/retry`;
@@ -83,6 +85,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
       gitopsSyncDs,
       retryDs,
       detailStore,
+      configFormDs,
     };
     return (
       <Store.Provider value={value}>

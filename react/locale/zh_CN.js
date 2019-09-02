@@ -26,6 +26,7 @@ const commonField = {
   deployment: '部署',
   upgrade: '升级',
   modify: '变更',
+  iknow: '我知道了',
 
   // 通用描述
   app: '应用',
@@ -396,6 +397,9 @@ const envrionment = {
   'c7ncd.env.code': '环境编码',
   'c7ncd.env.description': '环境描述',
   'c7ncd.env.config.app': '服务',
+  'c7ncd.env.config.modify': '修改部属配置',
+  'c7ncd.env.config.delete.disable': '无法删除部署配置“{name}”',
+  'c7ncd.env.config.delete.describe': '仅能删除没有关联任务和关联实例的部署配置。',
   'c7ncd.env.sync.empty': '目前部署同步正常，暂无错误信息',
   'c7ncd.env.resource.setting': '资源安全设置',
   'c7ncd.env.resource.setting.create': '添加安全设置规则',

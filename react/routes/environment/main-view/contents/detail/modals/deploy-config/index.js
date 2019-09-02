@@ -1,7 +1,7 @@
 import React from 'react';
 import { StoreProvider } from './stores';
-import DeployConfig from './DeployConfig';
+import DeployConfigForm from './DeployConfigForm';
 
 export default (props) => <StoreProvider {...props}>
-  <DeployConfig />
+  <DeployConfigForm />
 </StoreProvider>;

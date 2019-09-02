@@ -6,7 +6,6 @@ export default ({ formatMessage, intlPrefix, projectId, id }) => ({
   transport: {
     read: ({ data }) => {
       const postData = getTablePostData(data);
-
       return {
         url: `/devops/v1/projects/${projectId}/envs/${id}/permission/page_by_options`,
         method: 'post',
