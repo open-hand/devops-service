@@ -431,14 +431,14 @@ public interface AppServiceService {
     List<AppServiceGroupVO> listAppServiceGroup(Long projectId);
 
     /**
-     * 查询可部署应用服务
+     * 查询所有应用服务
      *
      * @param projectId
      * @param type normal_service(本项目服务) share_service(组织下共享) market_service(应用市场下载)
      * @param param
      * @return
      */
-    List<AppServiceGroupVO> listDeployAppServices(Long projectId, String type, String param);
+    List<AppServiceGroupVO> listAllAppServices(Long projectId, String type, String param,String serviceType);
 
     String getToken(Integer gitlabProjectId, String applicationDir, UserAttrDTO userAttrDTO);
 }

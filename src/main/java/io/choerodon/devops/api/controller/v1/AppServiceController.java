@@ -670,17 +670,19 @@ public class AppServiceController {
 
 
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "查询可部署应用服务")
-    @GetMapping(value = "/list_deploy")
-    public ResponseEntity<List<AppServiceGroupVO>> listDeployAppServices(
+    @ApiOperation(value = "查询所有应用服务(应用服务导入、应用部署)")
+    @GetMapping(value = "/list_all_app_services")
+    public ResponseEntity<List<AppServiceGroupVO>> listAllAppServices(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "类型", required = true)
             @RequestParam(value = "type") String type,
             @ApiParam(value = "查询参数", required = false)
-            @RequestParam(value = "param", required = false) String param) {
+            @RequestParam(value = "param", required = false) String param,
+            @ApiParam(value = "应用服务类型", required = false)
+            @RequestParam(value = "service_type", required = false) String serviceType) {
         return Optional.ofNullable(
-                applicationServiceService.listDeployAppServices(projectId, type, param))
+                applicationServiceService.listAllAppServices(projectId, type, param, serviceType))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.list.app.service.deploy"));
     }

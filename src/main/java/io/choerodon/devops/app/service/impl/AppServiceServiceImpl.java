@@ -1405,7 +1405,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         baseServiceClientOperator.listIamProjectByOrgId(organizationId, null, null).forEach(proId ->
                 baseListAll(projectId).forEach(appServiceDTO -> appServiceIds.add(appServiceDTO.getId()))
         );
-        PageInfo<AppServiceDTO> applicationServiceDTOPageInfo = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> appServiceMapper.listShareApplicationService(appServiceIds, projectId, TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS))));
+        PageInfo<AppServiceDTO> applicationServiceDTOPageInfo = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> appServiceMapper.listShareApplicationService(appServiceIds, projectId, null, TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS))));
         return ConvertUtils.convertPage(applicationServiceDTOPageInfo, AppServiceRepVO.class);
     }
 
@@ -1984,7 +1984,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     @Override
     public List<AppServiceGroupVO> listAppServiceGroup(Long projectId) {
-        List<AppServiceDTO> marketDownloadApps = appServiceMapper.queryMarketDownloadApps();
+        List<AppServiceDTO> marketDownloadApps = appServiceMapper.queryMarketDownloadApps(null);
         // 组织共享的应用服务
         List<AppServiceDTO> organizationShareApps = ListSharedAppService(projectId);
 
@@ -1996,7 +1996,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public List<AppServiceGroupVO> listDeployAppServices(Long projectId, String type, String param) {
+    public List<AppServiceGroupVO> listAllAppServices(Long projectId, String type, String param, String serviceType) {
         List<AppServiceDTO> list = new ArrayList<>();
         List<String> params = new ArrayList<>();
         List<AppServiceGroupVO> appServiceGroupList = new ArrayList<>();
@@ -2005,7 +2005,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
         switch (type) {
             case NORMAL_SERVICE: {
-                list.addAll(appServiceMapper.list(projectId, true, true, null, null, params, PageRequestUtil.checkSortIsEmpty(new PageRequest())));
+                list.addAll(appServiceMapper.list(projectId, true, true, serviceType, null, params, PageRequestUtil.checkSortIsEmpty(new PageRequest())));
                 break;
             }
             case SHARE_SERVICE: {
@@ -2014,11 +2014,11 @@ public class AppServiceServiceImpl implements AppServiceService {
                 baseServiceClientOperator.listIamProjectByOrgId(organizationId, null, null).forEach(proId ->
                         baseListAll(projectId).forEach(appServiceDTO -> appServiceIds.add(appServiceDTO.getId()))
                 );
-                list.addAll(appServiceMapper.listShareApplicationService(appServiceIds, projectId, params));
+                list.addAll(appServiceMapper.listShareApplicationService(appServiceIds, projectId, serviceType, params));
                 break;
             }
             case MARKET_SERVICE: {
-                list.addAll(appServiceMapper.queryMarketDownloadApps());
+                list.addAll(appServiceMapper.queryMarketDownloadApps(serviceType));
                 break;
             }
             default: {
