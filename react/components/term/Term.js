@@ -59,14 +59,21 @@ export default class Term extends PureComponent {
       if (!this.term) {
         this.setupTerm();
       } else {
-        this.term.detach(this.socket);
-        if (this.socket) {
-          this.socket.close();
-          this.socket = null;
+        try {
+          this.term.detach(this.socket);
+        } catch (e) {
+          console.log(e);
+        } finally {
+          this.term.dataListener.dispose();
+          this.term.dataListener = undefined;
+          if (this.socket) {
+            this.socket.close();
+            this.socket = null;
+          }
+          setTimeout(() => {
+            this.createConnect();
+          }, 0);
         }
-        setTimeout(() => {
-          this.createConnect();
-        }, 0);
       }
     }
   }
@@ -102,6 +109,7 @@ export default class Term extends PureComponent {
       socket.onerror = this.errorTerminal;
     } catch (e) {
       this.errorTerminal();
+      throw new Error("Failed to construct 'WebSocket': The URL ERROR");
     }
   }
 
@@ -109,7 +117,7 @@ export default class Term extends PureComponent {
     this.term.clear();
     this.term.setOption('disableStdin', false);
     this.term.attach(this.socket, false);
-    this.term.onData((data) => {
+    this.term.dataListener = this.term.onData((data) => {
       this.socket.send(new Blob([data], { type: 'text/plain' }));
     });
     this.term._initialized = true;

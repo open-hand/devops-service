@@ -220,6 +220,7 @@ export default class LogSidebar extends Component {
         }, 0);
       } catch (e) {
         editor.setValue('连接失败\n');
+        throw new Error("Failed to construct 'WebSocket': The URL ERROR");
       }
     }
   };

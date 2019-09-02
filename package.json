@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "diff-match-patch": "^1.0.4",
-    "echarts": "^4.1.0",
+    "echarts": "^4.2.1",
     "echarts-for-react": "^2.0.12",
     "js-file-download": "^0.4.4",
     "js-yaml": "^3.12.1",

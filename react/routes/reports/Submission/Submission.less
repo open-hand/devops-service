@@ -1,0 +1,125 @@
+.c7n-report-control {
+  display: flex;
+  padding: 8px 0;
+  margin-bottom: 16px;
+  .c7n-report-control-select {
+    margin-right: 60px;
+    margin-bottom: 8px;
+    width: 400px;
+
+    // 限制选项过多换行问题
+    .c7n-select-selection__choice {
+      padding: 0 4px;
+      margin: 0 3px 3px 0;
+
+      .c7n-select-selection__choice__content {
+        max-width: 86px;
+      }
+
+      .c7n-select-selection__choice__remove {
+        margin-left: 2px;
+      }
+    }
+  }
+}
+
+.c7n-report-submission {
+  width: 100%;
+  .c7n-report-submission-overview {
+    overflow: hidden;
+    float: left;
+    width: 67%;
+    padding: 15px;
+    height: 330px;
+    background: #fff;
+    box-shadow: 0 1px 3px 0 rgba(14, 15, 16, .24);
+    border-radius: 2px;
+  }
+  .c7n-report-submission-history {
+    float: left;
+    padding: 0 15px 15px;
+    width: 33%;
+    height: 330px;
+    // 提交历史
+    .c7n-region .c7n-report-history-title,
+    .c7n-report-history-title {
+      margin: 0 0 12px;
+      font-size: 16px;
+      color: #000;
+    }
+
+    .c7n-report-history-list {
+      width: 100%;
+      height: 270px;
+      overflow: auto;
+      .c7n-report-history-item {
+        margin-bottom: 10px;
+        &:last-child {
+          margin-bottom: 0;
+        }
+        .c7n-report-history-info {
+          display: inline-block;
+          margin-left: 10px;
+          width: ~"calc(100% - 36px)";
+          vertical-align: middle;
+          .c7n-report-history-content {
+            width: 100%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            .c7n-report-history-link {
+              line-height: 20px;
+              font-size: 14px;
+              color: #000;
+            }
+          }
+          .c7n-report-history-date {
+            font-size: 12px;
+            color: rgba(0, 0, 0, .54);
+          }
+        }
+      }
+      .c7n-report-history-list-none {
+        color: rgba(0, 0, 0, .45);
+      }
+    }
+    .c7n-report-history-page {
+      text-align: right;
+    }
+  }
+}
+
+.c7n-report-commits-title {
+  color: #000;
+  font-size: 16px;
+  line-height: 24px;
+  .c7n-report-commits-avatar {
+    margin-right: 8px;
+  }
+  .c7n-report-commits-text {
+    margin-left: 32px;
+    color: #000;
+    font-size: 12px;
+  }
+}
+
+.c7n-report-submission-wrap {
+  width: 100%;
+  padding: 20px 0;
+  .c7n-report-submission-item {
+    overflow: hidden;
+    margin-bottom: 20px;
+    padding: 15px;
+    width: ~"calc(50% - 10px)";
+    height: 230px;
+    background: #fff;
+    box-shadow: 0 1px 3px 0 rgba(14, 15, 16, .24);
+    border-radius: 2px;
+    &:nth-child(odd) {
+      float: left;
+    }
+    &:nth-child(even) {
+      float: right;
+    }
+  }
+}

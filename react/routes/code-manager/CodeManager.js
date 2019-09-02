@@ -7,8 +7,6 @@ import MainView from './main-view';
 
 export default function CodeManager() {
   return <Page>
-    {/* <CodeManagerToolBar /> */}
-    {/* <CodeManagerHeader /> */}
     <MainView />
   </Page>;
 }
