@@ -20,10 +20,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.FeignException;
 import io.choerodon.devops.api.vo.OrganizationSimplifyVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
-import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO;
-import io.choerodon.devops.api.vo.iam.RoleSearchVO;
-import io.choerodon.devops.api.vo.iam.RoleVO;
-import io.choerodon.devops.api.vo.iam.UserWithRoleVO;
+import io.choerodon.devops.api.vo.iam.*;
 import io.choerodon.devops.api.vo.kubernetes.ProjectCreateDTO;
 import io.choerodon.devops.infra.dto.iam.*;
 import io.choerodon.devops.infra.feign.BaseServiceClient;
@@ -340,5 +337,17 @@ public class BaseServiceClientOperator {
         } catch (Exception e) {
             throw new CommonException("error.application.download.message", e.getMessage());
         }
+    }
+
+    public String checkLatestToken() {
+        try {
+            RemoteTokenAuthorizationVO remoteTokenAuthorizationVO = baseServiceClient.checkLatestToken().getBody();
+            if (remoteTokenAuthorizationVO != null) {
+                return remoteTokenAuthorizationVO.getRemoteToken();
+            }
+        } catch (Exception e) {
+            throw new CommonException("error.remote.token.authorization", e.getMessage());
+        }
+        return null;
     }
 }
