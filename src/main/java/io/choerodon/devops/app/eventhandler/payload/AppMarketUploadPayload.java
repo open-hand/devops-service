@@ -16,6 +16,9 @@ public class AppMarketUploadPayload {
     @ApiModelProperty("市场应用Id")
     private Long mktAppId;
 
+    @ApiModelProperty("市场应用code")
+    private String mktAppCode;
+
     @ApiModelProperty("市场应用版本Id")
     private Long mktAppVersionId;
 
@@ -132,5 +135,13 @@ public class AppMarketUploadPayload {
 
     public void setMktAppVersionId(Long mktAppVersionId) {
         this.mktAppVersionId = mktAppVersionId;
+    }
+
+    public String getMktAppCode() {
+        return mktAppCode;
+    }
+
+    public void setMktAppCode(String mktAppCode) {
+        this.mktAppCode = mktAppCode;
     }
 }

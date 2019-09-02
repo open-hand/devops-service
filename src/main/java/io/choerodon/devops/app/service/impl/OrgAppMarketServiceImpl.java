@@ -306,38 +306,38 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         MarketImageUrlVO marketImageUrlVO = null;
         switch (marketUploadVO.getStatus()) {
             case DOWNLOAD_ONLY: {
-                String appRepoFilePath = String.format(APP_FILE_PATH_FORMAT, appFilePath, File.separator, REPO, File.separator, marketUploadVO.getAppCode());
+                String appRepoFilePath = String.format(APP_FILE_PATH_FORMAT, appFilePath, File.separator, REPO, File.separator, marketUploadVO.getMktAppCode());
                 //clone 并压缩源代码
                 marketUploadVO.getAppServiceUploadPayloads().forEach(appServiceMarketVO -> packageRepo(appServiceMarketVO, appRepoFilePath));
-                String outputFilePath = String.format(APP_OUT_FILE_FORMAT, appFile.getParent(), File.separator, REPO, marketUploadVO.getAppCode(), System.currentTimeMillis(), ZIP);
+                String outputFilePath = String.format(APP_OUT_FILE_FORMAT, appFile.getParent(), File.separator, REPO, marketUploadVO.getMktAppCode(), System.currentTimeMillis(), ZIP);
                 toZip(outputFilePath, appRepoFilePath);
                 zipFileList.add(outputFilePath);
                 break;
             }
             case DEPLOY_ONLY: {
-                String appChartFilePath = String.format(APP_FILE_PATH_FORMAT, appFilePath, File.separator, CHART, File.separator, marketUploadVO.getAppCode());
+                String appChartFilePath = String.format(APP_FILE_PATH_FORMAT, appFilePath, File.separator, CHART, File.separator, marketUploadVO.getMktAppCode());
                 marketUploadVO.getAppServiceUploadPayloads().forEach(appServiceMarketVO -> packageChart(appServiceMarketVO, appChartFilePath));
 
-                String outputFilePath = String.format(APP_OUT_FILE_FORMAT, appFile.getParent(), File.separator, CHART, marketUploadVO.getAppCode(), System.currentTimeMillis(), ZIP);
+                String outputFilePath = String.format(APP_OUT_FILE_FORMAT, appFile.getParent(), File.separator, CHART, marketUploadVO.getMktAppCode(), System.currentTimeMillis(), ZIP);
                 toZip(outputFilePath, appChartFilePath);
                 zipFileList.add(outputFilePath);
                 marketImageUrlVO = pushImageForUpload(marketUploadVO);
                 break;
             }
             case ALL: {
-                String appRepoFilePath = String.format(APP_FILE_PATH_FORMAT, appFilePath, File.separator, REPO, File.separator, marketUploadVO.getAppCode());
-                String appChartFilePath = String.format(APP_FILE_PATH_FORMAT, appFilePath, File.separator, CHART, File.separator, marketUploadVO.getAppCode());
+                String appRepoFilePath = String.format(APP_FILE_PATH_FORMAT, appFilePath, File.separator, REPO, File.separator, marketUploadVO.getMktAppCode());
+                String appChartFilePath = String.format(APP_FILE_PATH_FORMAT, appFilePath, File.separator, CHART, File.separator, marketUploadVO.getMktAppCode());
 
                 marketUploadVO.getAppServiceUploadPayloads().forEach(appServiceMarketVO -> {
                     packageRepo(appServiceMarketVO, appRepoFilePath);
                     packageChart(appServiceMarketVO, appChartFilePath);
                 });
 
-                String outputFilePath = String.format(APP_OUT_FILE_FORMAT, appFile.getParent(), File.separator, CHART, marketUploadVO.getAppCode(), System.currentTimeMillis(), ZIP);
+                String outputFilePath = String.format(APP_OUT_FILE_FORMAT, appFile.getParent(), File.separator, CHART, marketUploadVO.getMktAppCode(), System.currentTimeMillis(), ZIP);
                 toZip(outputFilePath, appChartFilePath);
                 zipFileList.add(outputFilePath);
 
-                outputFilePath = String.format(APP_OUT_FILE_FORMAT, appFile.getParent(), File.separator, REPO, marketUploadVO.getAppCode(), System.currentTimeMillis(), ZIP);
+                outputFilePath = String.format(APP_OUT_FILE_FORMAT, appFile.getParent(), File.separator, REPO, marketUploadVO.getMktAppCode(), System.currentTimeMillis(), ZIP);
                 toZip(outputFilePath, appRepoFilePath);
                 zipFileList.add(outputFilePath);
                 marketImageUrlVO = pushImageForUpload(marketUploadVO);
@@ -565,7 +565,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
 
     private MarketImageUrlVO pushImageForUpload(AppMarketUploadPayload appMarketUploadVO) {
         MarketImageUrlVO marketImageUrlVO = new MarketImageUrlVO();
-        marketImageUrlVO.setAppCode(appMarketUploadVO.getAppCode());
+        marketImageUrlVO.setAppCode(appMarketUploadVO.getMktAppCode());
 
         File file = new File(String.format("%s%s%s", SHELL, File.separator, PUSH_IAMGES));
         if (!file.exists()) {

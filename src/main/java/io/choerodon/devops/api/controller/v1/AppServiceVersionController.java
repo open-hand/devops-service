@@ -64,7 +64,8 @@ public class AppServiceVersionController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
-            @ApiIgnore PageRequest pageRequest,
+            @ApiIgnore
+            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
             @ApiParam(value = "服务Id，选填的用于进行筛选记录的字段")
             @RequestParam(value = "app_service_id", required = false) Long appServiceId,
             @ApiParam(value = "查询参数")
