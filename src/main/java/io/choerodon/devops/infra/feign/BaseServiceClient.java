@@ -13,10 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import io.choerodon.base.constant.PageConstant;
 import io.choerodon.devops.api.vo.OrganizationSimplifyVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
-import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO;
-import io.choerodon.devops.api.vo.iam.RoleSearchVO;
-import io.choerodon.devops.api.vo.iam.RoleVO;
-import io.choerodon.devops.api.vo.iam.UserWithRoleVO;
+import io.choerodon.devops.api.vo.iam.*;
 import io.choerodon.devops.api.vo.kubernetes.MemberRoleVO;
 import io.choerodon.devops.api.vo.kubernetes.ProjectCreateDTO;
 import io.choerodon.devops.infra.dto.iam.*;
@@ -165,4 +162,8 @@ public interface BaseServiceClient {
     @PostMapping(value = "/v1/applications/{publish_app_version_id}/complete_downloading")
     ResponseEntity completeDownloadApplication(@PathVariable("publish_app_version_id") Long publishAppVersionId,
                                                @RequestBody Set<Long> serviceVersionIds);
+
+    @GetMapping(value = "/v1/remote_token/authorization/check/latest")
+    ResponseEntity<RemoteTokenAuthorizationVO> checkLatestToken();
+
 }

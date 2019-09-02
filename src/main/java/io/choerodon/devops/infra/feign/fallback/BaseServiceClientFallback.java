@@ -10,10 +10,7 @@ import com.github.pagehelper.PageInfo;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.OrganizationSimplifyVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
-import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO;
-import io.choerodon.devops.api.vo.iam.RoleSearchVO;
-import io.choerodon.devops.api.vo.iam.RoleVO;
-import io.choerodon.devops.api.vo.iam.UserWithRoleVO;
+import io.choerodon.devops.api.vo.iam.*;
 import io.choerodon.devops.api.vo.kubernetes.MemberRoleVO;
 import io.choerodon.devops.api.vo.kubernetes.ProjectCreateDTO;
 import io.choerodon.devops.infra.dto.iam.*;
@@ -176,5 +173,10 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     @Override
     public ResponseEntity completeDownloadApplication(Long publishAppVersionId, Set<Long> serviceVersionIds) {
         throw new CommonException("error.application.download");
+    }
+
+    @Override
+    public ResponseEntity<RemoteTokenAuthorizationVO> checkLatestToken() {
+        throw new CommonException("error.remote.token.authorization");
     }
 }

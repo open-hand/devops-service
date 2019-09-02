@@ -606,7 +606,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             newUser.setUsername(appMarketUploadVO.getUser().getRobotName());
             newUser.setPassword(appMarketUploadVO.getUser().getRobotToken());
             // 执行脚本
-            callScript(SHELL, appServiceMarketVO.getHarborUrl(), newUser, oldUser);
+//            callScript(appServiceMarketVO.getHarborUrl(), newUser, oldUser);
             FileUtil.deleteFile(String.format(APP_TEMP_PATH_FORMAT, SHELL, File.separator, IMAGES));
         });
         marketImageUrlVO.setServiceImageVOS(imageVOList);
@@ -635,7 +635,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             oldUser.setPassword(appMarketDownloadVO.getUser().getRobotToken());
             harborUrl = harborUrl.endsWith("/") ? harborUrl : harborUrl + "/";
 
-            callScript(new File(shellPath).getAbsolutePath(), String.format("%s%s", harborUrl, MARKET_PRO), newUser, oldUser);
+//            callScript(String.format("%s%s", harborUrl, MARKET_PRO), newUser, oldUser);
             FileUtil.deleteFile(String.format(APP_TEMP_PATH_FORMAT, shellPath, File.separator, IMAGES));
         });
     }
@@ -645,7 +645,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
      *
      * @param script 脚本文件绝对路径
      */
-    private void callScript(String script, String harborUrl, User newUser, User oldUser) {
+    private void callScript( String harborUrl, User newUser, User oldUser) {
         try {
             String cmd = String.format("sh /shell/%s %s %s %s %s %s", PUSH_IAMGES, harborUrl, newUser.getUsername(), newUser.getPassword(), oldUser.getUsername(), oldUser.getPassword());
             LOGGER.info(cmd);
@@ -668,7 +668,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             //阻塞执行线程直至脚本执行完成后返回
             process.waitFor();
         } catch (Exception e) {
-            throw new CommonException("error.exec.push.image",e.getMessage());
+            throw new CommonException("error.exec.push.image", e.getMessage());
         }
     }
 
@@ -683,8 +683,10 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         String mapJson = marketImageUrlVO != null ? gson.toJson(marketImageUrlVO) : null;
         String getawayUrl = appMarketUploadVO.getSaasGetawayUrl().endsWith("/") ? appMarketUploadVO.getSaasGetawayUrl() : appMarketUploadVO.getSaasGetawayUrl() + "/";
         MarketServiceClient marketServiceClient = RetrofitHandler.getMarketServiceClient(getawayUrl, MARKET);
+
+        String remoteToken = baseServiceClientOperator.checkLatestToken();
         try {
-            Boolean uploadSuccess = marketServiceClient.uploadFile(appMarketUploadVO.getAppVersion(), files, mapJson).execute().body().getBody();
+            Boolean uploadSuccess = marketServiceClient.uploadFile(remoteToken, appMarketUploadVO.getAppVersion(), files, mapJson).execute().body().getBody();
             if (uploadSuccess == null || !uploadSuccess) {
                 throw new CommonException("error.upload.file", uploadSuccess);
             }
@@ -706,8 +708,11 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         String appJson = gson.toJson(appMarketFixVersionPayload.getMarketApplicationVO());
         String getawayUrl = appMarketFixVersionPayload.getFixVersionUploadPayload().getSaasGetawayUrl().endsWith("/") ? appMarketFixVersionPayload.getFixVersionUploadPayload().getSaasGetawayUrl() : appMarketFixVersionPayload.getFixVersionUploadPayload() + "/";
         MarketServiceClient marketServiceClient = RetrofitHandler.getMarketServiceClient(getawayUrl, MARKET);
+
+        String remoteToken = baseServiceClientOperator.checkLatestToken();
         try {
             Boolean uploadSuccess = marketServiceClient.updateAppPublishInfoFix(
+                    remoteToken,
                     appMarketFixVersionPayload.getMarketApplicationVO().getCode(),
                     appMarketFixVersionPayload.getMarketApplicationVO().getVersion(),
                     appJson,
