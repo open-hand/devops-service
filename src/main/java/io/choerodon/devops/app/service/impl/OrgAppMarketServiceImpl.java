@@ -573,6 +573,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             FileUtil.createDirectory(SHELL);
             String shellPath = this.getClass().getResource(String.format("/%s/%s", SHELL, PUSH_IAMGES)).getPath();
             FileUtil.copyFile(shellPath, SHELL);
+            LOGGER.info("========创建push_image.sh脚本");
         }
 
         List<MarketAppServiceImageVO> imageVOList = new ArrayList<>();
