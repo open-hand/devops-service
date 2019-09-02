@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service;
 
 import com.github.pagehelper.PageInfo;
+
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.DevopsDeployValueVO;
 import io.choerodon.devops.infra.dto.DevopsDeployValueDTO;
@@ -17,65 +18,65 @@ public interface DevopsDeployValueService {
     /**
      * 项目下创建流水线配置
      *
-     * @param projectId
-     * @param devopsDeployValueVO
-     * @return
+     * @param projectId           项目id
+     * @param devopsDeployValueVO 配置信息
+     * @return 创建后的配置信息
      */
     DevopsDeployValueVO createOrUpdate(Long projectId, DevopsDeployValueVO devopsDeployValueVO);
 
     /**
      * 项目下删除配置
      *
-     * @param projectId
-     * @param valueId
+     * @param projectId 项目id
+     * @param valueId   配置id
      */
     void delete(Long projectId, Long valueId);
 
     /**
      * 项目下获取部署配置
      *
-     * @param projectId
-     * @param appServiceId
-     * @param envId
-     * @param pageRequest
-     * @param params
-     * @return
+     * @param projectId    项目id
+     * @param appServiceId 应用服务id
+     * @param envId        环境id
+     * @param pageRequest  分页参数
+     * @param params       查询参数
+     * @return 分页的部署配置
      */
     PageInfo<DevopsDeployValueVO> pageByOptions(Long projectId, Long appServiceId, Long envId, PageRequest pageRequest, String params);
 
     /**
      * 项目下查询配置详情
      *
-     * @param pipelineId
-     * @param valueId
-     * @return
+     * @param pipelineId 流水线id
+     * @param valueId    配置id
+     * @return 配置信息
      */
     DevopsDeployValueVO query(Long pipelineId, Long valueId);
 
     /**
      * 名称校验
      *
-     * @param projectId
-     * @param name
+     * @param projectId 项目id
+     * @param name      待校验的名称
      */
     void checkName(Long projectId, String name);
 
     /**
-     * 根据应用Id和环境Id获取配置
+     * 根据应用服务Id和环境Id获取配置
      *
-     * @param projectId
-     * @param appServiceId
-     * @param envId
-     * @return
+     * @param projectId    项目id
+     * @param appServiceId 应用服务id
+     * @param envId        环境id
+     * @return 查看环境下服务的配置
      */
     List<DevopsDeployValueVO> listByEnvAndApp(Long projectId, Long appServiceId, Long envId);
 
     /**
      * 检测能否删除
      *
-     * @param projectId
-     * @param valueId
-     * @return
+     * @param projectId 项目id
+     * @param valueId   配置id
+     * @return true 如果能删除
      */
     Boolean checkDelete(Long projectId, Long valueId);
 
