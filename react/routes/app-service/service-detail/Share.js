@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { TabPage, Content, Permission, Breadcrumb, Action } from '@choerodon/master';
 import { Table, Modal } from 'choerodon-ui/pro';
 import { Button } from 'choerodon-ui';
@@ -27,6 +27,10 @@ const Share = (props) => {
     AppState: { currentMenuType: { projectId } },
     AppStore,
   } = useServiceDetailStore();
+
+  useEffect(() => {
+    refresh();
+  }, []);
 
   function refresh() {
     shareDs.query();
@@ -107,7 +111,9 @@ const Share = (props) => {
   }
 
   return (
-    <TabPage>
+    <TabPage
+      service={['devops-service.app-share-rule.createOrUpdate']}
+    >
       <HeaderButtons>
         <Permission
           service={['devops-service.app-share-rule.createOrUpdate']}
@@ -131,7 +137,7 @@ const Share = (props) => {
         <Table dataSet={shareDs}>
           <Column name="versionType" />
           <Column renderer={renderAction} />
-          <Column name="version" />
+          <Column name="version" sortable />
           <Column name="projectName" renderer={renderProjectName} />
         </Table>
       </Content>

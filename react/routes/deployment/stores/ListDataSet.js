@@ -28,5 +28,8 @@ export default ((intlPrefix, formatMessage, projectId) => ({
     { name: 'userImage', type: 'string' },
     { name: 'realName', type: 'string' },
   ],
-  queryFields: [],
+  queryFields: [
+    { name: 'deployId', type: 'number', label: formatMessage({ id: `${intlPrefix}.number` }) },
+    { name: 'pipelineName', type: 'string', label: formatMessage({ id: `${intlPrefix}.pipeline.name` }) },
+  ],
 }));

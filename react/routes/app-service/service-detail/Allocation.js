@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { TabPage, Content, Permission, Breadcrumb, Action } from '@choerodon/master';
 import { Table, Modal } from 'choerodon-ui/pro';
 import { Button } from 'choerodon-ui';
@@ -29,6 +29,10 @@ const Allocation = observer((props) => {
     params,
     permissionStore,
   } = useServiceDetailStore();
+
+  useEffect(() => {
+    refresh();
+  }, []);
 
   function refresh() {
     permissionDs.query();
@@ -78,8 +82,9 @@ const Allocation = observer((props) => {
   }
 
   return (
-    <TabPage>
-
+    <TabPage
+      service={['devops-service.app-service.updatePermission']}
+    >
       <HeaderButtons>
         <Permission
           service={['devops-service.app-service.updatePermission']}
@@ -101,11 +106,11 @@ const Allocation = observer((props) => {
       <Breadcrumb title="服务详情" />
       <Content>
         <Table dataSet={permissionDs}>
-          <Column name="realName" />
+          <Column name="realName" sortable />
           <Column renderer={renderAction} width="0.7rem" />
-          <Column name="loginName" />
+          <Column name="loginName" sortable />
           <Column name="role" renderer={renderRole} />
-          <Column name="creationDate" renderer={renderTime} />
+          <Column name="creationDate" renderer={renderTime} sortable />
         </Table>
       </Content>
     </TabPage>

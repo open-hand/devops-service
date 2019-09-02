@@ -105,7 +105,7 @@ const AppService = withRouter(observer((props) => {
         action: () => changeActive(true),
       },
       delete: {
-        service: [],
+        service: ['devops-service.app-service.delete'],
         text: formatMessage({ id: 'delete' }),
         action: handleDelete,
       },
@@ -190,7 +190,16 @@ const AppService = withRouter(observer((props) => {
   }
 
   return (
-    <Page>
+    <Page
+      service={[
+        'devops-service.app-service.pageByOptions',
+        'devops-service.app-service.create',
+        'devops-service.app-service.importApp',
+        'devops-service.app-service.update',
+        'devops-service.app-service.updateActive',
+        'devops-service.app-service.delete',
+      ]}
+    >
       <Header title={<FormattedMessage id="app.head" />}>
         <Permission
           service={['devops-service.app-service.create']}
@@ -227,9 +236,11 @@ const AppService = withRouter(observer((props) => {
           queryBar="bar"
           className={`${prefixCls}.table`}
         >
-          <Column name="name" renderer={renderName} />
-          <Column renderer={renderActions} width="0.7rem" />
-          <Column name="code" />
+          <Column name="name" renderer={renderName} sortable />
+          {AppStore.getProjectRole === 'owner' && (
+            <Column renderer={renderActions} width="0.7rem" />
+          )}
+          <Column name="code" sortable />
           <Column name="type" renderer={renderType} />
           <Column name="repoUrl" renderer={renderUrl} />
           <Column name="creationDate" renderer={renderDate} />

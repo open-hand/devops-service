@@ -43,8 +43,6 @@ export const StoreProvider = injectIntl(inject('AppState')(
 
     useEffect(() => {
       nonePermissionDs.transport.read.url = `/devops/v1/projects/${projectId}/app_service/${id}/list_non_permission_users`;
-      shareLevelDs.transport.read.url = `/devops/v1/projects/${projectId}/app_service/${organizationId}/list_projects`;
-
       detailDs.transport.read = {
         url: `/devops/v1/projects/${projectId}/app_service/${id}`,
         method: 'get',
@@ -52,6 +50,11 @@ export const StoreProvider = injectIntl(inject('AppState')(
       detailDs.paging = false;
       detailDs.query();
     }, [projectId, id]);
+
+    useEffect(() => {
+      shareLevelDs.transport.read.url = `/devops/v1/projects/${projectId}/app_service/${organizationId}/list_projects`;
+      AppStore.judgeRole(organizationId, projectId);
+    }, [organizationId, projectId]);
 
     const value = {
       ...props,

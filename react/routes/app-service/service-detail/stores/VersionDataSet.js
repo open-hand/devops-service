@@ -20,4 +20,7 @@ export default ((formatMessage, projectId, id) => ({
     { name: 'creationDate', type: 'dateTime', label: formatMessage({ id: 'createDate' }) },
     { name: 'id', type: 'number' },
   ],
+  queryFields: [
+    { name: 'version', type: 'string', label: formatMessage({ id: 'version' }) },
+  ],
 }));

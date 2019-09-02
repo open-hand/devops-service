@@ -38,7 +38,7 @@ const Version = (props) => {
       <Breadcrumb title="服务详情" />
       <Content>
         <Table dataSet={versionDs}>
-          <Column name="version" />
+          <Column name="version" sortable />
           <Column name="creationDate" renderer={renderTime} />
         </Table>
       </Content>

@@ -5,6 +5,7 @@ export default ((intlPrefix, formatMessage, projectId) => ({
   transport: {
     create: ({ data: [data] }) => {
       const res = omit(data, ['__id', '__status', 'appServiceSource']);
+      res.appServiceId = Number(data.appServiceId.split('__')[0]);
 
       return ({
         url: `/devops/v1/projects/${projectId}/app_service_instances`,
@@ -14,7 +15,7 @@ export default ((intlPrefix, formatMessage, projectId) => ({
     },
   },
   fields: [
-    { name: 'appServiceId', type: 'number', label: formatMessage({ id: `${intlPrefix}.app` }), required: true },
+    { name: 'appServiceId', type: 'string', label: formatMessage({ id: `${intlPrefix}.app` }), required: true },
     { name: 'appServiceVersionId', type: 'number', label: formatMessage({ id: `${intlPrefix}.app.version` }), required: true },
     { name: 'environmentId', type: 'number', label: formatMessage({ id: 'environment' }), required: true },
     { name: 'instanceName', type: 'string', label: formatMessage({ id: `${intlPrefix}.instance.name` }), required: true },
@@ -24,6 +25,6 @@ export default ((intlPrefix, formatMessage, projectId) => ({
     { name: 'devopsIngressVO', type: 'object' },
     { name: 'type', type: 'string', defaultValue: 'create' },
     { name: 'isNotChange', type: 'boolean', defaultValue: false },
-    { name: 'appServiceSource', type: 'string', defaultValue: 'project', label: formatMessage({ id: `${intlPrefix}.source` }) },
+    { name: 'appServiceSource', type: 'string', defaultValue: 'normal_service', label: formatMessage({ id: `${intlPrefix}.source` }) },
   ],
 }));

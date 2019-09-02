@@ -30,6 +30,14 @@ export default function useStore() {
       return this.version.slice();
     },
 
+    projectRole: '',
+    setProjectRole(flag) {
+      this.projectRole = flag ? 'owner' : 'member';
+    },
+    get getProjectRole() {
+      return this.projectRole;
+    },
+
     loadAppById(projectId, id) {
       return axios.get(`/devops/v1/projects/${projectId}/app_service/${id}`);
     },
@@ -64,11 +72,11 @@ export default function useStore() {
       return axios.get(`/devops/v1/projects/${projectId}/app_service_share/${id}`);
     },
 
-    async loadAppService(projectId) {
+    async loadAppService(projectId, type) {
       try {
-        const res = await axios.post(`/devops/v1/projects/${projectId}/app_service/page_by_options?has_version=true&type=normal`);
+        const res = await axios.get(`/devops/v1/projects/${projectId}/app_service/list_all_app_services?type=${type}`);
         if (handlePromptError(res)) {
-          this.setAppService(res.list);
+          this.setAppService(res);
         }
       } catch (e) {
         Choerodon.handleResponseError(e);
@@ -80,6 +88,24 @@ export default function useStore() {
         const res = await axios.get(`/devops/v1/projects/${projectId}/app_service_versions/list_app_services/${id}`);
         if (handlePromptError(res)) {
           this.setVersion(res);
+        }
+      } catch (e) {
+        Choerodon.handleResponseError(e);
+      }
+    },
+
+    async judgeRole(organizationId, projectId) {
+      const data = [{
+        code: 'devops-service.app-service.create',
+        organizationId,
+        projectId,
+        resourceType: 'project',
+      }];
+      try {
+        const res = await axios.post('/base/v1/permissions/checkPermission', JSON.stringify(data));
+        if (handlePromptError(res)) {
+          const { approve } = res[0] || {};
+          this.setProjectRole(approve);
         }
       } catch (e) {
         Choerodon.handleResponseError(e);

@@ -118,15 +118,15 @@ export default injectIntl(observer(({
             <FormattedMessage id={`${intlPrefix}.project.add`} />
           </Button>
           <Table dataSet={permissionProjectDs}>
-            <Column name="name" />
+            <Column name="name" sortable />
             <Column renderer={renderAction} />
-            <Column name="code" />
+            <Column name="code" sortable />
           </Table>
         </Fragment>
       ) : (
         <Table dataSet={allProjectDs}>
-          <Column name="name" />
-          <Column name="code" />
+          <Column name="name" sortable />
+          <Column name="code" sortable />
         </Table>
       )}
     </div>
