@@ -12,7 +12,7 @@ import ResourceSetting from './resource-setting/notificationsHome';
 import useStore from './useStore';
 import EnvCreateForm from '../../../modals/env-create';
 import GroupForm from '../../../modals/GroupForm';
-import DeployConfig from './deploy-config';
+import DeployConfigForm from './deploy-config';
 
 import './index.less';
 
@@ -54,6 +54,7 @@ const EnvModals = observer(() => {
     gitopsLogDs,
     gitopsSyncDs,
     configDs,
+    configFormDs,
   } = useDetailStore();
 
   function refresh() {
@@ -158,11 +159,13 @@ const EnvModals = observer(() => {
 
   function openConfigModal() {
     const { id } = getSelectedMenu;
+    configFormDs.create();
     Modal.open({
       key: configKey,
       title: formatMessage({ id: `${currentIntlPrefix}.create.config` }),
-      children: <DeployConfig
-        parentStore={detailStore}
+      children: <DeployConfigForm
+        store={detailStore}
+        dataSet={configFormDs}
         refresh={refresh}
         envId={id}
         intlPrefix={currentIntlPrefix}
@@ -170,6 +173,10 @@ const EnvModals = observer(() => {
       />,
       drawer: true,
       style: configModalStyle,
+      afterClose: () => {
+        configFormDs.reset();
+        detailStore.setValue('');
+      },
     });
   }
 

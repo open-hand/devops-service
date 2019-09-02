@@ -1,4 +1,4 @@
-import React, { Fragment, useState } from 'react';
+import React, { Fragment, useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Form, TextField, TextArea, Select } from 'choerodon-ui/pro';
 import YamlEditor from '../../../../../../../components/yamlEditor';
@@ -8,34 +8,41 @@ import './index.less';
 
 const { Option } = Select;
 
-function DeployConfig() {
+function DeployConfigForm() {
   const {
+    isModify,
     intl: { formatMessage },
     intlPrefix,
     prefixCls,
-    formDs,
+    dataSet,
     appOptionDs,
-    configStore: { getValue },
     modal,
     envId,
     refresh,
-    parentStore,
+    store,
   } = useFormStore();
   const [value, setValue] = useState('');
   const [isError, setValueError] = useState(false);
 
+  useEffect(() => {
+    const nextValue = store.getValue;
+    if (value !== nextValue) {
+      setValue(nextValue);
+    }
+  }, [store.getValue]);
+
   async function handleSubmit() {
     if (isError) return false;
 
-    const config = value || getValue || '';
-    const record = formDs.current;
+    const config = value || store.getValue || '';
+    const record = dataSet.current;
     if (record) {
       record.set('value', config);
       record.set('envId', envId);
     }
     try {
-      if ((await formDs.submit()) !== false) {
-        parentStore.setTabKey('config');
+      if ((await dataSet.submit()) !== false) {
+        store.setTabKey('config');
         refresh();
       } else {
         return false;
@@ -56,12 +63,13 @@ function DeployConfig() {
   }
 
   function renderValue() {
-    const record = formDs.current;
+    const record = dataSet.current;
     const app = record && record.get('appServiceId');
+    const configValue = store.getValue;
     return app ? <YamlEditor
       readOnly={false}
-      value={value || getValue}
-      originValue={getValue}
+      value={value || configValue}
+      originValue={configValue}
       onValueChange={setValue}
       handleEnableNext={setValueError}
     /> : null;
@@ -69,15 +77,18 @@ function DeployConfig() {
 
   return <Fragment>
     <div className={`${prefixCls}-config-form`}>
-      <Form dataSet={formDs}>
+      <Form dataSet={dataSet}>
         <TextField name="name" />
         <TextArea name="description" resize="vertical" />
-        <Select
-          searchable={false}
-          name="appServiceId"
-        >
-          {appOptionDs.map(appOption)}
-        </Select>
+        {isModify
+          ? <TextField name="appServiceName" disabled />
+          : <Select
+            disabled={isModify}
+            searchable={false}
+            name="appServiceId"
+          >
+            {appOptionDs.map(appOption)}
+          </Select>}
       </Form>
     </div>
     <h3>{formatMessage({ id: `${intlPrefix}.config` })}</h3>
@@ -85,4 +96,4 @@ function DeployConfig() {
   </Fragment>;
 }
 
-export default observer(DeployConfig);
+export default observer(DeployConfigForm);

@@ -27,7 +27,7 @@ export default ({ formatMessage, intlPrefix, projectId, store }) => {
   };
 
   return {
-    autoCreate: true,
+    paging: false,
     fields: [{
       name: 'name',
       type: 'string',
@@ -45,6 +45,14 @@ export default ({ formatMessage, intlPrefix, projectId, store }) => {
       type: 'number',
       textField: 'text',
       label: '服务',
+      required: true,
+    }, {
+      name: 'appServiceName',
+      type: 'string',
+      label: '服务',
+      required: true,
+      readOnly: true,
+      ignore: 'always',
     }, {
       name: 'value',
       type: 'string',
@@ -53,6 +61,9 @@ export default ({ formatMessage, intlPrefix, projectId, store }) => {
       type: 'number',
     }],
     transport: {
+      read: {
+        method: 'get',
+      },
       submit: ({ data: [data] }) => ({
         url: `/devops/v1/projects/${projectId}/deploy_value`,
         method: 'post',
@@ -60,6 +71,10 @@ export default ({ formatMessage, intlPrefix, projectId, store }) => {
       }),
     },
     events: {
+      load: ({ dataSet }) => {
+        const [data] = dataSet.toData();
+        store.setValue(data.value || '');
+      },
       update: handleUpdate,
     },
   };
