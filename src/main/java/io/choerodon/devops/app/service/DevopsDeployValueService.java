@@ -56,10 +56,11 @@ public interface DevopsDeployValueService {
     /**
      * 名称校验
      *
-     * @param projectId 项目id
-     * @param name      待校验的名称
+     * @param projectId     项目id
+     * @param name          待校验的名称
+     * @param deployValueId deployValueId
      */
-    void checkName(Long projectId, String name);
+    void checkName(Long projectId, String name, Long deployValueId);
 
     /**
      * 根据应用服务Id和环境Id获取配置
@@ -88,7 +89,7 @@ public interface DevopsDeployValueService {
 
     DevopsDeployValueDTO baseQueryById(Long valueId);
 
-    void baseCheckName(Long projectId, String name);
+    void baseCheckName(Long projectId, String name, Long deployValueId);
 
     List<DevopsDeployValueDTO> baseQueryByAppIdAndEnvId(Long projectId, Long appServiceId, Long envId);
 }

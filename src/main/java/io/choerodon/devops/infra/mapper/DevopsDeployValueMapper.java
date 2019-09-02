@@ -1,11 +1,12 @@
 package io.choerodon.devops.infra.mapper;
 
-import io.choerodon.devops.infra.dto.DevopsDeployValueDTO;
-import io.choerodon.mybatis.common.Mapper;
-import org.apache.ibatis.annotations.Param;
-
 import java.util.List;
 import java.util.Map;
+
+import org.apache.ibatis.annotations.Param;
+
+import io.choerodon.devops.infra.dto.DevopsDeployValueDTO;
+import io.choerodon.mybatis.common.Mapper;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -19,4 +20,6 @@ public interface DevopsDeployValueMapper extends Mapper<DevopsDeployValueDTO> {
                                              @Param("userId") Long userId,
                                              @Param("searchParam") Map<String, Object> searchParam,
                                              @Param("params") List<String> params);
+
+    DevopsDeployValueDTO queryById(@Param("valueId") Long id);
 }
