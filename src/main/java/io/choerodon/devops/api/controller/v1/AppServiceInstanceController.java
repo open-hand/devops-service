@@ -316,7 +316,7 @@ public class AppServiceInstanceController {
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "获取升级Value")
-    @GetMapping(value = "/{instance_id}/appServiceService/{version_id}/upgrade_value")
+    @GetMapping(value = "/{instance_id}/appServiceVersion/{version_id}/upgrade_value")
     public ResponseEntity<InstanceValueVO> queryUpgradeValue(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
