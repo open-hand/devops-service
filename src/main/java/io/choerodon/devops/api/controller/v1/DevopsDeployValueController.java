@@ -133,8 +133,10 @@ public class DevopsDeployValueController {
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "名称", required = true)
-            @RequestParam(value = "name") String name) {
-        devopsDeployValueService.checkName(projectId, name);
+            @RequestParam(value = "name") String name,
+            @ApiParam(value = "配置id")
+            @RequestParam(value = "deploy_value_id", required = false) Long deployValueId) {
+        devopsDeployValueService.checkName(projectId, name, deployValueId);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 

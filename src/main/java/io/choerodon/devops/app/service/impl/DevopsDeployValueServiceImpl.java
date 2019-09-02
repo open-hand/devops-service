@@ -2,11 +2,13 @@ package io.choerodon.devops.app.service.impl;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -28,8 +30,6 @@ import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.FileUtil;
 import io.choerodon.devops.infra.util.PageRequestUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -93,14 +93,14 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
 
     @Override
     public DevopsDeployValueVO query(Long projectId, Long valueId) {
-        DevopsDeployValueVO devopsDeployValueVO = ConvertUtils.convertObject(baseQueryById(valueId), DevopsDeployValueVO.class);
+        DevopsDeployValueVO devopsDeployValueVO = ConvertUtils.convertObject(devopsDeployValueMapper.queryById(valueId), DevopsDeployValueVO.class);
         devopsDeployValueVO.setIndex(checkDelete(projectId, valueId));
         return devopsDeployValueVO;
     }
 
     @Override
-    public void checkName(Long projectId, String name) {
-        baseCheckName(projectId, name);
+    public void checkName(Long projectId, String name, Long deployValueId) {
+        baseCheckName(projectId, name, deployValueId);
     }
 
     @Override
@@ -160,11 +160,16 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
     }
 
     @Override
-    public void baseCheckName(Long projectId, String name) {
+    public void baseCheckName(Long projectId, String name, Long deployValueId) {
         DevopsDeployValueDTO devopsDeployValueDTO = new DevopsDeployValueDTO();
         devopsDeployValueDTO.setProjectId(projectId);
         devopsDeployValueDTO.setName(name);
-        if (!devopsDeployValueMapper.select(devopsDeployValueDTO).isEmpty()) {
+        List<DevopsDeployValueDTO> devopsDeployValueDTOS = devopsDeployValueMapper.select(devopsDeployValueDTO);
+        boolean updateCheck = false;
+        if (deployValueId != null) {
+            updateCheck = devopsDeployValueDTOS.size() == 1 && devopsDeployValueDTOS.get(0).getId().equals(deployValueId);
+        }
+        if (!(devopsDeployValueDTOS.isEmpty() || updateCheck)) {
             throw new CommonException("error.devops.pipeline.value.name.exit");
         }
     }

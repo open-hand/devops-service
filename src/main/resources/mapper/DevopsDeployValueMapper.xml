@@ -54,4 +54,12 @@
             </foreach>
         </if>
     </sql>
+
+    <select id="queryById" resultType="io.choerodon.devops.infra.dto.DevopsDeployValueDTO">
+        SELECT ddv.*,
+               ds.name as appServiceName
+        FROM devops_deploy_value ddv
+        INNER JOIN devops_app_service ds ON ddv.app_service_id = ds.id
+        WHERE ddv.id = #{valueId}
+    </select>
 </mapper>
