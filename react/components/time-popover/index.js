@@ -5,14 +5,15 @@ import TimeAgo from 'timeago-react';
 import { formatDate } from '../../utils';
 
 function TimePopover({ datetime, placement }) {
-  let time = datetime;
+  let time;
 
-  if (time) {
-    if (typeof datetime === 'string') {
-      time = Math.min(Date.now(), new Date(datetime.replace(/-/g, '/')).getTime());
+  if (datetime) {
+    // eslint-disable-next-line no-underscore-dangle
+    if (typeof datetime === 'object' && datetime._isAMomentObject) {
+      time = datetime.format();
+    } else if (typeof datetime === 'string') {
+      time = new Date(datetime.replace(/-/g, '/')).getTime();
     }
-  } else {
-    time = null;
   }
 
   return <Fragment>

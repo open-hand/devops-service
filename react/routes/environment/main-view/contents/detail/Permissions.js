@@ -1,13 +1,14 @@
 import React from 'react';
 import { Action } from '@choerodon/master';
 import { Table } from 'choerodon-ui/pro';
+import { observer } from 'mobx-react-lite';
 import TimePopover from '../../../../../components/time-popover';
 import { useEnvironmentStore } from '../../../stores';
 import { useDetailStore } from './stores';
 
 const { Column } = Table;
 
-export default function Permissions() {
+function Permissions() {
   const {
     envStore: {
       getSelectedMenu: { active, skipCheckPermission },
@@ -54,3 +55,5 @@ export default function Permissions() {
     </Table>
   );
 }
+
+export default observer(Permissions);

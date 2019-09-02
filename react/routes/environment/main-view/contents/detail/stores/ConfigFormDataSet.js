@@ -27,7 +27,6 @@ export default ({ formatMessage, intlPrefix, projectId, store }) => {
   };
 
   return {
-    autoCreate: true,
     paging: false,
     fields: [{
       name: 'name',
@@ -47,6 +46,13 @@ export default ({ formatMessage, intlPrefix, projectId, store }) => {
       textField: 'text',
       label: '服务',
       required: true,
+    }, {
+      name: 'appServiceName',
+      type: 'string',
+      label: '服务',
+      required: true,
+      readOnly: true,
+      ignore: 'always',
     }, {
       name: 'value',
       type: 'string',

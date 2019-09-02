@@ -28,8 +28,10 @@ build-combine:
     - npm install --registry https://nexus.choerodon.com.cn/repository/choerodon-npm/ --sass-binary-site=http://npm.taobao.org/mirrors/node-sass
     - chmod -R 755 node_modules
     - npm run dist
-    - curl -sX POST -F token=${FE_CI_TOKEN} -F ref=master https://code.choerodon.com.cn/api/v4/projects/32/trigger/pipeline
     - mv src/main/resources/lib/dist docker
+    - echo '//${NPM_REGISTRY}:_authToken=${NPM_TOKEN}'>.npmrc
+    - npm publish --registry https://nexus.choerodon.com.cn/repository/private-npm/
+    - curl -sX POST -F token=${FRONT_REPOSITORY_TOKEN} -F ref=${REF_NAME} https://code.choerodon.com.cn/api/v4/projects/32/trigger/pipeline
     - kaniko -c $PWD/docker -f $PWD/docker/Dockerfile-combine -d ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}
   only:
     variables:

@@ -1,28 +1,6 @@
 /**
- * 【废弃】请使用 handlePromptError
- */
-function handleProptError(data) {
-  if (data && data.failed) {
-    Choerodon.prompt(data.message);
-    return false;
-  }
-  return data;
-}
-
-/**
- * 【废弃】请使用 handlePromptError
- */
-function handleCheckerProptError(data) {
-  if (data && data.failed) {
-    Choerodon.prompt(data.message);
-    return false;
-  }
-  return true;
-}
-
-/**
  * 数据请求后的错误拦截
- * 【将要废弃】请使用框架内置的错误处理方法
+ * 不建议使用此错误处理方法
  * @param data
  * @param hasReturn
  */
@@ -103,10 +81,8 @@ function timeConvert(time) {
 }
 
 export {
-  handleProptError,
   formatDate,
   getTimeLeft,
   timeConvert,
-  handleCheckerProptError,
   handlePromptError,
 };

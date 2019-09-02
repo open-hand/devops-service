@@ -63,27 +63,30 @@ export default function DeployConfig() {
 
   function openModifyModal(record) {
     const valueId = record.get('id');
-    // configFormDs.transport.read.url = `/devops/v1/projects/${projectId}/deploy_value?value_id=${valueId}`;
-    // configFormDs.query();
+    configFormDs.transport.read = {
+      url: `/devops/v1/projects/${projectId}/deploy_value?value_id=${valueId}`,
+      method: 'get',
+    };
+    configFormDs.query();
 
     Modal.open({
-      key: modifyModalKey,
-      title: formatMessage({ id: `${intlPrefix}.create.config` }),
-      // children: <DeployConfigForm
-      //   store={detailStore}
-      //   dataSet={configFormDs}
-      //   refresh={refresh}
-      //   envId={id}
-      //   intlPrefix={intlPrefix}
-      //   prefixCls={prefixCls}
-      // />,
       drawer: true,
+      key: modifyModalKey,
       style: configModalStyle,
+      title: formatMessage({ id: `${intlPrefix}.create.config` }),
+      children: <DeployConfigForm
+        isModify
+        store={detailStore}
+        dataSet={configFormDs}
+        refresh={refresh}
+        envId={id}
+        intlPrefix={intlPrefix}
+        prefixCls={prefixCls}
+      />,
       afterClose: () => {
-        // configFormDs.current.reset();
-        // configFormDs.current.clear();
-        // detailStore.setValue('');
-        // configFormDs.transport.read.url = '';
+        configFormDs.transport.read = null;
+        configFormDs.reset();
+        detailStore.setValue('');
       },
     });
   }

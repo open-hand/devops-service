@@ -8,7 +8,7 @@ import _ from 'lodash';
 import StatusTags from '../../../components/status-tag';
 import TimePopover from '../../../components/timePopover';
 import UserInfo from '../../../components/userInfo';
-import { handleCheckerProptError } from '../../../utils';
+import { handlePromptError } from '../../../utils';
 import { FAST_SEARCH } from '../components/Constants';
 import PipelineCreate from '../pipeline-create';
 import PipelineEdit from '../pipeline-edit';
@@ -185,7 +185,7 @@ export default class Pipeline extends Component {
         Choerodon.handleResponseError(e);
       });
 
-    if (handleCheckerProptError(response)) {
+    if (handlePromptError(response, false)) {
       this.closeRemove();
       this.handleRefresh(null, 1);
     }
@@ -213,7 +213,6 @@ export default class Pipeline extends Component {
 
   makeStatusInvalid = async () => {
     const {
-      
       AppState: {
         currentMenuType: { id: projectId },
       },
@@ -227,7 +226,7 @@ export default class Pipeline extends Component {
         this.setState({ invalidLoading: false });
         Choerodon.handleResponseError(e);
       });
-    if (handleCheckerProptError(response)) {
+    if (handlePromptError(response)) {
       this.closeInvalid();
       this.handleRefresh();
     }
@@ -236,7 +235,6 @@ export default class Pipeline extends Component {
 
   async makeStatusActive(id) {
     const {
-      
       AppState: {
         currentMenuType: { id: projectId },
       },
@@ -245,7 +243,7 @@ export default class Pipeline extends Component {
       .changeStatus(projectId, id, STATUS_ACTIVE)
       .catch((e) => Choerodon.handleResponseError(e));
 
-    if (handleCheckerProptError(response)) {
+    if (handlePromptError(response)) {
       this.handleRefresh();
     }
   }
@@ -272,7 +270,7 @@ export default class Pipeline extends Component {
    */
   executeFun = async () => {
     const {
-      
+
       AppState: {
         currentMenuType: { id: projectId },
       },
@@ -511,7 +509,7 @@ export default class Pipeline extends Component {
       },
       intl: { formatMessage },
     } = this.props;
-    const { 
+    const {
       getListData,
       getPageInfo,
       getLoading,
@@ -636,7 +634,7 @@ export default class Pipeline extends Component {
       {
         pipelineCreateStore.createVisible ? <PipelineCreate visible={pipelineCreateStore.createVisible} pipelineCreateStore={pipelineCreateStore} /> : null
       }
-      { 
+      {
         pipelineCreateStore.editId ? <PipelineEdit visible={pipelineCreateStore.editVisible} PipelineCreateStore={pipelineCreateStore} refreshTable={this.handleRefresh} /> : null
       }
       {showDelete && (<Modal

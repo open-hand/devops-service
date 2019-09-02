@@ -1,4 +1,4 @@
-import React, { Fragment, useState } from 'react';
+import React, { Fragment, useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Form, TextField, TextArea, Select } from 'choerodon-ui/pro';
 import YamlEditor from '../../../../../../../components/yamlEditor';
@@ -10,7 +10,7 @@ const { Option } = Select;
 
 function DeployConfigForm() {
   const {
-    isEdit,
+    isModify,
     intl: { formatMessage },
     intlPrefix,
     prefixCls,
@@ -23,6 +23,13 @@ function DeployConfigForm() {
   } = useFormStore();
   const [value, setValue] = useState('');
   const [isError, setValueError] = useState(false);
+
+  useEffect(() => {
+    const nextValue = store.getValue;
+    if (value !== nextValue) {
+      setValue(nextValue);
+    }
+  }, [store.getValue]);
 
   async function handleSubmit() {
     if (isError) return false;
@@ -70,15 +77,18 @@ function DeployConfigForm() {
 
   return <Fragment>
     <div className={`${prefixCls}-config-form`}>
-      <Form dataSet={dataSet}>
+      <Form dataSet={dataSet} record={dataSet.current}>
         <TextField name="name" />
         <TextArea name="description" resize="vertical" />
-        <Select
-          searchable={false}
-          name="appServiceId"
-        >
-          {appOptionDs.map(appOption)}
-        </Select>
+        {isModify
+          ? <TextField name="appServiceName" disabled />
+          : <Select
+            disabled={isModify}
+            searchable={false}
+            name="appServiceId"
+          >
+            {appOptionDs.map(appOption)}
+          </Select>}
       </Form>
     </div>
     <h3>{formatMessage({ id: `${intlPrefix}.config` })}</h3>
