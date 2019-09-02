@@ -341,7 +341,16 @@ public class AppServiceServiceImpl implements AppServiceService {
                                                    Boolean appMarket,
                                                    String type, Boolean doPage,
                                                    PageRequest pageRequest, String params) {
-        PageInfo<AppServiceDTO> applicationServiceDTOS = basePageByOptions(projectId, isActive, hasVersion, appMarket, type, doPage, pageRequest, params);
+        PageInfo<AppServiceDTO> applicationServiceDTOS = new PageInfo<>();
+        Long userId = GitUserNameUtil.getUserId().longValue();
+        ProjectDTO project = new ProjectDTO();
+        project.setId(projectId);
+        Boolean projectOwner = baseServiceClientOperator.isProjectOwner(userId, project);
+        if (projectOwner) {
+            applicationServiceDTOS = basePageByOptions(projectId, isActive, hasVersion, appMarket, type, doPage, pageRequest, params);
+        } else {
+            applicationServiceDTOS = baseProjectMembers(projectId, isActive, hasVersion, appMarket, type, doPage, pageRequest, params, userId);
+        }
         UserAttrDTO userAttrDTO = userAttrMapper.selectByPrimaryKey(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
@@ -352,6 +361,38 @@ public class AppServiceServiceImpl implements AppServiceService {
         PageInfo<AppServiceRepVO> resultDTOPage = ConvertUtils.convertPage(applicationServiceDTOS, this::dtoToRepVo);
         resultDTOPage.setList(setApplicationRepVOPermission(applicationServiceDTOS.getList(), userAttrDTO, projectDTO));
         return resultDTOPage;
+    }
+
+    /**
+     * 项目成员权限可查看的应用服务
+     *
+     * @param projectId
+     * @param isActive
+     * @param hasVersion
+     * @param appMarket
+     * @param type
+     * @param doPage
+     * @param pageRequest
+     * @param params
+     * @param userId
+     * @return
+     */
+    private PageInfo<AppServiceDTO> baseProjectMembers(Long projectId, Boolean isActive, Boolean hasVersion, Boolean appMarket, String type, Boolean doPage, PageRequest pageRequest, String params, Long userId) {
+        PageInfo<AppServiceDTO> applicationDTOPageInfo = new PageInfo<>();
+
+        Map<String, Object> mapParams = TypeUtil.castMapParams(params);
+        //是否需要分页
+        if (doPage != null && !doPage) {
+            applicationDTOPageInfo.setList(appServiceMapper.ListProjectMembersAppService(projectId, isActive, hasVersion, type,
+                    TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
+                    TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)), PageRequestUtil.checkSortIsEmpty(pageRequest), userId));
+        } else {
+            applicationDTOPageInfo = PageHelper
+                    .startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> appServiceMapper.ListProjectMembersAppService(projectId, isActive, hasVersion, type,
+                            TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
+                            TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)), PageRequestUtil.checkSortIsEmpty(pageRequest), userId));
+        }
+        return applicationDTOPageInfo;
     }
 
     @Override
