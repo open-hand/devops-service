@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.vo;
 
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * Created by younger on 2018/3/28.
  */
@@ -10,9 +12,29 @@ public class AppServiceReqVO {
     private String code;
     private Long projectId;
     private String type;
+    @ApiModelProperty("模板服务Id")
+    private Long templateAppServiceId;
+    @ApiModelProperty("模板服务版本Id")
+    private Long templateAppServiceVersionId;
     private Long harborConfigId;
     private Long chartConfigId;
     private String imgUrl;
+
+    public Long getTemplateAppServiceId() {
+        return templateAppServiceId;
+    }
+
+    public void setTemplateAppServiceId(Long templateAppServiceId) {
+        this.templateAppServiceId = templateAppServiceId;
+    }
+
+    public Long getTemplateAppServiceVersionId() {
+        return templateAppServiceVersionId;
+    }
+
+    public void setTemplateAppServiceVersionId(Long templateAppServiceVersionId) {
+        this.templateAppServiceVersionId = templateAppServiceVersionId;
+    }
 
     public Long getId() {
         return id;

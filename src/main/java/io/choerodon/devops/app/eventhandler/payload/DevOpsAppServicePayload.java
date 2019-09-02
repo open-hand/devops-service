@@ -17,6 +17,8 @@ public class DevOpsAppServicePayload {
     private List<Long> userIds;
     private Boolean skipCheckPermission;
     private Long iamProjectId;
+    private Long templateAppServiceId;
+    private Long templateAppServiceVersionId;
 
     public Integer getUserId() {
         return userId;
@@ -96,5 +98,21 @@ public class DevOpsAppServicePayload {
 
     public void setIamProjectId(Long iamProjectId) {
         this.iamProjectId = iamProjectId;
+    }
+
+    public Long getTemplateAppServiceId() {
+        return templateAppServiceId;
+    }
+
+    public void setTemplateAppServiceId(Long templateAppServiceId) {
+        this.templateAppServiceId = templateAppServiceId;
+    }
+
+    public Long getTemplateAppServiceVersionId() {
+        return templateAppServiceVersionId;
+    }
+
+    public void setTemplateAppServiceVersionId(Long templateAppServiceVersionId) {
+        this.templateAppServiceVersionId = templateAppServiceVersionId;
     }
 }
