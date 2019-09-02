@@ -19,7 +19,6 @@ import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.app.eventhandler.payload.AppServiceImportPayload;
 import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.infra.enums.GitPlatformType;
 import io.choerodon.mybatis.annotation.SortDefault;
@@ -667,6 +666,23 @@ public class AppServiceController {
                 applicationServiceService.listAppServiceGroup(projectId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.list.app.group.error"));
+    }
+
+
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "查询可部署应用服务")
+    @GetMapping(value = "/list_deploy")
+    public ResponseEntity<List<AppServiceGroupVO>> listDeployAppServices(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "类型", required = true)
+            @RequestParam(value = "type") String type,
+            @ApiParam(value = "查询参数", required = false)
+            @RequestParam(value = "param", required = false) String param) {
+        return Optional.ofNullable(
+                applicationServiceService.listDeployAppServices(projectId, type, param))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.list.app.service.deploy"));
     }
 
 }

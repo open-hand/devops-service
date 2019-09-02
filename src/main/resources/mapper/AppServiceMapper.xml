@@ -37,11 +37,6 @@
                 AND NOT EXISTS ( SELECT 1 FROM devops_app_service_version dav WHERE dav.app_service_id = da.id )
             </if>
         </if>
-        <if test="appMarket != null">
-            <if test="!appMarket">
-                AND da.gitlab_project_id is NOT NULL
-            </if>
-        </if>
         <include refid="sqlparam"/>
         <if test="index !=''">
             ORDER BY da.is_active desc,

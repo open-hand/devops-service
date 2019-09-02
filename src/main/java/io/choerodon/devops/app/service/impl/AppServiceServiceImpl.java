@@ -105,6 +105,10 @@ public class AppServiceServiceImpl implements AppServiceService {
     private static final String APP_SERVICE = "appService";
     private static final String ERROR_USER_NOT_OWNER = "error.user.not.owner";
     private static final String METRICS = "metrics";
+    private static final String NORMAL_SERVICE = "normal_service";
+    private static final String SHARE_SERVICE = "share_service";
+    private static final String MARKET_SERVICE = "market_service";
+
     private static final IOFileFilter filenameFilter = new IOFileFilter() {
 
         @Override
@@ -1746,12 +1750,12 @@ public class AppServiceServiceImpl implements AppServiceService {
         Map<String, Object> mapParams = TypeUtil.castMapParams(params);
         //是否需要分页
         if (doPage != null && !doPage) {
-            applicationDTOPageInfo.setList(appServiceMapper.list(projectId, isActive, hasVersion, appMarket, type,
+            applicationDTOPageInfo.setList(appServiceMapper.list(projectId, isActive, hasVersion, type,
                     TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
                     TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)), PageRequestUtil.checkSortIsEmpty(pageRequest)));
         } else {
             applicationDTOPageInfo = PageHelper
-                    .startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> appServiceMapper.list(projectId, isActive, hasVersion, appMarket, type,
+                    .startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> appServiceMapper.list(projectId, isActive, hasVersion, type,
                             TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
                             TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)), PageRequestUtil.checkSortIsEmpty(pageRequest)));
         }
@@ -1978,34 +1982,80 @@ public class AppServiceServiceImpl implements AppServiceService {
         List<AppServiceDTO> organizationShareApps = ListSharedAppService(projectId);
 
         List<AppServiceGroupVO> appServiceGroupList = new ArrayList<>();
-        changeList(appServiceGroupList,marketDownloadApps,false);
-        changeList(appServiceGroupList,organizationShareApps,true);
+        changeList(appServiceGroupList, marketDownloadApps, false);
+        changeList(appServiceGroupList, organizationShareApps, true);
 
         return appServiceGroupList;
     }
 
-    private void changeList(List<AppServiceGroupVO> appServiceGroupList,List<AppServiceDTO> appServiceDTOList,Boolean share){
+    @Override
+    public List<AppServiceGroupVO> listDeployAppServices(Long projectId, String type, String param) {
+        List<AppServiceDTO> list = new ArrayList<>();
+        List<String> params = new ArrayList<>();
+        List<AppServiceGroupVO> appServiceGroupList = new ArrayList<>();
+        if (param != null && !param.isEmpty()) {
+            params.add(param);
+        }
+        switch (type) {
+            case NORMAL_SERVICE: {
+                list.addAll(appServiceMapper.list(projectId, true, true, null, null, params, PageRequestUtil.checkSortIsEmpty(new PageRequest())));
+                break;
+            }
+            case SHARE_SERVICE: {
+                Long organizationId = baseServiceClientOperator.queryIamProjectById(projectId).getOrganizationId();
+                List<Long> appServiceIds = new ArrayList<>();
+                baseServiceClientOperator.listIamProjectByOrgId(organizationId, null, null).forEach(proId ->
+                        baseListAll(projectId).forEach(appServiceDTO -> appServiceIds.add(appServiceDTO.getId()))
+                );
+                list.addAll(appServiceMapper.listShareApplicationService(appServiceIds, projectId, params));
+                break;
+            }
+            case MARKET_SERVICE: {
+                list.addAll(appServiceMapper.queryMarketDownloadApps());
+                break;
+            }
+            default: {
+                throw new CommonException("error.list.deploy.app.service.type");
+            }
+        }
+        Map<Long, List<AppServiceGroupInfoVO>> map = list.stream()
+                .map(this::dtoToGroupInfoVO)
+                .collect(Collectors.groupingBy(AppServiceGroupInfoVO::getAppId));
+
+        for (Long key : map.keySet()) {
+            ApplicationDTO appDTO = baseServiceClient.queryAppById(key);
+            AppServiceGroupVO appServiceGroupVO = dtoToGroupVO(appDTO);
+            appServiceGroupVO.setAppServiceList(map.get(key));
+            appServiceGroupList.add(appServiceGroupVO);
+        }
+        return appServiceGroupList;
+    }
+
+    private void changeList(List<AppServiceGroupVO> appServiceGroupList, List<AppServiceDTO> appServiceDTOList, Boolean share) {
         if (!appServiceDTOList.isEmpty()) {
             // 进行分组合并
             List<AppServiceGroupVO> appServiceGroupVOS = groupMerging(appServiceDTOList, share);
             appServiceGroupList.addAll(appServiceGroupVOS);
         }
     }
+
     private List<AppServiceDTO> baseListAll(Long projectId) {
         return appServiceMapper.listAll(projectId);
     }
+
     /**
      * 获取组织共享的应用服务
+     *
      * @param projectId
      * @return
      */
-    private List<AppServiceDTO> ListSharedAppService(Long projectId){
+    private List<AppServiceDTO> ListSharedAppService(Long projectId) {
         // 获取组织Id
         Long organizationId = baseServiceClientOperator.queryIamProjectById(projectId).getOrganizationId();
         List<Long> appServiceIds = new ArrayList<>();
         baseServiceClientOperator.listIamProjectByOrgId(organizationId, null, null).forEach(projectDTO ->
                 baseListAll(projectId).forEach(appServiceDTO -> appServiceIds.add(appServiceDTO.getId()))
-                );
+        );
         // 分别获取组织共享和市场下载的应用服务集合
         List<AppServiceDTO> organizationShareApps = appServiceMapper.queryOrganizationShareApps(appServiceIds);
         // 查询当前项目可选的项目共享Apps

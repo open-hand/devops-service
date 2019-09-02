@@ -365,6 +365,7 @@ public interface AppServiceService {
 
     /**
      * 导入内部应用服务（创建gitlabProject）
+     *
      * @param appServiceImportPayload
      */
     void importAppServiceGitlab(AppServiceImportPayload appServiceImportPayload);
@@ -428,6 +429,16 @@ public interface AppServiceService {
      * @return List<AppServiceGroupVO>
      */
     List<AppServiceGroupVO> listAppServiceGroup(Long projectId);
+
+    /**
+     * 查询可部署应用服务
+     *
+     * @param projectId
+     * @param type normal_service(本项目服务) share_service(组织下共享) market_service(应用市场下载)
+     * @param param
+     * @return
+     */
+    List<AppServiceGroupVO> listDeployAppServices(Long projectId, String type, String param);
 
     String getToken(Integer gitlabProjectId, String applicationDir, UserAttrDTO userAttrDTO);
 }
