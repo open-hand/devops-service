@@ -88,10 +88,12 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
                                 return null;
                             }
                         }).collect(Collectors.toList());
-                devopsDeployRecordVO.setEnv(Joiner.on(",").join(env));
+                if(!env.isEmpty()) {
+                    devopsDeployRecordVO.setEnv(Joiner.on(",").join(env));
+                }
             }
             iamUserDTOS.forEach(iamUserDTO -> {
-                if (devopsDeployRecordVO.getDeployCreatedBy().equals(iamUserDTO.getId())) {
+                if (iamUserDTO.getId().equals(devopsDeployRecordVO.getDeployCreatedBy())) {
                     devopsDeployRecordVO.setUserName(iamUserDTO.getRealName());
                     devopsDeployRecordVO.setUserImage(iamUserDTO.getImageUrl());
                 }
