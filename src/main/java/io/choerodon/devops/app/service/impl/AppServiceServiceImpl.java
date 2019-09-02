@@ -13,6 +13,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSONObject;
+import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
@@ -341,21 +342,12 @@ public class AppServiceServiceImpl implements AppServiceService {
                                                    Boolean appMarket,
                                                    String type, Boolean doPage,
                                                    PageRequest pageRequest, String params) {
-        PageInfo<AppServiceDTO> applicationServiceDTOS = new PageInfo<>();
-        Long userId = GitUserNameUtil.getUserId().longValue();
-        ProjectDTO project = new ProjectDTO();
-        project.setId(projectId);
-        Boolean projectOwner = baseServiceClientOperator.isProjectOwner(userId, project);
-        if (projectOwner) {
-            applicationServiceDTOS = basePageByOptions(projectId, isActive, hasVersion, appMarket, type, doPage, pageRequest, params);
-        } else {
-            applicationServiceDTOS = baseProjectMembers(projectId, isActive, hasVersion, appMarket, type, doPage, pageRequest, params, userId);
-        }
-        UserAttrDTO userAttrDTO = userAttrMapper.selectByPrimaryKey(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        PageInfo<AppServiceDTO>  applicationServiceDTOS = basePageByOptions(projectId, isActive, hasVersion, appMarket, type, doPage, pageRequest, params);
+        UserAttrDTO userAttrDTO = userAttrMapper.selectByPrimaryKey(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
-
         initApplicationParams(projectDTO, organizationDTO, applicationServiceDTOS.getList(), urlSlash);
 
         PageInfo<AppServiceRepVO> resultDTOPage = ConvertUtils.convertPage(applicationServiceDTOS, this::dtoToRepVo);
@@ -363,37 +355,6 @@ public class AppServiceServiceImpl implements AppServiceService {
         return resultDTOPage;
     }
 
-    /**
-     * 项目成员权限可查看的应用服务
-     *
-     * @param projectId
-     * @param isActive
-     * @param hasVersion
-     * @param appMarket
-     * @param type
-     * @param doPage
-     * @param pageRequest
-     * @param params
-     * @param userId
-     * @return
-     */
-    private PageInfo<AppServiceDTO> baseProjectMembers(Long projectId, Boolean isActive, Boolean hasVersion, Boolean appMarket, String type, Boolean doPage, PageRequest pageRequest, String params, Long userId) {
-        PageInfo<AppServiceDTO> applicationDTOPageInfo = new PageInfo<>();
-
-        Map<String, Object> mapParams = TypeUtil.castMapParams(params);
-        //是否需要分页
-        if (doPage != null && !doPage) {
-            applicationDTOPageInfo.setList(appServiceMapper.ListProjectMembersAppService(projectId, isActive, hasVersion, type,
-                    TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
-                    TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)), PageRequestUtil.checkSortIsEmpty(pageRequest), userId));
-        } else {
-            applicationDTOPageInfo = PageHelper
-                    .startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> appServiceMapper.ListProjectMembersAppService(projectId, isActive, hasVersion, type,
-                            TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
-                            TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)), PageRequestUtil.checkSortIsEmpty(pageRequest), userId));
-        }
-        return applicationDTOPageInfo;
-    }
 
     @Override
     public PageInfo<AppServiceRepVO> pageCodeRepository(Long projectId, PageRequest pageRequest, String params) {
@@ -1793,20 +1754,29 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public PageInfo<AppServiceDTO> basePageByOptions(Long projectId, Boolean isActive, Boolean hasVersion, Boolean
             appMarket, String type, Boolean doPage, PageRequest pageRequest, String params) {
-        PageInfo<AppServiceDTO> applicationDTOPageInfo = new PageInfo<>();
 
         Map<String, Object> mapParams = TypeUtil.castMapParams(params);
+        Long userId = GitUserNameUtil.getUserId().longValue();
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        Boolean projectOwner = baseServiceClientOperator.isProjectOwner(userId, projectDTO);
+        List<AppServiceDTO> list;
         //是否需要分页
-        if (doPage != null && !doPage) {
-            applicationDTOPageInfo.setList(appServiceMapper.list(projectId, isActive, hasVersion, type,
-                    TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
-                    TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)), PageRequestUtil.checkSortIsEmpty(pageRequest)));
-        } else {
-            applicationDTOPageInfo = PageHelper
-                    .startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> appServiceMapper.list(projectId, isActive, hasVersion, type,
-                            TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
-                            TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)), PageRequestUtil.checkSortIsEmpty(pageRequest)));
+        if (doPage != null && doPage) {
+            PageHelper
+                    .startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest));
         }
+        if(projectOwner){
+            list = appServiceMapper.list(projectId, isActive, hasVersion, type,
+                    TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
+                    TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)), PageRequestUtil.checkSortIsEmpty(pageRequest));
+        }
+        else{
+            list = appServiceMapper.ListProjectMembersAppService(projectId, isActive, hasVersion, type,
+                    TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
+                    TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)), PageRequestUtil.checkSortIsEmpty(pageRequest), userId);
+        }
+
+        PageInfo<AppServiceDTO> applicationDTOPageInfo = new PageInfo<>(list);
         return applicationDTOPageInfo;
     }
 
