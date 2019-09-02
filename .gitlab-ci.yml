@@ -37,7 +37,6 @@ build-combine:
     variables:
       - $COMBINE == "true"
 
-
 release:
   stage: release
   script:
