@@ -12,6 +12,7 @@ public class AppServiceReqVO {
     private String type;
     private Long harborConfigId;
     private Long chartConfigId;
+    private String imgUrl;
 
     public Long getId() {
         return id;
@@ -67,5 +68,13 @@ public class AppServiceReqVO {
 
     public void setChartConfigId(Long chartConfigId) {
         this.chartConfigId = chartConfigId;
+    }
+
+    public String getImgUrl() {
+        return imgUrl;
+    }
+
+    public void setImgUrl(String imgUrl) {
+        this.imgUrl = imgUrl;
     }
 }
