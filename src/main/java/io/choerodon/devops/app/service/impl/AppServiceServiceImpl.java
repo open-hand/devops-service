@@ -1759,7 +1759,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         Long userId = GitUserNameUtil.getUserId().longValue();
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         Boolean projectOwner = baseServiceClientOperator.isProjectOwner(userId, projectDTO);
-        List<AppServiceDTO> list;
+        List<AppServiceDTO> list = new ArrayList<>();
         //是否需要分页
         if (doPage != null && doPage) {
             PageHelper
