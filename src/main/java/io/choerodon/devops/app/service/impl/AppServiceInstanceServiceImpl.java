@@ -1370,7 +1370,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         appServiceInstanceDTO.setAppServiceId(appServiceDeployVO.getAppServiceId());
         appServiceInstanceDTO.setEnvId(appServiceDeployVO.getEnvironmentId());
         appServiceInstanceDTO.setStatus(InstanceStatus.OPERATING.getStatus());
-        appServiceDeployVO.setValueId(appServiceDeployVO.getValueId());
+        appServiceInstanceDTO.setValueId(appServiceDeployVO.getValueId());
         if (appServiceDeployVO.getType().equals(UPDATE)) {
             AppServiceInstanceDTO oldAppServiceInstanceDTO = baseQuery(
                     appServiceDeployVO.getInstanceId());

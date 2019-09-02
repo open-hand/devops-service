@@ -35,6 +35,8 @@ import io.choerodon.devops.infra.util.TypeUtil;
 import io.kubernetes.client.JSON;
 import io.kubernetes.client.custom.IntOrString;
 import io.kubernetes.client.models.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -48,6 +50,8 @@ import org.springframework.util.StringUtils;
  */
 @Service
 public class DevopsServiceServiceImpl implements DevopsServiceService {
+
+    private static final Logger logger = LoggerFactory.getLogger(DevopsServiceServiceImpl.class);
 
     public static final String ENDPOINTS = "Endpoints";
     public static final String LOADBALANCER = "LoadBalancer";
@@ -1079,6 +1083,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                     serviceSagaPayLoad.getGitlabUserId(),
                     serviceSagaPayLoad.getDevopsServiceDTO().getId(), SERVICE, serviceSagaPayLoad.getV1Endpoints(), false, serviceSagaPayLoad.getDevopsEnvironmentDTO().getId(), filePath);
         } catch (Exception e) {
+            logger.info("create or update service failed", e);
             //有异常更新网络以及command的状态
             DevopsServiceDTO devopsServiceDTO = baseQuery(serviceSagaPayLoad.getDevopsServiceDTO().getId());
             DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
@@ -1090,7 +1095,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                 baseUpdate(devopsServiceDTO);
                 DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsServiceDTO.getCommandId());
                 devopsEnvCommandDTO.setStatus(CommandStatus.FAILED.getStatus());
-                devopsEnvCommandDTO.setError("create or update gitOps file failed!");
+                devopsEnvCommandDTO.setError("create or update service failed");
                 devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
             }
         }

@@ -248,10 +248,12 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 .stream()
                 .peek(t -> setEnvStatus(upgradeClusterList, t))
                 .collect(Collectors.toList());
+
         // 没有环境列表则返回空列表
         if (devopsEnvironmentDTOS.isEmpty()) {
             return devopsEnvGroupEnvsDTOS;
         }
+
         List<DevopsEnviromentRepVO> devopsEnvironmentRepDTOS = ConvertUtils.convertList(devopsEnvironmentDTOS, DevopsEnviromentRepVO.class);
         //选出未激活的环境列表
         devopsEnvGroupEnvsDTO.setDevopsEnviromentRepDTOs(devopsEnvironmentRepDTOS

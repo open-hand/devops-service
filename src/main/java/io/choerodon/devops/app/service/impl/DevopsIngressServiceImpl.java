@@ -40,6 +40,8 @@ import io.choerodon.devops.infra.util.TypeUtil;
 import io.kubernetes.client.JSON;
 import io.kubernetes.client.custom.IntOrString;
 import io.kubernetes.client.models.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -49,6 +51,8 @@ import org.springframework.util.StringUtils;
 
 @Component
 public class DevopsIngressServiceImpl implements DevopsIngressService {
+
+    private static final Logger logger = LoggerFactory.getLogger(DevopsIngressServiceImpl.class);
 
     public static final String ERROR_DOMAIN_PATH_EXIST = "error.domain.path.exist";
     public static final String INGRESS = "Ingress";
@@ -617,6 +621,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
                     ingressSagaPayload.getGitlabUserId(),
                     ingressSagaPayload.getDevopsIngressDTO().getId(), INGRESS, null, false, ingressSagaPayload.getDevopsEnvironmentDTO().getId(), filePath);
         } catch (Exception e) {
+            logger.info("create or update Ingress failed!",e);
             //有异常更新实例以及command的状态
             DevopsIngressDTO devopsIngressDTO = baseQuery(ingressSagaPayload.getDevopsIngressDTO().getId());
             DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
@@ -628,7 +633,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
                 baseUpdate(devopsIngressDTO);
                 DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsIngressDTO.getCommandId());
                 devopsEnvCommandDTO.setStatus(CommandStatus.FAILED.getStatus());
-                devopsEnvCommandDTO.setError("create or update gitOps file failed!");
+                devopsEnvCommandDTO.setError("create or update Ingress failed!");
                 devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
             }
         }

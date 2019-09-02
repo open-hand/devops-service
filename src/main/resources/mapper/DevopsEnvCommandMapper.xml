@@ -60,8 +60,8 @@ WHERE
 
     <update id="updateSha">
         UPDATE devops_env_command dc
-        SET dc.error = null
-        and dc.sha = #{sha}
+        SET dc.error = null ,
+         dc.sha = #{sha}
         WHERE dc.id = #{id}
     </update>
 
