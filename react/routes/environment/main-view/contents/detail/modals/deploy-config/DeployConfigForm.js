@@ -77,7 +77,7 @@ function DeployConfigForm() {
 
   return <Fragment>
     <div className={`${prefixCls}-config-form`}>
-      <Form dataSet={dataSet} record={dataSet.current}>
+      <Form dataSet={dataSet}>
         <TextField name="name" />
         <TextArea name="description" resize="vertical" />
         {isModify
