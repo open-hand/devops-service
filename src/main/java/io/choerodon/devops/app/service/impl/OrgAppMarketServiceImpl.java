@@ -606,7 +606,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             newUser.setUsername(appMarketUploadVO.getUser().getRobotName());
             newUser.setPassword(appMarketUploadVO.getUser().getRobotToken());
             // 执行脚本
-//            callScript(appServiceMarketVO.getHarborUrl(), newUser, oldUser);
+            callScript(appServiceMarketVO.getHarborUrl(), newUser, oldUser);
             FileUtil.deleteFile(String.format(APP_TEMP_PATH_FORMAT, SHELL, File.separator, IMAGES));
         });
         marketImageUrlVO.setServiceImageVOS(imageVOList);
@@ -635,7 +635,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             oldUser.setPassword(appMarketDownloadVO.getUser().getRobotToken());
             harborUrl = harborUrl.endsWith("/") ? harborUrl : harborUrl + "/";
 
-//            callScript(String.format("%s%s", harborUrl, MARKET_PRO), newUser, oldUser);
+            callScript(String.format("%s%s", harborUrl, MARKET_PRO), newUser, oldUser);
             FileUtil.deleteFile(String.format(APP_TEMP_PATH_FORMAT, shellPath, File.separator, IMAGES));
         });
     }
@@ -643,7 +643,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
     /**
      * 脚本文件具体执行及脚本执行过程探测
      *
-     * @param script 脚本文件绝对路径
+     * @param 
      */
     private void callScript( String harborUrl, User newUser, User oldUser) {
         try {
