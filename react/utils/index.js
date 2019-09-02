@@ -80,9 +80,16 @@ function timeConvert(time) {
   return result;
 }
 
+function removeEndsChar(str, char) {
+  if (typeof str !== 'string') return '';
+
+  return str.endsWith(char) ? str.slice(-1) : str;
+}
+
 export {
   formatDate,
   getTimeLeft,
   timeConvert,
   handlePromptError,
+  removeEndsChar,
 };
