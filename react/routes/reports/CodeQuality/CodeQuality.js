@@ -332,7 +332,7 @@ class CodeQuality extends Component {
           onChange={this.handleAppSelect}
         >
           {
-            _.map(getAllApps, ({ id, code, appName }) => (
+            _.map(getAllApps, ({ id, code, name: appName }) => (
               <Option value={id} key={id}>
                 <Tooltip title={code}>
                   <span>{appName}</span>
