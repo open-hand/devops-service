@@ -29,6 +29,7 @@ build-combine:
     - chmod -R 755 node_modules
     - npm run dist
     - mv src/main/resources/lib/dist docker
+    - npm run compile
     - echo '//${NPM_REGISTRY}:_authToken=${NPM_TOKEN}'>.npmrc
     - npm publish --registry https://nexus.choerodon.com.cn/repository/private-npm/
     - curl -sX POST -F token=${FRONT_REPOSITORY_TOKEN} -F ref=${REF_NAME} https://code.choerodon.com.cn/api/v4/projects/32/trigger/pipeline

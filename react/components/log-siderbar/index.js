@@ -9,6 +9,7 @@ import ReactCodeMirror from 'react-codemirror';
 import 'codemirror/lib/codemirror.css';
 import 'codemirror/theme/base16-dark.css';
 import './index.less';
+import { removeEndsChar } from '../../utils';
 
 
 const LOG_OPTIONS = {
@@ -147,8 +148,8 @@ export default class LogSidebar extends Component {
     const clusterId = this.props.clusterId || this.props.record.clusterId;
     const { logId, containerName, following } = this.state;
     const authToken = document.cookie.split('=')[1];
-    const url = `POD_WEBSOCKET_URL/devops/log?key=cluster:${clusterId}.log:${logId}&env=${namespace}&podName=${podName}&containerName=${containerName}&logId=${logId}&token=${authToken}`;
-    // const url = `ws://devops-service-front.staging.saas.hand-china.com/devops/log?key=cluster:${clusterId}.log:${logId}&env=${namespace}&podName=${podName}&containerName=${containerName}&logId=${logId}&token=${authToken}`;
+    const wsUrl = removeEndsChar(window._env_.DEVOPS_HOST, '/');
+    const url = `${wsUrl}/devops/log?key=cluster:${clusterId}.log:${logId}&env=${namespace}&podName=${podName}&containerName=${containerName}&logId=${logId}&token=${authToken}`;
     const logs = [];
     let oldLogs = [];
     let editor = null;
@@ -244,7 +245,7 @@ export default class LogSidebar extends Component {
       <Content
         className="sidebar-content"
       >
-       
+
         <div className={fullScreen ? 'c7n-container-sidebar-content_full' : 'c7n-container-sidebar-content'}>
           <div className="c7n-term-title">
             <FormattedMessage id="container.term.log" />
