@@ -78,19 +78,16 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
         }
         PageInfo<DevopsDeployValueDTO> deployValueDTOPageInfo = basePageByOptions(projectId, appServiceId, envId, userId, pageRequest, params);
         PageInfo<DevopsDeployValueVO> page = ConvertUtils.convertPage(deployValueDTOPageInfo, DevopsDeployValueVO.class);
-        page.setList(deployValueDTOPageInfo.getList().stream().map(devopsDeployValueDTO -> {
-
-            DevopsDeployValueVO devopsDeployValueVO = ConvertUtils.convertObject(devopsDeployValueDTO, DevopsDeployValueVO.class);
-            IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(devopsDeployValueDTO.getCreatedBy());
-            devopsDeployValueVO.setCreateUserName(iamUserDTO.getLoginName());
-            devopsDeployValueVO.setCreateUserUrl(iamUserDTO.getImageUrl());
-            devopsDeployValueVO.setCreateUserRealName(iamUserDTO.getRealName());
-            DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsDeployValueDTO.getEnvId());
+        page.getList().forEach(value -> {
+            IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(value.getCreatedBy());
+            value.setCreateUserName(iamUserDTO.getLoginName());
+            value.setCreateUserUrl(iamUserDTO.getImageUrl());
+            value.setCreateUserRealName(iamUserDTO.getRealName());
+            DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(value.getEnvId());
             if (updatedEnvList.contains(devopsEnvironmentDTO.getClusterId())) {
-                devopsDeployValueVO.setEnvStatus(true);
+                value.setEnvStatus(true);
             }
-            return devopsDeployValueVO;
-        }).collect(Collectors.toList()));
+        });
         return page;
     }
 
@@ -125,7 +122,7 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
 
     @Override
     public PageInfo<DevopsDeployValueDTO> basePageByOptions(Long projectId, Long appServiceId, Long envId, Long userId, PageRequest pageRequest, String params) {
-        Map maps = gson.fromJson(params, Map.class);
+        Map<String, Object> maps = TypeUtil.castMapParams(params);
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
         List<String> paramList = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
         return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest))
