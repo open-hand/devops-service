@@ -13,7 +13,7 @@ import DomainForm from '../../../../components/domain-form';
 
 import './index.less';
 
-const { Option } = Select;
+const { Option, OptGroup } = Select;
 
 export default injectIntl(observer(({ record, dataSet, store, projectId, networkStore, ingressStore, refresh, intlPrefix, prefixCls, modal, intl: { formatMessage } }) => {
   const [resourceIsExpand, setResourceIsExpand] = useState(false);
@@ -24,34 +24,50 @@ export default injectIntl(observer(({ record, dataSet, store, projectId, network
   const [hasYamlFailed, setHasYamlFailed] = useState(false);
 
   useEffect(() => {
-    store.loadAppService(projectId);
     store.loadEnv(projectId);
   }, []);
 
   useEffect(() => {
+    record.get('appServiceId') && record.set('appServiceId', null);
+    store.loadAppService(projectId, record.get('appServiceSource'));
+  }, [record.get('appServiceSource')]);
+
+  useEffect(() => {
     if (record.get('appServiceId')) {
-      store.loadVersion(projectId, record.get('appServiceId'));
-      const data = find(store.getAppService, ['id', record.get('appServiceId')]) || {};
-      record.set('instanceName', getRandomName(data.code));
+      store.loadVersion(projectId, record.get('appServiceId').split('__')[0]);
+      record.set('instanceName', getRandomName(record.get('appServiceId').split('__')[1]));
     }
     record.get('appServiceVersionId') && record.set('appServiceVersionId', null);
   }, [record.get('appServiceId')]);
 
   useEffect(() => {
     if (record.get('environmentId') && record.get('appServiceId')) {
-      store.loadConfig(projectId, record.get('environmentId'), record.get('appServiceId'));
-      networkStore.loadPorts(projectId, record.get('environmentId'), record.get('appServiceId'));
+      store.loadConfig(projectId, record.get('environmentId'), record.get('appServiceId').split('__')[0]);
+      networkStore.loadPorts(projectId, record.get('environmentId'), record.get('appServiceId').split('__')[0]);
     }
     record.get('valueId', null);
   }, [record.get('environmentId'), record.get('appServiceId')]);
 
   useEffect(() => {
+    if (record.get('appServiceVersionId') && !record.get('valueId')) {
+      record.get('appServiceVersionId') && store.loadDeployValue(projectId, record.get('appServiceVersionId'));
+    }
+  }, [record.get('appServiceVersionId')]);
+
+  useEffect(() => {
     record.get('valueId') && store.loadConfigValue(projectId, record.get('valueId'));
+    if (record.get('valueId')) {
+      store.loadConfigValue(projectId, record.get('valueId'));
+    } else if (record.get('appServiceVersionId')) {
+      store.loadDeployValue(projectId, record.get('appServiceVersionId'));
+    } else {
+      store.setConfigValue('');
+    }
   }, [record.get('valueId')]);
 
   useEffect(() => {
-    ChangeConfigValue(store.getConfigValue.value);
-  }, [store.getConfigValue.value]);
+    ChangeConfigValue(store.getConfigValue);
+  }, [store.getConfigValue]);
 
   modal.handleOk(async () => {
     if (hasYamlFailed) return false;
@@ -90,7 +106,7 @@ export default injectIntl(observer(({ record, dataSet, store, projectId, network
 
           const network = {
             name,
-            appServiceId: record.get('appServiceId'),
+            appServiceId: record.get('appServiceId').split('__')[0],
             instances: [record.get('instanceName')],
             envId: record.get('environmentId'),
             externalIp: externalIps && externalIps.length ? externalIps.join(',') : null,
@@ -135,7 +151,7 @@ export default injectIntl(observer(({ record, dataSet, store, projectId, network
             domain,
             name,
             certId,
-            appServiceId: record.get('appServiceId'),
+            appServiceId: record.get('appServiceId').split('__')[0],
             envId: record.get('environmentId'),
             pathList,
           };
@@ -147,8 +163,9 @@ export default injectIntl(observer(({ record, dataSet, store, projectId, network
     }
     if (!hasFailed && await dataSet.submit() !== false) {
       refresh();
+    } else {
+      return false;
     }
-    return false;
   });
 
   function getRandomName(prefix) {
@@ -175,14 +192,24 @@ export default injectIntl(observer(({ record, dataSet, store, projectId, network
     <div className={`${prefixCls}-manual-deploy`}>
       <Form record={record} columns={3}>
         <SelectBox name="appServiceSource">
-          <Option value="project">{formatMessage({ id: `${intlPrefix}.source.project` })}</Option>
-          <Option value="organization">{formatMessage({ id: `${intlPrefix}.source.organization` })}</Option>
-          <Option value="market">{formatMessage({ id: `${intlPrefix}.source.market` })}</Option>
+          <Option value="normal_service">{formatMessage({ id: `${intlPrefix}.source.project` })}</Option>
+          <Option value="share_service">{formatMessage({ id: `${intlPrefix}.source.organization` })}</Option>
+          <Option value="market_service">{formatMessage({ id: `${intlPrefix}.source.market` })}</Option>
         </SelectBox>
         <Select name="appServiceId" searchable newLine>
-          {map(store.getAppService, ({ id, name }) => (
-            <Option value={id}>{name}</Option>
-          ))}
+          {record.get('appServiceSource') === 'normal_service' ? (
+            map(store.getAppService[0] && store.getAppService[0].appServiceList, ({ id, name, code }) => (
+              <Option value={`${id}__${code}`}>{name}</Option>
+            ))
+          ) : (
+            map(store.getAppService, ({ id: groupId, name: groupName, appServiceList }) => (
+              <OptGroup label={groupName} key={groupId}>
+                {map(appServiceList, ({ id, name, code }) => (
+                  <Option value={`${id}__${code}`}>{name}</Option>
+                ))}
+              </OptGroup>
+            ))
+          )}
         </Select>
         <Select name="appServiceVersionId" searchable>
           {map(store.getVersion, ({ id, version }) => (
@@ -204,8 +231,8 @@ export default injectIntl(observer(({ record, dataSet, store, projectId, network
           colSpan={3}
           newLine
           readOnly={false}
-          originValue={store.getConfigValue.value}
-          value={record.get('values') || store.getConfigValue.value}
+          originValue={store.getConfigValue}
+          value={record.get('values') || store.getConfigValue}
           onValueChange={ChangeConfigValue}
           handleEnableNext={handleEnableNext}
         />

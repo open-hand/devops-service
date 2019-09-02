@@ -8,7 +8,7 @@ import _ from 'lodash';
 import UserInfo from '../../../../components/userInfo';
 import DetailTitle from './components/detailTitle';
 import DetailCard from './components/detailCard';
-import PendingCheckModal from './components/pendingCheckModal';
+import PendingCheckModal from '../../components/pendingCheckModal';
 import { TRIGGER_TYPE_MANUAL } from './components/Constants';
 
 import './index.less';

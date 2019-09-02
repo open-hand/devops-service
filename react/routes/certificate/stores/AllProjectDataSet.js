@@ -17,4 +17,8 @@ export default ((intlPrefix, formatMessage, projectId) => ({
     { name: 'name', type: 'string', label: formatMessage({ id: `${intlPrefix}.project.name` }) },
     { name: 'code', type: 'string', label: formatMessage({ id: `${intlPrefix}.project.code` }) },
   ],
+  queryFields: [
+    { name: 'name', type: 'string', label: formatMessage({ id: `${intlPrefix}.project.name` }) },
+    { name: 'code', type: 'string', label: formatMessage({ id: `${intlPrefix}.project.code` }) },
+  ],
 }));

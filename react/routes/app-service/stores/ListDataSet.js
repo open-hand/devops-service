@@ -102,7 +102,7 @@ export default ((intlPrefix, formatMessage, projectId) => {
     selection: false,
     transport: {
       create: ({ data: [data] }) => {
-        const res = pick(data, ['type', 'code', 'name', 'imgUrl', 'templateId', 'versionId']);
+        const res = pick(data, ['type', 'code', 'name', 'imgUrl', 'templateAppServiceId', 'templateAppServiceVersionId']);
         return ({
           url: `/devops/v1/projects/${projectId}/app_service`,
           method: 'post',
@@ -152,8 +152,8 @@ export default ((intlPrefix, formatMessage, projectId) => {
       { name: 'harborType', type: 'string', defaultValue: 'default', label: formatMessage({ id: `${intlPrefix}.docker` }) },
       { name: 'oldName', type: 'string' },
       { name: 'appServiceSource', type: 'string', label: formatMessage({ id: `${intlPrefix}.service.source` }) },
-      { name: 'templateId', type: 'number', label: formatMessage({ id: intlPrefix }) },
-      { name: 'versionId', type: 'number', label: formatMessage({ id: `${intlPrefix}.version` }) },
+      { name: 'templateAppServiceId', type: 'number', label: formatMessage({ id: intlPrefix }) },
+      { name: 'templateAppServiceVersionId', type: 'number', label: formatMessage({ id: `${intlPrefix}.version` }) },
     ],
     events: {
       update: handleUpdate,

@@ -42,12 +42,12 @@ const AppService = withRouter(observer((props) => {
   function renderActions() {
     const actionData = [
       {
-        service: [],
+        service: ['devops-service.project-certification.assignPermission'],
         text: formatMessage({ id: `${intlPrefix}.permission` }),
         action: openPermission,
       },
       {
-        service: [],
+        service: ['devops-service.project-certification.deleteOrgCert'],
         text: formatMessage({ id: 'delete' }),
         action: handleDelete,
       },
@@ -110,10 +110,18 @@ const AppService = withRouter(observer((props) => {
   }
 
   return (
-    <Page>
+    <Page
+      service={[
+        'devops-service.project-certification.pageOrgCert',
+        'devops-service.project-certification.create',
+        'devops-service.project-certification.query',
+        'devops-service.project-certification.deleteOrgCert',
+        'devops-service.project-certification.assignPermission',
+      ]}
+    >
       <Header title={<FormattedMessage id="app.head" />}>
         <Permission
-          service={[]}
+          service={['devops-service.project-certification.create']}
         >
           <Button
             icon="playlist_add"
@@ -137,9 +145,9 @@ const AppService = withRouter(observer((props) => {
           queryBar="bar"
           className={`${prefixCls}.table`}
         >
-          <Column name="name" />
+          <Column name="name" sortable />
           <Column renderer={renderActions} width="0.7rem" />
-          <Column name="domain" />
+          <Column name="domain" sortable />
         </Table>
       </Content>
     </Page>

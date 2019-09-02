@@ -2,7 +2,7 @@ import { axios } from '@choerodon/master';
 import getTablePostData from '../../../../utils/getTablePostData';
 
 export default ((formatMessage, projectId, id) => ({
-  autoQuery: true,
+  autoQuery: false,
   selection: false,
   pageSize: 10,
   transport: {
@@ -25,5 +25,9 @@ export default ((formatMessage, projectId, id) => ({
     { name: 'creationDate', type: 'dateTime', label: formatMessage({ id: 'addTime' }) },
     { name: 'iamUserId', type: 'number' },
     { name: 'role', type: 'string', label: formatMessage({ id: 'projectRole' }) },
+  ],
+  queryFields: [
+    { name: 'realName', type: 'string', label: formatMessage({ id: 'userName' }) },
+    { name: 'loginName', type: 'string', label: formatMessage({ id: 'loginName' }) },
   ],
 }));

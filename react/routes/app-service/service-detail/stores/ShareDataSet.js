@@ -22,7 +22,7 @@ function formatData(data) {
 }
 
 export default ((intlPrefix, formatMessage, projectId, id) => ({
-  autoQuery: true,
+  autoQuery: false,
   selection: false,
   pageSize: 10,
   transport: {
@@ -79,6 +79,7 @@ export default ((intlPrefix, formatMessage, projectId, id) => ({
     { name: 'projectName', type: 'string', label: formatMessage({ id: `${intlPrefix}.share.range` }) },
     { name: 'shareLevel', type: 'object', textField: 'name', valueField: 'id', label: formatMessage({ id: `${intlPrefix}.share.range` }), required: true },
   ],
+  queryFields: [],
   events: {
     update: handleUpdate,
   },

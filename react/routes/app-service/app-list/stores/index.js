@@ -18,7 +18,7 @@ export function useAppServiceStore() {
 export const StoreProvider = injectIntl(inject('AppState')(
   (props) => {
     const {
-      AppState: { currentMenuType: { projectId } },
+      AppState: { currentMenuType: { projectId, organizationId } },
       intl: { formatMessage },
       children,
     } = props;
@@ -41,6 +41,10 @@ export const StoreProvider = injectIntl(inject('AppState')(
       };
       listDs.query();
     }, [projectId]);
+
+    useEffect(() => {
+      AppStore.judgeRole(organizationId, projectId);
+    }, [organizationId, projectId]);
 
     const value = {
       ...props,

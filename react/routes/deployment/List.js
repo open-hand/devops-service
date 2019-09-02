@@ -14,7 +14,7 @@ import Process from './modals/process';
 import ManualDetail from './modals/manualDetail';
 import AutoDetail from './modals/autoDetail';
 import Deploy from './modals/deploy';
-import PendingCheckModal from './modals/autoDetail/components/pendingCheckModal';
+import PendingCheckModal from './components/pendingCheckModal';
 
 import './index.less';
 
@@ -217,21 +217,21 @@ const Deployment = withRouter(observer((props) => {
       switch (record.get('deployStatus')) {
         case 'failed':
           actionData = [{
-            service: [],
+            service: ['devops-service.pipeline.retry'],
             text: formatMessage({ id: `${intlPrefix}.retry` }),
             action: () => openOperatingModal('retry'),
           }];
           break;
         case 'running':
           actionData = [{
-            service: [],
+            service: ['devops-service.pipeline.failed'],
             text: formatMessage({ id: `${intlPrefix}.failed` }),
             action: () => openOperatingModal('failed'),
           }];
           break;
         case 'pendingcheck':
           execute && (actionData = [{
-            service: [],
+            service: ['devops-service.pipeline.audit'],
             text: formatMessage({ id: `${intlPrefix}.check` }),
             action: () => serShowPendingCheck(true),
           }]);
@@ -248,10 +248,19 @@ const Deployment = withRouter(observer((props) => {
   }
 
   return (
-    <Page>
+    <Page
+      service={[
+        'devops-service.devops-deploy-record.pageByOptions',
+        'devops-service.app-service-instance.deploy',
+        'devops-service.pipeline.batchExecute',
+        'devops-service.pipeline.audit',
+        'devops-service.pipeline.retry',
+        'devops-service.pipeline.failed',
+      ]}
+    >
       <Header title={<FormattedMessage id="app.head" />}>
         <Permission
-          service={[]}
+          service={['devops-service.app-service-instance.deploy']}
         >
           <Button
             icon="jsfiddle"
@@ -261,7 +270,7 @@ const Deployment = withRouter(observer((props) => {
           </Button>
         </Permission>
         <Permission
-          service={[]}
+          service={['devops-service.pipeline.batchExecute']}
         >
           <Button
             icon="playlist_play"
