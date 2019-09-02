@@ -6,7 +6,9 @@ import java.util.stream.Collectors;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.base.Joiner;
-import com.google.gson.Gson;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsDeployRecordVO;
@@ -21,18 +23,13 @@ import io.choerodon.devops.infra.mapper.DevopsDeployRecordMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.PageRequestUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 /**
  * Created by Sheep on 2019/7/29.
  */
-
 @Service
 public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService {
-
-
-    private static final Gson gson = new Gson();
+    private static final String COMMA = ",";
 
     @Autowired
     private DevopsDeployRecordMapper devopsDeployRecordMapper;
@@ -43,30 +40,29 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
     @Autowired
     private PipelineService pipelineService;
 
-
     @Override
     public PageInfo<DevopsDeployRecordVO> pageByProjectId(Long projectId, String params, PageRequest pageRequest) {
         PageInfo<DevopsDeployRecordDTO> devopsDeployRecordDTOPageInfo = basePageByProjectId(projectId, params, pageRequest);
         Set<Long> envIds = new HashSet<>();
 
-        //获取环境id
+        //获取所有涉及到的环境id
         devopsDeployRecordDTOPageInfo.getList().stream().filter(devopsDeployRecordDTO -> devopsDeployRecordDTO.getEnv() != null).forEach(devopsDeployRecordDTO -> {
             String[] envs = devopsDeployRecordDTO.getEnv().split(",");
             for (String env : envs) {
                 envIds.add(TypeUtil.objToLong(env));
             }
         });
+
         //查询环境
-        List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = new ArrayList<>();
-        if (!envIds.isEmpty()) {
-            devopsEnvironmentDTOS.addAll(devopsEnvironmentService.baseListByIds(new ArrayList<>(envIds)));
-        }
+        Map<Long, DevopsEnvironmentDTO> envMap = new HashMap<>(pageRequest.getSize());
+        devopsEnvironmentService.baseListByIds(new ArrayList<>(envIds)).forEach(env -> envMap.put(env.getId(), env));
 
         PageInfo<DevopsDeployRecordVO> devopsDeployRecordVOPageInfo = ConvertUtils.convertPage(devopsDeployRecordDTOPageInfo, DevopsDeployRecordVO.class);
 
         //查询用户信息
         List<Long> userIds = devopsDeployRecordVOPageInfo.getList().stream().map(DevopsDeployRecordVO::getDeployCreatedBy).collect(Collectors.toList());
-        List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.listUsersByIds(userIds);
+        Map<Long, IamUserDTO> userMap = new HashMap<>(pageRequest.getSize());
+        baseServiceClientOperator.listUsersByIds(userIds).forEach(user -> userMap.put(user.getId(), user));
 
 
         //设置环境信息以及用户信息
@@ -74,30 +70,27 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
             if (devopsDeployRecordVO.getDeployType().equals("auto")) {
                 pipelineService.setPipelineRecordDetail(projectId, devopsDeployRecordVO);
             }
+
+            // 把原本的形如"1,199"的id值转为形如"staging,production"的名称值
             if (devopsDeployRecordVO.getEnv() != null) {
-                List<String> env = Arrays.asList(devopsDeployRecordVO.getEnv().split(","))
-                        .stream()
-                        .map(s -> {
-                            List<DevopsEnvironmentDTO> envs = devopsEnvironmentDTOS
-                                    .stream()
-                                    .filter(devopsEnvironmentDTO -> devopsEnvironmentDTO.getId().equals(TypeUtil.objToLong(s)))
-                                    .collect(Collectors.toList());
-                            if (!envs.isEmpty()) {
-                                return envs.get(0).getName();
-                            } else {
-                                return null;
+                List<String> envNames = Arrays.stream(devopsDeployRecordVO.getEnv().split(COMMA))
+                        .map(id -> {
+                            Long envId = TypeUtil.objToLong(id);
+                            if (envMap.containsKey(envId)) {
+                                return envMap.get(envId).getName();
                             }
+                            return null;
                         }).collect(Collectors.toList());
-                if(!env.isEmpty()) {
-                    devopsDeployRecordVO.setEnv(Joiner.on(",").join(env));
+                if (!envNames.isEmpty()) {
+                    devopsDeployRecordVO.setEnv(Joiner.on(COMMA).join(envNames));
                 }
             }
-            iamUserDTOS.forEach(iamUserDTO -> {
-                if (iamUserDTO.getId().equals(devopsDeployRecordVO.getDeployCreatedBy())) {
-                    devopsDeployRecordVO.setUserName(iamUserDTO.getRealName());
-                    devopsDeployRecordVO.setUserImage(iamUserDTO.getImageUrl());
-                }
-            });
+
+            if (userMap.containsKey(devopsDeployRecordVO.getDeployCreatedBy())) {
+                IamUserDTO targetUser = userMap.get(devopsDeployRecordVO.getDeployCreatedBy());
+                devopsDeployRecordVO.setUserName(targetUser.getRealName());
+                devopsDeployRecordVO.setUserImage(targetUser.getImageUrl());
+            }
         });
         return devopsDeployRecordVOPageInfo;
     }

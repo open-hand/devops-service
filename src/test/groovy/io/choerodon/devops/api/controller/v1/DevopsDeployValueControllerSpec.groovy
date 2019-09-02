@@ -299,7 +299,7 @@ class DevopsDeployValueControllerSpec extends Specification {
 
     def "ListByEnvAndApp"() {
         given: "准备"
-        isToClean = false
+        isToClean = true
         def url = rootUrl + "/list_by_env_and_app?app_service_id={app_service_id}&env_id={env_id}"
         Map<String, Object> params = new HashMap<>()
         params.put("project_id", projectId)
