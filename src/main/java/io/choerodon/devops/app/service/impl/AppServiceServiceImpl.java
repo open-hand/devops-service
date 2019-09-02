@@ -2461,7 +2461,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     private ProjectVO dtoToProjectVO(ProjectDTO projectDTO) {
         ProjectVO projectVO = new ProjectVO();
         BeanUtils.copyProperties(projectDTO, projectVO);
-        projectVO.setAppName(projectDTO.getApplicationDTO().getName());
+        projectVO.setAppName(projectDTO.getApplicationVO().getName());
         return projectVO;
     }
 }
