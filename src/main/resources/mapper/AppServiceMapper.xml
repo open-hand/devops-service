@@ -371,6 +371,9 @@
         dasr.share_level = 'organization'
         OR dasr.project_id = #{projectId}
         )
+        <if test="type != null">
+            AND da.type = #{type}
+        </if>
         <if test='params != null and params.size > 0'>
             AND
             <foreach collection="params" item="param" open="(" separator=" OR " close=")">
@@ -415,6 +418,9 @@
             das.app_id IS NOT NULL
             AND db.iam_project_id IS NULL
             AND db.app_id IS NOT NULL
+        <if test="type != null">
+            AND das.type = #{type}
+        </if>
     </select>
 
     <select id="listShareProjectApps"  resultType="io.choerodon.devops.infra.dto.AppServiceDTO">

@@ -69,6 +69,7 @@ public interface AppServiceMapper extends Mapper<AppServiceDTO> {
 
     List<AppServiceDTO> listShareApplicationService(@Param("appServiceIds") List<Long> appServiceIds,
                                                     @Param("projectId") Long projectId,
+                                                    @Param("type") String type,
                                                     @Param("params") List<String> params);
 
     void updateHarborConfigNullByConfigId(@Param("harborConfigId") Long harborConfigId);
@@ -81,7 +82,7 @@ public interface AppServiceMapper extends Mapper<AppServiceDTO> {
 
     List<AppServiceDTO> queryOrganizationShareApps(@Param("appServiceIds") List<Long> appServiceIds);
 
-    List<AppServiceDTO> queryMarketDownloadApps();
+    List<AppServiceDTO> queryMarketDownloadApps(@Param("type") String type);
 
     /**
      * 根据ProjectID 查询可用的项目共享Apps
