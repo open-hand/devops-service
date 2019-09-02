@@ -9,7 +9,7 @@ import TreeItemName from '../../../../../components/treeitem-name';
 import EnvItem from '../../../../../components/env-item';
 import EnvModifyForm from '../../modals/env-modify';
 import { useEnvironmentStore } from '../../../stores';
-import { useTreeItemStore } from './stores';
+import { useMainStore } from '../../stores';
 
 const formKey = Modal.key();
 const effectKey = Modal.key();
@@ -23,7 +23,7 @@ function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
     AppState: { currentMenuType: { id: projectId } },
     envStore,
   } = useEnvironmentStore();
-  const { envItemStore } = useTreeItemStore();
+  const { mainStore } = useMainStore();
 
   function refresh() {
     treeDs.query();
@@ -32,19 +32,7 @@ function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
   async function handleDelete() {
     const { getSelectedMenu: { id } } = envStore;
     try {
-      const res = await envItemStore.deleteEnv(projectId, id);
-      handlePromptError(res);
-    } catch (e) {
-      Choerodon.handleResponseError(e);
-    } finally {
-      refresh();
-    }
-  }
-
-  async function handleEffect(target) {
-    const { getSelectedMenu } = envStore;
-    try {
-      const res = await envItemStore.effectEnv(projectId, getSelectedMenu.id, target);
+      const res = await mainStore.deleteEnv(projectId, id);
       handlePromptError(res);
     } catch (e) {
       Choerodon.handleResponseError(e);
@@ -67,14 +55,26 @@ function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
     });
   }
 
+  async function handleEffect(target) {
+    const { getSelectedMenu } = envStore;
+    try {
+      const res = await mainStore.effectEnv(projectId, getSelectedMenu.id, target);
+      handlePromptError(res);
+    } catch (e) {
+      Choerodon.handleResponseError(e);
+    } finally {
+      refresh();
+    }
+  }
+
   async function openEffectModal() {
-    const { id, active } = envStore.getSelectedMenu;
+    const { id } = envStore.getSelectedMenu;
     let children;
     let title;
     let disabled = true;
     try {
-      const res = await envItemStore.checkEffect(projectId, id);
-      if (handlePromptError(res) && !res.list.length) {
+      const res = await mainStore.checkEffect(projectId, id);
+      if (handlePromptError(res)) {
         title = '确认停用';
         children = '当你点击确认后，该环境将被停用！';
         disabled = false;
@@ -95,7 +95,7 @@ function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
       key: effectKey,
       title,
       children,
-      onOk: () => handleEffect(!active),
+      onOk: () => handleEffect(false),
       okProps: {
         disabled,
       },
@@ -112,7 +112,13 @@ function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
     const actionData = [{
       service: [],
       text: formatMessage({ id: `${intlPrefix}.modal.detail.${active ? 'stop' : 'start'}` }),
-      action: openEffectModal,
+      action: () => {
+        if (active) {
+          openEffectModal();
+        } else {
+          handleEffect(true);
+        }
+      },
     }, {
       service: [],
       text: formatMessage({ id: `${intlPrefix}.modal.detail.${active ? 'modify' : 'delete'}` }),

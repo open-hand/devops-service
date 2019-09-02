@@ -14,7 +14,7 @@ export default ({ formatMessage, intlPrefix, projectId, id }) => ({
       };
     },
     destroy: ({ data: [data] }) => ({
-      // url: `/devops/v1/projects/${projectId}/envs/${id}/permission/user_id=${data.iamUserId}`,
+      url: `/devops/v1/projects/${projectId}/deploy_value?value_id=${data.id}`,
       method: 'delete',
       data: null,
     }),
@@ -64,15 +64,3 @@ export default ({ formatMessage, intlPrefix, projectId, id }) => ({
     },
   ],
 });
-// appServiceId: 962
-// appServiceName: "svc0216"
-// createUserName: "20399"
-// createUserRealName: "林岩芳"
-// createUserUrl: null
-// createdBy: 12725
-// description: "config-1"
-// envId: 438
-// envName: "env0107"
-// id: 3
-// lastUpdateDate: "2019-04-15 16:20:15"
-// name: "config-1"

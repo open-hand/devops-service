@@ -8,18 +8,18 @@ import './index.less';
 
 const { Option } = Select;
 
-function DeployConfig() {
+function DeployConfigForm() {
   const {
+    isEdit,
     intl: { formatMessage },
     intlPrefix,
     prefixCls,
-    formDs,
+    dataSet,
     appOptionDs,
-    configStore: { getValue },
     modal,
     envId,
     refresh,
-    parentStore,
+    store,
   } = useFormStore();
   const [value, setValue] = useState('');
   const [isError, setValueError] = useState(false);
@@ -27,15 +27,15 @@ function DeployConfig() {
   async function handleSubmit() {
     if (isError) return false;
 
-    const config = value || getValue || '';
-    const record = formDs.current;
+    const config = value || store.getValue || '';
+    const record = dataSet.current;
     if (record) {
       record.set('value', config);
       record.set('envId', envId);
     }
     try {
-      if ((await formDs.submit()) !== false) {
-        parentStore.setTabKey('config');
+      if ((await dataSet.submit()) !== false) {
+        store.setTabKey('config');
         refresh();
       } else {
         return false;
@@ -56,12 +56,13 @@ function DeployConfig() {
   }
 
   function renderValue() {
-    const record = formDs.current;
+    const record = dataSet.current;
     const app = record && record.get('appServiceId');
+    const configValue = store.getValue;
     return app ? <YamlEditor
       readOnly={false}
-      value={value || getValue}
-      originValue={getValue}
+      value={value || configValue}
+      originValue={configValue}
       onValueChange={setValue}
       handleEnableNext={setValueError}
     /> : null;
@@ -69,7 +70,7 @@ function DeployConfig() {
 
   return <Fragment>
     <div className={`${prefixCls}-config-form`}>
-      <Form dataSet={formDs}>
+      <Form dataSet={dataSet}>
         <TextField name="name" />
         <TextArea name="description" resize="vertical" />
         <Select
@@ -85,4 +86,4 @@ function DeployConfig() {
   </Fragment>;
 }
 
-export default observer(DeployConfig);
+export default observer(DeployConfigForm);

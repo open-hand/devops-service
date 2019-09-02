@@ -5,36 +5,91 @@ import { Modal, Table } from 'choerodon-ui/pro';
 import StatusTag from '../../../../../components/status-tag';
 import { getEnvStatus } from '../../../../../components/status-dot';
 import { useEnvironmentStore } from '../../../stores';
+import { useMainStore } from '../../stores';
 import { useEnvGroupStore } from './stores';
 import Modals from './modals';
 import EnvModifyForm from '../../modals/env-modify';
+import { handlePromptError } from '../../../../../utils';
 
 const { Column } = Table;
 const envKey = Modal.key;
+const modalKey = Modal.key;
 
 const Group = observer(() => {
   const modalStyle = useMemo(() => ({
     width: 380,
   }), []);
   const {
-    prefixCls,
     intlPrefix,
     envStore,
     treeDs,
     AppState: { currentMenuType: { id: projectId } },
   } = useEnvironmentStore();
+  const { mainStore } = useMainStore();
   const {
     groupDs,
     intl: { formatMessage },
   } = useEnvGroupStore();
-  const { getSelectedMenu: { id, name } } = envStore;
+  const { getSelectedMenu: { name } } = envStore;
 
   function refresh() {
     groupDs.query();
     treeDs.query();
   }
 
-  function handleDelete() {
+  async function handleDelete(envId) {
+    try {
+      const res = await mainStore.deleteEnv(projectId, envId);
+      handlePromptError(res);
+    } catch (e) {
+      Choerodon.handleResponseError(e);
+    } finally {
+      refresh();
+    }
+  }
+
+  async function handleEffect(envId, target) {
+    try {
+      const res = await mainStore.effectEnv(projectId, envId, target);
+      handlePromptError(res);
+    } catch (e) {
+      Choerodon.handleResponseError(e);
+    } finally {
+      refresh();
+    }
+  }
+
+  async function openEffectModal(envId) {
+    let children;
+    let title;
+    let disabled = true;
+    try {
+      const res = await mainStore.checkEffect(projectId, envId);
+      if (handlePromptError(res)) {
+        title = '确认停用';
+        children = '当你点击确认后，该环境将被停用！';
+        disabled = false;
+      } else {
+        title = '不可停用';
+        children = '该环境下已有实例，且此环境正在运行中，无法停用！';
+      }
+    } catch (e) {
+      title = '出错了';
+      children = '请稍后重试。';
+      Choerodon.handleResponseError(e);
+    }
+    Modal.open({
+      movable: false,
+      closable: false,
+      header: true,
+      key: modalKey,
+      title,
+      children,
+      onOk: () => handleEffect(envId, false),
+      okProps: {
+        disabled,
+      },
+    });
   }
 
   function openModifyModal(record) {
@@ -82,15 +137,15 @@ const Group = observer(() => {
     }, {
       service: [],
       text: formatMessage({ id: 'stop' }),
-      // action: confirmDelete,
+      action: () => openEffectModal(envId),
     }] : [{
       service: [],
       text: formatMessage({ id: 'active' }),
-      // action: handleClick,
+      action: () => handleEffect(envId, true),
     }, {
       service: [],
       text: formatMessage({ id: 'delete' }),
-      // action: confirmDelete,
+      action: () => handleDelete(envId),
     }];
     return <Action data={actionData} />;
   }
