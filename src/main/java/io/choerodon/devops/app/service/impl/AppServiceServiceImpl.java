@@ -456,15 +456,14 @@ public class AppServiceServiceImpl implements AppServiceService {
             gitlabProjectDO = gitlabServiceClientOperator.createProject(devOpsAppServicePayload.getGroupId(),
                     devOpsAppServicePayload.getPath(),
                     devOpsAppServicePayload.getUserId(), false);
-            devOpsAppServicePayload.setGitlabProjectId(gitlabProjectDO.getId());
-            appServiceDTO = baseUpdate(appServiceDTO);
         }
+        devOpsAppServicePayload.setGitlabProjectId(gitlabProjectDO.getId());
 
-        String applicationServiceToken = getApplicationToken(appServiceDTO.getGitlabProjectId(), devOpsAppServicePayload.getUserId());
+        String applicationServiceToken = getApplicationToken(devOpsAppServicePayload.getGitlabProjectId(), devOpsAppServicePayload.getUserId());
         appServiceDTO.setToken(applicationServiceToken);
         appServiceDTO.setSynchro(true);
         appServiceDTO.setFailed(false);
-        setProjectHook(appServiceDTO, appServiceDTO.getGitlabProjectId(), applicationServiceToken, devOpsAppServicePayload.getUserId());
+        setProjectHook(appServiceDTO, devOpsAppServicePayload.getGitlabProjectId(), applicationServiceToken, devOpsAppServicePayload.getUserId());
         baseUpdate(appServiceDTO);
 
         // 为项目下的成员分配对于此gitlab项目的权限
@@ -487,9 +486,11 @@ public class AppServiceServiceImpl implements AppServiceService {
                 devopsProjectDTO.getIamProjectId());
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsProjectDTO.getIamProjectId());
         OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-        GitlabProjectDTO gitlabProjectDO = gitlabServiceClientOperator
-                .queryProjectByName(organizationDTO.getCode() + "-" + projectDTO.getCode(), appServiceDTO.getCode(),
-                        devOpsAppServiceImportPayload.getUserId());
+
+        GitlabProjectDTO gitlabProjectDO = gitlabServiceClientOperator.queryProjectByName(
+                organizationDTO.getCode() + "-" + projectDTO.getCode(),
+                appServiceDTO.getCode(),
+                devOpsAppServiceImportPayload.getUserId());
         if (gitlabProjectDO.getId() == null) {
             gitlabProjectDO = gitlabServiceClientOperator.createProject(devOpsAppServiceImportPayload.getGroupId(),
                     devOpsAppServiceImportPayload.getPath(),
@@ -538,7 +539,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 if (branchDTO.getName() == null) {
                     try {
                         // 提交并推代码
-                        gitUtil.commitAndPush(repositoryGit, appServiceDTO.getGitlabProjectUrl(), accessToken, ref.getName());
+                        gitUtil.commitAndPush(repositoryGit, appServiceDTO.getRepoUrl(), accessToken, ref.getName());
                     } catch (CommonException e) {
                         releaseResources(applicationWorkDir, repositoryGit);
                         throw e;
@@ -705,6 +706,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     @Saga(code = SagaTopicCodeConstants.DEVOPS_IMPORT_GITLAB_PROJECT,
             description = "Devops从外部代码平台导入到gitlab项目", inputSchema = "{}")
+    @Transactional(rollbackFor = Exception.class)
     public AppServiceRepVO importApp(Long projectId, AppServiceImportVO appServiceImportVO) {
         // 获取当前操作的用户的信息
         UserAttrVO userAttrVO = userAttrService.queryByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
@@ -754,15 +756,17 @@ public class AppServiceServiceImpl implements AppServiceService {
         Long appServiceId = appServiceDTO.getId();
 
         //创建saga payload
-        DevOpsAppServicePayload devOpsAppServicePayload = new DevOpsAppServicePayload();
-        devOpsAppServicePayload.setPath(appServiceDTO.getCode());
-        devOpsAppServicePayload.setOrganizationId(projectDTO.getOrganizationId());
-        devOpsAppServicePayload.setUserId(TypeUtil.objToInteger(userAttrVO.getGitlabUserId()));
-        devOpsAppServicePayload.setGroupId(TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()));
-        devOpsAppServicePayload.setUserIds(Collections.emptyList());
-        devOpsAppServicePayload.setSkipCheckPermission(appServiceDTO.getSkipCheckPermission());
-        devOpsAppServicePayload.setAppServiceId(appServiceDTO.getId());
-        devOpsAppServicePayload.setIamProjectId(projectId);
+        DevOpsAppImportServicePayload devOpsAppImportServicePayload = new DevOpsAppImportServicePayload();
+        devOpsAppImportServicePayload.setPath(appServiceDTO.getCode());
+        devOpsAppImportServicePayload.setOrganizationId(projectDTO.getOrganizationId());
+        devOpsAppImportServicePayload.setUserId(TypeUtil.objToInteger(userAttrVO.getGitlabUserId()));
+        devOpsAppImportServicePayload.setGroupId(TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()));
+        devOpsAppImportServicePayload.setUserIds(Collections.emptyList());
+        devOpsAppImportServicePayload.setSkipCheckPermission(appServiceDTO.getSkipCheckPermission());
+        devOpsAppImportServicePayload.setAppServiceId(appServiceDTO.getId());
+        devOpsAppImportServicePayload.setIamProjectId(projectId);
+        devOpsAppImportServicePayload.setRepositoryUrl(appServiceImportVO.getRepositoryUrl());
+        devOpsAppImportServicePayload.setAccessToken(appServiceImportVO.getAccessToken());
 
         producer.applyAndReturn(
                 StartSagaBuilder
@@ -771,7 +775,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                         .withRefType("")
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_IMPORT_GITLAB_PROJECT),
                 builder -> builder
-                        .withPayloadAndSerialize(devOpsAppServicePayload)
+                        .withPayloadAndSerialize(devOpsAppImportServicePayload)
                         .withRefId("")
                         .withSourceId(projectId));
 
@@ -1675,15 +1679,20 @@ public class AppServiceServiceImpl implements AppServiceService {
     public void importAppServiceGitlab(AppServiceImportPayload appServiceImportPayload) {
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceImportPayload.getAppServiceId());
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(appServiceImportPayload.getIamUserId());
+
+        GitlabProjectDTO gitlabProjectDTO = gitlabServiceClientOperator.queryProjectByName(
+                appServiceImportPayload.getOrgCode() + "-" + appServiceImportPayload.getProCode(),
+                appServiceDTO.getCode(),
+                TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         //创建gitlab 应用
-        if (appServiceDTO.getGitlabProjectId() == null) {
-            GitlabProjectDTO gitlabProjectDTO = gitlabServiceClientOperator.createProject(
+        if (gitlabProjectDTO.getId() == null) {
+            gitlabProjectDTO = gitlabServiceClientOperator.createProject(
                     appServiceImportPayload.getGitlabGroupId(),
                     appServiceDTO.getCode(),
                     TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), false);
-            appServiceDTO.setGitlabProjectId(gitlabProjectDTO.getId());
-            appServiceDTO = baseUpdate(appServiceDTO);
         }
+
+        appServiceDTO.setGitlabProjectId(gitlabProjectDTO.getId());
         String applicationServiceToken = getApplicationToken(appServiceDTO.getGitlabProjectId(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         appServiceDTO.setToken(applicationServiceToken);
         appServiceDTO.setSynchro(true);
