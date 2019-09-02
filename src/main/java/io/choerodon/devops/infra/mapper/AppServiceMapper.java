@@ -15,7 +15,6 @@ public interface AppServiceMapper extends Mapper<AppServiceDTO> {
     List<AppServiceDTO> list(@Param("appId") Long appId,
                              @Param("isActive") Boolean isActive,
                              @Param("hasVersion") Boolean hasVersion,
-                             @Param("appMarket") Boolean appMarket,
                              @Param("type") String type,
                              @Param("searchParam") Map<String, Object> searchParam,
                              @Param("params") List<String> params,
