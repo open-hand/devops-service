@@ -27,12 +27,13 @@ export default (dataSet, store) => {
 
   if (dataSet.length) {
     const selectedRecord = dataSet.find((record) => record.isSelected);
-    const { key: selectedKey, parentId: selectedParentId } = store.getSelectedMenu;
+    const selectedMenu = store.getSelectedMenu;
+    const { key: selectedKey, parentId: selectedParentId } = selectedMenu;
 
     if (!selectedRecord || selectedRecord.get('key') !== selectedKey) {
       const nextSelected = dataSet.find((record) => record.get('key') === selectedKey);
       if (nextSelected) {
-        nextSelected.isSelected = true;
+        selectRecord(nextSelected);
       } else {
         const parent = dataSet.find((record) => record.get('key') === selectedParentId);
         if (parent) {

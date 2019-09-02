@@ -76,6 +76,13 @@ const EnvModals = observer(() => {
     treeDs.query();
   }
 
+  function toPermissionTab() {
+    const { getTabKey } = detailStore;
+    detailStore.setTabKey(ASSIGN_TAB);
+    treeDs.query();
+    getTabKey === ASSIGN_TAB && permissionsDs.query();
+  }
+
   function openEnvModal() {
     Modal.open({
       key: envKey,
@@ -136,7 +143,7 @@ const EnvModals = observer(() => {
         intlPrefix={intlPrefix}
         prefixCls={prefixCls}
         skipPermission={skipCheckPermission}
-        refresh={refresh}
+        refresh={toPermissionTab}
       />,
       afterClose: () => {
         modalStore.setUsers([]);
