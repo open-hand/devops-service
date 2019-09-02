@@ -165,7 +165,8 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void uploadAPP(AppMarketUploadPayload marketUploadVO) {
+    public void
+    uploadAPP(AppMarketUploadPayload marketUploadVO) {
         List<String> zipFileList = new ArrayList<>();
         String appFilePath = gitUtil.getWorkingDirectory(APPLICATION + System.currentTimeMillis());
         try {
@@ -607,7 +608,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             newUser.setPassword(appMarketUploadVO.getUser().getRobotToken());
             // 执行脚本
             callScript(appServiceMarketVO.getHarborUrl(), newUser, oldUser);
-            FileUtil.deleteFile(String.format(APP_TEMP_PATH_FORMAT, SHELL, File.separator, IMAGES));
+//            FileUtil.deleteFile(String.format(APP_TEMP_PATH_FORMAT, SHELL, File.separator, IMAGES));
         });
         marketImageUrlVO.setServiceImageVOS(imageVOList);
         return marketImageUrlVO;
@@ -643,13 +644,13 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
     /**
      * 脚本文件具体执行及脚本执行过程探测
      *
-     * @param 
+     * @param
      */
-    private void callScript( String harborUrl, User newUser, User oldUser) {
+    private void callScript(String harborUrl, User newUser, User oldUser) {
         try {
             String cmd = String.format("sh /shell/%s %s %s %s %s %s", PUSH_IAMGES, harborUrl, newUser.getUsername(), newUser.getPassword(), oldUser.getUsername(), oldUser.getPassword());
             LOGGER.info(cmd);
-            //执行脚本并等待脚本执行完成
+//            执行脚本并等待脚本执行完成
             Process process = Runtime.getRuntime().exec(cmd);
 
             //写出脚本执行中的过程信息
