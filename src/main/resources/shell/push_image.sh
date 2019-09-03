@@ -24,8 +24,8 @@ else
 fi
 lastch=`echo $1 | awk '{print substr($0,length,1)}'`
 harobr_url="$1:"
-dos2unix images
-cat images | while read line
+#dos2unix images
+cat /shell/images | while read line
 	do
 	echo ${line}
 		if [$#>3];then
