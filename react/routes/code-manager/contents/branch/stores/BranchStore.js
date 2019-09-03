@@ -3,7 +3,6 @@ import { observable, action, computed } from 'mobx';
 import { axios, store, stores } from '@choerodon/master';
 import { handlePromptError } from '../../../../../utils';
 import DevPipelineStore from '../../../stores/DevPipelineStore';
-import { branchList, issuesList, tagList } from './mock';
 
 const { AppState } = stores;
 const HEIGHT = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
@@ -260,16 +259,17 @@ class BranchStore {
       };
       return result;
     });
-
-  deleteData = (proId = AppState.currentMenuType.id, appId, name) => axios.delete(`/devops/v1/projects/${proId}/app_service/${appId}/git/branch?branch_name=${name}`)
-    .then((datas) => {
+  deleteData = (proId = AppState.currentMenuType.id, appId, name)=>{
+    name = window.encodeURIComponent(name);
+    return axios.delete(`/devops/v1/projects/${proId}/app_service/${appId}/git/branch?branch_name=${name}`)
+    .then((datas)=>{
       const result = handlePromptError(datas)
       if(result){
         return datas;
       };
       return result;
-    });
-
+    })
+  }
   checkName = (projectId = AppState.currentMenuType.projectId, appId, name) => axios.get(`/devops/v1/projects/${projectId}/app_service/${appId}/git/check_branch_name?branch_name=${name}`)
 }
 

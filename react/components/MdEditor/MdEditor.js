@@ -88,14 +88,16 @@ class MdEditor extends Component {
         >
           <TabPane tab={formatMessage({ id: 'write' })} key="write">
             <div className="c7n-md-placeholder">{formatMessage({ id: 'md.placeholder' })}</div>
-            <ReactCodeMirror
-              ref={(cm) => {
-                this.mdEditor = cm;
-              }}
-              options={this.options}
-              value={value}
-              onChange={this.onChange}
-            />
+            <div onClick={(e) => { this.mdEditor.focus(); }}>
+              <ReactCodeMirror
+                ref={(cm) => {
+                  this.mdEditor = cm;
+                }}
+                options={this.options}
+                value={value}
+                onChange={this.onChange}
+              />
+            </div>
           </TabPane>
           <TabPane tab={formatMessage({ id: 'preview' })} key="preview">
             <div className="c7n-md-parse c7n-md-preview c7n-md-preview-box">

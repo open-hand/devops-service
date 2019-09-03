@@ -312,7 +312,7 @@ export default class TaskCreate extends Component {
     } = this.props;
     const { appId: selectApp, envId: selectEnv } = this.state;
     const { getTaskList } = PipelineCreateStore;
-    const { pipelineAppServiceDeployVO } = _.find(getTaskList[stageId], ['Layout.less.less', taskId]) || {};
+    const { pipelineAppServiceDeployVO } = _.find(getTaskList[stageId], ['index', taskId]) || {};
     const { appServiceId, envId, instanceId, valueId } = pipelineAppServiceDeployVO || {};
     const { code } = _.find(PipelineCreateStore.getAppData, ['id', selectApp]) || {};
     const initIstName = code ? `${code}-${uuidv1().substring(0, 5)}` : uuidv1().substring(0, 30);
@@ -873,8 +873,6 @@ export default class TaskCreate extends Component {
         }
       >
         <Content
-          code={`pipeline.task.${isEdit ? 'edit' : 'create'}`}
-          values={{ name: stageName }}
           className="sidebar-content c7n-pipeline-task-create"
         >
           <Form layout="vertical">

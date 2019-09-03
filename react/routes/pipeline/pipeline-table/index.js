@@ -283,11 +283,8 @@ export default class Pipeline extends Component {
     const response = await PipelineStore
       .executePipeline(projectId, executeId)
       .catch((e) => Choerodon.handleResponseError(e));
-    this.setState({ executeLoading: true });
-
-    if (response && response.failed) {
-      Choerodon.prompt(response.message);
-    } else {
+    this.setState({ executeLoading: false });
+    if (handlePromptError(response, false)) {
       this.linkToRecord(executeId);
     }
   };
@@ -360,9 +357,8 @@ export default class Pipeline extends Component {
       },
     } = this.props;
     history.push({
-      pathname: '/devops/pipeline-record',
+      pathname: '/devops/deployment-operation',
       search: `?type=${type}&id=${projectId}&name=${projectName}&organizationId=${organizationId}`,
-      state: { pipelineId: id, fromPipeline: true },
     });
   }
 
@@ -566,7 +562,7 @@ export default class Pipeline extends Component {
         </Button>
       </Header>
       <Breadcrumb />
-      <Content>
+      <Content className="c7ncd-pipeline-content">
         <Select
           mode="multiple"
           label={formatMessage({ id: 'pipeline.search' })}
@@ -632,7 +628,7 @@ export default class Pipeline extends Component {
         />
       </Content>
       {
-        pipelineCreateStore.createVisible ? <PipelineCreate visible={pipelineCreateStore.createVisible} pipelineCreateStore={pipelineCreateStore} /> : null
+        pipelineCreateStore.createVisible ? <PipelineCreate visible={pipelineCreateStore.createVisible} pipelineCreateStore={pipelineCreateStore} refreshTable={this.handleRefresh} /> : null
       }
       {
         pipelineCreateStore.editId ? <PipelineEdit visible={pipelineCreateStore.editVisible} PipelineCreateStore={pipelineCreateStore} refreshTable={this.handleRefresh} /> : null

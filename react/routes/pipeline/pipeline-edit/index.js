@@ -137,15 +137,18 @@ export default class PipelineEdit extends Component {
 
   goBack = () => {
     const { PipelineCreateStore } = this.props;
-    PipelineCreateStore.setUser([]);
-    PipelineCreateStore.clearStageList();
-    PipelineCreateStore.setStageIndex(0);
-    PipelineCreateStore.clearTaskList();
-    PipelineCreateStore.clearTaskSettings();
-    PipelineCreateStore.clearTaskIndex();
-    PipelineCreateStore.setTrigger(STAGE_FLOW_AUTO);
-    PipelineCreateStore.setPipeline([]);
     PipelineCreateStore.setEditVisible(false);
+    // 解决页面尚未退出 但是数据已经为空的问题
+    setTimeout(() => {
+      PipelineCreateStore.setUser([]);
+      PipelineCreateStore.clearStageList();
+      PipelineCreateStore.setStageIndex(0);
+      PipelineCreateStore.clearTaskList();
+      PipelineCreateStore.clearTaskSettings();
+      PipelineCreateStore.clearTaskIndex();
+      PipelineCreateStore.setTrigger(STAGE_FLOW_AUTO);
+      PipelineCreateStore.setPipeline([]);
+    }, 150);
   };
 
   get renderPipelineDom() {
@@ -173,10 +176,6 @@ export default class PipelineEdit extends Component {
 
   render() {
     const {
-      location: {
-        pathname,
-        search,
-      },
       intl: { formatMessage },
       form: { getFieldDecorator },
       PipelineCreateStore,
@@ -210,16 +209,7 @@ export default class PipelineEdit extends Component {
         okText={<FormattedMessage id="save" />}
         cancelText={<FormattedMessage id="cancel" />}
         confirmLoading={submitLoading}
-        service={[
-          'devops-service.pipeline.update',
-          'devops-service.pipeline.getAllUsers',
-          'devops-service.application.pageByOptions',
-          'devops-service.devops-environment.listByProjectIdAndActive',
-          'devops-service.application-instance.getByAppIdAndEnvId',
-          'devops-service.pipeline-value.queryByAppIdAndEnvId',
-          'devops-service.pipeline-value.queryById',
-          'devops-service.pipeline.queryById',
-        ]}
+        keyboard={false}
       >
         { _.isNull(getPipeline) ? <EmptyPage /> : <Fragment>
           <Content className="c7n-pipeline-content">
@@ -286,27 +276,6 @@ export default class PipelineEdit extends Component {
                 <Icon type="error" className="c7ncd-pipeline-error-icon" />
                 <span className="c7ncd-pipeline-error-msg">{formatMessage({ id: 'pipeline.create.error-2' })}</span>
               </div>}
-              {/* <FormItem
-                {...formItemLayout}
-              >
-                <Button
-                  disabled={getIsDisabled || !getCanSubmit}
-                  type="primary"
-                  funcType="raised"
-                  htmlType="submit"
-                  loading={submitLoading}
-                >
-                  <FormattedMessage id="save" />
-                </Button>
-                <Button
-                  disabled={submitLoading}
-                  funcType="raised"
-                  className="c7ncd-pipeline-btn_cancel"
-                  onClick={this.goBack}
-                >
-                  <FormattedMessage id="cancel" />
-                </Button>
-              </FormItem> */}
             </Form>
             <InterceptMask visible={submitLoading || getDetailLoading} />
           </Content>

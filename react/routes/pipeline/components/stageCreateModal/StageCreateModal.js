@@ -115,45 +115,44 @@ export default class StageCreateModal extends Component {
       okText={<FormattedMessage id={createOrEdit} />}
       cancelText={<FormattedMessage id="cancel" />}
     >
-      <Content style={{ height: '100%' }}>
-        <Form layout="vertical">
-          <FormItem
-            {...formItemLayout}
-          >
-            {getFieldDecorator('stageName', {
-              rules: [{
-                required: true,
-                message: formatMessage({ id: 'required' }),
-              }],
-              initialValue: stageName,
-            })(
-              <Input
-                label={<FormattedMessage id="name" />}
-                type="text"
-                maxLength={30}
-              />,
-            )}
-          </FormItem>
-          <FormItem
-            className="c7ncd-stage-modal-from"
-            {...formItemLayout}
-          >
-            {getFieldDecorator('triggerType', {
-              initialValue: triggerType || STAGE_FLOW_AUTO,
-            })(
-              <RadioGroup label={formatMessage({ id: 'pipeline.flow' })} onChange={this.changeFlowType}>
-                <Radio value={STAGE_FLOW_AUTO}>
-                  <FormattedMessage id="pipeline.flow.auto" />
-                </Radio>
-                <Radio value={STAGE_FLOW_MANUAL}>
-                  <FormattedMessage id="pipeline.flow.manual" />
-                </Radio>
-              </RadioGroup>,
-            )}
-          </FormItem>
-          {(flowType || triggerType) === STAGE_FLOW_MANUAL && <FormItem
-            {...formItemLayout}
-          >
+      <Form layout="vertical">
+        <FormItem
+          {...formItemLayout}
+        >
+          {getFieldDecorator('stageName', {
+            rules: [{
+              required: true,
+              message: formatMessage({ id: 'required' }),
+            }],
+            initialValue: stageName,
+          })(
+            <Input
+              label={<FormattedMessage id="name" />}
+              type="text"
+              maxLength={30}
+            />,
+          )}
+        </FormItem>
+        <FormItem
+          className="c7ncd-stage-modal-from"
+          {...formItemLayout}
+        >
+          {getFieldDecorator('triggerType', {
+            initialValue: triggerType || STAGE_FLOW_AUTO,
+          })(
+            <RadioGroup label={formatMessage({ id: 'pipeline.flow' })} onChange={this.changeFlowType}>
+              <Radio value={STAGE_FLOW_AUTO}>
+                <FormattedMessage id="pipeline.flow.auto" />
+              </Radio>
+              <Radio value={STAGE_FLOW_MANUAL}>
+                <FormattedMessage id="pipeline.flow.manual" />
+              </Radio>
+            </RadioGroup>,
+          )}
+        </FormItem>
+        {(flowType || triggerType) === STAGE_FLOW_MANUAL && <FormItem
+          {...formItemLayout}
+        >
             {getFieldDecorator('users', {
               rules: [{
                 required: true,
@@ -176,24 +175,7 @@ export default class StageCreateModal extends Component {
               </Select>,
             )}
           </FormItem>}
-          {/* <FormItem
-            className="c7ncd-stage-modal-btn"
-            {...formItemLayout}
-          >
-            <Button key="back" onClick={onClose}>
-              <FormattedMessage id="cancel" />
-            </Button>
-            <Button
-              key="submit"
-              type="primary"
-              onClick={this.onSubmit}
-            >
-              <FormattedMessage id={createOrEdit} />
-            </Button>
-          </FormItem> */}
-        </Form>
-      </Content>
-
+      </Form>
     </Sidebar>;
   }
 }

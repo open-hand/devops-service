@@ -127,12 +127,15 @@ class DevPipelineStore {
       DeploymentPipelineStore.setProRole('app', '');
     }
     this.setPreProId(projectId);
+    BranchStore.changeLoading(true);
     axios.get(`/devops/v1/projects/${projectId}/app_service/list_by_active`)
       .then((data) => {
+        BranchStore.changeLoading(false);
         if (handlePromptError(data)) {
           const res = data;
           const appSort = _.concat(_.filter(res, ['permission', true]), _.filter(res, ['permission', false]));
           const result = _.filter(appSort, ['permission', true]);
+          const tempAppId = this.selectedApp;
           this.setAppData(appSort);
           if (result && result.length) {
             if (apps) {
@@ -144,7 +147,7 @@ class DevPipelineStore {
             } else {
               this.setSelectApp(result[0].id);
             }
-            if (!(BranchStore.getBranchList && BranchStore.branchList.length > 0)) {
+            if (!(BranchStore.getBranchList && BranchStore.branchList.length > 0) || tempAppId !== this.selectedApp) {
               BranchStore.loadBranchList({ projectId });
             }
           } else {
