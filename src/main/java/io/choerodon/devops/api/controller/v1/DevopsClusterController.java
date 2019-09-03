@@ -59,7 +59,7 @@ public class DevopsClusterController {
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_ADMINISTRATOR})
     @ApiOperation(value = "更新集群")
-    @PutMapping("{cluster_id}")
+    @PutMapping("/{cluster_id}")
     public void update(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
