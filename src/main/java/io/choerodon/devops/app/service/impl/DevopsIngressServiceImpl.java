@@ -122,7 +122,9 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
         devopsIngressVO.getPathList().forEach(devopsIngressPathDTO -> {
             DevopsServiceDTO devopsServiceDTO = devopsServiceMapper.selectByPrimaryKey(devopsIngressPathDTO.getServiceId());
-            appServiceIds.add(devopsServiceDTO.getAppServiceId());
+            if (devopsServiceDTO.getAppServiceId() != null) {
+                appServiceIds.add(devopsServiceDTO.getAppServiceId());
+            }
             if (dealWithPorts(devopsServiceDTO.getPorts()).stream().map(PortMapVO::getPort).noneMatch(port -> port.equals(devopsIngressPathDTO.getServicePort()))) {
                 throw new CommonException(ERROR_SERVICE_NOT_CONTAIN_PORT);
             }
@@ -271,7 +273,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
         //在gitops库处理ingress文件
         operateEnvGitLabFile(
-                TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), deleteCert, v1beta1Ingress, false, path, devopsIngressDO, userAttrDTO, devopsEnvCommandDTO,appServiceIds);
+                TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), deleteCert, v1beta1Ingress, false, path, devopsIngressDO, userAttrDTO, devopsEnvCommandDTO, appServiceIds);
     }
 
     /**
@@ -621,7 +623,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
                     ingressSagaPayload.getGitlabUserId(),
                     ingressSagaPayload.getDevopsIngressDTO().getId(), INGRESS, null, false, ingressSagaPayload.getDevopsEnvironmentDTO().getId(), filePath);
         } catch (Exception e) {
-            logger.info("create or update Ingress failed!",e);
+            logger.info("create or update Ingress failed!", e);
             //有异常更新实例以及command的状态
             DevopsIngressDTO devopsIngressDTO = baseQuery(ingressSagaPayload.getDevopsIngressDTO().getId());
             DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService

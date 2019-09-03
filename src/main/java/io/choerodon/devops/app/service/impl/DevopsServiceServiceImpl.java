@@ -146,27 +146,25 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     @Override
     public DevopsServiceVO query(Long id) {
 
-        List<DevopsServiceInstanceDTO> devopsServiceAppInstanceDTOS = devopsServiceInstanceService.baseListByServiceId(id);
-        //网络多实例中存在删除实例时，给应用信息赋值
-        if (!devopsServiceAppInstanceDTOS.isEmpty()) {
-            for (DevopsServiceInstanceDTO devopsServiceAppInstanceDTO : devopsServiceAppInstanceDTOS) {
-                AppServiceInstanceDTO applicationInstanceDTO = appServiceInstanceService.baseQuery(devopsServiceAppInstanceDTO.getInstanceId());
-                if (applicationInstanceDTO != null) {
-                    AppServiceDTO appServiceDTO = applicationService.baseQuery(applicationInstanceDTO.getAppServiceId());
-                    DevopsServiceQueryDTO devopsServiceQueryDTO = baseQueryById(id);
-                    devopsServiceQueryDTO.setAppServiceId(appServiceDTO.getId());
-                    devopsServiceQueryDTO.setAppServiceName(appServiceDTO.getName());
-                    devopsServiceQueryDTO.setAppServiceProjectId(devopsProjectService.queryProjectIdByAppId(appServiceDTO.getAppId()));
-                    return queryDtoToVo(devopsServiceQueryDTO);
+        DevopsServiceQueryDTO devopsServiceQueryDTO = baseQueryById(id);
+        if (devopsServiceQueryDTO == null) {
+            return null;
+        } else {
+            List<DevopsServiceInstanceDTO> devopsServiceAppInstanceDTOS = devopsServiceInstanceService.baseListByServiceId(id);
+            //网络多实例中存在删除实例时，给应用信息赋值
+            if (!devopsServiceAppInstanceDTOS.isEmpty()) {
+                for (DevopsServiceInstanceDTO devopsServiceAppInstanceDTO : devopsServiceAppInstanceDTOS) {
+                    AppServiceInstanceDTO applicationInstanceDTO = appServiceInstanceService.baseQuery(devopsServiceAppInstanceDTO.getInstanceId());
+                    if (applicationInstanceDTO != null) {
+                        AppServiceDTO appServiceDTO = applicationService.baseQuery(applicationInstanceDTO.getAppServiceId());
+                        devopsServiceQueryDTO.setAppServiceId(appServiceDTO.getId());
+                        devopsServiceQueryDTO.setAppServiceName(appServiceDTO.getName());
+                        devopsServiceQueryDTO.setAppServiceProjectId(devopsProjectService.queryProjectIdByAppId(appServiceDTO.getAppId()));
+                    }
                 }
             }
         }
-        DevopsServiceQueryDTO devopsServiceQueryDTO = baseQueryById(id);
-        if(devopsServiceQueryDTO!=null) {
-            return queryDtoToVo(baseQueryById(id));
-        }else {
-            return null;
-        }
+        return queryDtoToVo(devopsServiceQueryDTO);
     }
 
     @Override
@@ -862,9 +860,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         boolean isUpdate = false;
 
         //资源视图更新网络类型为选择实例时，需要将网络和实例对应的应用服务相关联
-        if (!devopsServiceReqVO.getInstances().isEmpty()) {
+        if (devopsServiceReqVO.getInstances() != null && !devopsServiceReqVO.getInstances().isEmpty()) {
             AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQueryByCodeAndEnv(devopsServiceReqVO.getInstances().get(0), devopsServiceReqVO.getEnvId());
-            if (devopsServiceReqVO.getAppServiceId() == null) {
+            if (devopsServiceReqVO.getAppServiceId() == null && appServiceInstanceDTO != null) {
                 devopsServiceReqVO.setAppServiceId(appServiceInstanceDTO.getAppServiceId());
             }
         }
