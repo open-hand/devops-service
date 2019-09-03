@@ -4,6 +4,7 @@ import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
@@ -68,8 +69,6 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
     private static final String APPLICATION = "application";
     private static final String CHART = "chart";
     private static final String REPO = "repo";
-    private static final String IMAGES = "images";
-    private static final String PUSH_IAMGES = "push_image.sh";
     private static final String MARKET_PRO = "market-downloaded-app";
     private static final String DOWNLOADED_APP = "downloaded-app";
     private static final String HARBOR_NAME = "harbor_default";
@@ -87,7 +86,10 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
     private static final String ALL = "mkt_code_deploy";
     private static final String MARKET = "market";
     private static final String LINE = "line.separator";
-    private static final String SHELL = "shell";
+    private static final String CONFIG_PATH = "root/.docker";
+    private static final String CONFIG_JSON = "config.json";
+    private static final String DSLASH = "//";
+    private static final String SSLASH = "/";
     @Value("${services.helm.url}")
     private String helmUrl;
     @Value("${services.harbor.baseUrl}")
@@ -568,100 +570,88 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         MarketImageUrlVO marketImageUrlVO = new MarketImageUrlVO();
         marketImageUrlVO.setAppCode(appMarketUploadVO.getMktAppCode());
 
-        copyPushImageFile();
-
         List<MarketAppServiceImageVO> imageVOList = new ArrayList<>();
-        //获取push_image 脚本目录
-        // 创建images
         appMarketUploadVO.getAppServiceUploadPayloads().forEach(appServiceMarketVO -> {
             MarketAppServiceImageVO appServiceImageVO = new MarketAppServiceImageVO();
             appServiceImageVO.setServiceCode(appServiceMarketVO.getAppServiceCode());
             List<MarketAppServiceVersionImageVO> appServiceVersionImageVOS = new ArrayList<>();
-            StringBuilder stringBuilder = new StringBuilder();
-            appServiceMarketVO.getAppServiceVersionUploadPayloads().forEach(t -> {
-                stringBuilder.append(appServiceVersionService.baseQuery(t.getId()).getImage());
-                stringBuilder.append(System.getProperty(LINE));
-
-                MarketAppServiceVersionImageVO appServiceVersionImageVO = new MarketAppServiceVersionImageVO();
-                appServiceVersionImageVO.setVersion(t.getVersion());
-                appServiceVersionImageVO.setImageUrl(String.format("%s:%s", appServiceMarketVO.getHarborUrl(), t.getVersion()));
-                appServiceVersionImageVOS.add(appServiceVersionImageVO);
-            });
-            appServiceImageVO.setServiceVersionVOS(appServiceVersionImageVOS);
-            imageVOList.add(appServiceImageVO);
-            FileUtil.saveDataToFile(SHELL, IMAGES, stringBuilder.toString());
 
             //获取原仓库配置
             ConfigVO configVO = devopsConfigService.queryByResourceId(
                     appServiceService.baseQuery(appServiceMarketVO.getAppServiceId()).getChartConfigId(), "harbor")
                     .get(0).getConfig();
-            User oldUser = new User();
-            BeanUtils.copyProperties(configVO, oldUser);
-            oldUser.setUsername(configVO.getUserName());
-            User newUser = new User();
-            newUser.setUsername(appMarketUploadVO.getUser().getRobotName());
-            newUser.setPassword(appMarketUploadVO.getUser().getRobotToken());
-            // 执行脚本
-            callScript(appServiceMarketVO.getHarborUrl(), newUser, oldUser);
-            FileUtil.deleteFile(String.format(APP_TEMP_PATH_FORMAT, SHELL, File.separator, IMAGES));
+            User sourceUser = new User();
+            BeanUtils.copyProperties(configVO, sourceUser);
+            sourceUser.setUsername(configVO.getUserName());
+
+            User targetUser = new User();
+            targetUser.setUsername(appMarketUploadVO.getUser().getRobotName());
+            targetUser.setPassword(appMarketUploadVO.getUser().getRobotToken());
+
+            //准备认证json
+            String configStr = createConfigJson(sourceUser, getDomain(configVO.getUrl()), targetUser, getDomain(appServiceMarketVO.getHarborUrl()));
+            FileUtil.saveDataToFile(CONFIG_PATH, CONFIG_JSON, configStr);
+
+            appServiceMarketVO.getAppServiceVersionUploadPayloads().forEach(t -> {
+                //推送镜像
+                String targetImageUrl = String.format("%s:%s", appServiceMarketVO.getHarborUrl(), t.getVersion());
+                callScript(appServiceVersionService.baseQuery(t.getId()).getImage(), targetImageUrl);
+
+                MarketAppServiceVersionImageVO appServiceVersionImageVO = new MarketAppServiceVersionImageVO();
+                appServiceVersionImageVO.setVersion(t.getVersion());
+                appServiceVersionImageVO.setImageUrl(targetImageUrl);
+                appServiceVersionImageVOS.add(appServiceVersionImageVO);
+            });
+            appServiceImageVO.setServiceVersionVOS(appServiceVersionImageVOS);
+            imageVOList.add(appServiceImageVO);
         });
         marketImageUrlVO.setServiceImageVOS(imageVOList);
         return marketImageUrlVO;
     }
 
     private void pushImageForDownload(AppMarketDownloadPayload appMarketDownloadVO) {
-        //获取push_image 脚本目录
-        String shellPath = this.getClass().getResource(SHELL).getPath();
-        copyPushImageFile();
         appMarketDownloadVO.getAppServiceDownloadPayloads().forEach(appServiceMarketVO -> {
-            StringBuilder stringBuilder = new StringBuilder();
-            appServiceMarketVO.getAppServiceVersionDownloadPayloads().forEach(t -> {
-                stringBuilder.append(t.getImage());
-                stringBuilder.append(System.getProperty(LINE));
-            });
-            FileUtil.saveDataToFile(shellPath, IMAGES, stringBuilder.toString());
-
-            //获取新仓库配置
             ConfigVO configVO = gson.fromJson(devopsConfigService.baseQueryByName(null, HARBOR_NAME).getConfig(), ConfigVO.class);
-            User newUser = new User();
-            BeanUtils.copyProperties(configVO, newUser);
-            newUser.setUsername(configVO.getUserName());
-            User oldUser = new User();
-            oldUser.setUsername(appMarketDownloadVO.getUser().getRobotName());
-            oldUser.setPassword(appMarketDownloadVO.getUser().getRobotToken());
-            harborUrl = harborUrl.endsWith("/") ? harborUrl : harborUrl + "/";
+            User targetUser = new User();
+            BeanUtils.copyProperties(configVO, targetUser);
+            targetUser.setUsername(configVO.getUserName());
 
-            callScript(String.format("%s%s", harborUrl, MARKET_PRO), newUser, oldUser);
-            FileUtil.deleteFile(String.format(APP_TEMP_PATH_FORMAT, shellPath, File.separator, IMAGES));
+            User sourceUser = new User();
+            sourceUser.setUsername(appMarketDownloadVO.getUser().getRobotName());
+            sourceUser.setPassword(appMarketDownloadVO.getUser().getRobotToken());
+            harborUrl = harborUrl.endsWith("/") ? harborUrl : harborUrl + "/";
+            //准备认证json
+            String configStr = createConfigJson(sourceUser, harborUrl, targetUser, getDomain(configVO.getUrl()));
+            FileUtil.saveDataToFile(CONFIG_PATH, CONFIG_JSON, configStr);
+
+            appServiceMarketVO.getAppServiceVersionDownloadPayloads().forEach(t -> {
+                callScript(t.getImage(), String.format("%s%s:%s", harborUrl, MARKET_PRO, t.getVersion()));
+            });
         });
     }
 
     /**
-     * 脚本文件具体执行及脚本执行过程探测
+     * 执行pull/push脚本
      *
      * @param
      */
-    private void callScript(String harborUrl, User newUser, User oldUser) {
+    private void callScript(String sourceUrl, String targetUrl) {
         try {
-            String cmd = String.format("sh /shell/%s %s %s %s %s %s", PUSH_IAMGES, harborUrl, newUser.getUsername(), newUser.getPassword(), oldUser.getUsername(), oldUser.getPassword());
+            String cmd = String.format("echo 'FROM %s' | kaniko -f /dev/stdin -d %s", sourceUrl, targetUrl);
             LOGGER.info(cmd);
-//            执行脚本并等待脚本执行完成
             Process process = Runtime.getRuntime().exec(cmd);
-
-            //写出脚本执行中的过程信息
             BufferedReader infoInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
             BufferedReader errorInput = new BufferedReader(new InputStreamReader(process.getErrorStream()));
             String line = "";
             while ((line = infoInput.readLine()) != null) {
                 LOGGER.info(line);
             }
+            // todo errorTnput 不为null抛出异常
             while ((line = errorInput.readLine()) != null) {
                 LOGGER.error(line);
             }
             infoInput.close();
             errorInput.close();
-
-            //阻塞执行线程直至脚本执行完成后返回
             process.waitFor();
         } catch (Exception e) {
             throw new CommonException("error.exec.push.image", e.getMessage());
@@ -754,20 +744,49 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         }
     }
 
-    private void copyPushImageFile() {
-        File file = new File(String.format("%s%s%s", SHELL, File.separator, PUSH_IAMGES));
-        if (!file.exists()) {
-            FileUtil.createDirectory(SHELL);
-            int byteread = 0;
-            try (InputStream inStream = this.getClass().getResourceAsStream(String.format("/%s/%s", SHELL, PUSH_IAMGES));
-                 FileOutputStream fs = new FileOutputStream(SHELL + File.separator + PUSH_IAMGES)) {
-                byte[] buffer = new byte[1444];
-                while ((byteread = inStream.read(buffer)) != -1) {
-                    fs.write(buffer, 0, byteread);
-                }
-            } catch (IOException e) {
-                throw new CommonException("error.copy.push.image.file");
-            }
+    /**
+     * 创建kaniko 拉取image config.json
+     * @param sourceUser
+     * @param sourceUrl
+     * @param targetUser
+     * @param targetUrl
+     * @return
+     */
+    private String createConfigJson(User sourceUser, String sourceUrl, User targetUser, String targetUrl) {
+
+        JSONObject result = new JSONObject();
+
+        JSONObject sourceAuth = new JSONObject();
+        String sourceCode = Base64.getEncoder().encodeToString(String.format("%s:%s", sourceUser.getUsername(), sourceUser.getPassword()).getBytes());
+        sourceAuth.put("auth", sourceCode);
+
+        JSONObject targetAuth = new JSONObject();
+        String targetCode = Base64.getEncoder().encodeToString(String.format("%s:%s", targetUser.getUsername(), targetUser.getPassword()).getBytes());
+        targetAuth.put("auth", targetCode);
+
+        JSONObject temp = new JSONObject();
+        temp.put(sourceUrl, sourceAuth);
+        temp.put(targetUrl, targetAuth);
+
+        result.put("auths", temp);
+
+        return result.toJSONString();
+    }
+
+    /**
+     * 获取仓库域名
+     *
+     * @param url
+     * @return
+     */
+    private String getDomain(String url) {
+        String[] strArry;
+        if (url.contains(DSLASH)) {
+            strArry = url.split(DSLASH);
+            return strArry[1];
+        } else {
+            strArry = url.split(SSLASH);
+            return strArry[0];
         }
     }
 
