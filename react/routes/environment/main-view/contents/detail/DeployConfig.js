@@ -92,15 +92,6 @@ export default function DeployConfig() {
   }
 
   function renderActions({ record }) {
-    /**
-     *
-     * TODO: 只有运行中的环境可以操作
-     *   但是目前无法给action添加disabled
-     *
-     *   - 要么不能操作的不显示
-     *   - 要么让框架给action添加禁用的属性
-     *
-     */
     const actionData = [
       {
         service: [],

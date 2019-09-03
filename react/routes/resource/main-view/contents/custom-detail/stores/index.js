@@ -15,11 +15,7 @@ export function useCustomDetailStore() {
 export const StoreProvider = injectIntl(inject('AppState')(
   observer((props) => {
     const { AppState: { currentMenuType: { id } }, children } = props;
-    const {
-      intlPrefix,
-      intl: { formatMessage },
-      resourceStore: { getSelectedMenu: { menuId } },
-    } = useResourceStore();
+    const { resourceStore: { getSelectedMenu: { menuId } } } = useResourceStore();
     const detailDs = useMemo(() => new DataSet(DetailDataSet()), []);
 
     useEffect(() => {
