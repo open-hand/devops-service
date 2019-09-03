@@ -2,22 +2,17 @@ import React, { Fragment, useMemo } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { Permission } from '@choerodon/master';
 import { observer } from 'mobx-react-lite';
-import {
-  Tooltip,
-  Button,
-  Icon,
-  Modal,
-} from 'choerodon-ui/pro';
+import { Tooltip, Button, Icon, Modal } from 'choerodon-ui/pro';
 import { Popover } from 'choerodon-ui';
 import { useEnvironmentStore } from '../../../../stores';
 import { useDetailStore } from '../stores';
+import { isNotRunning } from '../../../../util';
 
 const SyncSituation = observer(() => {
   const {
-    envStore: {
-      getSelectedMenu: { active, synchro },
-    },
+    envStore: { getSelectedMenu },
   } = useEnvironmentStore();
+  const disabled = isNotRunning(getSelectedMenu || {});
   const {
     prefixCls,
     intlPrefix,
@@ -115,7 +110,7 @@ const SyncSituation = observer(() => {
             >
               <Tooltip title={<FormattedMessage id={`${intlPrefix}.environment.retry`} />}>
                 <Button
-                  disabled={!active || !synchro}
+                  disabled={disabled}
                   icon="replay"
                   color="primary"
                   funcType="flat"

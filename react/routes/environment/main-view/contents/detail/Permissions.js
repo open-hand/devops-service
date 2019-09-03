@@ -5,21 +5,24 @@ import { observer } from 'mobx-react-lite';
 import TimePopover from '../../../../../components/time-popover';
 import { useEnvironmentStore } from '../../../stores';
 import { useDetailStore } from './stores';
+import { isNotRunning } from '../../../util';
 
 const { Column } = Table;
 
 function Permissions() {
   const {
     envStore: {
-      getSelectedMenu: { active, skipCheckPermission },
+      getSelectedMenu,
     },
   } = useEnvironmentStore();
+  const disabled = isNotRunning(getSelectedMenu);
   const {
     intl: { formatMessage },
     permissionsDs: tableDs,
   } = useDetailStore();
 
   function renderActions({ record }) {
+    const { skipCheckPermission } = getSelectedMenu;
     const role = record.get('role');
     const actionData = [
       {
@@ -30,7 +33,8 @@ function Permissions() {
         },
       },
     ];
-    return role === 'member' && !skipCheckPermission ? <Action data={actionData} /> : null;
+    const displayAction = !disabled && role === 'member' && !skipCheckPermission;
+    return displayAction ? <Action data={actionData} /> : null;
   }
 
   function renderDate({ value }) {

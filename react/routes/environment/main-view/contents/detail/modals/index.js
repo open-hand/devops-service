@@ -8,11 +8,12 @@ import Permission from '../../../../../resource/main-view/contents/environment/m
 import { useEnvironmentStore } from '../../../../stores';
 import { useMainStore } from '../../../stores';
 import { useDetailStore } from '../stores';
-import ResourceSetting from './resource-setting/notificationsHome';
 import useStore from './useStore';
+import ResourceSetting from './resource-setting/notificationsHome';
 import EnvCreateForm from '../../../modals/env-create';
 import GroupForm from '../../../modals/GroupForm';
 import DeployConfigForm from './deploy-config';
+import { isNotRunning } from '../../../../util';
 
 import './index.less';
 
@@ -75,6 +76,7 @@ const EnvModals = observer(() => {
     }
     treeDs.query();
   }
+  const disabled = isNotRunning(getSelectedMenu || {});
 
   function toPermissionTab() {
     const { getTabKey } = detailStore;
@@ -188,8 +190,6 @@ const EnvModals = observer(() => {
   }
 
   function getButtons() {
-    const { active, synchro } = getSelectedMenu;
-    const disabled = !active || !synchro;
     return [{
       name: formatMessage({ id: `${currentIntlPrefix}.create` }),
       icon: 'playlist_add',
@@ -227,12 +227,15 @@ const EnvModals = observer(() => {
 
   function getOtherBtn() {
     const actionData = [{
+      service: [],
       text: formatMessage({ id: `${currentIntlPrefix}.group.create` }),
       action: openGroupModal,
     },
     {
+      disabled,
+      service: [],
       text: formatMessage({ id: `${currentIntlPrefix}.resource.setting` }),
-      action: resourceSetting,
+      action: !disabled ? resourceSetting : null,
     }];
     return <Action data={actionData} />;
   }

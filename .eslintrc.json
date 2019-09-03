@@ -63,6 +63,7 @@
     "import/no-duplicates": "off",
     "import/no-named-as-default": "off",
     "import/no-named-as-default-member": "off",
+    "import/prefer-default-export": "off",
     "no-trailing-spaces": "off",
     "class-methods-use-this": "off",
     "import/no-extraneous-dependencies": "off",

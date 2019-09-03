@@ -10,17 +10,18 @@ export default ({ formatMessage, intlPrefix, projectId, store }) => {
       }
     }
   };
-  const nameValidator = async (value) => {
+  const nameValidator = async (value, name, record) => {
+    const id = record.get('id');
+    const param = id ? `&deploy_value_id=${id}` : '';
     try {
-      const res = await axios.get(`/devops/v1/projects/${projectId}/deploy_value/check_name?name=${value}`);
+      const res = await axios.get(`/devops/v1/projects/${projectId}/deploy_value/check_name?name=${value}${param}`);
       if (res.failed) {
         if (res.code === 'error.devops.pipeline.value.name.exit') {
-          return '名称校验失败，请稍后再试';
+          return '名称已存在';
         }
-        return res.message;
-      } else {
-        return true;
+        return '名称校验失败，请稍后再试';
       }
+      return true;
     } catch (err) {
       return '名称校验失败，请稍后再试';
     }
