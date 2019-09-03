@@ -375,7 +375,7 @@ class DevopsGitControllerSpec extends Specification {
         Mockito.doReturn(pageResponseEntity).when(baseServiceClient).listProjectWithRole(anyLong(), anyInt(), anyInt())
 
         when: '获取工程下所有分支名'
-        def branches = restTemplate.postForObject("/v1/projects/1/app_service/1/git/page_branch_by_options?page=0&size=10", null, PageInfo.class)
+        def branches = restTemplate.postForObject("/v1/projects/1/app_service/1/git/page_branch_by_options?page=0&size=10&sort=branchName,asc", null, PageInfo.class)
 
 
         then: '校验返回值'

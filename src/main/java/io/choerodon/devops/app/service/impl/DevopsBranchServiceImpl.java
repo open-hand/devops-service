@@ -2,19 +2,22 @@ package io.choerodon.devops.app.service.impl;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.google.common.collect.Lists;
+import io.kubernetes.client.JSON;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import io.choerodon.base.domain.PageRequest;
+import io.choerodon.base.domain.Sort;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.DevopsBranchService;
 import io.choerodon.devops.infra.dto.DevopsBranchDTO;
 import io.choerodon.devops.infra.mapper.DevopsBranchMapper;
-import io.choerodon.devops.infra.util.PageRequestUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.kubernetes.client.JSON;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 
 /**
@@ -38,11 +41,13 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
         return devopsBranchMapper.select(queryDevopsBranchDTO);
     }
 
+    @Override
     public DevopsBranchDTO baseQueryByAppAndBranchName(Long appServiceId, String branchName) {
         return devopsBranchMapper
                 .queryByAppAndBranchName(appServiceId, branchName);
     }
 
+    @Override
     public void baseUpdateBranchIssue(Long appServiceId, DevopsBranchDTO devopsBranchDTO) {
         DevopsBranchDTO oldDevopsBranchDTO = devopsBranchMapper
                 .queryByAppAndBranchName(appServiceId, devopsBranchDTO.getBranchName());
@@ -50,6 +55,7 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
         devopsBranchMapper.updateByPrimaryKey(devopsBranchDTO);
     }
 
+    @Override
     public void baseUpdateBranchLastCommit(DevopsBranchDTO devopsBranchDTO) {
         DevopsBranchDTO oldDevopsBranchDTO = devopsBranchMapper
                 .queryByAppAndBranchName(devopsBranchDTO.getAppServiceId(), devopsBranchDTO.getBranchName());
@@ -60,6 +66,7 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
         devopsBranchMapper.updateByPrimaryKey(oldDevopsBranchDTO);
     }
 
+    @Override
     public DevopsBranchDTO baseCreate(DevopsBranchDTO devopsBranchDTO) {
         DevopsBranchDTO exist = new DevopsBranchDTO();
         exist.setAppServiceId(devopsBranchDTO.getAppServiceId());
@@ -71,11 +78,13 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
         return devopsBranchDTO;
     }
 
+    @Override
     public DevopsBranchDTO baseQuery(Long devopsBranchId) {
         return devopsBranchMapper.selectByPrimaryKey(devopsBranchId);
     }
 
 
+    @Override
     public void baseUpdateBranch(DevopsBranchDTO devopsBranchDTO) {
         devopsBranchDTO.setObjectVersionNumber(devopsBranchMapper.selectByPrimaryKey(devopsBranchDTO.getId()).getObjectVersionNumber());
         if (devopsBranchMapper.updateByPrimaryKey(devopsBranchDTO) != 1) {
@@ -84,11 +93,25 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
     }
 
 
+    @Override
     public PageInfo<DevopsBranchDTO> basePageBranch(Long appServiceId, PageRequest pageRequest, String params) {
 
         PageInfo<DevopsBranchDTO> devopsBranchDTOPageInfo;
         Map<String, Object> maps = TypeUtil.castMapParams(params);
-        devopsBranchDTOPageInfo = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest))
+        Sort sort = pageRequest.getSort();
+        String sortResult = "";
+        if (sort != null) {
+            sortResult = Lists.newArrayList(pageRequest.getSort().iterator()).stream()
+                    .map(t -> {
+                        String property = t.getProperty();
+                        if ("branchName".equals(property)) {
+                            property = "db.branch_name";
+                        }
+                        return property + " " + t.getDirection();
+                    })
+                    .collect(Collectors.joining(","));
+        }
+        devopsBranchDTOPageInfo = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), sortResult)
                 .doSelectPageInfo(
                         () -> devopsBranchMapper.list(appServiceId,
                                 TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
@@ -97,6 +120,7 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
     }
 
 
+    @Override
     public void baseDelete(Long appServiceId, String branchName) {
         DevopsBranchDTO devopsBranchDTO = devopsBranchMapper.queryByAppAndBranchName(appServiceId, branchName);
         if (devopsBranchDTO != null) {
@@ -104,6 +128,7 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
         }
     }
 
+    @Override
     public List<DevopsBranchDTO> baseListByAppId(Long appServiceId) {
         DevopsBranchDTO devopsBranchDTO = new DevopsBranchDTO();
         devopsBranchDTO.setAppServiceId(appServiceId);
@@ -111,6 +136,7 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
     }
 
 
+    @Override
     public List<DevopsBranchDTO> baseListByAppIdAndBranchName(Long appServiceId, String branchName) {
         DevopsBranchDTO devopsBranchDTO = new DevopsBranchDTO();
         devopsBranchDTO.setAppServiceId(appServiceId);
@@ -119,6 +145,7 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
     }
 
 
+    @Override
     public DevopsBranchDTO baseQueryByBranchNameAndCommit(String branchName, String commit) {
         DevopsBranchDTO devopsBranchDTO = new DevopsBranchDTO();
         devopsBranchDTO.setBranchName(branchName);
