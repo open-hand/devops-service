@@ -49,7 +49,7 @@
         </if>
     </select>
 
-    <select id="ListProjectMembersAppService" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
+    <select id="listProjectMembersAppService" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
         SELECT
           da.id,
           da.app_id,
