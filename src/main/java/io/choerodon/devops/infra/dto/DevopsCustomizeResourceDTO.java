@@ -1,6 +1,7 @@
 package io.choerodon.devops.infra.dto;
 
 
+import java.util.Objects;
 import javax.persistence.*;
 
 import io.choerodon.mybatis.entity.BaseDTO;
@@ -147,5 +148,21 @@ public class DevopsCustomizeResourceDTO extends BaseDTO {
 
     public void setResourceContent(String resourceContent) {
         this.resourceContent = resourceContent;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        DevopsCustomizeResourceDTO that = (DevopsCustomizeResourceDTO) o;
+        return
+                Objects.equals(k8sKind, that.k8sKind) &&
+                Objects.equals(name, that.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, projectId, envId, contentId, commandId, k8sKind, name, filePath, description, commandStatus, commandError, resourceContent);
     }
 }

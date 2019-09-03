@@ -96,7 +96,7 @@ public class HandlerConfigMapRelationsServiceImpl implements HandlerObjectFileRe
                                 configMap,
                                 envId, "update");
                         Boolean isNotChange = devopsConfigMapVO.getValue().equals(gson.fromJson(devopsConfigMapService.baseQueryById(devopsConfigMapDTO.getId()).getValue(), Map.class));
-                        DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsConfigMapDTO.getEnvId());
+                        DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsConfigMapDTO.getCommandId());
                         devopsConfigMapVO.setId(devopsConfigMapDTO.getId());
                         if (!isNotChange) {
                             devopsConfigMapService.createOrUpdateByGitOps(devopsConfigMapVO, userId);
