@@ -1,34 +1,28 @@
 package io.choerodon.devops.api.controller.v1
 
-import com.github.pagehelper.PageInfo
-import io.choerodon.devops.DependencyInjectUtil
-import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.api.vo.ConfigVO
-import io.choerodon.devops.api.vo.DefaultConfigVO
-import io.choerodon.devops.api.vo.DevopsConfigVO
-import io.choerodon.devops.app.service.DevopsConfigService
-import io.choerodon.devops.infra.dto.DevopsConfigDTO
-import io.choerodon.devops.infra.dto.DevopsProjectDTO
-import io.choerodon.devops.infra.dto.iam.OrganizationDTO
-import io.choerodon.devops.infra.dto.iam.ProjectDTO
-import io.choerodon.devops.infra.feign.BaseServiceClient
-import io.choerodon.devops.infra.feign.HarborClient
-import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator
-import io.choerodon.devops.infra.mapper.DevopsProjectMapper
-import io.choerodon.devops.infra.util.ConvertUtils
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
+
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.context.annotation.Import
-import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Stepwise
 import spock.lang.Subject
 
-import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
+import io.choerodon.devops.IntegrationTestConfiguration
+import io.choerodon.devops.api.vo.ConfigVO
+import io.choerodon.devops.api.vo.DefaultConfigVO
+import io.choerodon.devops.api.vo.DevopsConfigVO
+import io.choerodon.devops.app.service.DevopsConfigService
+import io.choerodon.devops.infra.dto.DevopsProjectDTO
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO
+import io.choerodon.devops.infra.dto.iam.ProjectDTO
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator
+import io.choerodon.devops.infra.mapper.DevopsProjectMapper
 
 /**
  * Created by Sheep on 2019/4/9.
@@ -39,8 +33,6 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @Subject(DevopsProjectConfigController)
 @Stepwise
 class DevopsProjectConfigControllerSpec extends Specification {
-    HarborClient harborClient = Mockito.mock(HarborClient.class)
-
     private static final String MAPPING = "/v1/projects/{project_id}/project_config"
 
     @Autowired
@@ -50,6 +42,10 @@ class DevopsProjectConfigControllerSpec extends Specification {
     @Shared
     Long project_id = 1L
 
+    @Qualifier("mockBaseServiceClientOperator")
+    @Autowired
+    private BaseServiceClientOperator mockBaseServiceClientOperator
+
     @Shared
     List<DevopsConfigVO> list = new ArrayList<>()
     @Shared
@@ -57,15 +53,9 @@ class DevopsProjectConfigControllerSpec extends Specification {
     @Shared
     DevopsConfigVO harborDTO = new DevopsConfigVO()
     @Autowired
-    private BaseServiceClientOperator baseServiceClientOperator
-    @Autowired
     private DevopsProjectMapper devopsProjectMapper
 
-    BaseServiceClient baseServiceClient = Mockito.mock(BaseServiceClient)
-
     def setup() {
-        DependencyInjectUtil.setAttribute(baseServiceClientOperator, "baseServiceClient", baseServiceClient)
-
         chartDTO.setName("test")
         chartDTO.setType("chart")
         chartDTO.setProjectId(project_id)
@@ -94,14 +84,12 @@ class DevopsProjectConfigControllerSpec extends Specification {
         projectDTO.setId(1L)
         projectDTO.setCode("aads")
         projectDTO.setOrganizationId(1L)
-        ResponseEntity<ProjectDTO> projectEntity = new ResponseEntity<>(projectDTO, HttpStatus.OK)
-        Mockito.doReturn(projectEntity).when(baseServiceClient).queryIamProject(1L)
+        Mockito.doReturn(projectDTO).when(mockBaseServiceClientOperator).queryIamProjectById(1L)
 
         OrganizationDTO organizationDTO = new OrganizationDTO()
         organizationDTO.setCode("organization")
         organizationDTO.setId(1L)
-        ResponseEntity<OrganizationDTO> organizationEntity = new ResponseEntity<>(organizationDTO, HttpStatus.OK)
-        Mockito.doReturn(organizationEntity).when(baseServiceClient).queryOrganizationById(1L)
+        Mockito.doReturn(organizationDTO).when(mockBaseServiceClientOperator).queryOrganizationById(1L)
     }
     //创建配置
     def "Create"() {

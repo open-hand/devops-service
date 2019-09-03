@@ -1,35 +1,31 @@
 package io.choerodon.devops.api.controller.v1
 
-import com.github.pagehelper.PageInfo
-import io.choerodon.devops.DependencyInjectUtil
+import static org.mockito.ArgumentMatchers.any
+
+import org.mockito.Mockito
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.web.client.TestRestTemplate
+import org.springframework.context.annotation.Import
+import spock.lang.Shared
+import spock.lang.Specification
+import spock.lang.Stepwise
+import spock.lang.Subject
+
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.PipelineFrequencyVO
 import io.choerodon.devops.api.vo.PipelineTimeVO
-import io.choerodon.devops.app.service.IamService
 import io.choerodon.devops.infra.dto.AppServiceDTO
 import io.choerodon.devops.infra.dto.DevopsGitlabCommitDTO
 import io.choerodon.devops.infra.dto.DevopsGitlabPipelineDTO
 import io.choerodon.devops.infra.dto.iam.IamUserDTO
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO
 import io.choerodon.devops.infra.dto.iam.ProjectDTO
-import io.choerodon.devops.infra.feign.BaseServiceClient
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator
 import io.choerodon.devops.infra.mapper.AppServiceMapper
 import io.choerodon.devops.infra.mapper.DevopsGitlabCommitMapper
 import io.choerodon.devops.infra.mapper.DevopsGitlabPipelineMapper
-import org.mockito.Mockito
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.web.client.TestRestTemplate
-import org.springframework.context.annotation.Import
-import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
-import spock.lang.Shared
-import spock.lang.Specification
-import spock.lang.Stepwise
-import spock.lang.Subject
-
-import static org.mockito.ArgumentMatchers.anyLong
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(IntegrationTestConfiguration)
@@ -44,14 +40,12 @@ class DevopsGitlabPipelineControlleSpec extends Specification {
     @Autowired
     private DevopsGitlabCommitMapper devopsGitlabCommitMapper
     @Autowired
-    private BaseServiceClientOperator baseServiceClientOperator
-    @Autowired
     private AppServiceMapper applicationMapper
 
+    @Qualifier("mockBaseServiceClientOperator")
     @Autowired
-    private IamService iamRepository
+    private BaseServiceClientOperator mockBaseServiceClientOperator
 
-    BaseServiceClient baseServiceClient = Mockito.mock(BaseServiceClient)
 
     @Shared
     AppServiceDTO applicationDO = new AppServiceDTO()
@@ -81,29 +75,23 @@ class DevopsGitlabPipelineControlleSpec extends Specification {
     }
 
     def setup() {
-        DependencyInjectUtil.setAttribute(iamRepository, "baseServiceClient", baseServiceClient)
-        DependencyInjectUtil.setAttribute(baseServiceClientOperator, "baseServiceClient", baseServiceClient)
-
         ProjectDTO projectDO = new ProjectDTO()
         projectDO.setId(1L)
         projectDO.setCode("pro")
         projectDO.setOrganizationId(1L)
-        ResponseEntity<ProjectDTO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
-        Mockito.doReturn(responseEntity).when(baseServiceClient).queryIamProject(1L)
+        Mockito.doReturn(projectDO).when(mockBaseServiceClientOperator).queryIamProjectById(1L)
 
         OrganizationDTO organizationDO = new OrganizationDTO()
         organizationDO.setId(1L)
         organizationDO.setCode("org")
-        ResponseEntity<OrganizationDTO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
-        Mockito.doReturn(responseEntity1).when(baseServiceClient).queryOrganizationById(1L)
+        Mockito.doReturn(organizationDO).when(mockBaseServiceClientOperator).queryOrganizationById(1L)
 
         IamUserDTO userDO = new IamUserDTO()
         userDO.setLoginName("test")
         userDO.setId(1L)
         List<IamUserDTO> userDOList = new ArrayList<>()
         userDOList.add(userDO)
-        ResponseEntity<List<IamUserDTO>> responseEntity3 = new ResponseEntity<>(userDOList, HttpStatus.OK)
-        Mockito.doReturn(responseEntity3).when(baseServiceClient).listUsersByIds(anyLong())
+        Mockito.doReturn(userDOList).when(mockBaseServiceClientOperator).listUsersByIds(any(List))
     }
 
     def "ListPipelineTime"() {

@@ -356,13 +356,13 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Override
     public List<TagVO> listTags(Long projectId, Long applicationId) {
         AppServiceDTO applicationDTO = applicationService.baseQuery(applicationId);
-        return ConvertUtils.convertList(gitlabServiceClientOperator.listTag(applicationDTO.getGitlabProjectId(), getGitlabUserId()), TagVO.class);
+        return ConvertUtils.convertList(gitlabServiceClientOperator.listTags(applicationDTO.getGitlabProjectId(), getGitlabUserId()), TagVO.class);
     }
 
     @Override
     public Boolean checkTag(Long projectId, Long applicationId, String tagName) {
         AppServiceDTO applicationDTO = applicationService.baseQuery(applicationId);
-        return gitlabServiceClientOperator.listTag(applicationDTO.getGitlabProjectId(), getGitlabUserId()).stream()
+        return gitlabServiceClientOperator.listTags(applicationDTO.getGitlabProjectId(), getGitlabUserId()).stream()
                 .noneMatch(t -> tagName.equals(t.getName()));
     }
 
@@ -981,7 +981,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
     private boolean getDevopsSyncTag(PushWebHookVO pushWebHookVO) {
 
-        return gitlabServiceClientOperator.listTag(pushWebHookVO.getProjectId(), pushWebHookVO.getUserId())
+        return gitlabServiceClientOperator.listTags(pushWebHookVO.getProjectId(), pushWebHookVO.getUserId())
                 .stream().noneMatch(tagDO -> tagDO.getName().equals(GitUtil.DEV_OPS_SYNC_TAG));
 
     }

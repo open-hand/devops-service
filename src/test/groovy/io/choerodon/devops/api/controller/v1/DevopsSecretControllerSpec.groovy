@@ -1,25 +1,33 @@
 package io.choerodon.devops.api.controller.v1
 
+import static org.mockito.ArgumentMatchers.*
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
+
 import com.github.pagehelper.PageInfo
-import io.choerodon.devops.DependencyInjectUtil
+import org.mockito.Mockito
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.web.client.TestRestTemplate
+import org.springframework.context.annotation.Import
+import spock.lang.Shared
+import spock.lang.Specification
+import spock.lang.Stepwise
+import spock.lang.Subject
+
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.SecretReqVO
 import io.choerodon.devops.api.vo.SecretRespVO
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO
 import io.choerodon.devops.api.vo.iam.RoleVO
-import io.choerodon.devops.app.service.GitlabGroupMemberService
-import io.choerodon.devops.app.service.IamService
 import io.choerodon.devops.app.service.impl.DevopsSecretServiceImpl
 import io.choerodon.devops.infra.dto.DevopsEnvFileResourceDTO
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO
 import io.choerodon.devops.infra.dto.DevopsSecretDTO
-import io.choerodon.devops.infra.dto.RepositoryFileDTO
 import io.choerodon.devops.infra.dto.gitlab.MemberDTO
 import io.choerodon.devops.infra.dto.iam.IamUserDTO
 import io.choerodon.devops.infra.dto.iam.ProjectDTO
 import io.choerodon.devops.infra.enums.AccessLevel
-import io.choerodon.devops.infra.feign.BaseServiceClient
-import io.choerodon.devops.infra.feign.GitlabServiceClient
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler
@@ -27,21 +35,6 @@ import io.choerodon.devops.infra.mapper.DevopsEnvFileResourceMapper
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper
 import io.choerodon.devops.infra.mapper.DevopsSecretMapper
 import io.choerodon.devops.infra.util.FileUtil
-import org.mockito.Mockito
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.web.client.TestRestTemplate
-import org.springframework.context.annotation.Import
-import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
-import spock.lang.Shared
-import spock.lang.Specification
-import spock.lang.Stepwise
-import spock.lang.Subject
-
-import static org.mockito.ArgumentMatchers.*
-import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
 /**
  * Created by n!Ck
@@ -73,32 +66,24 @@ class DevopsSecretControllerSpec extends Specification {
     @Qualifier("mockClusterConnectionHandler")
     private ClusterConnectionHandler envUtil
 
+    @Qualifier("mockBaseServiceClientOperator")
     @Autowired
-    private IamService iamRepository
-    @Autowired
-    private GitlabServiceClientOperator gitlabRepository
-    @Autowired
-    private GitlabGroupMemberService gitlabGroupMemberRepository
+    private BaseServiceClientOperator mockBaseServiceClientOperator
 
-    BaseServiceClient baseServiceClient = Mockito.mock(BaseServiceClient.class)
-    GitlabServiceClient gitlabServiceClient = Mockito.mock(GitlabServiceClient.class)
-    GitlabServiceClientOperator gitlabServiceClientOperator = Mockito.mock(GitlabServiceClientOperator.class)
-    BaseServiceClientOperator baseServiceClientOperator = Mockito.mock(BaseServiceClientOperator)
+    @Qualifier("mockGitlabServiceClientOperator")
+    @Autowired
+    private GitlabServiceClientOperator mockGitlabServiceClientOperator
+
     @Shared
     private DevopsEnvironmentDTO devopsEnvironmentDO = new DevopsEnvironmentDTO()
     @Shared
     private DevopsEnvFileResourceDTO devopsEnvFileResourceDO = new DevopsEnvFileResourceDTO()
 
     def setup() {
-        DependencyInjectUtil.setAttribute(iamRepository, "baseServiceClient", baseServiceClient)
-        DependencyInjectUtil.setAttribute(gitlabRepository, "gitlabServiceClient", gitlabServiceClient)
-        DependencyInjectUtil.setAttribute(gitlabGroupMemberRepository, "gitlabServiceClientOperator", gitlabServiceClientOperator)
-        DependencyInjectUtil.setAttribute(devopsSecretServiceImpl, "baseServiceClientOperator", baseServiceClientOperator)
         ProjectDTO projectDO = new ProjectDTO()
         projectDO.setName("pro")
         projectDO.setOrganizationId(1L)
-        ResponseEntity<ProjectDTO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
-        Mockito.when(baseServiceClient.queryIamProject(anyLong())).thenReturn(responseEntity)
+        Mockito.when(mockBaseServiceClientOperator.queryIamProjectById(anyLong())).thenReturn(projectDO)
 
         List<RoleVO> roleDTOList = new ArrayList<>()
         RoleVO roleDTO = new RoleVO()
@@ -109,27 +94,17 @@ class DevopsSecretControllerSpec extends Specification {
         projectWithRoleDTO.setName("pro")
         projectWithRoleDTO.setRoles(roleDTOList)
         projectWithRoleDTOList.add(projectWithRoleDTO)
-        PageInfo<ProjectWithRoleVO> projectWithRoleDTOPage = new PageInfo<>(projectWithRoleDTOList)
-        ResponseEntity<PageInfo<ProjectWithRoleVO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
-        Mockito.doReturn(pageResponseEntity).when(baseServiceClient).listProjectWithRole(anyLong(), anyInt(), anyInt())
+        Mockito.doReturn(projectWithRoleDTOList).when(mockBaseServiceClientOperator).listProjectWithRoleDTO(anyLong())
 
         MemberDTO memberDO = new MemberDTO()
         memberDO.setAccessLevel(AccessLevel.OWNER.toValue())
-        ResponseEntity<MemberDTO> responseEntity1 = new ResponseEntity<>(memberDO, HttpStatus.OK)
-        Mockito.when(gitlabServiceClient.queryGroupMember(anyInt(), anyInt())).thenReturn(responseEntity1)
+        Mockito.when(mockGitlabServiceClientOperator.queryGroupMember(anyInt(), anyInt())).thenReturn(memberDO)
 
-        RepositoryFileDTO file = new RepositoryFileDTO()
-        file.setFilePath("filePath")
-        ResponseEntity<RepositoryFileDTO> responseEntity2 = new ResponseEntity<>(file, HttpStatus.OK)
-        Mockito.when(gitlabServiceClient.createFile(anyInt(), anyString(), anyString(), anyString(), anyInt())).thenReturn(responseEntity2)
-
-        Mockito.when(gitlabServiceClient.updateFile(anyInt(), anyString(), anyString(), anyString(), anyInt())).thenReturn(responseEntity2)
-
-        IamUserDTO iamUserDTO = new IamUserDTO();
+        IamUserDTO iamUserDTO = new IamUserDTO()
         iamUserDTO.setId(1L)
         iamUserDTO.setRealName("aa")
 
-        Mockito.doReturn(iamUserDTO).when(baseServiceClientOperator).queryUserByUserId(1L)
+        Mockito.doReturn(iamUserDTO).when(mockBaseServiceClientOperator).queryUserByUserId(1L)
     }
 
     def setupSpec() {

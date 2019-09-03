@@ -1,9 +1,25 @@
 package io.choerodon.devops.api.controller.v1
 
+import static org.mockito.ArgumentMatchers.*
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
+
 import com.alibaba.fastjson.JSONArray
 import com.github.pagehelper.PageInfo
+import org.mockito.ArgumentMatcher
+import org.mockito.Mockito
+import org.powermock.api.mockito.PowerMockito
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.web.client.TestRestTemplate
+import org.springframework.context.annotation.Import
+import spock.lang.Shared
+import spock.lang.Specification
+import spock.lang.Stepwise
+import spock.lang.Subject
+
+import io.choerodon.base.domain.PageRequest
 import io.choerodon.core.exception.ExceptionResponse
-import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.*
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO
@@ -18,30 +34,11 @@ import io.choerodon.devops.infra.dto.iam.OrganizationDTO
 import io.choerodon.devops.infra.dto.iam.ProjectDTO
 import io.choerodon.devops.infra.enums.AccessLevel
 import io.choerodon.devops.infra.enums.InstanceStatus
-import io.choerodon.devops.infra.feign.BaseServiceClient
-import io.choerodon.devops.infra.feign.GitlabServiceClient
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler
 import io.choerodon.devops.infra.mapper.*
 import io.choerodon.devops.infra.util.GitUtil
-import org.mockito.ArgumentMatcher
-import org.mockito.Mockito
-import org.powermock.api.mockito.PowerMockito
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.web.client.TestRestTemplate
-import org.springframework.context.annotation.Import
-import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
-import spock.lang.Shared
-import spock.lang.Specification
-import spock.lang.Stepwise
-import spock.lang.Subject
-
-import static org.mockito.ArgumentMatchers.*
-import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
 /**
  * Created by n!Ck
@@ -97,8 +94,14 @@ class DevopsEnvironmentControllerSpec extends Specification {
     private DevopsEnvAppServiceMapper devopsEnvAppServiceMapper
     @Autowired
     private AppServiceMapper appServiceMapper
+
+    @Qualifier("mockBaseServiceClientOperator")
     @Autowired
-    private BaseServiceClientOperator baseServiceClientOperator
+    private BaseServiceClientOperator mockBaseServiceClientOperator
+
+    @Qualifier("mockGitlabServiceClientOperator")
+    @Autowired
+    private GitlabServiceClientOperator mockGitlabServiceClientOperator
 
     @Autowired
     @Qualifier("mockClusterConnectionHandler")
@@ -114,15 +117,6 @@ class DevopsEnvironmentControllerSpec extends Specification {
 
     @Autowired
     private UserAttrService userAttrService
-    @Autowired
-    private IamService iamService
-    @Autowired
-    private GitlabServiceClientOperator gitlabServiceClientOperator
-    @Autowired
-    private GitlabGroupMemberService gitlabGroupMemberService
-
-    private BaseServiceClient baseServiceClient = Mockito.mock(BaseServiceClient)
-    private GitlabServiceClient gitlabServiceClient = Mockito.mock(GitlabServiceClient.class)
 
     @Shared
     Map<String, Object> searchParam = new HashMap<>()
@@ -170,10 +164,6 @@ class DevopsEnvironmentControllerSpec extends Specification {
     def setup() {
         if (isToInit) {
             initData()
-
-            DependencyInjectUtil.setAttribute(iamService, "baseServiceClient", baseServiceClient)
-            DependencyInjectUtil.setAttribute(baseServiceClientOperator, "baseServiceClient", baseServiceClient)
-            DependencyInjectUtil.setAttribute(gitlabServiceClientOperator, "gitlabServiceClient", gitlabServiceClient)
 
             initMock()
         }
@@ -316,30 +306,16 @@ class DevopsEnvironmentControllerSpec extends Specification {
         RoleSearchVO ownerRoleSearchDTO = new RoleSearchVO()
         ownerRoleSearchDTO.setCode("role/project/default/project-owner")
 
-        PageInfo<RoleVO> ownerRoleDTOPage = new PageInfo<>(ownerRoleDTOList)
-        ResponseEntity<PageInfo<RoleVO>> responseEntity3 = new ResponseEntity<>(ownerRoleDTOPage, HttpStatus.OK)
-        PowerMockito.when(baseServiceClient.queryRoleIdByCode(argThat(new ArgumentMatcher<RoleSearchVO>() {
-            @Override
-            boolean matches(RoleSearchVO argument) {
-                return argument != null && argument.getCode() == ownerRoleDTO.getCode()
-            }
-        }))).thenReturn(responseEntity3)
+        PowerMockito.when(mockBaseServiceClientOperator.queryRoleIdByCode(eq(ownerRoleDTO.getCode()))).thenReturn(ownerRoleDTO.getId())
 
         List<RoleVO> memberRoleDTOList = new ArrayList<>()
         RoleVO memberRoleDTO = new RoleVO()
         memberRoleDTO.setId(memberRoleId)
         memberRoleDTO.setCode("role/project/default/project-member")
         memberRoleDTOList.add(memberRoleDTO)
-        PageInfo<RoleVO> memberRoleDTOPage = new PageInfo<>(memberRoleDTOList)
-        ResponseEntity<PageInfo<RoleVO>> responseEntity4 = new ResponseEntity<>(memberRoleDTOPage, HttpStatus.OK)
         RoleSearchVO memberRoleSearchDTO = new RoleSearchVO()
         memberRoleSearchDTO.setCode("role/project/default/project-member")
-        PowerMockito.when(baseServiceClient.queryRoleIdByCode(argThat(new ArgumentMatcher<RoleSearchVO>() {
-            @Override
-            boolean matches(RoleSearchVO argument) {
-                return argument != null && argument.getCode() == memberRoleDTO.getCode()
-            }
-        }))).thenReturn(responseEntity4)
+        PowerMockito.when(mockBaseServiceClientOperator.queryRoleIdByCode(eq(memberRoleDTO.getCode()))).thenReturn(memberRoleDTO.getId())
     }
 
     def mockQueryUsersByRoleId() {
@@ -351,8 +327,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         ownerUserDTO.setRealName("realTest")
         ownerUserDTOList.add(ownerUserDTO)
         PageInfo<IamUserDTO> ownerUserDTOPage = new PageInfo<>(ownerUserDTOList)
-        ResponseEntity<PageInfo<IamUserDTO>> ownerPageResponseEntity = new ResponseEntity<>(ownerUserDTOPage, HttpStatus.OK)
-        PowerMockito.when(baseServiceClient.pagingQueryUsersByRoleIdOnProjectLevel(anyInt(), anyInt(), eq(ownerRoleId), anyLong(), anyBoolean(), any(RoleAssignmentSearchVO.class))).thenReturn(ownerPageResponseEntity)
+        PowerMockito.when(mockBaseServiceClientOperator.pagingQueryUsersByRoleIdOnProjectLevel(any(PageRequest), any(RoleAssignmentSearchVO), eq(ownerRoleId), anyLong(), anyBoolean())).thenReturn(ownerUserDTOPage)
 
 
         IamUserDTO memberUserDTO = new IamUserDTO()
@@ -362,8 +337,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         memberUserDTO.setRealName("realTest4")
         memberUserDTOList.add(memberUserDTO)
         PageInfo<IamUserDTO> memberUserDTOPage = new PageInfo<>(memberUserDTOList)
-        ResponseEntity<PageInfo<IamUserDTO>> memberPageResponseEntity = new ResponseEntity<>(memberUserDTOPage, HttpStatus.OK)
-        Mockito.when(baseServiceClient.pagingQueryUsersByRoleIdOnProjectLevel(anyInt(), anyInt(), eq(memberRoleId), anyLong(), anyBoolean(), any(RoleAssignmentSearchVO.class))).thenReturn(memberPageResponseEntity)
+        Mockito.when(mockBaseServiceClientOperator.pagingQueryUsersByRoleIdOnProjectLevel(any(PageRequest), any(RoleAssignmentSearchVO), eq(memberRoleId), anyLong(), anyBoolean())).thenReturn(memberUserDTOPage)
     }
 
     def mockQueryUsersByIds() {
@@ -374,13 +348,14 @@ class DevopsEnvironmentControllerSpec extends Specification {
         iamUserDTO.setLoginName("loginName")
         iamUserDTO.setRealName("realName")
         iamUserDTOS.add(iamUserDTO)
-        ResponseEntity<List<IamUserDTO>> responseEntity22 = new ResponseEntity<>(iamUserDTOS, HttpStatus.OK)
-        PowerMockito.when(baseServiceClient.listUsersByIds(argThat(new ArgumentMatcher<Long[]>() {
+        PowerMockito.when(mockBaseServiceClientOperator.listUsersByIds(argThat(new ArgumentMatcher<List>() {
             @Override
-            boolean matches(Long[] argument) {
-                return argument != null && Arrays.asList(argument).contains(1L)
+            boolean matches(List argument) {
+                return argument != null && argument.contains(1L)
             }
-        }))).thenReturn(responseEntity22)
+        }))).thenReturn(iamUserDTOS)
+
+        PowerMockito.when(mockBaseServiceClientOperator.queryUserByUserId(eq(1L))).thenReturn(iamUserDTO)
 
         List<IamUserDTO> iamUserDTOS2 = new ArrayList<>()
         IamUserDTO iamUserDTO1 = new IamUserDTO()
@@ -388,13 +363,12 @@ class DevopsEnvironmentControllerSpec extends Specification {
         iamUserDTO1.setLoginName("loginName5")
         iamUserDTO1.setRealName("realName5")
         iamUserDTOS2.add(iamUserDTO1)
-        ResponseEntity<List<IamUserDTO>> responseEntity = new ResponseEntity<>(iamUserDTOS2, HttpStatus.OK)
-        PowerMockito.when(baseServiceClient.listUsersByIds(argThat(new ArgumentMatcher<Long[]>() {
+        PowerMockito.when(mockBaseServiceClientOperator.listUsersByIds(argThat(new ArgumentMatcher<List>() {
             @Override
-            boolean matches(Long[] argument) {
-                return argument != null && Arrays.asList(argument).contains(5L)
+            boolean matches(List argument) {
+                return argument != null && argument.contains(5L)
             }
-        }))).thenReturn(responseEntity)
+        }))).thenReturn(iamUserDTOS2)
     }
 
     def initMock() {
@@ -403,15 +377,13 @@ class DevopsEnvironmentControllerSpec extends Specification {
         projectDO.setId(1L)
         projectDO.setCode("pro")
         projectDO.setOrganizationId(1L)
-        ResponseEntity<ProjectDTO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
-        Mockito.doReturn(responseEntity).when(baseServiceClient).queryIamProject(1L)
+        Mockito.doReturn(projectDO).when(mockBaseServiceClientOperator).queryIamProjectById(1L)
 
         // 查询组织
         OrganizationDTO organizationDO = new OrganizationDTO()
         organizationDO.setId(1L)
         organizationDO.setCode("org")
-        ResponseEntity<OrganizationDTO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
-        Mockito.doReturn(responseEntity1).when(baseServiceClient).queryOrganizationById(1L)
+        Mockito.doReturn(organizationDO).when(mockBaseServiceClientOperator).queryOrganizationById(1L)
 
         mockBaseServiceQueryRoleIdByCode()
 
@@ -424,16 +396,13 @@ class DevopsEnvironmentControllerSpec extends Specification {
         projectWithRoleDTO.setName("pro")
         projectWithRoleDTO.setRoles(roleDTOList)
         projectWithRoleDTOList.add(projectWithRoleDTO)
-        PageInfo<ProjectWithRoleVO> projectWithRoleDTOPage = new PageInfo<>(projectWithRoleDTOList)
-        ResponseEntity<PageInfo<ProjectWithRoleVO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
-        Mockito.doReturn(pageResponseEntity).when(baseServiceClient).listProjectWithRole(anyLong(), anyInt(), anyInt())
+        Mockito.doReturn(projectWithRoleDTOList).when(mockBaseServiceClientOperator).listProjectWithRoleDTO(anyLong())
 
         // mock 查询用户在gitlab的角色
         MemberDTO memberDO = new MemberDTO()
         memberDO.setId(userAttrDTO.getGitlabUserId().intValue())
         memberDO.setAccessLevel(AccessLevel.OWNER.toValue())
-        ResponseEntity<MemberDTO> responseEntity2 = new ResponseEntity<>(memberDO, HttpStatus.OK)
-        Mockito.when(gitlabServiceClient.queryGroupMember(anyInt(), anyInt())).thenReturn(responseEntity2)
+        Mockito.when(mockGitlabServiceClientOperator.queryGroupMember(anyInt(), anyInt())).thenReturn(memberDO)
 
         mockQueryUsersByIds()
 
@@ -466,15 +435,11 @@ class DevopsEnvironmentControllerSpec extends Specification {
         agentPodInfoVO2.setMemoryUsed("400MiB")
         PowerMockito.when(agentPodService.queryLatestPodSnapshot(agentPodInfoVO2.getPodName(), agentPodInfoVO2.getNamespace())).thenReturn(agentPodInfoVO2)
 
-        PowerMockito.when(gitlabServiceClient.queryProjectById(anyInt())).thenReturn(new ResponseEntity<GitlabProjectDTO>(HttpStatus.OK))
+        PowerMockito.when(mockGitlabServiceClientOperator.queryProjectById(anyInt())).thenReturn(new GitlabProjectDTO())
     }
 
     def cleanup() {
         if (isToCleanup) {
-            DependencyInjectUtil.restoreDefaultDependency(iamService, "baseServiceClient")
-            DependencyInjectUtil.restoreDefaultDependency(baseServiceClientOperator, "baseServiceClient")
-            DependencyInjectUtil.restoreDefaultDependency(gitlabServiceClientOperator, "gitlabServiceClient")
-
             appServiceMapper.delete(null)
             devopsClusterMapper.delete(null)
             devopsEnvUserPermissionMapper.delete(null)
