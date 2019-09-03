@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Action } from '@choerodon/master';
 import { Modal } from 'choerodon-ui/pro';
+import { Menu, Dropdown, Button } from 'choerodon-ui';
 import HeaderButtons from '../../../../../../components/header-buttons';
 import EnvDetail from '../../../../../../components/env-detail';
 import Permission from '../../../../../resource/main-view/contents/environment/modals/permission';
@@ -23,6 +23,8 @@ const groupKey = Modal.key();
 const permissionKey = Modal.key();
 const resourceKey = Modal.key();
 const configKey = Modal.key();
+const ITEM_GROUP = 'group';
+const ITEM_SAFETY = 'safety';
 
 const EnvModals = observer(() => {
   const modalStore = useStore();
@@ -226,18 +228,37 @@ const EnvModals = observer(() => {
   }
 
   function getOtherBtn() {
-    const actionData = [{
-      service: [],
-      text: formatMessage({ id: `${currentIntlPrefix}.group.create` }),
-      action: openGroupModal,
-    },
-    {
-      disabled,
-      service: [],
-      text: formatMessage({ id: `${currentIntlPrefix}.resource.setting` }),
-      action: !disabled ? resourceSetting : null,
-    }];
-    return <Action data={actionData} />;
+    const menu = (
+      <Menu onClick={handleMenuClick}>
+        <Menu.Item key={ITEM_GROUP}>{formatMessage({ id: `${currentIntlPrefix}.group.create` })}</Menu.Item>
+        <Menu.Item key={ITEM_SAFETY} disabled={disabled}>{formatMessage({ id: `${currentIntlPrefix}.resource.setting` })}</Menu.Item>
+      </Menu>
+    );
+    return (
+      <Dropdown
+        trigger="click"
+        overlay={menu}
+      >
+        <Button
+          style={{ color: '#000' }}
+          size="small"
+          shape="circle"
+          funcType="flat"
+          icon="more_vert"
+        />
+      </Dropdown>
+    );
+  }
+
+  function handleMenuClick(e) {
+    e.domEvent.stopPropagation();
+    const handlerMapping = {
+      [ITEM_GROUP]: openGroupModal,
+      [ITEM_SAFETY]: resourceSetting,
+    };
+
+    const handler = handlerMapping[e.key];
+    handler && handler();
   }
 
   return <HeaderButtons items={getButtons()}>

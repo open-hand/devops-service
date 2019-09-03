@@ -11,9 +11,7 @@ const { Column } = Table;
 
 function Permissions() {
   const {
-    envStore: {
-      getSelectedMenu,
-    },
+    envStore: { getSelectedMenu },
   } = useEnvironmentStore();
   const disabled = isNotRunning(getSelectedMenu);
   const {
@@ -33,7 +31,7 @@ function Permissions() {
         },
       },
     ];
-    const displayAction = !disabled && role === 'member' && !skipCheckPermission;
+    const displayAction = role === 'member' && !skipCheckPermission;
     return displayAction ? <Action data={actionData} /> : null;
   }
 
@@ -52,7 +50,7 @@ function Permissions() {
       queryBar="bar"
     >
       <Column name="realName" />
-      <Column renderer={renderActions} />
+      {!disabled && <Column renderer={renderActions} />}
       <Column name="loginName" />
       <Column name="role" renderer={renderRole} />
       <Column name="creationDate" renderer={renderDate} />

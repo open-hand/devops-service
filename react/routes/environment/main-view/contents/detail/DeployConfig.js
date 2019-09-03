@@ -4,6 +4,7 @@ import { Table, Modal } from 'choerodon-ui/pro';
 import TimePopover from '../../../../../components/time-popover';
 import UserInfo from '../../../../../components/userInfo';
 import DeployConfigForm from './modals/deploy-config';
+import { isNotRunning } from '../../../util';
 import { handlePromptError } from '../../../../../utils';
 import { useEnvironmentStore } from '../../../stores';
 import { useDetailStore } from './stores';
@@ -21,7 +22,7 @@ export default function DeployConfig() {
     intlPrefix,
     prefixCls,
     AppState: { currentMenuType: { id: projectId } },
-    envStore: { getSelectedMenu: { id } },
+    envStore: { getSelectedMenu },
   } = useEnvironmentStore();
   const {
     intl: { formatMessage },
@@ -29,6 +30,8 @@ export default function DeployConfig() {
     detailStore,
     configFormDs,
   } = useDetailStore();
+
+  const disabled = isNotRunning(getSelectedMenu);
 
   function refresh() {
     configDs.query();
@@ -63,6 +66,7 @@ export default function DeployConfig() {
 
   function openModifyModal(record) {
     const valueId = record.get('id');
+    const { id: envId } = getSelectedMenu;
     configFormDs.transport.read = {
       url: `/devops/v1/projects/${projectId}/deploy_value?value_id=${valueId}`,
       method: 'get',
@@ -79,7 +83,7 @@ export default function DeployConfig() {
         store={detailStore}
         dataSet={configFormDs}
         refresh={refresh}
-        envId={id}
+        envId={envId}
         intlPrefix={intlPrefix}
         prefixCls={prefixCls}
       />,
@@ -104,7 +108,7 @@ export default function DeployConfig() {
         action: () => checkDelete(record),
       },
     ];
-    return (<Action data={actionData} />);
+    return <Action data={actionData} />;
   }
 
   function renderUser({ value, record }) {
@@ -123,7 +127,7 @@ export default function DeployConfig() {
       queryBar="bar"
     >
       <Column name="name" sortable />
-      <Column renderer={renderActions} />
+      {!disabled && <Column renderer={renderActions} />}
       <Column name="description" sortable />
       <Column name="appServiceName" />
       <Column name="envName" />
