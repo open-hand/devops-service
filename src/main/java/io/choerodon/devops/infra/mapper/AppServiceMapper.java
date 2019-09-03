@@ -92,7 +92,7 @@ public interface AppServiceMapper extends Mapper<AppServiceDTO> {
      */
     List<AppServiceDTO> listShareProjectApps(@Param("projectId") Long projectId);
 
-    List<AppServiceDTO> ListProjectMembersAppService(@Param("appId") Long appId,
+    List<AppServiceDTO> listProjectMembersAppService(@Param("appId") Long appId,
                                                      @Param("isActive") Boolean isActive,
                                                      @Param("hasVersion") Boolean hasVersion,
                                                      @Param("type") String type,
