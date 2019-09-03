@@ -568,13 +568,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         MarketImageUrlVO marketImageUrlVO = new MarketImageUrlVO();
         marketImageUrlVO.setAppCode(appMarketUploadVO.getMktAppCode());
 
-        File file = new File(String.format("%s%s%s", SHELL, File.separator, PUSH_IAMGES));
-        if (!file.exists()) {
-            FileUtil.createDirectory(SHELL);
-            String shellPath = this.getClass().getResource(String.format("/%s/%s", SHELL, PUSH_IAMGES)).getPath();
-            FileUtil.copyFile(shellPath, SHELL);
-            LOGGER.info("========创建push_image.sh脚本");
-        }
+        copyPushImageFile();
 
         List<MarketAppServiceImageVO> imageVOList = new ArrayList<>();
         //获取push_image 脚本目录
@@ -609,7 +603,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             newUser.setPassword(appMarketUploadVO.getUser().getRobotToken());
             // 执行脚本
             callScript(appServiceMarketVO.getHarborUrl(), newUser, oldUser);
-//            FileUtil.deleteFile(String.format(APP_TEMP_PATH_FORMAT, SHELL, File.separator, IMAGES));
+            FileUtil.deleteFile(String.format(APP_TEMP_PATH_FORMAT, SHELL, File.separator, IMAGES));
         });
         marketImageUrlVO.setServiceImageVOS(imageVOList);
         return marketImageUrlVO;
@@ -618,7 +612,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
     private void pushImageForDownload(AppMarketDownloadPayload appMarketDownloadVO) {
         //获取push_image 脚本目录
         String shellPath = this.getClass().getResource(SHELL).getPath();
-
+        copyPushImageFile();
         appMarketDownloadVO.getAppServiceDownloadPayloads().forEach(appServiceMarketVO -> {
             StringBuilder stringBuilder = new StringBuilder();
             appServiceMarketVO.getAppServiceVersionDownloadPayloads().forEach(t -> {
@@ -757,6 +751,23 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         } catch (IOException e) {
             IOUtils.closeQuietly(fos);
             throw new CommonException("error.download.file", e.getMessage());
+        }
+    }
+
+    private void copyPushImageFile() {
+        File file = new File(String.format("%s%s%s", SHELL, File.separator, PUSH_IAMGES));
+        if (!file.exists()) {
+            FileUtil.createDirectory(SHELL);
+            int byteread = 0;
+            try (InputStream inStream = this.getClass().getResourceAsStream(String.format("/%s/%s", SHELL, PUSH_IAMGES));
+                 FileOutputStream fs = new FileOutputStream(SHELL + File.separator + PUSH_IAMGES)) {
+                byte[] buffer = new byte[1444];
+                while ((byteread = inStream.read(buffer)) != -1) {
+                    fs.write(buffer, 0, byteread);
+                }
+            } catch (IOException e) {
+                throw new CommonException("error.copy.push.image.file");
+            }
         }
     }
 
