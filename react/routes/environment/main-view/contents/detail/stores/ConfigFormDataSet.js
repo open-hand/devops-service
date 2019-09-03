@@ -1,7 +1,7 @@
 import { axios } from '@choerodon/master';
 
 export default ({ formatMessage, intlPrefix, projectId, store }) => {
-  const handleUpdate = ({ name, value }) => {
+  const handleUpdate = ({ name, value, record }) => {
     if (name === 'appServiceId' && value) {
       if (value) {
         store.loadValue(projectId, value);
@@ -51,7 +51,6 @@ export default ({ formatMessage, intlPrefix, projectId, store }) => {
       name: 'appServiceName',
       type: 'string',
       label: '服务',
-      required: true,
       readOnly: true,
       ignore: 'always',
     }, {
