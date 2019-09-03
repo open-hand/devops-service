@@ -1668,7 +1668,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                             .newBuilder()
                             .withLevel(ResourceLevel.PROJECT)
                             .withRefType("")
-                            .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_APPLICATION_SERVICE)
+                            .withSagaCode(SagaTopicCodeConstants.DEVOPS_IMPORT_INTERNAL_APPLICATION_SERVICE)
                             .withPayloadAndSerialize(appServiceImportPayload)
                             .withRefId("")
                             .withSourceId(projectId),

@@ -365,9 +365,9 @@ public class DevopsSagaHandler {
     /**
      * devops导入内部应用服务
      */
-    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_CREATE_INGRESS,
-            description = "devops创建域名",
-            sagaCode = SagaTopicCodeConstants.DEVOPS_CREATE_APPLICATION_SERVICE,
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_IMPORT_INTERNAL_APPLICATION_SERVICE,
+            description = "devops导入内部应用服务",
+            sagaCode = SagaTopicCodeConstants.DEVOPS_IMPORT_INTERNAL_APPLICATION_SERVICE,
             maxRetryCount = 3,
             seq = 1)
     public String importAppServiceGitlab(String data) {
