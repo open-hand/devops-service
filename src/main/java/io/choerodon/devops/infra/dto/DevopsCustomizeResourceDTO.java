@@ -35,6 +35,11 @@ public class DevopsCustomizeResourceDTO extends BaseDTO {
     public DevopsCustomizeResourceDTO() {
     }
 
+    public DevopsCustomizeResourceDTO(Long envId, String k8sKind, String name) {
+        this.envId = envId;
+        this.k8sKind = k8sKind;
+        this.name = name;
+    }
 
     public DevopsCustomizeResourceDTO(Long projectId, Long envId, Long contentId, Long commandId, String k8sKind, String name, String filePath, Long createBy) {
         this.projectId = projectId;

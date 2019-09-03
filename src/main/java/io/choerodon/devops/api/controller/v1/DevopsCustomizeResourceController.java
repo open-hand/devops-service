@@ -82,7 +82,6 @@ public class DevopsCustomizeResourceController {
     @GetMapping("/{resource_id}")
     public ResponseEntity<DevopsCustomizeResourceVO> getResource(@PathVariable(value = "project_id") Long projectId,
                                                                  @PathVariable(value = "resource_id") Long resourceId) {
-        devopsCustomizeResourceService.queryDevopsCustomizeResourceDetail(resourceId);
         return Optional.ofNullable(devopsCustomizeResourceService.queryDevopsCustomizeResourceDetail(resourceId))
                 .map(t -> new ResponseEntity<>(t, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.resource.get"));

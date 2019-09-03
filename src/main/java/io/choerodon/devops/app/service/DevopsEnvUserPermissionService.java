@@ -27,8 +27,6 @@ public interface DevopsEnvUserPermissionService {
 
     void baseCreate(DevopsEnvUserPermissionDTO devopsEnvUserPermissionE);
 
-    PageInfo<DevopsEnvUserPermissionDTO> basePageByOptions(Long envId, PageRequest pageRequest, String params);
-
     List<DevopsEnvUserPermissionDTO> baseListByEnvId(Long envId);
 
     List<DevopsEnvUserPermissionDTO> baseListAll(Long envId);
@@ -36,8 +34,6 @@ public interface DevopsEnvUserPermissionService {
     void baseUpdate(Long envId, List<Long> addUsersList, List<Long> deleteUsersList);
 
     List<DevopsEnvUserPermissionDTO> baseListByUserId(Long userId);
-
-    void baseCheckEnvDeployPermission(Long userId, Long envId);
 
     void baseDelete(Long envId, Long userId);
 

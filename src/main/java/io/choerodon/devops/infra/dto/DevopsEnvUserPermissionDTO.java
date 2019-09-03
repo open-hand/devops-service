@@ -22,6 +22,11 @@ public class DevopsEnvUserPermissionDTO extends BaseDTO {
     public DevopsEnvUserPermissionDTO() {
     }
 
+    public DevopsEnvUserPermissionDTO(Long envId, Long userId) {
+        this.envId = envId;
+        this.iamUserId = userId;
+    }
+
     public DevopsEnvUserPermissionDTO(String loginName, Long iamUserId, String realName, Long envId, Boolean isPermitted) {
         this.loginName = loginName;
         this.iamUserId = iamUserId;
