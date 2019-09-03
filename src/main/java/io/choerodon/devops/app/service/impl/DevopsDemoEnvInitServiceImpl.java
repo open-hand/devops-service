@@ -161,8 +161,8 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
         Long appId = devopsProjectService.queryAppIdByProjectId(projectId);
 
         applicationDTO.setAppId(appId);
-        applicationService.checkName(appId, applicationDTO.getName());
-        applicationService.checkCode(appId, applicationDTO.getCode());
+        applicationService.checkName(projectId, applicationDTO.getName());
+        applicationService.checkCode(projectId, applicationDTO.getCode());
 
         applicationDTO.setActive(true);
         applicationDTO.setSynchro(false);

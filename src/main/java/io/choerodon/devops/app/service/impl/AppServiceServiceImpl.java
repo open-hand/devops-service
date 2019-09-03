@@ -184,6 +184,10 @@ public class AppServiceServiceImpl implements AppServiceService {
         UserAttrVO userAttrVO = userAttrService.queryByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         ApplicationValidator.checkApplicationService(appServiceReqVO.getCode());
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+
+        baseCheckCode(projectDTO.getApplicationId(), appServiceReqVO.getCode());
+        baseCheckName(projectDTO.getApplicationId(), appServiceReqVO.getName());
+
         // 查询创建应用服务所在的gitlab应用组
         DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
         MemberDTO memberDTO = gitlabGroupMemberService.queryByUserId(
@@ -319,7 +323,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
 
         if (!oldAppServiceDTO.getName().equals(appServiceUpdateDTO.getName())) {
-            checkName(oldAppServiceDTO.getAppId(), appServiceDTO.getName());
+            baseCheckName(oldAppServiceDTO.getAppId(), appServiceDTO.getName());
         }
         baseUpdate(appServiceDTO);
         sendUpdateAppServiceInfo(baseQuery(appServiceUpdateDTO.getId()), projectId);
@@ -716,10 +720,10 @@ public class AppServiceServiceImpl implements AppServiceService {
         ApplicationValidator.checkApplicationService(appServiceImportVO.getCode());
         Long appId = devopsProjectService.queryAppIdByProjectId(projectId);
         // 校验名称唯一性
-        checkName(appId, appServiceImportVO.getName());
+        baseCheckName(appId, appServiceImportVO.getName());
 
         // 校验code唯一性
-        checkCode(appId, appServiceImportVO.getCode());
+        baseCheckCode(appId, appServiceImportVO.getCode());
 
         AppServiceDTO appServiceDTO = new AppServiceDTO();
         appServiceDTO.setAppId(appId);
@@ -1624,10 +1628,10 @@ public class AppServiceServiceImpl implements AppServiceService {
                 ApplicationValidator.checkApplicationService(importInternalVO.getAppCode());
 
                 // 校验名称唯一性
-                checkName(appId, importInternalVO.getAppName());
+                baseCheckName(appId, importInternalVO.getAppName());
 
                 // 校验code唯一性
-                checkCode(appId, importInternalVO.getAppCode());
+                baseCheckCode(appId, importInternalVO.getAppCode());
 
                 appServiceDTO.setCode(importInternalVO.getAppCode());
                 appServiceDTO.setName(importInternalVO.getAppName());
@@ -1978,8 +1982,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     public AppServiceDTO getApplicationServiceDTO(Long projectId, AppServiceReqVO appServiceReqVO) {
         AppServiceDTO appServiceDTO = ConvertUtils.convertObject(appServiceReqVO, AppServiceDTO.class);
         Long appId = devopsProjectService.queryAppIdByProjectId(projectId);
-        checkName(appId, appServiceDTO.getName());
-        checkCode(appId, appServiceDTO.getCode());
+        baseCheckName(appId, appServiceDTO.getName());
+        baseCheckCode(appId, appServiceDTO.getCode());
         appServiceDTO.setActive(true);
         appServiceDTO.setSynchro(false);
         appServiceDTO.setAppId(appId);
