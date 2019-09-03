@@ -40,7 +40,7 @@
 
     <sql id="sqlparamTriggerType">
         <if test='pipelineSearchVO!=null and pipelineSearchVO.triggerType != null and pipelineSearchVO.triggerType!=""'>
-            AND dp.trigger_type='manual'
+            AND dp.trigger_type=#{pipelineSearchVO.triggerType}
         </if>
     </sql>
 
