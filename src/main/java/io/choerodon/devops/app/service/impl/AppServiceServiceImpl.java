@@ -350,7 +350,8 @@ public class AppServiceServiceImpl implements AppServiceService {
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         initApplicationParams(projectDTO, organizationDTO, applicationServiceDTOS.getList(), urlSlash);
 
-        PageInfo<AppServiceRepVO> resultDTOPage = ConvertUtils.convertPage(applicationServiceDTOS, this::dtoToRepVo);
+        PageInfo<AppServiceRepVO> resultDTOPage = new PageInfo<>();
+        BeanUtils.copyProperties(applicationServiceDTOS, resultDTOPage, "list");
         resultDTOPage.setList(setApplicationRepVOPermission(applicationServiceDTOS.getList(), userAttrDTO, projectDTO));
         return resultDTOPage;
     }
@@ -460,6 +461,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         devOpsAppServicePayload.setGitlabProjectId(gitlabProjectDO.getId());
 
         String applicationServiceToken = getApplicationToken(devOpsAppServicePayload.getGitlabProjectId(), devOpsAppServicePayload.getUserId());
+        appServiceDTO.setGitlabProjectId(gitlabProjectDO.getId());
         appServiceDTO.setToken(applicationServiceToken);
         appServiceDTO.setSynchro(true);
         appServiceDTO.setFailed(false);
