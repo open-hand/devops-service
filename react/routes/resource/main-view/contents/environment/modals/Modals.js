@@ -66,6 +66,7 @@ const EnvModals = observer(() => {
 
   function refresh() {
     baseInfoDs.query();
+    treeDs.query();
     const tabKey = getTabKey;
     if (tabKey === SYNC_TAB) {
       gitopsSyncDs.query();
