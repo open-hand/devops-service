@@ -68,7 +68,6 @@ const AppService = withRouter(observer((props) => {
         refresh={refresh}
         store={certStore}
       />,
-      onCancel: handleCancel,
     });
   }
 

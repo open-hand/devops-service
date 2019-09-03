@@ -117,7 +117,7 @@ const AppService = withRouter(observer((props) => {
     } else if (record.get('synchro') && record.get('active')) {
       actionItems = pick(actionData, ['edit', 'stop']);
     } else if (record.get('active')) {
-      actionItems = {};
+      return;
     } else {
       actionItems = pick(actionData, ['edit', 'run']);
     }
@@ -215,7 +215,7 @@ const AppService = withRouter(observer((props) => {
           service={['devops-service.app-service.importApp']}
         >
           <Button
-            icon="playlist_add"
+            icon="archive"
             onClick={openImport}
           >
             <FormattedMessage id={`${intlPrefix}.import`} />

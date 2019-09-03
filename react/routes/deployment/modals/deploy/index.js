@@ -191,7 +191,7 @@ export default injectIntl(observer(({ record, dataSet, store, projectId, network
   return (
     <div className={`${prefixCls}-manual-deploy`}>
       <Form record={record} columns={3}>
-        <SelectBox name="appServiceSource">
+        <SelectBox name="appServiceSource" colSpan={3}>
           <Option value="normal_service">{formatMessage({ id: `${intlPrefix}.source.project` })}</Option>
           <Option value="share_service">{formatMessage({ id: `${intlPrefix}.source.organization` })}</Option>
           <Option value="market_service">{formatMessage({ id: `${intlPrefix}.source.market` })}</Option>

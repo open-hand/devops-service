@@ -369,6 +369,9 @@ const appService = {
   'c7ncd.appService.source.project': '项目应用服务',
   'c7ncd.appService.source.organization': '组织共享',
   'c7ncd.appService.source.market': '市场下载',
+  'c7ncd.appService.user.all': '项目下所有成员',
+  'c7ncd.appService.user.some': '项目下特定成员',
+  'c7ncd.appService.user': '成员',
 };
 
 const envrionment = {
@@ -460,6 +463,22 @@ const deploy = {
   'c7ncd.deploy.source.project': '项目应用服务',
   'c7ncd.deploy.source.organization': '组织共享',
   'c7ncd.deploy.source.market': '市场下载',
+};
+
+const repository = {
+  'c7ncd.repository': '仓库配置',
+  'c7ncd.repository.info': '操作存在一定风险，若无实质需求，请使用默认仓库！',
+  'c7ncd.repository.harbor': 'Docker仓库',
+  'c7ncd.repository.harbor.config': 'Docker仓库配置',
+  'c7ncd.repository.harbor.default': '默认Docker仓库',
+  'c7ncd.repository.harbor.custom': '自定义Docker仓库',
+  'c7ncd.repository.chart': 'Helm仓库',
+  'c7ncd.repository.chart.config': 'Helm仓库配置',
+  'c7ncd.repository.chart.default': '默认Helm仓库',
+  'c7ncd.repository.chart.custom': '自定义Helm仓库',
+  'c7ncd.repository.test': '测试连接',
+  'c7ncd.repository.test.success': '连接成功',
+  'c7ncd.repository.test.failed': '连接失败',
 };
 
 // 文档地址前缀
@@ -2305,6 +2324,7 @@ const zhCN = {
   ...certificate,
   ...cluster,
   ...deploy,
+  ...repository,
 };
 
 export default zhCN;

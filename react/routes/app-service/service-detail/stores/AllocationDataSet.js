@@ -1,7 +1,7 @@
 import { axios } from '@choerodon/master';
 import getTablePostData from '../../../../utils/getTablePostData';
 
-export default ((formatMessage, projectId, id) => ({
+export default ((formatMessage, intlPrefix, projectId, id) => ({
   autoQuery: false,
   selection: false,
   pageSize: 10,
@@ -15,7 +15,7 @@ export default ((formatMessage, projectId, id) => ({
       };
     },
     destroy: ({ data: [data] }) => ({
-      url: `/devops/v1/projects/${projectId}/app_service/${data.id}/delete_permission`,
+      url: `/devops/v1/projects/${projectId}/app_service/${id}/delete_permission?user_id=${data.iamUserId}`,
       method: 'delete',
     }),
   },
@@ -23,7 +23,7 @@ export default ((formatMessage, projectId, id) => ({
     { name: 'realName', type: 'string', label: formatMessage({ id: 'userName' }) },
     { name: 'loginName', type: 'string', label: formatMessage({ id: 'loginName' }) },
     { name: 'creationDate', type: 'dateTime', label: formatMessage({ id: 'addTime' }) },
-    { name: 'iamUserId', type: 'number' },
+    { name: 'iamUserId', type: 'number', textField: 'realName', valueField: 'iamUserId', label: formatMessage({ id: `${intlPrefix}.user` }), required: true },
     { name: 'role', type: 'string', label: formatMessage({ id: 'projectRole' }) },
   ],
   queryFields: [
