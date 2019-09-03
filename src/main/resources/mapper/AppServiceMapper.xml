@@ -466,7 +466,7 @@
         <if test='appServiceIds != null and appServiceIds.size > 0'>
             AND
             <foreach collection="appServiceIds" item="appServiceId" open="(" separator=" OR " close=")">
-                da.id = #{appServiceId}
+                das.id = #{appServiceId}
             </foreach>
         </if>
     </select>

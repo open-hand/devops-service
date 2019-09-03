@@ -60,11 +60,9 @@ public class DevopsOrganizationConfigController {
     @GetMapping
     public ResponseEntity<List<DevopsConfigVO>> query(
             @ApiParam(value = "组织Id",required = true)
-            @PathVariable(value = "organization_id") Long organizationId,
-            @ApiParam(value = "配置类型",required = true)
-            @RequestParam(value = "type") String type) {
+            @PathVariable(value = "organization_id") Long organizationId) {
         return Optional.ofNullable(
-              devopsConfigService.queryByResourceId(organizationId, type))
+              devopsConfigService.queryByResourceId(organizationId, ResourceType.ORGANIZATION.value()))
               .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
               .orElseThrow(() -> new CommonException("error.devops.organization.config.get.type"));
     }
