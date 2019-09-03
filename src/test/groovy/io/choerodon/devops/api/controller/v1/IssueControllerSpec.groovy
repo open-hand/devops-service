@@ -1,12 +1,27 @@
 package io.choerodon.devops.api.controller.v1
 
-import com.github.pagehelper.PageInfo
-import io.choerodon.devops.DependencyInjectUtil
+import static org.mockito.ArgumentMatchers.*
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
+
+import org.mockito.Mockito
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.web.client.TestRestTemplate
+import org.springframework.context.annotation.Import
+import spock.lang.Shared
+import spock.lang.Specification
+import spock.lang.Stepwise
+import spock.lang.Subject
+
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.IssueVO
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO
 import io.choerodon.devops.api.vo.iam.RoleVO
-import io.choerodon.devops.app.service.*
+import io.choerodon.devops.app.service.AppServiceService
+import io.choerodon.devops.app.service.DevopsGitService
+import io.choerodon.devops.app.service.DevopsMergeRequestService
+import io.choerodon.devops.app.service.IssueService
 import io.choerodon.devops.infra.dto.AppServiceDTO
 import io.choerodon.devops.infra.dto.DevopsBranchDTO
 import io.choerodon.devops.infra.dto.DevopsMergeRequestDTO
@@ -16,28 +31,12 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO
 import io.choerodon.devops.infra.dto.iam.ProjectDTO
 import io.choerodon.devops.infra.enums.AccessLevel
-import io.choerodon.devops.infra.feign.BaseServiceClient
-import io.choerodon.devops.infra.feign.GitlabServiceClient
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator
 import io.choerodon.devops.infra.mapper.AppServiceMapper
 import io.choerodon.devops.infra.mapper.DevopsBranchMapper
 import io.choerodon.devops.infra.mapper.DevopsMergeRequestMapper
 import io.choerodon.devops.infra.util.FileUtil
-import org.mockito.Mockito
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.web.client.TestRestTemplate
-import org.springframework.context.annotation.Import
-import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
-import spock.lang.Shared
-import spock.lang.Specification
-import spock.lang.Stepwise
-import spock.lang.Subject
-
-import static org.mockito.ArgumentMatchers.*
-import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
 /**
  * Created by n!Ck
@@ -72,11 +71,14 @@ class IssueControllerSpec extends Specification {
     private BaseServiceClientOperator baseServiceClientOperator
     @Autowired
     private GitlabServiceClientOperator gitlabServiceClientOperator
-    @Autowired
-    private IamService iamService
-    BaseServiceClient baseServiceClient = Mockito.mock(BaseServiceClient.class)
 
-    GitlabServiceClient gitlabServiceClient = Mockito.mock(GitlabServiceClient.class)
+    @Qualifier("mockBaseServiceClientOperator")
+    @Autowired
+    private BaseServiceClientOperator mockBaseServiceClientOperator
+
+    @Qualifier("mockGitlabServiceClientOperator")
+    @Autowired
+    private GitlabServiceClientOperator mockGitlabServiceClientOperator
 
     @Shared
     Date date = new Date(2018, 9, 7, 9, 18, 0)
@@ -149,21 +151,16 @@ class IssueControllerSpec extends Specification {
     }
 
     def setup() {
-        DependencyInjectUtil.setAttribute(baseServiceClientOperator, "baseServiceClient", baseServiceClient)
-        DependencyInjectUtil.setAttribute(gitlabServiceClientOperator, "gitlabServiceClient", gitlabServiceClient)
-        DependencyInjectUtil.setAttribute(iamService,"baseServiceClient", baseServiceClient)
         ProjectDTO projectDO = new ProjectDTO()
         projectDO.setId(1L)
         projectDO.setCode("pro")
         projectDO.setOrganizationId(1L)
-        ResponseEntity<ProjectDTO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
-        Mockito.doReturn(responseEntity).when(baseServiceClient).queryIamProject(1L)
+        Mockito.doReturn(projectDO).when(mockBaseServiceClientOperator).queryIamProjectById(1L)
 
         OrganizationDTO organizationDO = new OrganizationDTO()
         organizationDO.setId(1L)
         organizationDO.setCode("org")
-        ResponseEntity<OrganizationDTO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
-        Mockito.doReturn(responseEntity1).when(baseServiceClient).queryOrganizationById(1L)
+        Mockito.doReturn(organizationDO).when(mockBaseServiceClientOperator).queryOrganizationById(1L)
 
         List<IamUserDTO> addIamUserList = new ArrayList<>()
         IamUserDTO userDO = new IamUserDTO()
@@ -172,21 +169,18 @@ class IssueControllerSpec extends Specification {
         userDO.setRealName("realTest")
         userDO.setImageUrl("imageURL")
         addIamUserList.add(userDO)
-        ResponseEntity<List<IamUserDTO>> responseEntity2 = new ResponseEntity<>(addIamUserList, HttpStatus.OK)
-        Mockito.when(baseServiceClient.listUsersByIds(any(Long[].class))).thenReturn(responseEntity2)
+        Mockito.when(mockBaseServiceClientOperator.listUsersByIds(any(List))).thenReturn(addIamUserList)
 
         List<CommitDTO> commitDOS1 = new ArrayList<>()
         CommitDTO commitDO = new CommitDTO()
         commitDO.setId("test")
         commitDOS1.add(commitDO)
-        ResponseEntity<List<CommitDTO>> responseEntity3 = new ResponseEntity<>(commitDOS1, HttpStatus.OK)
-        Mockito.doReturn(responseEntity3).when(gitlabServiceClient).getCommits(anyInt(), anyString(), anyString())
+        Mockito.doReturn(commitDOS1).when(mockGitlabServiceClientOperator).getCommits(anyInt(), anyString(), anyString())
 
 
         MemberDTO memberDO = new MemberDTO()
         memberDO.setAccessLevel(AccessLevel.OWNER.toValue())
-        ResponseEntity<MemberDTO> responseEntity4 = new ResponseEntity<>(memberDO, HttpStatus.OK)
-        Mockito.when(gitlabServiceClient.queryGroupMember(anyInt(), anyInt())).thenReturn(responseEntity4)
+        Mockito.when(mockGitlabServiceClientOperator.queryGroupMember(anyInt(), anyInt())).thenReturn(memberDO)
 
         List<RoleVO> roleDTOList = new ArrayList<>()
         RoleVO roleDTO = new RoleVO()
@@ -197,12 +191,9 @@ class IssueControllerSpec extends Specification {
         projectWithRoleDTO.setName("pro")
         projectWithRoleDTO.setRoles(roleDTOList)
         projectWithRoleDTOList.add(projectWithRoleDTO)
-        PageInfo<ProjectWithRoleVO> projectWithRoleDTOPage = new PageInfo<>(projectWithRoleDTOList)
-        ResponseEntity<PageInfo<ProjectWithRoleVO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
-        Mockito.doReturn(pageResponseEntity).when(baseServiceClient).listProjectWithRole(anyLong(), anyInt(), anyInt())
+        Mockito.doReturn(projectWithRoleDTOList).when(mockBaseServiceClientOperator).listProjectWithRoleDTO(anyLong())
 
-        ResponseEntity<List<CommitDTO>> responseEntity5 = new ResponseEntity<>(commitDOS, HttpStatus.OK)
-        Mockito.when(gitlabServiceClient.getCommits(anyInt(), anyString(), anyString())).thenReturn(responseEntity5)
+        Mockito.when(mockGitlabServiceClientOperator.getCommits(anyInt(), anyString(), anyString())).thenReturn(commitDOS)
     }
 
     def "GetCommitsByIssueId"() {

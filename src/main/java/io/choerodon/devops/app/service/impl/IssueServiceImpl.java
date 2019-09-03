@@ -20,6 +20,7 @@ import io.choerodon.devops.infra.dto.DevopsBranchDTO;
 import io.choerodon.devops.infra.dto.DevopsGitlabCommitDTO;
 import io.choerodon.devops.infra.dto.DevopsMergeRequestDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.AppServiceMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 
@@ -39,7 +40,7 @@ public class IssueServiceImpl implements IssueService {
     @Autowired
     private DevopsMergeRequestService devopsMergeRequestService;
     @Autowired
-    private IamService iamService;
+    private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
     private DevopsGitlabCommitService devopsGitlabCommitService;
     @Autowired
@@ -113,8 +114,8 @@ public class IssueServiceImpl implements IssueService {
             authorIds.add(devopsMergeRequestE.getAuthorId());
             assigneeIds.add(devopsMergeRequestE.getAssigneeId());
         });
-        List<IamUserDTO> authors = iamService.listUsersByIds(authorIds);
-        List<IamUserDTO> assignees = iamService.listUsersByIds(assigneeIds);
+        List<IamUserDTO> authors = baseServiceClientOperator.listUsersByIds(authorIds);
+        List<IamUserDTO> assignees = baseServiceClientOperator.listUsersByIds(assigneeIds);
 
         devopsMergeRequestDTOS.forEach(devopsMergeRequestE -> {
             Long authorId = devopsMergeRequestE.getAuthorId();

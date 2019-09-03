@@ -32,11 +32,11 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.GitConfigVO;
 import io.choerodon.devops.api.vo.GitEnvConfigVO;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
-import io.choerodon.devops.app.service.IamService;
 import io.choerodon.devops.app.service.impl.DevopsGitServiceImpl;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 
 /**
  * Created by younger on 2018/3/29.
@@ -52,11 +52,11 @@ public class GitUtil {
     private static final String ERROR_GIT_CLONE = "error.git.clone";
     private static final String REPO_NAME = "devops-service-repo";
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsGitServiceImpl.class);
-    Pattern pattern = Pattern.compile("^[-\\+]?[\\d]*$");
+    private Pattern pattern = Pattern.compile("^[-\\+]?[\\d]*$");
     @Autowired
-    DevopsEnvironmentService devopsEnvironmentService;
+    private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
-    IamService iamService;
+    private BaseServiceClientOperator baseServiceClientOperator;
     private String classPath;
     private String sshKey;
     @Value("${services.gitlab.sshUrl}")
@@ -572,8 +572,8 @@ public class GitUtil {
 
 
     public String handDevopsEnvGitRepository(Long projectId, String envCode, String envRsa) {
-        ProjectDTO projectDTO = iamService.queryIamProject(projectId);
-        OrganizationDTO organizationDTO = iamService.queryOrganizationById(projectDTO.getOrganizationId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         //本地路径
         String path = String.format("gitops/%s/%s/%s",
                 organizationDTO.getCode(), projectDTO.getCode(), envCode);
@@ -595,8 +595,8 @@ public class GitUtil {
         GitConfigVO gitConfigVO = new GitConfigVO();
         List<GitEnvConfigVO> gitEnvConfigDTOS = new ArrayList<>();
         devopsEnvironments.stream().filter(devopsEnvironmentE -> devopsEnvironmentE.getGitlabEnvProjectId() != null).forEach(devopsEnvironmentE -> {
-            ProjectDTO projectDTO = iamService.queryIamProject(devopsEnvironmentE.getProjectId());
-            OrganizationDTO organizationDTO = iamService.queryOrganizationById(projectDTO.getOrganizationId());
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentE.getProjectId());
+            OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
             String repoUrl = GitUtil.getGitlabSshUrl(pattern, gitlabSshUrl, organizationDTO.getCode(), projectDTO.getCode(), devopsEnvironmentE.getCode());
 
             GitEnvConfigVO gitEnvConfigVO = new GitEnvConfigVO();

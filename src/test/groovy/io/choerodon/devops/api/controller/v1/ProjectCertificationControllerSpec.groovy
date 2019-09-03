@@ -56,7 +56,6 @@ class ProjectCertificationControllerSpec extends Specification {
     @Qualifier("mockClusterConnectionHandler")
     private ClusterConnectionHandler envUtil
 
-    BaseServiceClient baseServiceClient = Mockito.mock(BaseServiceClient)
     BaseServiceClientOperator baseServiceClientOperator = Mockito.mock(BaseServiceClientOperator)
 
     void setup() {

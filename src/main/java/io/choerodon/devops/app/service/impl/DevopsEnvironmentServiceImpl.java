@@ -38,6 +38,7 @@ import io.choerodon.devops.infra.enums.AccessLevel;
 import io.choerodon.devops.infra.enums.EnvironmentGitopsStatus;
 import io.choerodon.devops.infra.enums.HelmObjectKind;
 import io.choerodon.devops.infra.enums.InstanceStatus;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsEnvFileErrorMapper;
@@ -80,7 +81,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Autowired
     private DevopsEnvironmentMapper devopsEnvironmentMapper;
     @Autowired
-    private IamService iamService;
+    private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
     private UserAttrService userAttrService;
     @Autowired
@@ -135,8 +136,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         devopsEnvironmentDTO.setClusterId(devopsEnvironmentReqVO.getClusterId());
         devopsEnvironmentDTO.setToken(GenerateUUID.generateUUID());
         devopsEnvironmentDTO.setProjectId(projectId);
-        ProjectDTO projectDTO = iamService.queryIamProject(projectId);
-        OrganizationDTO organizationDTO = iamService.queryOrganizationById(projectDTO.getOrganizationId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         if (userAttrDTO == null) {
@@ -165,7 +166,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         gitlabProjectPayload.setPath(devopsEnvironmentReqVO.getCode());
         gitlabProjectPayload.setOrganizationId(null);
         gitlabProjectPayload.setType(ENV);
-        IamUserDTO iamUserDTO = iamService.queryUserByUserId(userAttrDTO.getIamUserId());
+        IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(userAttrDTO.getIamUserId());
         gitlabProjectPayload.setLoginName(iamUserDTO.getLoginName());
         gitlabProjectPayload.setRealName(iamUserDTO.getRealName());
         gitlabProjectPayload.setClusterId(devopsEnvironmentReqVO.getClusterId());
@@ -325,9 +326,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 .baseListByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId())).stream()
                 .filter(DevopsEnvUserPermissionDTO::getPermitted)
                 .map(DevopsEnvUserPermissionDTO::getEnvId).collect(Collectors.toList());
-        ProjectDTO projectDTO = iamService.queryIamProject(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         // 查询当前用户是否为项目所有者
-        Boolean isProjectOwner = iamService
+        Boolean isProjectOwner = baseServiceClientOperator
                 .isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectDTO);
 
         List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedEnvList();
@@ -601,8 +602,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         DevopsProjectDTO gitlabGroupE = devopsProjectService.baseQueryByGitlabEnvGroupId(
                 TypeUtil.objToInteger(gitlabProjectPayload.getGroupId()));
         DevopsEnvironmentDTO devopsEnvironmentDTO = baseQueryByClusterIdAndCode(gitlabProjectPayload.getClusterId(), gitlabProjectPayload.getPath());
-        ProjectDTO projectDTO = iamService.queryIamProject(gitlabGroupE.getIamProjectId());
-        OrganizationDTO organizationDTO = iamService.queryOrganizationById(projectDTO.getOrganizationId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(gitlabGroupE.getIamProjectId());
+        OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 
         GitlabProjectDTO gitlabProjectDO = gitlabServiceClientOperator.queryProjectByName(organizationDTO.getCode()
                 + "-" + projectDTO.getCode() + "-gitops", devopsEnvironmentDTO.getCode(), gitlabProjectPayload.getUserId());
@@ -654,7 +655,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
         // 跳过权限检查，项目下所有成员自动分配权限
         if (Boolean.TRUE.equals(gitlabProjectPayload.getSkipCheckPermission())) {
-            List<Long> iamUserIds = iamService.getAllMemberIdsWithoutOwner(gitlabProjectPayload.getIamProjectId());
+            List<Long> iamUserIds = baseServiceClientOperator.getAllMemberIdsWithoutOwner(gitlabProjectPayload.getIamProjectId());
             userAttrService.baseListByUserIds(iamUserIds)
                     .stream()
                     .map(UserAttrDTO::getGitlabUserId)
@@ -714,8 +715,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     public EnvSyncStatusVO queryEnvSyncStatus(Long projectId, Long envId) {
-        ProjectDTO projectDTO = iamService.queryIamProject(projectId);
-        OrganizationDTO organizationDTO = iamService.queryOrganizationById(projectDTO.getOrganizationId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         DevopsEnvironmentDTO devopsEnvironmentDTO = baseQueryById(envId);
         if (devopsEnvironmentDTO == null) {
             return null;
@@ -797,8 +798,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         }
 
         // 根据搜索参数查询所有的项目所有者
-        Long ownerId = iamService.queryRoleIdByCode(PROJECT_OWNER);
-        PageInfo<IamUserDTO> projectOwners = iamService.pagingQueryUsersByRoleIdOnProjectLevel(
+        Long ownerId = baseServiceClientOperator.queryRoleIdByCode(PROJECT_OWNER);
+        PageInfo<IamUserDTO> projectOwners = baseServiceClientOperator.pagingQueryUsersByRoleIdOnProjectLevel(
                 new PageRequest(0, 0), roleAssignmentSearchVO, ownerId, projectId, false);
 
         List<DevopsUserPermissionVO> members;
@@ -812,13 +813,13 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                     .collect(Collectors.toList());
         } else {
             // 搜索所有的项目成员，并过滤其中的项目所有者
-            Long memberRoleId = iamService.queryRoleIdByCode(PROJECT_MEMBER);
+            Long memberRoleId = baseServiceClientOperator.queryRoleIdByCode(PROJECT_MEMBER);
             List<Long> ownerIds = projectOwners
                     .getList()
                     .stream()
                     .map(IamUserDTO::getId)
                     .collect(Collectors.toList());
-            members = iamService.pagingQueryUsersByRoleIdOnProjectLevel(
+            members = baseServiceClientOperator.pagingQueryUsersByRoleIdOnProjectLevel(
                     new PageRequest(0, 0), roleAssignmentSearchVO, memberRoleId, projectId, false)
                     .getList()
                     .stream()
@@ -862,16 +863,16 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         }
 
         // 根据参数搜索所有的项目成员
-        Long memberRoleId = iamService.queryRoleIdByCode(PROJECT_MEMBER);
-        PageInfo<IamUserDTO> allProjectMembers = iamService.pagingQueryUsersByRoleIdOnProjectLevel(
+        Long memberRoleId = baseServiceClientOperator.queryRoleIdByCode(PROJECT_MEMBER);
+        PageInfo<IamUserDTO> allProjectMembers = baseServiceClientOperator.pagingQueryUsersByRoleIdOnProjectLevel(
                 new PageRequest(0, 0), roleAssignmentSearchVO, memberRoleId, projectId, false);
         if (allProjectMembers.getList().isEmpty()) {
             return Collections.emptyList();
         }
 
         // 获取项目下所有的项目所有者（带上搜索参数搜索可以获得更精确的结果）
-        Long ownerId = iamService.queryRoleIdByCode(PROJECT_OWNER);
-        List<Long> allProjectOwnerIds = iamService.pagingQueryUsersByRoleIdOnProjectLevel(
+        Long ownerId = baseServiceClientOperator.queryRoleIdByCode(PROJECT_OWNER);
+        List<Long> allProjectOwnerIds = baseServiceClientOperator.pagingQueryUsersByRoleIdOnProjectLevel(
                 new PageRequest(0, 0), roleAssignmentSearchVO, ownerId, projectId, false)
                 .getList()
                 .stream()
@@ -924,7 +925,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 return;
             } else {
                 // 添加权限
-                List<IamUserDTO> addIamUsers = iamService.listUsersByIds(devopsEnvPermissionUpdateVO.getUserIds());
+                List<IamUserDTO> addIamUsers = baseServiceClientOperator.listUsersByIds(devopsEnvPermissionUpdateVO.getUserIds());
                 addIamUsers.forEach(e -> devopsEnvUserPermissionService.baseCreate(new DevopsEnvUserPermissionDTO(e.getLoginName(), e.getId(), e.getRealName(), preEnvironmentDTO.getId(), true)));
 
                 userPayload.setOption(1);
@@ -993,15 +994,15 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             }
         }
         // 获取项目所有者角色id和数量
-        Long ownerId = iamService.queryRoleIdByCode(PROJECT_OWNER);
+        Long ownerId = baseServiceClientOperator.queryRoleIdByCode(PROJECT_OWNER);
         // 获取项目成员id
-        Long memberId = iamService.queryRoleIdByCode(PROJECT_MEMBER);
+        Long memberId = baseServiceClientOperator.queryRoleIdByCode(PROJECT_MEMBER);
         // 所有项目成员，可能还带有项目所有者的角色
-        PageInfo<IamUserDTO> allMemberWithOtherUsersPage = iamService
+        PageInfo<IamUserDTO> allMemberWithOtherUsersPage = baseServiceClientOperator
                 .pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, 0), roleAssignmentSearchVO,
                         memberId, projectId, false);
         // 所有项目所有者
-        PageInfo<IamUserDTO> allOwnerUsersPage = iamService
+        PageInfo<IamUserDTO> allOwnerUsersPage = baseServiceClientOperator
                 .pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, 0), roleAssignmentSearchVO,
                         ownerId, projectId, false);
         //合并项目所有者和项目成员
@@ -1099,7 +1100,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     public List<DevopsClusterRepVO> listDevopsCluster(Long projectId) {
-        ProjectDTO projectDTO = iamService.queryIamProject(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         List<DevopsClusterRepVO> devopsClusterRepVOS = ConvertUtils.convertList(devopsClusterService.baseListByProjectId(projectId, projectDTO.getOrganizationId()), DevopsClusterRepVO.class);
         List<Long> connectedClusterList = clusterConnectionHandler.getConnectedEnvList();
         List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedEnvList();
