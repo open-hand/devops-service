@@ -193,7 +193,7 @@ class MergeRequestStore {
       .then((datas) => { if (handlePromptError(datas)) { return datas; } });
   }
 
-  loadUser = () => axios.get('iam/v1/users/self').then((data) => {
+  loadUser = () => axios.get('base/v1/users/self').then((data) => {
     this.setUserId(data.id);
   });
 

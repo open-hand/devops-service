@@ -16,7 +16,7 @@ const CodeManagerHeader = observer(() => {
 
   return <div className="c7ncd-code-manager">
     {!getNoHeader && <div className={`${prefixCls}-header-placeholder`} />}
-    <Breadcrumb className={`${prefixCls}-header-no-bottom`} title="代码管理" />
+    <Breadcrumb className={`${prefixCls}-header-no-bottom`} />
   </div>;
 });
 

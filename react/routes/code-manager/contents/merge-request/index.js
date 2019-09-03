@@ -62,11 +62,12 @@ class MergeRequestHome extends Component {
     });
     MergeRequestStore.setLoading(true);
     MergeRequestStore.loadMergeRquest(
-      DevPipelineStore.selectedApp,
+      DevPipelineStore.getSelectApp,
       this.state.tabKey,
       MergeRequestStore.pageInfo.current,
       MergeRequestStore.pageInfo.pageSize,
     );
+    MergeRequestStore.loadUrl(AppState.currentMenuType.id, DevPipelineStore.getSelectApp);
   };
 
   tabChange = (key) => {
@@ -77,7 +78,7 @@ class MergeRequestHome extends Component {
     if (key === 'assignee') {
       keys = 'opened';
     }
-    MergeRequestStore.loadMergeRquest(DevPipelineStore.selectedApp, keys);
+    MergeRequestStore.loadMergeRquest(DevPipelineStore.getSelectApp, keys);
   };
 
   /**
@@ -95,7 +96,7 @@ class MergeRequestHome extends Component {
     }
     MergeRequestStore.setLoading(true);
     MergeRequestStore.loadMergeRquest(
-      DevPipelineStore.selectedApp,
+      DevPipelineStore.getSelectApp,
       keys,
       pagination.current,
       pagination.pageSize,
@@ -441,61 +442,6 @@ class MergeRequestHome extends Component {
       >
         {hasAppData && appId
           ? <Fragment>
-            {/* <Header
-              title={<FormattedMessage id="merge.head" />}
-              backPath={backPath}
-            >
-              <Select
-                filter
-                className="c7n-header-select"
-                dropdownClassName="c7n-header-select_drop"
-                placeholder={intl.formatMessage({ id: 'ist.noApp' })}
-                value={hasAppData ? DevPipelineStore.getSelectApp : undefined}
-                disabled={appData.length === 0}
-                filterOption={(input, option) => option.props.children.props.children.props.children
-                  .toLowerCase().indexOf(input.toLowerCase()) >= 0}
-                onChange={this.handleChange}
-              >
-                <OptGroup label={intl.formatMessage({ id: 'recent' })} key="recent">
-                  {
-                    _.map(DevPipelineStore.getRecentApp, app => (
-                      <Option
-                        key={`recent-${app.id}`}
-                        value={app.id}
-                        disabled={!app.permission}
-                      >
-                        <Tooltip title={app.code}><span className="c7n-ib-width_100">{app.name}</span></Tooltip>
-                      </Option>))
-                  }
-                </OptGroup>
-                <OptGroup label={intl.formatMessage({ id: 'deploy.app' })} key="app">
-                  {
-                    _.map(appData, (app, index) => (
-                      <Option
-                        value={app.id}
-                        key={index}
-                        disabled={!app.permission}
-                      >
-                        <Tooltip title={app.code}><span className="c7n-ib-width_100">{app.name}</span></Tooltip>
-                      </Option>))
-                  }
-                </OptGroup>
-              </Select>
-              {appData.length ? (<Button
-                funcType="flat"
-                onClick={this.linkToNewMerge}
-              >
-                <i className="icon-playlist_add icon" />
-                <FormattedMessage id="merge.createMerge" />
-              </Button>) : null}
-              <Button
-                funcType="flat"
-                onClick={this.reload}
-              >
-                <i className="icon-refresh icon" />
-                <FormattedMessage id="refresh" />
-              </Button>
-            </Header> */}
             <Content values={{ name: titleName }} className="c7n-merge-content">
               <Tabs activecKey={tabKey} onChange={this.tabChange} animated={false} className="c7n-merge-tabs">
                 <TabPane tab={`${intl.formatMessage({ id: 'merge.tab1' })}(${openCount || 0})`} key="opened">

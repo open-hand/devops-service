@@ -1,8 +1,8 @@
 import React, { Component, Fragment } from 'react';
 import { observer } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
-import { Button, Tooltip, Modal, Table, Popover, Select, Icon } from 'choerodon-ui';
-import { Content, Header, Page, Permission, stores, Action } from '@choerodon/master';
+import { Button, Tooltip, Modal, Table } from 'choerodon-ui';
+import { Content, Page, Permission, stores, Action } from '@choerodon/master';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import _ from 'lodash';
 import BranchCreate from './branch-create';
@@ -19,7 +19,6 @@ import './Branch.less';
 import './index.less';
 
 const { AppState } = stores;
-const { Option, OptGroup } = Select;
 
 
 @observer
@@ -159,7 +158,6 @@ class Branch extends Component {
     const { intl: { formatMessage } } = this.props;
     const { paras, filters, sort: { columnKey, order } } = this.state;
     const menu = AppState.currentMenuType;
-    const { type, organizationId: orgId } = menu;
     const branchColumns = [
       {
         title: <FormattedMessage id="branch.name" />,
@@ -248,11 +246,9 @@ class Branch extends Component {
         </div>),
       },
     ];
-    const titleData = ['master', 'feature', 'bugfix', 'release', 'hotfix', 'custom'];
     return (
       <div>
         <Table
-          filters={paras}
           filterBarPlaceholder={formatMessage({ id: 'filter' })}
           loading={BranchStore.loading}
           className="c7n-branch-table"
@@ -263,6 +259,7 @@ class Branch extends Component {
           rowKey={({ creationDate, branchName }) => `${branchName}-${creationDate}`}
           onChange={this.tableChange}
           locale={{ emptyText: formatMessage({ id: 'branch.empty' }) }}
+          noFilters={false}
         />
       </div>
 
@@ -376,6 +373,7 @@ class Branch extends Component {
     const menu = AppState.currentMenuType;
     const organizationId = menu.id;
     this.setState({ filters, paras, sort: sorter });
+    const page = pagination.current;
     const sort = { field: 'creation_date', order: 'asc' };
     if (sorter.column) {
       sort.field = sorter.field || sorter.columnKey;
@@ -385,18 +383,18 @@ class Branch extends Component {
         sort.order = 'desc';
       }
     }
-    let searchParam = {};
-    const page = pagination.current;
-    if (Object.keys(filters).length) {
-      searchParam = filters;
-    }
-    if (paras.length) {
-      searchParam = { branchName: [paras.toString()] };
+
+    const searchParam = {};
+    if (filters) {
+      _.forEach(filters, (value, key) => {
+        searchParam[key] = value[0];
+      });
     }
     const postData = {
       searchParam,
-      param: '',
+      params: paras,
     };
+
     BranchStore
       .loadBranchList({
         projectId: organizationId,
@@ -413,86 +411,15 @@ class Branch extends Component {
     const { name: branchName, submitting, visible } = this.state;
     const apps = DevPipelineStore.appData.slice();
     const appId = DevPipelineStore.getSelectApp;
-    const titleName = _.find(apps, ['id', appId]) ? _.find(apps, ['id', appId]).name : name;
-    const backPath = state && state.backPath;
     return (
       <Page
         className="c7n-region c7n-branch"
-        service={[
-          'devops-service.application.listByActive',
-          'devops-service.devops-git.createBranch',
-          'devops-service.devops-git.queryByAppId',
-          'devops-service.devops-git.delete',
-          'devops-service.devops-git.listByAppId',
-          'devops-service.devops-git.getTagList',
-          'devops-service.devops-git.update',
-          'agile-service.issue.queryIssueByOption',
-          'agile-service.issue.queryIssue',
-          'agile-service.work-log.queryWorkLogListByIssueId',
-        ]}
       >
-        {apps && apps.length && appId
-          ? <Fragment>
-            {/* <Header
-              title={<FormattedMessage id="branch.head" />}
-              backPath={backPath}
-            >
-              <Select
-                filter
-                className="c7n-header-select"
-                dropdownClassName="c7n-header-select_drop"
-                placeholder={formatMessage({ id: 'ist.noApp' })}
-                value={apps && apps.length ? DevPipelineStore.getSelectApp : undefined}
-                disabled={apps.length === 0}
-                filterOption={(input, option) => option.props.children.props.children.props.children
-                  .toLowerCase().indexOf(input.toLowerCase()) >= 0}
-                onChange={this.loadData}
-              >
-                <OptGroup label={formatMessage({ id: 'recent' })} key="recent">
-                  {
-                _.map(DevPipelineStore.getRecentApp, app => (
-                  <Option
-                    key={`recent-${app.id}`}
-                    value={app.id}
-                    disabled={!app.permission}
-                  >
-                    <Tooltip title={app.code}><span className="c7n-ib-width_100">{app.name}</span></Tooltip>
-                  </Option>))
-              }
-                </OptGroup>
-                <OptGroup label={formatMessage({ id: 'deploy.app' })} key="app">
-                  {
-                _.map(apps, (app, index) => (
-                  <Option
-                    value={app.id}
-                    key={index}
-                    disabled={!app.permission}
-                  >
-                    <Tooltip title={app.code}><span className="c7n-ib-width_100">{app.name}</span></Tooltip>
-                  </Option>))
-              }
-                </OptGroup>
-              </Select>
-              {BranchStore.getBranchList.length && DevPipelineStore.selectedApp ? <Permission
-                service={['devops-service.devops-git.createBranch']}
-              >
-                <Button
-                  onClick={this.showSidebar}
-                  icon="playlist_add"
-                >
-                  <FormattedMessage id="branch.create" />
-                </Button>
-              </Permission> : null}
-              <Button
-                onClick={this.handleRefresh}
-                icon="refresh"
-              >
-                <FormattedMessage id="refresh" />
-              </Button>
-            </Header> */}
-            <Content className="page-content c7n-branch-content">
-              {this.tableBranch}
-            </Content>
+        <Fragment>
+          <Content className="page-content c7n-branch-content">
+            {this.tableBranch}
+          </Content>
+          {apps && apps.length && appId ? <Fragment>
             {BranchStore.createBranchShow === 'create' && <BranchCreate
               name={_.filter(apps, (app) => app.id === DevPipelineStore.selectedApp)[0].name}
               appId={DevPipelineStore.selectedApp}
@@ -528,7 +455,9 @@ class Branch extends Component {
               ]}
             >
               <div className="c7n-padding-top_8">{formatMessage({ id: 'branch.delete.tooltip' })}</div>
-            </Modal></Fragment> : null}
+            </Modal> 
+          </Fragment> : null}
+        </Fragment>
       </Page>
     );
   }

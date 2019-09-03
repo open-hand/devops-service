@@ -49,10 +49,14 @@ const CreateCluster = observer((props) => {
             ...formData,
             clusterId: formData.id,
           };
-          const res = await mainStore.updateCluster(data);
-          if (handlePromptError(res, false)) {
-            afterOk();
-            modal.close();
+          try {
+            const res = await mainStore.updateCluster(data);
+            if (handlePromptError(res, false)) {
+              afterOk();
+              modal.close();
+            }
+          } catch (e) {
+            Choerodon.handleResponseError(e);
           }
         }
       }

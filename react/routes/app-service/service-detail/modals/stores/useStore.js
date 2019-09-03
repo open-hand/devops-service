@@ -23,7 +23,8 @@ export default function useStore() {
           }
           return;
         case 'sub':
-          return this.permissionUsers.filter((v, k) => k !== index);
+          this.permissionUsers = this.permissionUsers.filter((v, k) => k !== index);
+          return;
         default:
           throw new Error('action type not in [add,sub,change]');
       }

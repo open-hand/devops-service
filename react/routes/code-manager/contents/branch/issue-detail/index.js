@@ -198,7 +198,7 @@ class IssueDetail extends Component {
                     width: 30,
                     height: 30,
                     borderRadius: '50%',
-                    background: STATUS_ICON[issue.statusMapDTO.type] ? `${STATUS_ICON[issue.statusMapDTO.type].color}33` : '#ffae0233',
+                    background: STATUS_ICON[issue.statusVO.type] ? `${STATUS_ICON[issue.statusVO.type].color}33` : '#ffae0233',
                     marginRight: 12,
                     flexShrink: 0,
                     display: 'flex',
@@ -207,17 +207,17 @@ class IssueDetail extends Component {
                   }}
                 >
                   <Icon
-                    type={STATUS_ICON[issue.statusMapDTO.type] ? STATUS_ICON[issue.statusMapDTO.type].icon : 'timelapse'}
+                    type={STATUS_ICON[issue.statusVO.type] ? STATUS_ICON[issue.statusVO.type].icon : 'timelapse'}
                     style={{
                       fontSize: '24px',
-                      color: STATUS_ICON[issue.statusMapDTO.type] ? STATUS_ICON[issue.statusMapDTO.type].color : '#ffae02',
+                      color: STATUS_ICON[issue.statusVO.type] ? STATUS_ICON[issue.statusVO.type].color : '#ffae02',
                     }}
                   />
                 </span>
               </span>
               <div>
                 <div className="issue-status-title">{<FormattedMessage id="network.column.status" />}</div>
-                <div className="issue-status-text" style={{ color: issue.statusColor }}>{issue.statusMapDTO.name}</div>
+                <div className="issue-status-text" style={{ color: issue.statusColor }}>{issue.statusVO.name}</div>
               </div>
             </div>
             <div className="issue-status">
@@ -226,7 +226,7 @@ class IssueDetail extends Component {
               </span>
               <div>
                 <div className="issue-status-title">{<FormattedMessage id="branch.issue.priority" />}</div>
-                <div className="issue-status-text" style={{ color: issue.priorityDTO.colour }}>{issue.priorityDTO.name}</div>
+                <div className="issue-status-text" style={{ color: issue.priorityVO.colour }}>{issue.priorityVO.name}</div>
               </div>
             </div>
             <div className="issue-status">
@@ -269,17 +269,17 @@ class IssueDetail extends Component {
               <div className="issue-detail-tr">
                 <div>
                   <span className="issue-detail-content-title">{formatMessage({ id: 'branch.issue.module' })}:</span>
-                  {issue.componentIssueRelDTOList.length ? issue.componentIssueRelDTOList.map((module) => <span key={module.name} className="issue-detail-module-value">{module.name}{`${issue.componentIssueRelDTOList.length > 1 ? ',' : ''}`}</span>) : '无'}
+                  {issue.componentIssueRelVOList.length ? issue.componentIssueRelVOList.map((module) => <span key={module.name} className="issue-detail-module-value">{module.name}{`${issue.componentIssueRelVOList.length > 1 ? ',' : ''}`}</span>) : '无'}
                 </div>
                 <div>
                   <span className="issue-detail-content-title">{formatMessage({ id: 'branch.issue.label' })}:</span>
-                  {issue.labelIssueRelDTOList.length
-                    ? issue.labelIssueRelDTOList.map((label) => <span key={label.labelName} className="issue-detail-label-value">{label.labelName}</span>) : formatMessage({ id: 'branch.issue.no' })}
+                  {issue.labelIssueRelVOList.length
+                    ? issue.labelIssueRelVOList.map((label) => <span key={label.labelName} className="issue-detail-label-value">{label.labelName}</span>) : formatMessage({ id: 'branch.issue.no' })}
                 </div>
                 <div>
                   <span className="issue-detail-content-title">{formatMessage({ id: 'branch.issue.fixVer' })}:</span>
-                  {issue.versionIssueRelDTOList.length
-                    ? issue.versionIssueRelDTOList.map((label) => <span className="issue-detail-module-value">{label.relationType === 'fix' ? label.name : formatMessage({ id: 'branch.issue.no' })}{`${issue.versionIssueRelDTOList.length > 1 ? ',' : ''}`}</span>) : '无'}
+                  {issue.versionIssueRelVOList.length
+                    ? issue.versionIssueRelVOList.map((label) => <span className="issue-detail-module-value">{label.relationType === 'fix' ? label.name : formatMessage({ id: 'branch.issue.no' })}{`${issue.versionIssueRelVOList.length > 1 ? ',' : ''}`}</span>) : '无'}
                 </div>
                 <div>
                   <span className="issue-detail-content-title">{formatMessage({ id: 'branch.issue.epic' })}:</span>

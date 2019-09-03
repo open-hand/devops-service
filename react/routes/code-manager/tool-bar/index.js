@@ -31,7 +31,6 @@ class CodeManagerToolBar extends Component {
       AppState: { currentMenuType: { projectId } },
       location: { state },
     } = this.props;
-
     const { appId } = state || {};
     DevPipelineStore.queryAppData(projectId, 'branch', appId);
   }
@@ -70,12 +69,10 @@ class CodeManagerToolBar extends Component {
     return obj || null;
   }
 
+
   render() {
     const {
       intl: { formatMessage },
-      location: {
-        search,
-      },
     } = this.props;
     const appData = DevPipelineStore.getAppData;
     const appId = DevPipelineStore.getSelectApp;
@@ -90,8 +87,8 @@ class CodeManagerToolBar extends Component {
         className="c7n-header-select c7n-header-select-noborder"
         dropdownClassName="c7n-header-select_drop"
         placeholder={formatMessage({ id: 'ist.noApp' })}
-        value={getSelectApp}
         disabled={getAppData.length === 0}
+        value={getSelectApp}
         filterOption={(input, option) => option.props.children.props.children.props.children
           .toLowerCase().indexOf(input.toLowerCase()) >= 0}
         onChange={(value, option) => this.handleSelect(value, option)}

@@ -1,8 +1,6 @@
 import React from 'react';
-import { Page, Header } from '@choerodon/master';
-import { Button } from 'choerodon-ui';
+import { Page } from '@choerodon/master';
 
-import CodeManagerToolBar from './tool-bar';
 import MainView from './main-view';
 
 export default function CodeManager() {
