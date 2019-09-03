@@ -83,7 +83,7 @@ function timeConvert(time) {
 function removeEndsChar(str, char) {
   if (typeof str !== 'string') return '';
 
-  return str.endsWith(char) ? str.slice(-1) : str;
+  return str.endsWith(char) ? str.slice(0, -1) : str;
 }
 
 export {
