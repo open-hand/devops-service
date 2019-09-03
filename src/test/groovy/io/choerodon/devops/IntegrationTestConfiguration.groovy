@@ -5,7 +5,10 @@ import io.choerodon.asgard.saga.producer.TransactionalProducer
 import io.choerodon.core.exception.CommonException
 import io.choerodon.core.oauth.CustomUserDetails
 import io.choerodon.devops.app.service.AgentPodService
+import io.choerodon.devops.app.service.GitlabGroupMemberService
 import io.choerodon.devops.app.service.ProjectConfigHarborService
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler
 import io.choerodon.devops.infra.util.GitUtil
 import io.choerodon.liquibase.LiquibaseConfig
@@ -75,6 +78,24 @@ class IntegrationTestConfiguration extends WebSecurityConfigurerAdapter {
     @Bean("mockAgentPodInfoService")
     AgentPodService agentPodService() {
         PowerMockito.mock(AgentPodService)
+    }
+
+    @Primary
+    @Bean("mockBaseServiceClientOperator")
+    BaseServiceClientOperator baseServiceClientOperator() {
+        PowerMockito.mock(BaseServiceClientOperator)
+    }
+
+    @Primary
+    @Bean("mockGitlabServiceClientOperator")
+    GitlabServiceClientOperator gitlabServiceClientOperator() {
+        PowerMockito.mock(GitlabServiceClientOperator)
+    }
+
+    @Primary
+    @Bean("mockGitlabGroupMemberService")
+    GitlabGroupMemberService gitlabGroupMemberService() {
+        PowerMockito.mock(GitlabGroupMemberService)
     }
 
     @Primary

@@ -17,6 +17,7 @@ import io.choerodon.devops.infra.dto.DevopsEnvCommandDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvFileResourceDTO;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
+import io.choerodon.devops.infra.mapper.DevopsCustomizeResourceMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.GitUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
@@ -39,14 +40,15 @@ public class HandlerCustomResourceServiceImpl implements HandlerObjectFileRelati
     private DevopsCustomizeResourceContentService devopsCustomizeResourceContentService;
     @Autowired
     private DevopsEnvCommandService devopsEnvCommandService;
+    @Autowired
+    private DevopsCustomizeResourceMapper devopsCustomizeResourceMapper;
 
     @Override
     public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceDTO> beforeSync, List<DevopsCustomizeResourceDTO> devopsCustomizeResources, List<V1Endpoints> v1Endpoints, Long envId, Long projectId, String path, Long userId) {
         List<DevopsCustomizeResourceDTO> beforeDevopsCustomResource = beforeSync.stream()
                 .filter(devopsEnvFileResourceVO -> devopsEnvFileResourceVO.getResourceType().equals(ResourceType.CUSTOM.getType()))
                 .map(devopsEnvFileResourceVO -> {
-                    DevopsCustomizeResourceDTO devopsCustomizeResourceDTO = devopsCustomizeResourceService
-                            .baseQuery(devopsEnvFileResourceVO.getResourceId());
+                    DevopsCustomizeResourceDTO devopsCustomizeResourceDTO = devopsCustomizeResourceMapper.selectByPrimaryKey(devopsEnvFileResourceVO.getResourceId());
                     if (devopsCustomizeResourceDTO == null) {
                         devopsEnvFileResourceService
                                 .baseDeleteByEnvIdAndResourceId(envId, devopsEnvFileResourceVO.getResourceId(), ResourceType.CUSTOM.getType());
@@ -92,7 +94,7 @@ public class HandlerCustomResourceServiceImpl implements HandlerObjectFileRelati
 
                 //判断自定义资源是否发生了改变
                 DevopsCustomizeResourceContentDTO devopsCustomizeResourceContentDTO = devopsCustomizeResourceContentService.baseQuery(devopsCustomizeResourceDTO.getContentId());
-                Boolean isNotChange = customResource.getResourceContent().equals(devopsCustomizeResourceContentDTO.getContent());
+                boolean isNotChange = customResource.getResourceContent().equals(devopsCustomizeResourceContentDTO.getContent());
                 DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsCustomizeResourceDTO.getEnvId());
 
                 //发生改变走处理改变自定义资源的逻辑

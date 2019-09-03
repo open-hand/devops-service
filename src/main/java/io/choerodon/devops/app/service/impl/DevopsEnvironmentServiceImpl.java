@@ -501,7 +501,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Override
     public void checkEnv(DevopsEnvironmentDTO devopsEnvironmentDTO, UserAttrDTO userAttrDTO) {
         //校验用户是否有环境的权限
-        devopsEnvUserPermissionService.baseCheckEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), devopsEnvironmentDTO.getId());
+        devopsEnvUserPermissionService.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), devopsEnvironmentDTO.getId());
 
         //校验环境是否连接
         clusterConnectionHandler.checkEnvConnection(devopsEnvironmentDTO.getClusterId());

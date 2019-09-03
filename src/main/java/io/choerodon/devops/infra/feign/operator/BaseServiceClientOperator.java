@@ -55,16 +55,6 @@ public class BaseServiceClientOperator {
         }
     }
 
-    public IamUserDTO queryUserByLoginName(String userName) {
-        try {
-            ResponseEntity<IamUserDTO> responseEntity = baseServiceClient.queryByLoginName(userName);
-            return responseEntity.getBody();
-        } catch (FeignException e) {
-            LOGGER.error("get user by longin name {} error", userName);
-            return null;
-        }
-    }
-
     public List<ProjectDTO> listIamProjectByOrgId(Long organizationId, String name, String[] params) {
         int page = 0;
         int size = 0;

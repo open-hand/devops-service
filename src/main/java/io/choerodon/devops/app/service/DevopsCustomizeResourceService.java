@@ -62,8 +62,6 @@ public interface DevopsCustomizeResourceService {
 
     void baseUpdate(DevopsCustomizeResourceDTO devopsCustomizeResourceDTO);
 
-    void baseDelete(Long resourceId);
-
     List<DevopsCustomizeResourceDTO> listByEnvAndFilePath(Long envId, String filePath);
 
     DevopsCustomizeResourceDTO queryByEnvIdAndKindAndName(Long envId, String kind, String name);
