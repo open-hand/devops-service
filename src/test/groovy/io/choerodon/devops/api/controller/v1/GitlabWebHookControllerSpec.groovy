@@ -1,36 +1,10 @@
 package io.choerodon.devops.api.controller.v1
 
-import com.github.pagehelper.PageInfo
-import io.choerodon.asgard.saga.feign.SagaClient
-import io.choerodon.asgard.saga.feign.SagaClientCallback
-import io.choerodon.asgard.saga.producer.TransactionalProducer
-import io.choerodon.base.domain.PageRequest
-import io.choerodon.devops.DependencyInjectUtil
-import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.api.vo.DevopsMergeRequestVO
-import io.choerodon.devops.app.service.AgentCommandService
-import io.choerodon.devops.app.service.DevopsEnvCommitService
-import io.choerodon.devops.app.service.DevopsGitService
-import io.choerodon.devops.app.service.DevopsGitlabCommitService
-import io.choerodon.devops.app.service.DevopsGitlabPipelineService
-import io.choerodon.devops.app.service.DevopsMergeRequestService
-import io.choerodon.devops.app.service.GitlabWebHookService
-import io.choerodon.devops.app.service.IamService
-import io.choerodon.devops.app.service.impl.DevopsEnvCommitServiceImpl
-import io.choerodon.devops.app.service.impl.DevopsGitServiceImpl
-import io.choerodon.devops.app.service.impl.DevopsGitlabCommitServiceImpl
-import io.choerodon.devops.app.service.impl.DevopsGitlabPipelineServiceImpl
-import io.choerodon.devops.app.service.impl.DevopsMergeRequestServiceImpl
-import io.choerodon.devops.app.service.impl.GitlabWebHookServiceImpl
-import io.choerodon.devops.infra.dto.*
-import io.choerodon.devops.infra.dto.gitlab.CommitDTO
-import io.choerodon.devops.infra.dto.iam.IamUserDTO
-import io.choerodon.devops.infra.feign.BaseServiceClient
-import io.choerodon.devops.infra.feign.GitlabServiceClient
-import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator
-import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator
-import io.choerodon.devops.infra.handler.ClusterConnectionHandler
-import io.choerodon.devops.infra.mapper.*
+import static org.mockito.ArgumentMatchers.anyInt
+import static org.mockito.ArgumentMatchers.anyLong
+import static org.mockito.ArgumentMatchers.anyString
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
+
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
@@ -39,17 +13,23 @@ import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.context.annotation.Import
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
-import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Stepwise
 import spock.lang.Subject
 
-import static org.mockito.ArgumentMatchers.anyInt
-import static org.mockito.ArgumentMatchers.anyLong
-import static org.mockito.Matchers.anyString
-import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
+import io.choerodon.devops.DependencyInjectUtil
+import io.choerodon.devops.IntegrationTestConfiguration
+import io.choerodon.devops.app.service.*
+import io.choerodon.devops.infra.dto.AppServiceDTO
+import io.choerodon.devops.infra.dto.DevopsEnvCommitDTO
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO
+import io.choerodon.devops.infra.dto.gitlab.CommitDTO
+import io.choerodon.devops.infra.dto.iam.IamUserDTO
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator
+import io.choerodon.devops.infra.handler.ClusterConnectionHandler
+import io.choerodon.devops.infra.mapper.*
 
 /**
  *
@@ -95,11 +75,14 @@ class GitlabWebHookControllerSpec extends Specification {
     @Autowired
     GitlabWebHookController gitlabWebHookController
 
-    private BaseServiceClient iamServiceClient = Mockito.mock(BaseServiceClient)
+    @Qualifier("mockBaseServiceClientOperator")
+    @Autowired
+    private BaseServiceClientOperator mockBaseServiceClientOperator
 
-    GitlabServiceClientOperator gitlabServiceClientOperator = Mockito.mock(GitlabServiceClientOperator)
-//    private CommandSender mockCommandSender = Mockito.mock(CommandSender)
-    BaseServiceClientOperator baseServiceClientOperator = Mockito.mock(BaseServiceClientOperator)
+    @Qualifier("mockGitlabServiceClientOperator")
+    @Autowired
+    private GitlabServiceClientOperator mockGitlabServiceClientOperator
+
     @Shared
     private AppServiceDTO applicationDO = new AppServiceDTO()
     @Shared
@@ -116,16 +99,11 @@ class GitlabWebHookControllerSpec extends Specification {
 
     def setup() {
         if (isToInit) {
-
-            DependencyInjectUtil.setAttribute(devopsGitService,"baseServiceClientOperator",baseServiceClientOperator)
-            DependencyInjectUtil.setAttribute(devopsGitRepository, "gitlabServiceClientOperator",gitlabServiceClientOperator)
             DependencyInjectUtil.setAttribute(gitlabWebHookService,"devopsGitService",devopsGitService)
             // mock baseList user
             IamUserDTO userDO = new IamUserDTO()
             userDO.setId(1L)
-            PageInfo<IamUserDTO> page = new PageInfo<>(Collections.singletonList(userDO) as List<IamUserDTO>)
-            ResponseEntity<PageInfo<IamUserDTO>> responseEntity = new ResponseEntity<>(page, HttpStatus.OK)
-            Mockito.when(iamServiceClient.listUsersByEmail(Mockito.anyLong(), anyInt(), anyInt(), anyString())).thenReturn(responseEntity)
+            Mockito.when(mockBaseServiceClientOperator.queryByEmail(anyLong(), anyString())).thenReturn(userDO)
 
             // mock get commit
             CommitDTO commit = new CommitDTO()
@@ -136,7 +114,7 @@ class GitlabWebHookControllerSpec extends Specification {
             commit.setUrl("http://www.baidu.com")
             commit.setCommittedDate(new Date())
 
-            Mockito.doReturn(commit).when(gitlabServiceClientOperator).queryCommit(anyInt(), anyString(), anyInt())
+            Mockito.doReturn(commit).when(mockGitlabServiceClientOperator).queryCommit(anyInt(), anyString(), anyInt())
 
             // mock env util
             Mockito.when(mockEnvUtil.getConnectedEnvList()).thenReturn(Arrays.asList(1L))
@@ -144,17 +122,14 @@ class GitlabWebHookControllerSpec extends Specification {
             IamUserDTO iamUserDTO=new IamUserDTO()
             iamUserDTO.setLoginName("aaa")
             iamUserDTO.setOrganizationId(1L)
-            Mockito.doReturn(iamUserDTO).when(baseServiceClientOperator).queryUserByUserId(null)
+            Mockito.doReturn(iamUserDTO).when(mockBaseServiceClientOperator).queryUserByUserId(null)
 
         }
     }
 
     def cleanup() {
         if (isToClean) {
-            // reset dependency injection
-            DependencyInjectUtil.restoreDefaultDependency(iamRepository, "baseServiceClient")
-            DependencyInjectUtil.restoreDefaultDependency(devopsGitRepository, "gitlabServiceClientOperator")
-
+            DependencyInjectUtil.restoreDefaultDependency(gitlabWebHookService,"devopsGitService")
 
             applicationMapper.delete(applicationDO)
             devopsEnvironmentMapper.delete(devopsEnvironmentDO)

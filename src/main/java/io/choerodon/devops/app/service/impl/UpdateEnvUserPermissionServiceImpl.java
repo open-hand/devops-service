@@ -4,15 +4,23 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.app.eventhandler.payload.DevopsEnvUserPayload;
-import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.infra.dto.*;
-import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
-import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
-import io.choerodon.devops.infra.util.TypeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.app.eventhandler.payload.DevopsEnvUserPayload;
+import io.choerodon.devops.app.service.DevopsEnvUserPermissionService;
+import io.choerodon.devops.app.service.DevopsEnvironmentService;
+import io.choerodon.devops.app.service.DevopsProjectService;
+import io.choerodon.devops.app.service.UserAttrService;
+import io.choerodon.devops.infra.dto.DevopsEnvUserPermissionDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
+import io.choerodon.devops.infra.dto.DevopsProjectDTO;
+import io.choerodon.devops.infra.dto.UserAttrDTO;
+import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
+import io.choerodon.devops.infra.util.TypeUtil;
 
 
 /**
@@ -28,17 +36,17 @@ public class UpdateEnvUserPermissionServiceImpl extends UpdateUserPermissionServ
     private final UserAttrService userAttrService;
     private final DevopsProjectService devopsProjectService;
     private final GitlabServiceClientOperator gitlabServiceClientOperator;
-    private final IamService iamService;
+    private final BaseServiceClientOperator baseServiceClientOperator;
 
     @Autowired
-    public UpdateEnvUserPermissionServiceImpl(DevopsEnvironmentService devopsEnvironmentService, DevopsEnvUserPermissionService devopsEnvUserPermissionService, UserAttrService userAttrService, DevopsProjectService devopsProjectService, GitlabServiceClientOperator gitlabServiceClientOperator, IamService iamService) {
+    public UpdateEnvUserPermissionServiceImpl(DevopsEnvironmentService devopsEnvironmentService, DevopsEnvUserPermissionService devopsEnvUserPermissionService, UserAttrService userAttrService, DevopsProjectService devopsProjectService, GitlabServiceClientOperator gitlabServiceClientOperator, BaseServiceClientOperator baseServiceClientOperator) {
         super(gitlabServiceClientOperator);
         this.devopsEnvironmentService = devopsEnvironmentService;
         this.devopsEnvUserPermissionService = devopsEnvUserPermissionService;
         this.userAttrService = userAttrService;
         this.devopsProjectService = devopsProjectService;
         this.gitlabServiceClientOperator = gitlabServiceClientOperator;
-        this.iamService = iamService;
+        this.baseServiceClientOperator = baseServiceClientOperator;
     }
 
     @Override
@@ -133,7 +141,7 @@ public class UpdateEnvUserPermissionServiceImpl extends UpdateUserPermissionServ
      * 获取iam项目下所有的项目成员的gitlabUserId，过滤掉项目所有者
      */
     private List<Integer> getAllGitlabMemberWithoutOwner(Long projectId) {
-        return userAttrService.baseListByUserIds(iamService.getAllMemberIdsWithoutOwner(projectId)).stream()
+        return userAttrService.baseListByUserIds(baseServiceClientOperator.getAllMemberIdsWithoutOwner(projectId)).stream()
                 .map(UserAttrDTO::getGitlabUserId)
                 .map(TypeUtil::objToInteger).collect(Collectors.toList());
     }

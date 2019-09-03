@@ -490,7 +490,7 @@ public class GitlabServiceClientOperator {
             }
         }
 
-        List<TagDTO> tagTotalList = listTag(gitlabProjectId, userId);
+        List<TagDTO> tagTotalList = listTags(gitlabProjectId, userId);
         PageInfo<TagDTO> tagsPage = new PageInfo<>();
         List<TagDTO> tagList = tagTotalList.stream()
                 .filter(t -> filterTag(t, params))
@@ -587,7 +587,7 @@ public class GitlabServiceClientOperator {
         return index;
     }
 
-    public List<TagDTO> listTag(Integer projectId, Integer userId) {
+    public List<TagDTO> listTags(Integer projectId, Integer userId) {
         ResponseEntity<List<TagDTO>> tagResponseEntity;
         try {
             tagResponseEntity = gitlabServiceClient.getTags(projectId, userId);

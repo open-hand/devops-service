@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.any
 import com.github.pagehelper.PageInfo
 import org.powermock.api.mockito.PowerMockito
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.context.annotation.Import
@@ -13,7 +14,6 @@ import spock.lang.Specification
 import spock.lang.Stepwise
 import spock.lang.Subject
 
-import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.DevopsDeployRecordVO
 import io.choerodon.devops.app.service.DevopsDeployRecordService
@@ -57,7 +57,9 @@ class DevopsDeployRecordControllerSpec extends Specification {
     @Autowired
     private DevopsEnvCommandMapper devopsEnvCommandMapper
 
-    private BaseServiceClientOperator mockBaseServiceClientOperator = PowerMockito.mock(BaseServiceClientOperator)
+    @Qualifier("mockBaseServiceClientOperator")
+    @Autowired
+    private BaseServiceClientOperator mockBaseServiceClientOperator
 
     @Shared
     private DevopsEnvironmentDTO devopsEnvironmentDTO
@@ -77,7 +79,6 @@ class DevopsDeployRecordControllerSpec extends Specification {
         if (!isToInit) {
             return
         }
-        DependencyInjectUtil.setAttribute(deployRecordService, "baseServiceClientOperator", mockBaseServiceClientOperator)
 
         devopsEnvironmentDTO = new DevopsEnvironmentDTO()
         devopsEnvironmentDTO.setId(envId)
@@ -109,7 +110,6 @@ class DevopsDeployRecordControllerSpec extends Specification {
         if (!isToClean) {
             return
         }
-        DependencyInjectUtil.restoreDefaultDependency(deployRecordService, "baseServiceClientOperator")
 
         devopsEnvironmentMapper.delete(null)
         devopsEnvCommandMapper.delete(null)

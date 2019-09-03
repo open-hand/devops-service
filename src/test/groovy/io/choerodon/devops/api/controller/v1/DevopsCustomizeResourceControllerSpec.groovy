@@ -42,8 +42,6 @@ class DevopsCustomizeResourceControllerSpec extends Specification {
     private Long projectId = 1L
     @Shared
     private Long envId = 1L
-    @Shared
-    private Long userId = 1L
 
     @Autowired
     private TestRestTemplate restTemplate

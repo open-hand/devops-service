@@ -7,17 +7,18 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.ClusterSessionVO;
-import io.choerodon.devops.app.service.IamService;
-import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
-import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.util.GitUtil;
-import io.choerodon.devops.infra.util.TypeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.ClusterSessionVO;
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.util.GitUtil;
+import io.choerodon.devops.infra.util.TypeUtil;
 
 /**
  * Creator: Runge
@@ -37,7 +38,7 @@ public class ClusterConnectionHandler {
     @Value("${services.gitlab.sshUrl}")
     private String gitlabSshUrl;
     @Autowired
-    private IamService iamService;
+    private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
     private GitUtil gitUtil;
     @Autowired
@@ -132,8 +133,8 @@ public class ClusterConnectionHandler {
 
 
     public String handDevopsEnvGitRepository(Long projectId, String envCode, String envRsa) {
-        ProjectDTO projectDTO = iamService.queryIamProject(projectId);
-        OrganizationDTO organizationDTO = iamService.queryOrganizationById(projectDTO.getOrganizationId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         //本地路径
         String path = String.format("gitops/%s/%s/%s",
                 organizationDTO.getCode(), projectDTO.getCode(), envCode);

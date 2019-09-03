@@ -1,7 +1,23 @@
 package io.choerodon.devops.api.controller.v1
 
+import static org.mockito.ArgumentMatchers.*
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
+
 import com.github.pagehelper.PageInfo
-import io.choerodon.devops.DependencyInjectUtil
+import org.mockito.Mockito
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.web.client.TestRestTemplate
+import org.springframework.context.annotation.Import
+import org.springframework.http.HttpEntity
+import org.springframework.http.HttpHeaders
+import org.springframework.http.MediaType
+import spock.lang.Shared
+import spock.lang.Specification
+import spock.lang.Stepwise
+import spock.lang.Subject
+
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.DevopsIngressPathVO
 import io.choerodon.devops.api.vo.DevopsIngressVO
@@ -11,34 +27,18 @@ import io.choerodon.devops.app.service.DevopsEnvCommandService
 import io.choerodon.devops.app.service.DevopsEnvironmentService
 import io.choerodon.devops.app.service.DevopsProjectService
 import io.choerodon.devops.app.service.GitlabGroupMemberService
-import io.choerodon.devops.app.service.IamService
 import io.choerodon.devops.infra.dto.*
 import io.choerodon.devops.infra.dto.gitlab.MemberDTO
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO
 import io.choerodon.devops.infra.dto.iam.ProjectDTO
 import io.choerodon.devops.infra.enums.AccessLevel
 import io.choerodon.devops.infra.enums.CertificationStatus
-import io.choerodon.devops.infra.feign.BaseServiceClient
-import io.choerodon.devops.infra.feign.GitlabServiceClient
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler
 import io.choerodon.devops.infra.mapper.*
 import io.choerodon.devops.infra.util.FileUtil
 import io.choerodon.devops.infra.util.GitUtil
-import org.mockito.Mockito
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.web.client.TestRestTemplate
-import org.springframework.context.annotation.Import
-import org.springframework.http.*
-import spock.lang.Shared
-import spock.lang.Specification
-import spock.lang.Stepwise
-import spock.lang.Subject
-
-import static org.mockito.ArgumentMatchers.*
-import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
 /**
  * Created by n!Ck
@@ -82,26 +82,25 @@ class DevopsIngressControllerSpec extends Specification {
     @Autowired
     @Qualifier("mockGitUtil")
     private GitUtil gitUtil
-//    @Autowired
-//    @Qualifier("mockEnvListener")
-//    private EnvListener envListener
 
+    @Qualifier("mockBaseServiceClientOperator")
     @Autowired
-    private IamService iamService
+    private BaseServiceClientOperator mockBaseServiceClientOperator
+
+    @Qualifier("mockGitlabServiceClientOperator")
     @Autowired
-    private GitlabServiceClientOperator gitlabServiceClientOperator
+    private GitlabServiceClientOperator mockGitlabServiceClientOperator
+
     @Autowired
     private GitlabGroupMemberService gitlabGroupMemberService
 
-    BaseServiceClient baseServiceClient = Mockito.mock(BaseServiceClient)
-    GitlabServiceClient gitlabServiceClient = Mockito.mock(GitlabServiceClient.class)
-    DevopsEnvironmentService devopsEnvironmentService=Mockito.mock(DevopsEnvironmentService.class)
+    DevopsEnvironmentService devopsEnvironmentService = Mockito.mock(DevopsEnvironmentService.class)
     @Shared
     DevopsIngressVO devopsIngressDTO = new DevopsIngressVO()
     @Shared
     DevopsIngressPathVO devopsIngressPathDTO = new DevopsIngressPathVO()
     @Shared
-    DevopsEnvironmentDTO    devopsEnvironmentDO = new DevopsEnvironmentDTO()
+    DevopsEnvironmentDTO devopsEnvironmentDO = new DevopsEnvironmentDTO()
     @Shared
     DevopsServiceDTO devopsServiceDO = new DevopsServiceDTO()
     @Shared
@@ -184,27 +183,20 @@ class DevopsIngressControllerSpec extends Specification {
         devopsEnvCommandMapper.insert(devopsEnvCommandDO)
         devopsEnvFileResourceMapper.insert(devopsEnvFileResourceDO)
 
-        DependencyInjectUtil.setAttribute(iamService, "baseServiceClient", baseServiceClient)
-        DependencyInjectUtil.setAttribute(gitlabServiceClientOperator, "gitlabServiceClient", gitlabServiceClient)
-        DependencyInjectUtil.setAttribute(gitlabGroupMemberService, "gitlabServiceClientOperator", gitlabServiceClientOperator)
-
         ProjectDTO projectDO = new ProjectDTO()
         projectDO.setId(1L)
         projectDO.setCode("pro")
         projectDO.setOrganizationId(1L)
-        ResponseEntity<ProjectDTO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
-        Mockito.doReturn(responseEntity).when(baseServiceClient).queryIamProject(1L)
+        Mockito.doReturn(projectDO).when(mockBaseServiceClientOperator).queryIamProjectById(eq(1L))
 
         OrganizationDTO organizationDO = new OrganizationDTO()
         organizationDO.setId(1L)
         organizationDO.setCode("org")
-        ResponseEntity<OrganizationDTO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
-        Mockito.doReturn(responseEntity1).when(baseServiceClient).queryOrganizationById(1L)
+        Mockito.doReturn(organizationDO).when(mockBaseServiceClientOperator).queryOrganizationById(eq(1L))
 
         MemberDTO memberDO = new MemberDTO()
         memberDO.setAccessLevel(AccessLevel.OWNER.toValue())
-        ResponseEntity<MemberDTO> responseEntity2 = new ResponseEntity<>(memberDO, HttpStatus.OK)
-        Mockito.when(gitlabServiceClient.queryGroupMember(anyInt(), anyInt())).thenReturn(responseEntity2)
+        Mockito.when(mockGitlabServiceClientOperator.queryGroupMember(anyInt(), anyInt())).thenReturn(memberDO)
 
         List<RoleVO> roleDTOList = new ArrayList<>()
         RoleVO roleDTO = new RoleVO()
@@ -215,19 +207,11 @@ class DevopsIngressControllerSpec extends Specification {
         projectWithRoleDTO.setName("pro")
         projectWithRoleDTO.setRoles(roleDTOList)
         projectWithRoleDTOList.add(projectWithRoleDTO)
-        PageInfo<ProjectWithRoleVO> projectWithRoleDTOPage = new PageInfo<>(projectWithRoleDTOList)
-        ResponseEntity<PageInfo<ProjectWithRoleVO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
-        Mockito.doReturn(pageResponseEntity).when(baseServiceClient).listProjectWithRole(anyLong(), anyInt(), anyInt())
-
-        RepositoryFileDTO repositoryFile = new RepositoryFileDTO()
-        repositoryFile.setFilePath("testFilePath")
-        ResponseEntity<RepositoryFileDTO> responseEntity3 = new ResponseEntity<>(repositoryFile, HttpStatus.OK)
-        Mockito.when(gitlabServiceClient.createFile(anyInt(), anyString(), anyString(), anyString(), anyInt())).thenReturn(responseEntity3)
-        Mockito.when(gitlabServiceClient.updateFile(anyInt(), anyString(), anyString(), anyString(), anyInt())).thenReturn(responseEntity3)
+        Mockito.doReturn(projectWithRoleDTOList).when(mockBaseServiceClientOperator).listProjectWithRoleDTO(anyLong())
     }
 
 
-    def  cleanup(){
+    def cleanup() {
         // 删除cert
         List<CertificationDTO> list = devopsCertificationMapper.selectAll()
         if (list != null && !list.isEmpty()) {
@@ -279,6 +263,7 @@ class DevopsIngressControllerSpec extends Specification {
         }
 
     }
+
     def "Create"() {
         given: '初始化参数'
 //        devopsEnvironmentMapper.insert(devopsEnvironmentDO)
@@ -327,7 +312,7 @@ class DevopsIngressControllerSpec extends Specification {
 
         envUtil.checkEnvConnection(_ as Long) >> null
         gitUtil.cloneBySsh(_ as String, _ as String) >> null
-        devopsEnvironmentService.checkEnv(any(DevopsEnvironmentDTO.class), any(UserAttrDTO.class));
+        devopsEnvironmentService.checkEnv(any(DevopsEnvironmentDTO.class), any(UserAttrDTO.class))
 
         and: "mock handDevopsEnvGitRepository"
         envUtil.handDevopsEnvGitRepository(_ as Long, _ as String, _ as String) >> "src/test/gitops/org/pro/env"

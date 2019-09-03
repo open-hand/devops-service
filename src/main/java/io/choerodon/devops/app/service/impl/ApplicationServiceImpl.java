@@ -220,6 +220,8 @@ public class ApplicationServiceImpl implements ApplicationService {
             }
         }
 
+        localOriginalRepo.close();
+
 
         // 删除所有commits纪录
         File gitDir = new File(workingDir, ".git");
@@ -259,6 +261,8 @@ public class ApplicationServiceImpl implements ApplicationService {
             logger.warn("The exception is: ", e);
             FileUtil.deleteDirectory(workingDirFile);
             return;
+        } finally {
+            git.close();
         }
 
         // 清理本地目录

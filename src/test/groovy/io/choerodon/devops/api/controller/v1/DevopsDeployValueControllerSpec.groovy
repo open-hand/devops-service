@@ -1,13 +1,12 @@
 package io.choerodon.devops.api.controller.v1
 
-import static org.mockito.ArgumentMatchers.any
-import static org.mockito.ArgumentMatchers.anyLong
-import static org.mockito.ArgumentMatchers.eq
+import static org.mockito.ArgumentMatchers.*
 
 import com.alibaba.fastjson.JSONArray
 import com.github.pagehelper.PageInfo
 import org.powermock.api.mockito.PowerMockito
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.context.annotation.Import
@@ -17,24 +16,15 @@ import spock.lang.Stepwise
 import spock.lang.Subject
 
 import io.choerodon.core.exception.ExceptionResponse
-import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.DevopsDeployValueVO
 import io.choerodon.devops.app.service.DevopsDeployValueService
-import io.choerodon.devops.infra.dto.AppServiceDTO
-import io.choerodon.devops.infra.dto.AppServiceInstanceDTO
-import io.choerodon.devops.infra.dto.DevopsDeployValueDTO
-import io.choerodon.devops.infra.dto.DevopsEnvUserPermissionDTO
-import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO
+import io.choerodon.devops.infra.dto.*
 import io.choerodon.devops.infra.dto.iam.IamUserDTO
 import io.choerodon.devops.infra.dto.iam.ProjectDTO
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler
-import io.choerodon.devops.infra.mapper.AppServiceInstanceMapper
-import io.choerodon.devops.infra.mapper.AppServiceMapper
-import io.choerodon.devops.infra.mapper.DevopsDeployValueMapper
-import io.choerodon.devops.infra.mapper.DevopsEnvUserPermissionMapper
-import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper
+import io.choerodon.devops.infra.mapper.*
 
 /**
  *
@@ -71,7 +61,9 @@ class DevopsDeployValueControllerSpec extends Specification {
     @Autowired
     private DevopsEnvUserPermissionMapper devopsEnvUserPermissionMapper
 
-    private BaseServiceClientOperator mockBaseServiceClientOperator = PowerMockito.mock(BaseServiceClientOperator)
+    @Qualifier("mockBaseServiceClientOperator")
+    @Autowired
+    private BaseServiceClientOperator mockBaseServiceClientOperator
 
     @Shared
     private DevopsDeployValueDTO deployValueDTO
@@ -92,8 +84,6 @@ class DevopsDeployValueControllerSpec extends Specification {
 
     void setup() {
         if (isToInit) {
-            DependencyInjectUtil.setAttribute(deployValueService, "baseServiceClientOperator", mockBaseServiceClientOperator)
-
             mock()
 
             devopsEnvironmentDTO = new DevopsEnvironmentDTO()
@@ -153,8 +143,6 @@ class DevopsDeployValueControllerSpec extends Specification {
 
     void cleanup() {
         if (isToClean) {
-            DependencyInjectUtil.restoreDefaultDependency(deployValueService, "baseServiceClientOperator")
-
             deployValueMapper.delete(null)
             appServiceInstanceMapper.delete(null)
             appServiceMapper.delete(null)
