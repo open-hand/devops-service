@@ -22,7 +22,7 @@ export default function StatusTag({ name, color, colorCode, style, ellipsis, err
     creating: '#4d90fe',
     disconnect: '#ff9915',
     executing: '#4d90fe',
-    terminated: '#ff7043',
+    stop: '#ff7043',
   }), []);
   const defaultColor = 'rgba(0, 0, 0, 0.28)';
 

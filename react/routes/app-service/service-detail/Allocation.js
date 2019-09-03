@@ -28,6 +28,7 @@ const Allocation = observer((props) => {
     nonePermissionDs,
     params,
     permissionStore,
+    AppState: { currentMenuType: { id } },
   } = useServiceDetailStore();
 
   useEffect(() => {
@@ -36,6 +37,7 @@ const Allocation = observer((props) => {
 
   function refresh() {
     permissionDs.query();
+    detailDs.query();
   }
 
   function renderTime({ value }) {
@@ -49,7 +51,7 @@ const Allocation = observer((props) => {
   function renderAction({ record }) {
     if (detailDs.current.get('skipCheckPermission') || record.get('role') === 'owner') return;
     const actionData = [{
-      service: [],
+      service: ['devops-service.app-service.deletePermission'],
       text: formatMessage({ id: 'delete' }),
       action: handleDelete,
     }];
@@ -62,23 +64,24 @@ const Allocation = observer((props) => {
     Modal.open({
       key: modalKey1,
       title: formatMessage({ id: `${intlPrefix}.detail` }),
-      children: <ServicePermission store={permissionStore} record={detailDs.current} nonePermissionDS={nonePermissionDs} intlPrefix={intlPrefix} prefixCls={prefixCls} formatMessage={formatMessage} />,
+      children: <ServicePermission
+        dataSet={permissionDs}
+        record={detailDs.current}
+        nonePermissionDS={nonePermissionDs}
+        intlPrefix={intlPrefix}
+        prefixCls={prefixCls}
+        formatMessage={formatMessage}
+        projectId={id}
+        refresh={refresh}
+      />,
       drawer: true,
       style: modalStyle,
-      onOk: () => {
-        if (!permissionStore.addUsers(params)) {
-          return false;
-        }
-        permissionDs.query();
-        detailDs.query();
-        return true;
-      },
       okText: formatMessage({ id: 'save' }),
     });
   }
 
   function handleDelete() {
-    permissionDs.current.delete();
+    permissionDs.delete(permissionDs.current);
   }
 
   return (

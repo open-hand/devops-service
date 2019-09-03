@@ -13,6 +13,8 @@ const Certificate = asyncRouter(() => import('./routes/certificate'));
 const Cluster = asyncRouter(() => import('./routes/cluster'));
 const Environment = asyncRouter(() => import('./routes/environment'));
 const Reports = asyncRouter(() => import('./routes/reports'));
+const Repository = asyncRouter(() => import('./routes/repository'));
+
 function DEVOPSIndex({ match, AppState: { currentLanguage: language } }) {
   const IntlProviderAsync = asyncLocaleProvider(language, () => import(`./locale/${language}`),);
   return (
@@ -28,6 +30,7 @@ function DEVOPSIndex({ match, AppState: { currentLanguage: language } }) {
           <Route path={`${match.url}/cert-management`} component={Certificate} />
           <Route path={`${match.url}/cluster-management`} component={Cluster} />
           <Route path={`${match.url}/reports`} component={Reports} />
+          <Route path={`${match.url}/repository`} component={Repository} />
           <Route path="*" component={nomatch} />
         </Switch>
         <ModalContainer />

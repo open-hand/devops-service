@@ -31,10 +31,10 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const shareLevelDs = useMemo(() => new DataSet(OptionsDataSet()), []);
 
     const versionDs = useMemo(() => new DataSet(VersionDataSet(formatMessage, projectId, id)), [formatMessage, id, projectId]);
-    const permissionDs = useMemo(() => new DataSet(AllocationDataSet(formatMessage, projectId, id)), [formatMessage, id, projectId]);
+    const permissionDs = useMemo(() => new DataSet(AllocationDataSet(formatMessage, intlPrefix, projectId, id)), [formatMessage, id, projectId]);
     const shareDs = useMemo(() => new DataSet(ShareDataSet(intlPrefix, formatMessage, projectId, id)), [formatMessage, id, projectId]);
     const detailDs = useMemo(() => new DataSet(ListDataSet(intlPrefix, formatMessage, projectId)), [intlPrefix, formatMessage, projectId]);
-    const nonePermissionDs = useMemo(() => new DataSet(NonePermissionDs()));
+    const nonePermissionDs = useMemo(() => new DataSet(OptionsDataSet()), []);
     const permissionStore = usePermissionStore();
 
 

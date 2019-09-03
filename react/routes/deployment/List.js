@@ -185,8 +185,8 @@ const Deployment = withRouter(observer((props) => {
     const message = newValue === 'stop' ? 'terminated' : newValue;
     return (
       <StatusTag
-        colorCode={newValue}
-        name={formatMessage({ id: message })}
+        colorCode={newValue || ''}
+        name={message ? formatMessage({ id: message }) : 'unKnow'}
         style={statusTagsStyle}
       />
     );
@@ -242,9 +242,14 @@ const Deployment = withRouter(observer((props) => {
     } else {
       actionData = [{
         text: formatMessage({ id: `${intlPrefix}.view.instance` }),
+        service: [],
       }];
     }
     return (<Action data={actionData} />);
+  }
+
+  function closePendingCheck(isLoad) {
+    isLoad && refresh();
   }
 
   return (
@@ -307,7 +312,7 @@ const Deployment = withRouter(observer((props) => {
             id={listDs.current.get('deployId')}
             name={listDs.current.get('pipelineName')}
             checkData={listDs.current.get('pipelineDetailVO')}
-            onClose={this.closePendingCheck}
+            onClose={closePendingCheck}
             PipelineRecordStore={pipelineStore}
           />
         )}

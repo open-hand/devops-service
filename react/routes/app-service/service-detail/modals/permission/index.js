@@ -1,81 +1,101 @@
-import React, { useState, useReducer, useEffect } from 'react';
+import React, { Fragment, useEffect } from 'react';
 import { FormattedMessage } from 'react-intl';
-import { Radio } from 'choerodon-ui';
 import { observer } from 'mobx-react-lite';
-import _ from 'lodash';
-import './index.less';
-import { Button, Select, Form, message } from 'choerodon-ui';
-import useStore from '../stores/useStore';
+import map from 'lodash/map';
+import { SelectBox, Select, Form } from 'choerodon-ui/pro';
+import { Button } from 'choerodon-ui';
 
+import './index.less';
 
 const { Option } = Select;
-const RadioGroup = Radio.Group;
 
-
-export default observer(({ store, record, formatMessage, prefixCls, intlPrefix, nonePermissionDS }) => {
-  let nonePermissionRecord;
+export default observer(({ dataSet, refresh, record, projectId, formatMessage, prefixCls, intlPrefix, nonePermissionDS, modal }) => {
   useEffect(() => {
+    dataSet.getField('iamUserId').set('options', nonePermissionDS);
     nonePermissionDS.query();
   }, []);
-  const { checked, setChecked, permissionUsers, setPermissionUsers } = store;
+
+  useEffect(() => {
+    dataSet.transport.create = ({ data }) => {
+      const res = {
+        skipCheckPermission: record.get('skipCheckPermission'),
+        userIds: map(data, 'iamUserId'),
+      };
+
+      return ({
+        url: `/devops/v1/projects/${projectId}/app_service/${record.get('id')}/update_permission`,
+        method: 'post',
+        data: res,
+      });
+    };
+  }, []);
+
+  useEffect(() => {
+    if (record.get('skipCheckPermission')) {
+      dataSet.reset();
+    } else {
+      handleCreate();
+    }
+  }, [record.get('skipCheckPermission')]);
+
+  modal.handleOk(async () => {
+    try {
+      if (await dataSet.submit() !== false) {
+        refresh();
+      } else {
+        return false;
+      }
+    } catch (e) {
+      return false;
+    }
+  });
+
+  modal.handleCancel(() => {
+    dataSet.reset();
+  });
+
+  function handleDelete(current) {
+    dataSet.remove(current);
+  }
+
+  function handleCreate() {
+    dataSet.create();
+  }
+
   return (
-    <div>
-      <RadioGroup
-        label={<FormattedMessage id="app.authority.label" />}
-        onChange={() => { setChecked(!checked); }}
-        value={checked}
-        className={`${prefixCls}-RadioGroup`}
-      >
-        <Radio value>
-          <FormattedMessage id="app.mbr.all" />
-        </Radio>
-        <Radio value={false}>
-          <FormattedMessage id="app.mbr.part" />
-        </Radio>  
-      </RadioGroup>
-      
-      {checked ? null 
-        : (
-          <Form>
-            {permissionUsers.map((value, index) => (
-              <div className="add-item">
-                <Select
-                  label={formatMessage({ id: `${intlPrefix}.mbr` })}
-                  searchable
-                  required
-                  value={value}
-                  key={value}
-                  onChange={(v) => setPermissionUsers({ type: 'change', value: v, index })}
-                >
-                  {_.map(nonePermissionDS.toData(), ({ iamUserId: id, realName: name }) => (
-                    <Option value={id} key={id}>{name}</Option>
-                  ))}
-                </Select>
-                <Button
-                  shape="circle"
-                  icon="delete"
-                  onClick={() => setPermissionUsers({ type: 'sub', value, index })}
-                />
-              </div>
-            ))}
-            <Button
-              icon="add"
-              type="primary"
-              onClick={() => { setPermissionUsers({ type: 'add' }); }}
-            >
-              <FormattedMessage id={`${intlPrefix}.add.mbr`} />
-            </Button>
-          </Form>)}
+    <div className={`${prefixCls}-permission-form`}>
+      <Form record={record}>
+        <SelectBox name="skipCheckPermission">
+          <Option value>{formatMessage({ id: `${intlPrefix}.user.all` })}</Option>
+          <Option value={false}>{formatMessage({ id: `${intlPrefix}.user.some` })}</Option>
+        </SelectBox>
+      </Form>
+      {!record.get('skipCheckPermission') && (
+        <Fragment>
+          {map(dataSet.created, (userRecord) => (
+            <div className={`${prefixCls}-permission-form-item`}>
+              <Form record={userRecord}>
+                <Select name="iamUserId" />
+              </Form>
+              <Button
+                icon="delete"
+                shape="circle"
+                onClick={() => handleDelete(userRecord)}
+                disabled={dataSet.created.length === 1}
+                className={`${prefixCls}-permission-form-button`}
+              />
+            </div>
+          ))}
+          <Button
+            icon="add"
+            type="primary"
+            onClick={handleCreate}
+          >
+            <FormattedMessage id={`${intlPrefix}.add.mbr`} />
+          </Button>
+        </Fragment>
+      )}
     </div>
 
   );
 });
-
-function handleErrorMessage(msg) {
-  message.destroy();
-  message.config({
-    top: 20,
-    duration: 1.5,
-  });
-  message.error(msg, undefined, undefined, 'rightTop');
-}
