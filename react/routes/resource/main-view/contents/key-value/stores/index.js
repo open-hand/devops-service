@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useMemo } from 'react';
 import { DataSet } from 'choerodon-ui/pro';
 import { inject } from 'mobx-react';
+import { observer } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
 import TableDataSet from './TableDataSet';
 import { useResourceStore } from '../../../../stores';
@@ -19,10 +20,9 @@ export function useKeyValueStore() {
 }
 
 export const StoreProvider = injectIntl(inject('AppState')(
-  (props) => {
+  observer((props) => {
     const { AppState: { currentMenuType: { id } }, children, contentType } = props;
     const {
-      intlPrefix,
       intl: { formatMessage },
       resourceStore: { getSelectedMenu: { parentId } },
     } = useResourceStore();
@@ -33,7 +33,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
       itemType,
       projectId: id,
       envId: parentId,
-    })), [formatMessage, id, itemType, parentId]);
+    })), [id, itemType, parentId]);
 
     const itemData = {
       configMap: {
@@ -65,5 +65,5 @@ export const StoreProvider = injectIntl(inject('AppState')(
         {children}
       </Store.Provider>
     );
-  }
+  })
 ));

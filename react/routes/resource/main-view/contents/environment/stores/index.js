@@ -19,9 +19,15 @@ export function useEnvironmentStore() {
 
 export const StoreProvider = injectIntl(inject('AppState')(
   observer((props) => {
-    const { intl: { formatMessage }, AppState: { currentMenuType: { id } }, children } = props;
-    const { intlPrefix, resourceStore } = useResourceStore();
-    const { getSelectedMenu: { menuId } } = resourceStore;
+    const {
+      intl: { formatMessage },
+      AppState: { currentMenuType: { id: projectId } },
+      children,
+    } = props;
+    const {
+      intlPrefix,
+      resourceStore: { getSelectedMenu: { id } },
+    } = useResourceStore();
 
     const tabs = useMemo(() => ({
       SYNC_TAB: 'sync',
@@ -32,32 +38,31 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const permissionsDs = useMemo(() => new DataSet(PermissionsDataSet({
       formatMessage,
       intlPrefix,
-      projectId: id,
-      id: menuId,
-    })), [id, menuId]);
+      projectId,
+      id,
+    })), [projectId, id]);
     const gitopsLogDs = useMemo(() => new DataSet(GitopsLogDataSet({ formatMessage, intlPrefix })), []);
     const gitopsSyncDs = useMemo(() => new DataSet(GitopsSyncDataSet()), []);
     const retryDs = useMemo(() => new DataSet(RetryDataSet()), []);
 
-
     useEffect(() => {
-      retryDs.transport.read.url = `/devops/v1/projects/${id}/envs/${menuId}/retry`;
-      baseInfoDs.transport.read.url = `/devops/v1/projects/${id}/envs/${menuId}/info`;
+      retryDs.transport.read.url = `/devops/v1/projects/${projectId}/envs/${id}/retry`;
+      baseInfoDs.transport.read.url = `/devops/v1/projects/${projectId}/envs/${id}/info`;
       baseInfoDs.query();
-    }, [id, menuId]);
+    }, [projectId, id]);
 
     const tabKey = envStore.getTabKey;
 
     useEffect(() => {
       if (tabKey === tabs.SYNC_TAB) {
-        gitopsSyncDs.transport.read.url = `/devops/v1/projects/${id}/envs/${menuId}/status`;
+        gitopsSyncDs.transport.read.url = `/devops/v1/projects/${projectId}/envs/${id}/status`;
         gitopsSyncDs.query();
-        gitopsLogDs.transport.read.url = `/devops/v1/projects/${id}/envs/${menuId}/error_file/page_by_env`;
+        gitopsLogDs.transport.read.url = `/devops/v1/projects/${projectId}/envs/${id}/error_file/page_by_env`;
         gitopsLogDs.query();
       } else if (tabKey === tabs.ASSIGN_TAB) {
         permissionsDs.query();
       }
-    }, [id, menuId, tabKey]);
+    }, [projectId, id, tabKey]);
 
     const value = {
       ...props,

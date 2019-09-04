@@ -19,6 +19,7 @@ const EnvModals = observer(() => {
     intlPrefix,
     intl: { formatMessage },
     resourceStore,
+    treeDs,
   } = useResourceStore();
   const {
     baseDs,
@@ -41,12 +42,12 @@ const EnvModals = observer(() => {
     const record = baseDs.current;
     if (!record) return false;
 
-    const { menuId, parentId } = resourceStore.getSelectedMenu;
+    const { id, parentId } = resourceStore.getSelectedMenu;
     const appServiceVersionId = record.get('appServiceVersionId');
-    istStore.loadValue(projectId, menuId, appServiceVersionId);
+    istStore.loadValue(projectId, id, appServiceVersionId);
 
     const deployVo = {
-      id: menuId,
+      id,
       parentId,
       projectId,
       appServiceVersionId,
@@ -75,10 +76,10 @@ const EnvModals = observer(() => {
     const record = baseDs.current;
     if (!record) return false;
 
-    const { menuId, parentId } = resourceStore.getSelectedMenu;
+    const { id, parentId } = resourceStore.getSelectedMenu;
     const appServiceVersionId = record.get('appServiceVersionId');
     const deployVo = {
-      id: menuId,
+      id,
       parentId,
       versionId: appServiceVersionId,
     };
@@ -129,10 +130,11 @@ const EnvModals = observer(() => {
 
   function refresh() {
     const activeKey = istStore.getTabKey;
-    const { menuId } = resourceStore.getSelectedMenu;
-
+    const { id } = resourceStore.getSelectedMenu;
+    baseDs.query();
+    treeDs.query();
     if (activeKey === DETAILS_TAB) {
-      detailsStore.loadResource(projectId, menuId);
+      detailsStore.loadResource(projectId, id);
     } else {
       const ds = getDs(activeKey);
       ds && ds.query();
@@ -140,9 +142,9 @@ const EnvModals = observer(() => {
   }
 
   async function redeploy() {
-    const { menuId } = resourceStore.getSelectedMenu;
+    const { id } = resourceStore.getSelectedMenu;
     try {
-      const result = await istStore.redeploy(projectId, menuId);
+      const result = await istStore.redeploy(projectId, id);
       if (handlePromptError(result, false)) {
         refresh();
       }
@@ -152,8 +154,8 @@ const EnvModals = observer(() => {
   }
 
   function getHeader() {
-    const { menuId } = resourceStore.getSelectedMenu;
-    const btnDisabled = !menuId;
+    const { id } = resourceStore.getSelectedMenu;
+    const btnDisabled = !id;
 
     const buttons = [{
       name: formatMessage({ id: `${intlPrefix}.modal.values` }),

@@ -13,19 +13,11 @@ const Content = observer(() => {
   const {
     prefixCls,
     intlPrefix,
-    resourceStore: { getSelectedMenu: { menuId, parentId } },
   } = useResourceStore();
-  const {
-    detailDs,
-    intl: { formatMessage },
-  } = useCertDetailStore();
+  const { detailDs } = useCertDetailStore();
 
   const record = detailDs.current;
   if (!record) return <span>loading</span>;
-
-  function refresh() {
-    detailDs.query();
-  }
 
   return (
     <div className={`${prefixCls}-certificate-detail`}>

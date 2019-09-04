@@ -1,6 +1,5 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { Action } from '@choerodon/master';
 import { Table } from 'choerodon-ui/pro';
 import StatusIcon from '../../../../../components/StatusIcon';
 import AppName from '../../../../../components/appName';
@@ -25,10 +24,6 @@ const Content = observer(() => {
     istListDs,
     intl: { formatMessage },
   } = useIstListStore();
-
-  function refresh() {
-    istListDs.query();
-  }
 
   function renderName({ value, record }) {
     return (
@@ -55,10 +50,6 @@ const Content = observer(() => {
   function renderPods({ record }) {
     const dataSource = record.toData();
     return <PodStatus dataSource={dataSource} />;
-  }
-
-  function handleDelete() {
-    istListDs.delete(istListDs.current);
   }
 
   return (

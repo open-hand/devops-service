@@ -1,24 +1,21 @@
-/* eslint-disable no-plusplus */
 import omit from 'lodash/omit';
 import isEmpty from 'lodash/isEmpty';
 import pick from 'lodash/pick';
-import map from 'lodash/map';
+import forEach from 'lodash/forEach';
 import { itemTypeMappings, viewTypeMappings, RES_TYPES, ENV_KEYS } from './mappings';
 
 const { IST_VIEW_TYPE, RES_VIEW_TYPE } = viewTypeMappings;
 const { ENV_ITEM, APP_ITEM, IST_ITEM } = itemTypeMappings;
 
-function formatResource(value, expandsKeys) {
-  if (isEmpty(value)) return [];
+function createResourceRecord({ dataSet, expandsKeys }) {
+  const value = dataSet.toData();
+  dataSet.removeAll();
 
-  const flatted = [];
-  for (let i = 0; i < value.length; i++) {
-    const node = value[i];
+  forEach(value, (node) => {
     const envInfo = pick(node, ENV_KEYS);
     const envId = envInfo.id;
     const envKey = String(envId);
-
-    flatted.push({
+    dataSet.create({
       ...envInfo,
       key: envKey,
       itemType: ENV_ITEM,
@@ -26,82 +23,71 @@ function formatResource(value, expandsKeys) {
       parentId: '0',
     });
 
-    for (let j = 0; j < RES_TYPES.length; j++) {
-      const childType = RES_TYPES[j];
-      const child = node[childType];
-      const groupKey = `${envId}-${childType}`;
+    forEach(RES_TYPES, (type, index) => {
+      const child = node[type];
+      const groupKey = `${envId}-${type}`;
       const group = {
-        id: j,
-        name: childType,
+        id: index,
+        name: type,
         key: groupKey,
         isGroup: true,
-        itemType: `group_${childType}`,
+        itemType: `group_${type}`,
         parentId: String(envId),
         expand: expandsKeys.includes(groupKey),
       };
 
-      const items = map(child, (item) => ({
-        ...item,
-        name: childType === 'instances' ? item.code : item.name,
-        key: `${envId}-${item.id}-${childType}`,
-        itemType: childType,
-        parentId: `${envId}-${childType}`,
-        expand: false,
-      }));
-      flatted.push(group, ...items);
-    }
-  }
+      dataSet.create(group);
 
-  return flatted;
+      forEach(child, (item) => {
+        dataSet.create({
+          ...item,
+          name: type === 'instances' ? item.code : item.name,
+          key: `${envId}-${item.id}-${type}`,
+          itemType: type,
+          parentId: `${envId}-${type}`,
+          expand: false,
+        });
+      });
+    });
+  });
 }
 
-function formatInstance(value, expandsKeys) {
-  if (isEmpty(value)) return [];
-
-  const flatted = [];
-
-  function flatData(data, prevKey = '', itemType = ENV_ITEM) {
-    for (let i = 0; i < data.length; i++) {
-      const node = data[i];
-      const peerNode = omit(node, ['apps', 'instances']);
-      const key = prevKey ? `${prevKey}-${node.id}` : String(node.id);
-
-      flatted.push({
-        ...peerNode,
-        name: node.name || node.code,
+function createInstanceRecord({ dataSet, expandsKeys }) {
+  const value = dataSet.toData();
+  dataSet.removeAll();
+  function recursiveCreate(data, prevKey = '', itemType = ENV_ITEM) {
+    forEach(data, (item) => {
+      const pureNode = omit(item, ['apps', 'instances']);
+      const key = prevKey ? `${prevKey}-${item.id}` : String(item.id);
+      dataSet.create({
+        ...pureNode,
+        name: item.name || item.code,
         expand: expandsKeys.includes(key),
         parentId: prevKey || '0',
         itemType,
         key,
       });
-      const children = node.apps || node.instances;
-
+      const children = item.apps || item.instances;
       if (!isEmpty(children)) {
-        const type = node.apps ? APP_ITEM : IST_ITEM;
-        flatData(children, key, type);
+        const type = item.apps ? APP_ITEM : IST_ITEM;
+        recursiveCreate(children, key, type);
       }
-    }
+    });
   }
-
-  flatData(value);
-
-  return flatted;
+  recursiveCreate(value);
 }
 
 function handleSelect(record, store) {
   if (record) {
-    const menuId = record.get('id');
-    const menuType = record.get('itemType');
-    const parentId = record.get('parentId');
-    const key = record.get('key');
-    store.setSelectedMenu({ menuId, menuType, parentId, key });
+    const data = record.toData();
+    store.setSelectedMenu(data);
   }
 }
 
 export default (store, type) => {
   const formatMaps = {
-    [IST_VIEW_TYPE]: formatInstance,
-    [RES_VIEW_TYPE]: formatResource,
+    [IST_VIEW_TYPE]: createInstanceRecord,
+    [RES_VIEW_TYPE]: createResourceRecord,
   };
   return {
     paging: false,
@@ -122,27 +108,16 @@ export default (store, type) => {
       },
       unSelect: ({ record }) => {
         // 禁用取消选中
-        // 实际上依然会取消只是又重新选中
         record.isSelected = true;
       },
       load: ({ dataSet }) => {
-        const record = dataSet.current;
-        handleSelect(record, store);
+        const expandsKeys = store.getExpandedKeys;
+        formatMaps[type]({ dataSet, expandsKeys });
       },
     },
     transport: {
       read: {
         method: 'get',
-        // TODO: 让后端返回需要的数据，前端不再做处理
-        //   或者添加加载错误处理
-        transformResponse(response) {
-          const res = JSON.parse(response);
-          const expandsKeys = store.getExpandedKeys;
-          const result = formatMaps[type](res, expandsKeys);
-          return {
-            list: result,
-          };
-        },
       },
     },
   };

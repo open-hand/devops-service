@@ -14,18 +14,16 @@ export function useSecretDetailStore() {
 
 export const StoreProvider = injectIntl(inject('AppState')(
   observer((props) => {
-    const { AppState: { currentMenuType: { id } }, children } = props;
+    const { AppState: { currentMenuType: { id: projectId } }, children } = props;
     const {
-      intlPrefix,
-      intl: { formatMessage },
-      resourceStore: { getSelectedMenu: { menuId } },
+      resourceStore: { getSelectedMenu: { id } },
     } = useResourceStore();
     const detailDs = useMemo(() => new DataSet(DetailDataSet()), []);
 
     useEffect(() => {
-      detailDs.transport.read.url = `/devops/v1/projects/${id}/secret/${menuId}?to_decode=false`;
+      detailDs.transport.read.url = `/devops/v1/projects/${projectId}/secret/${id}?to_decode=false`;
       detailDs.query();
-    }, [id, menuId]);
+    }, [projectId, id]);
 
     const value = {
       ...props,

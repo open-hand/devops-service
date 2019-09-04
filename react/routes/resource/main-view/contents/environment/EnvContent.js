@@ -1,5 +1,6 @@
 import React, { Fragment, lazy, Suspense } from 'react';
 import { observer } from 'mobx-react-lite';
+import { Permission } from '@choerodon/master';
 import { Tabs, Spin } from 'choerodon-ui';
 import { useEnvironmentStore } from './stores';
 import { useResourceStore } from '../../../stores';
@@ -48,6 +49,7 @@ const EnvContent = observer(() => {
     }
     return null;
   }
+
   return (
     <div className={`${prefixCls}-environment`}>
       <PageTitle>

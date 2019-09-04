@@ -12,10 +12,7 @@ import './index.less';
 const TIMEOUT_TIME = 50000;
 
 const Content = observer(() => {
-  const {
-    prefixCls,
-    resourceStore: { getSelectedMenu: { menuId, parentId } },
-  } = useResourceStore();
+  const { prefixCls } = useResourceStore();
   const [value, setValue] = useState('');
   const { detailDs } = useCustomDetailStore();
   let ws;

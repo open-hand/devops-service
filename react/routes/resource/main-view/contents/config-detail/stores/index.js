@@ -14,18 +14,16 @@ export function useConfigDetailStore() {
 
 export const StoreProvider = injectIntl(inject('AppState')(
   observer((props) => {
-    const { AppState: { currentMenuType: { id } }, children } = props;
+    const { AppState: { currentMenuType: { id: projectId } }, children } = props;
     const {
-      intlPrefix,
-      intl: { formatMessage },
-      resourceStore: { getSelectedMenu: { menuId } },
+      resourceStore: { getSelectedMenu: { id } },
     } = useResourceStore();
     const detailDs = useMemo(() => new DataSet(DetailDataSet()), []);
 
     useEffect(() => {
-      detailDs.transport.read.url = `/devops/v1/projects/${id}/config_maps/${menuId}`;
+      detailDs.transport.read.url = `/devops/v1/projects/${projectId}/config_maps/${id}`;
       detailDs.query();
-    }, [id, menuId]);
+    }, [projectId, id]);
 
     const value = {
       ...props,

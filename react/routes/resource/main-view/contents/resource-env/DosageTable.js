@@ -11,10 +11,10 @@ export default observer(() => {
   const {
     prefixCls,
     intlPrefix,
-    resourceStore: { getSelectedMenu: { menuId } },
+    resourceStore: { getSelectedMenu: { id } },
   } = useResourceStore();
   const {
-    AppState: { currentMenuType: { id } },
+    AppState: { currentMenuType: { id: projectId } },
     intl: { formatMessage },
     tableDs,
   } = useREStore();
@@ -22,7 +22,7 @@ export default observer(() => {
   const [sortType, setSortType] = useState('memory');
 
   useEffect(() => {
-    tableDs.transport.read.url = `/devops/v1/projects/${id}/pods/pod_ranking?env_id=${menuId}&sort=${sortType}`;
+    tableDs.transport.read.url = `/devops/v1/projects/${projectId}/pods/pod_ranking?env_id=${id}&sort=${sortType}`;
     tableDs.query();
   }, [sortType]);
 

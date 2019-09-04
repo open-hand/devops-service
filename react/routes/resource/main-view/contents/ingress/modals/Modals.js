@@ -1,8 +1,5 @@
-import React, { Fragment, useMemo, useCallback, useEffect, useState } from 'react';
+import React, { Fragment, useMemo, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Modal } from 'choerodon-ui/pro';
-import { Button } from 'choerodon-ui';
-import { FormattedMessage } from 'react-intl';
 import HeaderButtons from '../../../../../../components/header-buttons';
 import { useResourceStore } from '../../../../stores';
 import { useModalStore } from './stores';
@@ -10,14 +7,9 @@ import { useIngressStore } from '../stores';
 import DomainModal from '../../application/modals/domain';
 import { useMainStore } from '../../../stores';
 
-const modalStyle = {
-  width: '26%',
-};
-
 const EnvModals = observer(() => {
   const {
     intlPrefix,
-    prefixCls,
     intl: { formatMessage },
     resourceStore,
   } = useResourceStore();
@@ -25,11 +17,8 @@ const EnvModals = observer(() => {
     ingressDs,
   } = useIngressStore();
   const { ingressStore } = useMainStore();
-  const {
-    permissions,
-    AppState: { currentMenuType: { projectId } },
-  } = useModalStore();
-  const { menuId, parentId } = resourceStore.getSelectedMenu;
+  const { permissions } = useModalStore();
+  const { parentId } = resourceStore.getSelectedMenu;
 
   const [showModal, setShowModal] = useState(false);
 

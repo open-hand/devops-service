@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback, useEffect, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Modal } from 'choerodon-ui/pro';
 import HeaderButtons from '../../../../../../components/header-buttons';
@@ -9,9 +9,7 @@ import KeyValueModal from './key-value';
 import DomainModal from './domain';
 import CreateNetwork from './network';
 
-const modalKey1 = Modal.key();
-const modalKey2 = Modal.key();
-const modalKey3 = Modal.key();
+const modalKey = Modal.key();
 
 const AppModals = observer(() => {
   const modalStyle = useMemo(() => ({
@@ -22,11 +20,10 @@ const AppModals = observer(() => {
     prefixCls,
     intl: { formatMessage },
     resourceStore,
+    treeDs,
   } = useResourceStore();
   const {
-    appStore: {
-      tabKey,
-    },
+    appStore: { tabKey },
     tabs: {
       NET_TAB,
       MAPPING_TAB,
@@ -41,13 +38,15 @@ const AppModals = observer(() => {
     mappingDs,
     cipherDs,
   } = useApplicationStore();
-  const { menuId, parentId } = resourceStore.getSelectedMenu;
+  const { id, parentId } = resourceStore.getSelectedMenu;
 
   const [showKeyValue, setShowKeyValue] = useState(false);
   const [showDomain, setShowDomain] = useState(false);
   const [showNetwork, setShowNetwork] = useState(false);
 
   function refresh() {
+    treeDs.query();
+    baseInfoDs.query();
     switch (tabKey) {
       case NET_TAB:
         netDs.query();
@@ -64,7 +63,7 @@ const AppModals = observer(() => {
 
   function openDetail() {
     Modal.open({
-      key: modalKey1,
+      key: modalKey,
       title: formatMessage({ id: `${intlPrefix}.service.detail` }),
       children: <Detail
         record={baseInfoDs.current}
@@ -145,14 +144,14 @@ const AppModals = observer(() => {
       title={showKeyValue}
       visible={!!showKeyValue}
       envId={parentId}
-      appId={menuId}
+      appId={id}
       onClose={closeKeyValue}
       store={showKeyValue === 'configMap' ? mappingStore : cipherStore}
     />}
     {showDomain && (
       <DomainModal
         envId={parentId}
-        appServiceId={menuId}
+        appServiceId={id}
         visible={showDomain}
         type="create"
         store={domainStore}
@@ -162,7 +161,7 @@ const AppModals = observer(() => {
     {showNetwork && (
       <CreateNetwork
         envId={parentId}
-        appServiceId={menuId}
+        appServiceId={id}
         visible={showNetwork}
         store={networkStore}
         onClose={closeNetwork}

@@ -1,4 +1,3 @@
-import omit from 'lodash/omit';
 import getTablePostData from '../../../../../../utils/getTablePostData';
 
 export default ({ formatMessage, intlPrefix, projectId, id }) => ({
