@@ -7,7 +7,9 @@ RUN pyinstaller --noconfirm --clean values_yaml.py
 
 FROM registry.cn-shanghai.aliyuncs.com/choerodon-tools/javabase:0.8.2
 COPY --from=pyinstaller /home/yaml/dist/values_yaml /usr/lib/yaml
+COPY kaniko  /usr/bin/kaniko
 COPY app.jar /devops-service.jar
 COPY dist /dist
 RUN chmod 777 /dist/env.sh
 CMD /dist/env.sh java $JAVA_OPTS $SKYWALKING_OPTS -jar /devops-service.jar
+}

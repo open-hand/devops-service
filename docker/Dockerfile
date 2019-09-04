@@ -1,4 +1,3 @@
-#FROM gcr.azk8s.cn/kaniko-project/executor:v0.11.0 as kaniko
 FROM registry.cn-hangzhou.aliyuncs.com/choerodon-tools/devops-base:0.7.1 as pyinstaller
 WORKDIR /home/yaml
 COPY values_yaml.py requirements.txt  ./
@@ -8,7 +7,7 @@ RUN pyinstaller --noconfirm --clean values_yaml.py
 
 FROM registry.cn-shanghai.aliyuncs.com/choerodon-tools/javabase:0.8.2
 # Install kaniko
-#COPY --from=kaniko /kaniko/executor /usr/bin/kaniko
 COPY --from=pyinstaller /home/yaml/dist/values_yaml /usr/lib/yaml
+COPY  kaniko  /usr/bin/kaniko
 COPY app.jar /devops-service.jar
 CMD java $JAVA_OPTS $SKYWALKING_OPTS -jar /devops-service.jar
