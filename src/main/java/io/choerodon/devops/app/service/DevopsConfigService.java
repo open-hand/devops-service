@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
+import io.choerodon.devops.api.vo.DevopsConfigRepVO;
 import io.choerodon.devops.api.vo.DevopsConfigVO;
 import io.choerodon.devops.api.vo.DefaultConfigVO;
 import io.choerodon.devops.infra.dto.DevopsConfigDTO;
@@ -22,7 +23,7 @@ public interface DevopsConfigService {
      * @param devopsConfigVO
      * @return
      */
-    void operate(Long resourceId, String resourceType,  List<DevopsConfigVO> devopsConfigVO);
+    void operate(Long resourceId, String resourceType, List<DevopsConfigVO> devopsConfigVO);
 
 
     /**
@@ -38,11 +39,11 @@ public interface DevopsConfigService {
     /**
      * 查询各资源层级默认组件设置
      *
-     * @param resourceId 资源id
-     * @param resourceType  资源类型
+     * @param resourceId   资源id
+     * @param resourceType 资源类型
      * @return DefaultConfigVO
      */
-    DefaultConfigVO queryDefaultConfig(Long resourceId,String resourceType);
+    DefaultConfigVO queryDefaultConfig(Long resourceId, String resourceType);
 
 
     DevopsConfigDTO queryRealConfig(Long resourceId, String resourceType, String configType);
@@ -75,5 +76,22 @@ public interface DevopsConfigService {
     DevopsConfigVO dtoToVo(DevopsConfigDTO devopsConfigDTO);
 
     DevopsConfigDTO voToDto(DevopsConfigVO devopsConfigVO);
+
+    /***
+     * 查询 仓库配置
+     * @param resourceId
+     * @param resourceType
+     * @return
+     */
+    DevopsConfigRepVO queryConfig(Long resourceId, String resourceType);
+
+    /**
+     * 操作 仓库配置
+     *
+     * @param organizationId
+     * @param resourceType
+     * @param devopsConfigRepVO 配置分装类
+     */
+    void operateConfig(Long organizationId, String resourceType, DevopsConfigRepVO devopsConfigRepVO);
 }
 

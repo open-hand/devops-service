@@ -15,7 +15,9 @@
         da.uuid,
         da.is_failed,
         da.is_skip_check_permission,
-        da.creation_date
+        da.creation_date,
+        da.created_by,
+        da.last_updated_by
         FROM devops_app_service da
         where da.app_id = #{appId}
         <if test="isActive != null">
@@ -62,7 +64,9 @@
           da.uuid,
           da.is_failed,
           da.is_skip_check_permission,
-          da.creation_date
+          da.creation_date,
+          da.created_by,
+          da.last_updated_by
         FROM
             (
         SELECT
