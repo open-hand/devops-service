@@ -9,6 +9,7 @@ import java.util.Map;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+import io.choerodon.devops.api.vo.DevopsConfigRepVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -460,6 +461,34 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
         String configJson = gson.toJson(devopsConfigVO.getConfig());
         devopsConfigDTO.setConfig(configJson);
         return devopsConfigDTO;
+    }
+
+    private void RepVOToConfigVO(DevopsConfigRepVO devopsConfigRepVO, DevopsConfigVO devopsConfigVO) {
+        if (devopsConfigVO.getType().equals(HARBOR)) {
+            devopsConfigRepVO.setHarbor(devopsConfigVO);
+        } else if (devopsConfigVO.getType().equals(CHART)) {
+            devopsConfigRepVO.setChart(devopsConfigVO);
+        }
+    }
+
+    @Override
+    public DevopsConfigRepVO queryConfig(Long resourceId, String resourceType) {
+        List<DevopsConfigVO> list = queryByResourceId(resourceId, resourceType);
+        DevopsConfigRepVO devopsConfigRepVO = new DevopsConfigRepVO();
+        list.stream().forEach(devopsConfigVO -> RepVOToConfigVO(devopsConfigRepVO, devopsConfigVO));
+        return devopsConfigRepVO;
+    }
+
+    @Override
+    public void operateConfig(Long organizationId, String resourceType, DevopsConfigRepVO devopsConfigRepVO) {
+        List<DevopsConfigVO> configVOS = new ArrayList<>();
+        if (!ObjectUtils.isEmpty(devopsConfigRepVO.getHarbor())) {
+            configVOS.add(devopsConfigRepVO.getHarbor());
+        }
+        if (!ObjectUtils.isEmpty(devopsConfigRepVO.getChart())) {
+            configVOS.add(devopsConfigRepVO.getChart());
+        }
+        operate(organizationId, resourceType, configVOS);
     }
 
     private void checkRegistryProjectIsPrivate(DevopsConfigVO devopsConfigVO) {
