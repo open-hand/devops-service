@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, Fragment } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import { Select, Form } from 'choerodon-ui/pro';
@@ -10,7 +10,8 @@ import './index.less';
 const { Option } = Select;
 const VERSION_TYPE = ['master', 'feature', 'hotfix', 'bugfix', 'release'];
 
-export default observer(({ record, versionOptions, levelOptions, projectId, store, formatMessage, appServiceId, intlPrefix }) => {
+export default observer(({ record, dataSet, versionOptions, levelOptions, projectId, store, formatMessage, appServiceId, intlPrefix, prefixCls, modal }) => {
+  const [hasFailed, setHasFailed] = useState(false);
   useEffect(() => {
     async function loadShareById() {
       try {
@@ -47,6 +48,27 @@ export default observer(({ record, versionOptions, levelOptions, projectId, stor
     versionOptions.transport.read.url = `/devops/v1/projects/${projectId}/app_service_versions/list_app_services/${appServiceId}${url}`;
     versionOptions.query();
   }, [record.get('versionType')]);
+
+  useEffect(() => {
+    setHasFailed(false);
+  }, [record.get('versionType'), record.get('version')]);
+
+  modal.handleOk(async () => {
+    if (!record.get('version') && !record.get('versionType')) {
+      setHasFailed(true);
+      return false;
+    }
+    try {
+      if (await dataSet.submit() !== false) {
+        dataSet.query();
+      } else {
+        return false;
+      }
+    } catch (e) {
+      Choerodon.handleResponseError(e);
+      return false;
+    }
+  });
   
   function optionRenderer({ record: tableRecord, text, value }) {
     return (
@@ -54,7 +76,7 @@ export default observer(({ record, versionOptions, levelOptions, projectId, stor
     );
   }
 
-  return (
+  return (<Fragment>
     <Form record={record}>
       <Select name="versionType" combo>
         {map(VERSION_TYPE, (item) => (
@@ -64,5 +86,10 @@ export default observer(({ record, versionOptions, levelOptions, projectId, stor
       <Select name="version" searchable />
       <Select name="shareLevel" searchable optionRenderer={optionRenderer} />
     </Form>
-  );
+    {hasFailed && (
+      <span className={`${prefixCls}-share-failed`}>
+        {formatMessage({ id: `${intlPrefix}.share.failed` })}
+      </span>
+    )}
+  </Fragment>);
 });

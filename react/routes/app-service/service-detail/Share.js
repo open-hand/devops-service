@@ -75,26 +75,13 @@ const Share = (props) => {
         projectId={projectId}
         appServiceId={id}
         store={AppStore}
+        dataSet={shareDs}
       />,
       drawer: true,
       style: modalStyle,
       okText: formatMessage({ id: 'save' }),
-      onOk: handleCreate,
       onCancel: handleCancel,
     });
-  }
-
-  async function handleCreate() {
-    try {
-      if (await shareDs.submit() !== false) {
-        refresh();
-      } else {
-        return false;
-      }
-    } catch (e) {
-      Choerodon.handleResponseError(e);
-      return false;
-    }
   }
 
   function handleCancel() {

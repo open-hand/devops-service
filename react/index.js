@@ -14,6 +14,7 @@ const Cluster = asyncRouter(() => import('./routes/cluster'));
 const Environment = asyncRouter(() => import('./routes/environment'));
 const Reports = asyncRouter(() => import('./routes/reports'));
 const Repository = asyncRouter(() => import('./routes/repository'));
+const ProRepository = asyncRouter(() => import('./routes/pro-repository'));
 
 function DEVOPSIndex({ match, AppState: { currentLanguage: language } }) {
   const IntlProviderAsync = asyncLocaleProvider(language, () => import(`./locale/${language}`),);
@@ -31,6 +32,7 @@ function DEVOPSIndex({ match, AppState: { currentLanguage: language } }) {
           <Route path={`${match.url}/cluster-management`} component={Cluster} />
           <Route path={`${match.url}/reports`} component={Reports} />
           <Route path={`${match.url}/repository`} component={Repository} />
+          <Route path={`${match.url}/project-repository`} component={ProRepository} />
           <Route path="*" component={nomatch} />
         </Switch>
         <ModalContainer />

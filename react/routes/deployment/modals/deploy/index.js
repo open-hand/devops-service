@@ -10,12 +10,13 @@ import uuidV1 from 'uuid/v1';
 import YamlEditor from '../../../../components/yamlEditor';
 import NetworkForm from './network-form';
 import DomainForm from '../../../../components/domain-form';
+import StatusDot from '../../../../components/status-dot';
 
 import './index.less';
 
 const { Option, OptGroup } = Select;
 
-export default injectIntl(observer(({ record, dataSet, store, projectId, networkStore, ingressStore, refresh, intlPrefix, prefixCls, modal, intl: { formatMessage } }) => {
+export default injectIntl(observer(({ record, dataSet, store, projectId, networkStore, ingressStore, refresh, envOptionsDs, intlPrefix, prefixCls, modal, intl: { formatMessage } }) => {
   const [resourceIsExpand, setResourceIsExpand] = useState(false);
   const [netIsExpand, setNetIsExpand] = useState(false);
   const [ingressIsExpand, setIngressIsExpand] = useState(false);
@@ -24,7 +25,9 @@ export default injectIntl(observer(({ record, dataSet, store, projectId, network
   const [hasYamlFailed, setHasYamlFailed] = useState(false);
 
   useEffect(() => {
-    store.loadEnv(projectId);
+    // store.loadEnv(projectId);
+    envOptionsDs.query();
+    record.getField('environmentId').set('options', envOptionsDs);
   }, []);
 
   useEffect(() => {
@@ -188,6 +191,19 @@ export default injectIntl(observer(({ record, dataSet, store, projectId, network
     setHasYamlFailed(flag);
   }
 
+  function renderEnvOption({ record: envRecord, text, value }) {
+    return (
+      <div disabled={!envRecord.get('connect') || !envRecord.get('synchro')}>
+        <StatusDot
+          connect={envRecord.get('connect')}
+          synchronize={envRecord.get('synchro')}
+          active={envRecord.get('active')}
+        />
+        {text}
+      </div>
+    );
+  }
+
   return (
     <div className={`${prefixCls}-manual-deploy`}>
       <Form record={record} columns={3}>
@@ -216,11 +232,7 @@ export default injectIntl(observer(({ record, dataSet, store, projectId, network
             <Option value={id}>{version}</Option>
           ))}
         </Select>
-        <Select name="environmentId" searchable newLine>
-          {map(store.getEnv, ({ id, name }) => (
-            <Option value={id}>{name}</Option>
-          ))}
-        </Select>
+        <Select name="environmentId" searchable newLine optionRenderer={renderEnvOption} />
         <TextField name="instanceName" />
         <Select name="valueId" searchable colSpan={2} newLine>
           {map(store.getConfig, ({ id, name }) => (

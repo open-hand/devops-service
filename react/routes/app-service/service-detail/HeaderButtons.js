@@ -45,7 +45,7 @@ const HeaderButtons = observer(({ children }) => {
       key: modalKey1,
       drawer: true,
       style: modalStyle,
-      title: <FormattedMessage id={`${intlPrefix}.create`} />,
+      title: <FormattedMessage id={`${intlPrefix}.edit`} />,
       children: <CreateForm
         dataSet={detailDs}
         record={detailDs.current}

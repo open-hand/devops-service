@@ -6,7 +6,7 @@ import { FormattedMessage } from 'react-intl';
 import { withRouter } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
 import { useRepositoryStore } from './stores';
-import RepositoryForm from './repository-form';
+import RepositoryForm from '../repository/repository-form';
 
 import './index.less';
 
@@ -15,10 +15,10 @@ const modalStyle = {
   width: 380,
 };
 
-const Repository = withRouter(observer((props) => {
+const ProRepository = withRouter(observer((props) => {
   const {
     intl: { formatMessage },
-    AppState: { currentMenuType: { organizationId } },
+    AppState: { currentMenuType: { id } },
     intlPrefix,
     prefixCls,
     homeDs,
@@ -40,7 +40,8 @@ const Repository = withRouter(observer((props) => {
         record={detailDs.current}
         dataSet={detailDs}
         store={repositoryStore}
-        id={organizationId}
+        id={id}
+        isProject
         intlPrefix={intlPrefix}
         prefixCls={prefixCls}
       />,
@@ -60,7 +61,7 @@ const Repository = withRouter(observer((props) => {
             icon="mode_edit"
             onClick={openModal}
           >
-            <FormattedMessage id={intlPrefix} />
+            <FormattedMessage id="edit" />
           </Button>
         </Permission>
       </Header>
@@ -91,4 +92,4 @@ const Repository = withRouter(observer((props) => {
   );
 }));
 
-export default Repository;
+export default ProRepository;
