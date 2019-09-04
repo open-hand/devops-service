@@ -12,4 +12,3 @@ COPY app.jar /devops-service.jar
 COPY dist /dist
 RUN chmod 777 /dist/env.sh
 CMD /dist/env.sh java $JAVA_OPTS $SKYWALKING_OPTS -jar /devops-service.jar
-}
