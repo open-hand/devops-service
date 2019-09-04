@@ -19,7 +19,6 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import io.choerodon.devops.api.vo.UserAttrVO;
 import io.choerodon.devops.app.eventhandler.payload.ApplicationEventPayload;
 import io.choerodon.devops.app.eventhandler.payload.DevOpsAppServicePayload;
 import io.choerodon.devops.app.service.AppServiceService;
@@ -29,6 +28,7 @@ import io.choerodon.devops.app.service.UserAttrService;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.AppServiceVersionDTO;
 import io.choerodon.devops.infra.dto.DevopsProjectDTO;
+import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.dto.gitlab.GitlabProjectDTO;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.AppServiceMapper;
@@ -167,13 +167,13 @@ public class ApplicationServiceImpl implements ApplicationService {
 
         final AppServiceDTO newAppService = createDatabaseRecord(newAppId, originalAppService);
         logger.info("New app service is {}", JSONObject.toJSONString(newAppService));
-        final UserAttrVO userAttrVO = userAttrService.queryByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-        logger.info("User attribute vo is {}", JSONObject.toJSONString(userAttrVO));
+        final UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        logger.info("User attribute vo is {}", JSONObject.toJSONString(userAttrDTO));
         DevopsProjectDTO devopsProjectDTO = devopsProjectMapper.selectByPrimaryKey(newAppId);
         logger.info("Project dto is {}", JSONObject.toJSONString(devopsProjectDTO));
 
         //创建saga payload
-        final DevOpsAppServicePayload payload = createPayload(newAppService, TypeUtil.objToInteger(userAttrVO.getGitlabUserId()), TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()), projectId);
+        final DevOpsAppServicePayload payload = createPayload(newAppService, TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()), projectId);
         logger.info("Payload is {}", JSONObject.toJSONString(payload));
 
         // 创建服务对应的代码仓库
@@ -188,11 +188,11 @@ public class ApplicationServiceImpl implements ApplicationService {
             return;
         }
 
-        // 创建用于拉取原有代码仓库代码和之后推送代码的token
-        final String accessToken = gitlabServiceClientOperator.createProjectToken(TypeUtil.objToInteger(userAttrVO.getGitlabUserId()));
+        // 获取用于拉取原有代码仓库代码和之后推送代码的token
+        final String accessToken = getToken(userAttrDTO);
         logger.info("AccessToken is {}", accessToken);
 
-        // 创建token失败
+        // 获取token失败
         if (StringUtils.isEmpty(accessToken)) {
             logger.warn("Failed to create access token for gitlab repository of the original repository for the new application service with id: {}", newAppService.getId());
             return;
@@ -272,6 +272,22 @@ public class ApplicationServiceImpl implements ApplicationService {
         // 发送消息通知
         logger.info("Send saga");
         appServiceService.sendCreateAppServiceInfo(newAppService, projectId);
+    }
+
+    /**
+     * 获取gitlab用户id对应的impersonalToken
+     *
+     * @param userAttrDTO 用户相关信息
+     * @return token
+     */
+    private String getToken(UserAttrDTO userAttrDTO) {
+        String impersonalToken = userAttrDTO.getGitlabToken();
+        if (impersonalToken == null) {
+            impersonalToken = gitlabServiceClientOperator.createProjectToken(userAttrDTO.getGitlabUserId().intValue());
+            userAttrDTO.setGitlabToken(impersonalToken);
+            userAttrService.baseUpdate(userAttrDTO);
+        }
+        return impersonalToken;
     }
 
     /**
