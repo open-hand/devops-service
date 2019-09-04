@@ -14,18 +14,16 @@ export function useNetworkDetailStore() {
 
 export const StoreProvider = injectIntl(inject('AppState')(
   observer((props) => {
-    const { AppState: { currentMenuType: { id } }, children } = props;
+    const { AppState: { currentMenuType: { id: projectId } }, children } = props;
     const {
-      intlPrefix,
-      intl: { formatMessage },
-      resourceStore: { getSelectedMenu: { menuId } },
+      resourceStore: { getSelectedMenu: { id } },
     } = useResourceStore();
     const baseInfoDs = useMemo(() => new DataSet(BaseInfoDataSet()), []);
 
     useEffect(() => {
-      baseInfoDs.transport.read.url = `/devops/v1/projects/${id}/service/${menuId}`;
+      baseInfoDs.transport.read.url = `/devops/v1/projects/${projectId}/service/${id}`;
       baseInfoDs.query();
-    }, [id, menuId]);
+    }, [id, projectId]);
 
     const value = {
       ...props,

@@ -1,4 +1,4 @@
-import React, { Fragment, useState } from 'react';
+import React from 'react';
 import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import map from 'lodash/map';
@@ -13,19 +13,11 @@ const Content = observer(() => {
   const {
     prefixCls,
     intlPrefix,
-    resourceStore: { getSelectedMenu: { menuId, parentId } },
   } = useResourceStore();
-  const {
-    detailDs,
-    intl: { formatMessage },
-  } = useSecretDetailStore();
+  const { detailDs } = useSecretDetailStore();
 
   const record = detailDs.current;
   if (!record) return <span>loading</span>;
-
-  function refresh() {
-    detailDs.query();
-  }
 
   return (
     <div className={`${prefixCls}-secret-detail`}>

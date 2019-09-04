@@ -21,14 +21,12 @@ const EnvModals = observer(() => {
     intlPrefix,
     prefixCls,
     intl: { formatMessage },
-    resourceStore,
+    resourceStore: { getSelectedMenu: { id } },
     AppState: { currentMenuType: { id: projectId } },
     treeDs,
   } = useResourceStore();
   const {
-    envStore: {
-      getTabKey,
-    },
+    envStore,
     tabs: {
       SYNC_TAB,
       ASSIGN_TAB,
@@ -42,10 +40,8 @@ const EnvModals = observer(() => {
     modalStore,
   } = useModalStore();
 
-  const { menuId } = resourceStore.getSelectedMenu;
-
   function linkServices(data) {
-    return modalStore.addService(projectId, menuId, data);
+    return modalStore.addService(projectId, id, data);
   }
 
   function addUsers(data) {
@@ -54,7 +50,7 @@ const EnvModals = observer(() => {
       const objectVersionNumber = record.get('objectVersionNumber');
       const users = {
         projectId,
-        envId: menuId,
+        envId: id,
         objectVersionNumber,
         ...data,
       };
@@ -67,7 +63,7 @@ const EnvModals = observer(() => {
   function refresh() {
     baseInfoDs.query();
     treeDs.query();
-    const tabKey = getTabKey;
+    const tabKey = envStore.getTabKey;
     if (tabKey === SYNC_TAB) {
       gitopsSyncDs.query();
       gitopsLogDs.query();
@@ -89,7 +85,7 @@ const EnvModals = observer(() => {
   }
 
   function openLinkService() {
-    modalStore.loadServices(projectId, menuId);
+    modalStore.loadServices(projectId, id);
     Modal.open({
       key: modalKey2,
       title: formatMessage({ id: `${intlPrefix}.modal.link-service` }),
@@ -109,7 +105,7 @@ const EnvModals = observer(() => {
   }
 
   function openPermission() {
-    modalStore.loadUsers(projectId, menuId);
+    modalStore.loadUsers(projectId, id);
     Modal.open({
       key: modalKey3,
       title: formatMessage({ id: `${intlPrefix}.modal.permission` }),
@@ -121,12 +117,19 @@ const EnvModals = observer(() => {
         intlPrefix={intlPrefix}
         prefixCls={prefixCls}
         skipPermission={baseInfoDs.current.get('skipCheckPermission')}
-        refresh={refresh}
+        refresh={toPermissionTab}
       />,
       afterClose: () => {
         modalStore.setUsers([]);
       },
     });
+  }
+
+  function toPermissionTab() {
+    const { getTabKey } = envStore;
+    envStore.setTabKey(ASSIGN_TAB);
+    baseInfoDs.query();
+    getTabKey === ASSIGN_TAB && permissionsDs.query();
   }
 
   function getButtons() {

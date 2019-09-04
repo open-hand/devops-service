@@ -59,10 +59,9 @@ const MainView = observer(() => {
     },
   } = useResourceStore();
   const { mainStore } = useMainStore();
-  // useRef 总是返回不变的对象，不会因为 current 指向改变而改变
   const rootRef = useRef(null);
 
-  const { menuType } = getSelectedMenu;
+  const { itemType } = getSelectedMenu;
   const content = useMemo(() => {
     const cmMaps = {
       [ENV_ITEM]: getViewType === IST_VIEW_TYPE ? <EnvContent /> : <ResourceEnvContent />,
@@ -82,10 +81,10 @@ const MainView = observer(() => {
       [CIPHER_ITEM]: <SecretDetail />,
       [SERVICES_ITEM]: <ServiceDetail />,
     };
-    return cmMaps[menuType]
-      ? <Suspense fallback={<Loading display />}>{cmMaps[menuType]}</Suspense>
+    return cmMaps[itemType]
+      ? <Suspense fallback={<Loading display />}>{cmMaps[itemType]}</Suspense>
       : <Loading display />;
-  }, [menuType, getViewType]);
+  }, [itemType, getViewType]);
 
   return (<div
     ref={rootRef}

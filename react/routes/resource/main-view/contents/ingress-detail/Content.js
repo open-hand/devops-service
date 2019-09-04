@@ -1,7 +1,7 @@
-import React, { Fragment, useState } from 'react';
+import React from 'react';
 import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
-import { Icon, Tooltip } from 'choerodon-ui';
+import { Icon } from 'choerodon-ui';
 import map from 'lodash/map';
 import { useResourceStore } from '../../../stores';
 import { useCustomDetailStore } from './stores';
@@ -9,7 +9,6 @@ import Modals from './modals';
 import StatusTags from '../../../../../components/status-tag';
 
 import './index.less';
-import MouserOverWrapper from '../../../../../components/MouseOverWrapper';
 
 const statusTagsStyle = {
   minWidth: 40,
@@ -22,7 +21,6 @@ const Content = observer(() => {
   const {
     prefixCls,
     intlPrefix,
-    resourceStore: { getSelectedMenu: { menuId, parentId } },
   } = useResourceStore();
   const {
     detailDs,

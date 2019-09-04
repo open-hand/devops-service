@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useMemo } from 'react';
 import { DataSet } from 'choerodon-ui/pro';
 import { inject } from 'mobx-react';
+import { observer } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
 import TableDataSet from './TableDataSet';
 import { useResourceStore } from '../../../../stores';
@@ -12,7 +13,7 @@ export function useCustomStore() {
 }
 
 export const StoreProvider = injectIntl(inject('AppState')(
-  (props) => {
+  observer((props) => {
     const { AppState: { currentMenuType: { id } }, children } = props;
     const {
       intlPrefix,
@@ -24,7 +25,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
       intlPrefix,
       projectId: id,
       envId: parentId,
-    })), [formatMessage, id, intlPrefix, parentId]);
+    })), [id, parentId]);
 
     const value = {
       ...props,
@@ -36,5 +37,5 @@ export const StoreProvider = injectIntl(inject('AppState')(
         {children}
       </Store.Provider>
     );
-  }
+  })
 ));

@@ -2,6 +2,7 @@ import React, { Fragment, useMemo, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import map from 'lodash/map';
+import compact from 'lodash/compact';
 import { Button, Icon, Popover } from 'choerodon-ui';
 import ReactEcharts from 'echarts-for-react';
 import { useResourceStore } from '../../../stores';
@@ -20,7 +21,7 @@ const PodList = observer(() => {
   } = useNetworkDetailStore();
 
   const record = baseInfoDs.current;
-  
+
   const [visible, setVisible] = useState(false);
   const [data, setData] = useState();
 
@@ -69,8 +70,8 @@ const PodList = observer(() => {
       </div>
     );
   }
-  
-  function getOption(data, timeList, name) {
+
+  function getOption(value, timeList, name) {
     return ({
       xAxis: {
         type: 'category',
@@ -95,7 +96,7 @@ const PodList = observer(() => {
         },
       },
       series: [{
-        data,
+        data: value,
         type: 'line',
         areaStyle: {},
         itemStyle: {
@@ -111,7 +112,7 @@ const PodList = observer(() => {
         <FormattedMessage id={`${intlPrefix}.pods`} />
       </div>
       <div className="detail-content-section-detail">
-        {map(record.get('podLiveInfos'), ({
+        {map(compact(record.get('podLiveInfos')), ({
           containers,
           cpuUsedList,
           memoryUsedList,

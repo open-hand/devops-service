@@ -16,18 +16,22 @@ export function useREStore() {
 
 export const StoreProvider = injectIntl(inject('AppState')(
   observer((props) => {
-    const { AppState: { currentMenuType: { id } }, intl: { formatMessage }, children } = props;
-    const { resourceStore: { getSelectedMenu: { menuId } }, intlPrefix } = useResourceStore();
+    const {
+      AppState: { currentMenuType: { id: projectId } },
+      intl: { formatMessage },
+      children,
+    } = props;
+    const { resourceStore: { getSelectedMenu: { id } }, intlPrefix } = useResourceStore();
     const baseInfoDs = useMemo(() => new DataSet(BaseInfoDataSet()), []);
     const resourceCountDs = useMemo(() => new DataSet(ResourceCountDataSet()), []);
     const tableDs = useMemo(() => new DataSet(TableDataSet(formatMessage, intlPrefix)), []);
 
     useEffect(() => {
-      baseInfoDs.transport.read.url = `/devops/v1/projects/${id}/envs/${menuId}/info`;
+      baseInfoDs.transport.read.url = `/devops/v1/projects/${projectId}/envs/${id}/info`;
       baseInfoDs.query();
-      resourceCountDs.transport.read.url = `/devops/v1/projects/${id}/envs/${menuId}/resource_count`;
+      resourceCountDs.transport.read.url = `/devops/v1/projects/${projectId}/envs/${id}/resource_count`;
       resourceCountDs.query();
-    }, [id, menuId]);
+    }, [projectId, id]);
 
     const value = {
       ...props,

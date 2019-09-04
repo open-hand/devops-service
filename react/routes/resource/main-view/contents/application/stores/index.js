@@ -21,10 +21,9 @@ export function useApplicationStore() {
 export const StoreProvider = injectIntl(observer((props) => {
   const { children, intl: { formatMessage } } = props;
   const {
-    AppState: { currentMenuType: { id } },
-    resourceStore: { getSelectedMenu: { menuId, parentId } },
+    AppState: { currentMenuType: { id: projectId } },
+    resourceStore: { getSelectedMenu: { id, parentId } },
     intlPrefix,
-    resourceStore,
   } = useResourceStore();
   const tabs = useMemo(() => ({
     NET_TAB: 'net',
@@ -35,25 +34,25 @@ export const StoreProvider = injectIntl(observer((props) => {
   const netDs = useMemo(() => new DataSet(NetDataSet({
     formatMessage,
     intlPrefix,
-    projectId: id,
-    id: menuId,
-  })), [id, menuId]);
+    projectId,
+    id,
+  })), [projectId, id]);
   const mappingDs = useMemo(() => new DataSet(ConfigDataSet({
     formatMessage,
     intlPrefix,
-    projectId: id,
+    projectId,
     envId: parentId,
-    appId: menuId,
+    appId: id,
     type: tabs.MAPPING_TAB,
-  })), [id, menuId, parentId]);
+  })), [projectId, id, parentId]);
   const cipherDs = useMemo(() => new DataSet(ConfigDataSet({
     formatMessage,
     intlPrefix,
-    projectId: id,
+    projectId,
     envId: parentId,
-    appId: menuId,
+    appId: id,
     type: tabs.CIPHER_TAB,
-  })), [id, menuId, parentId]);
+  })), [projectId, id, parentId]);
 
   const appStore = useStore(tabs);
   const mappingStore = useConfigMapStore();
@@ -63,9 +62,9 @@ export const StoreProvider = injectIntl(observer((props) => {
 
 
   useEffect(() => {
-    baseInfoDs.transport.read.url = `/devops/v1/projects/${id}/app_service/${menuId}`;
+    baseInfoDs.transport.read.url = `/devops/v1/projects/${projectId}/app_service/${id}`;
     baseInfoDs.query();
-  }, [id, menuId]);
+  }, [projectId, id]);
 
   const tabKey = appStore.getTabKey;
   useEffect(() => {
@@ -81,7 +80,7 @@ export const StoreProvider = injectIntl(observer((props) => {
         break;
       default:
     }
-  }, [id, menuId, tabKey]);
+  }, [tabKey]);
 
   const value = {
     ...props,

@@ -20,13 +20,10 @@ export function useInstanceStore() {
 
 export const StoreProvider = injectIntl(inject('AppState')(
   observer((props) => {
-    const { AppState: { currentMenuType: { id } }, children, intl } = props;
+    const { AppState: { currentMenuType: { id: projectId } }, children, intl } = props;
     const {
       resourceStore: {
-        getSelectedMenu: {
-          menuId,
-          parentId,
-        },
+        getSelectedMenu: { id, parentId },
         getViewType,
       },
       intlPrefix,
@@ -47,23 +44,23 @@ export const StoreProvider = injectIntl(inject('AppState')(
       return new DataSet(PodsDataset({
         intl,
         intlPrefix,
-        projectId: id,
+        projectId,
         envId,
         appId: getViewType === 'instance' ? appId : '',
-        id: menuId,
+        id,
       }));
-    }, [id, parentId, menuId, getViewType]);
+    }, [projectId, parentId, id, getViewType]);
 
     const tabKey = istStore.getTabKey;
 
     useEffect(() => {
-      baseDs.transport.read.url = `/devops/v1/projects/${id}/app_service_instances/${menuId}`;
+      baseDs.transport.read.url = `/devops/v1/projects/${projectId}/app_service_instances/${id}`;
       baseDs.query();
-      casesDs.transport.read.url = `/devops/v1/projects/${id}/app_service_instances/${menuId}/events`;
+      casesDs.transport.read.url = `/devops/v1/projects/${projectId}/app_service_instances/${id}/events`;
       tabKey === tabs.CASES_TAB && casesDs.query();
-      tabKey === tabs.DETAILS_TAB && detailsStore.loadResource(id, menuId);
+      tabKey === tabs.DETAILS_TAB && detailsStore.loadResource(projectId, id);
       tabKey === tabs.PODS_TAB && podsDs.query();
-    }, [id, menuId, tabKey]);
+    }, [projectId, id, tabKey]);
 
     const value = {
       ...props,
@@ -73,7 +70,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
       podsDs,
       istStore,
       detailsStore,
-      instanceId: menuId,
+      instanceId: id,
     };
     return (
       <Store.Provider value={value}>

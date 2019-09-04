@@ -19,7 +19,7 @@ const Configs = observer(() => {
     intl: { formatMessage },
     prefixCls,
     intlPrefix,
-    resourceStore: { getSelectedMenu: { menuId, parentId } },
+    resourceStore: { getSelectedMenu: { id, parentId } },
   } = useResourceStore();
   const {
     appStore: {
@@ -107,7 +107,7 @@ const Configs = observer(() => {
         visible={showModal}
         id={recordId}
         envId={parentId}
-        appId={menuId}
+        appId={id}
         onClose={closeSideBar}
         store={formStore}
       />}

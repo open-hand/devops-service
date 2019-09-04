@@ -16,7 +16,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const {
       resourceStore: {
         getSelectedMenu: {
-          menuType,
+          itemType,
           parentId,
         },
       },
@@ -34,23 +34,25 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const treeItemStore = useStore();
 
     useEffect(() => {
-      const envId = parentId.split('-')[0];
-      treeDs.transport.destroy = ({ data: [data] }) => {
-        const url = {
-          [IST_ITEM]: `/devops/v1/projects/${id}/app_service_instances/${data.id}/delete`,
-          [SERVICES_ITEM]: `/devops/v1/projects/${id}/service/${data.id}`,
-          [INGRESS_ITEM]: `/devops/v1/projects/${id}/ingress/${data.id}`,
-          [CERT_ITEM]: `/devops/v1/projects/${id}/certifications?cert_id=${data.id}`,
-          [MAP_ITEM]: `/devops/v1/projects/${id}/config_maps/${data.id}`,
-          [CIPHER_ITEM]: `/devops/v1/projects/${id}/secret/${envId}/${data.id}`,
-          [CUSTOM_ITEM]: `/devops/v1/projects/${id}/customize_resource?resource_id=${data.id}`,
+      if (parentId) {
+        const envId = parentId.split('-')[0];
+        treeDs.transport.destroy = ({ data: [data] }) => {
+          const url = {
+            [IST_ITEM]: `/devops/v1/projects/${id}/app_service_instances/${data.id}/delete`,
+            [SERVICES_ITEM]: `/devops/v1/projects/${id}/service/${data.id}`,
+            [INGRESS_ITEM]: `/devops/v1/projects/${id}/ingress/${data.id}`,
+            [CERT_ITEM]: `/devops/v1/projects/${id}/certifications?cert_id=${data.id}`,
+            [MAP_ITEM]: `/devops/v1/projects/${id}/config_maps/${data.id}`,
+            [CIPHER_ITEM]: `/devops/v1/projects/${id}/secret/${envId}/${data.id}`,
+            [CUSTOM_ITEM]: `/devops/v1/projects/${id}/customize_resource?resource_id=${data.id}`,
+          };
+          return ({
+            url: url[itemType],
+            method: 'delete',
+          });
         };
-        return ({
-          url: url[menuType],
-          method: 'delete',
-        });
-      };
-    }, [id, menuType]);
+      }
+    }, [id, itemType, parentId]);
 
     const value = {
       ...props,

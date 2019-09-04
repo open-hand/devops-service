@@ -2,23 +2,19 @@ import React, { Fragment, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import { Action } from '@choerodon/master';
-import {
-  Tooltip,
-  Icon,
-  Popover,
-} from 'choerodon-ui';
+import { Tooltip, Icon, Popover } from 'choerodon-ui';
 import { Table, Modal } from 'choerodon-ui/pro';
 import _ from 'lodash';
 import classnames from 'classnames';
 import MouserOverWrapper from '../../../../../../components/MouseOverWrapper/MouserOverWrapper';
 import StatusIcon from '../../../../../../components/StatusIcon';
+import { handlePromptError } from '../../../../../../utils';
 import { useResourceStore } from '../../../../stores';
 import { useApplicationStore } from '../stores';
 import DomainModal from '../modals/domain';
 import EditNetwork from '../modals/network/network-edit';
 
 import './index.less';
-import { handlePromptError } from '../../../../../../utils';
 
 const { Column } = Table;
 
@@ -26,9 +22,9 @@ const Networking = observer(() => {
   const {
     prefixCls,
     intlPrefix,
-    resourceStore: { getSelectedMenu: { menuId, parentId } },
+    resourceStore: { getSelectedMenu: { id, parentId } },
     intl: { formatMessage },
-    AppState: { currentMenuType: { id } },
+    AppState: { currentMenuType: { id: projectId } },
   } = useResourceStore();
   const {
     netDs,
@@ -272,7 +268,7 @@ const Networking = observer(() => {
 
   async function handleIngressDelete(itemId) {
     try {
-      const res = await domainStore.deleteIngress(id, itemId);
+      const res = await domainStore.deleteIngress(projectId, itemId);
       if (handlePromptError(res, false)) {
         netDs.query();
       } else {
@@ -375,7 +371,7 @@ const Networking = observer(() => {
       {showDomain && (
         <DomainModal
           envId={parentId}
-          appServiceId={menuId}
+          appServiceId={id}
           id={domainId}
           visible={showDomain}
           type="edit"
@@ -387,7 +383,7 @@ const Networking = observer(() => {
         <EditNetwork
           netId={netDs.current.get('id')}
           envId={parentId}
-          appServiceId={menuId}
+          appServiceId={id}
           visible={showNetwork}
           store={networkStore}
           onClose={closeNetworkEdit}

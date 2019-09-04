@@ -1,4 +1,4 @@
-import React, { Fragment, useState } from 'react';
+import React from 'react';
 import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import { Icon } from 'choerodon-ui';
@@ -13,19 +13,13 @@ const Content = observer(() => {
   const {
     prefixCls,
     intlPrefix,
-    resourceStore: { getSelectedMenu: { menuId, parentId } },
   } = useResourceStore();
   const {
     detailDs,
-    intl: { formatMessage },
   } = useConfigDetailStore();
 
   const record = detailDs.current;
   if (!record) return;
-
-  function refresh() {
-    detailDs.query();
-  }
 
   return (
     <div className={`${prefixCls}-configMap-detail`}>
