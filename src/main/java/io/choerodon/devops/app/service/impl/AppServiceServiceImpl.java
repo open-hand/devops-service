@@ -12,7 +12,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
@@ -483,7 +482,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
 
     @Override
-    public void operationApplicationImport(DevOpsAppImportServicePayload devOpsAppServiceImportPayload) {
+    public void operationAppServiceImport(DevOpsAppImportServicePayload devOpsAppServiceImportPayload) {
         // 准备相关的数据
         DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByGitlabAppGroupId(
                 TypeUtil.objToInteger(devOpsAppServiceImportPayload.getGroupId()));
@@ -602,7 +601,6 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_APP_FAIL,
             description = "Devops设置application状态为创建失败(devops set app status create err)", inputSchema = "{}")
     public void setAppErrStatus(String input, Long projectId) {
-        GitlabProjectEventVO gitlabProjectEventVO = JSONObject.parseObject(input, GitlabProjectEventVO.class);
         producer.applyAndReturn(
                 StartSagaBuilder
                         .newBuilder()
@@ -610,7 +608,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                         .withRefType("")
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_APP_FAIL),
                 builder -> builder
-                        .withPayloadAndSerialize(gitlabProjectEventVO)
+                        .withJson(input)
                         .withRefId("")
                         .withSourceId(projectId));
     }
@@ -872,7 +870,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
         HarborClient harborClient = retrofit.create(HarborClient.class);
         Call<User> getUser = harborClient.getCurrentUser();
-        Response<User> userResponse = null;
+        Response<User> userResponse;
         try {
             userResponse = getUser.execute();
             if (userResponse.raw().code() != 200) {
@@ -893,7 +891,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         //如果传入了project,校验用户是否有project的权限
         if (project != null) {
             Call<List<ProjectDetail>> listProject = harborClient.listProject(project);
-            Response<List<ProjectDetail>> projectResponse = null;
+            Response<List<ProjectDetail>> projectResponse;
             try {
                 projectResponse = listProject.execute();
                 if (projectResponse.body() == null) {
@@ -1426,8 +1424,8 @@ public class AppServiceServiceImpl implements AppServiceService {
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
 
         RoleAssignmentSearchVO roleAssignmentSearchVO = new RoleAssignmentSearchVO();
-        Map<String, Object> searchParamMap = null;
-        String param = null;
+        Map<String, Object> searchParamMap;
+        String param;
         // 处理搜索参数
         if (!org.springframework.util.StringUtils.isEmpty(searchParam)) {
             Map maps = gson.fromJson(searchParam, Map.class);

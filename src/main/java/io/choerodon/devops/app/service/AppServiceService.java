@@ -97,7 +97,7 @@ public interface AppServiceService {
      *
      * @param devOpsAppImportPayload 服务导入相关信息
      */
-    void operationApplicationImport(DevOpsAppImportServicePayload devOpsAppImportPayload);
+    void operationAppServiceImport(DevOpsAppImportServicePayload devOpsAppImportPayload);
 
 
     /**

@@ -169,7 +169,7 @@ public class DevopsSagaHandler {
     public String importApp(String data) {
         DevOpsAppImportServicePayload devOpsAppImportPayload = gson.fromJson(data, DevOpsAppImportServicePayload.class);
         try {
-            appServiceService.operationApplicationImport(devOpsAppImportPayload);
+            appServiceService.operationAppServiceImport(devOpsAppImportPayload);
         } catch (Exception e) {
             appServiceService.setAppErrStatus(data, devOpsAppImportPayload.getIamProjectId());
             throw e;
