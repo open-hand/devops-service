@@ -17,7 +17,7 @@ export default ((intlPrefix, formatMessage, projectId) => ({
   fields: [
     { name: 'appServiceId', type: 'string', label: formatMessage({ id: `${intlPrefix}.app` }), required: true },
     { name: 'appServiceVersionId', type: 'number', label: formatMessage({ id: `${intlPrefix}.app.version` }), required: true },
-    { name: 'environmentId', type: 'number', label: formatMessage({ id: 'environment' }), required: true },
+    { name: 'environmentId', type: 'number', textField: 'name', valueField: 'id', label: formatMessage({ id: 'environment' }), required: true },
     { name: 'instanceName', type: 'string', label: formatMessage({ id: `${intlPrefix}.instance.name` }), required: true },
     { name: 'valueId', type: 'number', label: formatMessage({ id: `${intlPrefix}.config` }) },
     { name: 'values', type: 'string' },

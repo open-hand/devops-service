@@ -340,7 +340,7 @@ const appService = {
   'c7ncd.appService.helm.custom': '自定义Helm仓库',
   'c7ncd.appService.test': '测试连接',
   'c7ncd.appService.version.specific': '特定版本',
-  'c7ncd.appService.version.type': '特定类型',
+  'c7ncd.appService.version.type': '版本类型',
   'c7ncd.appService.share.range': '共享范围',
   'c7ncd.appService.mbr': '成员',
   'c7ncd.appService.add.mbr': '添加成员',
@@ -372,6 +372,8 @@ const appService = {
   'c7ncd.appService.user.all': '项目下所有成员',
   'c7ncd.appService.user.some': '项目下特定成员',
   'c7ncd.appService.user': '成员',
+  'c7ncd.appService.file.failed': '请上传图片格式的文件',
+  'c7ncd.appService.share.failed': '版本类型与特定版本需至少填写一个',
 };
 
 const envrionment = {
@@ -479,6 +481,8 @@ const repository = {
   'c7ncd.repository.test': '测试连接',
   'c7ncd.repository.test.success': '连接成功',
   'c7ncd.repository.test.failed': '连接失败',
+  'c7ncd.repository.public': '公有',
+  'c7ncd.repository.private': '私有',
 };
 
 // 文档地址前缀

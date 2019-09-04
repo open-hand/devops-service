@@ -3,7 +3,7 @@ import { observer, inject } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { Button, Modal } from 'choerodon-ui';
-import { Permission } from '@choerodon/boot';
+import { Permission } from '@choerodon/master';
 import _ from 'lodash';
 import UserInfo from '../../../../components/userInfo';
 import DetailTitle from './components/detailTitle';
@@ -19,7 +19,6 @@ import './index.less';
 @observer
 export default class PipelineDetail extends Component {
   state = {
-    recordId: null,
     submitting: false,
     showPendingCheck: false,
     checkData: {},
@@ -43,6 +42,7 @@ export default class PipelineDetail extends Component {
    * 关闭强制失败或重试弹窗
    */
   closeModal = () => {
+    this.refresh();
     this.setState({ show: false });
   };
 
@@ -51,7 +51,7 @@ export default class PipelineDetail extends Component {
    * @param flag 是否重新加载列表数据
    */
   closePendingCheck = (flag) => {
-    flag && this.loadingData();
+    flag && this.refresh();
     this.setState({ showPendingCheck: false, checkData: {} });
   };
 
@@ -60,14 +60,13 @@ export default class PipelineDetail extends Component {
    */
   openPendingCheck = () => {
     const {
-      record,
-    } = this.prop;
-    const {
-      type,
-      stageRecordId,
-      taskRecordId,
-      stageName,
-    } = record.toData();
+      data: {
+        type,
+        stageRecordId,
+        taskRecordId,
+        stageName,
+      },
+    } = this.props;
     this.setState({
       showPendingCheck: true,
       checkData: {
@@ -122,19 +121,11 @@ export default class PipelineDetail extends Component {
    */
   getButton = () => {
     const {
-      AppState: {
-        currentMenuType: {
-          projectId,
-          type,
-          organizationId,
-        },
+      data: {
+        status,
+        execute,
       },
-      record,
     } = this.props;
-    const {
-      status,
-      execute,
-    } = record.toData();
     let dom = null;
     switch (status) {
       case 'running':
@@ -193,12 +184,11 @@ export default class PipelineDetail extends Component {
 
   get renderPipeline() {
     const {
-      record,
+      data: {
+        stageRecordDTOS,
+        status: pipelineStatus,
+      },
     } = this.props;
-    const {
-      stageRecordDTOS,
-      status: pipelineStatus,
-    } = record.toData();
 
     const isPipelineCadence = pipelineStatus === 'stop';
 
@@ -237,23 +227,19 @@ export default class PipelineDetail extends Component {
 
   render() {
     const {
-      match: {
-        params,
-      },
       intl: { formatMessage },
-      record,
+      data: {
+        userDTO,
+        triggerType,
+        pipelineName,
+        status,
+      },
       PipelineStore,
+      id,
     } = this.props;
-    const {
-      userDTO,
-      triggerType,
-      pipelineName,
-      status,
-    } = record.toData();
 
     const { loginName, realName, imageUrl } = userDTO || {};
     const {
-      recordId,
       submitting,
       showPendingCheck,
       checkData,
@@ -299,7 +285,7 @@ export default class PipelineDetail extends Component {
       )}
       {showPendingCheck && (
         <PendingCheckModal
-          id={Number(recordId || params.rId)}
+          id={id}
           name={pipelineName}
           checkData={checkData}
           onClose={this.closePendingCheck}

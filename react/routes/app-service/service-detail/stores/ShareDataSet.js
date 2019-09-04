@@ -2,14 +2,6 @@ import { axios } from '@choerodon/master';
 import forEach from 'lodash/forEach';
 import getTablePostData from '../../../../utils/getTablePostData';
 
-function handleUpdate({ record }) {
-  if (!record.get('versionType')) {
-    record.getField('version').set('required', true);
-  } else {
-    record.getField('version').set('required', false);
-  }
-}
-
 function formatData(data) {
   const { shareLevel } = data;
   if (shareLevel.id !== 'all') {
@@ -73,14 +65,11 @@ export default ((intlPrefix, formatMessage, projectId, id) => ({
   },
   fields: [
     { name: 'versionType', type: 'string', label: formatMessage({ id: `${intlPrefix}.version.type` }) },
-    { name: 'version', type: 'string', textField: 'version', valueField: 'version', label: formatMessage({ id: `${intlPrefix}.version.specific` }), required: true },
+    { name: 'version', type: 'string', textField: 'version', valueField: 'version', label: formatMessage({ id: `${intlPrefix}.version.specific` }) },
     { name: 'id', type: 'number' },
     { name: 'projectId', type: 'number' },
     { name: 'projectName', type: 'string', label: formatMessage({ id: `${intlPrefix}.share.range` }) },
     { name: 'shareLevel', type: 'object', textField: 'name', valueField: 'id', label: formatMessage({ id: `${intlPrefix}.share.range` }), required: true },
   ],
   queryFields: [],
-  events: {
-    update: handleUpdate,
-  },
 }));

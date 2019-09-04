@@ -10,6 +10,7 @@ import usePipelineStore from './usePipelineStore';
 import ManualDeployDataSet from './ManualDeployDataSet';
 import useNetworkStore from './useNetworkStore';
 import useIngressStore from './useIngressStore';
+import OptionsDataSet from './OptionsDataSet';
 
 const Store = createContext();
 
@@ -30,10 +31,16 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const detailDs = useMemo(() => new DataSet(DetailDataSet()), []);
     const manualDeployDs = useMemo(() => new DataSet(ManualDeployDataSet(intlPrefix, formatMessage, projectId)), [projectId]);
 
+    const envOptionsDs = useMemo(() => new DataSet(OptionsDataSet()), []);
+
     const deployStore = useStore();
     const pipelineStore = usePipelineStore();
     const networkStore = useNetworkStore();
     const ingressStore = useIngressStore();
+
+    useEffect(() => {
+      envOptionsDs.transport.read.url = `/devops/v1/projects/${projectId}/envs/list_by_active?active=true`;
+    }, [projectId]);
 
     const value = {
       ...props,
@@ -47,6 +54,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
       manualDeployDs,
       networkStore,
       ingressStore,
+      envOptionsDs,
     };
     return (
       <Store.Provider value={value}>

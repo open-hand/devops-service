@@ -124,8 +124,8 @@ export default ((intlPrefix, formatMessage, projectId) => {
       }),
     },
     fields: [
-      { name: 'name', type: 'string', label: formatMessage({ id: `${intlPrefix}.name` }), required: true, validator: checkName },
-      { name: 'code', type: 'string', label: formatMessage({ id: `${intlPrefix}.code` }), required: true },
+      { name: 'name', type: 'string', label: formatMessage({ id: `${intlPrefix}.name` }), required: true, validator: checkName, maxLength: 20 },
+      { name: 'code', type: 'string', label: formatMessage({ id: `${intlPrefix}.code` }), required: true, maxLength: 30 },
       { name: 'id', type: 'number' },
       { name: 'type', type: 'string', defaultValue: 'normal', label: formatMessage({ id: `${intlPrefix}.type` }), required: true },
       { name: 'active', type: 'boolean', label: formatMessage({ id: 'status' }) },

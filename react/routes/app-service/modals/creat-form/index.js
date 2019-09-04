@@ -6,6 +6,7 @@ import { Icon, Input, Button, Avatar } from 'choerodon-ui';
 import { axios } from '@choerodon/master';
 import pick from 'lodash/pick';
 import isEmpty from 'lodash/isEmpty';
+import includes from 'lodash/includes';
 import Settings from './Settings';
 import Source from './Source';
 import { handlePromptError } from '../../../../utils';
@@ -13,6 +14,7 @@ import { handlePromptError } from '../../../../utils';
 import './index.less';
 
 const { Option } = Select;
+const FILE_TYPE = 'image/png, image/jpeg, image/gif, image/jpg';
 
 const CreateForm = injectIntl(observer((props) => {
   const { modal, dataSet, record, AppStore, projectId, intl: { formatMessage }, intlPrefix, prefixCls, isDetailPage } = props;
@@ -93,6 +95,10 @@ const CreateForm = injectIntl(observer((props) => {
   async function selectFile(e) {
     const formdata = new FormData();
     const img = e.target.files[0];
+    if (!includes(FILE_TYPE, img.type)) {
+      Choerodon.prompt(formatMessage({ id: `${intlPrefix}.file.failed` }));
+      return;
+    }
     formdata.append('file', e.target.files[0]);
     try {
       const data = await axios.post(
@@ -158,6 +164,7 @@ const CreateForm = injectIntl(observer((props) => {
       <Input
         id="file"
         type="file"
+        accept={FILE_TYPE}
         onChange={selectFile}
         style={{ display: 'none' }}
       />

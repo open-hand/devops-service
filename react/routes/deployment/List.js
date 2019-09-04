@@ -48,6 +48,7 @@ const Deployment = withRouter(observer((props) => {
     manualDeployDs,
     networkStore,
     ingressStore,
+    envOptionsDs,
   } = useDeployStore();
 
   const [showPendingCheck, serShowPendingCheck] = useState(false);
@@ -86,8 +87,8 @@ const Deployment = withRouter(observer((props) => {
           dataSet={detailDs}
           id={listDs.current.get('deployId')}
           projectId={id}
-          pipelineStore={pipelineStore}
-          record={detailDs.current}
+          PipelineStore={pipelineStore}
+          data={detailDs.current.toData()}
           intlPrefix={intlPrefix}
           prefixCls={prefixCls}
         />,
@@ -160,6 +161,7 @@ const Deployment = withRouter(observer((props) => {
         record={manualDeployDs.create()}
         networkStore={networkStore}
         ingressStore={ingressStore}
+        envOptionsDs={envOptionsDs}
       />,
       okText: formatMessage({ id: 'deployment' }),
     });
