@@ -35,6 +35,8 @@
         WHERE
         dav.app_service_id = #{appServiceId}
         AND dav.repository IS NOT NULL
+        ORDER BY
+        dav.id DESC
     </select>
 
     <select id="listApplicationVersion" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">

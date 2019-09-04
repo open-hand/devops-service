@@ -25,11 +25,9 @@ import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
-import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.validator.ApplicationValidator;
 import io.choerodon.devops.api.validator.HarborMarketVOValidator;
 import io.choerodon.devops.api.vo.ConfigVO;
@@ -37,7 +35,6 @@ import io.choerodon.devops.api.vo.HarborMarketVO;
 import io.choerodon.devops.api.vo.iam.MarketAppServiceImageVO;
 import io.choerodon.devops.api.vo.iam.MarketAppServiceVersionImageVO;
 import io.choerodon.devops.api.vo.iam.MarketImageUrlVO;
-import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.*;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
@@ -127,6 +124,8 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
     private DevopsProjectService devopsProjectService;
     @Autowired
     private ApplicationService applicationService;
+    @Autowired
+    private GitlabGroupService gitlabGroupService;
 
     @Override
     public PageInfo<AppServiceUploadPayload> pageByAppId(Long appId,
@@ -210,50 +209,52 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
     @Transactional(rollbackFor = Exception.class)
     public void downLoadApp(AppMarketDownloadPayload appMarketDownloadVO) {
         Set<Long> appServiceVersionIds = new HashSet<>();
-        //创建应用
-        ApplicationEventPayload applicationEventPayload = new ApplicationEventPayload();
-        BeanUtils.copyProperties(appMarketDownloadVO, applicationEventPayload);
-        applicationEventPayload.setId(appMarketDownloadVO.getAppId());
-        applicationService.handleApplicationCreation(applicationEventPayload);
+        try {
+            //创建应用
+            ApplicationEventPayload applicationEventPayload = downPayloadToEnentPayload(appMarketDownloadVO);
+            gitlabGroupService.createApplicationGroup(applicationEventPayload);
 
-        DevopsProjectDTO projectDTO = devopsProjectService.queryByAppId(appMarketDownloadVO.getAppId());
-        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(appMarketDownloadVO.getIamUserId());
+            DevopsProjectDTO projectDTO = devopsProjectService.queryByAppId(appMarketDownloadVO.getAppId());
+            UserAttrDTO userAttrDTO = userAttrService.baseQueryById(appMarketDownloadVO.getIamUserId());
 
-        ApplicationDTO applicationDTO = baseServiceClientOperator.queryAppById(appMarketDownloadVO.getAppId());
-        String groupPath = String.format(SITE_APP_GROUP_NAME_FORMAT, applicationDTO.getCode());
-        appMarketDownloadVO.getAppServiceDownloadPayloads().forEach(downloadPayload -> {
-            //1. 校验是否已经下载过
-            AppServiceDTO appServiceDTO = appServiceService.baseQueryByCode(downloadPayload.getAppServiceCode(), appMarketDownloadVO.getAppId());
-            downloadPayload.setAppId(appMarketDownloadVO.getAppId());
-            Boolean isFirst = appServiceDTO == null;
-            if (appServiceDTO == null) {
-                appServiceDTO = createGitlabProject(downloadPayload, TypeUtil.objToInteger(projectDTO.getDevopsAppGroupId()), userAttrDTO.getGitlabUserId());
+            ApplicationDTO applicationDTO = baseServiceClientOperator.queryAppById(appMarketDownloadVO.getAppId());
+            String groupPath = String.format(SITE_APP_GROUP_NAME_FORMAT, applicationDTO.getCode());
+            appMarketDownloadVO.getAppServiceDownloadPayloads().forEach(downloadPayload -> {
+                //1. 校验是否已经下载过
+                AppServiceDTO appServiceDTO = appServiceService.baseQueryByCode(downloadPayload.getAppServiceCode(), appMarketDownloadVO.getAppId());
+                downloadPayload.setAppId(appMarketDownloadVO.getAppId());
+                Boolean isFirst = appServiceDTO == null;
+                if (appServiceDTO == null) {
+                    appServiceDTO = createGitlabProject(downloadPayload, appMarketDownloadVO.getCode(), TypeUtil.objToInteger(projectDTO.getDevopsAppGroupId()), userAttrDTO.getGitlabUserId());
 
-                //创建saga payload
-                DevOpsAppServiceSyncPayload appServiceSyncPayload = new DevOpsAppServiceSyncPayload();
-                BeanUtils.copyProperties(appServiceDTO, appServiceSyncPayload);
-                producer.apply(
-                        StartSagaBuilder.newBuilder()
-                                .withSourceId(applicationDTO.getId())
-                                .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_APPLICATION_SERVICE_EVENT)
-                                .withLevel(ResourceLevel.SITE)
-                                .withPayloadAndSerialize(appServiceSyncPayload),
-                        builder -> {
-                        }
-                );
+                    //创建saga payload
+                    DevOpsAppServiceSyncPayload appServiceSyncPayload = new DevOpsAppServiceSyncPayload();
+                    BeanUtils.copyProperties(appServiceDTO, appServiceSyncPayload);
+//                producer.apply(
+//                        StartSagaBuilder.newBuilder()
+//                                .withSourceId(applicationDTO.getId())
+//                                .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_APPLICATION_SERVICE_EVENT)
+//                                .withLevel(ResourceLevel.SITE)
+//                                .withPayloadAndSerialize(appServiceSyncPayload),
+//                        builder -> {
+//                        }
+//                );
+                }
+                String applicationDir = APPLICATION + System.currentTimeMillis();
+                String accessToken = appServiceService.getToken(appServiceDTO.getGitlabProjectId(), applicationDir, userAttrDTO);
+                appServiceVersionIds.addAll(createAppServiceVersion(downloadPayload, appServiceDTO, groupPath, isFirst, accessToken));
+            });
+            if (appMarketDownloadVO.getUser() != null) {
+                pushImageForDownload(appMarketDownloadVO);
             }
-            String applicationDir = APPLICATION + System.currentTimeMillis();
-            String accessToken = appServiceService.getToken(appServiceDTO.getGitlabProjectId(), applicationDir, userAttrDTO);
-            appServiceVersionIds.addAll(createAppServiceVersion(downloadPayload, appServiceDTO, groupPath, isFirst, accessToken));
-        });
-        if (appMarketDownloadVO.getUser() != null) {
-            pushImageForDownload(appMarketDownloadVO);
+            baseServiceClientOperator.completeDownloadApplication(appMarketDownloadVO.getAppDownloadRecordId(), appServiceVersionIds);
+        } catch (Exception e) {
+            baseServiceClientOperator.failToDownloadApplication(appMarketDownloadVO.getAppDownloadRecordId());
+            throw new CommonException("error.download.app", e.getMessage());
         }
-        baseServiceClientOperator.completeDownloadApplication(appMarketDownloadVO.getAppVersionId(), appServiceVersionIds);
-
     }
 
-    private AppServiceDTO createGitlabProject(AppServiceDownloadPayload downloadPayload, Integer gitlabGroupId, Long gitlabUserId) {
+    private AppServiceDTO createGitlabProject(AppServiceDownloadPayload downloadPayload, String appCode, Integer gitlabGroupId, Long gitlabUserId) {
         ApplicationValidator.checkApplicationService(downloadPayload.getAppServiceCode());
         AppServiceDTO appServiceDTO = ConvertUtils.convertObject(downloadPayload, AppServiceDTO.class);
         appServiceDTO.setName(downloadPayload.getAppServiceName());
@@ -270,10 +271,16 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         }
 
         //3. 创建gitlab project
-        GitlabProjectDTO gitlabProjectDTO = gitlabServiceClientOperator.createProject(gitlabGroupId,
-                downloadPayload.getAppServiceCode(),
-                TypeUtil.objToInteger(gitlabUserId),
-                true);
+        GitlabProjectDTO gitlabProjectDTO = gitlabServiceClientOperator.queryProjectByName(
+                String.format(SITE_APP_GROUP_NAME_FORMAT, appCode),
+                appServiceDTO.getCode(),
+                TypeUtil.objToInteger(gitlabUserId));
+        if (gitlabProjectDTO.getId() == null) {
+            gitlabProjectDTO = gitlabServiceClientOperator.createProject(gitlabGroupId,
+                    downloadPayload.getAppServiceCode(),
+                    TypeUtil.objToInteger(gitlabUserId),
+                    true);
+        }
         appServiceDTO.setGitlabProjectId(gitlabProjectDTO.getId());
         appServiceDTO.setSynchro(true);
         appServiceDTO.setFailed(false);
@@ -721,11 +728,15 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         fileUrl = fileUrl.replace(fileName, "");
         configurationProperties.setBaseUrl(fileUrl);
 
+        String[] fileNameArr = fileName.split("[?]");
+        fileName=fileNameArr[0];
+        Map map = getParam(fileNameArr[1]);
+
         Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
         MarketServiceClient marketServiceClient = retrofit.create(MarketServiceClient.class);
-        Call<ResponseBody> getTaz = marketServiceClient.downloadFile(fileName);
         FileOutputStream fos = null;
         try {
+            Call<ResponseBody> getTaz = marketServiceClient.downloadFile(fileName,map);
             Response<ResponseBody> response = getTaz.execute();
             fos = new FileOutputStream(downloadFilePath);
             if (response.body() != null) {
@@ -746,6 +757,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
 
     /**
      * 创建kaniko 拉取image config.json
+     *
      * @param sourceUser
      * @param sourceUrl
      * @param targetUser
@@ -788,6 +800,26 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             strArry = url.split(SSLASH);
             return strArry[0];
         }
+    }
+
+    private ApplicationEventPayload downPayloadToEnentPayload(AppMarketDownloadPayload appMarketDownloadPayload) {
+        ApplicationEventPayload applicationEventPayload = new ApplicationEventPayload();
+        BeanUtils.copyProperties(appMarketDownloadPayload, applicationEventPayload);
+        applicationEventPayload.setId(appMarketDownloadPayload.getAppId());
+        applicationEventPayload.setCode(appMarketDownloadPayload.getCode());
+        applicationEventPayload.setName(appMarketDownloadPayload.getName());
+        applicationEventPayload.setUserId(appMarketDownloadPayload.getIamUserId());
+        return applicationEventPayload;
+    }
+
+    private Map getParam(String url) {
+        Map<String, String> map = new HashMap<>();
+        String[] arr = url.split("&");
+        for (String str : arr) {
+            String[] temp = str.split("=");
+            map.put(temp[0], temp[1]);
+        }
+        return map;
     }
 
     private AppServiceUploadPayload dtoToMarketVO(AppServiceDTO applicationDTO) {
