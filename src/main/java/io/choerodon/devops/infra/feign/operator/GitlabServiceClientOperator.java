@@ -15,6 +15,7 @@ import feign.RetryableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.infra.dto.RepositoryFileDTO;
 import io.choerodon.devops.infra.dto.gitlab.*;
@@ -23,6 +24,7 @@ import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.GitUtil;
+import io.choerodon.devops.infra.util.PageInfoUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 
 
@@ -491,7 +493,6 @@ public class GitlabServiceClientOperator {
         }
 
         List<TagDTO> tagTotalList = listTags(gitlabProjectId, userId);
-        PageInfo<TagDTO> tagsPage = new PageInfo<>();
         List<TagDTO> tagList = tagTotalList.stream()
                 .filter(t -> filterTag(t, params))
                 .collect(Collectors.toCollection(ArrayList::new));
@@ -508,17 +509,11 @@ public class GitlabServiceClientOperator {
                 })
                 .collect(Collectors.toCollection(ArrayList::new));
 
-        if (tagVOS.size() < size * page) {
-            tagsPage.setSize(TypeUtil.objToInt(tagVOS.size()) - (size * (page - 1)));
-        } else {
-            tagsPage.setSize(size);
-        }
+        PageRequest pageRequest = new PageRequest();
+        pageRequest.setPage(page);
+        pageRequest.setSize(size);
 
-        tagsPage.setPageSize(size);
-        tagsPage.setTotal(tagList.size());
-        tagsPage.setPageNum(page);
-        tagsPage.setList(tagVOS);
-        return tagsPage;
+        return PageInfoUtil.createPageFromList(tagVOS, pageRequest);
     }
 
     private Boolean filterTag(TagDTO tagDTO, String params) {
