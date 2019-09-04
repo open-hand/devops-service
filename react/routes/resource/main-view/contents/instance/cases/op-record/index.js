@@ -1,7 +1,7 @@
-import React, { Fragment, useState, useMemo, useRef, useEffect } from 'react';
+import React, { Fragment, useState, useMemo, useRef } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
-import { Popover, Icon, Button } from 'choerodon-ui';
+import { Popover, Icon } from 'choerodon-ui';
 import map from 'lodash/map';
 import classnames from 'classnames';
 import UserInfo from '../../../../../../../components/userInfo/UserInfo';
@@ -29,15 +29,6 @@ const OpRecord = observer(({ handleClick, active }) => {
   const [cardActive, setCardActive] = useState('');
   const podKeys = useMemo(() => (['type', 'createTime', 'status', 'loginName', 'realName', 'userImage', 'podEventVO']), []);
 
-  // useEffect(() => {
-  //   const { current } = rowRef;
-  //   console.log(current);
-  //   if (current) {
-  //     const { offsetWidth } = current;
-  //     console.log(offsetWidth);
-  //   }
-  // });
-
   function getPopoverContent({ status, createTime, realName, loginName, userImage, index }) {
     return <Fragment>
       <ul className={`${prefixCls}-cases-popover-card`}>
@@ -61,7 +52,7 @@ const OpRecord = observer(({ handleClick, active }) => {
     </Fragment>;
   }
 
-  const renderOperation = useMemo(() => {
+  function renderOperation() {
     const firstRecord = casesDs.get(0);
     let realActive = cardActive || active;
     const isExist = casesDs.find((r) => r.get('createTime') === realActive);
@@ -92,6 +83,7 @@ const OpRecord = observer(({ handleClick, active }) => {
           return (
             <Popover
               getPopupContainer={(triggerNode) => triggerNode.parentNode}
+              autoAdjustOverflow={false}
               content={getPopoverContent({
                 createTime,
                 status,
@@ -121,32 +113,14 @@ const OpRecord = observer(({ handleClick, active }) => {
         })}
       </div>
     );
-  }, [cardActive]);
-
-  // const isDisabled = casesDs.status !== 'ready' && casesDs.length;
+  }
 
   return (
     <div className={`${prefixCls}-cases-record`}>
       <span className="cases-record-title">
         {formatMessage({ id: `${intlPrefix}.instance.cases.record` })}
       </span>
-      {/* <Button */}
-      {/*  ghost */}
-      {/*  className={`${prefixCls}-cases-record-arrow`} */}
-      {/*  funcType="flat" */}
-      {/*  shape="circle" */}
-      {/*  type="primary" */}
-      {/*  icon="navigate_before" */}
-      {/* /> */}
-      {renderOperation}
-      {/* <Button */}
-      {/*  ghost */}
-      {/*  className={`${prefixCls}-cases-record-arrow`} */}
-      {/*  funcType="flat" */}
-      {/*  shape="circle" */}
-      {/*  type="primary" */}
-      {/*  icon="navigate_next" */}
-      {/* /> */}
+      {renderOperation()}
     </div>
   );
 });
