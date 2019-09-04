@@ -1,7 +1,6 @@
 import { observable, action, computed } from 'mobx';
 import { axios } from '@choerodon/master';
 import { handlePromptError } from '../../../../../../utils';
-// import resourceData from './mock';
 
 export default class InstanceDetails {
   @observable resources = {};
@@ -91,7 +90,6 @@ export default class InstanceDetails {
 
   async loadResource(projectId, instanceId) {
     this.setLoading(true);
-    // this.setResources(resourceData);
 
     try {
       const data = await axios
