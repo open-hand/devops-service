@@ -20,6 +20,7 @@ import org.apache.commons.io.filefilter.IOFileFilter;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ListBranchCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Ref;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -519,21 +520,27 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         File applicationWorkDir = new File(gitUtil.getWorkingDirectory(applicationDir));
 
+        String protectedBranchName = null;
+
         try {
             List<Ref> refs = repositoryGit.branchList().setListMode(ListBranchCommand.ListMode.ALL).call();
             for (Ref ref : refs) {
                 String branchName;
-                if (ref.getName().equals("refs/remotes/origin/master")) {
-                    continue;
-                }
-                if (ref.getName().equals("refs/heads/master")) {
-                    branchName = MASTER;
+                if (ref.getName().contains(Constants.R_HEADS)) {
+                    branchName = ref.getName().split("/")[2];
+                    // 当前的本地的 refs/heads/ 内的引用是保护分支的名称，大部分保护分支是master，不排除develop等其他分支的可能
+                    protectedBranchName = branchName;
                 } else {
                     branchName = ref.getName().split("/")[3];
                 }
-                repositoryGit.checkout().setName(ref.getName()).call();
-                if (!branchName.equals(MASTER)) {
-                    repositoryGit.checkout().setCreateBranch(true).setName(branchName).call();
+
+                // 跳过对活跃本地分支A: /refs/heads/A 和 /refs/remotes/origin/A 之间的第二次重复的推送
+                if (branchName.equals(protectedBranchName) && ref.getName().contains(Constants.R_REMOTES)) {
+                    continue;
+                }
+
+                if (ref.getName().contains(Constants.R_REMOTES)) {
+                    repositoryGit.checkout().setCreateBranch(true).setName(branchName).setStartPoint(ref.getName()).call();
                 }
 
                 // 获取push代码所需的access token
@@ -543,35 +550,26 @@ public class AppServiceServiceImpl implements AppServiceService {
                 if (branchDTO.getName() == null) {
                     try {
                         // 提交并推代码
-                        gitUtil.commitAndPush(repositoryGit, appServiceDTO.getRepoUrl(), accessToken, ref.getName());
+                        gitUtil.push(repositoryGit, appServiceDTO.getRepoUrl(), accessToken, branchName);
                     } catch (CommonException e) {
                         releaseResources(applicationWorkDir, repositoryGit);
                         throw e;
                     }
-
-                    branchDTO = gitlabServiceClientOperator.queryBranch(gitlabProjectDO.getId(), branchName);
-                    //解决push代码之后gitlab给master分支设置保护分支速度和程序运行速度不一致
-                    if (branchName.equals(MASTER)) {
-                        if (!branchDTO.getProtected()) {
-                            try {
-                                gitlabServiceClientOperator.createProtectBranch(devOpsAppServiceImportPayload.getGitlabProjectId(), MASTER, AccessLevel.MASTER.toString(), AccessLevel.MASTER.toString(), devOpsAppServiceImportPayload.getUserId());
-                            } catch (CommonException e) {
-                                if (!gitlabServiceClientOperator.queryBranch(gitlabProjectDO.getId(), MASTER).getProtected()) {
-                                    throw new CommonException(e);
-                                }
-                            }
-                        }
-                    }
-                } else {
-                    if (branchName.equals(MASTER)) {
-                        if (!branchDTO.getProtected()) {
-                            gitlabServiceClientOperator.createProtectBranch(devOpsAppServiceImportPayload.getGitlabProjectId(), MASTER,
-                                    AccessLevel.MASTER.toString(), AccessLevel.MASTER.toString(),
-                                    devOpsAppServiceImportPayload.getUserId());
-                        }
-                    }
                 }
                 initBranch(devOpsAppServiceImportPayload, appServiceDTO, branchName);
+            }
+
+            BranchDTO branchDTO = gitlabServiceClientOperator.queryBranch(gitlabProjectDO.getId(), protectedBranchName);
+            //解决push代码之后gitlab给master分支设置保护分支速度和程序运行速度不一致
+            if (!branchDTO.getProtected()) {
+                try {
+                    gitlabServiceClientOperator.createProtectBranch(devOpsAppServiceImportPayload.getGitlabProjectId(), protectedBranchName, AccessLevel.MASTER.toString(), AccessLevel.MASTER.toString(), devOpsAppServiceImportPayload.getUserId());
+                } catch (CommonException e) {
+                    // 出现异常时重试一次
+                    if (!gitlabServiceClientOperator.queryBranch(gitlabProjectDO.getId(), protectedBranchName).getProtected()) {
+                        gitlabServiceClientOperator.createProtectBranch(devOpsAppServiceImportPayload.getGitlabProjectId(), protectedBranchName, AccessLevel.MASTER.toString(), AccessLevel.MASTER.toString(), devOpsAppServiceImportPayload.getUserId());
+                    }
+                }
             }
         } catch (GitAPIException e) {
             LOGGER.error("GitAPIException: {}", e);

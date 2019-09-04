@@ -359,7 +359,6 @@ public class GitUtil {
      */
     public void commitAndPush(Git git, String repoUrl, String accessToken, String refName) throws CommonException {
         try {
-            String[] url = repoUrl.split("://");
             git.add().addFilepattern(".").call();
             git.add().setUpdate(true).addFilepattern(".").call();
             git.commit().setMessage("Render Variables[skip ci]").call();
@@ -368,12 +367,48 @@ public class GitUtil {
             for (Ref ref : refs) {
                 if (ref.getName().equals(refName)) {
                     pushCommand.add(ref);
+                    break;
                 }
             }
             pushCommand.setRemote(repoUrl);
             pushCommand.setCredentialsProvider(new UsernamePasswordCredentialsProvider(
                     "", accessToken));
             pushCommand.call();
+        } catch (GitAPIException e) {
+            throw new CommonException("error.git.push", e);
+        }
+    }
+
+    /**
+     * 将单个分支推送到远程仓库
+     *
+     * @param git         Git对象
+     * @param repoUrl     仓库地址
+     * @param accessToken 访问token
+     * @param branchName  要推送的分支名
+     */
+    public void push(Git git, String repoUrl, String accessToken, String branchName) {
+        try {
+            // 找出对应分支名的本地分支引用
+            Ref localRef = null;
+            List<Ref> refs = git.branchList().call();
+            for (Ref ref : refs) {
+                if (ref.getName().equals(branchName)) {
+                    localRef = ref;
+                    break;
+                }
+            }
+
+            // 如果在本地分支找不到匹配branchName的Ref直接返回
+            if (localRef == null) {
+                return;
+            }
+
+            // 推代码
+            git.push().add(localRef)
+                    .setRemote(repoUrl)
+                    .setCredentialsProvider(new UsernamePasswordCredentialsProvider("", accessToken))
+                    .call();
         } catch (GitAPIException e) {
             throw new CommonException("error.git.push", e);
         }
