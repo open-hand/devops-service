@@ -14,6 +14,10 @@ export DOCKER_USERNAME={{ DOCKER_USERNAME }}
 export DOCKER_PASSWORD={{ DOCKER_PASSWORD }}
 # 获取的组织编码-项目编码(harbor Project地址)
 export GROUP_NAME={{ GROUP_NAME }}
+# SONARQUBE的地址
+export SONAR_URL= {{ SONAR_URL }}
+# SONARQUBE的登陆名
+export SONAR_LOGIN= {{ SONAR_LOGIN }}
 
 C7N_COMMIT_TIMESTAMP=$(git log -1 --pretty=format:"%ci"| awk '{print $1$2}' | sed 's/[-:]//g')
 C7N_COMMIT_YEAR=${C7N_COMMIT_TIMESTAMP:0:4}
