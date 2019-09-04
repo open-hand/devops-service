@@ -20,10 +20,10 @@ public class AppMarketDownloadPayload {
     private Long appId;
 
     @ApiModelProperty("应用name")
-    private String name;
+    private String appName;
 
     @ApiModelProperty("应用name")
-    private String code;
+    private String appCode;
 
     @ApiModelProperty("harbor用户")
     private RobotUser user;
@@ -69,20 +69,20 @@ public class AppMarketDownloadPayload {
         this.user = user;
     }
 
-    public String getName() {
-        return name;
+    public String getAppName() {
+        return appName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setAppName(String appName) {
+        this.appName = appName;
     }
 
-    public String getCode() {
-        return code;
+    public String getAppCode() {
+        return appCode;
     }
 
-    public void setCode(String code) {
-        this.code = code;
+    public void setAppCode(String appCode) {
+        this.appCode = appCode;
     }
 
     public Long getAppVersionId() {

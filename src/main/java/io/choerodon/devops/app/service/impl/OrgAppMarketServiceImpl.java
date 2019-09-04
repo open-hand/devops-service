@@ -82,7 +82,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
     private static final String DOWNLOAD_ONLY = "mkt_code_only";
     private static final String ALL = "mkt_code_deploy";
     private static final String MARKET = "market";
-    private static final String LINE = "line.separator";
+    private static final String ERROR_UPLOAD = "error.upload.file";
     private static final String CONFIG_PATH = "root/.docker";
     private static final String CONFIG_JSON = "config.json";
     private static final String DSLASH = "//";
@@ -225,7 +225,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                 downloadPayload.setAppId(appMarketDownloadVO.getAppId());
                 Boolean isFirst = appServiceDTO == null;
                 if (appServiceDTO == null) {
-                    appServiceDTO = createGitlabProject(downloadPayload, appMarketDownloadVO.getCode(), TypeUtil.objToInteger(projectDTO.getDevopsAppGroupId()), userAttrDTO.getGitlabUserId());
+                    appServiceDTO = createGitlabProject(downloadPayload, appMarketDownloadVO.getAppCode(), TypeUtil.objToInteger(projectDTO.getDevopsAppGroupId()), userAttrDTO.getGitlabUserId());
 
                     //创建saga payload
                     DevOpsAppServiceSyncPayload appServiceSyncPayload = new DevOpsAppServiceSyncPayload();
@@ -679,12 +679,13 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
 
         String remoteToken = baseServiceClientOperator.checkLatestToken();
         try {
-            Boolean uploadSuccess = marketServiceClient.uploadFile(remoteToken, appMarketUploadVO.getAppVersion(), files, mapJson).execute().body().getBody();
+            Boolean uploadSuccess = marketServiceClient.uploadFile(remoteToken, appMarketUploadVO.getAppVersion(), files, mapJson).execute().body();
             if (uploadSuccess == null || !uploadSuccess) {
-                throw new CommonException("error.upload.file", uploadSuccess);
+                throw new CommonException(ERROR_UPLOAD, uploadSuccess);
             }
         } catch (IOException e) {
-            throw new CommonException("error.upload.file", e.getMessage());
+            LOGGER.error("file.upload.error:{}",e.getMessage());
+            throw new CommonException(ERROR_UPLOAD, e.getMessage());
         }
     }
 
@@ -710,12 +711,12 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                     appMarketFixVersionPayload.getMarketApplicationVO().getVersion(),
                     appJson,
                     files,
-                    imageJson).execute().body().getBody();
+                    imageJson).execute().body();
             if (uploadSuccess == null || !uploadSuccess) {
-                throw new CommonException("error.upload.file", uploadSuccess);
+                throw new CommonException(ERROR_UPLOAD, uploadSuccess);
             }
         } catch (IOException e) {
-            throw new CommonException("error.upload.file", e.getMessage());
+            throw new CommonException(ERROR_UPLOAD, e.getMessage());
         }
     }
 
@@ -729,14 +730,14 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         configurationProperties.setBaseUrl(fileUrl);
 
         String[] fileNameArr = fileName.split("[?]");
-        fileName=fileNameArr[0];
+        fileName = fileNameArr[0];
         Map map = getParam(fileNameArr[1]);
 
         Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
         MarketServiceClient marketServiceClient = retrofit.create(MarketServiceClient.class);
         FileOutputStream fos = null;
         try {
-            Call<ResponseBody> getTaz = marketServiceClient.downloadFile(fileName,map);
+            Call<ResponseBody> getTaz = marketServiceClient.downloadFile(fileName, map);
             Response<ResponseBody> response = getTaz.execute();
             fos = new FileOutputStream(downloadFilePath);
             if (response.body() != null) {
@@ -806,8 +807,8 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         ApplicationEventPayload applicationEventPayload = new ApplicationEventPayload();
         BeanUtils.copyProperties(appMarketDownloadPayload, applicationEventPayload);
         applicationEventPayload.setId(appMarketDownloadPayload.getAppId());
-        applicationEventPayload.setCode(appMarketDownloadPayload.getCode());
-        applicationEventPayload.setName(appMarketDownloadPayload.getName());
+        applicationEventPayload.setCode(appMarketDownloadPayload.getAppCode());
+        applicationEventPayload.setName(appMarketDownloadPayload.getAppName());
         applicationEventPayload.setUserId(appMarketDownloadPayload.getIamUserId());
         return applicationEventPayload;
     }
