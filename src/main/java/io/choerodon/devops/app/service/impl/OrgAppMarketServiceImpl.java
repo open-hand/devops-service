@@ -25,9 +25,11 @@ import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
+import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.validator.ApplicationValidator;
 import io.choerodon.devops.api.validator.HarborMarketVOValidator;
 import io.choerodon.devops.api.vo.ConfigVO;
@@ -35,6 +37,7 @@ import io.choerodon.devops.api.vo.HarborMarketVO;
 import io.choerodon.devops.api.vo.iam.MarketAppServiceImageVO;
 import io.choerodon.devops.api.vo.iam.MarketAppServiceVersionImageVO;
 import io.choerodon.devops.api.vo.iam.MarketImageUrlVO;
+import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.*;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
@@ -166,8 +169,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void
-    uploadAPP(AppMarketUploadPayload marketUploadVO) {
+    public void uploadAPP(AppMarketUploadPayload marketUploadVO) {
         List<String> zipFileList = new ArrayList<>();
         String appFilePath = gitUtil.getWorkingDirectory(APPLICATION + System.currentTimeMillis());
         try {
@@ -230,15 +232,15 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                     //创建saga payload
                     DevOpsAppServiceSyncPayload appServiceSyncPayload = new DevOpsAppServiceSyncPayload();
                     BeanUtils.copyProperties(appServiceDTO, appServiceSyncPayload);
-//                producer.apply(
-//                        StartSagaBuilder.newBuilder()
-//                                .withSourceId(applicationDTO.getId())
-//                                .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_APPLICATION_SERVICE_EVENT)
-//                                .withLevel(ResourceLevel.SITE)
-//                                .withPayloadAndSerialize(appServiceSyncPayload),
-//                        builder -> {
-//                        }
-//                );
+                    producer.apply(
+                            StartSagaBuilder.newBuilder()
+                                    .withSourceId(applicationDTO.getId())
+                                    .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_APPLICATION_SERVICE_EVENT)
+                                    .withLevel(ResourceLevel.SITE)
+                                    .withPayloadAndSerialize(appServiceSyncPayload),
+                            builder -> {
+                            }
+                    );
                 }
                 String applicationDir = APPLICATION + System.currentTimeMillis();
                 String accessToken = appServiceService.getToken(appServiceDTO.getGitlabProjectId(), applicationDir, userAttrDTO);
@@ -381,27 +383,38 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
         String repositoryUrl = repoUrl + groupPath + "/" + downloadPayload.getAppServiceCode() + GIT;
         String unZipFilePath = gitUtil.getWorkingDirectory(REPO + System.currentTimeMillis());
-        FileUtil.unZipFiles(file, unZipFilePath);
-        unZipFilePath = String.format(APP_TEMP_PATH_FORMAT, unZipFilePath, File.separator, appServiceVersionPayload.getVersion());
-        if (isFirst) {
-            git = gitUtil.initGit(new File(unZipFilePath));
-        } else {
-            String appServiceDir = APPLICATION + System.currentTimeMillis();
-            String appServiceFilePath = gitUtil.clone(appServiceDir, repositoryUrl, accessToken);
-            git = gitUtil.combineAppMarket(appServiceFilePath, unZipFilePath);
-        }
-        //6. push 到远程仓库
-        gitUtil.commitAndPushForMaster(git, repositoryUrl, appServiceVersionPayload.getVersion(), accessToken);
+        String appServiceDir = null;
+        try {
+            FileUtil.unZipFiles(file, unZipFilePath);
+            String repoFilePath = String.format(APP_TEMP_PATH_FORMAT, unZipFilePath, File.separator, appServiceVersionPayload.getVersion());
+            if (isFirst) {
+                git = gitUtil.initGit(new File(repoFilePath));
+            } else {
+                appServiceDir = APPLICATION + System.currentTimeMillis();
+                String appServiceFilePath = gitUtil.clone(appServiceDir, repositoryUrl, accessToken);
+                git = gitUtil.combineAppMarket(appServiceFilePath, repoFilePath);
+            }
+            //6. push 到远程仓库
+            gitUtil.commitAndPushForMaster(git, repositoryUrl, appServiceVersionPayload.getVersion(), accessToken);
 
-        if (versionDTO.getId() == null) {
-            versionDTO.setAppServiceId(appServiceId);
-            BeanUtils.copyProperties(appServiceVersionPayload, versionDTO);
-            versionDTO = appServiceVersionService.baseCreate(versionDTO);
+            if (versionDTO.getId() == null) {
+                versionDTO.setAppServiceId(appServiceId);
+                BeanUtils.copyProperties(appServiceVersionPayload, versionDTO);
+                versionDTO = appServiceVersionService.baseCreate(versionDTO);
+            }
+            versionDTO.setCommit(gitUtil.getFirstCommit(git));
+            AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQueryByAppIdAndVersion(appServiceId, appServiceVersionPayload.getVersion());
+            appServiceVersionDTO.setCommit(gitUtil.getFirstCommit(git));
+            appServiceVersionService.baseUpdate(appServiceVersionDTO);
+        } catch (Exception e) {
+            throw new CommonException("error.resolver.git", e.getMessage());
+        } finally {
+            FileUtil.deleteFile(file);
+            FileUtil.deleteDirectory(new File(unZipFilePath));
+            if (appServiceDir != null) {
+                FileUtil.deleteDirectory(new File(appServiceDir));
+            }
         }
-        versionDTO.setCommit(gitUtil.getFirstCommit(git));
-        AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQueryByAppIdAndVersion(appServiceId, appServiceVersionPayload.getVersion());
-        appServiceVersionDTO.setCommit(gitUtil.getFirstCommit(git));
-        appServiceVersionService.baseUpdate(appServiceVersionDTO);
         return versionDTO;
     }
 
@@ -422,45 +435,53 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         helmUrl = helmUrl.endsWith("/") ? helmUrl : helmUrl + "/";
         versionDTO.setAppServiceId(appServiceId);
         AppServiceVersionDTO appServiceVersionDTO = null;
-        //解析 解压过后的文件
-        if (zipDirectory.exists() && zipDirectory.isDirectory()) {
+        String newTgzFile = null;
+        try {
+            //解析 解压过后的文件
+            if (zipDirectory.exists() && zipDirectory.isDirectory()) {
 
-            File[] listFiles = zipDirectory.listFiles();
-            BeanUtils.copyProperties(appServiceVersionPayload, versionDTO);
-            //9. 获取替换Repository
-            List<File> appMarkets = Arrays.stream(listFiles).parallel()
-                    .filter(k -> k.getName().equals(VALUES))
-                    .collect(Collectors.toCollection(ArrayList::new));
-            if (!appMarkets.isEmpty() && appMarkets.size() == 1) {
-                File valuesFile = appMarkets.get(0);
+                File[] listFiles = zipDirectory.listFiles();
+                BeanUtils.copyProperties(appServiceVersionPayload, versionDTO);
+                //9. 获取替换Repository
+                List<File> appMarkets = Arrays.stream(listFiles).parallel()
+                        .filter(k -> k.getName().equals(VALUES))
+                        .collect(Collectors.toCollection(ArrayList::new));
+                if (!appMarkets.isEmpty() && appMarkets.size() == 1) {
+                    File valuesFile = appMarkets.get(0);
 
-                Map<String, String> params = new HashMap<>();
-                params.put(appServiceVersionPayload.getImage(), String.format("%s/%s/%s", harborUrl, MARKET_PRO, appServiceCode));
-                FileUtil.fileToInputStream(valuesFile, params);
+                    Map<String, String> params = new HashMap<>();
+                    params.put(appServiceVersionPayload.getImage(), String.format("%s/%s/%s", harborUrl, MARKET_PRO, appServiceCode));
+                    FileUtil.fileToInputStream(valuesFile, params);
 
-                //10. 创建appServiceValue
-                AppServiceVersionValueDTO versionValueDTO = new AppServiceVersionValueDTO();
-                versionValueDTO.setValue(FileUtil.getFileContent(valuesFile));
-                versionDTO.setValueId(appServiceVersionValueService.baseCreate(versionValueDTO).getId());
-                // 创建ReadMe
-                AppServiceVersionReadmeDTO versionReadmeDTO = new AppServiceVersionReadmeDTO();
-                versionReadmeDTO.setReadme(FileUtil.getReadme(unZipPath));
-                versionDTO.setReadmeValueId(appServiceVersionReadmeService.baseCreate(versionReadmeDTO).getId());
-                //创建version
-                appServiceVersionDTO = appServiceVersionService.baseCreate(versionDTO);
+                    //10. 创建appServiceValue
+                    AppServiceVersionValueDTO versionValueDTO = new AppServiceVersionValueDTO();
+                    versionValueDTO.setValue(FileUtil.getFileContent(valuesFile));
+                    versionDTO.setValueId(appServiceVersionValueService.baseCreate(versionValueDTO).getId());
+                    // 创建ReadMe
+                    AppServiceVersionReadmeDTO versionReadmeDTO = new AppServiceVersionReadmeDTO();
+                    versionReadmeDTO.setReadme(FileUtil.getReadme(unZipPath));
+                    versionDTO.setReadmeValueId(appServiceVersionReadmeService.baseCreate(versionReadmeDTO).getId());
+                    //创建version
+                    appServiceVersionDTO = appServiceVersionService.baseCreate(versionDTO);
+                }
+            } else {
+                FileUtil.deleteDirectory(zipDirectory);
+                throw new CommonException("error.zip.empty");
             }
-        } else {
-            FileUtil.deleteDirectory(zipDirectory);
-            throw new CommonException("error.zip.empty");
+
+            newTgzFile = gitUtil.getWorkingDirectory(CHART + System.currentTimeMillis());
+            FileUtil.toTgz(String.format(APP_TEMP_PATH_FORMAT, unZipPath, File.separator, appServiceCode), newTgzFile);
+            chartUtil.uploadChart(MARKET, DOWNLOADED_APP, new File(newTgzFile + TGZ));
+
+        } catch (Exception e) {
+            throw new CommonException("error.resolver.chart", e.getMessage());
+        } finally {
+            FileUtil.deleteFile(file);
+            FileUtil.deleteDirectory(new File(unZipPath));
+            if (newTgzFile != null) {
+                FileUtil.deleteDirectory(new File(newTgzFile));
+            }
         }
-
-        String newTgzFile = gitUtil.getWorkingDirectory(CHART + System.currentTimeMillis());
-        FileUtil.toTgz(String.format(APP_TEMP_PATH_FORMAT, unZipPath, File.separator, appServiceCode), newTgzFile);
-        chartUtil.uploadChart(MARKET, DOWNLOADED_APP, new File(newTgzFile + TGZ));
-        FileUtil.deleteFile(file);
-        FileUtil.deleteDirectory(new File(unZipPath));
-        FileUtil.deleteDirectory(new File(newTgzFile));
-
         versionDTO.setRepository(String.format("%s/%s/%s", harborUrl, MARKET_PRO, appServiceCode));
         appServiceVersionService.baseUpdate(versionDTO);
         return appServiceVersionDTO;
@@ -653,12 +674,16 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             while ((line = infoInput.readLine()) != null) {
                 LOGGER.info(line);
             }
-            // todo errorTnput 不为null抛出异常
+            Boolean failed = false;
             while ((line = errorInput.readLine()) != null) {
                 LOGGER.error(line);
+                failed = true;
             }
             infoInput.close();
             errorInput.close();
+            if (failed) {
+                throw new CommonException("error.exec.push.image");
+            }
             process.waitFor();
         } catch (Exception e) {
             throw new CommonException("error.exec.push.image", e.getMessage());
@@ -684,7 +709,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                 throw new CommonException(ERROR_UPLOAD, uploadSuccess);
             }
         } catch (IOException e) {
-            LOGGER.error("file.upload.error:{}",e.getMessage());
+            LOGGER.error("file.upload.error:{}", e.getMessage());
             throw new CommonException(ERROR_UPLOAD, e.getMessage());
         }
     }
