@@ -87,7 +87,7 @@
     </update>
 
 
-    <select id="listInstanceEnvTree" resultMap="instanceEnvTree">
+    <select id="listAllInstanceEnvTree" resultMap="instanceEnvTree">
         SELECT env.id         as           env_id,
                env.name       as           env_name,
                app.id         as           app_service_id,
@@ -118,6 +118,77 @@
           AND env.is_active = TRUE
           AND env.is_failed = FALSE
           AND (app.is_active = TRUE OR app.is_active is NULL);
+    </select>
+
+    <select id="listMemberInstanceEnvTree" resultMap="instanceEnvTree">
+        (SELECT env.id         as           env_id,
+                env.name       as           env_name,
+                app.id         as           app_service_id,
+                app.name       as           app_name,
+                ins.id         as           ins_id,
+                ins.code       as           ins_code,
+                ins.status     as           ins_status,
+                env.cluster_id as           cluster_id,
+                env.is_synchro as           synchronize,
+                (SELECT count(1)
+                 FROM devops_env_pod dp
+                 WHERE dp.instance_id = ins.id
+                   AND dp.namespace = env.code
+                   AND env.id = ins.env_id) pod_count,
+                (SELECT count(1)
+                 FROM devops_env_pod dp
+                 WHERE dp.instance_id = ins.id
+                   AND dp.`status` = 'Running'
+                   AND dp.is_ready = TRUE
+                   AND dp.namespace = env.code
+                   AND env.id = ins.env_id) pod_running_count
+         FROM devops_env env
+                  LEFT JOIN devops_env_app_service env_app ON env.id = env_app.env_id
+                  LEFT JOIN devops_app_service app ON env_app.app_service_id = app.id
+                  LEFT JOIN devops_app_service_instance ins ON app.id = ins.app_service_id
+                                                                   AND env.id = ins.env_id
+         WHERE env.project_id = #{projectId}
+           AND env.is_skip_check_permission = TRUE
+           AND env.is_active = TRUE
+           AND env.is_failed = FALSE
+           AND (app.is_active = TRUE OR app.is_active is NULL))
+
+        UNION ALL
+                (
+                SELECT env.id         as           env_id,
+                       env.name       as           env_name,
+                       app.id         as           app_service_id,
+                       app.name       as           app_name,
+                       ins.id         as           ins_id,
+                       ins.code       as           ins_code,
+                       ins.status     as           ins_status,
+                       env.cluster_id as           cluster_id,
+                       env.is_synchro as           synchronize,
+                       (SELECT count(1)
+                        FROM devops_env_pod dp
+                        WHERE dp.instance_id = ins.id
+                          AND dp.namespace = env.code
+                          AND env.id = ins.env_id) pod_count,
+                       (SELECT count(1)
+                        FROM devops_env_pod dp
+                        WHERE dp.instance_id = ins.id
+                          AND dp.`status` = 'Running'
+                          AND dp.is_ready = TRUE
+                          AND dp.namespace = env.code
+                          AND env.id = ins.env_id) pod_running_count
+                FROM devops_env env
+                         LEFT JOIN devops_env_app_service env_app ON env.id = env_app.env_id
+                         LEFT JOIN devops_app_service app ON env_app.app_service_id = app.id
+                         LEFT JOIN devops_app_service_instance ins ON app.id = ins.app_service_id
+                                                                          AND env.id = ins.env_id
+                         LEFT JOIN devops_env_user_permission deup ON env.id = deup.env_id
+                WHERE env.project_id = #{projectId}
+                  AND env.is_skip_check_permission = FALSE
+                  AND env.is_active = TRUE
+                  AND env.is_failed = FALSE
+                  AND deup.iam_user_id = #{memberId}
+                  AND (app.is_active = TRUE OR app.is_active is NULL)
+                )
     </select>
 
     <select id="queryInfoById" resultMap="queryInfoByIdResultMap">
@@ -166,7 +237,7 @@
         WHERE env.id = #{envId};
     </select>
 
-    <select id="listResourceEnvTree" resultMap="resourceEnvTree">
+    <select id="listAllResourceEnvTree" resultMap="resourceEnvTree">
         SELECT env.id         as           env_id,
                env.name       as           env_name,
                ins.id         as           ins_id,
@@ -191,6 +262,65 @@
         WHERE env.project_id = #{projectId}
           AND env.is_active = TRUE
           AND env.is_failed = FALSE;
+    </select>
+
+    <select id="listMemberResourceEnvTree" resultMap="resourceEnvTree">
+        (SELECT env.id         as           env_id,
+               env.name       as           env_name,
+               ins.id         as           ins_id,
+               ins.status     as           ins_status,
+               ins.code       as           ins_code,
+               env.cluster_id as           cluster_id,
+               env.is_synchro as           synchronize,
+               (SELECT count(1)
+                FROM devops_env_pod dp
+                WHERE dp.instance_id = ins.id
+                  AND dp.namespace = env.code
+                  AND env.id = ins.env_id) pod_count,
+               (SELECT count(1)
+                FROM devops_env_pod dp
+                WHERE dp.instance_id = ins.id
+                  AND dp.`status` = 'Running'
+                  AND dp.is_ready = TRUE
+                  AND dp.namespace = env.code
+                  AND env.id = ins.env_id) pod_running_count
+        FROM devops_env env
+                 LEFT JOIN devops_app_service_instance ins ON env.id = ins.env_id
+        WHERE env.project_id = #{projectId}
+          AND env.is_skip_check_permission = TRUE
+          AND env.is_active = TRUE
+          AND env.is_failed = FALSE)
+
+        UNION ALL
+        (
+        SELECT env.id         as           env_id,
+               env.name       as           env_name,
+               ins.id         as           ins_id,
+               ins.status     as           ins_status,
+               ins.code       as           ins_code,
+               env.cluster_id as           cluster_id,
+               env.is_synchro as           synchronize,
+               (SELECT count(1)
+                FROM devops_env_pod dp
+                WHERE dp.instance_id = ins.id
+                  AND dp.namespace = env.code
+                  AND env.id = ins.env_id) pod_count,
+               (SELECT count(1)
+                FROM devops_env_pod dp
+                WHERE dp.instance_id = ins.id
+                  AND dp.`status` = 'Running'
+                  AND dp.is_ready = TRUE
+                  AND dp.namespace = env.code
+                  AND env.id = ins.env_id) pod_running_count
+        FROM devops_env env
+                 LEFT JOIN devops_app_service_instance ins ON env.id = ins.env_id
+                 LEFT JOIN devops_env_user_permission deup ON env.id = deup.env_id
+        WHERE env.project_id = #{projectId}
+          AND env.is_skip_check_permission = FALSE
+          AND env.is_active = TRUE
+          AND env.is_failed = FALSE
+          AND deup.iam_user_id = #{memberId}
+        )
     </select>
 
     <select id="listByProjectIdAndGroupIdAndActive"

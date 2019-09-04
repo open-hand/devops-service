@@ -19,6 +19,7 @@ import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.validator.DevopsEnvironmentValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.iam.UserVO;
@@ -357,7 +358,17 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         List<DevopsEnvironmentViewVO> unConnectedEnvs = new ArrayList<>();
         List<DevopsEnvironmentViewVO> unSynchronizedEnvs = new ArrayList<>();
 
-        devopsEnvironmentMapper.listInstanceEnvTree(projectId).forEach(e -> {
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        boolean isOwner = baseServiceClientOperator.isProjectOwner(DetailsHelper.getUserDetails().getUserId(), projectDTO);
+
+        List<DevopsEnvironmentViewDTO> views;
+        if (isOwner) {
+            views = devopsEnvironmentMapper.listAllInstanceEnvTree(projectId);
+        } else {
+            views = devopsEnvironmentMapper.listMemberInstanceEnvTree(projectId, DetailsHelper.getUserDetails().getUserId());
+        }
+
+        views.forEach(e -> {
             // 将DTO层对象转为VO
             DevopsEnvironmentViewVO vo = new DevopsEnvironmentViewVO();
             BeanUtils.copyProperties(e, vo, "apps");
@@ -393,7 +404,17 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         List<DevopsResourceEnvOverviewVO> unConnectedEnvs = new ArrayList<>();
         List<DevopsResourceEnvOverviewVO> unSynchronizedEnvs = new ArrayList<>();
 
-        devopsEnvironmentMapper.listResourceEnvTree(projectId).forEach(e -> {
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        boolean isOwner = baseServiceClientOperator.isProjectOwner(DetailsHelper.getUserDetails().getUserId(), projectDTO);
+
+        List<DevopsResourceEnvOverviewDTO> views;
+        if (isOwner) {
+            views = devopsEnvironmentMapper.listAllResourceEnvTree(projectId);
+        } else {
+            views = devopsEnvironmentMapper.listMemberResourceEnvTree(projectId, DetailsHelper.getUserDetails().getUserId());
+        }
+
+        views.forEach(e -> {
             // 将DTO层对象转为VO
             DevopsResourceEnvOverviewVO vo = new DevopsResourceEnvOverviewVO();
             BeanUtils.copyProperties(e, vo);
