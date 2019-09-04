@@ -114,7 +114,8 @@ public class PipelineServiceImpl implements PipelineService {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         Long userId = DetailsHelper.getUserDetails().getUserId();
         String sortSql = pageRequest.getSort() != null ? pageRequest.getSort().toSql() : null;
-        List<PipelineVO> pipelineVOS = ConvertUtils.convertList(pipelineMapper.listByOptions(projectId, pipelineSearchVO, userId, sortSql), PipelineVO.class);
+         String sortSqlUnder = HumpToUnderlineUtil.toUnderLine(sortSql);
+        List<PipelineVO> pipelineVOS = ConvertUtils.convertList(pipelineMapper.listByOptions(projectId, pipelineSearchVO, userId, sortSqlUnder), PipelineVO.class);
         List<PipelineVO> pipelineVOList;
         Boolean projectOwner = baseServiceClientOperator.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectDTO);
         if (pipelineSearchVO != null && pipelineSearchVO.getManager() != null && pipelineSearchVO.getManager()) {
@@ -821,7 +822,7 @@ public class PipelineServiceImpl implements PipelineService {
         params.put("projectName", projectDTO.getName());
         params.put("organizationId", projectDTO.getOrganizationId().toString());
         notifyVO.setParams(params);
-        notifyClient.sendMessage(notifyVO);
+//        notifyClient.sendMessage(notifyVO);
     }
 
     private void sendFailedSiteMessage(Long pipelineRecordId, Long userId) {
