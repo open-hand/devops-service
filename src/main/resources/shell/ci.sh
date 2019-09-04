@@ -16,7 +16,7 @@ export DOCKER_PASSWORD={{ DOCKER_PASSWORD }}
 export GROUP_NAME={{ GROUP_NAME }}
 # SONARQUBE的地址
 export SONAR_URL= {{ SONAR_URL }}
-# SONARQUBE的登陆名
+# SONARQUBE的token
 export SONAR_LOGIN= {{ SONAR_LOGIN }}
 
 C7N_COMMIT_TIMESTAMP=$(git log -1 --pretty=format:"%ci"| awk '{print $1$2}' | sed 's/[-:]//g')
