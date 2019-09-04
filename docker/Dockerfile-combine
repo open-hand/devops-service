@@ -6,8 +6,6 @@ RUN pyinstaller --noconfirm --clean values_yaml.py
 #RUN cat /src/warn*.txt
 
 FROM registry.cn-shanghai.aliyuncs.com/choerodon-tools/javabase:0.8.2
-# Install kaniko
-
 COPY --from=pyinstaller /home/yaml/dist/values_yaml /usr/lib/yaml
 COPY kaniko  /usr/bin/kaniko
 COPY app.jar /devops-service.jar

@@ -34,20 +34,21 @@ build-combine:
     variables:
       - $COMBINE == "true"
 
-#build-publish:
-#  stage: build
-#  script:
-#    - npm run compile
-#    - echo '//${NPM_REGISTRY}:_authToken=${NPM_TOKEN}'>.npmrc
-#    - npm publish --registry https://nexus.choerodon.com.cn/repository/private-npm/
-#    - curl -sX POST -F token=${FRONT_REPOSITORY_TOKEN} -F ref=${REF_NAME} https://code.choerodon.com.cn/api/v4/projects/32/trigger/pipeline
-#   only:
-#    - master
-#    - tags
-#    - /^release-.*$/
-#    - /^hotfix-.*$/
-#   variables:
-#    - $COMBINE == "true"
+build-publish:
+  stage: build
+  script:
+    - npm run compile
+    - echo '//${NPM_REGISTRY}:_authToken=${NPM_TOKEN}'>.npmrc
+    - npm publish --registry https://nexus.choerodon.com.cn/repository/private-npm/
+    - curl -sX POST -F token=${FRONT_REPOSITORY_TOKEN} -F ref=${REF_NAME} https://code.choerodon.com.cn/api/v4/projects/32/trigger/pipeline
+  only:
+    refs:
+      - master
+      - tags
+      - /^release-.*$/
+      - /^hotfix-.*$/
+    variables:
+      - $COMBINE == "true"
 
 release:
   stage: release
