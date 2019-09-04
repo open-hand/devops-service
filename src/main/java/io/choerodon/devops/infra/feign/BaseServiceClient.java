@@ -159,9 +159,12 @@ public interface BaseServiceClient {
                                                                 @RequestParam("size") int size,
                                                                 @RequestParam(value = "params", required = false) String[] params);
 
-    @PostMapping(value = "/v1/applications/{publish_app_version_id}/complete_downloading")
-    ResponseEntity completeDownloadApplication(@PathVariable("publish_app_version_id") Long publishAppVersionId,
+    @PostMapping(value = "/v1/applications/{app_download_recode_id}/complete_downloading")
+    ResponseEntity completeDownloadApplication(@PathVariable("app_download_recode_id") Long publishAppVersionId,
                                                @RequestBody Set<Long> serviceVersionIds);
+
+    @PutMapping(value = "/v1/applications/{app_download_recode_id}/fail_downloading")
+    ResponseEntity failToDownloadApplication(@PathVariable("app_download_recode_id") Long publishAppVersionId);
 
     @GetMapping(value = "/v1/remote_token/authorization/check/latest")
     ResponseEntity<RemoteTokenAuthorizationVO> checkLatestToken();

@@ -1,6 +1,7 @@
 package io.choerodon.devops.infra.feign;
 
 import java.util.List;
+import java.util.Map;
 
 import okhttp3.MultipartBody;
 import okhttp3.ResponseBody;
@@ -16,7 +17,8 @@ import retrofit2.http.*;
 public interface MarketServiceClient {
 
     @Multipart
-    @POST("market/v1/market_applications/upload")
+//    @POST("market/v1/market_applications/upload")
+    @POST("v1/market_applications/upload")
     Call<ResponseEntity<Boolean>> uploadFile(@Query("remote_token") String remoteToken,
                                              @Query("app_version") String appVersion,
                                              @Part List<MultipartBody.Part> list,
@@ -32,5 +34,5 @@ public interface MarketServiceClient {
                                                           @Part("imageUrl") String imageUrl);
 
     @GET("{fileName}")
-    Call<ResponseBody> downloadFile(@Path("fileName") String fileName);
+    Call<ResponseBody> downloadFile(@Path(value = "fileName") String fileName, @QueryMap(encoded = true) Map<String, String> map);
 }
