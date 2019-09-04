@@ -47,8 +47,8 @@ build-publish:
     - tags
     - /^release-.*$/
     - /^hotfix-.*$/
-    variables:
-      - $COMBINE == "true"
+   variables:
+    - $COMBINE == "true"
 
 release:
   stage: release
