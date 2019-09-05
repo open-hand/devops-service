@@ -1,6 +1,5 @@
 import React, { Fragment, useEffect, useState } from 'react';
 import { Form, Icon, Select, SelectBox, TextField } from 'choerodon-ui/pro';
-import { Button } from 'choerodon-ui';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import map from 'lodash/map';
@@ -16,7 +15,7 @@ import './index.less';
 
 const { Option, OptGroup } = Select;
 
-export default injectIntl(observer(({ record, dataSet, store, projectId, networkStore, ingressStore, refresh, envOptionsDs, intlPrefix, prefixCls, modal, intl: { formatMessage } }) => {
+export default injectIntl(observer(({ record, dataSet, store, projectId, networkStore, ingressStore, refresh, intlPrefix, prefixCls, modal, intl: { formatMessage } }) => {
   const [resourceIsExpand, setResourceIsExpand] = useState(false);
   const [netIsExpand, setNetIsExpand] = useState(false);
   const [ingressIsExpand, setIngressIsExpand] = useState(false);
@@ -25,48 +24,10 @@ export default injectIntl(observer(({ record, dataSet, store, projectId, network
   const [hasYamlFailed, setHasYamlFailed] = useState(false);
 
   useEffect(() => {
-    // store.loadEnv(projectId);
-    envOptionsDs.query();
-    record.getField('environmentId').set('options', envOptionsDs);
-  }, []);
-
-  useEffect(() => {
-    record.get('appServiceId') && record.set('appServiceId', null);
-    store.loadAppService(projectId, record.get('appServiceSource'));
-  }, [record.get('appServiceSource')]);
-
-  useEffect(() => {
-    if (record.get('appServiceId')) {
-      store.loadVersion(projectId, record.get('appServiceId').split('__')[0]);
-      record.set('instanceName', getRandomName(record.get('appServiceId').split('__')[1]));
-    }
-    record.get('appServiceVersionId') && record.set('appServiceVersionId', null);
-  }, [record.get('appServiceId')]);
-
-  useEffect(() => {
     if (record.get('environmentId') && record.get('appServiceId')) {
-      store.loadConfig(projectId, record.get('environmentId'), record.get('appServiceId').split('__')[0]);
       networkStore.loadPorts(projectId, record.get('environmentId'), record.get('appServiceId').split('__')[0]);
     }
-    record.get('valueId', null);
   }, [record.get('environmentId'), record.get('appServiceId')]);
-
-  useEffect(() => {
-    if (record.get('appServiceVersionId') && !record.get('valueId')) {
-      record.get('appServiceVersionId') && store.loadDeployValue(projectId, record.get('appServiceVersionId'));
-    }
-  }, [record.get('appServiceVersionId')]);
-
-  useEffect(() => {
-    record.get('valueId') && store.loadConfigValue(projectId, record.get('valueId'));
-    if (record.get('valueId')) {
-      store.loadConfigValue(projectId, record.get('valueId'));
-    } else if (record.get('appServiceVersionId')) {
-      store.loadDeployValue(projectId, record.get('appServiceVersionId'));
-    } else {
-      store.setConfigValue('');
-    }
-  }, [record.get('valueId')]);
 
   useEffect(() => {
     ChangeConfigValue(store.getConfigValue);
@@ -227,18 +188,10 @@ export default injectIntl(observer(({ record, dataSet, store, projectId, network
             ))
           )}
         </Select>
-        <Select name="appServiceVersionId" searchable>
-          {map(store.getVersion, ({ id, version }) => (
-            <Option value={id}>{version}</Option>
-          ))}
-        </Select>
+        <Select name="appServiceVersionId" searchable />
         <Select name="environmentId" searchable newLine optionRenderer={renderEnvOption} />
         <TextField name="instanceName" />
-        <Select name="valueId" searchable colSpan={2} newLine>
-          {map(store.getConfig, ({ id, name }) => (
-            <Option value={id}>{name}</Option>
-          ))}
-        </Select>
+        <Select name="valueId" searchable colSpan={2} newLine />
         <YamlEditor
           colSpan={3}
           newLine

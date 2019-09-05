@@ -1,7 +1,6 @@
 import React, { useCallback, Fragment, useEffect } from 'react';
 import { TabPage, Content, Header, Breadcrumb, Permission } from '@choerodon/master';
-import { Modal } from 'choerodon-ui/pro';
-import { Button } from 'choerodon-ui';
+import { Modal, Button } from 'choerodon-ui/pro';
 import { FormattedMessage } from 'react-intl';
 import { withRouter } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
@@ -59,6 +58,8 @@ const ProRepository = withRouter(observer((props) => {
         >
           <Button
             icon="mode_edit"
+            color="primary"
+            funcType="flat"
             onClick={openModal}
           >
             <FormattedMessage id="edit" />

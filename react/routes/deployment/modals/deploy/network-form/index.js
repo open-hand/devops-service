@@ -470,7 +470,7 @@ export default class CreateNetwork extends Component {
     ));
 
     return (
-      <Form layout="horizontal" className="c7n-network-form-wrap" style={{ width: '66.66%' }}>
+      <Form layout="horizontal" className="c7ncd-deployment-network-form-wrap" style={{ width: '66.66%' }}>
         <FormItem
           className="network-form-name"
           {...formItemLayout}
@@ -496,7 +496,7 @@ export default class CreateNetwork extends Component {
           )}
         </FormItem>
         <div className="network-panel-title">
-          <FormattedMessage id="network.config" />
+          <FormattedMessage id="ist.networking.service.type" />
         </div>
         <div>
           <FormItem

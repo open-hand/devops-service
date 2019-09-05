@@ -5,7 +5,6 @@ import { DataSet } from 'choerodon-ui/pro';
 import VersionDataSet from './VersionDataSet';
 import AllocationDataSet from './AllocationDataSet';
 import ShareDataSet from './ShareDataSet';
-import NonePermissionDs from '../modals/stores/PermissionDataSet';
 import usePermissionStore from '../modals/stores/useStore';
 import OptionsDataSet from './OptionsDataSet';
 import useStore from '../../stores/useStore';

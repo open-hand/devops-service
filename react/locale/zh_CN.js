@@ -483,6 +483,7 @@ const repository = {
   'c7ncd.repository.test.failed': '连接失败',
   'c7ncd.repository.public': '公有',
   'c7ncd.repository.private': '私有',
+  'c7ncd.repository.type': '仓库类型',
 };
 
 // 文档地址前缀

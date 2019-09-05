@@ -1,6 +1,5 @@
 import React, { Fragment, useEffect } from 'react';
 import { Table } from 'choerodon-ui/pro';
-import { Button } from 'choerodon-ui';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import map from 'lodash/map';

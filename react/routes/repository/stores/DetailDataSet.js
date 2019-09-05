@@ -6,11 +6,13 @@ function handleUpdate({ record, name, value }) {
   switch (name) {
     case 'harborCustom':
       forEach(['url', 'userName', 'password', 'email', 'project'], (item) => {
-        record.getField(item) && record.getField(item).set('required', value);
+        item !== 'project' && record.getField(item).set('required', value);
+        handleInitialValue(record, value, record.get('harbor'), item);
       });
       break;
     case 'chartCustom':
       record.getField('chartUrl').set('required', value);
+      handleInitialValue(record, value, record.get('chart'), 'chartUrl');
       break;
     case 'url' || 'userName' || 'password' || 'email' || 'project':
       record.set('harborStatus', '');
@@ -20,6 +22,16 @@ function handleUpdate({ record, name, value }) {
       break;
     default:
       break;
+  }
+}
+
+function handleInitialValue(record, isCustom, data, item) {
+  if (isCustom && !isEmpty(data)) {
+    const config = data.config || {};
+    record.set(item, config[item === 'chartUrl' ? 'url' : item]);
+  }
+  if (!isCustom) {
+    record.set(item, null);
   }
 }
 
@@ -64,7 +76,7 @@ export default ((intlPrefix, formatMessage, url) => ({
       method: 'get',
     },
     update: ({ data: [data] }) => {
-      const res = pick(data, ['chart', 'harbor']);
+      const res = pick(data, ['chart', 'harbor', 'harborPrivate']);
       getRequestData(data, res);
 
       return ({
@@ -87,7 +99,7 @@ export default ((intlPrefix, formatMessage, url) => ({
     { name: 'project', type: 'url', label: 'Harbor Project' },
     { name: 'harborStatus', type: 'string', defaultValue: '' },
     { name: 'chartStatus', type: 'string', defaultValue: '' },
-    { name: 'harborPrivate', type: 'boolean', defaultValue: false },
+    { name: 'harborPrivate', type: 'boolean', defaultValue: false, label: formatMessage({ id: `${intlPrefix}.type` }) },
   ],
 
   events: {

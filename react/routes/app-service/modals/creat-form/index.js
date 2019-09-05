@@ -41,8 +41,8 @@ const CreateForm = injectIntl(observer((props) => {
   modal.handleOk(async () => {
     if (isModify) {
       if (record.get('harborStatus') === 'failed' || record.get('chartStatus') === 'failed') return false;
-      const harborTestFailed = record.get('harborType') === 'custom' && !isEmpty(record.get('harbor')) && !record.get('harborStatus') && !await handleTestHarbor();
-      const chartTestFailed = record.get('chartType') === 'custom' && !isEmpty(record.get('chart')) && !record.get('chartStatus') && !await handleTestChart();
+      const harborTestFailed = record.get('harborType') === 'custom' && !record.get('harborStatus') && !await handleTestHarbor();
+      const chartTestFailed = record.get('chartType') === 'custom' && !record.get('chartStatus') && !await handleTestChart();
       if (!harborTestFailed && !chartTestFailed && (await dataSet.submit()) !== false) {
         dataSet.query();
       } else {
@@ -62,18 +62,11 @@ const CreateForm = injectIntl(observer((props) => {
     record.set('objectVersionNumber', res.objectVersionNumber);
     record.set('imgUrl', res.imgUrl);
     if (!isEmpty(res.chart)) {
-      record.set('chartUrl', res.chart.config.url);
       record.set('chartType', 'custom');
     } else {
       record.set('chartType', 'default');
     }
     if (!isEmpty(res.harbor)) {
-      const { url, userName, password, project, email } = res.harbor.config || {};
-      record.set('url', url);
-      record.set('userName', userName);
-      record.set('password', password);
-      record.set('email', email);
-      record.set('project', project);
       record.set('harborType', 'custom');
     } else {
       record.set('harborType', 'default');

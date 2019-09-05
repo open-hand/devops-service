@@ -1,12 +1,11 @@
 import React, { Fragment, useEffect } from 'react';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
-import map from 'lodash/map';
 import isEmpty from 'lodash/isEmpty';
 import forEach from 'lodash/forEach';
 import pick from 'lodash/pick';
-import { SelectBox, Select, Form, TextField, UrlField, Password, EmailField } from 'choerodon-ui/pro';
-import { Button, Icon } from 'choerodon-ui';
+import { SelectBox, Select, Form, TextField, UrlField, Password, EmailField, Icon } from 'choerodon-ui/pro';
+import { Button } from 'choerodon-ui';
 import { handlePromptError } from '../../../utils';
 
 import './index.less';
@@ -43,8 +42,8 @@ export default injectIntl(observer(({
 
   modal.handleOk(async () => {
     if (record.get('harborStatus') === 'failed' || record.get('chartStatus') === 'failed') return false;
-    const harborTestFailed = !record.get('harborCustom') && !isEmpty(record.get('harbor')) && !record.get('harborStatus') && !await handleTestHarbor();
-    const chartTestFailed = !record.get('chartCustom') && !isEmpty(record.get('chart')) && !record.get('chartStatus') && !await handleTestChart();
+    const harborTestFailed = record.get('harborCustom') && !record.get('harborStatus') && !await handleTestHarbor();
+    const chartTestFailed = record.get('chartCustom') && !record.get('chartStatus') && !await handleTestChart();
     if (!harborTestFailed && !chartTestFailed && (await dataSet.submit()) !== false) {
       dataSet.query();
     } else {
