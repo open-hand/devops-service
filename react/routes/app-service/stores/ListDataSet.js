@@ -6,12 +6,14 @@ import forEach from 'lodash/forEach';
 function handleUpdate({ record, name, value }) {
   switch (name) {
     case 'harborType':
-      forEach(['url', 'userName', 'password', 'email'], (item) => {
-        record.getField(item).set('required', value === 'custom');
+      forEach(['url', 'userName', 'password', 'email', 'project'], (item) => {
+        item !== 'project' && record.getField(item).set('required', value === 'custom');
+        handleInitialValue(record, value === 'custom', record.get('harbor'), item);
       });
       break;
     case 'chartType':
       record.getField('chartUrl').set('required', value === 'custom');
+      handleInitialValue(record, value === 'custom', record.get('chart'), 'chartUrl');
       break;
     case 'url' || 'userName' || 'password' || 'email' || 'project':
       record.set('harborStatus', '');
@@ -21,6 +23,16 @@ function handleUpdate({ record, name, value }) {
       break;
     default:
       break;
+  }
+}
+
+function handleInitialValue(record, isCustom, data, item) {
+  if (isCustom && !isEmpty(data)) {
+    const config = data.config || {};
+    record.set(item, config[item === 'chartUrl' ? 'url' : item]);
+  }
+  if (!isCustom) {
+    record.set(item, null);
   }
 }
 

@@ -138,7 +138,7 @@ const AppService = withRouter(observer((props) => {
       key: modalKey1,
       drawer: true,
       style: modalStyle1,
-      title: <FormattedMessage id={`${intlPrefix}.edit`} />,
+      title: <FormattedMessage id={`${intlPrefix}.${record.status !== 'add' ? 'edit' : 'create'}`} />,
       children: <CreateForm
         dataSet={listDs}
         record={record}

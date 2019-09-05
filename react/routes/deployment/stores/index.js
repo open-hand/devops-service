@@ -26,21 +26,20 @@ export const StoreProvider = injectIntl(inject('AppState')(
       children,
     } = props;
     const intlPrefix = 'c7ncd.deploy';
-    const listDs = useMemo(() => new DataSet(ListDataSet(intlPrefix, formatMessage, projectId)), [projectId]);
-    const pipelineDs = useMemo(() => new DataSet(PipelineDataSet(intlPrefix, formatMessage, projectId)), [projectId]);
-    const detailDs = useMemo(() => new DataSet(DetailDataSet()), []);
-    const manualDeployDs = useMemo(() => new DataSet(ManualDeployDataSet(intlPrefix, formatMessage, projectId)), [projectId]);
-
-    const envOptionsDs = useMemo(() => new DataSet(OptionsDataSet()), []);
 
     const deployStore = useStore();
     const pipelineStore = usePipelineStore();
     const networkStore = useNetworkStore();
     const ingressStore = useIngressStore();
 
-    useEffect(() => {
-      envOptionsDs.transport.read.url = `/devops/v1/projects/${projectId}/envs/list_by_active?active=true`;
-    }, [projectId]);
+    const envOptionsDs = useMemo(() => new DataSet(OptionsDataSet()), []);
+    const valueIdOptionsDs = useMemo(() => new DataSet(OptionsDataSet()), []);
+    const versionOptionsDs = useMemo(() => new DataSet(OptionsDataSet()), []);
+
+    const listDs = useMemo(() => new DataSet(ListDataSet(intlPrefix, formatMessage, projectId)), [projectId]);
+    const pipelineDs = useMemo(() => new DataSet(PipelineDataSet(intlPrefix, formatMessage, projectId)), [projectId]);
+    const detailDs = useMemo(() => new DataSet(DetailDataSet()), []);
+    const manualDeployDs = useMemo(() => new DataSet(ManualDeployDataSet(intlPrefix, formatMessage, projectId, envOptionsDs, valueIdOptionsDs, versionOptionsDs, deployStore)), [projectId]);
 
     const value = {
       ...props,
@@ -54,7 +53,6 @@ export const StoreProvider = injectIntl(inject('AppState')(
       manualDeployDs,
       networkStore,
       ingressStore,
-      envOptionsDs,
     };
     return (
       <Store.Provider value={value}>

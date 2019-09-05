@@ -88,6 +88,7 @@ export default function useStore() {
         const res = await axios.get(`/devops/v1/projects/${projectId}/app_service_versions/list_app_services/${id}`);
         if (handlePromptError(res)) {
           this.setVersion(res);
+          return res;
         }
       } catch (e) {
         Choerodon.handleResponseError(e);
