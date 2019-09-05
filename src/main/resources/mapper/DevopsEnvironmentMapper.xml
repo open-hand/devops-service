@@ -111,13 +111,12 @@
                   AND env.id = ins.env_id) pod_running_count
         FROM devops_env env
                  LEFT JOIN devops_env_app_service env_app ON env.id = env_app.env_id
-                 LEFT JOIN devops_app_service app ON env_app.app_service_id = app.id
+                 LEFT JOIN devops_app_service app ON env_app.app_service_id = app.id AND (app.is_active = TRUE OR app.is_active is NULL)
                  LEFT JOIN devops_app_service_instance ins ON app.id = ins.app_service_id
                                                           AND env.id = ins.env_id
         WHERE env.project_id = #{projectId}
           AND env.is_active = TRUE
-          AND env.is_failed = FALSE
-          AND (app.is_active = TRUE OR app.is_active is NULL);
+          AND env.is_failed = FALSE;
     </select>
 
     <select id="listMemberInstanceEnvTree" resultMap="instanceEnvTree">
