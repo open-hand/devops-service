@@ -393,7 +393,7 @@ public class GitUtil {
             Ref localRef = null;
             List<Ref> refs = git.branchList().call();
             for (Ref ref : refs) {
-                if (ref.getName().equals(branchName)) {
+                if (ref.getName().contains(branchName)) {
                     localRef = ref;
                     break;
                 }
