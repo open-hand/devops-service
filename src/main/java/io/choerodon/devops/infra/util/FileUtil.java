@@ -95,11 +95,11 @@ public class FileUtil {
     public static void replaceReturnFile(File file, Map<String, String> params) {
         File[] files = file.listFiles();
         for (File a : files) {
-            if (a.getName().equals(".git") || a.getName().endsWith(".xlsx")) {
+            if (a.getName().equals(".git") || a.getName().endsWith(".xlsx")||a.getName().equals("java")) {
                 continue;
             }
             File newFile = null;
-            if (a.getName().equals("model-service")) {
+            if (a.getName().equals("model-service")||a.getName().equals(params.get("the-oldService-name"))) {
                 String parentPath = a.getParent();
                 newFile = new File(parentPath + File.separator + params.get("{{service.code}}"));
                 if (!a.renameTo(newFile)) {
