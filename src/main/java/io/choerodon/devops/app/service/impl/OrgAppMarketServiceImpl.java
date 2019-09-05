@@ -623,7 +623,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             appServiceMarketVO.getAppServiceVersionUploadPayloads().forEach(t -> {
                 //推送镜像
                 String targetImageUrl = String.format("%s:%s", appServiceMarketVO.getHarborUrl(), t.getVersion());
-                callScript(appServiceVersionService.baseQuery(t.getId()).getImage(), targetImageUrl);
+//                callScript(appServiceVersionService.baseQuery(t.getId()).getImage(), targetImageUrl);
 
                 MarketAppServiceVersionImageVO appServiceVersionImageVO = new MarketAppServiceVersionImageVO();
                 appServiceVersionImageVO.setVersion(t.getVersion());
@@ -703,14 +703,10 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         MarketServiceClient marketServiceClient = RetrofitHandler.getMarketServiceClient(getawayUrl, MARKET);
 
         String remoteToken = baseServiceClientOperator.checkLatestToken();
-        try {
-            Boolean uploadSuccess = marketServiceClient.uploadFile(remoteToken, appMarketUploadVO.getAppVersion(), files, mapJson).execute().body();
-            if (uploadSuccess == null || !uploadSuccess) {
-                throw new CommonException(ERROR_UPLOAD, uploadSuccess);
-            }
-        } catch (IOException e) {
-            LOGGER.error("file.upload.error:{}", e.getMessage());
-            throw new CommonException(ERROR_UPLOAD, e.getMessage());
+        Call<ResponseBody> responseCall = marketServiceClient.uploadFile(remoteToken, appMarketUploadVO.getAppVersion(), files, mapJson);
+        Boolean result = RetrofitCallExceptionParse.executeCall(responseCall, ERROR_UPLOAD, Boolean.class);
+        if (!result) {
+            throw new CommonException(ERROR_UPLOAD);
         }
     }
 
@@ -729,20 +725,14 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         MarketServiceClient marketServiceClient = RetrofitHandler.getMarketServiceClient(getawayUrl, MARKET);
 
         String remoteToken = baseServiceClientOperator.checkLatestToken();
-        try {
-            Boolean uploadSuccess = marketServiceClient.updateAppPublishInfoFix(
-                    remoteToken,
-                    appMarketFixVersionPayload.getMarketApplicationVO().getCode(),
-                    appMarketFixVersionPayload.getMarketApplicationVO().getVersion(),
-                    appJson,
-                    files,
-                    imageJson).execute().body();
-            if (uploadSuccess == null || !uploadSuccess) {
-                throw new CommonException(ERROR_UPLOAD, uploadSuccess);
-            }
-        } catch (IOException e) {
-            throw new CommonException(ERROR_UPLOAD, e.getMessage());
-        }
+        Call<ResponseBody> responseCall = marketServiceClient.updateAppPublishInfoFix(
+                remoteToken,
+                appMarketFixVersionPayload.getMarketApplicationVO().getCode(),
+                appMarketFixVersionPayload.getMarketApplicationVO().getVersion(),
+                appJson,
+                files,
+                imageJson);
+        RetrofitCallExceptionParse.executeCall(responseCall, ERROR_UPLOAD, Boolean.class);
     }
 
     private void fileDownload(String fileUrl, String downloadFilePath) {
