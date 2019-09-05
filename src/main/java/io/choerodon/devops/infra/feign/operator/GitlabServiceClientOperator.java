@@ -496,24 +496,19 @@ public class GitlabServiceClientOperator {
         List<TagDTO> tagList = tagTotalList.stream()
                 .filter(t -> filterTag(t, params))
                 .collect(Collectors.toCollection(ArrayList::new));
-        List<TagDTO> tagVOS = tagList.stream()
+
+        PageInfo<TagDTO> resp = PageInfoUtil.createPageFromList(tagList, new PageRequest(page, size));
+
+        resp.getList().stream()
                 .sorted(this::sortTag)
-                .map(TagDTO::new)
-                .parallel()
-                .peek(t -> {
+                .forEach(t -> {
                     IamUserDTO userDTO = baseServiceClientOperator.queryByEmail(TypeUtil.objToLong(gitlabProjectId), t.getCommit().getAuthorEmail());
                     if (userDTO != null) {
                         t.setCommitUserImage(userDTO.getImageUrl());
                     }
                     t.getCommit().setUrl(String.format("%s/commit/%s?view=parallel", path, t.getCommit().getId()));
-                })
-                .collect(Collectors.toCollection(ArrayList::new));
-
-        PageRequest pageRequest = new PageRequest();
-        pageRequest.setPage(page);
-        pageRequest.setSize(size);
-
-        return PageInfoUtil.createPageFromList(tagVOS, pageRequest);
+                });
+        return resp;
     }
 
     private Boolean filterTag(TagDTO tagDTO, String params) {
