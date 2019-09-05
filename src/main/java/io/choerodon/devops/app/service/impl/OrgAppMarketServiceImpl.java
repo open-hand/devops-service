@@ -219,7 +219,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
     @Transactional(rollbackFor = Exception.class)
     public void downLoadApp(AppMarketDownloadPayload appMarketDownloadVO) {
         Set<Long> appServiceVersionIds = new HashSet<>();
-        try {
+//        try {
             //创建应用
             ApplicationEventPayload applicationEventPayload = downPayloadToEnentPayload(appMarketDownloadVO);
             gitlabGroupService.createApplicationGroup(applicationEventPayload);
@@ -266,10 +266,10 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             LOGGER.info("==========应用下载开始调用回传接口==========");
             baseServiceClientOperator.completeDownloadApplication(appMarketDownloadVO.getAppDownloadRecordId(), appServiceVersionIds);
             LOGGER.info("==========应用下载完成==========");
-        } catch (Exception e) {
-            baseServiceClientOperator.failToDownloadApplication(appMarketDownloadVO.getAppDownloadRecordId());
-            throw new CommonException("error.download.app", e.getMessage());
-        }
+//        } catch (Exception e) {
+//            baseServiceClientOperator.failToDownloadApplication(appMarketDownloadVO.getAppDownloadRecordId());
+//            throw new CommonException("error.download.app", e.getMessage());
+//        }
     }
 
     private AppServiceDTO createGitlabProject(AppServiceDownloadPayload downloadPayload, String appCode, Integer gitlabGroupId, Long gitlabUserId) {
