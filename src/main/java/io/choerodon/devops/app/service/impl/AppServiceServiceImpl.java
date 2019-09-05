@@ -1430,16 +1430,19 @@ public class AppServiceServiceImpl implements AppServiceService {
             searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
             List<String> list = (List<String>) maps.get(TypeUtil.PARAMS);
             if (!CollectionUtils.isEmpty(list)) {
-                param = TypeUtil.cast(list.toString());
-                roleAssignmentSearchVO.setParam(new String[]{param});
+                String[] arrayParams = new String[list.size()];
+                list.toArray(arrayParams);
+                roleAssignmentSearchVO.setParam(arrayParams);
             }
-            if (searchParamMap.get("loginName") != null) {
-                String loginName = TypeUtil.objToString(searchParamMap.get("loginName"));
-                roleAssignmentSearchVO.setLoginName(loginName);
-            }
-            if (searchParamMap.get("realName") != null) {
-                String realName = TypeUtil.objToString(searchParamMap.get("realName"));
-                roleAssignmentSearchVO.setRealName(realName);
+            if(!CollectionUtils.isEmpty(searchParamMap)){
+                if (searchParamMap.get("loginName") != null) {
+                    String loginName = TypeUtil.objToString(searchParamMap.get("loginName"));
+                    roleAssignmentSearchVO.setLoginName(loginName);
+                }
+                if (searchParamMap.get("realName") != null) {
+                    String realName = TypeUtil.objToString(searchParamMap.get("realName"));
+                    roleAssignmentSearchVO.setRealName(realName);
+                }
             }
         }
 
