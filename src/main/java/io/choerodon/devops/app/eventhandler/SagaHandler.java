@@ -274,7 +274,7 @@ public class SagaHandler {
     @SagaTask(code = SagaTaskCodeConstants.APIM_UPLOAD_APP_FIX_VERSION,
             description = "应用上传,修复版本",
             sagaCode = SagaTopicCodeConstants.APIM_UPLOAD_APP_FIX_VERSION,
-            maxRetryCount = 3, seq = 1)
+            maxRetryCount = 0, seq = 1)
     public String uploadAppFixVersion(String payload) {
         AppMarketFixVersionPayload fixVersionPayload = gson.fromJson(payload, AppMarketFixVersionPayload.class);
         loggerInfo(fixVersionPayload);
@@ -289,7 +289,7 @@ public class SagaHandler {
     @SagaTask(code = SagaTaskCodeConstants.APIM_DOWNLOAD_APP,
             description = "应用下载",
             sagaCode = SagaTopicCodeConstants.APIM_DOWNLOAD_APP,
-            maxRetryCount = 3, seq = 1)
+            maxRetryCount = 0, seq = 1)
     public String downloadApp(String payload) {
         AppMarketDownloadPayload appMarketDownloadPayload = gson.fromJson(payload, AppMarketDownloadPayload.class);
         loggerInfo(appMarketDownloadPayload);
