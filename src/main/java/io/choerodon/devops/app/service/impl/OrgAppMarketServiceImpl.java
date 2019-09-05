@@ -219,29 +219,35 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
     @Transactional(rollbackFor = Exception.class)
     public void downLoadApp(AppMarketDownloadPayload appMarketDownloadVO) {
         Set<Long> appServiceVersionIds = new HashSet<>();
+
 //        try {
-            //创建应用
-            ApplicationEventPayload applicationEventPayload = downPayloadToEnentPayload(appMarketDownloadVO);
-            gitlabGroupService.createApplicationGroup(applicationEventPayload);
-            LOGGER.info("==========应用下载，创建gitlab Group 成功！！==========");
+        //创建应用
+        ApplicationEventPayload applicationEventPayload = downPayloadToEnentPayload(appMarketDownloadVO);
+        gitlabGroupService.createApplicationGroup(applicationEventPayload);
+        LOGGER.info("==========应用下载，创建gitlab Group 成功！！==========");
 
-            DevopsProjectDTO projectDTO = devopsProjectService.queryByAppId(appMarketDownloadVO.getAppId());
-            UserAttrDTO userAttrDTO = userAttrService.baseQueryById(appMarketDownloadVO.getIamUserId());
+        DevopsProjectDTO projectDTO = devopsProjectService.queryByAppId(appMarketDownloadVO.getAppId());
+        LOGGER.info("==========应用下载，appMarketDownloadVO.getAppId(){},projectDTO=========={}", appMarketDownloadVO.getAppId(), projectDTO.getIamProjectId());
 
-            ApplicationDTO applicationDTO = baseServiceClientOperator.queryAppById(appMarketDownloadVO.getAppId());
-            String groupPath = String.format(SITE_APP_GROUP_NAME_FORMAT, applicationDTO.getCode());
-            appMarketDownloadVO.getAppServiceDownloadPayloads().forEach(downloadPayload -> {
-                //1. 校验是否已经下载过
-                AppServiceDTO appServiceDTO = appServiceService.baseQueryByCode(downloadPayload.getAppServiceCode(), appMarketDownloadVO.getAppId());
-                downloadPayload.setAppId(appMarketDownloadVO.getAppId());
-                Boolean isFirst = appServiceDTO == null;
-                if (appServiceDTO == null) {
-                    appServiceDTO = createGitlabProject(downloadPayload, appMarketDownloadVO.getAppCode(), TypeUtil.objToInteger(projectDTO.getDevopsAppGroupId()), userAttrDTO.getGitlabUserId());
-                    LOGGER.info("==========应用下载，创建gitlab Project成功！！==========");
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(appMarketDownloadVO.getIamUserId());
 
-                    //创建saga payload
-                    DevOpsAppServiceSyncPayload appServiceSyncPayload = new DevOpsAppServiceSyncPayload();
-                    BeanUtils.copyProperties(appServiceDTO, appServiceSyncPayload);
+        ApplicationDTO applicationDTO = baseServiceClientOperator.queryAppById(appMarketDownloadVO.getAppId());
+        String groupPath = String.format(SITE_APP_GROUP_NAME_FORMAT, applicationDTO.getCode());
+        appMarketDownloadVO.getAppServiceDownloadPayloads().forEach(downloadPayload -> {
+            //1. 校验是否已经下载过
+            AppServiceDTO appServiceDTO = appServiceService.baseQueryByCode(downloadPayload.getAppServiceCode(), appMarketDownloadVO.getAppId());
+            downloadPayload.setAppId(appMarketDownloadVO.getAppId());
+            Boolean isFirst = appServiceDTO == null;
+            if (appServiceDTO == null) {
+                LOGGER.info("==========应用下载=========={}", appMarketDownloadVO.getAppCode());
+                LOGGER.info("==========应用下载=========={}", projectDTO.getDevopsAppGroupId());
+                LOGGER.info("==========应用下载=========={}", userAttrDTO.getGitlabUserId());
+                appServiceDTO = createGitlabProject(downloadPayload, appMarketDownloadVO.getAppCode(), TypeUtil.objToInteger(projectDTO.getDevopsAppGroupId()), userAttrDTO.getGitlabUserId());
+                LOGGER.info("==========应用下载，创建gitlab Project成功！！==========");
+
+                //创建saga payload
+                DevOpsAppServiceSyncPayload appServiceSyncPayload = new DevOpsAppServiceSyncPayload();
+                BeanUtils.copyProperties(appServiceDTO, appServiceSyncPayload);
                     producer.apply(
                             StartSagaBuilder.newBuilder()
                                     .withSourceId(applicationDTO.getId())
@@ -251,21 +257,21 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                             builder -> {
                             }
                     );
-                }
-                String applicationDir = APPLICATION + System.currentTimeMillis();
-                String accessToken = appServiceService.getToken(appServiceDTO.getGitlabProjectId(), applicationDir, userAttrDTO);
-                LOGGER.info("=========应用下载，获取token成功=========");
-
-                appServiceVersionIds.addAll(createAppServiceVersion(downloadPayload, appServiceDTO, groupPath, isFirst, accessToken, appMarketDownloadVO.getDownloadAppType()));
-                LOGGER.info("==========应用下载文件上传成功==========");
-            });
-            if (!appMarketDownloadVO.getDownloadAppType().equals(DOWNLOAD_ONLY)) {
-                pushImageForDownload(appMarketDownloadVO);
-                LOGGER.info("==========应用下载镜像推送成功==========");
             }
-            LOGGER.info("==========应用下载开始调用回传接口==========");
-            baseServiceClientOperator.completeDownloadApplication(appMarketDownloadVO.getAppDownloadRecordId(), appServiceVersionIds);
-            LOGGER.info("==========应用下载完成==========");
+            String applicationDir = APPLICATION + System.currentTimeMillis();
+            String accessToken = appServiceService.getToken(appServiceDTO.getGitlabProjectId(), applicationDir, userAttrDTO);
+            LOGGER.info("=========应用下载，获取token成功=========");
+
+            appServiceVersionIds.addAll(createAppServiceVersion(downloadPayload, appServiceDTO, groupPath, isFirst, accessToken, appMarketDownloadVO.getDownloadAppType()));
+            LOGGER.info("==========应用下载文件上传成功==========");
+        });
+        if (!appMarketDownloadVO.getDownloadAppType().equals(DOWNLOAD_ONLY)) {
+            pushImageForDownload(appMarketDownloadVO);
+            LOGGER.info("==========应用下载镜像推送成功==========");
+        }
+        LOGGER.info("==========应用下载开始调用回传接口==========");
+        baseServiceClientOperator.completeDownloadApplication(appMarketDownloadVO.getAppDownloadRecordId(), appServiceVersionIds);
+        LOGGER.info("==========应用下载完成==========");
 //        } catch (Exception e) {
 //            baseServiceClientOperator.failToDownloadApplication(appMarketDownloadVO.getAppDownloadRecordId());
 //            throw new CommonException("error.download.app", e.getMessage());
@@ -765,6 +771,9 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
     }
 
     private void fileDownload(String fileUrl, String downloadFilePath) {
+        LOGGER.info("============文件下载====fileUrl{}", fileUrl);
+        LOGGER.info("============文件下载====downloadFilePath{}", downloadFilePath);
+
         ConfigurationProperties configurationProperties = new ConfigurationProperties();
         configurationProperties.setType(CHART);
         configurationProperties.setInsecureSkipTlsVerify(false);
@@ -781,16 +790,21 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         MarketServiceClient marketServiceClient = retrofit.create(MarketServiceClient.class);
         FileOutputStream fos = null;
         try {
+            LOGGER.info("============文件下载===={}", fileName);
+            LOGGER.info("============文件下载===={},====={}", map.toString(), map.size());
             Call<ResponseBody> getTaz = marketServiceClient.downloadFile(fileName, map);
             Response<ResponseBody> response = getTaz.execute();
+            LOGGER.info("============文件下载===={}", response.headers());
             fos = new FileOutputStream(downloadFilePath);
             if (response.body() != null) {
+                LOGGER.info("============文件下载=========1111");
                 InputStream is = response.body().byteStream();
                 byte[] buffer = new byte[4096];
                 int r = 0;
                 while ((r = is.read(buffer)) > 0) {
                     fos.write(buffer, 0, r);
                 }
+                LOGGER.info("============文件下载=========2222");
                 is.close();
             }
             fos.close();
