@@ -55,7 +55,9 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
 
         //查询环境
         Map<Long, DevopsEnvironmentDTO> envMap = new HashMap<>(pageRequest.getSize());
-        devopsEnvironmentService.baseListByIds(new ArrayList<>(envIds)).forEach(env -> envMap.put(env.getId(), env));
+        if (!envIds.isEmpty()) {
+            devopsEnvironmentService.baseListByIds(new ArrayList<>(envIds)).forEach(env -> envMap.put(env.getId(), env));
+        }
 
         PageInfo<DevopsDeployRecordVO> devopsDeployRecordVOPageInfo = ConvertUtils.convertPage(devopsDeployRecordDTOPageInfo, DevopsDeployRecordVO.class);
 
