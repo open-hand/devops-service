@@ -72,7 +72,6 @@ export default class CertificateCreate extends Component {
     } else {
       const {
         store,
-        form,
         AppState: {
           currentMenuType: {
             id: projectId,
@@ -90,7 +89,7 @@ export default class CertificateCreate extends Component {
             callback(formatMessage({ id: 'ctf.name.check.exist' }));
           }
         })
-        .catch(() => callback());
+        .catch(() => callback('名称检验失败，请稍后再试！'));
     }
   }, 600);
 

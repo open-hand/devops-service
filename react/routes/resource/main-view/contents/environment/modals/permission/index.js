@@ -1,7 +1,7 @@
 import React, { Fragment, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
-import { Select, SelectBox } from 'choerodon-ui/pro';
+import { Select, Radio } from 'choerodon-ui';
 import { Form } from 'choerodon-ui';
 import omit from 'lodash/omit';
 import map from 'lodash/map';
@@ -12,6 +12,7 @@ import './index.less';
 
 const FormItem = Form.Item;
 const { Option } = Select;
+const RadioGroup = Radio.Group;
 
 const Permission = observer(({ modal, form, store, onOk, skipPermission, refresh, intlPrefix, prefixCls, intl: { formatMessage } }) => {
   const { getFieldDecorator } = form;
@@ -44,10 +45,8 @@ const Permission = observer(({ modal, form, store, onOk, skipPermission, refresh
     }
   });
 
-
-  // TODO: 替换掉 SelectBox
-  function handleChange(value) {
-    setIsSkip(value);
+  function handleChange(e) {
+    setIsSkip(e.target.value);
   }
 
   function getSelector() {
@@ -58,11 +57,11 @@ const Permission = observer(({ modal, form, store, onOk, skipPermission, refresh
 
     const options = map(getUsers, ({ iamUserId, realName }) => {
       const selectedValues = Object.values(omit(data, 'keys'));
-      return <Select.Option
+      return <Option
         disabled={selectedValues.includes(iamUserId)}
         key={iamUserId}
         value={iamUserId}
-      >{realName}</Select.Option>;
+      >{realName}</Option>;
     });
 
     return <DynamicSelect
@@ -81,17 +80,16 @@ const Permission = observer(({ modal, form, store, onOk, skipPermission, refresh
       <Form>
         <div className={`${prefixCls}-modal-selectbox`}>
           <FormItem>
-            {getFieldDecorator('skipCheckPermission', { initialValue: isSkip })(<SelectBox
-              // readOnly={!getUsers.length}
-              onChange={handleChange}
-            >
-              <Option value>
-                {formatMessage({ id: `${intlPrefix}.member.all` })}
-              </Option>
-              <Option value={false}>
-                {formatMessage({ id: `${intlPrefix}.member.specific` })}
-              </Option>
-            </SelectBox>)}
+            {getFieldDecorator('skipCheckPermission', { initialValue: isSkip })(
+              <RadioGroup onChange={handleChange}>
+                <Radio value>
+                  {formatMessage({ id: `${intlPrefix}.member.all` })}
+                </Radio>
+                <Radio value={false}>
+                  {formatMessage({ id: `${intlPrefix}.member.specific` })}
+                </Radio>
+              </RadioGroup>
+            )}
           </FormItem>
         </div>
         {getSelector()}

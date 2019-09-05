@@ -1,6 +1,5 @@
 import React, { Fragment, lazy, Suspense } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Permission } from '@choerodon/master';
 import { Tabs, Spin } from 'choerodon-ui';
 import { useEnvironmentStore } from './stores';
 import { useResourceStore } from '../../../stores';
@@ -17,6 +16,7 @@ const EnvContent = observer(() => {
   const {
     prefixCls,
     intlPrefix,
+    treeDs,
   } = useResourceStore();
   const {
     intl: { formatMessage },
@@ -35,9 +35,20 @@ const EnvContent = observer(() => {
   function getTitle() {
     const record = baseInfoDs.current;
     if (record) {
+      const id = record.get('id');
       const name = record.get('name');
       const connect = record.get('connect');
       const synchronize = record.get('synchronize');
+
+      const menuItem = treeDs.find((item) => item.get('id') === id);
+      if (menuItem
+        && (menuItem.get('connect') !== connect
+          || menuItem.get('synchronize') !== synchronize
+          || menuItem.get('name') !== name)) {
+        menuItem.set('connect', connect);
+        menuItem.set('synchronize', synchronize);
+        menuItem.set('name', name);
+      }
 
       return <Fragment>
         <StatusDot
@@ -68,14 +79,14 @@ const EnvContent = observer(() => {
             <SyncSituation />
           </Suspense>
         </TabPane>
-        <TabPane
+        {envStore.getPermission && <TabPane
           key={ASSIGN_TAB}
           tab={formatMessage({ id: `${intlPrefix}.environment.tabs.assignPermissions` })}
         >
           <Suspense fallback={<Spin />}>
             <Permissions />
           </Suspense>
-        </TabPane>
+        </TabPane>}
       </Tabs>
       <Modals />
     </div>

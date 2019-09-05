@@ -44,23 +44,29 @@ const TreeView = observer(({ ds, store, nodesRender, searchAble }) => {
     [store.getSearchValue]);
 
   function handleSearch(value) {
-    /**
-     *
-     * 如果在 DataSet 的 load 方法中对原始数据进行了修改
-     * 那么就不能使用 ds.reset(); 进行重置，因为该方法是基于 originalData 的
-     * 应该手动将各记录重置
-     *
-     * */
-    ds.map((record) => record.reset());
-
-    const treeData = ds.data;
     const realValue = value || '';
     const expandedKeys = [];
 
     // NOTE: 让多个 action 只执行一次
     runInAction(() => {
+      /**
+       *
+       * 如果在 DataSet 的 load 方法中对原始数据进行了修改
+       * 那么就不能使用 ds.reset(); 进行重置，因为该方法是基于 originalData 的
+       * 应该手动将各记录重置
+       *
+       * */
+      ds.forEach((record) => {
+        record.reset();
+
+        /**
+         * 未清除搜索值就刷新，Record会记录expand状态，导致上一步record.reset()失效
+         * */
+        record.isExpanded = false;
+      });
+      const treeData = ds.data;
       // eslint-disable-next-line no-plusplus
-      for (let i = 0; i < treeData.length; i++) {
+      for (let i = 0, len = treeData.length; i < len; i++) {
         const record = treeData[i];
         const name = record.get('name');
 
@@ -71,8 +77,8 @@ const TreeView = observer(({ ds, store, nodesRender, searchAble }) => {
     });
 
     const uniqKeys = new Set(expandedKeys);
-    store.setExpandedKeys([...uniqKeys]);
     store.setSearchValue(realValue);
+    handleExpanded([...uniqKeys]);
   }
 
   function handleExpanded(keys) {

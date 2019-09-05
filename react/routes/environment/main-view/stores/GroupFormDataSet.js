@@ -1,9 +1,9 @@
 import { axios } from '@choerodon/master';
 
 export default ({ formatMessage, intlPrefix, projectId }) => {
-  const nameValidator = async (value, name, record) => {
+  const nameValidator = async (value) => {
     try {
-      const res = await axios.get(`/devops/v1/projects/${projectId}/env_groups/check_name?name=${value}`);
+      const res = await axios.get(`/devops/v1/projects/${projectId}/env_groups/check_name?name=${encodeURIComponent(value)}`);
       if (res.failed) {
         return '分组名重名校验失败，请稍后再试';
       } else if (!res) {
@@ -21,7 +21,7 @@ export default ({ formatMessage, intlPrefix, projectId }) => {
     paging: false,
     transport: {
       submit: ({ data: [data] }) => ({
-        url: `/devops/v1/projects/${projectId}/env_groups?name=${data.name}`,
+        url: `/devops/v1/projects/${projectId}/env_groups?name=${encodeURIComponent(data.name)}`,
         method: 'post',
         data: null,
       }),

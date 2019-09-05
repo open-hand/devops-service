@@ -1,23 +1,7 @@
-import getTablePostData from '../../../../../../utils/getTablePostData';
-
-export default ({ formatMessage, intlPrefix, projectId, id }) => ({
+export default ({ formatMessage, intlPrefix }) => ({
   selection: false,
   pageSize: 10,
-  transport: {
-    read: ({ data }) => {
-      const postData = getTablePostData(data);
-
-      return ({
-        url: `/devops/v1/projects/${projectId}/service/page_by_instance?app_service_id=${id}`,
-        method: 'post',
-        data: postData,
-      });
-    },
-    destroy: ({ data: [data] }) => ({
-      url: `/devops/v1/projects/${projectId}/service/${data.id}`,
-      method: 'delete',
-    }),
-  },
+  transport: {},
   fields: [
     { name: 'id', type: 'number' },
     { name: 'name', type: 'string', label: formatMessage({ id: `${intlPrefix}.application.net.name` }) },

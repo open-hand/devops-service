@@ -44,6 +44,7 @@ const Content = observer(() => {
       try {
         const wsHost = removeEndsChar(window._env_.DEVOPS_HOST, '/');
         const url = `${wsHost}/devops/describe?key=cluster:${clusterId}.describe:${uuidv1()}&env=${env}&kind=${kind}&name=${name}&describeId=${id}`;
+        // const url = `${wsHost}/devops/describe?key=cluster:61.describe:${uuidv1()}&env=envtestenv&kind=${kind}&name=${name}&describeId=${id}`;
         ws = new WebSocket(url);
         ws.addEventListener('message', handleMessage);
         ws.addEventListener('error', handleError);

@@ -4,7 +4,7 @@ export default ({ formatMessage, intlPrefix, id }) => {
   const nameValidator = async (value, name, record) => {
     const groupId = record.get('id');
     try {
-      const res = await axios.get(`/devops/v1/projects/${id}/env_groups/check_name?name=${value}&group_id=${groupId}`);
+      const res = await axios.get(`/devops/v1/projects/${id}/env_groups/check_name?name=${encodeURIComponent(value)}&group_id=${groupId}`);
       if (res.failed) {
         return '分组名重名校验失败，请稍后再试';
       } else if (!res) {

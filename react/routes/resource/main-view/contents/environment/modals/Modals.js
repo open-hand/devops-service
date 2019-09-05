@@ -1,10 +1,11 @@
 import React, { useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
+import { Permission } from '@choerodon/master';
 import { Modal } from 'choerodon-ui/pro';
 import HeaderButtons from '../../../../../../components/header-buttons';
 import EnvDetail from '../../../../../../components/env-detail';
 import LinkService from './link-service';
-import Permission from './permission';
+import PermissionPage from './permission';
 import { useResourceStore } from '../../../../stores';
 import { useEnvironmentStore } from '../stores';
 import { useModalStore } from './stores';
@@ -111,7 +112,7 @@ const EnvModals = observer(() => {
       title: formatMessage({ id: `${intlPrefix}.modal.permission` }),
       drawer: true,
       style: modalStyle,
-      children: <Permission
+      children: <PermissionPage
         store={modalStore}
         onOk={addUsers}
         intlPrefix={intlPrefix}
@@ -140,6 +141,7 @@ const EnvModals = observer(() => {
       display: true,
       group: 1,
     }, {
+      permissions: ['devops-service.devops-environment.pageEnvUserPermissions'],
       name: formatMessage({ id: `${intlPrefix}.modal.permission` }),
       icon: 'authority',
       handler: openPermission,
