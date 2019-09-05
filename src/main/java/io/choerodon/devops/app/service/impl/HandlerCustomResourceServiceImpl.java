@@ -95,7 +95,7 @@ public class HandlerCustomResourceServiceImpl implements HandlerObjectFileRelati
                 //判断自定义资源是否发生了改变
                 DevopsCustomizeResourceContentDTO devopsCustomizeResourceContentDTO = devopsCustomizeResourceContentService.baseQuery(devopsCustomizeResourceDTO.getContentId());
                 boolean isNotChange = customResource.getResourceContent().equals(devopsCustomizeResourceContentDTO.getContent());
-                DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsCustomizeResourceDTO.getEnvId());
+                DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsCustomizeResourceDTO.getCommandId());
 
                 //发生改变走处理改变自定义资源的逻辑
                 if (!isNotChange) {

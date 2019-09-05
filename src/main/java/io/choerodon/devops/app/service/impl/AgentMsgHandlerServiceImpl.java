@@ -132,7 +132,6 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     DevopsCommandEventService devopsCommandEventService;
 
 
-
     public void handlerUpdatePodMessage(String key, String msg, Long envId) {
         V1Pod v1Pod = json.deserialize(msg, V1Pod.class);
 
@@ -215,9 +214,6 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
     private void handleEnvPod(V1Pod v1Pod, AppServiceInstanceDTO appServiceInstanceDTO, String resourceVersion, DevopsEnvPodDTO devopsEnvPodDTO, Boolean flag, List<DevopsEnvPodDTO> devopsEnvPodDTOS) {
 
-
-
-
         if (devopsEnvPodDTOS == null || devopsEnvPodDTOS.isEmpty()) {
             devopsEnvPodDTO.setInstanceId(appServiceInstanceDTO.getId());
             devopsEnvPodService.baseCreate(devopsEnvPodDTO);
@@ -225,11 +221,10 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             for (DevopsEnvPodDTO pod : devopsEnvPodDTOS) {
                 if (pod.getName().equals(v1Pod.getMetadata().getName())
                         && pod.getNamespace().equals(v1Pod.getMetadata().getNamespace())) {
-                    if(v1Pod.getStatus().getPhase().equals(EVICTED)||v1Pod.getStatus().getReason().equals(EVICTED)) {
+                    if ((v1Pod.getStatus().getPhase() != null && v1Pod.getStatus().getPhase().equals(EVICTED)) || (v1Pod.getStatus().getReason() != null && v1Pod.getStatus().getReason().equals(EVICTED))) {
                         devopsEnvPodService.baseDeleteById(pod.getId());
-                        devopsEnvResourceService.deleteByKindAndNameAndInstanceId(ResourceType.POD.getType(),pod.getName(),pod.getInstanceId());
-                    }
-                    else if (!resourceVersion.equals(pod.getResourceVersion())) {
+                        devopsEnvResourceService.deleteByKindAndNameAndInstanceId(ResourceType.POD.getType(), pod.getName(), pod.getInstanceId());
+                    } else if (!resourceVersion.equals(pod.getResourceVersion())) {
                         devopsEnvPodDTO.setId(pod.getId());
                         devopsEnvPodDTO.setInstanceId(pod.getInstanceId());
                         devopsEnvPodDTO.setObjectVersionNumber(pod.getObjectVersionNumber());

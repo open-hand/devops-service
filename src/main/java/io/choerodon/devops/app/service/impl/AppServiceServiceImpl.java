@@ -2058,7 +2058,10 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
         switch (type) {
             case NORMAL_SERVICE: {
-                list.addAll(appServiceMapper.list(projectId, true, true, serviceType, null, params, PageRequestUtil.checkSortIsEmpty(new PageRequest())));
+                AppServiceDTO appServiceDTO = new AppServiceDTO();
+                appServiceDTO.setAppId(devopsProjectService.queryAppIdByProjectId(projectId));
+                appServiceDTO.setActive(true);
+                list.addAll(appServiceMapper.select(appServiceDTO));
                 break;
             }
             case SHARE_SERVICE: {
