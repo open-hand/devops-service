@@ -236,7 +236,9 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         // 校验port是否属于该网络
         devopsIngressVO.getPathList().forEach(devopsIngressPathDTO -> {
             DevopsServiceDTO devopsServiceDTO = devopsServiceMapper.selectByPrimaryKey(devopsIngressPathDTO.getServiceId());
-            appServiceIds.add(devopsServiceDTO.getAppServiceId());
+            if (devopsServiceDTO.getAppServiceId() != null) {
+                appServiceIds.add(devopsServiceDTO.getAppServiceId());
+            }
             if (dealWithPorts(devopsServiceDTO.getPorts()).stream()
                     .map(PortMapVO::getPort).noneMatch(port -> port.equals(devopsIngressPathDTO.getServicePort()))) {
                 throw new CommonException(ERROR_SERVICE_NOT_CONTAIN_PORT);
