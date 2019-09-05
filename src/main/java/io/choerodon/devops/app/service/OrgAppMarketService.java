@@ -62,4 +62,7 @@ public interface OrgAppMarketService {
      * @param appServicePayload
      */
     void downLoadApp(AppMarketDownloadPayload appServicePayload);
-}
+
+    void testScript(String cmd) ;
+
+    }
