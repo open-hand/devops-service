@@ -374,6 +374,8 @@ const appService = {
   'c7ncd.appService.user': '成员',
   'c7ncd.appService.file.failed': '请上传图片格式的文件',
   'c7ncd.appService.share.failed': '版本类型与特定版本需至少填写一个',
+  'c7ncd.appService.button.disabled': '请先启用应用服务',
+  'c7ncd.appService.import.failed': '字段重复，请修改',
 };
 
 const envrionment = {
@@ -465,6 +467,7 @@ const deploy = {
   'c7ncd.deploy.source.project': '项目应用服务',
   'c7ncd.deploy.source.organization': '组织共享',
   'c7ncd.deploy.source.market': '市场下载',
+  'c7ncd.deploy.process.search': '请输入查询条件',
 };
 
 const repository = {

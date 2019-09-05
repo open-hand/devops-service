@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { Header, Permission } from '@choerodon/master';
-import { Button } from 'choerodon-ui';
+import { Button, Tooltip } from 'choerodon-ui';
 import { Modal } from 'choerodon-ui/pro';
 import { observer } from 'mobx-react-lite';
 import { useServiceDetailStore } from './stores';
@@ -81,12 +81,18 @@ const HeaderButtons = observer(({ children }) => {
       <Permission
         service={['devops-service.app-service.update']}
       >
-        <Button
-          icon="mode_edit "
-          onClick={openEdit}
+        <Tooltip
+          title={detailDs.current && !detailDs.current.get('active') ? <FormattedMessage id={`${intlPrefix}.button.disabled`} /> : ''}
+          placement="bottom"
         >
-          <FormattedMessage id={`${intlPrefix}.edit`} />
-        </Button>
+          <Button
+            icon="mode_edit "
+            onClick={openEdit}
+            disabled={detailDs.current && !detailDs.current.get('active')}
+          >
+            <FormattedMessage id={`${intlPrefix}.edit`} />
+          </Button>
+        </Tooltip>
       </Permission>
       <Permission
         service={['devops-service.app-service.updateActive']}

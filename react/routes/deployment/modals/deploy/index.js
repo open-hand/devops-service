@@ -1,5 +1,5 @@
 import React, { Fragment, useEffect, useState } from 'react';
-import { Form, Icon, Select, SelectBox, TextField } from 'choerodon-ui/pro';
+import { Button, Form, Icon, Select, SelectBox, TextField } from 'choerodon-ui/pro';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import map from 'lodash/map';
@@ -155,12 +155,13 @@ export default injectIntl(observer(({ record, dataSet, store, projectId, network
   function renderEnvOption({ record: envRecord, text, value }) {
     return (
       <div disabled={!envRecord.get('connect') || !envRecord.get('synchro')}>
-        <StatusDot
+        {value && (<StatusDot
           connect={envRecord.get('connect')}
           synchronize={envRecord.get('synchro')}
           active={envRecord.get('active')}
-        />
-        {text}
+          size="small"
+        />)}
+        <span className={`${prefixCls}-select-option-text`}>{text}</span>
       </div>
     );
   }

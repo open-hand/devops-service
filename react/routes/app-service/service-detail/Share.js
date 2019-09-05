@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { TabPage, Content, Permission, Breadcrumb, Action } from '@choerodon/master';
 import { Table, Modal } from 'choerodon-ui/pro';
-import { Button } from 'choerodon-ui';
+import { Button, Tooltip } from 'choerodon-ui';
 import { FormattedMessage } from 'react-intl';
 import { useServiceDetailStore } from './stores';
 import HeaderButtons from './HeaderButtons';
@@ -9,8 +9,7 @@ import ShareRule from './modals/share-rule';
 
 const { Column } = Table;
 
-const modalKey1 = Modal.key();
-
+const modalKey = Modal.key();
 const modalStyle = {
   width: 380,
 };
@@ -26,6 +25,7 @@ const Share = (props) => {
     params: { id },
     AppState: { currentMenuType: { projectId } },
     AppStore,
+    detailDs,
   } = useServiceDetailStore();
 
   useEffect(() => {
@@ -63,7 +63,7 @@ const Share = (props) => {
 
   function openModal(record) {
     Modal.open({
-      key: modalKey1,
+      key: modalKey,
       title: formatMessage({ id: `${intlPrefix}.share.rule.add` }),
       children: <ShareRule
         versionOptions={shareVersionsDs}
@@ -97,21 +97,34 @@ const Share = (props) => {
     shareDs.delete(shareDs.current);
   }
 
+  function renderButtons() {
+    const isStop = detailDs.current && !detailDs.current.get('active');
+    return (
+      <Permission
+        service={['devops-service.app-share-rule.createOrUpdate']}
+      >
+        <Tooltip
+          title={isStop ? <FormattedMessage id={`${intlPrefix}.button.disabled`} /> : ''}
+          placement="bottom"
+        >
+          <Button
+            icon="playlist_add"
+            onClick={() => openModal(shareDs.create())}
+            disabled={isStop}
+          >
+            <FormattedMessage id={`${intlPrefix}.share.rule.add`} />
+          </Button>
+        </Tooltip>
+      </Permission>
+    );
+  }
+
   return (
     <TabPage
       service={['devops-service.app-share-rule.createOrUpdate']}
     >
       <HeaderButtons>
-        <Permission
-          service={['devops-service.app-share-rule.createOrUpdate']}
-        >
-          <Button
-            icon="playlist_add"
-            onClick={() => openModal(shareDs.create())}
-          >
-            <FormattedMessage id={`${intlPrefix}.share.rule.add`} />
-          </Button>
-        </Permission>
+        {renderButtons()}
         <Button
           icon="refresh"
           onClick={refresh}

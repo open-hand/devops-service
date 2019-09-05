@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { TabPage, Content, Permission, Breadcrumb, Action } from '@choerodon/master';
 import { Table, Modal } from 'choerodon-ui/pro';
-import { Button } from 'choerodon-ui';
+import { Button, Tooltip } from 'choerodon-ui';
 import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import { useServiceDetailStore } from './stores';
@@ -26,8 +26,6 @@ const Allocation = observer((props) => {
     permissionDs,
     detailDs,
     nonePermissionDs,
-    params,
-    permissionStore,
     AppState: { currentMenuType: { id } },
   } = useServiceDetailStore();
 
@@ -59,11 +57,9 @@ const Allocation = observer((props) => {
   }
 
   function openDetail() {
-    permissionStore.setChecked(detailDs.current.get('skipCheckPermission'));
-    permissionStore.clearPermissionUsers();
     Modal.open({
       key: modalKey1,
-      title: formatMessage({ id: `${intlPrefix}.detail` }),
+      title: formatMessage({ id: `${intlPrefix}.permission.manage` }),
       children: <ServicePermission
         dataSet={permissionDs}
         record={detailDs.current}
@@ -84,21 +80,34 @@ const Allocation = observer((props) => {
     permissionDs.delete(permissionDs.current);
   }
 
+  function renderButtons() {
+    const isStop = detailDs.current && !detailDs.current.get('active');
+    return (
+      <Permission
+        service={['devops-service.app-service.updatePermission']}
+      >
+        <Tooltip
+          title={isStop ? <FormattedMessage id={`${intlPrefix}.button.disabled`} /> : ''}
+          placement="bottom"
+        >
+          <Button
+            icon="authority"
+            onClick={openDetail}
+            disabled={isStop}
+          >
+            <FormattedMessage id={`${intlPrefix}.permission.manage`} />
+          </Button>
+        </Tooltip>
+      </Permission>
+    );
+  }
+
   return (
     <TabPage
       service={['devops-service.app-service.updatePermission']}
     >
       <HeaderButtons>
-        <Permission
-          service={['devops-service.app-service.updatePermission']}
-        >
-          <Button
-            icon="authority"
-            onClick={openDetail}
-          >
-            <FormattedMessage id={`${intlPrefix}.permission.manage`} />
-          </Button>
-        </Permission>
+        {renderButtons()}
         <Button
           icon="refresh"
           onClick={refresh}
