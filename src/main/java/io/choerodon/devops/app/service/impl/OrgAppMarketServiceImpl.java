@@ -216,7 +216,6 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void downLoadApp(AppMarketDownloadPayload appMarketDownloadVO) {
         Set<Long> appServiceVersionIds = new HashSet<>();
 
@@ -756,7 +755,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
 
         String imageJson = marketImageUrlVO != null ? gson.toJson(marketImageUrlVO) : null;
         String appJson = gson.toJson(appMarketFixVersionPayload.getMarketApplicationVO());
-        String getawayUrl = appMarketFixVersionPayload.getFixVersionUploadPayload().getSaasGetawayUrl().endsWith("/") ? appMarketFixVersionPayload.getFixVersionUploadPayload().getSaasGetawayUrl() : appMarketFixVersionPayload.getFixVersionUploadPayload() + "/";
+        String getawayUrl = appMarketFixVersionPayload.getFixVersionUploadPayload().getSaasGetawayUrl().endsWith("/") ? appMarketFixVersionPayload.getFixVersionUploadPayload().getSaasGetawayUrl() : appMarketFixVersionPayload.getFixVersionUploadPayload().getSaasGetawayUrl() + "/";
         MarketServiceClient marketServiceClient = RetrofitHandler.getMarketServiceClient(getawayUrl, MARKET);
 
         String remoteToken = baseServiceClientOperator.checkLatestToken();
