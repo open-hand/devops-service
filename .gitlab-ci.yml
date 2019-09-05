@@ -37,9 +37,9 @@ build-combine-feature:
     - tags
     - /^release-.*$/
     - /^hotfix-.*$/
-  variables:
-    - $COMBINE == "true"
-      g
+    variables:
+      - $COMBINE == "true"
+
 build-combine:
   stage: build
   script:
