@@ -175,14 +175,17 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         try {
             //解析打包
             MarketImageUrlVO marketImageUrlVO = appUploadResolver(marketUploadVO, zipFileList, appFilePath);
+            LOGGER.info("==========应用上传，解析文件成功！！==========");
             //上传删除
             fileUpload(zipFileList, marketUploadVO, marketImageUrlVO);
-        } catch (CommonException e) {
-            baseServiceClientOperator.publishFail(marketUploadVO.getProjectId(), marketUploadVO.getMktAppId(), marketUploadVO.getMktAppVersionId(), e.getCode(), false);
-            throw new CommonException(e.getCode());
-        } finally {
+            LOGGER.info("==========应用上传，上传文件！！==========");
             FileUtil.deleteDirectory(new File(appFilePath));
             zipFileList.forEach(FileUtil::deleteFile);
+        } catch (CommonException e) {
+            baseServiceClientOperator.publishFail(marketUploadVO.getProjectId(), marketUploadVO.getMktAppId(), marketUploadVO.getMktAppVersionId(), e.getCode(), false);
+            FileUtil.deleteDirectory(new File(appFilePath));
+            zipFileList.forEach(FileUtil::deleteFile);
+            throw new CommonException(e.getCode());
         }
     }
 
@@ -192,7 +195,9 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         String appFilePath = gitUtil.getWorkingDirectory(APPLICATION + System.currentTimeMillis());
         try {
             MarketImageUrlVO marketImageUrlVO = appUploadResolver(appMarketFixVersionPayload.getFixVersionUploadPayload(), zipFileList, appFilePath);
+            LOGGER.info("==========应用上传修复版本，解析文件成功！！==========");
             fileUploadFixVersion(zipFileList, appMarketFixVersionPayload, marketImageUrlVO);
+            LOGGER.info("==========应用上传修复版本，上传文件！！==========");
             zipFileList.forEach(FileUtil::deleteFile);
             FileUtil.deleteDirectory(new File(appFilePath));
         } catch (CommonException e) {
@@ -202,6 +207,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                     appMarketFixVersionPayload.getFixVersionUploadPayload().getMktAppVersionId(),
                     e.getCode(),
                     true);
+            zipFileList.forEach(FileUtil::deleteFile);
             FileUtil.deleteDirectory(new File(appFilePath));
             throw new CommonException(e.getCode());
         }
@@ -215,6 +221,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             //创建应用
             ApplicationEventPayload applicationEventPayload = downPayloadToEnentPayload(appMarketDownloadVO);
             gitlabGroupService.createApplicationGroup(applicationEventPayload);
+            LOGGER.info("==========应用下载，创建gitlab Group 成功！！==========");
 
             DevopsProjectDTO projectDTO = devopsProjectService.queryByAppId(appMarketDownloadVO.getAppId());
             UserAttrDTO userAttrDTO = userAttrService.baseQueryById(appMarketDownloadVO.getIamUserId());
@@ -228,6 +235,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                 Boolean isFirst = appServiceDTO == null;
                 if (appServiceDTO == null) {
                     appServiceDTO = createGitlabProject(downloadPayload, appMarketDownloadVO.getAppCode(), TypeUtil.objToInteger(projectDTO.getDevopsAppGroupId()), userAttrDTO.getGitlabUserId());
+                    LOGGER.info("==========应用下载，创建gitlab Project成功！！==========");
 
                     //创建saga payload
                     DevOpsAppServiceSyncPayload appServiceSyncPayload = new DevOpsAppServiceSyncPayload();
@@ -244,12 +252,16 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                 }
                 String applicationDir = APPLICATION + System.currentTimeMillis();
                 String accessToken = appServiceService.getToken(appServiceDTO.getGitlabProjectId(), applicationDir, userAttrDTO);
-                appServiceVersionIds.addAll(createAppServiceVersion(downloadPayload, appServiceDTO, groupPath, isFirst, accessToken));
+                appServiceVersionIds.addAll(createAppServiceVersion(downloadPayload, appServiceDTO, groupPath, isFirst, accessToken, appMarketDownloadVO.getDownloadAppType()));
+                LOGGER.info("==========应用下载文件上传成功==========");
             });
-            if (appMarketDownloadVO.getUser() != null) {
+            if (!appMarketDownloadVO.getDownloadAppType().equals(DOWNLOAD_ONLY)) {
                 pushImageForDownload(appMarketDownloadVO);
+                LOGGER.info("==========应用下载镜像推送成功==========");
             }
+            LOGGER.info("==========应用下载开始调用回传接口==========");
             baseServiceClientOperator.completeDownloadApplication(appMarketDownloadVO.getAppDownloadRecordId(), appServiceVersionIds);
+            LOGGER.info("==========应用下载完成==========");
         } catch (Exception e) {
             baseServiceClientOperator.failToDownloadApplication(appMarketDownloadVO.getAppDownloadRecordId());
             throw new CommonException("error.download.app", e.getMessage());
@@ -290,18 +302,18 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         return appServiceDTO;
     }
 
-    private Set<Long> createAppServiceVersion(AppServiceDownloadPayload downloadPayload, AppServiceDTO appServiceDTO, String groupPath, Boolean isFirst, String accessToken) {
+    private Set<Long> createAppServiceVersion(AppServiceDownloadPayload downloadPayload, AppServiceDTO appServiceDTO, String groupPath, Boolean isFirst, String accessToken, String downloadType) {
         Long appServiceId = appServiceDTO.getId();
         Set<Long> serviceVersionIds = new HashSet<>();
         downloadPayload.getAppServiceVersionDownloadPayloads().forEach(appServiceVersionPayload -> {
             AppServiceVersionDTO versionDTO = new AppServiceVersionDTO();
-            if (appServiceVersionPayload.getChartFilePath() != null && !appServiceVersionPayload.getChartFilePath().isEmpty()) {
+            if (!downloadType.equals(DOWNLOAD_ONLY)) {
                 String chartFilePath = String.format("%s%s", gitUtil.getWorkingDirectory(APPLICATION + System.currentTimeMillis()), TGZ);
                 fileDownload(appServiceVersionPayload.getChartFilePath(), chartFilePath);
                 AppServiceVersionDTO appServiceVersionDTO = chartResolver(appServiceVersionPayload, appServiceId, downloadPayload.getAppServiceCode(), new File(chartFilePath), versionDTO);
                 serviceVersionIds.add(appServiceVersionDTO.getId());
             }
-            if (appServiceVersionPayload.getRepoFilePath() != null && !appServiceVersionPayload.getRepoFilePath().isEmpty()) {
+            if (!downloadType.equals(DEPLOY_ONLY)) {
                 String repoFilePath = String.format("%s%s", gitUtil.getWorkingDirectory(APPLICATION + System.currentTimeMillis()), ZIP);
                 fileDownload(appServiceVersionPayload.getRepoFilePath(), repoFilePath);
                 AppServiceVersionDTO appServiceVersionDTO = gitResolver(appServiceVersionPayload, isFirst, groupPath, new File(repoFilePath), downloadPayload, accessToken, versionDTO, appServiceId);
@@ -623,7 +635,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             appServiceMarketVO.getAppServiceVersionUploadPayloads().forEach(t -> {
                 //推送镜像
                 String targetImageUrl = String.format("%s:%s", appServiceMarketVO.getHarborUrl(), t.getVersion());
-                callScript(appServiceVersionService.baseQuery(t.getId()).getImage(), targetImageUrl);
+//                callScript(appServiceVersionService.baseQuery(t.getId()).getImage(), targetImageUrl);
 
                 MarketAppServiceVersionImageVO appServiceVersionImageVO = new MarketAppServiceVersionImageVO();
                 appServiceVersionImageVO.setVersion(t.getVersion());
@@ -703,14 +715,10 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         MarketServiceClient marketServiceClient = RetrofitHandler.getMarketServiceClient(getawayUrl, MARKET);
 
         String remoteToken = baseServiceClientOperator.checkLatestToken();
-        try {
-            Boolean uploadSuccess = marketServiceClient.uploadFile(remoteToken, appMarketUploadVO.getAppVersion(), files, mapJson).execute().body();
-            if (uploadSuccess == null || !uploadSuccess) {
-                throw new CommonException(ERROR_UPLOAD, uploadSuccess);
-            }
-        } catch (IOException e) {
-            LOGGER.error("file.upload.error:{}", e.getMessage());
-            throw new CommonException(ERROR_UPLOAD, e.getMessage());
+        Call<ResponseBody> responseCall = marketServiceClient.uploadFile(remoteToken, appMarketUploadVO.getAppVersion(), files, mapJson);
+        Boolean result = RetrofitCallExceptionParse.executeCall(responseCall, ERROR_UPLOAD, Boolean.class);
+        if (!result) {
+            throw new CommonException(ERROR_UPLOAD);
         }
     }
 
@@ -729,20 +737,14 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         MarketServiceClient marketServiceClient = RetrofitHandler.getMarketServiceClient(getawayUrl, MARKET);
 
         String remoteToken = baseServiceClientOperator.checkLatestToken();
-        try {
-            Boolean uploadSuccess = marketServiceClient.updateAppPublishInfoFix(
-                    remoteToken,
-                    appMarketFixVersionPayload.getMarketApplicationVO().getCode(),
-                    appMarketFixVersionPayload.getMarketApplicationVO().getVersion(),
-                    appJson,
-                    files,
-                    imageJson).execute().body();
-            if (uploadSuccess == null || !uploadSuccess) {
-                throw new CommonException(ERROR_UPLOAD, uploadSuccess);
-            }
-        } catch (IOException e) {
-            throw new CommonException(ERROR_UPLOAD, e.getMessage());
-        }
+        Call<ResponseBody> responseCall = marketServiceClient.updateAppPublishInfoFix(
+                remoteToken,
+                appMarketFixVersionPayload.getMarketApplicationVO().getCode(),
+                appMarketFixVersionPayload.getMarketApplicationVO().getVersion(),
+                appJson,
+                files,
+                imageJson);
+        RetrofitCallExceptionParse.executeCall(responseCall, ERROR_UPLOAD, Boolean.class);
     }
 
     private void fileDownload(String fileUrl, String downloadFilePath) {

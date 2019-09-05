@@ -101,7 +101,7 @@ public class OrgAppMarketController {
      * @param appMarketUploadVO
      * @return
      */
-    @Permission(type = ResourceType.SITE, permissionWithin = true)
+    @Permission(permissionPublic = true)
     @ApiOperation(value = "应用上传")
     @PostMapping("/upload")
     public ResponseEntity uploadAPP(
@@ -115,7 +115,7 @@ public class OrgAppMarketController {
      * @param appMarketFixVersionPayload
      * @return
      */
-    @Permission(type = ResourceType.SITE, permissionWithin = true)
+    @Permission(permissionPublic = true)
     @ApiOperation(value = "应用上传 版本修复")
     @PostMapping("/upload_fix_version")
     public ResponseEntity uploadAPPFixVersion(
@@ -129,7 +129,7 @@ public class OrgAppMarketController {
      * @param applicationPayload
      * @return
      */
-    @Permission(type = ResourceType.SITE, permissionWithin = true)
+    @Permission(permissionPublic = true)
     @ApiOperation(value = "应用下载")
     @PostMapping("/download")
     public ResponseEntity downLoadApp(
