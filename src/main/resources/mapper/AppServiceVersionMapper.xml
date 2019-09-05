@@ -19,8 +19,9 @@
             </if>
         </if>
         <if test='params != null and params.size > 0'>
+            AND
             <foreach collection="params" item="param" open="(" separator=" OR " close=")">
-                dav.version LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                 dav.version LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
             </foreach>
         </if>
     </select>

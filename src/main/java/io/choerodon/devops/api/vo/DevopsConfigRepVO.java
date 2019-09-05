@@ -7,6 +7,15 @@ package io.choerodon.devops.api.vo;
 public class DevopsConfigRepVO {
     private DevopsConfigVO harbor;
     private DevopsConfigVO chart;
+    private Boolean harborPrivate;
+
+    public Boolean getHarborPrivate() {
+        return harborPrivate;
+    }
+
+    public void setHarborPrivate(Boolean harborPrivate) {
+        this.harborPrivate = harborPrivate;
+    }
 
     public DevopsConfigVO getHarbor() {
         return harbor;
