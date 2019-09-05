@@ -14,6 +14,7 @@ import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.*;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
+import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -43,7 +44,6 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
  */
 @Component
 public class GitUtil {
-
     public static final String DEV_OPS_SYNC_TAG = "devops-sync";
     public static final String TEMPLATE = "template";
     private static final String MASTER = "master";
@@ -389,11 +389,13 @@ public class GitUtil {
      */
     public void push(Git git, String repoUrl, String accessToken, String branchName) {
         try {
+            // 对应分支名的本地引用名
+            String localRefName = Constants.R_HEADS + branchName;
             // 找出对应分支名的本地分支引用
             Ref localRef = null;
             List<Ref> refs = git.branchList().call();
             for (Ref ref : refs) {
-                if (ref.getName().contains(branchName)) {
+                if (ref.getName().equals(localRefName)) {
                     localRef = ref;
                     break;
                 }
