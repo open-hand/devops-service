@@ -113,7 +113,7 @@
                  LEFT JOIN devops_env_app_service env_app ON env.id = env_app.env_id
                  LEFT JOIN devops_app_service app ON env_app.app_service_id = app.id AND (app.is_active = TRUE OR app.is_active is NULL)
                  LEFT JOIN devops_app_service_instance ins ON app.id = ins.app_service_id
-                                                          AND env.id = ins.env_id
+                                                          AND env.id = ins.env_id AND ins.status != 'deleted'
         WHERE env.project_id = #{projectId}
           AND env.is_active = TRUE
           AND env.is_failed = FALSE;
@@ -143,14 +143,13 @@
                    AND env.id = ins.env_id) pod_running_count
          FROM devops_env env
                   LEFT JOIN devops_env_app_service env_app ON env.id = env_app.env_id
-                  LEFT JOIN devops_app_service app ON env_app.app_service_id = app.id
+                  LEFT JOIN devops_app_service app ON env_app.app_service_id = app.id AND (app.is_active = TRUE OR app.is_active is NULL)
                   LEFT JOIN devops_app_service_instance ins ON app.id = ins.app_service_id
-                                                                   AND env.id = ins.env_id
+                                                                   AND env.id = ins.env_id AND ins.status != 'deleted'
          WHERE env.project_id = #{projectId}
            AND env.is_skip_check_permission = TRUE
            AND env.is_active = TRUE
-           AND env.is_failed = FALSE
-           AND (app.is_active = TRUE OR app.is_active is NULL))
+           AND env.is_failed = FALSE)
 
         UNION ALL
                 (
@@ -177,16 +176,15 @@
                           AND env.id = ins.env_id) pod_running_count
                 FROM devops_env env
                          LEFT JOIN devops_env_app_service env_app ON env.id = env_app.env_id
-                         LEFT JOIN devops_app_service app ON env_app.app_service_id = app.id
+                         LEFT JOIN devops_app_service app ON env_app.app_service_id = app.id AND (app.is_active = TRUE OR app.is_active is NULL)
                          LEFT JOIN devops_app_service_instance ins ON app.id = ins.app_service_id
-                                                                          AND env.id = ins.env_id
+                                                                          AND env.id = ins.env_id AND ins.status != 'deleted'
                          LEFT JOIN devops_env_user_permission deup ON env.id = deup.env_id
                 WHERE env.project_id = #{projectId}
                   AND env.is_skip_check_permission = FALSE
                   AND env.is_active = TRUE
                   AND env.is_failed = FALSE
-                  AND deup.iam_user_id = #{memberId}
-                  AND (app.is_active = TRUE OR app.is_active is NULL)
+                  AND deup.iam_user_id = #{memberId})
                 )
     </select>
 
@@ -222,7 +220,7 @@
 
     <select id="queryEnvResourceCount" resultType="io.choerodon.devops.api.vo.DevopsEnvResourceCountVO">
         SELECT env.id as env_id,
-               (SELECT COUNT(1) FROM devops_app_service_instance ins WHERE ins.env_id = env.id) AS instance_count,
+               (SELECT COUNT(1) FROM devops_app_service_instance ins WHERE ins.env_id = env.id AND ins.status != 'deleted') AS instance_count,
                (SELECT COUNT(1) FROM devops_service service WHERE service.env_id = env.id AND service.status!='deleted') AS service_count,
                (SELECT COUNT(1) FROM devops_ingress ingress WHERE ingress.env_id = env.id AND ingress.status!='deleted') AS ingress_count,
                (SELECT COUNT(1) FROM devops_certification certification WHERE certification.env_id = env.id AND certification.status!='deleted') AS certification_count,
@@ -257,7 +255,7 @@
                   AND dp.namespace = env.code
                   AND env.id = ins.env_id) pod_running_count
         FROM devops_env env
-                 LEFT JOIN devops_app_service_instance ins ON env.id = ins.env_id
+                 LEFT JOIN devops_app_service_instance ins ON env.id = ins.env_id AND ins.status != 'deleted'
         WHERE env.project_id = #{projectId}
           AND env.is_active = TRUE
           AND env.is_failed = FALSE;
@@ -284,7 +282,7 @@
                   AND dp.namespace = env.code
                   AND env.id = ins.env_id) pod_running_count
         FROM devops_env env
-                 LEFT JOIN devops_app_service_instance ins ON env.id = ins.env_id
+                 LEFT JOIN devops_app_service_instance ins ON env.id = ins.env_id AND ins.status != 'deleted'
         WHERE env.project_id = #{projectId}
           AND env.is_skip_check_permission = TRUE
           AND env.is_active = TRUE
@@ -312,7 +310,7 @@
                   AND dp.namespace = env.code
                   AND env.id = ins.env_id) pod_running_count
         FROM devops_env env
-                 LEFT JOIN devops_app_service_instance ins ON env.id = ins.env_id
+                 LEFT JOIN devops_app_service_instance ins ON env.id = ins.env_id AND ins.status != 'deleted'
                  LEFT JOIN devops_env_user_permission deup ON env.id = deup.env_id
         WHERE env.project_id = #{projectId}
           AND env.is_skip_check_permission = FALSE
