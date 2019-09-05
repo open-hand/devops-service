@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { observer } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { Content, Header, Page, Permission, stores } from '@choerodon/master';
+import { Content, Header, Page, Permission, stores, Action } from '@choerodon/master';
 import { Button, Select, Modal, Form, Icon, Collapse, Avatar, Pagination, Tooltip } from 'choerodon-ui';
 import ReactMarkdown from 'react-markdown';
 import _ from 'lodash';
@@ -10,6 +10,7 @@ import Loading from '../../../../components/loading';
 import TimePopover from '../../../../components/timePopover';
 import DevPipelineStore from '../../stores/DevPipelineStore';
 import handleMapStore from '../../main-view/store/handleMapStore';
+import StatusIcon from '../../../../components/StatusIcon/StatusIcon';
 import AppTagStore from './stores';
 import '../../../main.less';
 import './style/AppTag.less';
@@ -127,8 +128,7 @@ class AppTag extends Component {
    * 打开删除确认框
    * @param tag
    */
-  openRemove = (e, tag) => {
-    e.stopPropagation();
+  openRemove = (tag) => {
     this.setState({ visible: true, tag });
   };
 
@@ -170,7 +170,8 @@ class AppTag extends Component {
    * @param res release内容
    * @param e
    */
-  displayEditModal = (flag, tag, res, e) => {
+  displayEditModal = (flag, res, tag, ...rest) => {
+    const e = rest.pop();
     let editTag = null;
     let editRelease = null;
     if (tag) {
@@ -210,7 +211,24 @@ class AppTag extends Component {
         <div className="c7n-tag-panel-info">
           <div className="c7n-tag-panel-name">
             <Icon type="local_offer" />
-            <span>{release.tagName}</span>
+            <div className="c7n-tag-name">
+              <StatusIcon 
+                name={release.tagName}
+                handleAtagClick={this.displayEditModal.bind(this, true, release, release.tagName)}
+              />
+            </div>
+            <div className="c7n-tag-action" onClick={stopPropagation}>
+              <Action data={[
+                {
+                  service: [],
+                  text: formatMessage({ id: 'delete' }),
+                  action: () => { 
+                    this.openRemove(release.tagName);
+                  },
+                },
+              ]}
+              />
+            </div>
           </div>
           <div className="c7n-tag-panel-detail">
             <Icon className="c7n-tag-icon-point" type="point" />
@@ -228,48 +246,7 @@ class AppTag extends Component {
             <div className="c7n-tag-time"><TimePopover content={committedDate} /></div>
           </div>
         </div>
-        <div className="c7n-tag-panel-opera">
-          <Permission
-            service={[
-              'devops-service.devops-git.updateTagRelease',
-            ]}
-            type={type}
-            projectId={projectId}
-            organizationId={orgId}
-          >
-            <Tooltip
-              placement="bottom"
-              title={<FormattedMessage id="edit" />}
-            >
-              <Button
-                shape="circle"
-                size="small"
-                icon="mode_edit"
-                onClick={(e) => this.displayEditModal(true, release.tagName, release, e)}
-              />
-            </Tooltip>
-          </Permission>
-          <Permission
-            type={type}
-            projectId={projectId}
-            organizationId={orgId}
-            service={[
-              'devops-service.devops-git.deleteTag',
-            ]}
-          >
-            <Tooltip
-              placement="bottom"
-              title={<FormattedMessage id="delete" />}
-            >
-              <Button
-                shape="circle"
-                size="small"
-                icon="delete_forever"
-                onClick={(e) => this.openRemove(e, release.tagName)}
-              />
-            </Tooltip>
-          </Permission>
-        </div>
+        {/* <div className="c7n-tag-panel-opera" /> */}
       </div>);
       tagList.push(<Panel
         header={header}
@@ -352,3 +329,8 @@ class AppTag extends Component {
 }
 
 export default Form.create({})(withRouter(injectIntl(AppTag)));
+
+
+function stopPropagation(e) {
+  e.stopPropagation();
+}

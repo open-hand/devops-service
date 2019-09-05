@@ -54,6 +54,11 @@ class Branch extends Component {
     });
   }
 
+  componentWillUnmount() {
+    BranchStore.setBranchData([]);
+    BranchStore.setBranchList([]);
+  }
+
   /**
    * 生成特殊的自定义tool-bar
    */
@@ -63,6 +68,7 @@ class Branch extends Component {
     <Button
       onClick={this.showSidebar}
       icon="playlist_add"
+      disabled={!DevPipelineStore.getSelectApp}
     >
       <FormattedMessage id="branch.create" />
     </Button>
@@ -131,7 +137,6 @@ class Branch extends Component {
     const {
       intl: { formatMessage },
     } = this.props;
-    // const { id, name, isEnabled, triggerType, execute, edit } = record;
     const action = [
       {
         service: [],
@@ -141,7 +146,9 @@ class Branch extends Component {
         },
       },
       {
-        service: [],
+        service: [
+          'devops-service.devops-git.deleteBranch',
+        ],
         text: formatMessage({ id: 'delete' }),
         action: () => {
           this.openRemove(record.branchName);
@@ -151,15 +158,10 @@ class Branch extends Component {
     return (<Action data={action} />);
   };
 
-  /**
-   * 获取分支列表正文
-   * @returns {*}
-   */
-  get tableBranch() {
-    const { intl: { formatMessage } } = this.props;
+
+  getBranchColumn = () => {
     const { paras, filters, sort: { columnKey, order } } = this.state;
-    const menu = AppState.currentMenuType;
-    const branchColumns = [
+    return [
       {
         title: <FormattedMessage id="branch.name" />,
         dataIndex: 'branchName',
@@ -247,20 +249,32 @@ class Branch extends Component {
         </div>),
       },
     ];
+  }
+
+  /**
+   * 获取分支列表正文
+   * @returns {*}
+   */
+  get tableBranch() {
+    const { intl: { formatMessage } } = this.props;
+    
+    const menu = AppState.currentMenuType;
+
+    const { getBranchList, loading, getPageInfo } = BranchStore;
     return (
       <div>
         <Table
           filterBarPlaceholder={formatMessage({ id: 'filter' })}
-          loading={BranchStore.loading}
+          loading={loading}
           className="c7n-branch-table"
           rowClassName="c7n-branch-tr"
-          pagination={BranchStore.getPageInfo}
-          columns={branchColumns}
-          dataSource={BranchStore.getBranchList}
+          pagination={getPageInfo}
+          columns={this.getBranchColumn()}
+          dataSource={getBranchList}
           rowKey={({ creationDate, branchName }) => `${branchName}-${creationDate}`}
           onChange={this.tableChange}
           locale={{ emptyText: formatMessage({ id: 'branch.empty' }) }}
-          noFilters={false}
+          noFilter
         />
       </div>
 
@@ -416,6 +430,17 @@ class Branch extends Component {
     return (
       <Page
         className="c7n-region c7n-branch"
+        service={[
+          'devops-service.devops-git.createBranch',
+          'devops-service.devops-git.queryByAppId',
+          'devops-service.devops-git.delete',
+          'devops-service.devops-git.listByAppId',
+          'devops-service.devops-git.getTagList',
+          'devops-service.devops-git.update',
+          'agile-service.issue.queryIssueByOption',
+          'agile-service.issue.queryIssue',
+          'agile-service.work-log.queryWorkLogListByIssueId',
+        ]}
       > 
         {!(DevPipelineStore.getAppData && DevPipelineStore.getAppData.length > 0) ? <Loading display={DevPipelineStore.getLoading} />
           : <Fragment>

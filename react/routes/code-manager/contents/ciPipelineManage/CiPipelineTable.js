@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { observer } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import { Button, Table, Tooltip } from 'choerodon-ui';
-import { Permission, stores } from '@choerodon/master';
+import { Permission, stores, Action } from '@choerodon/master';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import TimeAgo from 'timeago-react';
 import MouserOverWrapper from '../../../../components/MouseOverWrapper';
@@ -112,6 +112,11 @@ class CiPipelineTable extends Component {
         render: (pipelineId, record) => this.renderSign(pipelineId, record),
       },
       {
+        width: 56,
+        dataIndex: 'gitlabProjectId',
+        render: (gitlabProjectId, record) => this.renderAction(record),
+      },
+      {
         title: <Tips type="title" data="ciPipeline.commit" />,
         dataIndex: 'commit',
         render: (commit, record) => this.renderCommit(commit, record),
@@ -144,11 +149,6 @@ class CiPipelineTable extends Component {
               />
             </Tooltip>
           </div>),
-      },
-      {
-        width: 56,
-        dataIndex: 'gitlabProjectId',
-        render: (gitlabProjectId, record) => this.renderAction(record),
       },
     ];
     return (
@@ -378,28 +378,18 @@ class CiPipelineTable extends Component {
   };
 
   renderAction = (record) => {
-    const projectId = AppState.currentMenuType.id;
-    const organizationId = AppState.currentMenuType.organizationId;
-    const type = AppState.currentMenuType.type;
+    const {
+      intl: { formatMessage },
+    } = this.props;
     if (record.status && record.status !== 'passed' && record.status !== 'success' && record.status !== 'skipped') {
-      return (
-        <Permission
-          service={['devops-service.project-pipeline.retry', 'devops-service.project-pipeline.cancel']}
-          organizationId={organizationId}
-          projectId={projectId}
-          type={type}
-        >
-          <Tooltip placement="top" title={<span>{(record.status === 'running' || record.status === 'pending') ? 'cancel' : 'retry'}</span>}>
-            <Button
-              size="small"
-              shape="circle"
-              onClick={this.handleAction.bind(this, record)}
-            >
-              <span className={`icon ${ICONS_ACTION[record.status].icon} c7n-icon-action c7n-icon-sm`} />
-            </Button>
-          </Tooltip>
-        </Permission>
-      );
+      const action = [
+        {
+          service: ['devops-service.project-pipeline.retry', 'devops-service.project-pipeline.cancel'],
+          text: formatMessage({ id: (record.status === 'running' || record.status === 'pending') ? 'cancel' : 'retry' }),
+          action: this.handleAction.bind(this, record),
+        },
+      ];
+      return (<Action data={action} />);
     } else {
       return null;
     }

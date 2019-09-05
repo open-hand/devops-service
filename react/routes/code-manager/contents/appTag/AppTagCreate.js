@@ -218,12 +218,13 @@ class AppTagCreate extends Component {
                 </OptGroup>
               </Select>)}
             </FormItem>
-            <Tips type="form" data="apptag.tip" />
+            <Tips type="form" data="apptag.tip" />    
           </div>
         </Form>
         <div className="c7n-creation-title"><FormattedMessage id="apptag.release.title" /></div>
         <MdEditor
           value={release}
+          textMaxLength={1000}
           onChange={this.handleNoteChange}
         />
         <InterceptMask visible={submitting} />
