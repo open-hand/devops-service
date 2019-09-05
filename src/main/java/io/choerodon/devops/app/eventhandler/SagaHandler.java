@@ -287,7 +287,7 @@ public class SagaHandler {
     /**
      * 应用下载
      */
-    @SagaTask(code = SagaTaskCodeConstants.APIM_DOWNLOAD_APP,
+    @SagaTask(code = SagaTaskCodeConstants.APIM_DOWNLOAD_APP_CREATE_PROJECT,
             description = "应用下载",
             sagaCode = SagaTopicCodeConstants.APIM_DOWNLOAD_APP,
             maxRetryCount = 0, seq = 1)
