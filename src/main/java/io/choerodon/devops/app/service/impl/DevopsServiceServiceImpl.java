@@ -7,6 +7,18 @@ import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import io.kubernetes.client.JSON;
+import io.kubernetes.client.custom.IntOrString;
+import io.kubernetes.client.models.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -32,17 +44,6 @@ import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.ResourceCreatorInfoUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.kubernetes.client.JSON;
-import io.kubernetes.client.custom.IntOrString;
-import io.kubernetes.client.models.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 
 /**
@@ -164,7 +165,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                 }
             }
         }
-        return queryDtoToVo(devopsServiceQueryDTO);
+        return querySingleServiceDtoToVo(devopsServiceQueryDTO);
     }
 
     @Override
@@ -698,10 +699,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         }
         DevopsServiceVO devopsServiceVO = new DevopsServiceVO();
         BeanUtils.copyProperties(devopsServiceQueryDTO, devopsServiceVO);
-
-        //获取环境id
-        Long envId = devopsServiceQueryDTO.getEnvId();
-
         DevopsServiceConfigVO devopsServiceConfigVO = new DevopsServiceConfigVO();
         devopsServiceConfigVO.setPorts(gson.fromJson(devopsServiceQueryDTO.getPorts(), new TypeToken<ArrayList<PortMapVO>>() {
         }.getType()));
@@ -733,16 +730,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         }.getType()));
         devopsServiceVO.setTarget(devopsServiceTargetVO);
 
-        //获得pod实时信息
-        if (devopsServiceQueryDTO.getInstances() != null) {
-            List<PodLiveInfoVO> podLiveInfoVOS = devopsServiceQueryDTO.getInstances()
-                    .stream()
-                    .map(instanceInfoVO -> getPodLiveInfoVOs(instanceInfoVO.getId(), envId))
-                    .collect(Collectors.toList());
-
-            devopsServiceVO.setPodLiveInfos(podLiveInfoVOS);
-        }
-
         // service的dnsName为${serviceName.namespace}
         devopsServiceVO.setDns(devopsServiceVO.getName() + "." + devopsServiceQueryDTO.getEnvCode());
 
@@ -755,47 +742,67 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         return devopsServiceVO;
     }
 
-    private PodLiveInfoVO getPodLiveInfoVOs(Long instanceId, Long envId) {
+    @Override
+    public DevopsServiceVO querySingleServiceDtoToVo(DevopsServiceQueryDTO devopsServiceQueryDTO) {
+        DevopsServiceVO devopsServiceVO = queryDtoToVo(devopsServiceQueryDTO);
+        Long envId = devopsServiceQueryDTO.getEnvId();
+        //获得pod实时信息
+        if (devopsServiceQueryDTO.getInstances() != null) {
+            List<Map<Long, List<PodLiveInfoVO>>> instancePodLiveInfoVOs = devopsServiceQueryDTO.getInstances()
+                    .stream()
+                    .map(instanceInfoVO -> getInstancePodLiveInfoVOs(instanceInfoVO.getId(), envId))
+                    .collect(Collectors.toList());
+
+            devopsServiceVO.setPodLiveInfos(instancePodLiveInfoVOs);
+        }
+        return devopsServiceVO;
+    }
+
+    private Map<Long, List<PodLiveInfoVO>> getInstancePodLiveInfoVOs(Long instanceId, Long envId) {
         PodLiveInfoVO podLiveInfoVO = new PodLiveInfoVO();
 
         //从数据库中获得pod已经存在的信息
-        DevopsEnvPodDTO devopsEnvPodDTO = devopsEnvPodMapper.queryPodByEnvIdAndInstanceId(instanceId, envId);
-        if (devopsEnvPodDTO == null) {
+        List<DevopsEnvPodDTO> devopsEnvPodDTOList = devopsEnvPodMapper.queryPodByEnvIdAndInstanceId(instanceId, envId);
+        if (devopsEnvPodDTOList == null || devopsEnvPodDTOList.size() == 0) {
             return null;
         }
+        List<PodLiveInfoVO> podLiveInfoVOList = devopsEnvPodDTOList.stream().map(devopsEnvPodDTO -> {
+            BeanUtils.copyProperties(devopsEnvPodDTO, podLiveInfoVO);
 
-        BeanUtils.copyProperties(devopsEnvPodDTO, podLiveInfoVO);
+            //反序列化json
+            V1Pod v1Pod = json.deserialize(devopsEnvPodDTO.getMessage(), V1Pod.class);
 
-        //反序列化json
-        V1Pod v1Pod = json.deserialize(devopsEnvPodDTO.getMessage(), V1Pod.class);
+            List<ContainerVO> containerVOS = v1Pod.getSpec().getContainers().stream().map(v1Container -> {
+                ContainerVO containerVO = new ContainerVO();
+                containerVO.setName(v1Container.getName());
+                containerVO.setRegistry(v1Container.getImage());
+                return containerVO;
+            }).collect(Collectors.toList());
 
-        List<ContainerVO> containerVOS = v1Pod.getSpec().getContainers().stream().map(v1Container -> {
-            ContainerVO containerVO = new ContainerVO();
-            containerVO.setName(v1Container.getName());
-            containerVO.setRegistry(v1Container.getImage());
-            return containerVO;
+            //设置podName,containers
+            podLiveInfoVO.setPodName(v1Pod.getMetadata().getName());
+            podLiveInfoVO.setContainers(containerVOS);
+
+            //设置实时CPU、内存信息
+            List<AgentPodInfoVO> agentPodInfoVOS = agentPodInfoService.queryAllPodSnapshots(devopsEnvPodDTO.getName(), devopsEnvPodDTO.getNamespace());
+
+            if (!agentPodInfoVOS.isEmpty()) {
+                List<String> cpuUsedList = agentPodInfoVOS.stream().map(AgentPodInfoVO::getCpuUsed).collect(Collectors.toList());
+                List<String> memoryUsedList = agentPodInfoVOS.stream().map(AgentPodInfoVO::getMemoryUsed).collect(Collectors.toList());
+                List<Date> timeList = agentPodInfoVOS.stream().map(AgentPodInfoVO::getSnapshotTime).collect(Collectors.toList());
+
+                podLiveInfoVO.setCpuUsedList(cpuUsedList);
+                podLiveInfoVO.setMemoryUsedList(memoryUsedList);
+                podLiveInfoVO.setTimeList(timeList);
+                podLiveInfoVO.setNodeIp(agentPodInfoVOS.get(0).getNodeIp());
+                podLiveInfoVO.setNodeName(agentPodInfoVOS.get(0).getNodeName());
+                podLiveInfoVO.setPodIp(agentPodInfoVOS.get(0).getPodIp());
+            }
+            return podLiveInfoVO;
         }).collect(Collectors.toList());
-
-        //设置podName,containers
-        podLiveInfoVO.setPodName(v1Pod.getMetadata().getName());
-        podLiveInfoVO.setContainers(containerVOS);
-
-        //设置实时CPU、内存信息
-        List<AgentPodInfoVO> agentPodInfoVOS = agentPodInfoService.queryAllPodSnapshots(devopsEnvPodDTO.getName(), devopsEnvPodDTO.getNamespace());
-
-        if (!agentPodInfoVOS.isEmpty()) {
-            List<String> cpuUsedList = agentPodInfoVOS.stream().map(AgentPodInfoVO::getCpuUsed).collect(Collectors.toList());
-            List<String> memoryUsedList = agentPodInfoVOS.stream().map(AgentPodInfoVO::getMemoryUsed).collect(Collectors.toList());
-            List<Date> timeList = agentPodInfoVOS.stream().map(AgentPodInfoVO::getSnapshotTime).collect(Collectors.toList());
-
-            podLiveInfoVO.setCpuUsedList(cpuUsedList);
-            podLiveInfoVO.setMemoryUsedList(memoryUsedList);
-            podLiveInfoVO.setTimeList(timeList);
-            podLiveInfoVO.setNodeIp(agentPodInfoVOS.get(0).getNodeIp());
-            podLiveInfoVO.setNodeName(agentPodInfoVOS.get(0).getNodeName());
-            podLiveInfoVO.setPodIp(agentPodInfoVOS.get(0).getPodIp());
-        }
-        return podLiveInfoVO;
+        Map<Long, List<PodLiveInfoVO>> instancePodLiveInfoVOs = new HashMap<>();
+        instancePodLiveInfoVOs.put(instanceId, podLiveInfoVOList);
+        return instancePodLiveInfoVOs;
     }
 
     private DevopsServiceDTO initDevopsService(DevopsServiceDTO devopsServiceDTO, DevopsServiceReqVO devopsServiceReqVO, List<DevopsServiceInstanceDTO> devopsServiceInstanceDTOS, List<String> beforeDevopsServiceAppInstanceDTOS) {

@@ -27,6 +27,6 @@ public interface DevopsEnvPodMapper extends Mapper<DevopsEnvPodDTO> {
 
     List<DevopsEnvPodInfoVO> queryEnvPodIns(@Param("envId") Long envId);
 
-    DevopsEnvPodDTO queryPodByEnvIdAndInstanceId(@Param("instanceId") Long instanceId,
-                                                 @Param("envId") Long envId);
+    List<DevopsEnvPodDTO> queryPodByEnvIdAndInstanceId(@Param("instanceId") Long instanceId,
+                                                       @Param("envId") Long envId);
 }
