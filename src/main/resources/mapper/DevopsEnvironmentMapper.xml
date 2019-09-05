@@ -184,7 +184,7 @@
                   AND env.is_skip_check_permission = FALSE
                   AND env.is_active = TRUE
                   AND env.is_failed = FALSE
-                  AND deup.iam_user_id = #{memberId})
+                  AND deup.iam_user_id = #{memberId}
                 )
     </select>
 
