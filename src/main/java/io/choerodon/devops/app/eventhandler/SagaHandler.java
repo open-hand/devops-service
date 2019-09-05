@@ -260,7 +260,7 @@ public class SagaHandler {
     @SagaTask(code = SagaTaskCodeConstants.APIM_UPLOAD_APP,
             description = "应用上传",
             sagaCode = SagaTopicCodeConstants.APIM_UPLOAD_APP,
-            maxRetryCount = 3, seq = 1)
+            maxRetryCount = 0, seq = 1)
     public String uploadApp(String payload) {
         AppMarketUploadPayload appMarketUploadVO = gson.fromJson(payload, AppMarketUploadPayload.class);
         loggerInfo(appMarketUploadVO);
