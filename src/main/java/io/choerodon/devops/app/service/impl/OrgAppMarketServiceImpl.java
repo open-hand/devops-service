@@ -88,6 +88,8 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
     private static final String ERROR_UPLOAD = "error.upload.file";
     private static final String CONFIG_PATH = "root/.docker";
     private static final String CONFIG_JSON = "config.json";
+    private static final String SHELL = "shell";
+    private static final String PUSH_IMAGE = "push_image.sh";
     private static final String DSLASH = "//";
     private static final String SSLASH = "/";
     @Value("${services.helm.url}")
@@ -407,7 +409,9 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                 git = gitUtil.combineAppMarket(appServiceFilePath, repoFilePath);
             }
             //6. push 到远程仓库
+            LOGGER.info("==========应用下载，开始推送代码==========");
             gitUtil.commitAndPushForMaster(git, repositoryUrl, appServiceVersionPayload.getVersion(), accessToken);
+            LOGGER.info("==========应用下载，代码推送成功==========");
 
             if (versionDTO.getId() == null) {
                 versionDTO.setAppServiceId(appServiceId);
@@ -635,7 +639,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             appServiceMarketVO.getAppServiceVersionUploadPayloads().forEach(t -> {
                 //推送镜像
                 String targetImageUrl = String.format("%s:%s", appServiceMarketVO.getHarborUrl(), t.getVersion());
-//                callScript(appServiceVersionService.baseQuery(t.getId()).getImage(), targetImageUrl);
+                callScript(appServiceVersionService.baseQuery(t.getId()).getImage(), targetImageUrl);
 
                 MarketAppServiceVersionImageVO appServiceVersionImageVO = new MarketAppServiceVersionImageVO();
                 appServiceVersionImageVO.setVersion(t.getVersion());
@@ -677,7 +681,11 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
      */
     private void callScript(String sourceUrl, String targetUrl) {
         try {
+
             String cmd = String.format("echo 'FROM %s' | kaniko -f /dev/stdin -d %s", sourceUrl, targetUrl);
+            FileUtil.saveDataToFile(SHELL, PUSH_IMAGE, cmd);
+            LOGGER.info(cmd);
+            cmd = String.format("sh /%s/%s", SHELL, PUSH_IMAGE);
             LOGGER.info(cmd);
             Process process = Runtime.getRuntime().exec(cmd);
             BufferedReader infoInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
@@ -686,16 +694,11 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             while ((line = infoInput.readLine()) != null) {
                 LOGGER.info(line);
             }
-            Boolean failed = false;
             while ((line = errorInput.readLine()) != null) {
                 LOGGER.error(line);
-                failed = true;
             }
             infoInput.close();
             errorInput.close();
-            if (failed) {
-                throw new CommonException("error.exec.push.image");
-            }
             process.waitFor();
         } catch (Exception e) {
             throw new CommonException("error.exec.push.image", e.getMessage());
