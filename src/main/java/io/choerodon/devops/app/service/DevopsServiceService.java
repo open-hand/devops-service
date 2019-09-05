@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 
 import com.github.pagehelper.PageInfo;
+
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.DevopsServiceReqVO;
 import io.choerodon.devops.api.vo.DevopsServiceVO;
@@ -129,6 +130,14 @@ public interface DevopsServiceService {
      * @return Page of DevopsServiceVO
      */
     PageInfo<DevopsServiceVO> pageByInstance(Long projectId, Long instanceId, PageRequest pageRequest, Long appServiceId, String searchParam);
+
+    /**
+     * 查看网络信息时，展示网络对应实例的Pod实时数据
+     *
+     * @param devopsServiceQueryDTO
+     * @return
+     */
+    DevopsServiceVO querySingleServiceDtoToVo(DevopsServiceQueryDTO devopsServiceQueryDTO);
 
     void createServiceBySaga(ServiceSagaPayLoad serviceSagaPayLoad);
 
