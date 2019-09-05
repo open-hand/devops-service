@@ -25,6 +25,9 @@ public class AppMarketDownloadPayload {
     @ApiModelProperty("应用name")
     private String appCode;
 
+    @ApiModelProperty("下载的应用类型")
+    private String downloadAppType;
+
     @ApiModelProperty("harbor用户")
     private RobotUser user;
 
@@ -99,5 +102,13 @@ public class AppMarketDownloadPayload {
 
     public void setAppDownloadRecordId(Long appDownloadRecordId) {
         this.appDownloadRecordId = appDownloadRecordId;
+    }
+
+    public String getDownloadAppType() {
+        return downloadAppType;
+    }
+
+    public void setDownloadAppType(String downloadAppType) {
+        this.downloadAppType = downloadAppType;
     }
 }

@@ -244,9 +244,9 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                 }
                 String applicationDir = APPLICATION + System.currentTimeMillis();
                 String accessToken = appServiceService.getToken(appServiceDTO.getGitlabProjectId(), applicationDir, userAttrDTO);
-                appServiceVersionIds.addAll(createAppServiceVersion(downloadPayload, appServiceDTO, groupPath, isFirst, accessToken));
+                appServiceVersionIds.addAll(createAppServiceVersion(downloadPayload, appServiceDTO, groupPath, isFirst, accessToken, appMarketDownloadVO.getDownloadAppType()));
             });
-            if (appMarketDownloadVO.getUser() != null) {
+            if (!appMarketDownloadVO.getDownloadAppType().equals(DOWNLOAD_ONLY)) {
                 pushImageForDownload(appMarketDownloadVO);
             }
             baseServiceClientOperator.completeDownloadApplication(appMarketDownloadVO.getAppDownloadRecordId(), appServiceVersionIds);
@@ -290,18 +290,18 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         return appServiceDTO;
     }
 
-    private Set<Long> createAppServiceVersion(AppServiceDownloadPayload downloadPayload, AppServiceDTO appServiceDTO, String groupPath, Boolean isFirst, String accessToken) {
+    private Set<Long> createAppServiceVersion(AppServiceDownloadPayload downloadPayload, AppServiceDTO appServiceDTO, String groupPath, Boolean isFirst, String accessToken, String downloadType) {
         Long appServiceId = appServiceDTO.getId();
         Set<Long> serviceVersionIds = new HashSet<>();
         downloadPayload.getAppServiceVersionDownloadPayloads().forEach(appServiceVersionPayload -> {
             AppServiceVersionDTO versionDTO = new AppServiceVersionDTO();
-            if (appServiceVersionPayload.getChartFilePath() != null && !appServiceVersionPayload.getChartFilePath().isEmpty()) {
+            if (!downloadType.equals(DOWNLOAD_ONLY)) {
                 String chartFilePath = String.format("%s%s", gitUtil.getWorkingDirectory(APPLICATION + System.currentTimeMillis()), TGZ);
                 fileDownload(appServiceVersionPayload.getChartFilePath(), chartFilePath);
                 AppServiceVersionDTO appServiceVersionDTO = chartResolver(appServiceVersionPayload, appServiceId, downloadPayload.getAppServiceCode(), new File(chartFilePath), versionDTO);
                 serviceVersionIds.add(appServiceVersionDTO.getId());
             }
-            if (appServiceVersionPayload.getRepoFilePath() != null && !appServiceVersionPayload.getRepoFilePath().isEmpty()) {
+            if (!downloadType.equals(DEPLOY_ONLY)) {
                 String repoFilePath = String.format("%s%s", gitUtil.getWorkingDirectory(APPLICATION + System.currentTimeMillis()), ZIP);
                 fileDownload(appServiceVersionPayload.getRepoFilePath(), repoFilePath);
                 AppServiceVersionDTO appServiceVersionDTO = gitResolver(appServiceVersionPayload, isFirst, groupPath, new File(repoFilePath), downloadPayload, accessToken, versionDTO, appServiceId);
