@@ -32,7 +32,6 @@ build-combine:
     - npm run compile
     - echo '//${NPM_REGISTRY}:_authToken=${NPM_TOKEN}'>.npmrc
     - npm publish --registry https://nexus.choerodon.com.cn/repository/private-npm/
-    - curl -sX POST -F token=${FRONT_REPOSITORY_TOKEN} -F ref=${REF_NAME} https://code.choerodon.com.cn/api/v4/projects/32/trigger/pipeline
     - mv src/main/resources/lib/dist docker
     - cp /usr/bin/kaniko $PWD/docker
     - kaniko -c $PWD/docker -f $PWD/docker/Dockerfile-combine -d ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}
@@ -40,18 +39,18 @@ build-combine:
     variables:
       - $COMBINE == "true"
 
-#build-publish:
-#  stage: build
-#  script:
-#
-#  only:
-#    refs:
-#      - master
-#      - tags
-#      - /^release-.*$/
-#      - /^hotfix-.*$/
-#    variables:
-#      - $COMBINE == "true"
+build-publish:
+  stage: build
+  script:
+    - curl -sX POST -F token=${FRONT_REPOSITORY_TOKEN} -F ref=${REF_NAME} https://code.choerodon.com.cn/api/v4/projects/32/trigger/pipeline
+  only:
+    refs:
+      - master
+      - tags
+      - /^release-.*$/
+      - /^hotfix-.*$/
+    variables:
+      - $COMBINE == "true"
 
 release:
   stage: release
