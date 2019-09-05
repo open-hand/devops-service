@@ -15,7 +15,7 @@ public class AppServiceRepVO {
     private Long appId;
     private Long gitlabProjectId;
     private String repoUrl;
-    private Boolean isSynchro;
+    private Boolean synchro;
     private Boolean isActive;
     private String publishLevel;
     private String contributor;
@@ -109,11 +109,11 @@ public class AppServiceRepVO {
     }
 
     public Boolean getSynchro() {
-        return isSynchro;
+        return synchro;
     }
 
     public void setSynchro(Boolean synchro) {
-        isSynchro = synchro;
+        this.synchro = synchro;
     }
 
     public Boolean getActive() {

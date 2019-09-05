@@ -2435,6 +2435,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     private AppServiceRepVO dtoToRepVo(AppServiceDTO appServiceDTO) {
         AppServiceRepVO appServiceRepVO = new AppServiceRepVO();
         BeanUtils.copyProperties(appServiceDTO, appServiceRepVO);
+        appServiceRepVO.setFail(appServiceDTO.getFailed());
         IamUserDTO createUser = baseServiceClientOperator.queryUserByUserId(appServiceDTO.getCreatedBy());
         IamUserDTO updateUser = baseServiceClientOperator.queryUserByUserId(appServiceDTO.getLastUpdatedBy());
         if (createUser != null) {
