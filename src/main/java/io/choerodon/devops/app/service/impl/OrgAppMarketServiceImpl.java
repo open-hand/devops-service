@@ -175,14 +175,17 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         try {
             //解析打包
             MarketImageUrlVO marketImageUrlVO = appUploadResolver(marketUploadVO, zipFileList, appFilePath);
+            LOGGER.info("==========应用上传，解析文件成功！！==========");
             //上传删除
             fileUpload(zipFileList, marketUploadVO, marketImageUrlVO);
-        } catch (CommonException e) {
-            baseServiceClientOperator.publishFail(marketUploadVO.getProjectId(), marketUploadVO.getMktAppId(), marketUploadVO.getMktAppVersionId(), e.getCode(), false);
-            throw new CommonException(e.getCode());
-        } finally {
+            LOGGER.info("==========应用上传，上传文件！！==========");
             FileUtil.deleteDirectory(new File(appFilePath));
             zipFileList.forEach(FileUtil::deleteFile);
+        } catch (CommonException e) {
+            baseServiceClientOperator.publishFail(marketUploadVO.getProjectId(), marketUploadVO.getMktAppId(), marketUploadVO.getMktAppVersionId(), e.getCode(), false);
+            FileUtil.deleteDirectory(new File(appFilePath));
+            zipFileList.forEach(FileUtil::deleteFile);
+            throw new CommonException(e.getCode());
         }
     }
 
@@ -192,7 +195,9 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         String appFilePath = gitUtil.getWorkingDirectory(APPLICATION + System.currentTimeMillis());
         try {
             MarketImageUrlVO marketImageUrlVO = appUploadResolver(appMarketFixVersionPayload.getFixVersionUploadPayload(), zipFileList, appFilePath);
+            LOGGER.info("==========应用上传修复版本，解析文件成功！！==========");
             fileUploadFixVersion(zipFileList, appMarketFixVersionPayload, marketImageUrlVO);
+            LOGGER.info("==========应用上传修复版本，上传文件！！==========");
             zipFileList.forEach(FileUtil::deleteFile);
             FileUtil.deleteDirectory(new File(appFilePath));
         } catch (CommonException e) {
@@ -202,6 +207,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                     appMarketFixVersionPayload.getFixVersionUploadPayload().getMktAppVersionId(),
                     e.getCode(),
                     true);
+            zipFileList.forEach(FileUtil::deleteFile);
             FileUtil.deleteDirectory(new File(appFilePath));
             throw new CommonException(e.getCode());
         }
@@ -215,6 +221,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             //创建应用
             ApplicationEventPayload applicationEventPayload = downPayloadToEnentPayload(appMarketDownloadVO);
             gitlabGroupService.createApplicationGroup(applicationEventPayload);
+            LOGGER.info("==========应用下载，创建gitlab Group 成功！！==========");
 
             DevopsProjectDTO projectDTO = devopsProjectService.queryByAppId(appMarketDownloadVO.getAppId());
             UserAttrDTO userAttrDTO = userAttrService.baseQueryById(appMarketDownloadVO.getIamUserId());
@@ -228,6 +235,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                 Boolean isFirst = appServiceDTO == null;
                 if (appServiceDTO == null) {
                     appServiceDTO = createGitlabProject(downloadPayload, appMarketDownloadVO.getAppCode(), TypeUtil.objToInteger(projectDTO.getDevopsAppGroupId()), userAttrDTO.getGitlabUserId());
+                    LOGGER.info("==========应用下载，创建gitlab Project成功！！==========");
 
                     //创建saga payload
                     DevOpsAppServiceSyncPayload appServiceSyncPayload = new DevOpsAppServiceSyncPayload();
@@ -245,11 +253,15 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                 String applicationDir = APPLICATION + System.currentTimeMillis();
                 String accessToken = appServiceService.getToken(appServiceDTO.getGitlabProjectId(), applicationDir, userAttrDTO);
                 appServiceVersionIds.addAll(createAppServiceVersion(downloadPayload, appServiceDTO, groupPath, isFirst, accessToken, appMarketDownloadVO.getDownloadAppType()));
+                LOGGER.info("==========应用下载文件上传成功==========");
             });
             if (!appMarketDownloadVO.getDownloadAppType().equals(DOWNLOAD_ONLY)) {
                 pushImageForDownload(appMarketDownloadVO);
+                LOGGER.info("==========应用下载镜像推送成功==========");
             }
+            LOGGER.info("==========应用下载开始调用回传接口==========");
             baseServiceClientOperator.completeDownloadApplication(appMarketDownloadVO.getAppDownloadRecordId(), appServiceVersionIds);
+            LOGGER.info("==========应用下载完成==========");
         } catch (Exception e) {
             baseServiceClientOperator.failToDownloadApplication(appMarketDownloadVO.getAppDownloadRecordId());
             throw new CommonException("error.download.app", e.getMessage());
