@@ -855,4 +855,31 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         appServiceMarketVO.setAppServiceName(applicationDTO.getName());
         return appServiceMarketVO;
     }
+
+    public void testScript(String cmd) {
+        try {
+//            String cmd = String.format("echo 'FROM %s' | kaniko -f /dev/stdin -d %s", sourceUrl, targetUrl);
+            LOGGER.info(cmd);
+            Process process = Runtime.getRuntime().exec(cmd);
+            BufferedReader infoInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            BufferedReader errorInput = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+            String line = "";
+            while ((line = infoInput.readLine()) != null) {
+                LOGGER.info(line);
+            }
+            Boolean failed = false;
+            while ((line = errorInput.readLine()) != null) {
+                LOGGER.error(line);
+                failed = true;
+            }
+            infoInput.close();
+            errorInput.close();
+            if (failed) {
+                throw new CommonException("error.exec.push.image");
+            }
+            process.waitFor();
+        } catch (Exception e) {
+            throw new CommonException("error.exec.push.image", e.getMessage());
+        }
+    }
 }
