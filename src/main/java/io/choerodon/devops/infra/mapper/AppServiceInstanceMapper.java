@@ -60,4 +60,6 @@ public interface AppServiceInstanceMapper extends Mapper<AppServiceInstanceDTO> 
     void deleteInstanceRelInfo(@Param("instanceId") Long instanceId);
 
     Boolean checkCodeExist(@Param("code") String code, @Param("envIds") List<Long> envIds);
+
+    int countNonDeletedInstances(@Param("appServiceId") Long appServiceId);
 }

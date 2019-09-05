@@ -70,6 +70,7 @@ import io.choerodon.devops.infra.feign.SonarClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
+import io.choerodon.devops.infra.mapper.AppServiceInstanceMapper;
 import io.choerodon.devops.infra.mapper.AppServiceMapper;
 import io.choerodon.devops.infra.mapper.AppServiceUserRelMapper;
 import io.choerodon.devops.infra.mapper.UserAttrMapper;
@@ -147,6 +148,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     private GitUtil gitUtil;
     @Autowired
     private AppServiceMapper appServiceMapper;
+    @Autowired
+    private AppServiceInstanceMapper appServiceInstanceMapper;
     @Autowired
     private UserAttrMapper userAttrMapper;
     @Autowired
@@ -334,7 +337,17 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     @Transactional
     public Boolean updateActive(Long appServiceId, Boolean active) {
+        active = Boolean.FALSE.equals(active) ? Boolean.FALSE : Boolean.TRUE;
+
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
+
+        if (!active) {
+            int nonDeleteInstancesCount = appServiceInstanceMapper.countNonDeletedInstances(appServiceId);
+            if (nonDeleteInstancesCount > 0) {
+                throw new CommonException("error.disable.application.service", appServiceId);
+            }
+        }
+
         appServiceDTO.setActive(active);
         baseUpdate(appServiceDTO);
         return true;
@@ -476,9 +489,9 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         if (devOpsAppServicePayload.getTemplateAppServiceId() != null) {
             String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
-            String newGroupName=organizationDTO.getCode() + "-" + projectDTO.getCode();
+            String newGroupName = organizationDTO.getCode() + "-" + projectDTO.getCode();
             String repositoryUrl = repoUrl + newGroupName + "/" + appServiceDTO.getCode() + GIT;
-            cloneAndPushCode(appServiceDTO, userAttrDTO, devOpsAppServicePayload.getTemplateAppServiceId(), devOpsAppServicePayload.getTemplateAppServiceVersionId(), repositoryUrl,newGroupName);
+            cloneAndPushCode(appServiceDTO, userAttrDTO, devOpsAppServicePayload.getTemplateAppServiceId(), devOpsAppServicePayload.getTemplateAppServiceVersionId(), repositoryUrl, newGroupName);
         }
     }
 
@@ -1435,7 +1448,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 list.toArray(arrayParams);
                 roleAssignmentSearchVO.setParam(arrayParams);
             }
-            if(!CollectionUtils.isEmpty(searchParamMap)){
+            if (!CollectionUtils.isEmpty(searchParamMap)) {
                 if (searchParamMap.get("loginName") != null) {
                     String loginName = TypeUtil.objToString(searchParamMap.get("loginName"));
                     roleAssignmentSearchVO.setLoginName(loginName);
@@ -1708,10 +1721,10 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
         String repositoryUrl = repoUrl + appServiceImportPayload.getOrgCode() + "-" + appServiceImportPayload.getProCode() + "/" + appServiceDTO.getCode() + GIT;
-        cloneAndPushCode(appServiceDTO, userAttrDTO, appServiceImportPayload.getOldAppServiceId(), appServiceImportPayload.getVersionId(), repositoryUrl,newGroupName);
+        cloneAndPushCode(appServiceDTO, userAttrDTO, appServiceImportPayload.getOldAppServiceId(), appServiceImportPayload.getVersionId(), repositoryUrl, newGroupName);
     }
 
-    private void cloneAndPushCode(AppServiceDTO appServiceDTO, UserAttrDTO userAttrDTO, Long oldAppServiceId, Long oldAppServiceVersionId, String repositoryUrl,String newGroupName) {
+    private void cloneAndPushCode(AppServiceDTO appServiceDTO, UserAttrDTO userAttrDTO, Long oldAppServiceId, Long oldAppServiceVersionId, String repositoryUrl, String newGroupName) {
         AppServiceDTO oldAppServiceDTO = appServiceMapper.selectByPrimaryKey(oldAppServiceId);
         ProjectDTO oldProjectDTO = baseServiceClientOperator.queryIamProjectById(oldAppServiceDTO.getAppId());
         OrganizationDTO oldOrganizationDTO = baseServiceClientOperator.queryOrganizationById(oldProjectDTO.getOrganizationId());
@@ -1727,7 +1740,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         String pullToken = gitlabServiceClientOperator.getAdminToken();
         String oldRepository = repoUrl + oldOrganizationDTO.getCode() + "-" + oldProjectDTO.getCode() + "/" + oldAppServiceDTO.getCode() + GIT;
         String workingDirectory = gitUtil.cloneAppMarket(applicationDir, oldAppServiceVersionDTO.getCommit(), oldRepository, pullToken);
-        replaceParams(appServiceDTO.getCode(),newGroupName,workingDirectory,oldAppServiceDTO.getCode(),oldOrganizationDTO.getCode() + "-" + oldProjectDTO.getCode());
+        replaceParams(appServiceDTO.getCode(), newGroupName, workingDirectory, oldAppServiceDTO.getCode(), oldOrganizationDTO.getCode() + "-" + oldProjectDTO.getCode());
         Git git = gitUtil.initGit(new File(workingDirectory));
         //push 到远程仓库
         GitLabUserDTO gitLabUserDTO = gitlabServiceClientOperator.queryUserById(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
