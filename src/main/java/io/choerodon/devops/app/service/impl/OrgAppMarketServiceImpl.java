@@ -407,7 +407,9 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                 git = gitUtil.combineAppMarket(appServiceFilePath, repoFilePath);
             }
             //6. push 到远程仓库
+            LOGGER.info("==========应用下载，开始推送代码==========");
             gitUtil.commitAndPushForMaster(git, repositoryUrl, appServiceVersionPayload.getVersion(), accessToken);
+            LOGGER.info("==========应用下载，代码推送成功==========");
 
             if (versionDTO.getId() == null) {
                 versionDTO.setAppServiceId(appServiceId);

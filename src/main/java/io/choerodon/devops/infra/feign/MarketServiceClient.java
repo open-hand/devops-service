@@ -17,8 +17,8 @@ import retrofit2.http.*;
 public interface MarketServiceClient {
 
     @Multipart
-//    @POST("market/v1/market_applications/upload")
-    @POST("v1/market_applications/upload")
+    @POST("market/v1/market_applications/upload")
+//    @POST("v1/market_applications/upload")
     Call<ResponseBody> uploadFile(@Query("remote_token") String remoteToken,
                                              @Query("app_version") String appVersion,
                                              @Part List<MultipartBody.Part> list,
