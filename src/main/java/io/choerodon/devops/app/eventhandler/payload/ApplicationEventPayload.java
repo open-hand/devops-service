@@ -2,6 +2,8 @@ package io.choerodon.devops.app.eventhandler.payload;
 
 import java.util.Set;
 
+import io.choerodon.devops.infra.enums.Visibility;
+
 /**
  * @author zongw.lee@gmail.com
  * @since 2019/8/7
@@ -28,6 +30,9 @@ public class ApplicationEventPayload {
     private Long projectId;
 
     private Long userId;
+
+    private Visibility visibility;
+
 
     /**
      * 如果这个值不为空，则当前应用选择某个特定版本的平台层应用作为模板，这是该特定版本每个服务的版本ID，对应`devops_app_service_version`表
@@ -128,5 +133,13 @@ public class ApplicationEventPayload {
 
     public void setServiceVersionIds(Set<Long> serviceVersionIds) {
         this.serviceVersionIds = serviceVersionIds;
+    }
+
+    public Visibility getVisibility() {
+        return visibility;
+    }
+
+    public void setVisibility(Visibility visibility) {
+        this.visibility = visibility;
     }
 }
