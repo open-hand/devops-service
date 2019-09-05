@@ -174,7 +174,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
             DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
             String username = devopsProjectDTO.getHarborProjectUserName() == null ? String.format(USER_PREFIX, organizationDTO.getId(), projectId) : devopsProjectDTO.getHarborProjectUserName();
             String email = devopsProjectDTO.getHarborProjectUserEmail() == null ? String.format("%s@choerodon.com", username) : devopsProjectDTO.getHarborProjectUserEmail();
-            String password = devopsProjectDTO.getHarborProjectUserPassword() == null ? String.format("%sA", username) : devopsProjectDTO.getHarborProjectUserPassword();
+            String password = devopsProjectDTO.getHarborProjectUserPassword() == null ? String.format("%sAAA", username) : devopsProjectDTO.getHarborProjectUserPassword();
             User user = new User(username, email, password, username);
             //创建用户
             Response<Void> result = null;
@@ -487,10 +487,24 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
     @Override
     public void operateConfig(Long organizationId, String resourceType, DevopsConfigRepVO devopsConfigRepVO) {
         List<DevopsConfigVO> configVOS = new ArrayList<>();
-        if (!ObjectUtils.isEmpty(devopsConfigRepVO.getHarbor())) {
-            configVOS.add(devopsConfigRepVO.getHarbor());
+        DevopsConfigVO harbor = new DevopsConfigVO();
+        DevopsConfigVO chart = new DevopsConfigVO();
+        if (ObjectUtils.isEmpty(devopsConfigRepVO.getHarbor())) {
+            harbor.setCustom(false);
+            harbor.setType(HARBOR);
+            harbor.setHarborPrivate(devopsConfigRepVO.getHarborPrivate());
+            configVOS.add(harbor);
+        } else {
+            harbor = devopsConfigRepVO.getHarbor();
+            harbor.setHarborPrivate(devopsConfigRepVO.getHarborPrivate());
+            configVOS.add(harbor);
         }
-        if (!ObjectUtils.isEmpty(devopsConfigRepVO.getChart())) {
+
+        if (ObjectUtils.isEmpty(devopsConfigRepVO.getChart())) {
+            chart.setCustom(false);
+            chart.setType(CHART);
+            configVOS.add(chart);
+        } else {
             configVOS.add(devopsConfigRepVO.getChart());
         }
         operate(organizationId, resourceType, configVOS);
