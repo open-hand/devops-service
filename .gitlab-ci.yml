@@ -18,8 +18,6 @@ build:
     variables:
       - $COMBINE == null
 
-
-
 build-combine-feature:
   stage: build
   script:
@@ -33,14 +31,14 @@ build-combine-feature:
   only:
     refs:
       - branches
+    variables:
+      - $COMBINE == "true"
   except:
     refs:
       - master
       - tags
       - /^release-.*$/
       - /^hotfix-.*$/
-    variables:
-      - $COMBINE == "true"
 
 build-combine:
   stage: build
