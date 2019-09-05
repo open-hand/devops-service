@@ -25,7 +25,7 @@ const Status = injectIntl(({ intl: { formatMessage }, active, fail, synchro }) =
   return (
     <StatusTags
       name={formatMessage({ id: msg })}
-      colorCode={msg}
+      color={color}
     />
   );
 });

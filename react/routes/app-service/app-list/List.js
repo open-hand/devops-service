@@ -119,7 +119,7 @@ const AppService = withRouter(observer((props) => {
     } else if (record.get('active')) {
       return;
     } else {
-      actionItems = pick(actionData, ['edit', 'run']);
+      actionItems = pick(actionData, ['run']);
     }
     return (<Action data={Object.values(actionItems)} />);
   }

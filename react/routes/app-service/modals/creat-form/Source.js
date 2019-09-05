@@ -2,7 +2,6 @@ import React, { Fragment, useCallback, useState, useEffect } from 'react';
 import { Form, Select } from 'choerodon-ui/pro';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
-import { Icon } from 'choerodon-ui';
 import map from 'lodash/map';
 
 import './index.less';
@@ -16,18 +15,22 @@ export default injectIntl(observer((props) => {
     if (record.get('appServiceSource')) {
       AppStore.loadAppService(projectId, record.get('appServiceSource'));
     } else {
-      record.set('templateAppServiceId', null);
       AppStore.setAppService([]);
     }
+    record.set('templateAppServiceId', null);
   }, [record.get('appServiceSource')]);
 
   useEffect(() => {
-    if (record.get('templateAppServiceId')) {
-      AppStore.loadVersion(projectId, record.get('templateAppServiceId'));
-    } else {
-      AppStore.setVersion([]);
+    async function loadVersion() {
+      if (record.get('templateAppServiceId')) {
+        const res = await AppStore.loadVersion(projectId, record.get('templateAppServiceId'));
+        res && res[0] && record.set('templateAppServiceVersionId', res[0].id);
+      } else {
+        AppStore.setVersion([]);
+      }
     }
-    record.get('templateAppServiceVersionId') && record.set('templateAppServiceVersionId', null);
+    loadVersion();
+    record.set('templateAppServiceVersionId', null);
   }, [record.get('templateAppServiceId')]);
 
   return (

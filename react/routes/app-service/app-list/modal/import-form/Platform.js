@@ -3,7 +3,7 @@ import { Action } from '@choerodon/master';
 import { Table, Modal } from 'choerodon-ui/pro';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
-import { Button, Icon } from 'choerodon-ui';
+import { Button, Icon, Tooltip } from 'choerodon-ui';
 import EditForm from './EditForm';
 import SourceTable from './SourceTable';
 
@@ -49,7 +49,11 @@ const Platform = injectIntl(observer((props) => {
     return (
       <span>
         {value}
-        {record.get('nameFailed') && <Icon type="info" className={`${prefixCls}-import-platform-failed`} />}
+        {record.get('nameFailed') && (
+          <Tooltip title={formatMessage({ id: `${intlPrefix}.import.failed` })}>
+            <Icon type="info" className={`${prefixCls}-import-platform-failed`} />
+          </Tooltip>
+        )}
       </span>
     );
   }
@@ -58,7 +62,11 @@ const Platform = injectIntl(observer((props) => {
     return (
       <span>
         {value}
-        {record.get('codeFailed') && <Icon type="info" className={`${prefixCls}-import-platform-failed`} />}
+        {record.get('codeFailed') && (
+          <Tooltip title={formatMessage({ id: `${intlPrefix}.import.failed` })}>
+            <Icon type="info" className={`${prefixCls}-import-platform-failed`} />
+          </Tooltip>
+        )}
       </span>
     );
   }
@@ -73,7 +81,7 @@ const Platform = injectIntl(observer((props) => {
   }
 
   function renderType({ value }) {
-    return <FormattedMessage id={`${intlPrefix}.type.${value}`} />;
+    return value && <FormattedMessage id={`${intlPrefix}.type.${value}`} />;
   }
 
   function renderShare({ value }) {
@@ -123,8 +131,8 @@ const Platform = injectIntl(observer((props) => {
         <Column renderer={renderAction} width="0.7rem" />
         <Column name="code" renderer={renderCode} />
         <Column name="appName" />
-        <Column name="share" renderer={renderShare} />
-        <Column name="type" renderer={renderType} />
+        <Column name="share" renderer={renderShare} width="1rem" align="left" />
+        <Column name="type" renderer={renderType} width="1rem" />
         <Column name="version" />
       </Table>
     </div>

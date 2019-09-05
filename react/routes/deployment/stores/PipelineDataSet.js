@@ -1,11 +1,11 @@
 export default ((intlPrefix, formatMessage, projectId) => ({
   paging: false,
   transport: {
-    read: {
+    read: ({ data }) => ({
       url: `/devops/v1/projects/${projectId}/pipeline/page_by_options`,
       method: 'post',
-      data: { triggerType: 'manual', executor: true },
-    },
+      data: { triggerType: 'manual', executor: true, name: data.params },
+    }),
 
   },
   fields: [
