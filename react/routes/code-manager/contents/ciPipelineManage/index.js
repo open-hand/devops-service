@@ -10,6 +10,7 @@ import DevPipelineStore from '../../stores/DevPipelineStore';
 import DevopsStore from '../../stores/DevopsStore';
 import CiPipelineTable from './CiPipelineTable.js';
 import handleMapStore from '../../main-view/store/handleMapStore';
+import Loading from '../../../../components/loading';
 import '../../../main.less';
 import './index.less';
 
@@ -29,7 +30,6 @@ class CiPipelineHome extends Component {
   }
 
   componentDidMount() {
-    this.handleRefresh();
   }
 
   componentWillUnmount() {
@@ -59,17 +59,11 @@ class CiPipelineHome extends Component {
     return (
       <Page
         className="c7n-ciPipeline"
-        service={[
-          'devops-service.application.listByActive',
-          'devops-service.project-pipeline.cancel',
-          'devops-service.project-pipeline.retry',
-          'devops-service.devops-gitlab-pipeline.pagePipeline',
-        ]}
       >
         {appData && appData.length && appId ? <Fragment>
           <Content className="c7n-content">
             <CiPipelineTable store={CiPipelineStore} loading={CiPipelineStore.loading} />
-          </Content></Fragment> : null}
+          </Content></Fragment> : <Loading display={DevPipelineStore.getLoading} />}
       </Page>
     );
   }

@@ -4,7 +4,6 @@ import { TabPage, Content, Header, Breadcrumb } from '@choerodon/master';
 import CodeManagerHeader from '../../header';
 import CodeManagerToolBar from '../../tool-bar';  
 import CodeManagerCiPipelineManage from '../../contents/ciPipelineManage';
-
 import '../index.less';
 
 const CiPipelineManage = observer((props) => <TabPage>

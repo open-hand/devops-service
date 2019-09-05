@@ -128,6 +128,7 @@ class MergeRequestStore {
     if (key === 'all') {
       axios.get(`/devops/v1/projects/${projectId}/app_service/${appId}/git/list_merge_request?page=${page}&size=${size}`)
         .then((res) => {
+          this.setLoading(false);
           const response = handlePromptError(res);
           if (response) {
             const { mergeRequestVOPageInfo, closeCount, mergeCount, openCount, totalCount } = res;
@@ -146,7 +147,6 @@ class MergeRequestStore {
               totalCount,
             });
           }
-          this.setLoading(false);
         })
         .catch((error) => {
           this.setLoading(false);
@@ -156,6 +156,7 @@ class MergeRequestStore {
       // 针对opened和assignee的数据不分页处理，原因是前端从opened中分离assignee数据，会导致分页数据都显示opened的
       axios.get(`/devops/v1/projects/${projectId}/app_service/${appId}/git/list_merge_request?state=${key}&page=${page}&size=${key === 'opened' ? 30 : size}`)
         .then((res) => {
+          this.setLoading(false);
           const response = handlePromptError(res);
           if (response) {
             const { mergeRequestVOPageInfo, closeCount, mergeCount, openCount, totalCount } = res;
@@ -179,7 +180,6 @@ class MergeRequestStore {
               totalCount,
             });
           }
-          this.setLoading(false);
         })
         .catch((error) => {
           this.setLoading(false);

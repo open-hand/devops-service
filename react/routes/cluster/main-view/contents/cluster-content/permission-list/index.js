@@ -31,7 +31,6 @@ export default () => {
     <Table
       dataSet={PermissionDs}
       border={false}
-      queryBar="none"
     >
       <Column name="name" width={200} />
       {cluster.get('skipCheckProjectPermission') ? null : <Column renderer={renderActions} />}

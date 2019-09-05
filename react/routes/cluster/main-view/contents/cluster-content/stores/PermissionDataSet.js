@@ -29,4 +29,5 @@ export default ({ formatMessage, intlPrefix, projectId }) => ({
       label: formatMessage({ id: 'cluster.project.code' }),
     },
   ],
+  queryFields: [],
 });
