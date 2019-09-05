@@ -463,9 +463,10 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
         return devopsConfigDTO;
     }
 
-    private void RepVOToConfigVO(DevopsConfigRepVO devopsConfigRepVO, DevopsConfigVO devopsConfigVO) {
+    private void ConfigVOInToRepVO(DevopsConfigRepVO devopsConfigRepVO, DevopsConfigVO devopsConfigVO) {
         if (devopsConfigVO.getType().equals(HARBOR)) {
             devopsConfigRepVO.setHarbor(devopsConfigVO);
+            devopsConfigRepVO.setHarborPrivate(devopsConfigVO.getHarborPrivate());
         } else if (devopsConfigVO.getType().equals(CHART)) {
             devopsConfigRepVO.setChart(devopsConfigVO);
         }
@@ -473,9 +474,13 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
 
     @Override
     public DevopsConfigRepVO queryConfig(Long resourceId, String resourceType) {
-        List<DevopsConfigVO> list = queryByResourceId(resourceId, resourceType);
         DevopsConfigRepVO devopsConfigRepVO = new DevopsConfigRepVO();
-        list.stream().forEach(devopsConfigVO -> RepVOToConfigVO(devopsConfigRepVO, devopsConfigVO));
+        List<DevopsConfigVO> configVOS = queryByResourceId(resourceId, resourceType);
+        configVOS.stream().forEach(devopsConfigVO -> ConfigVOInToRepVO(devopsConfigRepVO,devopsConfigVO));
+        if(resourceType.equals(ResourceLevel.PROJECT.value())){
+            DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(resourceId);
+            devopsConfigRepVO.setHarborPrivate(devopsProjectDTO.getHarborProjectIsPrivate());
+        }
         return devopsConfigRepVO;
     }
 
