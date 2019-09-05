@@ -14,7 +14,7 @@ export default ({ formatMessage, intlPrefix, projectId, store }) => {
     const id = record.get('id');
     const param = id ? `&deploy_value_id=${id}` : '';
     try {
-      const res = await axios.get(`/devops/v1/projects/${projectId}/deploy_value/check_name?name=${value}${param}`);
+      const res = await axios.get(`/devops/v1/projects/${projectId}/deploy_value/check_name?name=${encodeURIComponent(value)}${param}`);
       if (res.failed) {
         if (res.code === 'error.devops.pipeline.value.name.exit') {
           return '名称已存在';

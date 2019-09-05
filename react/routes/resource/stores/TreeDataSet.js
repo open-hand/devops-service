@@ -35,9 +35,7 @@ function createResourceRecord({ dataSet, expandsKeys }) {
         parentId: String(envId),
         expand: expandsKeys.includes(groupKey),
       };
-
       dataSet.create(group);
-
       forEach(child, (item) => {
         dataSet.create({
           ...item,

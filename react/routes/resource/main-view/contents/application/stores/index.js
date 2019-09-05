@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useMemo } from 'react';
 import { DataSet } from 'choerodon-ui/pro';
 import { observer } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
+import getTablePostData from '../../../../../../utils/getTablePostData';
 import BaseInfoDataSet from './BaseInfoDataSet';
 import NetDataSet from './NetDataSet';
 import ConfigDataSet from './ConfigDataSet';
@@ -31,12 +32,7 @@ export const StoreProvider = injectIntl(observer((props) => {
     CIPHER_TAB: 'cipher',
   }), []);
   const baseInfoDs = useMemo(() => new DataSet(BaseInfoDataSet()), []);
-  const netDs = useMemo(() => new DataSet(NetDataSet({
-    formatMessage,
-    intlPrefix,
-    projectId,
-    id,
-  })), [projectId, id]);
+  const netDs = useMemo(() => new DataSet(NetDataSet({ formatMessage, intlPrefix })), [projectId, id]);
   const mappingDs = useMemo(() => new DataSet(ConfigDataSet({
     formatMessage,
     intlPrefix,
@@ -64,6 +60,19 @@ export const StoreProvider = injectIntl(observer((props) => {
   useEffect(() => {
     baseInfoDs.transport.read.url = `/devops/v1/projects/${projectId}/app_service/${id}`;
     baseInfoDs.query();
+    netDs.transport.read = ({ data }) => {
+      const postData = getTablePostData(data);
+      return ({
+        url: `/devops/v1/projects/${projectId}/service/page_by_instance?app_service_id=${id}`,
+        method: 'post',
+        data: postData,
+      });
+    };
+    netDs.transport.destroy = ({ data: [data] }) => ({
+      url: `/devops/v1/projects/${projectId}/service/${data.id}`,
+      method: 'delete',
+    });
+    netDs.query();
   }, [projectId, id]);
 
   const tabKey = appStore.getTabKey;

@@ -21,7 +21,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
   observer((props) => {
     const {
       intl: { formatMessage },
-      AppState: { currentMenuType: { id: projectId } },
+      AppState: { currentMenuType: { id: projectId, organizationId, type: resourceType } },
       children,
     } = props;
     const {
@@ -33,7 +33,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
       SYNC_TAB: 'sync',
       ASSIGN_TAB: 'assign',
     }), []);
-    const envStore = useStore(tabs);
+    const envStore = useStore({ defaultTab: tabs.SYNC_TAB });
     const baseInfoDs = useMemo(() => new DataSet(BaseInfoDataSet()), []);
     const permissionsDs = useMemo(() => new DataSet(PermissionsDataSet({
       formatMessage,
@@ -63,6 +63,10 @@ export const StoreProvider = injectIntl(inject('AppState')(
         permissionsDs.query();
       }
     }, [projectId, id, tabKey]);
+
+    useEffect(() => {
+      envStore.checkPermission({ projectId, organizationId, resourceType });
+    }, [projectId, organizationId, resourceType]);
 
     const value = {
       ...props,

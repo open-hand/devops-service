@@ -40,11 +40,25 @@
     }
 
     &-icon {
+      position: relative;
       flex: 0 0 .24rem;
       margin-right: .08rem;
       margin-top: 0.03rem;
       line-height: .4rem;
       font-size: .24rem;
+      z-index: 0;
+
+      &::after {
+        content: '';
+        position: absolute;
+        top: 0.03rem;
+        right: -0.04rem;
+        width: .2rem;
+        height: .2rem;
+        border-radius: 0.04rem;
+        background-color: #b6c2cd;
+        z-index: -1;
+      }
     }
 
     &-number {
