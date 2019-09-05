@@ -287,8 +287,8 @@ public class SagaHandler {
     /**
      * 应用下载
      */
-    @SagaTask(code = SagaTaskCodeConstants.APIM_DOWNLOAD_APP_CREATE_PROJECT,
-            description = "应用下载",
+    @SagaTask(code = SagaTaskCodeConstants.APIM_DOWNLOAD_APP_CREATE_GROUP,
+            description = "应用下载,创建gitlab Group ",
             sagaCode = SagaTopicCodeConstants.APIM_DOWNLOAD_APP,
             maxRetryCount = 0, seq = 1)
     public String downloadAppCreateProject(String payload) {

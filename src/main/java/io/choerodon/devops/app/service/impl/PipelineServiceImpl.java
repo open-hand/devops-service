@@ -114,7 +114,7 @@ public class PipelineServiceImpl implements PipelineService {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         Long userId = DetailsHelper.getUserDetails().getUserId();
         String sortSql = pageRequest.getSort() != null ? pageRequest.getSort().toSql() : null;
-         String sortSqlUnder = HumpToUnderlineUtil.toUnderLine(sortSql);
+        String sortSqlUnder = HumpToUnderlineUtil.toUnderLine(sortSql);
         List<PipelineVO> pipelineVOS = ConvertUtils.convertList(pipelineMapper.listByOptions(projectId, pipelineSearchVO, userId, sortSqlUnder), PipelineVO.class);
         List<PipelineVO> pipelineVOList;
         Boolean projectOwner = baseServiceClientOperator.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectDTO);
@@ -161,7 +161,7 @@ public class PipelineServiceImpl implements PipelineService {
             Long stageId = pipelineStageES.get(i).getId();
             createUserRel(pipelineReqVO.getPipelineStageVOs().get(i).getStageUserRels(), null, stageId, null);
             List<PipelineTaskVO> taskDTOList = pipelineReqVO.getPipelineStageVOs().get(i).getPipelineTaskVOs();
-            if (taskDTOList != null && taskDTOList.size() > 0) {
+            if (taskDTOList != null && !taskDTOList.isEmpty()) {
                 taskDTOList.forEach(t -> createPipelineTask(t, projectId, stageId));
             }
         }
@@ -346,7 +346,7 @@ public class PipelineServiceImpl implements PipelineService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public List<PipelineUserVO>  audit(Long projectId, PipelineUserRecordRelationshipVO recordRelDTO) {
+    public List<PipelineUserVO> audit(Long projectId, PipelineUserRecordRelationshipVO recordRelDTO) {
         List<PipelineUserVO> userDTOS = new ArrayList<>();
         String status;
         PipelineRecordDTO pipelineRecordE = pipelineRecordService.baseQueryById(recordRelDTO.getPipelineRecordId());
@@ -1271,7 +1271,6 @@ public class PipelineServiceImpl implements PipelineService {
         }
         return userIds.contains(TypeUtil.objToString(DetailsHelper.getUserDetails().getUserId()));
     }
-
 
 
     private Boolean checkTaskTriggerPermission(Long taskRecordId) {
