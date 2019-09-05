@@ -127,10 +127,38 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
     private AppServiceVersionReadmeService appServiceVersionReadmeService;
     @Autowired
     private DevopsProjectService devopsProjectService;
-    @Autowired
-    private ApplicationService applicationService;
-    @Autowired
-    private GitlabGroupService gitlabGroupService;
+
+    /**
+     * 执行pull/push脚本
+     * kaniko工具
+     *
+     * @param
+     */
+    private static synchronized void pushImageScript(String sourceUrl, String targetUrl, String configStr) {
+        try {
+            FileUtil.saveDataToFile(CONFIG_PATH, CONFIG_JSON, configStr);
+            String cmd = String.format("echo 'FROM %s' | kaniko -f /dev/stdin -d %s", sourceUrl, targetUrl);
+            FileUtil.saveDataToFile(SHELL, PUSH_IMAGE, cmd);
+            LOGGER.info(cmd);
+            Process process = Runtime.getRuntime().exec(String.format("sh /%s/%s", SHELL, PUSH_IMAGE));
+            BufferedReader infoInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            BufferedReader errorInput = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+            String line = "";
+            while ((line = infoInput.readLine()) != null) {
+                LOGGER.info(line);
+            }
+            LOGGER.info("=============信息分界线=================");
+            while ((line = errorInput.readLine()) != null) {
+                LOGGER.error(line);
+            }
+            LOGGER.info("=============信息分界线=================");
+            infoInput.close();
+            errorInput.close();
+            process.waitFor();
+        } catch (Exception e) {
+            throw new CommonException("error.exec.push.image", e.getMessage());
+        }
+    }
 
     @Override
     public PageInfo<AppServiceUploadPayload> pageByAppId(Long appId,
@@ -221,29 +249,27 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         Set<Long> appServiceVersionIds = new HashSet<>();
 
         try {
-        //创建应用
-        DevopsProjectDTO projectDTO = devopsProjectService.queryByAppId(appMarketDownloadVO.getAppId());
-        LOGGER.info("==========应用下载，appMarketDownloadVO.getAppId(){},projectDTO=========={}", appMarketDownloadVO.getAppId(), projectDTO.getIamProjectId());
+            //创建应用
+            DevopsProjectDTO projectDTO = devopsProjectService.queryByAppId(appMarketDownloadVO.getAppId());
+            LOGGER.info("==========应用下载，appMarketDownloadVO.getAppId(){},projectDTO=========={}", appMarketDownloadVO.getAppId(), projectDTO.getIamProjectId());
+            UserAttrDTO userAttrDTO = userAttrService.baseQueryById(appMarketDownloadVO.getIamUserId());
+            ApplicationDTO applicationDTO = baseServiceClientOperator.queryAppById(appMarketDownloadVO.getAppId());
+            String groupPath = String.format(SITE_APP_GROUP_NAME_FORMAT, applicationDTO.getCode());
+            appMarketDownloadVO.getAppServiceDownloadPayloads().forEach(downloadPayload -> {
+                //1. 校验是否已经下载过
+                AppServiceDTO appServiceDTO = appServiceService.baseQueryByCode(downloadPayload.getAppServiceCode(), appMarketDownloadVO.getAppId());
+                downloadPayload.setAppId(appMarketDownloadVO.getAppId());
+                Boolean isFirst = appServiceDTO == null;
+                if (appServiceDTO == null) {
+                    LOGGER.info("==========应用下载=========={}", appMarketDownloadVO.getAppCode());
+                    LOGGER.info("==========应用下载=========={}", projectDTO.getDevopsAppGroupId());
+                    LOGGER.info("==========应用下载=========={}", userAttrDTO.getGitlabUserId());
+                    appServiceDTO = createGitlabProject(downloadPayload, appMarketDownloadVO.getAppCode(), TypeUtil.objToInteger(projectDTO.getDevopsAppGroupId()), userAttrDTO.getGitlabUserId());
+                    LOGGER.info("==========应用下载，创建gitlab Project成功！！==========");
 
-        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(appMarketDownloadVO.getIamUserId());
-
-        ApplicationDTO applicationDTO = baseServiceClientOperator.queryAppById(appMarketDownloadVO.getAppId());
-        String groupPath = String.format(SITE_APP_GROUP_NAME_FORMAT, applicationDTO.getCode());
-        appMarketDownloadVO.getAppServiceDownloadPayloads().forEach(downloadPayload -> {
-            //1. 校验是否已经下载过
-            AppServiceDTO appServiceDTO = appServiceService.baseQueryByCode(downloadPayload.getAppServiceCode(), appMarketDownloadVO.getAppId());
-            downloadPayload.setAppId(appMarketDownloadVO.getAppId());
-            Boolean isFirst = appServiceDTO == null;
-            if (appServiceDTO == null) {
-                LOGGER.info("==========应用下载=========={}", appMarketDownloadVO.getAppCode());
-                LOGGER.info("==========应用下载=========={}", projectDTO.getDevopsAppGroupId());
-                LOGGER.info("==========应用下载=========={}", userAttrDTO.getGitlabUserId());
-                appServiceDTO = createGitlabProject(downloadPayload, appMarketDownloadVO.getAppCode(), TypeUtil.objToInteger(projectDTO.getDevopsAppGroupId()), userAttrDTO.getGitlabUserId());
-                LOGGER.info("==========应用下载，创建gitlab Project成功！！==========");
-
-                //创建saga payload
-                DevOpsAppServiceSyncPayload appServiceSyncPayload = new DevOpsAppServiceSyncPayload();
-                BeanUtils.copyProperties(appServiceDTO, appServiceSyncPayload);
+                    //创建saga payload
+                    DevOpsAppServiceSyncPayload appServiceSyncPayload = new DevOpsAppServiceSyncPayload();
+                    BeanUtils.copyProperties(appServiceDTO, appServiceSyncPayload);
                     producer.apply(
                             StartSagaBuilder.newBuilder()
                                     .withSourceId(applicationDTO.getId())
@@ -253,21 +279,21 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                             builder -> {
                             }
                     );
-            }
-            String applicationDir = APPLICATION + System.currentTimeMillis();
-            String accessToken = appServiceService.getToken(appServiceDTO.getGitlabProjectId(), applicationDir, userAttrDTO);
-            LOGGER.info("=========应用下载，获取token成功=========");
+                }
+                String applicationDir = APPLICATION + System.currentTimeMillis();
+                String accessToken = appServiceService.getToken(appServiceDTO.getGitlabProjectId(), applicationDir, userAttrDTO);
+                LOGGER.info("=========应用下载，获取token成功=========");
 
-            appServiceVersionIds.addAll(createAppServiceVersion(downloadPayload, appServiceDTO, groupPath, isFirst, accessToken, appMarketDownloadVO.getDownloadAppType()));
-            LOGGER.info("==========应用下载文件上传成功==========");
-        });
-        if (!appMarketDownloadVO.getDownloadAppType().equals(DOWNLOAD_ONLY)) {
-            pushImageForDownload(appMarketDownloadVO);
-            LOGGER.info("==========应用下载镜像推送成功==========");
-        }
-        LOGGER.info("==========应用下载开始调用回传接口==========");
-        baseServiceClientOperator.completeDownloadApplication(appMarketDownloadVO.getAppDownloadRecordId(), appMarketDownloadVO.getAppVersionId(), appServiceVersionIds);
-        LOGGER.info("==========应用下载完成==========");
+                appServiceVersionIds.addAll(createAppServiceVersion(downloadPayload, appServiceDTO, groupPath, isFirst, accessToken, appMarketDownloadVO.getDownloadAppType()));
+                LOGGER.info("==========应用下载文件上传成功==========");
+            });
+            if (!appMarketDownloadVO.getDownloadAppType().equals(DOWNLOAD_ONLY)) {
+                pushImageForDownload(appMarketDownloadVO);
+                LOGGER.info("==========应用下载镜像推送成功==========");
+            }
+            LOGGER.info("==========应用下载开始调用回传接口==========");
+            baseServiceClientOperator.completeDownloadApplication(appMarketDownloadVO.getAppDownloadRecordId(), appMarketDownloadVO.getAppVersionId(), appServiceVersionIds);
+            LOGGER.info("==========应用下载完成==========");
         } catch (Exception e) {
             baseServiceClientOperator.failToDownloadApplication(appMarketDownloadVO.getAppDownloadRecordId());
             throw new CommonException("error.download.app", e.getMessage());
@@ -650,12 +676,10 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
 
             //准备认证json
             String configStr = createConfigJson(sourceUser, getDomain(configVO.getUrl()), targetUser, getDomain(appServiceMarketVO.getHarborUrl()));
-            FileUtil.saveDataToFile(CONFIG_PATH, CONFIG_JSON, configStr);
-
             appServiceMarketVO.getAppServiceVersionUploadPayloads().forEach(t -> {
                 //推送镜像
                 String targetImageUrl = String.format("%s:%s", appServiceMarketVO.getHarborUrl(), t.getVersion());
-                callScript(appServiceVersionService.baseQuery(t.getId()).getImage(), targetImageUrl);
+                pushImageScript(appServiceVersionService.baseQuery(t.getId()).getImage(), targetImageUrl, configStr);
 
                 MarketAppServiceVersionImageVO appServiceVersionImageVO = new MarketAppServiceVersionImageVO();
                 appServiceVersionImageVO.setVersion(t.getVersion());
@@ -682,44 +706,11 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             harborUrl = harborUrl.endsWith("/") ? harborUrl : harborUrl + "/";
             //准备认证json
             String configStr = createConfigJson(sourceUser, getDomain(harborUrl), targetUser, getDomain(configVO.getUrl()));
-            FileUtil.saveDataToFile(CONFIG_PATH, CONFIG_JSON, configStr);
 
             appServiceMarketVO.getAppServiceVersionDownloadPayloads().forEach(t -> {
-                callScript(t.getImage(), String.format("%s%s:%s", harborUrl, MARKET_PRO, t.getVersion()));
+                pushImageScript(t.getImage(), String.format("%s%s:%s", harborUrl, MARKET_PRO, t.getVersion()), configStr);
             });
         });
-    }
-
-    /**
-     * 执行pull/push脚本
-     *
-     * @param
-     */
-    private void callScript(String sourceUrl, String targetUrl) {
-        try {
-
-            String cmd = String.format("echo 'FROM %s' | kaniko -f /dev/stdin -d %s", sourceUrl, targetUrl);
-            FileUtil.saveDataToFile(SHELL, PUSH_IMAGE, cmd);
-            LOGGER.info(cmd);
-            cmd = String.format("sh /%s/%s", SHELL, PUSH_IMAGE);
-            LOGGER.info(cmd);
-            Process process = Runtime.getRuntime().exec(cmd);
-            BufferedReader infoInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            BufferedReader errorInput = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-            String line = "";
-            while ((line = infoInput.readLine()) != null) {
-                LOGGER.info(line);
-            }
-            LOGGER.info("=============信息分界线=================");
-            while ((line = errorInput.readLine()) != null) {
-                LOGGER.error(line);
-            }
-            infoInput.close();
-            errorInput.close();
-            process.waitFor();
-        } catch (Exception e) {
-            throw new CommonException("error.exec.push.image", e.getMessage());
-        }
     }
 
     private void fileUpload(List<String> zipFileList, AppMarketUploadPayload appMarketUploadVO, MarketImageUrlVO marketImageUrlVO) {
@@ -764,7 +755,10 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                 appJson,
                 files,
                 imageJson);
-        RetrofitCallExceptionParse.executeCall(responseCall, ERROR_UPLOAD, Boolean.class);
+        Boolean result = RetrofitCallExceptionParse.executeCall(responseCall, ERROR_UPLOAD, Boolean.class);
+        if (!result) {
+            throw new CommonException(ERROR_UPLOAD);
+        }
     }
 
     private void fileDownload(String fileUrl, String downloadFilePath) {
@@ -874,32 +868,5 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         appServiceMarketVO.setAppServiceCode(applicationDTO.getCode());
         appServiceMarketVO.setAppServiceName(applicationDTO.getName());
         return appServiceMarketVO;
-    }
-
-    public void testScript(String cmd) {
-        try {
-//            String cmd = String.format("echo 'FROM %s' | kaniko -f /dev/stdin -d %s", sourceUrl, targetUrl);
-            LOGGER.info(cmd);
-            Process process = Runtime.getRuntime().exec(cmd);
-            BufferedReader infoInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            BufferedReader errorInput = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-            String line = "";
-            while ((line = infoInput.readLine()) != null) {
-                LOGGER.info(line);
-            }
-            Boolean failed = false;
-            while ((line = errorInput.readLine()) != null) {
-                LOGGER.error(line);
-                failed = true;
-            }
-            infoInput.close();
-            errorInput.close();
-            if (failed) {
-                throw new CommonException("error.exec.push.image");
-            }
-            process.waitFor();
-        } catch (Exception e) {
-            throw new CommonException("error.exec.push.image", e.getMessage());
-        }
     }
 }

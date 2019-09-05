@@ -101,7 +101,7 @@ public class OrgAppMarketController {
      * @param appMarketUploadVO
      * @return
      */
-    @Permission(permissionPublic = true)
+    @Permission(type = ResourceType.SITE, permissionWithin = true)
     @ApiOperation(value = "应用上传")
     @PostMapping("/upload")
     public ResponseEntity uploadAPP(
@@ -115,7 +115,7 @@ public class OrgAppMarketController {
      * @param appMarketFixVersionPayload
      * @return
      */
-    @Permission(permissionPublic = true)
+    @Permission(type = ResourceType.SITE, permissionWithin = true)
     @ApiOperation(value = "应用上传 版本修复")
     @PostMapping("/upload_fix_version")
     public ResponseEntity uploadAPPFixVersion(
@@ -129,23 +129,13 @@ public class OrgAppMarketController {
      * @param applicationPayload
      * @return
      */
-    @Permission(permissionPublic = true)
+    @Permission(type = ResourceType.SITE, permissionWithin = true)
     @ApiOperation(value = "应用下载")
     @PostMapping("/download")
     public ResponseEntity downLoadApp(
             @ApiParam(value = "应用信息", required = true)
             @RequestBody AppMarketDownloadPayload applicationPayload) {
         orgAppMarketService.downLoadApp(applicationPayload);
-        return new ResponseEntity(HttpStatus.NO_CONTENT);
-    }
-
-    @Permission(permissionPublic = true)
-    @ApiOperation(value = "测试")
-    @GetMapping("/test")
-    public ResponseEntity test(
-            @ApiParam(value = "应用信息", required = true)
-            @RequestParam String cmd) {
-        orgAppMarketService.testScript(cmd);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 }
