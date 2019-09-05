@@ -53,7 +53,7 @@ function StatusIcon(props) {
 
   const handleClick = (e) => {
     e.preventDefault();
-    handleAtagClick(name);
+    handleAtagClick(name, e);
   };
 
   return (
@@ -72,7 +72,7 @@ function StatusIcon(props) {
 }
 
 StatusIcon.propTypes = {
-  status: PropTypes.string.isRequired,
+  status: PropTypes.string,
   name: PropTypes.string.isRequired,
   error: PropTypes.string,
   width: PropTypes.oneOfType([

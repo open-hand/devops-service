@@ -7,6 +7,7 @@ import { injectIntl, FormattedMessage } from 'react-intl';
 import TimeAgo from 'timeago-react';
 import _ from 'lodash';
 import MouserOverWrapper from '../../../../components/MouseOverWrapper';
+import StatusIcon from '../../../../components/StatusIcon/StatusIcon';
 import DevPipelineStore from '../../stores/DevPipelineStore';
 import Tips from '../../../../components/Tips';
 import MergeRequestStore from './stores';
@@ -140,16 +141,18 @@ class MergeRequestHome extends Component {
     const backPath = state && state.backPath;
 
     const columnsAll = [{
-      title: <Tips type="title" data="app.code" />,
-      key: 'iid',
-      render: (record) => (<span>!{record.iid}</span>),
-    }, {
       title: <FormattedMessage id="app.name" />,
       dataIndex: 'title',
       key: 'title',
-      render: (text, record) => (<MouserOverWrapper text={record.title} width={0.2}>
-        {record.title}
-      </MouserOverWrapper>),
+      render: (text, record) => (<StatusIcon
+        name={record.title}
+        width={0.25}
+        handleAtagClick={this.linkToMerge.bind(this, record.iid)}
+      />),
+    }, {
+      title: <Tips type="title" data="app.code" />,
+      key: 'iid',
+      render: (record) => (<span>!{record.iid}</span>),
     }, {
       title: <Tips type="title" data="app.branch" />,
       key: 'targetBranch',
@@ -207,32 +210,18 @@ class MergeRequestHome extends Component {
             />
           </Tooltip>
         </div>),
-    }, {
-      width: 56,
-      key: 'action',
-      render: (test, record) => (
-        <div>
-          <Permission
-            service={['devops-service.devops-git.getMergeRequestList']}
-            organizationId={organizationId}
-            projectId={projectId}
-            type={type}
-          >
-            <Tooltip placement="bottom" title={<FormattedMessage id="merge.detail" />}>
-              <Button
-                size="small"
-                shape="circle"
-                onClick={this.linkToMerge.bind(this, record.iid)}
-              >
-                <i className="icon icon-find_in_page" />
-              </Button>
-            </Tooltip>
-          </Permission>
-        </div>
-      ),
     }];
 
     const columns = [{
+      title: <FormattedMessage id="app.name" />,
+      dataIndex: 'title',
+      key: 'title',
+      render: (text, record) => (<StatusIcon
+        name={record.title}
+        width={0.25}
+        handleAtagClick={this.linkToMerge.bind(this, record.iid)}
+      />),
+    }, {
       title: <Tips type="title" data="app.code" />,
       key: 'iid',
       render: (record) => (<span>!{record.iid}</span>),
@@ -240,9 +229,11 @@ class MergeRequestHome extends Component {
       title: <FormattedMessage id="app.name" />,
       dataIndex: 'title',
       key: 'title',
-      render: (text, record) => (<MouserOverWrapper text={record.title} width={0.25}>
-        {record.title}
-      </MouserOverWrapper>),
+      render: (text, record) => (<StatusIcon
+        name={record.title}
+        width={0.25}
+        handleAtagClick={this.linkToMerge.bind(this, record.iid)}
+      />),
     }, {
       title: <Tips type="title" data="app.branch" />,
       key: 'targetBranch',
@@ -296,42 +287,22 @@ class MergeRequestHome extends Component {
             />
           </Tooltip>
         </div>),
-    }, {
-      width: 56,
-      key: 'action',
-      render: (test, record) => (
-        <div>
-          <Permission
-            service={['devops-service.devops-git.getMergeRequestList']}
-            organizationId={organizationId}
-            projectId={projectId}
-            type={type}
-          >
-            <Tooltip placement="bottom" title={<FormattedMessage id="merge.detail" />}>
-              <Button
-                size="small"
-                shape="circle"
-                onClick={this.linkToMerge.bind(this, record.iid)}
-              >
-                <i className="icon icon-find_in_page" />
-              </Button>
-            </Tooltip>
-          </Permission>
-        </div>
-      ),
     }];
 
     const columnsOpen = [{
-      title: <Tips type="title" data="app.code" />,
-      key: 'iid',
-      render: (record) => (<span>!{record.iid}</span>),
-    }, {
       title: <FormattedMessage id="app.name" />,
       dataIndex: 'title',
       key: 'title',
-      render: (text, record) => (<MouserOverWrapper text={record.title} width={0.25}>
-        {record.title}
-      </MouserOverWrapper>),
+      render: (text, record) => (
+        <StatusIcon
+          name={record.title}
+          width={0.25}
+          handleAtagClick={this.linkToMerge.bind(this, record.iid)}
+        />),
+    }, {
+      title: <Tips type="title" data="app.code" />,
+      key: 'iid',
+      render: (record) => (<span>!{record.iid}</span>),
     }, {
       title: <Tips type="title" data="app.branch" />,
       key: 'targetBranch',
@@ -403,26 +374,6 @@ class MergeRequestHome extends Component {
             {record.assignee.username !== record.assignee.name ? `${record.assignee.username} ${record.assignee.name}` : record.assignee.name}
           </div>) : <FormattedMessage id="merge.noAssignee" />}
         </div>),
-    }, {
-      width: 56,
-      key: 'action',
-      render: (test, record) => (
-        <Permission
-          service={['devops-service.devops-git.getMergeRequestList']}
-          organizationId={organizationId}
-          projectId={projectId}
-          type={type}
-        >
-          <Tooltip placement="bottom" title={<FormattedMessage id="merge.detail" />}>
-            <Button
-              icon="find_in_page"
-              size="small"
-              shape="circle"
-              onClick={this.linkToMerge.bind(this, record.iid)}
-            />
-          </Tooltip>
-        </Permission>
-      ),
     }];
 
     const hasAppData = appData && appData.length;
