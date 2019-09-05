@@ -46,6 +46,7 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(applicationEventPayload.getUserId());
         GroupDTO groupDTO = gitlabServiceClientOperator.queryGroupByName(group.getPath(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         if (groupDTO == null) {
+            group.setVisibility(applicationEventPayload.getVisibility());
             groupDTO = gitlabServiceClientOperator.createGroup(group, TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         }
 

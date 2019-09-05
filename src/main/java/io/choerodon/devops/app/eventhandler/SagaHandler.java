@@ -19,6 +19,7 @@ import io.choerodon.devops.app.eventhandler.constants.SagaTaskCodeConstants;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.*;
 import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.enums.Visibility;
 import io.choerodon.devops.infra.util.TypeUtil;
 
 
@@ -290,10 +291,36 @@ public class SagaHandler {
             description = "应用下载",
             sagaCode = SagaTopicCodeConstants.APIM_DOWNLOAD_APP,
             maxRetryCount = 0, seq = 1)
+    public String downloadAppCreateProject(String payload) {
+        AppMarketDownloadPayload appMarketDownloadPayload = gson.fromJson(payload, AppMarketDownloadPayload.class);
+        ApplicationEventPayload applicationEventPayload = downPayloadToEnentPayload(appMarketDownloadPayload);
+        applicationEventPayload.setVisibility(Visibility.PUBLIC);
+        gitlabGroupService.createApplicationGroup(applicationEventPayload);
+        return payload;
+    }
+
+    /**
+     * 应用下载
+     */
+    @SagaTask(code = SagaTaskCodeConstants.APIM_DOWNLOAD_APP,
+            description = "应用下载",
+            sagaCode = SagaTopicCodeConstants.APIM_DOWNLOAD_APP,
+            maxRetryCount = 0, seq = 10)
     public String downloadApp(String payload) {
         AppMarketDownloadPayload appMarketDownloadPayload = gson.fromJson(payload, AppMarketDownloadPayload.class);
         loggerInfo(appMarketDownloadPayload);
         orgAppMarketService.downLoadApp(appMarketDownloadPayload);
         return payload;
     }
+
+    private ApplicationEventPayload downPayloadToEnentPayload(AppMarketDownloadPayload appMarketDownloadPayload) {
+        ApplicationEventPayload applicationEventPayload = new ApplicationEventPayload();
+        BeanUtils.copyProperties(appMarketDownloadPayload, applicationEventPayload);
+        applicationEventPayload.setId(appMarketDownloadPayload.getAppId());
+        applicationEventPayload.setCode(appMarketDownloadPayload.getAppCode());
+        applicationEventPayload.setName(appMarketDownloadPayload.getAppName());
+        applicationEventPayload.setUserId(appMarketDownloadPayload.getIamUserId());
+        return applicationEventPayload;
+    }
+
 }

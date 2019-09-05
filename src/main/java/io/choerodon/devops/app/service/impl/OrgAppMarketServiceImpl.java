@@ -216,15 +216,12 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void downLoadApp(AppMarketDownloadPayload appMarketDownloadVO) {
         Set<Long> appServiceVersionIds = new HashSet<>();
 
-//        try {
+        try {
         //创建应用
-        ApplicationEventPayload applicationEventPayload = downPayloadToEnentPayload(appMarketDownloadVO);
-        gitlabGroupService.createApplicationGroup(applicationEventPayload);
-        LOGGER.info("==========应用下载，创建gitlab Group 成功！！==========");
-
         DevopsProjectDTO projectDTO = devopsProjectService.queryByAppId(appMarketDownloadVO.getAppId());
         LOGGER.info("==========应用下载，appMarketDownloadVO.getAppId(){},projectDTO=========={}", appMarketDownloadVO.getAppId(), projectDTO.getIamProjectId());
 
@@ -269,12 +266,12 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             LOGGER.info("==========应用下载镜像推送成功==========");
         }
         LOGGER.info("==========应用下载开始调用回传接口==========");
-        baseServiceClientOperator.completeDownloadApplication(appMarketDownloadVO.getAppDownloadRecordId(), appServiceVersionIds);
+        baseServiceClientOperator.completeDownloadApplication(appMarketDownloadVO.getAppDownloadRecordId(), appMarketDownloadVO.getAppVersionId(), appServiceVersionIds);
         LOGGER.info("==========应用下载完成==========");
-//        } catch (Exception e) {
-//            baseServiceClientOperator.failToDownloadApplication(appMarketDownloadVO.getAppDownloadRecordId());
-//            throw new CommonException("error.download.app", e.getMessage());
-//        }
+        } catch (Exception e) {
+            baseServiceClientOperator.failToDownloadApplication(appMarketDownloadVO.getAppDownloadRecordId());
+            throw new CommonException("error.download.app", e.getMessage());
+        }
     }
 
     private AppServiceDTO createGitlabProject(AppServiceDownloadPayload downloadPayload, String appCode, Integer gitlabGroupId, Long gitlabUserId) {
@@ -684,7 +681,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             sourceUser.setPassword(appMarketDownloadVO.getUser().getRobotToken());
             harborUrl = harborUrl.endsWith("/") ? harborUrl : harborUrl + "/";
             //准备认证json
-            String configStr = createConfigJson(sourceUser, harborUrl, targetUser, getDomain(configVO.getUrl()));
+            String configStr = createConfigJson(sourceUser, getDomain(harborUrl), targetUser, getDomain(configVO.getUrl()));
             FileUtil.saveDataToFile(CONFIG_PATH, CONFIG_JSON, configStr);
 
             appServiceMarketVO.getAppServiceVersionDownloadPayloads().forEach(t -> {
@@ -713,6 +710,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             while ((line = infoInput.readLine()) != null) {
                 LOGGER.info(line);
             }
+            LOGGER.info("=============信息分界线=================");
             while ((line = errorInput.readLine()) != null) {
                 LOGGER.error(line);
             }
@@ -858,16 +856,6 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             strArry = url.split(SSLASH);
             return strArry[0];
         }
-    }
-
-    private ApplicationEventPayload downPayloadToEnentPayload(AppMarketDownloadPayload appMarketDownloadPayload) {
-        ApplicationEventPayload applicationEventPayload = new ApplicationEventPayload();
-        BeanUtils.copyProperties(appMarketDownloadPayload, applicationEventPayload);
-        applicationEventPayload.setId(appMarketDownloadPayload.getAppId());
-        applicationEventPayload.setCode(appMarketDownloadPayload.getAppCode());
-        applicationEventPayload.setName(appMarketDownloadPayload.getAppName());
-        applicationEventPayload.setUserId(appMarketDownloadPayload.getIamUserId());
-        return applicationEventPayload;
     }
 
     private Map getParam(String url) {

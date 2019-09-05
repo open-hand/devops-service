@@ -161,6 +161,7 @@ public interface BaseServiceClient {
 
     @PostMapping(value = "/v1/applications/{app_download_recode_id}/complete_downloading")
     ResponseEntity completeDownloadApplication(@PathVariable("app_download_recode_id") Long publishAppVersionId,
+                                               @RequestParam("app_version_id") Long appVersionId,
                                                @RequestBody Set<Long> serviceVersionIds);
 
     @PutMapping(value = "/v1/applications/{app_download_recode_id}/fail_downloading")

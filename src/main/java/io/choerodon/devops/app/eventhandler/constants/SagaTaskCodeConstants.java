@@ -190,6 +190,11 @@ public class SagaTaskCodeConstants {
     /**
      * 应用下载
      */
+    public static final String APIM_DOWNLOAD_APP_CREATE_PROJECT = "apimDownloadApplicationCreateProject";
+
+    /**
+     * 应用下载
+     */
     public static final String APIM_DOWNLOAD_APP = "apimDownloadApplication";
 
 

@@ -321,9 +321,9 @@ public class BaseServiceClientOperator {
         }
     }
 
-    public void completeDownloadApplication(Long publishAppVersionId, Set<Long> serviceVersionIds) {
+    public void completeDownloadApplication(Long publishAppVersionId, Long appVersionId, Set<Long> serviceVersionIds) {
         try {
-            baseServiceClient.completeDownloadApplication(publishAppVersionId, serviceVersionIds);
+            baseServiceClient.completeDownloadApplication(publishAppVersionId, appVersionId, serviceVersionIds);
         } catch (Exception e) {
             throw new CommonException("error.application.download.complete", e.getMessage());
         }
