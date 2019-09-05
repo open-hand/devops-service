@@ -30,17 +30,18 @@ class CodeManagerToolBar extends Component {
     const {
       AppState: { currentMenuType: { projectId } },
       location: { state },
+      name,
     } = this.props;
     const { appId } = state || {};
-    DevPipelineStore.queryAppData(projectId, 'branch', appId);
+    DevPipelineStore.queryAppData(projectId, name, appId, this.handleRefresh, false);
   }
+
 
   /**
    * 通过下拉选择器选择应用时，获取应用id
    * @param id
    */
   handleSelect = (value, option) => {
-    DevPipelineStore.setSelectApp(value);
     DevPipelineStore.setRecentApp(value);
     Object.keys(handleMapStore).forEach((key) => {
       if (key.indexOf('Code') !== -1) {
@@ -61,6 +62,19 @@ class CodeManagerToolBar extends Component {
   handleRefresh = () => {
     handleMapStore[this.state.name].refresh();
   };
+
+  /**
+   * @param isInit 表示是否需要刷新app数据
+   */
+  refreshApp = (isInit = true) => {
+    const {
+      AppState: { currentMenuType: { projectId } },
+      location: { state },
+      name,
+    } = this.props;
+    const { appId } = state || {};
+    DevPipelineStore.queryAppData(projectId, name, appId, this.handleRefresh, true, this.changeLoding);
+  }
 
   getSelfToolBar = () => {
     const obj = handleMapStore[this.state.name]
@@ -123,19 +137,18 @@ class CodeManagerToolBar extends Component {
         </OptGroup>
       </Select>
       {this.getSelfToolBar()}
-      {currentApp && currentApp.repoUrl
-        ? <Tooltip title={<FormattedMessage id="repository.copyUrl" />} placement="bottom">
-          <CopyToClipboard
-            text={currentApp.repoUrl || noRepoUrl}
-            onCopy={this.handleCopy}
-          >
-            <Button icon="content_copy">
-              <FormattedMessage id="repository.copyUrl" />
-            </Button>
-          </CopyToClipboard>
-        </Tooltip> : null}
+      <Tooltip title={<FormattedMessage id="repository.copyUrl" />} placement="bottom">
+        <CopyToClipboard
+          text={(currentApp && currentApp.repoUrl) || noRepoUrl}
+          onCopy={this.handleCopy}
+        >
+          <Button icon="content_copy">
+            <FormattedMessage id="repository.copyUrl" />
+          </Button>
+        </CopyToClipboard>
+      </Tooltip> 
       <Button
-        onClick={this.handleRefresh}
+        onClick={this.refreshApp}
         icon="refresh"
       ><FormattedMessage id="refresh" /></Button>
     </Header>;

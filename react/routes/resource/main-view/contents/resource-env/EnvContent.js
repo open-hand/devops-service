@@ -37,16 +37,19 @@ ItemNumberByStatus.propTypes = {
 
 function ItemNumberByResource({ code, count, name, prefixCls }) {
   const iconMappings = {
-    instanceCount: 'router',
-    serviceCount: 'language',
-    ingressCount: 'class',
-    certificationCount: 'compare_arrows',
-    configMapCount: 'vpn_key',
-    secretCount: 'filter_b_and_w',
+    instanceCount: 'instance_outline',
+    serviceCount: 'router',
+    ingressCount: 'language',
+    certificationCount: 'class',
+    configMapCount: 'compare_arrows',
+    secretCount: 'vpn_key', 
   };
   return (
     <div className={`${prefixCls}-re-item-static`}>
-      <Icon type={iconMappings[code]} className={`${prefixCls}-re-item-static-icon`} />
+      <div className={`${prefixCls}-re-item-static-icon-wrapper`}>
+        <Icon type={iconMappings[code]} className={`${prefixCls}-re-item-static-icon`} />
+        <div className={`${prefixCls}-re-item-static-icon-bg`} />
+      </div>
       <span className={`${prefixCls}-re-item-static-number`}>{countDisplay(count, 999)}</span>
       <span className={`${prefixCls}-re-item-static-name`}>{name}</span>
     </div>

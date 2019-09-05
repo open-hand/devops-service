@@ -3,13 +3,7 @@ import { axios, store, stores } from '@choerodon/master';
 import _ from 'lodash';
 import moment from 'moment';
 import { handlePromptError } from '../../../utils';
-import AppTagStore from '../contents/appTag/stores';
-import BranchStore from '../contents/branch/stores';
-import MergeRequestStore from '../contents/merge-request/stores';
-import CiPipelineStore from '../contents/ciPipelineManage/stores';
-// import DevConsoleStore from '../devConsole/stores';
 import DeploymentPipelineStore from './DeploymentPipelineStore';  
-import CodeQualityStore from '../contents/codeQuality/stores';
 
 
 const { AppState } = stores;
@@ -54,6 +48,8 @@ class DevPipelineStore {
 
   @observable preProId = AppState.currentMenuType.id;
 
+  @observable loading = false;
+
   @action setAppData(data) {
     this.appData = data;
   }
@@ -80,6 +76,14 @@ class DevPipelineStore {
 
   @computed get getDefaultAppName() {
     return this.defaultAppName;
+  }
+
+  @action setLoading(value) {
+    this.loading = value;
+  }
+
+  @computed get getLoading() {
+    return this.loading;
   }
 
   @computed
@@ -121,16 +125,21 @@ class DevPipelineStore {
    * @param type
    * @param apps
    */
-  queryAppData = (projectId = AppState.currentMenuType.id, type, apps) => {
+  queryAppData = (projectId = AppState.currentMenuType.id, type, apps, refersh, isReloadApp) => {
+    // 已经加载过app数据 只更新对应模块的数据， 除非主动刷新 否则不查询app数据,
+    if (!isReloadApp && this.appData.length !== 0) { 
+      refersh && refersh();
+      return;
+    }
     if (Number(this.preProId) !== Number(projectId)) {
-      this.setAppData([]);
       DeploymentPipelineStore.setProRole('app', '');
     }
+    this.setAppData([]);
     this.setPreProId(projectId);
-    BranchStore.changeLoading(true);
+    this.setLoading(true);
     axios.get(`/devops/v1/projects/${projectId}/app_service/list_by_active`)
       .then((data) => {
-        BranchStore.changeLoading(false);
+        this.setLoading(false);
         if (handlePromptError(data)) {
           const res = data;
           const appSort = _.concat(_.filter(res, ['permission', true]), _.filter(res, ['permission', false]));
@@ -147,9 +156,7 @@ class DevPipelineStore {
             } else {
               this.setSelectApp(result[0].id);
             }
-            if (!(BranchStore.getBranchList && BranchStore.branchList.length > 0) || tempAppId !== this.selectedApp) {
-              BranchStore.loadBranchList({ projectId });
-            }
+            refersh && refersh();
           } else {
             this.setSelectApp(null);
           }

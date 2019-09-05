@@ -5,6 +5,8 @@ import { Button } from 'choerodon-ui';
 import CodeManagerHeader from '../../header';
 import CodeManagerToolBar from '../../tool-bar';  
 import CodeQualityContent from '../../contents/codeQuality';
+import DevPipelineStore from '../../stores/DevPipelineStore';
+import Loading from '../../../../components/loading';
 import '../index.less';
 
 const CodeQuality = observer(() => <TabPage>

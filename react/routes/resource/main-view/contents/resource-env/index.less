@@ -21,10 +21,28 @@
     margin-bottom: .1rem;
     min-width: 1.36rem;
     line-height: .4rem;
+    position: relative;
+
+    &-icon-wrapper {
+      z-index: 0;
+      margin-right: .2rem;
+    }
+
+    &-icon-bg {
+      width: 0.2rem;
+      height: 0.2rem;
+      background: rgba(182, 194, 205, 1);
+      border-radius: 0.04rem;
+      position: absolute;
+      left: 0.08rem;
+      top: 0.08rem;
+      z-index: -1;
+    }
 
     &-icon {
       flex: 0 0 .24rem;
       margin-right: .08rem;
+      margin-top: 0.03rem;
       line-height: .4rem;
       font-size: .24rem;
     }
@@ -39,6 +57,7 @@
     &-name {
       flex: 1;
       white-space: nowrap;
+      color: rgba(0, 0, 0, 0.65);
     }
   }
 

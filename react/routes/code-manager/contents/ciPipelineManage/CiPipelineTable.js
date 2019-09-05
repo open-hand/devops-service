@@ -168,7 +168,8 @@ class CiPipelineTable extends Component {
   }
 
   handleTableChange = (pagination) => {
-    this.props.idnex.loadPipelines(
+    const { store } = this.props;
+    store.loadPipelines(
       true,
       DevPipelineStore.selectedApp,
       pagination.current,

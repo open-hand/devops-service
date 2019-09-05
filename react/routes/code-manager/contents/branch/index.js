@@ -14,6 +14,7 @@ import DevPipelineStore from '../../stores/DevPipelineStore';
 import StatusIcon from '../../../../components/StatusIcon/StatusIcon';
 import BranchStore from './stores';
 import handleMapStore from '../../main-view/store/handleMapStore';
+import Loading from '../../../../components/loading';
 import '../../../main.less';
 import './Branch.less';
 import './index.less';
@@ -56,7 +57,7 @@ class Branch extends Component {
   /**
    * 生成特殊的自定义tool-bar
    */
-  getSelfToolBar= () => (BranchStore.getBranchList.length && DevPipelineStore.selectedApp ? <Permission
+  getSelfToolBar= () => <Permission
     service={['devops-service.devops-git.createBranch']}
   >
     <Button
@@ -65,7 +66,7 @@ class Branch extends Component {
     >
       <FormattedMessage id="branch.create" />
     </Button>
-  </Permission> : null)
+  </Permission>
 
   /**
    * 获取issue的options
@@ -358,6 +359,7 @@ class Branch extends Component {
     }).catch((error) => {
       this.setState({ submitting: false });
       Choerodon.handleResponseError(error);
+      this.closeRemove();
     });
     this.setState({ paras: [], filters: {}, sort: { columnKey: 'creation_date', order: 'ascend' } });
   };
@@ -414,50 +416,51 @@ class Branch extends Component {
     return (
       <Page
         className="c7n-region c7n-branch"
-      >
-        <Fragment>
-          <Content className="page-content c7n-branch-content">
-            {this.tableBranch}
-          </Content>
-          {apps && apps.length && appId ? <Fragment>
-            {BranchStore.createBranchShow === 'create' && <BranchCreate
-              name={_.filter(apps, (app) => app.id === DevPipelineStore.selectedApp)[0].name}
-              appId={DevPipelineStore.selectedApp}
-              store={BranchStore}
-              visible={BranchStore.createBranchShow === 'create'}
-              onClose={this.hideSidebar}
-            />}
-            {BranchStore.createBranchShow === 'edit' && <BranchEdit
-              name={branchName}
-              appId={DevPipelineStore.selectedApp}
-              store={BranchStore}
-              visible={BranchStore.createBranchShow === 'edit'}
-              onClose={this.hideSidebar}
-            />}
-            {BranchStore.createBranchShow === 'detail' && <IssueDetail
-              name={branchName}
-              store={BranchStore}
-              visible={BranchStore.createBranchShow === 'detail'}
-              onClose={this.hideSidebar}
-            />}
-            <Modal
-              confirmLoading={submitting}
-              visible={visible}
-              title={`${formatMessage({ id: 'branch.action.delete' })}“${branchName}”`}
-              closable={false}
-              footer={[
-                <Button key="back" onClick={this.closeRemove} disabled={submitting}>{<FormattedMessage
-                  id="cancel"
-                />}</Button>,
-                <Button key="submit" type="danger" onClick={this.handleDelete} loading={submitting}>
-                  {formatMessage({ id: 'delete' })}
-                </Button>,
-              ]}
-            >
-              <div className="c7n-padding-top_8">{formatMessage({ id: 'branch.delete.tooltip' })}</div>
-            </Modal> 
-          </Fragment> : null}
-        </Fragment>
+      > 
+        {!(DevPipelineStore.getAppData && DevPipelineStore.getAppData.length > 0) ? <Loading display={DevPipelineStore.getLoading} />
+          : <Fragment>
+            <Content className="page-content c7n-branch-content">
+              {this.tableBranch}
+            </Content>
+            {apps && apps.length && appId ? <Fragment>
+              {BranchStore.createBranchShow === 'create' && <BranchCreate
+                name={_.filter(apps, (app) => app.id === DevPipelineStore.selectedApp)[0].name}
+                appId={DevPipelineStore.selectedApp}
+                store={BranchStore}
+                visible={BranchStore.createBranchShow === 'create'}
+                onClose={this.hideSidebar}
+              />}
+              {BranchStore.createBranchShow === 'edit' && <BranchEdit
+                name={branchName}
+                appId={DevPipelineStore.selectedApp}
+                store={BranchStore}
+                visible={BranchStore.createBranchShow === 'edit'}
+                onClose={this.hideSidebar}
+              />}
+              {BranchStore.createBranchShow === 'detail' && <IssueDetail
+                name={branchName}
+                store={BranchStore}
+                visible={BranchStore.createBranchShow === 'detail'}
+                onClose={this.hideSidebar}
+              />}
+              <Modal
+                confirmLoading={submitting}
+                visible={visible}
+                title={`${formatMessage({ id: 'branch.action.delete' })}“${branchName}”`}
+                closable={false}
+                footer={[
+                  <Button key="back" onClick={this.closeRemove} disabled={submitting}>{<FormattedMessage
+                    id="cancel"
+                  />}</Button>,
+                  <Button key="submit" type="danger" onClick={this.handleDelete} loading={submitting}>
+                    {formatMessage({ id: 'delete' })}
+                  </Button>,
+                ]}
+              >
+                <div className="c7n-padding-top_8">{formatMessage({ id: 'branch.delete.tooltip' })}</div>
+              </Modal> 
+            </Fragment> : null}
+          </Fragment>}
       </Page>
     );
   }

@@ -11,7 +11,7 @@ import DevPipelineStore from '../../stores/DevPipelineStore';
 import Tips from '../../../../components/Tips';
 import MergeRequestStore from './stores';
 import handleMapStore from '../../main-view/store/handleMapStore';
-
+import Loading from '../../../../components/loading';
 import './index.less';
 import '../../../main.less';
 
@@ -35,23 +35,19 @@ class MergeRequestHome extends Component {
 
   componentDidMount() {
     MergeRequestStore.loadUser();
-    this.reload();
   }
   
 
   /**
    * 生成特殊的自定义tool-bar
    */
-  getSelfToolBar= () => {
-    const appData = DevPipelineStore.getAppData;
-    return appData.length ? (<Button
-      funcType="flat"
-      onClick={this.linkToNewMerge}
-    >
-      <i className="icon-playlist_add icon" />
-      <FormattedMessage id="merge.createMerge" />
-    </Button>) : null;
-  }
+  getSelfToolBar= () => (<Button
+    funcType="flat"
+    onClick={this.linkToNewMerge}
+  >
+    <i className="icon-playlist_add icon" />
+    <FormattedMessage id="merge.createMerge" />
+  </Button>)
 
   /**
    * 刷新函数
@@ -433,12 +429,7 @@ class MergeRequestHome extends Component {
 
     return (
       <Page
-        className="c7n-region page-container"
-        service={[
-          'devops-service.application.listByActive',
-          'devops-service.devops-git.getMergeRequestList',
-          'devops-service.devops-git.getUrl',
-        ]}
+        className="c7n-region page-container c7n-merge-wrapper"
       >
         {hasAppData && appId
           ? <Fragment>
@@ -513,7 +504,7 @@ class MergeRequestHome extends Component {
               </Tabs>
             </Content>
           </Fragment>
-          : null}
+          : <Loading display={DevPipelineStore.getLoading} />}
       </Page>
     );
   }

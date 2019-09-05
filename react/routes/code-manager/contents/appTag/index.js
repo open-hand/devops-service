@@ -46,7 +46,6 @@ class AppTag extends Component {
     AppTagStore.setLoading(null);
     AppTagStore.setTagData([]);
     this.loadInitData();
-    this.handleRefresh();
   }
 
 
@@ -56,7 +55,7 @@ class AppTag extends Component {
   getSelfToolBar= () => {
     const appData = DevPipelineStore.getAppData;
     const { type, id: projectId, organizationId: orgId } = AppState.currentMenuType;
-    return appData && appData.length ? (
+    return ( 
       <Permission
         service={[
           'devops-service.devops-git.createTag',
@@ -73,8 +72,7 @@ class AppTag extends Component {
         >
           <FormattedMessage id="apptag.create" />
         </Button>
-      </Permission>
-    ) : null;
+      </Permission>);
   }
 
 
@@ -290,88 +288,9 @@ class AppTag extends Component {
     return (
       <Page
         className="c7n-tag-wrapper"
-        service={[
-          'devops-service.application.listByActive',
-          'devops-service.devops-git.getTagByPage',
-          'devops-service.devops-git.listByAppId',
-          'devops-service.devops-git.updateTagRelease',
-          'devops-service.devops-git.createTag',
-          'devops-service.devops-git.checkTag',
-          'devops-service.devops-git.deleteTag',
-        ]}
       >
         {appData && appData.length && appId ? <Fragment>
-          {/* <Header
-          title={<FormattedMessage id="apptag.head" />}
-          backPath={backPath}
-        >
-          <Select
-            filter
-            className="c7n-header-select"
-            dropdownClassName="c7n-header-select_drop"
-            placeholder={formatMessage({ id: 'ist.noApp' })}
-            value={appData && appData.length ? DevPipelineStore.getSelectApp : undefined}
-            disabled={appData.length === 0}
-            filterOption={(input, option) => option.props.children.props.children.props.children
-              .toLowerCase().indexOf(input.toLowerCase()) >= 0}
-            onChange={(value, option) => this.handleSelect(value, option)}
-          >
-            <OptGroup label={formatMessage({ id: 'recent' })} key="recent">
-              {
-                _.map(DevPipelineStore.getRecentApp, app => (
-                  <Option
-                    key={`recent-${app.id}`}
-                    value={app.id}
-                    disabled={!app.permission}
-                  >
-                    <Tooltip title={app.code}><span className="c7n-ib-width_100">{app.name}</span></Tooltip>
-                  </Option>))
-              }
-            </OptGroup>
-            <OptGroup label={formatMessage({ id: 'deploy.app' })} key="app">
-              {
-                _.map(appData, (app, index) => (
-                  <Option
-                    value={app.id}
-                    key={index}
-                    disabled={!app.permission}
-                  >
-                    <Tooltip title={app.code}><span className="c7n-ib-width_100">{app.name}</span></Tooltip>
-                  </Option>))
-              }
-            </OptGroup>
-          </Select>
-          {appData && appData.length ? (
-            <Permission
-              service={[
-                'devops-service.devops-git.createTag',
-              ]}
-              type={type}
-              projectId={projectId}
-              organizationId={orgId}
-            >
-              <Button
-                type="primary"
-                funcType="flat"
-                icon="playlist_add"
-                onClick={() => this.displayCreateModal(true)}
-              >
-                <FormattedMessage id="apptag.create" />
-              </Button>
-            </Permission>
-          ) : null}
-          <Button
-            type="primary"
-            funcType="flat"
-            icon="refresh"
-            onClick={this.handleRefresh}
-          >
-            <FormattedMessage id="refresh" />
-          </Button>
-        </Header> */}
-          {/* <Content code={appData.length ? 'apptag.app' : 'apptag'} values={{ name: titleName }}> */}
           <Content className="c7n-tag-content">
-            {/* <div className="c7n-tag-table"><FormattedMessage id="apptag.table" /></div> */}
             {loading || _.isNull(loading) ? <Loading display /> : <Fragment>
               {tagList.length ? <Fragment>
                 <Collapse bordered={false}>{tagList}</Collapse>
@@ -426,7 +345,7 @@ class AppTag extends Component {
             release={editRelease}
             show={editDisplay}
             close={this.displayEditModal}
-          /> : null}</Fragment> : null}
+          /> : null}</Fragment> : <Loading display={DevPipelineStore.getLoading} />}
       </Page>
     );
   }

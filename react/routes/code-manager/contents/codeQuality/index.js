@@ -187,7 +187,7 @@ class CodeQuality extends Component {
           <Content className="c7n-codeQuality-content">
             {getLoading ? <Loading display /> : this.getDetail()}
           </Content>
-        </Fragment> : null}
+        </Fragment> : <Loading display={DevPipelineStore.getLoading} />}
       </Page>
     );
   }

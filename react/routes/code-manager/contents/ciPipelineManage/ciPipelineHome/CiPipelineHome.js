@@ -55,15 +55,7 @@ class CiPipelineHome extends Component {
     const appId = DevPipelineStore.getSelectApp;
     const titleName = _.find(appData, ['id', appId]) ? _.find(appData, ['id', appId]).name : name;
     return (
-      <Page
-        className="c7n-ciPipeline"
-        service={[
-          'devops-service.application.listByActive',
-          'devops-service.project-pipeline.cancel',
-          'devops-service.project-pipeline.retry',
-          'devops-service.devops-gitlab-pipeline.pagePipeline',
-        ]}
-      >
+      <Page className="c7n-ciPipeline">
         {appData && appData.length && appId ? <Fragment><Header title={<FormattedMessage id="ciPipeline.head" />}>
           <Select
             filter
