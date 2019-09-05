@@ -65,6 +65,7 @@
                  LEFT JOIN devops_project project ON das.app_id = project.app_id
                  LEFT JOIN devops_env_command cmd ON cmd.id = ins.command_id
         WHERE ins.env_id = #{envId}
+          AND ins.status != 'deleted'
         <include refid="infoSqlParam"/>
     </select>
 
