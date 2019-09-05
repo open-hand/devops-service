@@ -537,4 +537,11 @@ WHERE
 	devops_env_command.object_id = #{instanceId}
 	AND devops_env_command.object = 'instance'
     </delete>
+
+    <select id="countNonDeletedInstances" resultType="java.lang.Integer">
+        SELECT COUNT(1)
+        FROM devops_app_service_instance ins
+        WHERE ins.app_service_id = #{appServiceId}
+          AND ins.status != 'deleted'
+    </select>
 </mapper>
