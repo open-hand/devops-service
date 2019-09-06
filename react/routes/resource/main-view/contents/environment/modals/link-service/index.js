@@ -4,7 +4,7 @@ import { injectIntl } from 'react-intl';
 import { Form, Select } from 'choerodon-ui';
 import omit from 'lodash/omit';
 import map from 'lodash/map';
-import DynamicSelect from '../../../../components/dynamic-select';
+import DynamicSelect from '../../../../../../../components/dynamic-select';
 import { handlePromptError } from '../../../../../../../utils';
 
 import './index.less';
@@ -51,6 +51,8 @@ const LinkService = observer(({ modal, form, store, tree, onOk, intlPrefix, intl
         options={options}
         form={form}
         fieldKeys={data}
+        notFoundContent={formatMessage({ id: `${intlPrefix}.environment.service.empty` })}
+        requireText={formatMessage({ id: `${intlPrefix}.environment.service.require` })}
         label={formatMessage({ id: `${intlPrefix}.app-service` })}
         addText={formatMessage({ id: `${intlPrefix}.environment.add.service` })}
       />

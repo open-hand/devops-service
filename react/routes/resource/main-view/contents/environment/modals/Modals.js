@@ -1,6 +1,5 @@
 import React, { useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Permission } from '@choerodon/master';
 import { Modal } from 'choerodon-ui/pro';
 import HeaderButtons from '../../../../../../components/header-buttons';
 import EnvDetail from '../../../../../../components/env-detail';
@@ -9,6 +8,8 @@ import PermissionPage from './permission';
 import { useResourceStore } from '../../../../stores';
 import { useEnvironmentStore } from '../stores';
 import { useModalStore } from './stores';
+
+import '../../../../../../components/dynamic-select/style';
 
 const modalKey1 = Modal.key();
 const modalKey2 = Modal.key();
@@ -92,6 +93,7 @@ const EnvModals = observer(() => {
       title: formatMessage({ id: `${intlPrefix}.modal.link-service` }),
       style: modalStyle,
       drawer: true,
+      className: 'c7ncd-modal-wrapper',
       children: <LinkService
         store={modalStore}
         tree={treeDs}
@@ -112,6 +114,7 @@ const EnvModals = observer(() => {
       title: formatMessage({ id: `${intlPrefix}.modal.permission` }),
       drawer: true,
       style: modalStyle,
+      className: 'c7ncd-modal-wrapper',
       children: <PermissionPage
         store={modalStore}
         onOk={addUsers}
@@ -134,11 +137,17 @@ const EnvModals = observer(() => {
   }
 
   function getButtons() {
+    let isSync;
+    const record = baseInfoDs.current;
+    if (record) {
+      isSync = record.get('synchronize');
+    }
     return [{
       name: formatMessage({ id: `${intlPrefix}.modal.link-service` }),
       icon: 'relate',
       handler: openLinkService,
       display: true,
+      disabled: !isSync,
       group: 1,
     }, {
       permissions: ['devops-service.devops-environment.pageEnvUserPermissions'],
@@ -146,13 +155,14 @@ const EnvModals = observer(() => {
       icon: 'authority',
       handler: openPermission,
       display: true,
+      disabled: !isSync,
       group: 1,
     }, {
       name: formatMessage({ id: `${intlPrefix}.modal.env-detail` }),
       icon: 'find_in_page',
       handler: openEnvDetail,
       display: true,
-      group: 1,
+      group: 2,
     }, {
       name: formatMessage({ id: 'refresh' }),
       icon: 'refresh',

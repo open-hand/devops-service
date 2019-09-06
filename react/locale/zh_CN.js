@@ -80,6 +80,9 @@ const commonField = {
   executing: '执行中',
   terminated: '已终止',
 
+  // 表单通用描述
+  noRepeat: '不可重复',
+
   // public
   detail: '详情',
   operate: '操作',
@@ -193,6 +196,8 @@ const deployment = {
   'c7ncd.deployment.environment.description': '环境描述',
   'c7ncd.deployment.environment.cluster': '连接集群',
   'c7ncd.deployment.environment.add.service': '添加服务',
+  'c7ncd.deployment.environment.service.empty': '暂无可选应用服务',
+  'c7ncd.deployment.environment.service.require': '请选择应用服务',
   'c7ncd.deployment.application.tabs.networking': '网络与域名',
   'c7ncd.deployment.application.tabs.mapping': '配置映射',
   'c7ncd.deployment.application.tabs.cipher': '密文',
@@ -253,6 +258,8 @@ const deployment = {
   'c7ncd.deployment.app-service': '应用服务',
   'c7ncd.deployment.set-operator': '设置该环境的开发操作人员',
   'c7ncd.deployment.project.member': '项目成员',
+  'c7ncd.deployment.project.member.empty': '暂无可选项目成员',
+  'c7ncd.deployment.project.member.require': '请选择项目成员',
   'c7ncd.deployment.member.all': '项目下所有成员',
   'c7ncd.deployment.member.specific': '项目下特定成员',
   'c7ncd.deployment.add.member': '添加人员',

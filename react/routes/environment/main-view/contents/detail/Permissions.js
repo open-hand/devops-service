@@ -1,7 +1,6 @@
 import React from 'react';
 import { Action } from '@choerodon/master';
 import { Table } from 'choerodon-ui/pro';
-import { observer } from 'mobx-react-lite';
 import TimePopover from '../../../../../components/time-popover';
 import { useEnvironmentStore } from '../../../stores';
 import { useDetailStore } from './stores';
@@ -9,11 +8,10 @@ import { isNotRunning } from '../../../util';
 
 const { Column } = Table;
 
-function Permissions() {
+export default function Permissions() {
   const {
     envStore: { getSelectedMenu },
   } = useEnvironmentStore();
-  const disabled = isNotRunning(getSelectedMenu);
   const {
     intl: { formatMessage },
     permissionsDs: tableDs,
@@ -43,6 +41,11 @@ function Permissions() {
     return formatMessage({ id: value });
   }
 
+  function getActionColumn() {
+    const disabled = isNotRunning(getSelectedMenu);
+    return !disabled && <Column renderer={renderActions} />;
+  }
+
   return (
     <Table
       dataSet={tableDs}
@@ -50,12 +53,10 @@ function Permissions() {
       queryBar="bar"
     >
       <Column name="realName" />
-      {!disabled && <Column renderer={renderActions} />}
+      {getActionColumn()}
       <Column name="loginName" />
       <Column name="role" renderer={renderRole} />
       <Column name="creationDate" renderer={renderDate} />
     </Table>
   );
 }
-
-export default observer(Permissions);
