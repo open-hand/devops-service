@@ -1,6 +1,5 @@
-import React, { Fragment, useRef, useMemo, lazy, Suspense } from 'react';
+import React, { Fragment, useRef, lazy, Suspense, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
-import isEmpty from 'lodash/isEmpty';
 import Sidebar from './sidebar';
 import DragBar from '../../../components/drag-bar';
 import Loading from '../../../components/loading';
@@ -32,10 +31,7 @@ const ServiceDetail = lazy(() => import('./contents/service-detail'));
 const MainView = observer(() => {
   const {
     prefixCls,
-    resourceStore: {
-      getViewType,
-      getSelectedMenu,
-    },
+    resourceStore,
     viewTypeMappings: {
       IST_VIEW_TYPE,
     },
@@ -57,12 +53,16 @@ const MainView = observer(() => {
       CUSTOM_GROUP,
       IST_GROUP,
     },
+    treeDs,
   } = useResourceStore();
   const { mainStore } = useMainStore();
   const rootRef = useRef(null);
 
-  const { itemType } = getSelectedMenu;
   const content = useMemo(() => {
+    const {
+      getViewType,
+      getSelectedMenu: { itemType },
+    } = resourceStore;
     const cmMaps = {
       [ENV_ITEM]: getViewType === IST_VIEW_TYPE ? <EnvContent /> : <ResourceEnvContent />,
       [APP_ITEM]: <AppContent />,
@@ -84,23 +84,33 @@ const MainView = observer(() => {
     return cmMaps[itemType]
       ? <Suspense fallback={<Loading display />}>{cmMaps[itemType]}</Suspense>
       : <Loading display />;
-  }, [itemType, getViewType]);
+  }, [resourceStore.getViewType, resourceStore.getSelectedMenu.itemType]);
 
-  return (<div
-    ref={rootRef}
-    className={`${prefixCls}-wrap`}
-  >
-    <DragBar
-      parentRef={rootRef}
-      store={mainStore}
-    />
-    <Fragment>
-      <Sidebar />
-      {!isEmpty(getSelectedMenu) ? <div className={`${prefixCls}-main ${prefixCls}-animate`}>
-        {content}
-      </div> : <Loading display />}
-    </Fragment>
-  </div>);
+  function getMainView() {
+    if (!treeDs.length) {
+      resourceStore.setShowHeader(false);
+      return <div>当前项目下没有可运行环境，请先去创建环境！</div>;
+    } else {
+      resourceStore.setShowHeader(true);
+      return <div
+        ref={rootRef}
+        className={`${prefixCls}-wrap`}
+      >
+        <DragBar
+          parentRef={rootRef}
+          store={mainStore}
+        />
+        <Fragment>
+          <Sidebar />
+          <div className={`${prefixCls}-main ${prefixCls}-animate`}>
+            {content}
+          </div>
+        </Fragment>
+      </div>;
+    }
+  }
+
+  return treeDs.status === 'ready' ? getMainView() : <Loading display />;
 });
 
 export default MainView;
