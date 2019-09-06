@@ -482,12 +482,16 @@ public class AppServiceServiceImpl implements AppServiceService {
         appServiceDTO.setSynchro(true);
         appServiceDTO.setFailed(false);
         setProjectHook(appServiceDTO, devOpsAppServicePayload.getGitlabProjectId(), applicationServiceToken, devOpsAppServicePayload.getUserId());
-        baseUpdate(appServiceDTO);
+//        baseUpdate(appServiceDTO);
+        appServiceMapper.updateByPrimaryKey(appServiceDTO);
 
         // 为项目下的成员分配对于此gitlab项目的权限
         operateGitlabMemberPermission(devOpsAppServicePayload);
 
         if (devOpsAppServicePayload.getTemplateAppServiceId() != null) {
+            LOGGER.info("The current app service id is {} and the service code is {}", appServiceDTO.getId(), appServiceDTO.getCode());
+            LOGGER.info("The template app service id is not null: {}, start to clone template repository", devOpsAppServicePayload.getTemplateAppServiceId());
+
             String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
             String newGroupName = organizationDTO.getCode() + "-" + projectDTO.getCode();
             String repositoryUrl = repoUrl + newGroupName + "/" + appServiceDTO.getCode() + GIT;
