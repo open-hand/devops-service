@@ -375,14 +375,14 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     @Override
     public PageInfo<AppServiceRepVO> pageCodeRepository(Long projectId, PageRequest pageRequest, String params) {
-
+        Long appId = devopsProjectService.queryAppIdByProjectId(projectId);
         UserAttrDTO userAttrDTO = userAttrMapper.selectByPrimaryKey(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         Boolean isProjectOwner = baseServiceClientOperator.isProjectOwner(userAttrDTO.getIamUserId(), projectDTO);
         OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 
         Map maps = gson.fromJson(params, Map.class);
-        PageInfo<AppServiceDTO> applicationServiceDTOPageInfo = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> appServiceMapper.listCodeRepository(projectId,
+        PageInfo<AppServiceDTO> applicationServiceDTOPageInfo = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> appServiceMapper.listCodeRepository(appId,
                 TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
                 TypeUtil.cast(maps.get(TypeUtil.PARAMS)), isProjectOwner, userAttrDTO.getIamUserId()));
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
@@ -1446,7 +1446,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         if (!org.springframework.util.StringUtils.isEmpty(searchParam)) {
             Map maps = gson.fromJson(searchParam, Map.class);
             searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
-            List<String> list = (List<String>) maps.get(TypeUtil.PARAMS);
+            List<String> list = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
             if (!CollectionUtils.isEmpty(list)) {
                 String[] arrayParams = new String[list.size()];
                 list.toArray(arrayParams);
@@ -1830,8 +1830,9 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public PageInfo<AppServiceDTO> basePageCodeRepository(Long projectId, PageRequest pageRequest, String params,
                                                           Boolean isProjectOwner, Long userId) {
+        Long appId = devopsProjectService.queryAppIdByProjectId(projectId);
         Map maps = gson.fromJson(params, Map.class);
-        return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> appServiceMapper.listCodeRepository(projectId,
+        return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> appServiceMapper.listCodeRepository(appId,
                 TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
                 TypeUtil.cast(maps.get(TypeUtil.PARAMS)), isProjectOwner, userId));
     }
@@ -1851,28 +1852,33 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     @Override
     public List<AppServiceDTO> baseListByEnvId(Long projectId, Long envId, String status) {
-        return appServiceMapper.listByEnvId(projectId, envId, null, status);
+        Long appId = devopsProjectService.queryAppIdByProjectId(projectId);
+        return appServiceMapper.listByEnvId(appId, envId, null, status);
     }
 
     @Override
     public PageInfo<AppServiceDTO> basePageByEnvId(Long projectId, Long envId, Long appServiceId, PageRequest pageRequest) {
-        return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> appServiceMapper.listByEnvId(projectId, envId, appServiceId, NODELETED));
+        Long appId = devopsProjectService.queryAppIdByProjectId(projectId);
+        return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> appServiceMapper.listByEnvId(appId, envId, appServiceId, NODELETED));
 
     }
 
     @Override
     public List<AppServiceDTO> baseListByActive(Long projectId) {
-        return appServiceMapper.listByActive(projectId);
+        Long appId = devopsProjectService.queryAppIdByProjectId(projectId);
+        return appServiceMapper.listByActive(appId);
     }
 
     @Override
     public List<AppServiceDTO> baseListDeployedApp(Long projectId) {
-        return appServiceMapper.listDeployedApp(projectId);
+        Long appId = devopsProjectService.queryAppIdByProjectId(projectId);
+        return appServiceMapper.listDeployedApp(appId);
     }
 
     @Override
     public PageInfo<AppServiceDTO> basePageByActiveAndPubAndHasVersion(Long projectId, Boolean isActive,
                                                                        PageRequest pageRequest, String params) {
+        Long appId = devopsProjectService.queryAppIdByProjectId(projectId);
         Map<String, Object> searchParam = null;
         List<String> paramList = null;
         if (!StringUtils.isEmpty(params)) {
@@ -1884,7 +1890,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         final List<String> finalParam = paramList;
 
         return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> appServiceMapper
-                .basePageByActiveAndPubAndHasVersion(projectId, isActive, finalSearchParam, finalParam));
+                .basePageByActiveAndPubAndHasVersion(appId, isActive, finalSearchParam, finalParam));
     }
 
     @Override
@@ -1931,7 +1937,8 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     @Override
     public void baseUpdateHarborConfig(Long projectId, Long newConfigId, Long oldConfigId, boolean harborPrivate) {
-        appServiceMapper.updateHarborConfig(projectId, newConfigId, oldConfigId, harborPrivate);
+        Long appId = devopsProjectService.queryAppIdByProjectId(projectId);
+        appServiceMapper.updateHarborConfig(appId, newConfigId, oldConfigId, harborPrivate);
     }
 
     @Override
@@ -1960,7 +1967,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     private void getRate(SonarContentVO sonarContentVO, List<Facet> facets) {
         sonarContentVO.setRate("A");
         facets.stream().filter(facet -> facet.getProperty().equals(SEVERITIES)).forEach(facet -> {
-            facet.getValues().stream().forEach(value -> {
+            facet.getValues().forEach(value -> {
                 if (value.getVal().equals(Rate.MINOR.getRate()) && value.getCount() >= 1) {
                     if (sonarContentVO.getRate().equals("A")) {
                         sonarContentVO.setRate("B");
@@ -2044,7 +2051,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     public List<AppServiceGroupVO> listAppServiceGroup(Long projectId) {
         List<AppServiceDTO> marketDownloadApps = appServiceMapper.queryMarketDownloadApps(null);
         // 组织共享的应用服务
-        List<AppServiceDTO> organizationShareApps = ListSharedAppService(projectId);
+        List<AppServiceDTO> organizationShareApps = listSharedAppService(projectId);
 
         List<AppServiceGroupVO> appServiceGroupList = new ArrayList<>();
         changeList(appServiceGroupList, marketDownloadApps, false);
@@ -2108,7 +2115,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     private List<AppServiceDTO> baseListAll(Long projectId) {
-        return appServiceMapper.listAll(projectId);
+        Long appId = devopsProjectService.queryAppIdByProjectId(projectId);
+        return appServiceMapper.listAll(appId);
     }
 
     /**
@@ -2117,7 +2125,7 @@ public class AppServiceServiceImpl implements AppServiceService {
      * @param projectId
      * @return
      */
-    private List<AppServiceDTO> ListSharedAppService(Long projectId) {
+    private List<AppServiceDTO> listSharedAppService(Long projectId) {
         // 获取组织Id
         Long organizationId = baseServiceClientOperator.queryIamProjectById(projectId).getOrganizationId();
         List<Long> appServiceIds = new ArrayList<>();
