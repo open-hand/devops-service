@@ -13,6 +13,15 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.env.YamlPropertySourceLoader;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -40,14 +49,6 @@ import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.AppServiceInstanceMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvAppServiceMapper;
 import io.choerodon.devops.infra.util.*;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.env.YamlPropertySourceLoader;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 
 /**
@@ -786,12 +787,12 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Override
     public List<RunningInstanceVO> listRunningInstance(Long projectId, Long appServiceId, Long appServiceVersionId, Long envId) {
         return ConvertUtils.convertList(appServiceInstanceMapper.listApplicationInstanceCode(
-                projectId, appServiceId, appServiceVersionId, envId), RunningInstanceVO.class);
+                projectId, envId, appServiceVersionId, appServiceId), RunningInstanceVO.class);
     }
 
     @Override
     public List<RunningInstanceVO> listByAppIdAndEnvId(Long projectId, Long appServiceId, Long envId) {
-        return ConvertUtils.convertList(appServiceInstanceMapper.listRunningAndFailedInstance(projectId, appServiceId, envId),
+        return ConvertUtils.convertList(appServiceInstanceMapper.listRunningAndFailedInstance(projectId, envId, appServiceId),
                 RunningInstanceVO.class);
     }
 
