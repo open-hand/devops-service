@@ -296,7 +296,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             LOGGER.info("==========应用下载完成==========");
         } catch (Exception e) {
             baseServiceClientOperator.failToDownloadApplication(appMarketDownloadVO.getAppDownloadRecordId());
-            throw new CommonException("error.download.app", e.getMessage());
+            throw new CommonException("error.download.app", e);
         }
     }
 
@@ -340,14 +340,14 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         downloadPayload.getAppServiceVersionDownloadPayloads().forEach(appServiceVersionPayload -> {
             AppServiceVersionDTO versionDTO = new AppServiceVersionDTO();
             if (!downloadType.equals(DOWNLOAD_ONLY)) {
-                String chartFilePath = String.format("%s%s", gitUtil.getWorkingDirectory(APPLICATION + System.currentTimeMillis()), TGZ);
+                String chartFilePath = String.format("%s%s", APPLICATION + System.currentTimeMillis(), TGZ);
                 fileDownload(appServiceVersionPayload.getChartFilePath(), chartFilePath);
                 LOGGER.info("=========应用下载，文件下载成功=========");
                 AppServiceVersionDTO appServiceVersionDTO = chartResolver(appServiceVersionPayload, appServiceId, downloadPayload.getAppServiceCode(), new File(chartFilePath), versionDTO);
                 serviceVersionIds.add(appServiceVersionDTO.getId());
             }
             if (!downloadType.equals(DEPLOY_ONLY)) {
-                String repoFilePath = String.format("%s%s", gitUtil.getWorkingDirectory(APPLICATION + System.currentTimeMillis()), ZIP);
+                String repoFilePath = String.format("%s%s", APPLICATION + System.currentTimeMillis(), ZIP);
                 fileDownload(appServiceVersionPayload.getRepoFilePath(), repoFilePath);
                 LOGGER.info("=========应用下载，文件下载成功=========");
                 AppServiceVersionDTO appServiceVersionDTO = gitResolver(appServiceVersionPayload, isFirst, groupPath, new File(repoFilePath), downloadPayload, accessToken, versionDTO, appServiceId);
@@ -801,6 +801,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             fos.close();
         } catch (IOException e) {
             IOUtils.closeQuietly(fos);
+            e.printStackTrace();
             throw new CommonException("error.download.file", e.getMessage());
         }
     }
