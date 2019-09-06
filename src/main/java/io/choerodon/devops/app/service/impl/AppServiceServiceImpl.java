@@ -2155,12 +2155,14 @@ public class AppServiceServiceImpl implements AppServiceService {
         // 遍历ids集合
         ids.stream().forEach(appId -> {
             ApplicationDTO appDTO = baseServiceClient.queryAppById(appId);
-            AppServiceGroupVO appServiceGroupVO = dtoToGroupVO(appDTO);
-            // 当前应用下的应用服务集合
-            List<AppServiceGroupInfoVO> commonGroupAppServiceList = collect.get(appId);
-            appServiceGroupVO.setShare(share);
-            appServiceGroupVO.setAppServiceList(commonGroupAppServiceList);
-            list.add(appServiceGroupVO);
+            if (!ObjectUtils.isEmpty(appDTO)) {
+                AppServiceGroupVO appServiceGroupVO = dtoToGroupVO(appDTO);
+                // 当前应用下的应用服务集合
+                List<AppServiceGroupInfoVO> commonGroupAppServiceList = collect.get(appId);
+                appServiceGroupVO.setShare(share);
+                appServiceGroupVO.setAppServiceList(commonGroupAppServiceList);
+                list.add(appServiceGroupVO);
+            }
         });
 
         return list;
