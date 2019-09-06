@@ -245,7 +245,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                     true);
             zipFileList.forEach(FileUtil::deleteFile);
             FileUtil.deleteDirectory(new File(appFilePath));
-            throw new CommonException(e.getCode());
+            throw new CommonException(e.getCode(),e);
         }
     }
 
@@ -276,15 +276,15 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                     //创建saga payload
                     DevOpsAppServiceSyncPayload appServiceSyncPayload = new DevOpsAppServiceSyncPayload();
                     BeanUtils.copyProperties(appServiceDTO, appServiceSyncPayload);
-                    producer.apply(
-                            StartSagaBuilder.newBuilder()
-                                    .withSourceId(applicationDTO.getId())
-                                    .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_APPLICATION_SERVICE_EVENT)
-                                    .withLevel(ResourceLevel.SITE)
-                                    .withPayloadAndSerialize(appServiceSyncPayload),
-                            builder -> {
-                            }
-                    );
+//                    producer.apply(
+//                            StartSagaBuilder.newBuilder()
+//                                    .withSourceId(applicationDTO.getId())
+//                                    .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_APPLICATION_SERVICE_EVENT)
+//                                    .withLevel(ResourceLevel.SITE)
+//                                    .withPayloadAndSerialize(appServiceSyncPayload),
+//                            builder -> {
+//                            }
+//                    );
                 }
                 String applicationDir = APPLICATION + System.currentTimeMillis();
                 String accessToken = appServiceService.getToken(appServiceDTO.getGitlabProjectId(), applicationDir, userAttrDTO);
@@ -463,7 +463,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             appServiceVersionService.baseCreateOrUpdate(versionDTO);
             LOGGER.info("==========应用下载，创建版本Service成功==========");
         } catch (Exception e) {
-            throw new CommonException("error.resolver.git", e.getMessage());
+            throw new CommonException("error.resolver.git", e);
         } finally {
             FileUtil.deleteFile(file);
             FileUtil.deleteDirectory(new File(unZipFilePath));
@@ -492,7 +492,6 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         File zipDirectory = new File(String.format(APP_TEMP_PATH_FORMAT, unZipPath, File.separator, appServiceCode));
         helmUrl = helmUrl.endsWith("/") ? helmUrl : helmUrl + "/";
         versionDTO.setAppServiceId(appServiceId);
-        AppServiceVersionDTO appServiceVersionDTO = null;
         String newTgzFile = null;
         File[] listFiles = zipDirectory.listFiles();
         try {
@@ -544,7 +543,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         versionDTO.setRepository(String.format("%s/%s/%s", harborUrl, MARKET_PRO, appServiceCode));
         appServiceVersionService.baseCreateOrUpdate(versionDTO);
         LOGGER.info("==========应用下载，chart解析完结==========");
-        return appServiceVersionDTO;
+        return versionDTO;
     }
 
     /**
@@ -681,7 +680,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             appServiceMarketVO.getAppServiceVersionUploadPayloads().forEach(t -> {
                 //推送镜像
                 String targetImageUrl = String.format("%s:%s", appServiceMarketVO.getHarborUrl(), t.getVersion());
-                pushImageScript(appServiceVersionService.baseQuery(t.getId()).getImage(), targetImageUrl, configStr);
+//                pushImageScript(appServiceVersionService.baseQuery(t.getId()).getImage(), targetImageUrl, configStr);
 
                 MarketAppServiceVersionImageVO appServiceVersionImageVO = new MarketAppServiceVersionImageVO();
                 appServiceVersionImageVO.setVersion(t.getVersion());
