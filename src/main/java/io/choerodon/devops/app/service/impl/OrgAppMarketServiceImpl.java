@@ -526,7 +526,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                 throw new CommonException("error.zip.empty");
             }
             LOGGER.info("==========应用下载，chart 开始上传chart包==========");
-            newTgzFile = gitUtil.getWorkingDirectory(CHART + System.currentTimeMillis());
+            newTgzFile = String.format("%s%s%s", APPLICATION, File.separator, CHART + System.currentTimeMillis());
             FileUtil.toTgz(String.format(APP_TEMP_PATH_FORMAT, unZipPath, File.separator, appServiceCode), newTgzFile);
             chartUtil.uploadChart(MARKET, DOWNLOADED_APP, new File(newTgzFile + TGZ));
             LOGGER.info("==========应用下载，chart包删除成功==========");
@@ -535,9 +535,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         } finally {
             FileUtil.deleteFile(file);
             FileUtil.deleteDirectory(new File(unZipPath));
-            if (newTgzFile != null) {
-                FileUtil.deleteDirectory(new File(newTgzFile));
-            }
+            FileUtil.deleteFile(newTgzFile + TGZ);
         }
         //创建version
         versionDTO.setRepository(String.format("%s/%s/%s", harborUrl, MARKET_PRO, appServiceCode));
