@@ -50,15 +50,11 @@
         <if test='searchParam != null'>
             <if test='searchParam.loginName != null and searchParam.loginName.length > 0'>
                 AND
-                <foreach collection="searchParam.loginName" item="loginName" open="(" separator=" OR " close=")">
-                    deup.login_name LIKE CONCAT(CONCAT('%', #{loginName, jdbcType=VARCHAR}),'%')
-                </foreach>
+                    deup.login_name LIKE CONCAT(CONCAT('%', #{searchParam.loginName, jdbcType=VARCHAR}),'%')
             </if>
             <if test='searchParam.realName != null and searchParam.realName.length > 0'>
                 AND
-                <foreach collection="searchParam.realName" item="realName" open="(" separator=" OR " close=")">
-                    deup.real_name LIKE CONCAT(CONCAT('%', #{realName, jdbcType=VARCHAR}),'%')
-                </foreach>
+                    deup.real_name LIKE CONCAT(CONCAT('%', #{searchParam.realName, jdbcType=VARCHAR}),'%')
             </if>
         </if>
         <if test='params != null and params.size > 0'>
