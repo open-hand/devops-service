@@ -253,6 +253,12 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
         // 没有环境列表则返回空列表
         if (devopsEnvironmentDTOS.isEmpty()) {
+            devopsEnvGroupEnvsDTOS.add(new DevopsEnvGroupEnvsVO() {{
+                setActive(false);
+            }});
+            devopsEnvGroupEnvsDTOS.add(new DevopsEnvGroupEnvsVO() {{
+                setActive(true);
+            }});
             return devopsEnvGroupEnvsDTOS;
         }
 
