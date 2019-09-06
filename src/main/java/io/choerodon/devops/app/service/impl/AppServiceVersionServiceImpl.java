@@ -370,6 +370,20 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     }
 
     @Override
+    public AppServiceVersionDTO baseCreateOrUpdate(AppServiceVersionDTO appServiceVersionDTO) {
+        if (appServiceVersionDTO.getId() == null) {
+            if (appServiceVersionMapper.insert(appServiceVersionDTO) != 1) {
+                throw new CommonException("error.version.insert");
+            }
+        } else {
+            if (appServiceVersionMapper.updateByPrimaryKey(appServiceVersionDTO) != 1) {
+                throw new CommonException("error.version.update");
+            }
+        }
+        return appServiceVersionDTO;
+    }
+
+    @Override
     public AppServiceVersionDTO queryServiceVersionByAppServiceId(Long appServiceId, String share) {
 
         return appServiceVersionMapper.queryServiceVersionByAppServiceId(appServiceId, share);

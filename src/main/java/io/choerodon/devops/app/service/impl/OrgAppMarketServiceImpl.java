@@ -13,6 +13,7 @@ import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import org.apache.commons.compress.utils.IOUtils;
+import org.apache.http.entity.ContentType;
 import org.eclipse.jgit.api.Git;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
@@ -37,6 +39,7 @@ import io.choerodon.devops.api.vo.HarborMarketVO;
 import io.choerodon.devops.api.vo.iam.MarketAppServiceImageVO;
 import io.choerodon.devops.api.vo.iam.MarketAppServiceVersionImageVO;
 import io.choerodon.devops.api.vo.iam.MarketImageUrlVO;
+import io.choerodon.devops.api.vo.kubernetes.MockMultipartFile;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.*;
 import io.choerodon.devops.app.service.*;
@@ -49,9 +52,10 @@ import io.choerodon.devops.infra.dto.iam.ApplicationDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.AccessLevel;
-import io.choerodon.devops.infra.feign.MarketServiceClient;
+import io.choerodon.devops.infra.feign.MarketServicePublicClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
 import io.choerodon.devops.infra.mapper.AppServiceMapper;
 import io.choerodon.devops.infra.util.*;
@@ -127,6 +131,8 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
     private AppServiceVersionReadmeService appServiceVersionReadmeService;
     @Autowired
     private DevopsProjectService devopsProjectService;
+    @Autowired
+    private MarketServiceClientOperator marketServiceClientOperator;
 
     /**
      * 执行pull/push脚本
@@ -340,6 +346,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         FileUtil.createDirectory(APPLICATION);
         downloadPayload.getAppServiceVersionDownloadPayloads().forEach(appServiceVersionPayload -> {
             AppServiceVersionDTO versionDTO = appServiceVersionService.baseQueryByAppIdAndVersion(appServiceId, appServiceVersionPayload.getVersion());
+            versionDTO = versionDTO == null ? new AppServiceVersionDTO() : versionDTO;
             if (!downloadType.equals(DOWNLOAD_ONLY)) {
                 String chartFilePath = String.format("%s%s%s%s", APPLICATION, File.separator, APPLICATION + System.currentTimeMillis(), TGZ);
                 fileDownload(appServiceVersionPayload.getChartFilePath(), chartFilePath);
@@ -449,16 +456,11 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             gitUtil.commitAndPushForMaster(git, repositoryUrl, appServiceVersionPayload.getVersion(), accessToken);
             LOGGER.info("==========应用下载，代码推送成功==========");
 
-            if (versionDTO.getId() == null) {
-                versionDTO.setAppServiceId(appServiceId);
-                BeanUtils.copyProperties(appServiceVersionPayload, versionDTO);
-                versionDTO = appServiceVersionService.baseCreate(versionDTO);
-                LOGGER.info("==========应用下载，创建版本成功==========");
-            }
+            versionDTO.setAppServiceId(appServiceId);
+            BeanUtils.copyProperties(appServiceVersionPayload, versionDTO);
+            LOGGER.info("==========应用下载，创建版本成功==========");
             versionDTO.setCommit(gitUtil.getFirstCommit(git));
-            AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQueryByAppIdAndVersion(appServiceId, appServiceVersionPayload.getVersion());
-            appServiceVersionDTO.setCommit(gitUtil.getFirstCommit(git));
-            appServiceVersionService.baseUpdate(appServiceVersionDTO);
+            appServiceVersionService.baseCreateOrUpdate(versionDTO);
             LOGGER.info("==========应用下载，创建版本Service成功==========");
         } catch (Exception e) {
             throw new CommonException("error.resolver.git", e.getMessage());
@@ -492,11 +494,11 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         versionDTO.setAppServiceId(appServiceId);
         AppServiceVersionDTO appServiceVersionDTO = null;
         String newTgzFile = null;
+        File[] listFiles = zipDirectory.listFiles();
         try {
             //解析 解压过后的文件
-            if (zipDirectory.exists() && zipDirectory.isDirectory()) {
+            if (zipDirectory.exists() && zipDirectory.isDirectory() && listFiles != null) {
 
-                File[] listFiles = zipDirectory.listFiles();
                 BeanUtils.copyProperties(appServiceVersionPayload, versionDTO);
                 //9. 获取替换Repository
                 LOGGER.info("==========应用下载，chart开始解析文件==========");
@@ -518,8 +520,6 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                     AppServiceVersionReadmeDTO versionReadmeDTO = new AppServiceVersionReadmeDTO();
                     versionReadmeDTO.setReadme(FileUtil.getReadme(unZipPath));
                     versionDTO.setReadmeValueId(appServiceVersionReadmeService.baseCreate(versionReadmeDTO).getId());
-                    //创建version
-                    appServiceVersionDTO = appServiceVersionService.baseCreate(versionDTO);
                 }
             } else {
                 FileUtil.deleteDirectory(zipDirectory);
@@ -540,8 +540,9 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                 FileUtil.deleteDirectory(new File(newTgzFile));
             }
         }
+        //创建version
         versionDTO.setRepository(String.format("%s/%s/%s", harborUrl, MARKET_PRO, appServiceCode));
-        appServiceVersionService.baseUpdate(versionDTO);
+        appServiceVersionService.baseCreateOrUpdate(versionDTO);
         LOGGER.info("==========应用下载，chart解析完结==========");
         return appServiceVersionDTO;
     }
@@ -715,20 +716,42 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
     }
 
     private void fileUpload(List<String> zipFileList, AppMarketUploadPayload appMarketUploadVO, MarketImageUrlVO marketImageUrlVO) {
-        List<MultipartBody.Part> files = new ArrayList<>();
-        zipFileList.forEach(f -> {
-            File file = new File(f);
-            RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), file);
-            MultipartBody.Part body = MultipartBody.Part.createFormData("files", file.getName(), requestFile);
-            files.add(body);
-        });
-        String mapJson = marketImageUrlVO != null ? gson.toJson(marketImageUrlVO) : null;
-        String getawayUrl = appMarketUploadVO.getSaasGetawayUrl().endsWith("/") ? appMarketUploadVO.getSaasGetawayUrl() : appMarketUploadVO.getSaasGetawayUrl() + "/";
-        MarketServiceClient marketServiceClient = RetrofitHandler.getMarketServiceClient(getawayUrl, MARKET);
 
-        String remoteToken = baseServiceClientOperator.checkLatestToken();
-        Call<ResponseBody> responseCall = marketServiceClient.uploadFile(remoteToken, appMarketUploadVO.getAppVersion(), files, mapJson);
-        Boolean result = RetrofitCallExceptionParse.executeCall(responseCall, ERROR_UPLOAD, Boolean.class);
+        String mapJson = marketImageUrlVO != null ? gson.toJson(marketImageUrlVO) : null;
+
+        Boolean result;
+        if (appMarketUploadVO.getMarketSaaSPlatform()) {
+            List<MultipartFile> files = new ArrayList<>();
+            zipFileList.forEach(f -> {
+                File file = new File(f);
+                FileInputStream fileInputStream = null;
+                MultipartFile multipartFile = null;
+                try {
+                    fileInputStream = new FileInputStream(file);
+                    multipartFile = new MockMultipartFile(file.getName(), file.getName(), ContentType.APPLICATION_OCTET_STREAM.toString(), fileInputStream);
+                    files.add(multipartFile);
+                } catch (Exception e) {
+                    throw new CommonException(ERROR_UPLOAD, e);
+                } finally {
+                    IOUtils.closeQuietly(fileInputStream);
+                }
+            });
+            result = marketServiceClientOperator.uploadFile(appMarketUploadVO.getAppVersion(), files, mapJson);
+        } else {
+            List<MultipartBody.Part> files = new ArrayList<>();
+            zipFileList.forEach(f -> {
+                File file = new File(f);
+                RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), file);
+                MultipartBody.Part body = MultipartBody.Part.createFormData("files", file.getName(), requestFile);
+                files.add(body);
+            });
+            String getawayUrl = appMarketUploadVO.getSaasGetawayUrl().endsWith("/") ? appMarketUploadVO.getSaasGetawayUrl() : appMarketUploadVO.getSaasGetawayUrl() + "/";
+            MarketServicePublicClient marketServiceClient = RetrofitHandler.getMarketServiceClient(getawayUrl, MARKET);
+
+            String remoteToken = baseServiceClientOperator.checkLatestToken();
+            Call<ResponseBody> responseCall = marketServiceClient.uploadFile(remoteToken, appMarketUploadVO.getAppVersion(), files, mapJson);
+            result = RetrofitCallExceptionParse.executeCall(responseCall, ERROR_UPLOAD, Boolean.class);
+        }
         if (!result) {
             throw new CommonException(ERROR_UPLOAD);
         }
@@ -746,7 +769,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         String imageJson = marketImageUrlVO != null ? gson.toJson(marketImageUrlVO) : null;
         String appJson = gson.toJson(appMarketFixVersionPayload.getMarketApplicationVO());
         String getawayUrl = appMarketFixVersionPayload.getFixVersionUploadPayload().getSaasGetawayUrl().endsWith("/") ? appMarketFixVersionPayload.getFixVersionUploadPayload().getSaasGetawayUrl() : appMarketFixVersionPayload.getFixVersionUploadPayload().getSaasGetawayUrl() + "/";
-        MarketServiceClient marketServiceClient = RetrofitHandler.getMarketServiceClient(getawayUrl, MARKET);
+        MarketServicePublicClient marketServiceClient = RetrofitHandler.getMarketServiceClient(getawayUrl, MARKET);
 
         String remoteToken = baseServiceClientOperator.checkLatestToken();
         Call<ResponseBody> responseCall = marketServiceClient.updateAppPublishInfoFix(
@@ -779,7 +802,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         Map map = getParam(fileNameArr[1]);
 
         Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
-        MarketServiceClient marketServiceClient = retrofit.create(MarketServiceClient.class);
+        MarketServicePublicClient marketServiceClient = retrofit.create(MarketServicePublicClient.class);
         FileOutputStream fos = null;
         try {
             LOGGER.info("============文件下载===={}", fileName);
@@ -802,7 +825,6 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             fos.close();
         } catch (IOException e) {
             IOUtils.closeQuietly(fos);
-            e.printStackTrace();
             throw new CommonException("error.download.file", e.getMessage());
         }
     }
