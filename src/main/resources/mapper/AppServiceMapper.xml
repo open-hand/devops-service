@@ -41,13 +41,9 @@
         </if>
         <include refid="sqlparam"/>
         <if test="index !=''">
-            ORDER BY da.is_active desc,
-            (
-            da.is_synchro = 1
-            AND da.gitlab_project_id IS NOT NULL
-            )
+            ORDER BY da.is_active DESC,
             OR da.is_synchro = 0 DESC,
-            da.id desc
+            da.id DESC
         </if>
     </select>
 
