@@ -276,16 +276,16 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                     //创建saga payload
                     DevOpsAppServiceSyncPayload appServiceSyncPayload = new DevOpsAppServiceSyncPayload();
                     BeanUtils.copyProperties(appServiceDTO, appServiceSyncPayload);
-//                    producer.apply(
-//                            StartSagaBuilder.newBuilder()
-//                                    .withSourceId(applicationDTO.getId())
-//                                    .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_APPLICATION_SERVICE_EVENT)
-//                                    .withLevel(ResourceLevel.SITE)
-//                                    .withPayloadAndSerialize(appServiceSyncPayload),
-//                            builder -> {
-//                            }
-//                    );
-                }
+                    producer.apply(
+                            StartSagaBuilder.newBuilder()
+                                    .withSourceId(applicationDTO.getId())
+                                    .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_APPLICATION_SERVICE_EVENT)
+                                    .withLevel(ResourceLevel.SITE)
+                                    .withPayloadAndSerialize(appServiceSyncPayload),
+                            builder -> {
+                            }
+                    );
+                    }
                 String applicationDir = APPLICATION + System.currentTimeMillis();
                 String accessToken = appServiceService.getToken(appServiceDTO.getGitlabProjectId(), applicationDir, userAttrDTO);
                 LOGGER.info("=========应用下载，获取token成功=========");
@@ -678,7 +678,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             appServiceMarketVO.getAppServiceVersionUploadPayloads().forEach(t -> {
                 //推送镜像
                 String targetImageUrl = String.format("%s:%s", appServiceMarketVO.getHarborUrl(), t.getVersion());
-//                pushImageScript(appServiceVersionService.baseQuery(t.getId()).getImage(), targetImageUrl, configStr);
+                pushImageScript(appServiceVersionService.baseQuery(t.getId()).getImage(), targetImageUrl, configStr);
 
                 MarketAppServiceVersionImageVO appServiceVersionImageVO = new MarketAppServiceVersionImageVO();
                 appServiceVersionImageVO.setVersion(t.getVersion());
