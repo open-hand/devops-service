@@ -19,7 +19,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
-import io.choerodon.devops.infra.feign.MarketServiceClient;
+import io.choerodon.devops.infra.feign.MarketServicePublicClient;
 import io.choerodon.devops.infra.feign.SonarClient;
 
 public class RetrofitHandler {
@@ -148,13 +148,13 @@ public class RetrofitHandler {
         return retrofit.create(SonarClient.class);
     }
 
-    public static MarketServiceClient getMarketServiceClient(String getawayUrl, String type) {
+    public static MarketServicePublicClient getMarketServiceClient(String getawayUrl, String type) {
         ConfigurationProperties configurationProperties = new ConfigurationProperties();
         configurationProperties.setBaseUrl(getawayUrl);
         configurationProperties.setInsecureSkipTlsVerify(false);
         configurationProperties.setType(type);
         Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
-        return retrofit.create(MarketServiceClient.class);
+        return retrofit.create(MarketServicePublicClient.class);
     }
 
 }

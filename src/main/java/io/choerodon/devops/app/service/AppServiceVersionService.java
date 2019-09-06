@@ -175,6 +175,8 @@ public interface AppServiceVersionService {
 
     AppServiceVersionDTO baseCreate(AppServiceVersionDTO appServiceVersionDTO);
 
+    AppServiceVersionDTO baseCreateOrUpdate(AppServiceVersionDTO appServiceVersionDTO);
+
     /**
      * 查询应用服务在组织共享下的最新版本
      *

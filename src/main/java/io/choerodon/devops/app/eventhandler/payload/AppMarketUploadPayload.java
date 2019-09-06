@@ -49,6 +49,9 @@ public class AppMarketUploadPayload {
     @ApiModelProperty("更新发布应用版本")
     private Boolean updateVersion;
 
+    @ApiModelProperty("是否是Saas内部发布应用")
+    private Boolean marketSaaSPlatform;
+
     public Long getProjectId() {
         return projectId;
     }
@@ -143,5 +146,13 @@ public class AppMarketUploadPayload {
 
     public void setMktAppCode(String mktAppCode) {
         this.mktAppCode = mktAppCode;
+    }
+
+    public Boolean getMarketSaaSPlatform() {
+        return marketSaaSPlatform;
+    }
+
+    public void setMarketSaaSPlatform(Boolean marketSaaSPlatform) {
+        this.marketSaaSPlatform = marketSaaSPlatform;
     }
 }

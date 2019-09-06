@@ -1,36 +1,34 @@
 package io.choerodon.devops.infra.feign;
 
 import java.util.List;
-import java.util.Map;
 
-import okhttp3.MultipartBody;
-import okhttp3.ResponseBody;
-import retrofit2.Call;
-import retrofit2.http.*;
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.multipart.MultipartFile;
+
+import io.choerodon.devops.infra.feign.fallback.GitlabServiceClientFallback;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
- * Date:  12:06 2019/8/18
+ * Date:  11:31 2019/9/6
  * Description:
  */
+@FeignClient(value = "market-service", fallback = GitlabServiceClientFallback.class)
 public interface MarketServiceClient {
 
-    @Multipart
-    @POST("market/v1/market_applications/upload")
-    Call<ResponseBody> uploadFile(@Query("remote_token") String remoteToken,
-                                  @Query("app_version") String appVersion,
-                                  @Part List<MultipartBody.Part> list,
-                                  @Part("imageUrl") String imageUrl);
+    @PostMapping("market/v1/market_applications/uploadWithin")
+    ResponseEntity<Boolean> uploadFile(@RequestParam(value = "app_version") String appVersion,
+                                       @RequestPart List<MultipartFile> files,
+                                       @RequestParam(required = false, value = "imageUrl") String imageUrl);
 
-    @Multipart
-    @PUT("market/v1/market_applications/published/versionFix")
-    Call<ResponseBody> updateAppPublishInfoFix(@Query("remote_token") String remoteToken,
-                                               @Query("app_code") String code,
-                                               @Query("version") String version,
-                                               @Part("marketApplicationVOStr") String marketApplicationVOStr,
-                                               @Part List<MultipartBody.Part> list,
-                                               @Part("imageUrl") String imageUrl);
-
-    @GET("{fileName}")
-    Call<ResponseBody> downloadFile(@Path(value = "fileName") String fileName, @QueryMap(encoded = true) Map<String, String> map);
+    @PutMapping("market/v1/market_applications/published/versionFixWithin")
+    ResponseEntity<Boolean> updateAppPublishInfoFix(@RequestParam(value = "app_code") String code,
+                                                    @RequestParam(value = "version") String version,
+                                                    @RequestParam(value = "marketApplicationVOStr") String marketApplicationVOStr,
+                                                    @RequestPart List<MultipartFile> files,
+                                                    @RequestParam(required = false, value = "imageUrl") String imageUrl);
 }
