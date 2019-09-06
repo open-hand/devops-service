@@ -337,17 +337,18 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
     private Set<Long> createAppServiceVersion(AppServiceDownloadPayload downloadPayload, AppServiceDTO appServiceDTO, String groupPath, Boolean isFirst, String accessToken, String downloadType) {
         Long appServiceId = appServiceDTO.getId();
         Set<Long> serviceVersionIds = new HashSet<>();
+        FileUtil.createDirectory(APPLICATION);
         downloadPayload.getAppServiceVersionDownloadPayloads().forEach(appServiceVersionPayload -> {
-            AppServiceVersionDTO versionDTO = new AppServiceVersionDTO();
+            AppServiceVersionDTO versionDTO = appServiceVersionService.baseQueryByAppIdAndVersion(appServiceId, appServiceVersionPayload.getVersion());
             if (!downloadType.equals(DOWNLOAD_ONLY)) {
-                String chartFilePath = String.format("%s%s", APPLICATION + System.currentTimeMillis(), TGZ);
+                String chartFilePath = String.format("%s%s%s%s", APPLICATION, File.separator, APPLICATION + System.currentTimeMillis(), TGZ);
                 fileDownload(appServiceVersionPayload.getChartFilePath(), chartFilePath);
                 LOGGER.info("=========应用下载，文件下载成功=========");
                 AppServiceVersionDTO appServiceVersionDTO = chartResolver(appServiceVersionPayload, appServiceId, downloadPayload.getAppServiceCode(), new File(chartFilePath), versionDTO);
                 serviceVersionIds.add(appServiceVersionDTO.getId());
             }
             if (!downloadType.equals(DEPLOY_ONLY)) {
-                String repoFilePath = String.format("%s%s", APPLICATION + System.currentTimeMillis(), ZIP);
+                String repoFilePath = String.format("%s%s%s%s", APPLICATION, File.separator, APPLICATION + System.currentTimeMillis(), ZIP);
                 fileDownload(appServiceVersionPayload.getRepoFilePath(), repoFilePath);
                 LOGGER.info("=========应用下载，文件下载成功=========");
                 AppServiceVersionDTO appServiceVersionDTO = gitResolver(appServiceVersionPayload, isFirst, groupPath, new File(repoFilePath), downloadPayload, accessToken, versionDTO, appServiceId);
