@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.vo;
 
+import java.util.List;
+
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  14:00 2019/8/9
@@ -11,6 +13,7 @@ public class PipelineSearchVO {
     private Boolean manager;
     private Long envId;
     private String triggerType;
+    private List<String> name;
 
     public Boolean getCreator() {
         return creator;
@@ -50,5 +53,13 @@ public class PipelineSearchVO {
 
     public void setTriggerType(String triggerType) {
         this.triggerType = triggerType;
+    }
+
+    public List<String> getName() {
+        return name;
+    }
+
+    public void setName(List<String> name) {
+        this.name = name;
     }
 }
