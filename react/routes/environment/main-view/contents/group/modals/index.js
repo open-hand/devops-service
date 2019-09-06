@@ -11,7 +11,7 @@ import { useEnvGroupStore } from '../stores';
 const groupKey = Modal.key();
 const envKey = Modal.key();
 
-const AppModals = observer(() => {
+const GroupModal = observer(() => {
   const modalStyle = useMemo(() => ({
     width: 380,
   }), []);
@@ -78,4 +78,4 @@ const AppModals = observer(() => {
   </div>);
 });
 
-export default AppModals;
+export default GroupModal;

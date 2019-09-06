@@ -5,6 +5,14 @@ const { IST_VIEW_TYPE } = viewTypeMappings;
 
 export default function useStore() {
   return useLocalStore(() => ({
+    showHeader: true,
+    setShowHeader(flag) {
+      this.showHeader = flag;
+    },
+    get getShowHeader() {
+      return this.showHeader;
+    },
+
     selectedMenu: {},
     viewType: IST_VIEW_TYPE,
     setSelectedMenu(data) {

@@ -6,10 +6,13 @@ import MainView from './main-view';
 import { useResourceStore } from './stores';
 
 function Resource() {
-  const { permissions } = useResourceStore();
+  const {
+    permissions,
+    resourceStore: { getShowHeader },
+  } = useResourceStore();
 
   return <Page service={permissions}>
-    <CustomHeader show />
+    <CustomHeader show={getShowHeader} />
     <MainView />
   </Page>;
 }

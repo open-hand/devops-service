@@ -82,12 +82,17 @@ function handleSelect(record, store) {
   }
 }
 
-export default (store, type) => {
+export default ({ store, type, projectId }) => {
   const formatMaps = {
     [IST_VIEW_TYPE]: createInstanceRecord,
     [RES_VIEW_TYPE]: createResourceRecord,
   };
+  const urlMaps = {
+    [IST_VIEW_TYPE]: `/devops/v1/projects/${projectId}/envs/ins_tree_menu`,
+    [RES_VIEW_TYPE]: `/devops/v1/projects/${projectId}/envs/resource_tree_menu`,
+  };
   return {
+    autoQuery: true,
     paging: false,
     selection: 'single',
     parentField: 'parentId',
@@ -115,6 +120,7 @@ export default (store, type) => {
     },
     transport: {
       read: {
+        url: urlMaps[type],
         method: 'get',
       },
     },
