@@ -127,8 +127,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Autowired
     private DevopsEnvAppServiceMapper devopsEnvAppServiceMapper;
     @Autowired
-    private MarketConnectInfoService marketConnectInfoService;
-    @Autowired
     private DevopsIngressService devopsIngressService;
     @Autowired
     private DevopsServiceService devopsServiceService;
@@ -328,7 +326,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         if (envIds.length == 0) {
             return new DeployFrequencyVO();
         }
-        List<DeployDTO> deployDTOS = baselistDeployFrequency(projectId, envIds, appServiceId, startTime, endTime);
+        List<DeployDTO> deployDTOS = baseListDeployFrequency(projectId, envIds, appServiceId, startTime, endTime);
 
         //以时间维度分组
         Map<String, List<DeployDTO>> resultMaps = deployDTOS.stream()
@@ -787,12 +785,14 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
     @Override
     public List<RunningInstanceVO> listRunningInstance(Long projectId, Long appServiceId, Long appServiceVersionId, Long envId) {
-        return ConvertUtils.convertList(baseListByOptions(projectId, appServiceId, appServiceVersionId, envId), RunningInstanceVO.class);
+        return ConvertUtils.convertList(appServiceInstanceMapper.listApplicationInstanceCode(
+                projectId, appServiceId, appServiceVersionId, envId), RunningInstanceVO.class);
     }
 
     @Override
     public List<RunningInstanceVO> listByAppIdAndEnvId(Long projectId, Long appServiceId, Long envId) {
-        return ConvertUtils.convertList(baseListByAppIdAndEnvId(projectId, appServiceId, envId), RunningInstanceVO.class);
+        return ConvertUtils.convertList(appServiceInstanceMapper.listRunningAndFailedInstance(projectId, appServiceId, envId),
+                RunningInstanceVO.class);
     }
 
 
@@ -873,8 +873,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         //如果文件对象对应关系不存在，证明没有部署成功，删掉gitops文件,删掉资源
         if (devopsEnvFileResourceDTO == null) {
-            baseDelete(instanceId);
-            baseDeleteInstanceRelInfo(instanceId);
+            appServiceInstanceMapper.deleteByPrimaryKey(instanceId);
+            appServiceInstanceMapper.deleteInstanceRelInfo(instanceId);
             if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER,
                     RELEASE_PREFIX + appServiceInstanceDTO.getCode() + YAML_SUFFIX)) {
                 gitlabServiceClientOperator.deleteFile(
@@ -888,8 +888,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             //如果文件对象对应关系存在，但是gitops文件不存在，也直接删掉资源
             if (!gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER,
                     devopsEnvFileResourceDTO.getFilePath())) {
-                baseDelete(instanceId);
-                baseDeleteInstanceRelInfo(instanceId);
+                appServiceInstanceMapper.deleteByPrimaryKey(instanceId);
+                appServiceInstanceMapper.deleteInstanceRelInfo(instanceId);
                 devopsEnvFileResourceService.baseDeleteById(devopsEnvFileResourceDTO.getId());
                 return;
             }
@@ -946,8 +946,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         //校验环境是否连接
         clusterConnectionHandler.checkEnvConnection(devopsEnvironmentDTO.getClusterId());
 
-        baseDeleteInstanceRelInfo(instanceId);
-        baseDelete(instanceId);
+        appServiceInstanceMapper.deleteInstanceRelInfo(instanceId);
+        appServiceInstanceMapper.deleteByPrimaryKey(instanceId);
     }
 
 
@@ -1015,29 +1015,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     }
 
     @Override
-    public List<AppServiceInstanceDTO> baseListByOptions(Long projectId, Long appServiceId, Long appServiceVersionId, Long envId) {
-        return appServiceInstanceMapper.listApplicationInstanceCode(
-                projectId, envId, appServiceVersionId, appServiceId);
-    }
-
-    @Override
-    public List<AppServiceInstanceDTO> baseListByAppIdAndEnvId(Long projectId, Long appServiceId, Long envId) {
-        return appServiceInstanceMapper.listRunningAndFailedInstance(
-                projectId, envId, appServiceId);
-    }
-
-    @Override
-    public int baseCountByOptions(Long envId, Long appServiceId, String appServiceInstanceCode) {
-        return appServiceInstanceMapper.countByOptions(envId, appServiceId, appServiceInstanceCode);
-    }
-
-    @Override
-    public String baseQueryValueByEnvIdAndAppId(Long
-                                                        envId, Long appServiceId) {
-        return appServiceInstanceMapper.queryValueByEnvIdAndAppId(envId, appServiceId);
-    }
-
-    @Override
     public void baseUpdate(AppServiceInstanceDTO appServiceInstanceDTO) {
         appServiceInstanceDTO.setObjectVersionNumber(
                 appServiceInstanceMapper.selectByPrimaryKey(appServiceInstanceDTO.getId()).getObjectVersionNumber());
@@ -1064,20 +1041,9 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     }
 
     @Override
-    public List<AppServiceInstanceDTO> baseList() {
-        return appServiceInstanceMapper.selectAll();
-    }
-
-    @Override
     public String baseQueryValueByInstanceId(Long instanceId) {
         return appServiceInstanceMapper.queryByInstanceId(instanceId);
     }
-
-    @Override
-    public void baseDelete(Long id) {
-        appServiceInstanceMapper.deleteByPrimaryKey(id);
-    }
-
 
     @Override
     public List<DeployDTO> baseListDeployTime(Long projectId, Long envId, Long[] appServiceIds, Date startTime, Date endTime) {
@@ -1087,7 +1053,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     }
 
     @Override
-    public List<DeployDTO> baselistDeployFrequency(Long projectId, Long[] envIds, Long appServiceId,
+    public List<DeployDTO> baseListDeployFrequency(Long projectId, Long[] envIds, Long appServiceId,
                                                    Date startTime, Date endTime) {
         return appServiceInstanceMapper
                 .listDeployFrequency(projectId, envIds, appServiceId, new java.sql.Date(startTime.getTime()),
@@ -1138,12 +1104,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     public String baseGetInstanceResourceDetailJson(Long instanceId, String resourceName, ResourceType resourceType) {
         return appServiceInstanceMapper.getInstanceResourceDetailJson(instanceId, resourceName, resourceType.getType());
     }
-
-    @Override
-    public void baseDeleteInstanceRelInfo(Long instanceId) {
-        appServiceInstanceMapper.deleteInstanceRelInfo(instanceId);
-    }
-
 
     private void handleStartOrStopInstance(Long instanceId, String type) {
 

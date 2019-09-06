@@ -102,7 +102,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 //                syncEnvAppRelevance(logs);
 //                syncAppShare(logs);
 //                syncDeployRecord(logs);
-//                syncCulsterAndCertifications(logs);
+//                syncClusterAndCertifications(logs);
 //                syncProjectAppId();
 //                syncConfig();
                   syncBranch();
@@ -253,7 +253,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
         }
 
-        private void syncCulsterAndCertifications(List<CheckLog> checkLogs) {
+        private void syncClusterAndCertifications(List<CheckLog> checkLogs) {
             LOGGER.info("开始迁移集群和证书到项目下!");
             Map<Long, List<DevopsClusterDTO>> clusters = devopsClusterMapper.selectAll().stream()
                     .collect(Collectors.groupingBy(DevopsClusterDTO::getOrganizationId));
