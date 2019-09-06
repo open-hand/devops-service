@@ -20,7 +20,7 @@ function DEVOPSIndex({ match, AppState: { currentLanguage: language } }) {
   const IntlProviderAsync = asyncLocaleProvider(language, () => import(`./locale/${language}`),);
   return (
     <IntlProviderAsync>
-      <div>
+      <div className="c7ncd-root">
         <Switch>
           <Route path={`${match.url}/app-service`} component={AppService} />
           <Route path={`${match.url}/code-management`} component={Code} />

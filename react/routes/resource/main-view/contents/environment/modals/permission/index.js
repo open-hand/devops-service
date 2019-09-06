@@ -5,7 +5,7 @@ import { Select, Radio } from 'choerodon-ui';
 import { Form } from 'choerodon-ui';
 import omit from 'lodash/omit';
 import map from 'lodash/map';
-import DynamicSelect from '../../../../components/dynamic-select';
+import DynamicSelect from '../../../../../../../components/dynamic-select';
 import { handlePromptError } from '../../../../../../../utils';
 
 import './index.less';
@@ -33,7 +33,7 @@ const Permission = observer(({ modal, form, store, onOk, skipPermission, refresh
       }
     });
 
-    if (!users.userIds) return false;
+    if (!users || !users.userIds) return false;
 
     try {
       const res = await onOk(users);
@@ -68,6 +68,8 @@ const Permission = observer(({ modal, form, store, onOk, skipPermission, refresh
       options={options}
       form={form}
       fieldKeys={data}
+      requireText={formatMessage({ id: `${intlPrefix}.project.member.require` })}
+      notFoundContent={formatMessage({ id: `${intlPrefix}.project.member.empty` })}
       label={formatMessage({ id: `${intlPrefix}.project.member` })}
       addText={formatMessage({ id: `${intlPrefix}.add.member` })}
     />;

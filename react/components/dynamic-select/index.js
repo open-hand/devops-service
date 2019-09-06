@@ -1,5 +1,6 @@
 import React, { Fragment, useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
+import { injectIntl } from 'react-intl';
 import { Form, Select, Button } from 'choerodon-ui';
 import map from 'lodash/map';
 import findKey from 'lodash/findKey';
@@ -31,20 +32,21 @@ function getRepeatKey(data, value, field) {
   return findKey(omit(data, ['keys', field]), (item) => item === value);
 }
 
-export function SimpleSelect({ uid, label, options, disabled, onDelete, removeable, form }) {
+export const SimpleSelect = injectIntl(({ intl, uid, label, options, onDelete, removeable, form, notFoundContent, requireText }) => {
   const handleDelete = useCallback(() => {
     onDelete(uid);
   }, [uid]);
 
   function uniqValid(rule, value, callback) {
-    if (!value) callback('请选择一个应用服务');
+    if (!value) callback(requireText);
 
     const { field } = rule;
     const data = form.getFieldsValue();
     const repeatKey = getRepeatKey(data, value, field);
 
     if (repeatKey) {
-      callback('不可重复选择');
+      const text = intl.formatMessage({ id: 'noRepeat' });
+      callback(text);
     }
 
     callback();
@@ -63,8 +65,9 @@ export function SimpleSelect({ uid, label, options, disabled, onDelete, removeab
     })(<Select
       required
       searchable
-      disabled={disabled}
+      notFoundContent={notFoundContent}
       label={label}
+      getPopupContainer={(triggerNode) => triggerNode.parentNode}
     >
       {options}
     </Select>)}
@@ -76,7 +79,7 @@ export function SimpleSelect({ uid, label, options, disabled, onDelete, removeab
       onClick={handleDelete}
     />
   </FormItem>;
-}
+});
 
 SimpleSelect.propTypes = {
   uid: PropTypes.string.isRequired,
@@ -84,7 +87,8 @@ SimpleSelect.propTypes = {
   label: PropTypes.string,
   removeable: PropTypes.bool,
   onDelete: PropTypes.func,
-  disabled: PropTypes.bool,
+  notFoundContent: PropTypes.string,
+  requireText: PropTypes.string,
 };
 
 SimpleSelect.defaultProps = {
@@ -92,7 +96,7 @@ SimpleSelect.defaultProps = {
   options: [],
 };
 
-export default function DynamicSelect({ form, label, fieldKeys, options, addText }) {
+export default function DynamicSelect({ form, label, fieldKeys, options, addText, notFoundContent, requireText }) {
   function add() {
     const keys = form.getFieldValue('keys');
     if (!keys) return;
@@ -119,14 +123,15 @@ export default function DynamicSelect({ form, label, fieldKeys, options, addText
   }
 
   const keys = useMemo(() => fieldKeys.keys, [fieldKeys]);
-  const disabledAdd = options.length <= 1 || (keys && keys.length >= options.length);
+  // const disabledAdd = options.length <= 1 || (keys && keys.length >= options.length);
 
   return <Fragment>
     {map(keys, (key, index) => (<SimpleSelect
       key={key}
       uid={key}
       form={form}
-      disabled={!options.length}
+      notFoundContent={notFoundContent}
+      requireText={requireText}
       options={options}
       removeable={index > 0 || (keys && keys.length > 1)}
       onDelete={remove}
@@ -137,7 +142,6 @@ export default function DynamicSelect({ form, label, fieldKeys, options, addText
         icon="add"
         type="primary"
         funcType="flat"
-        disabled={disabledAdd}
         onClick={add}
       >
         {addText}
@@ -153,6 +157,8 @@ DynamicSelect.propTypes = {
   }),
   label: PropTypes.string,
   addText: PropTypes.string,
+  notFoundContent: PropTypes.string,
+  requireText: PropTypes.string,
 };
 
 DynamicSelect.defaultProps = {

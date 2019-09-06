@@ -5,7 +5,7 @@ import { Select, SelectBox } from 'choerodon-ui/pro';
 import { Form } from 'choerodon-ui';
 import omit from 'lodash/omit';
 import map from 'lodash/map';
-import DynamicSelect from '../../../../../../resource/main-view/components/dynamic-select';
+import DynamicSelect from '../../../../../../../components/dynamic-select';
 import { handlePromptError } from '../../../../../../../utils';
 
 import './index.less';

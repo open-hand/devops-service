@@ -9,6 +9,8 @@ import { useModalStore } from './stores';
 import CreateCluster from './create-cluster';
 import PermissionManage from './permission-manage';
 
+import '../../../../../../components/dynamic-select/style';
+
 const modalKey1 = Modal.key();
 const modalKey2 = Modal.key();
 const modalKey3 = Modal.key();
@@ -45,7 +47,7 @@ const ClusterModals = observer(() => {
   } = useModalStore();
 
   const { menuId } = clusterStore.getSelectedMenu;
-  
+
   function permissionUpdate(data) {
     const record = ClusterDetailDs.current;
     if (record) {
@@ -95,6 +97,7 @@ const ClusterModals = observer(() => {
       title: formatMessage({ id: `${intlPrefix}.modal.permission` }),
       drawer: true,
       style: modalStyle,
+      className: 'c7ncd-modal-wrapper',
       children: <PermissionManage
         refreshPermission={refreshPermission}
         projectList={arr}

@@ -1,8 +1,8 @@
 import React from 'react';
-import { Permission, Action } from '@choerodon/master';
+import { Action } from '@choerodon/master';
 import { Table } from 'choerodon-ui/pro';
 import { FormattedMessage } from 'react-intl';
-import TimePopover from '../../../../../components/timePopover';
+import TimePopover from '../../../../../components/time-popover';
 import { useEnvironmentStore } from './stores';
 
 const { Column } = Table;
@@ -24,15 +24,25 @@ export default function Permissions() {
         },
       },
     ];
-    return record.get('role') === 'member' && !baseInfoDs.current.get('skipCheckPermission') && <Action data={actionData} />;
+    const isOwner = record.get('role') === 'member';
+    return isOwner && <Action data={actionData} />;
   }
 
   function renderDate({ value }) {
-    return value && <TimePopover content={value} />;
+    return value && <TimePopover datetime={value} />;
   }
 
   function renderRole({ value }) {
     return value && <FormattedMessage id={value} />;
+  }
+
+  function getActionColumn() {
+    const envRecord = baseInfoDs.current;
+    const isSkip = envRecord.get('skipCheckPermission');
+    const connect = envRecord.get('connect');
+    const synchro = envRecord.get('synchronize');
+    const isDisplay = !isSkip && synchro && connect;
+    return isDisplay && <Column renderer={renderActions} />;
   }
 
   return (
@@ -42,7 +52,7 @@ export default function Permissions() {
       queryBar="bar"
     >
       <Column name="realName" />
-      <Column renderer={renderActions} />
+      {getActionColumn()}
       <Column name="loginName" />
       <Column name="role" renderer={renderRole} />
       <Column name="creationDate" renderer={renderDate} />
