@@ -1792,6 +1792,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         Long userId = GitUserNameUtil.getUserId().longValue();
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         Boolean projectOwner = baseServiceClientOperator.isProjectOwner(userId, projectDTO);
+        Long appId = devopsProjectService.queryAppIdByProjectId(projectId);
         List<AppServiceDTO> list;
         if (projectOwner) {
             //是否需要分页
@@ -1799,11 +1800,11 @@ public class AppServiceServiceImpl implements AppServiceService {
                 return PageHelper
                         .startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest))
                         .doSelectPageInfo(
-                                () -> appServiceMapper.list(projectId, isActive, hasVersion, type,
+                                () -> appServiceMapper.list(appId, isActive, hasVersion, type,
                                         TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
                                         TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)), PageRequestUtil.checkSortIsEmpty(pageRequest)));
             } else {
-                list = appServiceMapper.list(projectId, isActive, hasVersion, type,
+                list = appServiceMapper.list(appId, isActive, hasVersion, type,
                         TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
                         TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)), PageRequestUtil.checkSortIsEmpty(pageRequest));
             }
@@ -1813,11 +1814,11 @@ public class AppServiceServiceImpl implements AppServiceService {
                 return PageHelper
                         .startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest))
                         .doSelectPageInfo(
-                                () -> appServiceMapper.listProjectMembersAppService(projectId, isActive, hasVersion, type,
+                                () -> appServiceMapper.listProjectMembersAppService(appId, isActive, hasVersion, type,
                                         TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
                                         TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)), PageRequestUtil.checkSortIsEmpty(pageRequest), userId));
             } else {
-                list = appServiceMapper.listProjectMembersAppService(projectId, isActive, hasVersion, type,
+                list = appServiceMapper.listProjectMembersAppService(appId, isActive, hasVersion, type,
                         TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
                         TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)), PageRequestUtil.checkSortIsEmpty(pageRequest), userId);
             }
