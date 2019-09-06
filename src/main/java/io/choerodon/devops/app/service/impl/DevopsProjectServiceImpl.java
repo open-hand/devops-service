@@ -134,9 +134,7 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
 
     @Override
     public Long queryProjectIdByAppId(Long appId) {
-        DevopsProjectDTO devopsProjectDTO = new DevopsProjectDTO();
-        devopsProjectDTO.setAppId(appId);
-        return devopsProjectMapper.selectOne(devopsProjectDTO).getIamProjectId();
+        return devopsProjectMapper.queryProjectIdByAppId(appId);
     }
 
     @Override

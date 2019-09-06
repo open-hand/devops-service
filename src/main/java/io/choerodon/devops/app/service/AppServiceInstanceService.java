@@ -316,8 +316,6 @@ public interface AppServiceInstanceService {
 
     List<AppServiceInstanceDTO> baseListByAppId(Long appServiceId);
 
-    List<AppServiceInstanceDTO> baseList();
-
     List<AppServiceInstanceDTO> baseListByValueId(Long valueId);
 
     AppServiceInstanceDTO baseQuery(Long id);
@@ -330,25 +328,15 @@ public interface AppServiceInstanceService {
 
     AppServiceInstanceDTO baseCreate(AppServiceInstanceDTO appServiceInstanceDTO);
 
-    List<AppServiceInstanceDTO> baseListByOptions(Long projectId, Long appServiceId, Long appServiceServiceId, Long envId);
-
-    List<AppServiceInstanceDTO> baseListByAppIdAndEnvId(Long projectId, Long appServiceId, Long envId);
-
-    int baseCountByOptions(Long envId, Long appServiceId, String appServiceInstanceCode);
-
-    String baseQueryValueByEnvIdAndAppId(Long envId, Long appServiceId);
-
     void baseUpdate(AppServiceInstanceDTO appServiceInstanceDTO);
 
     List<AppServiceInstanceOverViewDTO> baseListApplicationInstanceOverView(Long projectId, Long appServiceId, List<Long> envIds);
 
     String baseQueryValueByInstanceId(Long instanceId);
 
-    void baseDelete(Long id);
-
     List<DeployDTO> baseListDeployTime(Long projectId, Long envId, Long[] appServiceIds, Date startTime, Date endTime);
 
-    List<DeployDTO> baselistDeployFrequency(Long projectId, Long[] envIds, Long appServiceId,
+    List<DeployDTO> baseListDeployFrequency(Long projectId, Long[] envIds, Long appServiceId,
                                             Date startTime, Date endTime);
 
     PageInfo<DeployDTO> basePageDeployFrequencyTable(Long projectId, PageRequest pageRequest, Long[] envIds, Long appServiceId,
@@ -358,7 +346,4 @@ public interface AppServiceInstanceService {
                                                 Date startTime, Date endTime);
 
     String baseGetInstanceResourceDetailJson(Long instanceId, String resourceName, ResourceType resourceType);
-
-    void baseDeleteInstanceRelInfo(Long instanceId);
-
 }

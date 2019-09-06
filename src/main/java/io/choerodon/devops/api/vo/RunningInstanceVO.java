@@ -1,20 +1,24 @@
 package io.choerodon.devops.api.vo;
 
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * Created by Zenger on 2018/4/18.
  */
 public class RunningInstanceVO {
-
-    private String id;
+    @ApiModelProperty("实例id")
+    private Long id;
+    @ApiModelProperty("实例code")
     private String code;
+    @ApiModelProperty("实例版本名")
     private String appServiceVersion;
     private Integer isEnabled;
 
-    public String getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
