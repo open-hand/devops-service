@@ -94,12 +94,19 @@ public class FileUtil {
      */
     public static void replaceReturnFile(File file, Map<String, String> params) {
         File[] files = file.listFiles();
+
+        // files 可能为 null
+        if (files == null) {
+            logger.warn("There is no file in the file: {}", file.getAbsolutePath());
+            return;
+        }
+
         for (File a : files) {
-            if (a.getName().equals(".git") || a.getName().endsWith(".xlsx")||a.getName().equals("java")) {
+            if (a.getName().equals(".git") || a.getName().endsWith(".xlsx") || a.getName().equals("java")) {
                 continue;
             }
             File newFile = null;
-            if (a.getName().equals("model-service")||a.getName().equals(params.get("the-oldService-name"))) {
+            if (a.getName().equals("model-service") || a.getName().equals(params.get("the-oldService-name"))) {
                 String parentPath = a.getParent();
                 newFile = new File(parentPath + File.separator + params.get("{{service.code}}"));
                 if (!a.renameTo(newFile)) {
@@ -226,7 +233,7 @@ public class FileUtil {
         }
         destDir = destDir.endsWith(File.separator) ? destDir : destDir + File.separator;
 
-        try(FileInputStream inputStream = new FileInputStream(tarFile)) {
+        try (FileInputStream inputStream = new FileInputStream(tarFile)) {
             unTar(new GzipCompressorInputStream(inputStream), destDir);
         } catch (IOException e) {
             if (logger.isDebugEnabled()) {
@@ -793,7 +800,7 @@ public class FileUtil {
         res.setHeader("Content-Disposition", "attachment;filename=" + filePath);
         File file = new File(filePath);
         res.setHeader("Content-Length", "" + file.length());
-        try(BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file)); OutputStream os = res.getOutputStream()) {
+        try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file)); OutputStream os = res.getOutputStream()) {
             byte[] buff = new byte[bis.available()];
             int count = bis.read(buff);
             if (count > 0) {
