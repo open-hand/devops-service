@@ -1,9 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import com.google.gson.Gson;
@@ -18,15 +16,12 @@ import retrofit2.Retrofit;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.DevopsConfigVO;
-import io.choerodon.devops.api.vo.HarborMarketVO;
 import io.choerodon.devops.app.eventhandler.payload.HarborPayload;
 import io.choerodon.devops.app.service.DevopsConfigService;
 import io.choerodon.devops.app.service.HarborService;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
 import io.choerodon.devops.infra.config.HarborConfigurationProperties;
 import io.choerodon.devops.infra.dto.harbor.Project;
-import io.choerodon.devops.infra.dto.harbor.ProjectDetail;
-import io.choerodon.devops.infra.dto.harbor.Role;
 import io.choerodon.devops.infra.feign.HarborClient;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
 
@@ -57,11 +52,18 @@ public class HarborServiceImpl implements HarborService {
     @Override
     public void createHarborForProject(HarborPayload harborPayload) {
         //获取当前项目的harbor设置,如果有自定义的取自定义，没自定义取组织层的harbor配置
-        DevopsConfigVO devopsConfigVO = devopsConfigService.dtoToVo(devopsConfigService.queryRealConfig(harborPayload.getProjectId(), ResourceLevel.PROJECT.value(), HARBOR));
-        harborConfigurationProperties.setUsername(devopsConfigVO.getConfig().getUserName());
-        harborConfigurationProperties.setPassword(devopsConfigVO.getConfig().getPassword());
-        harborConfigurationProperties.setBaseUrl(devopsConfigVO.getConfig().getUrl());
-
+        if (harborPayload.getProjectId() != null) {
+            DevopsConfigVO devopsConfigVO = devopsConfigService.dtoToVo(devopsConfigService.queryRealConfig(harborPayload.getProjectId(), ResourceLevel.PROJECT.value(), HARBOR));
+            harborConfigurationProperties.setUsername(devopsConfigVO.getConfig().getUserName());
+            harborConfigurationProperties.setPassword(devopsConfigVO.getConfig().getPassword());
+            harborConfigurationProperties.setBaseUrl(devopsConfigVO.getConfig().getUrl());
+        } else {
+            harborConfigurationProperties.setUsername(username);
+            harborConfigurationProperties.setPassword(password);
+            baseUrl = baseUrl.endsWith("/") ? baseUrl : baseUrl + "/";
+            harborConfigurationProperties.setBaseUrl(baseUrl);
+            harborConfigurationProperties.setInsecureSkipTlsVerify(true);
+        }
         ConfigurationProperties configurationProperties = new ConfigurationProperties(harborConfigurationProperties);
         configurationProperties.setType(HARBOR);
         Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
@@ -90,50 +92,6 @@ public class HarborServiceImpl implements HarborService {
             throw new CommonException(e);
         }
 
-    }
-
-    @Override
-    public String createHarborForAppMarket(HarborMarketVO harborMarketVO) {
-        try {
-            //1.获取当前项目的harbor设置,如果有自定义的取自定义，没自定义取组织层的harbor配置
-            harborConfigurationProperties.setUsername(username);
-            harborConfigurationProperties.setPassword(password);
-            baseUrl = baseUrl.endsWith("/") ? baseUrl : baseUrl + "/";
-            harborConfigurationProperties.setBaseUrl(baseUrl);
-
-            ConfigurationProperties configurationProperties = new ConfigurationProperties(harborConfigurationProperties);
-            configurationProperties.setType(HARBOR);
-            configurationProperties.setInsecureSkipTlsVerify(true);
-            Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
-            HarborClient harborClient = retrofit.create(HarborClient.class);
-            //2. 创建项目
-            Response<Void> projectResult = harborClient.insertProject(new Project(harborMarketVO.getProjectCode(), 0)).execute();
-            if (projectResult.raw().code() != 201 && projectResult.raw().code() != 409) {
-                throw new CommonException("error.create.harbor.project", projectResult.message());
-            }
-            //3.创建用户
-            Response<Void> userResult = harborClient.insertUser(harborMarketVO.getUser()).execute();
-            if (userResult.raw().code() != 201 && userResult.raw().code() != 409) {
-                throw new CommonException("error.create.harbor.user", userResult.message());
-            }
-            //4.分配权限
-            Response<List<ProjectDetail>> projects = harborClient.listProject(harborMarketVO.getProjectCode()).execute();
-            Integer projectId;
-            if (projects.body() != null && !projects.body().isEmpty()) {
-                projectId = projects.body().get(0).getProjectId();
-                Role role = new Role();
-                role.setUsername(harborMarketVO.getUser().getUsername());
-                role.setRoles(Arrays.asList(1));
-                Response<Void> roleResult = harborClient.setProjectMember(projectId, role).execute();
-                if (roleResult.raw().code() != 200 && roleResult.raw().code() != 409) {
-                    throw new CommonException("error.create.harbor.role", roleResult.message());
-                }
-            }
-        } catch (IOException e) {
-            throw new CommonException(e);
-        }
-        String[] repoUrl = baseUrl.split("//");
-        return String.format("%s%s", repoUrl[1], harborMarketVO.getProjectCode());
     }
 
 }

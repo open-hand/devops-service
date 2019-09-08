@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 
 import com.github.pagehelper.PageInfo;
+import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.app.eventhandler.payload.*;
@@ -38,12 +39,6 @@ public interface OrgAppMarketService {
      */
     List<AppServiceVersionUploadPayload> listServiceVersionsByAppServiceId(Long appServiceId);
 
-    /**
-     * 创建harbor仓库
-     * @param harborMarketVO
-     * @return
-     */
-    String createHarborRepository(HarborMarketVO harborMarketVO);
 
     /**
      * 应用上传

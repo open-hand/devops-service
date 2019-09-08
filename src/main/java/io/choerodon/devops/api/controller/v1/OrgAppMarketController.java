@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.base.annotation.Permission;
@@ -81,21 +82,6 @@ public class OrgAppMarketController {
                 .orElseThrow(() -> new CommonException("error.app.services_version.listByAppServiceId"));
     }
 
-    /**
-     * @param harborMarketVO
-     * @return
-     */
-    @Permission(type = ResourceType.SITE, permissionWithin = true)
-    @ApiOperation(value = "创建harbor仓库")
-    @PostMapping("/harbor_repo")
-    public ResponseEntity<String> createHarborRepository(
-            @ApiParam(value = "应用信息", required = true)
-            @RequestBody HarborMarketVO harborMarketVO) {
-        return Optional.ofNullable(
-                orgAppMarketService.createHarborRepository(harborMarketVO))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.create.harbor.project"));
-    }
 
     /**
      * @param appMarketUploadVO
