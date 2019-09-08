@@ -2,9 +2,10 @@ package io.choerodon.devops.infra.config;
 
 
 import feign.codec.Encoder;
-import feign.form.FormEncoder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import io.choerodon.devops.infra.util.FeignSpringFormEncoder;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -16,6 +17,6 @@ public class FeignMultipartSupportConfig {
 
     @Bean
     public Encoder encoder() {
-        return new FormEncoder();
+        return new FeignSpringFormEncoder();
     }
 }

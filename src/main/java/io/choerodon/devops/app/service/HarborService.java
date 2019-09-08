@@ -1,6 +1,5 @@
 package io.choerodon.devops.app.service;
 
-import io.choerodon.devops.api.vo.HarborMarketVO;
 import io.choerodon.devops.app.eventhandler.payload.HarborPayload;
 import io.choerodon.devops.infra.feign.HarborClient;
 
@@ -16,7 +15,4 @@ public interface HarborService {
     void createHarborForProject(HarborPayload harborPayload);
 
     void createHarbor(HarborClient harborClient, String projectCode);
-
-    String createHarborForAppMarket(HarborMarketVO harborMarketVO);
-
 }

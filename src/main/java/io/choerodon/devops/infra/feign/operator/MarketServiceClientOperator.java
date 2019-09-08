@@ -1,6 +1,8 @@
 package io.choerodon.devops.infra.feign.operator;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,9 +25,12 @@ public class MarketServiceClientOperator {
     @Autowired
     private MarketServiceClient marketServiceClient;
 
-    public Boolean uploadFile(String appVersion, List<MultipartFile> list, String imageUrl) {
+    public Boolean uploadFile(String appVersion, MultipartFile[] multipartFiles, String imageUrl) {
         try {
-            return marketServiceClient.uploadFile(appVersion, list, imageUrl).getBody();
+            Map<String, Object> map = new HashMap<>();
+            map.put("imageUrl", imageUrl);
+            map.put("files", multipartFiles);
+            return marketServiceClient.uploadFile(appVersion, map).getBody();
         } catch (Exception e) {
             throw new CommonException("error.upload.file.within", e);
         }
@@ -34,10 +39,14 @@ public class MarketServiceClientOperator {
     public Boolean updateAppPublishInfoFix(String code,
                                            String version,
                                            String marketApplicationVOStr,
-                                           List<MultipartFile> files,
+                                           MultipartFile[] multipartFiles,
                                            String imageUrl) {
         try {
-            return marketServiceClient.updateAppPublishInfoFix(code, version, marketApplicationVOStr, files, imageUrl).getBody();
+            Map<String, Object> map = new HashMap<>();
+            map.put("marketApplicationVOStr", marketApplicationVOStr);
+            map.put("files", multipartFiles);
+            map.put("imageUrl", imageUrl);
+            return marketServiceClient.updateAppPublishInfoFix(code, version, map).getBody();
         } catch (Exception e) {
             throw new CommonException("error.upload.file.fix.version.within", e);
         }
