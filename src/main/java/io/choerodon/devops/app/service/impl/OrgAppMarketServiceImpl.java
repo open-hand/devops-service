@@ -702,9 +702,8 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             sourceUser.setPassword(appMarketDownloadVO.getUser().getRobotToken());
             harborUrl = harborUrl.endsWith("/") ? harborUrl : harborUrl + "/";
             //准备认证json
-            String configStr = createConfigJson(sourceUser, getDomain(harborUrl), targetUser, getDomain(configVO.getUrl()));
-
             appServiceMarketVO.getAppServiceVersionDownloadPayloads().forEach(t -> {
+                String configStr = createConfigJson(sourceUser, getDomain(t.getImage()), targetUser, getDomain(configVO.getUrl()));
                 pushImageScript(t.getImage(), String.format("%s%s/%s:%s", getDomain(harborUrl), MARKET_PRO, appServiceMarketVO.getAppServiceCode(), t.getVersion()), configStr);
             });
         });
