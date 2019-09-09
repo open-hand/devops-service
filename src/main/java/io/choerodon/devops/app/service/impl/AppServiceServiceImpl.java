@@ -177,8 +177,6 @@ public class AppServiceServiceImpl implements AppServiceService {
     private AppServiceVersionService appServiceVersionService;
     @Value("${services.helm.url}")
     private String helmUrl;
-    @Autowired
-    private BaseServiceClientOperator baseServiceClient;
 
     @Override
     @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_APPLICATION_SERVICE,
@@ -2097,7 +2095,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 appServiceGroupInfoVO.setVersion(appServiceVersionDTO.getVersion());
                 appServiceGroupInfoVO.setShare(share);
                 // 获取应用信息，并传入应用名称
-                ApplicationDTO applicationDTO = baseServiceClient.queryAppById(appServiceGroupInfoVO.getAppId());
+                ApplicationDTO applicationDTO = baseServiceClientOperator.queryAppById(appServiceGroupInfoVO.getAppId());
                 String appName = ObjectUtils.isEmpty(applicationDTO) ? null : applicationDTO.getName();
                 appServiceGroupInfoVO.setAppName(appName);
                 appServiceGroupInfoVOS.add(appServiceGroupInfoVO);
@@ -2143,7 +2141,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 .collect(Collectors.groupingBy(AppServiceGroupInfoVO::getAppId));
 
         for (Long key : map.keySet()) {
-            ApplicationDTO appDTO = baseServiceClient.queryAppById(key);
+            ApplicationDTO appDTO = baseServiceClientOperator.queryAppById(key);
             AppServiceGroupVO appServiceGroupVO = dtoToGroupVO(appDTO);
             appServiceGroupVO.setAppServiceList(map.get(key));
             appServiceGroupList.add(appServiceGroupVO);
@@ -2185,60 +2183,6 @@ public class AppServiceServiceImpl implements AppServiceService {
         appServiceDTO.setHarborConfigId(appServiceImportVO.getHarborConfigId());
         appServiceDTO.setChartConfigId(appServiceImportVO.getChartConfigId());
         return appServiceDTO;
-    }
-
-    /**
-     * 对appservice集合进行分组
-     *
-     * @param appServiceList 要进行分组appservice的集合
-     * @param share          true为组织共享 false为市场下载
-     * @return List<AppServiceGroupVO>
-     */
-    private List<AppServiceGroupVO> groupMerging(List<AppServiceDTO> appServiceList, Boolean share) {
-        List<AppServiceGroupVO> list = new ArrayList<>();
-        Map<Long, List<AppServiceGroupInfoVO>> collect = appServiceList.stream()
-                .map(this::dtoToGroupInfoVO)
-                .map(appServiceGroupInfoVO -> getVersion(appServiceGroupInfoVO, share))
-                .collect(Collectors.groupingBy(AppServiceGroupInfoVO::getAppId));
-        // 获取appServiceList中appid的集合
-        Set<Long> ids = appServiceList.stream().map(AppServiceDTO::getId).collect(Collectors.toSet());
-        // 遍历ids集合
-        ids.forEach(appId -> {
-            ApplicationDTO appDTO = baseServiceClient.queryAppById(appId);
-            if (!ObjectUtils.isEmpty(appDTO)) {
-                AppServiceGroupVO appServiceGroupVO = dtoToGroupVO(appDTO);
-                // 当前应用下的应用服务集合
-                List<AppServiceGroupInfoVO> commonGroupAppServiceList = collect.get(appId);
-                appServiceGroupVO.setShare(share);
-                appServiceGroupVO.setAppServiceList(commonGroupAppServiceList);
-                list.add(appServiceGroupVO);
-            }
-        });
-
-        return list;
-    }
-
-    /**
-     * 获取应用服务的最新版本号
-     *
-     * @param appServiceGroupInfoVO 应用服务
-     * @param share                 是否是组织共享
-     * @return AppServiceGroupInfoVO
-     */
-    private AppServiceGroupInfoVO getVersion(AppServiceGroupInfoVO appServiceGroupInfoVO, Boolean share) {
-        AppServiceVersionDTO appServiceVersionDTO = null;
-        // 判断是组织共享还是市场下载
-        if (share) {
-            appServiceVersionDTO = appServiceVersionService.queryServiceVersionByAppServiceId(appServiceGroupInfoVO.getId(), "share");
-        } else {
-            appServiceVersionDTO = appServiceVersionService.queryServiceVersionByAppServiceId(appServiceGroupInfoVO.getId(), null);
-        }
-
-        if (appServiceVersionDTO != null) {
-            appServiceGroupInfoVO.setVersionId(appServiceVersionDTO.getId());
-            appServiceGroupInfoVO.setVersion(appServiceVersionDTO.getVersion());
-        }
-        return appServiceGroupInfoVO;
     }
 
     private AppServiceGroupInfoVO dtoToGroupInfoVO(AppServiceDTO appServiceDTO) {
