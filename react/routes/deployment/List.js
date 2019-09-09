@@ -211,7 +211,7 @@ const Deployment = withRouter(observer((props) => {
   }
 
   function renderActions({ record }) {
-    let actionData = [];
+    let actionData;
     const { execute } = record.get('pipelineDetailVO') || {};
 
     if (record.get('deployType') === 'auto') {
@@ -246,7 +246,7 @@ const Deployment = withRouter(observer((props) => {
         service: [],
       }];
     }
-    return (<Action data={actionData} />);
+    return (actionData ? <Action data={actionData} /> : null);
   }
 
   function closePendingCheck(isLoad) {

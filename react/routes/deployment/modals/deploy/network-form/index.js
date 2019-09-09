@@ -502,7 +502,11 @@ export default class CreateNetwork extends Component {
     ));
 
     return (
-      <Form layout="horizontal" className="c7ncd-deployment-network-form-wrap" style={{ width: '66.66%' }}>
+      <Form
+        layout="horizontal"
+        className="c7ncd-deploy-network-form-wrap"
+        style={{ width: '66.66%' }}
+      >
         <FormItem
           className="network-form-name"
           {...formItemLayout}

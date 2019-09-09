@@ -15,10 +15,49 @@
       color: #d50000;
       margin-left: .06rem;
     }
+
+    &-selected {
+      font-size: .16rem;
+      font-weight: 500;
+      line-height: .22rem;
+      margin-bottom: .16rem;
+    }
   }
 
   &-failed {
     color: #d50000;
     margin-top: .07rem;
+    display: block;
+  }
+
+  &-column {
+    display: flex;
+    align-items: center;
+
+    &-text {
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    &-name {
+
+      &:hover {
+        cursor: pointer;
+        color: #3f51b5;
+      }
+    }
+  }
+}
+
+.c7ncd-appService-import-source {
+  display: flex;
+  align-items: center;
+
+  &-icon {
+    font-size: .2rem;
+    margin-right: .02rem;
+    color: #3f51b5;
+    cursor: pointer;
   }
 }

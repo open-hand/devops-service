@@ -119,6 +119,10 @@ const Share = (props) => {
     );
   }
 
+  function handleTableFilter(record) {
+    return record.status !== 'add';
+  }
+
   return (
     <TabPage
       service={['devops-service.app-share-rule.createOrUpdate']}
@@ -134,7 +138,7 @@ const Share = (props) => {
       </HeaderButtons>
       <Breadcrumb title="服务详情" />
       <Content>
-        <Table dataSet={shareDs}>
+        <Table dataSet={shareDs} filter={handleTableFilter}>
           <Column name="versionType" />
           <Column renderer={renderAction} />
           <Column name="version" sortable />

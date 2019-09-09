@@ -8,6 +8,7 @@ import ImportDataSet from './ImportDataSet';
 import ImportTableDataSet from './ImportTableDataSet';
 import getTablePostData from '../../../../utils/getTablePostData';
 import OptionsDataSet from '../../stores/OptionsDataSet';
+import selectedDataSet from './SelectedDataSet';
 
 const Store = createContext();
 
@@ -28,6 +29,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const importDs = useMemo(() => new DataSet(ImportDataSet(intlPrefix, formatMessage, projectId)), [formatMessage, projectId]);
     const importTableDs = useMemo(() => new DataSet(ImportTableDataSet(intlPrefix, formatMessage, projectId)), [formatMessage, projectId]);
     const versionOptions = useMemo(() => new DataSet(OptionsDataSet()), []);
+    const selectedDs = useMemo(() => new DataSet(selectedDataSet(intlPrefix, formatMessage, projectId)), [projectId]);
 
     useEffect(() => {
       listDs.transport.read = ({ data }) => {
@@ -55,6 +57,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
       importTableDs,
       AppStore,
       versionOptions,
+      selectedDs,
     };
     return (
       <Store.Provider value={value}>

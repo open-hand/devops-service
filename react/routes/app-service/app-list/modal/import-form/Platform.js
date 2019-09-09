@@ -10,22 +10,37 @@ import SourceTable from './SourceTable';
 const { Column } = Table;
 const modalKey1 = Modal.key();
 const modalKey2 = Modal.key();
-const modalStyle = {
+const modalStyle1 = {
+  width: '70%',
+};
+const modalStyle2 = {
   width: 380,
 };
 
 const Platform = injectIntl(observer((props) => {
-  const { tableDs, intl: { formatMessage }, intlPrefix, prefixCls, versionOptions, projectId } = props;
+  const { tableDs, selectedDs, intl: { formatMessage }, intlPrefix, prefixCls, versionOptions, projectId } = props;
 
   function openModal() {
-    Modal.open({
+    const importModal = Modal.open({
       key: modalKey1,
       drawer: true,
-      title: formatMessage({ id: `${intlPrefix}.import` }),
-      children: <SourceTable {...props} />,
-      style: modalStyle,
+      title: <div className={`${prefixCls}-import-source`}>
+        <Icon
+          type="keyboard_backspace"
+          className={`${prefixCls}-import-source-icon`}
+          onClick={() => importModal.close()}
+        />
+        <FormattedMessage id={`${intlPrefix}.import`} />
+      </div>,
+      children: <SourceTable
+        tableDs={tableDs}
+        selectedDs={selectedDs}
+        intlPrefix={intlPrefix}
+        prefixCls={prefixCls}
+      />,
+      style: modalStyle1,
       okText: formatMessage({ id: 'add' }),
-      onCancel: handleCancelAdd,
+      afterClose: () => tableDs.removeAll(),
     });
   }
 
@@ -35,11 +50,11 @@ const Platform = injectIntl(observer((props) => {
       drawer: true,
       title: formatMessage({ id: `${intlPrefix}.edit` }),
       children: <EditForm
-        record={tableDs.current}
+        record={selectedDs.current}
         versionOptions={versionOptions}
         projectId={projectId}
       />,
-      style: modalStyle,
+      style: modalStyle2,
       okText: formatMessage({ id: 'save' }),
       onCancel: handleCancelEdit,
     });
@@ -47,37 +62,35 @@ const Platform = injectIntl(observer((props) => {
 
   function renderName({ value, record }) {
     return (
-      <span>
-        {value}
+      <div
+        className={`${prefixCls}-import-wrap-column ${prefixCls}-import-wrap-column-name `}
+        onClick={openEdit}
+      >
+        <span className={`${prefixCls}-import-wrap-column-text`}>{value}</span>
         {record.get('nameFailed') && (
           <Tooltip title={formatMessage({ id: `${intlPrefix}.import.failed` })}>
             <Icon type="info" className={`${prefixCls}-import-platform-failed`} />
           </Tooltip>
         )}
-      </span>
+      </div>
     );
   }
 
   function renderCode({ value, record }) {
     return (
-      <span>
-        {value}
+      <div className={`${prefixCls}-import-wrap-column`}>
+        <span className={`${prefixCls}-import-wrap-column-text`}>{value}</span>
         {record.get('codeFailed') && (
           <Tooltip title={formatMessage({ id: `${intlPrefix}.import.failed` })}>
             <Icon type="info" className={`${prefixCls}-import-platform-failed`} />
           </Tooltip>
         )}
-      </span>
+      </div>
     );
   }
 
   function handleCancelEdit() {
-    tableDs.current.reset();
-    tableDs.current.set('selected', true);
-  }
-
-  function handleCancelAdd() {
-    tableDs.reset();
+    selectedDs.current.reset();
   }
 
   function renderType({ value }) {
@@ -92,11 +105,6 @@ const Platform = injectIntl(observer((props) => {
     const actionData = [
       {
         service: [],
-        text: formatMessage({ id: 'edit' }),
-        action: openEdit,
-      },
-      {
-        service: [],
         text: formatMessage({ id: 'delete' }),
         action: handleDelete,
       },
@@ -105,11 +113,7 @@ const Platform = injectIntl(observer((props) => {
   }
 
   function handleDelete() {
-    tableDs.current.set('selected', false);
-  }
-
-  function selectedFilter(tableRecord) {
-    return tableRecord.get('selected') && tableRecord.get('appId');
+    selectedDs.remove(selectedDs.current);
   }
 
   return (
@@ -122,18 +126,20 @@ const Platform = injectIntl(observer((props) => {
       >
         <FormattedMessage id={`${intlPrefix}.add`} />
       </Button>
+      <div className={`${prefixCls}-import-platform-selected`}>
+        <FormattedMessage id={`${intlPrefix}.selected`} values={{ number: selectedDs.length }} />
+      </div>
       <Table
-        dataSet={tableDs}
-        filter={selectedFilter}
+        dataSet={selectedDs}
         queryBar="none"
       >
         <Column name="name" renderer={renderName} />
-        <Column renderer={renderAction} width="0.7rem" />
+        <Column renderer={renderAction} width="0.5rem" />
         <Column name="code" renderer={renderCode} />
         <Column name="appName" />
-        <Column name="share" renderer={renderShare} width="1rem" align="left" />
-        <Column name="type" renderer={renderType} width="1rem" />
-        <Column name="version" />
+        <Column name="share" renderer={renderShare} width="0.8rem" align="left" />
+        <Column name="type" renderer={renderType} width="0.8rem" />
+        <Column name="version" header={<FormattedMessage id={`${intlPrefix}.version`} />} />
       </Table>
     </div>
   );

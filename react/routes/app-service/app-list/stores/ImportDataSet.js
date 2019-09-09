@@ -1,15 +1,14 @@
 import { axios } from '@choerodon/master';
 import map from 'lodash/map';
 import omit from 'lodash/omit';
-import getTablePostData from '../../../../utils/getTablePostData';
 
 function getRequestData(appServiceList) {
-  const res = map(appServiceList, ({ id, name, code, type, version }) => ({
+  const res = map(appServiceList, ({ id, name, code, type, versionId }) => ({
     appServiceId: id,
     appName: name,
     appCode: code,
     type,
-    versionId: version.id,
+    versionId,
   }));
   return res;
 }
