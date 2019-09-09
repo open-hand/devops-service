@@ -4,6 +4,14 @@ import _ from 'lodash';
 
 import './index.less';
 
+/**
+ * 传入一个数组，返回这个数组的每一项组成的段落
+ * @param arr 遍历的数组 
+ * @param valueKey p标签中文本 在数组元素中的key 不传直接取数组的元素
+ */
+function generateManyP(arr, valueKey) {
+  return _.map(arr, (value, key) => <p className="" key={key}>{valueKey ? value[valueKey] : value}</p>);
+}
 
 export default function ({ intlPrefix, record, prefixCls, formatMessage }) {
   let updater = (record && record.get('lastUpdaterName'));
@@ -16,15 +24,18 @@ export default function ({ intlPrefix, record, prefixCls, formatMessage }) {
   }
   let instanceCode = '-';
   if (record && record.get('target') && record.get('target').instances && record.get('target').instances.length !== 0) {
-    const codeArr = _.map(record.get('target').instances, (value, key) => <p className="" key={key}>{value.code}</p>);
-    instanceCode = codeArr;
+    instanceCode = generateManyP(record.get('target').instances, 'code');
+  }
+  let externalIps = '-';
+  if (record && record.get('config') && record.get('config').externalIps) {
+    externalIps = generateManyP(record.get('config').externalIps);
   }
   return (
     <div className={`${prefixCls}-net`}>
       <p className={`${prefixCls}-net-title`}>详情</p>
       <ul className={`${prefixCls}-application-detail-modal`}>
         <li className="detail-item">
-          <div className="instance">
+          <div className="detail-item-one-to-many">
             <div>
               <span className="detail-item-text">
                 {formatMessage({ id: 'instance' })}:
@@ -43,19 +54,22 @@ export default function ({ intlPrefix, record, prefixCls, formatMessage }) {
             && record.get('type')) || '-'}</span>
         </li>
         <li className="detail-item">
-          <span className="detail-item-text">
-            {formatMessage({ id: `${intlPrefix}.application.net.ip` })}:
-          </span>
-          <span>{(record 
-            && record.get('config') 
-            && record.get('config').externalIps
-            && record.get('config').externalIps.join(' ,')) || '-' }</span>
+          <div className="detail-item-one-to-many">
+            <div>
+              <span className="detail-item-text">
+                {formatMessage({ id: `${intlPrefix}.application.net.ip` })}:
+              </span>
+            </div>
+            <div>
+              {externalIps}
+            </div>
+          </div>
         </li>
         <li className="detail-item">
           <span className="detail-item-text">
             {formatMessage({ id: `${intlPrefix}.net.selecter` })}:
           </span>
-          <span>{(record 
+          <span className="detail-item-more-text">{(record 
             && record.get('target') 
             && record.get('target').labels
             && _.map(record.get('target').labels, (value, key) => `${key}=${value}`).join(' ,')) || '-' }</span>
@@ -73,7 +87,7 @@ export default function ({ intlPrefix, record, prefixCls, formatMessage }) {
           </span>
           <span>{
             (record 
-            && record.get('creatorDate')) || '-' 
+            && record.get('creationDate')) || '-' 
           }</span>
         </li>
         <li className="detail-item">
@@ -110,8 +124,7 @@ export default function ({ intlPrefix, record, prefixCls, formatMessage }) {
             </div>
             <span className={`${prefixCls}-application-label-text`}>{value}</span>
           </div>
-        ))
-      }
+        ))}
       
     </div>
   );

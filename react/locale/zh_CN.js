@@ -1024,7 +1024,7 @@ const zhCN = {
   'ist.run': '启用实例',
   'ist.reDeploy': '重新部署',
   'ist.nolog': '没有日志信息。',
-  'ist.noApp': '暂无应用',
+  'ist.noApp': '暂无应用服务',
   'ist.runDetial': '运行详情',
   'ist.operation.log': '操作日志',
   'ist.update': '更新实例',

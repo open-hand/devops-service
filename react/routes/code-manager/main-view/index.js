@@ -11,14 +11,13 @@ import CodeManagerCiPipelineManage from './ci-pipeline-manage';
 import './index.less'; 
 
 
-const MainView = observer(() => <PageWrap noHeader={[]}>
+const MainView = observer(() => <div className="c7n-code-managerment-tab-list"> <PageWrap noHeader={[]}>
   <PageTab title="分支" tabKey="key1" component={CodeManagerBranch} />
   <PageTab title="合并请求" tabKey="key2" component={CodeManagerMergeRequest} />
   <PageTab title="持续集成" tabKey="key3" component={CodeManagerCiPipelineManage} />
   <PageTab title="标记" tabKey="key4" component={CodeManagerAppTag} />
   <PageTab title="代码质量" tabKey="key5" component={CodeQuality} />
-  
-</PageWrap>);
+</PageWrap></div>);
 
 
 export default MainView;

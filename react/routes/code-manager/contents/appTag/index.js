@@ -53,28 +53,23 @@ class AppTag extends Component {
   /**
    * 生成特殊的自定义tool-bar
    */
-  getSelfToolBar= () => {
-    const appData = DevPipelineStore.getAppData;
-    const { type, id: projectId, organizationId: orgId } = AppState.currentMenuType;
-    return ( 
-      <Permission
-        service={[
-          'devops-service.devops-git.createTag',
-        ]}
-        type={type}
-        projectId={projectId}
-        organizationId={orgId}
+  getSelfToolBar= () => ( 
+    <Permission
+      service={[
+        'devops-service.devops-git.createTag',
+        'devops-service.devops-git.checkTag',
+      ]}
+    >
+      <Button
+        type="primary"
+        funcType="flat"
+        icon="playlist_add"
+        onClick={() => this.displayCreateModal(true)}
+        disabled={!DevPipelineStore.getSelectApp}
       >
-        <Button
-          type="primary"
-          funcType="flat"
-          icon="playlist_add"
-          onClick={() => this.displayCreateModal(true)}
-        >
-          <FormattedMessage id="apptag.create" />
-        </Button>
-      </Permission>);
-  }
+        <FormattedMessage id="apptag.create" />
+      </Button>
+    </Permission>)
 
 
   /**
@@ -84,8 +79,6 @@ class AppTag extends Component {
    */
   handleSelect = (id, option) => {
     this.setState({ page: 1, pageSize: 10, appName: option.props.children });
-    DevPipelineStore.setSelectApp(id);
-    DevPipelineStore.setRecentApp(id);
     this.loadTagData();
   };
 
@@ -220,7 +213,9 @@ class AppTag extends Component {
             <div className="c7n-tag-action" onClick={stopPropagation}>
               <Action data={[
                 {
-                  service: [],
+                  service: [
+                    'devops-service.devops-git.deleteTag',
+                  ],
                   text: formatMessage({ id: 'delete' }),
                   action: () => { 
                     this.openRemove(release.tagName);
@@ -246,7 +241,6 @@ class AppTag extends Component {
             <div className="c7n-tag-time"><TimePopover content={committedDate} /></div>
           </div>
         </div>
-        {/* <div className="c7n-tag-panel-opera" /> */}
       </div>);
       tagList.push(<Panel
         header={header}
@@ -265,6 +259,7 @@ class AppTag extends Component {
     return (
       <Page
         className="c7n-tag-wrapper"
+        service={['devops-service.devops-git.pageTagsByOptions']}
       >
         {appData && appData.length && appId ? <Fragment>
           <Content className="c7n-tag-content">

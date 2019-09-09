@@ -125,9 +125,9 @@ class DevPipelineStore {
    * @param type
    * @param apps
    */
-  queryAppData = (projectId = AppState.currentMenuType.id, type, apps, refersh, isReloadApp) => {
+  queryAppData = (projectId = AppState.currentMenuType.id, type, refersh, isReloadApp) => {
     // 已经加载过app数据 只更新对应模块的数据， 除非主动刷新 否则不查询app数据,
-    if (!isReloadApp && this.appData.length !== 0) { 
+    if (!isReloadApp && this.appData.length !== 0 && type !== 'CodeManagerBranch') { 
       refersh && refersh();
       return;
     }
@@ -135,6 +135,7 @@ class DevPipelineStore {
       DeploymentPipelineStore.setProRole('app', '');
     }
     this.setAppData([]);
+    this.setSelectApp(null);
     this.setPreProId(projectId);
     this.setLoading(true);
     axios.get(`/devops/v1/projects/${projectId}/app_service/list_by_active`)
@@ -147,9 +148,7 @@ class DevPipelineStore {
           const tempAppId = this.selectedApp;
           this.setAppData(appSort);
           if (result && result.length) {
-            if (apps) {
-              this.setSelectApp(apps);
-            } else if (this.selectedApp) {
+            if (this.selectedApp) {
               if (_.filter(result, ['id', this.selectedApp]).length === 0) {
                 this.setSelectApp(result[0].id);
               }

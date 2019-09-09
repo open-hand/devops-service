@@ -91,7 +91,7 @@ export default function ({ record, formatMessage, prefixCls, intlPrefix }) {
         </span>
         <span>{
           (record
-            && record.get('creatorName')) || '-'
+            && record.get('createUserName')) || '-'
         }</span>
       </li>
       <li className="detail-item">
@@ -105,7 +105,8 @@ export default function ({ record, formatMessage, prefixCls, intlPrefix }) {
         <span className="detail-item-text">
           {formatMessage({ id: 'updater' })}:
         </span>
-        <span>更新者</span>
+        <span>{(record
+          && record.get('updateUserName')) || '-'}</span>
       </li>
     </ul>
   );

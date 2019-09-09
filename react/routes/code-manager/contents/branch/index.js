@@ -55,15 +55,15 @@ class Branch extends Component {
   }
 
   componentWillUnmount() {
-    BranchStore.setBranchData([]);
-    BranchStore.setBranchList([]);
+    
   }
 
   /**
    * 生成特殊的自定义tool-bar
    */
   getSelfToolBar= () => <Permission
-    service={['devops-service.devops-git.createBranch']}
+    service={['devops-service.devops-git.createBranch',
+    ]}
   >
     <Button
       onClick={this.showSidebar}
@@ -139,7 +139,9 @@ class Branch extends Component {
     } = this.props;
     const action = [
       {
-        service: [],
+        service: [
+          'devops-service.devops-git.pageBranchByOptions',
+        ],
         text: formatMessage({ id: 'branch.request' }),
         action: () => {
           window.open(`${record.commitUrl.split('/commit')[0]}/merge_requests/new?change_branches=true&merge_request[source_branch]=${record.branchName}&merge_request[target_branch]=master`);
@@ -155,6 +157,9 @@ class Branch extends Component {
         },
       },
     ];
+    if (record.branchName === 'master') {
+      action.shift(); 
+    }
     return (<Action data={action} />);
   };
 
@@ -284,11 +289,8 @@ class Branch extends Component {
   /**
    * 获取分支
    */
-  loadData = (value) => {
+  loadData = () => {
     const { projectId } = this.state;
-    DevPipelineStore.setSelectApp(value);
-    DevPipelineStore.setRecentApp(value);
-    BranchStore.setBranchData({ list: [] });
     BranchStore.loadBranchList({ projectId });
   };
 
@@ -432,14 +434,10 @@ class Branch extends Component {
         className="c7n-region c7n-branch"
         service={[
           'devops-service.devops-git.createBranch',
-          'devops-service.devops-git.queryByAppId',
-          'devops-service.devops-git.delete',
-          'devops-service.devops-git.listByAppId',
-          'devops-service.devops-git.getTagList',
-          'devops-service.devops-git.update',
-          'agile-service.issue.queryIssueByOption',
-          'agile-service.issue.queryIssue',
-          'agile-service.work-log.queryWorkLogListByIssueId',
+          'devops-service.devops-git.deleteBranch',
+          'devops-service.devops-git.updateBranchIssue',
+          'devops-service.devops-git.pageBranchByOptions',
+          'devops-service.devops-git.pageTagsByOptions',
         ]}
       > 
         {!(DevPipelineStore.getAppData && DevPipelineStore.getAppData.length > 0) ? <Loading display={DevPipelineStore.getLoading} />

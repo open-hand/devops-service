@@ -112,7 +112,7 @@ const EnvModals = observer(() => {
       okText: formatMessage({ id: 'close' }),
       style: { width: 380 },
       children: <DetailsModal
-        record={baseDs.current}
+        record={baseDs.current} 
         intlPrefix={intlPrefix}
         prefixCls={prefixCls}
         formatMessage={formatMessage}
