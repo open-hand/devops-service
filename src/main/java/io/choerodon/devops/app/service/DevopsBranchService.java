@@ -14,7 +14,7 @@ public interface DevopsBranchService {
 
     DevopsBranchDTO baseQueryByAppAndBranchName(Long appServiceId, String branchName);
 
-    void baseUpdateBranchIssue(Long appServiceId, DevopsBranchDTO devopsBranchDTO);
+    void updateBranchIssue(DevopsBranchDTO devopsBranchDTO);
 
     void baseUpdateBranchLastCommit(DevopsBranchDTO devopsBranchDTO);
 

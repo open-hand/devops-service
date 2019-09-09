@@ -287,9 +287,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     @Override
-    public void updateBranchIssue(Long projectId, Long applicationId, DevopsBranchVO devopsBranchVO) {
-        DevopsBranchDTO devopsBranchDTO = ConvertUtils.convertObject(devopsBranchVO, DevopsBranchDTO.class);
-        devopsBranchService.baseUpdateBranchIssue(applicationId, devopsBranchDTO);
+    public void updateBranchIssue(Long projectId, Long appServiceId, DevopsBranchUpdateVO devopsBranchUpdateVO) {
+        devopsBranchService.updateBranchIssue(ConvertUtils.convertObject(devopsBranchUpdateVO, DevopsBranchDTO.class));
     }
 
     @Override

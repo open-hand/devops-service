@@ -92,11 +92,11 @@ public interface DevopsGitService {
     /**
      * 更新分支关联的问题
      *
-     * @param projectId      项目 ID
-     * @param applicationId  应用ID
-     * @param devopsBranchVO 分支
+     * @param projectId            项目ID
+     * @param appServiceId         应用服务ID
+     * @param devopsBranchUpdateVO 分支更新信息
      */
-    void updateBranchIssue(Long projectId, Long applicationId, DevopsBranchVO devopsBranchVO);
+    void updateBranchIssue(Long projectId, Long appServiceId, DevopsBranchUpdateVO devopsBranchUpdateVO);
 
     /**
      * 删除分支
