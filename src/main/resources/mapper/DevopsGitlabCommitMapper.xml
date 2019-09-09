@@ -16,22 +16,14 @@
         FROM
         devops_gitlab_commit dgc
         JOIN devops_app_service da ON dgc.app_service_id = da.id
+        JOIN devops_project dp on dp.app_id=da.app_id
         WHERE
-        da.app_id = #{projectId}
+        dp.iam_project_id = #{projectId}
         <if test="appServiceIds != null">
-           AND dgc.app_service_id IN
+            AND dgc.app_service_id IN
             <foreach collection="appServiceIds" item="appServiceId" open="(" close=")" separator=",">
                 #{appServiceId}
             </foreach>
-        </if>
-        <if test="appServiceIds == null">
-            1
-        </if>
-        <if test="startDate != null">
-            AND dgc.commit_date >= CONCAT('','${startDate}',' 00:00:00')
-        </if>
-        <if test="endDate != null">
-            AND dgc.commit_date <![CDATA[<=]]>  CONCAT('','${endDate}',' 23:59:59')
         </if>
         AND da.is_active = 1
         AND dgc.app_service_id = da.id
