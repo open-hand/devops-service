@@ -217,6 +217,7 @@
         <result property="createdBy" column="created_by"/>
         <result property="creationDate" column="creation_date"/>
         <result property="lastUpdatedBy" column="last_updated_by"/>
+        <result property="lastUpdateDate" column="last_update_date"/>
         <collection property="instances" ofType="io.choerodon.devops.infra.dto.AppServiceInstanceInfoDTO" notNullColumn="instance_id">
             <result column="instance_id" property="id" jdbcType="VARCHAR"/>
             <result column="ins_code" property="code" jdbcType="VARCHAR"/>
