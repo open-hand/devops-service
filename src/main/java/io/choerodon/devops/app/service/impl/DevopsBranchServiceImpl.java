@@ -26,10 +26,6 @@ import io.choerodon.devops.infra.util.TypeUtil;
 
 @Service
 public class DevopsBranchServiceImpl implements DevopsBranchService {
-
-    private JSON json = new JSON();
-
-
     @Autowired
     private DevopsBranchMapper devopsBranchMapper;
 
@@ -48,11 +44,19 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
     }
 
     @Override
-    public void baseUpdateBranchIssue(Long appServiceId, DevopsBranchDTO devopsBranchDTO) {
+    public void updateBranchIssue(DevopsBranchDTO devopsBranchDTO) {
         DevopsBranchDTO oldDevopsBranchDTO = devopsBranchMapper
-                .queryByAppAndBranchName(appServiceId, devopsBranchDTO.getBranchName());
-        oldDevopsBranchDTO.setIssueId(devopsBranchDTO.getIssueId());
-        devopsBranchMapper.updateByPrimaryKey(devopsBranchDTO);
+                .queryByAppAndBranchName(devopsBranchDTO.getAppServiceId(), devopsBranchDTO.getBranchName());
+
+        if (oldDevopsBranchDTO == null) {
+            throw new CommonException("error.query.branch.by.name");
+        }
+
+        DevopsBranchDTO toUpdate= new DevopsBranchDTO();
+        toUpdate.setId(oldDevopsBranchDTO.getId());
+        toUpdate.setIssueId(devopsBranchDTO.getIssueId());
+        toUpdate.setObjectVersionNumber(devopsBranchDTO.getObjectVersionNumber());
+        devopsBranchMapper.updateByPrimaryKey(toUpdate);
     }
 
     @Override

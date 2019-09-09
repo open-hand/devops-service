@@ -2,21 +2,9 @@ package io.choerodon.devops.api.controller.v1;
 
 import java.util.List;
 import java.util.Optional;
+import javax.validation.Valid;
 
 import com.github.pagehelper.PageInfo;
-import io.choerodon.base.annotation.Permission;
-import io.choerodon.base.domain.PageRequest;
-import io.choerodon.base.domain.Sort;
-import io.choerodon.base.enums.ResourceType;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.vo.BranchVO;
-import io.choerodon.devops.api.vo.DevopsBranchVO;
-import io.choerodon.devops.api.vo.MergeRequestTotalVO;
-import io.choerodon.devops.api.vo.TagVO;
-import io.choerodon.devops.app.service.DevopsGitService;
-import io.choerodon.mybatis.annotation.SortDefault;
-import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +12,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
+
+import io.choerodon.base.annotation.Permission;
+import io.choerodon.base.domain.PageRequest;
+import io.choerodon.base.domain.Sort;
+import io.choerodon.base.enums.ResourceType;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.InitRoleCode;
+import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.app.service.DevopsGitService;
+import io.choerodon.mybatis.annotation.SortDefault;
+import io.choerodon.swagger.annotation.CustomPageRequest;
 
 
 /**
@@ -43,7 +42,7 @@ public class DevopsGitController {
     /**
      * 获取工程下地址
      *
-     * @param projectId     项目 ID
+     * @param projectId    项目 ID
      * @param appServiceId 服务ID
      * @return url
      */
@@ -64,11 +63,11 @@ public class DevopsGitController {
     /**
      * 创建标签
      *
-     * @param projectId     项目ID
+     * @param projectId    项目ID
      * @param appServiceId 服务ID
-     * @param tag           标签名称
-     * @param ref           参考名称
-     * @param releaseNotes  发布日志
+     * @param tag          标签名称
+     * @param ref          参考名称
+     * @param releaseNotes 发布日志
      * @return null
      */
     @Permission(type = ResourceType.PROJECT,
@@ -95,10 +94,10 @@ public class DevopsGitController {
     /**
      * 更新标签
      *
-     * @param projectId     项目ID
+     * @param projectId    项目ID
      * @param appServiceId 服务ID
-     * @param tag           标签名称
-     * @param releaseNotes  发布日志
+     * @param tag          标签名称
+     * @param releaseNotes 发布日志
      * @return null
      */
     @Permission(type = ResourceType.PROJECT,
@@ -121,9 +120,9 @@ public class DevopsGitController {
     /**
      * 分页获取标签列表
      *
-     * @param projectId     项目ID
+     * @param projectId    项目ID
      * @param appServiceId 服务ID
-     * @param params        查询参数
+     * @param params       查询参数
      * @return PageInfo
      */
     @Permission(type = ResourceType.PROJECT,
@@ -148,7 +147,7 @@ public class DevopsGitController {
     /**
      * 获取标签列表
      *
-     * @param projectId     项目ID
+     * @param projectId    项目ID
      * @param appServiceId 服务ID
      * @return null
      */
@@ -169,7 +168,7 @@ public class DevopsGitController {
     /**
      * 检查标签
      *
-     * @param projectId     项目ID
+     * @param projectId    项目ID
      * @param appServiceId 服务ID
      * @return Boolean
      */
@@ -192,9 +191,9 @@ public class DevopsGitController {
     /**
      * 删除标签
      *
-     * @param projectId     项目Id
+     * @param projectId    项目Id
      * @param appServiceId 服务Id
-     * @param tag           标签名
+     * @param tag          标签名
      */
     @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER})
@@ -215,7 +214,7 @@ public class DevopsGitController {
      * 创建分支
      *
      * @param projectId      项目ID
-     * @param appServiceId  服务ID
+     * @param appServiceId   服务ID
      * @param devopsBranchVO 分支
      */
     @Permission(type = ResourceType.PROJECT,
@@ -236,9 +235,9 @@ public class DevopsGitController {
     /**
      * 分页查询服务下的分支
      *
-     * @param projectId     项目 ID
+     * @param projectId    项目 ID
      * @param appServiceId 服务ID
-     * @param params        查询参数
+     * @param params       查询参数
      * @return PageInfo
      */
     @Permission(type = ResourceType.PROJECT,
@@ -263,9 +262,9 @@ public class DevopsGitController {
     /**
      * 查询单个分支
      *
-     * @param projectId     项目 ID
+     * @param projectId    项目 ID
      * @param appServiceId 服务ID
-     * @param branchName    分支名
+     * @param branchName   分支名
      * @return BranchDTO
      */
     @Permission(type = ResourceType.PROJECT,
@@ -287,9 +286,9 @@ public class DevopsGitController {
     /**
      * 更新分支关联的问题
      *
-     * @param projectId      项目 ID
-     * @param appServiceId  服务ID
-     * @param devopsBranchVO 分支
+     * @param projectId            项目 ID
+     * @param appServiceId         服务ID
+     * @param devopsBranchUpdateVO 分支更新信息
      */
     @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
@@ -300,9 +299,9 @@ public class DevopsGitController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "服务id", required = true)
             @PathVariable(value = "app_service_id") Long appServiceId,
-            @ApiParam(value = "分支", required = true)
-            @RequestBody DevopsBranchVO devopsBranchVO) {
-        devopsGitService.updateBranchIssue(projectId, appServiceId, devopsBranchVO);
+            @ApiParam(value = "分支更新信息", required = true)
+            @RequestBody @Valid DevopsBranchUpdateVO devopsBranchUpdateVO) {
+        devopsGitService.updateBranchIssue(projectId, appServiceId, devopsBranchUpdateVO);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -310,7 +309,7 @@ public class DevopsGitController {
      * 删除分支
      *
      * @param appServiceId 服务ID
-     * @param branchName    分支名
+     * @param branchName   分支名
      */
     @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
@@ -330,7 +329,7 @@ public class DevopsGitController {
     /**
      * 查看所有合并请求
      *
-     * @param projectId     项目id
+     * @param projectId    项目id
      * @param appServiceId 服务id
      * @return mergeRequest列表
      */
@@ -357,9 +356,9 @@ public class DevopsGitController {
     /**
      * 校验分支名唯一性
      *
-     * @param projectId     项目id
+     * @param projectId    项目id
      * @param appServiceId 服务id
-     * @param branchName    分支名
+     * @param branchName   分支名
      */
     @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
