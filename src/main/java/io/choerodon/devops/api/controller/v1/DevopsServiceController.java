@@ -206,14 +206,14 @@ public class DevopsServiceController {
     @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "环境总览分页查询网络")
+    @ApiOperation(value = "分页查询网络")
     @CustomPageRequest
-    @PostMapping(value = "/{env_id}/page_by_env")
+    @PostMapping(value = "/page_by_options")
     public ResponseEntity<PageInfo<DevopsServiceVO>> pageByEnv(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)
-            @PathVariable(value = "env_id") Long envId,
+            @RequestParam(value = "env_id") Long envId,
             @ApiParam(value = "服务id")
             @RequestParam(value = "app_service_id", required = false) Long appServiceId,
             @ApiParam(value = "分页参数")
