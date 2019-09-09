@@ -120,9 +120,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     }
 
     @Override
-    public PageInfo<DevopsServiceVO> pageByInstance(Long projectId, Long instanceId, PageRequest pageRequest, Long appServiceId, String searchParam) {
+    public PageInfo<DevopsServiceVO> pageByInstance(Long projectId, Long envId, Long instanceId, PageRequest pageRequest, Long appServiceId, String searchParam) {
         PageInfo<DevopsServiceVO> devopsServiceByPage = ConvertUtils.convertPage(basePageByOptions(
-                projectId, null, instanceId, pageRequest, null, appServiceId), this::queryDtoToVo);
+                projectId, envId, instanceId, pageRequest, null, appServiceId), this::queryDtoToVo);
         if (!devopsServiceByPage.getList().isEmpty()) {
             devopsServiceByPage.getList().forEach(devopsServiceVO -> {
                 PageInfo<DevopsIngressVO> devopsIngressVOPageInfo = devopsIngressService
@@ -483,27 +483,17 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         result.setPageNum(pageRequest.getPage());
         int count;
         List<DevopsServiceQueryDTO> devopsServiceQueryDTOS;
-        if (!StringUtils.isEmpty(searchParam)) {
-            Map<String, Object> searchParamMap = json.deserialize(searchParam, Map.class);
-            count = devopsServiceMapper.selectCountByName(
-                    projectId, envId, instanceId, TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
-                    TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS)), appServiceId);
+        Map<String, Object> searchParamMap = TypeUtil.castMapParams(searchParam);
+        count = devopsServiceMapper.selectCountByName(
+                projectId, envId, instanceId, TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
+                TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS)), appServiceId);
 
-            result.setTotal(count);
-            List<String> paramList = TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS));
-            devopsServiceQueryDTOS = devopsServiceMapper.listDevopsServiceByPage(
-                    projectId, envId, instanceId, TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
-                    paramList, sortResult, appServiceId);
-            result.setList(devopsServiceQueryDTOS.subList(start, stop > devopsServiceQueryDTOS.size() ? devopsServiceQueryDTOS.size() : stop));
-        } else {
-            count = devopsServiceMapper
-                    .selectCountByName(projectId, envId, instanceId, null, null, appServiceId);
-            result.setTotal(count);
-            devopsServiceQueryDTOS =
-                    devopsServiceMapper.listDevopsServiceByPage(
-                            projectId, envId, instanceId, null, null, sortResult, appServiceId);
-            result.setList(devopsServiceQueryDTOS.subList(start, stop > devopsServiceQueryDTOS.size() ? devopsServiceQueryDTOS.size() : stop));
-        }
+        result.setTotal(count);
+        List<String> paramList = TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS));
+        devopsServiceQueryDTOS = devopsServiceMapper.listDevopsServiceByPage(
+                projectId, envId, instanceId, TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
+                paramList, sortResult, appServiceId);
+        result.setList(devopsServiceQueryDTOS.subList(start, stop > devopsServiceQueryDTOS.size() ? devopsServiceQueryDTOS.size() : stop));
         if (devopsServiceQueryDTOS.size() < pageRequest.getSize() * pageRequest.getPage()) {
             result.setSize(TypeUtil.objToInt(devopsServiceQueryDTOS.size()) - (pageRequest.getSize() * (pageRequest.getPage() - 1)));
         } else {

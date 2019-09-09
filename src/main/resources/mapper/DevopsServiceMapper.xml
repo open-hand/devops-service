@@ -108,7 +108,7 @@
             AND devs.env_id = #{envId}
         </if>
         <if test="sort != null and !sort.isEmpty()">
-            ORDER BY ${sort}
+            ORDER BY #{sort}
         </if>
         ) ds
         JOIN devops_env de ON ds.env_id = de.id
