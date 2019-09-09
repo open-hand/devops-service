@@ -35,6 +35,7 @@ const AppService = withRouter(observer((props) => {
     importTableDs,
     AppStore,
     versionOptions,
+    selectedDs,
   } = useAppServiceStore();
 
   function refresh() {
@@ -168,8 +169,10 @@ const AppService = withRouter(observer((props) => {
         prefixCls={prefixCls}
         refresh={refresh}
         versionOptions={versionOptions}
+        selectedDs={selectedDs}
       />,
       okText: formatMessage({ id: 'import' }),
+      afterClose: () => { selectedDs.removeAll(); },
       onCancel: () => handleCancel(importDs),
     });
   }
@@ -187,6 +190,10 @@ const AppService = withRouter(observer((props) => {
     if (await AppStore.changeActive(id, listDs.current.get('id'), active)) {
       refresh();
     }
+  }
+
+  function handleTableFilter(record) {
+    return record.status !== 'add';
   }
 
   return (
@@ -234,6 +241,7 @@ const AppService = withRouter(observer((props) => {
           dataSet={listDs}
           border={false}
           queryBar="bar"
+          filter={handleTableFilter}
           className={`${prefixCls}.table`}
         >
           <Column name="name" renderer={renderName} sortable />

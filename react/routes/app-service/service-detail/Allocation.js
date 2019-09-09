@@ -102,6 +102,10 @@ const Allocation = observer((props) => {
     );
   }
 
+  function handleTableFilter(record) {
+    return record.status !== 'add';
+  }
+
   return (
     <TabPage
       service={['devops-service.app-service.updatePermission']}
@@ -117,7 +121,7 @@ const Allocation = observer((props) => {
       </HeaderButtons>
       <Breadcrumb title="服务详情" />
       <Content>
-        <Table dataSet={permissionDs}>
+        <Table dataSet={permissionDs} filter={handleTableFilter}>
           <Column name="realName" sortable />
           <Column renderer={renderAction} width="0.7rem" />
           <Column name="loginName" sortable />

@@ -59,7 +59,7 @@ export default injectIntl(observer((props) => {
             ))
           )}
         </Select>
-        <Select name="templateAppServiceVersionId" colSpan={3} searchable>
+        <Select name="templateAppServiceVersionId" colSpan={3} searchable clearButton={false}>
           {map(AppStore.getVersion, ({ id, version }) => (
             <Option value={id}>{version}</Option>
           ))}

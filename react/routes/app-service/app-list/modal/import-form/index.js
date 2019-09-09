@@ -2,29 +2,26 @@ import React, { Fragment, useCallback, useState, useEffect } from 'react';
 import { Form, TextField, Select, SelectBox } from 'choerodon-ui/pro';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
-import reduce from 'lodash/reduce';
 import pickBy from 'lodash/pickBy';
 import forEach from 'lodash/forEach';
 import includes from 'lodash/includes';
 import isEmpty from 'lodash/isEmpty';
+import countBy from 'lodash/countBy';
+import keys from 'lodash/keys';
 import PlatForm from './Platform';
+import { handlePromptError } from '../../../../../utils';
 
 import './index.less';
-import { handlePromptError } from '../../../../../utils';
 
 const { Option } = Select;
 
 const ImportForm = injectIntl(observer((props) => {
-  const { dataSet, tableDs, record, AppStore, projectId, intl: { formatMessage }, intlPrefix, prefixCls, refresh } = props;
+  const { dataSet, tableDs, selectedDs, record, AppStore, projectId, intl: { formatMessage }, intlPrefix, prefixCls, refresh } = props;
   const [hasFailed, setHasFailed] = useState(false);
-
-  useEffect(() => {
-    tableDs.query();
-  }, []);
 
   props.modal.handleOk(async () => {
     if (record.get('platformType') === 'platform') {
-      const lists = tableDs.toData().filter((item) => item.selected && item.appId);
+      const lists = selectedDs.toData();
       if (isEmpty(lists)) return false;
 
       const { listName, listCode, repeatCode, repeatName } = getRepeatData(lists);
@@ -36,8 +33,7 @@ const ImportForm = injectIntl(observer((props) => {
             setHasFailed(false);
             record.set('appServiceList', lists);
           } else {
-            const selectedRecords = tableDs.filter((item) => item.get('selected') && item.get('appId'));
-            forEach(selectedRecords, (item) => {
+            selectedDs.forEach((item) => {
               if (includes(repeatName.concat(res.listName), item.get('name'))) {
                 item.set('nameFailed', true);
               } else {
@@ -74,16 +70,12 @@ const ImportForm = injectIntl(observer((props) => {
 
 
   function getRepeatData(lists) {
-    const repeatData = reduce(lists, (res, obj) => {
-      (res.name[obj.name] || (res.name[obj.name] = [])).push(obj);
-      (res.code[obj.code] || (res.code[obj.code] = [])).push(obj);
-      return res;
-    }, { name: {}, code: {} });
-
-    const listCode = Object.keys(repeatData.code);
-    const listName = Object.keys(repeatData.name);
-    const repeatName = Object.keys(pickBy(repeatData.name, (value) => value.length > 1) || {});
-    const repeatCode = Object.keys(pickBy(repeatData.code, (value) => value.length > 1) || {});
+    const nameData = countBy(lists, 'name');
+    const codeData = countBy(lists, 'code');
+    const listName = keys(nameData);
+    const listCode = keys(codeData);
+    const repeatName = keys(pickBy(nameData, (value) => value > 1) || {});
+    const repeatCode = keys(pickBy(codeData, (value) => value > 1) || {});
 
     return { listCode, listName, repeatName, repeatCode };
   }

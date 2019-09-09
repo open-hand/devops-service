@@ -7,7 +7,7 @@ const { Option } = Select;
 
 const EditForm = injectIntl(observer(({ record, versionOptions, projectId }) => {
   useEffect(() => {
-    record.getField('version').set('options', versionOptions);
+    record.getField('versionId').set('options', versionOptions);
     versionOptions.transport.read.url = `/devops/v1/projects/${projectId}/app_service_versions/${record.get('id')}/list_share_versions${record.get('share') ? '?share=share' : ''}`;
     versionOptions.query();
   }, []);
@@ -17,7 +17,7 @@ const EditForm = injectIntl(observer(({ record, versionOptions, projectId }) => 
       <TextField name="name" />
       <TextField name="code" />
       <Select
-        name="version"
+        name="versionId"
         searchable
         clearButton={false}
       />

@@ -383,6 +383,7 @@ const appService = {
   'c7ncd.appService.share.failed': '版本类型与特定版本需至少填写一个',
   'c7ncd.appService.button.disabled': '请先启用应用服务',
   'c7ncd.appService.import.failed': '字段重复，请修改',
+  'c7ncd.appService.selected': '{number}个已选择应用服务',
 };
 
 const envrionment = {
@@ -451,7 +452,7 @@ const deploy = {
   'c7ncd.deploy.trigger.auto': '自动触发',
   'c7ncd.deploy.number': '编号',
   'c7ncd.deploy.manual': '手动部署',
-  'c7ncd.deploy.auto': '自动部署',
+  'c7ncd.deploy.auto': '流水线部署',
   'c7ncd.deploy.start': '启动部署流程',
   'c7ncd.deploy.detail.title': '部署"{name}"的详情',
   'c7ncd.deploy.service': '部署服务',

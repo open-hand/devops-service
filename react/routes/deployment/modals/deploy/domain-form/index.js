@@ -422,7 +422,7 @@ export default class Index extends Component {
             />,
           )}
         </FormItem>
-        <div className="c7n-creation-title">
+        <div className="c7n-protocol-type-title">
           <FormattedMessage id="domain.protocol.type" />
         </div>
         <FormItem
