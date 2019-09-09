@@ -7,7 +7,7 @@
   display: flex;
   align-items: center;
   margin-bottom: .14rem;
-  height: .74rem;
+  min-height: 1rem;
 
   &-arrow {
     margin-top: -0.04rem;
@@ -18,6 +18,7 @@
   }
 
   .cases-record-title {
+    margin-top: -0.25rem;
     white-space: nowrap;
     margin-right: .1rem;
   }
@@ -41,6 +42,9 @@
 
       .operation-record-title {
         font-size: .12rem;
+        span {
+          margin-left: .02rem;
+        }
       }
 
       .operation-record-time {
@@ -60,7 +64,7 @@
           top: 50%;
           height: .02rem;
           width: 100%;
-          transform: translateY(-0.01rem);
+          transform: translateY(-0.025rem);
           background: rgba(0, 0, 0, 0.12);
           content: "";
         }
@@ -83,35 +87,17 @@
           color: @active-color;
         }
 
+        .operation-record-user {
+          .c7ncd-userinfo-name {
+            color: @active-color;
+          }
+        }
+
         .operation-record-icon {
           background: @active-color !important;
         }
       }
     }
-  }
-}
-
-.c7ncd-deployment-cases-popover-card {
-  padding: .1rem;
-  margin: 0;
-  list-style: none;
-
-  li {
-    margin-bottom: .1rem;
-
-    &:last-child {
-      margin-bottom: 0;
-    }
-  }
-
-  &-bottom {
-    margin: 0 -0.16rem -0.12rem;
-    padding: 0 0.16rem;
-    height: .35rem;
-    line-height: .34rem;
-    border-top: 1px solid #d3d3d3;
-    font-size: 12px;
-    color: rgba(0, 0, 0, 0.54);
   }
 }
 

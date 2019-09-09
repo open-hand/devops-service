@@ -1,4 +1,4 @@
-import React, { Fragment, useState, useCallback } from 'react';
+import React, { Fragment, useState, useCallback, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { FormattedMessage } from 'react-intl';
 import { Tooltip, Icon, Progress, Modal } from 'choerodon-ui/pro';
@@ -27,6 +27,7 @@ const Cases = observer(() => {
   const {
     prefixCls,
     intlPrefix,
+    resourceStore: { getSelectedMenu: { id, parentId } },
   } = useResourceStore();
   const {
     intl: { formatMessage },
@@ -35,6 +36,10 @@ const Cases = observer(() => {
   const [podTime, setPodTime] = useState('');
   const [expandKeys, setExpandKeys] = useState([]);
   const loading = casesDs.status === 'loading';
+
+  useEffect(() => {
+    setPodTime('');
+  }, [id, parentId]);
 
   const changeEvent = useCallback((data) => {
     setPodTime(data);
@@ -135,7 +140,7 @@ const InstanceEvent = ({ index, jobPodStatus, name, log, flag, event, intlPrefix
         )}
         <span className="content-step-title-text">{name}</span>
         {log && (
-        <Tooltip  
+        <Tooltip
           title={formatMessage({ id: `${intlPrefix}.instance.cases.log` })}
           placement="bottom"
         >

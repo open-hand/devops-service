@@ -1,7 +1,7 @@
-import React, { Fragment, useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
-import { Popover, Icon } from 'choerodon-ui';
+import { Icon, Tooltip } from 'choerodon-ui';
 import map from 'lodash/map';
 import classnames from 'classnames';
 import UserInfo from '../../../../../../../components/userInfo/UserInfo';
@@ -16,100 +16,89 @@ const ICON_TYPE_MAPPING = {
   success: 'check_circle',
 };
 
+const OpCard = ({ record, isActive, disabled, intlPrefix, prefixCls, formatMessage, onClick }) => {
+  const podKeys = useMemo(() => (['type', 'createTime', 'status', 'loginName', 'realName', 'userImage', 'podEventVO']), []);
+  const [
+    type,
+    createTime,
+    status,
+    loginName,
+    realName,
+    userImage,
+  ] = map(podKeys, (item) => record.get(item));
+  const cardClass = classnames({
+    'operation-record-card': true,
+    'operation-record-card-active': isActive,
+  });
+  const handleClick = useCallback(() => {
+    !disabled && onClick(createTime);
+  }, [createTime, disabled]);
+
+  return (
+    <div
+      className={cardClass}
+      onClick={handleClick}
+    >
+      <div className="operation-record-title">
+        <Tooltip title={formatMessage({ id: status })}>
+          <Icon type={ICON_TYPE_MAPPING[status]} className={`${prefixCls}-cases-status-${status}`} />
+        </Tooltip>
+        <FormattedMessage id={`${intlPrefix}.instance.cases.${type}`} />
+      </div>
+      <div className="operation-record-step">
+        <i className="operation-record-icon" />
+      </div>
+      <div className="operation-record-user"><UserInfo name={realName} id={loginName} avatar={userImage} /></div>
+      <div className="operation-record-time">{createTime}</div>
+    </div>
+  );
+};
+
 const OpRecord = observer(({ handleClick, active }) => {
   const rowRef = useRef(null);
   const {
     prefixCls,
     intlPrefix,
+    resourceStore: { getSelectedMenu: { id, parentId } },
   } = useResourceStore();
   const {
     intl: { formatMessage },
     casesDs,
   } = useInstanceStore();
   const [cardActive, setCardActive] = useState('');
-  const podKeys = useMemo(() => (['type', 'createTime', 'status', 'loginName', 'realName', 'userImage', 'podEventVO']), []);
 
-  function getPopoverContent({ status, createTime, realName, loginName, userImage, index }) {
-    return <Fragment>
-      <ul className={`${prefixCls}-cases-popover-card`}>
-        <li>
-          <FormattedMessage id={`${intlPrefix}.instance.cases.result`} />：
-          <Icon type={ICON_TYPE_MAPPING[status]} className={`${prefixCls}-cases-status-${status}`} />
-          <FormattedMessage id={status} />
-        </li>
-        <li>
-          <FormattedMessage id={`${intlPrefix}.instance.cases.time`} />：
-          <span>{createTime}</span>
-        </li>
-        <li>
-          <FormattedMessage id={`${intlPrefix}.instance.cases.operator`} />：
-          <UserInfo name={realName} id={loginName} avatar={userImage} />
-        </li>
-      </ul>
-      {index > 3 && <div className={`${prefixCls}-cases-popover-card-bottom`}>
-        当前仅保留最近4条操作记录的详情
-      </div>}
-    </Fragment>;
+  useEffect(() => {
+    setCardActive('');
+  }, [id, parentId]);
+
+  function handleRecordClick(time) {
+    setCardActive(time);
+    handleClick(time);
   }
 
   function renderOperation() {
-    const firstRecord = casesDs.get(0);
     let realActive = cardActive || active;
     const isExist = casesDs.find((r) => r.get('createTime') === realActive);
 
     if (!realActive || !isExist) {
+      const firstRecord = casesDs.get(0);
       realActive = firstRecord.get('createTime');
     }
 
     return (
       <div ref={rowRef} className="cases-record-detail">
         {casesDs.map((record, index) => {
-          const [
-            type,
-            createTime,
-            status,
-            loginName,
-            realName,
-            userImage,
-          ] = map(podKeys, (item) => record.get(item));
-          const cardClass = classnames({
-            'operation-record-card': true,
-            'operation-record-card-active': realActive === createTime,
-          });
-          const handleRecordClick = () => {
-            setCardActive(createTime);
-            handleClick(createTime);
-          };
-          return (
-            <Popover
-              getPopupContainer={(triggerNode) => triggerNode.parentNode}
-              autoAdjustOverflow={false}
-              content={getPopoverContent({
-                createTime,
-                status,
-                loginName,
-                realName,
-                userImage,
-                index,
-              })}
-              key={createTime}
-              placement="bottom"
-            >
-              <div
-                className={cardClass}
-                onClick={index < 4 ? handleRecordClick : null}
-              >
-                <div className="operation-record-title">
-                  <Icon type={ICON_TYPE_MAPPING[status]} className={`${prefixCls}-cases-status-${status}`} />
-                  <FormattedMessage id={`${intlPrefix}.instance.cases.${type}`} />
-                </div>
-                <div className="operation-record-step">
-                  <i className="operation-record-icon" />
-                </div>
-                <div className="operation-record-time">{createTime}</div>
-              </div>
-            </Popover>
-          );
+          const createTime = record.get('createTime');
+          return <OpCard
+            key={createTime}
+            disabled={index >= 4}
+            isActive={realActive === createTime}
+            formatMessage={formatMessage}
+            record={record}
+            prefixCls={prefixCls}
+            intlPrefix={intlPrefix}
+            onClick={handleRecordClick}
+          />;
         })}
       </div>
     );

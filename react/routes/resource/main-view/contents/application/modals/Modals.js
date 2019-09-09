@@ -98,25 +98,34 @@ const AppModals = observer(() => {
   }
 
   function getButtons() {
+    const envRecord = treeDs.find((record) => record.get('key') === parentId);
+    const connect = envRecord.get('connect');
+    const synchronize = envRecord.get('synchronize');
+    const disabled = !connect || !synchronize;
+
     return [{
+      disabled,
       name: formatMessage({ id: `${intlPrefix}.create.network` }),
       icon: 'playlist_add',
       handler: () => setShowNetwork(true),
       display: tabKey === NET_TAB,
       group: 1,
     }, {
+      disabled,
       name: formatMessage({ id: `${intlPrefix}.create.ingress` }),
       icon: 'playlist_add',
       handler: () => setShowDomain(true),
       display: tabKey === NET_TAB,
       group: 1,
     }, {
+      disabled,
       name: formatMessage({ id: `${intlPrefix}.create.configMap` }),
       icon: 'playlist_add',
       handler: () => openKeyValue('configMap'),
       display: tabKey === MAPPING_TAB,
       group: 1,
     }, {
+      disabled,
       name: formatMessage({ id: `${intlPrefix}.create.secret` }),
       icon: 'playlist_add',
       handler: () => openKeyValue('secret'),

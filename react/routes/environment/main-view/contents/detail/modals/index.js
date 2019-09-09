@@ -80,13 +80,6 @@ const EnvModals = observer(() => {
   }
   const disabled = isNotRunning(getSelectedMenu || {});
 
-  function toPermissionTab() {
-    const { getTabKey } = detailStore;
-    detailStore.setTabKey(ASSIGN_TAB);
-    treeDs.query();
-    getTabKey === ASSIGN_TAB && permissionsDs.query();
-  }
-
   function openEnvModal() {
     Modal.open({
       key: envKey,
@@ -147,7 +140,7 @@ const EnvModals = observer(() => {
         intlPrefix={intlPrefix}
         prefixCls={prefixCls}
         skipPermission={skipCheckPermission}
-        refresh={toPermissionTab}
+        refresh={refresh}
       />,
       afterClose: () => {
         modalStore.setUsers([]);
@@ -192,6 +185,8 @@ const EnvModals = observer(() => {
   }
 
   function getButtons() {
+    const { getTabKey } = detailStore;
+
     return [{
       name: formatMessage({ id: `${currentIntlPrefix}.create` }),
       icon: 'playlist_add',
@@ -203,14 +198,14 @@ const EnvModals = observer(() => {
       name: formatMessage({ id: `${currentIntlPrefix}.create.config` }),
       icon: 'playlist_add',
       handler: openConfigModal,
-      display: true,
+      display: getTabKey === CONFIG_TAB,
       group: 1,
     }, {
       disabled,
       name: formatMessage({ id: `${intlPrefix}.modal.permission` }),
       icon: 'authority',
       handler: openPermission,
-      display: true,
+      display: getTabKey === ASSIGN_TAB,
       group: 1,
     }, {
       name: formatMessage({ id: `${intlPrefix}.modal.env-detail` }),
@@ -236,7 +231,7 @@ const EnvModals = observer(() => {
     );
     return (
       <Dropdown
-        trigger="click"
+        trigger={['click']}
         overlay={menu}
       >
         <Button

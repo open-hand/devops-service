@@ -32,23 +32,9 @@ export const StoreProvider = injectIntl(observer((props) => {
     CIPHER_TAB: 'cipher',
   }), []);
   const baseInfoDs = useMemo(() => new DataSet(BaseInfoDataSet()), []);
-  const netDs = useMemo(() => new DataSet(NetDataSet({ formatMessage, intlPrefix })), [projectId, id]);
-  const mappingDs = useMemo(() => new DataSet(ConfigDataSet({
-    formatMessage,
-    intlPrefix,
-    projectId,
-    envId: parentId,
-    appId: id,
-    type: tabs.MAPPING_TAB,
-  })), [projectId, id, parentId]);
-  const cipherDs = useMemo(() => new DataSet(ConfigDataSet({
-    formatMessage,
-    intlPrefix,
-    projectId,
-    envId: parentId,
-    appId: id,
-    type: tabs.CIPHER_TAB,
-  })), [projectId, id, parentId]);
+  const netDs = useMemo(() => new DataSet(NetDataSet({ formatMessage, intlPrefix })), []);
+  const mappingDs = useMemo(() => new DataSet(ConfigDataSet(formatMessage)), []);
+  const cipherDs = useMemo(() => new DataSet(ConfigDataSet(formatMessage)), []);
 
   const appStore = useStore(tabs);
   const mappingStore = useConfigMapStore();
@@ -56,27 +42,8 @@ export const StoreProvider = injectIntl(observer((props) => {
   const domainStore = useDomainStore();
   const networkStore = useNetworkStore();
 
-
-  useEffect(() => {
-    baseInfoDs.transport.read.url = `/devops/v1/projects/${projectId}/app_service/${id}`;
-    baseInfoDs.query();
-    netDs.transport.read = ({ data }) => {
-      const postData = getTablePostData(data);
-      return ({
-        url: `/devops/v1/projects/${projectId}/service/page_by_instance?app_service_id=${id}`,
-        method: 'post',
-        data: postData,
-      });
-    };
-    netDs.transport.destroy = ({ data: [data] }) => ({
-      url: `/devops/v1/projects/${projectId}/service/${data.id}`,
-      method: 'delete',
-    });
-    netDs.query();
-  }, [projectId, id]);
-
-  const tabKey = appStore.getTabKey;
-  useEffect(() => {
+  function queryData() {
+    const tabKey = appStore.getTabKey;
     switch (tabKey) {
       case tabs.NET_TAB:
         netDs.query();
@@ -89,7 +56,50 @@ export const StoreProvider = injectIntl(observer((props) => {
         break;
       default:
     }
-  }, [tabKey]);
+  }
+
+  useEffect(() => {
+    baseInfoDs.transport.read.url = `/devops/v1/projects/${projectId}/app_service/${id}`;
+    baseInfoDs.query();
+    netDs.transport.read = ({ data }) => {
+      const postData = getTablePostData(data);
+      return ({
+        url: `/devops/v1/projects/${projectId}/service/page_by_instance?app_service_id=${id}`,
+        // url: `/devops/v1/projects/${projectId}/service/page_by_options?env_id=${parentId}&app_service_id=${id}`,
+        method: 'post',
+        data: postData,
+      });
+    };
+    netDs.transport.destroy = ({ data: [data] }) => ({
+      url: `/devops/v1/projects/${projectId}/service/${data.id}`,
+      method: 'delete',
+    });
+    mappingDs.transport.read = ({ data }) => {
+      const postData = getTablePostData(data);
+      return ({
+        url: `/devops/v1/projects/${projectId}/config_maps/page_by_options?env_id=${parentId}&app_service_id=${id}`,
+        method: 'post',
+        data: postData,
+      });
+    };
+    mappingDs.transport.destroy = ({ data: [data] }) => ({
+      url: `/devops/v1/projects/${projectId}/config_maps/${data.id}`,
+      method: 'delete',
+    });
+    cipherDs.transport.read = ({ data }) => {
+      const postData = getTablePostData(data);
+      return ({
+        url: `/devops/v1/projects/${projectId}/secret/page_by_options?env_id=${parentId}&app_service_id=${id}`,
+        method: 'post',
+        data: postData,
+      });
+    };
+    cipherDs.transport.destroy = ({ data: [data] }) => ({
+      url: `/devops/v1/projects/${projectId}/secret/${parentId}/${data.id}`,
+      method: 'delete',
+    });
+    queryData();
+  }, [projectId, id, parentId, appStore.getTabKey]);
 
   const value = {
     ...props,
