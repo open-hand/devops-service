@@ -515,7 +515,9 @@
         das.type
         FROM
         devops_app_service das
-        LEFT JOIN devops_project db ON das.app_id = db.app_id
+        JOIN devops_project db ON das.app_id = db.app_id
+        JOIN devops_app_service_version dasv ON dasv.app_service_id = das.id
+        AND dasv.`commit` IS NOT NULL
         WHERE
         das.app_id IS NOT NULL
         AND ISNULL(db.iam_project_id)
