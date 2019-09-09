@@ -90,11 +90,11 @@ public class AppServiceVersionController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "服务Id")
             @PathVariable(value = "app_service_id") Long appServiceId,
-            @ApiParam(value = "类型")
-            @RequestParam(value = "type") String type,
+            @ApiParam(value = "是否仅部署")
+            @RequestParam(value = "deploy_only") Boolean deployOnly,
             @ApiParam(value = "查询参数")
             @RequestParam(value = "version", required = false) String version) {
-        return Optional.ofNullable(appServiceVersionService.listByAppServiceId(appServiceId, type, version))
+        return Optional.ofNullable(appServiceVersionService.listByAppServiceId(appServiceId, deployOnly, version))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(VERSION_QUERY_ERROR));
     }

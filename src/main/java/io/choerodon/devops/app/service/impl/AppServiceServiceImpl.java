@@ -12,7 +12,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -2076,14 +2075,14 @@ public class AppServiceServiceImpl implements AppServiceService {
         List<AppServiceDTO> marketDownloadApps = new ArrayList<>();
         List<AppServiceDTO> organizationShareApps = new ArrayList<>();
         if (StringUtils.isEmpty(share)) {
-            marketDownloadApps = appServiceMapper.queryMarketDownloadApps(null, param);
+            marketDownloadApps = appServiceMapper.queryMarketDownloadApps(null, param,false);
             // 组织共享的应用服务
             organizationShareApps = listSharedAppService(projectId, param);
         }
         if (!StringUtils.isEmpty(share) && share) {
             organizationShareApps = listSharedAppService(projectId, param);
         } else {
-            marketDownloadApps = appServiceMapper.queryMarketDownloadApps(null, param);
+            marketDownloadApps = appServiceMapper.queryMarketDownloadApps(null, param,false);
         }
         List<AppServiceGroupInfoVO> appServiceGroupInfoVOS = new ArrayList<>();
 
@@ -2143,6 +2142,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         // 将应用信息加入appServiceGroupInfoVOS 构建一维的返回数据
         appServiceGroupInfoVOS.addAll(appList);
     }
+
     /**
      * 根据传入的appServiceList集合获取app_id集合
      *
@@ -2156,8 +2156,9 @@ public class AppServiceServiceImpl implements AppServiceService {
         );
         return appIds;
     }
+
     @Override
-    public List<AppServiceGroupVO> listAllAppServices(Long projectId, String type, String param, String serviceType) {
+    public List<AppServiceGroupVO> listAllAppServices(Long projectId, String type, String param, Boolean deployOnly, String serviceType) {
         List<AppServiceDTO> list = new ArrayList<>();
         List<String> params = new ArrayList<>();
         List<AppServiceGroupVO> appServiceGroupList = new ArrayList<>();
@@ -2179,7 +2180,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 break;
             }
             case MARKET_SERVICE: {
-                list.addAll(appServiceMapper.queryMarketDownloadApps(serviceType, null));
+                list.addAll(appServiceMapper.queryMarketDownloadApps(serviceType, null, deployOnly));
                 break;
             }
             default: {

@@ -35,10 +35,10 @@ public interface AppServiceVersionService {
      *
      * @param appServiceId 应用Id
      * @param version      查询参数
-     * @param type (code仅源码、deploy仅部署)
+     * @param deployOnly (仅部署)
      * @return List
      */
-    List<AppServiceVersionRespVO> listByAppServiceId(Long appServiceId, String type, String version);
+    List<AppServiceVersionRespVO> listByAppServiceId(Long appServiceId, Boolean deployOnly, String version);
 
     /**
      * 项目下查询应用所有已部署版本
