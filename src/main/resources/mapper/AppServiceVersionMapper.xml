@@ -375,16 +375,17 @@
 
 
     <select id="listServiceVersionByAppServiceIds" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
-        select  DISTINCT a.id,a.version,a.app_service_id
-        from devops_app_service_version a
+        SELECT
+        a.id,
+        a.app_service_id,
+        a.version
+        FROM
+        devops_app_service_version a
         <if test="share!=null and share !=''">
          left join devops_app_service_share_rule c on c.app_service_id=a.app_service_id
         </if>
         where
-        (
-        select count(*) from devops_app_service_version b
-        where b.id=a.id
-        and b.last_updated_by>a.last_updated_by)&lt;1
+        a.last_update_date = (SELECT MAX(b.last_update_date ) FROM devops_app_service_version b WHERE b.app_service_id = a.app_service_id )
         and a.app_service_id is not null
         <if test="share != null and share != ''">
             and c.id is not null
@@ -395,7 +396,7 @@
                 a.app_service_id=#{id}
             </foreach>
         </if>
-        ORDER BY a.id
+        ORDER BY a.app_service_id,version desc
     </select>
 
     <select id="queryServiceVersionByAppServiceIdAndShare" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">

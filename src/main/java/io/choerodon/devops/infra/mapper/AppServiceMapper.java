@@ -80,9 +80,9 @@ public interface AppServiceMapper extends Mapper<AppServiceDTO> {
 
     void updateChartConfigNullByServiceId(@Param("appServiceId") Long appServiceId);
 
-    List<AppServiceDTO> queryOrganizationShareApps(@Param("appServiceIds") List<Long> appServiceIds);
+    List<AppServiceDTO> queryOrganizationShareApps(@Param("appServiceIds") List<Long> appServiceIds,@Param("param") String param);
 
-    List<AppServiceDTO> queryMarketDownloadApps(@Param("type") String type);
+    List<AppServiceDTO> queryMarketDownloadApps(@Param("type") String type,@Param("param") String param);
 
     /**
      * 根据ProjectID 查询可用的项目共享Apps
@@ -90,7 +90,7 @@ public interface AppServiceMapper extends Mapper<AppServiceDTO> {
      * @param projectId
      * @return
      */
-    List<AppServiceDTO> listShareProjectApps(@Param("projectId") Long projectId);
+    List<AppServiceDTO> listShareProjectApps(@Param("projectId") Long projectId,@Param("param") String param);
 
     List<AppServiceDTO> listProjectMembersAppService(@Param("appId") Long appId,
                                                      @Param("isActive") Boolean isActive,

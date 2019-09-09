@@ -493,11 +493,16 @@
         LEFT JOIN devops_app_service_version dasv on dasv.app_service_id = b.app_service_id
         WHERE
         das.app_id is not null and b.app_service_id is not null and dasv.version is not null
+
         <if test='appServiceIds != null and appServiceIds.size > 0'>
             AND
             <foreach collection="appServiceIds" item="appServiceId" open="(" separator=" OR " close=")">
                 das.id = #{appServiceId}
             </foreach>
+        </if>
+        <if test="param != null and param != ''">
+            AND ( das.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR  das.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%'))
         </if>
     </select>
 
@@ -513,10 +518,14 @@
         LEFT JOIN devops_project db ON das.app_id = db.app_id
         WHERE
         das.app_id IS NOT NULL
-        AND db.iam_project_id IS NULL
+        AND ISNULL(db.iam_project_id)
         AND db.app_id IS NOT NULL
         <if test="type != null and type != ''">
             AND das.type = #{type}
+        </if>
+        <if test="param != null and param != ''">
+            AND  (das.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR  das.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%'))
         </if>
     </select>
 
@@ -542,5 +551,9 @@
         ) bb ON das.id = bb.app_service_id
     WHERE
         bb.app_service_id IS NOT NULL
+        <if test="param != null and param != ''">
+            AND  ( das.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            AND  das.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%'))
+        </if>
     </select>
 </mapper>

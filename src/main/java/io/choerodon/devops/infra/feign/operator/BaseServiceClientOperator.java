@@ -305,6 +305,14 @@ public class BaseServiceClientOperator {
         }
     }
 
+    public List<ApplicationDTO> getAppByIds(Set<Long> ids){
+        try {
+            return baseServiceClient.getAppByIds(ids).getBody();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     public void publishFail(Long projectId, Long mktAppId, Long mktAppVersionId, String code, Boolean fixFlag) {
         try {
             baseServiceClient.publishFail(projectId, mktAppId, mktAppVersionId, code, fixFlag).getBody();

@@ -161,6 +161,11 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
+    public ResponseEntity<List<ApplicationDTO>> getAppByIds(Set<Long> appIds) {
+        throw new CommonException("error.application.get");
+    }
+
+    @Override
     public ResponseEntity<Boolean> publishFail(Long projectId, Long publishAppId, Long id, String errorCode, Boolean fixFlag) {
         throw new CommonException("error.publishFail.status.get");
     }
