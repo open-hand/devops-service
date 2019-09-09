@@ -13,6 +13,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -27,15 +32,11 @@ import io.choerodon.devops.infra.dto.gitlab.JobDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsGitlabPipelineMapper;
 import io.choerodon.devops.infra.util.PageRequestUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
 
 @Service
 public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineService {
@@ -62,8 +63,8 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
     private DevopsGitlabPipelineMapper devopsGitlabPipelineMapper;
     @Autowired
     private TransactionalProducer transactionalProducer;
-
-
+    @Autowired
+    private DevopsProjectService devopsProjectService;
 
 
     @Override
@@ -307,8 +308,8 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
             refWithPipelineIds.put(key, pipeLineId);
         });
 
-        AppServiceDTO applicationDTO = applicationService.baseQuery(appServiceId);
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(applicationDTO.getAppId());
+        AppServiceDTO appServiceDTO = applicationService.baseQuery(appServiceId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsProjectService.queryProjectIdByAppId(appServiceDTO.getAppId()));
         OrganizationDTO organization = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 
         //获取pipeline记录
@@ -338,7 +339,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
             });
 
             devopsGitlabPipelineDTO.setCreationDate(devopsGitlabPipelineDO.getPipelineCreationDate());
-            devopsGitlabPipelineDTO.setGitlabProjectId(TypeUtil.objToLong(applicationDTO.getGitlabProjectId()));
+            devopsGitlabPipelineDTO.setGitlabProjectId(TypeUtil.objToLong(appServiceDTO.getGitlabProjectId()));
             devopsGitlabPipelineDTO.setPipelineId(devopsGitlabPipelineDO.getPipelineId());
 
             if (("success").equals(devopsGitlabPipelineDO.getStatus())) {
@@ -361,7 +362,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
             devopsGitlabPipelineDTO.setStages(stages);
             devopsGitlabPipelineDTO.setGitlabUrl(gitlabUrl + "/"
                     + organization.getCode() + "-" + projectDTO.getCode() + "/"
-                    + applicationDTO.getCode() + ".git");
+                    + appServiceDTO.getCode() + ".git");
             devopsGiltabPipelineDTOS.add(devopsGitlabPipelineDTO);
         });
 
