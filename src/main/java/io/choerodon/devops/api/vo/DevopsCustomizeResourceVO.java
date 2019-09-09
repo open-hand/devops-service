@@ -8,7 +8,9 @@ public class DevopsCustomizeResourceVO extends DevopsResourceDataInfoVO{
     private Long id;
     private Long projectId;
     private Long envId;
+    private Long clusterId;
     private Boolean envStatus;
+    private String envCode;
     private String resourceContent;
     private String k8sKind;
     private String commandStatus;
@@ -94,5 +96,21 @@ public class DevopsCustomizeResourceVO extends DevopsResourceDataInfoVO{
 
     public void setEnvId(Long envId) {
         this.envId = envId;
+    }
+
+    public Long getClusterId() {
+        return clusterId;
+    }
+
+    public void setClusterId(Long clusterId) {
+        this.clusterId = clusterId;
+    }
+
+    public String getEnvCode() {
+        return envCode;
+    }
+
+    public void setEnvCode(String envCode) {
+        this.envCode = envCode;
     }
 }

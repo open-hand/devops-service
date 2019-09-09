@@ -215,6 +215,9 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
             return null;
         }
         DevopsCustomizeResourceVO resource = ConvertUtils.convertObject(devopsCustomizeResourceDTO, DevopsCustomizeResourceVO.class);
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(resource.getEnvId());
+        resource.setEnvCode(devopsEnvironmentDTO.getCode());
+        resource.setClusterId(devopsEnvironmentDTO.getClusterId());
         if (devopsCustomizeResourceDTO.getCreatedBy() != null && devopsCustomizeResourceDTO.getCreatedBy() != 0) {
             resource.setCreatorName(ResourceCreatorInfoUtil.getOperatorName(baseServiceClientOperator, devopsCustomizeResourceDTO.getCreatedBy()));
         }
@@ -230,9 +233,9 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
         PageInfo<DevopsCustomizeResourceDTO> devopsCustomizeResourceDTOPageInfo = pageDevopsCustomizeResourceE(envId, pageRequest, params);
         List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedEnvList();
         PageInfo<DevopsCustomizeResourceVO> devopsCustomizeResourceVOPageInfo = ConvertUtils.convertPage(devopsCustomizeResourceDTOPageInfo, DevopsCustomizeResourceVO.class);
-        devopsCustomizeResourceVOPageInfo.getList().forEach(devopsCustomizeResourceDTO -> {
+        devopsCustomizeResourceVOPageInfo.getList().forEach(devopsCustomizeResourceVO-> {
             DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
-            devopsCustomizeResourceDTO.setEnvStatus(updatedEnvList.contains(devopsEnvironmentDTO.getClusterId()));
+            devopsCustomizeResourceVO.setEnvStatus(updatedEnvList.contains(devopsEnvironmentDTO.getClusterId()));
         });
         return devopsCustomizeResourceVOPageInfo;
     }
