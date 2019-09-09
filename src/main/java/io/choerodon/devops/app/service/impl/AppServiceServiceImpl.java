@@ -43,7 +43,6 @@ import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.validator.ApplicationValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.sonar.*;
@@ -107,6 +106,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     private static final String APP_SERVICE = "appService";
     private static final String ERROR_USER_NOT_OWNER = "error.user.not.owner";
     private static final String METRICS = "metrics";
+    private static final String SONAR_NAME = "sonar_default";
     private static final String NORMAL_SERVICE = "normal_service";
     private static final String SHARE_SERVICE = "share_service";
     private static final String MARKET_SERVICE = "market_service";
@@ -669,7 +669,10 @@ public class AppServiceServiceImpl implements AppServiceService {
             }
             String dockerUrl = harborProjectConfig.getUrl().replace("http://", "").replace("https://", "");
             dockerUrl = dockerUrl.endsWith("/") ? dockerUrl.substring(0, dockerUrl.length() - 1) : dockerUrl;
-
+            DevopsConfigDTO sonarConfig = devopsConfigService.baseQueryByName(null, SONAR_NAME);
+            if(sonarConfig!=null) {
+                params.put("{{ SONAR_LOGIN }}", sonarConfig.getConfig());
+            }
             params.put("{{ GROUP_NAME }}", groupName);
             params.put("{{ PROJECT_NAME }}", appServiceDTO.getCode());
             params.put("{{ PRO_CODE }}", projectDTO.getCode());

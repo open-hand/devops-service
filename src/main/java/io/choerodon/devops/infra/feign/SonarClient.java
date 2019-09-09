@@ -3,6 +3,8 @@ package io.choerodon.devops.infra.feign;
 import java.util.Map;
 
 import io.choerodon.devops.api.vo.sonar.*;
+
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
@@ -51,4 +53,7 @@ public interface SonarClient {
 
     @GET("api/users/current")
     Call<Void> getUser();
+
+    @POST("api/user_tokens/generate")
+    Call<ResponseBody> createToken(@QueryMap Map<String, String> maps);
 }
