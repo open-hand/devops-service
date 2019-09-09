@@ -31,7 +31,7 @@ function _isEmpty(value) {
  * @constructor
  */
 function ConfigNode(key = null, value = null, index = 1) {
-  if (!new.target) throw 'ConfigNode() must be called with new';
+  if (!new.target) throw new Error('ConfigNode() must be called with new');
 
   this.temp = '=';
   this.key = key;
@@ -99,9 +99,11 @@ function makePostData(data) {
 
   let index = 1;
   const result = [];
+  // eslint-disable-next-line no-restricted-syntax
   for (const [key, value] of dataEntries) {
     const config = new ConfigNode(key, value, index);
     result.push(config);
+    // eslint-disable-next-line no-plusplus
     index++;
   }
 

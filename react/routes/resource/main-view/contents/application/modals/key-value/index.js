@@ -2,9 +2,8 @@
 import React, { Component, Fragment } from 'react';
 import { observer, inject } from 'mobx-react';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { Content } from '@choerodon/master';
 import _ from 'lodash';
-import { Button, Form, Select, Input, Modal, Icon, Table, Popover } from 'choerodon-ui';
+import { Button, Form, Input, Modal, Icon, Table, Popover } from 'choerodon-ui';
 import { EditableCell, EditableFormRow } from './editableTable';
 import { objToYaml, yamlToObj, takeObject, ConfigNode, makePostData } from '../utils';
 import YamlEditor from '../../../../../../../components/yamlEditor';
@@ -16,7 +15,6 @@ import './index.less';
 
 const { Sidebar } = Modal;
 const { Item: FormItem } = Form;
-const { Option } = Select;
 const { TextArea } = Input;
 
 const formItemLayout = {

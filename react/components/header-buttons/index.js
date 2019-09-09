@@ -9,6 +9,8 @@ import { Button } from 'choerodon-ui/pro';
 
 import './index.less';
 
+const WAIT_TIME = 1000;
+
 const HeaderButtons = ({ items, children }) => {
   const displayBtn = useMemo(() => items.filter(({ display }) => display), [items]);
 
@@ -23,6 +25,8 @@ const HeaderButtons = ({ items, children }) => {
           className="c7ncd-header-btn"
           funcType="flat"
           onClick={handler}
+          wait={WAIT_TIME}
+          waitType="throttle"
         >
           {name}
         </Button>;

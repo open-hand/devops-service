@@ -90,7 +90,7 @@ const EnvModals = observer(() => {
     modalStore.loadServices(projectId, id);
     Modal.open({
       key: modalKey2,
-      title: formatMessage({ id: `${intlPrefix}.modal.link-service` }),
+      title: formatMessage({ id: `${intlPrefix}.modal.service.link` }),
       style: modalStyle,
       drawer: true,
       className: 'c7ncd-modal-wrapper',
@@ -137,13 +137,14 @@ const EnvModals = observer(() => {
   }
 
   function getButtons() {
+    const { getTabKey } = envStore;
     let isSync;
     const record = baseInfoDs.current;
     if (record) {
       isSync = record.get('synchronize');
     }
     return [{
-      name: formatMessage({ id: `${intlPrefix}.modal.link-service` }),
+      name: formatMessage({ id: `${intlPrefix}.modal.service.link` }),
       icon: 'relate',
       handler: openLinkService,
       display: true,
@@ -154,7 +155,7 @@ const EnvModals = observer(() => {
       name: formatMessage({ id: `${intlPrefix}.modal.permission` }),
       icon: 'authority',
       handler: openPermission,
-      display: true,
+      display: getTabKey === ASSIGN_TAB,
       disabled: !isSync,
       group: 1,
     }, {

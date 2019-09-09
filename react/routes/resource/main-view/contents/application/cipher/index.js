@@ -8,35 +8,25 @@ import TimePopover from '../../../../../../components/timePopover/TimePopover';
 import KeyValueModal from '../modals/key-value';
 import { useResourceStore } from '../../../../stores';
 import { useApplicationStore } from '../stores';
-import { useConfigsStore } from './stores';
 
-import './index.less';
+import '../configs/index.less';
 
 const { Column } = Table;
 
-const Configs = observer(() => {
+const Cipher = observer(() => {
   const {
     intl: { formatMessage },
     prefixCls,
     intlPrefix,
     resourceStore: { getSelectedMenu: { id, parentId } },
   } = useResourceStore();
-  const {
-    appStore: {
-      getTabKey: type,
-    },
-  } = useApplicationStore();
-  const {
-    tableDs,
-    formStore,
-  } = useConfigsStore();
+  const { cipherStore, cipherDs } = useApplicationStore();
   const statusStyle = useMemo(() => ({ marginRight: '0.08rem' }), []);
-
   const [showModal, setShowModal] = useState(false);
   const [recordId, setRecordId] = useState(null);
 
   function refresh() {
-    return tableDs.query();
+    return cipherDs.query();
   }
 
   function closeSideBar(fresh) {
@@ -82,7 +72,7 @@ const Configs = observer(() => {
         service: [],
         text: formatMessage({ id: 'delete' }),
         action: () => {
-          tableDs.delete(record);
+          cipherDs.delete(record);
         },
       },
     ];
@@ -92,27 +82,27 @@ const Configs = observer(() => {
   return (
     <div className={`${prefixCls}-mapping-content`}>
       <Table
-        dataSet={tableDs}
+        dataSet={cipherDs}
         border={false}
         queryBar="bar"
       >
-        <Column name="name" header={formatMessage({ id: `${intlPrefix}.application.tabs.${type}` })} renderer={renderName} />
+        <Column name="name" header={formatMessage({ id: `${intlPrefix}.application.tabs.cipher` })} renderer={renderName} />
         <Column renderer={renderAction} />
         <Column name="key" renderer={renderKey} />
         <Column name="lastUpdateDate" renderer={renderDate} />
       </Table>
       {showModal && <KeyValueModal
-        modeSwitch={type === 'mapping'}
-        title={type === 'mapping' ? 'configMap' : 'secret'}
+        modeSwitch={false}
+        title="secret"
         visible={showModal}
         id={recordId}
         envId={parentId}
         appId={id}
         onClose={closeSideBar}
-        store={formStore}
+        store={cipherStore}
       />}
     </div>
   );
 });
 
-export default Configs;
+export default Cipher;

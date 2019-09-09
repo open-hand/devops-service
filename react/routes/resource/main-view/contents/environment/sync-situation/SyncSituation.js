@@ -1,14 +1,8 @@
-import React, { Fragment, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { Permission } from '@choerodon/master';
 import { observer } from 'mobx-react-lite';
-import {
-  Tooltip,
-  Button,
-  Icon,
-  Modal,
-} from 'choerodon-ui/pro';
-import { Popover } from 'choerodon-ui';
+import { Tooltip, Button, Modal } from 'choerodon-ui/pro';
 import { useEnvironmentStore } from '../stores';
 import { useResourceStore } from '../../../../stores';
 
@@ -16,6 +10,11 @@ const SyncSituation = observer(() => {
   const {
     prefixCls,
     intlPrefix,
+    resourceStore: {
+      getSelectedMenu: {
+        synchronize,
+      },
+    },
   } = useResourceStore();
   const {
     intl: { formatMessage },
@@ -23,32 +22,6 @@ const SyncSituation = observer(() => {
     gitopsSyncDs,
     retryDs,
   } = useEnvironmentStore();
-
-  const content = useMemo(() => (
-    <Fragment>
-      <p className="log-help-desc">
-        <FormattedMessage id={`${intlPrefix}.environment.help`} />
-      </p>
-      <h4 className="log-help-title">
-        <FormattedMessage id={`${intlPrefix}.environment.config`} />
-      </h4>
-      <p className="log-help-desc">
-        <FormattedMessage id={`${intlPrefix}.environment.config.des`} />
-      </p>
-      <h4 className="log-help-title">
-        <FormattedMessage id={`${intlPrefix}.environment.parsed`} />
-      </h4>
-      <p className="log-help-desc">
-        <FormattedMessage id={`${intlPrefix}.environment.parsed.des`} />
-      </p>
-      <h4 className="log-help-title">
-        <FormattedMessage id={`${intlPrefix}.environment.executed`} />
-      </h4>
-      <p className="log-help-desc">
-        <FormattedMessage id={`${intlPrefix}.environment.executed.des`} />
-      </p>
-    </Fragment>
-  ), [intlPrefix]);
 
   /**
    * 打开重试弹窗
@@ -112,6 +85,7 @@ const SyncSituation = observer(() => {
             >
               <Tooltip title={<FormattedMessage id={`${intlPrefix}.environment.retry`} />}>
                 <Button
+                  disabled={!synchronize}
                   icon="replay"
                   color="primary"
                   funcType="flat"

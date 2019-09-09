@@ -1,3 +1,3 @@
-export function isNotRunning({ active, synchro, connect }) {
-  return !active || !synchro || !connect;
+export function isNotRunning({ active, synchro }) {
+  return !active || !synchro;
 }

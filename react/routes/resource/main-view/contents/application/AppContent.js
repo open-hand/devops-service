@@ -10,7 +10,8 @@ import './index.less';
 
 const { TabPane } = Tabs;
 
-const MappingContent = lazy(() => import('./configs'));
+const Configs = lazy(() => import('./configs'));
+const Cipher = lazy(() => import('./cipher'));
 const NetContent = lazy(() => import('./net'));
 
 const AppContent = observer(() => {
@@ -68,7 +69,7 @@ const AppContent = observer(() => {
           tab={formatMessage({ id: `${intlPrefix}.application.tabs.mapping` })}
         >
           <Suspense fallback={<div>loading</div>}>
-            <MappingContent />
+            <Configs />
           </Suspense>
         </TabPane>
         <TabPane
@@ -76,7 +77,7 @@ const AppContent = observer(() => {
           tab={formatMessage({ id: `${intlPrefix}.application.tabs.cipher` })}
         >
           <Suspense fallback={<div>loading</div>}>
-            <MappingContent />
+            <Cipher />
           </Suspense>
         </TabPane>
       </Tabs>

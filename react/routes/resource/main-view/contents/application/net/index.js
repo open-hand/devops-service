@@ -301,11 +301,6 @@ const Networking = observer(() => {
 
   function renderExpandedRow({ record }) {
     const devopsIngressDTOS = record.get('devopsIngressVOS');
-    const button = {
-      shape: 'circle',
-      size: 'small',
-      funcType: 'flat',
-    };
     const content = devopsIngressDTOS && devopsIngressDTOS.length ? (
       _.map(devopsIngressDTOS, ({ id: itemId, name, domain, error, status, pathList }) => {
         const buttons = [

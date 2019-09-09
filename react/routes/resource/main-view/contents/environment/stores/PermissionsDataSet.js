@@ -1,23 +1,7 @@
-import getTablePostData from '../../../../../../utils/getTablePostData';
-
-export default ({ formatMessage, intlPrefix, projectId, id }) => ({
+export default ({ formatMessage, intlPrefix }) => ({
   selection: false,
   pageSize: 10,
-  transport: {
-    read: ({ data }) => {
-      const postData = getTablePostData(data);
-
-      return {
-        url: `/devops/v1/projects/${projectId}/envs/${id}/permission/page_by_options`,
-        method: 'post',
-        data: postData,
-      };
-    },
-    destroy: ({ data: [data] }) => ({
-      url: `/devops/v1/projects/${projectId}/envs/${id}/permission?user_id=${data.iamUserId}`,
-      method: 'delete',
-    }),
-  },
+  transport: {},
   fields: [
     {
       name: 'realName',

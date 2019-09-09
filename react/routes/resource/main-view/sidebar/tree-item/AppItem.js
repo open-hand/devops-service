@@ -3,10 +3,12 @@ import PropTypes from 'prop-types';
 import { observer } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
 import { Action, Permission } from '@choerodon/master';
-import { Icon } from 'choerodon-ui/pro';
+import { Icon, Modal } from 'choerodon-ui/pro';
 import { handlePromptError } from '../../../../../utils';
 import { useResourceStore } from '../../../stores';
 import { useTreeItemStore } from './stores';
+
+const modalKey = Modal.key();
 
 function AppItem({ name, record, intl: { formatMessage }, intlPrefix }) {
   const {
@@ -30,11 +32,23 @@ function AppItem({ name, record, intl: { formatMessage }, intlPrefix }) {
     }
   }
 
+  function openModal() {
+    Modal.open({
+      movable: false,
+      closable: false,
+      key: modalKey,
+      title: formatMessage({ id: `${intlPrefix}.modal.service.delete` }),
+      children: formatMessage({ id: `${intlPrefix}.modal.service.delete.desc` }),
+      okText: formatMessage({ id: 'delete' }),
+      onOk: handleClick,
+    });
+  }
+
   function getSuffix() {
     const actionData = [{
       service: [],
-      text: formatMessage({ id: `${intlPrefix}.modal.remove-service` }),
-      action: handleClick,
+      text: formatMessage({ id: `${intlPrefix}.modal.service.delete` }),
+      action: openModal,
     }];
     return <Action placement="bottomRight" data={actionData} />;
   }
