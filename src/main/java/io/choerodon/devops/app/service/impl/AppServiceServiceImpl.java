@@ -2095,7 +2095,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     private void initAppServiceGroupInfoVOList(List<AppServiceGroupInfoVO> appServiceGroupInfoVOS, List<AppServiceDTO> appServiceDTOList, Boolean share) {
-        if(appServiceDTOList.isEmpty()) return;
+        if (appServiceDTOList.isEmpty()) return;
         // 获取应用服务编号集合去得到服务最新的版本号
         List<Long> appServiceIds = appServiceDTOList.stream().map(v -> v.getId()).collect(Collectors.toList());
         String shareString = null;
@@ -2120,7 +2120,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 ApplicationDTO applicationDTO = appMap.get(appServiceDTO.getAppId());
                 if (!ObjectUtils.isEmpty(applicationDTO)) {
                     // 初始化应用服务信息
-                    AppServiceGroupInfoVO  appServiceGroupInfoVO = dtoToGroupInfoVO(appServiceDTO);
+                    AppServiceGroupInfoVO appServiceGroupInfoVO = dtoToGroupInfoVO(appServiceDTO);
                     appServiceGroupInfoVO.setVersionId(appServiceVersionDTO.getId());
                     appServiceGroupInfoVO.setVersion(appServiceVersionDTO.getVersion());
                     appServiceGroupInfoVO.setShare(share);

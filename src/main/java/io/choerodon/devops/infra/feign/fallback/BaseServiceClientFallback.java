@@ -24,7 +24,8 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class BaseServiceClientFallback implements BaseServiceClient {
-    private static final String ERROR_PROJECT_GET="error.project.get";
+    private static final String ERROR_PROJECT_GET = "error.project.get";
+
     @Override
     public ResponseEntity<ProjectDTO> queryIamProject(Long projectId) {
         throw new CommonException(ERROR_PROJECT_GET);
@@ -88,9 +89,9 @@ public class BaseServiceClientFallback implements BaseServiceClient {
 
     @Override
     public ResponseEntity<PageInfo<IamUserDTO>> pagingQueryUsersByRoleIdOnProjectLevel(int page, int size, Long roleId,
-                                                                                   Long sourceId,
-                                                                                   Boolean doPage,
-                                                                                   RoleAssignmentSearchVO roleAssignmentSearchVO) {
+                                                                                       Long sourceId,
+                                                                                       Boolean doPage,
+                                                                                       RoleAssignmentSearchVO roleAssignmentSearchVO) {
         throw new CommonException("error.user.get.byRoleId");
     }
 

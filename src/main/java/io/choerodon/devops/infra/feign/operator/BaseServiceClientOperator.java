@@ -305,7 +305,7 @@ public class BaseServiceClientOperator {
         }
     }
 
-    public List<ApplicationDTO> getAppByIds(Set<Long> ids){
+    public List<ApplicationDTO> getAppByIds(Set<Long> ids) {
         try {
             return baseServiceClient.getAppByIds(ids).getBody();
         } catch (Exception e) {
