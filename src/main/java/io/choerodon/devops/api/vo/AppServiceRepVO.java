@@ -3,37 +3,83 @@ package io.choerodon.devops.api.vo;
 
 import java.util.Date;
 
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * @author younger
  * @date 2018/3/30
  */
 public class AppServiceRepVO {
-
+    @ApiModelProperty("应用服务id")
     private Long id;
+
+    @ApiModelProperty("应用服务名称")
     private String name;
+
+    @ApiModelProperty("应用服务code")
     private String code;
+
+    @ApiModelProperty("应用服务所属应用id")
     private Long appId;
+
+    @ApiModelProperty("应用服务对应gitlab项目的id")
     private Long gitlabProjectId;
+
+    @ApiModelProperty("应用服务对应的gitlab仓库地址")
     private String repoUrl;
+
+    @ApiModelProperty("应用服务是否同步完成，false表示正在处理中")
     private Boolean synchro;
+
+    @ApiModelProperty("应用服务是否启用")
     private Boolean isActive;
+
     private String publishLevel;
     private String contributor;
+
+    @ApiModelProperty("应用服务描述")
     private String description;
+
+    @ApiModelProperty("sonarqube地址")
     private String sonarUrl;
-    private Boolean isFail;
+
+    @ApiModelProperty("应用服务是否失败，如果已同步且这个值为true说明应用服务创建失败")
+    private Boolean fail;
+
+    @ApiModelProperty("应用服务的类型")
     private String type;
-    private Boolean permission;
+
+    @ApiModelProperty("应用服务数据库纪录的版本号")
     private Long objectVersionNumber;
+
+    @ApiModelProperty("应用服务对应的harbor配置信息")
     private DevopsConfigVO harbor;
+
+    @ApiModelProperty("应用服务对应的chart配置信息")
     private DevopsConfigVO chart;
+
+    @ApiModelProperty("应用服务图标url")
     private String imgUrl;
+
+    @ApiModelProperty("应用创建时间")
     private Date creationDate;
+
+    @ApiModelProperty("应用服务最近更新时间")
     private Date lastUpdateDate;
+
+    @ApiModelProperty("创建者用户名")
     private String createUserName;
+
+    @ApiModelProperty("创建者登录名")
     private String createLoginName;
+
+    @ApiModelProperty("最近更新者用户名")
     private String updateUserName;
+
+    @ApiModelProperty("最近更新者登录名")
     private String updateLoginName;
+
+    @ApiModelProperty("此应用服务是够跳过权限检查，true表示允许项目下所有的项目成员及项目所有者访问")
     private Boolean skipCheckPermission;
 
     public DevopsConfigVO getHarbor() {
@@ -157,19 +203,11 @@ public class AppServiceRepVO {
     }
 
     public Boolean getFail() {
-        return isFail;
+        return fail;
     }
 
     public void setFail(Boolean fail) {
-        isFail = fail;
-    }
-
-    public Boolean getPermission() {
-        return permission;
-    }
-
-    public void setPermission(Boolean permission) {
-        this.permission = permission;
+        this.fail = fail;
     }
 
     public String getType() {

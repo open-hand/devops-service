@@ -181,6 +181,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             appServiceService.operationApplication(payload);
         } catch (Exception e) {
             AppServiceDTO appServiceDTO = appServiceService.baseQuery(payload.getAppServiceId());
+            appServiceDTO.setSynchro(true);
             appServiceDTO.setFailed(true);
             appServiceService.baseUpdate(appServiceDTO);
             logger.warn("Failed to create application service with id {}", appServiceDTO.getId());

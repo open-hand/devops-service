@@ -43,6 +43,7 @@ import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.validator.ApplicationValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.sonar.*;
@@ -176,8 +177,6 @@ public class AppServiceServiceImpl implements AppServiceService {
     private AppServiceVersionService appServiceVersionService;
     @Value("${services.helm.url}")
     private String helmUrl;
-    @Autowired
-    private BaseServiceClientOperator baseServiceClient;
 
     @Override
     @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_APPLICATION_SERVICE,
@@ -336,20 +335,30 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     @Override
     @Transactional
-    public Boolean updateActive(Long appServiceId, Boolean active) {
-        active = Boolean.FALSE.equals(active) ? Boolean.FALSE : Boolean.TRUE;
+    public Boolean updateActive(Long projectId, Long appServiceId, final Boolean active) {
+        // 为空则默认true
+        Boolean toUpdateValue = Boolean.FALSE.equals(active) ? Boolean.FALSE : Boolean.TRUE;
 
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
 
-        if (!active) {
+        // 如果原先的值和更新的值相等，则不更新
+        if (toUpdateValue.equals(appServiceDTO.getActive())) {
+            return false;
+        }
+
+        // 如果不相等，且将停用应用服务，检查该应用服务是否有不处于删除状态的实例
+        if (!toUpdateValue) {
             int nonDeleteInstancesCount = appServiceInstanceMapper.countNonDeletedInstances(appServiceId);
             if (nonDeleteInstancesCount > 0) {
                 throw new CommonException("error.disable.application.service", appServiceId);
             }
         }
 
-        appServiceDTO.setActive(active);
+        appServiceDTO.setActive(toUpdateValue);
         baseUpdate(appServiceDTO);
+
+        // 发送同步消息给其它服务
+        sendUpdateAppServiceInfo(appServiceDTO, projectId);
         return true;
     }
 
@@ -366,10 +375,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         initApplicationParams(projectDTO, organizationDTO, applicationServiceDTOS.getList(), urlSlash);
 
-        PageInfo<AppServiceRepVO> resultDTOPage = new PageInfo<>();
-        BeanUtils.copyProperties(applicationServiceDTOS, resultDTOPage, "list");
-        resultDTOPage.setList(setApplicationRepVOPermission(applicationServiceDTOS.getList(), userAttrDTO, projectDTO));
-        return resultDTOPage;
+        return ConvertUtils.convertPage(applicationServiceDTOS, this::dtoToRepVo);
     }
 
 
@@ -397,12 +403,12 @@ public class AppServiceServiceImpl implements AppServiceService {
         Long userId = TypeUtil.objToLong(GitUserNameUtil.getUserId());
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         Boolean projectOwner = baseServiceClientOperator.isProjectOwner(userId, projectDTO);
-        List<AppServiceDTO> applicationDTOServiceList = new ArrayList<>();
+        List<AppServiceDTO> applicationDTOServiceList;
         if (projectOwner) {
             applicationDTOServiceList = baseListByActive(projectId);
         } else {
             Long appId = devopsProjectService.queryAppIdByProjectId(projectId);
-            applicationDTOServiceList = appServiceMapper.listProjectMembersAppServicByActive(appId, userId);
+            applicationDTOServiceList = appServiceMapper.listProjectMembersAppServiceByActive(appId, userId);
         }
 
         UserAttrDTO userAttrDTO = userAttrMapper.selectByPrimaryKey(userId);
@@ -410,8 +416,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
 
         initApplicationParams(projectDTO, organizationDTO, applicationDTOServiceList, urlSlash);
-
-        return setApplicationRepVOPermission(applicationDTOServiceList, userAttrDTO, projectDTO);
+        return ConvertUtils.convertList(applicationDTOServiceList, this::dtoToRepVo);
     }
 
     @Override
@@ -610,6 +615,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             appServiceDTO.setGitlabProjectId(TypeUtil.objToInteger(devOpsAppServiceImportPayload.getGitlabProjectId()));
             appServiceDTO.setToken(applicationServiceToken);
             appServiceDTO.setSynchro(true);
+            appServiceDTO.setFailed(false);
 
             // set project hook id for application
             setProjectHook(appServiceDTO, gitlabProjectDO.getId(), applicationServiceToken, devOpsAppServiceImportPayload.getUserId());
@@ -1763,7 +1769,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public void baseCheckApp(Long projectId, Long appServiceId) {
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
-        if (appServiceDTO == null || !appServiceDTO.getAppId().equals(projectId)) {
+        if (appServiceDTO == null || !projectId.equals(devopsProjectService.queryProjectIdByAppId(appServiceDTO.getAppId()))) {
             throw new CommonException("error.app.project.notMatch");
         }
     }
@@ -1771,13 +1777,9 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public AppServiceDTO baseUpdate(AppServiceDTO applicationDTO) {
         AppServiceDTO oldAppServiceDTO = appServiceMapper.selectByPrimaryKey(applicationDTO.getId());
-        if (applicationDTO.getFailed() != null && !applicationDTO.getFailed()) {
-            appServiceMapper.updateAppToSuccess(applicationDTO.getId());
-        }
         applicationDTO.setObjectVersionNumber(oldAppServiceDTO.getObjectVersionNumber());
         if (appServiceMapper.updateByPrimaryKeySelective(applicationDTO) != 1) {
             throw new CommonException("error.app.service.update");
-
         }
         return appServiceMapper.selectByPrimaryKey(applicationDTO.getId());
     }
@@ -2071,10 +2073,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     private void initAppServiceGroupInfoVOList(List<AppServiceGroupInfoVO> appServiceGroupInfoVOS, List<AppServiceDTO> appServiceDTOList, Boolean share) {
-        // 得到应用Id的结合
-        Set<Long> appIds = getAppIds(appServiceDTOList);
         // 获取应用服务编号集合去得到服务最新的版本号
-        List<Long> appServiceIds = appServiceDTOList.stream().map(v -> v.getId()).collect(Collectors.toList());
+        List<Long> appServiceIds = appServiceDTOList.stream().map(AppServiceDTO::getId).collect(Collectors.toList());
         String shareString = null;
         if (share) {
             shareString = "share";
@@ -2082,13 +2082,12 @@ public class AppServiceServiceImpl implements AppServiceService {
         List<AppServiceVersionDTO> versionList = appServiceVersionService.listServiceVersionByAppServiceIds(appServiceIds, shareString);
 
         // 遍历应用服务集合并转换为VO
-        appServiceDTOList.stream().forEach(appServiceDTO -> {
+        appServiceDTOList.forEach(appServiceDTO -> {
             // 根据应用服务的ID查询出versionList中对应的版本信息
             Optional<AppServiceVersionDTO> first = versionList.stream()
                     .filter(v -> v.getAppServiceId().equals(appServiceDTO.getId()))
-                    .filter(appServiceVersionDTO -> !ObjectUtils.isEmpty(appServiceVersionDTO))
                     .findFirst();
-            AppServiceVersionDTO appServiceVersionDTO = !ObjectUtils.isEmpty(first) ? first.get() : null;
+            AppServiceVersionDTO appServiceVersionDTO = first.orElse(null);
             // 应用服务含有共享版本才加入List
             if (appServiceVersionDTO != null) {
                 AppServiceGroupInfoVO appServiceGroupInfoVO = dtoToGroupInfoVO(appServiceDTO);
@@ -2096,7 +2095,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 appServiceGroupInfoVO.setVersion(appServiceVersionDTO.getVersion());
                 appServiceGroupInfoVO.setShare(share);
                 // 获取应用信息，并传入应用名称
-                ApplicationDTO applicationDTO = baseServiceClient.queryAppById(appServiceGroupInfoVO.getAppId());
+                ApplicationDTO applicationDTO = baseServiceClientOperator.queryAppById(appServiceGroupInfoVO.getAppId());
                 String appName = ObjectUtils.isEmpty(applicationDTO) ? null : applicationDTO.getName();
                 appServiceGroupInfoVO.setAppName(appName);
                 appServiceGroupInfoVOS.add(appServiceGroupInfoVO);
@@ -2142,7 +2141,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 .collect(Collectors.groupingBy(AppServiceGroupInfoVO::getAppId));
 
         for (Long key : map.keySet()) {
-            ApplicationDTO appDTO = baseServiceClient.queryAppById(key);
+            ApplicationDTO appDTO = baseServiceClientOperator.queryAppById(key);
             AppServiceGroupVO appServiceGroupVO = dtoToGroupVO(appDTO);
             appServiceGroupVO.setAppServiceList(map.get(key));
             appServiceGroupList.add(appServiceGroupVO);
@@ -2184,20 +2183,6 @@ public class AppServiceServiceImpl implements AppServiceService {
         appServiceDTO.setHarborConfigId(appServiceImportVO.getHarborConfigId());
         appServiceDTO.setChartConfigId(appServiceImportVO.getChartConfigId());
         return appServiceDTO;
-    }
-
-    /**
-     * 根据传入的appServiceList集合获取app_id集合
-     *
-     * @param appServiceList
-     * @return
-     */
-    private Set<Long> getAppIds(List<AppServiceDTO> appServiceList) {
-        Set<Long> appIds = new HashSet<>();
-        appServiceList.stream().forEach(appServiceDTO ->
-                appIds.add(appServiceDTO.getAppId())
-        );
-        return appIds;
     }
 
     private AppServiceGroupInfoVO dtoToGroupInfoVO(AppServiceDTO appServiceDTO) {
@@ -2277,30 +2262,6 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
         return accessToken;
     }
-
-    private List<AppServiceRepVO> setApplicationRepVOPermission(List<AppServiceDTO> appServiceDTOS,
-                                                                UserAttrDTO userAttrDTO, ProjectDTO projectDTO) {
-        List<AppServiceRepVO> resultDTOList = ConvertUtils.convertList(appServiceDTOS, this::dtoToRepVo);
-        if (userAttrDTO == null) {
-            throw new CommonException("error.gitlab.user.sync.failed");
-        }
-        if (!baseServiceClientOperator.isProjectOwner(userAttrDTO.getIamUserId(), projectDTO)) {
-            AppServiceUserRelDTO appUserPermissionDO = new AppServiceUserRelDTO();
-            appUserPermissionDO.setIamUserId(userAttrDTO.getIamUserId());
-            List<Long> appServiceIds = appServiceUserRelMapper.select(appUserPermissionDO).stream()
-                    .map(AppServiceUserRelDTO::getAppServiceId).collect(Collectors.toList());
-
-            resultDTOList.stream().filter(e -> e != null && e.getPermission() != null && !e.getPermission()).forEach(e -> {
-                if (appServiceIds.contains(e.getId())) {
-                    e.setPermission(true);
-                }
-            });
-        } else {
-            resultDTOList.stream().filter(Objects::nonNull).forEach(e -> e.setPermission(true));
-        }
-        return resultDTOList;
-    }
-
 
     /**
      * 释放资源

@@ -171,7 +171,7 @@
           AND da.app_id = #{appId}
     </select>
 
-    <select id="listProjectMembersAppServicByActive" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
+    <select id="listProjectMembersAppServiceByActive" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
          SELECT
                 da.*
                 FROM
@@ -185,7 +185,7 @@
                 das.id IS NOT NULL
                 AND das.app_id = #{appId}
                 AND dasur.iam_user_id = #{userId}
-                AND das.is_skip_check_permission = 0 UNION
+                AND das.is_skip_check_permission = 0 UNION ALL
                 SELECT
                 *
                 FROM
@@ -198,6 +198,7 @@
                   AND da.is_synchro is true
                   AND da.gitlab_project_id is not null
     </select>
+
     <select id="listDeployedApp" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
         SELECT DISTINCT
         dam.share_level publishLevel,
