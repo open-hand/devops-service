@@ -386,7 +386,7 @@
         where b.id=a.id
         and b.last_updated_by>a.last_updated_by)&lt;1
         and a.app_service_id is not null
-        <if test="share!=null and share !=''">
+        <if test="share != null and share != ''">
             and c.id is not null
         </if>
         <if test='ids != null and ids.size > 0'>
@@ -401,7 +401,7 @@
     <select id="queryServiceVersionByAppServiceIdAndShare" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
         select * from  devops_app_service_version
         where app_service_id=#{appServiceId}
-        <if test="share!=null and share !=''">
+        <if test="share != null and share != ''">
             and version in(select version from devops_app_service_share_rule where app_service_id=#{appServiceId})
         </if>
         order by last_update_date desc

@@ -2055,13 +2055,13 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         List<AppServiceGroupInfoVO> appServiceGroupInfoVOS = new ArrayList<>();
 
-        changList(appServiceGroupInfoVOS, organizationShareApps, true);
-        changList(appServiceGroupInfoVOS, marketDownloadApps, false);
+        initAppServiceGroupInfoVOList(appServiceGroupInfoVOS, organizationShareApps, true);
+        initAppServiceGroupInfoVOList(appServiceGroupInfoVOS, marketDownloadApps, false);
 
         return appServiceGroupInfoVOS;
     }
 
-    private void changList(List<AppServiceGroupInfoVO> appServiceGroupInfoVOS, List<AppServiceDTO> appServiceDTOList, Boolean share) {
+    private void initAppServiceGroupInfoVOList(List<AppServiceGroupInfoVO> appServiceGroupInfoVOS, List<AppServiceDTO> appServiceDTOList, Boolean share) {
         // 得到应用Id的结合
         Set<Long> appIds = getAppIds(appServiceDTOList);
         // 获取应用服务编号集合去得到服务最新的版本号
