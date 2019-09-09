@@ -394,9 +394,18 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     @Override
     public List<AppServiceRepVO> listByActive(Long projectId) {
-        List<AppServiceDTO> applicationDTOServiceList = baseListByActive(projectId);
-        UserAttrDTO userAttrDTO = userAttrMapper.selectByPrimaryKey(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        Long userId = TypeUtil.objToLong(GitUserNameUtil.getUserId());
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        Boolean projectOwner = baseServiceClientOperator.isProjectOwner(userId, projectDTO);
+        List<AppServiceDTO> applicationDTOServiceList = new ArrayList<>();
+        if (projectOwner) {
+            applicationDTOServiceList = baseListByActive(projectId);
+        } else {
+            Long appId = devopsProjectService.queryAppIdByProjectId(projectId);
+            applicationDTOServiceList = appServiceMapper.listProjectMembersAppServicByActive(appId, userId);
+        }
+
+        UserAttrDTO userAttrDTO = userAttrMapper.selectByPrimaryKey(userId);
         OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
 
