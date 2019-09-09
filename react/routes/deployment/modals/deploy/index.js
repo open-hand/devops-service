@@ -1,5 +1,6 @@
 import React, { Fragment, useEffect, useState } from 'react';
 import { Button, Form, Icon, Select, SelectBox, TextField } from 'choerodon-ui/pro';
+import { Form as OldForm } from 'choerodon-ui';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import map from 'lodash/map';
@@ -8,26 +9,18 @@ import forEach from 'lodash/forEach';
 import uuidV1 from 'uuid/v1';
 import YamlEditor from '../../../../components/yamlEditor';
 import NetworkForm from './network-form';
-import DomainForm from '../../../../components/domain-form';
+import DomainForm from './domain-form';
 import StatusDot from '../../../../components/status-dot';
 
 import './index.less';
 
 const { Option, OptGroup } = Select;
 
-export default injectIntl(observer(({ record, dataSet, store, projectId, networkStore, ingressStore, refresh, intlPrefix, prefixCls, modal, intl: { formatMessage } }) => {
+const DeployModal = injectIntl(observer(({ record, dataSet, store, projectId, refresh, intlPrefix, prefixCls, modal, form, intl: { formatMessage } }) => {
   const [resourceIsExpand, setResourceIsExpand] = useState(false);
   const [netIsExpand, setNetIsExpand] = useState(false);
   const [ingressIsExpand, setIngressIsExpand] = useState(false);
-  const [netFormRef, setNetFormRef] = useState();
-  const [ingressFormRef, setIngressFormRef] = useState();
   const [hasYamlFailed, setHasYamlFailed] = useState(false);
-
-  useEffect(() => {
-    if (record.get('environmentId') && record.get('appServiceId')) {
-      networkStore.loadPorts(projectId, record.get('environmentId'), record.get('appServiceId').split('__')[0]);
-    }
-  }, [record.get('environmentId'), record.get('appServiceId')]);
 
   useEffect(() => {
     ChangeConfigValue(store.getConfigValue);
@@ -36,14 +29,23 @@ export default injectIntl(observer(({ record, dataSet, store, projectId, network
   modal.handleOk(async () => {
     if (hasYamlFailed) return false;
 
-    let hasFailed = false;
-    const netForm = netFormRef.props.form;
-    const ingressForm = ingressFormRef.props.form;
-    if (netForm.getFieldValue('name') || netForm.getFieldValue('externalIps') || netForm.getFieldValue('port').join('') || netForm.getFieldValue('tport').join('') || (netForm.getFieldValue('nport') && netForm.getFieldValue('nport').join('')) || (netForm.getFieldValue('protocol') && netForm.getFieldValue('protocol').join(''))) {
-      netFormRef.props.form.validateFieldsAndScroll((err, data) => {
+    let hasDomain = false;
+    let hasNet = false;
+    const { getFieldValue, validateFieldsAndScroll } = form;
+    const fieldNames = [];
+    if (getFieldValue('networkName') || getFieldValue('externalIps') || getFieldValue('port').join('') || getFieldValue('tport').join('') || (getFieldValue('nport') && getFieldValue('nport').join('')) || (getFieldValue('protocol') && getFieldValue('protocol').join(''))) {
+      fieldNames.push('networkName', 'externalIps', 'portKeys', 'config', 'port', 'tport', 'nport', 'protocol');
+      hasNet = true;
+    }
+    if (getFieldValue('domain') || getFieldValue('domainName') || getFieldValue('netPort').join('') || getFieldValue('path').join('') !== '/') {
+      fieldNames.push('domain', 'domainName', 'paths', 'netPort', 'path', 'network', 'type');
+      hasDomain = true;
+    }
+    if (fieldNames.length) {
+      form.validateFieldsAndScroll(fieldNames, async (err, data) => {
         if (!err) {
           const {
-            name,
+            networkName,
             externalIps,
             portKeys,
             port,
@@ -51,93 +53,78 @@ export default injectIntl(observer(({ record, dataSet, store, projectId, network
             nport,
             protocol,
             config,
-          } = data;
-
-          const ports = [];
-          if (portKeys) {
-            forEach(portKeys, (item) => {
-              if (item || item === 0) {
-                const node = {
-                  port: Number(port[item]),
-                  targetPort: Number(tport[item]),
-                  nodePort: nport ? Number(nport[item]) : null,
-                };
-                config === 'NodePort' && (node.protocol = protocol[item]);
-                ports.push(node);
-              }
-            });
-          }
-
-          const network = {
-            name,
-            appServiceId: record.get('appServiceId').split('__')[0],
-            instances: [record.get('instanceName')],
-            envId: record.get('environmentId'),
-            externalIp: externalIps && externalIps.length ? externalIps.join(',') : null,
-            ports,
-            type: config,
-          };
-          record.set('devopsServiceReqVO', network);
-        } else {
-          hasFailed = true;
-        }
-      });
-    }
-    if (ingressForm.getFieldValue('domain') || ingressForm.getFieldValue('name') || ingressForm.getFieldValue('network').join('') || ingressForm.getFieldValue('port').join('') || ingressForm.getFieldValue('path').join('') !== '/') {
-      ingressFormRef.props.form.validateFieldsAndScroll((err, data) => {
-        if (!err) {
-          const {
             domain,
-            name,
+            domainName,
             certId,
             paths,
             path,
             network,
-            port,
+            netPort,
           } = data;
+          if (hasNet) {
+            const ports = [];
+            if (portKeys) {
+              forEach(portKeys, (item) => {
+                if (item || item === 0) {
+                  const node = {
+                    port: Number(port[item]),
+                    targetPort: Number(tport[item]),
+                    nodePort: nport ? Number(nport[item]) : null,
+                  };
+                  config === 'NodePort' && (node.protocol = protocol[item]);
+                  ports.push(node);
+                }
+              });
+            }
 
-          const pathList = [];
-          const networkList = ingressStore.getNetwork;
-          forEach(paths, (item) => {
-            const pt = path[item];
-            const serviceId = network[item];
-            const servicePort = port[item];
-            const serviceName = find(networkList, ['id', serviceId])[0].name;
-            pathList.push({
-              path: pt,
-              serviceId,
-              servicePort,
-              serviceName,
+            const networkData = {
+              name: networkName,
+              appServiceId: record.get('appServiceId').split('__')[0],
+              instances: [record.get('instanceName')],
+              envId: record.get('environmentId'),
+              externalIp: externalIps && externalIps.length ? externalIps.join(',') : null,
+              ports,
+              type: config,
+            };
+            record.set('devopsServiceReqVO', networkData);
+          }
+          if (hasDomain) {
+            const pathList = [];
+            forEach(paths, (item) => {
+              const pt = path[item];
+              const servicePort = netPort[item];
+              const serviceName = network[item];
+              pathList.push({
+                path: pt,
+                servicePort,
+                serviceName,
+              });
             });
-          });
 
-          const ingress = {
-            domain,
-            name,
-            certId,
-            appServiceId: record.get('appServiceId').split('__')[0],
-            envId: record.get('environmentId'),
-            pathList,
-          };
-          record.set('devopsIngressVO', ingress);
-        } else {
-          hasFailed = true;
+            const ingress = {
+              domain,
+              name: domainName,
+              certId,
+              appServiceId: record.get('appServiceId').split('__')[0],
+              envId: record.get('environmentId'),
+              pathList,
+            };
+            record.set('devopsIngressVO', ingress);
+          }
+          handleSubmit();
         }
       });
-    }
-    if (!hasFailed && await dataSet.submit() !== false) {
-      refresh();
     } else {
-      return false;
+      handleSubmit();
     }
+    return false;
   });
 
-  function getRandomName(prefix) {
-    const randomString = uuidV1();
-
-    return prefix
-      ? `${prefix.substring(0, 24)}-${randomString.substring(0, 5)}`
-      : randomString.substring(0, 30);
+  async function handleSubmit() {
+    if (await dataSet.submit() !== false) {
+      modal.close();
+      refresh();
+    }
   }
 
   function ChangeConfigValue(value) {
@@ -227,8 +214,8 @@ export default injectIntl(observer(({ record, dataSet, store, projectId, network
           </div>
           <div className={netIsExpand ? `${prefixCls}-resource-content` : `${prefixCls}-resource-display`}>
             <NetworkForm
-              wrappedComponentRef={(form) => setNetFormRef(form)}
-              store={networkStore}
+              form={form}
+              store={store}
               envId={record.get('environmentId')}
             />
           </div>
@@ -244,11 +231,10 @@ export default injectIntl(observer(({ record, dataSet, store, projectId, network
           </div>
           <div className={ingressIsExpand ? `${prefixCls}-resource-content` : `${prefixCls}-resource-display`}>
             <DomainForm
-              wrappedComponentRef={(form) => setIngressFormRef(form)}
+              form={form}
               type="create"
               envId={record.get('environmentId')}
-              DomainStore={ingressStore}
-              isDeployPage
+              DomainStore={store}
             />
           </div>
         </div>
@@ -256,3 +242,5 @@ export default injectIntl(observer(({ record, dataSet, store, projectId, network
     </div>
   );
 }));
+
+export default OldForm.create()(DeployModal);

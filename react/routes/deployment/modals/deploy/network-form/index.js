@@ -30,7 +30,6 @@ const formItemLayout = {
   },
 };
 
-@Form.create({})
 @injectIntl
 @withRouter
 @inject('AppState')
@@ -200,6 +199,7 @@ export default class CreateNetwork extends Component {
         setFieldsValue,
         validateFields,
       },
+      store,
     } = this.props;
     const { portKeys } = this.state;
     const keys = getFieldValue(type);
@@ -225,7 +225,10 @@ export default class CreateNetwork extends Component {
 
     setFieldsValue({
       [type]: _.filter(keys, (key) => key !== k),
-    }, () => validateFields(list, { force: true }));
+    }, () => {
+      validateFields(list, { force: true });
+      this.triggerNetPortCheck();
+    });
   };
 
   /**
@@ -255,7 +258,6 @@ export default class CreateNetwork extends Component {
     const {
       form: {
         validateFields,
-        getFieldValue,
       },
     } = this.props;
 
@@ -263,8 +265,28 @@ export default class CreateNetwork extends Component {
       this.selectLabel(value, keyFiled, valueFiled);
     }
 
+    if (type === 'port') {
+      this.triggerNetPortCheck();
+    }
+
     validateFields([type], { force: true });
   }, 400);
+
+  triggerNetPortCheck = () => {
+    const {
+      form: {
+        validateFields,
+        getFieldValue,
+        setFieldsValue,
+      },
+    } = this.props;
+    _.forEach(getFieldValue('paths'), (item) => {
+      const value = getFieldValue(`netPort[${item}]`);
+      if ((value && !getFieldValue('port').includes(value))) {
+        setFieldsValue({ [`netPort[${item}]`]: '' });
+      }
+    });
+  };
 
   /**
    * 处理输入的内容并返回给value
@@ -340,6 +362,21 @@ export default class CreateNetwork extends Component {
       });
       validateFields(['keywords'], { force: true });
     }
+  };
+
+  handleChangeName = (e) => {
+    const {
+      store,
+      form: {
+        getFieldValue,
+        setFieldsValue,
+      },
+    } = this.props;
+    _.forEach(getFieldValue('paths'), (item) => {
+      setFieldsValue({
+        [`network[${item}]`]: e.target.value,
+      });
+    });
   };
 
   render() {
@@ -421,17 +458,12 @@ export default class CreateNetwork extends Component {
               },
             ],
           })(
-            <Select
-              mode="combobox"
+            <Input
+              type="text"
               maxLength={5}
               onChange={this.changeValue.bind(this, 'tport')}
               label={<FormattedMessage id="network.config.targetPort" />}
-              dropdownMatchSelectWidth={false}
-            >
-              {_.map(store.getPorts, ({ resourceName, portValue }) => (
-                <Option key={portValue}>{resourceName}: {portValue}</Option>
-              ))}
-            </Select>,
+            />,
           )}
         </FormItem>
         {configType === 'NodePort' && (
@@ -475,7 +507,7 @@ export default class CreateNetwork extends Component {
           className="network-form-name"
           {...formItemLayout}
         >
-          {getFieldDecorator('name', {
+          {getFieldDecorator('networkName', {
             initialValue: initName,
             rules: [
               {
@@ -492,6 +524,7 @@ export default class CreateNetwork extends Component {
               disabled={!envId}
               type="text"
               label={<FormattedMessage id="network.form.name" />}
+              onChange={this.handleChangeName}
             />,
           )}
         </FormItem>
