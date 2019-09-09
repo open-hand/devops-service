@@ -18,6 +18,7 @@ function StatusIcon(props) {
   let statusDom = null;
   const statusClass = classnames({
     'c7n-status-deleted': status === 'deleted',
+    'c7n-status-unset': handleAtagClick,
   });
   switch (status) {
     case 'failed': {

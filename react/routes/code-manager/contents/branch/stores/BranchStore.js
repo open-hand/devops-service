@@ -242,7 +242,7 @@ class BranchStore {
       return res;
     });
 
-  updateBranchByName = (projectId, appId, postData) => axios.put(`/devops/v1/projects/${projectId}/app_service/${appId}/git/branch`, postData)
+  updateBranchByName = (projectId, appId, postData) => axios.put(`/devops/v1/projects/${projectId}/app_service/${appId}/git/update_branch_issue`, postData)
     .then((datas) => {
       const result = handlePromptError(datas)
       if(result){

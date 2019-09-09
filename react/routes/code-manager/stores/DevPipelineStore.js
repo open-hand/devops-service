@@ -142,18 +142,14 @@ class DevPipelineStore {
       .then((data) => {
         this.setLoading(false);
         if (handlePromptError(data)) {
-          const res = data;
-          const appSort = _.concat(_.filter(res, ['permission', true]), _.filter(res, ['permission', false]));
-          const result = _.filter(appSort, ['permission', true]);
-          const tempAppId = this.selectedApp;
-          this.setAppData(appSort);
-          if (result && result.length) {
+          this.setAppData(data);
+          if (data && data.length) {
             if (this.selectedApp) {
-              if (_.filter(result, ['id', this.selectedApp]).length === 0) {
-                this.setSelectApp(result[0].id);
+              if (_.filter(data, ['id', this.selectedApp]).length === 0) {
+                this.setSelectApp(data[0].id);
               }
             } else {
-              this.setSelectApp(result[0].id);
+              this.setSelectApp(data[0].id);
             }
             refersh && refersh();
           } else {

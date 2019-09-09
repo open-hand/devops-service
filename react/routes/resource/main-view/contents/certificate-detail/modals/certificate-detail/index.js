@@ -1,7 +1,7 @@
 import React from 'react';
 import { FormattedMessage } from 'react-intl';
 import _ from 'lodash';
-
+import moment from 'moment'; 
 import './index.less';
 
 
@@ -15,7 +15,7 @@ export default function ({ intlPrefix, record, prefixCls, formatMessage }) {
         <span>{(record 
             && record.get('validFrom')
             && record.get('validUntil')
-            && (`${record.get('validFrom')}-${record.get('validUntil')}`)) || '-' }</span>
+            && (`${moment(record.get('validFrom')).format('YYYY.MM.DD')}-${moment(record.get('validUntil')).format('YYYY.MM.DD')}`)) || '-' }</span>
       </li>
       <li className="detail-item">
         <span className="detail-item-text">

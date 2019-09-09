@@ -1,7 +1,6 @@
 import React from 'react';
 import { FormattedMessage } from 'react-intl';
 import _ from 'lodash';
-
 import './index.less';
 
 /**
@@ -78,7 +77,7 @@ export default function ({ intlPrefix, record, prefixCls, formatMessage }) {
           <span className="detail-item-text">
             {formatMessage({ id: `${intlPrefix}.net.dns` })}:
           </span>
-          <span>{(record 
+          <span className="detail-item-more-text">{(record 
             && record.get('dns')) || '-' }</span>
         </li>
         <li className="detail-item">

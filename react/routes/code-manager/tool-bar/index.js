@@ -75,16 +75,18 @@ class CodeManagerToolBar extends Component {
 
     return <Header>
       {this.getSelfToolBar()}
-      <Tooltip title={<FormattedMessage id="repository.copyUrl" />} placement="bottom">
-        <CopyToClipboard
-          text={(currentApp && currentApp.repoUrl) || noRepoUrl}
-          onCopy={this.handleCopy}
-        >
+      
+      <CopyToClipboard
+        text={(currentApp && currentApp.repoUrl) || noRepoUrl}
+        onCopy={this.handleCopy}
+      >
+        <Tooltip title={<FormattedMessage id="repository.copyUrl" />} placement="bottom">
           <Button icon="content_copy" disabled={!(currentApp && currentApp.repoUrl)}>
             <FormattedMessage id="repository.copyUrl" />
           </Button>
-        </CopyToClipboard>
-      </Tooltip> 
+        </Tooltip> 
+      </CopyToClipboard>
+      
       <Button
         onClick={this.refreshApp}
         icon="refresh"
@@ -125,11 +127,10 @@ export const SelectApp = injectIntl(inject('AppState')(observerLite((props) => {
   >
     <OptGroup label={formatMessage({ id: 'recent' })} key="recent">
       {
-          _.map(getRecentApp, ({ id, permission, code, name: opName }) => (
+          _.map(getRecentApp, ({ id, code, name: opName }) => (
             <Option
               key={`recent-${id}`}
               value={id}
-              disabled={!permission}
             >
               <Tooltip title={code}>
                 <span className="c7n-ib-width_100">{opName}</span>
@@ -139,11 +140,10 @@ export const SelectApp = injectIntl(inject('AppState')(observerLite((props) => {
     </OptGroup>
     <OptGroup label={formatMessage({ id: 'deploy.app' })} key="app">
       {
-          _.map(getAppData, ({ id, code, name: opName, permission }, index) => (
+          _.map(getAppData, ({ id, code, name: opName }, index) => (
             <Option
               value={id}
               key={index}
-              disabled={!permission}
             >
               <Tooltip title={code}>
                 <span className="c7n-ib-width_100">{opName}</span>
