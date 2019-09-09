@@ -1,4 +1,4 @@
-import React, { Fragment, useRef, lazy, Suspense, useMemo } from 'react';
+import React, { useRef, lazy, Suspense, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import DragBar from '../../../components/drag-bar';
 import Loading from '../../../components/loading';
@@ -36,7 +36,7 @@ const MainView = observer(() => {
   }, [itemType]);
 
   function getMainView() {
-    if (!treeDs.length) {
+    if (!treeDs.length && treeDs.status === 'ready') {
       return <div
         className={`${prefixCls}-wrap`}
       >
@@ -62,7 +62,7 @@ const MainView = observer(() => {
     }
   }
 
-  return treeDs.status === 'ready' ? getMainView() : <Loading display />;
+  return getMainView();
 });
 
 export default MainView;
