@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 
 import com.github.pagehelper.PageInfo;
+
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.eventhandler.payload.BranchSagaPayLoad;
@@ -100,10 +101,10 @@ public interface DevopsGitService {
     /**
      * 删除分支
      *
-     * @param applicationId 应用ID
-     * @param branchName    分支名
+     * @param appServiceId 应用服务ID
+     * @param branchName   分支名
      */
-    void deleteBranch(Long applicationId, String branchName);
+    void deleteBranch(Long appServiceId, String branchName);
 
     /**
      * 校验分支名唯一性
