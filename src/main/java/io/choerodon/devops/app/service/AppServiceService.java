@@ -59,11 +59,12 @@ public interface AppServiceService {
     /**
      * 项目下启用停用服务信息
      *
+     * @param projectId     项目id
      * @param applicationId 服务id
      * @param active        启用停用
      * @return Boolean
      */
-    Boolean updateActive(Long applicationId, Boolean active);
+    Boolean updateActive(Long projectId, Long applicationId, Boolean active);
 
     /**
      * 组织下分页查询服务
@@ -434,11 +435,11 @@ public interface AppServiceService {
      * 查询所有应用服务
      *
      * @param projectId
-     * @param type normal_service(本项目服务) share_service(组织下共享) market_service(应用市场下载)
+     * @param type      normal_service(本项目服务) share_service(组织下共享) market_service(应用市场下载)
      * @param param
      * @return
      */
-    List<AppServiceGroupVO> listAllAppServices(Long projectId, String type, String param,String serviceType);
+    List<AppServiceGroupVO> listAllAppServices(Long projectId, String type, String param, String serviceType);
 
     String getToken(Integer gitlabProjectId, String applicationDir, UserAttrDTO userAttrDTO);
 }

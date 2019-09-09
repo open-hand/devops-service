@@ -137,7 +137,7 @@ public class AppServiceController {
             @PathVariable(value = "app_service_id") Long appServiceId,
             @ApiParam(value = "启用停用", required = true)
             @RequestParam Boolean active) {
-        return Optional.ofNullable(applicationServiceService.updateActive(appServiceId, active))
+        return Optional.ofNullable(applicationServiceService.updateActive(projectId, appServiceId, active))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.app.service.active"));
     }
