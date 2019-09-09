@@ -26,7 +26,7 @@ public interface MarketServiceClient {
     ResponseEntity<Boolean> uploadFile(@RequestParam(value = "app_version") String appVersion,
                                        @RequestPart Map map);
 
-    @PutMapping("v1/market_applications/published/versionFixWithin")
+    @PostMapping("v1/market_applications/published/versionFixWithin")
     ResponseEntity<Boolean> updateAppPublishInfoFix(@RequestParam(value = "app_code") String code,
                                                     @RequestParam(value = "version") String version,
                                                     @RequestPart Map map);

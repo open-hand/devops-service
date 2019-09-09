@@ -23,7 +23,7 @@ public interface MarketServicePublicClient {
                                   @Part("imageUrl") String imageUrl);
 
     @Multipart
-    @PUT("market/v1/market_applications/published/versionFix")
+    @POST("market/v1/market_applications/published/versionFix")
     Call<ResponseBody> updateAppPublishInfoFix(@Query("remote_token") String remoteToken,
                                                @Query("app_code") String code,
                                                @Query("version") String version,
