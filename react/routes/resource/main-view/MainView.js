@@ -1,4 +1,4 @@
-import React, { Fragment, useRef, lazy, Suspense, useMemo } from 'react';
+import React, { useRef, lazy, Suspense, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import Sidebar from './sidebar';
 import DragBar from '../../../components/drag-bar';
@@ -87,7 +87,7 @@ const MainView = observer(() => {
   }, [resourceStore.getViewType, resourceStore.getSelectedMenu.itemType]);
 
   function getMainView() {
-    if (!treeDs.length) {
+    if (!treeDs.length && treeDs.status === 'ready') {
       resourceStore.setShowHeader(false);
       return <div>当前项目下没有可运行环境，请先去创建环境！</div>;
     } else {
@@ -100,17 +100,15 @@ const MainView = observer(() => {
           parentRef={rootRef}
           store={mainStore}
         />
-        <Fragment>
-          <Sidebar />
-          <div className={`${prefixCls}-main ${prefixCls}-animate`}>
-            {content}
-          </div>
-        </Fragment>
+        <Sidebar />
+        <div className={`${prefixCls}-main ${prefixCls}-animate`}>
+          {content}
+        </div>
       </div>;
     }
   }
 
-  return treeDs.status === 'ready' ? getMainView() : <Loading display />;
+  return getMainView();
 });
 
 export default MainView;
