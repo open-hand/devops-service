@@ -1,9 +1,8 @@
 import React, { Component, Fragment } from 'react';
 import { observer, inject } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
-import { Tooltip, Select } from 'choerodon-ui';
-import { Content, Header, Page, stores } from '@choerodon/master';
-import { injectIntl, FormattedMessage } from 'react-intl';
+import { Content, Page } from '@choerodon/master';
+import { injectIntl } from 'react-intl';
 import _ from 'lodash';
 import CiPipelineStore from './stores';
 import DevPipelineStore from '../../stores/DevPipelineStore';
@@ -29,9 +28,6 @@ class CiPipelineHome extends Component {
     });
   }
 
-  componentDidMount() {
-  }
-
   componentWillUnmount() {
     CiPipelineStore.setCiPipelines([]);
     DevopsStore.clearAutoRefresh();
@@ -47,8 +43,6 @@ class CiPipelineHome extends Component {
   };
 
   handleChange(appId) {
-    DevPipelineStore.setSelectApp(appId);
-    DevPipelineStore.setRecentApp(appId);
     CiPipelineStore.loadPipelines(true, appId);
   }
 
@@ -59,6 +53,9 @@ class CiPipelineHome extends Component {
     return (
       <Page
         className="c7n-ciPipeline"
+        service={[
+          'devops-service.pipeline.pageByOptions',
+        ]}
       >
         {appData && appData.length && appId ? <Fragment>
           <Content className="c7n-content">

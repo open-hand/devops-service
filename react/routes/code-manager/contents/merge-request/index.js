@@ -42,13 +42,19 @@ class MergeRequestHome extends Component {
   /**
    * 生成特殊的自定义tool-bar
    */
-  getSelfToolBar= () => (<Button
-    funcType="flat"
-    onClick={this.linkToNewMerge}
-  >
-    <i className="icon-playlist_add icon" />
-    <FormattedMessage id="merge.createMerge" />
-  </Button>)
+  getSelfToolBar= () => (
+    <Permission
+      service={['devops-service.devops-git.queryUrl']}
+    >
+      <Button
+        funcType="flat"
+        onClick={this.linkToNewMerge}
+        disabled={!MergeRequestStore.getUrl}
+      >
+        <i className="icon-playlist_add icon" />
+        <FormattedMessage id="merge.createMerge" />
+      </Button>
+    </Permission>)
 
   /**
    * 刷新函数
@@ -115,8 +121,6 @@ class MergeRequestHome extends Component {
       tabKey: 'opened',
     });
     const projectId = parseInt(AppState.currentMenuType.id, 10);
-    DevPipelineStore.setSelectApp(id);
-    DevPipelineStore.setRecentApp(id);
     MergeRequestStore.setAssignee([]);
     MergeRequestStore.setAssigneeCount(0);
     MergeRequestStore.loadMergeRquest(id, 'opened');
@@ -381,6 +385,10 @@ class MergeRequestHome extends Component {
     return (
       <Page
         className="c7n-region page-container c7n-merge-wrapper"
+        service={[
+          'devops-service.devops-git.listMergeRequest',
+          'devops-service.devops-git.queryUrl',
+        ]}
       >
         {hasAppData && appId
           ? <Fragment>

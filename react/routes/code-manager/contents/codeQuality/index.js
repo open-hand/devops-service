@@ -5,7 +5,6 @@ import { injectIntl, FormattedMessage } from 'react-intl';
 import { Page, Header, Content } from '@choerodon/master';
 import { Select, Button, Tooltip, Icon, Card } from 'choerodon-ui';
 import _ from 'lodash';
-import { CopyToClipboard } from 'react-copy-to-clipboard';
 import Loading from '../../../../components/loading';
 import DevPipelineStore from '../../stores/DevPipelineStore';
 import Percentage from '../../../../components/percentage/Percentage';
@@ -17,7 +16,6 @@ import handleMapStore from '../../main-view/store/handleMapStore';
 import './index.less';
 import '../../../main.less';
 
-const { Option, OptGroup } = Select;
 @injectIntl
 @withRouter
 @inject('AppState')
@@ -57,17 +55,8 @@ class CodeQuality extends Component {
     const {
       AppState: { currentMenuType: { projectId } },
     } = this.props;
-    DevPipelineStore.setSelectApp(value);
-    DevPipelineStore.setRecentApp(value);
     CodeQualityStore.loadData(projectId, value);
   };
-
-  /**
-   * 复制仓库地址处理函数
-   */
-  handleCopy = () => {
-    // this.setState();
-  }
 
   getDetail = () => {
     const {
@@ -179,8 +168,7 @@ class CodeQuality extends Component {
       <Page
         className="c7n-region c7n-codeQuality-wrapper"
         service={[
-          'devops-service.application.listByActive',
-          'devops-service.application.getSonarQube',
+          'devops-service.app-service.getSonarQube',
         ]}
       >
         {getAppData && getAppData.length && getSelectApp ? <Fragment>

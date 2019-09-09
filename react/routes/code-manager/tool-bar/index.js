@@ -1,5 +1,6 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component, Fragment, useMemo } from 'react';
 import { observer, inject } from 'mobx-react';
+import { observer as observerLite } from 'mobx-react-lite';
 import { withRouter, Link } from 'react-router-dom';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { Header } from '@choerodon/master';
@@ -29,29 +30,10 @@ class CodeManagerToolBar extends Component {
   componentDidMount() {
     const {
       AppState: { currentMenuType: { projectId } },
-      location: { state },
       name,
     } = this.props;
-    const { appId } = state || {};
-    DevPipelineStore.queryAppData(projectId, name, appId, this.handleRefresh, false);
+    DevPipelineStore.queryAppData(projectId, name, this.handleRefresh, false);
   }
-
-
-  /**
-   * 通过下拉选择器选择应用时，获取应用id
-   * @param id
-   */
-  handleSelect = (value, option) => {
-    DevPipelineStore.setRecentApp(value);
-    Object.keys(handleMapStore).forEach((key) => {
-      if (key.indexOf('Code') !== -1) {
-        handleMapStore[key]
-        && handleMapStore[key].select
-        && handleMapStore[key].select(value, option);
-      }
-    });
-  };
-
 
   /**
    * 点击复制代码成功回调
@@ -69,11 +51,9 @@ class CodeManagerToolBar extends Component {
   refreshApp = (isInit = true) => {
     const {
       AppState: { currentMenuType: { projectId } },
-      location: { state },
       name,
     } = this.props;
-    const { appId } = state || {};
-    DevPipelineStore.queryAppData(projectId, name, appId, this.handleRefresh, true, this.changeLoding);
+    DevPipelineStore.queryAppData(projectId, name, this.handleRefresh, true, this.changeLoding);
   }
 
   getSelfToolBar = () => {
@@ -90,59 +70,17 @@ class CodeManagerToolBar extends Component {
     } = this.props;
     const appData = DevPipelineStore.getAppData;
     const appId = DevPipelineStore.getSelectApp;
-    const { getAppData, getRecentApp, getSelectApp } = DevPipelineStore;
-    const app = _.find(getAppData, ['id', getSelectApp]);
     const currentApp = _.find(appData, ['id', appId]);
     const noRepoUrl = formatMessage({ id: 'repository.noUrl' });
 
     return <Header>
-      <Select
-        filter
-        className="c7n-header-select c7n-header-select-noborder"
-        dropdownClassName="c7n-header-select_drop"
-        placeholder={formatMessage({ id: 'ist.noApp' })}
-        disabled={getAppData.length === 0}
-        value={getSelectApp}
-        filterOption={(input, option) => option.props.children.props.children.props.children
-          .toLowerCase().indexOf(input.toLowerCase()) >= 0}
-        onChange={(value, option) => this.handleSelect(value, option)}
-      >
-        <OptGroup label={formatMessage({ id: 'recent' })} key="recent">
-          {
-                  _.map(getRecentApp, ({ id, permission, code, name: opName }) => (
-                    <Option
-                      key={`recent-${id}`}
-                      value={id}
-                      disabled={!permission}
-                    >
-                      <Tooltip title={code}>
-                        <span className="c7n-ib-width_100">{opName}</span>
-                      </Tooltip>
-                    </Option>))
-                }
-        </OptGroup>
-        <OptGroup label={formatMessage({ id: 'deploy.app' })} key="app">
-          {
-                  _.map(getAppData, ({ id, code, name: opName, permission }, index) => (
-                    <Option
-                      value={id}
-                      key={index}
-                      disabled={!permission}
-                    >
-                      <Tooltip title={code}>
-                        <span className="c7n-ib-width_100">{opName}</span>
-                      </Tooltip>
-                    </Option>))
-                }
-        </OptGroup>
-      </Select>
       {this.getSelfToolBar()}
       <Tooltip title={<FormattedMessage id="repository.copyUrl" />} placement="bottom">
         <CopyToClipboard
           text={(currentApp && currentApp.repoUrl) || noRepoUrl}
           onCopy={this.handleCopy}
         >
-          <Button icon="content_copy">
+          <Button icon="content_copy" disabled={!(currentApp && currentApp.repoUrl)}>
             <FormattedMessage id="repository.copyUrl" />
           </Button>
         </CopyToClipboard>
@@ -155,4 +93,63 @@ class CodeManagerToolBar extends Component {
   }
 }
 
+
 export default CodeManagerToolBar;
+
+export const SelectApp = injectIntl(inject('AppState')(observerLite((props) => {
+  const handleSelect = (value, option) => {
+    DevPipelineStore.setSelectApp(value);
+    DevPipelineStore.setRecentApp(value);
+    Object.keys(handleMapStore).forEach((key) => {
+      if (key.indexOf('Code') !== -1) {
+        handleMapStore[key]
+        && handleMapStore[key].select
+        && handleMapStore[key].select(value, option);
+      }
+    });
+  };
+  const {
+    intl: { formatMessage },
+  } = props;
+  const { getAppData, getRecentApp, getSelectApp } = DevPipelineStore;
+  return <Select
+    filter
+    filterOption={(input, option) => option.props.children.props.children.props.children
+      .toLowerCase().indexOf(input.toLowerCase()) >= 0}
+    placeholder={formatMessage({ id: 'ist.noApp' })}
+    disabled={getAppData.length === 0}
+    label={formatMessage({ id: 'c7ncd.deployment.app-service' })}
+    className="c7n-code-managerment-select-app"
+    value={getSelectApp}
+    onChange={handleSelect}
+  >
+    <OptGroup label={formatMessage({ id: 'recent' })} key="recent">
+      {
+          _.map(getRecentApp, ({ id, permission, code, name: opName }) => (
+            <Option
+              key={`recent-${id}`}
+              value={id}
+              disabled={!permission}
+            >
+              <Tooltip title={code}>
+                <span className="c7n-ib-width_100">{opName}</span>
+              </Tooltip>
+            </Option>))
+        }
+    </OptGroup>
+    <OptGroup label={formatMessage({ id: 'deploy.app' })} key="app">
+      {
+          _.map(getAppData, ({ id, code, name: opName, permission }, index) => (
+            <Option
+              value={id}
+              key={index}
+              disabled={!permission}
+            >
+              <Tooltip title={code}>
+                <span className="c7n-ib-width_100">{opName}</span>
+              </Tooltip>
+            </Option>))
+        }
+    </OptGroup>
+  </Select>;
+})));

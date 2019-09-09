@@ -529,14 +529,13 @@ export default class Pipeline extends Component {
     return (<Page
       className="c7n-region"
       service={[
-        'devops-service.pipeline.create',
+        'devops-service.pipeline.pageByOptions',
+        'devops-service.pipeline.listByActive',
+        'devops-service.pipeline.execute',
         'devops-service.pipeline.update',
-        'devops-service.pipeline.listByOptions',
         'devops-service.pipeline.updateIsEnabled',
         'devops-service.pipeline.delete',
-        'devops-service.pipeline.execute',
-        'devops-service.pipeline.listRecords',
-        'devops-service.pipeline.checkDeploy',
+        'devops-service.pipeline.create',
       ]}
     >
       <Header title={<FormattedMessage id="pipeline.head" />}>

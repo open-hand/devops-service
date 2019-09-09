@@ -150,9 +150,6 @@ class BranchCreate extends Component {
           .createBranch(projectId, appId, postData)
           .then(() => {
             store.loadBranchList({ projectId, appId: this.props.appId });
-            // if (isDevConsole) {
-            //   DevConsoleStore.loadBranchList(projectId, appId);
-            // }
             this.props.onClose();
             this.props.form.resetFields();
             this.setState({ submitting: false });

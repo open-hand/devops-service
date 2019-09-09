@@ -15,7 +15,7 @@
       margin-bottom: .16rem;
       list-style: none;
       font-size: .14rem;
-      .instance {
+      &-one-to-many {
         display: flex;
         p {
           line-height: .14rem;
@@ -26,6 +26,14 @@
         color: rgba(0, 0, 0, 0.65);
         width: .88rem;
         display: inline-block;
+      }
+
+      &-more-text {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: inline-block;
+        width: 70%;
       }
 
       &-has-url {
