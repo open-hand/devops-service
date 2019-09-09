@@ -374,23 +374,35 @@
     </select>
 
 
-    <select id="queryServiceVersionByAppServiceId" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
-        select * from devops_app_service_version as b where not exists(select 1 from devops_app_service_version where
-        app_service_id= b.app_service_id
-        and b.last_update_date &lt; last_update_date)
-        and app_service_id=#{appServiceId}
+    <select id="listServiceVersionByAppServiceIds" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
+        select  DISTINCT a.id,a.version,a.app_service_id
+        from devops_app_service_version a
         <if test="share!=null and share !=''">
-            or version in(select version from devops_app_service_share_rule where app_service_id=#{appServiceId})
+         left join devops_app_service_share_rule c on c.app_service_id=a.app_service_id
         </if>
-        order by last_update_date desc
-        limit 1
+        where
+        (
+        select count(*) from devops_app_service_version b
+        where b.id=a.id
+        and b.last_updated_by>a.last_updated_by)&lt;1
+        and a.app_service_id is not null
+        <if test="share != null and share != ''">
+            and c.id is not null
+        </if>
+        <if test='ids != null and ids.size > 0'>
+            AND
+            <foreach collection="ids" item="id" open="(" separator=" OR " close=")">
+                a.app_service_id=#{id}
+            </foreach>
+        </if>
+        ORDER BY a.id
     </select>
 
     <select id="queryServiceVersionByAppServiceIdAndShare" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
-      	select * from  devops_app_service_version
-				where app_service_id=#{appServiceId}
-        <if test="share!=null and share !=''">
-				and version in(select version from devops_app_service_share_rule where app_service_id=#{appServiceId})
+        select * from  devops_app_service_version
+        where app_service_id=#{appServiceId}
+        <if test="share != null and share != ''">
+            and version in(select version from devops_app_service_share_rule where app_service_id=#{appServiceId})
         </if>
         order by last_update_date desc
     </select>

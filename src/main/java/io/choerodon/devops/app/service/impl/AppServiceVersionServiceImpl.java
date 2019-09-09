@@ -384,9 +384,9 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     }
 
     @Override
-    public AppServiceVersionDTO queryServiceVersionByAppServiceId(Long appServiceId, String share) {
+    public List<AppServiceVersionDTO> listServiceVersionByAppServiceIds(List<Long> appServiceIds, String share) {
 
-        return appServiceVersionMapper.queryServiceVersionByAppServiceId(appServiceId, share);
+        return appServiceVersionMapper.listServiceVersionByAppServiceIds(appServiceIds, share);
     }
 
     @Override
