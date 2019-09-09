@@ -2124,10 +2124,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
         switch (type) {
             case NORMAL_SERVICE: {
-                AppServiceDTO appServiceDTO = new AppServiceDTO();
-                appServiceDTO.setAppId(devopsProjectService.queryAppIdByProjectId(projectId));
-                appServiceDTO.setActive(true);
-                list.addAll(appServiceMapper.select(appServiceDTO));
+                list.addAll(appServiceMapper.list(devopsProjectService.queryAppIdByProjectId(projectId), null, true, serviceType, null, params, ""));
                 break;
             }
             case SHARE_SERVICE: {
