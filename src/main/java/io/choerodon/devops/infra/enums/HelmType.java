@@ -65,6 +65,7 @@ public enum HelmType {
     CERT_MANAGER_INSTALL("cert_manager_install"),
     OPERATE_DOCKER_REGISTRY_SECRET_FAILED("operate_docker_registry_secret_failed"),
     OPERATE_DOCKER_REGISTRY_SECRET("operate_docker_registry_secret"),
+    POD_METRICS_SYNC("pod_metrics_sync"),
     NODE_SYNC("node_sync");
 
     private static HashMap<String, HelmType> valuesMap = new HashMap<>(6);

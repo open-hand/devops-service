@@ -651,7 +651,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             return null;
         }
         try {
-            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getAppId());
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsProjectService.queryProjectIdByAppId(appServiceDTO.getAppId()));
             OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
             InputStream inputStream;
             ConfigVO harborProjectConfig = gson.fromJson(devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, HARBOR).getConfig(), ConfigVO.class);
@@ -2122,8 +2122,8 @@ public class AppServiceServiceImpl implements AppServiceService {
             case SHARE_SERVICE: {
                 Long organizationId = baseServiceClientOperator.queryIamProjectById(projectId).getOrganizationId();
                 List<Long> appServiceIds = new ArrayList<>();
-                baseServiceClientOperator.listIamProjectByOrgId(organizationId, null, null).forEach(proId ->
-                        baseListAll(projectId).forEach(appServiceDTO -> appServiceIds.add(appServiceDTO.getId()))
+                baseServiceClientOperator.listIamProjectByOrgId(organizationId, null, null).forEach(pro ->
+                        baseListAll(pro.getId()).forEach(appServiceDTO -> appServiceIds.add(appServiceDTO.getId()))
                 );
                 list.addAll(appServiceMapper.listShareApplicationService(appServiceIds, projectId, serviceType, params));
                 break;
