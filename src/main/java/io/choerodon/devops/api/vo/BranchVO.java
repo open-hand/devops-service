@@ -2,6 +2,8 @@ package io.choerodon.devops.api.vo;
 
 import java.util.Date;
 
+import io.swagger.annotations.ApiModelProperty;
+
 import io.choerodon.devops.infra.dto.DevopsBranchDTO;
 import io.choerodon.devops.infra.dto.agile.IssueDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
@@ -30,6 +32,9 @@ public class BranchVO {
     private String status;
     private String errorMessage;
 
+    @ApiModelProperty("分支纪录的版本号")
+    private Long objectVersionNumber;
+
     public BranchVO() {
     }
 
@@ -57,6 +62,7 @@ public class BranchVO {
         this.createUserRealName = realName;
         this.status = status;
         this.errorMessage = errorMessage;
+        this.objectVersionNumber = devopsBranchDTO.getObjectVersionNumber();
     }
 
     public String getBranchName() {
@@ -195,5 +201,11 @@ public class BranchVO {
         this.errorMessage = errorMessage;
     }
 
+    public Long getObjectVersionNumber() {
+        return objectVersionNumber;
+    }
 
+    public void setObjectVersionNumber(Long objectVersionNumber) {
+        this.objectVersionNumber = objectVersionNumber;
+    }
 }
