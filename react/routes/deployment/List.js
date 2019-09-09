@@ -46,8 +46,6 @@ const Deployment = withRouter(observer((props) => {
     deployStore,
     pipelineStore,
     manualDeployDs,
-    networkStore,
-    ingressStore,
   } = useDeployStore();
 
   const [showPendingCheck, serShowPendingCheck] = useState(false);
@@ -158,9 +156,12 @@ const Deployment = withRouter(observer((props) => {
         intlPrefix={intlPrefix}
         prefixCls={prefixCls}
         record={manualDeployDs.create()}
-        networkStore={networkStore}
-        ingressStore={ingressStore}
       />,
+      afterClose: () => {
+        deployStore.setCertificates([]);
+        deployStore.setAppService([]);
+        deployStore.setConfigValue('');
+      },
       okText: formatMessage({ id: 'deployment' }),
     });
   }

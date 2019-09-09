@@ -8,8 +8,6 @@ import DetailDataSet from './DetailDataSet';
 import useStore from './useStore';
 import usePipelineStore from './usePipelineStore';
 import ManualDeployDataSet from './ManualDeployDataSet';
-import useNetworkStore from './useNetworkStore';
-import useIngressStore from './useIngressStore';
 import OptionsDataSet from './OptionsDataSet';
 
 const Store = createContext();
@@ -29,8 +27,6 @@ export const StoreProvider = injectIntl(inject('AppState')(
 
     const deployStore = useStore();
     const pipelineStore = usePipelineStore();
-    const networkStore = useNetworkStore();
-    const ingressStore = useIngressStore();
 
     const envOptionsDs = useMemo(() => new DataSet(OptionsDataSet()), []);
     const valueIdOptionsDs = useMemo(() => new DataSet(OptionsDataSet()), []);
@@ -51,8 +47,6 @@ export const StoreProvider = injectIntl(inject('AppState')(
       deployStore,
       pipelineStore,
       manualDeployDs,
-      networkStore,
-      ingressStore,
     };
     return (
       <Store.Provider value={value}>

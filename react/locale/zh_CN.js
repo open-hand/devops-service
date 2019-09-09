@@ -1624,6 +1624,7 @@ const zhCN = {
   'domain.network.check.failed': '请移除不可用的网络',
   'domain.port.notExist': '请更新端口',
   'domain.protocol': '网络协议',
+  'domain.protocol.type': '协议类型',
   'domain.protocol.normal': '普通协议',
   'domain.protocol.secret': '加密协议',
   'domain.cert.none': '未检索到证书',

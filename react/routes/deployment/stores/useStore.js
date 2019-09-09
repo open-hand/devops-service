@@ -21,6 +21,14 @@ export default function useStore() {
       return this.configValue;
     },
 
+    certificates: [],
+    setCertificates(data) {
+      this.certificates = data;
+    },
+    get getCertificates() {
+      return this.certificates;
+    },
+
     async startPipeline(projectId, pipelineIds) {
       try {
         const res = await axios.get(`/devops/v1/projects/${projectId}/pipeline/batch_execute?pipelineIds=${pipelineIds}`);
@@ -61,6 +69,29 @@ export default function useStore() {
       } catch (e) {
         Choerodon.handleResponseError(e);
       }
+    },
+
+    checkNetWorkName(projectId, envId, value) {
+      return axios.get(`/devops/v1/projects/${projectId}/service/check_name?env_id=${envId}&name=${value}`);
+    },
+
+    async loadCertByEnv(projectId, envId, domain) {
+      try {
+        const res = await axios.post(`/devops/v1/projects/${projectId}/certifications/active?env_id=${envId}&domain=${domain}`);
+        if (handlePromptError(res)) {
+          this.setCertificates(res);
+        }
+      } catch (e) {
+        Choerodon.handleResponseError(e);
+      }
+    },
+
+    checkName(projectId, value, envId) {
+      return axios.get(`/devops/v1/projects/${projectId}/ingress/check_name?env_id=${envId}&name=${value}`);
+    },
+
+    checkPath(projectId, domain, env, value, id = '') {
+      return axios.get(`/devops/v1/projects/${projectId}/ingress/check_domain?domain=${domain}&env_id=${env}&path=${value}&id=${id}`);
     },
   }));
 }
