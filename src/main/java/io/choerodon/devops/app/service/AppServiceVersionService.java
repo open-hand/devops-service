@@ -3,11 +3,15 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 
 import com.github.pagehelper.PageInfo;
+import org.springframework.web.multipart.MultipartFile;
+
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.AppServiceVersionAndCommitVO;
+import io.choerodon.devops.api.vo.AppServiceVersionRespVO;
+import io.choerodon.devops.api.vo.AppServiceVersionVO;
+import io.choerodon.devops.api.vo.DeployVersionVO;
 import io.choerodon.devops.infra.dto.AppServiceLatestVersionDTO;
 import io.choerodon.devops.infra.dto.AppServiceVersionDTO;
-import org.springframework.web.multipart.MultipartFile;
 
 /**
  * Created by Zenger on 2018/4/3.
@@ -31,9 +35,10 @@ public interface AppServiceVersionService {
      *
      * @param appServiceId 应用Id
      * @param version      查询参数
+     * @param type (code仅源码、deploy仅部署)
      * @return List
      */
-    List<AppServiceVersionRespVO> listByAppServiceId(Long appServiceId, String version);
+    List<AppServiceVersionRespVO> listByAppServiceId(Long appServiceId, String type, String version);
 
     /**
      * 项目下查询应用所有已部署版本
@@ -181,7 +186,7 @@ public interface AppServiceVersionService {
      * 查询应用服务在组织共享下的最新版本根据服务ID集合
      *
      * @param appServiceIds 应用服务Id集合
-     * @param share 是否是组织共享
+     * @param share         是否是组织共享
      * @return 应用服务版本
      */
     List<AppServiceVersionDTO> listServiceVersionByAppServiceIds(List<Long> appServiceIds, String share);

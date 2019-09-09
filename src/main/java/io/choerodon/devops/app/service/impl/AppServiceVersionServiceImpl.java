@@ -221,8 +221,8 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     }
 
     @Override
-    public List<AppServiceVersionRespVO> listByAppServiceId(Long appServiceId, String version) {
-        return ConvertUtils.convertList(baseListByAppServiceIdAndVersion(appServiceId, version), AppServiceVersionRespVO.class);
+    public List<AppServiceVersionRespVO> listByAppServiceId(Long appServiceId, String type, String version) {
+        return ConvertUtils.convertList(baseListByAppServiceIdAndVersion(appServiceId, type, version), AppServiceVersionRespVO.class);
     }
 
     @Override
@@ -433,8 +433,8 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         return appServiceVersionDTOS;
     }
 
-    public List<AppServiceVersionDTO> baseListByAppServiceIdAndVersion(Long appServiceId, String version) {
-        List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceVersionMapper.listByAppIdAndVersion(appServiceId, version);
+    public List<AppServiceVersionDTO> baseListByAppServiceIdAndVersion(Long appServiceId, String type, String version) {
+        List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceVersionMapper.listByAppIdAndVersion(appServiceId, type, version);
         if (appServiceVersionDTOS.isEmpty()) {
             return Collections.emptyList();
         }

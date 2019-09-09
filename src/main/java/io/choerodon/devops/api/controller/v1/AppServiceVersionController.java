@@ -5,29 +5,24 @@ import java.util.List;
 import java.util.Optional;
 
 import com.github.pagehelper.PageInfo;
-
-import io.choerodon.base.domain.Sort;
-import io.choerodon.devops.api.vo.*;
-
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.domain.PageRequest;
+import io.choerodon.base.domain.Sort;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
+import io.choerodon.devops.api.vo.AppServiceVersionAndCommitVO;
+import io.choerodon.devops.api.vo.AppServiceVersionRespVO;
+import io.choerodon.devops.api.vo.AppServiceVersionVO;
+import io.choerodon.devops.api.vo.DeployVersionVO;
 import io.choerodon.devops.app.service.AppServiceVersionService;
 import io.choerodon.mybatis.annotation.SortDefault;
 import io.choerodon.swagger.annotation.CustomPageRequest;
@@ -95,9 +90,11 @@ public class AppServiceVersionController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "服务Id")
             @PathVariable(value = "app_service_id") Long appServiceId,
+            @ApiParam(value = "类型")
+            @RequestParam(value = "type") String type,
             @ApiParam(value = "查询参数")
             @RequestParam(value = "version", required = false) String version) {
-        return Optional.ofNullable(appServiceVersionService.listByAppServiceId(appServiceId, version))
+        return Optional.ofNullable(appServiceVersionService.listByAppServiceId(appServiceId, type, version))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(VERSION_QUERY_ERROR));
     }
