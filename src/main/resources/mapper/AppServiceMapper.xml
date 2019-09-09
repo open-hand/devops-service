@@ -457,14 +457,17 @@
         JOIN devops_app_service da ON da.id = dasr.app_service_id
 
         WHERE
-        dasr.app_service_id in
-        <foreach collection="appServiceIds" item="appServiceId" open="(" close=")" separator=",">
-            #{appServiceId}
-        </foreach>
-        AND (
+        (
         dasr.share_level = 'organization'
         OR dasr.project_id = #{projectId}
         )
+        <if test="appServiceIds!=null and appServiceIds.size>0">
+            AND
+            dasr.app_service_id in
+            <foreach collection="appServiceIds" item="appServiceId" open="(" close=")" separator=",">
+                #{appServiceId}
+            </foreach>
+        </if>
         <if test="type != null">
             AND da.type = #{type}
         </if>
