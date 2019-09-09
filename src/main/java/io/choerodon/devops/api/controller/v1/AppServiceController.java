@@ -683,10 +683,12 @@ public class AppServiceController {
             @RequestParam(value = "type") String type,
             @ApiParam(value = "查询参数", required = false)
             @RequestParam(value = "param", required = false) String param,
+            @ApiParam(value = "是否仅部署", required = true)
+            @RequestParam(value = "deploy_only", required = true) Boolean deployOnly,
             @ApiParam(value = "应用服务类型", required = false)
             @RequestParam(value = "service_type", required = false) String serviceType) {
         return Optional.ofNullable(
-                applicationServiceService.listAllAppServices(projectId, type, param, serviceType))
+                applicationServiceService.listAllAppServices(projectId, type, param, deployOnly, serviceType))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.list.app.service.deploy"));
     }

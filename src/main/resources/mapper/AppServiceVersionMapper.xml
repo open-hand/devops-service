@@ -166,7 +166,14 @@
         devops_app_service_version dav
         WHERE
         dav.app_service_id = #{appServiceId}
-        AND dav.repository IS NOT NULL
+        <choose>
+            <when test="deployOnly!=null and deployOnly==true">
+                AND dav.repository IS NOT NULL
+            </when>
+            <otherwise>
+                AND dav.`commit` IS NOT NULL
+            </otherwise>
+        </choose>
         <if test="version != null">
             AND
             dav.version LIKE CONCAT(CONCAT('%', #{version, jdbcType=VARCHAR}),'%')

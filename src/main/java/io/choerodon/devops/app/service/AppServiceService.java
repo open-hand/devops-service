@@ -429,7 +429,7 @@ public interface AppServiceService {
      *
      * @return List<AppServiceGroupVO>
      */
-    List<AppServiceGroupInfoVO> listAppServiceGroup(Long projectId,Boolean share,String param);
+    List<AppServiceGroupInfoVO> listAppServiceGroup(Long projectId, Boolean share, String param);
 
     /**
      * 查询所有应用服务
@@ -439,7 +439,7 @@ public interface AppServiceService {
      * @param param
      * @return
      */
-    List<AppServiceGroupVO> listAllAppServices(Long projectId, String type, String param, String serviceType);
+    List<AppServiceGroupVO> listAllAppServices(Long projectId, String type, String param, Boolean deployOnly, String serviceType);
 
     String getToken(Integer gitlabProjectId, String applicationDir, UserAttrDTO userAttrDTO);
 }
