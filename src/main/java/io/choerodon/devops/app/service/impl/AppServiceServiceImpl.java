@@ -43,6 +43,7 @@ import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.validator.ApplicationValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.sonar.*;
@@ -376,10 +377,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         initApplicationParams(projectDTO, organizationDTO, applicationServiceDTOS.getList(), urlSlash);
 
-        PageInfo<AppServiceRepVO> resultDTOPage = new PageInfo<>();
-        BeanUtils.copyProperties(applicationServiceDTOS, resultDTOPage, "list");
-        resultDTOPage.setList(setApplicationRepVOPermission(applicationServiceDTOS.getList(), userAttrDTO, projectDTO));
-        return resultDTOPage;
+        return ConvertUtils.convertPage(applicationServiceDTOS, this::dtoToRepVo);
     }
 
 
@@ -407,12 +405,12 @@ public class AppServiceServiceImpl implements AppServiceService {
         Long userId = TypeUtil.objToLong(GitUserNameUtil.getUserId());
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         Boolean projectOwner = baseServiceClientOperator.isProjectOwner(userId, projectDTO);
-        List<AppServiceDTO> applicationDTOServiceList = new ArrayList<>();
+        List<AppServiceDTO> applicationDTOServiceList;
         if (projectOwner) {
             applicationDTOServiceList = baseListByActive(projectId);
         } else {
             Long appId = devopsProjectService.queryAppIdByProjectId(projectId);
-            applicationDTOServiceList = appServiceMapper.listProjectMembersAppServicByActive(appId, userId);
+            applicationDTOServiceList = appServiceMapper.listProjectMembersAppServiceByActive(appId, userId);
         }
 
         UserAttrDTO userAttrDTO = userAttrMapper.selectByPrimaryKey(userId);
@@ -420,8 +418,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
 
         initApplicationParams(projectDTO, organizationDTO, applicationDTOServiceList, urlSlash);
-
-        return setApplicationRepVOPermission(applicationDTOServiceList, userAttrDTO, projectDTO);
+        return ConvertUtils.convertList(applicationDTOServiceList, this::dtoToRepVo);
     }
 
     @Override
@@ -2321,30 +2318,6 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
         return accessToken;
     }
-
-    private List<AppServiceRepVO> setApplicationRepVOPermission(List<AppServiceDTO> appServiceDTOS,
-                                                                UserAttrDTO userAttrDTO, ProjectDTO projectDTO) {
-        List<AppServiceRepVO> resultDTOList = ConvertUtils.convertList(appServiceDTOS, this::dtoToRepVo);
-        if (userAttrDTO == null) {
-            throw new CommonException("error.gitlab.user.sync.failed");
-        }
-        if (!baseServiceClientOperator.isProjectOwner(userAttrDTO.getIamUserId(), projectDTO)) {
-            AppServiceUserRelDTO appUserPermissionDO = new AppServiceUserRelDTO();
-            appUserPermissionDO.setIamUserId(userAttrDTO.getIamUserId());
-            List<Long> appServiceIds = appServiceUserRelMapper.select(appUserPermissionDO).stream()
-                    .map(AppServiceUserRelDTO::getAppServiceId).collect(Collectors.toList());
-
-            resultDTOList.stream().filter(e -> e != null && e.getPermission() != null && !e.getPermission()).forEach(e -> {
-                if (appServiceIds.contains(e.getId())) {
-                    e.setPermission(true);
-                }
-            });
-        } else {
-            resultDTOList.stream().filter(Objects::nonNull).forEach(e -> e.setPermission(true));
-        }
-        return resultDTOList;
-    }
-
 
     /**
      * 释放资源
