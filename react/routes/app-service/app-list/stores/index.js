@@ -8,7 +8,7 @@ import ImportDataSet from './ImportDataSet';
 import ImportTableDataSet from './ImportTableDataSet';
 import getTablePostData from '../../../../utils/getTablePostData';
 import OptionsDataSet from '../../stores/OptionsDataSet';
-import selectedDataSet from './selectedDataSet';
+import selectedDataSet from './SelectedDataSet';
 
 const Store = createContext();
 

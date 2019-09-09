@@ -40,7 +40,6 @@ export default ((intlPrefix, formatMessage, projectId) => ({
     { name: 'type', type: 'string', label: formatMessage({ id: `${intlPrefix}.type` }) },
     { name: 'appName', type: 'string', label: formatMessage({ id: `${intlPrefix}.app` }) },
     { name: 'share', type: 'boolean', label: formatMessage({ id: `${intlPrefix}.source` }) },
-    { name: 'selected', type: 'boolean', defaultValue: false },
     { name: 'versionId', type: 'number', label: formatMessage({ id: `${intlPrefix}.version` }), textField: 'version', valueField: 'id' },
   ],
   events: {
