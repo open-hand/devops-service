@@ -6,6 +6,7 @@ package io.choerodon.devops.infra.enums;
  */
 public enum ProjectConfigType {
     HARBOR("harbor"),
+    SONAR("sonar"),
     CHART("chart");
 
     private String type;
