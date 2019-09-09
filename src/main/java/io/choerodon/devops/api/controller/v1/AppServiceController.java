@@ -661,9 +661,13 @@ public class AppServiceController {
     @GetMapping(value = "/list_app_group")
     public ResponseEntity<List<AppServiceGroupInfoVO>> listAppServiceGroup(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable(value = "project_id") Long projectId) {
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "市场来源", required = false)
+            @RequestParam(required = false) Boolean share,
+            @ApiParam(value = "查询条件", required = false)
+            @RequestParam(required = false) String param) {
         return Optional.ofNullable(
-                applicationServiceService.listAppServiceGroup(projectId))
+                applicationServiceService.listAppServiceGroup(projectId, share, param))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.list.app.group.error"));
     }

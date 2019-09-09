@@ -429,7 +429,7 @@ public interface AppServiceService {
      *
      * @return List<AppServiceGroupVO>
      */
-    List<AppServiceGroupInfoVO> listAppServiceGroup(Long projectId);
+    List<AppServiceGroupInfoVO> listAppServiceGroup(Long projectId,Boolean share,String param);
 
     /**
      * 查询所有应用服务

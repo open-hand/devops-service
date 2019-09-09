@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.vo;
 
+import java.util.Objects;
+
 /**
  * @author zhaotianxin
  * @since 2019/8/13
@@ -85,5 +87,18 @@ public class AppServiceGroupInfoVO {
 
     public void setAppId(Long appId) {
         this.appId = appId;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        AppServiceGroupInfoVO appServiceGroupInfoVO = (AppServiceGroupInfoVO) obj;
+        return Objects.equals(id, appServiceGroupInfoVO.id);
     }
 }
