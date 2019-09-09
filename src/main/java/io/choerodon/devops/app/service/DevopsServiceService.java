@@ -123,13 +123,14 @@ public interface DevopsServiceService {
      * 查询实例下关联的网络域名（不包含chart）
      *
      * @param projectId    项目id
+     * @param envId        环境id
      * @param instanceId   实例Id
      * @param pageRequest  分页参数
      * @param appServiceId 应用id
      * @param searchParam  查询参数
      * @return Page of DevopsServiceVO
      */
-    PageInfo<DevopsServiceVO> pageByInstance(Long projectId, Long instanceId, PageRequest pageRequest, Long appServiceId, String searchParam);
+    PageInfo<DevopsServiceVO> pageByInstance(Long projectId, Long envId, Long instanceId, PageRequest pageRequest, Long appServiceId, String searchParam);
 
     /**
      * 查看网络信息时，展示网络对应实例的Pod实时数据
