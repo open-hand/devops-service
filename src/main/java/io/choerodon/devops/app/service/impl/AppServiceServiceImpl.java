@@ -190,6 +190,14 @@ public class AppServiceServiceImpl implements AppServiceService {
         baseCheckCode(projectDTO.getApplicationId(), appServiceReqVO.getCode());
         baseCheckName(projectDTO.getApplicationId(), appServiceReqVO.getName());
 
+        // 校验模板id和模板版本id是否都有值或者都为空
+        boolean isTemplateNull = appServiceReqVO.getTemplateAppServiceId() == null;
+        boolean isTemplateVersionNull = appServiceReqVO.getTemplateAppServiceVersionId() == null;
+
+        if ((isTemplateNull && !isTemplateVersionNull) || (!isTemplateNull && isTemplateVersionNull)) {
+            throw new CommonException("error.template.fields");
+        }
+
         // 查询创建应用服务所在的gitlab应用组
         DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
         MemberDTO memberDTO = gitlabGroupMemberService.queryByUserId(
@@ -670,7 +678,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             String dockerUrl = harborProjectConfig.getUrl().replace("http://", "").replace("https://", "");
             dockerUrl = dockerUrl.endsWith("/") ? dockerUrl.substring(0, dockerUrl.length() - 1) : dockerUrl;
             DevopsConfigDTO sonarConfig = devopsConfigService.baseQueryByName(null, SONAR_NAME);
-            if(sonarConfig!=null) {
+            if (sonarConfig != null) {
                 params.put("{{ SONAR_LOGIN }}", sonarConfig.getConfig());
             }
             params.put("{{ GROUP_NAME }}", groupName);
