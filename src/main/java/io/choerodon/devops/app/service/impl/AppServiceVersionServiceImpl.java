@@ -103,19 +103,19 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     }
 
     private void doCreate(String image, String token, String version, String commit, MultipartFile files) {
-        AppServiceDTO applicationDTO = appServiceMapper.queryByToken(token);
+        AppServiceDTO appServiceDTO = appServiceMapper.queryByToken(token);
 
         AppServiceVersionValueDTO appServiceVersionValueDTO = new AppServiceVersionValueDTO();
         AppServiceVersionDTO appServiceVersionDTO = new AppServiceVersionDTO();
-        ProjectDTO projectDTO = baseServiceClientOperator.queryProjectByAppId(applicationDTO.getAppId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryProjectByAppId(appServiceDTO.getAppId());
         OrganizationDTO organization = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-        AppServiceVersionDTO newApplicationVersion = baseQueryByAppIdAndVersion(applicationDTO.getId(), version);
-        appServiceVersionDTO.setAppServiceId(applicationDTO.getId());
+        AppServiceVersionDTO newApplicationVersion = baseQueryByAppIdAndVersion(appServiceDTO.getId(), version);
+        appServiceVersionDTO.setAppServiceId(appServiceDTO.getId());
         appServiceVersionDTO.setImage(image);
         appServiceVersionDTO.setCommit(commit);
         appServiceVersionDTO.setVersion(version);
-        if (applicationDTO.getChartConfigId() != null) {
-            DevopsConfigDTO devopsConfigDTO = devopsConfigMapper.selectByPrimaryKey((applicationDTO.getChartConfigId()));
+        if (appServiceDTO.getChartConfigId() != null) {
+            DevopsConfigDTO devopsConfigDTO = devopsConfigMapper.selectByPrimaryKey((appServiceDTO.getChartConfigId()));
             helmUrl = gson.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class).getUrl();
         }
 
