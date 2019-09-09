@@ -1,4 +1,4 @@
-FROM registry.cn-hangzhou.aliyuncs.com/choerodon-tools/devops-base:0.7.1 as pyinstaller
+FROM registry.cn-shanghai.aliyuncs.com/choerodon-tools/devops-base:0.8.0 as pyinstaller
 WORKDIR /home/yaml
 COPY values_yaml.py requirements.txt  ./
 RUN pyinstaller --noconfirm --clean values_yaml.py
@@ -7,7 +7,6 @@ RUN pyinstaller --noconfirm --clean values_yaml.py
 
 FROM registry.cn-shanghai.aliyuncs.com/choerodon-tools/javabase:0.8.2
 COPY --from=pyinstaller /home/yaml/dist/values_yaml /usr/lib/yaml
-COPY kaniko  /usr/bin/kaniko
 COPY app.jar /devops-service.jar
 COPY dist /dist
 RUN chmod 777 /dist/env.sh

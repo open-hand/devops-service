@@ -15,6 +15,7 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.web.socket.server.standard.ServletServerContainerFactoryBean;
 
 
 @EnableFeignClients("io.choerodon")
@@ -36,7 +37,7 @@ public class DevopsServiceApplication {
         SpringApplication.run(DevopsServiceApplication.class, args);
     }
 
-
+    //初始化redisTemplate
     @Bean
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
         RedisTemplate<String, Object> template = new RedisTemplate();
@@ -47,7 +48,16 @@ public class DevopsServiceApplication {
         return template;
     }
 
+    //初始化servletServerContainer 消息缓冲池大小
+    @Bean
+    public ServletServerContainerFactoryBean createServletServerContainerFactoryBean() {
+        ServletServerContainerFactoryBean container = new ServletServerContainerFactoryBean();
+        container.setMaxTextMessageBufferSize(32768);
+        container.setMaxBinaryMessageBufferSize(32768);
+        return container;
+    }
 
+    //清空agent连接信息
     @PostConstruct
     public void start() {
         Set<Object> keySet = redisTemplate.opsForHash().keys(CLUSTER_SESSION);
