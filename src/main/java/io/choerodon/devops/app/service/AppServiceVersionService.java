@@ -178,15 +178,16 @@ public interface AppServiceVersionService {
     AppServiceVersionDTO baseCreateOrUpdate(AppServiceVersionDTO appServiceVersionDTO);
 
     /**
-     * 查询应用服务在组织共享下的最新版本
+     * 查询应用服务在组织共享下的最新版本根据服务ID集合
      *
-     * @param appServiceId 应用服务Id
+     * @param appServiceIds 应用服务Id集合
+     * @param share 是否是组织共享
      * @return 应用服务版本
      */
-    AppServiceVersionDTO queryServiceVersionByAppServiceId(Long appServiceId, String share);
+    List<AppServiceVersionDTO> listServiceVersionByAppServiceIds(List<Long> appServiceIds, String share);
 
     /**
-     * 根据应用服务ID和共享规则去查询应用服务的版本列表
+     * 根据应用服务IDs和共享规则去查询应用服务的版本列表
      *
      * @param appServiceId
      * @param share

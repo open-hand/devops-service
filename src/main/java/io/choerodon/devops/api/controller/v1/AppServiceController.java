@@ -659,7 +659,7 @@ public class AppServiceController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "分组查询应用服务")
     @GetMapping(value = "/list_app_group")
-    public ResponseEntity<List<AppServiceGroupVO>> listAppServiceGroup(
+    public ResponseEntity<List<AppServiceGroupInfoVO>> listAppServiceGroup(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId) {
         return Optional.ofNullable(

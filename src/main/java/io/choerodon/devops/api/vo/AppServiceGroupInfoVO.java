@@ -12,6 +12,24 @@ public class AppServiceGroupInfoVO {
     private String type;
     private Long versionId;
     private String version;
+    private Boolean share;
+    private String  appName;
+
+    public Boolean getShare() {
+        return share;
+    }
+
+    public void setShare(Boolean share) {
+        this.share = share;
+    }
+
+    public String getAppName() {
+        return appName;
+    }
+
+    public void setAppName(String appName) {
+        this.appName = appName;
+    }
 
     public Long getVersionId() {
         return versionId;

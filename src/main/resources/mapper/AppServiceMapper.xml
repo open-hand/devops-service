@@ -484,7 +484,7 @@
             das.app_id IS NOT NULL
             AND db.iam_project_id IS NULL
             AND db.app_id IS NOT NULL
-        <if test="type != null">
+        <if test="type != null and type!=''">
             AND das.type = #{type}
         </if>
     </select>
