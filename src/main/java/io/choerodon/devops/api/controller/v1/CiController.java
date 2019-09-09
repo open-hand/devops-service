@@ -2,15 +2,16 @@ package io.choerodon.devops.api.controller.v1;
 
 import java.util.Optional;
 
-import io.choerodon.base.annotation.Permission;
-import io.choerodon.devops.app.service.AppServiceVersionService;
-import io.choerodon.devops.app.service.AppServiceService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import io.choerodon.base.annotation.Permission;
+import io.choerodon.devops.app.service.AppServiceService;
+import io.choerodon.devops.app.service.AppServiceVersionService;
 
 /**
  * Created by younger on 2018/4/13.
@@ -50,16 +51,17 @@ public class CiController {
 
 
     /**
-     * 获取服务版本信息
+     * 创建应用服务版本
      *
-     * @param token   @param image   类型
+     * @param image   类型
+     * @param token   应用服务的token
      * @param version 版本
      * @param commit  commit
      * @param file    tgz包
      * @return File
      */
     @Permission(permissionPublic = true)
-    @ApiOperation(value = "获取服务版本信息")
+    @ApiOperation(value = "创建应用服务版本")
     @PostMapping
     public ResponseEntity create(
             @ApiParam(value = "image", required = true)

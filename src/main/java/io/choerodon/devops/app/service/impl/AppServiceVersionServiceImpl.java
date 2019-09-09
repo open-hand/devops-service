@@ -107,7 +107,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
 
         AppServiceVersionValueDTO appServiceVersionValueDTO = new AppServiceVersionValueDTO();
         AppServiceVersionDTO appServiceVersionDTO = new AppServiceVersionDTO();
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(applicationDTO.getAppId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryProjectByAppId(applicationDTO.getAppId());
         OrganizationDTO organization = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         AppServiceVersionDTO newApplicationVersion = baseQueryByAppIdAndVersion(applicationDTO.getId(), version);
         appServiceVersionDTO.setAppServiceId(applicationDTO.getId());
