@@ -102,13 +102,11 @@ class BranchEdit extends Component {
     this.props.form.validateFieldsAndScroll((err, data, modify) => {
       if ((!err && modify) || (isModify && !err)) {
         data.branchName = store.branch.branchName;
+        data.appServiceId = DevPipelineStore.getSelectApp;
         this.setState({ submitting: true });
         store.updateBranchByName(projectId, appId, data)
           .then(() => {
             store.loadBranchData({ projectId });
-            // if (isDevConsole) {
-            //   DevConsoleStore.loadBranchList(projectId, appId);
-            // }
             this.props.onClose();
             this.props.form.resetFields();
             this.setState({ submitting: false });

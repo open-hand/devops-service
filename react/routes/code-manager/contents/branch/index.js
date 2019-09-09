@@ -60,19 +60,24 @@ class Branch extends Component {
 
   /**
    * 生成特殊的自定义tool-bar
+   * 为选择应用或者该应用是空仓库那么就不显示 创建分支按钮
    */
-  getSelfToolBar= () => <Permission
-    service={['devops-service.devops-git.createBranch',
-    ]}
-  >
-    <Button
-      onClick={this.showSidebar}
-      icon="playlist_add"
-      disabled={!DevPipelineStore.getSelectApp}
-    >
-      <FormattedMessage id="branch.create" />
-    </Button>
-  </Permission>
+  getSelfToolBar= () => (
+    !(DevPipelineStore.getSelectApp && BranchStore.getBranchList.length > 0)
+      ? null
+      : <Permission
+        service={['devops-service.devops-git.createBranch',
+        ]}
+      >
+        <Button
+          onClick={this.showSidebar}
+          icon="playlist_add"
+          disabled={!DevPipelineStore.getSelectApp}
+        >
+          <FormattedMessage id="branch.create" />
+        </Button>
+      </Permission>)
+  
 
   /**
    * 获取issue的options
@@ -157,8 +162,18 @@ class Branch extends Component {
         },
       },
     ];
+    // 分支如果是master  禁止创建合并请求 否认：会造成跳转到 gitlab，gailab页面报错的问题
     if (record.branchName === 'master') {
       action.shift(); 
+    }
+
+    // 如果仅有一个分支那么禁止删除
+    if (BranchStore.getBranchList.length <= 1) {
+      // 如果 仅有一个分支 且分支是master 那么禁止做任何操作
+      if (record.branchName === 'master') {
+        return null;
+      }
+      action.pop();
     }
     return (<Action data={action} />);
   };
