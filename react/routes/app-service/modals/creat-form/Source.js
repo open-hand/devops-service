@@ -44,7 +44,7 @@ export default injectIntl(observer((props) => {
           <Option value="share_service">{formatMessage({ id: `${intlPrefix}.source.organization` })}</Option>
           <Option value="market_service">{formatMessage({ id: `${intlPrefix}.source.market` })}</Option>
         </Select>
-        <Select name="templateAppServiceId" colSpan={2}>
+        <Select name="templateAppServiceId" colSpan={2} searchable>
           {record.get('appServiceSource') === 'normal_service' ? (
             map(AppStore.getAppService[0] && AppStore.getAppService[0].appServiceList, ({ id, name }) => (
               <Option value={id}>{name}</Option>

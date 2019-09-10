@@ -27,7 +27,7 @@ export default ((intlPrefix, formatMessage, projectId, envOptionsDs, valueIdOpti
         break;
       case 'appServiceId':
         if (value) {
-          versionOptionsDs.transport.read.url = `/devops/v1/projects/${projectId}/app_service_versions/list_app_services/${value.split('__')[0]}`;
+          versionOptionsDs.transport.read.url = `/devops/v1/projects/${projectId}/app_service_versions/list_app_services/${value.split('__')[0]}?deploy_only=true`;
           versionOptionsDs.query();
           record.set('instanceName', getRandomName(value.split('__')[1]));
         } else {
