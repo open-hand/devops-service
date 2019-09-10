@@ -42,6 +42,7 @@ function DeployConfigForm() {
     }
     try {
       if ((await dataSet.submit()) !== false) {
+        store.setTabKey('config');
         refresh();
       } else {
         return false;
