@@ -66,8 +66,8 @@ import io.choerodon.devops.infra.util.*;
 @Component
 public class OrgAppMarketServiceImpl implements OrgAppMarketService {
     public static final Logger LOGGER = LoggerFactory.getLogger(OrgAppMarketServiceImpl.class);
+    public static final String APP_SERVICE = "appService";
     private static final Gson gson = new Gson();
-
     private static final String APPLICATION = "application";
     private static final String CHART = "chart";
     private static final String REPO = "repo";
@@ -658,9 +658,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             List<MarketAppServiceVersionImageVO> appServiceVersionImageVOS = new ArrayList<>();
 
             //获取原仓库配置
-            ConfigVO configVO = devopsConfigService.queryByResourceId(
-                    appServiceService.baseQuery(appServiceMarketVO.getAppServiceId()).getChartConfigId(), "harbor")
-                    .get(0).getConfig();
+            ConfigVO configVO = devopsConfigService.queryRealConfigVO(appServiceMarketVO.getAppServiceId(), APP_SERVICE, "harbor").getConfig();
             User sourceUser = new User();
             BeanUtils.copyProperties(configVO, sourceUser);
             sourceUser.setUsername(configVO.getUserName());
