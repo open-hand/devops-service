@@ -19,6 +19,7 @@ import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.app.eventhandler.payload.DevOpsAppServicePayload;
 import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.infra.enums.GitPlatformType;
 import io.choerodon.mybatis.annotation.SortDefault;
@@ -691,6 +692,17 @@ public class AppServiceController {
                 applicationServiceService.listAllAppServices(projectId, type, param, deployOnly, serviceType))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.list.app.service.deploy"));
+    }
+
+    @Permission(permissionPublic = true)
+    @ApiOperation(value = "查询所有应用服务(应用服务导入、应用部署)")
+    @PostMapping(value = "/test")
+    public void test(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用服务类型", required = false)
+            @RequestBody DevOpsAppServicePayload devOpsAppServicePayload) {
+        applicationServiceService.operationApplication(devOpsAppServicePayload);
     }
 
 }
