@@ -33,7 +33,6 @@ public class AgentGitOpsMessageHandler implements TextMessageHandler<AgentMsgVO>
             logger.info("找不到指令啊 {}", msg.getType());
             return;
         }
-        logger.info("收到了这个指令嘿嘿:{}", helmType);
         //设置集群id
         msg.setClusterId(key.split(":")[1]);
         if (logger.isDebugEnabled()) {
@@ -189,6 +188,8 @@ public class AgentGitOpsMessageHandler implements TextMessageHandler<AgentMsgVO>
                 agentMsgHandlerService.operateDockerRegistrySecretResp(msg.getKey(), "success", TypeUtil.objToLong(msg.getClusterId()));
                 break;
             case POD_METRICS_SYNC:
+                logger.info("收到了这个指令嘿嘿:{}", helmType);
+                agentMsgHandlerService.handlePodMetricsSync(msg.getKey(),msg.getPayload(),TypeUtil.objToLong(msg.getClusterId()));
                 break;
             default:
                 break;

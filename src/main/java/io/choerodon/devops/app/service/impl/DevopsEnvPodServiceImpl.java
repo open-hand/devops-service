@@ -9,23 +9,14 @@ import java.util.stream.Collectors;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
-import io.kubernetes.client.JSON;
-import io.kubernetes.client.models.V1Pod;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
-
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.domain.Sort;
-import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.app.service.AgentPodService;
-import io.choerodon.devops.app.service.DevopsEnvPodService;
-import io.choerodon.devops.app.service.DevopsEnvResourceService;
-import io.choerodon.devops.app.service.DevopsEnvironmentService;
-import io.choerodon.devops.infra.dto.DevopsEnvPodDTO;
-import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
+import io.choerodon.devops.api.vo.ContainerVO;
+import io.choerodon.devops.api.vo.DevopsEnvPodInfoVO;
+import io.choerodon.devops.api.vo.DevopsEnvPodVO;
+import io.choerodon.devops.api.vo.PodMetricsRedisInfoVO;
+import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsEnvPodMapper;
@@ -33,6 +24,13 @@ import io.choerodon.devops.infra.util.ArrayUtil;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.K8sUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
+import io.kubernetes.client.JSON;
+import io.kubernetes.client.models.V1Pod;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 /**
  * Created by Zenger on 2018/4/17.
@@ -50,9 +48,13 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
     @Autowired
     private DevopsEnvResourceService devopsEnvResourceService;
     @Autowired
+    private DevopsEnvResourceDetailService devopsEnvResourceDetailService;
+    @Autowired
     private DevopsEnvPodMapper devopsEnvPodMapper;
     @Autowired
     private AgentPodService agentPodService;
+    @Autowired
+    private DevopsClusterService devopsClusterService;
 
     @Override
     public PageInfo<DevopsEnvPodVO> pageByOptions(Long projectId, Long envId, Long appServiceId, Long instanceId, PageRequest pageRequest, String searchParam) {
@@ -214,29 +216,32 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
 
     @Override
     public List<DevopsEnvPodInfoVO> queryEnvPodInfo(Long envId, String sort) {
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
+        DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(devopsEnvironmentDTO.getClusterId());
         List<DevopsEnvPodInfoVO> devopsEnvPodInfoVOList = devopsEnvPodMapper.queryEnvPodIns(envId);
         devopsEnvPodInfoVOList.forEach(devopsEnvPodInfoVO -> {
-            AgentPodInfoVO agentPodInfoVO = agentPodService.queryLatestPodSnapshot(devopsEnvPodInfoVO.getName(), devopsEnvPodInfoVO.getNamespace());
-            if (agentPodInfoVO != null) {
-                devopsEnvPodInfoVO.setCpuUsed(agentPodInfoVO.getCpuUsed());
-                devopsEnvPodInfoVO.setCpuValue(K8sUtil.getNormalValueFromCpuString(agentPodInfoVO.getCpuUsed()));
-                devopsEnvPodInfoVO.setMemoryUsed(agentPodInfoVO.getMemoryUsed());
-                devopsEnvPodInfoVO.setMemoryValue(K8sUtil.getByteFromMemoryString(agentPodInfoVO.getMemoryUsed()));
-                devopsEnvPodInfoVO.setPodIp(agentPodInfoVO.getPodIp());
+            PodMetricsRedisInfoVO podMetricsRedisInfoVO = agentPodService.queryLatestPodSnapshot(devopsEnvPodInfoVO.getName(), devopsEnvPodInfoVO.getNamespace(), devopsClusterDTO.getCode());
+            DevopsEnvResourceDTO devopsEnvResourceDTO = devopsEnvResourceService.baseQueryOptions(null, null, envId, ResourceType.POD.getType(), devopsEnvPodInfoVO.getName());
+            DevopsEnvResourceDetailDTO devopsEnvResourceDetailDTO = devopsEnvResourceDetailService.baesQueryByMessageId(devopsEnvResourceDTO.getResourceDetailId());
+            V1Pod v1Pod = json.deserialize(devopsEnvResourceDetailDTO.getMessage(), V1Pod.class);
+            if (podMetricsRedisInfoVO != null) {
+                devopsEnvPodInfoVO.setCpuUsed(podMetricsRedisInfoVO.getCpu());
+                devopsEnvPodInfoVO.setMemoryUsed(podMetricsRedisInfoVO.getMemory());
+                devopsEnvPodInfoVO.setPodIp(v1Pod == null ? null : v1Pod.getStatus().getPodIP());
             }
         });
 
         // 根据cpu进行逆序排序，考虑为null值的情况
         if ("cpu".equals(sort)) {
             devopsEnvPodInfoVOList = devopsEnvPodInfoVOList.stream()
-                    .sorted(Comparator.comparing(DevopsEnvPodInfoVO::getCpuValue, Comparator.nullsFirst(Double::compareTo)).reversed())
+                    .sorted(Comparator.comparing(DevopsEnvPodInfoVO::getCpuUsed, Comparator.nullsFirst(String::compareTo)).reversed())
                     .collect(Collectors.toList());
         }
 
         // 默认根据memory进行逆序排序，考虑为null值的情况
         if ("memory".equals(sort)) {
             devopsEnvPodInfoVOList = devopsEnvPodInfoVOList.stream()
-                    .sorted(Comparator.comparing(DevopsEnvPodInfoVO::getMemoryValue, Comparator.nullsFirst(Long::compareTo)).reversed())
+                    .sorted(Comparator.comparing(DevopsEnvPodInfoVO::getMemoryUsed, Comparator.nullsFirst(String::compareTo)).reversed())
                     .collect(Collectors.toList());
         }
 

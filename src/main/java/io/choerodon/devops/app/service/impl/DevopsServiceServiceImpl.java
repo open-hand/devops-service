@@ -105,7 +105,12 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     private DevopsEnvPodMapper devopsEnvPodMapper;
     @Autowired
     AgentPodInfoServiceImpl agentPodInfoService;
-
+    @Autowired
+    DevopsClusterService devopsClusterService;
+    @Autowired
+    DevopsEnvResourceService devopsEnvResourceService;
+    @Autowired
+    DevopsEnvResourceDetailService devopsEnvResourceDetailService;
 
     @Override
     public Boolean checkName(Long envId, String name) {
@@ -750,6 +755,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
     private Map<Long, List<PodLiveInfoVO>> getInstancePodLiveInfoVOs(Long instanceId, Long envId) {
         PodLiveInfoVO podLiveInfoVO = new PodLiveInfoVO();
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
+        DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(devopsEnvironmentDTO.getClusterId());
+
 
         //从数据库中获得pod已经存在的信息
         List<DevopsEnvPodDTO> devopsEnvPodDTOList = devopsEnvPodMapper.queryPodByEnvIdAndInstanceId(instanceId, envId);
@@ -774,19 +782,19 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             podLiveInfoVO.setContainers(containerVOS);
 
             //设置实时CPU、内存信息
-            List<AgentPodInfoVO> agentPodInfoVOS = agentPodInfoService.queryAllPodSnapshots(devopsEnvPodDTO.getName(), devopsEnvPodDTO.getNamespace());
+            List<PodMetricsRedisInfoVO> agentPodInfoVOS = agentPodInfoService.queryAllPodSnapshots(devopsEnvPodDTO.getName(), devopsEnvPodDTO.getNamespace(), devopsClusterDTO.getCode());
 
             if (!agentPodInfoVOS.isEmpty()) {
-                List<String> cpuUsedList = agentPodInfoVOS.stream().map(AgentPodInfoVO::getCpuUsed).collect(Collectors.toList());
-                List<String> memoryUsedList = agentPodInfoVOS.stream().map(AgentPodInfoVO::getMemoryUsed).collect(Collectors.toList());
-                List<Date> timeList = agentPodInfoVOS.stream().map(AgentPodInfoVO::getSnapshotTime).collect(Collectors.toList());
+                List<String> cpuUsedList = agentPodInfoVOS.stream().map(PodMetricsRedisInfoVO::getCpu).collect(Collectors.toList());
+                List<String> memoryUsedList = agentPodInfoVOS.stream().map(PodMetricsRedisInfoVO::getMemory).collect(Collectors.toList());
+                List<Date> timeList = agentPodInfoVOS.stream().map(PodMetricsRedisInfoVO::getSnapShotTime).collect(Collectors.toList());
 
                 podLiveInfoVO.setCpuUsedList(cpuUsedList);
                 podLiveInfoVO.setMemoryUsedList(memoryUsedList);
                 podLiveInfoVO.setTimeList(timeList);
-                podLiveInfoVO.setNodeIp(agentPodInfoVOS.get(0).getNodeIp());
-                podLiveInfoVO.setNodeName(agentPodInfoVOS.get(0).getNodeName());
-                podLiveInfoVO.setPodIp(agentPodInfoVOS.get(0).getPodIp());
+                podLiveInfoVO.setNodeIp(v1Pod.getStatus().getHostIP());
+                podLiveInfoVO.setNodeName(v1Pod.getSpec().getNodeName());
+                podLiveInfoVO.setPodIp(v1Pod.getStatus().getPodIP());
             }
             return podLiveInfoVO;
         }).collect(Collectors.toList());

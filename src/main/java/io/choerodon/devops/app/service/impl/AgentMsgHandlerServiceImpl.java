@@ -837,7 +837,6 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 .baseQueryByEnvIdAndResourceId(envId, devopsSecretDTO.getId(), ObjectType.SECRET.getType());
         updateEnvCommandStatus(resourceCommitVO, devopsSecretDTO.getCommandId(), devopsEnvFileResourceDTO,
                 SECRET_KIND, devopsSecretDTO.getName(), CommandStatus.SUCCESS.getStatus(), envFileErrorFiles);
-        devopsSecretService.baseUpdate(devopsSecretDTO);
     }
 
 
@@ -1609,6 +1608,44 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     public void handleNodeSync(String msg, Long clusterId) {
         clusterNodeInfoService.setValueForKey(clusterNodeInfoService.getRedisClusterKey(clusterId), JSONArray.parseArray(msg, AgentNodeInfoVO.class));
     }
+
+
+    @Override
+    public void handlePodMetricsSync(String key, String result, Long clusterId) {
+        List<PodMetricsRedisInfoVO> podMetricsRedisInfoVOS = new ArrayList<>();
+        DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
+        String namespace = KeyParseUtil.getNamespace(key);
+        PodMetricsInfoVO podMetricsInfoVO = json.deserialize(result, PodMetricsInfoVO.class);
+        if (podMetricsInfoVO.getItems() != null && !podMetricsInfoVO.getItems().isEmpty()) {
+            podMetricsInfoVO.getItems().forEach(podMetricsItemVO -> {
+                PodMetricsRedisInfoVO podMetricsRedisInfoVO = new PodMetricsRedisInfoVO();
+                podMetricsRedisInfoVO.setNamespace(namespace);
+                podMetricsRedisInfoVO.setName(podMetricsItemVO.getName());
+                podMetricsRedisInfoVO.setClusterCode(devopsClusterDTO.getCode());
+                podMetricsRedisInfoVO.setCpu("0");
+                podMetricsRedisInfoVO.setMemory("0");
+                double[] cpu = {0L};
+                double[] memory = {0L};
+                podMetricsItemVO.getContainers().forEach(podMetricsContainerVO -> {
+                    if (!podMetricsContainerVO.getUsage().getCpu().equals("0")) {
+                        cpu[0] = cpu[0] + TypeUtil.objToLong(podMetricsContainerVO.getUsage().getCpu().substring(0, (podMetricsContainerVO.getUsage().getCpu().length() - 1)));
+                    }
+                    if (!podMetricsContainerVO.getUsage().getMemory().equals("0")) {
+                        memory[0] = memory[0] + TypeUtil.objToLong(podMetricsContainerVO.getUsage().getMemory().substring(0, (podMetricsContainerVO.getUsage().getMemory().length() - 2)));
+                    }
+                });
+                if (cpu[0] != 0L) {
+                    podMetricsRedisInfoVO.setCpu(TypeUtil.objToLong(new Double(Math.ceil(cpu[0] / (1000*1000))).longValue()) + "m");
+                }
+                if (memory[0] != 0L) {
+                    podMetricsRedisInfoVO.setMemory(new Double(Math.floor(memory[0] / 1024)).longValue() + "Mi");
+                }
+                podMetricsRedisInfoVOS.add(podMetricsRedisInfoVO);
+            });
+            agentPodService.handleRealTimePodData(podMetricsRedisInfoVOS);
+        }
+    }
+
 
     @Override
     public void handleConfigUpdate(String key, String msg, Long clusterId) {

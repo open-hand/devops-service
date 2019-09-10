@@ -5,12 +5,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
+import io.choerodon.devops.api.vo.PodMetricsRedisInfoVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
-import io.choerodon.devops.api.vo.AgentPodInfoVO;
 import io.choerodon.devops.app.service.AgentPodService;
 
 /**
@@ -21,7 +21,7 @@ public class AgentPodInfoServiceImpl implements AgentPodService {
     /**
      * pod--${podName}--${namespace}
      */
-    private static final String KEY_PATTERN = "pod--%s--%s";
+    private static final String KEY_PATTERN = "pod--%s--%s--%s";
     /**
      * 在redis中存的实时数据的最大数量
      */
@@ -31,13 +31,13 @@ public class AgentPodInfoServiceImpl implements AgentPodService {
     private StringRedisTemplate stringRedisTemplate;
 
     @Override
-    public void handleRealTimePodData(List<AgentPodInfoVO> pods) {
+    public void handleRealTimePodData(List<PodMetricsRedisInfoVO> pods) {
         Date snapshotTime = new Date();
         pods.forEach(pod -> {
-            pod.setSnapshotTime(snapshotTime);
-            String key = String.format(KEY_PATTERN, pod.getPodName(), pod.getNamespace());
+            pod.setSnapShotTime(snapshotTime);
+            String key = String.format(KEY_PATTERN, pod.getName(), pod.getNamespace(), pod.getClusterCode());
             Long size = stringRedisTemplate.opsForList().size(key);
-            if (size >= 20) {
+            if (size >= RECORD_SIZE) {
                 long stop = size - 1;
                 long start = stop - (RECORD_SIZE - 1) + 1;
                 stringRedisTemplate.opsForList().trim(key, start, stop);
@@ -47,19 +47,19 @@ public class AgentPodInfoServiceImpl implements AgentPodService {
     }
 
     @Override
-    public List<AgentPodInfoVO> queryAllPodSnapshots(String podName, String namespace) {
+    public List<PodMetricsRedisInfoVO> queryAllPodSnapshots(String podName, String namespace, String clusterCode) {
         return stringRedisTemplate.opsForList()
-                .range(String.format(KEY_PATTERN, podName, namespace), 0, RECORD_SIZE - 1)
+                .range(String.format(KEY_PATTERN, podName, namespace, clusterCode), 0, RECORD_SIZE - 1)
                 .stream()
-                .map(p -> JSON.parseObject(p, AgentPodInfoVO.class))
+                .map(p -> JSON.parseObject(p, PodMetricsRedisInfoVO.class))
                 .collect(Collectors.toList());
     }
 
     @Nullable
     @Override
-    public AgentPodInfoVO queryLatestPodSnapshot(String podName, String namespace) {
-        String key = String.format(KEY_PATTERN, podName, namespace);
+    public PodMetricsRedisInfoVO queryLatestPodSnapshot(String podName, String namespace, String clusterCode) {
+        String key = String.format(KEY_PATTERN, podName, namespace, clusterCode);
         Long size = stringRedisTemplate.opsForList().size(key);
-        return JSON.parseObject(stringRedisTemplate.opsForList().index(key, size - 1), AgentPodInfoVO.class);
+        return JSON.parseObject(stringRedisTemplate.opsForList().index(key, size - 1), PodMetricsRedisInfoVO.class);
     }
 }
