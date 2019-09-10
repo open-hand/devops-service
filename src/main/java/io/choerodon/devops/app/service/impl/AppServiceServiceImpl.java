@@ -1771,7 +1771,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         String pullToken = gitlabServiceClientOperator.getAdminToken();
         String oldRepository = repoUrl + oldOrganizationDTO.getCode() + "-" + oldProjectDTO.getCode() + "/" + oldAppServiceDTO.getCode() + GIT;
         String workingDirectory = gitUtil.cloneAppMarket(applicationDir, oldAppServiceVersionDTO.getCommit(), oldRepository, pullToken);
-        replaceParams(appServiceDTO.getCode(), newGroupName, workingDirectory, oldAppServiceDTO.getCode(), oldOrganizationDTO.getCode() + "-" + oldProjectDTO.getCode());
+        replaceParams(appServiceDTO.getCode(), newGroupName, applicationDir, oldAppServiceDTO.getCode(), oldOrganizationDTO.getCode() + "-" + oldProjectDTO.getCode());
         Git git = gitUtil.initGit(new File(workingDirectory));
         //push 到远程仓库
         GitLabUserDTO gitLabUserDTO = gitlabServiceClientOperator.queryUserById(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
