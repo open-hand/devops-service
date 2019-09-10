@@ -236,7 +236,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     public PageInfo<AppServiceVersionVO> pageByOptions(Long projectId, Long appServiceId, Boolean deployOnly, Boolean doPage, Long appServiceVersionId, String version, PageRequest pageRequest) {
         PageInfo<AppServiceVersionDTO> applicationVersionDTOPageInfo;
         if (doPage) {
-            applicationVersionDTOPageInfo = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest))
+            applicationVersionDTOPageInfo = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), null)
                     .doSelectPageInfo(() -> appServiceVersionMapper.listByAppIdAndVersion(appServiceId, deployOnly, appServiceVersionId, version));
         } else {
             applicationVersionDTOPageInfo = new PageInfo<>();
