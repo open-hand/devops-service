@@ -506,7 +506,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         appServiceDTO.setFailed(false);
         setProjectHook(appServiceDTO, devOpsAppServicePayload.getGitlabProjectId(), applicationServiceToken, devOpsAppServicePayload.getUserId());
 //        baseUpdate(appServiceDTO);
-        appServiceMapper.updateByPrimaryKey(appServiceDTO);
+        appServiceMapper.updateByPrimaryKeySelective(appServiceDTO);
 
         // 为项目下的成员分配对于此gitlab项目的权限
         operateGitlabMemberPermission(devOpsAppServicePayload);
