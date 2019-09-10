@@ -221,11 +221,6 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     }
 
     @Override
-    public List<AppServiceVersionRespVO> listByAppServiceId(Long appServiceId, Boolean deployOnly, String version) {
-        return ConvertUtils.convertList(baseListByAppServiceIdAndVersion(appServiceId, deployOnly, version), AppServiceVersionRespVO.class);
-    }
-
-    @Override
     public List<AppServiceVersionRespVO> listDeployedByAppId(Long projectId, Long appServiceId) {
         return ConvertUtils.convertList(
                 baseListAppDeployedVersion(projectId, appServiceId), AppServiceVersionRespVO.class);
@@ -238,14 +233,15 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     }
 
     @Override
-    public PageInfo<AppServiceVersionVO> pageByOptions(Long projectId, Long appServiceId, PageRequest pageRequest, String searchParams) {
-        Map<String, Object> searchParamMap = TypeUtil.castMapParams(searchParams);
-        PageInfo<AppServiceVersionDTO> applicationVersionDTOPageInfo = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest))
-                .doSelectPageInfo(() ->
-                        appServiceVersionMapper.listByOptions(
-                                appServiceId,
-                                TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
-                                TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS))));
+    public PageInfo<AppServiceVersionVO> pageByOptions(Long projectId, Long appServiceId, Boolean deployOnly, Boolean doPage, Long appServiceVersionId, String version, PageRequest pageRequest) {
+        PageInfo<AppServiceVersionDTO> applicationVersionDTOPageInfo;
+        if (doPage) {
+            applicationVersionDTOPageInfo = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest))
+                    .doSelectPageInfo(() -> appServiceVersionMapper.listByAppIdAndVersion(appServiceId, deployOnly, appServiceVersionId, version));
+        } else {
+            applicationVersionDTOPageInfo = new PageInfo<>();
+            applicationVersionDTOPageInfo.setList(appServiceVersionMapper.listByAppIdAndVersion(appServiceId, deployOnly, appServiceVersionId, version));
+        }
         return ConvertUtils.convertPage(applicationVersionDTOPageInfo, AppServiceVersionVO.class);
     }
 
@@ -427,14 +423,6 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     @Override
     public List<AppServiceVersionDTO> baseListByAppServiceId(Long appServiceId) {
         List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceVersionMapper.listByAppId(appServiceId);
-        if (appServiceVersionDTOS.isEmpty()) {
-            return Collections.emptyList();
-        }
-        return appServiceVersionDTOS;
-    }
-
-    public List<AppServiceVersionDTO> baseListByAppServiceIdAndVersion(Long appServiceId, Boolean deployOnly, String version) {
-        List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceVersionMapper.listByAppIdAndVersion(appServiceId, deployOnly, version);
         if (appServiceVersionDTOS.isEmpty()) {
             return Collections.emptyList();
         }

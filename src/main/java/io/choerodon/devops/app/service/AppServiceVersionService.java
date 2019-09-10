@@ -31,16 +31,6 @@ public interface AppServiceVersionService {
 
 
     /**
-     * 根据参数和页数在应用下查询应用所有版本
-     *
-     * @param appServiceId 应用Id
-     * @param version      查询参数
-     * @param deployOnly (仅部署)
-     * @return List
-     */
-    List<AppServiceVersionRespVO> listByAppServiceId(Long appServiceId, Boolean deployOnly, String version);
-
-    /**
      * 项目下查询应用所有已部署版本
      *
      * @param projectId    项目ID
@@ -65,10 +55,10 @@ public interface AppServiceVersionService {
      * @param projectId    项目id
      * @param appServiceId 应用id
      * @param pageRequest  分页参数
-     * @param searchParam  模糊搜索参数
+     * @param version  模糊搜索参数
      * @return ApplicationVersionRespVO
      */
-    PageInfo<AppServiceVersionVO> pageByOptions(Long projectId, Long appServiceId, PageRequest pageRequest, String searchParam);
+    PageInfo<AppServiceVersionVO> pageByOptions(Long projectId, Long appServiceId, Boolean deployOnly, Boolean doPage, Long appServiceVersionId, String version, PageRequest pageRequest);
 
     /**
      * 根据应用id查询需要升级的应用版本

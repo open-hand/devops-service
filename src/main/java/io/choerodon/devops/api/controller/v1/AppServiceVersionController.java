@@ -19,10 +19,7 @@ import io.choerodon.base.domain.Sort;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.vo.AppServiceVersionAndCommitVO;
-import io.choerodon.devops.api.vo.AppServiceVersionRespVO;
-import io.choerodon.devops.api.vo.AppServiceVersionVO;
-import io.choerodon.devops.api.vo.DeployVersionVO;
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.AppServiceVersionService;
 import io.choerodon.mybatis.annotation.SortDefault;
 import io.choerodon.swagger.annotation.CustomPageRequest;
@@ -40,14 +37,15 @@ public class AppServiceVersionController {
     private AppServiceVersionService appServiceVersionService;
 
 
+
     /**
-     * 分页查询服务版本
-     *
-     * @param projectId    项目id
-     * @param pageRequest  分页参数
-     * @param appServiceId 服务Id，选填的用于进行筛选记录的字段
-     * @param searchParam  查询参数
-     * @return ApplicationVersionRespVO
+     * @param projectId
+     * @param appServiceId
+     * @param deployOnly
+     * @param appServiceVersionId
+     * @param version
+     * @param pageRequest
+     * @return
      */
     @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
@@ -58,46 +56,25 @@ public class AppServiceVersionController {
     public ResponseEntity<PageInfo<AppServiceVersionVO>> pageByOptions(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "服务Id")
+            @RequestParam(value = "app_service_id") Long appServiceId,
+            @ApiParam(value = "是否仅部署")
+            @RequestParam(value = "deploy_only") Boolean deployOnly,
+            @ApiParam(value = "是否分页")
+            @RequestParam(value = "do_page", required = false, defaultValue = "false") Boolean doPage,
+            @ApiParam(value = "版本Id")
+            @RequestParam(value = "app_service_version_id", required = false) Long appServiceVersionId,
+            @ApiParam(value = "查询参数")
+            @RequestParam(value = "version", required = false) String version,
             @ApiParam(value = "分页参数")
             @ApiIgnore
-            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
-            @ApiParam(value = "服务Id，选填的用于进行筛选记录的字段")
-            @RequestParam(value = "app_service_id", required = false) Long appServiceId,
-            @ApiParam(value = "查询参数")
-            @RequestBody(required = false) String searchParam) {
+            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest) {
         return Optional.ofNullable(appServiceVersionService.pageByOptions(
-                projectId, appServiceId, pageRequest, searchParam))
+                projectId, appServiceId, deployOnly, doPage, appServiceVersionId, version, pageRequest))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(VERSION_QUERY_ERROR));
     }
 
-    /**
-     * 服务下查询服务所有版本
-     *
-     * @param projectId    项目id
-     * @param appServiceId 服务Id
-     * @param version      查询参数
-     * @return List
-     */
-    @ApiOperation(value = "服务下查询服务所有版本")
-    @Permission(type = ResourceType.PROJECT,
-            roles = {InitRoleCode.PROJECT_OWNER,
-                    InitRoleCode.PROJECT_MEMBER})
-    @CustomPageRequest
-    @GetMapping("/list_app_services/{app_service_id}")
-    public ResponseEntity<List<AppServiceVersionRespVO>> listByAppServiceId(
-            @ApiParam(value = "项目ID", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "服务Id")
-            @PathVariable(value = "app_service_id") Long appServiceId,
-            @ApiParam(value = "是否仅部署")
-            @RequestParam(value = "deploy_only") Boolean deployOnly,
-            @ApiParam(value = "查询参数")
-            @RequestParam(value = "version", required = false) String version) {
-        return Optional.ofNullable(appServiceVersionService.listByAppServiceId(appServiceId, deployOnly, version))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException(VERSION_QUERY_ERROR));
-    }
 
     /**
      * 项目下查询服务所有已部署版本
