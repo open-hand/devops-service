@@ -1,4 +1,4 @@
-FROM registry.cn-shanghai.aliyuncs.com/choerodon-tools/devops-base:0.7.1 as pyinstaller
+FROM registry.cn-hangzhou.aliyuncs.com/choerodon-tools/devops-base:0.7.1 as pyinstaller
 WORKDIR /home/yaml
 COPY values_yaml.py requirements.txt  ./
 RUN pyinstaller --noconfirm --clean values_yaml.py
