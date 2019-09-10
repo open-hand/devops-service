@@ -74,7 +74,7 @@ export default function useStore() {
 
     async loadAppService(projectId, type) {
       try {
-        const res = await axios.get(`/devops/v1/projects/${projectId}/app_service/list_all_app_services?type=${type}`);
+        const res = await axios.get(`/devops/v1/projects/${projectId}/app_service/list_all_app_services?deploy_only=false&type=${type}`);
         if (handlePromptError(res)) {
           this.setAppService(res);
         }
@@ -85,7 +85,7 @@ export default function useStore() {
 
     async loadVersion(projectId, id) {
       try {
-        const res = await axios.get(`/devops/v1/projects/${projectId}/app_service_versions/list_app_services/${id}`);
+        const res = await axios.get(`/devops/v1/projects/${projectId}/app_service_versions/list_app_services/${id}?deploy_only=false`);
         if (handlePromptError(res)) {
           this.setVersion(res);
           return res;

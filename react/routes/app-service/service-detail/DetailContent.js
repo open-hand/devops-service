@@ -13,37 +13,29 @@ const DetailContent = observer((props) => {
     AppStore,
     detailDs,
   } = useServiceDetailStore();
-
-  function renderTabContent() {
-    let content;
-    if (AppStore.getProjectRole === 'owner') {
-      if (detailDs.current && detailDs.current.get('type') === 'normal') {
-        content = (
-          <PageWrap noHeader={[]}>
-            <PageTab title={formatMessage({ id: `${intlPrefix}.version` })} tabKey="version" component={Version} />
-            <PageTab title={formatMessage({ id: `${intlPrefix}.permission` })} tabKey="permission" component={Allocation} />
-            <PageTab title={formatMessage({ id: `${intlPrefix}.share` })} tabKey="share" component={Share} />
-          </PageWrap>
-        );
-      } else {
-        content = (
-          <PageWrap noHeader={[]}>
-            <PageTab title={formatMessage({ id: `${intlPrefix}.version` })} tabKey="version" component={Version} />
-            <PageTab title={formatMessage({ id: `${intlPrefix}.permission` })} tabKey="permission" component={Allocation} />
-          </PageWrap>
-        );
-      }
-    } else {
-      content = (
-        <PageWrap noHeader={[]}>
-          <PageTab title={formatMessage({ id: `${intlPrefix}.version` })} tabKey="version" component={Version} />
-        </PageWrap>
-      );
-    }
-
-    return content;
-  }
-  return renderTabContent();
+  
+  return (
+    <PageWrap noHeader={[]}>
+      <PageTab
+        title={formatMessage({ id: `${intlPrefix}.version` })}
+        tabKey="version"
+        component={Version}
+        alawaysShow
+      />
+      <PageTab
+        title={formatMessage({ id: `${intlPrefix}.permission` })}
+        tabKey="permission"
+        component={Allocation}
+        alawaysShow={AppStore.getProjectRole === 'owner'}
+      />
+      <PageTab
+        title={formatMessage({ id: `${intlPrefix}.share` })}
+        tabKey="share"
+        component={Share}
+        alawaysShow={AppStore.getProjectRole === 'owner' && detailDs.current && detailDs.current.get('type') === 'normal'}
+      />
+    </PageWrap>
+  );
 });
 
 export default DetailContent;
