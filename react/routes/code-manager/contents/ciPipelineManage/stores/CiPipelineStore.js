@@ -31,6 +31,7 @@ class CiPipelineStore {
     spin && this.setLoading(true);
     return axios.get(`/devops/v1/projects/${projectId}/pipeline/page_by_options?app_service_id=${appId}&page=${page}&size=${size}`)
       .then((res) => {
+        spin && this.setLoading(false);
         const response = handlePromptError(res);
         if (response) {
           this.setPagination({
@@ -40,8 +41,9 @@ class CiPipelineStore {
           });
           this.setCiPipelines(res.list);
         }
-        spin && this.setLoading(false);
         return res.list;
+      }).catch((error) => {        
+        spin && this.setLoading(false);
       });
   }
 

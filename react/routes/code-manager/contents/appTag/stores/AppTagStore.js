@@ -121,4 +121,5 @@ class AppTagStore {
 }
 
 const appTagStore = new AppTagStore();
+
 export default appTagStore;

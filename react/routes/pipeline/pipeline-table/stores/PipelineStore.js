@@ -215,7 +215,6 @@ class PipelineStore {
       }
     });
 }
-
 const pipelineStore = new PipelineStore();
 
 export default pipelineStore;

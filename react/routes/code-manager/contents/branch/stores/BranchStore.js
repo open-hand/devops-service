@@ -43,6 +43,16 @@ class BranchStore {
     pageSize: HEIGHT <= 900 ? 10 : 15,
   };
 
+  @observable currentBranchIssue = {};
+
+  @action setCurrentBranchIssue(value){
+    this.currentBranchIssue = value;
+  }
+
+  get getCurrentBranchIssue(){
+    return this.currentBranchIssue;
+  }
+
   @action setPageInfo(page) {
     this.pageInfo = page;
   }
@@ -130,9 +140,10 @@ class BranchStore {
       .then((data) => {
         this.setIssueLoading(false);
         if (handlePromptError(data)) {
+          if(issueId && data && data.list.length>0){
+            this.setCurrentBranchIssue(data.list[0])
+          }
           this.setIssue(data.list);
-        } else {
-          this.setIssue(issuesList.list);
         }
         return data;
       });

@@ -8,6 +8,7 @@ import ReactMarkdown from 'react-markdown';
 import _ from 'lodash';
 import Loading from '../../../../components/loading';
 import TimePopover from '../../../../components/timePopover';
+import UserInfo from '../../../../components/userInfo';
 import DevPipelineStore from '../../stores/DevPipelineStore';
 import handleMapStore from '../../main-view/store/handleMapStore';
 import StatusIcon from '../../../../components/StatusIcon/StatusIcon';
@@ -232,10 +233,10 @@ class AppTag extends Component {
             <span className="c7n-tag-msg">{commitMsg}</span>
             <span className="c7n-divide-point">&bull;</span>
             <span className="c7n-tag-panel-person">
-              {commitUserImage
-                ? <Avatar className="c7n-tag-commit-img" src={commitUserImage} />
-                : <span className="c7n-tag-commit c7n-tag-commit-avatar">{authorName.toString().substr(0, 1)}</span>}
-              <span className="c7n-tag-commit">{authorName}</span>
+              <UserInfo
+                name={authorName}
+                avatar={commitUserImage}
+              />
             </span>
             <span className="c7n-divide-point">&bull;</span>
             <div className="c7n-tag-time"><TimePopover content={committedDate} /></div>
