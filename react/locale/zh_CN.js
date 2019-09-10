@@ -441,6 +441,7 @@ const certificate = {
   'c7ncd.certificate.name': '证书名称',
   'c7ncd.certificate.domain': '域名地址',
   'c7ncd.certificate.create': '创建证书',
+  'c7ncd.certificate.edit': '修改证书',
   'c7ncd.certificate.permission': '权限管理',
   'c7ncd.certificate.permission.delete': '删除权限',
   'c7ncd.certificate.project': '项目',

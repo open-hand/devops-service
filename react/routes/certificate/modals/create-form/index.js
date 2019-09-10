@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import {
@@ -27,13 +27,14 @@ const formItemLayout = {
   },
 };
 
-const CreateForm = ({ intl: { formatMessage }, form, store, projectId, modal, refresh, intlPrefix, prefixCls }) => {
+const CreateForm = ({ certId, intl: { formatMessage }, form, store, projectId, modal, refresh, intlPrefix, prefixCls }) => {
   const [uploadMode, setUploadMode] = useState(false);
   const { getFieldDecorator, validateFieldsAndScroll } = form;
 
   const checkName = useMemo(() => (
     debounce(async (rule, value, callback) => {
-      if (value) {
+      const { name } = store.getCert || {};
+      if (value && value !== name) {
         try {
           const res = await store.checkCertName(projectId, value);
           if (res && res.failed) {
@@ -50,6 +51,10 @@ const CreateForm = ({ intl: { formatMessage }, form, store, projectId, modal, re
       }
     }, 1000)
   ), []);
+
+  useEffect(() => {
+    certId && store.loadCertById(projectId, certId);
+  }, []);
 
 
   /**
@@ -68,7 +73,7 @@ const CreateForm = ({ intl: { formatMessage }, form, store, projectId, modal, re
   }
 
   modal.handleOk(async () => {
-    const res = await validateFieldsAndScroll(async (err, data) => {
+    validateFieldsAndScroll(async (err, data) => {
       if (!err) {
         const formData = new FormData();
         const excludeProps = ['domainArr', 'cert', 'key'];
@@ -85,25 +90,31 @@ const CreateForm = ({ intl: { formatMessage }, form, store, projectId, modal, re
             formData.append(k, value);
           }
         });
-        formData.append('skipCheckProjectPermission', true);
+
+        let method;
+        if (certId) {
+          const { skipCheckProjectPermission, objectVersionNumber, id } = store.getCert || {};
+          formData.append('skipCheckProjectPermission', skipCheckProjectPermission);
+          formData.append('objectVersionNumber', objectVersionNumber);
+          formData.append('id', id);
+          method = store.updateCert;
+        } else {
+          formData.append('skipCheckProjectPermission', true);
+          method = store.createCert;
+        }
 
         try {
-          const result = await store.createCert(projectId, formData);
+          const result = await method(projectId, formData, certId);
           if (handlePromptError(result, false)) {
             refresh();
-            return true;
-          } else {
-            return false;
+            modal.close();
           }
         } catch (error) {
           Choerodon.handleResponseError(error);
-          return false;
         }
-      } else {
-        return false;
       }
     });
-    return res;
+    return false;
   });
 
   function changeUploadMode() {
@@ -124,6 +135,7 @@ const CreateForm = ({ intl: { formatMessage }, form, store, projectId, modal, re
                 validator: checkName,
               },
             ],
+            initialValue: store.getCert ? store.getCert.name : '',
           })(
             <Input
               maxLength={40}
@@ -149,6 +161,7 @@ const CreateForm = ({ intl: { formatMessage }, form, store, projectId, modal, re
                   validator: checkDomain,
                 },
               ],
+              initialValue: store.getCert ? store.getCert.domain : '',
             })(
               <Input
                 type="text"
@@ -171,7 +184,7 @@ const CreateForm = ({ intl: { formatMessage }, form, store, projectId, modal, re
               <FormattedMessage id={`${intlPrefix}.upload.mode`} />
             </Button>
           </div>
-          {CertConfig(uploadMode, form, formatMessage)}
+          {CertConfig(uploadMode, form, formatMessage, store.getCert || {})}
         </div>
       </Form>
     </div>
