@@ -3,9 +3,10 @@ package io.choerodon.devops.infra.mapper;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.ibatis.annotations.Param;
+
 import io.choerodon.devops.infra.dto.CertificationDTO;
 import io.choerodon.mybatis.common.Mapper;
-import org.apache.ibatis.annotations.Param;
 
 /**
  * Created by n!Ck
@@ -22,9 +23,11 @@ public interface DevopsCertificationMapper extends Mapper<CertificationDTO> {
 
     List<CertificationDTO> queryActiveByDomain(@Param("projectId") Long projectId, @Param("clusterId") Long clusterId, @Param("domain") String domain);
 
-    void updateSkipCheckPro(@Param("certId") Long clusterId, @Param("skipCheckPro") Boolean skipCheckPro);
+    void updateSkipCheckPro(@Param("certId") Long certId, @Param("skipCheckPro") Boolean skipCheckPro);
 
     List<CertificationDTO> listByProjectId(@Param("projectId") Long projectId, @Param("organizationId") Long organizationId);
 
     List<CertificationDTO> listAllOrgCertification();
+
+    Integer updateStatus(@Param("certId") Long certId, @Param("status") String status);
 }

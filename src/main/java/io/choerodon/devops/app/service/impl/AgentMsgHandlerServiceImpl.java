@@ -10,6 +10,16 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import io.kubernetes.client.JSON;
+import io.kubernetes.client.models.*;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -25,15 +35,6 @@ import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.util.*;
-import io.kubernetes.client.JSON;
-import io.kubernetes.client.models.*;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Created by Zenger on 2018/4/17.
@@ -880,7 +881,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         } else {
             devopsServiceDTO.setStatus(ServiceStatus.RUNNING.getStatus());
         }
-        devopsServiceService.baseUpdate(devopsServiceDTO);
+        devopsServiceService.UpdateStatus(devopsServiceDTO);
     }
 
     private void syncService(DevopsServiceDTO devopsServiceDTO, String msg, AppServiceInstanceDTO appServiceInstanceDTO) {

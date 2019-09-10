@@ -47,4 +47,6 @@ public interface DevopsServiceMapper extends Mapper<DevopsServiceDTO> {
     void setExternalIpNull(@Param("serviceId") Long serviceId);
 
     void deleteServiceInstance(@Param("serviceIds") List<Long> serviceIds);
+
+    Integer updateStatus(@Param("serviceId")Long serviceId,@Param("status")String status);
 }

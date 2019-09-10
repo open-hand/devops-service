@@ -87,4 +87,8 @@
         FROM devops_certification cert
         WHERE cert.project_id IS NOT NULL;
     </select>
+
+    <update id="updateStatus">
+        UPDATE devops_certification dc SET dc.status=#{status} WHERE dc.id=#{certId}
+    </update>
 </mapper>
