@@ -61,7 +61,7 @@ class ReportsStore {
 
   @observable historyLoad = false;
 
-  @observable isRefresh = true;
+  @observable isRefresh = false;
 
   @observable allApps = [];
 
@@ -308,9 +308,8 @@ class ReportsStore {
   });
 
   handleAppsDate = (data) => {
-    const apps = data ? _.filter(data, ['permission', true]) : [];
-    if (apps.length) {
-      this.setAllApps(apps);
+    if (data.length) {
+      this.setAllApps(data);
     } else {
       this.setEchartsLoading(false);
       this.changeLoading(false);

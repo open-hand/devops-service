@@ -19,7 +19,7 @@ class Home extends Component {
     return (
       <Page className="c7n-region">
         <Header title={<FormattedMessage id="report.head" />} />
-        <Content code="report" values={{ name }}>
+        <Content>
           <div className="c7n-reports-wrapper">
             {_.map(reportList, (item) => (
               <div

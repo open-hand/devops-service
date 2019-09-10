@@ -46,7 +46,7 @@ class CodeQuality extends Component {
     const {
       ReportsStore,
     } = this.props;
-    ReportsStore.changeIsRefresh(true);
+    
     this.loadDatas();
   }
 
@@ -71,8 +71,10 @@ class CodeQuality extends Component {
       location: { state },
     } = this.props;
     const { appId, type } = state || {};
+    ReportsStore.changeIsRefresh(true);
     ReportsStore.loadAllApps(projectId)
       .then((data) => {
+        ReportsStore.changeIsRefresh(false);
         const appData = data && data.length ? _.filter(data, ['permission', true]) : [];
         if (appData.length) {
           const selectApp = appId || appData[0].id;
@@ -395,8 +397,8 @@ class CodeQuality extends Component {
           <FormattedMessage id="refresh" />
         </Button>
       </Header>
-      <Content code="report.code-quality" values={{ name }}>
-        {isRefresh ? <LoadingBar /> : content}
+      <Content>
+        {isRefresh ? <LoadingBar display={isRefresh} /> : content}
       </Content>
     </Page>);
   }

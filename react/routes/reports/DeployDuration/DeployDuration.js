@@ -467,8 +467,8 @@ class DeployDuration extends Component {
           <FormattedMessage id="refresh" />
         </Button>
       </Header>
-      <Content code="report.deploy-duration" values={{ name }}>
-        {isRefresh ? <LoadingBar /> : content}
+      <Content>
+        {isRefresh ? <LoadingBar display={isRefresh} /> : content}
       </Content>
     </Page>);
   }

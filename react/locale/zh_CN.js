@@ -114,7 +114,7 @@ const commonField = {
   ok: '确定',
   language: 'zh_CN',
   chooseType: '选择类型',
-  chooseApp: '选择应用',
+  chooseApp: '选择应用服务',
   notes: '填写内容',
   write: '编辑',
   preview: '预览',
@@ -1241,7 +1241,7 @@ const zhCN = {
     '平台支持两种部署模式：新建实例和替换实例。新建实例是部署生成新的实例；替换实例是等待新部署生成的副本集通过健康检查后再删除原副本集，但实例不变，只替换其相关参数。同时，您可以在下方自定义该实例的名称，或者直接使用默认名称。',
   'deploy.step.three.description': '请在此选择需要部署的环境并修改相关配置信息，平台默认会引用该应用上次在该环境部署的信息。',
   'deploy.app.add': '打开应用列表',
-  'deploy.step.one.app': '选择应用',
+  'deploy.step.one.app': '选择应用服务',
   'deploy.step.one.app.must': '请先选择应用',
   'deploy.step.one.version.title': '选择版本',
   'deploy.step.one.version': '应用版本',
@@ -1548,7 +1548,7 @@ const zhCN = {
   'branch.issue.bug': '故障',
   'branch.issue.epic': '史诗',
   'branch.issue.subtask': '子任务',
-  'branch.empty': '该应用仓库为空，暂无分支',
+  'branch.empty': '该应用服务仓库为空，暂无分支',
 
   // ciPipeline
   'ciPipeline.head': '持续集成',
@@ -1672,7 +1672,7 @@ const zhCN = {
   'release.column.level': '发布范围',
   'release.action.version': '版本控制',
   'release.action.publish': '发布应用',
-  'release.add.step.one.title': '选择应用',
+  'release.add.step.one.title': '选择应用服务',
   'release.add.step.one.description': '您可在此选择需要发布的应用。',
   'release.add.step.two.title': '选择发布版本',
   'release.add.step.two.description':

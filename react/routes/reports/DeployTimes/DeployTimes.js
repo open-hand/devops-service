@@ -503,8 +503,8 @@ class DeployTimes extends Component {
           <FormattedMessage id="refresh" />
         </Button>
       </Header>
-      <Content code="report.deploy-times" values={{ name }}>
-        {isRefresh ? <LoadingBar /> : content}
+      <Content>
+        {isRefresh ? <LoadingBar display={isRefresh} /> : content}
       </Content>
     </Page>);
   }

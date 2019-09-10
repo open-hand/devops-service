@@ -136,7 +136,9 @@ class Submission extends Component {
         loadCommitsRecord,
         getStartTime,
         getEndTime,
+        changeIsRefresh,
       },
+      ReportsStore,
       history: {
         location: { state },
       },
@@ -155,8 +157,10 @@ class Submission extends Component {
       .format()
       .split('T')[0]
       .replace(/-/g, '/');
+    ReportsStore.changeIsRefresh(true);
     loadAllApps(projectId).then((data) => {
-      const appData = data && data.length ? _.filter(data, ['permission', true]) : [];
+      ReportsStore.changeIsRefresh(false);
+      const appData = data;
       if (appData.length) {
         let selectApp = appId || _.map(appData, (item) => item.id);
         if (!appId) {
@@ -327,8 +331,8 @@ class Submission extends Component {
             <FormattedMessage id="refresh" />
           </Button>
         </Header>
-        <Content code="report.submission" values={{ name }}>
-          {getIsRefresh ? <LoadingBar /> : content}
+        <Content>
+          {getIsRefresh ? <LoadingBar display="getIsRefresh" /> : content}
         </Content>
       </Page>
     );

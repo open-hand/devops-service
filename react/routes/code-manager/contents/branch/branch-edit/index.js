@@ -34,6 +34,7 @@ class BranchEdit extends Component {
     this.state = {
       projectId: menu.id,
       submitting: false,
+      searchInput: '',
     };
   }
 
@@ -96,13 +97,14 @@ class BranchEdit extends Component {
     const { projectId } = this.state;
     let isModify = false;
     const issueId = this.props.form.getFieldValue('issueId');
-    if (!store.branch.issueId && issueId) {
+    if (!store.branch.issueId && (issueId && typeof issueId === 'number')) {
       isModify = true;
     }
     this.props.form.validateFieldsAndScroll((err, data, modify) => {
       if ((!err && modify) || (isModify && !err)) {
         data.branchName = store.branch.branchName;
         data.appServiceId = DevPipelineStore.getSelectApp;
+        data.objectVersionNumber = store.branch.objectVersionNumber;
         this.setState({ submitting: true });
         store.updateBranchByName(projectId, appId, data)
           .then(() => {
@@ -138,11 +140,13 @@ class BranchEdit extends Component {
    */
   searchIssue = (input, options) => {
     const { store } = this.props;
+    const { searchInput } = this.state;
     if (input !== '') {
       store.loadIssue(this.state.projectId, input, false);
-    } else {
+    } else if (searchInput && input === '') {
       store.loadIssue(this.state.projectId, '', true);
     }
+    this.setState({ searchInput: input });
   };
 
 
@@ -157,6 +161,10 @@ class BranchEdit extends Component {
       if (issues.length) {
         issueId = issues[0].issueId;
       }
+    }
+    // 如果 issue列表为空的时候默认显示原始issue
+    if (issue.length === 0 && store.currentBranchIssue) {
+      issueId = this.getOptionContent(store.currentBranchIssue);
     }
     return (
       <Sidebar
@@ -175,7 +183,7 @@ class BranchEdit extends Component {
               {...formItemLayout}
             >
               {getFieldDecorator('issueId', {
-                initialValue: issue.length ? issueId : undefined,
+                initialValue: issueId,
               })(
                 <Select
                   dropdownClassName="createBranch-dropdown"
