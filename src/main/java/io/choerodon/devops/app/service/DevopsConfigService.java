@@ -3,10 +3,11 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 
 import com.github.pagehelper.PageInfo;
+
 import io.choerodon.base.domain.PageRequest;
+import io.choerodon.devops.api.vo.DefaultConfigVO;
 import io.choerodon.devops.api.vo.DevopsConfigRepVO;
 import io.choerodon.devops.api.vo.DevopsConfigVO;
-import io.choerodon.devops.api.vo.DefaultConfigVO;
 import io.choerodon.devops.infra.dto.DevopsConfigDTO;
 
 /**
@@ -48,6 +49,7 @@ public interface DevopsConfigService {
 
     DevopsConfigDTO queryRealConfig(Long resourceId, String resourceType, String configType);
 
+    DevopsConfigVO queryRealConfigVO(Long resourceId, String resourceType, String configType);
 
     DevopsConfigDTO baseCreate(DevopsConfigDTO devopsConfigDTO);
 
