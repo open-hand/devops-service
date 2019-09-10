@@ -67,8 +67,7 @@ public class AppServiceVersionController {
             @ApiParam(value = "查询参数")
             @RequestParam(value = "version", required = false) String version,
             @ApiParam(value = "分页参数")
-            @ApiIgnore
-            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest) {
+            @ApiIgnore PageRequest pageRequest) {
         return Optional.ofNullable(appServiceVersionService.pageByOptions(
                 projectId, appServiceId, deployOnly, doPage, appServiceVersionId, version, pageRequest))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
