@@ -2,7 +2,7 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
-import io.choerodon.devops.api.vo.AgentPodInfoVO;
+import io.choerodon.devops.api.vo.PodMetricsRedisInfoVO;
 import org.springframework.lang.Nullable;
 
 /**
@@ -16,7 +16,7 @@ public interface AgentPodService {
      *
      * @param pods pod数据
      */
-    void handleRealTimePodData(List<AgentPodInfoVO> pods);
+    void handleRealTimePodData(List<PodMetricsRedisInfoVO> pods);
 
     /**
      * 查询一个Pod的所有快照数据
@@ -25,7 +25,7 @@ public interface AgentPodService {
      * @param namespace kubernetes namespace
      * @return 实时数据
      */
-    List<AgentPodInfoVO> queryAllPodSnapshots(String podName, String namespace);
+    List<PodMetricsRedisInfoVO> queryAllPodSnapshots(String podName, String namespace, String clusterCode);
 
     /**
      * 查询Pod在Redis中最新的实时数据
@@ -35,5 +35,5 @@ public interface AgentPodService {
      * @return 最新的实时数据
      */
     @Nullable
-    AgentPodInfoVO queryLatestPodSnapshot(String podName, String namespace);
+    PodMetricsRedisInfoVO queryLatestPodSnapshot(String podName, String namespace, String clusterCode);
 }

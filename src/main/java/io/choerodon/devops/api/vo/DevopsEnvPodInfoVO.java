@@ -20,10 +20,6 @@ public class DevopsEnvPodInfoVO {
     private Date creationDate;
     @JsonIgnore
     private String namespace;
-    @JsonIgnore
-    private Double cpuValue;
-    @JsonIgnore
-    private Long memoryValue;
 
     public String getName() {
         return name;
@@ -71,22 +67,6 @@ public class DevopsEnvPodInfoVO {
 
     public void setCreationDate(Date creationDate) {
         this.creationDate = creationDate;
-    }
-
-    public Double getCpuValue() {
-        return cpuValue;
-    }
-
-    public void setCpuValue(Double cpuValue) {
-        this.cpuValue = cpuValue;
-    }
-
-    public Long getMemoryValue() {
-        return memoryValue;
-    }
-
-    public void setMemoryValue(Long memoryValue) {
-        this.memoryValue = memoryValue;
     }
 
     public String getNamespace() {
