@@ -56,10 +56,10 @@ function ClusterItem({
     });
   }
 
-  function editItem() {
+  function openEdit() {
     Modal.open({
       key: EditClusterModalKey,
-      title: formatMessage({ id: `${intlPrefix}.modal.create` }),
+      title: formatMessage({ id: `${intlPrefix}.modal.edit` }),
       children: <EditCluster isEdit record={ClusterDetailDs.current} mainStore={mainStore} afterOk={freshMenu} intlPrefix={intlPrefix} formatMessage={formatMessage} treeItemStore={treeItemStore} projectId={projectId} />,
       drawer: true,
       style: {
@@ -67,6 +67,17 @@ function ClusterItem({
       },
       okText: formatMessage({ id: 'save' }),
     });
+  }
+
+  function editItem() {
+    if (record.data.id !== ClusterDetailDs.current.get('id')) {
+      ClusterDetailDs.transport.read.url = `devops/v1/projects/${projectId}/clusters/${record.data.id}`;
+      ClusterDetailDs.query().then(() => {
+        openEdit();
+      });
+      return;
+    }
+    openEdit();
   }
 
   async function activateItem() {
@@ -111,10 +122,17 @@ function ClusterItem({
     }
     return <Action placement="bottomRight" data={Data} />;
   }, []);
+  
+  const clearClick = (e) => {
+    e.stopPropagation();
+  };
   return <Fragment>
+    
     {getPrefix}
     {name}
-    {getSuffix}
+    <div onClick={clearClick}>
+      {getSuffix}
+    </div>
   </Fragment>;
 }
 

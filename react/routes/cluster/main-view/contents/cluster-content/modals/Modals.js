@@ -64,6 +64,7 @@ const ClusterModals = observer(() => {
   }
 
   function refresh() {
+    resreshTree();
     if (getTabKey === NODE_TAB) {
       NodeListDs.query();
     } else {
@@ -76,7 +77,7 @@ const ClusterModals = observer(() => {
 
   function refreshPermission() {
     ClusterDetailDs.query();
-    PermissionDs.query();
+    NonPermissionDs.query();
   }
 
   function openCreate() {
@@ -86,7 +87,7 @@ const ClusterModals = observer(() => {
       children: <CreateCluster afterOk={resreshTree} prefixCls={prefixCls} intlPrefix={intlPrefix} formatMessage={formatMessage} mainStore={mainStore} projectId={projectId} />,
       drawer: true,
       style: modalStyle,
-      okText: formatMessage({ id: 'save' }),
+      okText: formatMessage({ id: 'create' }),
     });
   }
 

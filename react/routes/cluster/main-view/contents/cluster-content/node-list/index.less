@@ -28,3 +28,18 @@
     height: 100%;
     align-items: center;
 }
+
+.c7n-cls-table-one-line-omit {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.c7n-cls-span-omit {
+    display: inline-block;
+    width: fit-content;
+    max-width: 100%;
+    .has-status {
+        max-width: ~"calc(100% - 40px)";
+    }
+}
