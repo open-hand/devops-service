@@ -2,8 +2,9 @@ import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { observer } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
-import { Action, Permission } from '@choerodon/master';
+import { Permission } from '@choerodon/master';
 import { Icon, Modal } from 'choerodon-ui/pro';
+import Action from '../../../../../components/action';
 import { handlePromptError } from '../../../../../utils';
 import { useResourceStore } from '../../../stores';
 import { useTreeItemStore } from './stores';
@@ -32,7 +33,8 @@ function AppItem({ name, record, intl: { formatMessage }, intlPrefix }) {
     }
   }
 
-  function openModal() {
+  function openModal(e) {
+    e.domEvent.stopPropagation();
     Modal.open({
       movable: false,
       closable: false,
@@ -46,11 +48,10 @@ function AppItem({ name, record, intl: { formatMessage }, intlPrefix }) {
 
   function getSuffix() {
     const actionData = [{
-      service: [],
+      key: 'delete',
       text: formatMessage({ id: `${intlPrefix}.modal.service.delete` }),
-      action: openModal,
     }];
-    return <Action placement="bottomRight" data={actionData} />;
+    return <Action placement="bottomRight" items={actionData} menuClick={openModal} />;
   }
 
   return <Fragment>

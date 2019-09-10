@@ -1,9 +1,9 @@
 import React, { useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Modal } from 'choerodon-ui/pro';
-import { Menu, Dropdown, Button } from 'choerodon-ui';
 import HeaderButtons from '../../../../../../components/header-buttons';
 import EnvDetail from '../../../../../../components/env-detail';
+import Action from '../../../../../../components/action';
 import Permission from '../../../../../resource/main-view/contents/environment/modals/permission';
 import { useEnvironmentStore } from '../../../../stores';
 import { useMainStore } from '../../../stores';
@@ -14,8 +14,6 @@ import EnvCreateForm from '../../../modals/env-create';
 import GroupForm from '../../../modals/GroupForm';
 import DeployConfigForm from './deploy-config';
 import { isNotRunning } from '../../../../util';
-
-import './index.less';
 
 const detailKey = Modal.key();
 const envKey = Modal.key();
@@ -30,6 +28,12 @@ const EnvModals = observer(() => {
   const modalStore = useStore();
   const modalStyle = useMemo(() => ({
     width: 380,
+  }), []);
+  const actionStyle = useMemo(() => ({
+    marginLeft: '.2rem',
+  }), []);
+  const buttonStyle = useMemo(() => ({
+    padding: '0 0 0 .02rem',
   }), []);
   const configModalStyle = useMemo(() => ({
     width: 'calc(100vw - 3.52rem)',
@@ -103,6 +107,13 @@ const EnvModals = observer(() => {
     });
   }
 
+  function toPermissionTab() {
+    const { getTabKey } = detailStore;
+    detailStore.setTabKey(ASSIGN_TAB);
+    treeDs.query();
+    getTabKey === ASSIGN_TAB && permissionsDs.query();
+  }
+
   function openEnvDetail() {
     Modal.open({
       key: detailKey,
@@ -140,7 +151,7 @@ const EnvModals = observer(() => {
         intlPrefix={intlPrefix}
         prefixCls={prefixCls}
         skipPermission={skipCheckPermission}
-        refresh={refresh}
+        refresh={toPermissionTab}
       />,
       afterClose: () => {
         modalStore.setUsers([]);
@@ -185,8 +196,6 @@ const EnvModals = observer(() => {
   }
 
   function getButtons() {
-    const { getTabKey } = detailStore;
-
     return [{
       name: formatMessage({ id: `${currentIntlPrefix}.create` }),
       icon: 'playlist_add',
@@ -198,14 +207,14 @@ const EnvModals = observer(() => {
       name: formatMessage({ id: `${currentIntlPrefix}.create.config` }),
       icon: 'playlist_add',
       handler: openConfigModal,
-      display: getTabKey === CONFIG_TAB,
+      display: true,
       group: 1,
     }, {
       disabled,
       name: formatMessage({ id: `${intlPrefix}.modal.permission` }),
       icon: 'authority',
       handler: openPermission,
-      display: getTabKey === ASSIGN_TAB,
+      display: true,
       group: 1,
     }, {
       name: formatMessage({ id: `${intlPrefix}.modal.env-detail` }),
@@ -222,29 +231,6 @@ const EnvModals = observer(() => {
     }];
   }
 
-  function getOtherBtn() {
-    const menu = (
-      <Menu onClick={handleMenuClick}>
-        <Menu.Item key={ITEM_GROUP}>{formatMessage({ id: `${currentIntlPrefix}.group.create` })}</Menu.Item>
-        <Menu.Item key={ITEM_SAFETY} disabled={disabled}>{formatMessage({ id: `${currentIntlPrefix}.resource.setting` })}</Menu.Item>
-      </Menu>
-    );
-    return (
-      <Dropdown
-        trigger={['click']}
-        overlay={menu}
-      >
-        <Button
-          style={{ color: '#000' }}
-          size="small"
-          shape="circle"
-          funcType="flat"
-          icon="more_vert"
-        />
-      </Dropdown>
-    );
-  }
-
   function handleMenuClick(e) {
     e.domEvent.stopPropagation();
     const handlerMapping = {
@@ -256,8 +242,22 @@ const EnvModals = observer(() => {
     handler && handler();
   }
 
+  const actionItem = useMemo(() => ([{
+    key: ITEM_GROUP,
+    text: formatMessage({ id: `${currentIntlPrefix}.group.create` }),
+  }, {
+    key: ITEM_SAFETY,
+    text: formatMessage({ id: `${currentIntlPrefix}.resource.setting` }),
+    disabled,
+  }]), [disabled]);
+
   return <HeaderButtons items={getButtons()}>
-    <div className={`${currentPrefixCls}-other-btn`}>{getOtherBtn()}</div>
+    <Action
+      style={actionStyle}
+      buttonStyle={buttonStyle}
+      items={actionItem}
+      menuClick={handleMenuClick}
+    />
   </HeaderButtons>;
 });
 

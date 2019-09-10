@@ -137,7 +137,6 @@ const EnvModals = observer(() => {
   }
 
   function getButtons() {
-    const { getTabKey } = envStore;
     let isSync;
     const record = baseInfoDs.current;
     if (record) {
@@ -155,7 +154,7 @@ const EnvModals = observer(() => {
       name: formatMessage({ id: `${intlPrefix}.modal.permission` }),
       icon: 'authority',
       handler: openPermission,
-      display: getTabKey === ASSIGN_TAB,
+      display: true,
       disabled: !isSync,
       group: 1,
     }, {
