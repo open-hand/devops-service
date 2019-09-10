@@ -1518,8 +1518,8 @@ public class AppServiceServiceImpl implements AppServiceService {
         List<DevopsUserPermissionVO> memberWithoutOwners = allProjectMembers.stream().filter(e -> !ownerIds.contains(e.getIamUserId())).collect(Collectors.toList());
 
         //合并项目所有者和项目成员
-        List<DevopsUserPermissionVO> userPermissionVOS = new ArrayList<>(allProjectOwners);
-        userPermissionVOS.addAll(memberWithoutOwners);
+        List<DevopsUserPermissionVO> userPermissionVOS = new ArrayList<>(memberWithoutOwners);
+        userPermissionVOS.addAll(allProjectOwners);
 
         //没有任何项目成员和项目所有者
         if (userPermissionVOS.isEmpty()) {
