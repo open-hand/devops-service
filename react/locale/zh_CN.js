@@ -513,6 +513,15 @@ const repository = {
   'c7ncd.repository.type': '仓库类型',
 };
 
+
+const codeManagement = {
+  'code-management.branch': '分支',
+  'code-management.merge-request': '合并请求',
+  'code-management.ci-pipeline': '持续集成',
+  'code-management.app-tag': '标记',
+  'code-management.code-quality': '代码质量',
+};
+
 // 文档地址前缀
 const docServer = 'http://v0-18.choerodon.io/zh/docs';
 // 界面标题描述统一管理
@@ -2358,6 +2367,7 @@ const zhCN = {
   ...cluster,
   ...deploy,
   ...repository,
+  ...codeManagement,
 };
 
 export default zhCN;
