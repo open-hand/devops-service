@@ -164,6 +164,15 @@ const commonField = {
   notCovered: '不覆盖',
   container: '容器',
   'search.placeholder': '请输入搜索条件',
+
+  // 资源树名称
+  instances: '实例',
+  services: '网络',
+  ingresses: '域名',
+  certifications: '证书',
+  configMaps: '配置映射',
+  secrets: '密文',
+  customResources: '自定义资源',
 };
 
 const deployment = {

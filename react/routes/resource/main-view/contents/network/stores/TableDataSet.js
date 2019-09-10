@@ -9,7 +9,7 @@ export default ({ formatMessage, intlPrefix, projectId, envId }) => ({
       const postData = getTablePostData(data);
 
       return ({
-        url: `/devops/v1/projects/${projectId}/service/${envId}/page_by_env`,
+        url: `/devops/v1/projects/${projectId}/service/page_by_options?env_id=${envId}`,
         method: 'post',
         data: postData,
       });

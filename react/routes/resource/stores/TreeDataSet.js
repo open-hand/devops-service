@@ -7,7 +7,7 @@ import { itemTypeMappings, viewTypeMappings, RES_TYPES, ENV_KEYS } from './mappi
 const { IST_VIEW_TYPE, RES_VIEW_TYPE } = viewTypeMappings;
 const { ENV_ITEM, APP_ITEM, IST_ITEM } = itemTypeMappings;
 
-function createResourceRecord({ dataSet, expandsKeys }) {
+function createResourceRecord({ dataSet, expandsKeys, formatMessage }) {
   const value = dataSet.toData();
   dataSet.removeAll();
 
@@ -28,7 +28,7 @@ function createResourceRecord({ dataSet, expandsKeys }) {
       const groupKey = `${envId}-${type}`;
       const group = {
         id: index,
-        name: type,
+        name: formatMessage({ id: type }),
         key: groupKey,
         isGroup: true,
         itemType: `group_${type}`,
@@ -82,7 +82,7 @@ function handleSelect(record, store) {
   }
 }
 
-export default ({ store, type, projectId }) => {
+export default ({ store, type, projectId, formatMessage }) => {
   const formatMaps = {
     [IST_VIEW_TYPE]: createInstanceRecord,
     [RES_VIEW_TYPE]: createResourceRecord,
@@ -115,7 +115,7 @@ export default ({ store, type, projectId }) => {
       },
       load: ({ dataSet }) => {
         const expandsKeys = store.getExpandedKeys;
-        formatMaps[type]({ dataSet, expandsKeys });
+        formatMaps[type]({ dataSet, expandsKeys, formatMessage });
       },
     },
     transport: {

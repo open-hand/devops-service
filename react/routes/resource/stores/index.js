@@ -15,12 +15,16 @@ export function useResourceStore() {
 
 export const StoreProvider = injectIntl(inject('AppState')(
   observer((props) => {
-    const { AppState: { currentMenuType: { id } }, children } = props;
+    const {
+      intl: { formatMessage },
+      AppState: { currentMenuType: { id } },
+      children,
+    } = props;
     const resourceStore = useStore();
     const viewType = resourceStore.getViewType;
     const viewTypeMemo = useMemo(() => viewTypeMappings, []);
     const itemType = useMemo(() => itemTypeMappings, []);
-    const treeDs = useMemo(() => new DataSet(TreeDataSet({ store: resourceStore, type: viewType, projectId: id })), [viewType]);
+    const treeDs = useMemo(() => new DataSet(TreeDataSet({ store: resourceStore, type: viewType, projectId: id, formatMessage })), [viewType]);
 
     const value = {
       ...props,

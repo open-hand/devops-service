@@ -4,20 +4,22 @@ import { Tooltip } from 'choerodon-ui/pro';
 import './index.less';
 
 export default function DetailsModal({ intlPrefix, record, prefixCls, formatMessage }) {
-  let status;
-  let versionName;
-  let appServiceVersionId;
-  let commandVersionId;
-  let commandVersion;
-  if (record) {
-    status = record.get('status');
-    versionName = record.get('versionName');
-    appServiceVersionId = record.get('appServiceVersionId');
-    commandVersionId = record.get('commandVersionId');
-    commandVersion = record.get('commandVersion');
-  }
-
   function getStatus() {
+    let status;
+    let versionName;
+    let appServiceVersionId;
+    let commandVersionId;
+    let commandVersion;
+    if (record) {
+      status = record.get('status');
+      versionName = record.get('versionName');
+      appServiceVersionId = record.get('appServiceVersionId');
+      commandVersionId = record.get('commandVersionId');
+      commandVersion = record.get('commandVersion');
+    }
+
+    if (!status) return null;
+
     if (status === 'failed') {
       let code;
       let title = '';
@@ -47,12 +49,12 @@ export default function DetailsModal({ intlPrefix, record, prefixCls, formatMess
       <span
         className={`${prefixCls}-modals-key ${prefixCls}-modals-cell`}
       >{formatMessage({ id: `${intlPrefix}.instance.status` })}：</span>
-      {status ? getStatus() : null}
+      {getStatus()}
     </div>
     <div className={`${prefixCls}-modals-row`}>
       <span className={`${prefixCls}-modals-key ${prefixCls}-modals-cell`}>{formatMessage({ id: 'version' })}：</span>
       <span className={`${prefixCls}-modals-value ${prefixCls}-modals-cell`}>
-        {versionName}
+        {record ? record.get('versionName') : ''}
       </span>
     </div>
   </Fragment>;
