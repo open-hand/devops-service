@@ -93,6 +93,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     private static final String SONAR_KEY = "%s-%s:%s";
     private static final Pattern REPOSITORY_URL_PATTERN = Pattern.compile("^http.*\\.git");
     private static final String GITLAB_CI_FILE = ".gitlab-ci.yml";
+    private static final String SITE_APP_GROUP_NAME_FORMAT = "site_%s";
     private static final String DOCKER_FILE_NAME = "Dockerfile";
     private static final String ISSUE = "issue";
     private static final String COVERAGE = "coverage";
@@ -1758,20 +1759,26 @@ public class AppServiceServiceImpl implements AppServiceService {
     private void cloneAndPushCode(AppServiceDTO appServiceDTO, UserAttrDTO userAttrDTO, Long oldAppServiceId, Long oldAppServiceVersionId, String repositoryUrl, String newGroupName) {
         AppServiceDTO oldAppServiceDTO = appServiceMapper.selectByPrimaryKey(oldAppServiceId);
         ProjectDTO oldProjectDTO = baseServiceClientOperator.queryProjectByAppId(oldAppServiceDTO.getAppId());
-        OrganizationDTO oldOrganizationDTO = baseServiceClientOperator.queryOrganizationById(oldProjectDTO.getOrganizationId());
         AppServiceVersionDTO oldAppServiceVersionDTO = appServiceVersionService.baseQuery(oldAppServiceVersionId);
-
+        String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
+        String oldGroup=null;
+        if (oldProjectDTO.getOrganizationId() != null) {
+            OrganizationDTO oldOrganizationDTO = baseServiceClientOperator.queryOrganizationById(oldProjectDTO.getOrganizationId());
+            oldGroup=oldOrganizationDTO.getCode() + "-" + oldProjectDTO.getCode();
+        } else {
+            ApplicationDTO oldApplicationDTO = baseServiceClientOperator.queryAppById(oldAppServiceDTO.getAppId());
+            oldGroup = String.format(SITE_APP_GROUP_NAME_FORMAT, oldApplicationDTO.getCode());
+        }
         //拉取代码
         // 获取push代码所需的access token
         String applicationDir = APPLICATION + System.currentTimeMillis();
         String pushToken = getToken(appServiceDTO.getGitlabProjectId(), applicationDir, userAttrDTO);
 
-        String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
         //获取admin的token
         String pullToken = gitlabServiceClientOperator.getAdminToken();
-        String oldRepository = repoUrl + oldOrganizationDTO.getCode() + "-" + oldProjectDTO.getCode() + "/" + oldAppServiceDTO.getCode() + GIT;
+        String oldRepository = repoUrl + oldGroup + "/" + oldAppServiceDTO.getCode() + GIT;
         String workingDirectory = gitUtil.cloneAppMarket(applicationDir, oldAppServiceVersionDTO.getCommit(), oldRepository, pullToken);
-        replaceParams(appServiceDTO.getCode(), newGroupName, applicationDir, oldAppServiceDTO.getCode(), oldOrganizationDTO.getCode() + "-" + oldProjectDTO.getCode());
+        replaceParams(appServiceDTO.getCode(), newGroupName, applicationDir, oldAppServiceDTO.getCode(), oldGroup);
         Git git = gitUtil.initGit(new File(workingDirectory));
         //push 到远程仓库
         GitLabUserDTO gitLabUserDTO = gitlabServiceClientOperator.queryUserById(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
@@ -2075,14 +2082,14 @@ public class AppServiceServiceImpl implements AppServiceService {
         List<AppServiceDTO> marketDownloadApps = new ArrayList<>();
         List<AppServiceDTO> organizationShareApps = new ArrayList<>();
         if (StringUtils.isEmpty(share)) {
-            marketDownloadApps = appServiceMapper.queryMarketDownloadApps(null, param,false);
+            marketDownloadApps = appServiceMapper.queryMarketDownloadApps(null, param, false);
             // 组织共享的应用服务
             organizationShareApps = listSharedAppService(projectId, param);
         }
         if (!StringUtils.isEmpty(share) && share) {
             organizationShareApps = listSharedAppService(projectId, param);
         } else {
-            marketDownloadApps = appServiceMapper.queryMarketDownloadApps(null, param,false);
+            marketDownloadApps = appServiceMapper.queryMarketDownloadApps(null, param, false);
         }
         List<AppServiceGroupInfoVO> appServiceGroupInfoVOS = new ArrayList<>();
 
