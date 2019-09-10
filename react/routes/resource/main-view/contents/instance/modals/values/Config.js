@@ -15,6 +15,7 @@ const ValueModalContent = observer((
     intlPrefix,
     prefixCls,
     vo,
+    refresh,
   },
 ) => {
   const [value, setValue] = useState('');
@@ -43,6 +44,7 @@ const ValueModalContent = observer((
       const result = await store.upgrade(projectId, data);
       if (handlePromptError(result)) {
         Choerodon.prompt('修改成功.');
+        refresh();
       } else {
         Choerodon.prompt('修改失败.');
       }

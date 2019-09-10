@@ -67,6 +67,7 @@ const EnvModals = injectIntl(observer(() => {
         intlPrefix={intlPrefix}
         prefixCls={prefixCls}
         formatMessage={formatMessage}
+        refresh={refresh}
       />,
       afterClose: () => {
         istStore.setUpgradeValue({});
@@ -98,6 +99,7 @@ const EnvModals = injectIntl(observer(() => {
         vo={deployVo}
         intlPrefix={intlPrefix}
         prefixCls={prefixCls}
+        refresh={refresh}
       />,
       afterClose: () => {
         istStore.setUpgradeValue({});

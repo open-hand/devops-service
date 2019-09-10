@@ -197,6 +197,7 @@ export default class Upgrade extends Component {
       AppState: {
         currentMenuType: { projectId },
       },
+      refresh,
     } = this.props;
 
     const {
@@ -225,6 +226,7 @@ export default class Upgrade extends Component {
       const result = await store.upgrade(projectId, data);
       if (handlePromptError(result)) {
         Choerodon.prompt('变更成功.');
+        refresh();
       } else {
         Choerodon.prompt('变更失败.');
       }

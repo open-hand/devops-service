@@ -22,8 +22,7 @@ const formItemLayout = {
   },
 };
 
-export function CertTextarea(propsForm, formatMessage) {
-
+export function CertTextarea(propsForm, formatMessage, initData = {}) {
   return <Fragment>
     <FormItem
       {...formItemLayout}
@@ -36,6 +35,7 @@ export function CertTextarea(propsForm, formatMessage) {
             message: formatMessage({ id: 'required' }),
           },
         ],
+        initialValue: initData.keyValue || '',
       })(
         <TextArea
           autosize={{ minRows: 2 }}
@@ -54,6 +54,7 @@ export function CertTextarea(propsForm, formatMessage) {
             message: formatMessage({ id: 'required' }),
           },
         ],
+        initialValue: initData.certValue || '',
       })(
         <TextArea
           autosize={{ minRows: 2 }}

@@ -10,6 +10,7 @@ import PermissionManage from './modals/permission';
 import CreateForm from './modals/create-form';
 
 import './index.less';
+import StatusIcon from '../../components/StatusIcon/StatusIcon';
 
 const { Column } = Table;
 const modalKey1 = Modal.key();
@@ -39,6 +40,15 @@ const AppService = withRouter(observer((props) => {
     listDs.query();
   }
 
+  function renderName({ value }) {
+    return (
+      <StatusIcon
+        name={value}
+        handleAtagClick={() => openModal('edit')}
+      />
+    );
+  }
+
   function renderActions() {
     const actionData = [
       {
@@ -55,19 +65,21 @@ const AppService = withRouter(observer((props) => {
     return (<Action data={actionData} />);
   }
 
-  function openCreate() {
+  function openModal(type) {
     Modal.open({
       key: modalKey1,
       style: modalStyle1,
       drawer: true,
-      title: formatMessage({ id: `${intlPrefix}.create` }),
+      title: formatMessage({ id: `${intlPrefix}.${type}` }),
       children: <CreateForm
         projectId={id}
         intlPrefix={intlPrefix}
         prefixCls={prefixCls}
         refresh={refresh}
         store={certStore}
+        certId={type === 'edit' ? listDs.current.get('id') : null}
       />,
+      afterClose: () => certStore.setCert({}),
     });
   }
 
@@ -124,7 +136,7 @@ const AppService = withRouter(observer((props) => {
         >
           <Button
             icon="playlist_add"
-            onClick={openCreate}
+            onClick={() => openModal('create')}
           >
             <FormattedMessage id={`${intlPrefix}.create`} />
           </Button>
@@ -144,7 +156,7 @@ const AppService = withRouter(observer((props) => {
           queryBar="bar"
           className={`${prefixCls}.table`}
         >
-          <Column name="name" sortable />
+          <Column name="name" sortable renderer={renderName} />
           <Column renderer={renderActions} width="0.7rem" />
           <Column name="domain" sortable />
         </Table>
