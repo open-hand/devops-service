@@ -1062,6 +1062,11 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
 
     @Override
+    public void updateStatus(DevopsServiceDTO devopsServiceDTO) {
+        devopsServiceMapper.updateStatus(devopsServiceDTO.getId(), devopsServiceDTO.getStatus());
+    }
+
+    @Override
     public void createServiceBySaga(ServiceSagaPayLoad serviceSagaPayLoad) {
         try {
             //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆

@@ -115,7 +115,14 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         // 在gitops库处理secret文件
         operateEnvGitLabFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), v1Secret, devopsSecretDTO,
                 devopsEnvCommandE, CREATE.equals(secretReqVO.getType()), userAttrDTO, secretReqVO.getAppServiceId());
-        return ConvertUtils.convertObject(baseQuery(devopsSecretDTO.getId()), SecretRespVO.class);
+        SecretRespVO secretRespVO = ConvertUtils.convertObject(devopsSecretDTO.getId(), SecretRespVO.class);
+        if (devopsSecretDTO.getCreatedBy() != null && devopsSecretDTO.getCreatedBy() != 0) {
+            secretRespVO.setCreatorName(ResourceCreatorInfoUtil.getOperatorName(baseServiceClientOperator, devopsSecretDTO.getCreatedBy()));
+        }
+        if (devopsSecretDTO.getLastUpdatedBy() != null && devopsSecretDTO.getLastUpdatedBy() != 0) {
+            secretRespVO.setLastUpdaterName(ResourceCreatorInfoUtil.getOperatorName(baseServiceClientOperator, devopsSecretDTO.getLastUpdatedBy()));
+        }
+        return secretRespVO;
     }
 
     @Override

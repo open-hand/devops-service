@@ -509,9 +509,7 @@ public class CertificationServiceImpl implements CertificationService {
 
     @Override
     public void baseUpdateStatus(CertificationDTO inputCertificationDTO) {
-        CertificationDTO certificationDTO = devopsCertificationMapper.selectByPrimaryKey(inputCertificationDTO.getId());
-        certificationDTO.setStatus(inputCertificationDTO.getStatus());
-        devopsCertificationMapper.updateByPrimaryKeySelective(certificationDTO);
+        devopsCertificationMapper.updateStatus(inputCertificationDTO.getId(), inputCertificationDTO.getStatus());
     }
 
     @Override

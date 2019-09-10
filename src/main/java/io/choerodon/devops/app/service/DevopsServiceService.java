@@ -174,4 +174,6 @@ public interface DevopsServiceService {
 
     void baseDeleteServiceAndInstanceByEnvId(Long envId);
 
+    void updateStatus(DevopsServiceDTO devopsServiceDTO);
+
 }
