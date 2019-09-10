@@ -13,9 +13,6 @@ export const StoreProvider = (props) => {
 
   const value = {
     ...props,
-    permissions: [
-      'devops-service.application-instance.pageByOptions',
-    ],
     modalStore,
   };
   return (

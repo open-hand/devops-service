@@ -64,8 +64,7 @@ export const StoreProvider = injectIntl(observer((props) => {
     netDs.transport.read = ({ data }) => {
       const postData = getTablePostData(data);
       return ({
-        url: `/devops/v1/projects/${projectId}/service/page_by_instance?app_service_id=${id}`,
-        // url: `/devops/v1/projects/${projectId}/service/page_by_options?env_id=${parentId}&app_service_id=${id}`,
+        url: `/devops/v1/projects/${projectId}/service/page_by_instance?env_id=${parentId}&app_service_id=${id}`,
         method: 'post',
         data: postData,
       });

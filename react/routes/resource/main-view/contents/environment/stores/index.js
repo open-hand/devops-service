@@ -41,10 +41,22 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const gitopsSyncDs = useMemo(() => new DataSet(GitopsSyncDataSet()), []);
     const retryDs = useMemo(() => new DataSet(RetryDataSet()), []);
 
+    function queryData() {
+      const tabKey = envStore.getTabKey;
+      if (tabKey === tabs.SYNC_TAB) {
+        gitopsSyncDs.query();
+        gitopsLogDs.query();
+      } else if (tabKey === tabs.ASSIGN_TAB) {
+        permissionsDs.query();
+      }
+    }
+
     useEffect(() => {
-      retryDs.transport.read.url = `/devops/v1/projects/${projectId}/envs/${id}/retry`;
       baseInfoDs.transport.read.url = `/devops/v1/projects/${projectId}/envs/${id}/info`;
       baseInfoDs.query();
+      retryDs.transport.read.url = `/devops/v1/projects/${projectId}/envs/${id}/retry`;
+      gitopsLogDs.transport.read.url = `/devops/v1/projects/${projectId}/envs/${id}/error_file/page_by_env`;
+      gitopsSyncDs.transport.read.url = `/devops/v1/projects/${projectId}/envs/${id}/status`;
       permissionsDs.transport.read = ({ data }) => {
         const postData = getTablePostData(data);
         return {
@@ -53,23 +65,11 @@ export const StoreProvider = injectIntl(inject('AppState')(
           data: postData,
         };
       };
-      permissionsDs.query();
       permissionsDs.transport.destroy = ({ data: [data] }) => ({
         url: `/devops/v1/projects/${projectId}/envs/${id}/permission?user_id=${data.iamUserId}`,
         method: 'delete',
       });
-    }, [projectId, id]);
-
-    useEffect(() => {
-      const tabKey = envStore.getTabKey;
-      if (tabKey === tabs.SYNC_TAB) {
-        gitopsSyncDs.transport.read.url = `/devops/v1/projects/${projectId}/envs/${id}/status`;
-        gitopsSyncDs.query();
-        gitopsLogDs.transport.read.url = `/devops/v1/projects/${projectId}/envs/${id}/error_file/page_by_env`;
-        gitopsLogDs.query();
-      } else if (tabKey === tabs.ASSIGN_TAB) {
-        permissionsDs.query();
-      }
+      queryData();
     }, [projectId, id, envStore.getTabKey]);
 
     useEffect(() => {

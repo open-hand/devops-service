@@ -17,7 +17,7 @@ class UserInfo extends PureComponent {
     const { avatar, name, id } = this.props;
     const ava = avatar
       ? <img src={avatar} alt="avatar" className="c7ncd-userinfo-avatar" />
-      : <span className="c7ncd-userinfo-avatar-txt">{name.toUpperCase().substring(0, 1)}</span>;
+      : <span className="c7ncd-userinfo-avatar-txt">{(name || '').toUpperCase().substring(0, 1)}</span>;
 
     return (
       <div className="c7ncd-userinfo-wrap">
