@@ -15,6 +15,10 @@ public class DevopsUserPermissionVO extends DevopsEnvUserVO {
     public DevopsUserPermissionVO(Long iamUserId, String loginName, String realName) {
         super(iamUserId, loginName, realName);
     }
+    public DevopsUserPermissionVO(Long iamUserId, String loginName, String realName,Date creationDate) {
+        super(iamUserId, loginName, realName);
+        this.creationDate=creationDate;
+    }
 
     public String getRole() {
         return role;
