@@ -178,8 +178,15 @@
             AND
             dav.version LIKE CONCAT(CONCAT('%', #{version, jdbcType=VARCHAR}),'%')
         </if>
-        ORDER BY
-        dav.id DESC
+        <choose>
+            <when test="appServiceVersionId!=null and appServiceVersionId!=''">
+                ORDER BY dav.id != ${appServiceVersionId}, dav.id DESC
+            </when>
+            <otherwise>
+                ORDER BY dav.id DESC
+            </otherwise>
+        </choose>
+
     </select>
 
     <select id="listAppDeployedVersion" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
