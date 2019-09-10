@@ -513,6 +513,15 @@ const repository = {
   'c7ncd.repository.type': '仓库类型',
 };
 
+
+const codeManagement = {
+  'code-management.branch': '分支',
+  'code-management.merge-request': '合并请求',
+  'code-management.ci-pipeline': '持续集成',
+  'code-management.app-tag': '标记',
+  'code-management.code-quality': '代码质量',
+};
+
 // 文档地址前缀
 const docServer = 'http://v0-18.choerodon.io/zh/docs';
 // 界面标题描述统一管理
@@ -966,12 +975,15 @@ const cluster = {
   'c7ncd.cluster.node.cpu': 'CPU分配',
   'c7ncd.cluster.node.memory': '内存分配',
   'c7ncd.cluster.modal.create': '创建集群',
+  'c7ncd.cluster.modal.edit': '修改集群',
   'c7ncd.cluster.modal.permission': '权限管理',
   'c7ncd.cluster.name': '集群名称',
   'c7ncd.cluster.code': '集群编码',
   'c7ncd.cluster.dec': '集群描述',
   'c7ncd.cluster.project': '项目',
   'c7ncd.cluster.add.project': '添加项目',
+  'c7ncd.cluster.project.require': '暂无可选择的项目',
+  'c7ncd.cluster.project.empty': '请选择项目',
   'c7ncd.cluster.project.all': '组织下所有项目',
   'c7ncd.cluster.project.part': '组织下特定项目',
   'c7ncd.cluster.visibility': '集群公开范围',
@@ -2358,6 +2370,7 @@ const zhCN = {
   ...cluster,
   ...deploy,
   ...repository,
+  ...codeManagement,
 };
 
 export default zhCN;

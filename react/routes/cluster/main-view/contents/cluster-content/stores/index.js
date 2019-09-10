@@ -27,9 +27,11 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const { ClusterDetailDs } = useClusterMainStore();
     const { intlPrefix, clusterStore } = useClusterStore();
     const { getSelectedMenu: { menuId } } = clusterStore;
-    const NodeListDs = useMemo(() => new DataSet(NodeListDataSet({ formatMessage, intlPrefix, id })), []);
-    const PermissionDs = useMemo(() => new DataSet(PermissionDataSet({ formatMessage, intlPrefix, id })), []);
+    
     const record = ClusterDetailDs.current;
+    const NodeListDs = useMemo(() => new DataSet(NodeListDataSet({ formatMessage, intlPrefix, id })), []);
+    const PermissionDs = useMemo(() => new DataSet(PermissionDataSet({ formatMessage, intlPrefix, id, menuId, skipCheckProjectPermission: record && record.get('skipCheckProjectPermission') })), [record]);
+
     const contentStore = useStore(tabs);
     const tabkey = contentStore.getTabKey;
     useEffect(() => {

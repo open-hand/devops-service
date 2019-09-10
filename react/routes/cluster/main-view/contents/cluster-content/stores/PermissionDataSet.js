@@ -1,13 +1,19 @@
 import getTablePostData from '../../../../../../utils/getTablePostData';
 
-export default ({ formatMessage, intlPrefix, projectId }) => ({
+export default ({ formatMessage, intlPrefix, id: projectId, menuId, skipCheckProjectPermission }) => ({
   selection: false,
   pageSize: 10,
   transport: {
     read: ({ data }) => {
       const postData = getTablePostData(data);
+      let URL = '';
+      if (skipCheckProjectPermission) {
+        URL = `/devops/v1/projects/${projectId}/page_projects`;
+      } else {
+        URL = `/devops/v1/projects/${projectId}/clusters/${menuId}/permission/page_related`;
+      }
       return {
-        url: `/devops/v1/projects/${projectId}/clusters/page_projects`,
+        url: URL,
         method: 'post',
         data: postData,
       };

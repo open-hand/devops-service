@@ -1,3 +1,5 @@
+@import '~choerodon-ui/lib/style/themes/default';
+
 .c7n-app-select_512 {
   width: 512px;
   margin-bottom: 16px;
@@ -5,9 +7,21 @@
 
 .c7n-merge-tabs {
   height: 100%;
-  .c7n-tabs-bar {
+  .@{c7n-prefix}-tabs-bar {
     position: unset;
     margin-left: 0;
+    border-bottom: 0;
+    .@{c7n-prefix}-tabs-tab {
+      margin-right: 0 !important;
+      border-bottom: 0.01rem solid #e8e8e8 !important;
+      border-radius: unset !important;
+      line-height: 0.3rem !important;
+      background-color: #fff !important;
+      &-active {
+        border-color: #3f51b5 !important;
+        font-weight: 550 !important;
+      }
+    }
   }
 }
 

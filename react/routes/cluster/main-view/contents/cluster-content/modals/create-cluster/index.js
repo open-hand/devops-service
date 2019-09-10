@@ -1,5 +1,5 @@
 /* eslint-disable no-undef */
-import React, { Fragment, useState, useMemo } from 'react';
+import React, { Fragment, useState, useMemo, useEffect } from 'react';
 import { Input, Form, Row, Col } from 'choerodon-ui';
 import { observer } from 'mobx-react-lite';
 import _ from 'lodash';
@@ -158,7 +158,7 @@ const CreateCluster = observer((props) => {
             ],
             initialValue: isEdit ? record.get('name') : '',
           })(
-            <Input maxLength={30} placeholder={formatMessage({ id: `${intlPrefix}.name` })} onChange={handleNameChange} />
+            <Input maxLength={30} label={formatMessage({ id: `${intlPrefix}.name` })} onChange={handleNameChange} />
           )} </FormItem>
         <FormItem>
           {getFieldDecorator('code', {
@@ -173,13 +173,13 @@ const CreateCluster = observer((props) => {
             ],
             initialValue: isEdit ? record.get('code') : '',
           })(
-            <Input readOnly={isEdit} maxLength={10} placeholder={formatMessage({ id: `${intlPrefix}.code` })} onChange={handleCodeChange} />
+            <Input readOnly={isEdit} maxLength={10} label={formatMessage({ id: `${intlPrefix}.code` })} onChange={handleCodeChange} />
           )} </FormItem>
         <FormItem>
           {getFieldDecorator('description', {
             initialValue: isEdit ? record.get('description') : '',
           })(
-            <TextArea placeholder={formatMessage({ id: `${intlPrefix}.dec` })} onChange={handleDescriptionChange} />
+            <TextArea label={formatMessage({ id: `${intlPrefix}.dec` })} onChange={handleDescriptionChange} />
           )}
         </FormItem>
       </Form>

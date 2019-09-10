@@ -32,7 +32,7 @@ const Permission = observer(({ refreshPermission, modal, form, tree, onOk, proje
       }
     });
 
-    if (!projects.projectIds) return false;
+    if (!(projects && projects.projectIds)) return false;
     try {
       const res = await onOk(projects);
       if (handlePromptError(res, false)) {
@@ -74,6 +74,8 @@ const Permission = observer(({ refreshPermission, modal, form, tree, onOk, proje
       fieldKeys={data}
       label={formatMessage({ id: `${intlPrefix}.project` })}
       addText={formatMessage({ id: `${intlPrefix}.add.project` })}
+      requireText={formatMessage({ id: `${intlPrefix}.project.require` })}
+      notFoundContent={formatMessage({ id: `${intlPrefix}.project.empty` })}
     />;
   }
 

@@ -393,7 +393,7 @@ class MergeRequestHome extends Component {
         {hasAppData && appId
           ? <Fragment>
             <Content values={{ name: titleName }} className="c7n-merge-content">
-              <Tabs activecKey={tabKey} onChange={this.tabChange} animated={false} className="c7n-merge-tabs">
+              <Tabs activecKey={tabKey} onChange={this.tabChange} animated={false} className="c7n-merge-tabs" type="card" size="small" tabBarStyle={{ marginRight: '0' }}>
                 <TabPane tab={`${intl.formatMessage({ id: 'merge.tab1' })}(${openCount || 0})`} key="opened">
                   <Table
                     filterBarPlaceholder={intl.formatMessage({ id: 'filter' })}
