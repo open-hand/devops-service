@@ -2101,6 +2101,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     private void initAppServiceGroupInfoVOList(List<AppServiceGroupInfoVO> appServiceGroupInfoVOS, List<AppServiceDTO> appServiceDTOList, Boolean share) {
+        long open = System.currentTimeMillis();
         if (appServiceDTOList.isEmpty()) return;
         // 获取应用服务编号集合去得到服务最新的版本号
         List<Long> appServiceIds = appServiceDTOList.stream().map(v -> v.getId()).collect(Collectors.toList());
@@ -2114,9 +2115,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         Set<Long> appIds = getAppIds(appServiceDTOList);
         List<ApplicationDTO> appByIds = baseServiceClientOperator.getAppByIds(appIds);
         Map<Long, ApplicationDTO> appMap = appByIds.stream().collect(Collectors.toMap(ApplicationDTO::getId, Function.identity()));
-        Set<AppServiceGroupInfoVO> appList = new HashSet<>();
         // 遍历应用服务集合并转换为VO
-
         appServiceDTOList.stream().forEach(appServiceDTO -> {
             // 根据应用服务的ID查询出versionList中对应的版本信息
             AppServiceVersionDTO appServiceVersionDTO = versionMap.get(appServiceDTO.getId()).get(0);
@@ -2134,20 +2133,21 @@ public class AppServiceServiceImpl implements AppServiceService {
                     appServiceGroupInfoVO.setAppName(appName);
                     appServiceGroupInfoVOS.add(appServiceGroupInfoVO);
 
-                    // 获取applicationDTO转换为 AppServiceGroupInfoVO
-                    AppServiceGroupInfoVO appInfo = new AppServiceGroupInfoVO();
-                    appInfo.setId(applicationDTO.getId());
-                    appInfo.setCode(applicationDTO.getCode());
-                    appInfo.setName(applicationDTO.getName());
-                    appInfo.setShare(share);
-                    appList.add(appInfo);
                 }
-
             }
         });
 
         // 将应用信息加入appServiceGroupInfoVOS 构建一维的返回数据
+        List<AppServiceGroupInfoVO> appList = appByIds.stream().map(applicationDTO -> {
+            AppServiceGroupInfoVO appServiceGroupInfoVO = new AppServiceGroupInfoVO();
+            BeanUtils.copyProperties(applicationDTO, appServiceGroupInfoVO);
+            appServiceGroupInfoVO.setShare(share);
+            return appServiceGroupInfoVO;
+        }).collect(Collectors.toList());
         appServiceGroupInfoVOS.addAll(appList);
+
+        long end = System.currentTimeMillis();
+        System.out.println(end-open);
     }
 
     /**
