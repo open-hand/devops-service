@@ -17,6 +17,7 @@ import './index.less';
 const { Column } = Table;
 const modalKey1 = Modal.key();
 const modalKey2 = Modal.key();
+const modalKey3 = Modal.key();
 const modalStyle1 = {
   width: 380,
 };
@@ -122,7 +123,7 @@ const AppService = withRouter(observer((props) => {
     } else {
       actionItems = pick(actionData, ['run']);
     }
-    return (<Action data={Object.values(actionItems)} />);
+    return (AppStore.getProjectRole === 'owner' ? <Action data={Object.values(actionItems)} /> : null);
   }
 
   function handleCancel(dataSet) {
@@ -187,8 +188,28 @@ const AppService = withRouter(observer((props) => {
   }
 
   async function changeActive(active) {
-    if (await AppStore.changeActive(id, listDs.current.get('id'), active)) {
-      refresh();
+    if (!active) {
+      Modal.open({
+        key: modalKey3,
+        title: formatMessage({ id: `${intlPrefix}.stop` }),
+        children: <FormattedMessage id={`${intlPrefix}.stop.tips`} />,
+        onOk: () => handleChangeActive(active),
+      });
+    } else {
+      handleChangeActive(active);
+    }
+  }
+
+  async function handleChangeActive(active) {
+    try {
+      if (await AppStore.changeActive(id, listDs.current.get('id'), active)) {
+        refresh();
+      } else {
+        return false;
+      }
+    } catch (e) {
+      Choerodon.handleResponseError(e);
+      return false;
     }
   }
 
@@ -245,9 +266,7 @@ const AppService = withRouter(observer((props) => {
           className={`${prefixCls}.table`}
         >
           <Column name="name" renderer={renderName} sortable />
-          {AppStore.getProjectRole === 'owner' && (
-            <Column renderer={renderActions} width="0.7rem" />
-          )}
+          <Column renderer={renderActions} width="0.7rem" />
           <Column name="code" sortable />
           <Column name="type" renderer={renderType} />
           <Column name="repoUrl" renderer={renderUrl} />

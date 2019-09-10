@@ -27,6 +27,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
         getViewType,
       },
       intlPrefix,
+      treeDs,
     } = useResourceStore();
     const istStore = useStore();
 
@@ -71,6 +72,8 @@ export const StoreProvider = injectIntl(inject('AppState')(
       istStore,
       detailsStore,
       instanceId: id,
+      envId: parentId.split('-')[0],
+      treeDs,
     };
     return (
       <Store.Provider value={value}>

@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Modal } from 'choerodon-ui/pro';
+import { injectIntl, FormattedMessage } from 'react-intl';
 import { handlePromptError } from '../../../../../../utils';
 import HeaderButtons from '../../../../../../components/header-buttons';
 import DetailsModal from './details';
@@ -12,8 +13,9 @@ import { useInstanceStore } from '../stores';
 const detailKey = Modal.key();
 const valuesKey = Modal.key();
 const upgradeKey = Modal.key();
+const redeployKey = Modal.key();
 
-const EnvModals = observer(() => {
+const EnvModals = injectIntl(observer(() => {
   const {
     prefixCls,
     intlPrefix,
@@ -141,6 +143,15 @@ const EnvModals = observer(() => {
     }
   }
 
+  function openRedeploy() {
+    Modal.open({
+      key: redeployKey,
+      title: formatMessage({ id: `${intlPrefix}.modal.redeploy` }),
+      children: <FormattedMessage id={`${intlPrefix}.modal.redeploy.tips`} />,
+      onOk: redeploy,
+    });
+  }
+
   async function redeploy() {
     const { id } = resourceStore.getSelectedMenu;
     try {
@@ -162,22 +173,22 @@ const EnvModals = observer(() => {
       icon: 'rate_review1',
       handler: openValueModal,
       display: true,
-      permissions: [],
+      permissions: ['devops-service.app-service-instance.deploy'],
       group: 1,
       disabled: btnDisabled,
     }, {
       name: formatMessage({ id: `${intlPrefix}.modal.modify` }),
       icon: 'backup_line',
       handler: openUpgradeModal,
-      permissions: [],
+      permissions: ['devops-service.app-service-instance.deploy'],
       display: true,
       group: 1,
       disabled: btnDisabled,
     }, {
       name: formatMessage({ id: `${intlPrefix}.modal.redeploy` }),
       icon: 'redeploy_line',
-      handler: redeploy,
-      permissions: [],
+      handler: openRedeploy,
+      permissions: ['devops-service.app-service-instance.restart'],
       display: true,
       group: 1,
       disabled: btnDisabled,
@@ -202,6 +213,6 @@ const EnvModals = observer(() => {
   }
 
   return getHeader();
-});
+}));
 
 export default EnvModals;

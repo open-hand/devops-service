@@ -231,6 +231,9 @@ const deployment = {
   'c7ncd.deployment.instance.status.operating': '处理中',
   'c7ncd.deployment.instance.status.running': '运行中',
   'c7ncd.deployment.instance.action.stop': '停用实例',
+  'c7ncd.deployment.instance.action.stop.tips': '确定要停用该实例吗？',
+  'c7ncd.deployment.instance.action.start': '重启实例',
+  'c7ncd.deployment.instance.action.start.tips': '确定要重启该实例吗？',
   'c7ncd.deployment.instance.action.delete': '删除实例',
   'c7ncd.deployment.instance.status.failed.deploy': '部署失败',
   'c7ncd.deployment.instance.status.failed.deploy.describe': '部署版本{version}失败',
@@ -327,6 +330,7 @@ const deployment = {
   'c7ncd.deployment.node': '节点',
   'c7ncd.deployment.delete.ingress': '删除域名',
   'c7ncd.deployment.delete.ingress.tips': '确定要删除该域名吗？',
+  'c7ncd.deployment.modal.redeploy.tips': '确定要重新部署该实例吗？',
 };
 
 const appService = {
@@ -394,6 +398,8 @@ const appService = {
   'c7ncd.appService.button.disabled': '请先启用应用服务',
   'c7ncd.appService.import.failed': '字段重复，请修改',
   'c7ncd.appService.selected': '{number}个已选择应用服务',
+  'c7ncd.appService.stop': '停用服务',
+  'c7ncd.appService.stop.tips': '确定停用该应用服务吗？',
 };
 
 const envrionment = {

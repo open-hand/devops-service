@@ -45,7 +45,8 @@ export default observer(({ record, dataSet, versionOptions, levelOptions, projec
 
   useEffect(() => {
     const url = record.get('versionType') ? `&version=${record.get('versionType')}` : '';
-    versionOptions.transport.read.url = `/devops/v1/projects/${projectId}/app_service_versions/list_app_services/${appServiceId}?deploy_only=false${url}`;
+    versionOptions.transport.read.method = 'post';
+    versionOptions.transport.read.url = `/devops/v1/projects/${projectId}/app_service_versions/page_by_options?app_service_id=${appServiceId}&deploy_only=false${url}`;
     versionOptions.query();
   }, [record.get('versionType')]);
 

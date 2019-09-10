@@ -20,19 +20,19 @@ const DetailContent = observer((props) => {
         title={formatMessage({ id: `${intlPrefix}.version` })}
         tabKey="version"
         component={Version}
-        alawaysShow
+        alwaysShow
       />
       <PageTab
         title={formatMessage({ id: `${intlPrefix}.permission` })}
         tabKey="permission"
         component={Allocation}
-        alawaysShow={AppStore.getProjectRole === 'owner'}
+        alwaysShow={AppStore.getProjectRole === 'owner'}
       />
       <PageTab
         title={formatMessage({ id: `${intlPrefix}.share` })}
         tabKey="share"
         component={Share}
-        alawaysShow={AppStore.getProjectRole === 'owner' && detailDs.current && detailDs.current.get('type') === 'normal'}
+        alwaysShow={AppStore.getProjectRole === 'owner' && detailDs.current && detailDs.current.get('type') === 'normal'}
       />
     </PageWrap>
   );

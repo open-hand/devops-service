@@ -7,10 +7,9 @@ export default function useStore() {
     deleteInstance(projectId, istId) {
       axios.delete(`devops/v1/projects/${projectId}/app_instances/${istId}/delete`);
     },
-    // ？？？是否可以删除实例弹窗
     changeIstActive(projectId, istId, active) {
       axios.put(
-        `devops/v1/projects/${projectId}/app_instances/${istId}/${active}`,
+        `devops/v1/projects/${projectId}/app_service_instances/${istId}/${active}`,
       );
     },
     removeService(projectId, envId, appServiceIds) {

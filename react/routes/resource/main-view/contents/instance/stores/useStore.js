@@ -40,7 +40,7 @@ export default function useStore() {
     async loadValue(projectId, id, versionId) {
       this.setValueLoading(true);
       try {
-        const data = await axios.get(`/devops/v1/projects/${projectId}/app_service_instances/${id}/appServiceService/${versionId}/upgrade_value`);
+        const data = await axios.get(`/devops/v1/projects/${projectId}/app_service_instances/${id}/appServiceVersion/${versionId}/upgrade_value`);
         const result = handlePromptError(data);
         this.setValueLoading(false);
         if (result) {
@@ -55,9 +55,9 @@ export default function useStore() {
       }
     },
 
-    loadUpVersion({ projectId, appId, page, param = '', initId = '' }) {
-      return axios.get(
-        `/devops/v1/projects/${projectId}/app_service_versions/page_by_app_service/${appId}?page=${page}&app_version_id=${initId}&version=${param}&size=15`,
+    loadUpVersion({ projectId, appId, page, param = '', init = '' }) {
+      return axios.post(
+        `/devops/v1/projects/${projectId}/app_service_versions/page_by_options?app_service_id=${appId}&deploy_only=true&do_page=true&page=${page}&size=15&version=${param}&app_service_version_id=${init}`,
       );
     },
   }));

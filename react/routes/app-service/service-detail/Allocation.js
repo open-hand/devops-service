@@ -26,6 +26,7 @@ const Allocation = observer((props) => {
     permissionDs,
     detailDs,
     nonePermissionDs,
+    AppStore,
     AppState: { currentMenuType: { id } },
   } = useServiceDetailStore();
 
@@ -63,6 +64,7 @@ const Allocation = observer((props) => {
       children: <ServicePermission
         dataSet={permissionDs}
         record={detailDs.current}
+        store={AppStore}
         nonePermissionDS={nonePermissionDs}
         intlPrefix={intlPrefix}
         prefixCls={prefixCls}

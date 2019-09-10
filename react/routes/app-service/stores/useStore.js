@@ -85,10 +85,10 @@ export default function useStore() {
 
     async loadVersion(projectId, id) {
       try {
-        const res = await axios.get(`/devops/v1/projects/${projectId}/app_service_versions/list_app_services/${id}?deploy_only=false`);
+        const res = await axios.post(`/devops/v1/projects/${projectId}/app_service_versions/page_by_options?app_service_id=${id}&deploy_only=false`);
         if (handlePromptError(res)) {
-          this.setVersion(res);
-          return res;
+          this.setVersion(res.list);
+          return res.list;
         }
       } catch (e) {
         Choerodon.handleResponseError(e);
@@ -110,6 +110,15 @@ export default function useStore() {
         }
       } catch (e) {
         Choerodon.handleResponseError(e);
+      }
+    },
+
+    async updatePermission(projectId, id, data) {
+      try {
+        const res = await axios.post(`/devops/v1/projects/${projectId}/app_service/${id}/update_permission`, JSON.stringify(data));
+        return handlePromptError(res, false);
+      } catch (e) {
+        return false;
       }
     },
   }));
