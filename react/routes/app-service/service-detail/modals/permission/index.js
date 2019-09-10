@@ -9,25 +9,10 @@ import './index.less';
 
 const { Option } = Select;
 
-export default observer(({ dataSet, refresh, record, projectId, formatMessage, prefixCls, intlPrefix, nonePermissionDS, modal }) => {
+export default observer(({ dataSet, refresh, record, store, projectId, formatMessage, prefixCls, intlPrefix, nonePermissionDS, modal }) => {
   useEffect(() => {
     dataSet.getField('iamUserId').set('options', nonePermissionDS);
     nonePermissionDS.query();
-  }, []);
-
-  useEffect(() => {
-    dataSet.transport.create = ({ data }) => {
-      const res = {
-        skipCheckPermission: record.get('skipCheckPermission'),
-        userIds: map(data, 'iamUserId'),
-      };
-
-      return ({
-        url: `/devops/v1/projects/${projectId}/app_service/${record.get('id')}/update_permission`,
-        method: 'post',
-        data: res,
-      });
-    };
   }, []);
 
   useEffect(() => {
@@ -40,7 +25,11 @@ export default observer(({ dataSet, refresh, record, projectId, formatMessage, p
 
   modal.handleOk(async () => {
     try {
-      if (await dataSet.submit() !== false) {
+      const data = {
+        skipCheckPermission: record.get('skipCheckPermission'),
+        userIds: map(dataSet.created, (item) => item.get('iamUserId')),
+      };
+      if (await store.updatePermission(projectId, record.get('id'), data)) {
         refresh();
       } else {
         return false;

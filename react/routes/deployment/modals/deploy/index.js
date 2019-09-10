@@ -7,6 +7,7 @@ import map from 'lodash/map';
 import find from 'lodash/find';
 import forEach from 'lodash/forEach';
 import uuidV1 from 'uuid/v1';
+import classnames from 'classnames';
 import YamlEditor from '../../../../components/yamlEditor';
 import NetworkForm from './network-form';
 import DomainForm from './domain-form';
@@ -140,8 +141,11 @@ const DeployModal = injectIntl(observer(({ record, dataSet, store, projectId, re
   }
 
   function renderEnvOption({ record: envRecord, text, value }) {
+    const envClass = classnames({
+      [`${prefixCls}-manual-deploy-disabled`]: !envRecord.get('connect') || !envRecord.get('synchro'),
+    });
     return (
-      <div disabled={!envRecord.get('connect') || !envRecord.get('synchro')}>
+      <div className={envClass}>
         {value && (<StatusDot
           connect={envRecord.get('connect')}
           synchronize={envRecord.get('synchro')}

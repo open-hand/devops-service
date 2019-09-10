@@ -29,8 +29,15 @@ export default class Pods extends PureComponent {
           id: projectId,
         },
       },
+      refresh,
     } = this.props;
-    store.operatePodCount(projectId, envId, name, count);
+    store.operatePodCount(projectId, envId, name, count)
+      .then(() => {
+        refresh();
+      })
+      .catch((err) => {
+        Choerodon.handleResponseError(err);
+      });
   }, 600);
 
   /**
@@ -55,7 +62,7 @@ export default class Pods extends PureComponent {
     const currentPodTargetCount = targetCount[`${name}-${podType}`] || sum;
     let { btnDisable } = this.state;
 
-    if (targetCount > 1) {
+    if (currentPodTargetCount > 1) {
       const count = currentPodTargetCount - 1;
       // 最小pod数为1
       if (count <= 1) {

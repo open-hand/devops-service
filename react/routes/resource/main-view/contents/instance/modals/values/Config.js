@@ -65,12 +65,6 @@ const ValueModalContent = observer((
   }
 
   return (<Fragment>
-    <div className={`${prefixCls}-configValue-text`}>
-      <span>{formatMessage({ id: `${intlPrefix}.modal.config` })}：</span>
-      <span className={`${prefixCls}-configValue-name`}>
-        {name || formatMessage({ id: `${intlPrefix}.modal.config.empty` })}
-      </span>
-    </div>
     <Spin spinning={store.getValueLoading}>
       <YamlEditor
         readOnly={false}

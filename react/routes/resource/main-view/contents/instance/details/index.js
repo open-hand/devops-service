@@ -51,6 +51,23 @@ export default class Details extends Component {
     detailsStore.setResources({});
   }
 
+  refresh = () => {
+    const {
+      baseDs,
+      treeDs,
+      detailsStore,
+      instanceId,
+      AppState: {
+        currentMenuType: {
+          projectId,
+        },
+      },
+    } = this.context;
+    baseDs.query();
+    treeDs.query();
+    detailsStore.loadResource(projectId, instanceId);
+  };
+
   changeTargetCount = (count) => {
     const { detailsStore } = this.context;
     detailsStore.setTargetCount(count);
@@ -84,6 +101,7 @@ export default class Details extends Component {
       detailsStore,
       baseDs,
       instanceId,
+      envId,
     } = this.context;
     let status;
     let connect;
@@ -219,6 +237,8 @@ export default class Details extends Component {
               status={status}
               handleChangeCount={this.changeTargetCount}
               store={detailsStore}
+              envId={envId}
+              refresh={this.refresh}
             />
           </div>
         </div>

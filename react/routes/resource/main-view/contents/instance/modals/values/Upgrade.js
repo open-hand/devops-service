@@ -290,12 +290,6 @@ export default class Upgrade extends Component {
         >
           {versionOptions}
         </Select>
-        <div className={`${prefixCls}-configValue-text`}>
-          <span>{formatMessage({ id: `${intlPrefix}.modal.config` })}：</span>
-          <span className={`${prefixCls}-configValue-name`}>
-            {name || formatMessage({ id: `${intlPrefix}.modal.config.empty` })}
-          </span>
-        </div>
         <Spin spinning={loading}>
           <YamlEditor
             readOnly={false}

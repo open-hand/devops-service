@@ -79,13 +79,10 @@ export default class InstanceDetails {
   }
 
   operatePodCount(projectId, envId, name, num) {
-    axios
+    return axios
       .put(
-        `devops/v1/projects/${projectId}/app_service_instances/operate_pod_count?envId=${envId}&deploymentName=${name}&count=${num}`,
-      )
-      .catch((err) => {
-        Choerodon.handleResponseError(err);
-      });
+        `devops/v1/projects/${projectId}/app_service_instances/operate_pod_count?envId=${envId}&name=${name}&count=${num}`,
+      );
   }
 
   async loadResource(projectId, instanceId) {
