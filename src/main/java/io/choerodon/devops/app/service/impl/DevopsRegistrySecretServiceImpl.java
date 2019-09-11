@@ -44,6 +44,11 @@ public class DevopsRegistrySecretServiceImpl implements DevopsRegistrySecretServ
     }
 
     @Override
+    public void baseUpdateStatus(Long id, Boolean status) {
+        devopsRegistrySecretMapper.updateStatus(id,status);
+    }
+
+    @Override
     public DevopsRegistrySecretDTO baseQueryByEnvAndId(String namespace, Long configId) {
         DevopsRegistrySecretDTO devopsRegistrySecretDTO = new DevopsRegistrySecretDTO();
         devopsRegistrySecretDTO.setConfigId(configId);

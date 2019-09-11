@@ -9,6 +9,8 @@ public class DevopsEnvPodInfoVO {
 
     @ApiModelProperty("pod名称")
     private String name;
+    @ApiModelProperty("pod状态")
+    private String status;
     @ApiModelProperty("实例名称")
     private String instanceName;
     @ApiModelProperty("内存消耗")
@@ -75,5 +77,13 @@ public class DevopsEnvPodInfoVO {
 
     public void setNamespace(String namespace) {
         this.namespace = namespace;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }
