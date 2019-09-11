@@ -135,10 +135,10 @@ public interface DevopsServiceService {
     /**
      * 查看网络信息时，展示网络对应实例的Pod实时数据
      *
-     * @param devopsServiceQueryDTO
+     * @param id
      * @return
      */
-    DevopsServiceVO querySingleServiceDtoToVo(DevopsServiceQueryDTO devopsServiceQueryDTO);
+    DevopsServiceVO querySingleService(Long id);
 
     void createServiceBySaga(ServiceSagaPayLoad serviceSagaPayLoad);
 

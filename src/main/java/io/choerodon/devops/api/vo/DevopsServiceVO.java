@@ -38,13 +38,13 @@ public class DevopsServiceVO extends DevopsResourceDataInfoVO {
      * pod实时信息
      */
     @ApiModelProperty("pod实时信息")
-    private List<Map<Long, List<PodLiveInfoVO>>> podLiveInfos;
+    private List<PodLiveInfoVO> podLiveInfos;
 
-    public List<Map<Long, List<PodLiveInfoVO>>> getPodLiveInfos() {
+    public List<PodLiveInfoVO> getPodLiveInfos() {
         return podLiveInfos;
     }
 
-    public void setPodLiveInfos(List<Map<Long, List<PodLiveInfoVO>>> podLiveInfos) {
+    public void setPodLiveInfos(List<PodLiveInfoVO> podLiveInfos) {
         this.podLiveInfos = podLiveInfos;
     }
 
