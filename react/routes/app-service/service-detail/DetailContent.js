@@ -15,7 +15,7 @@ const DetailContent = observer((props) => {
   } = useServiceDetailStore();
   
   return (
-    <PageWrap noHeader={[]}>
+    <PageWrap noHeader={[]} cache>
       <PageTab
         title={formatMessage({ id: `${intlPrefix}.version` })}
         tabKey="version"
