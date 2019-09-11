@@ -190,4 +190,9 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     public ResponseEntity<RemoteTokenAuthorizationVO> checkLatestToken() {
         throw new CommonException("error.remote.token.authorization");
     }
+
+    @Override
+    public ResponseEntity<List<ProjectDTO>> queryByIds(Set<Long> ids) {
+       throw  new CommonException(ERROR_PROJECT_GET);
+    }
 }

@@ -174,4 +174,7 @@ public interface BaseServiceClient {
     @GetMapping(value = "/v1/remote_token/authorization/check/latest")
     ResponseEntity<RemoteTokenAuthorizationVO> checkLatestToken();
 
+    @PostMapping(value = "/v1/projects/ids")
+    ResponseEntity<List<ProjectDTO>> queryByIds(@RequestBody Set<Long> ids);
+
 }

@@ -2070,9 +2070,9 @@ public class AppServiceServiceImpl implements AppServiceService {
         List<AppServiceVersionDTO> versionList = appServiceVersionService.listServiceVersionByAppServiceIds(appServiceIds, shareString);
         Map<Long, List<AppServiceVersionDTO>> versionMap = versionList.stream().collect(Collectors.groupingBy(AppServiceVersionDTO::getAppServiceId));
 
-        Set<Long> projectIds = getProjectIds(appServiceDTOList);
-        List<ApplicationDTO> appByIds = baseServiceClientOperator.getAppByIds(projectIds);
-        Map<Long, ApplicationDTO> appMap = appByIds.stream().collect(Collectors.toMap(ApplicationDTO::getId, Function.identity()));
+        Set<Long> projectIds = appServiceDTOList.stream().map(appServiceDTO -> appServiceDTO.getProjectId()).collect(Collectors.toSet());
+        List<ProjectDTO> projects = baseServiceClientOperator.queryProjectsByIds(projectIds);
+        Map<Long, ProjectDTO> appMap = projects.stream().collect(Collectors.toMap(ProjectDTO::getId, Function.identity()));
         // 遍历应用服务集合并转换为VO
         appServiceDTOList.stream().forEach(appServiceDTO -> {
             // 根据应用服务的ID查询出versionList中对应的版本信息
@@ -2080,14 +2080,14 @@ public class AppServiceServiceImpl implements AppServiceService {
             // 应用服务含有共享版本才加入List
             if (appServiceVersionDTO != null) {
                 // 获取应用信息，并传入应用名称
-                ApplicationDTO applicationDTO = appMap.get(appServiceDTO.getProjectId());
-                if (!ObjectUtils.isEmpty(applicationDTO)) {
+                ProjectDTO projectDTO = appMap.get(appServiceDTO.getProjectId());
+                if (!ObjectUtils.isEmpty(projectDTO)) {
                     // 初始化应用服务信息
                     AppServiceGroupInfoVO appServiceGroupInfoVO = dtoToGroupInfoVO(appServiceDTO);
                     appServiceGroupInfoVO.setVersionId(appServiceVersionDTO.getId());
                     appServiceGroupInfoVO.setVersion(appServiceVersionDTO.getVersion());
                     appServiceGroupInfoVO.setShare(share);
-                    String appName = applicationDTO.getName();
+                    String appName = projectDTO.getName();
                     appServiceGroupInfoVO.setAppName(appName);
                     appServiceGroupInfoVOS.add(appServiceGroupInfoVO);
 
@@ -2095,28 +2095,14 @@ public class AppServiceServiceImpl implements AppServiceService {
             }
         });
 
-        // 将应用信息加入appServiceGroupInfoVOS 构建一维的返回数据
-        List<AppServiceGroupInfoVO> appList = appByIds.stream().map(applicationDTO -> {
+        // 将项目信息转为appServiceGroupInfoVOS 构建一维的返回数据
+        List<AppServiceGroupInfoVO> projectList = projects.stream().map(ProjectDTO -> {
             AppServiceGroupInfoVO appServiceGroupInfoVO = new AppServiceGroupInfoVO();
-            BeanUtils.copyProperties(applicationDTO, appServiceGroupInfoVO);
+            BeanUtils.copyProperties(ProjectDTO, appServiceGroupInfoVO);
             appServiceGroupInfoVO.setShare(share);
             return appServiceGroupInfoVO;
         }).collect(Collectors.toList());
-        appServiceGroupInfoVOS.addAll(appList);
-    }
-
-    /**
-     * 根据传入的appServiceList集合获取app_id集合
-     *
-     * @param appServiceList
-     * @return
-     */
-    private Set<Long> getProjectIds(List<AppServiceDTO> appServiceList) {
-        Set<Long> appIds = new HashSet<>();
-        appServiceList.stream().forEach(appServiceDTO ->
-                appIds.add(appServiceDTO.getProjectId())
-        );
-        return appIds;
+        appServiceGroupInfoVOS.addAll(projectList);
     }
 
     @Override
