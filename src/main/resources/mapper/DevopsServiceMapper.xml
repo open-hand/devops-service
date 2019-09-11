@@ -302,6 +302,8 @@
     </delete>
 
     <update id="updateStatus">
-        UPDATE devops_service ds SET ds.status=#{status} WHERE ds.id=#{serviceId}
+        UPDATE devops_service ds
+        SET ds.status=#{status}
+        WHERE ds.id = #{serviceId}
     </update>
 </mapper>

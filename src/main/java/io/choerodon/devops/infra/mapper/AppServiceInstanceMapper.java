@@ -62,4 +62,6 @@ public interface AppServiceInstanceMapper extends Mapper<AppServiceInstanceDTO> 
     Boolean checkCodeExist(@Param("code") String code, @Param("envIds") List<Long> envIds);
 
     int countNonDeletedInstances(@Param("appServiceId") Long appServiceId);
+
+    void updateStatus(@Param("instanceId")Long instanceId,@Param("status") String status);
 }

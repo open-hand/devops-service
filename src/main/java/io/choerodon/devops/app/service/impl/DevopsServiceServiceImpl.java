@@ -1071,6 +1071,12 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
     @Override
     public void updateStatus(DevopsServiceDTO devopsServiceDTO) {
+        if (devopsServiceDTO.getLabels() == null) {
+            devopsServiceMapper.updateLabelsToNull(devopsServiceDTO.getId());
+        }
+        if (devopsServiceDTO.getExternalIp() == null) {
+            devopsServiceMapper.setExternalIpNull(devopsServiceDTO.getId());
+        }
         devopsServiceMapper.updateStatus(devopsServiceDTO.getId(), devopsServiceDTO.getStatus());
     }
 

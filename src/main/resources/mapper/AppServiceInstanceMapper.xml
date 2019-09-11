@@ -545,4 +545,10 @@ WHERE
         WHERE ins.app_service_id = #{appServiceId}
           AND ins.status != 'deleted'
     </select>
+
+    <update id="updateStatus">
+        UPDATE devops_app_service_instance
+        SET status=#{status}
+        WHERE id = #{instanceId}
+    </update>
 </mapper>

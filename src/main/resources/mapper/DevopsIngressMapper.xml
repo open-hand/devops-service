@@ -147,4 +147,11 @@
         WHERE
         env_id = #{envId};
     </select>
+
+    <update id="updateStatus">
+        UPDATE devops_ingress
+        SET status=#{status}
+        WHERE env_id = #{envId}
+          AND name = #{name}
+    </update>
 </mapper>

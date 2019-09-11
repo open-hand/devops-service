@@ -844,6 +844,11 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     }
 
     @Override
+    public void updateStatus(Long envId, String name, String status) {
+        devopsIngressMapper.updateStatus(envId, name, status);
+    }
+
+    @Override
     public List<String> baseListNameByServiceId(Long serviceId) {
         return devopsIngressMapper.listIngressNameByServiceId(serviceId);
     }
