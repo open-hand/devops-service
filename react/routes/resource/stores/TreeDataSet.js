@@ -1,33 +1,33 @@
 import omit from 'lodash/omit';
 import isEmpty from 'lodash/isEmpty';
 import pick from 'lodash/pick';
-import forEach from 'lodash/forEach';
+import map from 'lodash/map';
 import { itemTypeMappings, viewTypeMappings, RES_TYPES, ENV_KEYS } from './mappings';
 
 const { IST_VIEW_TYPE, RES_VIEW_TYPE } = viewTypeMappings;
 const { ENV_ITEM, APP_ITEM, IST_ITEM } = itemTypeMappings;
 
-function createResourceRecord({ dataSet, expandsKeys, formatMessage }) {
-  const value = dataSet.toData();
-  dataSet.removeAll();
-
-  forEach(value, (node) => {
+function formatResource({ value, expandsKeys, formatMessage }) {
+  if (isEmpty(value)) return [];
+  const flatted = [];
+  for (let i = 0; i < value.length; i++) {
+    const node = value[i];
     const envInfo = pick(node, ENV_KEYS);
     const envId = envInfo.id;
     const envKey = String(envId);
-    dataSet.create({
+    flatted.push({
       ...envInfo,
       key: envKey,
       itemType: ENV_ITEM,
       expand: expandsKeys.includes(envKey),
       parentId: '0',
     });
-
-    forEach(RES_TYPES, (type, index) => {
+    for (let j = 0; j < RES_TYPES.length; j++) {
+      const type = RES_TYPES[j];
       const child = node[type];
       const groupKey = `${envId}-${type}`;
       const group = {
-        id: index,
+        id: j,
         name: formatMessage({ id: type }),
         key: groupKey,
         isGroup: true,
@@ -35,44 +35,49 @@ function createResourceRecord({ dataSet, expandsKeys, formatMessage }) {
         parentId: String(envId),
         expand: expandsKeys.includes(groupKey),
       };
-      dataSet.create(group);
-      forEach(child, (item) => {
-        dataSet.create({
-          ...item,
-          name: type === 'instances' ? item.code : item.name,
-          key: `${envId}-${item.id}-${type}`,
-          itemType: type,
-          parentId: `${envId}-${type}`,
-          expand: false,
-        });
-      });
-    });
-  });
+
+      const items = map(child, (item) => ({
+        ...item,
+        name: type === 'instances' ? item.code : item.name,
+        key: `${envId}-${item.id}-${type}`,
+        itemType: type,
+        parentId: `${envId}-${type}`,
+        expand: false,
+      }));
+      flatted.push(group, ...items);
+    }
+  }
+
+  return flatted;
 }
 
-function createInstanceRecord({ dataSet, expandsKeys }) {
-  const value = dataSet.toData();
-  dataSet.removeAll();
-  function recursiveCreate(data, prevKey = '', itemType = ENV_ITEM) {
-    forEach(data, (item) => {
-      const pureNode = omit(item, ['apps', 'instances']);
-      const key = prevKey ? `${prevKey}-${item.id}` : String(item.id);
-      dataSet.create({
-        ...pureNode,
-        name: item.name || item.code,
+function formatInstance({ value, expandsKeys }) {
+  if (isEmpty(value)) return [];
+  const flatted = [];
+  function flatData(data, prevKey = '', itemType = ENV_ITEM) {
+    for (let i = 0; i < data.length; i++) {
+      const node = data[i];
+      const peerNode = omit(node, ['apps', 'instances']);
+      const key = prevKey ? `${prevKey}-${node.id}` : String(node.id);
+
+      flatted.push({
+        ...peerNode,
+        name: node.name || node.code,
         expand: expandsKeys.includes(key),
         parentId: prevKey || '0',
         itemType,
         key,
       });
-      const children = item.apps || item.instances;
+      const children = node.apps || node.instances;
+
       if (!isEmpty(children)) {
-        const type = item.apps ? APP_ITEM : IST_ITEM;
-        recursiveCreate(children, key, type);
+        const type = node.apps ? APP_ITEM : IST_ITEM;
+        flatData(children, key, type);
       }
-    });
+    }
   }
-  recursiveCreate(value);
+  flatData(value);
+  return flatted;
 }
 
 function handleSelect(record, store) {
@@ -84,8 +89,8 @@ function handleSelect(record, store) {
 
 export default ({ store, type, projectId, formatMessage }) => {
   const formatMaps = {
-    [IST_VIEW_TYPE]: createInstanceRecord,
-    [RES_VIEW_TYPE]: createResourceRecord,
+    [IST_VIEW_TYPE]: formatInstance,
+    [RES_VIEW_TYPE]: formatResource,
   };
   const urlMaps = {
     [IST_VIEW_TYPE]: `/devops/v1/projects/${projectId}/envs/ins_tree_menu`,
@@ -94,6 +99,7 @@ export default ({ store, type, projectId, formatMessage }) => {
   return {
     autoQuery: true,
     paging: false,
+    dataKey: null,
     selection: 'single',
     parentField: 'parentId',
     expandField: 'expand',
@@ -113,15 +119,20 @@ export default ({ store, type, projectId, formatMessage }) => {
         // 禁用取消选中
         record.isSelected = true;
       },
-      load: ({ dataSet }) => {
-        const expandsKeys = store.getExpandedKeys;
-        formatMaps[type]({ dataSet, expandsKeys, formatMessage });
-      },
     },
     transport: {
       read: {
         url: urlMaps[type],
         method: 'get',
+        transformResponse(response) {
+          try {
+            const data = JSON.parse(response);
+            const expandsKeys = store.getExpandedKeys;
+            return formatMaps[type]({ value: data, expandsKeys, formatMessage });
+          } catch (e) {
+            return response;
+          }
+        },
       },
     },
   };

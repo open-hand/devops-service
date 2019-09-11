@@ -2,6 +2,7 @@ import React, { useState, Fragment, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Icon } from 'choerodon-ui';
 import uuidv1 from 'uuid/v1';
+import Loading from '../../../../../components/loading';
 import { removeEndsChar } from '../../../../../utils';
 import { useResourceStore } from '../../../stores';
 import { useCustomDetailStore } from './stores';
@@ -14,6 +15,7 @@ const TIMEOUT_TIME = 50000;
 const Content = observer(() => {
   const { prefixCls } = useResourceStore();
   const [value, setValue] = useState('');
+  const [loading, setLoading] = useState(true);
   const { detailDs } = useCustomDetailStore();
   let ws;
   let retry = false;
@@ -34,17 +36,17 @@ const Content = observer(() => {
   }
 
   function initSocket() {
+    setLoading(true);
     const record = detailDs.current;
     if (record) {
       const id = record.get('id');
       const clusterId = record.get('clusterId');
       const name = record.get('name');
       const kind = record.get('k8sKind');
-      const env = record.get('envName');
+      const env = record.get('envCode');
       try {
         const wsHost = removeEndsChar(window._env_.DEVOPS_HOST, '/');
         const url = `${wsHost}/devops/describe?key=cluster:${clusterId}.describe:${uuidv1()}&env=${env}&kind=${kind}&name=${name}&describeId=${id}`;
-        // const url = `${wsHost}/devops/describe?key=cluster:61.describe:${uuidv1()}&env=envtestenv&kind=${kind}&name=${name}&describeId=${id}`;
         ws = new WebSocket(url);
         ws.addEventListener('message', handleMessage);
         ws.addEventListener('error', handleError);
@@ -57,8 +59,10 @@ const Content = observer(() => {
   function handleMessage({ data }) {
     try {
       setValue(JSON.parse(data).data);
+      setLoading(false);
+      destroySocket();
     } catch (e) {
-      setValue('请求出错，请稍后重试！');
+      setValue('请求失败，请稍后重试！');
     }
   }
 
@@ -92,7 +96,7 @@ const Content = observer(() => {
       <Modals />
       {getTitle()}
       <pre className="custom-detail-section-content">
-        {value}
+        {loading ? <Loading display /> : value}
       </pre>
     </div>
   );
