@@ -6,5 +6,8 @@ export default function useStore() {
     queryActivateClusterShell(projectId, clusterId) {
       return axios.get(`/devops/v1/projects/${projectId}/clusters/query_shell/${clusterId}`);
     },
+    queryClusterDetail(projectId, clusterId) {
+      return axios.get(`devops/v1/projects/${projectId}/clusters/${clusterId}`);
+    },
   }));
 }
