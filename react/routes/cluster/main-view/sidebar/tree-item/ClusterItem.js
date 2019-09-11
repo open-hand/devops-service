@@ -56,11 +56,11 @@ function ClusterItem({
     });
   }
 
-  function openEdit() {
+  function openEdit(res) {
     Modal.open({
       key: EditClusterModalKey,
       title: formatMessage({ id: `${intlPrefix}.modal.edit` }),
-      children: <EditCluster isEdit record={ClusterDetailDs.current} mainStore={mainStore} afterOk={freshMenu} intlPrefix={intlPrefix} formatMessage={formatMessage} treeItemStore={treeItemStore} projectId={projectId} />,
+      children: <EditCluster isEdit record={res || ClusterDetailDs.current} mainStore={mainStore} afterOk={freshMenu} intlPrefix={intlPrefix} formatMessage={formatMessage} treeItemStore={treeItemStore} projectId={projectId} />,
       drawer: true,
       style: {
         width: 500,
@@ -69,12 +69,10 @@ function ClusterItem({
     });
   }
 
-  function editItem() {
+  async function editItem() {
     if (record.data.id !== ClusterDetailDs.current.get('id')) {
-      ClusterDetailDs.transport.read.url = `devops/v1/projects/${projectId}/clusters/${record.data.id}`;
-      ClusterDetailDs.query().then(() => {
-        openEdit();
-      });
+      const res = await treeItemStore.queryClusterDetail(projectId, record.data.id);
+      openEdit(res);
       return;
     }
     openEdit();
@@ -127,7 +125,6 @@ function ClusterItem({
     e.stopPropagation();
   };
   return <Fragment>
-    
     {getPrefix}
     {name}
     <div onClick={clearClick}>

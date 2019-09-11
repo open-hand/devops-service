@@ -31,7 +31,9 @@ const CreateCluster = observer((props) => {
     form } = props;
 
   const { getFieldDecorator, validateFields } = form;
-  const [formData, setFormData] = useState(record ? record.toData() : formDataModal);
+  
+  const [formData, setFormData] = useState(record ? toData(record) : formDataModal);
+  
   modal.handleOk(() => {
     validateFields(async (err, values) => {
       if (!err) {
@@ -97,7 +99,7 @@ const CreateCluster = observer((props) => {
 
   const checkName = useMemo(() => _.debounce((rule, value, callback) => {
     const pa = /^[a-z]([-a-z0-9]*[a-z0-9])?$/;
-    if (record && value === record.get('name')) {
+    if (formData && value === formData.name) {
       callback();
     } else if (value && pa.test(value)) {
       mainStore.checkClusterName({ projectId, clusterName: value })
@@ -120,7 +122,7 @@ const CreateCluster = observer((props) => {
   []);
   const checkCode = useMemo(() => _.debounce((rule, value, callback) => {
     const pa = /^[a-z]([-a-z0-9]*[a-z0-9])?$/;
-    if (record && value === record.get('code')) {
+    if (formData && value === formData.code) {
       callback();
     } else if (value && pa.test(value)) {
       mainStore.checkClusterCode({ projectId, clusterCode: value })
@@ -156,7 +158,7 @@ const CreateCluster = observer((props) => {
                 validator: checkName,
               },
             ],
-            initialValue: isEdit ? record.get('name') : '',
+            initialValue: isEdit ? formData.name : '',
           })(
             <Input maxLength={30} label={formatMessage({ id: `${intlPrefix}.name` })} onChange={handleNameChange} />
           )} </FormItem>
@@ -171,13 +173,13 @@ const CreateCluster = observer((props) => {
                 validator: checkCode,
               },
             ],
-            initialValue: isEdit ? record.get('code') : '',
+            initialValue: isEdit ? formData.code : '',
           })(
             <Input readOnly={isEdit} maxLength={10} label={formatMessage({ id: `${intlPrefix}.code` })} onChange={handleCodeChange} />
           )} </FormItem>
         <FormItem>
           {getFieldDecorator('description', {
-            initialValue: isEdit ? record.get('description') : '',
+            initialValue: isEdit ? formData.description : '',
           })(
             <TextArea label={formatMessage({ id: `${intlPrefix}.dec` })} onChange={handleDescriptionChange} />
           )}
@@ -186,5 +188,17 @@ const CreateCluster = observer((props) => {
     </Fragment>);
 });
 
+/**
+ * 根据obj是否拥有toData属性函数
+ * 将DataSet的record数据转换成JSON
+ * 或是将obj直接返回
+ * @param {数据对象} obj 
+ */
+function toData(obj) {
+  if (obj.toData) {
+    return obj.toData();
+  }
+  return obj;
+}
 
 export default Form.create({})(CreateCluster);
