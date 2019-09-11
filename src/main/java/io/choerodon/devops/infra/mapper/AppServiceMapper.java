@@ -22,9 +22,9 @@ public interface AppServiceMapper extends Mapper<AppServiceDTO> {
                              @Param("params") List<String> params,
                              @Param("index") String index);
 
-    List<AppServiceDTO> listByAppId(@Param("projectId") Long projectId,
-                                    @Param("searchParam") Map<String, Object> searchParam,
-                                    @Param("params") List<String> params);
+    List<AppServiceDTO> listByProjectId(@Param("projectId") Long projectId,
+                                        @Param("searchParam") Map<String, Object> searchParam,
+                                        @Param("params") List<String> params);
 
     List<AppServiceDTO> listAll(@Param("projectId") Long projectId);
 

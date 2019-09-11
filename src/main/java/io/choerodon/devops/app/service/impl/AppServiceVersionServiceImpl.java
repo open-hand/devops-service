@@ -85,7 +85,6 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
 
 
     private Gson gson = new Gson();
-    private JSON json = new JSON();
 
     /**
      * 方法中抛出runtime Exception而不是CommonException是为了返回非200的状态码。
@@ -107,7 +106,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
 
         AppServiceVersionValueDTO appServiceVersionValueDTO = new AppServiceVersionValueDTO();
         AppServiceVersionDTO appServiceVersionDTO = new AppServiceVersionDTO();
-        ProjectDTO projectDTO = baseServiceClientOperator.queryProjectByAppId(appServiceDTO.getProjectId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
         OrganizationDTO organization = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         AppServiceVersionDTO newApplicationVersion = baseQueryByAppIdAndVersion(appServiceDTO.getId(), version);
         appServiceVersionDTO.setAppServiceId(appServiceDTO.getId());
