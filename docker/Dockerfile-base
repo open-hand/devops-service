@@ -1,16 +1,10 @@
 # devops-base镜像的dockerfile
 FROM gcr.azk8s.cn/kaniko-project/executor:v0.11.0
-FROM dockerhub.azk8s.cn/library/python:2.7.16-slim-stretch
+FROM registry.cn-hangzhou.aliyuncs.com/choerodon-tools/devops-base:0.7.1
 
-RUN apt-get update \
-    && apt-get install -y zlib1g.dev gcc git pwgen clang \
-    && rm -rf /var/lib/apt/lists/* \
-    && pip install ruamel.yaml==0.15.54 \
-    && git clone --depth 1 --single-branch --branch v3.2 https://github.com/pyinstaller/pyinstaller.git /tmp/pyinstaller \
-    && cd /tmp/pyinstaller/bootloader \
-    && python ./waf configure --no-lsb all \
-    && pip install .. \
-    && rm -Rf /tmp
+WORKDIR /home/yaml
+COPY values_yaml.py requirements.txt  ./
+RUN pyinstaller --noconfirm --clean values_yaml.py
 
 # Install kaniko
 COPY --from=0 /kaniko/executor /usr/bin/kaniko

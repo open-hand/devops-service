@@ -881,7 +881,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         } else {
             devopsServiceDTO.setStatus(ServiceStatus.RUNNING.getStatus());
         }
-        devopsServiceService.UpdateStatus(devopsServiceDTO);
+        devopsServiceService.updateStatus(devopsServiceDTO);
     }
 
     private void syncService(DevopsServiceDTO devopsServiceDTO, String msg, AppServiceInstanceDTO appServiceInstanceDTO) {

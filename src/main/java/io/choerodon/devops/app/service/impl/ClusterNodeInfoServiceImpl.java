@@ -31,8 +31,8 @@ import io.choerodon.devops.infra.util.TypeUtil;
 @Service
 public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
     private static final String REDIS_CLUSTER_KEY_TEMPLATE = "node_info_project_id_%s_cluster_id_%s";
-    private static final String CPU_MEASURE_FORMAT = "%.3f";
-    private static final String MEMORY_MEASURE_FORMAT = "%.3f%s";
+    private static final String CPU_MEASURE_FORMAT = "%.2f";
+    private static final String MEMORY_MEASURE_FORMAT = "%.2f%s";
     private static final String[] MEMORY_MEASURE = {"Ki", "Ki", "Mi", "Gi"};
     private static final String PERCENTAGE_FORMAT = "%.2f%%";
     /**
