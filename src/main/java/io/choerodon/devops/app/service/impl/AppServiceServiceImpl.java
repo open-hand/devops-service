@@ -2070,8 +2070,8 @@ public class AppServiceServiceImpl implements AppServiceService {
         List<AppServiceVersionDTO> versionList = appServiceVersionService.listServiceVersionByAppServiceIds(appServiceIds, shareString);
         Map<Long, List<AppServiceVersionDTO>> versionMap = versionList.stream().collect(Collectors.groupingBy(AppServiceVersionDTO::getAppServiceId));
 
-        Set<Long> appIds = getAppIds(appServiceDTOList);
-        List<ApplicationDTO> appByIds = baseServiceClientOperator.getAppByIds(appIds);
+        Set<Long> projectIds = getProjectIds(appServiceDTOList);
+        List<ApplicationDTO> appByIds = baseServiceClientOperator.getAppByIds(projectIds);
         Map<Long, ApplicationDTO> appMap = appByIds.stream().collect(Collectors.toMap(ApplicationDTO::getId, Function.identity()));
         // 遍历应用服务集合并转换为VO
         appServiceDTOList.stream().forEach(appServiceDTO -> {
@@ -2111,7 +2111,7 @@ public class AppServiceServiceImpl implements AppServiceService {
      * @param appServiceList
      * @return
      */
-    private Set<Long> getAppIds(List<AppServiceDTO> appServiceList) {
+    private Set<Long> getProjectIds(List<AppServiceDTO> appServiceList) {
         Set<Long> appIds = new HashSet<>();
         appServiceList.stream().forEach(appServiceDTO ->
                 appIds.add(appServiceDTO.getProjectId())
