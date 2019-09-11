@@ -346,4 +346,6 @@ public interface AppServiceInstanceService {
                                                 Date startTime, Date endTime);
 
     String baseGetInstanceResourceDetailJson(Long instanceId, String resourceName, ResourceType resourceType);
+
+    void updateStatus(AppServiceInstanceDTO appServiceInstanceDTO);
 }

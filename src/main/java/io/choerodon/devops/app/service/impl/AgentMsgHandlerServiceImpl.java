@@ -866,7 +866,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         } else {
             certificationDTO.setStatus(CertificationStatus.APPLYING.getStatus());
         }
-        certificationService.baseUpdateStatus(certificationDTO);
+        certificationService.updateStatus(certificationDTO);
     }
 
     private void syncService(Long envId, List<DevopsEnvFileErrorDTO> errorDevopsFiles, ResourceCommitVO resourceCommitVO, String[] objects) {
@@ -938,9 +938,9 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 .baseQueryByEnvIdAndResourceId(envId, devopsIngressDTO.getId(), "Ingress");
         if (updateEnvCommandStatus(resourceCommitVO, devopsIngressDTO.getCommandId(),
                 devopsEnvFileResourceDTO, INGRESS_KIND, devopsIngressDTO.getName(), CommandStatus.SUCCESS.getStatus(), errorDevopsFiles)) {
-            devopsIngressService.baseUpdateStatus(envId, devopsIngressDTO.getName(), IngressStatus.FAILED.getStatus());
+            devopsIngressService.updateStatus(envId, devopsIngressDTO.getName(), IngressStatus.FAILED.getStatus());
         } else {
-            devopsIngressService.baseUpdateStatus(envId, devopsIngressDTO.getName(), IngressStatus.RUNNING.getStatus());
+            devopsIngressService.updateStatus(envId, devopsIngressDTO.getName(), IngressStatus.RUNNING.getStatus());
         }
     }
 
@@ -953,7 +953,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         if (updateEnvCommandStatus(resourceCommitVO, appServiceInstanceDTO.getCommandId(),
                 devopsEnvFileResourceDTO, C7NHELMRELEASE_KIND, appServiceInstanceDTO.getCode(), null, errorDevopsFiles)) {
             appServiceInstanceDTO.setStatus(InstanceStatus.FAILED.getStatus());
-            appServiceInstanceService.baseUpdate(appServiceInstanceDTO);
+            appServiceInstanceService.updateStatus(appServiceInstanceDTO);
         }
     }
 

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import io.choerodon.devops.infra.dto.DevopsIngressDTO;
+
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.mybatis.common.Mapper;
@@ -30,4 +31,6 @@ public interface DevopsIngressMapper extends Mapper<DevopsIngressDTO> {
             @Param("params") List<String> params);
 
     Boolean checkEnvHasIngress(@Param("envId") Long envId);
+
+    void updateStatus(@Param("envId") Long envId, @Param("name") String name, @Param("status") String status);
 }

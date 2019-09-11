@@ -1024,6 +1024,10 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         }
     }
 
+    @Override
+    public void updateStatus(AppServiceInstanceDTO appServiceInstanceDTO) {
+        appServiceInstanceMapper.updateStatus(appServiceInstanceDTO.getId(), appServiceInstanceDTO.getStatus());
+    }
 
     @Override
     public List<AppServiceInstanceDTO> baseListByEnvId(Long envId) {

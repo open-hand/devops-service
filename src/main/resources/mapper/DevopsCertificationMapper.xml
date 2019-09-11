@@ -89,6 +89,8 @@
     </select>
 
     <update id="updateStatus">
-        UPDATE devops_certification dc SET dc.status=#{status} WHERE dc.id=#{certId}
+        UPDATE devops_certification dc
+        SET dc.status=#{status}
+        WHERE dc.id = #{certId}
     </update>
 </mapper>

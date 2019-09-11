@@ -103,4 +103,6 @@ public interface CertificationService {
     List<CertificationDTO> baseListByOrgCertId(Long orgCertId);
 
     List<CertificationDTO> baseListByProject(Long projectId, Long organizationId);
+
+    void updateStatus(CertificationDTO certificationDTO);
 }

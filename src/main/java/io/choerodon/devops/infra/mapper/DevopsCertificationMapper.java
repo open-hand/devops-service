@@ -29,5 +29,5 @@ public interface DevopsCertificationMapper extends Mapper<CertificationDTO> {
 
     List<CertificationDTO> listAllOrgCertification();
 
-    Integer updateStatus(@Param("certId") Long certId, @Param("status") String status);
+    void updateStatus(@Param("certId") Long certId, @Param("status") String status);
 }
