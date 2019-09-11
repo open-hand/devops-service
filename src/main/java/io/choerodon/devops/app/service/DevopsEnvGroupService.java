@@ -42,7 +42,7 @@ public interface DevopsEnvGroupService {
      * @param projectId
      * @return
      */
-    Boolean checkName(String name, Long projectId,Long groupId);
+    Boolean checkName(String name, Long projectId, Long groupId);
 
 
     /**
@@ -61,6 +61,13 @@ public interface DevopsEnvGroupService {
      * @param id
      */
     void delete(Long id);
+
+    /**
+     * 检查环境组是否存在
+     *
+     * @param id
+     */
+    Boolean checkExist(Long id);
 
     DevopsEnvGroupDTO baseCreate(DevopsEnvGroupDTO devopsEnvGroupDTO);
 

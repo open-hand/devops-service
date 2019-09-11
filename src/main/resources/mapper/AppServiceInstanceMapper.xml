@@ -546,6 +546,16 @@ WHERE
           AND ins.status != 'deleted'
     </select>
 
+    <select id="countNonDeletedInstancesWithEnv" resultType="java.lang.Integer">
+        SELECT COUNT(1)
+        FROM devops_app_service_instance ins
+        WHERE ins.id = #{instanceId}
+          <if test="envId !=null">
+          AND ins.env_id = #{envId}
+          </if>
+          AND ins.status != 'deleted'
+    </select>
+
     <update id="updateStatus">
         UPDATE devops_app_service_instance
         SET status=#{status}

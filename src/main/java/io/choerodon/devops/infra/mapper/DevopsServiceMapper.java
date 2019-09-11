@@ -6,6 +6,7 @@ import java.util.Map;
 import io.choerodon.devops.infra.dto.DevopsServiceDTO;
 import io.choerodon.devops.infra.dto.DevopsServiceQueryDTO;
 import io.choerodon.mybatis.common.Mapper;
+
 import org.apache.ibatis.annotations.Param;
 
 
@@ -40,6 +41,8 @@ public interface DevopsServiceMapper extends Mapper<DevopsServiceDTO> {
 
     Boolean checkEnvContainingService(@Param("envId") Long envId);
 
+    int countNonDeletedServiceWithEnv(@Param("envId")Long envId,@Param("serviceId")Long serviceId);
+
     void updateLabelsToNull(@Param("serviceId") Long serviceId);
 
     void updateEndPointToNull(@Param("serviceId") Long serviceId);
@@ -48,5 +51,5 @@ public interface DevopsServiceMapper extends Mapper<DevopsServiceDTO> {
 
     void deleteServiceInstance(@Param("serviceIds") List<Long> serviceIds);
 
-    void updateStatus(@Param("serviceId")Long serviceId,@Param("status")String status);
+    void updateStatus(@Param("serviceId") Long serviceId, @Param("status") String status);
 }

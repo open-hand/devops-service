@@ -274,6 +274,16 @@
         AND `status` != 'deleted';
     </select>
 
+    <select id="countNonDeletedServiceWithEnv" resultType="java.lang.Integer">
+        SELECT COUNT(1)
+        FROM devops_service ds
+        WHERE ds.id = #{serviceId}
+        <if test="envId !=null">
+            AND ds.env_id = #{envId}
+        </if>
+          AND ds.status != 'deleted'
+    </select>
+
 
     <update id="updateLabelsToNull">
         UPDATE devops_service ds

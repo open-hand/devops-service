@@ -63,5 +63,7 @@ public interface AppServiceInstanceMapper extends Mapper<AppServiceInstanceDTO> 
 
     int countNonDeletedInstances(@Param("appServiceId") Long appServiceId);
 
+    int countNonDeletedInstancesWithEnv(@Param("envId")Long envId,@Param("instanceId")Long instanceId);
+
     void updateStatus(@Param("instanceId")Long instanceId,@Param("status") String status);
 }
