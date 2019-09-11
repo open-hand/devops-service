@@ -46,7 +46,10 @@ function CustomItem({
       text: formatMessage({ id: 'delete' }),
       action: deleteItem,
     }];
-    return <Action placement="bottomRight" data={actionData} />;
+    return <Action
+      placement="bottomRight"
+      data={actionData}
+    />;
   }
 
   return <Fragment>

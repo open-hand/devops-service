@@ -5,7 +5,8 @@ import remove from 'lodash/remove';
 /**
  * 通过DataSet创建Record
  */
-function createRecord({ data, dataSet, expandedKeys, formatMessage, intlPrefix }) {
+function formatTreeData({ data, expandedKeys, formatMessage, intlPrefix }) {
+  const result = [];
   forEach(data, ({
     devopsEnvGroupId: id,
     devopsEnvGroupName,
@@ -14,12 +15,10 @@ function createRecord({ data, dataSet, expandedKeys, formatMessage, intlPrefix }
   }) => {
     const groupKey = `group-${active ? 'active' : 'stopped'}-${id}`;
     let name = devopsEnvGroupName || '';
-
     if (!name && !id) {
       name = formatMessage({ id: `${intlPrefix}.group.${active ? 'default' : 'stopped'}` });
     }
-
-    dataSet.create({
+    result.push({
       id,
       name,
       active,
@@ -28,10 +27,9 @@ function createRecord({ data, dataSet, expandedKeys, formatMessage, intlPrefix }
       parentId: '',
       expand: expandedKeys.includes(groupKey),
     });
-
     forEach(envs, ({ id: envId, ...rest }) => {
       const key = `${groupKey}-${envId}`;
-      dataSet.create({
+      result.push({
         ...rest,
         id: envId,
         key,
@@ -41,6 +39,8 @@ function createRecord({ data, dataSet, expandedKeys, formatMessage, intlPrefix }
       });
     });
   });
+
+  return result;
 }
 
 function handleSelect(record, store) {
@@ -65,39 +65,34 @@ export default (projectId, store, formatMessage, intlPrefix) => ({
     unSelect: ({ record }) => {
       record.isSelected = true;
     },
-    load: ({ dataSet }) => {
-      const expandedKeys = store.getExpandedKeys;
-      /**
-       * NOTE: 数据加载完后转换为树的数据格式
-       * 按照顺序创建Record，默认分组在最上，停用的排在最下
-       */
-      const groups = dataSet.toData();
-      if (last(groups) && last(groups).active) {
-        const stoppedGroup = remove(groups, ({ active }) => !active);
-        groups.push(...stoppedGroup);
-      }
-
-      if (groups[0] && groups[0].devopsEnvGroupId) {
-        const defaultGroup = remove(groups, ({ active, devopsEnvGroupId }) => active && !devopsEnvGroupId);
-        groups.unshift(...defaultGroup);
-      }
-
-      // 移除原始数据
-      dataSet.removeAll();
-
-      createRecord({
-        data: groups,
-        dataSet,
-        expandedKeys,
-        formatMessage,
-        intlPrefix,
-      });
-    },
   },
   transport: {
     read: {
       url: `/devops/v1/projects/${projectId}/envs/env_tree_menu`,
       method: 'get',
+      transformResponse(response) {
+        try {
+          const expandedKeys = store.getExpandedKeys;
+          const groups = JSON.parse(response);
+          if (last(groups) && last(groups).active) {
+            const stoppedGroup = remove(groups, ({ active }) => !active);
+            groups.push(...stoppedGroup);
+          }
+
+          if (groups[0] && groups[0].devopsEnvGroupId) {
+            const defaultGroup = remove(groups, ({ active, devopsEnvGroupId }) => active && !devopsEnvGroupId);
+            groups.unshift(...defaultGroup);
+          }
+          return formatTreeData({
+            data: groups,
+            expandedKeys,
+            intlPrefix,
+            formatMessage,
+          });
+        } catch (e) {
+          return response;
+        }
+      },
     },
   },
 });
