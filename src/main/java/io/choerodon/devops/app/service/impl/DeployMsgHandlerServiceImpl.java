@@ -64,6 +64,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     private static final String PUBLIC = "public";
     private static final Logger logger = LoggerFactory.getLogger(DeployMsgHandlerServiceImpl.class);
     private static final String RESOURCE_VERSION = "resourceVersion";
+    public static final String EVICTED = "Evicted";
     private static final String INIT_AGENT = "init_agent";
     private static final String ENV_NOT_EXIST = "env not exists: {}";
     private static JSON json = new JSON();
@@ -229,25 +230,31 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
 
 
     private void handleEnvPod(V1Pod v1Pod, ApplicationInstanceE applicationInstanceE, String resourceVersion, DevopsEnvPodE devopsEnvPodE, Boolean flag, List<DevopsEnvPodE> devopsEnvPodEList) {
-        if (devopsEnvPodEList == null || devopsEnvPodEList.isEmpty()) {
-            devopsEnvPodE.initApplicationInstanceE(applicationInstanceE.getId());
-            devopsEnvPodRepository.insert(devopsEnvPodE);
+        //如果pod的状态是被驱逐的，则应该直接删掉
+        if ((v1Pod.getStatus().getPhase() != null && v1Pod.getStatus().getPhase().equals(EVICTED)) || (v1Pod.getStatus().getReason() != null && v1Pod.getStatus().getReason().equals(EVICTED))) {
+            devopsEnvPodRepository.deleteByName(v1Pod.getMetadata().getName(), applicationInstanceE.getDevopsEnvironmentE().getCode());
+            devopsEnvResourceRepository.deleteByKindAndNameAndInstanceId(ResourceType.POD.getType(), v1Pod.getMetadata().getName(), applicationInstanceE.getId());
         } else {
-            for (DevopsEnvPodE pod : devopsEnvPodEList) {
-                if (pod.getName().equals(v1Pod.getMetadata().getName())
-                        && pod.getNamespace().equals(v1Pod.getMetadata().getNamespace())) {
-                    if (!resourceVersion.equals(pod.getResourceVersion())) {
-                        devopsEnvPodE.setId(pod.getId());
-                        devopsEnvPodE.initApplicationInstanceE(pod.getApplicationInstanceE().getId());
-                        devopsEnvPodE.setObjectVersionNumber(pod.getObjectVersionNumber());
-                        devopsEnvPodRepository.update(devopsEnvPodE);
-                    }
-                    flag = true;
-                }
-            }
-            if (!flag) {
+            if (devopsEnvPodEList == null || devopsEnvPodEList.isEmpty()) {
                 devopsEnvPodE.initApplicationInstanceE(applicationInstanceE.getId());
                 devopsEnvPodRepository.insert(devopsEnvPodE);
+            } else {
+                for (DevopsEnvPodE pod : devopsEnvPodEList) {
+                    if (pod.getName().equals(v1Pod.getMetadata().getName())
+                            && pod.getNamespace().equals(v1Pod.getMetadata().getNamespace())) {
+                        if (!resourceVersion.equals(pod.getResourceVersion())) {
+                            devopsEnvPodE.setId(pod.getId());
+                            devopsEnvPodE.initApplicationInstanceE(pod.getApplicationInstanceE().getId());
+                            devopsEnvPodE.setObjectVersionNumber(pod.getObjectVersionNumber());
+                            devopsEnvPodRepository.update(devopsEnvPodE);
+                        }
+                        flag = true;
+                    }
+                }
+                if (!flag) {
+                    devopsEnvPodE.initApplicationInstanceE(applicationInstanceE.getId());
+                    devopsEnvPodRepository.insert(devopsEnvPodE);
+                }
             }
         }
     }
@@ -907,7 +914,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                 .queryByEnvIdAndResource(envId, applicationInstanceE.getId(), "C7NHelmRelease");
         if (updateEnvCommandStatus(resourceCommit, applicationInstanceE.getCommandId(),
                 devopsEnvFileResourceE, C7NHELMRELEASE_KIND, applicationInstanceE.getCode(), null, errorDevopsFiles)) {
-            if(!applicationInstanceE.getStatus().equals(InstanceStatus.RUNNING.getStatus())) {
+            if (!applicationInstanceE.getStatus().equals(InstanceStatus.RUNNING.getStatus())) {
                 applicationInstanceE.setStatus(InstanceStatus.FAILED.getStatus());
                 applicationInstanceRepository.update(applicationInstanceE);
             }

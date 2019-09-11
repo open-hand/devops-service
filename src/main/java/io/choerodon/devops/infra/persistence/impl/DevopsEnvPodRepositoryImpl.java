@@ -123,6 +123,11 @@ public class DevopsEnvPodRepositoryImpl implements DevopsEnvPodRepository {
     }
 
     @Override
+    public void deleteById(Long id) {
+        devopsEnvPodMapper.deleteByPrimaryKey(id);
+    }
+
+    @Override
     public DevopsEnvPodE getByNameAndEnv(String name, String namespace) {
         DevopsEnvPodDO devopsEnvPodDO = new DevopsEnvPodDO();
         devopsEnvPodDO.setName(name);

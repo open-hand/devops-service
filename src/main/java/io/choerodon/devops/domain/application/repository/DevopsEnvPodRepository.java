@@ -24,5 +24,7 @@ public interface DevopsEnvPodRepository {
 
     void deleteByName(String name, String namespace);
 
+    void deleteById(Long id);
+
     DevopsEnvPodE getByNameAndEnv(String name, String namespace);
 }
