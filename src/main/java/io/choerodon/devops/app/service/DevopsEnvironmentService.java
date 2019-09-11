@@ -261,6 +261,17 @@ public interface DevopsEnvironmentService {
     Boolean deleteCheck(Long projectId, Long envId);
 
 
+    /**
+     * 检查资源是否存在
+     *
+     * @param projectId 项目id
+     * @param envId     环境id
+     * @param objectId  其他对象id
+     * @param type      其他对象类型
+     * @return boolean
+     */
+    Boolean checkExist(Long projectId, Long envId, Long objectId, String type);
+
     DevopsEnvironmentDTO baseCreate(DevopsEnvironmentDTO devopsEnvironmentDTO);
 
     DevopsEnvironmentDTO baseQueryById(Long id);

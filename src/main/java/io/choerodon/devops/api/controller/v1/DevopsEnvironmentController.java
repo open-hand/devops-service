@@ -625,4 +625,31 @@ public class DevopsEnvironmentController {
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_ENVIRONMENT_GET));
     }
+
+    /**
+     * 检查资源是否存在
+     *
+     * @param projectId 项目id
+     * @param envId     环境id
+     * @param objectId  其他对象id
+     * @param type      其他对象类型
+     * @return boolean
+     */
+    @Permission(type = ResourceType.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "检查资源是否存在")
+    @GetMapping(value = "/{env_id}/check/{type}/{object_id}")
+    public ResponseEntity<Boolean> checkExist(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "对象类型")
+            @PathVariable(value = "type") String type,
+            @ApiParam(value = "对象id")
+            @PathVariable(value = "object_id") Long objectId,
+            @ApiParam(value = "环境id")
+            @PathVariable(value = "env_id") Long envId) {
+        return Optional.ofNullable(devopsEnvironmentService.checkExist(projectId, envId,objectId,type))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException(ERROR_ENVIRONMENT_GET));
+    }
 }

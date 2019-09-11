@@ -35,16 +35,11 @@ import io.choerodon.devops.infra.dto.gitlab.ProjectHookDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.enums.AccessLevel;
-import io.choerodon.devops.infra.enums.EnvironmentGitopsStatus;
-import io.choerodon.devops.infra.enums.HelmObjectKind;
-import io.choerodon.devops.infra.enums.InstanceStatus;
+import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
-import io.choerodon.devops.infra.mapper.DevopsEnvFileErrorMapper;
-import io.choerodon.devops.infra.mapper.DevopsEnvUserPermissionMapper;
-import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
+import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
 
 /**
@@ -117,6 +112,22 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private ClusterConnectionHandler clusterConnectionHandler;
     @Autowired
     private PipelineAppDeployService pipelineAppDeployService;
+    @Autowired
+    private AppServiceInstanceMapper appServiceInstanceMapper;
+    @Autowired
+    private DevopsServiceMapper devopsServiceMapper;
+    @Autowired
+    private DevopsIngressMapper devopsIngressMapper;
+    @Autowired
+    private DevopsCertificationMapper devopsCertificationMapper;
+    @Autowired
+    private DevopsConfigMapMapper devopsConfigMapMapper;
+    @Autowired
+    private DevopsSecretMapper devopsSecretMapper;
+    @Autowired
+    private DevopsCustomizeResourceMapper devopsCustomizeResourceMapper;
+    @Autowired
+    private DevopsEnvAppServiceMapper devopsEnvAppServiceMapper;
 
     @Override
     @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_ENV, description = "创建环境", inputSchema = "{}")
@@ -851,7 +862,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                     .getList()
                     .stream()
                     .filter(u -> !ownerIds.contains(u.getId()))
-                    .map(iamUser -> new DevopsUserPermissionVO(iamUser.getId(), iamUser.getLoginName(), iamUser.getRealName(),devopsEnvironmentDTO.getCreationDate()))
+                    .map(iamUser -> new DevopsUserPermissionVO(iamUser.getId(), iamUser.getLoginName(), iamUser.getRealName(), devopsEnvironmentDTO.getCreationDate()))
                     .peek(p -> p.setRole(MEMBER))
                     .collect(Collectors.toList());
         }
@@ -859,7 +870,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         // 项目成员加上项目所有者
         List<DevopsUserPermissionVO> owners = projectOwners.getList()
                 .stream()
-                .map(iamUser -> new DevopsUserPermissionVO(iamUser.getId(), iamUser.getLoginName(), iamUser.getRealName(),devopsEnvironmentDTO.getCreationDate()))
+                .map(iamUser -> new DevopsUserPermissionVO(iamUser.getId(), iamUser.getLoginName(), iamUser.getRealName(), devopsEnvironmentDTO.getCreationDate()))
                 .peek(p -> p.setRole(OWNER))
                 .collect(Collectors.toList());
         members.addAll(owners);
@@ -1309,5 +1320,76 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 && devopsEnvResourceCountVO.getSecretCount() == 0
                 && devopsEnvResourceCountVO.getConfigMapCount() == 0
                 && pipeLineAppDeployEmpty;
+    }
+
+    @Override
+    public Boolean checkExist(Long projectId, Long envId, Long objectId, String type) {
+        if ("app".equals(type)) {
+            DevopsEnvAppServiceDTO devopsEnvAppServiceDTO = new DevopsEnvAppServiceDTO();
+            devopsEnvAppServiceDTO.setEnvId(envId);
+            devopsEnvAppServiceDTO.setAppServiceId(objectId);
+            if (devopsEnvAppServiceMapper.selectOne(devopsEnvAppServiceDTO) != null) {
+                return true;
+            }
+            return false;
+        }
+        Boolean check = false;
+        ObjectType objectType = ObjectType.valueOf(type.toUpperCase());
+        switch (objectType) {
+            case INSTANCE:
+                if (appServiceInstanceMapper.countNonDeletedInstancesWithEnv(envId, objectId) == 1) {
+                    check = true;
+                }
+                break;
+            case SERVICE:
+                //状态不为删除时返回true,即选出为删除状态的实例数量为0返回true
+                if (devopsServiceMapper.countNonDeletedServiceWithEnv(envId, objectId) == 1) {
+                    check = true;
+                }
+                break;
+            case CONFIGMAP:
+                DevopsConfigMapDTO devopsConfigMapDTO = new DevopsConfigMapDTO();
+                devopsConfigMapDTO.setEnvId(envId);
+                devopsConfigMapDTO.setId(objectId);
+                if (devopsConfigMapMapper.selectCount(devopsConfigMapDTO) == 1) {
+                    check = true;
+                }
+                break;
+            case INGRESS:
+                DevopsIngressDTO devopsIngressDTO = new DevopsIngressDTO();
+                devopsIngressDTO.setEnvId(envId);
+                devopsIngressDTO.setId(objectId);
+                if (devopsIngressMapper.selectCount(devopsIngressDTO) == 1) {
+                    check = true;
+                }
+                break;
+            case CERTIFICATE:
+                CertificationDTO certificationDTO = new CertificationDTO();
+                certificationDTO.setEnvId(envId);
+                certificationDTO.setId(objectId);
+                if (devopsCertificationMapper.selectCount(certificationDTO) == 1) {
+                    check = true;
+                }
+                break;
+            case SECRET:
+                DevopsSecretDTO devopsSecretDTO = new DevopsSecretDTO();
+                devopsSecretDTO.setEnvId(envId);
+                devopsSecretDTO.setId(objectId);
+                if (devopsSecretMapper.selectCount(devopsSecretDTO) == 1) {
+                    check = true;
+                }
+                break;
+            case CUSTOM:
+                DevopsCustomizeResourceDTO devopsCustomizeResourceDTO = new DevopsCustomizeResourceDTO();
+                devopsCustomizeResourceDTO.setEnvId(envId);
+                devopsCustomizeResourceDTO.setId(objectId);
+                if (devopsCustomizeResourceMapper.selectCount(devopsCustomizeResourceDTO) == 1) {
+                    check = true;
+                }
+                break;
+            default:
+                break;
+        }
+        return check;
     }
 }

@@ -28,6 +28,8 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping(value = "/v1/projects/{project_id}/env_groups")
 public class DevopsEnvGroupController {
 
+    private static final String ERROR_ENV_GROUP_GET="error.env.group.get";
+
     @Autowired
     private DevopsEnvGroupService devopsEnvGroupService;
 
@@ -87,7 +89,7 @@ public class DevopsEnvGroupController {
             @PathVariable(value = "project_id") Long projectId) {
         return Optional.ofNullable(devopsEnvGroupService.listByProject(projectId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.env.group.get"));
+                .orElseThrow(() -> new CommonException(ERROR_ENV_GROUP_GET));
     }
 
     /**
@@ -108,7 +110,7 @@ public class DevopsEnvGroupController {
             @RequestParam(value = "group_id", required = false) Long groupId) {
         return Optional.ofNullable(devopsEnvGroupService.checkName(name, projectId, groupId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.env.group.get"));
+                .orElseThrow(() -> new CommonException(ERROR_ENV_GROUP_GET));
     }
 
 
@@ -129,5 +131,21 @@ public class DevopsEnvGroupController {
             @PathVariable(value = "group_id") Long groupId) {
         devopsEnvGroupService.delete(groupId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    /**
+     * 检查环境组是否存在
+     */
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "环境组存在检查")
+    @GetMapping(value = "/{group_id}/check")
+    public ResponseEntity checkExist(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "环境组ID", required = true)
+            @PathVariable(value = "group_id") Long groupId) {
+        return Optional.ofNullable(devopsEnvGroupService.checkExist(groupId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException(ERROR_ENV_GROUP_GET));
     }
 }
