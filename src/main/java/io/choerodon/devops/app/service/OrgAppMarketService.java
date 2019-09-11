@@ -58,6 +58,4 @@ public interface OrgAppMarketService {
      */
     void downLoadApp(AppMarketDownloadPayload appServicePayload);
 
-    void cellScript(String cmd);
-
     }
