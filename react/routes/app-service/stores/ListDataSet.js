@@ -105,6 +105,15 @@ export default ((intlPrefix, formatMessage, projectId) => {
     }
   }
 
+  function checkProject(value) {
+    const pa = /^[a-z0-9]([-_.a-z0-9]*[a-z0-9])?$/;
+    if (!value || (value && pa.test(value))) {
+      return true;
+    } else {
+      return formatMessage({ id: `${intlPrefix}.project.failed` });
+    }
+  }
+
   function handleCreate({ record }) {
     record.getField('code').set('validator', checkCode);
   }
@@ -157,7 +166,7 @@ export default ((intlPrefix, formatMessage, projectId) => {
       { name: 'userName', type: 'string', label: formatMessage({ id: 'loginName' }) },
       { name: 'password', type: 'string', label: formatMessage({ id: 'password' }) },
       { name: 'email', type: 'email', label: formatMessage({ id: 'mailbox' }) },
-      { name: 'project', type: 'url', label: 'Harbor Project' },
+      { name: 'project', type: 'string', label: 'Harbor Project', validator: checkProject },
       { name: 'harborStatus', type: 'string', defaultValue: '' },
       { name: 'chartStatus', type: 'string', defaultValue: '' },
       { name: 'chartType', type: 'string', defaultValue: 'default', label: formatMessage({ id: `${intlPrefix}.helm` }) },

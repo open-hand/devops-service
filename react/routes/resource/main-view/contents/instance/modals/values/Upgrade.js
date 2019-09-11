@@ -34,13 +34,13 @@ export default class Upgrade extends Component {
       vo: {
         parentId,
         versionId,
+        appServiceId,
       },
     } = this.props;
-    const appId = parentId.split('-')[1];
 
     modal.handleOk(this.handleOk);
 
-    this.handleLoadVersion(appId, '', versionId, true);
+    this.handleLoadVersion(appServiceId, '', versionId, true);
   }
 
   /**

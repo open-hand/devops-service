@@ -133,6 +133,7 @@ export default injectIntl(observer(({
           <TextField name="userName" />
           <Password name="password" />
           <EmailField name="email" />
+          {isProject && <TextField name="project" />}
         </Form>
         {renderTestButton(record.get('harborStatus'), handleTestHarbor)}
       </Fragment>)}

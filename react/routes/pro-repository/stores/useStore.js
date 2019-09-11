@@ -12,7 +12,7 @@ export default function useStore() {
     checkHarbor(projectId, postData) {
       let url = '';
       map(postData, (value, key) => {
-        url = `${url}&${key}=${value}`;
+        value && (url = `${url}&${key}=${value}`);
       });
 
       return axios.get(`/devops/v1/projects/${projectId}/project_config/check_harbor?${url.substr(1)}`);

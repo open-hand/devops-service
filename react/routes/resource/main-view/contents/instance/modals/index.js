@@ -45,7 +45,8 @@ const EnvModals = injectIntl(observer(() => {
     if (!record) return false;
 
     const { id, parentId } = resourceStore.getSelectedMenu;
-    const appServiceVersionId = record.get('appServiceVersionId');
+    const appServiceVersionId = record.get('commandVersionId');
+    const appServiceId = record.get('appServiceId');
     istStore.loadValue(projectId, id, appServiceVersionId);
 
     const deployVo = {
@@ -53,6 +54,7 @@ const EnvModals = injectIntl(observer(() => {
       parentId,
       projectId,
       appServiceVersionId,
+      appServiceId,
     };
     Modal.open({
       key: valuesKey,
@@ -80,11 +82,13 @@ const EnvModals = injectIntl(observer(() => {
     if (!record) return false;
 
     const { id, parentId } = resourceStore.getSelectedMenu;
-    const appServiceVersionId = record.get('appServiceVersionId');
+    const appServiceVersionId = record.get('commandVersionId');
+    const appServiceId = record.get('appServiceId');
     const deployVo = {
       id,
       parentId,
       versionId: appServiceVersionId,
+      appServiceId,
     };
 
     Modal.open({

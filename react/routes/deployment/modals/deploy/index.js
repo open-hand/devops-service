@@ -141,8 +141,10 @@ const DeployModal = injectIntl(observer(({ record, dataSet, store, projectId, re
   }
 
   function renderEnvOption({ record: envRecord, text, value }) {
+    const isAvailable = envRecord.get('connect') && envRecord.get('synchro');
     const envClass = classnames({
-      [`${prefixCls}-manual-deploy-disabled`]: !envRecord.get('connect') || !envRecord.get('synchro'),
+      [`${prefixCls}-manual-deploy-available`]: isAvailable,
+      [`${prefixCls}-manual-deploy-disabled`]: !isAvailable,
     });
     return (
       <div className={envClass}>
@@ -181,7 +183,14 @@ const DeployModal = injectIntl(observer(({ record, dataSet, store, projectId, re
           )}
         </Select>
         <Select name="appServiceVersionId" searchable />
-        <Select name="environmentId" searchable newLine optionRenderer={renderEnvOption} />
+        <Select
+          name="environmentId"
+          searchable
+          newLine
+          optionRenderer={renderEnvOption}
+          popupCls={`${prefixCls}-manual-deploy`}
+          dropdownMenuStyle={{ cursor: 'not-allowed' }}
+        />
         <TextField name="instanceName" />
         <Select name="valueId" searchable colSpan={2} newLine />
         <YamlEditor

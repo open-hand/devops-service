@@ -31,6 +31,8 @@ export const StoreProvider = injectIntl(inject('AppState')(
       baseInfoDs.query();
       resourceCountDs.transport.read.url = `/devops/v1/projects/${projectId}/envs/${id}/resource_count`;
       resourceCountDs.query();
+      tableDs.transport.read.url = `/devops/v1/projects/${projectId}/pods/pod_ranking?env_id=${id}&sort=memory`;
+      tableDs.query();
     }, [projectId, id]);
 
     const value = {

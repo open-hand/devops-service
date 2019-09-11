@@ -166,14 +166,19 @@ const Deployment = withRouter(observer((props) => {
     });
   }
 
-  function renderNumber({ value }) {
+  function renderNumber({ value, record }) {
     return (
-      <span
-        onClick={openDetail}
-        className={`${prefixCls}-table-number`}
-      >
-        #{value}
-      </span>
+      <div>
+        <div className={`${prefixCls}-table-mark ${prefixCls}-table-mark-${record.get('deployType')}`}>
+          <span>{record.get('deployType') === 'auto' ? 'A' : 'M'}</span>
+        </div>
+        <span
+          onClick={openDetail}
+          className={`${prefixCls}-table-number`}
+        >
+          #{value}
+        </span>
+      </div>
     );
   }
 
