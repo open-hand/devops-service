@@ -898,4 +898,30 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         appServiceMarketVO.setAppServiceName(applicationDTO.getName());
         return appServiceMarketVO;
     }
+
+    public void cellScript(String cmd) {
+        try {
+            LOGGER.info(cmd);
+            Process process = Runtime.getRuntime().exec(cmd);
+            BufferedReader infoInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            BufferedReader errorInput = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+            String line = "";
+            while ((line = infoInput.readLine()) != null) {
+                LOGGER.info("=============info=================");
+                LOGGER.info(line);
+            }
+            LOGGER.info("=============信息分界线=================");
+            while ((line = errorInput.readLine()) != null) {
+                LOGGER.info("=============error=================");
+                LOGGER.error(line);
+            }
+            LOGGER.info("=============信息分界线=================");
+            infoInput.close();
+            errorInput.close();
+            process.waitFor();
+        } catch (Exception e) {
+            throw new CommonException("error.exec.push.image", e.getMessage());
+        }
+    }
+
 }
