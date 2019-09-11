@@ -8,6 +8,8 @@ import io.choerodon.devops.infra.dto.DevopsRegistrySecretDTO;
 import io.choerodon.devops.infra.mapper.DevopsRegistrySecretMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Created by Sheep on 2019/7/15.
@@ -21,6 +23,7 @@ public class DevopsRegistrySecretServiceImpl implements DevopsRegistrySecretServ
     private DevopsRegistrySecretMapper devopsRegistrySecretMapper;
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public DevopsRegistrySecretDTO baseCreate(DevopsRegistrySecretDTO devopsRegistrySecretDTO) {
         if (devopsRegistrySecretMapper.insert(devopsRegistrySecretDTO) != 1) {
             throw new CommonException("error.registry.secret.create.error");

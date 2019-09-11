@@ -20,8 +20,8 @@ public class PodLiveInfoVO {
     @JsonProperty("podId")
     private Long id;
     private List<ContainerVO> containers;
-    private List<String> cpuUsedList;
-    private List<String> memoryUsedList;
+    private List<Long> cpuUsedList;
+    private List<Long> memoryUsedList;
     private List<Date> timeList;
     private Date creationDate;
     private Long clusterId;
@@ -99,19 +99,19 @@ public class PodLiveInfoVO {
         this.containers = containers;
     }
 
-    public List<String> getCpuUsedList() {
+    public List<Long> getCpuUsedList() {
         return cpuUsedList;
     }
 
-    public void setCpuUsedList(List<String> cpuUsedList) {
+    public void setCpuUsedList(List<Long> cpuUsedList) {
         this.cpuUsedList = cpuUsedList;
     }
 
-    public List<String> getMemoryUsedList() {
+    public List<Long> getMemoryUsedList() {
         return memoryUsedList;
     }
 
-    public void setMemoryUsedList(List<String> memoryUsedList) {
+    public void setMemoryUsedList(List<Long> memoryUsedList) {
         this.memoryUsedList = memoryUsedList;
     }
 
