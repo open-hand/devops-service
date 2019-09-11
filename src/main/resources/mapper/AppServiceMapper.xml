@@ -453,7 +453,6 @@
         FROM
         devops_app_service_share_rule dasr
         JOIN devops_app_service da ON da.id = dasr.app_service_id
-
         WHERE
         (
         dasr.share_level = 'organization'
@@ -507,13 +506,12 @@
     <select id="queryMarketDownloadApps" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
         SELECT DISTINCT
         das.id,
-        das.app_id,
+        das.project_id,
         das.`name`,
         das.CODE,
         das.type
         FROM
         devops_app_service das
-        JOIN devops_project db ON das.app_id = db.app_id
         JOIN devops_app_service_version dasv ON dasv.app_service_id = das.id
         <choose>
             <when test="deployOnly!=null and deployOnly==true">
@@ -524,9 +522,7 @@
             </otherwise>
         </choose>
         WHERE
-        das.app_id IS NOT NULL
-        AND ISNULL(db.iam_project_id)
-        AND db.app_id IS NOT NULL
+        das.project_id IS NULL
         <if test="type != null and type != ''">
             AND das.type = #{type}
         </if>

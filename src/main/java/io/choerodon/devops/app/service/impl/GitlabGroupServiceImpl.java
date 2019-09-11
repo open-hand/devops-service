@@ -1,7 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import feign.FeignException;
@@ -17,6 +16,7 @@ import io.choerodon.devops.app.service.UserAttrService;
 import io.choerodon.devops.infra.dto.DevopsProjectDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.dto.gitlab.GroupDTO;
+import io.choerodon.devops.infra.enums.Visibility;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.util.TypeUtil;
 
@@ -31,7 +31,7 @@ import io.choerodon.devops.infra.util.TypeUtil;
 public class GitlabGroupServiceImpl implements GitlabGroupService {
     private static final String GROUP_NAME_FORMAT = "%s-%s%s";
     private static final String SITE_APP_GROUP_NAME_FORMAT = "site_%s";
-    private static final String GROUP_APP_MARKET = "application-marker";
+    private static final String GROUP_APP_MARKET = "site-application-marker";
     private static final String ENV_GROUP_SUFFIX = "-gitops";
 
     @Autowired
@@ -53,6 +53,7 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
         updateGroup(gitlabGroupPayload, null);
     }
 
+    @Override
     public void createApplicationGroup(ApplicationEventPayload applicationEventPayload) {
         GroupDTO group = new GroupDTO();
         setAppGroupNameAndPath(group, applicationEventPayload);
@@ -70,23 +71,18 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
     }
 
     @Override
-    public GroupDTO createSiteAppGroup() {
-        // TODO by scp
-        return null;
-    }
-
-    @Nonnull
-    @Override
-    public GroupDTO querySiteAppGroup() {
-        // TODO by scp
-        GroupDTO group = null;
-
-        if (group == null) {
-            return createSiteAppGroup();
+    public GroupDTO createSiteAppGroup(Long iamUserId) {
+        GroupDTO group = new GroupDTO();
+        group.setName(GROUP_APP_MARKET);
+        group.setPath(GROUP_APP_MARKET);
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(iamUserId);
+        GroupDTO groupDTO = gitlabServiceClientOperator.queryGroupByName(group.getPath(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+        if (groupDTO == null) {
+            group.setVisibility(Visibility.PUBLIC);
+            groupDTO = gitlabServiceClientOperator.createGroup(group, TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         }
-        return group;
+        return groupDTO;
     }
-
 
     private void setAppGroupNameAndPath(GroupDTO group, ApplicationEventPayload applicationEventPayload) {
         String name;
@@ -180,23 +176,4 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
         }
     }
 
-    @Override
-    public GroupDTO createAppMarketGroup(GitlabGroupPayload gitlabGroupPayload) {
-        //创建gitlab group
-        GroupDTO group = new GroupDTO();
-        // name: orgName-application-market
-        group.setName(String.format("%s-%s",
-                gitlabGroupPayload.getOrganizationName(),
-                GROUP_APP_MARKET));
-        // path: orgCode-application-market
-        group.setPath(String.format("%s-%s",
-                gitlabGroupPayload.getOrganizationCode(),
-                GROUP_APP_MARKET));
-        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(gitlabGroupPayload.getUserId());
-        GroupDTO groupDTO = gitlabServiceClientOperator.queryGroupByName(group.getPath(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
-        if (groupDTO == null) {
-            groupDTO = gitlabServiceClientOperator.createGroup(group, TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
-        }
-        return groupDTO;
-    }
 }

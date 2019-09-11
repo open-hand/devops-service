@@ -256,7 +256,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
 
         try {
             //创建应用
-            GroupDTO groupDTO = gitlabGroupService.querySiteAppGroup();
+            GroupDTO groupDTO = gitlabGroupService.createSiteAppGroup(appMarketDownloadVO.getIamUserId());
             LOGGER.info("==========应用下载，appMarketDownloadVO.getAppId(){}, groupId=========={}", appMarketDownloadVO.getAppId(), groupDTO.getId());
             UserAttrDTO userAttrDTO = userAttrService.baseQueryById(appMarketDownloadVO.getIamUserId());
             ApplicationDTO applicationDTO = baseServiceClientOperator.queryAppById(appMarketDownloadVO.getAppId());

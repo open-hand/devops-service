@@ -1,7 +1,5 @@
 package io.choerodon.devops.app.service;
 
-import javax.annotation.Nonnull;
-
 import io.choerodon.devops.app.eventhandler.payload.ApplicationEventPayload;
 import io.choerodon.devops.app.eventhandler.payload.GitlabGroupPayload;
 import io.choerodon.devops.infra.dto.gitlab.GroupDTO;
@@ -36,21 +34,6 @@ public interface GitlabGroupService {
      *
      * @return 创建后的组
      */
-    GroupDTO createSiteAppGroup();
+    GroupDTO createSiteAppGroup(Long iamUserId);
 
-    /**
-     * 查询平台的应用组，如果不存在则创建
-     *
-     * @return 查询到的应用组
-     */
-    @Nonnull
-    GroupDTO querySiteAppGroup();
-
-    /**
-     * 为应用下载创建 group
-     *
-     * @param gitlabGroupPayload
-     * @return
-     */
-    GroupDTO createAppMarketGroup(GitlabGroupPayload gitlabGroupPayload);
 }
