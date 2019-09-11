@@ -13,26 +13,23 @@ const DetailContent = observer((props) => {
     AppStore,
     detailDs,
   } = useServiceDetailStore();
-  
+
   return (
     <PageWrap noHeader={[]} cache>
       <PageTab
         title={formatMessage({ id: `${intlPrefix}.version` })}
-        tabKey="version"
+        tabKey="choerodon.code.develop.app-service.version"
         component={Version}
-        alwaysShow
       />
       <PageTab
         title={formatMessage({ id: `${intlPrefix}.permission` })}
-        tabKey="permission"
+        tabKey="choerodon.code.develop.app-service.permission"
         component={Allocation}
-        alwaysShow={AppStore.getProjectRole === 'owner'}
       />
       <PageTab
         title={formatMessage({ id: `${intlPrefix}.share` })}
-        tabKey="share"
+        tabKey="choerodon.code.develop.app-service.share"
         component={Share}
-        alwaysShow={AppStore.getProjectRole === 'owner' && detailDs.current && detailDs.current.get('type') === 'normal'}
       />
     </PageWrap>
   );
