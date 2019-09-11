@@ -44,6 +44,7 @@ import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.GitlabProjectDTO;
+import io.choerodon.devops.infra.dto.gitlab.GroupDTO;
 import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
 import io.choerodon.devops.infra.dto.harbor.User;
 import io.choerodon.devops.infra.dto.iam.ApplicationDTO;
@@ -129,7 +130,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
     @Autowired
     private AppServiceVersionReadmeService appServiceVersionReadmeService;
     @Autowired
-    private DevopsProjectService devopsProjectService;
+    private GitlabGroupService gitlabGroupService;
     @Autowired
     private MarketServiceClientOperator marketServiceClientOperator;
 
@@ -255,8 +256,8 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
 
         try {
             //创建应用
-            DevopsProjectDTO projectDTO = devopsProjectService.queryByAppId(appMarketDownloadVO.getAppId());
-            LOGGER.info("==========应用下载，appMarketDownloadVO.getAppId(){},projectDTO=========={}", appMarketDownloadVO.getAppId(), projectDTO.getIamProjectId());
+            GroupDTO groupDTO = gitlabGroupService.querySiteAppGroup();
+            LOGGER.info("==========应用下载，appMarketDownloadVO.getAppId(){}, groupId=========={}", appMarketDownloadVO.getAppId(), groupDTO.getId());
             UserAttrDTO userAttrDTO = userAttrService.baseQueryById(appMarketDownloadVO.getIamUserId());
             ApplicationDTO applicationDTO = baseServiceClientOperator.queryAppById(appMarketDownloadVO.getAppId());
             String groupPath = String.format(SITE_APP_GROUP_NAME_FORMAT, applicationDTO.getCode());
@@ -267,9 +268,9 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                 Boolean isFirst = appServiceDTO == null;
                 if (appServiceDTO == null) {
                     LOGGER.info("==========应用下载=========={}", appMarketDownloadVO.getAppCode());
-                    LOGGER.info("==========应用下载=========={}", projectDTO.getDevopsAppGroupId());
+                    LOGGER.info("==========应用下载=========={}", groupDTO.getId());
                     LOGGER.info("==========应用下载=========={}", userAttrDTO.getGitlabUserId());
-                    appServiceDTO = createGitlabProject(downloadPayload, appMarketDownloadVO.getAppCode(), TypeUtil.objToInteger(projectDTO.getDevopsAppGroupId()), userAttrDTO.getGitlabUserId());
+                    appServiceDTO = createGitlabProject(downloadPayload, appMarketDownloadVO.getAppCode(), TypeUtil.objToInteger(groupDTO.getId()), userAttrDTO.getGitlabUserId());
                     LOGGER.info("==========应用下载，创建gitlab Project成功！！==========");
 
                     //创建saga payload
@@ -555,7 +556,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
      */
     private void packageRepo(AppServiceUploadPayload appServiceMarketVO, String appFilePath) {
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceMarketVO.getAppServiceId());
-        ApplicationDTO applicationDTO = baseServiceClientOperator.queryAppById(appServiceDTO.getAppId());
+        ApplicationDTO applicationDTO = baseServiceClientOperator.queryAppById(appServiceDTO.getProjectId());
         OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(applicationDTO.getOrganizationId());
 
         //1.创建目录 应用服务仓库
@@ -588,7 +589,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
      */
     private void packageChart(AppServiceUploadPayload appServiceMarketVO, String appFilePath) {
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceMarketVO.getAppServiceId());
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getAppId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
         OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 
         //1.创建目录 应用服务仓库

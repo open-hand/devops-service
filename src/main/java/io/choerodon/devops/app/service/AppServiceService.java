@@ -390,7 +390,7 @@ public interface AppServiceService {
                                                    Boolean isProjectOwner, Long userId);
 
 
-    AppServiceDTO baseQueryByCode(String code, Long appId);
+    AppServiceDTO baseQueryByCode(String code, Long projectId);
 
     AppServiceDTO baseQueryByCodeWithNullProject(String code);
 

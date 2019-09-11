@@ -1,5 +1,22 @@
 package io.choerodon.devops.api.controller.v1
 
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
+
+import org.mockito.Mockito
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.web.client.TestRestTemplate
+import org.springframework.context.annotation.Import
+import org.springframework.core.io.FileSystemResource
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
+import org.springframework.util.LinkedMultiValueMap
+import org.springframework.util.MultiValueMap
+import spock.lang.Shared
+import spock.lang.Specification
+import spock.lang.Stepwise
+import spock.lang.Subject
+
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.ProjectVO
@@ -17,22 +34,6 @@ import io.choerodon.devops.infra.mapper.AppServiceVersionMapper
 import io.choerodon.devops.infra.mapper.AppServiceVersionReadmeMapper
 import io.choerodon.devops.infra.mapper.AppServiceVersionValueMapper
 import io.choerodon.devops.infra.util.FileUtil
-import org.mockito.Mockito
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.web.client.TestRestTemplate
-import org.springframework.context.annotation.Import
-import org.springframework.core.io.FileSystemResource
-import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
-import org.springframework.util.LinkedMultiValueMap
-import org.springframework.util.MultiValueMap
-import spock.lang.Shared
-import spock.lang.Specification
-import spock.lang.Stepwise
-import spock.lang.Subject
-
-import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
 /**
  * Created by n!Ck
@@ -87,7 +88,7 @@ class CiControllerSpec extends Specification {
 
         appServiceDTO = new AppServiceDTO()
         appServiceDTO.setId(1L)
-        appServiceDTO.setAppId(project_id)
+        appServiceDTO.setProjectId(project_id)
         appServiceDTO.setToken("token")
         appServiceDTO.setCode("app")
     }

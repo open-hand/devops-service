@@ -19,8 +19,8 @@ public class AppServiceRepVO {
     @ApiModelProperty("应用服务code")
     private String code;
 
-    @ApiModelProperty("应用服务所属应用id")
-    private Long appId;
+    @ApiModelProperty("应用服务所属项目id")
+    private Long projectId;
 
     @ApiModelProperty("应用服务对应gitlab项目的id")
     private Long gitlabProjectId;
@@ -138,12 +138,12 @@ public class AppServiceRepVO {
         this.code = code;
     }
 
-    public Long getAppId() {
-        return appId;
+    public Long getProjectId() {
+        return projectId;
     }
 
-    public void setAppId(Long appId) {
-        this.appId = appId;
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
     }
 
     public String getRepoUrl() {

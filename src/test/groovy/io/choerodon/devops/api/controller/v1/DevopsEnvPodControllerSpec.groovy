@@ -1,13 +1,8 @@
 package io.choerodon.devops.api.controller.v1
 
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
+
 import com.github.pagehelper.PageInfo
-import io.choerodon.base.domain.PageRequest
-import io.choerodon.devops.DependencyInjectUtil
-import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.api.vo.DevopsEnvPodInfoVO
-import io.choerodon.devops.infra.dto.*
-import io.choerodon.devops.infra.handler.ClusterConnectionHandler
-import io.choerodon.devops.infra.mapper.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.test.context.SpringBootTest
@@ -16,13 +11,15 @@ import org.springframework.context.annotation.Import
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
-import org.springframework.http.ResponseEntity
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Stepwise
 import spock.lang.Subject
 
-import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
+import io.choerodon.devops.IntegrationTestConfiguration
+import io.choerodon.devops.infra.dto.*
+import io.choerodon.devops.infra.handler.ClusterConnectionHandler
+import io.choerodon.devops.infra.mapper.*
 
 /**
  * Created by n!Ck
@@ -113,8 +110,8 @@ class DevopsEnvPodControllerSpec extends Specification {
         applicationDO1.setSynchro(true)
         applicationDO.setCode("app")
         applicationDO1.setCode("app1")
-        applicationDO.setAppId(1L)
-        applicationDO1.setAppId(1L)
+        applicationDO.setProjectId(1L)
+        applicationDO1.setProjectId(1L)
         applicationDO.setName("appname")
         applicationDO1.setName("appname1")
         applicationDO.setGitlabProjectId(1)

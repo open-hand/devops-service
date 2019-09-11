@@ -165,7 +165,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                         AppServiceDTO appServiceDTO = applicationService.baseQuery(applicationInstanceDTO.getAppServiceId());
                         devopsServiceQueryDTO.setAppServiceId(appServiceDTO.getId());
                         devopsServiceQueryDTO.setAppServiceName(appServiceDTO.getName());
-                        devopsServiceQueryDTO.setAppServiceProjectId(devopsProjectService.queryProjectIdByAppId(appServiceDTO.getAppId()));
+                        devopsServiceQueryDTO.setAppServiceProjectId(appServiceDTO.getProjectId());
                     }
                 }
             }

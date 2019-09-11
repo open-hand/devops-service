@@ -256,7 +256,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
 
         appServiceDTO.setId(1L)
         appServiceDTO.setCode("test-devops-service")
-        appServiceDTO.setAppId(1L)
+        appServiceDTO.setProjectId(1L)
         appServiceDTO.setName("Devops服务")
         appServiceDTO.setChartConfigId(1L)
         appServiceDTO.setHarborConfigId(1L)

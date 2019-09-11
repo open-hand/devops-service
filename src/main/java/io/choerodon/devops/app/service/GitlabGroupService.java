@@ -1,15 +1,13 @@
 package io.choerodon.devops.app.service;
 
+import javax.annotation.Nonnull;
+
 import io.choerodon.devops.app.eventhandler.payload.ApplicationEventPayload;
 import io.choerodon.devops.app.eventhandler.payload.GitlabGroupPayload;
 import io.choerodon.devops.infra.dto.gitlab.GroupDTO;
 
 /**
- * Created with IntelliJ IDEA.
- * User: Runge
- * Date: 2018/4/8
- * Time: 10:04
- * Description:
+ * GitLab组相关的操作
  */
 public interface GitlabGroupService {
     /**
@@ -32,6 +30,21 @@ public interface GitlabGroupService {
      * @param applicationEventPayload 应用信息
      */
     void createApplicationGroup(ApplicationEventPayload applicationEventPayload);
+
+    /**
+     * 创建平台的应用组
+     *
+     * @return 创建后的组
+     */
+    GroupDTO createSiteAppGroup();
+
+    /**
+     * 查询平台的应用组，如果不存在则创建
+     *
+     * @return 查询到的应用组
+     */
+    @Nonnull
+    GroupDTO querySiteAppGroup();
 
     /**
      * 为应用下载创建 group

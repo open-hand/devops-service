@@ -66,11 +66,6 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
     }
 
     @Override
-    public DevopsProjectDTO queryByAppId(Long appId) {
-        return devopsProjectMapper.selectByPrimaryKey(appId);
-    }
-
-    @Override
     public void createProject(ProjectPayload projectPayload) {
         // create project in db
         DevopsProjectDTO devopsProjectDTO = new DevopsProjectDTO(projectPayload.getProjectId());
@@ -125,16 +120,6 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
             devopsProjectDTO.setObjectVersionNumber(oldDevopsProjectDTO.getObjectVersionNumber());
             devopsProjectMapper.updateByPrimaryKeySelective(devopsProjectDTO);
         }
-    }
-
-    @Override
-    public Long queryAppIdByProjectId(Long projectId) {
-        return devopsProjectMapper.queryAppIdByProjectId(projectId);
-    }
-
-    @Override
-    public Long queryProjectIdByAppId(Long appId) {
-        return devopsProjectMapper.queryProjectIdByAppId(appId);
     }
 
     @Override

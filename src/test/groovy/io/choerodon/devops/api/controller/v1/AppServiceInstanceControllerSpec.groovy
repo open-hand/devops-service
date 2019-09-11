@@ -1,7 +1,22 @@
 package io.choerodon.devops.api.controller.v1
 
+import static org.mockito.ArgumentMatchers.*
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
+
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.pagehelper.PageInfo
+import org.mockito.Mockito
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.web.client.TestRestTemplate
+import org.springframework.context.annotation.Import
+import org.springframework.http.*
+import spock.lang.Shared
+import spock.lang.Specification
+import spock.lang.Stepwise
+import spock.lang.Subject
+
 import io.choerodon.core.exception.CommonException
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.devops.DependencyInjectUtil
@@ -29,20 +44,6 @@ import io.choerodon.devops.infra.mapper.*
 import io.choerodon.devops.infra.util.FileUtil
 import io.choerodon.devops.infra.util.GitUtil
 import io.choerodon.devops.infra.util.JsonYamlConversionUtil
-import org.mockito.Mockito
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.web.client.TestRestTemplate
-import org.springframework.context.annotation.Import
-import org.springframework.http.*
-import spock.lang.Shared
-import spock.lang.Specification
-import spock.lang.Stepwise
-import spock.lang.Subject
-
-import static org.mockito.ArgumentMatchers.*
-import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
 /**
  * Created by n!Ck
@@ -275,7 +276,7 @@ class AppServiceInstanceControllerSpec extends Specification {
                 "  managementPort: 9011")
         // da
         applicationDO.setId(1L)
-        applicationDO.setAppId(1L)
+        applicationDO.setProjectId(1L)
         applicationDO.setName("appName")
         applicationDO.setCode("appCode")
         applicationDO.setGitlabProjectId(1)

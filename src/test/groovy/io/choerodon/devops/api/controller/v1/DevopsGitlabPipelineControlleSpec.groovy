@@ -56,7 +56,7 @@ class DevopsGitlabPipelineControlleSpec extends Specification {
 
     def setupSpec() {
         applicationDO.setId(1L)
-        applicationDO.setAppId(1L)
+        applicationDO.setProjectId(1L)
         applicationDO.setActive(true)
         applicationDO.setCode("test")
         applicationDO.setName("test")

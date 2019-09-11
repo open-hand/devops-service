@@ -1,18 +1,10 @@
 package io.choerodon.devops.api.controller.v1
 
+import static org.mockito.Matchers.anyInt
+import static org.mockito.Matchers.anyLong
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
+
 import com.github.pagehelper.PageInfo
-import io.choerodon.devops.DependencyInjectUtil
-import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.api.vo.DeployVersionVO
-import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO
-import io.choerodon.devops.api.vo.iam.RoleVO
-import io.choerodon.devops.app.service.IamService
-import io.choerodon.devops.infra.dto.*
-import io.choerodon.devops.infra.dto.iam.IamUserDTO
-import io.choerodon.devops.infra.dto.iam.OrganizationDTO
-import io.choerodon.devops.infra.dto.iam.ProjectDTO
-import io.choerodon.devops.infra.feign.BaseServiceClient
-import io.choerodon.devops.infra.mapper.*
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -26,9 +18,18 @@ import spock.lang.Specification
 import spock.lang.Stepwise
 import spock.lang.Subject
 
-import static org.mockito.Matchers.anyInt
-import static org.mockito.Matchers.anyLong
-import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
+import io.choerodon.devops.DependencyInjectUtil
+import io.choerodon.devops.IntegrationTestConfiguration
+import io.choerodon.devops.api.vo.DeployVersionVO
+import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO
+import io.choerodon.devops.api.vo.iam.RoleVO
+import io.choerodon.devops.app.service.IamService
+import io.choerodon.devops.infra.dto.*
+import io.choerodon.devops.infra.dto.iam.IamUserDTO
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO
+import io.choerodon.devops.infra.dto.iam.ProjectDTO
+import io.choerodon.devops.infra.feign.BaseServiceClient
+import io.choerodon.devops.infra.mapper.*
 
 /**
  * Created by n!Ck
@@ -162,7 +163,7 @@ class AppServiceVersionControllerSpec extends Specification {
         applicationDO.setId(init_id)
         applicationDO.setName("app_name")
         applicationDO.setCode("app_code")
-        applicationDO.setAppId(project_id)
+        applicationDO.setProjectId(project_id)
         applicationDO.setGitlabProjectId(1)
         applicationDO.setSkipCheckPermission(true)
 

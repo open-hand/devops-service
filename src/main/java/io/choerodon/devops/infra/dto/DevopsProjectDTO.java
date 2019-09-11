@@ -11,7 +11,6 @@ import io.choerodon.mybatis.entity.BaseDTO;
 @Table(name = "devops_project")
 public class DevopsProjectDTO extends BaseDTO {
     @Id
-    private Long appId;
     private Long iamProjectId;
     private Long devopsAppGroupId;
     private Long devopsEnvGroupId;
@@ -33,14 +32,6 @@ public class DevopsProjectDTO extends BaseDTO {
 
     public void setIamProjectId(Long iamProjectId) {
         this.iamProjectId = iamProjectId;
-    }
-
-    public Long getAppId() {
-        return appId;
-    }
-
-    public void setAppId(Long appId) {
-        this.appId = appId;
     }
 
     public Long getDevopsAppGroupId() {

@@ -1,6 +1,19 @@
 package io.choerodon.devops.app.service.impl
 
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
+
 import com.google.gson.Gson
+import org.mockito.Mockito
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.context.annotation.Import
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
+import spock.lang.Shared
+import spock.lang.Specification
+import spock.lang.Subject
+
 import io.choerodon.asgard.saga.feign.SagaClient
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
@@ -18,18 +31,6 @@ import io.choerodon.devops.infra.feign.GitlabServiceClient
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler
 import io.choerodon.devops.infra.mapper.*
 import io.choerodon.devops.infra.util.FileUtil
-import org.mockito.Mockito
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.context.annotation.Import
-import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
-import spock.lang.Shared
-import spock.lang.Specification
-import spock.lang.Subject
-
-import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @Import(IntegrationTestConfiguration)
@@ -217,7 +218,7 @@ class GitlabWebHookServiceimplSpec extends Specification {
         applicationDO.setId(1L)
         applicationDO.setName("testApp")
         applicationDO.setCode("testApp")
-        applicationDO.setAppId(1L)
+        applicationDO.setProjectId(1L)
 
         //初始化应用版本value
         applicationVersionValueDO.setId(1L)

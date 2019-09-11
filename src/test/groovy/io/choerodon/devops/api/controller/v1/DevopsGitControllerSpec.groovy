@@ -104,7 +104,7 @@ class DevopsGitControllerSpec extends Specification {
 
     def setup() {
         applicationDO.setId(1L)
-        applicationDO.setAppId(1L)
+        applicationDO.setProjectId(1L)
         applicationDO.setCode("test")
         applicationDO.setName("test")
         applicationDO.setGitlabProjectId(1)

@@ -18,8 +18,6 @@ public interface DevopsProjectService {
 
     boolean queryProjectGitlabGroupReady(Long projectId);
 
-    DevopsProjectDTO queryByAppId(Long appId);
-
     DevopsProjectDTO baseQueryByGitlabAppGroupId(Integer appGroupId);
 
     DevopsProjectDTO baseQueryByProjectId(Long projectId);
@@ -27,10 +25,6 @@ public interface DevopsProjectService {
     DevopsProjectDTO baseQueryByGitlabEnvGroupId(Integer envGroupId);
 
     void baseUpdate(DevopsProjectDTO devopsProjectDTO);
-
-    Long queryAppIdByProjectId(Long projectId);
-
-    Long queryProjectIdByAppId(Long appId);
 
     /**
      * 分页查询与该项目在同一组织的项目列表（包含自身）

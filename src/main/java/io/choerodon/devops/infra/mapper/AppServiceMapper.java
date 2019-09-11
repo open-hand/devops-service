@@ -14,7 +14,7 @@ import io.choerodon.mybatis.common.Mapper;
  * Created by younger on 2018/3/28.
  */
 public interface AppServiceMapper extends Mapper<AppServiceDTO> {
-    List<AppServiceDTO> list(@Param("appId") Long appId,
+    List<AppServiceDTO> list(@Param("projectId") Long projectId,
                              @Param("isActive") Boolean isActive,
                              @Param("hasVersion") Boolean hasVersion,
                              @Param("type") String type,
@@ -22,33 +22,33 @@ public interface AppServiceMapper extends Mapper<AppServiceDTO> {
                              @Param("params") List<String> params,
                              @Param("index") String index);
 
-    List<AppServiceDTO> listByAppId(@Param("appId") Long appId,
+    List<AppServiceDTO> listByAppId(@Param("projectId") Long projectId,
                                     @Param("searchParam") Map<String, Object> searchParam,
                                     @Param("params") List<String> params);
 
-    List<AppServiceDTO> listAll(@Param("appId") Long appId);
+    List<AppServiceDTO> listAll(@Param("projectId") Long projectId);
 
-    List<AppServiceDTO> listCodeRepository(@Param("appId") Long appId,
+    List<AppServiceDTO> listCodeRepository(@Param("projectId") Long projectId,
                                            @Param("searchParam") Map<String, Object> searchParam,
                                            @Param("params") List<String> param,
                                            @Param("isProjectOwner") Boolean isProjectOwner,
                                            @Param("userId") Long userId);
 
-    List<AppServiceDTO> listByEnvId(@Param("appId") Long appId,
+    List<AppServiceDTO> listByEnvId(@Param("projectId") Long projectId,
                                     @Param("envId") Long envId,
                                     @Param("appServiceId") Long appServiceId,
                                     @Param("status") String status);
 
-    List<AppServiceDTO> basePageByActiveAndPubAndHasVersion(@Param("appId") Long appId,
+    List<AppServiceDTO> basePageByActiveAndPubAndHasVersion(@Param("projectId") Long projectId,
                                                             @Param("active") Boolean active,
                                                             @Param("searchParam") Map<String, Object> searchParam,
                                                             @Param("params") List<String> params);
 
     AppServiceDTO queryByToken(@Param("token") String token);
 
-    List<AppServiceDTO> listByActive(@Param("appId") Long appId);
+    List<AppServiceDTO> listByActive(@Param("projectId") Long projectId);
 
-    List<AppServiceDTO> listDeployedApp(@Param("appId") Long appId);
+    List<AppServiceDTO> listDeployedApp(@Param("projectId") Long projectId);
 
     Integer checkAppCanDisable(@Param("appServiceId") Long appServiceId);
 
@@ -66,7 +66,7 @@ public interface AppServiceMapper extends Mapper<AppServiceDTO> {
                                  @Param("hookId") Long hookId,
                                  @Param("isSynchro") Boolean isSynchro);
 
-    void updateHarborConfig(@Param("appId") Long appId, @Param("newConfigId") Long newConfigId, @Param("oldConfigId") Long oldConfigId, @Param("harborPrivate") boolean harborPrivate);
+    void updateHarborConfig(@Param("projectId") Long projectId, @Param("newConfigId") Long newConfigId, @Param("oldConfigId") Long oldConfigId, @Param("harborPrivate") boolean harborPrivate);
 
 
     List<AppServiceDTO> listShareApplicationService(@Param("appServiceIds") List<Long> appServiceIds,
@@ -94,7 +94,7 @@ public interface AppServiceMapper extends Mapper<AppServiceDTO> {
      */
     List<AppServiceDTO> listShareProjectApps(@Param("projectId") Long projectId, @Param("param") String param);
 
-    List<AppServiceDTO> listProjectMembersAppService(@Param("appId") Long appId,
+    List<AppServiceDTO> listProjectMembersAppService(@Param("projectId") Long projectId,
                                                      @Param("isActive") Boolean isActive,
                                                      @Param("hasVersion") Boolean hasVersion,
                                                      @Param("type") String type,
@@ -103,10 +103,11 @@ public interface AppServiceMapper extends Mapper<AppServiceDTO> {
                                                      @Param("index") String index,
                                                      @Param("userId") Long userId);
 
-    List<AppServiceDTO> listProjectMembersAppServiceByActive(@Param("appId") Long appId, @Param("userId") Long userId);
 
     List<AppServiceDTO> listAppServiceByIds(@Param("ids") Set<Long> ids,
                                             @Param("searchParam") Map<String, Object> searchParam,
                                             @Param("params") List<String> params);
+
+    List<AppServiceDTO> listProjectMembersAppServiceByActive(@Param("projectId") Long projectId, @Param("userId") Long userId);
 }
 

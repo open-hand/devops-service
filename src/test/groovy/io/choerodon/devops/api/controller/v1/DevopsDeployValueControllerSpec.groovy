@@ -109,7 +109,7 @@ class DevopsDeployValueControllerSpec extends Specification {
             appServiceDTO.setSynchro(true)
             appServiceDTO.setFailed(false)
             appServiceDTO.setActive(true)
-            appServiceDTO.setAppId(1L)
+            appServiceDTO.setProjectId(1L)
             appServiceMapper.insert(appServiceDTO)
 
             deployValueDTO = new DevopsDeployValueDTO()

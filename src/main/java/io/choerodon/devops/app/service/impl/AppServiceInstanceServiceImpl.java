@@ -652,7 +652,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         appServiceDeployVO.setInstanceId(appServiceInstanceDTO.getId());
         appServiceDeployVO.setInstanceName(code);
-        InstanceSagaPayload instanceSagaPayload = new InstanceSagaPayload(applicationDTO.getAppId(), userAttrDTO.getGitlabUserId(), secretCode);
+        InstanceSagaPayload instanceSagaPayload = new InstanceSagaPayload(applicationDTO.getProjectId(), userAttrDTO.getGitlabUserId(), secretCode);
         instanceSagaPayload.setApplicationDTO(applicationDTO);
         instanceSagaPayload.setAppServiceVersionDTO(appServiceVersionDTO);
         instanceSagaPayload.setAppServiceDeployVO(appServiceDeployVO);

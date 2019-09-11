@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import feign.FeignException;
@@ -65,24 +66,25 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
 
         DevopsProjectDTO devopsProjectDO = new DevopsProjectDTO(applicationEventPayload.getProjectId());
         devopsProjectDO.setDevopsAppGroupId(TypeUtil.objToLong(groupDTO.getId()));
-        devopsProjectDO.setAppId(applicationEventPayload.getId());
         devopsProjectService.baseUpdate(devopsProjectDO);
     }
 
+    @Override
+    public GroupDTO createSiteAppGroup() {
+        // TODO by scp
+        return null;
+    }
 
-    public void updateApplicationGroup(ApplicationEventPayload applicationEventPayload) {
-        GroupDTO group = new GroupDTO();
-        setAppGroupNameAndPath(group, applicationEventPayload);
+    @Nonnull
+    @Override
+    public GroupDTO querySiteAppGroup() {
+        // TODO by scp
+        GroupDTO group = null;
 
-        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(applicationEventPayload.getUserId());
-        DevopsProjectDTO devopsProjectDTO = devopsProjectService.queryByAppId(applicationEventPayload.getId());
-
-        Integer groupId = TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId());
-        try {
-            gitlabServiceClientOperator.updateGroup(groupId, TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), group);
-        } catch (FeignException e) {
-            throw new CommonException(e);
+        if (group == null) {
+            return createSiteAppGroup();
         }
+        return group;
     }
 
 

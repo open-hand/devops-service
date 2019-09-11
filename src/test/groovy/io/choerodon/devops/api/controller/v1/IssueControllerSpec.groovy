@@ -106,7 +106,7 @@ class IssueControllerSpec extends Specification {
     def setupSpec() {
         applicationDO.setId(1L)
         applicationDO.setName("name")
-        applicationDO.setAppId(1L)
+        applicationDO.setProjectId(1L)
         applicationDO.setGitlabProjectId(1)
 
         devopsBranchDO.setId(1L)
