@@ -37,6 +37,9 @@ public class AppMarketDownloadPayload {
     @ApiModelProperty("历史记录Id")
     private Long appDownloadRecordId;
 
+    @ApiModelProperty("SasS端应用版本Id")
+    private Long mktAppVersionId;
+
     @ApiModelProperty("应用服务")
     private List<AppServiceDownloadPayload> appServiceDownloadPayloads;
 
@@ -110,5 +113,12 @@ public class AppMarketDownloadPayload {
 
     public void setDownloadAppType(String downloadAppType) {
         this.downloadAppType = downloadAppType;
+    }
+    public Long getMktAppVersionId() {
+        return mktAppVersionId;
+    }
+
+    public void setMktAppVersionId(Long mktAppVersionId) {
+        this.mktAppVersionId = mktAppVersionId;
     }
 }
