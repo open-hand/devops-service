@@ -164,7 +164,7 @@ public class DevopsServiceController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "网络ID", required = true)
             @PathVariable Long id) {
-        return Optional.ofNullable(devopsServiceService.query(id))
+        return Optional.ofNullable(devopsServiceService.querySingleService(id))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_APP_K8S_SERVICE_QUERY));
     }

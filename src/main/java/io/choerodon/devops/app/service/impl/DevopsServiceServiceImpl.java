@@ -170,7 +170,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                 }
             }
         }
-        return querySingleServiceDtoToVo(devopsServiceQueryDTO);
+        return queryDtoToVo(devopsServiceQueryDTO);
     }
 
     @Override
@@ -738,14 +738,38 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     }
 
     @Override
-    public DevopsServiceVO querySingleServiceDtoToVo(DevopsServiceQueryDTO devopsServiceQueryDTO) {
+    public DevopsServiceVO querySingleService(Long id) {
+        DevopsServiceQueryDTO devopsServiceQueryDTO = baseQueryById(id);
+        if (devopsServiceQueryDTO == null) {
+            return null;
+        } else {
+            List<DevopsServiceInstanceDTO> devopsServiceAppInstanceDTOS = devopsServiceInstanceService.baseListByServiceId(id);
+            //网络多实例中存在删除实例时，给应用信息赋值
+            if (!devopsServiceAppInstanceDTOS.isEmpty()) {
+                for (DevopsServiceInstanceDTO devopsServiceAppInstanceDTO : devopsServiceAppInstanceDTOS) {
+                    AppServiceInstanceDTO applicationInstanceDTO = appServiceInstanceService.baseQuery(devopsServiceAppInstanceDTO.getInstanceId());
+                    if (applicationInstanceDTO != null) {
+                        AppServiceDTO appServiceDTO = applicationService.baseQuery(applicationInstanceDTO.getAppServiceId());
+                        devopsServiceQueryDTO.setAppServiceId(appServiceDTO.getId());
+                        devopsServiceQueryDTO.setAppServiceName(appServiceDTO.getName());
+                        devopsServiceQueryDTO.setAppServiceProjectId(devopsProjectService.queryProjectIdByAppId(appServiceDTO.getAppId()));
+                    }
+                }
+            }
+        }
+        return querySingleServiceDtoToVo(devopsServiceQueryDTO);
+    }
+
+    private DevopsServiceVO querySingleServiceDtoToVo(DevopsServiceQueryDTO devopsServiceQueryDTO) {
         DevopsServiceVO devopsServiceVO = queryDtoToVo(devopsServiceQueryDTO);
         Long envId = devopsServiceQueryDTO.getEnvId();
         //获得pod实时信息
         if (devopsServiceQueryDTO.getInstances() != null) {
-            List<Map<Long, List<PodLiveInfoVO>>> instancePodLiveInfoVOs = devopsServiceQueryDTO.getInstances()
+            List<PodLiveInfoVO> instancePodLiveInfoVOs = devopsServiceQueryDTO.getInstances()
                     .stream()
                     .map(instanceInfoVO -> getInstancePodLiveInfoVOs(instanceInfoVO.getId(), envId))
+                    .filter(Objects::nonNull)
+                    .flatMap(Collection::stream)
                     .collect(Collectors.toList());
 
             devopsServiceVO.setPodLiveInfos(instancePodLiveInfoVOs);
@@ -753,7 +777,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         return devopsServiceVO;
     }
 
-    private Map<Long, List<PodLiveInfoVO>> getInstancePodLiveInfoVOs(Long instanceId, Long envId) {
+    private List<PodLiveInfoVO> getInstancePodLiveInfoVOs(Long instanceId, Long envId) {
         PodLiveInfoVO podLiveInfoVO = new PodLiveInfoVO();
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(devopsEnvironmentDTO.getClusterId());
@@ -764,7 +788,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         if (devopsEnvPodDTOList == null || devopsEnvPodDTOList.size() == 0) {
             return null;
         }
-        List<PodLiveInfoVO> podLiveInfoVOList = devopsEnvPodDTOList.stream().map(devopsEnvPodDTO -> {
+        List<PodLiveInfoVO> podLiveInfoVOList;
+        podLiveInfoVOList = devopsEnvPodDTOList.stream().map(devopsEnvPodDTO -> {
             BeanUtils.copyProperties(devopsEnvPodDTO, podLiveInfoVO);
 
             //反序列化json
@@ -798,9 +823,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             }
             return podLiveInfoVO;
         }).collect(Collectors.toList());
-        Map<Long, List<PodLiveInfoVO>> instancePodLiveInfoVOs = new HashMap<>();
-        instancePodLiveInfoVOs.put(instanceId, podLiveInfoVOList);
-        return instancePodLiveInfoVOs;
+        return podLiveInfoVOList;
     }
 
     private DevopsServiceDTO initDevopsService(DevopsServiceDTO devopsServiceDTO, DevopsServiceReqVO devopsServiceReqVO, List<DevopsServiceInstanceDTO> devopsServiceInstanceDTOS, List<String> beforeDevopsServiceAppInstanceDTOS) {
