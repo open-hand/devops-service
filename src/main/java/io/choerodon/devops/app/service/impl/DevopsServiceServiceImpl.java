@@ -7,18 +7,6 @@ import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import io.kubernetes.client.JSON;
-import io.kubernetes.client.custom.IntOrString;
-import io.kubernetes.client.models.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -44,6 +32,17 @@ import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.ResourceCreatorInfoUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
+import io.kubernetes.client.JSON;
+import io.kubernetes.client.custom.IntOrString;
+import io.kubernetes.client.models.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 
 /**
@@ -810,8 +809,23 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             List<PodMetricsRedisInfoVO> agentPodInfoVOS = agentPodInfoService.queryAllPodSnapshots(devopsEnvPodDTO.getName(), devopsEnvPodDTO.getNamespace(), devopsClusterDTO.getCode());
 
             if (!agentPodInfoVOS.isEmpty()) {
-                List<String> cpuUsedList = agentPodInfoVOS.stream().map(PodMetricsRedisInfoVO::getCpu).collect(Collectors.toList());
-                List<String> memoryUsedList = agentPodInfoVOS.stream().map(PodMetricsRedisInfoVO::getMemory).collect(Collectors.toList());
+                List<Long> cpuUsedList = agentPodInfoVOS.stream()
+                        .map(info -> {
+                            if (info.getCpu().equals("0")) {
+                                return 0L;
+                            } else {
+                                return TypeUtil.objToLong(info.getCpu().substring(0, (info.getCpu().length() - 1)));
+                            }
+                        }).collect(Collectors.toList());
+                List<Long> memoryUsedList = agentPodInfoVOS.stream()
+                        .map(info -> {
+                            if (info.getMemory().equals("0")) {
+                                return 0L;
+                            } else {
+                                return TypeUtil.objToLong(info.getMemory().substring(0, (info.getMemory()).length() - 2));
+                            }
+                        })
+                        .collect(Collectors.toList());
                 List<Date> timeList = agentPodInfoVOS.stream().map(PodMetricsRedisInfoVO::getSnapShotTime).collect(Collectors.toList());
 
                 podLiveInfoVO.setCpuUsedList(cpuUsedList);

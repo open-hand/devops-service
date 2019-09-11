@@ -9,14 +9,6 @@ import java.util.Map;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.ObjectUtils;
-import retrofit2.Call;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
@@ -42,6 +34,13 @@ import io.choerodon.devops.infra.handler.RetrofitHandler;
 import io.choerodon.devops.infra.mapper.DevopsConfigMapper;
 import io.choerodon.devops.infra.util.PageRequestUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
+import retrofit2.Call;
+import retrofit2.Response;
+import retrofit2.Retrofit;
 
 /**
  * @author zongw.lee@gmail.com
@@ -128,7 +127,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                 //默认的harbor类型,在项目层级有设置私有的功能
                 if (devopsConfigVO.getType().equals(HARBOR) && resourceType.equals(ResourceLevel.PROJECT.value())) {
                     DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(resourceId);
-                    //判断当前默认仓库私有配置是否和数据库中存储一致，不一致则执行对应逻辑
+                    //判断当前默认仓库私有配置是否和数据库中存储一致，不一致则执行对应逻辑,注意，只能将系统默认的harhor配置设置为私有
                     if (!devopsProjectDTO.getHarborProjectIsPrivate().equals(devopsConfigVO.getHarborPrivate())) {
                         operateHarborProject(resourceId, devopsConfigVO.getHarborPrivate());
                     }
@@ -311,8 +310,34 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
             ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
             OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
             DevopsConfigDTO organizationConfig = baseQueryByResourceAndType(organizationDTO.getId(), ResourceLevel.ORGANIZATION.value(), configType);
+            //如果组织层使用自定义设置，为了避免给组织层下所有项目都创一遍harborProject,则只在具体某个应用服务用到的时候，在去给应用服务所属的项目创建对应的harborProject
             if (organizationConfig != null) {
+                if (configType.equals(HARBOR)) {
+                    ConfigVO configVO = gson.fromJson(organizationConfig.getConfig(), ConfigVO.class);
+                    harborConfigurationProperties.setUsername(configVO.getUserName());
+                    harborConfigurationProperties.setPassword(configVO.getPassword());
+                    harborConfigurationProperties.setBaseUrl(configVO.getUrl());
+                    ConfigurationProperties configurationProperties = new ConfigurationProperties(harborConfigurationProperties);
+                    configurationProperties.setType(HARBOR);
+                    Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
+                    HarborClient harborClient = retrofit.create(HarborClient.class);
+                    projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+                    organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+                    harborService.createHarbor(harborClient, organizationDTO.getCode() + "-" + projectDTO.getCode());
+                }
                 return organizationConfig;
+            }
+            //若应用服务最后查出来的配置是最高级的默认harbor配置，需要校验项目层是否将默认harbor设置成了私有，如设为私有，需要读取私有的授权信息，用于ci推镜像和部署secret
+            if(configType.equals(HARBOR)) {
+                DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectDTO.getId());
+                if (devopsProjectDTO.getHarborProjectIsPrivate()) {
+                    ConfigVO configVO = gson.fromJson(organizationConfig.getConfig(), ConfigVO.class);
+                    configVO.setPrivate(true);
+                    configVO.setUserName(devopsProjectDTO.getHarborProjectUserName());
+                    configVO.setPassword(devopsProjectDTO.getHarborProjectUserPassword());
+                    configVO.setEmail(devopsProjectDTO.getHarborProjectUserEmail());
+                    defaultConfig.setConfig(gson.toJson(configVO));
+                }
             }
             return defaultConfig;
         } else if (resourceType.equals(ResourceLevel.PROJECT.value())) {
