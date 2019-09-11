@@ -1687,11 +1687,10 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         }
         DevopsRegistrySecretDTO devopsRegistrySecretDTO = devopsRegistrySecretService.baseQueryByEnvAndName(envId, KeyParseUtil.getResourceName(key));
         if (result.equals("failed")) {
-            devopsRegistrySecretDTO.setStatus(false);
+            devopsRegistrySecretService.baseUpdateStatus(devopsRegistrySecretDTO.getId(),false);
         } else {
-            devopsRegistrySecretDTO.setStatus(true);
+            devopsRegistrySecretService.baseUpdateStatus(devopsRegistrySecretDTO.getId(),true);
         }
-        devopsRegistrySecretService.baseUpdate(devopsRegistrySecretDTO);
     }
 }
 

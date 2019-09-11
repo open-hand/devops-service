@@ -15,6 +15,8 @@ public interface DevopsRegistrySecretService {
 
      DevopsRegistrySecretDTO baseUpdate(DevopsRegistrySecretDTO devopsRegistrySecretDTO);
 
+     void baseUpdateStatus(Long id, Boolean status);
+
      DevopsRegistrySecretDTO baseQueryByEnvAndId(String namespace, Long configId);
 
      List<DevopsRegistrySecretDTO> baseListByConfig(Long configId);
