@@ -50,6 +50,7 @@ import io.choerodon.devops.infra.dto.iam.ApplicationDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.AccessLevel;
+import io.choerodon.devops.infra.enums.UploadErrorEnum;
 import io.choerodon.devops.infra.feign.MarketServicePublicClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
@@ -93,6 +94,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
     private static final String PUSH_IMAGE = "push_image.sh";
     private static final String DSLASH = "//";
     private static final String SSLASH = "/";
+    private static final String UNAUTHORIZED = "UNAUTHORIZED";
     @Value("${services.helm.url}")
     private String helmUrl;
     @Value("${services.harbor.baseUrl}")
@@ -149,17 +151,22 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             String line = "";
             while ((line = infoInput.readLine()) != null) {
                 LOGGER.info(line);
+                if(line.contains(UNAUTHORIZED)){
+                    throw new CommonException(UploadErrorEnum.PUSH_IMAGE.value());
+                }
             }
-            LOGGER.info("=============信息分界线=================");
+
             while ((line = errorInput.readLine()) != null) {
                 LOGGER.error(line);
+                if(line.contains(UNAUTHORIZED)){
+                    throw new CommonException(UploadErrorEnum.PUSH_IMAGE.value());
+                }
             }
-            LOGGER.info("=============信息分界线=================");
             infoInput.close();
             errorInput.close();
             process.waitFor();
         } catch (Exception e) {
-            throw new CommonException("error.exec.push.image", e.getMessage());
+            throw new CommonException(UploadErrorEnum.PUSH_IMAGE.value(), e.getMessage());
         }
     }
 
@@ -209,11 +216,11 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             LOGGER.info("==========应用上传，上传文件！！==========");
             FileUtil.deleteDirectory(new File(appFilePath));
             zipFileList.forEach(FileUtil::deleteFile);
-        } catch (CommonException e) {
-            baseServiceClientOperator.publishFail(marketUploadVO.getProjectId(), marketUploadVO.getMktAppId(), marketUploadVO.getMktAppVersionId(), e.getCode(), false);
+        } catch (Exception e) {
+            baseServiceClientOperator.publishFail(marketUploadVO.getProjectId(), marketUploadVO.getMktAppId(), marketUploadVO.getMktAppVersionId(), e.getMessage(), false);
             FileUtil.deleteDirectory(new File(appFilePath));
             zipFileList.forEach(FileUtil::deleteFile);
-            throw new CommonException(e.getCode());
+            throw new CommonException(e.getMessage());
         }
     }
 
@@ -228,16 +235,16 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             LOGGER.info("==========应用上传修复版本，上传文件！！==========");
             zipFileList.forEach(FileUtil::deleteFile);
             FileUtil.deleteDirectory(new File(appFilePath));
-        } catch (CommonException e) {
+        } catch (Exception e) {
             baseServiceClientOperator.publishFail(
                     appMarketFixVersionPayload.getFixVersionUploadPayload().getProjectId(),
                     appMarketFixVersionPayload.getFixVersionUploadPayload().getMktAppId(),
                     appMarketFixVersionPayload.getFixVersionUploadPayload().getMktAppVersionId(),
-                    e.getCode(),
+                    e.getMessage(),
                     true);
             zipFileList.forEach(FileUtil::deleteFile);
             FileUtil.deleteDirectory(new File(appFilePath));
-            throw new CommonException(e.getCode(), e);
+            throw new CommonException(e.getMessage(), e);
         }
     }
 
@@ -897,31 +904,6 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         appServiceMarketVO.setAppServiceCode(applicationDTO.getCode());
         appServiceMarketVO.setAppServiceName(applicationDTO.getName());
         return appServiceMarketVO;
-    }
-
-    public void cellScript(String cmd) {
-        try {
-            LOGGER.info(cmd);
-            Process process = Runtime.getRuntime().exec(cmd);
-            BufferedReader infoInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            BufferedReader errorInput = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-            String line = "";
-            while ((line = infoInput.readLine()) != null) {
-                LOGGER.info("=============info=================");
-                LOGGER.info(line);
-            }
-            LOGGER.info("=============信息分界线=================");
-            while ((line = errorInput.readLine()) != null) {
-                LOGGER.info("=============error=================");
-                LOGGER.error(line);
-            }
-            LOGGER.info("=============信息分界线=================");
-            infoInput.close();
-            errorInput.close();
-            process.waitFor();
-        } catch (Exception e) {
-            throw new CommonException("error.exec.push.image", e.getMessage());
-        }
     }
 
 }
