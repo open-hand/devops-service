@@ -57,7 +57,7 @@ public class SagaHandler {
     /**
      * 消费创建应用事件，为应用创建组
      */
-    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_CREATE_GITLAB_GROUP,
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_CONSUME_APPLICATION_CREATION,
             description = "消费创建应用事件",
             sagaCode = SagaTopicCodeConstants.BASE_CREATE_APPLICATION,
             maxRetryCount = 3,
@@ -72,8 +72,8 @@ public class SagaHandler {
     /**
      * 创建组事件，消费创建项目事件
      */
-    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_CREATE_GITOPS_GROUP,
-            description = "devops 创建 GitOps Group",
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_CREATE_GITLAB_GROUP,
+            description = "devops 创建对应项目的两个Group",
             sagaCode = SagaTopicCodeConstants.IAM_CREATE_PROJECT,
             maxRetryCount = 3,
             seq = 1)
@@ -82,31 +82,15 @@ public class SagaHandler {
         GitlabGroupPayload gitlabGroupPayload = new GitlabGroupPayload();
         BeanUtils.copyProperties(projectPayload, gitlabGroupPayload);
         loggerInfo(gitlabGroupPayload);
-        gitlabGroupService.createEnvGroup(gitlabGroupPayload);
+        gitlabGroupService.createGroups(gitlabGroupPayload);
         return msg;
     }
 
-
     /**
-     * 消费更新应用事件，更新应用对应的组
+     * 更新项目事件，为项目更新组
      */
     @SagaTask(code = SagaTaskCodeConstants.DEVOPS_UPDATE_GITLAB_GROUP,
-            description = "devops  更新 应用 Group",
-            sagaCode = SagaTopicCodeConstants.BASE_UPDATE_APPLICATION,
-            maxRetryCount = 3,
-            seq = 1)
-    public String handleUpdateGitlabGroupEvent(String msg) {
-        loggerInfo(msg);
-        ApplicationEventPayload projectPayload = gson.fromJson(msg, ApplicationEventPayload.class);
-        gitlabGroupService.updateApplicationGroup(projectPayload);
-        return msg;
-    }
-
-    /**
-     * 更新项目事件，为项目更新环境组
-     */
-    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_UPDATE_GITOPS_GROUP,
-            description = "devops  更新 GitOps Group",
+            description = "devops更新项目对应的两个GitLab组",
             sagaCode = SagaTopicCodeConstants.IAM_UPDATE_PROJECT,
             maxRetryCount = 3,
             seq = 1)
@@ -115,7 +99,7 @@ public class SagaHandler {
         GitlabGroupPayload gitlabGroupPayload = new GitlabGroupPayload();
         BeanUtils.copyProperties(projectPayload, gitlabGroupPayload);
         loggerInfo(msg);
-        gitlabGroupService.updateEnvGroup(gitlabGroupPayload);
+        gitlabGroupService.updateGroups(gitlabGroupPayload);
         return msg;
     }
 

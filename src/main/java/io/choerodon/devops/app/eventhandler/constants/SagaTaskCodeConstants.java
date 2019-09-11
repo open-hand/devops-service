@@ -93,24 +93,20 @@ public class SagaTaskCodeConstants {
     public static final String REGISTER_DEVOPS_INIT_PROJCET = "register-devops-init-projcet";
 
     /**
+     * devops 消费应用创建事件
+     */
+    public static final String DEVOPS_CONSUME_APPLICATION_CREATION = "devops-consume-application-creation";
+
+    /**
      * devops 创建 GitLab Group
      */
     public static final String DEVOPS_CREATE_GITLAB_GROUP = "devopsCreateGitLabGroup";
-
-    /**
-     * devops 创建 GitOps Group
-     */
-    public static final String DEVOPS_CREATE_GITOPS_GROUP = "devopsCreateGitOpsGroup";
 
     /**
      * devops  更新 GitLab Group
      */
     public static final String DEVOPS_UPDATE_GITLAB_GROUP = "devopsUpdateGitLabGroup";
 
-    /**
-     * devops  更新 GitOps Group
-     */
-    public static final String DEVOPS_UPDATE_GITOPS_GROUP = "devopsUpdateGitOpsGroup";
 
     /**
      * devops 创建 Harbor
