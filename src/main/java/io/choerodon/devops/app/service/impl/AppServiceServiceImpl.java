@@ -186,9 +186,6 @@ public class AppServiceServiceImpl implements AppServiceService {
         ApplicationValidator.checkApplicationService(appServiceReqVO.getCode());
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
 
-        baseCheckCode(projectDTO.getApplicationId(), appServiceReqVO.getCode());
-        baseCheckName(projectDTO.getApplicationId(), appServiceReqVO.getName());
-
         // 校验模板id和模板版本id是否都有值或者都为空
         boolean isTemplateNull = appServiceReqVO.getTemplateAppServiceId() == null;
         boolean isTemplateVersionNull = appServiceReqVO.getTemplateAppServiceVersionId() == null;
@@ -332,7 +329,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
 
         if (!oldAppServiceDTO.getName().equals(appServiceUpdateDTO.getName())) {
-            baseCheckName(oldAppServiceDTO.getProjectId(), appServiceDTO.getName());
+            checkName(oldAppServiceDTO.getProjectId(), appServiceDTO.getName());
         }
         baseUpdate(appServiceDTO);
         sendUpdateAppServiceInfo(baseQuery(appServiceUpdateDTO.getId()), projectId);
@@ -431,12 +428,22 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     @Override
     public void checkName(Long projectId, String name) {
-        baseCheckName(projectId, name);
+        AppServiceDTO appServiceDTO = new AppServiceDTO();
+        appServiceDTO.setProjectId(projectId);
+        appServiceDTO.setName(name);
+        if (appServiceMapper.selectOne(appServiceDTO) != null) {
+            throw new CommonException("error.name.exist");
+        }
     }
 
     @Override
     public void checkCode(Long projectId, String code) {
-        baseCheckCode(projectId, code);
+        AppServiceDTO appServiceDTO = new AppServiceDTO();
+        appServiceDTO.setProjectId(projectId);
+        appServiceDTO.setCode(code);
+        if (appServiceMapper.selectOne(appServiceDTO) != null) {
+            throw new CommonException("error.code.exist");
+        }
     }
 
     @Override
@@ -459,16 +466,6 @@ public class AppServiceServiceImpl implements AppServiceService {
             return list != null && list.size() != 0;
         }).collect(Collectors.toList()));
         return batchCheckVO;
-    }
-
-    @Override
-    public void checkNameByProjectId(Long projectId, String name) {
-        baseCheckName(projectId, name);
-    }
-
-    @Override
-    public void checkCodeByProjectId(Long projectId, String code) {
-        baseCheckCode(projectId, code);
     }
 
     @Override
@@ -754,10 +751,10 @@ public class AppServiceServiceImpl implements AppServiceService {
         // 校验application信息的格式
         ApplicationValidator.checkApplicationService(appServiceImportVO.getCode());
         // 校验名称唯一性
-        baseCheckName(projectId, appServiceImportVO.getName());
+        checkName(projectId, appServiceImportVO.getName());
 
         // 校验code唯一性
-        baseCheckCode(projectId, appServiceImportVO.getCode());
+        checkCode(projectId, appServiceImportVO.getCode());
 
         AppServiceDTO appServiceDTO = new AppServiceDTO();
         appServiceDTO.setProjectId(projectId);
@@ -1662,10 +1659,10 @@ public class AppServiceServiceImpl implements AppServiceService {
                 ApplicationValidator.checkApplicationService(importInternalVO.getAppCode());
 
                 // 校验名称唯一性
-                baseCheckName(projectId, importInternalVO.getAppName());
+                checkName(projectId, importInternalVO.getAppName());
 
                 // 校验code唯一性
-                baseCheckCode(projectId, importInternalVO.getAppCode());
+                checkCode(projectId, importInternalVO.getAppCode());
 
                 appServiceDTO.setCode(importInternalVO.getAppCode());
                 appServiceDTO.setName(importInternalVO.getAppName());
@@ -2019,8 +2016,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public AppServiceDTO getApplicationServiceDTO(Long projectId, AppServiceReqVO appServiceReqVO) {
         AppServiceDTO appServiceDTO = ConvertUtils.convertObject(appServiceReqVO, AppServiceDTO.class);
-        baseCheckName(projectId, appServiceDTO.getName());
-        baseCheckCode(projectId, appServiceDTO.getCode());
+        checkName(projectId, appServiceDTO.getName());
+        checkCode(projectId, appServiceDTO.getCode());
         appServiceDTO.setActive(true);
         appServiceDTO.setSynchro(false);
         appServiceDTO.setProjectId(projectId);
@@ -2029,24 +2026,6 @@ public class AppServiceServiceImpl implements AppServiceService {
         appServiceDTO.setHarborConfigId(appServiceReqVO.getHarborConfigId());
         appServiceDTO.setChartConfigId(appServiceReqVO.getChartConfigId());
         return appServiceDTO;
-    }
-
-    private void baseCheckName(Long projectId, String appServiceName) {
-        AppServiceDTO appServiceDTO = new AppServiceDTO();
-        appServiceDTO.setProjectId(projectId);
-        appServiceDTO.setName(appServiceName);
-        if (appServiceMapper.selectOne(appServiceDTO) != null) {
-            throw new CommonException("error.name.exist");
-        }
-    }
-
-    private void baseCheckCode(Long projectId, String appServiceCode) {
-        AppServiceDTO appServiceDTO = new AppServiceDTO();
-        appServiceDTO.setProjectId(projectId);
-        appServiceDTO.setCode(appServiceCode);
-        if (!appServiceMapper.select(appServiceDTO).isEmpty()) {
-            throw new CommonException("error.code.exist");
-        }
     }
 
     @Override

@@ -180,22 +180,6 @@ public interface AppServiceService {
     AppServiceBatchCheckVO checkCodeByProjectId(Long projectId, AppServiceBatchCheckVO appServiceBatchCheckVO);
 
     /**
-     * 创建服务校验名称是否存在
-     *
-     * @param projectId 项目ID
-     * @param name      服务name
-     */
-    void checkNameByProjectId(Long projectId, String name);
-
-    /**
-     * 创建服务校验编码是否存在
-     *
-     * @param projectId 项目ID
-     * @param code      服务code
-     */
-    void checkCodeByProjectId(Long projectId, String code);
-
-    /**
      * 项目下查询已经启用有版本未发布的服务
      *
      * @param projectId   项目id

@@ -303,7 +303,7 @@ public class AppServiceController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境名", required = true)
             @RequestParam String name) {
-        applicationServiceService.checkNameByProjectId(projectId, name);
+        applicationServiceService.checkName(projectId, name);
     }
 
     /**
@@ -320,7 +320,7 @@ public class AppServiceController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "服务编码", required = true)
             @RequestParam String code) {
-        applicationServiceService.checkCodeByProjectId(projectId, code);
+        applicationServiceService.checkCode(projectId, code);
     }
 
     /**
