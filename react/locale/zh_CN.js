@@ -400,6 +400,7 @@ const appService = {
   'c7ncd.appService.selected': '{number}个已选择应用服务',
   'c7ncd.appService.stop': '停用服务',
   'c7ncd.appService.stop.tips': '确定停用该应用服务吗？',
+  'c7ncd.appService.project.failed': '由小写字母，数字，\'-\'、\'_\'或\'.\'组成，以字母、数字开始和结束',
 };
 
 const envrionment = {
@@ -512,6 +513,7 @@ const repository = {
   'c7ncd.repository.public': '公有',
   'c7ncd.repository.private': '私有',
   'c7ncd.repository.type': '仓库类型',
+  'c7ncd.repository.project.failed': '由小写字母，数字，\'-\'、\'_\'或\'.\'组成，以字母、数字开始和结束',
 };
 
 

@@ -66,7 +66,6 @@ const ProRepository = withRouter(observer((props) => {
           </Button>
         </Permission>
       </Header>
-      <Breadcrumb />
       <Content>
         <div className={`${prefixCls}-home-item`}>
           <span className={`${prefixCls}-home-item-text`}>

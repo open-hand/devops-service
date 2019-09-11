@@ -30,9 +30,12 @@
     }
   }
 
+  &-available {
+    pointer-events: auto;
+  }
+
   &-disabled {
-    //cursor: not-allowed;
-    pointer-events: none;
+    color: rgba(0, 0, 0, .54);
   }
 
   .c7ncd-deploy-resource-display {
@@ -41,6 +44,10 @@
 
   .c7ncd-deploy-resource-content {
     margin-top: .12rem;
+  }
+
+  .c7n-pro-select-dropdown-menu-item {
+    pointer-events: none;
   }
 }
 

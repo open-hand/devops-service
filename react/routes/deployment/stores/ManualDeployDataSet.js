@@ -21,6 +21,7 @@ export default ((intlPrefix, formatMessage, projectId, envOptionsDs, valueIdOpti
     switch (name) {
       case 'appServiceSource':
         deployStore.loadAppService(projectId, value);
+        record.get('appServiceId') && record.set('appServiceId', null);
         break;
       case 'environmentId':
         loadValueList(record);

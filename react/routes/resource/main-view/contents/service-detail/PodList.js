@@ -58,13 +58,13 @@ const PodList = observer(() => {
       </div>
     ));
     return (
-      <div>
+      <div className="service-detail-pod-registry">
         {list[0]}
         {list.length > 1 && (
           <Popover
             content={list}
           >
-            <Icon type="expand_more" />
+            <Icon type="expand_more" className="service-detail-pod-item-icon" />
           </Popover>
         )}
       </div>

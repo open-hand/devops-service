@@ -31,5 +31,7 @@ export default ((intlPrefix, formatMessage, projectId) => ({
   queryFields: [
     { name: 'deployId', type: 'number', label: formatMessage({ id: `${intlPrefix}.number` }) },
     { name: 'pipelineName', type: 'string', label: formatMessage({ id: `${intlPrefix}.pipeline.name` }) },
+    { name: 'deployType', type: 'string', label: formatMessage({ id: `${intlPrefix}.type` }) },
+    { name: 'deployStatus', type: 'string', label: formatMessage({ id: `${intlPrefix}.result` }) },
   ],
 }));
