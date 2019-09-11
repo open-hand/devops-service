@@ -2072,7 +2072,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         Set<Long> projectIds = appServiceDTOList.stream().map(appServiceDTO -> appServiceDTO.getProjectId()).collect(Collectors.toSet());
         List<ProjectDTO> projects = baseServiceClientOperator.queryProjectsByIds(projectIds);
-        Map<Long, ProjectDTO> appMap = projects.stream().collect(Collectors.toMap(ProjectDTO::getId, Function.identity()));
+        Map<Long, ProjectDTO> projectMap = projects.stream().collect(Collectors.toMap(ProjectDTO::getId, Function.identity()));
         // 遍历应用服务集合并转换为VO
         appServiceDTOList.stream().forEach(appServiceDTO -> {
             // 根据应用服务的ID查询出versionList中对应的版本信息
@@ -2080,7 +2080,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             // 应用服务含有共享版本才加入List
             if (appServiceVersionDTO != null) {
                 // 获取应用信息，并传入应用名称
-                ProjectDTO projectDTO = appMap.get(appServiceDTO.getProjectId());
+                ProjectDTO projectDTO = projectMap.get(appServiceDTO.getProjectId());
                 if (!ObjectUtils.isEmpty(projectDTO)) {
                     // 初始化应用服务信息
                     AppServiceGroupInfoVO appServiceGroupInfoVO = dtoToGroupInfoVO(appServiceDTO);
