@@ -2,9 +2,8 @@ import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { observer } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
-import { Permission } from '@choerodon/master';
+import { Action, Permission } from '@choerodon/master';
 import { Icon, Modal } from 'choerodon-ui/pro';
-import Action from '../../../../../components/action';
 import { handlePromptError } from '../../../../../utils';
 import { useResourceStore } from '../../../stores';
 import { useTreeItemStore } from './stores';
@@ -33,8 +32,7 @@ function AppItem({ name, record, intl: { formatMessage }, intlPrefix }) {
     }
   }
 
-  function openModal(e) {
-    e.domEvent.stopPropagation();
+  function openModal() {
     Modal.open({
       movable: false,
       closable: false,
@@ -46,20 +44,23 @@ function AppItem({ name, record, intl: { formatMessage }, intlPrefix }) {
     });
   }
 
+  function handleActionClick(e) {
+    e.stopPropagation();
+  }
+
   function getSuffix() {
     const actionData = [{
-      key: 'delete',
+      service: ['devops-service.devops-env-app-service.delete'],
       text: formatMessage({ id: `${intlPrefix}.modal.service.delete` }),
+      action: openModal,
     }];
-    return <Action placement="bottomRight" items={actionData} menuClick={openModal} />;
+    return <Action placement="bottomRight" data={actionData} onClick={handleActionClick} />;
   }
 
   return <Fragment>
     <Icon type="widgets" />
     {name}
-    <Permission service={['devops-service.devops-env-app-service.delete']}>
-      {getSuffix()}
-    </Permission>
+    {getSuffix()}
   </Fragment>;
 }
 

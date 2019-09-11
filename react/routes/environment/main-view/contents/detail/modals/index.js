@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { Modal } from 'choerodon-ui/pro';
 import HeaderButtons from '../../../../../../components/header-buttons';
 import EnvDetail from '../../../../../../components/env-detail';
-import Action from '../../../../../../components/action';
+import HeaderAction from '../../../../../../components/header-action';
 import Permission from '../../../../../resource/main-view/contents/environment/modals/permission';
 import { useEnvironmentStore } from '../../../../stores';
 import { useMainStore } from '../../../stores';
@@ -243,16 +243,18 @@ const EnvModals = observer(() => {
   }
 
   const actionItem = useMemo(() => ([{
+    display: true,
     key: ITEM_GROUP,
     text: formatMessage({ id: `${currentIntlPrefix}.group.create` }),
   }, {
+    display: true,
     key: ITEM_SAFETY,
     text: formatMessage({ id: `${currentIntlPrefix}.resource.setting` }),
     disabled,
   }]), [disabled]);
 
   return <HeaderButtons items={getButtons()}>
-    <Action
+    <HeaderAction
       style={actionStyle}
       buttonStyle={buttonStyle}
       items={actionItem}

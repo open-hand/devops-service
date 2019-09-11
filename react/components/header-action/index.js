@@ -1,18 +1,24 @@
+/**
+ * master 中的 Action 不支持单个选项的disabled
+ * 该组件实现可以对单个item进行禁用，后期会更换到master的Action
+ */
 import React, { memo } from 'react';
 import PropTypes from 'prop-types';
 import { Permission } from '@choerodon/master';
-import { Menu, Dropdown, Button } from 'choerodon-ui';
+import { Dropdown, Menu, Button } from 'choerodon-ui';
 import map from 'lodash/map';
 
 import './index.less';
 
-const Action = memo(({ menuClick, items, placement = 'bottomCenter', style, buttonStyle }) => {
+const HeaderAction = memo(({ menuClick, items, placement, style, buttonStyle }) => {
   function getMenuItem() {
-    const menuItem = map(items, ({ key, text, display, service, ...rest }) => (
-      display ? <Permission service={service}>
-        <Menu.Item key={key} {...rest}>{text}</Menu.Item>
-      </Permission> : null
-    ));
+    const menuItem = map(items, ({ key, text, display, service, ...rest }) => {
+      const item = <Menu.Item key={key} {...rest}>{text}</Menu.Item>;
+      const itemWithPermission = service ? <Permission key={key} service={service}>
+        {item}
+      </Permission> : item;
+      return display ? itemWithPermission : null;
+    });
     return <Menu onClick={menuClick}>{menuItem}</Menu>;
   }
 
@@ -38,7 +44,7 @@ const Action = memo(({ menuClick, items, placement = 'bottomCenter', style, butt
   </div>;
 });
 
-Action.propTypes = {
+HeaderAction.propTypes = {
   menuClick: PropTypes.func,
   items: PropTypes.array,
   placement: PropTypes.string,
@@ -46,4 +52,8 @@ Action.propTypes = {
   buttonStyle: PropTypes.shape({}),
 };
 
-export default Action;
+HeaderAction.defaultProps = {
+  placement: 'bottomLeft',
+};
+
+export default HeaderAction;
