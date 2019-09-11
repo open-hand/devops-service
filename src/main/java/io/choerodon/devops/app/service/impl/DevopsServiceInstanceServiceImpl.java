@@ -77,6 +77,6 @@ public class DevopsServiceInstanceServiceImpl implements DevopsServiceInstanceSe
 
     @Override
     public List<DevopsServiceInstanceDTO> baseListByEnvIdAndInstanceCode(Long envId, String instanceCode) {
-        return ConvertHelper.convertList(devopsServiceInstanceMapper.listByEnvIdAndInstanceCode(instanceCode, envId), DevopsServiceInstanceDTO.class);
+        return devopsServiceInstanceMapper.listByEnvIdAndInstanceCode(instanceCode, envId);
     }
 }
