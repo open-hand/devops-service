@@ -714,6 +714,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         Boolean result = null;
         if (appMarketUploadVO.getMarketSaaSPlatform()) {
             MultipartFile[] files = createMockMultipartFile(zipFileList);
+            mapJson=mapJson==null?"":mapJson;
             result = marketServiceClientOperator.uploadFile(appMarketUploadVO.getAppVersion(), files, mapJson);
         } else {
             List<MultipartBody.Part> files = createMultipartBody(zipFileList);
