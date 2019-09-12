@@ -8,11 +8,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.dto.GitConfigDTO;
-import io.choerodon.devops.api.dto.GitEnvConfigDTO;
 import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
 import io.choerodon.devops.domain.application.entity.ProjectE;
-import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.websocket.helper.EnvListener;
@@ -33,6 +30,9 @@ import org.springframework.stereotype.Service;
 public class EnvUtil {
 
     Pattern pattern = Pattern.compile("^[-\\+]?[\\d]*$");
+
+    private static final String GIT_SUFFIX = "/.git";
+
     @Value("${agent.version}")
     private String agentExpectVersion;
     @Value("${services.gitlab.sshUrl}")
@@ -146,8 +146,11 @@ public class EnvUtil {
 
         File file = new File(path);
         gitUtil.setSshKey(devopsEnvironmentE.getEnvIdRsa());
+        final String repoPath = path + GIT_SUFFIX;
         if (!file.exists()) {
             gitUtil.cloneBySsh(path, url);
+        } else {
+            gitUtil.pullBySsh(repoPath);
         }
         return path;
     }
