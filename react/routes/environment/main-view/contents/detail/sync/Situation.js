@@ -92,7 +92,7 @@ const SyncSituation = observer(() => {
         <div className="log-sync-line">
           <div className="log-sync-line-card">
             <div className="log-sync-line-card-title">
-              <FormattedMessage id={`${intlPrefix}.environment.gitlab`} />
+              <FormattedMessage id={`${intlPrefix}.environment.config-lab`} />
             </div>
             <div className="log-sync-line-card-commit">
               <a
@@ -122,7 +122,7 @@ const SyncSituation = observer(() => {
           </div>
           <div className="log-sync-line-card">
             <div className="log-sync-line-card-title">
-              <FormattedMessage id={`${intlPrefix}.environment.analysis`} />
+              <FormattedMessage id={`${intlPrefix}.environment.resolved`} />
             </div>
             <div className="log-sync-line-card-commit">
               <a
@@ -139,7 +139,7 @@ const SyncSituation = observer(() => {
           </div>
           <div className="log-sync-line-card">
             <div className="log-sync-line-card-title">
-              <FormattedMessage id={`${intlPrefix}.environment.agent`} />
+              <FormattedMessage id={`${intlPrefix}.environment.executed`} />
             </div>
             <div className="log-sync-line-card-commit">
               <a
