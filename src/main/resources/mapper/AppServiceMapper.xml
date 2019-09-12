@@ -571,6 +571,7 @@
          select * from devops_app_service
          <where>
              <if test="ids != null and ids.size > 0">
+                AND
                  <foreach collection="ids" item="id" open="(" separator=" OR " close=")">
                     id = #{id}
                  </foreach>
