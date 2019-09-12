@@ -53,7 +53,7 @@
         FROM
         devops_app_service da
         RIGHT JOIN devops_app_service_version dav ON da.id = dav.app_service_id
-        WHERE da.app_id = #{projectId}
+        WHERE da.project_id = #{projectId}
         AND dav.repository IS NOT NULL
         <if test='appServiceId != null'>
             AND da.id= #{appServiceId}
@@ -100,10 +100,10 @@
         JOIN devops_app_service da ON lv.app_service_id = da.id
         LEFT JOIN devops_app_service_share_rule dam on dam.app_service_id = da.id
         WHERE
-        da.app_id = #{projectId}
+        da.project_id = #{projectId}
         AND dap.repository IS NOT NULL
         OR (
-        da.app_id IN
+        da.project_id IN
         <foreach collection="projectIds" item="project" open="(" separator="," close=")">
             #{project}
         </foreach>
@@ -252,7 +252,7 @@
         devops_app_service da
         JOIN devops_app_service_version dav ON dav.app_service_id = da.id
         WHERE
-        da.app_id = #{projectId}
+        da.project_id = #{projectId}
         AND dav.id = #{appServiceServiceId}
     </select>
 

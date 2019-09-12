@@ -11,7 +11,7 @@
         WHERE
         ds.app_service_id = da.id
         AND ds.`name` = #{name}
-        AND da.app_id = #{projectId}
+        AND da.project_id = #{projectId}
         AND ds.env_id = #{envId}
         AND ds.`status` != 'deleted'
     </select>
@@ -90,7 +90,7 @@
         cmd.`status` commandStatus,
         cmd.command_type commandType,
         cmd.error error,
-        project.iam_project_id AS app_service_project_id,
+        da.project_id AS app_service_project_id,
         dsai.instance_id AS instance_id,
         dsai.code AS ins_code,
         dai.`status` AS ins_status
@@ -119,7 +119,6 @@
         LEFT JOIN devops_app_service da ON da.id = ds.app_service_id
         LEFT JOIN devops_service_instance dsai ON dsai.service_id = ds.id
         LEFT JOIN devops_app_service_instance dai ON dai.id = dsai.instance_id
-        LEFT JOIN devops_project project ON da.app_id = project.app_id
         WHERE 1
         <if test="instanceId != null">
             AND dai.id = #{instanceId}
@@ -137,7 +136,7 @@
         ds.`name`,
         ds.external_ip,
         ds.labels,
-        project.iam_project_id app_service_project_id,
+        da.project_id app_service_project_id,
         ds. ports,
         ds.end_points,
         ds.`status`,
@@ -179,7 +178,6 @@
         LEFT JOIN devops_service_instance dsai ON dsai.service_id = ds.id
         LEFT JOIN devops_app_service_instance dai ON dai.id = dsai.instance_id
         LEFT JOIN devops_app_service da ON da.id = dai.app_service_id
-        LEFT JOIN devops_project project ON da.app_id = project.app_id
         WHERE
         ds.id = #{id}
         AND ds.`status` != 'deleted'

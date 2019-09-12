@@ -16,9 +16,8 @@
         FROM
         devops_gitlab_commit dgc
         JOIN devops_app_service da ON dgc.app_service_id = da.id
-        JOIN devops_project dp on dp.app_id=da.app_id
         WHERE
-        dp.iam_project_id = #{projectId}
+        da.project_id = #{projectId}
         <if test="appServiceIds != null">
             AND dgc.app_service_id IN
             <foreach collection="appServiceIds" item="appServiceId" open="(" close=")" separator=",">
