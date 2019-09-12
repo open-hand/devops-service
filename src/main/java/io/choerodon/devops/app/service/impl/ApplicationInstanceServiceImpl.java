@@ -25,10 +25,7 @@ import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.handler.CheckOptionsHandler;
 import io.choerodon.devops.domain.application.handler.ObjectOperation;
 import io.choerodon.devops.domain.application.repository.*;
-import io.choerodon.devops.domain.application.valueobject.C7nHelmRelease;
-import io.choerodon.devops.domain.application.valueobject.ImagePullSecret;
-import io.choerodon.devops.domain.application.valueobject.Metadata;
-import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
+import io.choerodon.devops.domain.application.valueobject.*;
 import io.choerodon.devops.domain.service.DeployService;
 import io.choerodon.devops.infra.common.util.*;
 import io.choerodon.devops.infra.common.util.enums.*;
@@ -36,10 +33,12 @@ import io.choerodon.devops.infra.dataobject.ApplicationInstanceDO;
 import io.choerodon.devops.infra.dataobject.ApplicationInstancesDO;
 import io.choerodon.devops.infra.dataobject.ApplicationLatestVersionDO;
 import io.choerodon.devops.infra.dataobject.DeployDO;
+import io.choerodon.devops.infra.feign.GitlabServiceClient;
 import io.choerodon.devops.infra.feign.NotifyClient;
 import io.choerodon.devops.infra.mapper.ApplicationInstanceMapper;
 import io.choerodon.websocket.Msg;
 import io.choerodon.websocket.helper.CommandSender;
+import io.kubernetes.client.JSON;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +46,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.env.YamlPropertySourceLoader;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -67,6 +67,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
 
     private static Gson gson = new Gson();
+    private static JSON json = new JSON();
 
     @Value("${agent.version}")
     private String agentExpectVersion;
@@ -131,6 +132,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     private NotifyClient notifyClient;
     @Autowired
     private DevopsDeployValueRepository devopsDeployValueRepository;
+    @Autowired
+    private GitlabServiceClient gitlabServiceClient;
 
 
     @Override
@@ -271,10 +274,10 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         if (type.equals(UPDATE)) {
             ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectById(instanceId);
             if (applicationInstanceE.getValueId() == null) {
-                replaceResult.setYaml(getReplaceResult(versionValue,applicationInstanceRepository.queryValueByInstanceId(instanceId)).getYaml());
+                replaceResult.setYaml(getReplaceResult(versionValue, applicationInstanceRepository.queryValueByInstanceId(instanceId)).getYaml());
             } else {
                 DevopsDeployValueE devopsDeployValueE = devopsDeployValueRepository.queryById(applicationInstanceE.getValueId());
-                replaceResult.setYaml(getReplaceResult(versionValue,devopsDeployValueE.getValue()).getYaml());
+                replaceResult.setYaml(getReplaceResult(versionValue, devopsDeployValueE.getValue()).getYaml());
                 replaceResult.setName(devopsDeployValueE.getName());
                 replaceResult.setId(devopsDeployValueE.getId());
                 replaceResult.setObjectVersionNumber(devopsDeployValueE.getObjectVersionNumber());
@@ -751,11 +754,9 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
 
-        //更新时候，如果isNotChange的值为true，则直接向agent发送更新指令，不走gitops,否则走操作gitops库文件逻辑
+        //更新时候，如果isNotChange的值为true，则证明该实例没有任何修改, 不做任何操作, 否则走操作gitops库文件逻辑
 
-        if (applicationDeployDTO.getIsNotChange()) {
-            applicationInstanceE = restartDeploy(applicationDeployDTO, devopsEnvironmentE, applicationE, applicationVersionE, applicationInstanceE, devopsEnvCommandValueE, secretCode);
-        } else {
+        if (!applicationDeployDTO.getIsNotChange()) {
             //存储数据
             if (applicationDeployDTO.getType().equals(CREATE)) {
                 applicationInstanceE.setCode(code);
@@ -774,6 +775,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             }
 
             //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
+
             String filePath = envUtil.handDevopsEnvGitRepository(devopsEnvironmentE);
 
             //在gitops库处理instance文件
@@ -829,8 +831,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                         devopsRegistrySecretE.setSecretDetail(gson.toJson(devopsProjectConfigE.getConfig()));
                         devopsRegistrySecretRepository.update(devopsRegistrySecretE);
                         deployService.operateSecret(clusterId, namespace, devopsRegistrySecretE.getSecretCode(), devopsProjectConfigE.getConfig(), UPDATE);
-                    }else {
-                        if(!devopsRegistrySecretE.getStatus()) {
+                    } else {
+                        if (!devopsRegistrySecretE.getStatus()) {
                             deployService.operateSecret(clusterId, namespace, devopsRegistrySecretE.getSecretCode(), devopsProjectConfigE.getConfig(), UPDATE);
                         }
                     }
@@ -982,16 +984,41 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Override
     public void instanceReStart(Long instanceId) {
         ApplicationInstanceE instanceE = applicationInstanceRepository.selectById(instanceId);
+
         //校验用户是否有环境的权限
         devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()),
                 instanceE.getDevopsEnvironmentE().getId());
         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(instanceE.getCommandId());
+
         ApplicationE applicationE = applicationRepository.query(instanceE.getApplicationE().getId());
         ApplicationVersionE applicationVersionE = applicationVersionRepository
                 .query(devopsEnvCommandE.getObjectVersionId());
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository
                 .queryById(instanceE.getDevopsEnvironmentE().getId());
         String value = applicationInstanceRepository.queryValueByInstanceId(instanceId);
+        String secretCode = null;
+        secretCode = getSecret(applicationE, secretCode, devopsEnvironmentE.getCode(), devopsEnvironmentE.getId(), devopsEnvironmentE.getClusterE().getId());
+        if (devopsEnvCommandE.getCommandType().equals(CommandType.CREATE.getType())) {
+            //部署失败，实例对应的gitops文件不存在，则新建gitops文件，执行部署操作
+            if (!gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
+                    RELEASE_PREFIX + instanceE.getCode() + YAML_SUFFIX)) {
+                throw new CommonException("error.gitops.file.not.exist");
+            }
+        } else if (devopsEnvCommandE.getCommandType().equals(CommandType.UPDATE.getType())) {
+            //升级失败，校验gitops库文件里面release对象的版本和目标版本是否一致，如果一致，则发指令到agent，如果不一致，则更新当前版本到上个版本，并提示用户重新点击升级
+            //todo  后续得加上单个文件多对象的情况,参考对象更新
+            DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
+                    .queryByEnvIdAndResource(devopsEnvironmentE.getId(), instanceId, C7NHELM_RELEASE);
+            ResponseEntity<RepositoryFile> responseEntity = gitlabServiceClient.getFile(devopsEnvironmentE.getGitlabEnvProjectId().intValue(), "master", devopsEnvFileResourceE.getFilePath());
+            if (responseEntity.getBody() != null) {
+                C7nHelmRelease c7nHelmRelease = json.deserialize(responseEntity.getBody().getContent(), C7nHelmRelease.class);
+                if (!c7nHelmRelease.getSpec().getChartVersion().equals(applicationVersionE.getVersion())) {
+                    devopsEnvCommandE.setObjectVersionId(instanceE.getApplicationVersionE().getId());
+                    devopsEnvCommandRepository.update(devopsEnvCommandE);
+                    throw new CommonException("error.release.version.update.fail");
+                }
+            }
+        }
         instanceE.setStatus(InstanceStatus.OPERATIING.getStatus());
         devopsEnvCommandE.setId(null);
         devopsEnvCommandE.setCommandType(CommandType.UPDATE.getType());
@@ -999,10 +1026,9 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         Long commandId = devopsEnvCommandRepository.create(devopsEnvCommandE).getId();
         instanceE.setCommandId(commandId);
         applicationInstanceRepository.update(instanceE);
-        String secretCode = null;
-        secretCode = getSecret(applicationE, secretCode, devopsEnvironmentE.getCode(), devopsEnvironmentE.getId(), devopsEnvironmentE.getClusterE().getId());
         deployService.deploy(applicationE, applicationVersionE, instanceE.getCode(), devopsEnvironmentE, value, commandId, secretCode);
     }
+
 
     @Override
     @Transactional(rollbackFor = Exception.class)
