@@ -313,9 +313,9 @@ public class PipelineServiceImpl implements PipelineService {
                     devopsDeployValueService.baseQueryById(taskRecordDTO.getValueId()).getValue(), taskRecordDTO.getAppServiceId(), type, instanceId,
                     taskRecordDTO.getInstanceName(), taskRecordDTO.getId(), taskRecordDTO.getValueId());
             if (type.equals(CommandType.UPDATE.getType())) {
-                AppServiceInstanceDTO oldapplicationServiceInstanceDTO = appServiceInstanceService.baseQuery(appServiceDeployVO.getInstanceId());
-                DevopsEnvCommandDTO olddevopsEnvCommandDTO = devopsEnvCommandService.baseQuery(oldapplicationServiceInstanceDTO.getCommandId());
-                if (olddevopsEnvCommandDTO.getObjectVersionId().equals(appServiceDeployVO.getAppServiceVersionId())) {
+                AppServiceInstanceDTO preInstance = appServiceInstanceService.baseQuery(appServiceDeployVO.getInstanceId());
+                DevopsEnvCommandDTO preCommand = devopsEnvCommandService.baseQuery(preInstance.getCommandId());
+                if (preCommand.getObjectVersionId().equals(appServiceDeployVO.getAppServiceVersionId())) {
                     String oldValue = appServiceInstanceService.baseQueryValueByInstanceId(appServiceDeployVO.getInstanceId());
                     if (appServiceDeployVO.getValues().trim().equals(oldValue.trim())) {
                         appServiceDeployVO.setIsNotChange(true);
@@ -327,6 +327,7 @@ public class PipelineServiceImpl implements PipelineService {
             producer.apply(
                     StartSagaBuilder.newBuilder()
                             .withJson(input)
+                            .withSagaCode(DEVOPS_PIPELINE_AUTO_DEPLOY_INSTANCE)
                             .withRefType("env")
                             .withRefId(taskRecordDTO.getEnvId().toString())
                             .withLevel(ResourceLevel.PROJECT)
