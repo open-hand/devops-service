@@ -365,6 +365,7 @@ public class DevopsSagaHandler {
                 }
             }
         } catch (Exception e) {
+            LOGGER.error("error create pipeline auto deploy instance {}, the exception is {}", taskRecordE.getInstanceName(), e);
             PipelineTaskRecordE pipelineTaskRecordE = new PipelineTaskRecordE();
             pipelineTaskRecordE.setId(applicationDeployDTO.getRecordId());
             pipelineTaskRecordE.setStatus(WorkFlowStatus.FAILED.toValue());
@@ -374,7 +375,6 @@ public class DevopsSagaHandler {
             user.setEmail(GitUserNameUtil.getEmail());
             user.setId(GitUserNameUtil.getUserId().longValue());
             pipelineService.sendSiteMessage(pipelineRecordId, PipelineNoticeType.PIPELINEFAILED.toValue(), Collections.singletonList(user), new HashMap<>());
-            LOGGER.error("error create pipeline auto deploy instance {}", e);
         }
     }
 
