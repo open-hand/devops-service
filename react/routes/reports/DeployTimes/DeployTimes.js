@@ -86,7 +86,7 @@ class DeployTimes extends Component {
     ReportsStore.setEndTime(moment());
     ReportsStore.setStartDate();
     ReportsStore.setEndDate();
-    ReportsStore.setPageInfo({ pageNum: 1, total: 0, pageSize: HEIGHT <= 900 ? 10 : 15 });
+    ReportsStore.setPageInfo({ pageNum: 1, total: 0, pageSize: 10 });
   }
 
   /**

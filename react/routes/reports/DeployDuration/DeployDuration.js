@@ -97,7 +97,7 @@ class DeployDuration extends Component {
     ReportsStore.setAllData([]);
     ReportsStore.setStartTime(moment().subtract(6, 'days'));
     ReportsStore.setEndTime(moment());
-    ReportsStore.setPageInfo({ pageNum: 1, total: 0, pageSize: HEIGHT <= 900 ? 10 : 15 });
+    ReportsStore.setPageInfo({ pageNum: 1, total: 0, pageSize: 10 });
     ReportsStore.setStartDate();
     ReportsStore.setEndDate();
   }

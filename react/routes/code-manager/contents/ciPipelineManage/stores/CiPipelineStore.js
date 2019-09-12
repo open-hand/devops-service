@@ -16,7 +16,7 @@ class CiPipelineStore {
   @observable commits = [];
 
   @observable pagination = {
-    current: 1, pageSize: HEIGHT <= 900 ? 10 : 15, total: 0,
+    current: 1, pageSize: 10, total: 0,
   };
 
   @observable loading = true;
