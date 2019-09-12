@@ -18,6 +18,7 @@ const CustomModals = observer(() => {
     prefixCls,
     intl: { formatMessage },
     resourceStore,
+    treeDs,
   } = useResourceStore();
   const {
     istListDs,
@@ -27,6 +28,7 @@ const CustomModals = observer(() => {
   } = useModalStore();
 
   function refresh() {
+    treeDs.query();
     istListDs.query();
   }
 

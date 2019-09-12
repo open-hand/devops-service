@@ -37,6 +37,7 @@ const IngressContent = observer(() => {
     prefixCls,
     intlPrefix,
     resourceStore: { getSelectedMenu: { parentId } },
+    treeDs,
   } = useResourceStore();
   const {
     ingressDs,
@@ -47,6 +48,7 @@ const IngressContent = observer(() => {
   const [showModal, setShowModal] = useState(false);
 
   function refresh() {
+    treeDs.query();
     ingressDs.query();
   }
 

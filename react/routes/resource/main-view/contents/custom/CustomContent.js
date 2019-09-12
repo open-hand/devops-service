@@ -20,6 +20,7 @@ const CustomContent = observer(() => {
     prefixCls,
     intlPrefix,
     resourceStore: { getSelectedMenu: { parentId } },
+    treeDs,
   } = useResourceStore();
   const {
     customDs,
@@ -30,6 +31,7 @@ const CustomContent = observer(() => {
   const [showModal, setShowModal] = useState(false);
 
   function refresh() {
+    treeDs.query();
     customDs.query();
   }
 

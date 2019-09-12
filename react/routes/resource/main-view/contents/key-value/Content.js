@@ -24,19 +24,25 @@ const ConfigMap = observer((props) => {
     prefixCls,
     intlPrefix,
     resourceStore: { getSelectedMenu: { parentId } },
+    treeDs,
   } = useResourceStore();
   const {
     intl: { formatMessage },
-    listDs,
     itemType,
     permissions,
     formStore,
+    SecretTableDs,
+    ConfigMapTableDs,
   } = useKeyValueStore();
 
   const [showModal, setShowModal] = useState(false);
 
   function refresh() {
-    return listDs.query();
+    treeDs.query();
+    if (itemType === 'configMap') {
+      return ConfigMapTableDs.query();
+    }
+    return SecretTableDs.query();
   }
 
   function renderName({ value, record }) {
@@ -53,10 +59,17 @@ const ConfigMap = observer((props) => {
     );
   }
 
-  function renderKey({ value = [] }) {
+  function renderKey({ value = [], record }) {
     return (
       <MouserOverWrapper width={0.5}>
         {value.join(',')}
+      </MouserOverWrapper>
+    );
+  }
+  function renderValue({ value = [] }) {
+    return (
+      <MouserOverWrapper width={0.5}>
+        {value && JSON.stringify(value)}
       </MouserOverWrapper>
     );
   }
@@ -82,7 +95,10 @@ const ConfigMap = observer((props) => {
   }
 
   function handleDelete() {
-    listDs.delete(listDs.current);
+    if (itemType === 'configMap') {
+      return ConfigMapTableDs.delete(ConfigMapTableDs.current);
+    }
+    return SecretTableDs.delete(SecretTableDs.current);
   }
 
   function openModal() {
@@ -93,25 +109,38 @@ const ConfigMap = observer((props) => {
     setShowModal(false);
     isLoad && refresh();
   }
-
+  const store = itemType === 'configMap' ? ConfigMapTableDs : SecretTableDs;
   return (
     <div className={`${prefixCls}-keyValue-table`}>
       <Modals />
-      <Table
-        dataSet={listDs}
-        border={false}
-        queryBar="bar"
-      >
-        <Column name="name" header={formatMessage({ id: `${intlPrefix}.${itemType}` })} renderer={renderName} />
-        <Column renderer={renderAction} width="0.7rem" />
-        <Column name="key" renderer={renderKey} />
-        <Column name="lastUpdateDate" renderer={renderDate} />
-      </Table>
+      {itemType === 'configMap'
+        ? <Table
+          dataSet={store}
+          border={false}
+          queryBar="bar"
+          key="1"
+        >
+          <Column name="name" header={formatMessage({ id: `${intlPrefix}.${itemType}` })} renderer={renderName} />
+          <Column renderer={renderAction} />
+          <Column name="key" renderer={renderKey} />
+          <Column name="lastUpdateDate" renderer={renderDate} />
+        </Table>
+        : <Table
+          dataSet={store}
+          border={false}
+          queryBar="bar"
+          key="2"
+        >
+          <Column name="name" header={formatMessage({ id: `${intlPrefix}.${itemType}` })} renderer={renderName} />
+          <Column renderer={renderAction} />
+          <Column name="key" renderer={renderKey} />
+          <Column name="lastUpdateDate" renderer={renderDate} />
+        </Table>}
       {showModal && <KeyValueModal
         modeSwitch={itemType === 'configMap'}
         title={itemType}
         visible={showModal}
-        id={listDs.current.get('id')}
+        id={store.current.get('id')}
         envId={parentId}
         onClose={closeModal}
         store={formStore}

@@ -21,6 +21,7 @@ const ServiceModals = observer(() => {
     prefixCls,
     intl: { formatMessage },
     resourceStore,
+    treeDs,
   } = useResourceStore();
   const {
     baseInfoDs,
@@ -44,6 +45,7 @@ const ServiceModals = observer(() => {
 
 
   function refresh() {
+    treeDs.query();
     baseInfoDs.query();
   }
 

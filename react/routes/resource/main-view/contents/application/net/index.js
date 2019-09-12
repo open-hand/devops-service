@@ -25,6 +25,7 @@ const Networking = observer(() => {
     resourceStore: { getSelectedMenu: { id, parentId } },
     intl: { formatMessage },
     AppState: { currentMenuType: { id: projectId } },
+    treeDs,
   } = useResourceStore();
   const {
     netDs,
@@ -37,6 +38,7 @@ const Networking = observer(() => {
   const [showNetwork, setShowNetwork] = useState(false);
 
   function refresh() {
+    treeDs.query();
     netDs.query();
   }
 

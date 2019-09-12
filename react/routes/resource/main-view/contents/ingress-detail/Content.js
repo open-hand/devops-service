@@ -21,6 +21,7 @@ const Content = observer(() => {
   const {
     prefixCls,
     intlPrefix,
+    treeDs,
   } = useResourceStore();
   const {
     detailDs,
@@ -31,6 +32,7 @@ const Content = observer(() => {
   if (!record) return <span>loading</span>;
 
   function refresh() {
+    treeDs.query();
     detailDs.query();
   }
 

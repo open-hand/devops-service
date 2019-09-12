@@ -15,6 +15,7 @@ const SyncSituation = observer(() => {
         synchronize,
       },
     },
+    treeDs,
   } = useResourceStore();
   const {
     intl: { formatMessage },
@@ -36,6 +37,7 @@ const SyncSituation = observer(() => {
   }
 
   function refresh() {
+    treeDs.query();
     gitopsSyncDs.query();
     gitopsLogDs.query();
   }

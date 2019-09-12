@@ -15,11 +15,14 @@ const KeyValueModals = observer(() => {
     prefixCls,
     intl: { formatMessage },
     resourceStore,
+    treeDs,
   } = useResourceStore();
   const {
     listDs,
     itemType,
     formStore,
+    SecretTableDs,
+    ConfigMapTableDs,
   } = useKeyValueStore();
   const {
     permissions,
@@ -30,7 +33,11 @@ const KeyValueModals = observer(() => {
   const [showModal, setShowModal] = useState(false);
 
   function refresh() {
-    listDs.query();
+    treeDs.query();
+    if (itemType === 'configMap') {
+      return ConfigMapTableDs.query();
+    }
+    return SecretTableDs.query();
   }
 
   function openModal() {

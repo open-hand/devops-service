@@ -26,6 +26,7 @@ const NetworkContent = observer(() => {
     prefixCls,
     intlPrefix,
     resourceStore: { getSelectedMenu: { parentId } },
+    treeDs,
   } = useResourceStore();
   const {
     networkStore,
@@ -39,6 +40,7 @@ const NetworkContent = observer(() => {
   const [showModal, setShowModal] = useState(false);
 
   function refresh() {
+    treeDs.query();
     networkDs.query();
   }
 
