@@ -195,7 +195,6 @@ const deployment = {
   'c7ncd.deployment.environment.config.des': '即 GitOps 环境库',
   'c7ncd.deployment.environment.parsed': '已解析',
   'c7ncd.deployment.environment.parsed.des': 'DevOps 平台会对部署文件进行解析，并在平台上生成相应的对象',
-  'c7ncd.deployment.environment.executed': '已执行',
   'c7ncd.deployment.environment.executed.des': '执行后，k8s 平台也会生成相应的对象',
   'c7ncd.deployment.environment.retry': '重试GitOps',
   'c7ncd.deployment.environment.retry.des': '确定要重试GitOps吗？',
