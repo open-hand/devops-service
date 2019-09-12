@@ -49,6 +49,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.yaml.snakeyaml.Yaml;
 
 /**
  * Created by Zenger on 2018/4/12.
@@ -67,7 +68,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
 
     private static Gson gson = new Gson();
-    private static JSON json =  new JSON();
 
     @Value("${agent.version}")
     private String agentExpectVersion;
@@ -983,6 +983,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
     @Override
     public void instanceReStart(Long instanceId) {
+        Yaml yaml = new Yaml();
         ApplicationInstanceE instanceE = applicationInstanceRepository.selectById(instanceId);
 
         //校验用户是否有环境的权限
@@ -1012,7 +1013,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                     .queryByEnvIdAndResource(devopsEnvironmentE.getId(), instanceId, C7NHELM_RELEASE);
             ResponseEntity<RepositoryFile> responseEntity = gitlabServiceClient.getFile(devopsEnvironmentE.getGitlabEnvProjectId().intValue(), "master", devopsEnvFileResourceE.getFilePath());
             if (responseEntity.getBody() != null) {
-                C7nHelmRelease c7nHelmRelease = json.deserialize(responseEntity.getBody().getContent(), C7nHelmRelease.class);
+                C7nHelmRelease c7nHelmRelease = yaml.loadAs(Base64Util.getBase64DecodedString(responseEntity.getBody().getContent()),C7nHelmRelease.class);
                 if (!c7nHelmRelease.getSpec().getChartVersion().equals(applicationVersionE.getVersion())) {
                     devopsEnvCommandE.setObjectVersionId(instanceE.getApplicationVersionE().getId());
                     devopsEnvCommandRepository.update(devopsEnvCommandE);
