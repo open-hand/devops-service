@@ -85,7 +85,6 @@ const Deployment = withRouter(observer((props) => {
           id={listDs.current.get('deployId')}
           projectId={id}
           PipelineStore={pipelineStore}
-          data={detailDs.current.toData()}
           intlPrefix={intlPrefix}
           prefixCls={prefixCls}
         />,

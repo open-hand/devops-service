@@ -1,131 +1,94 @@
-import React, { Component, Fragment } from 'react';
-import { observer, inject } from 'mobx-react';
-import { withRouter } from 'react-router-dom';
+import React, { Fragment, useState, useMemo } from 'react';
+import { observer } from 'mobx-react-lite';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { Button, Modal } from 'choerodon-ui';
+import { Button } from 'choerodon-ui';
+import { Modal } from 'choerodon-ui/pro';
 import { Permission } from '@choerodon/master';
-import _ from 'lodash';
+import pick from 'lodash/pick';
+import map from 'lodash/map';
 import UserInfo from '../../../../components/userInfo';
 import DetailTitle from './components/detailTitle';
 import DetailCard from './components/detailCard';
 import PendingCheckModal from '../../components/pendingCheckModal';
 import { TRIGGER_TYPE_MANUAL } from './components/Constants';
+import { handlePromptError } from '../../../../utils';
 
 import './index.less';
 
-@injectIntl
-@withRouter
-@inject('AppState')
-@observer
-export default class PipelineDetail extends Component {
-  state = {
-    submitting: false,
-    showPendingCheck: false,
-    checkData: {},
-    show: false,
-  };
+const modalKey = Modal.key();
 
-  refresh = () => {
-    const { dataSet } = this.props;
+export default injectIntl(observer(({
+  dataSet,
+  PipelineStore,
+  projectId,
+  id,
+  intl: { formatMessage },
+}) => {
+  const [showPendingCheck, setShowPendingCheck] = useState(false);
+  const [checkData, setCheckData] = useState({});
+  const data = useMemo(() => dataSet.current.toData(), [dataSet.current]);
+
+  function refresh() {
     dataSet.query();
-  };
+  }
+
+  function openModal(type) {
+    Modal.open({
+      key: modalKey,
+      title: formatMessage({ id: `pipeline.${type}.title` }),
+      children: <FormattedMessage id={`pipeline.${type}.des`} />,
+      onOk: () => handleSubmit(type),
+    });
+  }
 
   /**
-   * 打开强制失败或重试弹窗
-   * @param type
+   * 处理强制失败或重试
    */
-  openModal = (type) => {
-    this.setState({ show: type });
-  };
-
-  /**
-   * 关闭强制失败或重试弹窗
-   */
-  closeModal = () => {
-    this.refresh();
-    this.setState({ show: false });
-  };
+  async function handleSubmit(type) {
+    try {
+      let result = null;
+      if (type === 'stop') {
+        result = await PipelineStore.manualStop(projectId, id);
+      } else if (type === 'retry') {
+        result = await PipelineStore.retry(projectId, id);
+      }
+      if (handlePromptError(result, false)) {
+        refresh();
+      } else {
+        return false;
+      }
+    } catch (e) {
+      Choerodon.handleResponseError(e);
+      return false;
+    }
+  }
 
   /**
    * 关闭人工审核弹窗
    * @param flag 是否重新加载列表数据
    */
-  closePendingCheck = (flag) => {
-    flag && this.refresh();
-    this.setState({ showPendingCheck: false, checkData: {} });
-  };
+  function closePendingCheck(flag) {
+    flag && refresh();
+    setShowPendingCheck(false);
+    setCheckData({});
+  }
 
   /**
    * 打开人工审核弹窗
    */
-  openPendingCheck = () => {
-    const {
-      data: {
-        type,
-        stageRecordId,
-        taskRecordId,
-        stageName,
-      },
-    } = this.props;
-    this.setState({
-      showPendingCheck: true,
-      checkData: {
-        type,
-        stageRecordId,
-        taskRecordId,
-        stageName,
-      },
-    });
-  };
-
-  /**
-   * 处理强制失败或重试
-   */
-  handleSubmit = (type) => {
-    const {
-      PipelineStore,
-      AppState: {
-        currentMenuType: { projectId },
-      },
-      id,
-    } = this.props;
-    this.setState({ submitting: true });
-    let promise = null;
-    if (type === 'stop') {
-      promise = PipelineStore.manualStop(projectId, id);
-    } else if (type === 'retry') {
-      promise = PipelineStore.retry(projectId, id);
-    }
-    this.handleResponse(promise);
-  };
-
-  handleResponse = (promise) => {
-    if (promise) {
-      promise
-        .then((data) => {
-          if (data && data.failed) {
-            Choerodon.prompt(data.message);
-          }
-          this.closeModal();
-          this.setState({ submitting: false });
-        })
-        .catch((err) => {
-          this.setState({ submitting: false });
-          Choerodon.handleResponseError(err);
-        });
-    }
-  };
+  function openPendingCheck() {
+    setShowPendingCheck(true);
+    setCheckData(pick(data, ['type', 'stageRecordId', 'taskRecordId', 'stageName']));
+  }
 
   /**
    * 获取右侧按钮
    */
-  getButton = () => {
+  function renderButton() {
     const {
-      data: {
-        status,
-        execute,
-      },
-    } = this.props;
+      status,
+      execute,
+    } = data;
     let dom = null;
     switch (status) {
       case 'running':
@@ -134,7 +97,7 @@ export default class PipelineDetail extends Component {
             service={['devops-service.pipeline.failed']}
           >
             <Button
-              onClick={this.openModal.bind(this, 'stop')}
+              onClick={() => openModal('stop')}
               icon="power_settings_new"
               type="primary"
               className="c7ncd-pipeline-manual-stop"
@@ -150,7 +113,7 @@ export default class PipelineDetail extends Component {
             service={['devops-service.pipeline.retry']}
           >
             <Button
-              onClick={this.openModal.bind(this, 'retry')}
+              onClick={() => openModal('retry')}
               icon="replay"
               type="primary"
               className="c7ncd-pipeline-manual-stop"
@@ -166,7 +129,7 @@ export default class PipelineDetail extends Component {
             service={['devops-service.pipeline.audit']}
           >
             <Button
-              onClick={this.openPendingCheck}
+              onClick={openPendingCheck}
               icon="authorize"
               type="primary"
               className="c7ncd-pipeline-manual-stop"
@@ -180,21 +143,19 @@ export default class PipelineDetail extends Component {
         break;
     }
     return dom;
-  };
+  }
 
-  get renderPipeline() {
+  function renderPipeline() {
     const {
-      data: {
-        stageRecordDTOS,
-        status: pipelineStatus,
-      },
-    } = this.props;
+      stageRecordDTOS,
+      status: pipelineStatus,
+    } = data;
 
     const isPipelineCadence = pipelineStatus === 'stop';
 
-    return _.map(stageRecordDTOS,
+    return map(stageRecordDTOS,
       ({
-        id,
+        id: dtoId,
         index,
         status,
         stageName,
@@ -204,7 +165,7 @@ export default class PipelineDetail extends Component {
         isParallel,
         taskRecordDTOS,
       }, stageIndex) => (
-        <div className="c7ncd-pipeline-detail-stage" key={id}>
+        <div className="c7ncd-pipeline-detail-stage" key={dtoId}>
           <DetailTitle
             isCadence={isPipelineCadence}
             checking={index}
@@ -225,73 +186,47 @@ export default class PipelineDetail extends Component {
       ));
   }
 
-  render() {
+  function renderUserInfo() {
     const {
-      intl: { formatMessage },
-      data: {
-        userDTO,
-        triggerType,
-        pipelineName,
-        status,
-      },
-      PipelineStore,
-      id,
-    } = this.props;
-
+      triggerType,
+      userDTO,
+    } = data;
     const { loginName, realName, imageUrl } = userDTO || {};
-    const {
-      submitting,
-      showPendingCheck,
-      checkData,
-      show,
-    } = this.state;
 
-    return (<div className="c7n-region c7n-pipeline-detail">
-      <div>
-        <div className="c7ncd-pipeline-detail-msg">
-          <div className="c7ncd-pipeline-detail-item">
-            <span className="c7ncd-pipeline-detail-label">{formatMessage({ id: 'pipeline.trigger.type' })}</span>
-            {triggerType && <FormattedMessage id={`pipeline.trigger.${triggerType}`} />}
-          </div>
-          {triggerType === TRIGGER_TYPE_MANUAL && <div className="c7ncd-pipeline-detail-item">
-            <span className="c7ncd-pipeline-detail-label">{formatMessage({ id: 'pipeline.trigger.people' })}</span>
-            <UserInfo avatar={imageUrl} name={realName || ''} id={loginName} />
-          </div>}
-          <div className="c7ncd-pipeline-detail-item">
-            <span className="c7ncd-pipeline-detail-label">{formatMessage({ id: 'pipeline.process.status' })}</span>
-            {status && <span className={`c7ncd-pipeline-status-tag c7ncd-pipeline-status-tag_${status}`}>
-              <FormattedMessage id={`pipelineRecord.status.${status}`} />
-            </span>}
-          </div>
-          {this.getButton()}
-        </div>
-        <div className="c7ncd-pipeline-main">
-          <div className="c7ncd-pipeline-scroll">{this.renderPipeline}</div>
-        </div>
-      </div>
-      {show && (
-        <Modal
-          confirmLoading={submitting}
-          visible={show}
-          title={formatMessage({ id: `pipeline.${show}.title` })}
-          closable={false}
-          onOk={this.handleSubmit.bind(this, show)}
-          onCancel={this.closeModal}
-        >
-          <div className="c7n-padding-top_8">
-            <FormattedMessage id={`pipeline.${show}.des`} />
-          </div>
-        </Modal>
-      )}
-      {showPendingCheck && (
-        <PendingCheckModal
-          id={id}
-          name={pipelineName}
-          checkData={checkData}
-          onClose={this.closePendingCheck}
-          PipelineRecordStore={PipelineStore}
-        />
-      )}
+    return (triggerType === TRIGGER_TYPE_MANUAL && <div className="c7ncd-pipeline-detail-item">
+      <span className="c7ncd-pipeline-detail-label">{formatMessage({ id: 'pipeline.trigger.people' })}</span>
+      <UserInfo avatar={imageUrl} name={realName || ''} id={loginName} />
     </div>);
   }
-}
+
+  return (<div className="c7n-region c7n-pipeline-detail">
+    <div>
+      <div className="c7ncd-pipeline-detail-msg">
+        <div className="c7ncd-pipeline-detail-item">
+          <span className="c7ncd-pipeline-detail-label">{formatMessage({ id: 'pipeline.trigger.type' })}</span>
+          {data.triggerType && <FormattedMessage id={`pipeline.trigger.${data.triggerType}`} />}
+        </div>
+        {renderUserInfo()}
+        <div className="c7ncd-pipeline-detail-item">
+          <span className="c7ncd-pipeline-detail-label">{formatMessage({ id: 'pipeline.process.status' })}</span>
+          {data.status && <span className={`c7ncd-pipeline-status-tag c7ncd-pipeline-status-tag_${data.status}`}>
+            <FormattedMessage id={`pipelineRecord.status.${data.status}`} />
+          </span>}
+        </div>
+        {renderButton()}
+      </div>
+      <div className="c7ncd-pipeline-main">
+        <div className="c7ncd-pipeline-scroll">{renderPipeline()}</div>
+      </div>
+    </div>
+    {showPendingCheck && (
+      <PendingCheckModal
+        id={id}
+        name={data.pipelineName}
+        checkData={checkData}
+        onClose={closePendingCheck}
+        PipelineRecordStore={PipelineStore}
+      />
+    )}
+  </div>);
+}));

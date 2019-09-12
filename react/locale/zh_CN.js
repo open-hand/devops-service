@@ -331,6 +331,7 @@ const deployment = {
   'c7ncd.deployment.delete.ingress': '删除域名',
   'c7ncd.deployment.delete.ingress.tips': '确定要删除该域名吗？',
   'c7ncd.deployment.modal.redeploy.tips': '确定要重新部署该实例吗？',
+  'c7ncd.deployment.instance.version.failed': '升级至版本 “{text}” 失败',
 };
 
 const appService = {
@@ -367,7 +368,8 @@ const appService = {
   'c7ncd.appService.add.mbr': '添加成员',
   'c7ncd.appService.repoUrl': '仓库地址',
   'c7ncd.appService.import.type': '导入方式',
-  'c7ncd.appService.import.type.platform': '从平台应用导入',
+  'c7ncd.appService.import.type.share': '共享应用',
+  'c7ncd.appService.import.type.market': '市场下载',
   'c7ncd.appService.import.type.github': '从GitHub导入',
   'c7ncd.appService.import.type.gitlab': '从GitLab导入',
   'c7ncd.appService.url.gitlab': 'GitLab地址',

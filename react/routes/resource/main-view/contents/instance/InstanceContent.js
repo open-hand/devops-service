@@ -1,6 +1,6 @@
 import React, { Fragment, lazy, Suspense, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Tabs } from 'choerodon-ui';
+import { Tabs, Tooltip, Icon } from 'choerodon-ui';
 import PageTitle from '../../../../../components/page-title';
 import PodCircle from '../../components/pod-circle';
 import Modals from './modals';
@@ -53,6 +53,11 @@ const InstanceContent = observer(() => {
       const podRunningCount = record.get('podRunningCount');
       const podCount = record.get('podCount');
       const podUnlinkCount = podCount - podRunningCount;
+      const status = record.get('status');
+      const commandType = record.get('commandType');
+      const commandVersionId = record.get('commandVersionId');
+      const commandVersion = record.get('commandVersion');
+      const appServiceVersionId = record.get('appServiceVersionId');
 
       return <Fragment>
         <PodCircle
@@ -68,6 +73,11 @@ const InstanceContent = observer(() => {
           }]}
         />
         <span className="c7ncd-page-title-text">{code}</span>
+        {commandType === 'update' && status === 'failed' && appServiceVersionId && commandVersionId && commandVersionId !== appServiceVersionId && (
+          <Tooltip title={formatMessage({ id: `${intlPrefix}.instance.version.failed` }, { text: commandVersion })}>
+            <Icon type="error" className={`${prefixCls}-instance-page-title-icon`} />
+          </Tooltip>
+        )}
       </Fragment>;
     }
     return null;

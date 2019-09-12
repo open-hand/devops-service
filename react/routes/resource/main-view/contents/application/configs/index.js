@@ -50,8 +50,8 @@ const AppConfigs = observer(() => {
   }
 
   function renderName({ value, record }) {
-    const disabled = getEnvIsNotRunning();
     const commandStatus = record.get('commandStatus');
+    const disabled = getEnvIsNotRunning() || commandStatus === 'operating';
     return (
       <div>
         <StatusTags
@@ -79,14 +79,14 @@ const AppConfigs = observer(() => {
   function renderAction({ record }) {
     const buttons = [
       {
-        service: [],
+        service: ['devops-service.devops-config-map.delete'],
         text: formatMessage({ id: 'delete' }),
         action: () => {
           mappingDs.delete(record);
         },
       },
     ];
-    return <Action data={buttons} />;
+    return record.get('commandStatus') !== 'operating' && <Action data={buttons} />;
   }
 
   return (

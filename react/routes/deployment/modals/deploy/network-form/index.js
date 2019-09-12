@@ -401,7 +401,7 @@ export default class CreateNetwork extends Component {
       <div key={`port-${k}`} className="network-port-wrap">
         {configType !== 'ClusterIP' && (
           <FormItem
-            className="c7n-select_80 network-panel-form network-port-form"
+            className="c7n-select_118 network-panel-form network-port-form"
             {...formItemLayout}
           >
             {getFieldDecorator(`nport[${k}]`, {
@@ -421,7 +421,7 @@ export default class CreateNetwork extends Component {
           </FormItem>
         )}
         <FormItem
-          className="c7n-select_80 network-panel-form network-port-form"
+          className="c7n-select_118 network-panel-form network-port-form"
           {...formItemLayout}
         >
           {getFieldDecorator(`port[${k}]`, {
@@ -444,7 +444,7 @@ export default class CreateNetwork extends Component {
           )}
         </FormItem>
         <FormItem
-          className="c7n-select_80 network-panel-form network-port-form"
+          className="c7n-select_118 network-panel-form network-port-form"
           {...formItemLayout}
         >
           {getFieldDecorator(`tport[${k}]`, {
@@ -468,7 +468,7 @@ export default class CreateNetwork extends Component {
         </FormItem>
         {configType === 'NodePort' && (
           <FormItem
-            className="c7n-select_80 network-panel-form network-port-form"
+            className="c7n-select_118 network-panel-form network-port-form"
             {...formItemLayout}
           >
             {getFieldDecorator(`protocol[${k}]`, {
@@ -588,6 +588,7 @@ export default class CreateNetwork extends Component {
               funcType="flat"
               onClick={() => this.addGroup('portKeys')}
               icon="add"
+              className="c7ncd-deploy-network-btn"
             >
               <FormattedMessage id="network.config.addport" />
             </Button>

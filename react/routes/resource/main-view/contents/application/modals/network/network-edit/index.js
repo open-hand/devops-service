@@ -321,13 +321,6 @@ class EditNetwork extends Component {
                 deletedInstance.push(code);
               }
             });
-            if (instances.length > 1) {
-              initIstOption.unshift(
-                <Option key="all_instance" value={['all_instance']}>
-                  {formatMessage({ id: 'all' })}
-                </Option>
-              );
-            }
           }
           this.setState({
             initApp: appServiceId,
@@ -1136,7 +1129,7 @@ class EditNetwork extends Component {
       (item) => {
         const { id, code } = item;
         return (
-          <Option key={id} value={code}>
+          <Option key={id} value={[code]}>
             <Tooltip
               title={<FormattedMessage id="running" />}
               placement="right"
@@ -1147,6 +1140,13 @@ class EditNetwork extends Component {
         );
       },
     );
+    if ((istOption.concat(initIstOption)).length > 1) {
+      initIstOption.unshift(
+        <Option key="all_instance" value={['all_instance']}>
+          {intl.formatMessage({ id: 'all' })}
+        </Option>
+      );
+    }
 
     return (
       <div className="c7n-region">
