@@ -146,11 +146,12 @@ public class EnvUtil {
 
         File file = new File(path);
         gitUtil.setSshKey(devopsEnvironmentE.getEnvIdRsa());
-        final String repoPath = path + GIT_SUFFIX;
         if (!file.exists()) {
             gitUtil.cloneBySsh(path, url);
         } else {
-            gitUtil.pullBySsh(repoPath);
+            //todo 可以换成绑pvc的方式，不需要再次克隆
+            FileUtil.deleteDirectory(file);
+            gitUtil.cloneBySsh(path, url);
         }
         return path;
     }

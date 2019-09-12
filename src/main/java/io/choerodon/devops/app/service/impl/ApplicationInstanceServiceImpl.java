@@ -67,7 +67,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
 
     private static Gson gson = new Gson();
-    private static JSON json = new JSON();
+    private static JSON json =  new JSON();
 
     @Value("${agent.version}")
     private String agentExpectVersion;
@@ -999,7 +999,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         String secretCode = null;
         secretCode = getSecret(applicationE, secretCode, devopsEnvironmentE.getCode(), devopsEnvironmentE.getId(), devopsEnvironmentE.getClusterE().getId());
         if (devopsEnvCommandE.getCommandType().equals(CommandType.CREATE.getType())) {
-            //部署失败，实例对应的gitops文件不存在，则新建gitops文件，执行部署操作
+            //部署失败，实例对应的gitops文件不存在，则提示用户删除改对象，重新创建，否则发送重新部署命令
+            //todo 此处可切换成直接重新创建一个gitops文件，避免用户重新创建的操作
             if (!gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
                     RELEASE_PREFIX + instanceE.getCode() + YAML_SUFFIX)) {
                 throw new CommonException("error.gitops.file.not.exist");
@@ -1029,6 +1030,16 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         deployService.deploy(applicationE, applicationVersionE, instanceE.getCode(), devopsEnvironmentE, value, commandId, secretCode);
     }
 
+    private Long updateCommand(ApplicationInstanceE instanceE, DevopsEnvCommandE devopsEnvCommandE) {
+        instanceE.setStatus(InstanceStatus.OPERATIING.getStatus());
+        devopsEnvCommandE.setId(null);
+        devopsEnvCommandE.setCommandType(CommandType.UPDATE.getType());
+        devopsEnvCommandE.setStatus(CommandStatus.OPERATING.getStatus());
+        Long commandId = devopsEnvCommandRepository.create(devopsEnvCommandE).getId();
+        instanceE.setCommandId(commandId);
+        applicationInstanceRepository.update(instanceE);
+        return commandId;
+    }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
