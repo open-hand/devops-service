@@ -826,11 +826,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         final String repoPath = path + GIT_SUFFIX;
         if (!file.exists()) {
             gitUtil.cloneBySsh(path, url);
-            gitUtil.checkout(repoPath, commit);
         } else {
-            gitUtil.checkout(repoPath, "master");
             gitUtil.pullBySsh(repoPath);
-            gitUtil.checkout(repoPath, commit);
         }
     }
 }
