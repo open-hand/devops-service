@@ -715,6 +715,12 @@ public class AppServiceController {
             @RequestBody DevOpsAppServicePayload devOpsAppServicePayload) {
         applicationServiceService.operationApplication(devOpsAppServicePayload);
     }
-
+    public void en(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用服务类型", required = false)
+            @RequestBody DevOpsAppServicePayload devOpsAppServicePayload) {
+        applicationServiceService.operationApplication(devOpsAppServicePayload);
+    }
 }
 
