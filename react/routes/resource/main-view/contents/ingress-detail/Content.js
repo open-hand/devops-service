@@ -3,12 +3,14 @@ import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import { Icon } from 'choerodon-ui';
 import map from 'lodash/map';
+import { Tooltip } from 'choerodon-ui';
 import { useResourceStore } from '../../../stores';
 import { useCustomDetailStore } from './stores';
 import Modals from './modals';
 import StatusTags from '../../../../../components/status-tag';
 
 import './index.less';
+
 
 const statusTagsStyle = {
   minWidth: 40,
@@ -21,6 +23,7 @@ const Content = observer(() => {
   const {
     prefixCls,
     intlPrefix,
+    treeDs,
   } = useResourceStore();
   const {
     detailDs,
@@ -31,6 +34,7 @@ const Content = observer(() => {
   if (!record) return <span>loading</span>;
 
   function refresh() {
+    treeDs.query();
     detailDs.query();
   }
 
@@ -83,7 +87,7 @@ const Content = observer(() => {
                     <a
                       rel="nofollow me noopener noreferrer"
                       target="_blank"
-                      href={`${record.get('domain')}${path}`}
+                      href={`http://${record.get('domain')}${path}`}
                     >
                       <FormattedMessage id={`${intlPrefix}.click.visit`} />
                     </a>
@@ -103,7 +107,9 @@ const Content = observer(() => {
           {map(record.get('annotations'), (value, key) => (
             <li className={`${prefixCls}-detail-section-li`}>
               <span className="ingress-detail-annotation">{key}</span>
-              <span className="ingress-detail-annotation-value">{value}</span>
+              <Tooltip title={<div className={`${prefixCls}-detail-section-li-tooltip`}>{value}</div>} arrowPointAtCenter>
+                <span className="ingress-detail-annotation-value">{value}</span>
+              </Tooltip>
             </li>
           ))}
         </ul>

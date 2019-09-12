@@ -22,6 +22,7 @@ const CertContent = observer(() => {
     prefixCls,
     intlPrefix,
     resourceStore: { getSelectedMenu: { parentId } },
+    treeDs,
   } = useResourceStore();
   const {
     certificateDs,
@@ -29,6 +30,7 @@ const CertContent = observer(() => {
   } = useCertificateStore();
 
   function refresh() {
+    treeDs.query();
     certificateDs.query();
   }
 

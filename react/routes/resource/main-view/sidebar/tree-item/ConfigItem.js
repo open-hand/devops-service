@@ -15,12 +15,12 @@ function ConfigItem({
   intl: { formatMessage },
 }) {
   const { treeDs, itemType: { MAP_ITEM } } = useResourceStore();
-  const { configMapStore, secretStore } = useMainStore();
-
+  const { configMapStore, secretStore, childrenStore, testStore } = useMainStore();
   const [showModal, setShowModal] = useState(false);
 
   function freshMenu() {
     treeDs.query();
+    childrenStore.getDetailDs.query();
   }
 
   function deleteItem() {

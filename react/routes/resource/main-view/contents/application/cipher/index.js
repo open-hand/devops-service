@@ -19,6 +19,7 @@ const Cipher = observer(() => {
     prefixCls,
     intlPrefix,
     resourceStore: { getSelectedMenu: { id, parentId } },
+    treeDs,
   } = useResourceStore();
   const { cipherStore, cipherDs } = useApplicationStore();
   const statusStyle = useMemo(() => ({ marginRight: '0.08rem' }), []);
@@ -26,6 +27,7 @@ const Cipher = observer(() => {
   const [recordId, setRecordId] = useState(null);
 
   function refresh() {
+    treeDs.query();
     return cipherDs.query();
   }
 

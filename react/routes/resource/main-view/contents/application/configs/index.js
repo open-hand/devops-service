@@ -27,6 +27,7 @@ const AppConfigs = observer(() => {
   const [recordId, setRecordId] = useState(null);
 
   function refresh() {
+    treeDs.query();
     return mappingDs.query();
   }
 

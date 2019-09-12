@@ -12,6 +12,7 @@ const EnvModals = observer(() => {
     intlPrefix,
     intl: { formatMessage },
     resourceStore,
+    treeDs,
   } = useResourceStore();
   const {
     ingressDs,
@@ -23,6 +24,7 @@ const EnvModals = observer(() => {
   const [showModal, setShowModal] = useState(false);
 
   function refresh() {
+    treeDs.query();
     ingressDs.query();
   }
 

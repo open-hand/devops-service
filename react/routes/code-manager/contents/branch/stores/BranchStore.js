@@ -40,7 +40,7 @@ class BranchStore {
   @observable pageInfo = {
     current: 1,
     total: 0,
-    pageSize: HEIGHT <= 900 ? 10 : 15,
+    pageSize: 10,
   };
 
   @observable currentBranchIssue = {};

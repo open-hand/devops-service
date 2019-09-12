@@ -39,7 +39,7 @@ class BuildNumber extends Component {
     ReportsStore.setStartTime(moment().subtract(6, 'days'));
     ReportsStore.setEndTime(moment());
     ReportsStore.setAppId(null);
-    ReportsStore.setPageInfo({ pageNum: 0, total: 0, pageSize: HEIGHT <= 900 ? 10 : 15 });
+    ReportsStore.setPageInfo({ pageNum: 0, total: 0, pageSize: 10 });
     ReportsStore.setStartDate();
     ReportsStore.setEndDate();
     ReportsStore.setAllApps([]);

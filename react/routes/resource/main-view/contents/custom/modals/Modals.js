@@ -20,6 +20,7 @@ const CustomModals = observer(() => {
     prefixCls,
     intl: { formatMessage },
     resourceStore,
+    treeDs,
   } = useResourceStore();
   const {
     customDs,
@@ -34,6 +35,7 @@ const CustomModals = observer(() => {
   const [showModal, setShowModal] = useState(false);
 
   function refresh() {
+    treeDs.query();
     customDs.query();
   }
 

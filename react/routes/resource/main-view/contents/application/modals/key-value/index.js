@@ -336,6 +336,7 @@ export default class FormView extends Component {
           const res = await store.postKV(projectId, dto);
           if (handlePromptError(res)) {
             this.handleClose();
+            // store.loadSingleData(projectId,dto.id);
           }
           this.setState({ submitting: false });
         } catch (error) {
@@ -354,6 +355,7 @@ export default class FormView extends Component {
   handleClose = (isload = true) => {
     const { onClose } = this.props;
     onClose(isload);
+    
   };
 
   /**

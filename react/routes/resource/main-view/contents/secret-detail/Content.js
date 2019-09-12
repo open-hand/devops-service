@@ -4,18 +4,28 @@ import { observer } from 'mobx-react-lite';
 import map from 'lodash/map';
 import { Icon } from 'choerodon-ui';
 import { useResourceStore } from '../../../stores';
-import { useSecretDetailStore } from './stores';
+import { useMainStore } from '../../stores/index';
+import { useSecretDetailStore } from './stores'; 
 import Modals from './modals';
 
 import './index.less';
 
 const Content = observer(() => {
+  const resourceStore = useResourceStore();
   const {
     prefixCls,
     intlPrefix,
-  } = useResourceStore();
+  } = resourceStore;
   const { detailDs } = useSecretDetailStore();
 
+  const {
+    childrenStore,
+    testStore,
+  } = useMainStore();
+
+  testStore.store = detailDs;
+    
+  childrenStore.setDetailDs(detailDs);
   const record = detailDs.current;
   if (!record) return <span>loading</span>;
 

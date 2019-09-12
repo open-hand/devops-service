@@ -7,6 +7,7 @@ import useCustomStore from './useCustomStore';
 import useIngressStore from './useIngressStore';
 import useConfigMapStore from './useConfigMapStore';
 import useSecretStore from './useSecretStore';
+import useChildrenContextStore from './useChildrenContextStore';
 
 const Store = createContext();
 
@@ -24,7 +25,11 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const ingressStore = useIngressStore();
     const configMapStore = useConfigMapStore();
     const secretStore = useSecretStore();
-
+    const childrenStore = useChildrenContextStore();
+    const testStore = {
+      ceshi: 'ceshi',
+      store: null,
+    };
     const value = {
       ...props,
       prefixCls: 'c7ncd-deployment',
@@ -39,6 +44,8 @@ export const StoreProvider = injectIntl(inject('AppState')(
       ingressStore,
       configMapStore,
       secretStore,
+      childrenStore,
+      testStore,
     };
     return (
       <Store.Provider value={value}>

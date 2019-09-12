@@ -19,6 +19,7 @@ const EnvModals = observer(() => {
     prefixCls,
     intl: { formatMessage },
     resourceStore,
+    treeDs,
   } = useResourceStore();
   const {
     certificateDs,
@@ -33,6 +34,7 @@ const EnvModals = observer(() => {
   const [showModal, setShowModal] = useState(false);
 
   function refresh() {
+    treeDs.query();
     certificateDs.query();
   }
 

@@ -764,23 +764,6 @@ export default class TaskCreate extends Component {
                 .toLowerCase()
                 .indexOf(input.toLowerCase()) >= 0}
               dropdownClassName="c7n-pipeline-config-select"
-              footer={
-                <Button type="primary">
-                  <Link
-                    className="c7ncd-more-btn"
-                    to={{
-                      pathname: '/devops/deployment-config',
-                      search: `?type=${menuType}&id=${projectId}&name=${projectName}&organizationId=${organizationId}`,
-                      state: {
-                        appId,
-                        envId: selectEnvId,
-                      },
-                    }}
-                  >
-                    {formatMessage({ id: 'pipeline.link.toConfig' })}
-                  </Link>
-                </Button>
-              }
             >
               {configOptions}
             </Select>,

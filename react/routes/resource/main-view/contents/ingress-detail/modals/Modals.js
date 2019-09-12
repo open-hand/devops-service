@@ -20,6 +20,7 @@ const CustomModals = observer(() => {
     prefixCls,
     intl: { formatMessage },
     resourceStore,
+    treeDs,
   } = useResourceStore();
   const {
     detailDs,
@@ -31,6 +32,7 @@ const CustomModals = observer(() => {
   const { parentId } = resourceStore.getSelectedMenu;
 
   function refresh() {
+    treeDs.query();
     detailDs.query();
   }
 

@@ -353,28 +353,6 @@ export default class Notifications extends Component {
         >
           <FormattedMessage id="c7ncd.env.resource.setting.create" />
         </Button>
-        {/* <Header title={<FormattedMessage id="notification.header.title" />}>
-          <Permission
-            service={['devops-service.devops-notification.create']}
-            type={type}
-            projectId={projectId}
-            organizationId={organizationId}
-          >
-            <Button
-              funcType="flat"
-              icon="playlist_add"
-              onClick={this.openCreate}
-            >
-              <FormattedMessage id="notification.header.create" />
-            </Button>
-          </Permission>
-          <Button
-            icon="refresh"
-            onClick={this.handleRefresh}
-          >
-            <FormattedMessage id="refresh" />
-          </Button>
-        </Header> */}
         <Table
           filterBar={false}
           loading={getLoading}
