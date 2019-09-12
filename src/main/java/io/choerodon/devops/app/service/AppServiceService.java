@@ -442,4 +442,11 @@ public interface AppServiceService {
     List<AppServiceGroupVO> listAllAppServices(Long projectId, String type, String param, Boolean deployOnly, String serviceType);
 
     String getToken(Integer gitlabProjectId, String applicationDir, UserAttrDTO userAttrDTO);
+
+    /**
+     * 查询单个项目下的应用服务
+     * @param projectId
+     * @return
+     */
+    List<AppServiceRepVO> listAppByProjectId(Long projectId);
 }
