@@ -2101,7 +2101,6 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     private void initAppServiceGroupInfoVOList(List<AppServiceGroupInfoVO> appServiceGroupInfoVOS, List<AppServiceDTO> appServiceDTOList, Boolean share) {
-        long open = System.currentTimeMillis();
         if (appServiceDTOList.isEmpty()) return;
         // 获取应用服务编号集合去得到服务最新的版本号
         List<Long> appServiceIds = appServiceDTOList.stream().map(v -> v.getId()).collect(Collectors.toList());
@@ -2145,9 +2144,6 @@ public class AppServiceServiceImpl implements AppServiceService {
             return appServiceGroupInfoVO;
         }).collect(Collectors.toList());
         appServiceGroupInfoVOS.addAll(appList);
-
-        long end = System.currentTimeMillis();
-        System.out.println(end - open);
     }
 
     /**
@@ -2330,15 +2326,9 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public List<AppServiceVO> listAppServiceByIds(Set<Long> ids) {
         List<AppServiceDTO> appServiceDTOList = appServiceMapper.listAppServiceByIds(ids);
-        List<AppServiceVO> appServiceVOS = appServiceDTOList.stream()
-                .map(appServiceDTO -> dtoToVO(appServiceDTO)).collect(Collectors.toList());
-        return appServiceVOS;
+        return  ConvertUtils.convertList(appServiceDTOList,AppServiceVO.class);
     }
-    private AppServiceVO dtoToVO(AppServiceDTO appServiceDTO){
-        AppServiceVO appServiceVO = new AppServiceVO();
-        BeanUtils.copyProperties(appServiceDTO,appServiceVO);
-        return appServiceVO;
-    }
+
     /**
      * 释放资源
      */
