@@ -4,8 +4,13 @@ import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModelProperty;
 
-public class ProjectCertificationVO {
+/**
+ * @author lihao
+ * @date 2019-09-11 19:13
+ */
+public class ProjectCertificationUpdateVO {
     @ApiModelProperty("证书id")
+    @NotNull(message = "error.id.null")
     private Long id;
 
     @ApiModelProperty("证书名称")
@@ -22,36 +27,16 @@ public class ProjectCertificationVO {
     @NotNull(message = "error.domain.null")
     private String domain;
 
-    @ApiModelProperty("是否跳过权限校验")
-    private Boolean skipCheckProjectPermission;
-
     @ApiModelProperty("纪录版本字段")
+    @NotNull(message = "error.object.version.number.null")
     private Long objectVersionNumber;
 
-    public ProjectCertificationVO() {
+    public Long getId() {
+        return id;
     }
 
-    public ProjectCertificationVO(String name, String domain) {
-        this.name = name;
-        this.domain = domain;
-    }
-
-    public ProjectCertificationVO(Long id, String name, String domain, Boolean skipCheckProjectPermission, Long objectVersionNumber) {
+    public void setId(Long id) {
         this.id = id;
-        this.name = name;
-        this.domain = domain;
-        this.skipCheckProjectPermission = skipCheckProjectPermission;
-        this.objectVersionNumber = objectVersionNumber;
-    }
-
-    public ProjectCertificationVO(Long id, String name, String domain, Boolean skipCheckProjectPermission, Long objectVersionNumber, String keyValue, String certValue) {
-        this.id = id;
-        this.name = name;
-        this.domain = domain;
-        this.skipCheckProjectPermission = skipCheckProjectPermission;
-        this.objectVersionNumber = objectVersionNumber;
-        this.keyValue = keyValue;
-        this.certValue = certValue;
     }
 
     public String getName() {
@@ -78,28 +63,12 @@ public class ProjectCertificationVO {
         this.certValue = certValue;
     }
 
-    public Boolean getSkipCheckProjectPermission() {
-        return skipCheckProjectPermission;
-    }
-
-    public void setSkipCheckProjectPermission(Boolean skipCheckProjectPermission) {
-        this.skipCheckProjectPermission = skipCheckProjectPermission;
-    }
-
     public String getDomain() {
         return domain;
     }
 
     public void setDomain(String domain) {
         this.domain = domain;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public Long getObjectVersionNumber() {

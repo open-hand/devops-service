@@ -12,6 +12,7 @@ import com.google.gson.reflect.TypeToken;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.ProjectCertificationPermissionUpdateVO;
+import io.choerodon.devops.api.vo.ProjectCertificationUpdateVO;
 import io.choerodon.devops.api.vo.ProjectCertificationVO;
 import io.choerodon.devops.api.vo.ProjectReqVO;
 import io.choerodon.devops.app.service.CertificationService;
@@ -23,6 +24,7 @@ import io.choerodon.devops.infra.dto.DevopsCertificationProRelationshipDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.mapper.DevopsCertificationFileMapper;
 import io.choerodon.devops.infra.mapper.DevopsCertificationMapper;
 import io.choerodon.devops.infra.util.*;
 
@@ -48,6 +50,8 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
     private CertificationService certificationService;
     @Autowired
     private DevopsCertificationMapper devopsCertificationMapper;
+    @Autowired
+    private DevopsCertificationFileMapper devopsCertificationFileMapper;
 
     @Transactional(propagation = Propagation.REQUIRED)
     @Override
@@ -196,17 +200,50 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
     }
 
 
-    // TODO 发版前删除
-//    @Override
-//    @Transactional
-//    public void update(Long certId, ProjectCertificationVO projectCertificationVO) {
-//        Boolean skipCheckPro = projectCertificationVO.getSkipCheckProjectPermission();
-//        List<Long> addProjects = new ArrayList<>();
-//        CertificationDTO certificationDTO = certificationService.baseQueryById(certId);
-//
-//        certificationDTO.setSkipCheckProjectPermission(projectCertificationVO.getSkipCheckProjectPermission());
-//        certificationService.baseUpdateSkipProjectPermission(certificationDTO);
-//    }
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void update(Long projectId, MultipartFile key, MultipartFile cert, ProjectCertificationUpdateVO projectCertificationUpdateVO) {
+        OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectId);
+        String path = String.format("tmp%s%s%s%s", FILE_SEPARATOR, organizationDTO.getCode(), FILE_SEPARATOR, GenerateUUID.generateUUID().substring(0, 5));
+        String certFileName;
+        String keyFileName;
+
+        if (key != null && cert != null) {
+            //如果是选择上传文件方式
+            certFileName = cert.getOriginalFilename();
+            keyFileName = key.getOriginalFilename();
+            projectCertificationUpdateVO.setKeyValue(FileUtil.getFileContent(new File(FileUtil.multipartFileToFile(path, key))));
+            projectCertificationUpdateVO.setCertValue(FileUtil.getFileContent(new File(FileUtil.multipartFileToFile(path, cert))));
+        } else {
+            certFileName = String.format("%s.%s", GenerateUUID.generateUUID().substring(0, 5), "crt");
+            keyFileName = String.format("%s.%s", GenerateUUID.generateUUID().substring(0, 5), "key");
+            FileUtil.saveDataToFile(path, certFileName, projectCertificationUpdateVO.getCertValue());
+            FileUtil.saveDataToFile(path, keyFileName, projectCertificationUpdateVO.getKeyValue());
+        }
+        File certPath = new File(path + FILE_SEPARATOR + certFileName);
+        File keyPath = new File(path + FILE_SEPARATOR + keyFileName);
+        try {
+            SslUtil.validate(certPath, keyPath);
+        } catch (Exception e) {
+            FileUtil.deleteFile(certPath);
+            FileUtil.deleteFile(keyPath);
+            throw new CommonException(e);
+        }
+        FileUtil.deleteFile(certPath);
+        FileUtil.deleteFile(keyPath);
+
+        CertificationDTO certificationDTO = new CertificationDTO();
+        BeanUtils.copyProperties(projectCertificationUpdateVO, certificationDTO);
+        certificationDTO.setProjectId(projectId);
+        certificationDTO.setDomains(gson.toJson(Collections.singletonList(projectCertificationUpdateVO.getDomain())));
+        devopsCertificationMapper.updateByPrimaryKeySelective(certificationDTO);
+
+        CertificationFileDTO certificationFileDTO = new CertificationFileDTO();
+        certificationFileDTO.setId(certificationService.baseQueryById(certificationDTO.getId()).getCertificationFileId());
+        certificationFileDTO.setKeyFile(certificationDTO.getKeyValue());
+        certificationFileDTO.setCertFile(certificationDTO.getCertValue());
+        devopsCertificationFileMapper.updateByPrimaryKeySelective(certificationFileDTO);
+    }
 
 
     @Override
@@ -320,11 +357,12 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
         return orgCertificationDTOS;
     }
 
+    // TODO projectId验证
     @Override
     public ProjectCertificationVO queryCert(Long certId) {
-        CertificationDTO certificationDTO = certificationService.baseQueryById(certId);
+        CertificationDTO certificationDTO = devopsCertificationMapper.queryById(certId);
         List<String> stringList = gson.fromJson(certificationDTO.getDomains(), new TypeToken<List<String>>() {
         }.getType());
-        return new ProjectCertificationVO(certificationDTO.getId(), certificationDTO.getName(), stringList.get(0), certificationDTO.getSkipCheckProjectPermission(), certificationDTO.getObjectVersionNumber());
+        return new ProjectCertificationVO(certificationDTO.getId(), certificationDTO.getName(), stringList.get(0), certificationDTO.getSkipCheckProjectPermission(), certificationDTO.getObjectVersionNumber(), certificationDTO.getKeyValue(), certificationDTO.getCertValue());
     }
 }

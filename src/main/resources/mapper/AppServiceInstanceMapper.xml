@@ -43,29 +43,41 @@
 
     <select id="listInstanceInfoByEnvAndOptions" resultType="io.choerodon.devops.infra.dto.AppServiceInstanceInfoDTO">
         SELECT ins.id,
-               ins.code,
-               ins.status,
-               (SELECT count(1)
-                FROM devops_env_pod dp
-                WHERE dp.instance_id = ins.id) pod_count,
-               (SELECT count(1)
-                FROM devops_env_pod dp
-                WHERE dp.instance_id = ins.id
-                  AND dp.`status` = 'Running'
-                  AND dp.is_ready = TRUE) pod_running_count,
-                ins.app_service_id,
-                ins.app_service_version_id,
-                version.version as version_name,
-                das.name as app_service_name,
-                project.iam_project_id AS project_id,
-                cmd.error
+        ins.code,
+        ins.status,
+        env.cluster_id,
+        (SELECT count(1)
+        FROM devops_env_pod dp
+        WHERE dp.instance_id = ins.id) pod_count,
+        (SELECT count(1)
+        FROM devops_env_pod dp
+        WHERE dp.instance_id = ins.id
+        AND dp.`status` = 'Running'
+        AND dp.is_ready = TRUE)      pod_running_count,
+        ins.app_service_id,
+        ins.app_service_version_id,
+        ins.last_update_date,
+        ins.object_version_number,
+        version.version        as       version_name,
+        das.name               as       app_service_name,
+        project.iam_project_id AS       project_id,
+        cmd.error,
+        cmd.command_type,
+        cmd.status             as       command_status,
+        cmd.object_version_id  as       command_version_id,
+        (
+        select ndav.version
+        from devops_app_service_version ndav
+        where ndav.id = cmd.object_version_id
+        )                               commandVersion
         FROM devops_app_service_instance ins
-                 LEFT JOIN devops_app_service_version  version ON ins.app_service_version_id = version.id
-                 LEFT JOIN devops_app_service das ON ins.app_service_id = das.id
-                 LEFT JOIN devops_project project ON das.app_id = project.app_id
-                 LEFT JOIN devops_env_command cmd ON cmd.id = ins.command_id
+        LEFT JOIN devops_env env ON ins.env_id=env.id
+        LEFT JOIN devops_app_service_version version ON ins.app_service_version_id = version.id
+        LEFT JOIN devops_app_service das ON ins.app_service_id = das.id
+        LEFT JOIN devops_project project ON das.app_id = project.app_id
+        LEFT JOIN devops_env_command cmd ON cmd.id = ins.command_id
         WHERE ins.env_id = #{envId}
-          AND ins.status != 'deleted'
+        AND ins.status != 'deleted'
         <include refid="infoSqlParam"/>
     </select>
 

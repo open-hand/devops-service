@@ -3,6 +3,8 @@ package io.choerodon.devops.infra.dto;
 import java.util.Date;
 import javax.persistence.*;
 
+import io.swagger.annotations.ApiModelProperty;
+
 import io.choerodon.mybatis.entity.BaseDTO;
 
 /**
@@ -29,6 +31,12 @@ public class CertificationDTO extends BaseDTO {
     private Long orgCertId;
     private Long projectId;
 
+    @Transient
+    @ApiModelProperty("key文件内容")
+    private String keyValue;
+    @Transient
+    @ApiModelProperty("cert文件内容")
+    private String certValue;
     @Transient
     private String commandType;
     @Transient
@@ -205,5 +213,21 @@ public class CertificationDTO extends BaseDTO {
 
     public void setProjectId(Long projectId) {
         this.projectId = projectId;
+    }
+
+    public String getKeyValue() {
+        return keyValue;
+    }
+
+    public void setKeyValue(String keyValue) {
+        this.keyValue = keyValue;
+    }
+
+    public String getCertValue() {
+        return certValue;
+    }
+
+    public void setCertValue(String certValue) {
+        this.certValue = certValue;
     }
 }
