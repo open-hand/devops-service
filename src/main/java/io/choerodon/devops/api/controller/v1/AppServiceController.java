@@ -3,6 +3,7 @@ package io.choerodon.devops.api.controller.v1;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.annotation.Permission;
@@ -676,13 +677,13 @@ public class AppServiceController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "查询单个项目下的应用服务")
     @GetMapping(value = "/list_by_project_id")
-    public ResponseEntity<List<AppServiceRepVO>> listAppByProjectId(
+    public ResponseEntity<List<AppServiceDTO>> listAppByProjectId(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId) {
         return Optional.ofNullable(
                 applicationServiceService.listAppByProjectId(projectId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.list.app.group.error"));
+                .orElseThrow(() -> new CommonException("error.list.app.projectId.query"));
     }
 
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
@@ -715,12 +716,18 @@ public class AppServiceController {
             @RequestBody DevOpsAppServicePayload devOpsAppServicePayload) {
         applicationServiceService.operationApplication(devOpsAppServicePayload);
     }
-    public void en(
-            @ApiParam(value = "项目ID", required = true)
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "批量查询应用服务")
+    @GetMapping(value = "/list_app_service_ids")
+    public ResponseEntity<List<AppServiceVO>> batchQueryAppService(
+            @ApiParam(value = "项目Id")
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "应用服务类型", required = false)
-            @RequestBody DevOpsAppServicePayload devOpsAppServicePayload) {
-        applicationServiceService.operationApplication(devOpsAppServicePayload);
+            @ApiParam(value = "应用服务Ids")
+            @RequestParam(value = "ids") Set<Long> ids){
+        return Optional.ofNullable(
+                applicationServiceService.listAppServiceByIds(ids))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.list.app.serive.ids"));
     }
 }
 

@@ -1761,10 +1761,10 @@ public class AppServiceServiceImpl implements AppServiceService {
         ProjectDTO oldProjectDTO = baseServiceClientOperator.queryProjectByAppId(oldAppServiceDTO.getAppId());
         AppServiceVersionDTO oldAppServiceVersionDTO = appServiceVersionService.baseQuery(oldAppServiceVersionId);
         String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
-        String oldGroup=null;
+        String oldGroup = null;
         if (oldProjectDTO.getOrganizationId() != null) {
             OrganizationDTO oldOrganizationDTO = baseServiceClientOperator.queryOrganizationById(oldProjectDTO.getOrganizationId());
-            oldGroup=oldOrganizationDTO.getCode() + "-" + oldProjectDTO.getCode();
+            oldGroup = oldOrganizationDTO.getCode() + "-" + oldProjectDTO.getCode();
         } else {
             ApplicationDTO oldApplicationDTO = baseServiceClientOperator.queryAppById(oldAppServiceDTO.getAppId());
             oldGroup = String.format(SITE_APP_GROUP_NAME_FORMAT, oldApplicationDTO.getCode());
@@ -2147,7 +2147,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         appServiceGroupInfoVOS.addAll(appList);
 
         long end = System.currentTimeMillis();
-        System.out.println(end-open);
+        System.out.println(end - open);
     }
 
     /**
@@ -2322,11 +2322,23 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public List<AppServiceRepVO> listAppByProjectId(Long projectId) {
+    public List<AppServiceDTO> listAppByProjectId(Long projectId) {
         List<AppServiceDTO> appServiceDTOList = baseListByProjectId(projectId);
-        return appServiceDTOList.stream().map(appServiceDTO -> dtoToRepVo(appServiceDTO)).collect(Collectors.toList());
+        return appServiceDTOList;
     }
 
+    @Override
+    public List<AppServiceVO> listAppServiceByIds(Set<Long> ids) {
+        List<AppServiceDTO> appServiceDTOList = appServiceMapper.listAppServiceByIds(ids);
+        List<AppServiceVO> appServiceVOS = appServiceDTOList.stream()
+                .map(appServiceDTO -> dtoToVO(appServiceDTO)).collect(Collectors.toList());
+        return appServiceVOS;
+    }
+    private AppServiceVO dtoToVO(AppServiceDTO appServiceDTO){
+        AppServiceVO appServiceVO = new AppServiceVO();
+        BeanUtils.copyProperties(appServiceDTO,appServiceVO);
+        return appServiceVO;
+    }
     /**
      * 释放资源
      */
