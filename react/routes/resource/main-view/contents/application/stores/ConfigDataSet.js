@@ -36,4 +36,5 @@ export default (formatMessage) => ({
       label: formatMessage({ id: 'updateDate' }),
     },
   ],
+  queryFields: [],
 });

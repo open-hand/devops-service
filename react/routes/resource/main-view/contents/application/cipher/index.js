@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Action } from '@choerodon/master';
 import { Table } from 'choerodon-ui/pro';
+import keys from 'lodash/keys';
 import MouserOverWrapper from '../../../../../../components/MouseOverWrapper/MouserOverWrapper';
 import StatusTags from '../../../../../../components/status-tag';
 import TimePopover from '../../../../../../components/timePopover/TimePopover';
@@ -51,15 +52,17 @@ const Cipher = observer(() => {
           colorCode={commandStatus || 'success'}
           style={statusStyle}
         />
-        <a className="content-table-name" onClick={() => handleEdit(record)}>{value}</a>
+        {commandStatus === 'operating' ? <span>{value}</span> : (
+          <a className="content-table-name" onClick={() => handleEdit(record)}>{value}</a>
+        )}
       </div>
     );
   }
 
-  function renderKey({ value = [] }) {
+  function renderKey({ value = [], record }) {
     return (
       <MouserOverWrapper width={0.5}>
-        {value.join(',')}
+        {keys(record.get('value') || {}).join(',')}
       </MouserOverWrapper>
     );
   }
@@ -71,14 +74,14 @@ const Cipher = observer(() => {
   function renderAction({ record }) {
     const buttons = [
       {
-        service: [],
+        service: ['devops-service.devops-secret.deleteSecret'],
         text: formatMessage({ id: 'delete' }),
         action: () => {
           cipherDs.delete(record);
         },
       },
     ];
-    return <Action data={buttons} />;
+    return record.get('commandStatus') !== 'operating' && <Action data={buttons} />;
   }
 
   return (

@@ -335,7 +335,7 @@ export default class Index extends Component {
           )}
         </FormItem>
         <FormItem
-          className="domain-network-item c7n-select_160"
+          className="domain-network-item"
           {...formItemLayout}
         >
           {getFieldDecorator(`network[${k}]`, {

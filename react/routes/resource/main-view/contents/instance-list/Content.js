@@ -7,6 +7,7 @@ import PodStatus from './components/pod-status';
 import { useResourceStore } from '../../../stores';
 import { useIstListStore } from './stores';
 import Modals from './modals';
+import UploadIcon from './components/upload-icon';
 
 import './index.less';
 
@@ -36,6 +37,10 @@ const Content = observer(() => {
     );
   }
 
+  function renderVersion({ record }) {
+    return <UploadIcon dataSource={record.toData()} />;
+  }
+
   function renderAppName({ value, record }) {
     return (
       <AppName
@@ -61,7 +66,7 @@ const Content = observer(() => {
         queryBar="bar"
       >
         <Column name="code" renderer={renderName} />
-        <Column name="versionName" />
+        <Column name="versionName" renderer={renderVersion} />
         <Column name="appServiceName" renderer={renderAppName} />
         <Column renderer={renderPods} width="1rem" header={formatMessage({ id: `${intlPrefix}.instance.pod.status` })} />
       </Table>
