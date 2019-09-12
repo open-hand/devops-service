@@ -1761,10 +1761,10 @@ public class AppServiceServiceImpl implements AppServiceService {
         ProjectDTO oldProjectDTO = baseServiceClientOperator.queryProjectByAppId(oldAppServiceDTO.getAppId());
         AppServiceVersionDTO oldAppServiceVersionDTO = appServiceVersionService.baseQuery(oldAppServiceVersionId);
         String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
-        String oldGroup=null;
+        String oldGroup = null;
         if (oldProjectDTO.getOrganizationId() != null) {
             OrganizationDTO oldOrganizationDTO = baseServiceClientOperator.queryOrganizationById(oldProjectDTO.getOrganizationId());
-            oldGroup=oldOrganizationDTO.getCode() + "-" + oldProjectDTO.getCode();
+            oldGroup = oldOrganizationDTO.getCode() + "-" + oldProjectDTO.getCode();
         } else {
             ApplicationDTO oldApplicationDTO = baseServiceClientOperator.queryAppById(oldAppServiceDTO.getAppId());
             oldGroup = String.format(SITE_APP_GROUP_NAME_FORMAT, oldApplicationDTO.getCode());
@@ -2101,7 +2101,6 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     private void initAppServiceGroupInfoVOList(List<AppServiceGroupInfoVO> appServiceGroupInfoVOS, List<AppServiceDTO> appServiceDTOList, Boolean share) {
-        long open = System.currentTimeMillis();
         if (appServiceDTOList.isEmpty()) return;
         // 获取应用服务编号集合去得到服务最新的版本号
         List<Long> appServiceIds = appServiceDTOList.stream().map(v -> v.getId()).collect(Collectors.toList());
@@ -2145,9 +2144,6 @@ public class AppServiceServiceImpl implements AppServiceService {
             return appServiceGroupInfoVO;
         }).collect(Collectors.toList());
         appServiceGroupInfoVOS.addAll(appList);
-
-        long end = System.currentTimeMillis();
-        System.out.println(end-open);
     }
 
     /**
@@ -2322,9 +2318,15 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public List<AppServiceRepVO> listAppByProjectId(Long projectId) {
+    public List<AppServiceDTO> listAppByProjectId(Long projectId) {
         List<AppServiceDTO> appServiceDTOList = baseListByProjectId(projectId);
-        return appServiceDTOList.stream().map(appServiceDTO -> dtoToRepVo(appServiceDTO)).collect(Collectors.toList());
+        return appServiceDTOList;
+    }
+
+    @Override
+    public List<AppServiceVO> listAppServiceByIds(Set<Long> ids) {
+        List<AppServiceDTO> appServiceDTOList = appServiceMapper.listAppServiceByIds(ids);
+        return  ConvertUtils.convertList(appServiceDTOList,AppServiceVO.class);
     }
 
     /**

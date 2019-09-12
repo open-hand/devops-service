@@ -2,7 +2,9 @@ package io.choerodon.devops.infra.mapper;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import io.choerodon.devops.api.vo.AppServiceRepVO;
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.infra.dto.AppServiceDTO;
@@ -102,5 +104,7 @@ public interface AppServiceMapper extends Mapper<AppServiceDTO> {
                                                      @Param("userId") Long userId);
 
     List<AppServiceDTO> listProjectMembersAppServiceByActive(@Param("appId") Long appId, @Param("userId") Long userId);
+
+    List<AppServiceDTO> listAppServiceByIds(@Param("ids") Set<Long> ids);
 }
 

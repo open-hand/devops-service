@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import com.github.pagehelper.PageInfo;
 
@@ -448,5 +449,12 @@ public interface AppServiceService {
      * @param projectId
      * @return
      */
-    List<AppServiceRepVO> listAppByProjectId(Long projectId);
+    List<AppServiceDTO> listAppByProjectId(Long projectId);
+
+    /**
+     * 批量查询应用服务
+     * @param ids
+     * @return
+     */
+    List<AppServiceVO> listAppServiceByIds(Set<Long> ids);
 }
