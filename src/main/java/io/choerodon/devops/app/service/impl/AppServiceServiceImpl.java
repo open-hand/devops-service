@@ -2321,6 +2321,12 @@ public class AppServiceServiceImpl implements AppServiceService {
         return accessToken;
     }
 
+    @Override
+    public List<AppServiceRepVO> listAppByProjectId(Long projectId) {
+        List<AppServiceDTO> appServiceDTOList = baseListByProjectId(projectId);
+        return appServiceDTOList.stream().map(appServiceDTO -> dtoToRepVo(appServiceDTO)).collect(Collectors.toList());
+    }
+
     /**
      * 释放资源
      */

@@ -14,6 +14,7 @@ import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.eventhandler.payload.DevOpsAppServicePayload;
 import io.choerodon.devops.app.service.AppServiceService;
+import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.enums.GitPlatformType;
 import io.choerodon.mybatis.annotation.SortDefault;
 import io.choerodon.swagger.annotation.CustomPageRequest;
@@ -672,6 +673,17 @@ public class AppServiceController {
                 .orElseThrow(() -> new CommonException("error.list.app.group.error"));
     }
 
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "查询单个项目下的应用服务")
+    @GetMapping(value = "/list_by_project_id")
+    public ResponseEntity<List<AppServiceRepVO>> listAppByProjectId(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId) {
+        return Optional.ofNullable(
+                applicationServiceService.listAppByProjectId(projectId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.list.app.group.error"));
+    }
 
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "查询所有应用服务(应用服务导入、应用部署)")
