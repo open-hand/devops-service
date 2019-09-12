@@ -410,11 +410,11 @@ public interface AppServiceService {
     AppServiceDTO baseCreate(AppServiceDTO appServiceDTO);
 
     /**
-     * 查询组织共享和市场下载的应用服务并分组返回
+     * 导入应用下根据组织共享或者市场下载的查询应用服务
      *
      * @return List<AppServiceGroupVO>
      */
-    List<AppServiceGroupInfoVO> listAppServiceGroup(Long projectId, Boolean share, String param);
+    PageInfo<AppServiceGroupInfoVO> pageAppServiceByMode(Long projectId, Boolean share,Long searchProjectId,String param,PageRequest pageRequest);
 
     /**
      * 查询所有应用服务

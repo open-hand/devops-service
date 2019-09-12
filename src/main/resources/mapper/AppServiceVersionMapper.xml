@@ -396,11 +396,10 @@
         FROM
         devops_app_service_version a
         <if test="share!=null and share !=''">
-         left join devops_app_service_share_rule c on c.app_service_id=a.app_service_id
+         left join devops_app_service_share_rule c on c.app_service_id=a.app_service_id and c.version=a.version
         </if>
-        where
-        a.last_update_date = (SELECT MAX(b.last_update_date ) FROM devops_app_service_version b WHERE b.app_service_id = a.app_service_id )
-        and a.app_service_id is not null
+        <where>
+         a.app_service_id is not null
         <if test="share != null and share != ''">
             and c.id is not null
         </if>
@@ -410,7 +409,8 @@
                 a.app_service_id=#{id}
             </foreach>
         </if>
-        ORDER BY a.app_service_id,version desc
+        </where>
+        ORDER BY a.app_service_id,a.version desc
     </select>
 
     <select id="queryServiceVersionByAppServiceIdAndShare" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">

@@ -2037,26 +2037,19 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public List<AppServiceGroupInfoVO> listAppServiceGroup(Long projectId, Boolean share, String param) {
-        List<AppServiceDTO> marketDownloadApps = new ArrayList<>();
-        List<AppServiceDTO> organizationShareApps = new ArrayList<>();
-        if (StringUtils.isEmpty(share)) {
-            marketDownloadApps = appServiceMapper.queryMarketDownloadApps(null, param, false);
-            // 组织共享的应用服务
-            organizationShareApps = listSharedAppService(projectId, param);
-        }
+    public PageInfo<AppServiceGroupInfoVO> pageAppServiceByMode(Long projectId, Boolean share,Long searchProjectId, String param,PageRequest pageRequest) {
+        List<AppServiceDTO> appServiceDTOList = new ArrayList<>();
+
         if (!StringUtils.isEmpty(share) && share) {
-            organizationShareApps = listSharedAppService(projectId, param);
+            appServiceDTOList = listSharedAppService(projectId,searchProjectId,param);
         } else {
-            marketDownloadApps = appServiceMapper.queryMarketDownloadApps(null, param, false);
+            appServiceDTOList = appServiceMapper.queryMarketDownloadApps(null, param, false,searchProjectId);
         }
         List<AppServiceGroupInfoVO> appServiceGroupInfoVOS = new ArrayList<>();
 
-        initAppServiceGroupInfoVOList(appServiceGroupInfoVOS, organizationShareApps, true);
+        initAppServiceGroupInfoVOList(appServiceGroupInfoVOS, appServiceDTOList, true);
 
-        initAppServiceGroupInfoVOList(appServiceGroupInfoVOS, marketDownloadApps, false);
-
-        return appServiceGroupInfoVOS;
+        return PageInfoUtil.createPageFromList(appServiceGroupInfoVOS,pageRequest);
     }
 
     private void initAppServiceGroupInfoVOList(List<AppServiceGroupInfoVO> appServiceGroupInfoVOS, List<AppServiceDTO> appServiceDTOList, Boolean share) {
@@ -2076,33 +2069,22 @@ public class AppServiceServiceImpl implements AppServiceService {
         // 遍历应用服务集合并转换为VO
         appServiceDTOList.stream().forEach(appServiceDTO -> {
             // 根据应用服务的ID查询出versionList中对应的版本信息
-            AppServiceVersionDTO appServiceVersionDTO = versionMap.get(appServiceDTO.getId()).get(0);
+            List<AppServiceVersionDTO> appServiceVersionDTOS = versionMap.get(appServiceDTO.getId());
             // 应用服务含有共享版本才加入List
-            if (appServiceVersionDTO != null) {
-                // 获取应用信息，并传入应用名称
+            if (!appServiceVersionDTOS.isEmpty()) {
+                // 获取项目信息，并传入项目名称
                 ProjectDTO projectDTO = projectMap.get(appServiceDTO.getProjectId());
                 if (!ObjectUtils.isEmpty(projectDTO)) {
                     // 初始化应用服务信息
                     AppServiceGroupInfoVO appServiceGroupInfoVO = dtoToGroupInfoVO(appServiceDTO);
-                    appServiceGroupInfoVO.setVersionId(appServiceVersionDTO.getId());
-                    appServiceGroupInfoVO.setVersion(appServiceVersionDTO.getVersion());
+                    appServiceGroupInfoVO.setVersions(appServiceVersionDTOS);
                     appServiceGroupInfoVO.setShare(share);
-                    String appName = projectDTO.getName();
-                    appServiceGroupInfoVO.setAppName(appName);
+                    String projecteName = projectDTO.getName();
+                    appServiceGroupInfoVO.setProjectName(projecteName);
                     appServiceGroupInfoVOS.add(appServiceGroupInfoVO);
-
                 }
             }
         });
-
-        // 将项目信息转为appServiceGroupInfoVOS 构建一维的返回数据
-        List<AppServiceGroupInfoVO> projectList = projects.stream().map(ProjectDTO -> {
-            AppServiceGroupInfoVO appServiceGroupInfoVO = new AppServiceGroupInfoVO();
-            BeanUtils.copyProperties(ProjectDTO, appServiceGroupInfoVO);
-            appServiceGroupInfoVO.setShare(share);
-            return appServiceGroupInfoVO;
-        }).collect(Collectors.toList());
-        appServiceGroupInfoVOS.addAll(projectList);
     }
 
     @Override
@@ -2128,7 +2110,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 break;
             }
             case MARKET_SERVICE: {
-                list.addAll(appServiceMapper.queryMarketDownloadApps(serviceType, null, deployOnly));
+                list.addAll(appServiceMapper.queryMarketDownloadApps(serviceType, null, deployOnly,null));
                 break;
             }
             default: {
@@ -2137,7 +2119,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
         Map<Long, List<AppServiceGroupInfoVO>> map = list.stream()
                 .map(this::dtoToGroupInfoVO)
-                .collect(Collectors.groupingBy(AppServiceGroupInfoVO::getAppId));
+                .collect(Collectors.groupingBy(AppServiceGroupInfoVO::getProjectId));
 
         for (Long key : map.keySet()) {
             ApplicationDTO appDTO = baseServiceClientOperator.queryAppById(key);
@@ -2158,7 +2140,7 @@ public class AppServiceServiceImpl implements AppServiceService {
      * @param projectId
      * @return
      */
-    private List<AppServiceDTO> listSharedAppService(Long projectId, String param) {
+    private List<AppServiceDTO> listSharedAppService(Long projectId,Long searchProjectId, String param) {
         // 获取组织Id
         Long organizationId = baseServiceClientOperator.queryIamProjectById(projectId).getOrganizationId();
         List<Long> appServiceIds = new ArrayList<>();
@@ -2166,9 +2148,9 @@ public class AppServiceServiceImpl implements AppServiceService {
                 baseListAll(projectId).forEach(appServiceDTO -> appServiceIds.add(appServiceDTO.getId()))
         );
         // 分别获取组织共享和市场下载的应用服务集合
-        List<AppServiceDTO> organizationShareApps = appServiceMapper.queryOrganizationShareApps(appServiceIds, param);
+        List<AppServiceDTO> organizationShareApps = appServiceMapper.queryOrganizationShareApps(appServiceIds,param,searchProjectId);
         // 查询当前项目可选的项目共享Apps
-        List<AppServiceDTO> projectShareApps = appServiceMapper.listShareProjectApps(projectId, param);
+        List<AppServiceDTO> projectShareApps = appServiceMapper.listShareProjectApps(projectId,param,searchProjectId);
         // 加入组织共享集合中
         organizationShareApps.addAll(projectShareApps);
 
