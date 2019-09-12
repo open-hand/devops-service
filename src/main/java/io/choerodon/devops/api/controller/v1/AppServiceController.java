@@ -727,7 +727,7 @@ public class AppServiceController {
         return Optional.ofNullable(
                 applicationServiceService.listAppServiceByIds(ids))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.list.app.serive.ids"));
+                .orElseThrow(() -> new CommonException("error.list.app.service.ids"));
     }
 }
 
