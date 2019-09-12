@@ -2,11 +2,8 @@ import React, { useMemo, useState, useCallback } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import { Action } from '@choerodon/master';
-import {
-  Button,
-  Popover,
-} from 'choerodon-ui';
 import { Table } from 'choerodon-ui/pro';
+import { keys } from 'lodash';
 import MouserOverWrapper from '../../../../../components/MouseOverWrapper/MouserOverWrapper';
 import StatusTags from '../../../../../components/status-tag';
 import TimePopover from '../../../../../components/timePopover/TimePopover';
@@ -67,9 +64,10 @@ const ConfigMap = observer((props) => {
     );
   }
   function renderValue({ value = [] }) {
+    const keyarr = keys(value);
     return (
       <MouserOverWrapper width={0.5}>
-        {value && JSON.stringify(value)}
+        {keyarr && keyarr.join(',')}
       </MouserOverWrapper>
     );
   }

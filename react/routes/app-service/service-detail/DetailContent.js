@@ -18,18 +18,21 @@ const DetailContent = observer((props) => {
     <PageWrap noHeader={[]} cache>
       <PageTab
         title={formatMessage({ id: `${intlPrefix}.version` })}
-        tabKey="choerodon.code.develop.app-service.version"
+        tabKey="Version"
         component={Version}
+        alwaysShow
       />
       <PageTab
         title={formatMessage({ id: `${intlPrefix}.permission` })}
-        tabKey="choerodon.code.develop.app-service.permission"
+        tabKey="Allocation"
         component={Allocation}
+        alwaysShow={AppStore.getProjectRole === 'owner'}
       />
       <PageTab
         title={formatMessage({ id: `${intlPrefix}.share` })}
-        tabKey="choerodon.code.develop.app-service.share"
+        tabKey="Share"
         component={Share}
+        alwaysShow={AppStore.getProjectRole === 'owner' && detailDs.current && detailDs.current.get('type') === 'normal'}
       />
     </PageWrap>
   );
