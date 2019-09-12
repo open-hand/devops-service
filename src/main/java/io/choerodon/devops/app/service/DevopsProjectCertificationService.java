@@ -7,6 +7,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.ProjectCertificationPermissionUpdateVO;
+import io.choerodon.devops.api.vo.ProjectCertificationUpdateVO;
 import io.choerodon.devops.api.vo.ProjectCertificationVO;
 import io.choerodon.devops.api.vo.ProjectReqVO;
 
@@ -31,8 +32,7 @@ public interface DevopsProjectCertificationService {
 
     void create(Long projectId, MultipartFile key, MultipartFile cert, ProjectCertificationVO projectCertificationVO);
 
-    // TODO 发版前删除
-//    void update(Long certId, ProjectCertificationVO projectCertificationVO);
+    void update(Long projectId, MultipartFile key, MultipartFile cert, ProjectCertificationUpdateVO projectCertificationUpdateVO);
 
     void checkName(Long projectId, String name);
 

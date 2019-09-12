@@ -11,6 +11,7 @@ import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.ProjectCertificationPermissionUpdateVO;
+import io.choerodon.devops.api.vo.ProjectCertificationUpdateVO;
 import io.choerodon.devops.api.vo.ProjectCertificationVO;
 import io.choerodon.devops.api.vo.ProjectReqVO;
 import io.choerodon.devops.app.service.DevopsProjectCertificationService;
@@ -56,26 +57,27 @@ public class ProjectCertificationController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-//    /**
-//     * TODO 发版前删除
-//     * 更新证书
-//     *
-//     * @param project_id             项目Id
-//     * @param projectCertificationVO 项目层证书信息
-//     */
-//    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
-//    @ApiOperation(value = "更新证书")
-//    @PutMapping()
-//    public ResponseEntity update(
-//            @ApiParam(value = "项目ID", required = true)
-//            @PathVariable(value = "project_id") Long project_id,
-//            @ApiParam(value = "证书ID")
-//            @PathVariable Long certId,
-//            @ApiParam(value = "项目层证书信息")
-//            @RequestBody ProjectCertificationVO projectCertificationVO) {
-//        devopsProjectCertificationService.update(certId, projectCertificationVO);
-//        return new ResponseEntity<>(HttpStatus.OK);
-//    }
+    /**
+     * 更新证书
+     *
+     * @param projectId             项目Id
+     * @param projectCertificationUpdateVO 项目层证书信息
+     */
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "更新证书")
+    @PutMapping()
+    public ResponseEntity update(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "证书信息", required = true)
+            @ModelAttribute @Valid ProjectCertificationUpdateVO projectCertificationUpdateVO,
+            @ApiParam(value = "key文件")
+            @RequestParam(value = "key", required = false) MultipartFile key,
+            @ApiParam(value = "cert文件")
+            @RequestParam(value = "cert", required = false) MultipartFile cert) {
+        devopsProjectCertificationService.update(projectId,key,cert, projectCertificationUpdateVO);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 
     /**
      * 查询单个证书信息

@@ -2,8 +2,12 @@ package io.choerodon.devops.api.vo;
 
 import java.util.Date;
 
+import io.swagger.annotations.ApiModelProperty;
+import org.nutz.json.JsonIgnore;
+
 /**
  * 展示实例详情页面的单个实例的信息
+ *
  * @author zmf
  */
 public class AppServiceInstanceInfoVO {
@@ -25,6 +29,18 @@ public class AppServiceInstanceInfoVO {
     private String commandStatus;
     private String error;
     private Long projectId;
+
+    @JsonIgnore
+    @ApiModelProperty("集群id")
+    private Long clusterId;
+
+    public Long getClusterId() {
+        return clusterId;
+    }
+
+    public void setClusterId(Long clusterId) {
+        this.clusterId = clusterId;
+    }
 
     public Long getId() {
         return id;

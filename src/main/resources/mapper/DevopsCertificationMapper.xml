@@ -72,13 +72,13 @@
 
 
     <select id="listByProjectId" resultType="io.choerodon.devops.infra.dto.CertificationDTO">
-        select dc.id,dc.`name`,dc.domains from devops_certification dc where dc.skip_check_project_permission is true
-        and
+        SELECT dc.id,dc.`name`,dc.domains FROM devops_certification dc WHERE dc.skip_check_project_permission IS true
+        AND
         dc.organization_id = #{organizationId}
         UNION
-        select dc.id,dc.`name`,dc.domains from devops_certification dc
-        join devops_certification_pro_rel dcp on dc.id = dcp.cert_id
-        where dcp.project_id = #{projectId}
+        SELECT dc.id,dc.`name`,dc.domains FROM devops_certification dc
+        JOIN devops_certification_pro_rel dcp ON dc.id = dcp.cert_id
+        WHERE dcp.project_id = #{projectId}
     </select>
 
     <select id="listAllOrgCertification" resultType="io.choerodon.devops.infra.dto.CertificationDTO">
@@ -86,6 +86,15 @@
             cert.id, cert.name, cert.project_id, cert.object_version_number
         FROM devops_certification cert
         WHERE cert.project_id IS NOT NULL;
+    </select>
+
+    <select id="queryById" resultType="io.choerodon.devops.infra.dto.CertificationDTO">
+        SELECT dc.*,
+               dcf.key_file  as key_value,
+               dcf.cert_file as cert_value
+        FROM devops_certification dc
+                 JOIN devops_certification_file dcf ON dc.certification_file_id = dcf.id
+        WHERE dc.id = #{certId}
     </select>
 
     <update id="updateStatus">
