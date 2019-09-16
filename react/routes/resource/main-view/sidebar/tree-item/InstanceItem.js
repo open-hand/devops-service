@@ -4,12 +4,14 @@ import { observer } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
 import { Action } from '@choerodon/master';
 import { Modal } from 'choerodon-ui/pro';
+import eventStopProp from '../../../../../utils/eventStopProp';
 import PodCircle from '../../components/pod-circle';
 import { useResourceStore } from '../../../stores';
 import { useTreeItemStore } from './stores';
 import { handlePromptError } from '../../../../../utils';
 
 const stopKey = Modal.key();
+const deleteKey = Modal.key();
 
 function InstanceItem({
   record,
@@ -40,12 +42,32 @@ function InstanceItem({
     stroke: PADDING_COLOR,
   }], [podUnlinkCount, podRunningCount]);
 
-  function deleteItem() {
-    treeDs.delete(record);
+  async function deleteItem() {
+    try {
+      const result = await treeItemStore.deleteInstance(id, record.get('id'));
+      if (handlePromptError(result, false)) {
+        treeDs.query();
+      }
+    } catch (e) {
+      Choerodon.handleResponseError(e);
+    }
+  }
+
+  function openDeleteModal() {
+    Modal.open({
+      movable: false,
+      closable: false,
+      key: deleteKey,
+      title: formatMessage({ id: `${intlPrefix}.instance.action.delete` }),
+      children: formatMessage({ id: `${intlPrefix}.instance.action.delete.tips` }),
+      onOk: deleteItem,
+    });
   }
 
   function openChangeActive(active) {
     Modal.open({
+      movable: false,
+      closable: false,
       key: stopKey,
       title: formatMessage({ id: `${intlPrefix}.instance.action.${active}` }),
       children: formatMessage({ id: `${intlPrefix}.instance.action.${active}.tips` }),
@@ -80,7 +102,7 @@ function InstanceItem({
       delete: {
         service: ['devops-service.app-service-instance.delete'],
         text: formatMessage({ id: `${intlPrefix}.instance.action.delete` }),
-        action: deleteItem,
+        action: openDeleteModal,
       },
     };
     switch (record.get('status')) {
@@ -97,14 +119,10 @@ function InstanceItem({
         break;
     }
 
-    function handleActionClick(e) {
-      e.stopPropagation();
-    }
-
     return actionData ? <Action
       placement="bottomRight"
       data={actionData}
-      onClick={handleActionClick}
+      onClick={eventStopProp}
     /> : null;
   }
 

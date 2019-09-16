@@ -2,9 +2,10 @@ import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { observer } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
-import { Action, Permission } from '@choerodon/master';
+import { Action } from '@choerodon/master';
 import { Icon, Modal } from 'choerodon-ui/pro';
 import { handlePromptError } from '../../../../../utils';
+import eventStopProp from '../../../../../utils/eventStopProp';
 import { useResourceStore } from '../../../stores';
 import { useTreeItemStore } from './stores';
 
@@ -44,17 +45,13 @@ function AppItem({ name, record, intl: { formatMessage }, intlPrefix }) {
     });
   }
 
-  function handleActionClick(e) {
-    e.stopPropagation();
-  }
-
   function getSuffix() {
     const actionData = [{
       service: ['devops-service.devops-env-app-service.delete'],
       text: formatMessage({ id: `${intlPrefix}.modal.service.delete` }),
       action: openModal,
     }];
-    return <Action placement="bottomRight" data={actionData} onClick={handleActionClick} />;
+    return <Action placement="bottomRight" data={actionData} onClick={eventStopProp} />;
   }
 
   return <Fragment>

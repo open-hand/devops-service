@@ -12,6 +12,7 @@ import { handlePromptError } from '../../../../../../../utils';
 
 import '../../../../../../main.less';
 import './index.less';
+import DomainModal from '../domain';
 
 const { Sidebar } = Modal;
 const { Item: FormItem } = Form;
@@ -289,6 +290,7 @@ export default class FormView extends Component {
       },
       envId,
       appId,
+      afterSuccess,
     } = this.props;
     const {
       dataSource,
@@ -307,7 +309,6 @@ export default class FormView extends Component {
       configData = _.uniqBy(allData, 'index');
     } else {
       hasConfigRuleError = this.checkConfigRuleError();
-      // TODO: yaml 转对象的错误处理
       configData = yamlToObj(dataYaml);
     }
 
@@ -336,7 +337,7 @@ export default class FormView extends Component {
           const res = await store.postKV(projectId, dto);
           if (handlePromptError(res)) {
             this.handleClose();
-            // store.loadSingleData(projectId,dto.id);
+            afterSuccess();
           }
           this.setState({ submitting: false });
         } catch (error) {
@@ -355,7 +356,6 @@ export default class FormView extends Component {
   handleClose = (isload = true) => {
     const { onClose } = this.props;
     onClose(isload);
-    
   };
 
   /**
@@ -416,7 +416,7 @@ export default class FormView extends Component {
    * @returns {*}
    */
   getConfigMap = () => {
-    const { title } = this.props;
+    const { title, intlPrefix } = this.props;
     const {
       dataSource,
       isYamlEdit,
@@ -492,7 +492,7 @@ export default class FormView extends Component {
           rowKey={record => record.Layout}
         />
         <Button icon="add" onClick={this.handleAdd} type="primary">
-          <FormattedMessage id={`${title}.add`} />
+          <FormattedMessage id={`${intlPrefix}.${title}.add`} />
         </Button>
         {hasItemError ? <div className="c7n-cm-warning">{warningMes}</div> : null}
       </Fragment>;
@@ -601,6 +601,7 @@ export default class FormView extends Component {
           name: menuName,
         },
       },
+      intlPrefix,
     } = this.props;
     const {
       submitting,
@@ -612,7 +613,7 @@ export default class FormView extends Component {
     } = this.state;
 
     const titleName = id ? data.name : menuName;
-    const titleCode = `${title}.${id ? 'edit' : 'create'}`;
+    const titleCode = `${intlPrefix}.${title}.${id ? 'edit' : 'create'}`;
     const disableBtn = hasYamlError || hasValueError || hasItemError;
 
     return (
@@ -622,7 +623,7 @@ export default class FormView extends Component {
           visible={visible}
           title={<FormattedMessage id={titleCode} />}
           confirmLoading={submitting}
-          width={title === 'configMap' ? null : 380}
+          width={title === 'mapping' ? null : 380}
           footer={[
             <Button
               disabled={disableBtn}
@@ -648,7 +649,7 @@ export default class FormView extends Component {
             {this.getFormContent()}
 
             <div className="c7n-sidebar-from-title">
-              <FormattedMessage id={`${title}.head`} />
+              <FormattedMessage id={`${intlPrefix}.${title}.head`} />
               {!isYamlEdit && <Popover
                 overlayStyle={{ maxWidth: 350 }}
                 content={formatMessage({ id: `${title}.help.tooltip` })}

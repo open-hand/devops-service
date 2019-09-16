@@ -131,8 +131,8 @@ const EnvModals = observer(() => {
 
   function toPermissionTab() {
     const { getTabKey } = envStore;
-    envStore.setTabKey(ASSIGN_TAB);
     baseInfoDs.query();
+    envStore.setTabKey(ASSIGN_TAB);
     getTabKey === ASSIGN_TAB && permissionsDs.query();
   }
 

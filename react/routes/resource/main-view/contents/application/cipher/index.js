@@ -98,7 +98,8 @@ const Cipher = observer(() => {
       </Table>
       {showModal && <KeyValueModal
         modeSwitch={false}
-        title="secret"
+        intlPrefix={intlPrefix}
+        title="cipher"
         visible={showModal}
         id={recordId}
         envId={parentId}
