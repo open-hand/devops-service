@@ -131,7 +131,7 @@ const ConfigMap = observer((props) => {
         >
           <Column name="name" header={formatMessage({ id: `${intlPrefix}.${itemType}` })} renderer={renderName} />
           <Column renderer={renderAction} />
-          <Column name="key" renderer={renderKey} />
+          <Column name="value" renderer={renderValue} />
           <Column name="lastUpdateDate" renderer={renderDate} />
         </Table>}
       {showModal && <KeyValueModal

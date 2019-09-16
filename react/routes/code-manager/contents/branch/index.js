@@ -287,7 +287,6 @@ class Branch extends Component {
           filterBarPlaceholder={formatMessage({ id: 'filter' })}
           loading={loading}
           className="c7n-branch-table"
-          rowClassName="c7n-branch-tr"
           pagination={getPageInfo}
           columns={this.getBranchColumn()}
           dataSource={getBranchList}

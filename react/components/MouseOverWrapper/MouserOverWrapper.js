@@ -12,6 +12,7 @@ export default class MouserOverWrapper extends Component {
     super(props);
     const ret = this.calcWidth();
     this.state = {
+      domWidthMistake: 16 / 13, // 根据字符串计算宽度时 校正误差的乘法因子
       domRealWidth: 0,
       textStyle: null,
       domWidth: 0,
@@ -61,9 +62,12 @@ export default class MouserOverWrapper extends Component {
   };
 
   componentDidMount() {
-    if (this.domTest && this.state.domRealWidth === 0) {
+    const { domWidth, domWidthMistake, maxWidth, domRealWidth } = this.state;
+    if (this.domTest && domRealWidth === 0) {
       const width = this.getDomRealWidth(this.domTest);
-      if (this.state.domWidth > width && this.state.domWidth < this.state.maxWidth) {
+      // 这里用width×domWidthMistake的原因是：
+      // domWidth的计算存在较大误差，这里实验性的将 真实的width放大（16/13）倍 来处理误差
+      if (width && width !== 0 && (domWidth > width * domWidthMistake) && domWidth < maxWidth) {
         this.setState({ domRealWidth: width });
       }
     }
@@ -106,12 +110,14 @@ export default class MouserOverWrapper extends Component {
   }
 
   render() {
-    const { domRealWidth, textStyle, domWidth, maxWidth } = this.state;
+    const { domRealWidth, textStyle, domWidth, maxWidth, domWidthMistake } = this.state;
     const { text, className } = this.props;
     // 新增domRealWidth属性 来表示真实的dom元素宽度
     // 大体上按照原来的估算逻辑判断，加入逻辑：在挂载时计算真实的元素宽度
     // 如果 domWidth <= maxWidth 成立 但是 domWidth > domRealWidth 
     // 表明 估算出现误差 此时 改变domRealWidth  来让组件重绘制
+    // const minDomRealWidth = domRealWidth === 0 ? 0:domRealWidth - domWidthMistake;
+    // const maxDomRealWidth = 
     if ((domWidth < domRealWidth || domRealWidth === 0) && (text && domWidth <= maxWidth)) {
       return <div ref={(test) => { this.domTest = test; }} style={textStyle} className={className}> {this.props.children}</div>;
     } else {

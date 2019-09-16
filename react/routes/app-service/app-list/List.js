@@ -13,6 +13,7 @@ import ImportForm from './modal/import-form';
 import StatusTag from '../components/status-tag';
 
 import './index.less';
+import '../../main.less';
 
 const { Column } = Table;
 const modalKey1 = Modal.key();
@@ -264,6 +265,7 @@ const AppService = withRouter(observer((props) => {
           queryBar="bar"
           filter={handleTableFilter}
           className={`${prefixCls}.table`}
+          rowClassName="c7ncd-table-row-font-color"
         >
           <Column name="name" renderer={renderName} sortable />
           <Column renderer={renderActions} width="0.7rem" />
