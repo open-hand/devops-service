@@ -1456,7 +1456,6 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         RoleAssignmentSearchVO roleAssignmentSearchVO = new RoleAssignmentSearchVO();
         Map<String, Object> searchParamMap;
-        String param;
         // 处理搜索参数
         if (!org.springframework.util.StringUtils.isEmpty(searchParam)) {
             Map maps = gson.fromJson(searchParam, Map.class);
@@ -1503,10 +1502,11 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         Set<Long> ownerIds = allProjectOwners.stream().map(DevopsEnvUserVO::getIamUserId).collect(Collectors.toSet());
         //去除项目成员中的项目所有者成员
-        List<DevopsUserPermissionVO> memberWithoutOwners = allProjectMembers.stream().filter(e -> !ownerIds.contains(e.getIamUserId())).collect(Collectors.toList());
 
         //合并项目所有者和项目成员
-        List<DevopsUserPermissionVO> userPermissionVOS = new ArrayList<>(memberWithoutOwners);
+        List<DevopsUserPermissionVO> userPermissionVOS = allProjectMembers.stream()
+                .filter(e -> !ownerIds.contains(e.getIamUserId()))
+                .sorted(Comparator.comparing(DevopsUserPermissionVO::getCreationDate).reversed()).collect(Collectors.toList());
         userPermissionVOS.addAll(allProjectOwners);
 
         //没有任何项目成员和项目所有者
