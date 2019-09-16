@@ -15,16 +15,12 @@ public interface UserAttrService {
     UserAttrVO queryByUserId(Long userId);
 
     /**
-     * @return
+     * 根据gitlab用户id查询平台用户id
+     *
+     * @param gitLabUserId gitLab user id
+     * @return user id
      */
-    Integer getGitlabUserId();
-
-
-    /**
-     * @param gitLabUserId
-     * @return
-     */
-    Long getUserIdByGitlabUserId(Long gitLabUserId);
+    Long queryUserIdByGitlabUserId(Long gitLabUserId);
 
 
     UserAttrDTO baseQueryByGitlabUserId(Long gitlabUserId);
@@ -38,8 +34,6 @@ public interface UserAttrService {
     List<UserAttrDTO> baseListByUserIds(List<Long> userIds);
 
     void baseUpdate(UserAttrDTO userAttrDTO);
-
-    List<UserAttrDTO> baseList();
 
     UserAttrDTO baseQueryByGitlabUserName(String gitlabUserName);
 }

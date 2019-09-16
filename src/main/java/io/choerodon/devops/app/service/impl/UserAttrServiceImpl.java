@@ -25,23 +25,14 @@ public class UserAttrServiceImpl implements UserAttrService {
         return ConvertUtils.convertObject(baseQueryById(userId), UserAttrVO.class);
     }
 
-
     @Override
-    public Integer getGitlabUserId() {
-        UserAttrDTO userAttrDTO = baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-        return TypeUtil.objToInteger(userAttrDTO.getGitlabUserId());
-    }
-
-
-    @Override
-    public Long getUserIdByGitlabUserId(Long gitLabUserId) {
+    public Long queryUserIdByGitlabUserId(Long gitLabUserId) {
         try {
             return baseQueryUserIdByGitlabUserId(gitLabUserId);
         } catch (Exception e) {
             return null;
         }
     }
-
 
     @Override
     public int baseInsert(UserAttrDTO userAttrDTO) {
@@ -55,17 +46,15 @@ public class UserAttrServiceImpl implements UserAttrService {
 
     @Override
     public Long baseQueryUserIdByGitlabUserId(Long gitLabUserId) {
-        UserAttrDTO userAttrDTO = new UserAttrDTO();
-        userAttrDTO.setGitlabUserId(gitLabUserId);
         if (gitLabUserId == null) {
             return null;
         }
+
+        UserAttrDTO userAttrDTO = new UserAttrDTO();
+        userAttrDTO.setGitlabUserId(gitLabUserId);
         userAttrDTO = userAttrMapper.selectOne(userAttrDTO);
-        if (userAttrDTO == null) {
-            return null;
-        } else {
-            return userAttrDTO.getIamUserId();
-        }
+
+        return userAttrDTO == null ? null : userAttrDTO.getIamUserId();
     }
 
     @Override
@@ -89,11 +78,6 @@ public class UserAttrServiceImpl implements UserAttrService {
         newUserAttrDTO.setGitlabToken(userAttrDTO.getGitlabToken());
         newUserAttrDTO.setGitlabUserName(userAttrDTO.getGitlabUserName());
         userAttrMapper.updateByPrimaryKey(newUserAttrDTO);
-    }
-
-    @Override
-    public List<UserAttrDTO> baseList() {
-        return userAttrMapper.selectAll();
     }
 
     @Override
