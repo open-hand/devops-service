@@ -139,11 +139,6 @@ public class SagaTopicCodeConstants {
     public static final String BASE_UPDATE_APPLICATION = "base-update-application";
 
     /**
-     * base-service创建应用事件
-     */
-    public static final String BASE_CREATE_APPLICATION = "base-create-application";
-
-    /**
      * Iam删除应用
      */
     public static final String IAM_DELETE_APPLICATION = "iam-delete-application";

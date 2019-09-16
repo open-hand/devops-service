@@ -93,11 +93,6 @@ public class SagaTaskCodeConstants {
     public static final String REGISTER_DEVOPS_INIT_PROJCET = "register-devops-init-projcet";
 
     /**
-     * devops 消费应用创建事件
-     */
-    public static final String DEVOPS_CONSUME_APPLICATION_CREATION = "devops-consume-application-creation";
-
-    /**
      * devops 创建 GitLab Group
      */
     public static final String DEVOPS_CREATE_GITLAB_GROUP = "devopsCreateGitLabGroup";
@@ -182,11 +177,6 @@ public class SagaTaskCodeConstants {
      * 应用上传，修复版本
      */
     public static final String APIM_UPLOAD_APP_FIX_VERSION = "apimUploadApplicationFixVersion";
-
-    /**
-     * 应用下载
-     */
-    public static final String APIM_DOWNLOAD_APP_CREATE_GROUP = "apimDownloadApplicationCreateGroup";
 
     /**
      * 应用下载

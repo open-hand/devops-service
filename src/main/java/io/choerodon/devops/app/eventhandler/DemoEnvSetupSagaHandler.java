@@ -4,18 +4,6 @@ import java.util.Collections;
 import java.util.HashMap;
 
 import com.google.gson.Gson;
-import io.choerodon.asgard.saga.annotation.SagaTask;
-import io.choerodon.asgard.saga.consumer.MockHttpServletRequest;
-import io.choerodon.core.oauth.CustomUserDetails;
-import io.choerodon.devops.app.eventhandler.constants.SagaTaskCodeConstants;
-import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
-import io.choerodon.devops.app.eventhandler.payload.ApplicationEventPayload;
-import io.choerodon.devops.app.eventhandler.payload.GitlabGroupPayload;
-import io.choerodon.devops.app.eventhandler.payload.OrganizationRegisterEventPayload;
-import io.choerodon.devops.app.service.ApplicationService;
-import io.choerodon.devops.app.service.DevopsDemoEnvInitService;
-import io.choerodon.devops.app.service.GitlabGroupService;
-import io.choerodon.devops.infra.util.ConvertUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +14,16 @@ import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.OAuth2Request;
 import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
 import org.springframework.stereotype.Component;
+
+import io.choerodon.asgard.saga.annotation.SagaTask;
+import io.choerodon.asgard.saga.consumer.MockHttpServletRequest;
+import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.devops.app.eventhandler.constants.SagaTaskCodeConstants;
+import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
+import io.choerodon.devops.app.eventhandler.payload.GitlabGroupPayload;
+import io.choerodon.devops.app.eventhandler.payload.OrganizationRegisterEventPayload;
+import io.choerodon.devops.app.service.DevopsDemoEnvInitService;
+import io.choerodon.devops.app.service.GitlabGroupService;
 
 /**
  * Handle saga events for setting up demo environment.
@@ -41,8 +39,6 @@ public class DemoEnvSetupSagaHandler {
     private DevopsDemoEnvInitService devopsDemoEnvInitService;
     @Autowired
     private GitlabGroupService gitlabGroupService;
-    @Autowired
-    private ApplicationService applicationService;
 
     /**
      * saga原有的用户上下文

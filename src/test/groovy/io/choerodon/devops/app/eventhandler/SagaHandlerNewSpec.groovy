@@ -1,9 +1,22 @@
 package io.choerodon.devops.app.eventhandler
 
+import static org.mockito.ArgumentMatchers.*
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
+
 import com.github.pagehelper.PageInfo
+import org.mockito.Mockito
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.context.annotation.Import
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
+import spock.lang.Shared
+import spock.lang.Specification
+import spock.lang.Stepwise
+import spock.lang.Subject
+
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.app.service.ApplicationService
 import io.choerodon.devops.app.service.GitlabGroupMemberService
 import io.choerodon.devops.app.service.GitlabUserService
 import io.choerodon.devops.app.service.IamService
@@ -25,19 +38,6 @@ import io.choerodon.devops.infra.mapper.AppServiceMapper
 import io.choerodon.devops.infra.mapper.DevopsProjectMapper
 import io.choerodon.devops.infra.mapper.UserAttrMapper
 import io.choerodon.devops.infra.util.CustomContextUtil
-import org.mockito.Mockito
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.context.annotation.Import
-import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
-import spock.lang.Shared
-import spock.lang.Specification
-import spock.lang.Stepwise
-import spock.lang.Subject
-
-import static org.mockito.ArgumentMatchers.*
-import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
 /**
  * Created by Sheep on 2019/4/9.
@@ -72,8 +72,6 @@ class SagaHandlerNewSpec extends Specification {
     @Autowired
     private UserAttrMapper userAttrMapper
     @Autowired
-    private ApplicationService applicationService
-    @Autowired
     private AppServiceMapper applicationMapper
     @Autowired
     private GitlabUserService gitlabUserRepository
@@ -98,7 +96,6 @@ class SagaHandlerNewSpec extends Specification {
             DependencyInjectUtil.setAttribute(iamRepository, "baseServiceClient", iamServiceClient)
             DependencyInjectUtil.setAttribute(gitlabRepository, "gitlabServiceClient", gitlabServiceClient)
             DependencyInjectUtil.setAttribute(gitlabGroupMemberRepository, "gitlabServiceClientOperator", mockGitlabServiceClientOperator)
-            DependencyInjectUtil.setAttribute(applicationService, "sagaClient", sagaClient)
             DependencyInjectUtil.setAttribute(gitlabProjectRepository, "gitlabServiceClient", gitlabServiceClient)
             DependencyInjectUtil.setAttribute(gitlabUserRepository, "gitlabServiceClient", gitlabServiceClient)
 

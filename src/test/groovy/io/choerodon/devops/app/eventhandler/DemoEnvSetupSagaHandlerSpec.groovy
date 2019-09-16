@@ -1,6 +1,22 @@
 package io.choerodon.devops.app.eventhandler
 
+import static org.mockito.ArgumentMatchers.*
+import static org.mockito.Mockito.when
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
+
 import com.github.pagehelper.PageInfo
+import org.mockito.Mockito
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.context.annotation.Import
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
+import spock.lang.Shared
+import spock.lang.Specification
+import spock.lang.Stepwise
+import spock.lang.Subject
+
 import io.choerodon.asgard.saga.feign.SagaClient
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
@@ -10,7 +26,10 @@ import io.choerodon.devops.api.vo.iam.RoleSearchVO
 import io.choerodon.devops.api.vo.iam.RoleVO
 import io.choerodon.devops.api.vo.iam.UserVO
 import io.choerodon.devops.api.vo.kubernetes.RepositoryFile
-import io.choerodon.devops.app.service.*
+import io.choerodon.devops.app.service.DevopsGitService
+import io.choerodon.devops.app.service.GitlabGroupMemberService
+import io.choerodon.devops.app.service.GitlabUserService
+import io.choerodon.devops.app.service.IamService
 import io.choerodon.devops.infra.dto.*
 import io.choerodon.devops.infra.dto.gitlab.*
 import io.choerodon.devops.infra.dto.iam.ApplicationDTO
@@ -24,21 +43,6 @@ import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator
 import io.choerodon.devops.infra.mapper.*
 import io.choerodon.devops.infra.util.FileUtil
 import io.choerodon.devops.infra.util.GitUtil
-import org.mockito.Mockito
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.context.annotation.Import
-import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
-import spock.lang.Shared
-import spock.lang.Specification
-import spock.lang.Stepwise
-import spock.lang.Subject
-
-import static org.mockito.ArgumentMatchers.*
-import static org.mockito.Mockito.when
-import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
 /**
  * Created by Sheep on 2019/4/9.
@@ -65,8 +69,6 @@ class DemoEnvSetupSagaHandlerSpec extends Specification {
     private GitlabServiceClientOperator gitlabRepository
     @Autowired
     private GitlabGroupMemberService gitlabGroupMemberRepository
-    @Autowired
-    private ApplicationService applicationService
     @Autowired
     private GitlabUserService gitlabUserRepository
     @Autowired
@@ -97,7 +99,6 @@ class DemoEnvSetupSagaHandlerSpec extends Specification {
             DependencyInjectUtil.setAttribute(iamRepository, "baseServiceClient", iamServiceClient)
             DependencyInjectUtil.setAttribute(gitlabRepository, "gitlabServiceClient", gitlabServiceClient)
             DependencyInjectUtil.setAttribute(gitlabGroupMemberRepository, "gitlabServiceClientOperator", gitlabServiceClientOperator)
-            DependencyInjectUtil.setAttribute(applicationService, "sagaClient", sagaClient)
             DependencyInjectUtil.setAttribute(gitlabProjectRepository, "gitlabServiceClient", gitlabServiceClient)
             DependencyInjectUtil.setAttribute(gitlabUserRepository, "gitlabServiceClient", gitlabServiceClient)
             DependencyInjectUtil.setAttribute(devopsGitRepository, "gitlabServiceClient", gitlabServiceClient)
