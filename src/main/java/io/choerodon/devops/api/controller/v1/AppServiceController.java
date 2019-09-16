@@ -16,6 +16,7 @@ import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.eventhandler.payload.DevOpsAppServicePayload;
 import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
+import io.choerodon.devops.infra.dto.harbor.Project;
 import io.choerodon.devops.infra.enums.GitPlatformType;
 import io.choerodon.mybatis.annotation.SortDefault;
 import io.choerodon.swagger.annotation.CustomPageRequest;
@@ -739,6 +740,20 @@ public class AppServiceController {
                 applicationServiceService.listAppServiceByIds(ids, doPage, pageRequest, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.list.app.service.ids"));
+    }
+
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "根据导入类型查询应用服务所属的项目集合")
+    @GetMapping(value = "/list_project_by_share")
+    public ResponseEntity<List<ProjectVO>> listProjectByShare(
+            @ApiParam(value = "项目Id")
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "导入应用服务类型")
+            @RequestParam(value = "share") Boolean share){
+        return Optional.ofNullable(
+                applicationServiceService.listProjectByShare(projectId,share))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.list.project.by.share"));
     }
 }
 
