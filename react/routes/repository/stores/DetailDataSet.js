@@ -39,7 +39,7 @@ function getRequestData(data, res) {
   const { chartUrl, harborCustom, chartCustom } = data;
   if (harborCustom) {
     if (isEmpty(res.harbor)) {
-      res.chart = {
+      res.harbor = {
         id: res.id,
         type: 'harbor',
         custom: true,
