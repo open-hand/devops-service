@@ -18,6 +18,15 @@ public class DevopsEnvironmentInfoDTO {
     private Boolean isSkipCheckPermission;
     private Long objectVersionNumber;
     private String description;
+    private Boolean active;
+
+    public Boolean getActive() {
+        return active;
+    }
+
+    public void setActive(Boolean active) {
+        this.active = active;
+    }
 
     public Long getId() {
         return id;

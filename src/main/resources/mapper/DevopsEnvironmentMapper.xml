@@ -198,6 +198,7 @@
                env.devops_sync_commit,
                env.agent_sync_commit,
                env.cluster_id,
+               env.is_active as active,
                cluster.name as cluster_name,
                env.is_skip_check_permission,
                env.object_version_number,
