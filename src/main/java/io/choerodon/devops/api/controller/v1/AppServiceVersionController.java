@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 import com.github.pagehelper.PageInfo;
+import io.choerodon.devops.infra.dto.AppServiceVersionDTO;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -347,5 +348,19 @@ public class AppServiceVersionController {
                 appServiceVersionService.queryServiceVersionByAppServiceIdAndShare(appServiceId, share))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.remote.application.versions.get"));
+    }
+
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "根据应用服务Id集合查询所有应用版本")
+    @GetMapping(value = "/list_by_service_ids")
+    public ResponseEntity<List<AppServiceVersionDTO>> listVersionByIds(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用服务id集合", required = true)
+            @RequestParam(value = "app_service_ids", required = true) List<Long> ids) {
+        return Optional.ofNullable(
+                appServiceVersionService.listServiceVersionByAppServiceIds(ids,null))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.application.versions.get"));
     }
 }
