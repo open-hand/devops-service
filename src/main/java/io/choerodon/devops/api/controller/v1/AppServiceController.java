@@ -773,7 +773,7 @@ public class AppServiceController {
         return Optional.ofNullable(
                 applicationServiceService.listServiceByVersionIds(ids))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.list.project.by.share"));
+                .orElseThrow(() -> new CommonException("error.list.service.by.version.ids"));
     }
 }
 
