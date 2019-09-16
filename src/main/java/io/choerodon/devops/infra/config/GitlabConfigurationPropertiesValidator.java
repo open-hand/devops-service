@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.config;
 
+import javax.annotation.Nonnull;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -15,12 +17,12 @@ public class GitlabConfigurationPropertiesValidator implements Validator {
     private Logger logger = LoggerFactory.getLogger(GitlabConfigurationPropertiesValidator.class);
 
     @Override
-    public boolean supports(Class<?> clazz) {
+    public boolean supports(@Nonnull Class<?> clazz) {
         return GitlabConfigurationProperties.class == clazz;
     }
 
     @Override
-    public void validate(Object target, Errors errors) {
+    public void validate(Object target, @Nonnull Errors errors) {
         GitlabConfigurationProperties properties = (GitlabConfigurationProperties) target;
         if (properties.getPassword() == null || properties.getPassword().length() < 8) {
             logger.error("===============================================ERROR======================================================");
@@ -29,7 +31,6 @@ public class GitlabConfigurationPropertiesValidator implements Validator {
             errors.rejectValue("services.gitlab.password", "error.password.length");
         }
     }
-
 
     @Bean
     public static Validator configurationPropertiesValidator() {

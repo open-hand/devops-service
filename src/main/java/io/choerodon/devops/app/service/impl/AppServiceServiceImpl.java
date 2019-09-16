@@ -374,7 +374,6 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         PageInfo<AppServiceDTO> applicationServiceDTOS = basePageByOptions(projectId, isActive, hasVersion, appMarket, type, doPage, pageRequest, params);
-        UserAttrDTO userAttrDTO = userAttrMapper.selectByPrimaryKey(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         initApplicationParams(projectDTO, organizationDTO, applicationServiceDTOS.getList(), urlSlash);
@@ -397,7 +396,6 @@ public class AppServiceServiceImpl implements AppServiceService {
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
 
         initApplicationParams(projectDTO, organizationDTO, applicationServiceDTOPageInfo.getList(), urlSlash);
-
         return ConvertUtils.convertPage(applicationServiceDTOPageInfo, AppServiceRepVO.class);
     }
 
@@ -413,7 +411,6 @@ public class AppServiceServiceImpl implements AppServiceService {
             applicationDTOServiceList = appServiceMapper.listProjectMembersAppServiceByActive(projectId, userId);
         }
 
-        UserAttrDTO userAttrDTO = userAttrMapper.selectByPrimaryKey(userId);
         OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
 
@@ -496,13 +493,12 @@ public class AppServiceServiceImpl implements AppServiceService {
         appServiceDTO.setSynchro(true);
         appServiceDTO.setFailed(false);
         setProjectHook(appServiceDTO, devOpsAppServicePayload.getGitlabProjectId(), applicationServiceToken, devOpsAppServicePayload.getUserId());
-//        baseUpdate(appServiceDTO);
-        appServiceMapper.updateByPrimaryKeySelective(appServiceDTO);
+        baseUpdate(appServiceDTO);
 
         // 为项目下的成员分配对于此gitlab项目的权限
         operateGitlabMemberPermission(devOpsAppServicePayload);
 
-        if (devOpsAppServicePayload.getTemplateAppServiceId() != null) {
+        if (devOpsAppServicePayload.getTemplateAppServiceId() != null && devOpsAppServicePayload.getTemplateAppServiceVersionId() != null) {
             LOGGER.info("The current app service id is {} and the service code is {}", appServiceDTO.getId(), appServiceDTO.getCode());
             LOGGER.info("The template app service id is not null: {}, start to clone template repository", devOpsAppServicePayload.getTemplateAppServiceId());
 
@@ -1747,7 +1743,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         ProjectDTO oldProjectDTO = baseServiceClientOperator.queryIamProjectById(oldAppServiceDTO.getProjectId());
         AppServiceVersionDTO oldAppServiceVersionDTO = appServiceVersionService.baseQuery(oldAppServiceVersionId);
         String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
-        String oldGroup = null;
+        String oldGroup;
         if (oldProjectDTO.getOrganizationId() != null) {
             OrganizationDTO oldOrganizationDTO = baseServiceClientOperator.queryOrganizationById(oldProjectDTO.getOrganizationId());
             oldGroup = oldOrganizationDTO.getCode() + "-" + oldProjectDTO.getCode();
@@ -2038,7 +2034,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     @Override
     public PageInfo<AppServiceGroupInfoVO> pageAppServiceByMode(Long projectId, Boolean share,Long searchProjectId, String param,PageRequest pageRequest) {
-        List<AppServiceDTO> appServiceDTOList = new ArrayList<>();
+        List<AppServiceDTO> appServiceDTOList;
         if (!StringUtils.isEmpty(share) && share) {
             appServiceDTOList = listSharedAppService(projectId,searchProjectId,param);
         } else {

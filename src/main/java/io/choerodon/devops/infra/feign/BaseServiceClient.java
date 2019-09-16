@@ -167,7 +167,7 @@ public interface BaseServiceClient {
                                                @RequestParam("app_version_id") Long appVersionId,
                                                @RequestBody Set<Long> serviceVersionIds);
 
-    @PutMapping(value = "/v1/applications/{app_download_recode_id}/fail_downloading")
+    @PutMapping(value = "/v1/applications/{app_download_record_id}/fail_downloading")
     ResponseEntity failToDownloadApplication(@PathVariable("app_download_record_id") Long appDownloadRecordId,
                                              @RequestParam("mkt_app_version_id") Long mktVersionId);
 
