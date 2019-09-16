@@ -610,4 +610,8 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         return appServiceVersionMapper.queryValueByAppServiceId(appServiceId);
     }
 
+    @Override
+    public List<AppServiceVersionDTO> baseListVersions(List<Long> appServiceVersionIds) {
+        return appServiceVersionMapper.listVersions(appServiceVersionIds);
+    }
 }

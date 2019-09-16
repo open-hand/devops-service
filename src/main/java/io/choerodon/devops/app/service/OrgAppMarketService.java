@@ -3,11 +3,10 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 
 import com.github.pagehelper.PageInfo;
-import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.base.domain.PageRequest;
+import io.choerodon.devops.api.vo.iam.AppServiceAndVersionVO;
 import io.choerodon.devops.app.eventhandler.payload.*;
-import io.choerodon.devops.api.vo.HarborMarketVO;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -17,6 +16,7 @@ import io.choerodon.devops.api.vo.HarborMarketVO;
 public interface OrgAppMarketService {
     /**
      * 根据appId 查询应用服务
+     *
      * @param appId
      * @param pageRequest
      * @param params
@@ -27,13 +27,8 @@ public interface OrgAppMarketService {
                                                   String params);
 
     /**
-     * 查询所有应用服务
-     * @return
-     */
-    List<AppServiceUploadPayload> listAllAppServices();
-
-    /**
      * 根据appServiceId 查询所有服务版本
+     *
      * @param appServiceId
      * @return
      */
@@ -42,20 +37,29 @@ public interface OrgAppMarketService {
 
     /**
      * 应用上传
+     *
      * @param marketUploadVO
      */
     void uploadAPP(AppMarketUploadPayload marketUploadVO);
 
     /**
      * 应用上传 新增修复版本
+     *
      * @param appMarketFixVersionPayload
      */
     void uploadAPPFixVersion(AppMarketFixVersionPayload appMarketFixVersionPayload);
 
     /**
      * 应用下载
+     *
      * @param appServicePayload
      */
     void downLoadApp(AppMarketDownloadPayload appServicePayload);
 
-    }
+    /**
+     * 根据versionId查询应用服务版本
+     * 保留原排序
+     * @param versionVOList
+     */
+    List<AppServiceAndVersionVO> listVersions(List<AppServiceAndVersionVO> versionVOList);
+}
