@@ -41,7 +41,6 @@ function getRequestData(data, res) {
   if (harborType === 'custom') {
     if (isEmpty(res.harbor)) {
       res.harbor = {
-        id: res.id,
         type: 'harbor',
         custom: true,
         config: {},
@@ -55,7 +54,6 @@ function getRequestData(data, res) {
   if (chartType === 'custom') {
     if (isEmpty(res.chart)) {
       res.chart = {
-        id: res.id,
         type: 'chart',
         config: {},
       };

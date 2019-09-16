@@ -1140,13 +1140,6 @@ class EditNetwork extends Component {
         );
       },
     );
-    if ((istOption.concat(initIstOption)).length > 1) {
-      initIstOption.unshift(
-        <Option key="all_instance" value={['all_instance']}>
-          {intl.formatMessage({ id: 'all' })}
-        </Option>
-      );
-    }
 
     return (
       <div className="c7n-region">
@@ -1248,6 +1241,11 @@ class EditNetwork extends Component {
                           .toLowerCase()
                           .indexOf(input.toLowerCase()) >= 0}
                       >
+                        {istOption.concat(initIstOption).length > 1 && (
+                          <Option key="all_instance" value={['all_instance']}>
+                            {intl.formatMessage({ id: 'all' })}
+                          </Option>
+                        )}
                         {initIstOption}
                         {istOption}
                       </Select>,

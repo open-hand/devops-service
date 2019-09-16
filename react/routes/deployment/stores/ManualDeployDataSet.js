@@ -20,6 +20,7 @@ export default ((intlPrefix, formatMessage, projectId, envOptionsDs, valueIdOpti
   function handleUpdate({ dataSet, record, name, value }) {
     switch (name) {
       case 'appServiceSource':
+        deployStore.setAppService([]);
         deployStore.loadAppService(projectId, value);
         record.get('appServiceId') && record.set('appServiceId', null);
         break;

@@ -26,8 +26,8 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const intlPrefix = 'c7ncd.appService';
     const AppStore = useMemo(() => useStore(), []);
     const listDs = useMemo(() => new DataSet(ListDataSet(intlPrefix, formatMessage, projectId)), [formatMessage, projectId]);
-    const importDs = useMemo(() => new DataSet(ImportDataSet(intlPrefix, formatMessage, projectId)), [formatMessage, projectId]);
     const importTableDs = useMemo(() => new DataSet(ImportTableDataSet(intlPrefix, formatMessage, projectId)), [formatMessage, projectId]);
+    const importDs = useMemo(() => new DataSet(ImportDataSet(intlPrefix, formatMessage, projectId, importTableDs)), [formatMessage, projectId, importTableDs]);
     const versionOptions = useMemo(() => new DataSet(OptionsDataSet()), []);
     const selectedDs = useMemo(() => new DataSet(selectedDataSet(intlPrefix, formatMessage, projectId)), [projectId]);
 

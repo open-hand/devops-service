@@ -192,9 +192,10 @@ const AppService = withRouter(observer((props) => {
     if (!active) {
       Modal.open({
         key: modalKey3,
-        title: formatMessage({ id: `${intlPrefix}.stop` }),
+        title: formatMessage({ id: `${intlPrefix}.stop` }, { name: listDs.current.get('name') }),
         children: <FormattedMessage id={`${intlPrefix}.stop.tips`} />,
         onOk: () => handleChangeActive(active),
+        okText: formatMessage({ id: 'stop' }),
       });
     } else {
       handleChangeActive(active);
