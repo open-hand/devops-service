@@ -319,7 +319,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                     configurationProperties.setType(HARBOR);
                     Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
                     HarborClient harborClient = retrofit.create(HarborClient.class);
-                    projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+                    projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
                     organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
                     harborService.createHarbor(harborClient, organizationDTO.getCode() + "-" + projectDTO.getCode());
                 }
