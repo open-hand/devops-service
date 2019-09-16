@@ -5,7 +5,7 @@
     <select id="list" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
         SELECT
         da.id,
-        da.app_id,
+        da.project_id,
         da.name,
         da.code,
         da.type,
@@ -19,7 +19,7 @@
         da.created_by,
         da.last_updated_by
         FROM devops_app_service da
-        where da.app_id = #{appId}
+        WHERE da.project_id = #{projectId}
         <if test="isActive != null">
             <if test="isActive">
                 AND da.is_active = TRUE
@@ -49,7 +49,7 @@
     <select id="listProjectMembersAppService" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
         SELECT
         da.id,
-        da.app_id,
+        da.project_id,
         da.name,
         da.code,
         da.type,
@@ -71,7 +71,7 @@
         LEFT JOIN devops_app_service das ON dasur.app_service_id = das.id
         WHERE
         das.id IS NOT NULL
-        AND das.app_id = #{appId}
+        AND das.project_id = #{projectId}
         AND dasur.iam_user_id = #{userId}
         AND das.is_skip_check_permission = 0 UNION
         SELECT
@@ -79,7 +79,7 @@
         FROM
         devops_app_service
         WHERE
-        app_id = #{appId}
+        project_id = #{projectId}
         AND is_skip_check_permission = 1
         ) da
         <where>
@@ -115,10 +115,10 @@
         </if>
 
     </select>
-    <select id="listByAppId" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
+    <select id="listByProjectId" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
         SELECT
         da.id,
-        da.app_id,
+        da.project_id,
         da. NAME,
         da. CODE,
         EXISTS (
@@ -132,7 +132,7 @@
         FROM
         devops_app_service da
         WHERE
-        da.app_id = #{appId}
+        da.project_id = #{projectId}
         <include refid="sqlparam"/>
         ORDER BY
         version != 1,
@@ -145,14 +145,14 @@
         da.`code`,
         da.`name` ,
         dam.share_level,
-        da.app_id app_id
+        da.project_id project_id
         FROM
         devops_app_service da
         JOIN devops_app_service_instance dai ON dai.app_service_id = da.id
         JOIN devops_env de ON de.id = dai.env_id
         left join devops_app_service_share_rule dam on dam.app_service_id = da.id
         WHERE
-        de.project_id = #{appId}
+        de.project_id = #{projectId}
         AND de.id = #{envId}
         <if test="appServiceId!=null and appServiceId !=''">
             ORDER BY da.id not in (#{appServiceId}),da.id ASC
@@ -168,7 +168,7 @@
             da.is_active is true
           AND da.is_synchro is true
           AND da.gitlab_project_id is not null
-          AND da.app_id = #{appId}
+          AND da.project_id = #{projectId}
     </select>
 
     <select id="listProjectMembersAppServiceByActive" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
@@ -182,16 +182,15 @@
                 devops_app_service_user_rel dasur
                 LEFT JOIN devops_app_service das ON dasur.app_service_id = das.id
                 WHERE
-                das.id IS NOT NULL
-                AND das.app_id = #{appId}
-                AND dasur.iam_user_id = #{userId}
-                AND das.is_skip_check_permission = 0 UNION ALL
+                        das.id IS NOT NULL
+                  AND das.project_id = #{projectId}
+                  AND dasur.iam_user_id = #{userId}
+                  AND das.is_skip_check_permission = 0 UNION ALL
                 SELECT
                 *
                 FROM
                 devops_app_service
-                WHERE
-                app_id = #{appId}
+                WHERE project_id = #{projectId}
                 AND is_skip_check_permission = 1
                 ) da
                 where  da.is_active is true
@@ -210,8 +209,8 @@
         JOIN devops_env de ON dai.env_id = de.id
         LEFT JOIN devops_app_service_share_rule dam ON dam.app_service_id = da.id
         WHERE
-        da.is_active
-        AND de.project_id = #{appId}
+                da.is_active
+          AND de.project_id = #{projectId}
         ORDER BY
         dam.share_level ASC,
         da.id DESC
@@ -228,8 +227,8 @@
         JOIN devops_env de ON dai.env_id = de.id
         LEFT JOIN devops_app_service_share_rule dam ON dam.app_service_id = da.id
         WHERE
-        da.is_active
-        AND de.project_id = #{appId}
+                da.is_active
+          AND de.project_id = #{projectId}
         ORDER BY
         dam.share_level ASC,
         da.id DESC
@@ -290,7 +289,7 @@
         FROM
         devops_app_service da
         WHERE
-        da.app_id = #{appId}
+        da.project_id = #{projectId}
         AND da.is_active = #{active}
         AND ((select count(1) from devops_app_service_share_rule dam where da.id=dam.app_service_id)=0)
         AND ((select count(1) from devops_app_service_version dav where da.id=dav.app_service_id)>0)
@@ -300,18 +299,18 @@
 
     <select id="queryByToken" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
         SELECT
-        da.id,
-        da.app_id,
-        da.name,
-        da.code,
-        da.is_active,
-        da.is_synchro,
-        da.gitlab_project_id,
-        da.harbor_config_id,
-        da.chart_config_id,
-        da.uuid,
-        da.token,
-        da.object_version_number
+               da.id,
+               da.project_id,
+               da.name,
+               da.code,
+               da.is_active,
+               da.is_synchro,
+               da.gitlab_project_id,
+               da.harbor_config_id,
+               da.chart_config_id,
+               da.uuid,
+               da.token,
+               da.object_version_number
         FROM
         devops_app_service da
         WHERE
@@ -332,8 +331,7 @@
 
     <select id="listByCode" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
         SELECT
-        da.`id`,
-        da.app_id
+               da.`id`, da.project_id
         FROM
         devops_app_service da
         JOIN devops_app_service_share_rule dam ON da.id = dam.app_service_id
@@ -344,7 +342,7 @@
     <select id="listCodeRepository" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
         SELECT
         da.id,
-        da.app_id,
+        da.project_id,
         da.name,
         da.code,
         da.is_active,
@@ -354,7 +352,7 @@
         da.uuid
         FROM
         devops_app_service da
-        WHERE da.app_id = #{appId}
+        WHERE da.project_id = #{projectId}
         AND da.is_active = 1
         AND da.gitlab_project_id IS NOT NULL
         <if test='isProjectOwner != null'>
@@ -405,7 +403,7 @@
                 where da.harbor_config_id = #{oldConfigId}
             </if>
         </if>
-        AND da.app_id = #{appId}
+        AND da.project_id = #{projectId}
     </update>
 
 
@@ -441,7 +439,7 @@
             devops_app_service da
         WHERE
             da.code = #{code}
-          AND da.app_id is null
+          AND da.project_id is null
     </select>
 
     <select id="listShareApplicationService" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
@@ -449,13 +447,12 @@
         da.id,
         da.`code`,
         da.`name`,
-        da.app_id,
+        da.project_id,
         da.chart_config_id,
         da.harbor_config_id
         FROM
         devops_app_service_share_rule dasr
         JOIN devops_app_service da ON da.id = dasr.app_service_id
-
         WHERE
         (
         dasr.share_level = 'organization'
@@ -483,7 +480,7 @@
     <select id="queryOrganizationShareApps" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
         SELECT DISTINCT
         das.id,
-        das.app_id,
+        das.project_id,
         das.`name`,
         das.CODE,
         das.type
@@ -492,13 +489,16 @@
         LEFT JOIN devops_app_service_share_rule b ON das.id = b.app_service_id
         LEFT JOIN devops_app_service_version dasv on dasv.app_service_id = b.app_service_id
         WHERE
-        das.app_id is not null and b.app_service_id is not null and dasv.version is not null
+        das.project_id is not null and b.app_service_id is not null and dasv.version is not null
 
         <if test='appServiceIds != null and appServiceIds.size > 0'>
             AND
             <foreach collection="appServiceIds" item="appServiceId" open="(" separator=" OR " close=")">
                 das.id = #{appServiceId}
             </foreach>
+        </if>
+        <if test="searchProjectId != null and searchProjectId !=''">
+            AND das.project_id = searchProjectId
         </if>
         <if test="param != null and param != ''">
             AND ( das.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
@@ -509,13 +509,12 @@
     <select id="queryMarketDownloadApps" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
         SELECT DISTINCT
         das.id,
-        das.app_id,
+        das.project_id,
         das.`name`,
         das.CODE,
         das.type
         FROM
         devops_app_service das
-        JOIN devops_project db ON das.app_id = db.app_id
         JOIN devops_app_service_version dasv ON dasv.app_service_id = das.id
         <choose>
             <when test="deployOnly!=null and deployOnly==true">
@@ -526,11 +525,12 @@
             </otherwise>
         </choose>
         WHERE
-        das.app_id IS NOT NULL
-        AND ISNULL(db.iam_project_id)
-        AND db.app_id IS NOT NULL
+        das.project_id IS NULL
         <if test="type != null and type != ''">
             AND das.type = #{type}
+        </if>
+        <if test="searchProjectId != null and searchProjectId !=''">
+            AND das.project_id = searchProjectId
         </if>
         <if test="param != null and param != ''">
             AND  (das.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
@@ -541,7 +541,7 @@
     <select id="listShareProjectApps" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
       SELECT DISTINCT
         das.id,
-        das.app_id,
+        das.project_id,
         das.`name`,
         das.CODE,
         das.type
@@ -560,6 +560,9 @@
         ) bb ON das.id = bb.app_service_id
     WHERE
         bb.app_service_id IS NOT NULL
+        <if test="searchProjectId != null and searchProjectId !=''">
+            AND das.project_id = searchProjectId
+        </if>
         <if test="param != null and param != ''">
             AND  ( das.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
             AND  das.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%'))

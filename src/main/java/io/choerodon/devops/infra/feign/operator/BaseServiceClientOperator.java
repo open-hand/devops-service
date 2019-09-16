@@ -356,4 +356,12 @@ public class BaseServiceClientOperator {
         }
         return null;
     }
+
+    public List<ProjectDTO> queryProjectsByIds(Set<Long> ids){
+        try {
+            return baseServiceClient.queryByIds(ids).getBody();
+        } catch (Exception e) {
+            return null;
+        }
+    }
 }

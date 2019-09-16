@@ -103,7 +103,6 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 //                syncAppShare(logs);
 //                syncDeployRecord(logs);
 //                syncClusterAndCertifications(logs);
-//                syncProjectAppId();
 //                syncConfig();
                   syncBranch();
 
@@ -197,11 +196,6 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 }
                 logs.add(checkLog);
             });
-        }
-
-
-        private void syncProjectAppId() {
-            devopsProjectMapper.fixAppIdValue();
         }
 
         private void syncAppShare(List<CheckLog> logs) {

@@ -1,8 +1,6 @@
 package io.choerodon.devops.api.controller.v1
 
-import static org.mockito.ArgumentMatchers.anyInt
-import static org.mockito.ArgumentMatchers.anyLong
-import static org.mockito.ArgumentMatchers.anyString
+import static org.mockito.ArgumentMatchers.*
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
 import org.mockito.Mockito
@@ -148,7 +146,7 @@ class GitlabWebHookControllerSpec extends Specification {
         String body = "{\"object_kind\":\"pipeline\",\"object_attributes\":{\"id\":54192,\"ref\":\"master\",\"tag\":false,\"sha\":\"b77fceb9aab97e2a8dbacb8ef69686368fe8f7a1\",\"before_sha\":\"bae263786ff7009c1bfabe65baf5e575f68041cd\",\"status\":\"failed\",\"detailed_status\":\"failed\",\"stages\":[\"mvn-package\",\"docker-build\",\"external\"],\"created_at\":\"2018-12-25 10:55:26 UTC\",\"finished_at\":\"2018-12-25 11:04:56 UTC\",\"duration\":317},\"user\":{\"name\":\"zmf\",\"username\":\"20610\",\"avatar_url\":\"https://code.choerodon.com.cn/uploads/-/system/user/avatar/10256/avatar.png\"},\"project\":{\"id\":237,\"name\":\"devops-service\",\"description\":\"\",\"web_url\":\"https://code.choerodon.com.cn/choerodon-c7ncd/devops-service\",\"avatar_url\":null,\"git_ssh_url\":\"git@code.choerodon.com.cn:choerodon-c7ncd/devops-service.git\",\"git_http_url\":\"https://code.choerodon.com.cn/choerodon-c7ncd/devops-service.git\",\"namespace\":\"Choerodon-Choerodon持续交付\",\"visibility_level\":0,\"path_with_namespace\":\"choerodon-c7ncd/devops-service\",\"default_branch\":\"master\",\"ci_config_path\":null},\"commit\":{\"id\":\"b77fceb9aab97e2a8dbacb8ef69686368fe8f7a1\",\"message\":\"Merge branch 'feature-C7NCD-1756' into 'master'\\n\\n[IMP] 多容器返回在同一个Pod中的时候将不可用的容器排列在靠前\\n\\nSee merge request choerodon-c7ncd/devops-service!302\",\"timestamp\":\"2018-12-25T02:55:23Z\",\"url\":\"https://code.choerodon.com.cn/choerodon-c7ncd/devops-service/commit/b77fceb9aab97e2a8dbacb8ef69686368fe8f7a1\",\"author\":{\"name\":\"zmf\",\"email\":\"mofang.zheng@test.com\"}},\"builds\":[{\"id\":101344,\"stage\":\"docker-build\",\"name\":\"docker-build\",\"status\":\"success\",\"created_at\":\"2018-12-25 10:55:26 UTC\",\"started_at\":\"2018-12-25 11:04:35 UTC\",\"finished_at\":\"2018-12-25 11:04:56 UTC\",\"when\":\"on_success\",\"manual\":false,\"user\":{\"name\":\"zmf\",\"username\":\"20610\",\"avatar_url\":\"https://code.choerodon.com.cn/uploads/-/system/user/avatar/10256/avatar.png\"},\"runner\":{\"id\":1,\"description\":\"choerodon-runner\",\"active\":true,\"is_shared\":true},\"artifacts_file\":{\"filename\":null,\"size\":0}},{\"id\":101343,\"stage\":\"mvn-package\",\"name\":\"maven-test-build\",\"status\":\"success\",\"created_at\":\"2018-12-25 10:55:26 UTC\",\"started_at\":\"2018-12-25 10:59:30 UTC\",\"finished_at\":\"2018-12-25 11:04:26 UTC\",\"when\":\"on_success\",\"manual\":false,\"user\":{\"name\":\"zmf\",\"username\":\"20610\",\"avatar_url\":\"https://code.choerodon.com.cn/uploads/-/system/user/avatar/10256/avatar.png\"},\"runner\":{\"id\":1,\"description\":\"choerodon-runner\",\"active\":true,\"is_shared\":true},\"artifacts_file\":{\"filename\":null,\"size\":1671812}}]}"
 
         applicationDO.setToken(token)
-        applicationDO.setAppId(1L)
+        applicationDO.setProjectId(1L)
         applicationDO.setGitlabProjectId(1)
         applicationMapper.insert(applicationDO)
 

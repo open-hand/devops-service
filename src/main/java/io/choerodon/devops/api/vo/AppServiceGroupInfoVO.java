@@ -1,5 +1,8 @@
 package io.choerodon.devops.api.vo;
 
+import io.choerodon.devops.infra.dto.AppServiceVersionDTO;
+
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -10,12 +13,19 @@ public class AppServiceGroupInfoVO {
     private Long id;
     private String name;
     private String code;
-    private Long appId;
+    private Long projectId;
     private String type;
-    private Long versionId;
-    private String version;
+    private List<AppServiceVersionDTO> versions;
     private Boolean share;
-    private String  appName;
+    private String  projectName;
+
+    public List<AppServiceVersionDTO> getVersions() {
+        return versions;
+    }
+
+    public void setVersions(List<AppServiceVersionDTO> versions) {
+        this.versions = versions;
+    }
 
     public Boolean getShare() {
         return share;
@@ -25,36 +35,12 @@ public class AppServiceGroupInfoVO {
         this.share = share;
     }
 
-    public String getAppName() {
-        return appName;
-    }
-
-    public void setAppName(String appName) {
-        this.appName = appName;
-    }
-
-    public Long getVersionId() {
-        return versionId;
-    }
-
-    public void setVersionId(Long versionId) {
-        this.versionId = versionId;
-    }
-
     public String getType() {
         return type;
     }
 
     public void setType(String type) {
         this.type = type;
-    }
-
-    public String getVersion() {
-        return version;
-    }
-
-    public void setVersion(String version) {
-        this.version = version;
     }
 
     public Long getId() {
@@ -81,24 +67,19 @@ public class AppServiceGroupInfoVO {
         this.code = code;
     }
 
-    public Long getAppId() {
-        return appId;
+    public Long getProjectId() {
+        return projectId;
     }
 
-    public void setAppId(Long appId) {
-        this.appId = appId;
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
+    public String getProjectName() {
+        return projectName;
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        AppServiceGroupInfoVO appServiceGroupInfoVO = (AppServiceGroupInfoVO) obj;
-        return Objects.equals(id, appServiceGroupInfoVO.id);
+    public void setProjectName(String projectName) {
+        this.projectName = projectName;
     }
 }

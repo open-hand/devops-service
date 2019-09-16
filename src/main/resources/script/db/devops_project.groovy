@@ -49,25 +49,4 @@ databaseChangeLog(logicalFilePath: 'dba/devops_project.groovy') {
             column(name: 'harbor_project_is_private', type: 'TINYINT UNSIGNED', defaultValue: "0", afterColumn: 'harbor_project_user_email',remarks: 'harbor仓库是否私有。0公有，1私有')
         }
     }
-
-    changeSet(id: '2019-08-07-rename-column', author: 'zmf') {
-        addColumn(tableName: 'devops_project') {
-            column(name: 'app_id', type: 'BIGINT UNSIGNED', afterColumn: 'iam_project_id', remarks: '应用ID') {
-                constraints(nullable: false)
-            }
-        }
-    }
-
-    changeSet(id: '2019-08-13-change-primary-key', author: 'zmf') {
-        dropPrimaryKey(tableName: "devops_project")
-        addPrimaryKey(tableName: "devops_project", columnNames: "app_id")
-    }
-
-    changeSet(id: '2019-08-14-drop-project-id-app-id-default-value', author: 'zmf') {
-        dropDefaultValue(tableName: 'devops_project', columnName: "iam_project_id")
-        dropDefaultValue(tableName: 'devops_project', columnName: "app_id")
-    }
-    changeSet(id: '2019-08-16-drop-not-null-constraint-project-id', author: 'sheep') {
-        dropNotNullConstraint(tableName: 'devops_project', columnName: 'iam_project_id', columnDataType: 'BIGINT UNSIGNED')
-    }
 }

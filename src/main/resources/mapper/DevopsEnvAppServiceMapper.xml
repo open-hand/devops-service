@@ -40,8 +40,7 @@
                            FROM devops_env_app_service env_app
                            WHERE env_app.env_id = #{envId}
                            ) related_app ON app_service.id = related_app.app_service_id
-                 LEFT JOIN devops_project dp ON app_service.app_id = dp.app_id
-        WHERE dp.iam_project_id = #{projectId}
+        WHERE app_service.project_id = #{projectId}
           AND (app_service.is_failed IS NULL OR app_service.is_failed = FALSE)
           AND app_service.is_active = TRUE
           AND app_service.is_synchro = TRUE

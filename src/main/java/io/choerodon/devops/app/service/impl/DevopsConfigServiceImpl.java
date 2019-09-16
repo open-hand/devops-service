@@ -77,7 +77,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
     @Override
     public void operate(Long resourceId, String resourceType, List<DevopsConfigVO> devopsConfigVOS) {
 
-        devopsConfigVOS.stream().forEach(devopsConfigVO -> {
+        devopsConfigVOS.forEach(devopsConfigVO -> {
             //根据每个配置的默认还是自定义执行不同逻辑
             if (devopsConfigVO.getCustom()) {
 
@@ -105,8 +105,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                             organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
                         } else {
                             AppServiceDTO appServiceDTO = appServiceService.baseQuery(resourceId);
-                            Long projectId = devopsProjectService.queryProjectIdByAppId(appServiceDTO.getAppId());
-                            projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+                            projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
                             organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
                         }
                         harborService.createHarbor(harborClient, organizationDTO.getCode() + "-" + projectDTO.getCode());
@@ -302,12 +301,11 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                 return appServiceConfig;
             }
             AppServiceDTO appServiceDTO = appServiceService.baseQuery(resourceId);
-            Long projectId = devopsProjectService.queryProjectIdByAppId(appServiceDTO.getAppId());
-            DevopsConfigDTO projectConfig = baseQueryByResourceAndType(projectId, ResourceLevel.PROJECT.value(), configType);
+            DevopsConfigDTO projectConfig = baseQueryByResourceAndType(appServiceDTO.getProjectId(), ResourceLevel.PROJECT.value(), configType);
             if (projectConfig != null) {
                 return projectConfig;
             }
-            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
             OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
             DevopsConfigDTO organizationConfig = baseQueryByResourceAndType(organizationDTO.getId(), ResourceLevel.ORGANIZATION.value(), configType);
             //如果组织层使用自定义设置，为了避免给组织层下所有项目都创一遍harborProject,则只在具体某个应用服务用到的时候，在去给应用服务所属的项目创建对应的harborProject
@@ -321,7 +319,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                     configurationProperties.setType(HARBOR);
                     Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
                     HarborClient harborClient = retrofit.create(HarborClient.class);
-                    projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+                    projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
                     organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
                     harborService.createHarbor(harborClient, organizationDTO.getCode() + "-" + projectDTO.getCode());
                 }

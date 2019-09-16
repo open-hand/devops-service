@@ -180,22 +180,6 @@ public interface AppServiceService {
     AppServiceBatchCheckVO checkCodeByProjectId(Long projectId, AppServiceBatchCheckVO appServiceBatchCheckVO);
 
     /**
-     * 创建服务校验名称是否存在
-     *
-     * @param projectId 项目ID
-     * @param name      服务name
-     */
-    void checkNameByProjectId(Long projectId, String name);
-
-    /**
-     * 创建服务校验编码是否存在
-     *
-     * @param projectId 项目ID
-     * @param code      服务code
-     */
-    void checkCodeByProjectId(Long projectId, String code);
-
-    /**
      * 项目下查询已经启用有版本未发布的服务
      *
      * @param projectId   项目id
@@ -390,7 +374,7 @@ public interface AppServiceService {
                                                    Boolean isProjectOwner, Long userId);
 
 
-    AppServiceDTO baseQueryByCode(String code, Long appId);
+    AppServiceDTO baseQueryByCode(String code, Long projectId);
 
     AppServiceDTO baseQueryByCodeWithNullProject(String code);
 
@@ -426,11 +410,11 @@ public interface AppServiceService {
     AppServiceDTO baseCreate(AppServiceDTO appServiceDTO);
 
     /**
-     * 查询组织共享和市场下载的应用服务并分组返回
+     * 导入应用下根据组织共享或者市场下载的查询应用服务
      *
      * @return List<AppServiceGroupVO>
      */
-    List<AppServiceGroupInfoVO> listAppServiceGroup(Long projectId, Boolean share, String param);
+    PageInfo<AppServiceGroupInfoVO> pageAppServiceByMode(Long projectId, Boolean share,Long searchProjectId,String param,PageRequest pageRequest);
 
     /**
      * 查询所有应用服务

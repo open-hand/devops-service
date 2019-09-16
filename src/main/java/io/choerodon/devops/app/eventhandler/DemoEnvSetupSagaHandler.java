@@ -70,17 +70,7 @@ public class DemoEnvSetupSagaHandler {
         gitlabGroupPayload.setUserId(registerInfo.getUser().getId());
         gitlabGroupPayload.setUserName(registerInfo.getUser().getLoginName());
 
-        // 创建环境gitlab组
-        gitlabGroupService.createEnvGroup(gitlabGroupPayload);
-
-        // 创建应用gitlab组
-        ApplicationEventPayload applicationEventPayload = ConvertUtils.convertObject(registerInfo.getApplication(), ApplicationEventPayload.class);
-        applicationEventPayload.setOrganizationCode(registerInfo.getOrganization().getCode());
-        applicationEventPayload.setOrganizationName(registerInfo.getOrganization().getName());
-        applicationEventPayload.setProjectId(registerInfo.getProject().getId());
-        applicationEventPayload.setUserId(registerInfo.getUser().getId());
-
-        applicationService.handleApplicationCreation(applicationEventPayload);
+        gitlabGroupService.createGroups(gitlabGroupPayload);
         return payload;
     }
 

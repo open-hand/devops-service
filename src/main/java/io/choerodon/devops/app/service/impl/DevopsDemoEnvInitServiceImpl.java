@@ -158,9 +158,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
         OrganizationDTO organization = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         AppServiceDTO applicationDTO = ConvertUtils.convertObject(applicationReqDTO, AppServiceDTO.class);
 
-        Long appId = devopsProjectService.queryAppIdByProjectId(projectId);
-
-        applicationDTO.setAppId(appId);
+        applicationDTO.setProjectId(projectId);
         applicationService.checkName(projectId, applicationDTO.getName());
         applicationService.checkCode(projectId, applicationDTO.getCode());
 
@@ -169,7 +167,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
         applicationDTO.setSkipCheckPermission(Boolean.TRUE);
 
         // 查询创建应用所在的gitlab应用组
-        DevopsProjectDTO devopsProjectDTO = devopsProjectService.queryByAppId(applicationDTO.getAppId());
+        DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(applicationDTO.getProjectId());
         MemberDTO gitlabMember = gitlabGroupMemberService.queryByUserId(
                 TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()),
                 TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
@@ -207,7 +205,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
         devopsSagaHandler.createAppService(input);
 
         return ConvertUtils.convertObject(applicationService.baseQueryByCode(applicationReqDTO.getCode(),
-                applicationDTO.getAppId()), AppServiceRepVO.class);
+                applicationDTO.getProjectId()), AppServiceRepVO.class);
     }
 
 

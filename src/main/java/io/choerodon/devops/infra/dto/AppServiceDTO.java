@@ -15,7 +15,7 @@ public class AppServiceDTO extends BaseDTO {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long appId;
+    private Long projectId;
     private String name;
     private String code;
     private Integer gitlabProjectId;
@@ -102,12 +102,12 @@ public class AppServiceDTO extends BaseDTO {
         this.id = id;
     }
 
-    public Long getAppId() {
-        return appId;
+    public Long getProjectId() {
+        return projectId;
     }
 
-    public void setAppId(Long appId) {
-        this.appId = appId;
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
     }
 
     public String getName() {

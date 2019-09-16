@@ -93,7 +93,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     private void copyServicesFromProjectApp(Long originAppId, Long newAppId, Long projectId) {
         // 查询原应用下的所有服务
         AppServiceDTO search = new AppServiceDTO();
-        search.setAppId(originAppId);
+        search.setProjectId(originAppId);
         List<AppServiceDTO> originalAppServices = appServiceMapper.select(search);
 
         // 复制所有服务
@@ -322,7 +322,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         // 在新的APP中生成一条对应的服务记录
         AppServiceDTO appServiceDTO = new AppServiceDTO();
         appServiceDTO.setCode(originalAppService.getCode());
-        appServiceDTO.setAppId(newAppId);
+        appServiceDTO.setProjectId(newAppId);
 
         // 便于saga重试
         AppServiceDTO record;

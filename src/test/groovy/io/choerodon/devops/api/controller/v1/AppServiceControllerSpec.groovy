@@ -1,32 +1,11 @@
 package io.choerodon.devops.api.controller.v1
 
+import static org.mockito.ArgumentMatchers.*
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
+
+import java.util.function.Function
+
 import com.github.pagehelper.PageInfo
-import io.choerodon.asgard.saga.producer.StartSagaBuilder
-import io.choerodon.asgard.saga.producer.TransactionalProducer
-import io.choerodon.core.exception.CommonException
-import io.choerodon.core.exception.ExceptionResponse
-import io.choerodon.devops.DependencyInjectUtil
-import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.api.vo.*
-import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO
-import io.choerodon.devops.api.vo.iam.RoleSearchVO
-import io.choerodon.devops.api.vo.iam.RoleVO
-import io.choerodon.devops.app.service.*
-import io.choerodon.devops.infra.dto.*
-import io.choerodon.devops.infra.dto.gitlab.GitLabUserDTO
-import io.choerodon.devops.infra.dto.gitlab.GitlabProjectDTO
-import io.choerodon.devops.infra.dto.gitlab.ImpersonationTokenDTO
-import io.choerodon.devops.infra.dto.gitlab.MemberDTO
-import io.choerodon.devops.infra.dto.gitlab.ProjectHookDTO
-import io.choerodon.devops.infra.dto.gitlab.VariableDTO
-import io.choerodon.devops.infra.dto.iam.*
-import io.choerodon.devops.infra.enums.AccessLevel
-import io.choerodon.devops.infra.feign.BaseServiceClient
-import io.choerodon.devops.infra.feign.GitlabServiceClient
-import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator
-import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator
-import io.choerodon.devops.infra.mapper.*
-import io.choerodon.devops.infra.util.GitUtil
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.internal.storage.file.FileRepository
 import org.mockito.ArgumentMatcher
@@ -44,10 +23,27 @@ import spock.lang.Specification
 import spock.lang.Stepwise
 import spock.lang.Subject
 
-import java.util.function.Function
-
-import static org.mockito.ArgumentMatchers.*
-import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
+import io.choerodon.asgard.saga.producer.StartSagaBuilder
+import io.choerodon.asgard.saga.producer.TransactionalProducer
+import io.choerodon.core.exception.CommonException
+import io.choerodon.core.exception.ExceptionResponse
+import io.choerodon.devops.DependencyInjectUtil
+import io.choerodon.devops.IntegrationTestConfiguration
+import io.choerodon.devops.api.vo.*
+import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO
+import io.choerodon.devops.api.vo.iam.RoleSearchVO
+import io.choerodon.devops.api.vo.iam.RoleVO
+import io.choerodon.devops.app.service.*
+import io.choerodon.devops.infra.dto.*
+import io.choerodon.devops.infra.dto.gitlab.*
+import io.choerodon.devops.infra.dto.iam.*
+import io.choerodon.devops.infra.enums.AccessLevel
+import io.choerodon.devops.infra.feign.BaseServiceClient
+import io.choerodon.devops.infra.feign.GitlabServiceClient
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator
+import io.choerodon.devops.infra.mapper.*
+import io.choerodon.devops.infra.util.GitUtil
 
 /**
  * Created by n!Ck
@@ -384,7 +380,7 @@ class AppServiceControllerSpec extends Specification {
 
         and: '添加上删除的应用'
         AppServiceDTO appServiceDTO = new AppServiceDTO()
-        appServiceDTO.setAppId(init_id)
+        appServiceDTO.setProjectId(init_id)
         appServiceDTO.setId(init_id)
         appServiceDTO.setName("appName")
         appServiceDTO.setCode("appCode")
@@ -400,7 +396,7 @@ class AppServiceControllerSpec extends Specification {
     def "pageByOptions"() {
         given:
         AppServiceDTO appServiceDTO = new AppServiceDTO()
-        appServiceDTO.setAppId(1)
+        appServiceDTO.setProjectId(1)
         println appServiceMapper.selectOne(appServiceDTO)
 
         IamUserDTO iamUserDTO = new IamUserDTO()

@@ -303,7 +303,7 @@ public class AppServiceController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境名", required = true)
             @RequestParam String name) {
-        applicationServiceService.checkNameByProjectId(projectId, name);
+        applicationServiceService.checkName(projectId, name);
     }
 
     /**
@@ -320,7 +320,7 @@ public class AppServiceController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "服务编码", required = true)
             @RequestParam String code) {
-        applicationServiceService.checkCodeByProjectId(projectId, code);
+        applicationServiceService.checkCode(projectId, code);
     }
 
     /**
@@ -659,17 +659,21 @@ public class AppServiceController {
     }
 
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "分组查询应用服务")
-    @GetMapping(value = "/list_app_group")
-    public ResponseEntity<List<AppServiceGroupInfoVO>> listAppServiceGroup(
+    @ApiOperation(value = "导入应用下根据组织共享或者市场下载查询应用服务")
+    @GetMapping(value = "/page_by_mode")
+    public ResponseEntity<PageInfo<AppServiceGroupInfoVO>> listAppServiceGroup(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "市场来源", required = false)
-            @RequestParam(required = false) Boolean share,
+            @ApiParam(value = "市场来源", required = true)
+            @RequestParam(required = true) Boolean share,
+            @ApiParam(value = "分页参数")
+            @ApiIgnore PageRequest pageRequest,
+            @ApiParam(value = "查询项目Id", required = false)
+            @RequestParam(value = "search_project_id",required = false) Long searchProjectId,
             @ApiParam(value = "查询条件", required = false)
             @RequestParam(required = false) String param) {
         return Optional.ofNullable(
-                applicationServiceService.listAppServiceGroup(projectId, share, param))
+                applicationServiceService.pageAppServiceByMode(projectId, share,searchProjectId, param,pageRequest))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.list.app.group.error"));
     }
