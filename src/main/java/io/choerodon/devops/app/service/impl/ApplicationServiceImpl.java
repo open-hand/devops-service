@@ -272,7 +272,6 @@ public class ApplicationServiceImpl implements ApplicationService {
 
         // 发送消息通知
         logger.info("Send saga");
-        appServiceService.sendCreateAppServiceInfo(newAppService, projectId);
     }
 
     /**
