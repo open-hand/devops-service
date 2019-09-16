@@ -18,6 +18,7 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.HarborMarketVO;
+import io.choerodon.devops.api.vo.iam.AppServiceAndVersionVO;
 import io.choerodon.devops.app.eventhandler.payload.*;
 import io.choerodon.devops.app.service.OrgAppMarketService;
 import io.choerodon.swagger.annotation.CustomPageRequest;
@@ -32,16 +33,6 @@ import io.choerodon.swagger.annotation.CustomPageRequest;
 public class OrgAppMarketController {
     @Autowired
     private OrgAppMarketService orgAppMarketService;
-
-    @Permission(type = ResourceType.SITE, permissionWithin = true)
-    @ApiOperation(value = "查询所有应用服务")
-    @GetMapping("/list_app_services")
-    public ResponseEntity<List<AppServiceUploadPayload>> listAllAppServices() {
-        return Optional.ofNullable(
-                orgAppMarketService.listAllAppServices())
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.app.services.listAll"));
-    }
 
     /**
      * @param appId
@@ -123,6 +114,22 @@ public class OrgAppMarketController {
             @RequestBody AppMarketDownloadPayload applicationPayload) {
         orgAppMarketService.downLoadApp(applicationPayload);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
+    }
+
+    /**
+     * @param versionVOList
+     * @return
+     */
+    @Permission(type = ResourceType.SITE, permissionWithin = true)
+    @ApiOperation(value = "查询应用服务版本")
+    @PostMapping("/list_versions")
+    public ResponseEntity<List<AppServiceAndVersionVO>> listVersions(
+            @ApiParam(value = "应用信息", required = true)
+            @RequestBody List<AppServiceAndVersionVO> versionVOList) {
+        return Optional.ofNullable(
+                orgAppMarketService.listVersions(versionVOList))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.app.versions.list"));
     }
 }
 

@@ -169,6 +169,8 @@ public interface AppServiceVersionService {
 
     String baseQueryValueByAppId(Long appServiceId);
 
+    List<AppServiceVersionDTO> baseListVersions(List<Long> appServiceVersionIds);
+
     AppServiceVersionDTO baseCreate(AppServiceVersionDTO appServiceVersionDTO);
 
     AppServiceVersionDTO baseCreateOrUpdate(AppServiceVersionDTO appServiceVersionDTO);

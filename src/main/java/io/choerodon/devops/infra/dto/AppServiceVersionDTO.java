@@ -2,11 +2,7 @@ package io.choerodon.devops.infra.dto;
 
 
 import java.util.Date;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import javax.persistence.*;
 
 import io.choerodon.mybatis.entity.BaseDTO;
 
@@ -36,6 +32,8 @@ public class AppServiceVersionDTO extends BaseDTO {
     private String appServiceCode;
     @Transient
     private Boolean appServiceStatus;
+    @Transient
+    private String appServiceType;
     @Transient
     private String readme;
 
@@ -151,4 +149,11 @@ public class AppServiceVersionDTO extends BaseDTO {
         this.readmeValueId = readmeValueId;
     }
 
+    public String getAppServiceType() {
+        return appServiceType;
+    }
+
+    public void setAppServiceType(String appServiceType) {
+        this.appServiceType = appServiceType;
+    }
 }

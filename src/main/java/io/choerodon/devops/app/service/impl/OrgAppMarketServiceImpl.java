@@ -34,6 +34,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.validator.ApplicationValidator;
 import io.choerodon.devops.api.vo.ConfigVO;
+import io.choerodon.devops.api.vo.iam.AppServiceAndVersionVO;
 import io.choerodon.devops.api.vo.iam.MarketAppServiceImageVO;
 import io.choerodon.devops.api.vo.iam.MarketAppServiceVersionImageVO;
 import io.choerodon.devops.api.vo.iam.MarketImageUrlVO;
@@ -152,14 +153,14 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             String line = "";
             while ((line = infoInput.readLine()) != null) {
                 LOGGER.info(line);
-                if(line.contains(UNAUTHORIZED)){
+                if (line.contains(UNAUTHORIZED)) {
                     throw new CommonException(UploadErrorEnum.PUSH_IMAGE.value());
                 }
             }
 
             while ((line = errorInput.readLine()) != null) {
                 LOGGER.error(line);
-                if(line.contains(UNAUTHORIZED)){
+                if (line.contains(UNAUTHORIZED)) {
                     throw new CommonException(UploadErrorEnum.PUSH_IMAGE.value());
                 }
             }
@@ -190,12 +191,6 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         return appServiceMarketVOPageInfo;
     }
 
-    @Override
-    public List<AppServiceUploadPayload> listAllAppServices() {
-        List<AppServiceDTO> appServiceDTOList = appServiceMapper.selectAll();
-        return ConvertUtils.convertList(appServiceDTOList, this::dtoToMarketVO);
-    }
-
 
     @Override
     public List<AppServiceVersionUploadPayload> listServiceVersionsByAppServiceId(Long appServiceId) {
@@ -221,7 +216,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             baseServiceClientOperator.publishFail(marketUploadVO.getProjectId(), marketUploadVO.getMktAppId(), marketUploadVO.getMktAppVersionId(), e.getMessage(), false);
             FileUtil.deleteDirectory(new File(appFilePath));
             zipFileList.forEach(FileUtil::deleteFile);
-            throw new CommonException(e.getMessage(),e);
+            throw new CommonException(e.getMessage(), e);
         }
     }
 
@@ -301,9 +296,21 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             baseServiceClientOperator.completeDownloadApplication(appMarketDownloadVO.getAppDownloadRecordId(), appMarketDownloadVO.getAppVersionId(), appServiceVersionIds);
             LOGGER.info("==========应用下载完成==========");
         } catch (Exception e) {
-            baseServiceClientOperator.failToDownloadApplication(appMarketDownloadVO.getAppDownloadRecordId(),appMarketDownloadVO.getMktAppVersionId());
+            baseServiceClientOperator.failToDownloadApplication(appMarketDownloadVO.getAppDownloadRecordId(), appMarketDownloadVO.getMktAppVersionId());
             throw new CommonException("error.download.app", e);
         }
+    }
+
+    @Override
+    public List<AppServiceAndVersionVO> listVersions(List<AppServiceAndVersionVO> versionVOList) {
+        List<Long> appServiceVersionIds = versionVOList.stream().map(AppServiceAndVersionVO::getVersionId).collect(Collectors.toList());
+        List<AppServiceAndVersionVO> resultList = ConvertUtils.convertList(appServiceVersionService.baseListVersions(appServiceVersionIds), this::dtoToVersionVO);
+        for (int i = 0; i < resultList.size(); i++) {
+            AppServiceAndVersionVO appServiceAndVersionVO = resultList.get(i);
+            appServiceAndVersionVO.setVersionStatus(versionVOList.get(i).getVersionStatus());
+            versionVOList.set(i, appServiceAndVersionVO);
+        }
+        return resultList;
     }
 
     private AppServiceDTO createGitlabProject(AppServiceDownloadPayload downloadPayload, String appCode, Integer gitlabGroupId, Long gitlabUserId) {
@@ -722,7 +729,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         Boolean result = null;
         if (appMarketUploadVO.getMarketSaaSPlatform()) {
             MultipartFile[] files = createMockMultipartFile(zipFileList);
-            mapJson=mapJson==null?"":mapJson;
+            mapJson = mapJson == null ? "" : mapJson;
             result = marketServiceClientOperator.uploadFile(appMarketUploadVO.getAppVersion(), files, mapJson);
         } else {
             List<MultipartBody.Part> files = createMultipartBody(zipFileList);
@@ -905,6 +912,17 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         appServiceMarketVO.setAppServiceCode(applicationDTO.getCode());
         appServiceMarketVO.setAppServiceName(applicationDTO.getName());
         return appServiceMarketVO;
+    }
+
+    private AppServiceAndVersionVO dtoToVersionVO(AppServiceVersionDTO appServiceVersionDTO) {
+        AppServiceAndVersionVO appServiceAndVersionVO = new AppServiceAndVersionVO();
+        BeanUtils.copyProperties(appServiceVersionDTO, appServiceAndVersionVO);
+        appServiceAndVersionVO.setVersionId(appServiceVersionDTO.getId());
+        appServiceAndVersionVO.setId(appServiceVersionDTO.getAppServiceId());
+        appServiceAndVersionVO.setCode(appServiceVersionDTO.getAppServiceCode());
+        appServiceAndVersionVO.setName(appServiceVersionDTO.getAppServiceName());
+        appServiceAndVersionVO.setType(appServiceVersionDTO.getAppServiceType());
+        return appServiceAndVersionVO;
     }
 
 }

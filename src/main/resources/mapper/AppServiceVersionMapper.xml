@@ -421,4 +421,32 @@
         </if>
         order by last_update_date desc
     </select>
+
+    <select id="listVersions" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
+        SELECT
+            dasv.id,
+            dasv.version,
+            dasv.app_service_id,
+            das. CODE AS appServiceCode,
+            das.`name` AS appServiceName,
+            das.type AS appServiceType
+        FROM
+            devops_app_service_version dasv
+        JOIN devops_app_service das ON das.id = dasv.app_service_id
+        <if test="appServiceVersionIds!=null and appServiceVersionIds.size>0">
+            WHERE dasv.id in
+            <foreach collection="appServiceVersionIds" item="versionId"
+                     open="(" separator="," close=")">
+                #{versionId}
+            </foreach>
+        </if>
+        ORDER BY
+        CASE dasv.id
+        <foreach collection="appServiceVersionIds" index="index" item="versionId">
+            WHEN #{versionId} THEN #{index}
+        </foreach>
+        END
+    </select>
+
+
 </mapper>
