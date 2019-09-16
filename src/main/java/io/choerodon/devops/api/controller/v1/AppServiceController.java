@@ -719,13 +719,19 @@ public class AppServiceController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "批量查询应用服务")
     @GetMapping(value = "/list_app_service_ids")
-    public ResponseEntity<List<AppServiceVO>> batchQueryAppService(
+    public ResponseEntity<PageInfo<AppServiceVO>> batchQueryAppService(
             @ApiParam(value = "项目Id")
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用服务Ids")
-            @RequestParam(value = "ids") Set<Long> ids){
+            @RequestParam(value = "ids") Set<Long> ids,
+            @ApiParam(value = "是否分页")
+            @RequestParam(value = "doPage", required = false) Boolean doPage,
+            @ApiParam(value = "分页参数")
+            @ApiIgnore PageRequest pageRequest,
+            @ApiParam(value = "查询参数")
+            @RequestBody(required = false) String params){
         return Optional.ofNullable(
-                applicationServiceService.listAppServiceByIds(ids))
+                applicationServiceService.listAppServiceByIds(ids,doPage,pageRequest,params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.list.app.service.ids"));
     }
