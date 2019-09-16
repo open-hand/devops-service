@@ -328,9 +328,9 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                 return organizationConfig;
             }
             //若应用服务最后查出来的配置是最高级的默认harbor配置，需要校验项目层是否将默认harbor设置成了私有，如设为私有，需要读取私有的授权信息，用于ci推镜像和部署secret
-            if(configType.equals(HARBOR)) {
+            if (configType.equals(HARBOR)) {
                 DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectDTO.getId());
-                if (devopsProjectDTO.getHarborProjectIsPrivate()) {
+                if (devopsProjectDTO.getHarborProjectIsPrivate() != null && devopsProjectDTO.getHarborProjectIsPrivate()) {
                     ConfigVO configVO = gson.fromJson(organizationConfig.getConfig(), ConfigVO.class);
                     configVO.setPrivate(true);
                     configVO.setUserName(devopsProjectDTO.getHarborProjectUserName());
