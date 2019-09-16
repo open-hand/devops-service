@@ -23,8 +23,8 @@ export default function useStore() {
       });
     },
 
-    updateCert(projectId, data, id) {
-      return axios.put(`/devops/v1/projects/${projectId}/certs/${id}`, data, {
+    updateCert(projectId, data) {
+      return axios.put(`/devops/v1/projects/${projectId}/certs`, data, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
     },
