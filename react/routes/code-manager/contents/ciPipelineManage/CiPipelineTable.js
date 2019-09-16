@@ -161,6 +161,7 @@ class CiPipelineTable extends Component {
           dataSource={getCiPipelines}
           rowKey={(record) => record.pipelineId}
           onChange={this.handleTableChange}
+          rowClassName="c7ncd-table-row-font-color"
           filterBar={false}
         />
       </div>

@@ -1,4 +1,5 @@
 /* stylelint-disable no-descending-specificity */
+@import '~choerodon-ui/lib/style/themes/default';
 @WIDTH512: 512px;
 
 .c7n-formItem_180 {
@@ -224,4 +225,20 @@ input::-webkit-contacts-auto-fill-button {
 
 .c7n-padding-top_8 {
   padding-top: 8px;
+}
+
+// 以上部分为历史公共样式
+// -----------------------------------------------------------------------
+// 以下部分为新增公共样式
+.c7ncd-root {
+  .@{c7n-pro-prefix}-table {
+    .@{c7n-pro-prefix}-table-tbody {
+      color: rgba(0, 0, 0, 0.65);
+    }
+  }
+  .@{c7n-prefix}-table-body {
+    .@{c7n-prefix}-table-tbody {
+      color: rgba(0, 0, 0, 0.65);
+    }
+  }
 }

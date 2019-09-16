@@ -405,6 +405,7 @@ class MergeRequestHome extends Component {
                     dataSource={od.slice()}
                     rowKey={(record) => record.id}
                     filterBar={false}
+                    rowClassName="c7ncd-table-row-font-color"
                   />
                 </TabPane>
                 <TabPane tab={`${intl.formatMessage({ id: 'merge.tab2' })}(${mergeCount || 0})`} key="merged">
@@ -418,6 +419,7 @@ class MergeRequestHome extends Component {
                     dataSource={md.slice()}
                     rowKey={(record) => record.id}
                     filterBar={false}
+                    rowClassName="c7ncd-table-row-font-color"
                   />
                 </TabPane>
                 <TabPane tab={`${intl.formatMessage({ id: 'merge.tab3' })}(${closeCount || 0})`} key="closed">
@@ -431,6 +433,7 @@ class MergeRequestHome extends Component {
                     dataSource={cd.slice()}
                     rowKey={(record) => record.id}
                     filterBar={false}
+                    rowClassName="c7ncd-table-row-font-color"
                   />
                 </TabPane>
                 <TabPane tab={`${intl.formatMessage({ id: 'merge.tab4' })}(${totalCount || 0})`} key="all">
@@ -444,6 +447,7 @@ class MergeRequestHome extends Component {
                     dataSource={ad.slice()}
                     rowKey={(record) => record.id}
                     filterBar={false}
+                    rowClassName="c7ncd-table-row-font-color"
                   />
                 </TabPane>
                 {getAssigneeCount !== 0
@@ -458,6 +462,7 @@ class MergeRequestHome extends Component {
                       dataSource={getAssignee.slice()}
                       rowKey={(record) => record.id}
                       filterBar={false}
+                      rowClassName="c7ncd-table-row-font-color"
                     />
                   </TabPane> : null}
               </Tabs>
