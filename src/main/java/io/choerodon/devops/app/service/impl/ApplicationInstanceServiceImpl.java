@@ -11,6 +11,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.env.YamlPropertySourceLoader;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.yaml.snakeyaml.Yaml;
+
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
@@ -38,18 +51,6 @@ import io.choerodon.devops.infra.feign.NotifyClient;
 import io.choerodon.devops.infra.mapper.ApplicationInstanceMapper;
 import io.choerodon.websocket.Msg;
 import io.choerodon.websocket.helper.CommandSender;
-import io.kubernetes.client.JSON;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.env.YamlPropertySourceLoader;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.yaml.snakeyaml.Yaml;
 
 /**
  * Created by Zenger on 2018/4/12.
@@ -704,9 +705,20 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         return filterPodsAssociatedWithDaemonSet(devopsEnvPodDTOS, statefulSetName);
     }
 
+    /**
+     * 创建或更新实例
+     * 特别说明，此处的事务的propagation设置为{@link Propagation#REQUIRES_NEW} 是因为直接使用外层的事务会导致：
+     * 当外层捕获这个方法中抛出的异常进行相应的数据库记录状态回写会被回滚，以至于外层无法在实例操作失败后记录失败
+     * 的状态，因为这个事务被切面设置为 rollbackOnly 了。除非外层再次开启一个新的事务对相应操作状态进行更新。权衡
+     * 之后在此方法的事务从默认事务传播级别{@link Propagation#REQUIRED} 改成 {@link Propagation#REQUIRES_NEW}
+     *
+     * @param applicationDeployDTO 部署信息
+     * @param isFromPipeline       是否是从流水线发起的部署
+     * @return 部署后实例信息
+     */
     @Override
-    @Transactional(rollbackFor = Exception.class)
-    public ApplicationInstanceDTO createOrUpdate(ApplicationDeployDTO applicationDeployDTO) {
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
+    public ApplicationInstanceDTO createOrUpdate(ApplicationDeployDTO applicationDeployDTO, boolean isFromPipeline) {
 
         //校验用户是否有环境的权限
         DevopsEnvironmentE devopsEnvironmentE = checkEnvPermission(applicationDeployDTO.getEnvironmentId());
@@ -734,7 +746,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                 code = String.format("%s-%s", applicationE.getCode(), GenerateUUID.generateUUID().substring(0, 5));
             } else {
                 code = applicationDeployDTO.getInstanceName();
-                checkName(code, applicationDeployDTO.getEnvironmentId());
+                checkNameInternal(code, applicationDeployDTO.getEnvironmentId(), isFromPipeline);
             }
         } else {
             code = applicationInstanceE.getCode();
@@ -1013,7 +1025,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                     .queryByEnvIdAndResource(devopsEnvironmentE.getId(), instanceId, C7NHELM_RELEASE);
             ResponseEntity<RepositoryFile> responseEntity = gitlabServiceClient.getFile(devopsEnvironmentE.getGitlabEnvProjectId().intValue(), "master", devopsEnvFileResourceE.getFilePath());
             if (responseEntity.getBody() != null) {
-                C7nHelmRelease c7nHelmRelease = yaml.loadAs(Base64Util.getBase64DecodedString(responseEntity.getBody().getContent()),C7nHelmRelease.class);
+                C7nHelmRelease c7nHelmRelease = yaml.loadAs(Base64Util.getBase64DecodedString(responseEntity.getBody().getContent()), C7nHelmRelease.class);
                 if (!c7nHelmRelease.getSpec().getChartVersion().equals(applicationVersionE.getVersion())) {
                     devopsEnvCommandE.setObjectVersionId(instanceE.getApplicationVersionE().getId());
                     devopsEnvCommandRepository.update(devopsEnvCommandE);
@@ -1153,11 +1165,24 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
     @Override
     public void checkName(String instanceName, Long envId) {
+        checkNameInternal(instanceName, envId, false);
+    }
+
+    /**
+     * 校验实例名称格式是否符合，且是否重名
+     *
+     * @param instanceName   实例名
+     * @param envId          环境id
+     * @param isFromPipeline 是否从流水自动部署中进行校验，如果是，不再校验流水线中的将要创建的实例名称是否存在
+     */
+    private void checkNameInternal(String instanceName, Long envId, boolean isFromPipeline) {
         AppInstanceValidator.checkName(instanceName);
         ApplicationInstanceE applicationInstanceE = new ApplicationInstanceE();
         applicationInstanceE.setCode(instanceName);
         applicationInstanceRepository.checkName(instanceName, envId);
-        appDeployRepository.checkName(instanceName, envId);
+        if (!isFromPipeline) {
+            appDeployRepository.checkName(instanceName, envId);
+        }
     }
 
     private String getNameSpace(Long envId) {
