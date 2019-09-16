@@ -6,13 +6,13 @@ function handleUpdate({ record, name, value }) {
   switch (name) {
     case 'harborCustom':
       forEach(['url', 'userName', 'password', 'email', 'project'], (item) => {
-        item !== 'project' && record.getField(item).set('required', value);
-        handleInitialValue(record, value, record.get('harbor'), item);
+        item !== 'project' && record.getField(item).set('required', value === 'custom');
+        handleInitialValue(record, value === 'custom', record.get('harbor'), item);
       });
       break;
     case 'chartCustom':
-      record.getField('chartUrl').set('required', value);
-      handleInitialValue(record, value, record.get('chart'), 'chartUrl');
+      record.getField('chartUrl').set('required', value === 'custom');
+      handleInitialValue(record, value === 'custom', record.get('chart'), 'chartUrl');
       break;
     case 'url' || 'userName' || 'password' || 'email' || 'project':
       record.set('harborStatus', '');
@@ -37,10 +37,9 @@ function handleInitialValue(record, isCustom, data, item) {
 
 function getRequestData(data, res) {
   const { chartUrl, harborCustom, chartCustom } = data;
-  if (harborCustom) {
+  if (harborCustom === 'custom') {
     if (isEmpty(res.harbor)) {
       res.harbor = {
-        id: res.id,
         type: 'harbor',
         custom: true,
         config: {},
@@ -51,10 +50,9 @@ function getRequestData(data, res) {
   } else {
     res.harbor = null;
   }
-  if (chartCustom) {
+  if (chartCustom === 'custom') {
     if (isEmpty(res.chart)) {
       res.chart = {
-        id: res.id,
         type: 'chart',
         config: {},
       };
@@ -97,8 +95,8 @@ export default ((intlPrefix, formatMessage, url) => {
       },
     },
     fields: [
-      { name: 'harborCustom', type: 'boolean', defaultValue: false, label: formatMessage({ id: `${intlPrefix}.harbor.config` }) },
-      { name: 'chartCustom', type: 'boolean', defaultValue: false, label: formatMessage({ id: `${intlPrefix}.chart.config` }) },
+      { name: 'harborCustom', type: 'string', defaultValue: 'default', label: formatMessage({ id: `${intlPrefix}.harbor.config` }) },
+      { name: 'chartCustom', type: 'string', defaultValue: 'default', label: formatMessage({ id: `${intlPrefix}.chart.config` }) },
       { name: 'harbor', type: 'object' },
       { name: 'chart', type: 'object' },
       { name: 'chartUrl', type: 'url', label: formatMessage({ id: 'address' }) },

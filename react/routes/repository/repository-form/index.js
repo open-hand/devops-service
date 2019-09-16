@@ -22,30 +22,35 @@ export default injectIntl(observer(({
   intlPrefix,
   modal,
   isProject,
+  refresh,
 }) => {
   useEffect(() => {
     if (!isEmpty(record.get('harbor'))) {
-      record.set('harborCustom', true);
+      record.set('harborCustom', 'custom');
       forEach(record.get('harbor').config, (value, key) => {
         if (key !== 'project' || isProject) {
           record.set(key, value);
         }
       });
       isProject && record.set('harborPrivate', record.get('harbor').harborPrivate);
+    } else {
+      record.set('harborCustom', 'default');
     }
     if (!isEmpty(record.get('chart'))) {
       const { url } = record.get('chart').config || {};
-      record.set('chartCustom', true);
+      record.set('chartCustom', 'custom');
       record.set('chartUrl', url);
+    } else {
+      record.set('chartCustom', 'default');
     }
   }, []);
 
   modal.handleOk(async () => {
     if (record.get('harborStatus') === 'failed' || record.get('chartStatus') === 'failed') return false;
-    const harborTestFailed = record.get('harborCustom') && !record.get('harborStatus') && !await handleTestHarbor();
-    const chartTestFailed = record.get('chartCustom') && !record.get('chartStatus') && !await handleTestChart();
+    const harborTestFailed = record.get('harborCustom') === 'custom' && !record.get('harborStatus') && !await handleTestHarbor();
+    const chartTestFailed = record.get('chartCustom') === 'custom' && !record.get('chartStatus') && !await handleTestChart();
     if (!harborTestFailed && !chartTestFailed && (await dataSet.submit()) !== false) {
-      dataSet.query();
+      refresh();
     } else {
       return false;
     }
@@ -115,11 +120,11 @@ export default injectIntl(observer(({
       </div>
       <Form record={record}>
         <SelectBox name="harborCustom">
-          <Option value={false}>{formatMessage({ id: `${intlPrefix}.harbor.default` })}</Option>
-          <Option value>{formatMessage({ id: `${intlPrefix}.harbor.custom` })}</Option>
+          <Option value="default">{formatMessage({ id: `${intlPrefix}.harbor.default` })}</Option>
+          <Option value="custom">{formatMessage({ id: `${intlPrefix}.harbor.custom` })}</Option>
         </SelectBox>
       </Form>
-      {isProject && !record.get('harborCustom') && (
+      {isProject && record.get('harborCustom') === 'default' && (
         <Form record={record}>
           <SelectBox name="harborPrivate">
             <Option value={false}>{formatMessage({ id: `${intlPrefix}.public` })}</Option>
@@ -127,7 +132,7 @@ export default injectIntl(observer(({
           </SelectBox>
         </Form>
       )}
-      {record.get('harborCustom') && (<Fragment>
+      {record.get('harborCustom') === 'custom' && (<Fragment>
         <Form record={record}>
           <UrlField name="url" />
           <TextField name="userName" />
@@ -139,11 +144,11 @@ export default injectIntl(observer(({
       </Fragment>)}
       <Form record={record}>
         <SelectBox name="chartCustom">
-          <Option value={false}>{formatMessage({ id: `${intlPrefix}.chart.default` })}</Option>
-          <Option value>{formatMessage({ id: `${intlPrefix}.chart.custom` })}</Option>
+          <Option value="default">{formatMessage({ id: `${intlPrefix}.chart.default` })}</Option>
+          <Option value="custom">{formatMessage({ id: `${intlPrefix}.chart.custom` })}</Option>
         </SelectBox>
       </Form>
-      {record.get('chartCustom') && (<Fragment>
+      {record.get('chartCustom') === 'custom' && (<Fragment>
         <Form record={record}>
           <UrlField name="chartUrl" />
         </Form>

@@ -26,6 +26,7 @@ const Repository = withRouter(observer((props) => {
   } = useRepositoryStore();
 
   function refresh() {
+    homeDs.query();
   }
 
   async function openModal() {
@@ -42,6 +43,7 @@ const Repository = withRouter(observer((props) => {
         id={organizationId}
         intlPrefix={intlPrefix}
         prefixCls={prefixCls}
+        refresh={refresh}
       />,
       okText: formatMessage({ id: 'save' }),
     });
@@ -49,11 +51,15 @@ const Repository = withRouter(observer((props) => {
 
   return (
     <TabPage
-      service={[]}
+      service={[
+        'devops-service.devops-organization-config.queryOrganizationDefaultConfig',
+        'devops-service.devops-organization-config.create',
+        'devops-service.devops-organization-config.query',
+      ]}
     >
       <Header>
         <Permission
-          service={[]}
+          service={['devops-service.devops-organization-config.create']}
         >
           <Button
             icon="mode_edit"

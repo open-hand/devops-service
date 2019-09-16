@@ -2,6 +2,7 @@ import React, { Fragment, useEffect } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import map from 'lodash/map';
+import some from 'lodash/some';
 import { SelectBox, Select, Form } from 'choerodon-ui/pro';
 import { Button } from 'choerodon-ui';
 
@@ -51,6 +52,11 @@ export default observer(({ dataSet, refresh, record, store, projectId, formatMes
     dataSet.create();
   }
 
+  function handleUserFilter(optionRecord) {
+    const flag = some(dataSet.created, (creatRecord) => creatRecord.get('iamUserId') === optionRecord.get('iamUserId'));
+    return !flag;
+  }
+
   return (
     <div className={`${prefixCls}-permission-form`}>
       <Form record={record}>
@@ -64,7 +70,7 @@ export default observer(({ dataSet, refresh, record, store, projectId, formatMes
           {map(dataSet.created, (userRecord) => (
             <div className={`${prefixCls}-permission-form-item`}>
               <Form record={userRecord}>
-                <Select name="iamUserId" />
+                <Select name="iamUserId" optionsFilter={handleUserFilter} />
               </Form>
               <Button
                 icon="delete"

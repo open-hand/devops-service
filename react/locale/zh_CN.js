@@ -388,7 +388,7 @@ const appService = {
   'c7ncd.appService.token': '私有Token',
   'c7ncd.appService.import': '导入应用服务',
   'c7ncd.appService.add': '添加应用服务',
-  'c7ncd.appService.app': '所属应用',
+  'c7ncd.appService.project': '所属项目',
   'c7ncd.appService.source': '应用来源',
   'c7ncd.appService.source.true': '组织共享',
   'c7ncd.appService.source.false': '市场下载',
@@ -411,8 +411,8 @@ const appService = {
   'c7ncd.appService.button.disabled': '请先启用应用服务',
   'c7ncd.appService.import.failed': '字段重复，请修改',
   'c7ncd.appService.selected': '{number}个已选择应用服务',
-  'c7ncd.appService.stop': '停用服务',
-  'c7ncd.appService.stop.tips': '确定停用该应用服务吗？',
+  'c7ncd.appService.stop': '停用服务"{name}"',
+  'c7ncd.appService.stop.tips': '确定要停用该应用服务吗？',
   'c7ncd.appService.project.failed': '由小写字母，数字，\'-\'、\'_\'或\'.\'组成，以字母、数字开始和结束',
 };
 

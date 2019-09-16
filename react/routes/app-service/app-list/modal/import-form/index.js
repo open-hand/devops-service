@@ -20,7 +20,7 @@ const ImportForm = injectIntl(observer((props) => {
   const [hasFailed, setHasFailed] = useState(false);
 
   props.modal.handleOk(async () => {
-    if (record.get('platformType') === 'platform') {
+    if (record.get('platformType') === 'share' || record.get('platformType') === 'market') {
       const lists = selectedDs.toData();
       if (isEmpty(lists)) return false;
 
@@ -84,8 +84,8 @@ const ImportForm = injectIntl(observer((props) => {
     <div className={`${prefixCls}-import-wrap`}>
       <Form record={record}>
         <SelectBox name="platformType">
-          <Option value="platform">
-            <FormattedMessage id={`${intlPrefix}.import.type.platform`} />
+          <Option value="share">
+            <FormattedMessage id={`${intlPrefix}.import.type.share`} />
           </Option>
           <Option value="github">
             <FormattedMessage id={`${intlPrefix}.import.type.github`} />
@@ -93,9 +93,12 @@ const ImportForm = injectIntl(observer((props) => {
           <Option value="gitlab">
             <FormattedMessage id={`${intlPrefix}.import.type.gitlab`} />
           </Option>
+          <Option value="market">
+            <FormattedMessage id={`${intlPrefix}.import.type.market`} />
+          </Option>
         </SelectBox>
       </Form>
-      {record.get('platformType') === 'platform' ? (
+      {record.get('platformType') === 'share' || record.get('platformType') === 'market' ? (
         <Fragment>
           <PlatForm {...props} />
           {hasFailed && (

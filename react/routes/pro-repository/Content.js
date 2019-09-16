@@ -26,6 +26,7 @@ const ProRepository = withRouter(observer((props) => {
   } = useRepositoryStore();
 
   function refresh() {
+    homeDs.query();
   }
 
   async function openModal() {
@@ -43,6 +44,7 @@ const ProRepository = withRouter(observer((props) => {
         isProject
         intlPrefix={intlPrefix}
         prefixCls={prefixCls}
+        refresh={refresh}
       />,
       okText: formatMessage({ id: 'save' }),
     });
@@ -50,11 +52,15 @@ const ProRepository = withRouter(observer((props) => {
 
   return (
     <TabPage
-      service={[]}
+      service={[
+        'devops-service.devops-project-config.queryProjectDefaultConfig',
+        'devops-service.devops-project-config.create',
+        'devops-service.devops-project-config.query',
+      ]}
     >
       <Header>
         <Permission
-          service={[]}
+          service={['devops-service.devops-project-config.create']}
         >
           <Button
             icon="mode_edit"

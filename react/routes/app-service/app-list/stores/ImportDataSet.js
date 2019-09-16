@@ -3,17 +3,27 @@ import map from 'lodash/map';
 import omit from 'lodash/omit';
 
 function getRequestData(appServiceList) {
-  const res = map(appServiceList, ({ id, name, code, type, versionId }) => ({
-    appServiceId: id,
-    appName: name,
-    appCode: code,
-    type,
-    versionId,
-  }));
+  const res = map(appServiceList, ({ id, name, code, type, versionId, versions = [] }) => {
+    const { verId } = versions[0] || {};
+    return ({
+      appServiceId: id,
+      appName: name,
+      appCode: code,
+      type,
+      versionId: versionId || verId,
+    });
+  });
   return res;
 }
 
-export default ((intlPrefix, formatMessage, projectId) => {
+function handleRequired(record, flag) {
+  record.getField('repositoryUrl').set('required', flag);
+  record.getField('type').set('required', flag);
+  record.getField('name').set('required', flag);
+  record.getField('code').set('required', flag);
+}
+
+export default ((intlPrefix, formatMessage, projectId, importTableDs) => {
   async function checkCode(value) {
     const pa = /^[a-z]([-a-z0-9]*[a-z0-9])?$/;
     if (value && pa.test(value)) {
@@ -53,28 +63,25 @@ export default ((intlPrefix, formatMessage, projectId) => {
   function handleUpdate({ record, name, value }) {
     if (name === 'platformType') {
       switch (value) {
-        case 'platform':
-          record.getField('repositoryUrl').set('required', false);
-          record.getField('type').set('required', false);
-          record.getField('name').set('required', false);
-          record.getField('code').set('required', false);
+        case 'share':
+          handleRequired(record, false);
           record.getField('accessToken').set('required', false);
+          importTableDs.transport.read.url = `/devops/v1/projects/${projectId}/app_service/page_by_mode?share=true`;
+          break;
+        case 'market':
+          handleRequired(record, false);
+          record.getField('accessToken').set('required', false);
+          importTableDs.transport.read.url = `/devops/v1/projects/${projectId}/app_service/page_by_mode?share=false`;
           break;
         case 'github':
-          record.getField('repositoryUrl').set('required', true);
-          record.getField('type').set('required', true);
-          record.getField('name').set('required', true);
-          record.getField('code').set('required', true);
+          handleRequired(record, true);
           record.getField('accessToken').set('required', false);
           record.getField('repositoryUrl').set('label', formatMessage({ id: `${intlPrefix}.url.github` }));
           record.getField('name').set('validator', checkName);
           record.getField('code').set('validator', checkCode);
           break;
         case 'gitlab':
-          record.getField('repositoryUrl').set('required', true);
-          record.getField('type').set('required', true);
-          record.getField('name').set('required', true);
-          record.getField('code').set('required', true);
+          handleRequired(record, true);
           record.getField('accessToken').set('required', true);
           record.getField('repositoryUrl').set('label', formatMessage({ id: `${intlPrefix}.url.gitlab` }));
           record.getField('name').set('validator', checkName);
@@ -95,7 +102,7 @@ export default ((intlPrefix, formatMessage, projectId) => {
         const { platformType, appServiceList } = data;
         let url = 'external';
         let res = omit(data, ['__id', '__status', 'appServiceList']);
-        if (platformType === 'platform') {
+        if (platformType === 'share' || platformType === 'market') {
           url = 'internal';
           res = getRequestData(appServiceList);
         }
@@ -110,7 +117,7 @@ export default ((intlPrefix, formatMessage, projectId) => {
       { name: 'name', type: 'string', label: formatMessage({ id: `${intlPrefix}.name` }) },
       { name: 'code', type: 'string', label: formatMessage({ id: `${intlPrefix}.code` }) },
       { name: 'type', type: 'string', defaultValue: 'normal', label: formatMessage({ id: `${intlPrefix}.type` }) },
-      { name: 'platformType', type: 'string', label: formatMessage({ id: `${intlPrefix}.import.type` }), defaultValue: 'platform' },
+      { name: 'platformType', type: 'string', label: formatMessage({ id: `${intlPrefix}.import.type` }), defaultValue: 'share' },
       { name: 'repositoryUrl', type: 'url' },
       { name: 'accessToken', type: 'string', label: formatMessage({ id: `${intlPrefix}.token` }) },
       { name: 'appServiceList', type: 'object' },

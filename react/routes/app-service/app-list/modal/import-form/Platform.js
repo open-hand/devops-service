@@ -1,37 +1,28 @@
 import React, { Fragment, useCallback, useState, useEffect } from 'react';
 import { Action } from '@choerodon/master';
-import { Table, Modal } from 'choerodon-ui/pro';
+import { Table, Modal, Select } from 'choerodon-ui/pro';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import { Button, Icon, Tooltip } from 'choerodon-ui';
-import EditForm from './EditForm';
+import map from 'lodash/map';
 import SourceTable from './SourceTable';
 
 const { Column } = Table;
+const { Option } = Select;
+
 const modalKey1 = Modal.key();
-const modalKey2 = Modal.key();
 const modalStyle1 = {
-  width: '70%',
-};
-const modalStyle2 = {
-  width: 380,
+  width: 740,
 };
 
 const Platform = injectIntl(observer((props) => {
   const { tableDs, selectedDs, intl: { formatMessage }, intlPrefix, prefixCls, versionOptions, projectId } = props;
 
   function openModal() {
-    const importModal = Modal.open({
+    Modal.open({
       key: modalKey1,
       drawer: true,
-      title: <div className={`${prefixCls}-import-source`}>
-        <Icon
-          type="keyboard_backspace"
-          className={`${prefixCls}-import-source-icon`}
-          onClick={() => importModal.close()}
-        />
-        <FormattedMessage id={`${intlPrefix}.import`} />
-      </div>,
+      title: formatMessage({ id: `${intlPrefix}.import` }),
       children: <SourceTable
         tableDs={tableDs}
         selectedDs={selectedDs}
@@ -44,27 +35,10 @@ const Platform = injectIntl(observer((props) => {
     });
   }
 
-  function openEdit() {
-    Modal.open({
-      key: modalKey2,
-      drawer: true,
-      title: formatMessage({ id: `${intlPrefix}.edit` }),
-      children: <EditForm
-        record={selectedDs.current}
-        versionOptions={versionOptions}
-        projectId={projectId}
-      />,
-      style: modalStyle2,
-      okText: formatMessage({ id: 'save' }),
-      onCancel: handleCancelEdit,
-    });
-  }
-
   function renderName({ value, record }) {
     return (
       <div
         className={`${prefixCls}-import-wrap-column ${prefixCls}-import-wrap-column-name `}
-        onClick={openEdit}
       >
         <span className={`${prefixCls}-import-wrap-column-text`}>{value}</span>
         {record.get('nameFailed') && (
@@ -89,27 +63,30 @@ const Platform = injectIntl(observer((props) => {
     );
   }
 
-  function handleCancelEdit() {
-    selectedDs.current.reset();
-  }
+  function renderVersion({ value, record }) {
+    const { id: versionId } = value ? record.get('versions')[0] : {};
+    const selectOptions = map(value, ({ id, version }) => (
+      <Option value={id}>{version}</Option>
+    ));
 
-  function renderType({ value }) {
-    return value && <FormattedMessage id={`${intlPrefix}.type.${value}`} />;
-  }
-
-  function renderShare({ value }) {
-    return <FormattedMessage id={`${intlPrefix}.source.${value}`} />;
+    return (
+      <Select
+        value={record.get('versionId') || versionId}
+        onChange={handleChangeVersion}
+        clearButton={false}
+        className={`${prefixCls}-import-platform-table-select`}
+      >
+        {selectOptions}
+      </Select>
+    );
   }
 
   function renderAction() {
-    const actionData = [
-      {
-        service: [],
-        text: formatMessage({ id: 'delete' }),
-        action: handleDelete,
-      },
-    ];
-    return <Action data={actionData} />;
+    return <Button shape="circle" icon="delete" onClick={handleDelete} />;
+  }
+  
+  function handleChangeVersion(value) {
+    selectedDs.current.set('versionId', value);
   }
 
   function handleDelete() {
@@ -133,13 +110,11 @@ const Platform = injectIntl(observer((props) => {
         dataSet={selectedDs}
         queryBar="none"
       >
-        <Column name="name" renderer={renderName} />
-        <Column renderer={renderAction} width="0.5rem" />
-        <Column name="code" renderer={renderCode} />
-        <Column name="appName" />
-        <Column name="share" renderer={renderShare} width="0.8rem" align="left" />
-        <Column name="type" renderer={renderType} width="0.8rem" />
-        <Column name="version" header={<FormattedMessage id={`${intlPrefix}.version`} />} />
+        <Column name="name" renderer={renderName} editor />
+        <Column name="code" renderer={renderCode} editor />
+        <Column name="versions" renderer={renderVersion} />
+        <Column name="projectName" width="1.5rem" />
+        <Column renderer={renderAction} width="0.7rem" />
       </Table>
     </div>
   );
