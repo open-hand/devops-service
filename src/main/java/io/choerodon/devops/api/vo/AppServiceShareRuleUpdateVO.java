@@ -6,11 +6,12 @@ import javax.validation.constraints.NotNull;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
- * Creator: ChangpingShi0213@gmail.com
- * Date:  14:27 2019/7/26
- * Description:
+ * @author lihao
+ * @date 2019-09-15 15:32
  */
-public class AppServiceShareRuleVO {
+public class AppServiceShareRuleUpdateVO {
+    @ApiModelProperty("共享规则id")
+    @NotNull(message = "error.app.share.id.null")
     private Long id;
 
     @ApiModelProperty("应用服务Id/必填")
@@ -38,6 +39,8 @@ public class AppServiceShareRuleVO {
     @ApiModelProperty("共享到指定应用,应用名称")
     private String appName;
 
+    @ApiModelProperty("版本号/必须")
+    @NotNull(message = "error.object.version.number.null")
     private Long objectVersionNumber;
 
     public String getProjectName() {

@@ -1,19 +1,17 @@
 package io.choerodon.devops.api.vo;
 
-
-import java.util.Date;
-
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModelProperty;
 
 /**
- * Creator: ChangpingShi0213@gmail.com
- * Date:  9:44 2019/4/10
- * Description:
+ * @author lihao
+ * @date 2019-09-15 15:48
  */
-public class DevopsDeployValueVO {
+public class DevopsDeployValueUpdateVO {
+    @ApiModelProperty("部署配置id")
+    @NotNull(message = "error.deploy.value.id.null")
     private Long id;
     @ApiModelProperty("部署配置内容")
     @NotNull(message = "error.deploy.value.value.null")
@@ -34,14 +32,14 @@ public class DevopsDeployValueVO {
     private String createUserUrl;
     private String createUserName;
     private String createUserRealName;
-    private Long createdBy;
+    @ApiModelProperty("环境状态")
     private Boolean envStatus;
-    private Date lastUpdateDate;
     private Boolean index;
+    @ApiModelProperty("环境名称")
     private String envName;
     @ApiModelProperty("服务名称")
     private String appServiceName;
-
+    @ApiModelProperty("版本号/必须")
     private Long objectVersionNumber;
 
     public Long getObjectVersionNumber() {
@@ -50,22 +48,6 @@ public class DevopsDeployValueVO {
 
     public void setObjectVersionNumber(Long objectVersionNumber) {
         this.objectVersionNumber = objectVersionNumber;
-    }
-
-    public Long getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(Long createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    public Date getLastUpdateDate() {
-        return lastUpdateDate;
-    }
-
-    public void setLastUpdateDate(Date lastUpdateDate) {
-        this.lastUpdateDate = lastUpdateDate;
     }
 
     public String getEnvName() {

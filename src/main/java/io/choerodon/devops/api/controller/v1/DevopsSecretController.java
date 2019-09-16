@@ -10,6 +10,8 @@ import springfox.documentation.annotations.ApiIgnore;
 
 import java.util.Optional;
 
+import javax.validation.Valid;
+
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.enums.ResourceType;
@@ -17,7 +19,9 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.SecretRespVO;
 import io.choerodon.devops.api.vo.SecretReqVO;
+import io.choerodon.devops.api.vo.SecretUpdateVO;
 import io.choerodon.devops.app.service.DevopsSecretService;
+import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 
 /**
@@ -38,7 +42,7 @@ public class DevopsSecretController {
     }
 
     /**
-     * 创建或更新密钥
+     * 创建密钥
      *
      * @param secretReqVO 请求体
      * @return SecretRespVO
@@ -46,15 +50,37 @@ public class DevopsSecretController {
     @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "创建或更新密钥")
-    @PutMapping
-    public ResponseEntity<SecretRespVO> createOrUpdate(
+    @PostMapping
+    public ResponseEntity<SecretRespVO> create(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "请求体", required = true)
-            @RequestBody SecretReqVO secretReqVO) {
+            @Valid @RequestBody SecretReqVO secretReqVO) {
+        secretReqVO.setType("create");
         return Optional.ofNullable(devopsSecretService.createOrUpdate(secretReqVO))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.secret.create"));
+    }
+
+    /**
+     * 更新密钥
+     *
+     * @param secretUpdateVO 请求体
+     * @return SecretRespVO
+     */
+    @Permission(type = ResourceType.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "更新密钥")
+    @PutMapping
+    public ResponseEntity<SecretRespVO> update(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "请求体", required = true)
+            @Valid @RequestBody SecretUpdateVO secretUpdateVO) {
+        secretUpdateVO.setType("update");
+        return Optional.ofNullable(devopsSecretService.createOrUpdate(ConvertUtils.convertObject(secretUpdateVO, SecretReqVO.class)))
+                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.secret.update"));
     }
 
     /**

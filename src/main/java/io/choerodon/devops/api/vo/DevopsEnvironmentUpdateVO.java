@@ -1,6 +1,6 @@
 package io.choerodon.devops.api.vo;
 
-import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModelProperty;
@@ -13,7 +13,7 @@ public class DevopsEnvironmentUpdateVO {
     @NotNull(message = "error.env.id.null")
     private Long id;
     @ApiModelProperty("环境名称，不能为空")
-    @NotEmpty(message = "error.env.name.empty")
+    @NotBlank(message = "error.env.name.empty")
     private String name;
     @ApiModelProperty("环境描述")
     private String description;

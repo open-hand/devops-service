@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.vo;
 
+import javax.validation.constraints.NotNull;
+
 import io.swagger.annotations.ApiModelProperty;
 
 /**
@@ -8,9 +10,17 @@ import io.swagger.annotations.ApiModelProperty;
 public class AppServiceReqVO {
 
     private Long id;
+    @ApiModelProperty("服务名称/必填")
+    @NotNull(message = "error.app.name.null")
     private String name;
+    @ApiModelProperty("服务code/必填")
+    @NotNull(message = "error.app.code.null")
     private String code;
+    @ApiModelProperty("项目id/必填")
+    @NotNull(message = "error.project.id.null")
     private Long projectId;
+    @ApiModelProperty("服务类型/必填")
+    @NotNull(message = "error.app.type.null")
     private String type;
     @ApiModelProperty("模板服务Id")
     private Long templateAppServiceId;

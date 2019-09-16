@@ -1,15 +1,27 @@
 package io.choerodon.devops.api.vo;
 
 import java.util.Map;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+
+import io.swagger.annotations.ApiModelProperty;
 
 public class DevopsConfigMapVO {
 
+    @ApiModelProperty("配置映射id")
     private Long id;
+    @ApiModelProperty("应用服务id")
     private Long appServiceId;
+    @ApiModelProperty("环境id/必填")
+    @NotNull(message = "error.env.id.null")
     private Long envId;
+    @ApiModelProperty("配置名称/必填")
+    @NotBlank(message = "error.name.null")
     private String name;
+    @ApiModelProperty("配置描述/非必填")
     private String description;
     private String type;
+    @ApiModelProperty("配置值/创建的时候可以为空")
     private Map<String, String> value;
 
 

@@ -2,6 +2,8 @@ package io.choerodon.devops.api.controller.v1;
 
 import java.util.Optional;
 
+import javax.validation.Valid;
+
 import com.github.pagehelper.PageInfo;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -15,8 +17,10 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
+import io.choerodon.devops.api.vo.AppServiceShareRuleUpdateVO;
 import io.choerodon.devops.api.vo.AppServiceShareRuleVO;
 import io.choerodon.devops.app.service.AppServiceShareRuleService;
+import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 
 /**
@@ -42,15 +46,36 @@ public class AppShareRuleController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "服务共享规则")
     @PostMapping
-    public ResponseEntity<AppServiceShareRuleVO> createOrUpdate(
+    public ResponseEntity<AppServiceShareRuleVO> create(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "服务共享规则", required = true)
-            @RequestBody AppServiceShareRuleVO appServiceShareRuleVO) {
+            @Valid @RequestBody AppServiceShareRuleVO appServiceShareRuleVO) {
         return Optional.ofNullable(
                 applicationShareService.createOrUpdate(projectId, appServiceShareRuleVO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.share.rule.create"));
+    }
+
+    /**
+     * 更新服务共享规则
+     *
+     * @param projectId                   项目id
+     * @param appServiceShareRuleUpdateVO 服务共享规则
+     * @return Long
+     */
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "更新服务共享规则")
+    @PutMapping
+    public ResponseEntity<AppServiceShareRuleVO> update(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "服务共享规则", required = true)
+            @Valid @RequestBody AppServiceShareRuleUpdateVO appServiceShareRuleUpdateVO) {
+        return Optional.ofNullable(
+                applicationShareService.createOrUpdate(projectId, ConvertUtils.convertObject(appServiceShareRuleUpdateVO, AppServiceShareRuleVO.class)))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.share.rule.update"));
     }
 
     /**
@@ -103,6 +128,7 @@ public class AppShareRuleController {
 
     /**
      * 删除单个服务共享规则详情
+     *
      * @param projectId
      * @param ruleId
      * @return

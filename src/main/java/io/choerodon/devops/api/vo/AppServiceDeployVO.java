@@ -1,17 +1,49 @@
 package io.choerodon.devops.api.vo;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+
+import io.swagger.annotations.ApiModelProperty;
+
 public class AppServiceDeployVO {
-    private Long appServiceVersionId;
-    private Long environmentId;
-    private String values;
+    @ApiModelProperty("服务id/必填")
+    @NotNull(message = "error.app.id.null")
     private Long appServiceId;
-    private String type;
-    private Long instanceId;
-    private Long commandId;
-    private String instanceName;
-    private boolean isNotChange;
-    private Long recordId;
+
+    @ApiModelProperty("服务应用版本id/必填")
+    @NotNull(message = "appversion.not.exist.in.database")
+    private Long appServiceVersionId;
+
+    @ApiModelProperty("环境id/必填")
+    @NotNull(message = "error.env.id.null")
+    private Long environmentId;
+
+    @ApiModelProperty("部署配置")
+    private String values;
+
+    // TODO values和valueId二选一校验
+    @ApiModelProperty("值id")
     private Long valueId;
+
+    @ApiModelProperty("实例名称/必填")
+    @NotBlank(message = "error.app.instance.name.null")
+    private String instanceName;
+
+    @ApiModelProperty("实例id")
+    private Long instanceId;
+
+    @ApiModelProperty("操作类型")
+    private String type;
+
+    @ApiModelProperty("命令id")
+    private Long commandId;
+
+    @ApiModelProperty("是否改变")
+    private boolean isNotChange;
+
+    @ApiModelProperty("记录id")
+    private Long recordId;
+
     private DevopsServiceReqVO devopsServiceReqVO;
     private DevopsIngressVO devopsIngressVO;
 

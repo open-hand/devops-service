@@ -5,38 +5,33 @@ import java.util.Map;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
+
 /**
- * Created by n!Ck
- * Date: 18-12-4
- * Time: 上午9:46
- * Description:
+ * @author lihao
+ * @date 2019-09-15 15:35
  */
-public class SecretReqVO {
-    @ApiModelProperty(value = "密钥id")
+public class DevopsConfigMapUpdateVO {
+
+    @ApiModelProperty("配置映射id/必填")
+    @NotNull(message = "error.id.null")
     private Long id;
-
-    @ApiModelProperty(value = "应用id/非必填")
+    @ApiModelProperty("应用服务id")
     private Long appServiceId;
-
-    @ApiModelProperty(value = "环境id/必填")
+    @ApiModelProperty("环境id/必填")
     @NotNull(message = "error.env.id.null")
     private Long envId;
-
-    @ApiModelProperty(value = "密钥名/必填")
-    @NotBlank(message = "error.secret.name.null")
+    @ApiModelProperty("配置名称")
+    @NotBlank(message = "error.name.null")
     private String name;
-
-    @ApiModelProperty(value = "密钥对/必填")
-    @NotNull(message = "error.secret.value.is.null")
-    private Map<String, String> value;
-
-    @ApiModelProperty(value = "密钥描述/非必填")
+    @ApiModelProperty("配置描述/非必填")
     private String description;
-
-    @ApiModelProperty(value = "创建或者更新")
     private String type;
+    @ApiModelProperty("配置值")
+    @NotNull(message = "error.configMap.value")
+    private Map<String, String> value;
 
     public Long getId() {
         return id;
@@ -61,6 +56,7 @@ public class SecretReqVO {
     public void setEnvId(Long envId) {
         this.envId = envId;
     }
+
 
     public String getName() {
         return name;

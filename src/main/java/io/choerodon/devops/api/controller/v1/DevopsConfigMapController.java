@@ -1,6 +1,10 @@
 package io.choerodon.devops.api.controller.v1;
 
 
+import java.util.Optional;
+
+import javax.validation.Valid;
+
 import com.github.pagehelper.PageInfo;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -10,17 +14,17 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
-import java.util.Optional;
-
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.domain.Sort;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.vo.DevopsConfigMapVO;
 import io.choerodon.devops.api.vo.DevopsConfigMapRespVO;
+import io.choerodon.devops.api.vo.DevopsConfigMapUpdateVO;
+import io.choerodon.devops.api.vo.DevopsConfigMapVO;
 import io.choerodon.devops.app.service.DevopsConfigMapService;
+import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.mybatis.annotation.SortDefault;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 
@@ -35,7 +39,7 @@ public class DevopsConfigMapController {
     /**
      * 项目下创建配置映射
      *
-     * @param projectId          项目id
+     * @param projectId         项目id
      * @param devopsConfigMapVO 配置映射信息
      * @return ResponseEntity
      */
@@ -47,8 +51,30 @@ public class DevopsConfigMapController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "域名信息", required = true)
-            @RequestBody DevopsConfigMapVO devopsConfigMapVO) {
+            @Valid @RequestBody DevopsConfigMapVO devopsConfigMapVO) {
+        devopsConfigMapVO.setType("create");
         devopsConfigMapService.createOrUpdate(projectId, false, devopsConfigMapVO);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    /**
+     * 项目下更新配置映射
+     *
+     * @param projectId               项目id
+     * @param devopsConfigMapUpdateVO 配置映射信息
+     * @return ResponseEntity
+     */
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+            InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "项目下更新配置映射")
+    @PutMapping
+    public ResponseEntity update(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "域名信息", required = true)
+            @Valid @RequestBody DevopsConfigMapUpdateVO devopsConfigMapUpdateVO) {
+        devopsConfigMapUpdateVO.setType("update");
+        devopsConfigMapService.createOrUpdate(projectId, false, ConvertUtils.convertObject(devopsConfigMapUpdateVO, DevopsConfigMapVO.class));
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
@@ -75,8 +101,8 @@ public class DevopsConfigMapController {
     /**
      * 校验配置映射名唯一性
      *
-     * @param projectId     项目id
-     * @param name 配置映射名
+     * @param projectId 项目id
+     * @param name      配置映射名
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
@@ -118,11 +144,11 @@ public class DevopsConfigMapController {
     /**
      * 配置映射分页查询
      *
-     * @param projectId   项目id
-     * @param envId       环境id
-     * @param pageRequest 分页参数
-     * @param searchParam 查询参数
-     * @param appServiceId       应用id
+     * @param projectId    项目id
+     * @param envId        环境id
+     * @param pageRequest  分页参数
+     * @param searchParam  查询参数
+     * @param appServiceId 应用id
      * @return Page of DevopsServiceVO
      */
     @Permission(type = ResourceType.PROJECT,

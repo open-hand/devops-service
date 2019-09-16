@@ -4,7 +4,17 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+import javax.validation.Valid;
+
 import com.github.pagehelper.PageInfo;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
+
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
@@ -14,14 +24,8 @@ import io.choerodon.devops.api.vo.kubernetes.InstanceValueVO;
 import io.choerodon.devops.app.service.AppServiceInstanceService;
 import io.choerodon.devops.app.service.DevopsEnvResourceService;
 import io.choerodon.devops.infra.enums.ResourceType;
+import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.swagger.annotation.CustomPageRequest;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
 
 
 /**
@@ -412,8 +416,32 @@ public class AppServiceInstanceController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "部署信息", required = true)
-            @RequestBody AppServiceDeployVO appServiceDeployVO) {
+            @Valid @RequestBody AppServiceDeployVO appServiceDeployVO) {
+        appServiceDeployVO.setType("create");
         return Optional.ofNullable(appServiceInstanceService.createOrUpdate(appServiceDeployVO, false))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.application.deploy"));
+    }
+
+    /**
+     * 更新服务
+     *
+     * @param projectId                项目id
+     * @param appServiceDeployUpdateVO 更新信息
+     * @return ApplicationInstanceVO
+     */
+    @ApiOperation(value = "更新服务")
+    @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER})
+    @PutMapping
+    public ResponseEntity<AppServiceInstanceVO> update(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "更新信息", required = true)
+            @Valid @RequestBody AppServiceDeployUpdateVO appServiceDeployUpdateVO) {
+        appServiceDeployUpdateVO.setType("update");
+        return Optional.ofNullable(appServiceInstanceService.createOrUpdate(ConvertUtils.convertObject(appServiceDeployUpdateVO, AppServiceDeployVO.class), false))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.application.deploy"));
     }
@@ -494,7 +522,7 @@ public class AppServiceInstanceController {
     /**
      * 获取部署实例Event事件
      *
-     * @param projectId   项目id
+     * @param projectId  项目id
      * @param instanceId 实例id
      * @return List
      */
