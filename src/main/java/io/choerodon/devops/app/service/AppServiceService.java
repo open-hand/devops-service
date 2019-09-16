@@ -441,4 +441,11 @@ public interface AppServiceService {
      * @return
      */
     PageInfo<AppServiceVO> listAppServiceByIds(Set<Long> ids,Boolean doPage,PageRequest pageRequest,String params);
+
+    /**
+     * 根据导入应用类型查询应用所属的项目集合
+     * @param share
+     * @return
+     */
+    List<ProjectVO> listProjectByShare(Long projectId,Boolean share);
 }

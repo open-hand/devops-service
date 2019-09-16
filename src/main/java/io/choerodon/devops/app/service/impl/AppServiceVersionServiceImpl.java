@@ -379,7 +379,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     }
 
     @Override
-    public List<AppServiceVersionDTO> listServiceVersionByAppServiceIds(List<Long> appServiceIds, String share) {
+    public List<AppServiceVersionDTO> listServiceVersionByAppServiceIds(Set<Long> appServiceIds, String share) {
 
         return appServiceVersionMapper.listServiceVersionByAppServiceIds(appServiceIds, share);
     }

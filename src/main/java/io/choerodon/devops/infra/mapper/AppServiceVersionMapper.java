@@ -2,6 +2,7 @@ package io.choerodon.devops.infra.mapper;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
 
@@ -81,7 +82,7 @@ public interface AppServiceVersionMapper extends Mapper<AppServiceVersionDTO> {
      *
      * @return
      */
-    List<AppServiceVersionDTO> listServiceVersionByAppServiceIds(@Param("ids") List<Long> ids, @Param("share") String share);
+    List<AppServiceVersionDTO> listServiceVersionByAppServiceIds(@Param("ids") Set<Long> ids, @Param("share") String share);
 
     /**
      * 查询应用服务共享的所有版本

@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service;
 
 import java.util.List;
+import java.util.Set;
 
 import com.github.pagehelper.PageInfo;
 import org.springframework.web.multipart.MultipartFile;
@@ -179,7 +180,7 @@ public interface AppServiceVersionService {
      * @param share         是否是组织共享
      * @return 应用服务版本
      */
-    List<AppServiceVersionDTO> listServiceVersionByAppServiceIds(List<Long> appServiceIds, String share);
+    List<AppServiceVersionDTO> listServiceVersionByAppServiceIds(Set<Long> appServiceIds, String share);
 
     /**
      * 根据应用服务IDs和共享规则去查询应用服务的版本列表

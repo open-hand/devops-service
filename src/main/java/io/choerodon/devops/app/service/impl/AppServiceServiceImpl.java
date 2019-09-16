@@ -2039,7 +2039,6 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public PageInfo<AppServiceGroupInfoVO> pageAppServiceByMode(Long projectId, Boolean share,Long searchProjectId, String param,PageRequest pageRequest) {
         List<AppServiceDTO> appServiceDTOList = new ArrayList<>();
-
         if (!StringUtils.isEmpty(share) && share) {
             appServiceDTOList = listSharedAppService(projectId,searchProjectId,param);
         } else {
@@ -2047,7 +2046,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
         List<AppServiceGroupInfoVO> appServiceGroupInfoVOS = new ArrayList<>();
 
-        initAppServiceGroupInfoVOList(appServiceGroupInfoVOS, appServiceDTOList, true);
+        initAppServiceGroupInfoVOList(appServiceGroupInfoVOS, appServiceDTOList, share);
 
         return PageInfoUtil.createPageFromList(appServiceGroupInfoVOS,pageRequest);
     }
@@ -2055,7 +2054,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     private void initAppServiceGroupInfoVOList(List<AppServiceGroupInfoVO> appServiceGroupInfoVOS, List<AppServiceDTO> appServiceDTOList, Boolean share) {
         if (appServiceDTOList.isEmpty()) return;
         // 获取应用服务编号集合去得到服务最新的版本号
-        List<Long> appServiceIds = appServiceDTOList.stream().map(v -> v.getId()).collect(Collectors.toList());
+        Set<Long> appServiceIds = appServiceDTOList.stream().map(v -> v.getId()).collect(Collectors.toSet());
         String shareString = null;
         if (share) {
             shareString = "share";
@@ -2071,18 +2070,18 @@ public class AppServiceServiceImpl implements AppServiceService {
             // 根据应用服务的ID查询出versionList中对应的版本信息
             List<AppServiceVersionDTO> appServiceVersionDTOS = versionMap.get(appServiceDTO.getId());
             // 应用服务含有共享版本才加入List
-            if (!appServiceVersionDTOS.isEmpty()) {
+            if (appServiceVersionDTOS != null && !appServiceVersionDTOS.isEmpty()) {
                 // 获取项目信息，并传入项目名称
                 ProjectDTO projectDTO = projectMap.get(appServiceDTO.getProjectId());
+                AppServiceGroupInfoVO appServiceGroupInfoVO = dtoToGroupInfoVO(appServiceDTO);
+                appServiceGroupInfoVO.setVersions(appServiceVersionDTOS);
+                appServiceGroupInfoVO.setShare(share);
                 if (!ObjectUtils.isEmpty(projectDTO)) {
                     // 初始化应用服务信息
-                    AppServiceGroupInfoVO appServiceGroupInfoVO = dtoToGroupInfoVO(appServiceDTO);
-                    appServiceGroupInfoVO.setVersions(appServiceVersionDTOS);
-                    appServiceGroupInfoVO.setShare(share);
-                    String projecteName = projectDTO.getName();
-                    appServiceGroupInfoVO.setProjectName(projecteName);
-                    appServiceGroupInfoVOS.add(appServiceGroupInfoVO);
+                    String projectName = projectDTO.getName();
+                    appServiceGroupInfoVO.setProjectName(projectName);
                 }
+                appServiceGroupInfoVOS.add(appServiceGroupInfoVO);
             }
         });
     }
@@ -2261,6 +2260,20 @@ public class AppServiceServiceImpl implements AppServiceService {
         } else {
             return new PageInfo<>(collect);
         }
+    }
+
+    @Override
+    public List<ProjectVO> listProjectByShare(Long projectId,Boolean share) {
+        List<AppServiceDTO> appServiceDTOList = new ArrayList<>();
+
+        if (!StringUtils.isEmpty(share) && share) {
+            appServiceDTOList = listSharedAppService(projectId,null,null);
+        } else {
+            appServiceDTOList = appServiceMapper.queryMarketDownloadApps(null, null, false,null);
+        }
+        Set<Long> projectIds = appServiceDTOList.stream().map(appServiceDTO -> appServiceDTO.getProjectId()).collect(Collectors.toSet());
+        List<ProjectDTO> projectDTOS = baseServiceClientOperator.queryProjectsByIds(projectIds);
+        return ConvertUtils.convertList(projectDTOS,ProjectVO.class);
     }
 
     private AppServiceVO dtoTOVo(AppServiceDTO appServiceDTO) {
