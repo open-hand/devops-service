@@ -230,15 +230,23 @@ input::-webkit-contacts-auto-fill-button {
 // 以上部分为历史公共样式
 // -----------------------------------------------------------------------
 // 以下部分为新增公共样式
+@TABLE_FONT_COLOR: rgba(0, 0, 0, 0.65);
+
 .c7ncd-root {
   .@{c7n-pro-prefix}-table {
     .@{c7n-pro-prefix}-table-tbody {
-      color: rgba(0, 0, 0, 0.65);
+      color: @TABLE_FONT_COLOR;
+      .c7ncd-userinfo-name {
+        color: @TABLE_FONT_COLOR;
+      }
     }
   }
   .@{c7n-prefix}-table-body {
     .@{c7n-prefix}-table-tbody {
-      color: rgba(0, 0, 0, 0.65);
+      color: @TABLE_FONT_COLOR;
+      .c7ncd-userinfo-name {
+        color: @TABLE_FONT_COLOR;
+      }
     }
   }
 }

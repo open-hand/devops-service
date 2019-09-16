@@ -7,7 +7,7 @@ import useStore from './useStore';
 import { viewTypeMappings, itemTypeMappings } from './mappings';
 import TreeDataSet from './TreeDataSet';
 
-const { IST_VIEW_TYPE, RES_VIEW_TYPE, CLU_VIEW_TYPE } = viewTypeMappings;
+const { CLU_VIEW_TYPE } = viewTypeMappings;
 const Store = createContext();
 
 export function useClusterStore() {
@@ -34,7 +34,22 @@ export const StoreProvider = injectIntl(inject('AppState')(observer(
       ...props,
       prefixCls: 'c7ncd-cluster',
       intlPrefix: 'c7ncd.cluster',
-      permissions: [],
+      permissions: [
+        'devops-service.devops-cluster.queryClustersAndNodes',
+        'devops-service.devops-cluster.query',
+        'devops-service.project-certification.listAllNonRelatedMembers',
+        'devops-service.devops-cluster.listClusterNodes',
+        'devops-service.project-certification.pageRelatedProjects',
+        'devops-service.devops-cluster.assignPermission',
+        'devops-service.devops-cluster.checkName',
+        'devops-service.devops-cluster.checkCode',
+        'devops-service.devops-cluster.create',
+        'devops-service.devops-cluster.update',
+        'devops-service.devops-cluster.queryShell',
+        'devops-service.devops-cluster.deleteCluster',
+        'devops-service.devops-cluster.queryNodeInfo',
+        'devops-service.devops-cluster.pageQueryPodsByNodeName',
+      ],
       clusterStore,
       itemType,
       viewTypeMemo,

@@ -131,6 +131,7 @@ export default class DetailTitle extends PureComponent {
         {!tail && <div className="c7ncd-pipeline-title-trigger">
           {triggerDom}
         </div>}
+        <div className="c7ncd-pipeline-title-right-angle" />
       </div>
     );
   }
