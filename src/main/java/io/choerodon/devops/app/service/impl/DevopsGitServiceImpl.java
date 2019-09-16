@@ -227,15 +227,16 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             devopsBranchDTOCreate.setLastCommitDate(checkoutDate);
             devopsBranchDTOCreate.setLastCommit(checkoutSha);
             devopsBranchDTOCreate.setLastCommitMsg(commitDTO.getMessage());
-            Long commitUserId = null;
+            UserAttrDTO userAttrDTO;
             if (commitDTO.getCommitterName().equals("root")) {
-                UserAttrDTO userAttrDTO = userAttrService.baseQueryByGitlabUserName("admin");
+                userAttrDTO = userAttrService.baseQueryByGitlabUserName("admin");
                 if (userAttrDTO == null) {
                     userAttrDTO = userAttrService.baseQueryByGitlabUserName("admin1");
                 }
-                commitUserId = userAttrDTO.getGitlabUserId();
+            } else {
+                userAttrDTO = userAttrService.baseQueryByGitlabUserName(commitDTO.getCommitterName());
             }
-            devopsBranchDTOCreate.setLastCommitUser(commitUserId);
+            devopsBranchDTOCreate.setLastCommitUser(userAttrDTO == null ? null : userAttrDTO.getGitlabUserId());
             devopsBranchService.baseUpdateBranch(devopsBranchDTOCreate);
         } catch (Exception e) {
             DevopsBranchDTO devopsBranchDTOCreate = devopsBranchService.baseQuery(branchSagaPayLoad.getDevopsBranchId());
@@ -272,9 +273,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 issueDTO = agileServiceClientOperator.queryIssue(projectId, t.getIssueId(), organizationDTO.getId());
             }
             IamUserDTO userDTO = baseServiceClientOperator.queryUserByUserId(
-                    userAttrService.getUserIdByGitlabUserId(t.getUserId()));
+                    userAttrService.queryUserIdByGitlabUserId(t.getUserId()));
             IamUserDTO commitUserDTO = baseServiceClientOperator.queryUserByUserId(
-                    userAttrService.getUserIdByGitlabUserId(t.getLastCommitUser()));
+                    userAttrService.queryUserIdByGitlabUserId(t.getLastCommitUser()));
             String commitUrl = String.format("%s/commit/%s?view=parallel", path, t.getLastCommit());
             return getBranchVO(t, commitUrl, commitUserDTO, userDTO, issueDTO);
         }).collect(Collectors.toList()));
@@ -872,9 +873,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         mergeRequestVO.setId(devopsMergeRequestDTO.getId().intValue());
         mergeRequestVO.setIid(devopsMergeRequestDTO.getGitlabMergeRequestId().intValue());
         Long authorUserId = userAttrService
-                .getUserIdByGitlabUserId(devopsMergeRequestDTO.getAuthorId());
+                .queryUserIdByGitlabUserId(devopsMergeRequestDTO.getAuthorId());
         Long assigneeId = userAttrService
-                .getUserIdByGitlabUserId(devopsMergeRequestDTO.getAssigneeId());
+                .queryUserIdByGitlabUserId(devopsMergeRequestDTO.getAssigneeId());
         List<CommitDTO> commitDTOS;
         try {
             commitDTOS = gitlabServiceClientOperator.listCommits(
