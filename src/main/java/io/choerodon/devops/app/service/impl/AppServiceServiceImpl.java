@@ -2321,36 +2321,33 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public PageInfo<AppServiceVO> listAppServiceByIds(Set<Long> ids,Boolean doPage,PageRequest pageRequest,String params) {
+    public PageInfo<AppServiceVO> listAppServiceByIds(Set<Long> ids, Boolean doPage, PageRequest pageRequest, String params) {
         Map<String, Object> mapParams = TypeUtil.castMapParams(params);
         List<AppServiceDTO> appServiceDTOList = appServiceMapper.listAppServiceByIds(ids,
                 TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
                 TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)));
         List<AppServiceVO> collect = appServiceDTOList.stream().map(appServiceDTO -> dtoTOVo(appServiceDTO)).collect(Collectors.toList());
         if (doPage == null || doPage) {
-            return  PageInfoUtil.createPageFromList(collect,pageRequest);
-        }
-        else{
+            return PageInfoUtil.createPageFromList(collect, pageRequest);
+        } else {
             return new PageInfo<>(collect);
         }
     }
-    private  AppServiceVO dtoTOVo(AppServiceDTO appServiceDTO){
+
+    private AppServiceVO dtoTOVo(AppServiceDTO appServiceDTO) {
         AppServiceVO appServiceVO = new AppServiceVO();
         BeanUtils.copyProperties(appServiceDTO, appServiceVO);
-        if(appServiceDTO.getFailed() != null && appServiceDTO.getFailed()) {
+        if (appServiceDTO.getFailed() != null && appServiceDTO.getFailed()) {
             appServiceVO.setStatus(AppServiceStatus.FAILED.getStatus());
-        }
-        else if(appServiceDTO.getActive() != null && !appServiceDTO.getActive()){
+        } else if (appServiceDTO.getActive() != null && !appServiceDTO.getActive()) {
             appServiceVO.setStatus(AppServiceStatus.DISABLE.getStatus());
-        }
-        else if((appServiceDTO.getActive() != null && appServiceDTO.getActive()) && (appServiceDTO.getSynchro() !=null && appServiceDTO.getSynchro()) && ( appServiceDTO.getFailed() == null || !appServiceDTO.getFailed() )){
+        } else if ((appServiceDTO.getActive() != null && appServiceDTO.getActive()) && (appServiceDTO.getSynchro() != null && appServiceDTO.getSynchro()) && (appServiceDTO.getFailed() == null || !appServiceDTO.getFailed())) {
             appServiceVO.setStatus(AppServiceStatus.ENABLE.getStatus());
-        }
-        else if(appServiceDTO.getSynchro() != null &&!appServiceDTO.getSynchro() && (!appServiceDTO.getFailed() || appServiceDTO.getFailed() == null)){
+        } else if (appServiceDTO.getSynchro() != null && !appServiceDTO.getSynchro() && (!appServiceDTO.getFailed() || appServiceDTO.getFailed() == null)) {
             appServiceVO.setStatus(AppServiceStatus.ESTABLISH.getStatus());
         }
 
-        return  appServiceVO;
+        return appServiceVO;
     }
 
     /**
