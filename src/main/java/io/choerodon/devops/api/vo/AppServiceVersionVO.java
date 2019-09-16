@@ -8,6 +8,7 @@ import java.util.Date;
 public class AppServiceVersionVO {
     private Long id;
     private String version;
+    private Long appServiceId;
     private Date creationDate;
 
     public Long getId() {
@@ -24,6 +25,14 @@ public class AppServiceVersionVO {
 
     public void setVersion(String version) {
         this.version = version;
+    }
+
+    public Long getAppServiceId() {
+        return appServiceId;
+    }
+
+    public void setAppServiceId(Long appServiceId) {
+        this.appServiceId = appServiceId;
     }
 
     public Date getCreationDate() {

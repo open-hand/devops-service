@@ -425,7 +425,7 @@ public interface AppServiceService {
      * @param projectId
      * @return
      */
-    List<AppServiceDTO> listAppByProjectId(Long projectId);
+    PageInfo<AppServiceVO> listAppByProjectId(Long projectId,Boolean doPage,PageRequest pageRequest,String params);
 
     /**
      * 批量查询应用服务
@@ -440,4 +440,11 @@ public interface AppServiceService {
      * @return
      */
     List<ProjectVO> listProjectByShare(Long projectId,Boolean share);
+
+    /**
+     * 根据版本Id集合查询应用服务
+     * @param ids
+     * @return
+     */
+    List<AppServiceVO> listServiceByVersionIds(Set<Long> ids);
 }

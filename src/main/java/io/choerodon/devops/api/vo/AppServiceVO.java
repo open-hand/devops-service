@@ -2,6 +2,8 @@ package io.choerodon.devops.api.vo;
 
 import io.choerodon.devops.infra.enums.AppServiceStatus;
 
+import java.util.List;
+
 /**
  * @author zhaotianxin
  * @since 2019/9/12
@@ -11,7 +13,16 @@ public class AppServiceVO {
     private String name;
     private String code;
     private String type;
+    List<AppServiceVersionVO> versions;
     private String status;
+
+    public List<AppServiceVersionVO> getVersions() {
+        return versions;
+    }
+
+    public void setVersions(List<AppServiceVersionVO> versions) {
+        this.versions = versions;
+    }
 
     public String getStatus() {
         return status;
