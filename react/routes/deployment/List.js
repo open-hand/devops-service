@@ -73,8 +73,9 @@ const Deployment = withRouter(observer((props) => {
   }
 
   async function openDetail() {
+    const deployType = listDs.current.get('deployType');
     let params;
-    if (listDs.current.get('deployType') === 'auto') {
+    if (deployType === 'auto') {
       detailDs.transport.read.url = `/devops/v1/projects/${id}/pipeline/${listDs.current.get('deployId')}/record_detail`;
       await detailDs.query();
 
@@ -108,7 +109,7 @@ const Deployment = withRouter(observer((props) => {
       drawer: true,
       okCancel: false,
       okText: formatMessage({ id: 'close' }),
-      title: formatMessage({ id: `${intlPrefix}.detail.title` }, { name: listDs.current.get('deployId') }),
+      title: formatMessage({ id: `${intlPrefix}.detail.${deployType}.title` }, { name: listDs.current.get('deployId') }),
       ...params,
     });
   }
