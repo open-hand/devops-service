@@ -42,13 +42,11 @@ import io.choerodon.devops.domain.application.valueobject.*;
 import io.choerodon.devops.domain.service.DeployService;
 import io.choerodon.devops.infra.common.util.*;
 import io.choerodon.devops.infra.common.util.enums.*;
-import io.choerodon.devops.infra.dataobject.ApplicationInstanceDO;
-import io.choerodon.devops.infra.dataobject.ApplicationInstancesDO;
-import io.choerodon.devops.infra.dataobject.ApplicationLatestVersionDO;
-import io.choerodon.devops.infra.dataobject.DeployDO;
+import io.choerodon.devops.infra.dataobject.*;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
 import io.choerodon.devops.infra.feign.NotifyClient;
 import io.choerodon.devops.infra.mapper.ApplicationInstanceMapper;
+import io.choerodon.devops.infra.mapper.PipelineAppDeployMapper;
 import io.choerodon.websocket.Msg;
 import io.choerodon.websocket.helper.CommandSender;
 
@@ -105,6 +103,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     private UserAttrRepository userAttrRepository;
     @Autowired
     private ApplicationInstanceMapper applicationInstanceMapper;
+    @Autowired
+    private PipelineAppDeployMapper appDeployMapper;
     @Autowired
     private DevopsEnvPodRepository devopsEnvPodRepository;
     @Autowired
@@ -1058,6 +1058,15 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Transactional(rollbackFor = Exception.class)
     public void instanceDelete(Long instanceId) {
         ApplicationInstanceE instanceE = applicationInstanceRepository.selectById(instanceId);
+        //校验是否关联流水线
+        if (instanceE.getDevopsEnvironmentE() != null) {
+            PipelineAppDeployDO appDeployDO = new PipelineAppDeployDO();
+            appDeployDO.setInstanceName(instanceE.getCode());
+            appDeployDO.setEnvId(instanceE.getDevopsEnvironmentE().getId());
+            if (!appDeployMapper.select(appDeployDO).isEmpty()) {
+                throw new CommonException("error.delete.instance.related.pipeline");
+            }
+        }
         //校验用户是否有环境的权限
         DevopsEnvironmentE devopsEnvironmentE = checkEnvPermission(instanceE.getDevopsEnvironmentE().getId());
 
