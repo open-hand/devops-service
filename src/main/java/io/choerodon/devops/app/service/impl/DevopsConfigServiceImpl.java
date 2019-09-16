@@ -120,6 +120,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                     baseUpdate(newDevopsConfigDTO);
                 } else {
                     setResourceId(resourceId, resourceType, newDevopsConfigDTO);
+                    newDevopsConfigDTO.setId(null);
                     baseCreate(newDevopsConfigDTO);
                 }
             } else {
@@ -329,8 +330,8 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
             if (configType.equals(HARBOR)) {
                 DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectDTO.getId());
                 if (devopsProjectDTO.getHarborProjectIsPrivate() != null && devopsProjectDTO.getHarborProjectIsPrivate()) {
-                    ConfigVO configVO = gson.fromJson(organizationConfig.getConfig(), ConfigVO.class);
-                    configVO.setPrivate(true);
+                        ConfigVO configVO = gson.fromJson(organizationConfig.getConfig(), ConfigVO.class);
+                        configVO.setPrivate(true);
                     configVO.setUserName(devopsProjectDTO.getHarborProjectUserName());
                     configVO.setPassword(devopsProjectDTO.getHarborProjectUserPassword());
                     configVO.setEmail(devopsProjectDTO.getHarborProjectUserEmail());
