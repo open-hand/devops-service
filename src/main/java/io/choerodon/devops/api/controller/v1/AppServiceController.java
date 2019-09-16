@@ -724,7 +724,7 @@ public class AppServiceController {
 
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "批量查询应用服务")
-    @GetMapping(value = "/list_app_service_ids")
+    @PostMapping(value = "/list_app_service_ids")
     public ResponseEntity<PageInfo<AppServiceVO>> batchQueryAppService(
             @ApiParam(value = "项目Id")
             @PathVariable(value = "project_id") Long projectId,
