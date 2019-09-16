@@ -103,17 +103,17 @@ function ClusterItem({
   const getSuffix = useMemo(() => {
     const [status] = getStatus();
     const Data = [{
-      service: [],
+      service: ['devops-service.devops-cluster.update'],
       text: formatMessage({ id: `${intlPrefix}.action.edit` }),
       action: editItem,
     }];
     if (status === 'disconnect') {
       Data.push({
-        service: [],
+        service: ['devops-service.devops-cluster.queryShell'],
         text: formatMessage({ id: `${intlPrefix}.activate.header` }),
         action: activateItem,
       }, {
-        service: [],
+        service: ['devops-service.devops-cluster.deleteCluster'],
         text: formatMessage({ id: `${intlPrefix}.action.delete` }),
         action: deleteItem,
       });

@@ -114,12 +114,15 @@ const ClusterModals = observer(() => {
   function getButtons() {
     return [{
       name: formatMessage({ id: `${intlPrefix}.modal.create` }),
+      permissions: ['devops-service.devops-cluster.create'],
       icon: 'playlist_add',
       handler: openCreate,
       display: true,
       group: 1,
     }, {
       name: formatMessage({ id: `${intlPrefix}.modal.permission` }),
+      permissions: ['devops-service.devops-cluster.assignPermission', 'devops-service.devops-cluster.checkName',
+        'devops-service.devops-cluster.checkCode'],
       icon: 'authority',
       handler: openPermission,
       display: true,

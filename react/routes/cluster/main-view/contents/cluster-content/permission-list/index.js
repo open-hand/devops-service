@@ -2,7 +2,6 @@ import React from 'react';
 import { Permission, Action } from '@choerodon/master';
 import { Table } from 'choerodon-ui/pro';
 import { useClusterContentStore } from '../stores';
-import StatusTags from '../../../../../../components/status-tag';
 
 
 const { Column } = Table;
@@ -14,7 +13,7 @@ export default () => {
   function renderActions({ record }) {
     const actionData = [
       {
-        service: [],
+        service: ['devops-service.devops-cluster.deleteCluster'],
         text: formatMessage({ id: 'delete' }),
         action: () => {
           PermissionDs.transport.destroy.params = {

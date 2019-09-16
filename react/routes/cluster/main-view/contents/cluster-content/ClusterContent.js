@@ -55,7 +55,7 @@ export default observer((props) => {
   
 
   return (
-    <div>
+    <Fragment>
       <Modals />
       <PageTitle>
         {title}
@@ -82,5 +82,5 @@ export default observer((props) => {
           </Suspense>
         </TabPane>
       </Tabs>
-    </div>);
+    </Fragment>);
 });
