@@ -361,7 +361,7 @@ public class AppServiceVersionController {
             @ApiParam(value = "应用服务id集合", required = true)
             @RequestParam(value = "app_service_ids", required = true) Set<Long> ids) {
         return Optional.ofNullable(
-                appServiceVersionService.listServiceVersionByAppServiceIds(ids,null))
+                appServiceVersionService.listServiceVersionVoByIds(ids))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.application.versions.get"));
     }

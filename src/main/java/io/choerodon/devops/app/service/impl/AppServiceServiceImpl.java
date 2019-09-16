@@ -1984,7 +1984,6 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
         List<AppServiceVersionDTO> versionList = appServiceVersionService.listServiceVersionByAppServiceIds(appServiceIds, shareString);
         Map<Long, List<AppServiceVersionDTO>> versionMap = versionList.stream().collect(Collectors.groupingBy(AppServiceVersionDTO::getAppServiceId));
-
         Set<Long> projectIds = appServiceDTOList.stream().map(AppServiceDTO::getProjectId).collect(Collectors.toSet());
         List<ProjectDTO> projects = baseServiceClientOperator.queryProjectsByIds(projectIds);
         Map<Long, ProjectDTO> projectMap = projects.stream().collect(Collectors.toMap(ProjectDTO::getId, Function.identity()));

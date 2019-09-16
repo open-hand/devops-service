@@ -379,8 +379,8 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     }
 
     @Override
-    public List<AppServiceVersionVO> listServiceVersionByAppServiceIds(Set<Long> appServiceIds, String share) {
-        return ConvertUtils.convertList(appServiceVersionMapper.listServiceVersionByAppServiceIds(appServiceIds, share), AppServiceVersionVO.class);
+    public List<AppServiceVersionDTO> listServiceVersionByAppServiceIds(Set<Long> appServiceIds, String share) {
+        return appServiceVersionMapper.listServiceVersionByAppServiceIds(appServiceIds, share);
     }
 
     @Override
@@ -391,6 +391,11 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
             versionVoList = versionList.stream().map(this::dtoToVo).collect(Collectors.toList());
         }
         return versionVoList;
+    }
+
+    @Override
+    public List<AppServiceVersionVO> listServiceVersionVoByIds(Set<Long> ids) {
+        return ConvertUtils.convertList(listServiceVersionByAppServiceIds(ids,null),AppServiceVersionVO.class);
     }
 
     private AppServiceVersionVO dtoToVo(AppServiceVersionDTO appServiceVersionDTO) {
