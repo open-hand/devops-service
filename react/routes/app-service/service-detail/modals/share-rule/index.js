@@ -70,12 +70,6 @@ export default observer(({ record, dataSet, versionOptions, levelOptions, projec
       return false;
     }
   });
-  
-  function optionRenderer({ record: tableRecord, text, value }) {
-    return (
-      <div>{text}-{tableRecord.get('appName')}</div>
-    );
-  }
 
   return (<Fragment>
     <Form record={record}>
@@ -85,7 +79,7 @@ export default observer(({ record, dataSet, versionOptions, levelOptions, projec
         ))}
       </Select>
       <Select name="version" searchable />
-      <Select name="shareLevel" searchable optionRenderer={optionRenderer} />
+      <Select name="shareLevel" searchable />
     </Form>
     {hasFailed && (
       <span className={`${prefixCls}-share-failed`}>

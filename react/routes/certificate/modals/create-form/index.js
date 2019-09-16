@@ -104,7 +104,7 @@ const CreateForm = ({ certId, intl: { formatMessage }, form, store, projectId, m
         }
 
         try {
-          const result = await method(projectId, formData, certId);
+          const result = await method(projectId, formData);
           if (handlePromptError(result, false)) {
             refresh();
             modal.close();
