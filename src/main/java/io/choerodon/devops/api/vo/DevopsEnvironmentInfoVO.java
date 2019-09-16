@@ -18,6 +18,7 @@ public class DevopsEnvironmentInfoVO {
     private Boolean skipCheckPermission;
     private String description;
     private Long objectVersionNumber;
+    private Boolean active;
     /**
      * value from {@link EnvironmentGitopsStatus}
      */
@@ -109,5 +110,13 @@ public class DevopsEnvironmentInfoVO {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Boolean getActive() {
+        return active;
+    }
+
+    public void setActive(Boolean active) {
+        this.active = active;
     }
 }
