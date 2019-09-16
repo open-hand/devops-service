@@ -8,17 +8,13 @@ import javax.validation.constraints.NotNull;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
- * Created by n!Ck
- * Date: 18-12-4
- * Time: 上午9:46
- * Description:
+ * @author lihao
+ * @date 2019-09-15 15:54
  */
-public class SecretReqVO {
-    @ApiModelProperty(value = "密钥id")
+public class SecretUpdateVO {
+    @ApiModelProperty(value = "密钥id/必填")
+    @NotNull(message = "error.id.null")
     private Long id;
-
-    @ApiModelProperty(value = "应用id/非必填")
-    private Long appServiceId;
 
     @ApiModelProperty(value = "环境id/必填")
     @NotNull(message = "error.env.id.null")
@@ -37,6 +33,11 @@ public class SecretReqVO {
 
     @ApiModelProperty(value = "创建或者更新")
     private String type;
+
+    @ApiModelProperty(value = "应用id/非必填")
+    private Long appServiceId;
+
+    // TODO objectVersionNumber问题
 
     public Long getId() {
         return id;

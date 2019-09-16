@@ -3,6 +3,8 @@ package io.choerodon.devops.api.controller.v1;
 import java.util.List;
 import java.util.Optional;
 
+import javax.validation.Valid;
+
 import com.github.pagehelper.PageInfo;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -17,8 +19,10 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
+import io.choerodon.devops.api.vo.DevopsDeployValueUpdateVO;
 import io.choerodon.devops.api.vo.DevopsDeployValueVO;
 import io.choerodon.devops.app.service.DevopsDeployValueService;
+import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 
 /**
@@ -70,14 +74,34 @@ public class DevopsDeployValueController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下创建流水线配置")
     @PostMapping
-    public ResponseEntity<DevopsDeployValueVO> createOrUpdate(
+    public ResponseEntity<DevopsDeployValueVO> create(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "部署配置相关信息")
-            @RequestBody DevopsDeployValueVO devopsDeployValueVO) {
+            @Valid @RequestBody DevopsDeployValueVO devopsDeployValueVO) {
         return Optional.ofNullable(devopsDeployValueService.createOrUpdate(projectId, devopsDeployValueVO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.pipeline.value.createOrUpdate"));
+                .orElseThrow(() -> new CommonException("error.pipeline.value.create"));
+    }
+
+    /**
+     * 项目下更新流水线配置
+     *
+     * @param projectId                 项目Id
+     * @param devopsDeployValueUpdateVO 配置信息
+     * @return 部署配置
+     */
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "项目下更新流水线配置")
+    @PutMapping
+    public ResponseEntity<DevopsDeployValueVO> update(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "部署配置相关信息")
+            @Valid @RequestBody DevopsDeployValueUpdateVO devopsDeployValueUpdateVO) {
+        return Optional.ofNullable(devopsDeployValueService.createOrUpdate(projectId, ConvertUtils.convertObject(devopsDeployValueUpdateVO, DevopsDeployValueVO.class)))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.pipeline.value.update"));
     }
 
     /**
