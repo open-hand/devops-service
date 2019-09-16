@@ -230,7 +230,6 @@ public class AppServiceServiceImpl implements AppServiceService {
                         .withSourceId(projectId),
                 builder -> {
                 });
-        sendCreateAppServiceInfo(appServiceDTO, projectId);
         return ConvertUtils.convertObject(baseQueryByCode(appServiceDTO.getCode(), appServiceDTO.getProjectId()), AppServiceRepVO.class);
     }
 
@@ -279,7 +278,6 @@ public class AppServiceServiceImpl implements AppServiceService {
             }
         }
         appServiceMapper.deleteByPrimaryKey(appServiceId);
-        sendDeleteAppServiceInfo(appServiceDTO, projectId);
     }
 
     @Saga(code = SagaTopicCodeConstants.DEVOPS_UPDATE_GITLAB_USERS,
@@ -332,7 +330,6 @@ public class AppServiceServiceImpl implements AppServiceService {
             checkName(oldAppServiceDTO.getProjectId(), appServiceDTO.getName());
         }
         baseUpdate(appServiceDTO);
-        sendUpdateAppServiceInfo(baseQuery(appServiceUpdateDTO.getId()), projectId);
         return true;
     }
 
@@ -360,9 +357,6 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         appServiceDTO.setActive(toUpdateValue);
         baseUpdate(appServiceDTO);
-
-        // 发送同步消息给其它服务
-        sendUpdateAppServiceInfo(appServiceDTO, projectId);
         return true;
     }
 
@@ -374,7 +368,6 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         PageInfo<AppServiceDTO> applicationServiceDTOS = basePageByOptions(projectId, isActive, hasVersion, appMarket, type, doPage, pageRequest, params);
-        UserAttrDTO userAttrDTO = userAttrMapper.selectByPrimaryKey(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         initApplicationParams(projectDTO, organizationDTO, applicationServiceDTOS.getList(), urlSlash);
@@ -397,7 +390,6 @@ public class AppServiceServiceImpl implements AppServiceService {
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
 
         initApplicationParams(projectDTO, organizationDTO, applicationServiceDTOPageInfo.getList(), urlSlash);
-
         return ConvertUtils.convertPage(applicationServiceDTOPageInfo, AppServiceRepVO.class);
     }
 
@@ -413,7 +405,6 @@ public class AppServiceServiceImpl implements AppServiceService {
             applicationDTOServiceList = appServiceMapper.listProjectMembersAppServiceByActive(projectId, userId);
         }
 
-        UserAttrDTO userAttrDTO = userAttrMapper.selectByPrimaryKey(userId);
         OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
 
@@ -496,13 +487,12 @@ public class AppServiceServiceImpl implements AppServiceService {
         appServiceDTO.setSynchro(true);
         appServiceDTO.setFailed(false);
         setProjectHook(appServiceDTO, devOpsAppServicePayload.getGitlabProjectId(), applicationServiceToken, devOpsAppServicePayload.getUserId());
-//        baseUpdate(appServiceDTO);
-        appServiceMapper.updateByPrimaryKeySelective(appServiceDTO);
+        baseUpdate(appServiceDTO);
 
         // 为项目下的成员分配对于此gitlab项目的权限
         operateGitlabMemberPermission(devOpsAppServicePayload);
 
-        if (devOpsAppServicePayload.getTemplateAppServiceId() != null) {
+        if (devOpsAppServicePayload.getTemplateAppServiceId() != null && devOpsAppServicePayload.getTemplateAppServiceVersionId() != null) {
             LOGGER.info("The current app service id is {} and the service code is {}", appServiceDTO.getId(), appServiceDTO.getCode());
             LOGGER.info("The template app service id is not null: {}, start to clone template repository", devOpsAppServicePayload.getTemplateAppServiceId());
 
@@ -815,75 +805,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                         .withRefId("")
                         .withSourceId(projectId));
 
-        sendCreateAppServiceInfo(appServiceDTO, projectId);
         return ConvertUtils.convertObject(baseQuery(appServiceId), AppServiceRepVO.class);
-    }
-
-    /**
-     * 发送服务信息
-     *
-     * @param appServiceDTO 服务信息
-     * @param projectId     项目id
-     */
-    @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_APPLICATION_SERVICE_EVENT,
-            description = "devops创建应用服务",
-            inputSchemaClass = io.choerodon.devops.infra.dto.AppServiceDTO.class)
-    @Override
-    public void sendCreateAppServiceInfo(AppServiceDTO appServiceDTO, Long projectId) {
-        DevOpsAppServiceSyncPayload appServiceSyncPayload = new DevOpsAppServiceSyncPayload();
-        BeanUtils.copyProperties(appServiceDTO, appServiceSyncPayload);
-        producer.apply(
-                StartSagaBuilder.newBuilder()
-                        .withSourceId(projectId)
-                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_APPLICATION_SERVICE_EVENT)
-                        .withLevel(ResourceLevel.PROJECT)
-                        .withPayloadAndSerialize(appServiceSyncPayload),
-                builder -> {
-                }
-        );
-    }
-
-    /**
-     * 发送服务信息
-     *
-     * @param appServiceDTO 服务信息
-     * @param projectId     项目id
-     */
-    @Saga(code = SagaTopicCodeConstants.DEVOPS_DELETE_APPLICATION_SERVICE_EVENT,
-            description = "devops删除应用服务",
-            inputSchemaClass = io.choerodon.devops.infra.dto.AppServiceDTO.class)
-    private void sendDeleteAppServiceInfo(AppServiceDTO appServiceDTO, Long projectId) {
-        producer.apply(
-                StartSagaBuilder.newBuilder()
-                        .withSourceId(projectId)
-                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_DELETE_APPLICATION_SERVICE_EVENT)
-                        .withLevel(ResourceLevel.PROJECT)
-                        .withPayloadAndSerialize(appServiceDTO),
-                builder -> {
-                }
-        );
-    }
-
-
-    /**
-     * 发送服务信息
-     *
-     * @param appServiceDTO 服务信息
-     * @param projectId     项目id
-     */
-    @Saga(code = SagaTopicCodeConstants.DEVOPS_UPDATE_APPLICATION_SERVICE_EVENT,
-            description = "devops更新应用服务",
-            inputSchemaClass = io.choerodon.devops.infra.dto.AppServiceDTO.class)
-    private void sendUpdateAppServiceInfo(AppServiceDTO appServiceDTO, Long projectId) {
-        producer.apply(
-                StartSagaBuilder.newBuilder()
-                        .withSourceId(projectId)
-                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_UPDATE_APPLICATION_SERVICE_EVENT)
-                        .withLevel(ResourceLevel.PROJECT)
-                        .withPayloadAndSerialize(appServiceDTO),
-                builder -> {
-                }
-        );
     }
 
     @Override
@@ -1308,7 +1230,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 List<String> dates = new ArrayList<>();
                 List<String> codeSmells = new ArrayList<>();
                 List<String> vulnerabilities = new ArrayList<>();
-                sonarTablesResponse.body().getMeasures().stream().forEach(sonarTableMeasure -> {
+                sonarTablesResponse.body().getMeasures().forEach(sonarTableMeasure -> {
                     if (sonarTableMeasure.getMetric().equals(SonarQubeType.BUGS.getType())) {
                         sonarTableMeasure.getHistory().stream().filter(sonarHistory ->
                                 getHistory(startTime, tomorrow, sdf, sonarHistory)
@@ -1353,29 +1275,29 @@ public class AppServiceServiceImpl implements AppServiceService {
                 List<String> unCoverLines = new ArrayList<>();
                 List<String> coverLines = new ArrayList<>();
                 List<String> coverage = new ArrayList<>();
-                sonarTablesResponse.body().getMeasures().stream().forEach(sonarTableMeasure -> {
+                sonarTablesResponse.body().getMeasures().forEach(sonarTableMeasure -> {
                     if (sonarTableMeasure.getMetric().equals(SonarQubeType.COVERAGE.getType())) {
-                        sonarTableMeasure.getHistory().stream().filter(sonarHistroy ->
-                                getHistory(startTime, tomorrow, sdf, sonarHistroy)
-                        ).forEach(sonarHistroy -> {
-                            coverage.add(sonarHistroy.getValue());
+                        sonarTableMeasure.getHistory().stream().filter(sonarHistory ->
+                                getHistory(startTime, tomorrow, sdf, sonarHistory)
+                        ).forEach(sonarHistory -> {
+                            coverage.add(sonarHistory.getValue());
                         });
                         sonarTableVO.setCoverage(coverage);
                     }
                     if (sonarTableMeasure.getMetric().equals(SonarQubeType.LINES_TO_COVER.getType())) {
-                        sonarTableMeasure.getHistory().stream().filter(sonarHistroy ->
-                                getHistory(startTime, tomorrow, sdf, sonarHistroy)
-                        ).forEach(sonarHistroy -> {
-                            linesToCover.add(sonarHistroy.getValue());
-                            dates.add(sonarHistroy.getDate());
+                        sonarTableMeasure.getHistory().stream().filter(sonarHistory ->
+                                getHistory(startTime, tomorrow, sdf, sonarHistory)
+                        ).forEach(sonarHistory -> {
+                            linesToCover.add(sonarHistory.getValue());
+                            dates.add(sonarHistory.getDate());
                         });
                         sonarTableVO.setDates(dates);
                         sonarTableVO.setLinesToCover(linesToCover);
                     }
 
                     if (sonarTableMeasure.getMetric().equals(SonarQubeType.UNCOVERED_LINES.getType())) {
-                        sonarTableMeasure.getHistory().stream().filter(sonarHistroy ->
-                                getHistory(startTime, tomorrow, sdf, sonarHistroy)
+                        sonarTableMeasure.getHistory().stream().filter(sonarHistory ->
+                                getHistory(startTime, tomorrow, sdf, sonarHistory)
                         ).forEach(sonarHistory -> unCoverLines.add(sonarHistory.getValue()));
                     }
                 });
@@ -1401,30 +1323,30 @@ public class AppServiceServiceImpl implements AppServiceService {
                 List<String> dates = new ArrayList<>();
                 List<String> duplicatedLines = new ArrayList<>();
                 List<String> duplicatedLinesRate = new ArrayList<>();
-                sonarTablesResponse.body().getMeasures().stream().forEach(sonarTableMeasure -> {
+                sonarTablesResponse.body().getMeasures().forEach(sonarTableMeasure -> {
                     if (sonarTableMeasure.getMetric().equals(SonarQubeType.NCLOC.getType())) {
-                        sonarTableMeasure.getHistory().stream().filter(sonarHistroy ->
-                                getHistory(startTime, tomorrow, sdf, sonarHistroy)
-                        ).forEach(sonarHistroy -> {
-                            nclocs.add(sonarHistroy.getValue());
-                            dates.add(sonarHistroy.getDate());
+                        sonarTableMeasure.getHistory().stream().filter(sonarHistory ->
+                                getHistory(startTime, tomorrow, sdf, sonarHistory)
+                        ).forEach(sonarHistory -> {
+                            nclocs.add(sonarHistory.getValue());
+                            dates.add(sonarHistory.getDate());
                         });
                         sonarTableVO.setNclocs(nclocs);
                         sonarTableVO.setDates(dates);
                     }
                     if (sonarTableMeasure.getMetric().equals(SonarQubeType.DUPLICATED_LINES.getType())) {
-                        sonarTableMeasure.getHistory().stream().filter(sonarHistroy ->
-                                getHistory(startTime, tomorrow, sdf, sonarHistroy)
-                        ).forEach(sonarHistroy ->
-                                duplicatedLines.add(sonarHistroy.getValue())
+                        sonarTableMeasure.getHistory().stream().filter(sonarHistory ->
+                                getHistory(startTime, tomorrow, sdf, sonarHistory)
+                        ).forEach(sonarHistory ->
+                                duplicatedLines.add(sonarHistory.getValue())
                         );
                         sonarTableVO.setDuplicatedLines(duplicatedLines);
                     }
                     if (sonarTableMeasure.getMetric().equals(SonarQubeType.DUPLICATED_LINES_DENSITY.getType())) {
-                        sonarTableMeasure.getHistory().stream().filter(sonarHistroy ->
-                                getHistory(startTime, tomorrow, sdf, sonarHistroy)
-                        ).forEach(sonarHistroy -> {
-                            duplicatedLinesRate.add(sonarHistroy.getValue());
+                        sonarTableMeasure.getHistory().stream().filter(sonarHistory ->
+                                getHistory(startTime, tomorrow, sdf, sonarHistory)
+                        ).forEach(sonarHistory -> {
+                            duplicatedLinesRate.add(sonarHistory.getValue());
                         });
                         sonarTableVO.setDuplicatedLinesRate(duplicatedLinesRate);
                     }
@@ -1747,7 +1669,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         ProjectDTO oldProjectDTO = baseServiceClientOperator.queryIamProjectById(oldAppServiceDTO.getProjectId());
         AppServiceVersionDTO oldAppServiceVersionDTO = appServiceVersionService.baseQuery(oldAppServiceVersionId);
         String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
-        String oldGroup = null;
+        String oldGroup;
         if (oldProjectDTO.getOrganizationId() != null) {
             OrganizationDTO oldOrganizationDTO = baseServiceClientOperator.queryOrganizationById(oldProjectDTO.getOrganizationId());
             oldGroup = oldOrganizationDTO.getCode() + "-" + oldProjectDTO.getCode();
@@ -1964,9 +1886,9 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
 
-    private boolean getHistory(Date startTime, Date endTime, SimpleDateFormat sdf, SonarHistroy sonarHistroy) {
+    private boolean getHistory(Date startTime, Date endTime, SimpleDateFormat sdf, SonarHistroy sonarHistory) {
         try {
-            return sdf.parse(sonarHistroy.getDate()).compareTo(startTime) >= 0 && sdf.parse(sonarHistroy.getDate()).compareTo(endTime) <= 0;
+            return sdf.parse(sonarHistory.getDate()).compareTo(startTime) >= 0 && sdf.parse(sonarHistory.getDate()).compareTo(endTime) <= 0;
         } catch (ParseException e) {
             throw new CommonException(e);
         }
@@ -2038,7 +1960,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     @Override
     public PageInfo<AppServiceGroupInfoVO> pageAppServiceByMode(Long projectId, Boolean share,Long searchProjectId, String param,PageRequest pageRequest) {
-        List<AppServiceDTO> appServiceDTOList = new ArrayList<>();
+        List<AppServiceDTO> appServiceDTOList;
         if (!StringUtils.isEmpty(share) && share) {
             appServiceDTOList = listSharedAppService(projectId,searchProjectId,param);
         } else {
@@ -2054,7 +1976,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     private void initAppServiceGroupInfoVOList(List<AppServiceGroupInfoVO> appServiceGroupInfoVOS, List<AppServiceDTO> appServiceDTOList, Boolean share) {
         if (appServiceDTOList.isEmpty()) return;
         // 获取应用服务编号集合去得到服务最新的版本号
-        Set<Long> appServiceIds = appServiceDTOList.stream().map(v -> v.getId()).collect(Collectors.toSet());
+        Set<Long> appServiceIds = appServiceDTOList.stream().map(AppServiceDTO::getId).collect(Collectors.toSet());
         String shareString = null;
         if (share) {
             shareString = "share";
@@ -2062,11 +1984,11 @@ public class AppServiceServiceImpl implements AppServiceService {
         List<AppServiceVersionDTO> versionList = appServiceVersionService.listServiceVersionByAppServiceIds(appServiceIds, shareString);
         Map<Long, List<AppServiceVersionDTO>> versionMap = versionList.stream().collect(Collectors.groupingBy(AppServiceVersionDTO::getAppServiceId));
 
-        Set<Long> projectIds = appServiceDTOList.stream().map(appServiceDTO -> appServiceDTO.getProjectId()).collect(Collectors.toSet());
+        Set<Long> projectIds = appServiceDTOList.stream().map(AppServiceDTO::getProjectId).collect(Collectors.toSet());
         List<ProjectDTO> projects = baseServiceClientOperator.queryProjectsByIds(projectIds);
         Map<Long, ProjectDTO> projectMap = projects.stream().collect(Collectors.toMap(ProjectDTO::getId, Function.identity()));
         // 遍历应用服务集合并转换为VO
-        appServiceDTOList.stream().forEach(appServiceDTO -> {
+        appServiceDTOList.forEach(appServiceDTO -> {
             // 根据应用服务的ID查询出versionList中对应的版本信息
             List<AppServiceVersionDTO> appServiceVersionDTOS = versionMap.get(appServiceDTO.getId());
             // 应用服务含有共享版本才加入List
@@ -2135,9 +2057,6 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     /**
      * 获取组织共享的应用服务
-     *
-     * @param projectId
-     * @return
      */
     private List<AppServiceDTO> listSharedAppService(Long projectId,Long searchProjectId, String param) {
         // 获取组织Id
@@ -2244,8 +2163,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     @Override
     public List<AppServiceDTO> listAppByProjectId(Long projectId) {
-        List<AppServiceDTO> appServiceDTOList = baseListByProjectId(projectId);
-        return appServiceDTOList;
+        return baseListByProjectId(projectId);
     }
 
     @Override
@@ -2254,7 +2172,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         List<AppServiceDTO> appServiceDTOList = appServiceMapper.listAppServiceByIds(ids,
                 TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
                 TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)));
-        List<AppServiceVO> collect = appServiceDTOList.stream().map(appServiceDTO -> dtoTOVo(appServiceDTO)).collect(Collectors.toList());
+        List<AppServiceVO> collect = appServiceDTOList.stream().map(this::dtoTOVo).collect(Collectors.toList());
         if (doPage == null || doPage) {
             return PageInfoUtil.createPageFromList(collect, pageRequest);
         } else {
@@ -2264,14 +2182,14 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     @Override
     public List<ProjectVO> listProjectByShare(Long projectId,Boolean share) {
-        List<AppServiceDTO> appServiceDTOList = new ArrayList<>();
+        List<AppServiceDTO> appServiceDTOList;
 
         if (!StringUtils.isEmpty(share) && share) {
             appServiceDTOList = listSharedAppService(projectId,null,null);
         } else {
             appServiceDTOList = appServiceMapper.queryMarketDownloadApps(null, null, false,null);
         }
-        Set<Long> projectIds = appServiceDTOList.stream().map(appServiceDTO -> appServiceDTO.getProjectId()).collect(Collectors.toSet());
+        Set<Long> projectIds = appServiceDTOList.stream().map(AppServiceDTO::getProjectId).collect(Collectors.toSet());
         List<ProjectDTO> projectDTOS = baseServiceClientOperator.queryProjectsByIds(projectIds);
         return ConvertUtils.convertList(projectDTOS,ProjectVO.class);
     }

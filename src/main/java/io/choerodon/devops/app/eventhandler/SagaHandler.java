@@ -19,7 +19,6 @@ import io.choerodon.devops.app.eventhandler.constants.SagaTaskCodeConstants;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.*;
 import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.infra.enums.Visibility;
 import io.choerodon.devops.infra.util.TypeUtil;
 
 
@@ -44,29 +43,11 @@ public class SagaHandler {
     @Autowired
     private GitlabUserService gitlabUserService;
     @Autowired
-    private ApplicationService applicationService;
-    @Autowired
     private OrgAppMarketService orgAppMarketService;
 
 
     private void loggerInfo(Object o) {
         LOGGER.info("data: {}", JSONObject.toJSONString(o));
-    }
-
-
-    /**
-     * 消费创建应用事件，为应用创建组
-     */
-    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_CONSUME_APPLICATION_CREATION,
-            description = "消费创建应用事件",
-            sagaCode = SagaTopicCodeConstants.BASE_CREATE_APPLICATION,
-            maxRetryCount = 3,
-            seq = 1)
-    public String handleApplicationCreation(String msg) {
-        ApplicationEventPayload applicationEventPayload = gson.fromJson(msg, ApplicationEventPayload.class);
-        loggerInfo(msg);
-        applicationService.handleApplicationCreation(applicationEventPayload);
-        return msg;
     }
 
     /**
@@ -267,22 +248,6 @@ public class SagaHandler {
         return payload;
     }
 
-
-    /**
-     * 应用下载
-     */
-    @SagaTask(code = SagaTaskCodeConstants.APIM_DOWNLOAD_APP_CREATE_GROUP,
-            description = "应用下载,创建gitlab Group ",
-            sagaCode = SagaTopicCodeConstants.APIM_DOWNLOAD_APP,
-            maxRetryCount = 0, seq = 1)
-    public String downloadAppCreateProject(String payload) {
-        AppMarketDownloadPayload appMarketDownloadPayload = gson.fromJson(payload, AppMarketDownloadPayload.class);
-        ApplicationEventPayload applicationEventPayload = downPayloadToEnentPayload(appMarketDownloadPayload);
-        applicationEventPayload.setVisibility(Visibility.PUBLIC);
-        gitlabGroupService.createApplicationGroup(applicationEventPayload);
-        return payload;
-    }
-
     /**
      * 应用下载
      */
@@ -296,15 +261,4 @@ public class SagaHandler {
         orgAppMarketService.downLoadApp(appMarketDownloadPayload);
         return payload;
     }
-
-    private ApplicationEventPayload downPayloadToEnentPayload(AppMarketDownloadPayload appMarketDownloadPayload) {
-        ApplicationEventPayload applicationEventPayload = new ApplicationEventPayload();
-        BeanUtils.copyProperties(appMarketDownloadPayload, applicationEventPayload);
-        applicationEventPayload.setId(appMarketDownloadPayload.getAppId());
-        applicationEventPayload.setCode(appMarketDownloadPayload.getAppCode());
-        applicationEventPayload.setName(appMarketDownloadPayload.getAppName());
-        applicationEventPayload.setUserId(appMarketDownloadPayload.getIamUserId());
-        return applicationEventPayload;
-    }
-
 }

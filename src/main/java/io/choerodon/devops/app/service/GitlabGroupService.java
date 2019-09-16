@@ -1,6 +1,5 @@
 package io.choerodon.devops.app.service;
 
-import io.choerodon.devops.app.eventhandler.payload.ApplicationEventPayload;
 import io.choerodon.devops.app.eventhandler.payload.GitlabGroupPayload;
 import io.choerodon.devops.infra.dto.gitlab.GroupDTO;
 
@@ -21,13 +20,6 @@ public interface GitlabGroupService {
      * @param gitlabGroupPayload 项目信息
      */
     void updateGroups(GitlabGroupPayload gitlabGroupPayload);
-
-    /**
-     * 创建应用相关的group，包括平台下的应用及项目下应用
-     *
-     * @param applicationEventPayload 应用信息
-     */
-    void createApplicationGroup(ApplicationEventPayload applicationEventPayload);
 
     /**
      * 创建平台的应用组

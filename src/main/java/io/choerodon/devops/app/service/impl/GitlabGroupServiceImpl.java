@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.app.eventhandler.payload.ApplicationEventPayload;
 import io.choerodon.devops.app.eventhandler.payload.GitlabGroupPayload;
 import io.choerodon.devops.app.service.DevopsProjectService;
 import io.choerodon.devops.app.service.GitlabGroupService;
@@ -20,17 +19,9 @@ import io.choerodon.devops.infra.enums.Visibility;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.util.TypeUtil;
 
-/**
- * Created with IntelliJ IDEA.
- * User: Runge
- * Date: 2018/4/8
- * Time: 10:05
- * Description:
- */
 @Service
 public class GitlabGroupServiceImpl implements GitlabGroupService {
     private static final String GROUP_NAME_FORMAT = "%s-%s%s";
-    private static final String SITE_APP_GROUP_NAME_FORMAT = "site_%s";
     private static final String GROUP_APP_MARKET = "site-application-market";
     private static final String ENV_GROUP_SUFFIX = "-gitops";
 
@@ -54,23 +45,6 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
     }
 
     @Override
-    public void createApplicationGroup(ApplicationEventPayload applicationEventPayload) {
-        GroupDTO group = new GroupDTO();
-        setAppGroupNameAndPath(group, applicationEventPayload);
-
-        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(applicationEventPayload.getUserId());
-        GroupDTO groupDTO = gitlabServiceClientOperator.queryGroupByName(group.getPath(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
-        if (groupDTO == null) {
-            group.setVisibility(applicationEventPayload.getVisibility());
-            groupDTO = gitlabServiceClientOperator.createGroup(group, TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
-        }
-
-        DevopsProjectDTO devopsProjectDO = new DevopsProjectDTO(applicationEventPayload.getProjectId());
-        devopsProjectDO.setDevopsAppGroupId(TypeUtil.objToLong(groupDTO.getId()));
-        devopsProjectService.baseUpdate(devopsProjectDO);
-    }
-
-    @Override
     public GroupDTO createSiteAppGroup(Long iamUserId) {
         GroupDTO group = new GroupDTO();
         group.setName(GROUP_APP_MARKET);
@@ -82,31 +56,6 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
             groupDTO = gitlabServiceClientOperator.createGroup(group, TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         }
         return groupDTO;
-    }
-
-    private void setAppGroupNameAndPath(GroupDTO group, ApplicationEventPayload applicationEventPayload) {
-        String name;
-        String path;
-
-        if (applicationEventPayload.getProjectId() != null) {
-            // 项目下应用
-            // name: orgName-appName
-            name = String.format(GROUP_NAME_FORMAT, applicationEventPayload.getOrganizationName(),
-                    applicationEventPayload.getName(), "");
-            // path: orgName-appCode
-            path = String.format(GROUP_NAME_FORMAT, applicationEventPayload.getOrganizationCode(),
-                    applicationEventPayload.getCode(), "");
-        } else {
-            // 平台下应用
-            // name: site-appName
-            name = String.format(SITE_APP_GROUP_NAME_FORMAT, applicationEventPayload.getName());
-            // path: site-appCode
-            path = String.format(SITE_APP_GROUP_NAME_FORMAT, applicationEventPayload.getCode());
-        }
-
-
-        group.setName(name);
-        group.setPath(path);
     }
 
     private void createGroup(GitlabGroupPayload gitlabGroupPayload, @Nullable final String suffix) {

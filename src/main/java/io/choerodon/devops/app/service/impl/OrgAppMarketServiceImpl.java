@@ -267,19 +267,6 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                     LOGGER.info("==========应用下载=========={}", userAttrDTO.getGitlabUserId());
                     appServiceDTO = createGitlabProject(downloadPayload, appMarketDownloadVO.getAppCode(), TypeUtil.objToInteger(groupDTO.getId()), userAttrDTO.getGitlabUserId());
                     LOGGER.info("==========应用下载，创建gitlab Project成功！！==========");
-
-                    //创建saga payload
-                    DevOpsAppServiceSyncPayload appServiceSyncPayload = new DevOpsAppServiceSyncPayload();
-                    BeanUtils.copyProperties(appServiceDTO, appServiceSyncPayload);
-                    producer.apply(
-                            StartSagaBuilder.newBuilder()
-                                    .withSourceId(applicationDTO.getId())
-                                    .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_APPLICATION_SERVICE_EVENT)
-                                    .withLevel(ResourceLevel.SITE)
-                                    .withPayloadAndSerialize(appServiceSyncPayload),
-                            builder -> {
-                            }
-                    );
                 }
                 String applicationDir = APPLICATION + System.currentTimeMillis();
                 String accessToken = appServiceService.getToken(appServiceDTO.getGitlabProjectId(), applicationDir, userAttrDTO);

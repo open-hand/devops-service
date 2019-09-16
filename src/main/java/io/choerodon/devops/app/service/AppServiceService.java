@@ -227,14 +227,6 @@ public interface AppServiceService {
     AppServiceRepVO importApp(Long projectId, AppServiceImportVO appServiceImportVO);
 
     /**
-     * 发送创建应用服务消息
-     *
-     * @param appServiceDTO 应用服务信息
-     * @param projectId     项目id
-     */
-    void sendCreateAppServiceInfo(AppServiceDTO appServiceDTO, Long projectId);
-
-    /**
      * 根据服务code查询服务
      *
      * @param projectId 项目Id
