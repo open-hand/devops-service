@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.env.YamlPropertySourceLoader;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import io.choerodon.asgard.saga.annotation.Saga;
@@ -48,6 +49,7 @@ import io.choerodon.devops.infra.gitops.ResourceFileCheckHandler;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.AppServiceInstanceMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvAppServiceMapper;
+import io.choerodon.devops.infra.mapper.PipelineAppServiceDeployMapper;
 import io.choerodon.devops.infra.util.*;
 
 
@@ -133,6 +135,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     private DevopsServiceService devopsServiceService;
     @Autowired
     private DevopsDeployRecordService devopsDeployRecordService;
+    @Autowired
+    private PipelineAppServiceDeployMapper pipelineAppServiceDeployMapper;
 
     @Override
     public AppServiceInstanceInfoVO queryInfoById(Long instanceId) {
@@ -574,11 +578,22 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         return devopsEnvResourceVO;
     }
 
+    /**
+     * 创建或更新实例
+     * 特别说明，此处的事务的propagation设置为{@link Propagation#REQUIRES_NEW} 是因为直接使用外层的事务会导致：
+     * 当外层捕获这个方法中抛出的异常进行相应的数据库记录状态回写会被回滚，以至于外层无法在实例操作失败后记录失败
+     * 的状态，因为这个事务被切面设置为 rollbackOnly 了。除非外层再次开启一个新的事务对相应操作状态进行更新。权衡
+     * 之后在此方法的事务从默认事务传播级别{@link Propagation#REQUIRED} 改成 {@link Propagation#REQUIRES_NEW}
+     *
+     * @param appServiceDeployVO 部署信息
+     * @param isFromPipeline     是否是从流水线发起的部署
+     * @return 部署后实例信息
+     */
     @Override
     @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_INSTANCE,
             description = "Devops创建实例", inputSchema = "{}")
-    @Transactional(rollbackFor = Exception.class)
-    public AppServiceInstanceVO createOrUpdate(AppServiceDeployVO appServiceDeployVO) {
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
+    public AppServiceInstanceVO createOrUpdate(AppServiceDeployVO appServiceDeployVO, boolean isFromPipeline) {
 
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(appServiceDeployVO.getEnvironmentId());
 
@@ -589,7 +604,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         //校验values
         FileUtil.checkYamlFormat(appServiceDeployVO.getValues());
-
 
         AppServiceDTO applicationDTO = applicationService.baseQuery(appServiceDeployVO.getAppServiceId());
         AppServiceVersionDTO appServiceVersionDTO =
@@ -610,6 +624,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             if (appServiceDeployVO.getInstanceName() == null || appServiceDeployVO.getInstanceName().trim().equals("")) {
                 code = String.format("%s-%s", applicationDTO.getCode(), GenerateUUID.generateUUID().substring(0, 5));
             } else {
+                checkNameInternal(appServiceDeployVO.getInstanceName(), appServiceDeployVO.getEnvironmentId(), isFromPipeline);
                 code = appServiceDeployVO.getInstanceName();
             }
         } else {
@@ -849,14 +864,24 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Transactional(rollbackFor = Exception.class)
 
     public void deleteInstance(Long instanceId) {
-
         AppServiceInstanceDTO appServiceInstanceDTO = baseQuery(instanceId);
 
-        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(appServiceInstanceDTO.getEnvId());
+        if (appServiceInstanceDTO == null) {
+            return;
+        }
 
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(appServiceInstanceDTO.getEnvId());
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
-        //校验环境相关信息
+        // 校验是否关联流水线
+        PipelineAppServiceDeployDTO appDeployDTO = new PipelineAppServiceDeployDTO();
+        appDeployDTO.setInstanceName(appServiceInstanceDTO.getCode());
+        appDeployDTO.setEnvId(appServiceInstanceDTO.getEnvId());
+        if (!pipelineAppServiceDeployMapper.select(appDeployDTO).isEmpty()) {
+            throw new CommonException("error.delete.instance.related.pipeline");
+        }
+
+        // 校验环境相关信息
         devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
 
         DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(appServiceInstanceDTO.getCommandId());
@@ -958,15 +983,29 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
     @Override
     public void checkName(String code, Long envId) {
+        checkNameInternal(code, envId, false);
+    }
 
+    /**
+     * 校验实例名称格式是否符合，且是否重名
+     *
+     * @param code           实例code
+     * @param envId          环境id
+     * @param isFromPipeline 是否从流水自动部署中进行校验，如果是，不再校验流水线中的将要创建的实例名称是否存在
+     */
+    private void checkNameInternal(String code, Long envId, boolean isFromPipeline) {
         AppInstanceValidator.checkName(code);
 
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
         List<Long> envIds = devopsEnvironmentService.baseListByClusterId(devopsEnvironmentDTO.getClusterId()).stream().map(DevopsEnvironmentDTO::getId).collect(Collectors.toList());
+        // 这里校验集群下code唯一而不是环境下code唯一是因为helm的release是需要集群下唯一的
         if (appServiceInstanceMapper.checkCodeExist(code, envIds)) {
             throw new CommonException("error.app.instance.name.already.exist");
         }
-        pipelineAppDeployService.baseCheckName(code, envId);
+
+        if (!isFromPipeline) {
+            pipelineAppDeployService.baseCheckName(code, envId);
+        }
     }
 
 
@@ -1337,8 +1376,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
 
     private AppServiceInstanceDTO initApplicationInstanceDTO(AppServiceDeployVO appServiceDeployVO) {
-
-
         AppServiceInstanceDTO appServiceInstanceDTO = new AppServiceInstanceDTO();
         appServiceInstanceDTO.setAppServiceId(appServiceDeployVO.getAppServiceId());
         appServiceInstanceDTO.setEnvId(appServiceDeployVO.getEnvironmentId());

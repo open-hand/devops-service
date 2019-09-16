@@ -413,7 +413,7 @@ public class AppServiceInstanceController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "部署信息", required = true)
             @RequestBody AppServiceDeployVO appServiceDeployVO) {
-        return Optional.ofNullable(appServiceInstanceService.createOrUpdate(appServiceDeployVO))
+        return Optional.ofNullable(appServiceInstanceService.createOrUpdate(appServiceDeployVO, false))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.application.deploy"));
     }
