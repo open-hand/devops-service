@@ -355,7 +355,7 @@ public class AppServiceVersionController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据应用服务Id集合查询所有应用版本")
     @GetMapping(value = "/list_by_service_ids")
-    public ResponseEntity<List<AppServiceVersionDTO>> listVersionByIds(
+    public ResponseEntity<List<AppServiceVersionVO>> listVersionByIds(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用服务id集合", required = true)
