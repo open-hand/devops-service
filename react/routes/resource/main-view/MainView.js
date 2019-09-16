@@ -63,6 +63,9 @@ const MainView = observer(() => {
       getViewType,
       getSelectedMenu: { itemType },
     } = resourceStore;
+
+    if (!itemType) return <Loading display />;
+
     const cmMaps = {
       [ENV_ITEM]: getViewType === IST_VIEW_TYPE ? <EnvContent /> : <ResourceEnvContent />,
       [APP_ITEM]: <AppContent />,
@@ -83,7 +86,7 @@ const MainView = observer(() => {
     };
     return cmMaps[itemType]
       ? <Suspense fallback={<Loading display />}>{cmMaps[itemType]}</Suspense>
-      : <Loading display />;
+      : <div>未找到资源！</div>;
   }, [resourceStore.getViewType, resourceStore.getSelectedMenu.itemType]);
 
   function getMainView() {

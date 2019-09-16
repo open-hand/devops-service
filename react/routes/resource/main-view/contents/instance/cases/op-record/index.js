@@ -16,7 +16,7 @@ const ICON_TYPE_MAPPING = {
   success: 'check_circle',
 };
 
-const OpCard = ({ record, isActive, disabled, intlPrefix, prefixCls, formatMessage, onClick }) => {
+const OpCard = ({ index, record, isActive, intlPrefix, prefixCls, formatMessage, onClick }) => {
   const podKeys = useMemo(() => (['type', 'createTime', 'status', 'loginName', 'realName', 'userImage', 'podEventVO']), []);
   const [
     type,
@@ -30,9 +30,7 @@ const OpCard = ({ record, isActive, disabled, intlPrefix, prefixCls, formatMessa
     'operation-record-card': true,
     'operation-record-card-active': isActive,
   });
-  const handleClick = useCallback(() => {
-    !disabled && onClick(createTime);
-  }, [createTime, disabled]);
+  const handleClick = useCallback(() => onClick(createTime, index > 3), [createTime, index]);
 
   return (
     <div
@@ -71,9 +69,9 @@ const OpRecord = observer(({ handleClick, active }) => {
     setCardActive('');
   }, [id, parentId]);
 
-  function handleRecordClick(time) {
+  function handleRecordClick(time, isIgnore) {
     setCardActive(time);
-    handleClick(time);
+    handleClick(time, isIgnore);
   }
 
   function renderOperation() {
@@ -90,8 +88,8 @@ const OpRecord = observer(({ handleClick, active }) => {
         {casesDs.map((record, index) => {
           const createTime = record.get('createTime');
           return <OpCard
+            index={index}
             key={createTime}
-            disabled={index >= 4}
             isActive={realActive === createTime}
             formatMessage={formatMessage}
             record={record}

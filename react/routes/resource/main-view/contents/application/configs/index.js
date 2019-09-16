@@ -103,7 +103,8 @@ const AppConfigs = observer(() => {
       </Table>
       {showModal && <KeyValueModal
         modeSwitch
-        title="configMap"
+        intlPrefix={intlPrefix}
+        title="mapping"
         visible={showModal}
         id={recordId}
         envId={parentId}

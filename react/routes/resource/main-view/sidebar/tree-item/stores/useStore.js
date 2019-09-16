@@ -3,12 +3,11 @@ import { axios } from '@choerodon/master';
 
 export default function useStore() {
   return useLocalStore(() => ({
-    // ？？？如果有关联的资源弹出弹窗
     deleteInstance(projectId, istId) {
-      axios.delete(`devops/v1/projects/${projectId}/app_instances/${istId}/delete`);
+      return axios.delete(`devops/v1/projects/${projectId}/app_service_instances/${istId}/delete`);
     },
     changeIstActive(projectId, istId, active) {
-      axios.put(
+      return axios.put(
         `devops/v1/projects/${projectId}/app_service_instances/${istId}/${active}`,
       );
     },

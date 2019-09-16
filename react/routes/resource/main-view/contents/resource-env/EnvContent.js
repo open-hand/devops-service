@@ -17,11 +17,11 @@ function countDisplay(count, max) {
 
 function ItemNumberByStatus({ code, count, name, prefixCls }) {
   return (
-    <div className={`${prefixCls}-re-item`}>
+    <div className={`${prefixCls}-re-grid-right-item`}>
       <div className={`${prefixCls}-re-status ${prefixCls}-re-status_${code}`}>
         {countDisplay(count, 99)}
       </div>
-      <div className={`${prefixCls}-re-text`}>
+      <div className={`${prefixCls}-re-grid-right-text`}>
         <span>{name}</span>
       </div>
     </div>
@@ -42,16 +42,13 @@ function ItemNumberByResource({ code, count, name, prefixCls }) {
     ingressCount: 'language',
     certificationCount: 'class',
     configMapCount: 'compare_arrows',
-    secretCount: 'vpn_key', 
+    secretCount: 'vpn_key',
   };
   return (
-    <div className={`${prefixCls}-re-item-static`}>
-      <div className={`${prefixCls}-re-item-static-icon-wrapper`}>
-        <Icon type={iconMappings[code]} className={`${prefixCls}-re-item-static-icon`} />
-        <div className={`${prefixCls}-re-item-static-icon-bg`} />
-      </div>
-      <span className={`${prefixCls}-re-item-static-number`}>{countDisplay(count, 999)}</span>
-      <span className={`${prefixCls}-re-item-static-name`}>{name}</span>
+    <div className={`${prefixCls}-re-grid-left-item`}>
+      <Icon type={iconMappings[code]} className={`${prefixCls}-re-grid-left-icon`} />
+      <span className={`${prefixCls}-re-grid-left-number`}>{countDisplay(count, 99)}</span>
+      <span className={`${prefixCls}-re-grid-left-name`}>{name}</span>
     </div>
   );
 }
@@ -139,13 +136,13 @@ const Content = observer(() => {
       <div className={`${prefixCls}-re-card-wrap`}>
         <div className={`${prefixCls}-re-card ${prefixCls}-re-card_left`}>
           <div className={`${prefixCls}-re-card-title`}>{formatMessage({ id: `${intlPrefix}.resource.deploy` })}</div>
-          <div className={`${prefixCls}-re-items`}>
+          <div className={`${prefixCls}-re-grid-left`}>
             {getCounts()}
           </div>
         </div>
         <div className={`${prefixCls}-re-card ${prefixCls}-re-card_right`}>
           <div className={`${prefixCls}-re-card-title`}>{formatMessage({ id: `${intlPrefix}.instance.status` })}</div>
-          <div className={`${prefixCls}-re-items`}>{getCounts('status')}</div>
+          <div className={`${prefixCls}-re-grid-right`}>{getCounts('status')}</div>
         </div>
       </div>
       <DosageTable />

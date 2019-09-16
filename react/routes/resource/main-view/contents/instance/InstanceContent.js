@@ -1,6 +1,6 @@
 import React, { Fragment, lazy, Suspense, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Tabs, Tooltip, Icon } from 'choerodon-ui';
+import { Tabs, Tooltip, Icon, Spin } from 'choerodon-ui';
 import PageTitle from '../../../../../components/page-title';
 import PodCircle from '../../components/pod-circle';
 import Modals from './modals';
@@ -98,7 +98,7 @@ const InstanceContent = observer(() => {
           key={CASES_TAB}
           tab={formatMessage({ id: `${intlPrefix}.instance.tabs.cases` })}
         >
-          <Suspense fallback={<div>loading</div>}>
+          <Suspense fallback={<Spin />}>
             <Cases />
           </Suspense>
         </TabPane>
@@ -106,7 +106,7 @@ const InstanceContent = observer(() => {
           key={DETAILS_TAB}
           tab={formatMessage({ id: `${intlPrefix}.instance.tabs.details` })}
         >
-          <Suspense fallback={<div>loading</div>}>
+          <Suspense fallback={<Spin />}>
             <Details />
           </Suspense>
         </TabPane>
@@ -114,7 +114,7 @@ const InstanceContent = observer(() => {
           key={PODS_TAB}
           tab={formatMessage({ id: `${intlPrefix}.instance.tabs.pods` })}
         >
-          <Suspense fallback={<div>loading</div>}>
+          <Suspense fallback={<Spin />}>
             <PodsDetails />
           </Suspense>
         </TabPane>

@@ -1,9 +1,210 @@
-import React from 'react';
-import { StoreProvider } from './stores';
-import Modals from './Modals';
+import React, { useMemo, useState } from 'react';
+import { observer } from 'mobx-react-lite';
+import { Modal } from 'choerodon-ui/pro';
+import HeaderButtons from '../../../../../../components/header-buttons';
+import { useResourceStore } from '../../../../stores';
+import { useApplicationStore } from '../stores';
+import Detail from './detail';
+import KeyValueModal from './key-value';
+import DomainModal from './domain';
+import CreateNetwork from './network';
 
-export default (props) => (
-  <StoreProvider {...props}>
-    <Modals />
-  </StoreProvider>
-);
+const modalKey = Modal.key();
+
+const AppModals = observer(() => {
+  const modalStyle = useMemo(() => ({
+    width: 380,
+  }), []);
+  const {
+    intlPrefix,
+    prefixCls,
+    intl: { formatMessage },
+    resourceStore,
+    treeDs,
+  } = useResourceStore();
+  const {
+    tabs: {
+      NET_TAB,
+      MAPPING_TAB,
+      CIPHER_TAB,
+    },
+    baseInfoDs,
+    mappingStore,
+    cipherStore,
+    domainStore,
+    networkStore,
+    netDs,
+    mappingDs,
+    cipherDs,
+    appStore,
+  } = useApplicationStore();
+  const { id, parentId } = resourceStore.getSelectedMenu;
+
+  const [showKeyValue, setShowKeyValue] = useState(false);
+  const [showDomain, setShowDomain] = useState(false);
+  const [showNetwork, setShowNetwork] = useState(false);
+
+  function refresh() {
+    treeDs.query();
+    baseInfoDs.query();
+    // switch (tabKey) {
+    //   case NET_TAB:
+    //     netDs.query();
+    //     break;
+    //   case MAPPING_TAB:
+    //     mappingDs.query();
+    //     break;
+    //   case CIPHER_TAB:
+    //     cipherDs.query();
+    //     break;
+    //   default:
+    // }
+  }
+
+  function openDetail() {
+    const record = baseInfoDs.current;
+
+    if (!record) return;
+
+    Modal.open({
+      key: modalKey,
+      title: formatMessage({ id: `${intlPrefix}.service.detail` }),
+      children: <Detail
+        record={record}
+        intlPrefix={intlPrefix}
+        prefixCls={prefixCls}
+        formatMessage={formatMessage}
+      />,
+      drawer: true,
+      style: modalStyle,
+      okCancel: false,
+      okText: formatMessage({ id: 'close' }),
+    });
+  }
+
+  function openKeyValue(type) {
+    setShowKeyValue(type);
+  }
+
+  function closeKeyValue(isLoad) {
+    isLoad && setTabKey(showKeyValue);
+    setShowKeyValue(false);
+  }
+
+  function closeDomain(isLoad) {
+    setShowDomain(false);
+    isLoad && setTabKey(NET_TAB);
+  }
+
+  function closeNetwork(isLoad) {
+    setShowNetwork(false);
+    isLoad && setTabKey(NET_TAB);
+  }
+
+  function setTabKey(key) {
+    treeDs.query();
+    baseInfoDs.query();
+
+    const current = appStore.getTabKey;
+    if (current !== key) {
+      appStore.setTabKey(key);
+    }
+    switch (key) {
+      case NET_TAB:
+        netDs.query();
+        break;
+      case MAPPING_TAB:
+        mappingDs.query();
+        break;
+      case CIPHER_TAB:
+        cipherDs.query();
+        break;
+      default:
+    }
+  }
+
+  function getButtons() {
+    const envRecord = treeDs.find((record) => record.get('key') === parentId);
+    const connect = envRecord.get('connect');
+    const synchronize = envRecord.get('synchronize');
+    const disabled = !connect || !synchronize;
+
+    return [{
+      disabled,
+      name: formatMessage({ id: `${intlPrefix}.create.network` }),
+      icon: 'playlist_add',
+      handler: () => setShowNetwork(true),
+      display: true,
+      group: 1,
+    }, {
+      disabled,
+      name: formatMessage({ id: `${intlPrefix}.create.ingress` }),
+      icon: 'playlist_add',
+      handler: () => setShowDomain(true),
+      display: true,
+      group: 1,
+    }, {
+      disabled,
+      name: formatMessage({ id: `${intlPrefix}.create.configMap` }),
+      icon: 'playlist_add',
+      handler: () => openKeyValue(MAPPING_TAB),
+      display: true,
+      group: 1,
+    }, {
+      disabled,
+      name: formatMessage({ id: `${intlPrefix}.create.secret` }),
+      icon: 'playlist_add',
+      handler: () => openKeyValue(CIPHER_TAB),
+      display: true,
+      group: 1,
+    }, {
+      disabled: !baseInfoDs.current,
+      name: formatMessage({ id: `${intlPrefix}.service.detail` }),
+      icon: 'find_in_page',
+      handler: openDetail,
+      display: true,
+      group: 2,
+    }, {
+      name: formatMessage({ id: 'refresh' }),
+      icon: 'refresh',
+      handler: refresh,
+      display: true,
+      group: 2,
+    }];
+  }
+
+  return (<div>
+    <HeaderButtons items={getButtons()} />
+    {showKeyValue && <KeyValueModal
+      intlPrefix={intlPrefix}
+      modeSwitch={showKeyValue === MAPPING_TAB}
+      title={showKeyValue}
+      visible={!!showKeyValue}
+      envId={parentId}
+      appId={id}
+      onClose={closeKeyValue}
+      store={showKeyValue === MAPPING_TAB ? mappingStore : cipherStore}
+    />}
+    {showDomain && (
+      <DomainModal
+        envId={parentId}
+        appServiceId={id}
+        visible={showDomain}
+        type="create"
+        store={domainStore}
+        onClose={closeDomain}
+      />
+    )}
+    {showNetwork && (
+      <CreateNetwork
+        envId={parentId}
+        appServiceId={id}
+        visible={showNetwork}
+        store={networkStore}
+        onClose={closeNetwork}
+      />
+    )}
+  </div>);
+});
+
+export default AppModals;

@@ -21,7 +21,6 @@ export const StoreProvider = injectIntl(inject('AppState')(
         },
       },
       itemType: {
-        IST_ITEM,
         SERVICES_ITEM,
         INGRESS_ITEM,
         CERT_ITEM,
@@ -38,7 +37,6 @@ export const StoreProvider = injectIntl(inject('AppState')(
         const envId = parentId.split('-')[0];
         treeDs.transport.destroy = ({ data: [data] }) => {
           const url = {
-            [IST_ITEM]: `/devops/v1/projects/${id}/app_service_instances/${data.id}/delete`,
             [SERVICES_ITEM]: `/devops/v1/projects/${id}/service/${data.id}`,
             [INGRESS_ITEM]: `/devops/v1/projects/${id}/ingress/${data.id}`,
             [CERT_ITEM]: `/devops/v1/projects/${id}/certifications?cert_id=${data.id}`,

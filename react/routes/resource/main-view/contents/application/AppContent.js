@@ -1,6 +1,6 @@
 import React, { Fragment, lazy, Suspense } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Tabs, Icon } from 'choerodon-ui';
+import { Tabs, Icon, Spin } from 'choerodon-ui';
 import { useApplicationStore } from './stores';
 import { useResourceStore } from '../../../stores';
 import PageTitle from '../../../../../components/page-title';
@@ -60,7 +60,7 @@ const AppContent = observer(() => {
           key={NET_TAB}
           tab={formatMessage({ id: `${intlPrefix}.application.tabs.networking` })}
         >
-          <Suspense fallback={<div>loading</div>}>
+          <Suspense fallback={<Spin />}>
             <NetContent />
           </Suspense>
         </TabPane>
@@ -68,7 +68,7 @@ const AppContent = observer(() => {
           key={MAPPING_TAB}
           tab={formatMessage({ id: `${intlPrefix}.application.tabs.mapping` })}
         >
-          <Suspense fallback={<div>loading</div>}>
+          <Suspense fallback={<Spin />}>
             <Configs />
           </Suspense>
         </TabPane>
@@ -76,7 +76,7 @@ const AppContent = observer(() => {
           key={CIPHER_TAB}
           tab={formatMessage({ id: `${intlPrefix}.application.tabs.cipher` })}
         >
-          <Suspense fallback={<div>loading</div>}>
+          <Suspense fallback={<Spin />}>
             <Cipher />
           </Suspense>
         </TabPane>
