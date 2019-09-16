@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.vo;
 
+import io.choerodon.devops.infra.enums.AppServiceStatus;
+
 /**
  * @author zhaotianxin
  * @since 2019/9/12
@@ -9,6 +11,15 @@ public class AppServiceVO {
     private String name;
     private String code;
     private String type;
+    private String status;
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
 
     public Long getId() {
         return id;

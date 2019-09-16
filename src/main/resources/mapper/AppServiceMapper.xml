@@ -576,6 +576,34 @@
                     id = #{id}
                  </foreach>
              </if>
+             <if test="searchParam != null">
+                 <if test='searchParam.status != null'>
+                     AND
+                     <if test='searchParam.status == "失败"'>
+                         is_failed = 1
+                     </if>
+                     <if test="searchParam.status == '停用'">
+                         is_active = 0
+                     </if>
+                     <if test="searchParam.status == '启用'">
+                         is_active = 1
+                         AND is_synchro = 1
+                         AND (is_failed IS NULL OR is_failed=0)
+                     </if>
+                     <if test="searchParam.status == '创建中'">
+                         is_synchro = 0
+                         AND (is_failed IS NULL OR is_failed=0)
+                     </if>
+                 </if>
+             </if>
+             <if test='params != null and params.size > 0'>
+                 AND
+                 <foreach collection="params" item="param" open="(" separator=" OR " close=")">
+                     type LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                     OR  name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                     OR code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                 </foreach>
+             </if>
          </where>
     </select>
 </mapper>

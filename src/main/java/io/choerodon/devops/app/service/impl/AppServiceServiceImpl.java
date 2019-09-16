@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+import io.choerodon.devops.infra.enums.*;
 import io.kubernetes.client.JSON;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.eclipse.jgit.api.Git;
@@ -61,10 +62,6 @@ import io.choerodon.devops.infra.dto.iam.ApplicationDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.enums.AccessLevel;
-import io.choerodon.devops.infra.enums.GitPlatformType;
-import io.choerodon.devops.infra.enums.Rate;
-import io.choerodon.devops.infra.enums.SonarQubeType;
 import io.choerodon.devops.infra.feign.ChartClient;
 import io.choerodon.devops.infra.feign.HarborClient;
 import io.choerodon.devops.infra.feign.SonarClient;
@@ -2324,9 +2321,33 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public List<AppServiceVO> listAppServiceByIds(Set<Long> ids) {
-        List<AppServiceDTO> appServiceDTOList = appServiceMapper.listAppServiceByIds(ids);
-        return  ConvertUtils.convertList(appServiceDTOList,AppServiceVO.class);
+    public PageInfo<AppServiceVO> listAppServiceByIds(Set<Long> ids, Boolean doPage, PageRequest pageRequest, String params) {
+        Map<String, Object> mapParams = TypeUtil.castMapParams(params);
+        List<AppServiceDTO> appServiceDTOList = appServiceMapper.listAppServiceByIds(ids,
+                TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
+                TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)));
+        List<AppServiceVO> collect = appServiceDTOList.stream().map(appServiceDTO -> dtoTOVo(appServiceDTO)).collect(Collectors.toList());
+        if (doPage == null || doPage) {
+            return PageInfoUtil.createPageFromList(collect, pageRequest);
+        } else {
+            return new PageInfo<>(collect);
+        }
+    }
+
+    private AppServiceVO dtoTOVo(AppServiceDTO appServiceDTO) {
+        AppServiceVO appServiceVO = new AppServiceVO();
+        BeanUtils.copyProperties(appServiceDTO, appServiceVO);
+        if (appServiceDTO.getFailed() != null && appServiceDTO.getFailed()) {
+            appServiceVO.setStatus(AppServiceStatus.FAILED.getStatus());
+        } else if (appServiceDTO.getActive() != null && !appServiceDTO.getActive()) {
+            appServiceVO.setStatus(AppServiceStatus.DISABLE.getStatus());
+        } else if ((appServiceDTO.getActive() != null && appServiceDTO.getActive()) && (appServiceDTO.getSynchro() != null && appServiceDTO.getSynchro()) && (appServiceDTO.getFailed() == null || !appServiceDTO.getFailed())) {
+            appServiceVO.setStatus(AppServiceStatus.ENABLE.getStatus());
+        } else if (appServiceDTO.getSynchro() != null && !appServiceDTO.getSynchro() && (!appServiceDTO.getFailed() || appServiceDTO.getFailed() == null)) {
+            appServiceVO.setStatus(AppServiceStatus.ESTABLISH.getStatus());
+        }
+
+        return appServiceVO;
     }
 
     /**

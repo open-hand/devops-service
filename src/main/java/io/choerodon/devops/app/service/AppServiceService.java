@@ -456,5 +456,5 @@ public interface AppServiceService {
      * @param ids
      * @return
      */
-    List<AppServiceVO> listAppServiceByIds(Set<Long> ids);
+    PageInfo<AppServiceVO> listAppServiceByIds(Set<Long> ids,Boolean doPage,PageRequest pageRequest,String params);
 }
