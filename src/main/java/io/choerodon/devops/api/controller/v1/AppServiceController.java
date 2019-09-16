@@ -670,23 +670,29 @@ public class AppServiceController {
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "查询项目Id", required = false)
-            @RequestParam(value = "search_project_id",required = false) Long searchProjectId,
+            @RequestParam(value = "search_project_id", required = false) Long searchProjectId,
             @ApiParam(value = "查询条件", required = false)
             @RequestParam(required = false) String param) {
         return Optional.ofNullable(
-                applicationServiceService.pageAppServiceByMode(projectId, share,searchProjectId, param,pageRequest))
+                applicationServiceService.pageAppServiceByMode(projectId, share, searchProjectId, param, pageRequest))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.list.app.group.error"));
     }
 
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "查询单个项目下的应用服务")
-    @GetMapping(value = "/list_by_project_id")
-    public ResponseEntity<List<AppServiceDTO>> listAppByProjectId(
+    @PostMapping(value = "/list_by_project_id")
+    public ResponseEntity<PageInfo<AppServiceVO>> listAppByProjectId(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable(value = "project_id") Long projectId) {
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "是否分页")
+            @RequestParam(value = "doPage", required = false) Boolean doPage,
+            @ApiParam(value = "分页参数")
+            @ApiIgnore PageRequest pageRequest,
+            @ApiParam(value = "查询参数")
+            @RequestBody(required = false) String params) {
         return Optional.ofNullable(
-                applicationServiceService.listAppByProjectId(projectId))
+                applicationServiceService.listAppByProjectId(projectId, doPage, pageRequest, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.list.app.projectId.query"));
     }
@@ -749,9 +755,23 @@ public class AppServiceController {
             @ApiParam(value = "项目Id")
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "导入应用服务类型")
-            @RequestParam(value = "share") Boolean share){
+            @RequestParam(value = "share") Boolean share) {
         return Optional.ofNullable(
-                applicationServiceService.listProjectByShare(projectId,share))
+                applicationServiceService.listProjectByShare(projectId, share))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.list.project.by.share"));
+    }
+
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "根据版本Id查询应用服务")
+    @GetMapping(value = "/list_service_by_version_ids")
+    public ResponseEntity<List<AppServiceVO>> listServiceByVersionIds(
+            @ApiParam(value = "项目Id")
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用服务Ids")
+            @RequestParam(value = "version_ids") Set<Long> ids) {
+        return Optional.ofNullable(
+                applicationServiceService.listServiceByVersionIds(ids))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.list.project.by.share"));
     }
