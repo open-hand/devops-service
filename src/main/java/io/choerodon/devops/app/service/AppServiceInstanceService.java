@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.github.pagehelper.PageInfo;
+
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.kubernetes.InstanceValueVO;
@@ -75,9 +76,10 @@ public interface AppServiceInstanceService {
      * 部署应用
      *
      * @param appServiceDeployVO 部署信息
+     * @param isFromPipeline     是否是从流水线发起的部署
      * @return ApplicationInstanceVO
      */
-    AppServiceInstanceVO createOrUpdate(AppServiceDeployVO appServiceDeployVO);
+    AppServiceInstanceVO createOrUpdate(AppServiceDeployVO appServiceDeployVO, boolean isFromPipeline);
 
     /**
      * 部署应用,GitOps

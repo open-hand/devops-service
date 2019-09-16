@@ -279,7 +279,7 @@ public class DevopsSagaHandler {
         PipelineTaskRecordDTO taskRecordDTO = pipelineTaskRecordService.baseQueryRecordById(taskRecordId);
         Long pipelineRecordId = stageRecordDTO.getPipelineRecordId();
         try {
-            AppServiceInstanceVO appServiceInstanceVO = appServiceInstanceService.createOrUpdate(appServiceDeployVO);
+            AppServiceInstanceVO appServiceInstanceVO = appServiceInstanceService.createOrUpdate(appServiceDeployVO, true);
             if (!pipelineRecordService.baseQueryById(pipelineRecordId).getStatus().equals(WorkFlowStatus.FAILED.toValue()) || stageRecordDTO.getIsParallel() == 1) {
                 if (!taskRecordDTO.getStatus().equals(WorkFlowStatus.FAILED.toValue())) {
                     PipelineTaskRecordDTO pipelineTaskRecordDTO = new PipelineTaskRecordDTO();
@@ -291,6 +291,7 @@ public class DevopsSagaHandler {
                 }
             }
         } catch (Exception e) {
+            LOGGER.error("error create pipeline auto deploy instance {}", e);
             PipelineTaskRecordDTO pipelineTaskRecordDTO = new PipelineTaskRecordDTO();
             pipelineTaskRecordDTO.setId(appServiceDeployVO.getRecordId());
             pipelineTaskRecordDTO.setStatus(WorkFlowStatus.FAILED.toValue());
@@ -300,7 +301,7 @@ public class DevopsSagaHandler {
             user.setEmail(GitUserNameUtil.getEmail());
             user.setId(GitUserNameUtil.getUserId().longValue());
             pipelineService.sendSiteMessage(pipelineRecordId, PipelineNoticeType.PIPELINEFAILED.toValue(), Collections.singletonList(user), new HashMap<>());
-            LOGGER.error("error create pipeline auto deploy instance {}", e);
+            LOGGER.info("send pipeline failed message to the user. The user id is {}", user.getId());
         }
     }
 
