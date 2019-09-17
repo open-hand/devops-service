@@ -5,6 +5,9 @@ import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModelProperty;
 
+import io.choerodon.devops.api.validator.annotation.AtLeastOneNotEmpty;
+
+@AtLeastOneNotEmpty(fields = {"valueId", "values"})
 public class AppServiceDeployVO {
     @ApiModelProperty("服务id/必填")
     @NotNull(message = "error.app.id.null")
@@ -21,7 +24,6 @@ public class AppServiceDeployVO {
     @ApiModelProperty("部署配置")
     private String values;
 
-    // TODO values和valueId二选一校验
     @ApiModelProperty("值id")
     private Long valueId;
 

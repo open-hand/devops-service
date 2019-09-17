@@ -2,7 +2,6 @@ package io.choerodon.devops.api.controller.v1;
 
 
 import java.util.Optional;
-
 import javax.validation.Valid;
 
 import com.github.pagehelper.PageInfo;
@@ -51,7 +50,7 @@ public class DevopsConfigMapController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "域名信息", required = true)
-            @Valid @RequestBody DevopsConfigMapVO devopsConfigMapVO) {
+            @RequestBody @Valid DevopsConfigMapVO devopsConfigMapVO) {
         devopsConfigMapVO.setType("create");
         devopsConfigMapService.createOrUpdate(projectId, false, devopsConfigMapVO);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -72,7 +71,7 @@ public class DevopsConfigMapController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "域名信息", required = true)
-            @Valid @RequestBody DevopsConfigMapUpdateVO devopsConfigMapUpdateVO) {
+            @RequestBody @Valid DevopsConfigMapUpdateVO devopsConfigMapUpdateVO) {
         devopsConfigMapUpdateVO.setType("update");
         devopsConfigMapService.createOrUpdate(projectId, false, ConvertUtils.convertObject(devopsConfigMapUpdateVO, DevopsConfigMapVO.class));
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);

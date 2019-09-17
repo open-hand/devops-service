@@ -2,7 +2,6 @@ package io.choerodon.devops.api.controller.v1;
 
 import java.util.List;
 import java.util.Optional;
-
 import javax.validation.Valid;
 
 import com.github.pagehelper.PageInfo;
@@ -78,7 +77,7 @@ public class DevopsDeployValueController {
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "部署配置相关信息")
-            @Valid @RequestBody DevopsDeployValueVO devopsDeployValueVO) {
+            @RequestBody @Valid DevopsDeployValueVO devopsDeployValueVO) {
         return Optional.ofNullable(devopsDeployValueService.createOrUpdate(projectId, devopsDeployValueVO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.pipeline.value.create"));
@@ -98,7 +97,7 @@ public class DevopsDeployValueController {
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "部署配置相关信息")
-            @Valid @RequestBody DevopsDeployValueUpdateVO devopsDeployValueUpdateVO) {
+            @RequestBody @Valid DevopsDeployValueUpdateVO devopsDeployValueUpdateVO) {
         return Optional.ofNullable(devopsDeployValueService.createOrUpdate(projectId, ConvertUtils.convertObject(devopsDeployValueUpdateVO, DevopsDeployValueVO.class)))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.pipeline.value.update"));

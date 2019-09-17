@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.vo;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModelProperty;
@@ -14,7 +15,7 @@ public class ProjectCertificationUpdateVO {
     private Long id;
 
     @ApiModelProperty("证书名称")
-    @NotNull(message = "error.name.null")
+    @NotBlank(message = "error.name.null")
     private String name;
 
     @ApiModelProperty("key文件内容")
@@ -24,7 +25,7 @@ public class ProjectCertificationUpdateVO {
     private String certValue;
 
     @ApiModelProperty("域名")
-    @NotNull(message = "error.domain.null")
+    @NotBlank(message = "error.domain.null")
     private String domain;
 
     @ApiModelProperty("纪录版本字段")

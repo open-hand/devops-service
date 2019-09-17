@@ -1,7 +1,6 @@
 package io.choerodon.devops.api.controller.v1;
 
 import java.util.Optional;
-
 import javax.validation.Valid;
 
 import com.github.pagehelper.PageInfo;
@@ -50,7 +49,7 @@ public class AppShareRuleController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "服务共享规则", required = true)
-            @Valid @RequestBody AppServiceShareRuleVO appServiceShareRuleVO) {
+            @RequestBody @Valid AppServiceShareRuleVO appServiceShareRuleVO) {
         return Optional.ofNullable(
                 applicationShareService.createOrUpdate(projectId, appServiceShareRuleVO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
@@ -71,7 +70,7 @@ public class AppShareRuleController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "服务共享规则", required = true)
-            @Valid @RequestBody AppServiceShareRuleUpdateVO appServiceShareRuleUpdateVO) {
+            @RequestBody @Valid AppServiceShareRuleUpdateVO appServiceShareRuleUpdateVO) {
         return Optional.ofNullable(
                 applicationShareService.createOrUpdate(projectId, ConvertUtils.convertObject(appServiceShareRuleUpdateVO, AppServiceShareRuleVO.class)))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))

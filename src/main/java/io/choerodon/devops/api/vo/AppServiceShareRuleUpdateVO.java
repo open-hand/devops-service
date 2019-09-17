@@ -5,10 +5,13 @@ import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModelProperty;
 
+import io.choerodon.devops.api.validator.annotation.AtLeastOneNotEmpty;
+
 /**
  * @author lihao
  * @date 2019-09-15 15:32
  */
+@AtLeastOneNotEmpty(fields = {"versionType", "version"})
 public class AppServiceShareRuleUpdateVO {
     @ApiModelProperty("共享规则id")
     @NotNull(message = "error.app.share.id.null")

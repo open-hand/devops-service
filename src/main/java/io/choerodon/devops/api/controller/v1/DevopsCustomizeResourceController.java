@@ -2,18 +2,15 @@ package io.choerodon.devops.api.controller.v1;
 
 import java.util.Objects;
 import java.util.Optional;
-
 import javax.validation.Valid;
 
 import com.github.pagehelper.PageInfo;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.properties.bind.BindResult;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
@@ -54,7 +51,7 @@ public class DevopsCustomizeResourceController {
     @ApiOperation(value = "创建其他k8s资源")
     @PostMapping
     public ResponseEntity createResource(@PathVariable(value = "project_id") Long projectId,
-                                         @Validated @ModelAttribute DevopsCustomizeResourceReqVO devopsCustomizeResourceReqVO,
+                                         @ModelAttribute @Valid DevopsCustomizeResourceReqVO devopsCustomizeResourceReqVO,
                                          BindingResult bindingResult,
                                          @RequestParam(value = "contentFile", required = false) MultipartFile contentFile) {
         // 底层不能捕获BindException异常，所以这里手动处理抛出CommonException
@@ -78,7 +75,7 @@ public class DevopsCustomizeResourceController {
     @ApiOperation(value = "更新其他k8s资源")
     @PutMapping
     public ResponseEntity updateResource(@PathVariable(value = "project_id") Long projectId,
-                                         @Validated @ModelAttribute DevopsCustomizeResourceUpdateVO devopsCustomizeResourceUpdateVO,
+                                         @ModelAttribute @Valid DevopsCustomizeResourceUpdateVO devopsCustomizeResourceUpdateVO,
                                          BindingResult bindingResult,
                                          @RequestParam(value = "contentFile", required = false) MultipartFile contentFile) {
         // 底层不能捕获BindException异常，所以这里手动处理抛出CommonException

@@ -5,11 +5,14 @@ import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModelProperty;
 
+import io.choerodon.devops.api.validator.annotation.AtLeastOneNotEmpty;
+
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  14:27 2019/7/26
  * Description:
  */
+@AtLeastOneNotEmpty(fields = {"versionType", "version"})
 public class AppServiceShareRuleVO {
     private Long id;
 
