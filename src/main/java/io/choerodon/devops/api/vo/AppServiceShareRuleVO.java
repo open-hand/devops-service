@@ -38,9 +38,6 @@ public class AppServiceShareRuleVO {
     @NotBlank(message = "error.app.share.projectName.null")
     private String projectName;
 
-    @ApiModelProperty("共享到指定应用,应用名称")
-    private String appName;
-
     private Long objectVersionNumber;
 
     public String getProjectName() {
@@ -97,14 +94,6 @@ public class AppServiceShareRuleVO {
 
     public void setProjectId(Long projectId) {
         this.projectId = projectId;
-    }
-
-    public String getAppName() {
-        return appName;
-    }
-
-    public void setAppName(String appName) {
-        this.appName = appName;
     }
 
     public Long getObjectVersionNumber() {
