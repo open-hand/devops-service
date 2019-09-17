@@ -1777,6 +1777,14 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
+    public AppServiceDTO baseQueryByMktAppId(String code, Long mktAppId) {
+        AppServiceDTO applicationDTO = new AppServiceDTO();
+        applicationDTO.setMktAppId(mktAppId);
+        applicationDTO.setCode(code);
+        return appServiceMapper.selectOne(applicationDTO);
+    }
+
+    @Override
     public AppServiceDTO baseQueryByCodeWithNullProject(String code) {
         return appServiceMapper.queryByCodeWithNoProject(code);
     }

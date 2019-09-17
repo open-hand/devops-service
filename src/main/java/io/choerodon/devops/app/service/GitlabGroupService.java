@@ -26,6 +26,6 @@ public interface GitlabGroupService {
      *
      * @return 创建后的组
      */
-    GroupDTO createSiteAppGroup(Long iamUserId);
+    GroupDTO createSiteAppGroup(Long iamUserId, String groupName);
 
 }

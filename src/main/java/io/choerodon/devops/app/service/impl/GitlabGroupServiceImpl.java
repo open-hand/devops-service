@@ -45,10 +45,10 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
     }
 
     @Override
-    public GroupDTO createSiteAppGroup(Long iamUserId) {
+    public GroupDTO createSiteAppGroup(Long iamUserId, String groupName) {
         GroupDTO group = new GroupDTO();
-        group.setName(GROUP_APP_MARKET);
-        group.setPath(GROUP_APP_MARKET);
+        group.setName(groupName);
+        group.setPath(groupName);
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(iamUserId);
         GroupDTO groupDTO = gitlabServiceClientOperator.queryGroupByName(group.getPath(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         if (groupDTO == null) {
