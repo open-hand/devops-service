@@ -1,14 +1,17 @@
 import React, { Fragment, useRef, useMemo, lazy, Suspense } from 'react';
 import { observer } from 'mobx-react-lite';
+import { FormattedMessage } from 'react-intl';
 import isEmpty from 'lodash/isEmpty';
 import classnames from 'classnames';
 import Draggable from 'react-draggable';
 import Sidebar from './sidebar';
+
 import LoadingBar from '../../../components/loading';
 import { useClusterStore } from '../stores';
 import { useClusterMainStore } from './stores';
 import { useResize, X_AXIS_WIDTH, X_AXIS_WIDTH_MAX } from './useResize';
 import './styles/index.less';
+
 
 const ClusterContent = lazy(() => import('./contents/cluster-content'));
 const NodeContent = lazy(() => import('./contents/node-content'));
@@ -65,7 +68,7 @@ export default observer((props) => {
       <Suspense fallback={<LoadingBar display />}>
         <EmptyPage />
       </Suspense>
-      <div>请先创建分组！</div>
+      <div><FormattedMessage id="c7ncd.cluster.empty.msg" /></div>
     </div>;
   } else {
     return (<div

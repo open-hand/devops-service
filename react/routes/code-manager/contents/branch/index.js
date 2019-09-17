@@ -15,6 +15,7 @@ import StatusIcon from '../../../../components/StatusIcon/StatusIcon';
 import BranchStore from './stores';
 import handleMapStore from '../../main-view/store/handleMapStore';
 import Loading from '../../../../components/loading';
+import CustomConfirm from '../../../../components/custom-confirm';
 import '../../../main.less';
 import './Branch.less';
 import './index.less';
@@ -27,7 +28,8 @@ class Branch extends Component {
   constructor(props) {
     super(props);
     const menu = AppState.currentMenuType;
-
+    const { formatMessage } = this.props.intl;
+    this.customConfirm = new CustomConfirm({ formatMessage });
     this.state = {
       projectId: menu.id,
       paras: [],
@@ -158,7 +160,15 @@ class Branch extends Component {
         ],
         text: formatMessage({ id: 'delete' }),
         action: () => {
-          this.openRemove(record.branchName);
+          this.setState({ name: record.branchName });
+          this.customConfirm.delete({
+            titleId: 'branch.action.delete.title',
+            titleVal: {
+              name: record.branchName,
+            },
+            contentId: 'branch.delete.tooltip',
+            handleOk: this.handleDelete,
+          });
         },
       },
     ];
@@ -364,7 +374,7 @@ class Branch extends Component {
    * @param name
    */
   openRemove = (name) => {
-    this.setState({ visible: true, name });
+    
   };
 
   /**
@@ -381,13 +391,13 @@ class Branch extends Component {
     const { name } = this.state;
     const menu = AppState.currentMenuType;
     const organizationId = menu.id;
-    this.setState({ submitting: true });
+    BranchStore.changeLoading(true);
     BranchStore.deleteData(organizationId, DevPipelineStore.getSelectApp, name).then((data) => {
-      this.setState({ submitting: false });
+      BranchStore.changeLoading(false);
       this.loadData(DevPipelineStore.selectedApp);
       this.closeRemove();
     }).catch((error) => {
-      this.setState({ submitting: false });
+      BranchStore.changeLoading(false);
       Choerodon.handleResponseError(error);
       this.closeRemove();
     });
