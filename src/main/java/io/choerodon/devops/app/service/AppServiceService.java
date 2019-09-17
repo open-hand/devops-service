@@ -368,6 +368,8 @@ public interface AppServiceService {
 
     AppServiceDTO baseQueryByCode(String code, Long projectId);
 
+    AppServiceDTO baseQueryByMktAppId(String code, Long mktAppId);
+
     AppServiceDTO baseQueryByCodeWithNullProject(String code);
 
     List<AppServiceDTO> baseListByEnvId(Long projectId, Long envId, String status);

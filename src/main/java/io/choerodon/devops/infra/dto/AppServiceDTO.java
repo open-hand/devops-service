@@ -30,6 +30,7 @@ public class AppServiceDTO extends BaseDTO {
     private String type;
     private Boolean isSkipCheckPermission;
     private String imgUrl;
+    private Long mktAppId;
 
     @Transient
     private String publishLevel;
@@ -236,5 +237,13 @@ public class AppServiceDTO extends BaseDTO {
 
     public void setChartConfigId(Long chartConfigId) {
         this.chartConfigId = chartConfigId;
+    }
+
+    public Long getMktAppId() {
+        return mktAppId;
+    }
+
+    public void setMktAppId(Long mktAppId) {
+        this.mktAppId = mktAppId;
     }
 }
