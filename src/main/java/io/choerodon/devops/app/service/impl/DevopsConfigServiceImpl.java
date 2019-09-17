@@ -330,7 +330,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
             if (configType.equals(HARBOR)) {
                 DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectDTO.getId());
                 if (devopsProjectDTO.getHarborProjectIsPrivate() != null && devopsProjectDTO.getHarborProjectIsPrivate()) {
-                        ConfigVO configVO = gson.fromJson(organizationConfig.getConfig(), ConfigVO.class);
+                        ConfigVO configVO = gson.fromJson(defaultConfig.getConfig(), ConfigVO.class);
                         configVO.setPrivate(true);
                     configVO.setUserName(devopsProjectDTO.getHarborProjectUserName());
                     configVO.setPassword(devopsProjectDTO.getHarborProjectUserPassword());
