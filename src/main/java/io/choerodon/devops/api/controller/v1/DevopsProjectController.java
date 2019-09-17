@@ -56,7 +56,7 @@ public class DevopsProjectController {
      * @param projectId 项目id
      * @return Page
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_ADMINISTRATOR})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "分页查询与该项目在同一组织的项目列表（包含自身）")
     @CustomPageRequest
     @PostMapping("/page_projects")
