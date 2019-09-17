@@ -745,10 +745,7 @@ public class AppServiceController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "导入应用服务类型")
             @RequestParam(value = "share") Boolean share) {
-        return Optional.ofNullable(
-                applicationServiceService.listProjectByShare(projectId, share))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.list.project.by.share"));
+        return new ResponseEntity<>(applicationServiceService.listProjectByShare(projectId, share),HttpStatus.OK);
     }
 
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})

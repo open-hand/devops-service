@@ -177,6 +177,13 @@ public interface BaseServiceClient {
     @PostMapping(value = "/v1/projects/ids")
     ResponseEntity<List<ProjectDTO>> queryByIds(@RequestBody Set<Long> ids);
 
+    @GetMapping(value = "/v1/projects/{project_id}/publish_applications/query_by_service_ids")
+    ResponseEntity<List<ApplicationDTO>> queryByServiceIds(@PathVariable("project_id") Long projectId,
+                                                                    @RequestParam(value = "service_ids") Set<Long> serviceIds);
+
+    @GetMapping(value = "/v1/projects/{project_id}/applications/{application_id}/services/ids")
+    ResponseEntity<Set<Long>> listAppServiceByAppId(@PathVariable("project_id") Long projectId,
+                                                    @PathVariable("application_id") Long applicationId);
     /**
      * 根据组织Id及项目code查询项目
      *

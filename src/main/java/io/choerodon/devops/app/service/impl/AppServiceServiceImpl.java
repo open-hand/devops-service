@@ -77,6 +77,10 @@ import io.choerodon.devops.infra.mapper.AppServiceUserRelMapper;
 import io.choerodon.devops.infra.mapper.UserAttrMapper;
 import io.choerodon.devops.infra.util.*;
 
+import static java.util.Comparator.comparing;
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.toCollection;
+
 
 /**
  * Created by younger on 2018/3/28.
@@ -1427,7 +1431,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         //合并项目所有者和项目成员
         List<DevopsUserPermissionVO> userPermissionVOS = allProjectMembers.stream()
                 .filter(e -> !ownerIds.contains(e.getIamUserId()))
-                .sorted(Comparator.comparing(DevopsUserPermissionVO::getCreationDate).reversed()).collect(Collectors.toList());
+                .sorted(comparing(DevopsUserPermissionVO::getCreationDate).reversed()).collect(Collectors.toList());
         userPermissionVOS.addAll(allProjectOwners);
 
         //没有任何项目成员和项目所有者
@@ -1967,43 +1971,56 @@ public class AppServiceServiceImpl implements AppServiceService {
         if (Boolean.TRUE.equals(share)) {
             appServiceDTOList = listSharedAppService(projectId, searchProjectId, param);
         } else {
-            appServiceDTOList = appServiceMapper.queryMarketDownloadApps(null, param, false, searchProjectId);
+            if (ObjectUtils.isEmpty(searchProjectId)) {
+                appServiceDTOList = appServiceMapper.queryMarketDownloadApps(null, param, false, null);
+            } else {
+                Set<Long> appServiceIds = baseServiceClientOperator.listAppServiceByAppId(projectId, searchProjectId);
+                appServiceDTOList = appServiceMapper.listMarketDownloadAppsByServiceIds(appServiceIds, param, false);
+            }
         }
         List<AppServiceGroupInfoVO> appServiceGroupInfoVOS = new ArrayList<>();
 
-        initAppServiceGroupInfoVOList(appServiceGroupInfoVOS, appServiceDTOList, share);
+        initAppServiceGroupInfoVOList(appServiceGroupInfoVOS, appServiceDTOList, share, projectId);
 
         return PageInfoUtil.createPageFromList(appServiceGroupInfoVOS, pageRequest);
     }
 
-    private void initAppServiceGroupInfoVOList(List<AppServiceGroupInfoVO> appServiceGroupInfoVOS, List<AppServiceDTO> appServiceDTOList, Boolean share) {
+    private void initAppServiceGroupInfoVOList(List<AppServiceGroupInfoVO> appServiceGroupInfoVOS, List<AppServiceDTO> appServiceDTOList, Boolean share, Long projectId) {
         if (appServiceDTOList.isEmpty()) return;
         // 获取应用服务编号集合去得到服务最新的版本号
         Set<Long> appServiceIds = appServiceDTOList.stream().map(AppServiceDTO::getId).collect(Collectors.toSet());
         String shareString = null;
+        Map<Long, ProjectDTO> projectMap = new HashMap<>();
         if (share) {
             shareString = "share";
+            // 组织共享的应用服务去查找所属的项目信息
+            Set<Long> projectIds = appServiceDTOList.stream().map(AppServiceDTO::getProjectId).collect(Collectors.toSet());
+            List<ProjectDTO> projects = baseServiceClientOperator.queryProjectsByIds(projectIds);
+            projectMap = projects.stream().collect(Collectors.toMap(ProjectDTO::getId, Function.identity()));
         }
         List<AppServiceVersionDTO> versionList = appServiceVersionService.listServiceVersionByAppServiceIds(appServiceIds, shareString);
         Map<Long, List<AppServiceVersionDTO>> versionMap = versionList.stream().collect(Collectors.groupingBy(AppServiceVersionDTO::getAppServiceId));
-        Set<Long> projectIds = appServiceDTOList.stream().map(AppServiceDTO::getProjectId).collect(Collectors.toSet());
-        List<ProjectDTO> projects = baseServiceClientOperator.queryProjectsByIds(projectIds);
-        Map<Long, ProjectDTO> projectMap = projects.stream().collect(Collectors.toMap(ProjectDTO::getId, Function.identity()));
+
         // 遍历应用服务集合并转换为VO
+        Map<Long, ProjectDTO> finalProjectMap = projectMap;
         appServiceDTOList.stream().forEach(appServiceDTO -> {
             // 根据应用服务的ID查询出versionList中对应的版本信息
             List<AppServiceVersionDTO> appServiceVersionDTOS = versionMap.get(appServiceDTO.getId());
-            // 应用服务含有共享版本才加入List
+            // 应用服务的版本不为空才加入List
             if (appServiceVersionDTOS != null && !appServiceVersionDTOS.isEmpty()) {
                 // 获取项目信息，并传入项目名称
-                ProjectDTO projectDTO = projectMap.get(appServiceDTO.getProjectId());
+                ProjectDTO projectDTO = new ProjectDTO();
+                if (share) {
+                    projectDTO = finalProjectMap.get(appServiceDTO.getProjectId());
+                } else {
+                    projectDTO = finalProjectMap.get(appServiceDTO.getId());
+                }
                 AppServiceGroupInfoVO appServiceGroupInfoVO = dtoToGroupInfoVO(appServiceDTO);
                 appServiceGroupInfoVO.setVersions(appServiceVersionDTOS);
                 appServiceGroupInfoVO.setShare(share);
                 if (!ObjectUtils.isEmpty(projectDTO)) {
-                    // 初始化应用服务信息
-                    String projectName = projectDTO.getName();
-                    appServiceGroupInfoVO.setProjectName(projectName);
+                    appServiceGroupInfoVO.setProjectId(projectDTO.getId());
+                    appServiceGroupInfoVO.setProjectName(projectDTO.getName());
                 }
                 appServiceGroupInfoVOS.add(appServiceGroupInfoVO);
             }
@@ -2205,8 +2222,11 @@ public class AppServiceServiceImpl implements AppServiceService {
             projectDTOS = baseServiceClientOperator.queryProjectsByIds(projectIds);
         } else {
             appServiceDTOList = appServiceMapper.queryMarketDownloadApps(null, null, false, null);
-            projectIds = appServiceDTOList.stream().map(appServiceDTO -> appServiceDTO.getProjectId()).collect(Collectors.toSet());
-
+            Set<Long> appServiceIds = appServiceDTOList.stream().map(appServiceDTO -> appServiceDTO.getId()).collect(Collectors.toSet());
+            List<ApplicationDTO> applicationDTOS = baseServiceClientOperator.queryByServiceIds(projectId, appServiceIds);
+            if (!CollectionUtils.isEmpty(applicationDTOS)) {
+                projectDTOS = ConvertUtils.convertList(applicationDTOS, ProjectDTO.class);
+            }
         }
         return ConvertUtils.convertList(projectDTOS, ProjectVO.class);
     }
@@ -2221,7 +2241,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         AppServiceVO appServiceVO = new AppServiceVO();
         BeanUtils.copyProperties(appServiceDTO, appServiceVO);
         if (!appVerisonMap.isEmpty()) {
-            appServiceVO.setVersions(ConvertUtils.convertList(appVerisonMap.get(appServiceVO.getId()),
+            appServiceVO.setAppServiceVersions(ConvertUtils.convertList(appVerisonMap.get(appServiceVO.getId()),
                     AppServiceVersionVO.class));
         }
         if (appServiceDTO.getFailed() != null && appServiceDTO.getFailed()) {
