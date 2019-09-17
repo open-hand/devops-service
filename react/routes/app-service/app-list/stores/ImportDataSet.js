@@ -4,7 +4,7 @@ import omit from 'lodash/omit';
 
 function getRequestData(appServiceList) {
   const res = map(appServiceList, ({ id, name, code, type, versionId, versions = [] }) => {
-    const { verId } = versions[0] || {};
+    const { id: verId } = versions[0] || {};
     return ({
       appServiceId: id,
       appName: name,
