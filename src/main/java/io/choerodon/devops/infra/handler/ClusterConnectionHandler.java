@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import io.choerodon.devops.infra.util.FileUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -146,9 +147,9 @@ public class ClusterConnectionHandler {
         gitUtil.setSshKey(envRsa);
         if (!file.exists()) {
             gitUtil.cloneBySsh(path, url);
-//        } else {
-//            gitUtil.checkout(path, "master");
-//            gitUtil.pullBySsh(path);
+        } else {
+            FileUtil.deleteDirectory(file);
+            gitUtil.cloneBySsh(path, url);
         }
         return path;
     }

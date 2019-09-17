@@ -1001,14 +1001,12 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     private void handDevopsEnvGitRepository(String path, String url, String envIdRsa, String commit) {
         File file = new File(path);
         gitUtil.setSshKey(envIdRsa);
-        final String repoPath = path + GIT_SUFFIX;
         if (!file.exists()) {
             gitUtil.cloneBySsh(path, url);
-            gitUtil.checkout(repoPath, commit);
         } else {
-            gitUtil.checkout(repoPath, "master");
-            gitUtil.pullBySsh(repoPath);
-            gitUtil.checkout(repoPath, commit);
+            FileUtil.deleteDirectory(file);
+            gitUtil.cloneBySsh(path, url);
+
         }
     }
 

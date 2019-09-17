@@ -7,6 +7,7 @@ public class Spec {
 
     private String repoUrl;
     private String chartName;
+    private Integer commandId;
     private List<ImagePullSecret> imagePullSecrets;
     private String chartVersion;
     private String values;
@@ -49,5 +50,13 @@ public class Spec {
 
     public void setImagePullSecrets(List<ImagePullSecret> imagePullSecrets) {
         this.imagePullSecrets = imagePullSecrets;
+    }
+
+    public Integer getCommandId() {
+        return commandId;
+    }
+
+    public void setCommandId(Integer commandId) {
+        this.commandId = commandId;
     }
 }
