@@ -1164,8 +1164,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Saga(code = SagaTopicCodeConstants.DEVOPS_SET_ENV_ERR,
             description = "devops创建环境失败(devops set env status create err)", inputSchema = "{}")
     public void setEnvErrStatus(String data, Long projectId) {
-        //todo
-        //data转未完成
         producer.applyAndReturn(
                 StartSagaBuilder
                         .newBuilder()
@@ -1173,7 +1171,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                         .withRefType("")
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_SET_ENV_ERR),
                 builder -> builder
-                        .withPayloadAndSerialize(data)
+                        .withJson(data)
                         .withRefId("")
                         .withSourceId(projectId));
     }

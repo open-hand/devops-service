@@ -717,17 +717,6 @@ public class AppServiceController {
                 .orElseThrow(() -> new CommonException("error.list.app.service.deploy"));
     }
 
-    @Permission(permissionPublic = true)
-    @ApiOperation(value = "查询所有应用服务(应用服务导入、应用部署)")
-    @PostMapping(value = "/test")
-    public void test(
-            @ApiParam(value = "项目ID", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "应用服务类型", required = false)
-            @RequestBody DevOpsAppServicePayload devOpsAppServicePayload) {
-        applicationServiceService.operationApplication(devOpsAppServicePayload);
-    }
-
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "批量查询应用服务")
     @PostMapping(value = "/list_app_service_ids")

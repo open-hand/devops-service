@@ -34,6 +34,7 @@ import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.mapper.AppServiceMapper;
 import io.choerodon.devops.infra.util.*;
 
 /**
@@ -89,7 +90,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
-    private AppServiceService applicationService;
+    private AppServiceService appServiceService;
     @Autowired
     private AppServiceVersionService appServiceVersionService;
     @Autowired
@@ -128,6 +129,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     private AgentCommandService agentCommandService;
     @Autowired
     DevopsCommandEventService devopsCommandEventService;
+    @Autowired
+    private AppServiceMapper appServiceMapper;
 
 
     public void handlerUpdatePodMessage(String key, String msg, Long envId) {
@@ -1139,39 +1142,20 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     @Override
     public List<AppServiceDTO> getApplication(String appServiceName, Long projectId, Long orgId) {
         List<AppServiceDTO> applications = new ArrayList<>();
-        AppServiceDTO applicationDTO = applicationService
+        AppServiceDTO applicationDTO = appServiceService
                 .baseQueryByCode(appServiceName, projectId);
         if (applicationDTO != null) {
             applications.add(applicationDTO);
         }
-        List<AppServiceDTO> applicationDTOS = applicationService.baseListByCode(appServiceName);
-        List<AppServiceDTO> applicationList = applicationDTOS.stream()
-                .filter(result ->
-                        baseServiceClientOperator.queryIamProjectById(result.getProjectId()).getOrganizationId().equals(orgId))
-                .collect(Collectors.toList());
-        applications.addAll(findAppInAppMarket(applicationDTOS, applicationList));
-        return applications;
-    }
+        
+        Long organizationId = baseServiceClientOperator.queryIamProjectById(projectId).getOrganizationId();
+        List<Long> appServiceIds = new ArrayList<>();
+        baseServiceClientOperator.listIamProjectByOrgId(organizationId, null, null).forEach(pro ->
+                appServiceMapper.listAll(pro.getId()).forEach(dto -> appServiceIds.add(dto.getId()))
+        );
+        applications.addAll(appServiceMapper.listShareApplicationService(appServiceIds, projectId, null, null));
 
-    private List<AppServiceDTO> findAppInAppMarket(List<AppServiceDTO> applicationDTOS, List<AppServiceDTO> applicationList) {
-        List<AppServiceDTO> applications = new ArrayList<>();
-//        if (!applicationList.isEmpty()) {
-//            applicationList.forEach(applicationDTO -> {
-//                if (applicationShareService.baseCountByAppId(applicationDTO.getId()) != 0) {
-//                    applications.add(applicationDTO);
-//                }
-//            });
-//        }
-//        if (!applicationDTOS.isEmpty()) {
-//            applicationDTOS.forEach(applicationDTO -> {
-//                ApplicationShareRuleDTO applicationShareDTO =
-//                        applicationShareService.baseQueryByAppId(applicationDTO.getId());
-//                if (applicationShareDTO != null
-//                        || !applicationShareDTO.getPublishLevel().equals(PUBLIC)) {
-//                    applications.add(applicationDTO);
-//                }
-//            });
-//        }
+        applications.addAll(appServiceMapper.queryMarketDownloadApps(null, null, true, null));
         return applications;
     }
 
