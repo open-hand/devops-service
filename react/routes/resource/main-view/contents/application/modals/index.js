@@ -47,18 +47,27 @@ const AppModals = observer(() => {
   function refresh() {
     treeDs.query();
     baseInfoDs.query();
-    // switch (tabKey) {
-    //   case NET_TAB:
-    //     netDs.query();
-    //     break;
-    //   case MAPPING_TAB:
-    //     mappingDs.query();
-    //     break;
-    //   case CIPHER_TAB:
-    //     cipherDs.query();
-    //     break;
-    //   default:
-    // }
+    const current = appStore.getTabKey;
+    switch (current) {
+      case NET_TAB:
+        netDs.query();
+        break;
+      case MAPPING_TAB:
+        mappingDs.query();
+        break;
+      case CIPHER_TAB:
+        cipherDs.query();
+        break;
+      default:
+    }
+  }
+
+  function setTabKey(key) {
+    const current = appStore.getTabKey;
+    if (current !== key) {
+      appStore.setTabKey(key);
+    }
+    refresh();
   }
 
   function openDetail() {
@@ -99,28 +108,6 @@ const AppModals = observer(() => {
   function closeNetwork(isLoad) {
     setShowNetwork(false);
     isLoad && setTabKey(NET_TAB);
-  }
-
-  function setTabKey(key) {
-    treeDs.query();
-    baseInfoDs.query();
-
-    const current = appStore.getTabKey;
-    if (current !== key) {
-      appStore.setTabKey(key);
-    }
-    switch (key) {
-      case NET_TAB:
-        netDs.query();
-        break;
-      case MAPPING_TAB:
-        mappingDs.query();
-        break;
-      case CIPHER_TAB:
-        cipherDs.query();
-        break;
-      default:
-    }
   }
 
   function getButtons() {

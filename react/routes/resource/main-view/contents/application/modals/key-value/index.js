@@ -12,7 +12,6 @@ import { handlePromptError } from '../../../../../../../utils';
 
 import '../../../../../../main.less';
 import './index.less';
-import DomainModal from '../domain';
 
 const { Sidebar } = Modal;
 const { Item: FormItem } = Form;
@@ -227,7 +226,7 @@ export default class FormView extends Component {
     const onlyHasKey = hasKey.filter(({ value }) => _.isEmpty(value));
     const hasErrorItem = onlyHasKey.length || onlyHasValue.length;
     const hasRepeatKey = hasKey.length !== _.uniqBy(hasKey, 'key').length;
-    const hasEmptyKey = title === 'secret' && (_.isEmpty(hasKey) || hasKey.length !== _data.length);
+    const hasEmptyKey = title === 'cipher' && (_.isEmpty(hasKey) || hasKey.length !== _data.length);
 
     let hasErrorKey;
     for (const { key } of hasKey) {
@@ -372,7 +371,7 @@ export default class FormView extends Component {
     const { data } = this.state;
 
 
-    return (<Form className={title === 'configMap' ? 'c7n-sidebar-form' : ''} layout="vertical">
+    return (<Form className={title === 'mapping' ? 'c7n-sidebar-form' : ''} layout="vertical">
       <FormItem
         {...formItemLayout}
       >
@@ -438,17 +437,17 @@ export default class FormView extends Component {
       const baseColumns = [{
         title: 'key',
         dataIndex: 'key',
-        width: title === 'configMap' ? '25%' : 230,
+        width: title === 'mapping' ? '25%' : 230,
         editable: true,
       }, {
         title: '',
-        width: title === 'configMap' ? '5%' : 60,
+        width: title === 'mapping' ? '5%' : 60,
         className: 'icon-equal',
         align: 'center',
         dataIndex: 'temp',
       }, {
         title,
-        width: title === 'configMap' ? '100%' : 230,
+        width: title === 'mapping' ? '100%' : 230,
         dataIndex: 'value',
         editable: true,
       }, {
@@ -647,12 +646,11 @@ export default class FormView extends Component {
         >
           <div>
             {this.getFormContent()}
-
             <div className="c7n-sidebar-from-title">
               <FormattedMessage id={`${intlPrefix}.${title}.head`} />
               {!isYamlEdit && <Popover
                 overlayStyle={{ maxWidth: 350 }}
-                content={formatMessage({ id: `${title}.help.tooltip` })}
+                content={formatMessage({ id: `${intlPrefix}.${title}.help.tooltip` })}
               >
                 <Icon type="help" />
               </Popover>}
@@ -666,11 +664,9 @@ export default class FormView extends Component {
                 <FormattedMessage id={isYamlEdit ? 'configMap.mode.yaml' : 'configMap.mode.kv'} />
               </Button> : null}
             </div>
-
             <div className="c7n-config-editor">
               {this.getConfigMap()}
             </div>
-
             <InterceptMask visible={submitting} />
           </div>
         </Sidebar>

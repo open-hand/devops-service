@@ -36,6 +36,7 @@ export default class EditableCell extends React.Component {
    * 切换输入编辑状态
    */
   toggleEdit = () => {
+    // eslint-disable-next-line react/no-access-state-in-setstate
     const editing = !this.state.editing;
     this.setState({ editing }, () => {
       if (editing) {
@@ -85,13 +86,13 @@ export default class EditableCell extends React.Component {
     if (pasting) {
       const value = oldValue !== '' ? (e.target.value.substring(oldValue.length) || e.target.value) : e.target.value;
       if (value.includes('=')) {
-        const KValue = _.map(value.split('\n'), str => {
+        const KValue = _.map(value.split('\n'), (str) => {
           if (str) {
-            return _.map(str.split('='), s => s.trim());
+            return _.map(str.split('='), (s) => s.trim());
           }
         });
         this.handleSave();
-        add(_.filter(KValue, item => item));
+        add(_.filter(KValue, (item) => item));
       }
     }
 
@@ -116,6 +117,7 @@ export default class EditableCell extends React.Component {
    */
   checkKey = (rule, value, callback) => {
     const { intl } = this.props;
+    // eslint-disable-next-line no-useless-escape
     const pattern = /[^0-9A-Za-z\.\-\_]/;
     if (pattern.test(value) && rule.field === 'key') {
       callback(intl.formatMessage({ id: 'configMap.keyRule' }));
@@ -135,7 +137,7 @@ export default class EditableCell extends React.Component {
       ...restProps
     } = this.props;
     return (
-      <td ref={node => (this.cell = node)} {...restProps}>
+      <td ref={(node) => { this.cell = node; }} {...restProps}>
         {editable ? (
           <Consumer>
             {(form) => {
@@ -153,7 +155,7 @@ export default class EditableCell extends React.Component {
                     })(
                       <TextArea
                         label={intl.formatMessage({ id: dataIndex })}
-                        ref={node => (this.input = node)}
+                        ref={(node) => { this.input = node; }}
                         autosize
                         onKeyDown={this.onKeyDown}
                         onChange={this.onChange}
@@ -170,9 +172,10 @@ export default class EditableCell extends React.Component {
                     value={
                       title === 'secret'
                       && dataIndex === 'value'
-                      && restProps.children.filter(a => typeof (a) === 'string').length
+                      && restProps.children.filter((a) => typeof (a) === 'string').length
                         ? '******'
-                        : restProps.children.filter(a => typeof (a) === 'string')}
+                        : restProps.children.filter((a) => typeof (a) === 'string')
+}
                   />
                 )
               );
