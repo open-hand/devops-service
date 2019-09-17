@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.controller.v1;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import javax.validation.Valid;
 
@@ -21,6 +22,7 @@ import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
@@ -65,16 +67,21 @@ public class ProjectCertificationController {
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "更新证书")
-    @PutMapping()
+    @PutMapping
     public ResponseEntity update(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "证书信息", required = true)
             @ModelAttribute @Valid ProjectCertificationUpdateVO projectCertificationUpdateVO,
+            BindingResult bindingResult,
             @ApiParam(value = "key文件")
             @RequestParam(value = "key", required = false) MultipartFile key,
             @ApiParam(value = "cert文件")
             @RequestParam(value = "cert", required = false) MultipartFile cert) {
+        // 底层不能捕获BindException异常，所以这里手动处理抛出CommonException
+        if (bindingResult.hasErrors()) {
+            throw new CommonException(Objects.requireNonNull(bindingResult.getFieldError()).getDefaultMessage());
+        }
         devopsProjectCertificationService.update(projectId,key,cert, projectCertificationUpdateVO);
         return new ResponseEntity<>(HttpStatus.OK);
     }
