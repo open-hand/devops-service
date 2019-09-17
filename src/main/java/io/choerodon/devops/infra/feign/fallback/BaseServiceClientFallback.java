@@ -6,6 +6,9 @@ import java.util.Set;
 import javax.validation.Valid;
 
 import com.github.pagehelper.PageInfo;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.OrganizationSimplifyVO;
@@ -15,9 +18,6 @@ import io.choerodon.devops.api.vo.kubernetes.MemberRoleVO;
 import io.choerodon.devops.api.vo.kubernetes.ProjectCreateDTO;
 import io.choerodon.devops.infra.dto.iam.*;
 import io.choerodon.devops.infra.feign.BaseServiceClient;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
 
 /**
  * Created by younger on 2018/3/29.
@@ -182,7 +182,7 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
-    public ResponseEntity failToDownloadApplication(Long publishAppVersionId,Long mktVersionId) {
+    public ResponseEntity failToDownloadApplication(Long publishAppVersionId, Long mktVersionId) {
         throw new CommonException("error.application.download.failed");
     }
 
@@ -193,6 +193,11 @@ public class BaseServiceClientFallback implements BaseServiceClient {
 
     @Override
     public ResponseEntity<List<ProjectDTO>> queryByIds(Set<Long> ids) {
-       throw  new CommonException(ERROR_PROJECT_GET);
+        throw new CommonException(ERROR_PROJECT_GET);
+    }
+
+    @Override
+    public ResponseEntity<ProjectDTO> queryProjectByCodeAndOrgId(Long organizationId, String projectCode) {
+        throw new CommonException(ERROR_PROJECT_GET);
     }
 }
