@@ -20,41 +20,9 @@ const ImportForm = injectIntl(observer((props) => {
   const [hasFailed, setHasFailed] = useState(false);
 
   props.modal.handleOk(async () => {
-    if (record.get('platformType') === 'share' || record.get('platformType') === 'market') {
-      const lists = selectedDs.toData();
-      if (isEmpty(lists)) return false;
-
-      const { listName, listCode, repeatCode, repeatName } = getRepeatData(lists);
-
-      try {
-        const res = await AppStore.batchCheck(projectId, listCode, listName);
-        if (handlePromptError(res)) {
-          if (isEmpty(repeatName) && isEmpty(repeatCode) && isEmpty(res.listCode) && isEmpty(res.listName)) {
-            setHasFailed(false);
-            record.set('appServiceList', lists);
-          } else {
-            selectedDs.forEach((item) => {
-              if (includes(repeatName.concat(res.listName), item.get('name'))) {
-                item.set('nameFailed', true);
-              } else {
-                item.set('nameFailed', false);
-              }
-              if (includes(repeatCode.concat(res.listCode), item.get('code'))) {
-                item.set('codeFailed', true);
-              } else {
-                item.set('codeFailed', false);
-              }
-            });
-            setHasFailed(true);
-            return false;
-          }
-        } else {
-          return false;
-        }
-      } catch (e) {
-        Choerodon.handleResponseError(e);
-        return false;
-      }
+    if ((record.get('platformType') === 'share' || record.get('platformType') === 'market') && await selectedDs.validate() === false) {
+      setHasFailed(true);
+      return false;
     }
     try {
       if ((await dataSet.submit()) !== false) {

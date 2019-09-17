@@ -38,6 +38,14 @@ export default function useStore() {
       return this.projectRole;
     },
 
+    allProject: [],
+    setAllProject(data) {
+      this.allProject = data;
+    },
+    get getAllProject() {
+      return this.allProject.slice();
+    },
+
     loadAppById(projectId, id) {
       return axios.get(`/devops/v1/projects/${projectId}/app_service/${id}`);
     },
@@ -119,6 +127,17 @@ export default function useStore() {
         return handlePromptError(res, false);
       } catch (e) {
         return false;
+      }
+    },
+
+    async loadAllProject(projectId, isShare) {
+      try {
+        const res = await axios.get(`/devops/v1/projects/${projectId}/app_service/list_project_by_share?share=${isShare}`);
+        if (handlePromptError(res)) {
+          this.setAllProject(res);
+        }
+      } catch (e) {
+        Choerodon.handleResponseError(e);
       }
     },
   }));

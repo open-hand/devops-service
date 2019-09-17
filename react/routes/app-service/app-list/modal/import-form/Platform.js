@@ -16,7 +16,7 @@ const modalStyle1 = {
 };
 
 const Platform = injectIntl(observer((props) => {
-  const { tableDs, selectedDs, intl: { formatMessage }, intlPrefix, prefixCls, versionOptions, projectId } = props;
+  const { tableDs, selectedDs, intl: { formatMessage }, intlPrefix, prefixCls, AppStore, projectId, record: importRecord } = props;
 
   function openModal() {
     Modal.open({
@@ -28,6 +28,9 @@ const Platform = injectIntl(observer((props) => {
         selectedDs={selectedDs}
         intlPrefix={intlPrefix}
         prefixCls={prefixCls}
+        store={AppStore}
+        projectId={projectId}
+        importRecord={importRecord}
       />,
       style: modalStyle1,
       okText: formatMessage({ id: 'add' }),
@@ -110,8 +113,8 @@ const Platform = injectIntl(observer((props) => {
         dataSet={selectedDs}
         queryBar="none"
       >
-        <Column name="name" renderer={renderName} editor />
-        <Column name="code" renderer={renderCode} editor />
+        <Column name="name" editor />
+        <Column name="code" editor />
         <Column name="versions" renderer={renderVersion} />
         <Column name="projectName" width="1.5rem" />
         <Column renderer={renderAction} width="0.7rem" />

@@ -23,7 +23,7 @@ function handleRequired(record, flag) {
   record.getField('code').set('required', flag);
 }
 
-export default ((intlPrefix, formatMessage, projectId, importTableDs) => {
+export default ((intlPrefix, formatMessage, projectId, selectedDs) => {
   async function checkCode(value) {
     const pa = /^[a-z]([-a-z0-9]*[a-z0-9])?$/;
     if (value && pa.test(value)) {
@@ -62,16 +62,15 @@ export default ((intlPrefix, formatMessage, projectId, importTableDs) => {
 
   function handleUpdate({ record, name, value }) {
     if (name === 'platformType') {
+      selectedDs.removeAll();
       switch (value) {
         case 'share':
           handleRequired(record, false);
           record.getField('accessToken').set('required', false);
-          importTableDs.transport.read.url = `/devops/v1/projects/${projectId}/app_service/page_by_mode?share=true`;
           break;
         case 'market':
           handleRequired(record, false);
           record.getField('accessToken').set('required', false);
-          importTableDs.transport.read.url = `/devops/v1/projects/${projectId}/app_service/page_by_mode?share=false`;
           break;
         case 'github':
           handleRequired(record, true);
