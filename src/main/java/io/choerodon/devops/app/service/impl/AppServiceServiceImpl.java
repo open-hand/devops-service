@@ -1990,38 +1990,47 @@ public class AppServiceServiceImpl implements AppServiceService {
         // 获取应用服务编号集合去得到服务最新的版本号
         Set<Long> appServiceIds = appServiceDTOList.stream().map(AppServiceDTO::getId).collect(Collectors.toSet());
         String shareString = null;
-        Map<Long, ProjectDTO> projectMap = new HashMap<>();
+        List<ProjectDTO> projects = new ArrayList<>();
         if (share) {
             shareString = "share";
             // 组织共享的应用服务去查找所属的项目信息
             Set<Long> projectIds = appServiceDTOList.stream().map(AppServiceDTO::getProjectId).collect(Collectors.toSet());
-            List<ProjectDTO> projects = baseServiceClientOperator.queryProjectsByIds(projectIds);
-            projectMap = projects.stream().collect(Collectors.toMap(ProjectDTO::getId, Function.identity()));
+            projects= baseServiceClientOperator.queryProjectsByIds(projectIds);
+
+        } else {
+            Set<Long> appIds = appServiceDTOList.stream().map(appServiceDTO -> appServiceDTO.getMktAppId()).collect(Collectors.toSet());
+            List<ApplicationDTO> applicationDTOS = baseServiceClientOperator.queryByServiceIds(projectId, appIds);
+            projects = ConvertUtils.convertList(applicationDTOS,ProjectDTO.class);
         }
         List<AppServiceVersionDTO> versionList = appServiceVersionService.listServiceVersionByAppServiceIds(appServiceIds, shareString);
         Map<Long, List<AppServiceVersionDTO>> versionMap = versionList.stream().collect(Collectors.groupingBy(AppServiceVersionDTO::getAppServiceId));
+        Map<Long, ProjectDTO> projectDTOMap = new HashMap<>();
+        if (!CollectionUtils.isEmpty(projects)) {
+            projectDTOMap =  projects.stream().collect(Collectors.toMap(ProjectDTO::getId, Function.identity()));
+        }
 
-        // 遍历应用服务集合并转换为VO
-        Map<Long, ProjectDTO> finalProjectMap = projectMap;
+        Map<Long, ProjectDTO> finalProjectDTOMap = projectDTOMap;
         appServiceDTOList.stream().forEach(appServiceDTO -> {
             // 根据应用服务的ID查询出versionList中对应的版本信息
             List<AppServiceVersionDTO> appServiceVersionDTOS = versionMap.get(appServiceDTO.getId());
             // 应用服务的版本不为空才加入List
             if (appServiceVersionDTOS != null && !appServiceVersionDTOS.isEmpty()) {
-                // 获取项目信息，并传入项目名称
-                ProjectDTO projectDTO = new ProjectDTO();
-                if (share) {
-                    projectDTO = finalProjectMap.get(appServiceDTO.getProjectId());
-                } else {
-                    projectDTO = finalProjectMap.get(appServiceDTO.getId());
-                }
+                // 获取项目信息，并传入项目名
                 AppServiceGroupInfoVO appServiceGroupInfoVO = dtoToGroupInfoVO(appServiceDTO);
-                appServiceGroupInfoVO.setVersions(appServiceVersionDTOS);
-                appServiceGroupInfoVO.setShare(share);
-                if (!ObjectUtils.isEmpty(projectDTO)) {
-                    appServiceGroupInfoVO.setProjectId(projectDTO.getId());
+                ProjectDTO projectDTO = new ProjectDTO();
+                if(share){
+                    projectDTO = finalProjectDTOMap.get(appServiceDTO.getProjectId());
+                }
+                else {
+                    projectDTO = finalProjectDTOMap.get(appServiceDTO.getMktAppId());
+                }
+                if(!ObjectUtils.isEmpty(projectDTO)){
                     appServiceGroupInfoVO.setProjectName(projectDTO.getName());
                 }
+
+                appServiceGroupInfoVO.setVersions(appServiceVersionDTOS);
+                appServiceGroupInfoVO.setShare(share);
+
                 appServiceGroupInfoVOS.add(appServiceGroupInfoVO);
             }
         });
@@ -2241,7 +2250,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         AppServiceVO appServiceVO = new AppServiceVO();
         BeanUtils.copyProperties(appServiceDTO, appServiceVO);
         if (!appVerisonMap.isEmpty()) {
-            appServiceVO.setAppServiceVersions(ConvertUtils.convertList(appVerisonMap.get(appServiceVO.getId()),
+            appServiceVO.setAllAppServiceVersions(ConvertUtils.convertList(appVerisonMap.get(appServiceVO.getId()),
                     AppServiceVersionVO.class));
         }
         if (appServiceDTO.getFailed() != null && appServiceDTO.getFailed()) {

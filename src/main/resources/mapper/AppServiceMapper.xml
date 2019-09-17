@@ -558,6 +558,7 @@
             <foreach collection="appServiceIds" item="appServiceId" open="(" close=")" separator=",">
                 das.id = #{appServiceId}
             </foreach>
+        </if>
         <if test="searchProjectId != null and searchProjectId !=''">
             AND das.project_id = #{searchProjectId}
         </if>
@@ -579,7 +580,7 @@
         LEFT JOIN (
     SELECT
         dassr.app_service_id,
-        dasr.project_id
+        dassr.project_id
     FROM
         devops_app_service_share_rule dassr
     WHERE
