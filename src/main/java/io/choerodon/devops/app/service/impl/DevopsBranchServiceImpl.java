@@ -7,7 +7,6 @@ import java.util.stream.Collectors;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
-import io.kubernetes.client.JSON;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -52,7 +51,7 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
             throw new CommonException("error.query.branch.by.name");
         }
 
-        DevopsBranchDTO toUpdate= new DevopsBranchDTO();
+        DevopsBranchDTO toUpdate = new DevopsBranchDTO();
         toUpdate.setId(oldDevopsBranchDTO.getId());
         toUpdate.setIssueId(devopsBranchDTO.getIssueId());
         toUpdate.setObjectVersionNumber(devopsBranchDTO.getObjectVersionNumber());

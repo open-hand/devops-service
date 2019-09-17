@@ -876,7 +876,9 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             } catch (Exception e) {
                 throw new CommonException(ERROR_UPLOAD, e);
             } finally {
-                IOUtils.closeQuietly(fileInputStream);
+                if (fileInputStream != null) {
+                    IOUtils.closeQuietly(fileInputStream);
+                }
             }
         }
         return files;

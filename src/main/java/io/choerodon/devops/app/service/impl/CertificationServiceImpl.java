@@ -286,7 +286,7 @@ public class CertificationServiceImpl implements CertificationService {
         certificationDTO.setCommandId(createCertCommand(CommandType.DELETE.getType(), certId, null));
         baseUpdateCommandId(certificationDTO);
         certificationDTO.setStatus(CertificationStatus.DELETING.getStatus());
-        baseUpdateStatus(certificationDTO);
+        updateStatus(certificationDTO);
 
         if (devopsEnvFileResourceDTO.getFilePath() != null
                 && devopsEnvFileResourceService
@@ -505,11 +505,6 @@ public class CertificationServiceImpl implements CertificationService {
     @Override
     public List<CertificationDTO> baseQueryActiveByDomain(Long projectId, Long clusterId, String domain) {
         return devopsCertificationMapper.queryActiveByDomain(projectId, clusterId, domain);
-    }
-
-    @Override
-    public void baseUpdateStatus(CertificationDTO inputCertificationDTO) {
-        devopsCertificationMapper.updateStatus(inputCertificationDTO.getId(), inputCertificationDTO.getStatus());
     }
 
     @Override

@@ -16,7 +16,9 @@ import java.util.stream.Collectors;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+
 import io.choerodon.devops.infra.enums.*;
+
 import io.kubernetes.client.JSON;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.eclipse.jgit.api.Git;
@@ -38,6 +40,7 @@ import org.springframework.util.StringUtils;
 import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
+import retrofit2.http.HEAD;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
@@ -101,7 +104,6 @@ public class AppServiceServiceImpl implements AppServiceService {
     private static final String NORMAL = "normal";
     private static final String PROJECT_OWNER = "role/project/default/project-owner";
     private static final String PROJECT_MEMBER = "role/project/default/project-member";
-    private static final ConcurrentMap<Long, String> templateDockerfileMap = new ConcurrentHashMap<>();
     private static final String APP_SERVICE = "appService";
     private static final String ERROR_USER_NOT_OWNER = "error.user.not.owner";
     private static final String METRICS = "metrics";
@@ -448,14 +450,14 @@ public class AppServiceServiceImpl implements AppServiceService {
                     appServiceDTO.setProjectId(projectDTO.getApplicationId());
                     appServiceDTO.setCode(code);
                     List<AppServiceDTO> list = appServiceMapper.select(appServiceDTO);
-                    return list != null && list.size() != 0;
+                    return list != null && !list.isEmpty();
                 }).collect(Collectors.toList()));
         batchCheckVO.setListName(appServiceBatchCheckVO.getListName().stream().filter(name -> {
             AppServiceDTO appServiceDTO = new AppServiceDTO();
             appServiceDTO.setProjectId(projectDTO.getApplicationId());
             appServiceDTO.setName(name);
             List<AppServiceDTO> list = appServiceMapper.select(appServiceDTO);
-            return list != null && list.size() != 0;
+            return list != null && !list.isEmpty();
         }).collect(Collectors.toList()));
         return batchCheckVO;
     }
@@ -1280,9 +1282,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                     if (sonarTableMeasure.getMetric().equals(SonarQubeType.COVERAGE.getType())) {
                         sonarTableMeasure.getHistory().stream().filter(sonarHistory ->
                                 getHistory(startTime, tomorrow, sdf, sonarHistory)
-                        ).forEach(sonarHistory -> {
-                            coverage.add(sonarHistory.getValue());
-                        });
+                        ).forEach(sonarHistory -> coverage.add(sonarHistory.getValue()));
                         sonarTableVO.setCoverage(coverage);
                     }
                     if (sonarTableMeasure.getMetric().equals(SonarQubeType.LINES_TO_COVER.getType())) {
@@ -1346,9 +1346,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                     if (sonarTableMeasure.getMetric().equals(SonarQubeType.DUPLICATED_LINES_DENSITY.getType())) {
                         sonarTableMeasure.getHistory().stream().filter(sonarHistory ->
                                 getHistory(startTime, tomorrow, sdf, sonarHistory)
-                        ).forEach(sonarHistory -> {
-                            duplicatedLinesRate.add(sonarHistory.getValue());
-                        });
+                        ).forEach(sonarHistory -> duplicatedLinesRate.add(sonarHistory.getValue()));
                         sonarTableVO.setDuplicatedLinesRate(duplicatedLinesRate);
                     }
                 });
@@ -1494,9 +1492,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 appServiceDTO.setId(appServiceId);
                 appServiceDTO.setSkipCheckPermission(false);
                 appServiceMapper.updateByPrimaryKeySelective(appServiceDTO);
-                applicationPermissionVO.getUserIds().forEach(u -> {
-                    appServiceUserPermissionService.baseCreate(u, appServiceId);
-                });
+                applicationPermissionVO.getUserIds().forEach(u -> appServiceUserPermissionService.baseCreate(u, appServiceId));
                 devOpsUserPayload.setIamUserIds(applicationPermissionVO.getUserIds());
                 devOpsUserPayload.setOption(3);
             }
@@ -1510,9 +1506,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 devOpsUserPayload.setOption(2);
             } else {
                 //原来不跳过权限检查，现在也不跳过权限检查，新增用户权限
-                applicationPermissionVO.getUserIds().forEach(u -> {
-                    appServiceUserPermissionService.baseCreate(u, appServiceId);
-                });
+                applicationPermissionVO.getUserIds().forEach(u -> appServiceUserPermissionService.baseCreate(u, appServiceId));
                 devOpsUserPayload.setIamUserIds(applicationPermissionVO.getUserIds());
                 devOpsUserPayload.setOption(3);
 
@@ -1961,8 +1955,8 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     @Override
     public PageInfo<AppServiceGroupInfoVO> pageAppServiceByMode(Long projectId, Boolean share, Long searchProjectId, String param, PageRequest pageRequest) {
-        List<AppServiceDTO> appServiceDTOList = new ArrayList<>();
-        if (!StringUtils.isEmpty(share) && share) {
+        List<AppServiceDTO> appServiceDTOList;
+        if (Boolean.TRUE.equals(share)) {
             appServiceDTOList = listSharedAppService(projectId, searchProjectId, param);
         } else {
             appServiceDTOList = appServiceMapper.queryMarketDownloadApps(null, param, false, searchProjectId);
@@ -2042,10 +2036,10 @@ public class AppServiceServiceImpl implements AppServiceService {
                 .map(this::dtoToGroupInfoVO)
                 .collect(Collectors.groupingBy(AppServiceGroupInfoVO::getProjectId));
 
-        for (Long key : map.keySet()) {
-            ApplicationDTO appDTO = baseServiceClientOperator.queryAppById(key);
+        for (Map.Entry<Long, List<AppServiceGroupInfoVO>> entry : map.entrySet()) {
+            ApplicationDTO appDTO = baseServiceClientOperator.queryAppById(entry.getKey());
             AppServiceGroupVO appServiceGroupVO = dtoToGroupVO(appDTO);
-            appServiceGroupVO.setAppServiceList(map.get(key));
+            appServiceGroupVO.setAppServiceList(entry.getValue());
             appServiceGroupList.add(appServiceGroupVO);
         }
         return appServiceGroupList;

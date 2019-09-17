@@ -10,7 +10,6 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
-import io.kubernetes.client.JSON;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -42,6 +41,8 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
 
     private static final String DESTINATION_PATH = "devops";
     private static final String STORE_PATH = "stores";
+
+    private static final String ERROR_VERSION_INSERT = "error.version.insert";
 
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
@@ -148,7 +149,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
             appServiceVersionDTO.setValueId(appServiceVersionValueService
                     .baseCreate(appServiceVersionValueDTO).getId());
         } catch (Exception e) {
-            throw new CommonException("error.version.insert", e);
+            throw new CommonException(ERROR_VERSION_INSERT, e);
         }
 
         AppServiceVersionReadmeDTO appServiceVersionReadmeDTO = new AppServiceVersionReadmeDTO();
@@ -359,7 +360,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     @Override
     public AppServiceVersionDTO baseCreate(AppServiceVersionDTO appServiceVersionDTO) {
         if (appServiceVersionMapper.insert(appServiceVersionDTO) != 1) {
-            throw new CommonException("error.version.insert");
+            throw new CommonException(ERROR_VERSION_INSERT);
         }
         return appServiceVersionDTO;
     }
@@ -368,7 +369,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     public AppServiceVersionDTO baseCreateOrUpdate(AppServiceVersionDTO appServiceVersionDTO) {
         if (appServiceVersionDTO.getId() == null) {
             if (appServiceVersionMapper.insert(appServiceVersionDTO) != 1) {
-                throw new CommonException("error.version.insert");
+                throw new CommonException(ERROR_VERSION_INSERT);
             }
         } else {
             if (appServiceVersionMapper.updateByPrimaryKey(appServiceVersionDTO) != 1) {

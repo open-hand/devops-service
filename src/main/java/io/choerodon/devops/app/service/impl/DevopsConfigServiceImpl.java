@@ -9,6 +9,14 @@ import java.util.Map;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
+import retrofit2.Call;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
@@ -34,13 +42,6 @@ import io.choerodon.devops.infra.handler.RetrofitHandler;
 import io.choerodon.devops.infra.mapper.DevopsConfigMapper;
 import io.choerodon.devops.infra.util.PageRequestUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.ObjectUtils;
-import retrofit2.Call;
-import retrofit2.Response;
-import retrofit2.Retrofit;
 
 /**
  * @author zongw.lee@gmail.com
@@ -492,7 +493,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
         return devopsConfigDTO;
     }
 
-    private void ConfigVOInToRepVO(DevopsConfigRepVO devopsConfigRepVO, DevopsConfigVO devopsConfigVO) {
+    private void configVOInToRepVO(DevopsConfigRepVO devopsConfigRepVO, DevopsConfigVO devopsConfigVO) {
         if (devopsConfigVO.getType().equals(HARBOR)) {
             devopsConfigRepVO.setHarbor(devopsConfigVO);
             devopsConfigRepVO.setHarborPrivate(devopsConfigVO.getHarborPrivate());
@@ -505,7 +506,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
     public DevopsConfigRepVO queryConfig(Long resourceId, String resourceType) {
         DevopsConfigRepVO devopsConfigRepVO = new DevopsConfigRepVO();
         List<DevopsConfigVO> configVOS = queryByResourceId(resourceId, resourceType);
-        configVOS.stream().forEach(devopsConfigVO -> ConfigVOInToRepVO(devopsConfigRepVO, devopsConfigVO));
+        configVOS.forEach(devopsConfigVO -> configVOInToRepVO(devopsConfigRepVO, devopsConfigVO));
         if (resourceType.equals(ResourceLevel.PROJECT.value())) {
             DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(resourceId);
             devopsConfigRepVO.setHarborPrivate(devopsProjectDTO.getHarborProjectIsPrivate());

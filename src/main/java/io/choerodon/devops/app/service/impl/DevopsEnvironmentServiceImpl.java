@@ -264,12 +264,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
         // 没有环境列表则返回空列表
         if (devopsEnvironmentDTOS.isEmpty()) {
-            devopsEnvGroupEnvsDTOS.add(new DevopsEnvGroupEnvsVO() {{
-                setActive(false);
-            }});
-            devopsEnvGroupEnvsDTOS.add(new DevopsEnvGroupEnvsVO() {{
-                setActive(true);
-            }});
+            devopsEnvGroupEnvsDTOS.add(new DevopsEnvGroupEnvsVO(false));
+            devopsEnvGroupEnvsDTOS.add(new DevopsEnvGroupEnvsVO(true));
             return devopsEnvGroupEnvsDTOS;
         }
 
@@ -341,7 +337,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
         // 查询当前用户的环境权限
         List<Long> permissionEnvIds = devopsEnvUserPermissionService
-                .baseListByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId())).stream()
+                .listByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId())).stream()
                 .filter(DevopsEnvUserPermissionDTO::getPermitted)
                 .map(DevopsEnvUserPermissionDTO::getEnvId).collect(Collectors.toList());
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
@@ -1329,10 +1325,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             DevopsEnvAppServiceDTO devopsEnvAppServiceDTO = new DevopsEnvAppServiceDTO();
             devopsEnvAppServiceDTO.setEnvId(envId);
             devopsEnvAppServiceDTO.setAppServiceId(objectId);
-            if (devopsEnvAppServiceMapper.selectOne(devopsEnvAppServiceDTO) != null) {
-                return true;
-            }
-            return false;
+            return devopsEnvAppServiceMapper.selectOne(devopsEnvAppServiceDTO) != null;
         }
         Boolean check = false;
         ObjectType objectType = ObjectType.valueOf(type.toUpperCase());

@@ -76,8 +76,6 @@ public interface CertificationService {
 
     List<CertificationDTO> baseQueryActiveByDomain(Long projectId, Long clusterId, String domain);
 
-    void baseUpdateStatus(CertificationDTO certificationDTO);
-
     void baseUpdateCommandId(CertificationDTO certificationDTO);
 
     void baseUpdateValidField(CertificationDTO inputCertificationDTO);

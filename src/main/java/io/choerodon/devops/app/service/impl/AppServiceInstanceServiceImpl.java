@@ -739,7 +739,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             AppServiceInstanceDTO appServiceInstanceDTO = baseQuery(instanceSagaPayload.getAppServiceDeployVO().getInstanceId());
             DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
                     .baseQueryByEnvIdAndResourceId(instanceSagaPayload.getDevopsEnvironmentDTO().getId(), appServiceInstanceDTO.getId(), HELM_RELEASE);
-            String filePath = devopsEnvFileResourceDTO == null ? "release-" + appServiceInstanceDTO.getCode() + ".yaml" : devopsEnvFileResourceDTO.getFilePath();
+            String filePath = devopsEnvFileResourceDTO == null ? RELEASE_PREFIX + appServiceInstanceDTO.getCode() + YAML_SUFFIX : devopsEnvFileResourceDTO.getFilePath();
             if (!gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(instanceSagaPayload.getDevopsEnvironmentDTO().getGitlabEnvProjectId()), MASTER,
                     filePath)) {
                 appServiceInstanceDTO.setStatus(CommandStatus.FAILED.getStatus());
@@ -1256,47 +1256,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             envInstanceVO.addEnvVersionDTOS(envVersionVO);
             appServiceInstanceOverViewVO.appendEnvInstanceVOS(envInstanceVO);
         }
-    }
-
-
-    private AppServiceDTO createApplication(AppServiceRemoteDeployVO appServiceRemoteDeployVO) {
-        String code = appServiceRemoteDeployVO.getAppServiceRemoteVO().getCode();
-        String name = appServiceRemoteDeployVO.getAppServiceRemoteVO().getName();
-        AppServiceDTO applicationDTO = applicationService.baseQueryByCodeWithNullProject(code);
-        if (applicationDTO == null) {
-            applicationDTO = new AppServiceDTO();
-            DevopsConfigDTO harborConfigDTO = createConfig(HARBOR, appServiceRemoteDeployVO.getAppServiceRemoteVO().getCode(), appServiceRemoteDeployVO.getHarbor());
-            DevopsConfigDTO chartConfigDTO = createConfig(CHART, appServiceRemoteDeployVO.getAppServiceRemoteVO().getCode(), appServiceRemoteDeployVO.getChart());
-            applicationDTO.setType(appServiceRemoteDeployVO.getAppServiceRemoteVO().getType());
-            applicationDTO.setCode(code);
-            applicationDTO.setName(name);
-            applicationDTO.setActive(true);
-            applicationDTO.setSynchro(true);
-            applicationDTO.setSkipCheckPermission(true);
-            applicationDTO.setHarborConfigId(harborConfigDTO.getId());
-            applicationDTO.setChartConfigId(chartConfigDTO.getId());
-            return applicationService.baseCreate(applicationDTO);
-        }
-        return applicationDTO;
-    }
-
-
-    private AppServiceVersionDTO createVersion(AppServiceDTO applicationDTO, AppServiceVersionRemoteVO versionRemoteVO) {
-        AppServiceVersionDTO versionDTO = appServiceVersionService.baseQueryByAppIdAndVersion(applicationDTO.getId(), versionRemoteVO.getVersion());
-        if (versionDTO == null) {
-            AppServiceVersionValueDTO versionValueDTO = new AppServiceVersionValueDTO();
-            versionValueDTO.setValue(versionRemoteVO.getValues());
-            versionValueDTO = appServiceVersionValueService.baseCreate(versionValueDTO);
-            AppServiceVersionReadmeDTO versionReadmeDTO = new AppServiceVersionReadmeDTO();
-            versionReadmeDTO.setReadme(versionRemoteVO.getReadMeValue());
-            versionReadmeDTO = appServiceVersionReadmeService.baseCreate(versionReadmeDTO);
-            versionDTO = new AppServiceVersionDTO();
-            versionDTO.setAppServiceId(applicationDTO.getId());
-            versionDTO.setValueId(versionValueDTO.getId());
-            versionDTO.setReadmeValueId(versionReadmeDTO.getId());
-            return appServiceVersionService.baseCreate(versionDTO);
-        }
-        return versionDTO;
     }
 
     /**

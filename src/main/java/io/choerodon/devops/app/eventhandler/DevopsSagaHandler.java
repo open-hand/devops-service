@@ -44,7 +44,6 @@ import io.choerodon.devops.infra.util.GitUserNameUtil;
  */
 @Component
 public class DevopsSagaHandler {
-    private static final String TEMPLATE = "template";
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsSagaHandler.class);
 
     private final Gson gson = new Gson();

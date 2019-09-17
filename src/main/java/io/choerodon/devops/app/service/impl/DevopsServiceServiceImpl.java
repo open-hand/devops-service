@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.asgard.saga.annotation.Saga;
@@ -62,6 +63,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     private static final String SERVICE_LABLE = "choerodon.io/network";
     private static final String SERVICE_LABLE_VALUE = "service";
     private static final String MASTER = "master";
+
+    public static final String YAML_SUFFIX = ".yaml";
+
     private Gson gson = new Gson();
     private JSON json = new JSON();
     @Value("${services.gitlab.sshUrl}")
@@ -195,11 +199,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         // 先创建网络纪录
         baseCreate(devopsServiceDTO);
 
-        if (devopsServiceReqVO.getAppServiceId() != null) {
-            // 应用下不能创建endpoints类型网络
-            if (devopsServiceReqVO.getEndPoints() != null) {
-                throw new CommonException("error.app.create.endpoints.service");
-            }
+        // 应用下不能创建endpoints类型网络
+        if (devopsServiceReqVO.getAppServiceId() != null && devopsServiceReqVO.getEndPoints() != null) {
+            throw new CommonException("error.app.create.endpoints.service");
         }
 
         devopsServiceDTO.setAppServiceId(devopsServiceReqVO.getAppServiceId());
@@ -359,10 +361,10 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         if (devopsEnvFileResourceDTO == null) {
             baseDelete(id);
             if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER,
-                    "svc-" + devopsServiceDTO.getName() + ".yaml")) {
+                    SERVICE_PREFIX + devopsServiceDTO.getName() + YAML_SUFFIX)) {
                 gitlabServiceClientOperator.deleteFile(
                         TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
-                        "svc-" + devopsServiceDTO.getName() + ".yaml",
+                        SERVICE_PREFIX + devopsServiceDTO.getName() + YAML_SUFFIX,
                         "DELETE FILE",
                         TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
             }
@@ -435,10 +437,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         DevopsServiceDTO devopsServiceDTO = new DevopsServiceDTO();
         devopsServiceDTO.setEnvId(envId);
         devopsServiceDTO.setName(name);
-        if (devopsServiceMapper.selectOne(devopsServiceDTO) != null) {
-            return false;
-        }
-        return true;
+        return devopsServiceMapper.selectOne(devopsServiceDTO) == null;
     }
 
     @Override
@@ -784,7 +783,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
         //从数据库中获得pod已经存在的信息
         List<DevopsEnvPodDTO> devopsEnvPodDTOList = devopsEnvPodMapper.queryPodByEnvIdAndInstanceId(instanceId, envId);
-        if (devopsEnvPodDTOList == null || devopsEnvPodDTOList.size() == 0) {
+        if (CollectionUtils.isEmpty(devopsEnvPodDTOList)) {
             return null;
         }
         List<PodLiveInfoVO> podLiveInfoVOList;
@@ -1139,7 +1138,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             DevopsServiceDTO devopsServiceDTO = baseQuery(serviceSagaPayLoad.getDevopsServiceDTO().getId());
             DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
                     .baseQueryByEnvIdAndResourceId(serviceSagaPayLoad.getDevopsEnvironmentDTO().getId(), devopsServiceDTO.getId(), SERVICE);
-            String filePath = devopsEnvFileResourceDTO == null ? "svc-" + devopsServiceDTO.getName() + ".yaml" : devopsEnvFileResourceDTO.getFilePath();
+            String filePath = devopsEnvFileResourceDTO == null ? SERVICE_PREFIX + devopsServiceDTO.getName() + YAML_SUFFIX : devopsEnvFileResourceDTO.getFilePath();
             if (!gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(serviceSagaPayLoad.getDevopsEnvironmentDTO().getGitlabEnvProjectId()), MASTER,
                     filePath)) {
                 devopsServiceDTO.setStatus(CommandStatus.FAILED.getStatus());

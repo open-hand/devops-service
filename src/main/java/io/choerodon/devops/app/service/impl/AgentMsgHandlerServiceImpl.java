@@ -62,7 +62,6 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     public static final String EVICTED = "Evicted";
     private static JSON json = new JSON();
     private static ObjectMapper objectMapper = new ObjectMapper();
-    private ObjectMapper mapper = new ObjectMapper();
     private Gson gson = new Gson();
 
     @Value("${services.helm.url}")
@@ -113,8 +112,6 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     private DevopsClusterService devopsClusterService;
     @Autowired
     private DevopsClusterProPermissionService devopsClusterProPermissionService;
-    @Autowired
-    private GitUtil gitUtil;
     @Autowired
     private TransactionalProducer producer;
     @Autowired
@@ -671,16 +668,15 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 AppServiceInstanceDTO appServiceInstanceDTO =
                         appServiceInstanceService.baseQuery(devopsEnvCommandDTO.getObjectId());
                 appServiceInstanceDTO.setStatus(InstanceStatus.FAILED.getStatus());
-                appServiceInstanceService.baseUpdate(appServiceInstanceDTO);
+                appServiceInstanceService.updateStatus(appServiceInstanceDTO);
             } else if (devopsEnvCommandDTO.getObject().equals(ObjectType.SERVICE.getType())) {
                 DevopsServiceDTO devopsServiceDTO = devopsServiceService.baseQuery(devopsEnvCommandDTO.getObjectId());
                 devopsServiceDTO.setStatus(ServiceStatus.FAILED.getStatus());
-                devopsServiceService.baseUpdate(devopsServiceDTO);
+                devopsServiceService.updateStatus(devopsServiceDTO);
             } else if (devopsEnvCommandDTO.getObject().equals(ObjectType.INGRESS.getType())) {
                 DevopsIngressDTO ingress = devopsIngressService.baseQuery(devopsEnvCommandDTO.getObjectId());
-                devopsIngressService.baseUpdateStatus(ingress.getEnvId(), ingress.getName(), IngressStatus.FAILED.getStatus());
+                devopsIngressService.updateStatus(ingress.getEnvId(), ingress.getName(), IngressStatus.FAILED.getStatus());
             }
-            //其他资源也要加上更新状态的逻辑，todo
         }
     }
 
@@ -1384,7 +1380,6 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         }
         devopsClusterDTO.setInit(true);
         devopsClusterService.baseUpdate(devopsClusterDTO);
-        GitConfigVO gitConfigVO = gitUtil.getGitConfig(devopsClusterDTO.getId());
     }
 
 
@@ -1483,23 +1478,22 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         if (devopsEnvCommandDTO.getObject().equals(INSTANCE_KIND)) {
             AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQuery(devopsEnvCommandDTO.getObjectId());
             appServiceInstanceDTO.setStatus(running.getStatus());
-            appServiceInstanceService.baseUpdate(appServiceInstanceDTO);
+            appServiceInstanceService.updateStatus(appServiceInstanceDTO);
         }
         if (devopsEnvCommandDTO.getObject().equals(SERVICE_KIND)) {
             DevopsServiceDTO devopsServiceDTO = devopsServiceService.baseQuery(devopsEnvCommandDTO.getObjectId());
             devopsServiceDTO.setStatus(running2.getStatus());
-            devopsServiceService.baseUpdate(devopsServiceDTO);
+            devopsServiceService.updateStatus(devopsServiceDTO);
         }
         if (devopsEnvCommandDTO.getObject().equals(INGRESS_KIND)) {
             DevopsIngressDTO devopsIngressDTO = devopsIngressService.baseQuery(devopsEnvCommandDTO.getObjectId());
-            devopsIngressService.baseUpdateStatus(envId, devopsIngressDTO.getName(), running3.getStatus());
+            devopsIngressService.updateStatus(envId, devopsIngressDTO.getName(), running3.getStatus());
         }
         if (devopsEnvCommandDTO.getObject().equals(CERTIFICATE_KIND)) {
             CertificationDTO certificationDTO = certificationService.baseQueryById(devopsEnvCommandDTO.getObjectId());
             certificationDTO.setStatus(active.getStatus());
-            certificationService.baseUpdateStatus(certificationDTO);
+            certificationService.updateStatus(certificationDTO);
         }
-        //todo 其他资源的状态同步也要加上
     }
 
     @Override
@@ -1589,7 +1583,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             String failedStatus = CertificationStatus.FAILED.getStatus();
             if (failedStatus.equals(certificationDTO.getStatus())) {
                 certificationDTO.setStatus(failedStatus);
-                certificationService.baseUpdateStatus(certificationDTO);
+                certificationService.updateStatus(certificationDTO);
             }
         }
 
@@ -1636,10 +1630,10 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                     }
                 });
                 if (cpu[0] != 0L) {
-                    podMetricsRedisInfoVO.setCpu(TypeUtil.objToLong(new Double(Math.ceil(cpu[0] / (1000*1000))).longValue()) + "m");
+                    podMetricsRedisInfoVO.setCpu(((Double) Math.ceil(cpu[0] / (1000 * 1000))).longValue() + "m");
                 }
                 if (memory[0] != 0L) {
-                    podMetricsRedisInfoVO.setMemory(new Double(Math.floor(memory[0] / 1024)).longValue() + "Mi");
+                    podMetricsRedisInfoVO.setMemory(((Double) Math.floor(memory[0] / 1024)).longValue() + "Mi");
                 }
                 podMetricsRedisInfoVOS.add(podMetricsRedisInfoVO);
             });
@@ -1687,9 +1681,9 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         }
         DevopsRegistrySecretDTO devopsRegistrySecretDTO = devopsRegistrySecretService.baseQueryByEnvAndName(envId, KeyParseUtil.getResourceName(key));
         if (result.equals("failed")) {
-            devopsRegistrySecretService.baseUpdateStatus(devopsRegistrySecretDTO.getId(),false);
+            devopsRegistrySecretService.baseUpdateStatus(devopsRegistrySecretDTO.getId(), false);
         } else {
-            devopsRegistrySecretService.baseUpdateStatus(devopsRegistrySecretDTO.getId(),true);
+            devopsRegistrySecretService.baseUpdateStatus(devopsRegistrySecretDTO.getId(), true);
         }
     }
 }
