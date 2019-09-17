@@ -3,7 +3,6 @@ package io.choerodon.devops.api.controller.v1;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-
 import javax.validation.Valid;
 
 import com.github.pagehelper.PageInfo;
@@ -416,7 +415,7 @@ public class AppServiceInstanceController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "部署信息", required = true)
-            @Valid @RequestBody AppServiceDeployVO appServiceDeployVO) {
+            @RequestBody @Valid AppServiceDeployVO appServiceDeployVO) {
         appServiceDeployVO.setType("create");
         return Optional.ofNullable(appServiceInstanceService.createOrUpdate(appServiceDeployVO, false))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
@@ -439,7 +438,7 @@ public class AppServiceInstanceController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "更新信息", required = true)
-            @Valid @RequestBody AppServiceDeployUpdateVO appServiceDeployUpdateVO) {
+            @RequestBody @Valid AppServiceDeployUpdateVO appServiceDeployUpdateVO) {
         appServiceDeployUpdateVO.setType("update");
         return Optional.ofNullable(appServiceInstanceService.createOrUpdate(ConvertUtils.convertObject(appServiceDeployUpdateVO, AppServiceDeployVO.class), false))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))

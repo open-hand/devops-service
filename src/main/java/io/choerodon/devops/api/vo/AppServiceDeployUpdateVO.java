@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.vo;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModelProperty;
@@ -26,6 +27,7 @@ public class AppServiceDeployUpdateVO {
     private Long instanceId;
 
     @ApiModelProperty("部署配置/必填")
+    @NotBlank(message = "error.app.instance.values.null")
     private String values;
 
     @ApiModelProperty("操作类型")

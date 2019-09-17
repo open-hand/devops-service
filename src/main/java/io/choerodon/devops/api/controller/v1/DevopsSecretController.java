@@ -1,5 +1,8 @@
 package io.choerodon.devops.api.controller.v1;
 
+import java.util.Optional;
+import javax.validation.Valid;
+
 import com.github.pagehelper.PageInfo;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -8,17 +11,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
-import java.util.Optional;
-
-import javax.validation.Valid;
-
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.vo.SecretRespVO;
 import io.choerodon.devops.api.vo.SecretReqVO;
+import io.choerodon.devops.api.vo.SecretRespVO;
 import io.choerodon.devops.api.vo.SecretUpdateVO;
 import io.choerodon.devops.app.service.DevopsSecretService;
 import io.choerodon.devops.infra.util.ConvertUtils;
@@ -55,7 +54,7 @@ public class DevopsSecretController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "请求体", required = true)
-            @Valid @RequestBody SecretReqVO secretReqVO) {
+            @RequestBody @Valid SecretReqVO secretReqVO) {
         secretReqVO.setType("create");
         return Optional.ofNullable(devopsSecretService.createOrUpdate(secretReqVO))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
@@ -76,7 +75,7 @@ public class DevopsSecretController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "请求体", required = true)
-            @Valid @RequestBody SecretUpdateVO secretUpdateVO) {
+            @RequestBody @Valid SecretUpdateVO secretUpdateVO) {
         secretUpdateVO.setType("update");
         return Optional.ofNullable(devopsSecretService.createOrUpdate(ConvertUtils.convertObject(secretUpdateVO, SecretReqVO.class)))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
