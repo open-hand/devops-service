@@ -144,7 +144,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         if (appServiceInstanceInfoDTO == null) {
             return null;
         }
-        List<Long> updatedEnv = clusterConnectionHandler.getUpdatedEnvList();
+        List<Long> updatedEnv = clusterConnectionHandler.getUpdatedClusterList();
         AppServiceInstanceInfoVO appServiceInstanceInfoVO = new AppServiceInstanceInfoVO();
         BeanUtils.copyProperties(appServiceInstanceInfoDTO, appServiceInstanceInfoVO);
         appServiceInstanceInfoVO.setConnect(updatedEnv.contains(appServiceInstanceInfoDTO.getClusterId()));
@@ -158,7 +158,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                         .doSelectPageInfo(() -> appServiceInstanceMapper.listInstanceInfoByEnvAndOptions(
                                 envId, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)), TypeUtil.cast(maps.get(TypeUtil.PARAMS)))),
                 AppServiceInstanceInfoVO.class);
-        List<Long> updatedEnv = clusterConnectionHandler.getUpdatedEnvList();
+        List<Long> updatedEnv = clusterConnectionHandler.getUpdatedClusterList();
         pageInfo.getList().forEach(appServiceInstanceInfoVO ->
                 appServiceInstanceInfoVO.setConnect(updatedEnv.contains(appServiceInstanceInfoVO.getClusterId()))
         );

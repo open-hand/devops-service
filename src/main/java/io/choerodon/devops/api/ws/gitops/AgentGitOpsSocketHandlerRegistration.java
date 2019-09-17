@@ -131,7 +131,7 @@ public class AgentGitOpsSocketHandlerRegistration implements SocketHandlerRegist
 
         //连接成功之后,如果agent版本不匹配则提示升级agent,匹配则返回集群下关联环境的ssh信息
         Long clusterId = (TypeUtil.objToLong(attribute.get(CLUSTER_ID)));
-        List<Long> notUpgraded = clusterConnectionHandler.getUpdatedEnvList();
+        List<Long> notUpgraded = clusterConnectionHandler.getUpdatedClusterList();
         if (!notUpgraded.contains(clusterId)) {
             DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
             agentCommandService.upgradeCluster(devopsClusterDTO);

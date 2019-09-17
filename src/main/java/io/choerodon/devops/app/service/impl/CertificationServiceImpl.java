@@ -345,7 +345,7 @@ public class CertificationServiceImpl implements CertificationService {
     @Override
     public PageInfo<CertificationVO> pageByOptions(Long projectId, Long envId, PageRequest pageRequest, String params) {
         PageInfo<CertificationVO> certificationDTOPage = ConvertUtils.convertPage(basePage(null, envId, pageRequest, params), this::dtoToVo);
-        List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedEnvList();
+        List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedClusterList();
         certificationDTOPage.getList().stream()
                 .filter(certificationDTO -> certificationDTO.getOrganizationId() == null)
                 .forEach(certificationDTO -> {

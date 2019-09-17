@@ -107,11 +107,11 @@ public class ClusterConnectionHandler {
     }
 
     /**
-     * 环境链接列表
+     * 已连接的集群列表
      *
-     * @return 环境链接列表
+     * @return 已连接的集群列表
      */
-    public List<Long> getConnectedEnvList() {
+    public List<Long> getConnectedClusterList() {
         Map<String, ClusterSessionVO> clusterSessions = (Map<String, ClusterSessionVO>) (Map) redisTemplate.opsForHash().entries(CLUSTER_SESSION);
         return clusterSessions.entrySet().stream()
                 .map(t -> t.getValue().getClusterId())
@@ -119,11 +119,11 @@ public class ClusterConnectionHandler {
     }
 
     /**
-     * 环境更新列表, 不需要进行升级的集群 up-to-date
+     * 不需要进行升级的已连接的集群 up-to-date
      *
      * @return 环境更新列表
      */
-    public List<Long> getUpdatedEnvList() {
+    public List<Long> getUpdatedClusterList() {
         Map<String, ClusterSessionVO> clusterSessions = (Map<String, ClusterSessionVO>) (Map) redisTemplate.opsForHash().entries(CLUSTER_SESSION);
         return clusterSessions.entrySet().stream()
                 .filter(t -> compareVersion(t.getValue().getVersion() == null ? "0" : t.getValue().getVersion(), agentExpectVersion) != 1)

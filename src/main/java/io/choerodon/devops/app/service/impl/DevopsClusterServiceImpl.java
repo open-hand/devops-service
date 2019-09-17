@@ -148,8 +148,8 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         PageInfo<DevopsClusterRepVO> devopsClusterRepVOPageInfo = ConvertUtils.convertPage(basePageClustersByOptions(projectId, doPage, pageRequest, params), DevopsClusterRepVO.class);
         PageInfo<ClusterWithNodesVO> devopsClusterRepDTOPage = ConvertUtils.convertPage(devopsClusterRepVOPageInfo, ClusterWithNodesVO.class);
 
-        List<Long> connectedEnvList = clusterConnectionHandler.getConnectedEnvList();
-        List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedEnvList();
+        List<Long> connectedEnvList = clusterConnectionHandler.getConnectedClusterList();
+        List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedClusterList();
         devopsClusterRepVOPageInfo.getList().forEach(devopsClusterRepVO -> {
             devopsClusterRepVO.setConnect(isConnect(connectedEnvList, updatedEnvList, devopsClusterRepVO.getId()));
             devopsClusterRepVO.setUpgrade(isToUpgrade(connectedEnvList, updatedEnvList, devopsClusterRepVO.getId()));
@@ -262,8 +262,8 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         devopsClusterDTO.setProjectId(projectId);
         List<DevopsClusterDTO> devopsClusterDTOList = devopsClusterMapper.select(devopsClusterDTO);
         List<DevopsClusterBasicInfoVO> devopsClusterBasicInfoVOList = ConvertUtils.convertList(devopsClusterDTOList, DevopsClusterBasicInfoVO.class);
-        List<Long> connectedEnvList = clusterConnectionHandler.getConnectedEnvList();
-        List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedEnvList();
+        List<Long> connectedEnvList = clusterConnectionHandler.getConnectedClusterList();
+        List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedClusterList();
 
         devopsClusterBasicInfoVOList.forEach(devopsClusterBasicInfoVO -> {
             devopsClusterBasicInfoVO.setConnect(isConnect(connectedEnvList, updatedEnvList, devopsClusterBasicInfoVO.getId()));
@@ -362,7 +362,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
     @Override
     public Boolean checkConnectEnvs(Long clusterId) {
-        List<Long> connectedEnvList = clusterConnectionHandler.getConnectedEnvList();
+        List<Long> connectedEnvList = clusterConnectionHandler.getConnectedClusterList();
         List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = devopsEnvironmentService.baseListByClusterId(clusterId);
         if (connectedEnvList.contains(clusterId) || !devopsEnvironmentDTOS.isEmpty()) {
             throw new CommonException("error.cluster.delete");
@@ -377,8 +377,8 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         if (result == null) {
             return null;
         }
-        List<Long> connectedList = clusterConnectionHandler.getConnectedEnvList();
-        List<Long> upToDateList = clusterConnectionHandler.getUpdatedEnvList();
+        List<Long> connectedList = clusterConnectionHandler.getConnectedClusterList();
+        List<Long> upToDateList = clusterConnectionHandler.getUpdatedClusterList();
         result.setConnect(isConnect(connectedList, upToDateList, clusterId));
         result.setUpgrade(isToUpgrade(connectedList, upToDateList, clusterId));
         result.setUpgradeMessage(result.getUpgrade() ? UPGRADE_MESSAGE : null);
@@ -532,8 +532,8 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
     private DevopsClusterRepVO getDevopsClusterStatus(Long clusterId) {
         DevopsClusterRepVO devopsClusterRepVO = ConvertUtils.convertObject(baseQuery(clusterId), DevopsClusterRepVO.class);
-        List<Long> connectedEnvList = clusterConnectionHandler.getConnectedEnvList();
-        List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedEnvList();
+        List<Long> connectedEnvList = clusterConnectionHandler.getConnectedClusterList();
+        List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedClusterList();
 
         devopsClusterRepVO.setConnect(isConnect(connectedEnvList, updatedEnvList, devopsClusterRepVO.getId()));
         devopsClusterRepVO.setUpgrade(isToUpgrade(connectedEnvList, updatedEnvList, devopsClusterRepVO.getId()));

@@ -165,8 +165,8 @@ class DevopsEnvPodControllerSpec extends Specification {
         connectedEnvList.add(1L)
         List<Long> updateEnvList = new ArrayList<>()
         updateEnvList.add(1L)
-        envUtil.getConnectedEnvList() >> connectedEnvList
-        envUtil.getUpdatedEnvList() >> updateEnvList
+        envUtil.getConnectedClusterList() >> connectedEnvList
+        envUtil.getUpdatedClusterList() >> updateEnvList
 
         when: '分页查询容器管理'
         def entity = restTemplate.postForEntity(MAPPING+"/page_by_options?env_id=1&app_service_id=1",strEntity,PageInfo.class,1L)

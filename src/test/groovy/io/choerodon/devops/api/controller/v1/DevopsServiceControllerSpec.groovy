@@ -294,8 +294,8 @@ class DevopsServiceControllerSpec extends Specification {
         List<Long> envList = new ArrayList<>()
         envList.add(1L)
         envList.add(2L)
-        envUtil.getConnectedEnvList() >> envList
-        envUtil.getUpdatedEnvList() >> envList
+        envUtil.getConnectedClusterList() >> envList
+        envUtil.getUpdatedClusterList() >> envList
 
         when: '环境总览分页查询网络'
         def entity = restTemplate.postForEntity("/v1/projects/1/service/{env_id}/page_by_env", strEntity, PageInfo.class, 1L)

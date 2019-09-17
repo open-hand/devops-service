@@ -350,7 +350,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
             return null;
         }
 
-        List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedEnvList();
+        List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedClusterList();
 
         DevopsIngressVO vo = new DevopsIngressVO();
         BeanUtils.copyProperties(devopsIngressDTO, vo);
@@ -390,7 +390,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     public PageInfo<DevopsIngressVO> pageByEnv(Long projectId, Long envId, PageRequest pageRequest, String params) {
         PageInfo<DevopsIngressVO> devopsIngressVOPage = basePageByOptions(projectId, envId, null, pageRequest, params);
 
-        List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedEnvList();
+        List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedClusterList();
         devopsIngressVOPage.getList().forEach(devopsIngressVO -> {
             DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsIngressVO.getEnvId());
             devopsIngressVO.setEnvStatus(updatedEnvList.contains(devopsEnvironmentDTO.getClusterId()));

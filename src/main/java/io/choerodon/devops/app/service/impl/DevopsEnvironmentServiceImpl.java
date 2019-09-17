@@ -204,7 +204,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Override
     public List<DevopsEnvGroupEnvsVO> listDevopsEnvGroupEnvs(Long projectId, Boolean active) {
         List<DevopsEnvGroupEnvsVO> devopsEnvGroupEnvsDTOS = new ArrayList<>();
-        List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedEnvList();
+        List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedClusterList();
         List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = baseListByProjectIdAndActive(projectId, active).stream().peek(t ->
                 setEnvStatus(upgradeClusterList, t)
         )
@@ -256,7 +256,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         DevopsEnvGroupEnvsVO devopsEnvGroupEnvsDTO = new DevopsEnvGroupEnvsVO();
         List<DevopsEnvGroupEnvsVO> devopsEnvGroupEnvsDTOS = new ArrayList<>();
         // 获得环境列表(包含激活与不激活)
-        List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedEnvList();
+        List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedClusterList();
         List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = baseListByProjectId(projectId)
                 .stream()
                 .peek(t -> setEnvStatus(upgradeClusterList, t))
@@ -324,7 +324,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     public List<DevopsEnviromentRepVO> listByGroupAndActive(Long projectId, Long groupId, Boolean active) {
-        List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedEnvList();
+        List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedClusterList();
         List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = devopsEnvironmentMapper.listByProjectIdAndGroupIdAndActive(projectId, groupId, active)
                 .stream()
                 .peek(t -> setEnvStatus(upgradeClusterList, t))
@@ -345,7 +345,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         Boolean isProjectOwner = baseServiceClientOperator
                 .isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectDTO);
 
-        List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedEnvList();
+        List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedClusterList();
         List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = baseListByProjectIdAndActive(projectId, active).stream()
                 .filter(devopsEnvironmentE -> !devopsEnvironmentE.getFailed()).peek(t -> {
                     setEnvStatus(upgradeClusterList, t);
@@ -365,7 +365,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     public List<DevopsEnvironmentViewVO> listInstanceEnvTree(Long projectId) {
-        List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedEnvList();
+        List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedClusterList();
 
         List<DevopsEnvironmentViewVO> connectedEnvs = new ArrayList<>();
         List<DevopsEnvironmentViewVO> unConnectedEnvs = new ArrayList<>();
@@ -411,7 +411,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     public List<DevopsResourceEnvOverviewVO> listResourceEnvTree(Long projectId) {
-        List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedEnvList();
+        List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedClusterList();
 
         List<DevopsResourceEnvOverviewVO> connectedEnvs = new ArrayList<>();
         List<DevopsResourceEnvOverviewVO> unConnectedEnvs = new ArrayList<>();
@@ -473,12 +473,23 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     public Boolean updateActive(Long projectId, Long environmentId, Boolean active) {
-        DevopsEnvironmentDTO devopsEnvironmentDTO = baseQueryById(environmentId);
+        if (active == null) {
+            active = Boolean.TRUE;
+        }
 
-        List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedEnvList();
-        setEnvStatus(upgradeClusterList, devopsEnvironmentDTO);
-        if (!active && devopsEnvironmentDTO.getConnected()) {
-            devopsEnvironmentValidator.checkEnvCanDisabled(environmentId);
+        DevopsEnvironmentDTO devopsEnvironmentDTO = baseQueryById(environmentId);
+        List<Long> updatedClusterList = clusterConnectionHandler.getUpdatedClusterList();
+
+        // 要停用环境时，对环境进行校验
+        if (!active) {
+            // 如果已连接
+            if (updatedClusterList.contains(devopsEnvironmentDTO.getClusterId())) {
+                devopsEnvironmentValidator.checkEnvCanDisabled(environmentId);
+            } else {
+                if (!pipelineAppDeployService.baseQueryByEnvId(environmentId).isEmpty()) {
+                    throw new CommonException("error.env.stop.pipeline.app.deploy.exist");
+                }
+            }
         }
 
         devopsEnvironmentDTO.setActive(active);
@@ -501,7 +512,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         DevopsEnvironmentInfoVO vo = new DevopsEnvironmentInfoVO();
         BeanUtils.copyProperties(envInfo, vo);
 
-        List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedEnvList();
+        List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedClusterList();
         vo.setConnect(upgradeClusterList.contains(envInfo.getClusterId()));
 
 
@@ -1137,8 +1148,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     public List<DevopsClusterRepVO> listDevopsCluster(Long projectId) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         List<DevopsClusterRepVO> devopsClusterRepVOS = ConvertUtils.convertList(devopsClusterService.baseListByProjectId(projectId, projectDTO.getOrganizationId()), DevopsClusterRepVO.class);
-        List<Long> connectedClusterList = clusterConnectionHandler.getConnectedEnvList();
-        List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedEnvList();
+        List<Long> connectedClusterList = clusterConnectionHandler.getConnectedClusterList();
+        List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedClusterList();
         devopsClusterRepVOS.forEach(t -> {
             if (connectedClusterList.contains(t.getId()) && upgradeClusterList.contains(t.getId())) {
                 t.setConnect(true);

@@ -578,8 +578,8 @@ class AppServiceInstanceControllerSpec extends Specification {
         and: 'mock envUtil'
         List<Long> connectedEnvList = new ArrayList<>()
         connectedEnvList.add(1L)
-        envUtil.getConnectedEnvList() >> connectedEnvList
-        envUtil.getUpdatedEnvList() >> connectedEnvList
+        envUtil.getConnectedClusterList() >> connectedEnvList
+        envUtil.getUpdatedClusterList() >> connectedEnvList
 
         when: '分页查询应用部署'
         def page = restTemplate.postForObject(MAPPING+"/page_by_options?page=1&size=1", strEntity, PageInfo.class,1L)
@@ -973,8 +973,8 @@ class AppServiceInstanceControllerSpec extends Specification {
         given: 'mock envUtil'
         List<Long> connectedEnvList = new ArrayList<>()
         connectedEnvList.add(1L)
-        envUtil.getConnectedEnvList() >> connectedEnvList
-        envUtil.getUpdatedEnvList() >> connectedEnvList
+        envUtil.getConnectedClusterList() >> connectedEnvList
+        envUtil.getUpdatedClusterList() >> connectedEnvList
 
         when: '环境总览实例查询'
         def dto = restTemplate.postForObject("/v1/projects/1/app_instances/1/listByEnv", "{\"searchParam\":{},\"param\":\"\"}", DevopsEnvPreviewVO.class)
