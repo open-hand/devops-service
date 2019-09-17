@@ -368,6 +368,22 @@ public class BaseServiceClientOperator {
         }
     }
 
+    public List<ApplicationDTO> listApplicationInfoByAppIds(Long projectId, Set<Long> serviceIds){
+        try {
+            return baseServiceClient.listApplicationInfoByAppIds(projectId,serviceIds).getBody();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public Set<Long> listAppServiceByAppId(Long projectId,Long appId){
+        try {
+            return baseServiceClient.listAppServiceByAppId(projectId,appId).getBody();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     /**
      * 根据组织id和项目code查询项目
      *

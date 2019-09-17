@@ -13,15 +13,15 @@ public class AppServiceVO {
     private String name;
     private String code;
     private String type;
-    List<AppServiceVersionVO> versions;
+    List<AppServiceVersionVO> allAppServiceVersions;
     private String status;
 
-    public List<AppServiceVersionVO> getVersions() {
-        return versions;
+    public List<AppServiceVersionVO> getAllAppServiceVersions() {
+        return allAppServiceVersions;
     }
 
-    public void setVersions(List<AppServiceVersionVO> versions) {
-        this.versions = versions;
+    public void setAllAppServiceVersions(List<AppServiceVersionVO> allAppServiceVersions) {
+        this.allAppServiceVersions = allAppServiceVersions;
     }
 
     public String getStatus() {

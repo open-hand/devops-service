@@ -200,4 +200,14 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     public ResponseEntity<ProjectDTO> queryProjectByCodeAndOrgId(Long organizationId, String projectCode) {
         throw new CommonException(ERROR_PROJECT_GET);
     }
+
+    @Override
+    public ResponseEntity<List<ApplicationDTO>> listApplicationInfoByAppIds(Long projectId, Set<Long> serviceIds) {
+        throw new CommonException("error.application.query");
+    }
+
+    @Override
+    public ResponseEntity<Set<Long>> listAppServiceByAppId(Long projectId, Long applicationId) {
+        throw new CommonException("error.app.service.id.query");
+    }
 }

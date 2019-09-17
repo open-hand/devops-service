@@ -48,6 +48,8 @@ public class ProjectDTO extends BaseDTO {
     @ApiModelProperty(value = "应用")
     private ApplicationDTO applicationVO;
 
+
+    private Long appServiceId;
     private String typeName;
     private String organizationName;
     private String createUserName;
@@ -55,6 +57,13 @@ public class ProjectDTO extends BaseDTO {
     private String applicationName;
     private String applicationCode;
     private String programName;
+    public Long getAppServiceId() {
+        return appServiceId;
+    }
+
+    public void setAppServiceId(Long appServiceId) {
+        this.appServiceId = appServiceId;
+    }
 
     public Long getId() {
         return id;
