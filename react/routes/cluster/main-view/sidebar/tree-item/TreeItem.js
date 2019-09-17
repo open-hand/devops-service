@@ -82,7 +82,12 @@ const TreeItem = observer(({ record, search }) => {
       default:
         treeItem = null;
     }
-    return treeItem;
+    return (
+      <Fragment>
+        {treeItem}
+        {/* <div className="tree-node-selected" /> */}
+      </Fragment>
+    );
   }
 
   return getItem();
