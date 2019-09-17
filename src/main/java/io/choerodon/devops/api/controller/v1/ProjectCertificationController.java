@@ -6,6 +6,7 @@ import java.util.Optional;
 import javax.validation.Valid;
 
 import com.github.pagehelper.PageInfo;
+
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.enums.ResourceType;
@@ -17,6 +18,7 @@ import io.choerodon.devops.api.vo.ProjectCertificationVO;
 import io.choerodon.devops.api.vo.ProjectReqVO;
 import io.choerodon.devops.app.service.DevopsProjectCertificationService;
 import io.choerodon.swagger.annotation.CustomPageRequest;
+
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,51 +40,28 @@ public class ProjectCertificationController {
     private DevopsProjectCertificationService devopsProjectCertificationService;
 
     /**
-     * 项目下创建证书
+     * 项目下创建或更新证书
      *
      * @param projectId              项目Id
      * @param projectCertificationVO 证书信息
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "项目下创建证书")
+    @ApiOperation(value = "项目下创建或更新证书")
     @PostMapping
-    public ResponseEntity create(
+    public ResponseEntity createOrUpdate(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "证书信息", required = true)
             @ModelAttribute @Valid ProjectCertificationVO projectCertificationVO,
-            @ApiParam(value = "key文件")
-            @RequestParam(value = "key", required = false) MultipartFile key,
-            @ApiParam(value = "cert文件")
-            @RequestParam(value = "cert", required = false) MultipartFile cert) {
-        devopsProjectCertificationService.create(projectId, key, cert, projectCertificationVO);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    /**
-     * 更新证书
-     *
-     * @param projectId             项目Id
-     * @param projectCertificationUpdateVO 项目层证书信息
-     */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "更新证书")
-    @PutMapping
-    public ResponseEntity update(
-            @ApiParam(value = "项目Id", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "证书信息", required = true)
-            @ModelAttribute @Valid ProjectCertificationUpdateVO projectCertificationUpdateVO,
             BindingResult bindingResult,
             @ApiParam(value = "key文件")
             @RequestParam(value = "key", required = false) MultipartFile key,
             @ApiParam(value = "cert文件")
             @RequestParam(value = "cert", required = false) MultipartFile cert) {
-        // 底层不能捕获BindException异常，所以这里手动处理抛出CommonException
         if (bindingResult.hasErrors()) {
             throw new CommonException(Objects.requireNonNull(bindingResult.getFieldError()).getDefaultMessage());
         }
-        devopsProjectCertificationService.update(projectId,key,cert, projectCertificationUpdateVO);
+        devopsProjectCertificationService.createOrUpdate(projectId, key, cert, projectCertificationVO);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
