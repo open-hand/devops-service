@@ -57,7 +57,11 @@ const Platform = injectIntl(observer((props) => {
   }
 
   function renderAction() {
-    return <Button shape="circle" icon="delete" onClick={handleDelete} />;
+    return (
+      <Tooltip title={formatMessage({ id: 'delete' })}>
+        <Button shape="circle" icon="delete" onClick={handleDelete} />
+      </Tooltip>
+    );
   }
   
   function handleChangeVersion(value) {

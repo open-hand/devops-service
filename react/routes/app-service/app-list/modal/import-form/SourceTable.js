@@ -77,7 +77,7 @@ const SourceTable = injectIntl(observer(({ tableDs, selectedDs, store, projectId
           onChange={handleChangeParam}
           colSpan={2}
           prefix={<Icon type="search" />}
-          placeholder="请输入查询条件"
+          placeholder={formatMessage({ id: `${intlPrefix}.param` })}
         />
       </Form>
       <Table
