@@ -18,7 +18,6 @@ import io.choerodon.devops.api.vo.kubernetes.CheckLog;
 import io.choerodon.devops.api.vo.kubernetes.ProjectCreateDTO;
 import io.choerodon.devops.app.service.DevopsCheckLogService;
 import io.choerodon.devops.app.service.DevopsDeployRecordService;
-import io.choerodon.devops.app.service.DevopsEnvApplicationService;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.ProjectCategoryDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
@@ -49,13 +48,15 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     @Autowired
     private AppServiceInstanceMapper appServiceInstanceMapper;
     @Autowired
-    private DevopsEnvApplicationService devopsEnvApplicationService;
+    private DevopsEnvAppServiceMapper devopsEnvAppServiceMapper;
     @Autowired
     private DevopsEnvCommandMapper devopsEnvCommandMapper;
     @Autowired
     private PipelineRecordMapper pipelineRecordMapper;
     @Autowired
     private DevopsDeployRecordService devopsDeployRecordService;
+    @Autowired
+    private DevopsDeployRecordMapper devopsDeployRecordMapper;
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
@@ -186,10 +187,10 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 checkLog.setContent(String.format(
                         "Sync environment application relationship,envId: %s, appServiceId: %s", v.getEnvId(), v.getAppServiceId()));
                 try {
-                    devopsEnvApplicationService.baseCreate(v);
+                    devopsEnvAppServiceMapper.insertIgnore(v);
                     checkLog.setResult(SUCCESS);
                 } catch (Exception e) {
-                    checkLog.setResult("fail");
+                    checkLog.setResult(FAILED);
                     LOGGER.info(e.getMessage(), e);
                 }
                 logs.add(checkLog);
@@ -239,10 +240,13 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                             .map(pipelineRecordDTO -> new DevopsDeployRecordDTO(pipelineRecordDTO.getProjectId(), "auto", pipelineRecordDTO.getId(), pipelineRecordDTO.getEnv(), pipelineRecordDTO.getCreationDate()))
                             .collect(Collectors.toList()));
 
-            devopsDeployRecordDTOS.stream().sorted(Comparator.comparing(DevopsDeployRecordDTO::getDeployTime)).forEach(devopsDeployRecordDTO -> devopsDeployRecordService.baseCreate(devopsDeployRecordDTO));
+            // 防止二次调用数据修复逻辑时的重复插入
+            devopsDeployRecordDTOS = devopsDeployRecordDTOS.stream().filter(r -> devopsDeployRecordMapper.selectOne(r) == null).collect(Collectors.toList());
+
+            devopsDeployRecordDTOS.stream().sorted(Comparator.comparing(DevopsDeployRecordDTO::getDeployTime)).forEach(
+                    devopsDeployRecordDTO -> devopsDeployRecordService.baseCreate(devopsDeployRecordDTO));
 
             LOGGER.info("修复部署记录数据结束");
-
         }
 
         private void syncClusterAndCertifications(List<CheckLog> checkLogs) {
