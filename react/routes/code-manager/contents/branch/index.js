@@ -466,9 +466,7 @@ class Branch extends Component {
       > 
         {!(DevPipelineStore.getAppData && DevPipelineStore.getAppData.length > 0) ? <Loading display={DevPipelineStore.getLoading} />
           : <Fragment>
-            <Content className="page-content c7n-branch-content">
-              {this.tableBranch}
-            </Content>
+            {this.tableBranch}
             {apps && apps.length && appId ? <Fragment>
               {BranchStore.createBranchShow === 'create' && <BranchCreate
                 name={_.filter(apps, (app) => app.id === DevPipelineStore.selectedApp)[0].name}

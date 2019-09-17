@@ -10,9 +10,7 @@ const CodeManagerMergeRequest = observer((props) => <TabPage>
   <CodeManagerToolBar name="CodeManagerMergeRequest" />
   <CodeManagerHeader />
   <SelectApp />
-  <Content className="c7ncd-code-manager-content">
-    <MergeRequest />
-  </Content>
+  <MergeRequest />
 </TabPage>);
 
 export default CodeManagerMergeRequest;

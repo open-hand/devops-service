@@ -52,15 +52,14 @@ class CiPipelineHome extends Component {
     const appId = DevPipelineStore.getSelectApp;
     return (
       <Page
-        className="c7n-ciPipeline"
+        className="c7n-ciPipeline page-container"
         service={[
           'devops-service.pipeline.pageByOptions',
         ]}
       >
         {appData && appData.length && appId ? <Fragment>
-          <Content className="c7n-content">
-            <CiPipelineTable store={CiPipelineStore} loading={CiPipelineStore.loading} />
-          </Content></Fragment> : <Loading display={DevPipelineStore.getLoading} />}
+          <CiPipelineTable store={CiPipelineStore} loading={CiPipelineStore.loading} />
+        </Fragment> : <Loading display={DevPipelineStore.getLoading} />}
       </Page>
     );
   }

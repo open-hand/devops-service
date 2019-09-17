@@ -10,9 +10,7 @@ const CodeManagerAppTag = observer((props) => <TabPage>
   <CodeManagerToolBar name="CodeManagerAppTag" key="CodeManagerAppTag" />
   <CodeManagerHeader />
   <SelectApp />
-  <Content className="c7ncd-code-manager-content">
-    <AppTag />
-  </Content>
+  <AppTag />
 </TabPage>);
 
 export default CodeManagerAppTag;

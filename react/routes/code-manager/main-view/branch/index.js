@@ -12,9 +12,7 @@ const CodeManagerBranch = observer((props) => <TabPage>
   <CodeManagerToolBar name="CodeManagerBranch" key="CodeManagerBranch" />
   <CodeManagerHeader />
   <SelectApp />
-  <Content className="c7ncd-code-manager-content">
-    <Branch />
-  </Content>
+  <Branch />
 </TabPage>);
 
 export default CodeManagerBranch;
