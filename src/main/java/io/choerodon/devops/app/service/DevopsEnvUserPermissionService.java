@@ -33,8 +33,6 @@ public interface DevopsEnvUserPermissionService {
 
     void baseUpdate(Long envId, List<Long> addUsersList, List<Long> deleteUsersList);
 
-    List<DevopsEnvUserPermissionDTO> baseListByUserId(Long userId);
-
     void baseDelete(Long envId, Long userId);
 
 }

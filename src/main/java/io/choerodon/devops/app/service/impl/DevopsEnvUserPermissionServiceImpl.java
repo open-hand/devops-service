@@ -122,13 +122,6 @@ public class DevopsEnvUserPermissionServiceImpl implements DevopsEnvUserPermissi
     }
 
     @Override
-    public List<DevopsEnvUserPermissionDTO> baseListByUserId(Long userId) {
-        DevopsEnvUserPermissionDTO devopsEnvUserPermissionDO = new DevopsEnvUserPermissionDTO();
-        devopsEnvUserPermissionDO.setIamUserId(userId);
-        return devopsEnvUserPermissionMapper.select(devopsEnvUserPermissionDO);
-    }
-
-    @Override
     public void baseDelete(Long envId, Long userId) {
         DevopsEnvUserPermissionDTO devopsEnvUserPermissionDTO = new DevopsEnvUserPermissionDTO(envId, userId);
         devopsEnvUserPermissionMapper.delete(devopsEnvUserPermissionDTO);

@@ -11,8 +11,6 @@ import io.choerodon.devops.app.service.UserAttrService;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.mapper.UserAttrMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
-import io.choerodon.devops.infra.util.GitUserNameUtil;
-import io.choerodon.devops.infra.util.TypeUtil;
 
 @Service
 public class UserAttrServiceImpl implements UserAttrService {
@@ -86,5 +84,4 @@ public class UserAttrServiceImpl implements UserAttrService {
         userAttrDTO.setGitlabUserName(gitlabUserName);
         return userAttrMapper.selectOne(userAttrDTO);
     }
-
 }

@@ -8,7 +8,6 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.DevopsIngressVO;
 import io.choerodon.devops.app.eventhandler.payload.IngressSagaPayload;
 import io.choerodon.devops.infra.dto.DevopsIngressDTO;
-import io.choerodon.devops.infra.dto.DevopsIngressPathDTO;
 
 
 public interface DevopsIngressService {
@@ -135,16 +134,6 @@ public interface DevopsIngressService {
     DevopsIngressDTO baseCheckByEnvAndName(Long envId, String name);
 
     DevopsIngressDTO baseCreateIngress(DevopsIngressDTO devopsIngressDTO);
-
-    void baseCreatePath(DevopsIngressPathDTO devopsIngressPathDTO);
-
-    List<DevopsIngressPathDTO> baseListPathByEnvIdAndServiceName(Long envId, String serviceName);
-
-    List<DevopsIngressPathDTO> baseListPathByEnvIdAndServiceId(Long envId, Long serviceId);
-
-    List<DevopsIngressPathDTO> baseListPathByIngressId(Long ingressId);
-
-    void baseUpdateIngressPath(DevopsIngressPathDTO devopsIngressPathDTO);
 
     void baseDeletePathByIngressId(Long ingressId);
 

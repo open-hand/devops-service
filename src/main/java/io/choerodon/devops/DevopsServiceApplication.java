@@ -3,7 +3,6 @@ package io.choerodon.devops;
 import java.util.Set;
 import javax.annotation.PostConstruct;
 
-import io.choerodon.resource.annoation.EnableChoerodonResourceServer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -16,6 +15,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.web.socket.server.standard.ServletServerContainerFactoryBean;
+
+import io.choerodon.resource.annoation.EnableChoerodonResourceServer;
 
 
 @EnableFeignClients("io.choerodon")
@@ -40,7 +41,7 @@ public class DevopsServiceApplication {
     //初始化redisTemplate
     @Bean
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
-        RedisTemplate<String, Object> template = new RedisTemplate();
+        RedisTemplate<String, Object> template = new RedisTemplate<>();
         StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
         template.setKeySerializer(stringRedisSerializer);
         template.setHashKeySerializer(stringRedisSerializer);

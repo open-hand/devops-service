@@ -48,7 +48,7 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
     private static final String FILE_NAME_PATTERN = "custom-%s.yaml";
 
     private static Gson gson = new Gson();
-    private List<String> RESOURCE_TYPE = Arrays.asList(ResourceType.SERVICE.getType(), ResourceType.INGRESS.getType(), ResourceType.CONFIGMAP.getType(), ResourceType.SECRET.getType(), ResourceType.C7NHELMRELEASE.getType(), ResourceType.CERTIFICATE.getType());
+    private static final List<String> RESOURCE_TYPE = Arrays.asList(ResourceType.SERVICE.getType(), ResourceType.INGRESS.getType(), ResourceType.CONFIGMAP.getType(), ResourceType.SECRET.getType(), ResourceType.C7NHELMRELEASE.getType(), ResourceType.CERTIFICATE.getType());
 
     @Autowired
     private DevopsCustomizeResourceMapper devopsCustomizeResourceMapper;

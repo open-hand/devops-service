@@ -67,6 +67,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     private static final String INGRESS_NOT_EXIST = "ingress.not.exist";
     private static final Gson gson = new Gson();
     public static final String INGRESS_PREFIX = "ing-";
+    private static final String YAML_SUFFIX = ".yaml";
     private static final String MASTER = "master";
     @Value("${services.gitlab.sshUrl}")
     private String gitlabSshUrl;
@@ -432,10 +433,10 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
             devopsApplicationResourceService.baseDeleteByResourceIdAndType(ingressId, ObjectType.INGRESS.getType());
             baseDeletePathByIngressId(ingressId);
             if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER,
-                    "ing-" + ingressDO.getName() + ".yaml")) {
+                    INGRESS_PREFIX + ingressDO.getName() + YAML_SUFFIX)) {
                 gitlabServiceClientOperator.deleteFile(
                         TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
-                        "ing-" + ingressDO.getName() + ".yaml",
+                        INGRESS_PREFIX + ingressDO.getName() + YAML_SUFFIX,
                         "DELETE FILE",
                         TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
             }
@@ -630,7 +631,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
             DevopsIngressDTO devopsIngressDTO = baseQuery(ingressSagaPayload.getDevopsIngressDTO().getId());
             DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
                     .baseQueryByEnvIdAndResourceId(ingressSagaPayload.getDevopsEnvironmentDTO().getId(), devopsIngressDTO.getId(), INGRESS);
-            String filePath = devopsEnvFileResourceDTO == null ? "ing-" + devopsIngressDTO.getName() + ".yaml" : devopsEnvFileResourceDTO.getFilePath();
+            String filePath = devopsEnvFileResourceDTO == null ? INGRESS_PREFIX + devopsIngressDTO.getName() + YAML_SUFFIX : devopsEnvFileResourceDTO.getFilePath();
             if (!gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(ingressSagaPayload.getDevopsEnvironmentDTO().getGitlabEnvProjectId()), MASTER,
                     filePath)) {
                 devopsIngressDTO.setStatus(CommandStatus.FAILED.getStatus());
@@ -882,41 +883,10 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     }
 
     @Override
-    public void baseCreatePath(DevopsIngressPathDTO devopsIngressPathDTO) {
-        if (devopsIngressPathMapper.insert(devopsIngressPathDTO) != 1) {
-            throw new CommonException("error.domainAttr.insert");
-        }
-    }
-
-    @Override
-    public List<DevopsIngressPathDTO> baseListPathByEnvIdAndServiceName(Long envId, String serviceName) {
-        return devopsIngressPathMapper.listPathByEnvIdAndServiceName(envId, serviceName);
-    }
-
-    @Override
-    public List<DevopsIngressPathDTO> baseListPathByEnvIdAndServiceId(Long envId, Long serviceId) {
-        return devopsIngressPathMapper.listPathByEnvIdAndServiceId(envId, serviceId);
-    }
-
-    @Override
-    public List<DevopsIngressPathDTO> baseListPathByIngressId(Long ingressId) {
-        DevopsIngressPathDTO devopsIngressPathDTO = new DevopsIngressPathDTO();
-        devopsIngressPathDTO.setIngressId(ingressId);
-        return devopsIngressPathMapper.select(devopsIngressPathDTO);
-    }
-
-    @Override
     public List<DevopsIngressDTO> baseListByEnvId(Long envId) {
         DevopsIngressDTO devopsIngressDTO = new DevopsIngressDTO();
         devopsIngressDTO.setEnvId(envId);
         return devopsIngressMapper.select(devopsIngressDTO);
-    }
-
-    @Override
-    public void baseUpdateIngressPath(DevopsIngressPathDTO devopsIngressPathDTO) {
-        if (devopsIngressPathMapper.updateByPrimaryKey(devopsIngressPathDTO) != 1) {
-            throw new CommonException("error.domainAttr.update");
-        }
     }
 
     @Override
