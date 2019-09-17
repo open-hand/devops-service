@@ -77,5 +77,4 @@ WHERE
 			</foreach>
 		</if>
 	</sql>
-
 </mapper>

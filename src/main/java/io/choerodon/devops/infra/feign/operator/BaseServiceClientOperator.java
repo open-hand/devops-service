@@ -8,6 +8,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import com.github.pagehelper.PageInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -337,9 +340,9 @@ public class BaseServiceClientOperator {
         }
     }
 
-    public void failToDownloadApplication(Long publishAppVersionId,Long mktVersionId) {
+    public void failToDownloadApplication(Long publishAppVersionId, Long mktVersionId) {
         try {
-            baseServiceClient.failToDownloadApplication(publishAppVersionId,mktVersionId);
+            baseServiceClient.failToDownloadApplication(publishAppVersionId, mktVersionId);
         } catch (Exception e) {
             throw new CommonException("error.application.download.failed", e.getMessage());
         }
@@ -357,10 +360,28 @@ public class BaseServiceClientOperator {
         return null;
     }
 
-    public List<ProjectDTO> queryProjectsByIds(Set<Long> ids){
+    public List<ProjectDTO> queryProjectsByIds(Set<Long> ids) {
         try {
             return baseServiceClient.queryByIds(ids).getBody();
         } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * 根据组织id和项目code查询项目
+     *
+     * @param projectCode    项目code
+     * @param organizationId 组织id
+     * @return 项目信息(可能为空)
+     */
+    @Nullable
+    public ProjectDTO queryProjectByCodeAndOrganizationId(@Nonnull String projectCode, @Nonnull Long organizationId) {
+        try {
+            ResponseEntity<ProjectDTO> resp = baseServiceClient.queryProjectByCodeAndOrgId(organizationId, projectCode);
+            return resp == null ? null : resp.getBody();
+        } catch (Exception ex) {
+            LOGGER.info("Exception occurred when querying project by code {} and organization id {}", projectCode, organizationId);
             return null;
         }
     }

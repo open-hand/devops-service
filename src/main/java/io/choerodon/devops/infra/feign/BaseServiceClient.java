@@ -177,4 +177,14 @@ public interface BaseServiceClient {
     @PostMapping(value = "/v1/projects/ids")
     ResponseEntity<List<ProjectDTO>> queryByIds(@RequestBody Set<Long> ids);
 
+    /**
+     * 根据组织Id及项目code查询项目
+     *
+     * @param organizationId 组织Id
+     * @param projectCode    项目code
+     * @return 根据组织Id及项目code查询项目
+     */
+    @GetMapping(value = "/v1/organization/{organization_id}/projects/by_code")
+    ResponseEntity<ProjectDTO> queryProjectByCodeAndOrgId(@PathVariable(name = "organization_id") Long organizationId,
+                                                          @RequestParam(name = "code") String projectCode);
 }

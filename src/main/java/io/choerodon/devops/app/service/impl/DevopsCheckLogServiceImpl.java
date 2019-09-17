@@ -18,7 +18,6 @@ import io.choerodon.devops.api.vo.kubernetes.CheckLog;
 import io.choerodon.devops.api.vo.kubernetes.ProjectCreateDTO;
 import io.choerodon.devops.app.service.DevopsCheckLogService;
 import io.choerodon.devops.app.service.DevopsDeployRecordService;
-import io.choerodon.devops.app.service.DevopsEnvApplicationService;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.ProjectCategoryDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
@@ -49,7 +48,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     @Autowired
     private AppServiceInstanceMapper appServiceInstanceMapper;
     @Autowired
-    private DevopsEnvApplicationService devopsEnvApplicationService;
+    private DevopsEnvAppServiceMapper devopsEnvAppServiceMapper;
     @Autowired
     private DevopsEnvCommandMapper devopsEnvCommandMapper;
     @Autowired
@@ -57,7 +56,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     @Autowired
     private DevopsDeployRecordService devopsDeployRecordService;
     @Autowired
-    private DevopsProjectMapper devopsProjectMapper;
+    private DevopsDeployRecordMapper devopsDeployRecordMapper;
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
@@ -104,7 +103,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 //                syncDeployRecord(logs);
 //                syncClusterAndCertifications(logs);
 //                syncConfig();
-                  syncBranch();
+                syncBranch();
 
             } else {
                 LOGGER.info("version not matched");
@@ -188,10 +187,10 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 checkLog.setContent(String.format(
                         "Sync environment application relationship,envId: %s, appServiceId: %s", v.getEnvId(), v.getAppServiceId()));
                 try {
-                    devopsEnvApplicationService.baseCreate(v);
+                    devopsEnvAppServiceMapper.insertIgnore(v);
                     checkLog.setResult(SUCCESS);
                 } catch (Exception e) {
-                    checkLog.setResult("fail");
+                    checkLog.setResult(FAILED);
                     LOGGER.info(e.getMessage(), e);
                 }
                 logs.add(checkLog);
@@ -241,10 +240,13 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                             .map(pipelineRecordDTO -> new DevopsDeployRecordDTO(pipelineRecordDTO.getProjectId(), "auto", pipelineRecordDTO.getId(), pipelineRecordDTO.getEnv(), pipelineRecordDTO.getCreationDate()))
                             .collect(Collectors.toList()));
 
-            devopsDeployRecordDTOS.stream().sorted(Comparator.comparing(DevopsDeployRecordDTO::getDeployTime)).forEach(devopsDeployRecordDTO -> devopsDeployRecordService.baseCreate(devopsDeployRecordDTO));
+            // 防止二次调用数据修复逻辑时的重复插入
+            devopsDeployRecordDTOS = devopsDeployRecordDTOS.stream().filter(r -> devopsDeployRecordMapper.selectOne(r) == null).collect(Collectors.toList());
+
+            devopsDeployRecordDTOS.stream().sorted(Comparator.comparing(DevopsDeployRecordDTO::getDeployTime)).forEach(
+                    devopsDeployRecordDTO -> devopsDeployRecordService.baseCreate(devopsDeployRecordDTO));
 
             LOGGER.info("修复部署记录数据结束");
-
         }
 
         private void syncClusterAndCertifications(List<CheckLog> checkLogs) {
@@ -262,13 +264,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             allOrgIds.addAll(orgCertifications.keySet());
 
             allOrgIds.forEach(organizationId -> {
-                // 创建组织下的项目
-                ProjectCreateDTO projectCreateDTO = new ProjectCreateDTO();
-                projectCreateDTO.setName("默认运维项目");
-                projectCreateDTO.setCode("def-ops-proj");
-                projectCreateDTO.setCategoryIds(categoryIds);
-                projectCreateDTO.setOrganizationId(organizationId);
-                ProjectDTO projectDTO = baseServiceClientOperator.createProject(organizationId, projectCreateDTO);
+                ProjectDTO projectDTO = queryOrCreateMigrationProject(organizationId, categoryIds);
 
                 // 迁移集群
                 if (clusters.containsKey(organizationId)) {
@@ -277,6 +273,11 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                         checkLog.setContent(String.format(
                                 "Sync cluster migration to the project,clusterId: %s, organizationId: %s", cluster.getId(), organizationId));
                         if (projectDTO != null) {
+                            // 如果集群对应的项目id已经是将要设置的项目id，跳过
+                            if (Objects.equals(cluster.getProjectId(), projectDTO.getId())) {
+                                return;
+                            }
+
                             cluster.setProjectId(projectDTO.getId());
                             checkLog.setResult(devopsClusterMapper.updateByPrimaryKeySelective(cluster) != 1 ? FAILED : SUCCESS);
                         } else {
@@ -292,6 +293,11 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                         CheckLog checkLog = new CheckLog();
                         checkLog.setContent(String.format("Migrate organization certification to the project, org-cert-id: %s, organizationId: %s", cert.getId(), organizationId));
                         if (projectDTO != null) {
+                            // 如果证书对应的项目id已经是将要设置的项目id，跳过
+                            if (Objects.equals(cert.getProjectId(), projectDTO.getId())) {
+                                return;
+                            }
+
                             cert.setProjectId(projectDTO.getId());
                             checkLog.setResult(devopsCertificationMapper.updateByPrimaryKeySelective(cert) != 1 ? FAILED : SUCCESS);
                         } else {
@@ -303,5 +309,32 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             });
             LOGGER.info("迁移集群及证书到项目下已完成！");
         }
+    }
+
+    /**
+     * 查询或创建用于迁移数据的项目
+     *
+     * @param organizationId 组织id
+     * @param categoryIds    类型id
+     * @return 项目信息
+     */
+    private ProjectDTO queryOrCreateMigrationProject(Long organizationId, List<Long> categoryIds) {
+        final String migrationProjectName = "默认运维项目";
+        final String migrationProjectCode = "def-ops-proj";
+
+        ProjectDTO projectDTO = baseServiceClientOperator.queryProjectByCodeAndOrganizationId(migrationProjectCode, organizationId);
+
+        // 如果不存在，则创建组织下的项目
+        if (projectDTO == null) {
+            ProjectCreateDTO projectCreateDTO = new ProjectCreateDTO();
+            projectCreateDTO.setName(migrationProjectName);
+            projectCreateDTO.setCode(migrationProjectCode);
+            projectCreateDTO.setCategoryIds(categoryIds);
+            projectCreateDTO.setOrganizationId(organizationId);
+
+            projectDTO = baseServiceClientOperator.createProject(organizationId, projectCreateDTO);
+        }
+
+        return projectDTO;
     }
 }
