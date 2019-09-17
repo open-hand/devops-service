@@ -14,6 +14,7 @@ public class AppServiceGroupInfoVO {
     private String name;
     private String code;
     private Long projectId;
+    private Long mktAppId;
     private String type;
     private List<AppServiceVersionDTO> versions;
     private Boolean share;
@@ -81,5 +82,14 @@ public class AppServiceGroupInfoVO {
 
     public void setProjectName(String projectName) {
         this.projectName = projectName;
+    }
+
+
+    public Long getMktAppId() {
+        return mktAppId;
+    }
+
+    public void setMktAppId(Long mktAppId) {
+        this.mktAppId = mktAppId;
     }
 }

@@ -7,8 +7,6 @@ import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -16,9 +14,44 @@ import java.util.stream.Collectors;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
-
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.producer.StartSagaBuilder;
+import io.choerodon.asgard.saga.producer.TransactionalProducer;
+import io.choerodon.base.domain.PageRequest;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.validator.ApplicationValidator;
+import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.sonar.*;
+import io.choerodon.devops.app.eventhandler.DevopsSagaHandler;
+import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
+import io.choerodon.devops.app.eventhandler.payload.AppServiceImportPayload;
+import io.choerodon.devops.app.eventhandler.payload.DevOpsAppImportServicePayload;
+import io.choerodon.devops.app.eventhandler.payload.DevOpsAppServicePayload;
+import io.choerodon.devops.app.eventhandler.payload.DevOpsUserPayload;
+import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.config.ConfigurationProperties;
+import io.choerodon.devops.infra.config.HarborConfigurationProperties;
+import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.gitlab.*;
+import io.choerodon.devops.infra.dto.harbor.ProjectDetail;
+import io.choerodon.devops.infra.dto.harbor.User;
+import io.choerodon.devops.infra.dto.iam.ApplicationDTO;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.*;
-
+import io.choerodon.devops.infra.feign.ChartClient;
+import io.choerodon.devops.infra.feign.HarborClient;
+import io.choerodon.devops.infra.feign.SonarClient;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
+import io.choerodon.devops.infra.handler.RetrofitHandler;
+import io.choerodon.devops.infra.mapper.AppServiceInstanceMapper;
+import io.choerodon.devops.infra.mapper.AppServiceMapper;
+import io.choerodon.devops.infra.mapper.AppServiceUserRelMapper;
+import io.choerodon.devops.infra.mapper.UserAttrMapper;
+import io.choerodon.devops.infra.util.*;
 import io.kubernetes.client.JSON;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.eclipse.jgit.api.Git;
@@ -40,42 +73,6 @@ import org.springframework.util.StringUtils;
 import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
-import retrofit2.http.HEAD;
-
-import io.choerodon.asgard.saga.annotation.Saga;
-import io.choerodon.asgard.saga.producer.StartSagaBuilder;
-import io.choerodon.asgard.saga.producer.TransactionalProducer;
-import io.choerodon.base.domain.PageRequest;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.validator.ApplicationValidator;
-import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.api.vo.sonar.*;
-import io.choerodon.devops.app.eventhandler.DevopsSagaHandler;
-import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
-import io.choerodon.devops.app.eventhandler.payload.*;
-import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.infra.config.ConfigurationProperties;
-import io.choerodon.devops.infra.config.HarborConfigurationProperties;
-import io.choerodon.devops.infra.dto.*;
-import io.choerodon.devops.infra.dto.gitlab.*;
-import io.choerodon.devops.infra.dto.harbor.ProjectDetail;
-import io.choerodon.devops.infra.dto.harbor.User;
-import io.choerodon.devops.infra.dto.iam.ApplicationDTO;
-import io.choerodon.devops.infra.dto.iam.IamUserDTO;
-import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
-import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.feign.ChartClient;
-import io.choerodon.devops.infra.feign.HarborClient;
-import io.choerodon.devops.infra.feign.SonarClient;
-import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
-import io.choerodon.devops.infra.handler.RetrofitHandler;
-import io.choerodon.devops.infra.mapper.AppServiceInstanceMapper;
-import io.choerodon.devops.infra.mapper.AppServiceMapper;
-import io.choerodon.devops.infra.mapper.AppServiceUserRelMapper;
-import io.choerodon.devops.infra.mapper.UserAttrMapper;
-import io.choerodon.devops.infra.util.*;
 
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.collectingAndThen;
@@ -1554,12 +1551,14 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     @Override
     public List<ProjectVO> listProjects(Long organizationId, Long projectId, String params) {
-        String[] paramsArr = null;
-        if (!StringUtils.isEmpty(params)) {
-            paramsArr = new String[1];
-            paramsArr[0] = params;
+        PageInfo<ProjectDTO> projectDTOPageInfo = baseServiceClientOperator.pageProjectByOrgId(
+                organizationId,
+                0, 0, null,
+                new String[0]);
+        PageInfo<ProjectVO> pageInfo = ConvertUtils.convertPage(projectDTOPageInfo,ProjectVO.class);
+        if (pageInfo == null) {
+            return new ArrayList<>();
         }
-        PageInfo<ProjectVO> pageInfo = ConvertUtils.convertPage(baseServiceClientOperator.pagingProjectByOptions(organizationId, 1, 20, paramsArr), this::dtoToProjectVO);
         return pageInfo.getList().stream().filter(t -> !t.getId().equals(projectId)).collect(Collectors.toList());
     }
 
@@ -2047,6 +2046,9 @@ public class AppServiceServiceImpl implements AppServiceService {
         switch (type) {
             case NORMAL_SERVICE: {
                 list.addAll(appServiceMapper.list(projectId, null, true, serviceType, null, params, ""));
+                AppServiceGroupVO appServiceGroupVO = new AppServiceGroupVO();
+                appServiceGroupVO.setAppServiceList(ConvertUtils.convertList(list, this::dtoToGroupInfoVO));
+                appServiceGroupList.add(appServiceGroupVO);
                 break;
             }
             case SHARE_SERVICE: {
@@ -2056,25 +2058,42 @@ public class AppServiceServiceImpl implements AppServiceService {
                         baseListAll(pro.getId()).forEach(appServiceDTO -> appServiceIds.add(appServiceDTO.getId()))
                 );
                 list.addAll(appServiceMapper.listShareApplicationService(appServiceIds, projectId, serviceType, params));
+                Map<Long, List<AppServiceGroupInfoVO>> map = list.stream()
+                        .map(this::dtoToGroupInfoVO)
+                        .collect(Collectors.groupingBy(AppServiceGroupInfoVO::getProjectId));
+
+                for (Map.Entry<Long, List<AppServiceGroupInfoVO>> entry : map.entrySet()) {
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(entry.getKey());
+                    AppServiceGroupVO appServiceGroupVO = new AppServiceGroupVO();
+                    appServiceGroupVO.setName(projectDTO.getName());
+                    appServiceGroupVO.setCode(projectDTO.getCode());
+                    appServiceGroupVO.setId(projectDTO.getId());
+                    appServiceGroupVO.setAppServiceList(entry.getValue());
+                    appServiceGroupList.add(appServiceGroupVO);
+                }
                 break;
             }
             case MARKET_SERVICE: {
                 list.addAll(appServiceMapper.queryMarketDownloadApps(serviceType, null, deployOnly, null));
+                Map<Long, List<AppServiceGroupInfoVO>> map = list.stream()
+                        .map(this::dtoToGroupInfoVO)
+                        .filter(appServiceGroupInfoVO -> appServiceGroupInfoVO.getMktAppId() != null)
+                        .collect(Collectors.groupingBy(AppServiceGroupInfoVO::getMktAppId));
+
+                for (Map.Entry<Long, List<AppServiceGroupInfoVO>> entry : map.entrySet()) {
+                    ApplicationDTO applicationDTO = baseServiceClientOperator.queryAppById(entry.getKey());
+                    AppServiceGroupVO appServiceGroupVO = new AppServiceGroupVO();
+                    appServiceGroupVO.setName(applicationDTO.getName());
+                    appServiceGroupVO.setCode(applicationDTO.getCode());
+                    appServiceGroupVO.setId(applicationDTO.getId());
+                    appServiceGroupVO.setAppServiceList(entry.getValue());
+                    appServiceGroupList.add(appServiceGroupVO);
+                }
                 break;
             }
             default: {
                 throw new CommonException("error.list.deploy.app.service.type");
             }
-        }
-        Map<Long, List<AppServiceGroupInfoVO>> map = list.stream()
-                .map(this::dtoToGroupInfoVO)
-                .collect(Collectors.groupingBy(AppServiceGroupInfoVO::getProjectId));
-
-        for (Map.Entry<Long, List<AppServiceGroupInfoVO>> entry : map.entrySet()) {
-            ApplicationDTO appDTO = baseServiceClientOperator.queryAppById(entry.getKey());
-            AppServiceGroupVO appServiceGroupVO = dtoToGroupVO(appDTO);
-            appServiceGroupVO.setAppServiceList(entry.getValue());
-            appServiceGroupList.add(appServiceGroupVO);
         }
         return appServiceGroupList;
     }
