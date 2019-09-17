@@ -12,6 +12,7 @@ import './styles/index.less';
 
 const ClusterContent = lazy(() => import('./contents/cluster-content'));
 const NodeContent = lazy(() => import('./contents/node-content'));
+const EmptyPage = lazy(() => import('./contents/empty'));
 
 export default observer((props) => {
   const {
@@ -24,6 +25,7 @@ export default observer((props) => {
       CLU_ITEM,
       NODE_ITEM,
     },
+    treeDs,
   } = useClusterStore();
   const { mainStore } = useClusterMainStore();
   const rootRef = useRef(null);
@@ -56,12 +58,21 @@ export default observer((props) => {
   }), [isDragging]);
 
   const dragRight = resizeNav.x >= X_AXIS_WIDTH_MAX ? X_AXIS_WIDTH_MAX : bounds.width - X_AXIS_WIDTH;
-
-  return (<div
-    ref={rootRef}
-    className={`${prefixCls}-wrap`}
-  >
-    {draggable && (
+  if (!treeDs.length && treeDs.status === 'ready') {
+    return <div
+      className={`${prefixCls}-wrap`}
+    >
+      <Suspense fallback={<LoadingBar display />}>
+        <EmptyPage />
+      </Suspense>
+      <div>请先创建分组！</div>
+    </div>;
+  } else {
+    return (<div
+      ref={rootRef}
+      className={`${prefixCls}-wrap`}
+    >
+      {draggable && (
       <Fragment>
         <Draggable
           axis="x"
@@ -80,12 +91,13 @@ export default observer((props) => {
         </Draggable>
         {isDragging && <div className={`${dragPrefixCls}-blocker`} />}
       </Fragment>
-    )}
-    <Fragment>
-      <Sidebar />
-      {!isEmpty(getSelectedMenu) ? <div className={`${prefixCls}-main ${dragPrefixCls}-animate`}>
-        {content}
-      </div> : <LoadingBar display />}
-    </Fragment>
-  </div>);
+      )}
+      <Fragment>
+        <Sidebar />
+        {!isEmpty(getSelectedMenu) ? <div className={`${prefixCls}-main ${dragPrefixCls}-animate`}>
+          {content}
+        </div> : <LoadingBar display />}
+      </Fragment>
+    </div>);
+  }
 });

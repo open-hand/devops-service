@@ -5,7 +5,7 @@ import initial from 'lodash/initial';
 import flatten from 'lodash/flatten';
 import map from 'lodash/map';
 import { Header, Permission } from '@choerodon/master';
-import { Button } from 'choerodon-ui/pro';
+import { Button } from 'choerodon-ui';
 
 import './index.less';
 
