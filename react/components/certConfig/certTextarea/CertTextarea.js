@@ -35,7 +35,7 @@ export function CertTextarea(propsForm, formatMessage, initData = {}) {
             message: formatMessage({ id: 'required' }),
           },
         ],
-        initialValue: initData.keyValue || '',
+        initialValue: initData.certValue || '',
       })(
         <TextArea
           autosize={{ minRows: 2 }}
@@ -54,7 +54,7 @@ export function CertTextarea(propsForm, formatMessage, initData = {}) {
             message: formatMessage({ id: 'required' }),
           },
         ],
-        initialValue: initData.certValue || '',
+        initialValue: initData.keyValue || '',
       })(
         <TextArea
           autosize={{ minRows: 2 }}

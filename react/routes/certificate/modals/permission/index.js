@@ -4,7 +4,6 @@ import { Table, Modal, SelectBox, Form } from 'choerodon-ui/pro';
 import { Button } from 'choerodon-ui';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
-import map from 'lodash/map';
 import AddProject from './AddProject';
 
 import './index.less';
@@ -34,23 +33,6 @@ export default injectIntl(observer(({
     optionsDs.transport.read.url = `/devops/v1/projects/${projectId}/certs/${record.get('id')}/permission/list_non_related`;
     allProjectDs.query();
     permissionProjectDs.query();
-  }, []);
-
-  useEffect(() => {
-    permissionProjectDs.transport.create = ({ data }) => {
-      const res = {
-        objectVersionNumber: record.get('objectVersionNumber'),
-        certificationId: record.get('id'),
-        skipCheckProjectPermission: false,
-        projectIds: map(data, 'project'),
-      };
-
-      return ({
-        url: `/devops/v1/projects/${projectId}/certs/${record.get('id')}/permission`,
-        method: 'post',
-        data: res,
-      });
-    };
   }, []);
 
   modal.handleOk(async () => {
@@ -87,12 +69,12 @@ export default injectIntl(observer(({
   }
 
   function handleDelete() {
-    permissionProjectDs.current.delete();
+    permissionProjectDs.delete(permissionProjectDs.current);
   }
 
   function renderAction() {
     const actionData = [{
-      service: [],
+      service: ['devops-service.project-certification.deletePermissionOfProject'],
       text: formatMessage({ id: `${intlPrefix}.permission.delete` }),
       action: handleDelete,
     }];

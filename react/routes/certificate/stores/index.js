@@ -25,8 +25,8 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const intlPrefix = 'c7ncd.certificate';
     const listDs = useMemo(() => new DataSet(ListDataSet(intlPrefix, formatMessage, projectId)), [formatMessage, projectId]);
     const allProjectDs = useMemo(() => new DataSet(AllProjectDataSet(intlPrefix, formatMessage, projectId)), [projectId]);
-    const permissionProjectDs = useMemo(() => new DataSet(PermissionDataSet(intlPrefix, formatMessage, projectId)), [projectId]);
-    const detailDs = useMemo(() => new DataSet(DetailDataSet(intlPrefix, formatMessage)), []);
+    const detailDs = useMemo(() => new DataSet(DetailDataSet(intlPrefix, formatMessage, projectId)), [projectId]);
+    const permissionProjectDs = useMemo(() => new DataSet(PermissionDataSet(intlPrefix, formatMessage, projectId, detailDs)), [projectId, detailDs]);
     const optionsDs = useMemo(() => new DataSet(OptionsDataSet()), []);
 
     const certStore = useStore();

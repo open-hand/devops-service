@@ -97,14 +97,14 @@ const CreateForm = ({ certId, intl: { formatMessage }, form, store, projectId, m
           formData.append('skipCheckProjectPermission', skipCheckProjectPermission);
           formData.append('objectVersionNumber', objectVersionNumber);
           formData.append('id', id);
-          method = store.updateCert;
+          formData.append('type', 'update');
         } else {
           formData.append('skipCheckProjectPermission', true);
-          method = store.createCert;
+          formData.append('type', 'create');
         }
 
         try {
-          const result = await method(projectId, formData);
+          const result = await store.createCert(projectId, formData);
           if (handlePromptError(result, false)) {
             refresh();
             modal.close();

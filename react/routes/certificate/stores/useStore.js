@@ -23,12 +23,6 @@ export default function useStore() {
       });
     },
 
-    updateCert(projectId, data) {
-      return axios.put(`/devops/v1/projects/${projectId}/certs`, data, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-    },
-
     async loadCertById(projectId, id) {
       try {
         const res = await axios.get(`/devops/v1/projects/${projectId}/certs/${id}`);
