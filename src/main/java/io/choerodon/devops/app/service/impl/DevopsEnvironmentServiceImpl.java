@@ -848,6 +848,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                     .stream()
                     .map(p -> ConvertUtils.convertObject(p, DevopsUserPermissionVO.class))
                     .peek(p -> p.setRole(MEMBER))
+                    .sorted(Comparator.comparing(DevopsUserPermissionVO::getCreationDate).reversed())
                     .collect(Collectors.toList());
         } else {
             // 搜索所有的项目成员，并过滤其中的项目所有者
