@@ -498,7 +498,7 @@
             </foreach>
         </if>
         <if test="searchProjectId != null and searchProjectId !=''">
-            AND das.project_id = searchProjectId
+            AND das.project_id = #{searchProjectId}
         </if>
         <if test="param != null and param != ''">
             AND ( das.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
@@ -530,7 +530,7 @@
             AND das.type = #{type}
         </if>
         <if test="searchProjectId != null and searchProjectId !=''">
-            AND das.project_id = searchProjectId
+            AND das.project_id = #{searchProjectId}
         </if>
         <if test="param != null and param != ''">
             AND  (das.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
@@ -561,7 +561,7 @@
     WHERE
         bb.app_service_id IS NOT NULL
         <if test="searchProjectId != null and searchProjectId !=''">
-            AND das.project_id = searchProjectId
+            AND das.project_id = #{searchProjectId}
         </if>
         <if test="param != null and param != ''">
             AND  ( das.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')

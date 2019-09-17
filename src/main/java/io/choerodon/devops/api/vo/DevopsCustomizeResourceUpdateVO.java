@@ -1,6 +1,5 @@
 package io.choerodon.devops.api.vo;
 
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModelProperty;
@@ -10,16 +9,15 @@ import io.swagger.annotations.ApiModelProperty;
  * @date 2019-09-15 15:43
  */
 public class DevopsCustomizeResourceUpdateVO {
-    @ApiModelProperty("环境id")
+    @ApiModelProperty("环境id/必填")
     @NotNull(message = "error.env.id.null")
     private Long envId;
-    @ApiModelProperty("资源id")
+    @ApiModelProperty("资源id/必填")
     @NotNull(message = "error.customize.resource.id.null")
     private Long resourceId;
     @ApiModelProperty("操作类型")
     private String type;
     @ApiModelProperty("资源内容")
-    @NotBlank(message = "error.customize.resource.content.null")
     private String content;
 
     public Long getEnvId() {

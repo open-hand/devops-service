@@ -15,7 +15,7 @@ public class AppServiceDeployUpdateVO {
     private Long appServiceId;
 
     @ApiModelProperty("服务应用版本id/必填")
-    @NotNull(message = "appversion.not.exist.in.database")
+    @NotNull(message = "error.app.version.id.null")
     private Long appServiceVersionId;
 
     @ApiModelProperty("环境id/必填")

@@ -6,8 +6,9 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.github.pagehelper.PageInfo;
-import io.choerodon.core.exception.CommonException;
 import org.springframework.beans.BeanUtils;
+
+import io.choerodon.core.exception.CommonException;
 
 /**
  * @author zmf
@@ -59,6 +60,8 @@ public class ConvertUtils {
         BeanUtils.copyProperties(source, destination, "list");
         if (source.getList() != null) {
             destination.setList(source.getList().stream().map(converter).collect(Collectors.toList()));
+        } else {
+            destination.setList(new ArrayList<>());
         }
         return destination;
     }
