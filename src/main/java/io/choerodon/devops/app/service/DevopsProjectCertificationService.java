@@ -30,9 +30,7 @@ public interface DevopsProjectCertificationService {
      */
     PageInfo<ProjectReqVO> pageRelatedProjects(Long projectId, Long certId, PageRequest pageRequest, String params);
 
-    void create(Long projectId, MultipartFile key, MultipartFile cert, ProjectCertificationVO projectCertificationVO);
-
-    void update(Long projectId, MultipartFile key, MultipartFile cert, ProjectCertificationUpdateVO projectCertificationUpdateVO);
+    void createOrUpdate(Long projectId, MultipartFile key, MultipartFile cert, ProjectCertificationVO projectCertificationVO);
 
     void checkName(Long projectId, String name);
 

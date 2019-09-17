@@ -38,6 +38,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class DevopsProjectCertificationServiceImpl implements DevopsProjectCertificationService {
+    private static final String CREATE = "create";
+    private static final String UPDATE = "update";
     private static final String FILE_SEPARATOR = System.getProperty("file.separator");
     private static final String ERROR_CERTIFICATION_NOT_EXIST = "error.certification.not.exist";
 
@@ -160,13 +162,12 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void create(Long projectId, MultipartFile key, MultipartFile cert, ProjectCertificationVO projectCertificationVO) {
-        //如果是选择上传文件方式
+    public void createOrUpdate(Long projectId, MultipartFile key, MultipartFile cert, ProjectCertificationVO projectCertificationVO) {
         OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectId);
         String path = String.format("tmp%s%s%s%s", FILE_SEPARATOR, organizationDTO.getCode(), FILE_SEPARATOR, GenerateUUID.generateUUID().substring(0, 5));
         String certFileName;
         String keyFileName;
-
+        //如果是选择上传文件方式
         if (key != null && cert != null) {
             certFileName = cert.getOriginalFilename();
             keyFileName = key.getOriginalFilename();
@@ -185,64 +186,33 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
         } catch (Exception e) {
             FileUtil.deleteFile(certPath);
             FileUtil.deleteFile(keyPath);
-            throw new CommonException(e);
+            throw new CommonException(e.getMessage());
         }
+
         FileUtil.deleteFile(certPath);
         FileUtil.deleteFile(keyPath);
 
-        CertificationDTO certificationDTO = new CertificationDTO();
-        certificationDTO.setName(projectCertificationVO.getName());
-        certificationDTO.setProjectId(projectId);
-        certificationDTO.setSkipCheckProjectPermission(true);
-        certificationDTO.setDomains(gson.toJson(Collections.singletonList(projectCertificationVO.getDomain())));
-        certificationDTO.setCertificationFileId(certificationService.baseStoreCertFile(new CertificationFileDTO(projectCertificationVO.getCertValue(), projectCertificationVO.getKeyValue())));
-        certificationService.baseCreate(certificationDTO);
-    }
+        if (projectCertificationVO.getType().equals(CREATE)) {
 
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public void update(Long projectId, MultipartFile key, MultipartFile cert, ProjectCertificationUpdateVO projectCertificationUpdateVO) {
-        OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectId);
-        String path = String.format("tmp%s%s%s%s", FILE_SEPARATOR, organizationDTO.getCode(), FILE_SEPARATOR, GenerateUUID.generateUUID().substring(0, 5));
-        String certFileName;
-        String keyFileName;
-
-        if (key != null && cert != null) {
-            //如果是选择上传文件方式
-            certFileName = cert.getOriginalFilename();
-            keyFileName = key.getOriginalFilename();
-            projectCertificationUpdateVO.setKeyValue(FileUtil.getFileContent(new File(FileUtil.multipartFileToFile(path, key))));
-            projectCertificationUpdateVO.setCertValue(FileUtil.getFileContent(new File(FileUtil.multipartFileToFile(path, cert))));
+            CertificationDTO certificationDTO = new CertificationDTO();
+            certificationDTO.setName(projectCertificationVO.getName());
+            certificationDTO.setProjectId(projectId);
+            certificationDTO.setSkipCheckProjectPermission(true);
+            certificationDTO.setDomains(gson.toJson(Collections.singletonList(projectCertificationVO.getDomain())));
+            certificationDTO.setCertificationFileId(certificationService.baseStoreCertFile(new CertificationFileDTO(projectCertificationVO.getCertValue(), projectCertificationVO.getKeyValue())));
+            certificationService.baseCreate(certificationDTO);
         } else {
-            certFileName = String.format("%s.%s", GenerateUUID.generateUUID().substring(0, 5), "crt");
-            keyFileName = String.format("%s.%s", GenerateUUID.generateUUID().substring(0, 5), "key");
-            FileUtil.saveDataToFile(path, certFileName, projectCertificationUpdateVO.getCertValue());
-            FileUtil.saveDataToFile(path, keyFileName, projectCertificationUpdateVO.getKeyValue());
-        }
-        File certPath = new File(path + FILE_SEPARATOR + certFileName);
-        File keyPath = new File(path + FILE_SEPARATOR + keyFileName);
-        try {
-            SslUtil.validate(certPath, keyPath);
-        } catch (Exception e) {
-            FileUtil.deleteFile(certPath);
-            FileUtil.deleteFile(keyPath);
-            throw new CommonException(e);
-        }
-        FileUtil.deleteFile(certPath);
-        FileUtil.deleteFile(keyPath);
+            CertificationDTO certificationDTO = new CertificationDTO();
+            BeanUtils.copyProperties(projectCertificationVO, certificationDTO);
+            certificationDTO.setProjectId(projectId);
+            certificationDTO.setDomains(gson.toJson(Collections.singletonList(projectCertificationVO.getDomain())));
+            devopsCertificationMapper.updateByPrimaryKeySelective(certificationDTO);
 
-        CertificationDTO certificationDTO = new CertificationDTO();
-        BeanUtils.copyProperties(projectCertificationUpdateVO, certificationDTO);
-        certificationDTO.setProjectId(projectId);
-        certificationDTO.setDomains(gson.toJson(Collections.singletonList(projectCertificationUpdateVO.getDomain())));
-        devopsCertificationMapper.updateByPrimaryKeySelective(certificationDTO);
-
-        CertificationFileDTO certificationFileDTO = new CertificationFileDTO();
-        certificationFileDTO.setId(certificationService.baseQueryById(certificationDTO.getId()).getCertificationFileId());
-        certificationFileDTO.setKeyFile(certificationDTO.getKeyValue());
-        certificationFileDTO.setCertFile(certificationDTO.getCertValue());
-        devopsCertificationFileMapper.updateByPrimaryKeySelective(certificationFileDTO);
+            CertificationFileDTO certificationFileDTO = devopsCertificationFileMapper.queryByCertificationId(certificationDTO.getId());
+            certificationFileDTO.setKeyFile(certificationDTO.getKeyValue());
+            certificationFileDTO.setCertFile(certificationDTO.getCertValue());
+            devopsCertificationFileMapper.updateByPrimaryKeySelective(certificationFileDTO);
+        }
     }
 
 
