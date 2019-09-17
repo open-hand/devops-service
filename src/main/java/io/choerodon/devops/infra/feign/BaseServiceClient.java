@@ -91,8 +91,8 @@ public interface BaseServiceClient {
                                                                     @RequestParam("page") int page,
                                                                     @RequestParam("size") int size);
 
-    @PostMapping(value = "/v1/roles/search")
-    ResponseEntity<PageInfo<RoleVO>> queryRoleIdByCode(@RequestBody @Valid RoleSearchVO roleSearchVO);
+    @GetMapping(value = "/v1/roles/search")
+    ResponseEntity<PageInfo<RoleVO>> queryRoleIdByCode(@RequestParam(required = false) String code);
 
 
     @PostMapping(value = "/v1/organizations/{organization_id}/applications")

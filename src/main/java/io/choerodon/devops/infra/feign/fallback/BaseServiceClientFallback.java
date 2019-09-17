@@ -107,7 +107,7 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
-    public ResponseEntity<PageInfo<RoleVO>> queryRoleIdByCode(RoleSearchVO roleSearchVO) {
+    public ResponseEntity<PageInfo<RoleVO>> queryRoleIdByCode(String code) {
         throw new CommonException("error.roleId.get");
     }
 
