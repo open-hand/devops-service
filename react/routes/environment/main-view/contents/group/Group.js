@@ -4,6 +4,7 @@ import { Action } from '@choerodon/master';
 import { Modal, Table } from 'choerodon-ui/pro';
 import StatusTag from '../../../../../components/status-tag';
 import { getEnvStatus } from '../../../../../components/status-dot';
+import ClickText from '../../../../../components/click-text';
 import { useEnvironmentStore } from '../../../stores';
 import { useMainStore } from '../../stores';
 import { useEnvGroupStore } from './stores';
@@ -118,7 +119,12 @@ const Group = observer(() => {
           colorCode={status}
           name={formatMessage({ id: status })}
         />
-        {value}
+        <ClickText
+          value={value}
+          clickAble={active && synchronize}
+          onClick={openModifyModal}
+          record={record}
+        />
       </Fragment>
     );
   }
@@ -131,10 +137,6 @@ const Group = observer(() => {
     if (!synchronize && active) return null;
 
     const actionData = active ? [{
-      service: [],
-      text: formatMessage({ id: 'edit' }),
-      action: () => openModifyModal(record),
-    }, {
       service: [],
       text: formatMessage({ id: 'stop' }),
       action: () => openEffectModal(envId),

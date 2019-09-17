@@ -16,7 +16,7 @@ export default async function checkPermission({ projectId, organizationId, resou
       return approve;
     }
   } catch (e) {
-    Choerodon.handleResponseError(e);
+    // Choerodon.handleResponseError(e);
     return false;
   }
 }
