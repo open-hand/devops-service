@@ -45,6 +45,8 @@ choerodon_temp/*
 deployfile
 tmp
 
+~$micro-service-init-data.xlsx
+
 ### front ###
 
 config-local.js
