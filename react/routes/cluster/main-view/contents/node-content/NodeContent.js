@@ -33,16 +33,14 @@ const NodeContent = observer((props) => {
     <Fragment>
       <Modals />
       <h1>{name}</h1>
-      <Content className="c7n-node-content">
+      <div className="c7n-node-content">
         <div className="c7n-node-title">{formatMessage({ id: 'node.res' })}</div>
         <div className="c7n-node-pie">
           {node ? podPies(formatMessage, node.toData()) : null}
         </div>
         <div className="c7n-node-title">{formatMessage({ id: 'node.pods' })}</div>
         <NodePodsTable />
-        {/* {this.renderTable()} */}
-        {/* {showLog && <LogSiderbar visible={showLog} data={logParm} onClose={this.closeLog} />} */}
-      </Content>
+      </div>
     </Fragment>
   );
 });

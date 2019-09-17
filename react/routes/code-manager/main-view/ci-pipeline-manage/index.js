@@ -10,9 +10,7 @@ const CiPipelineManage = observer((props) => <TabPage>
   <CodeManagerToolBar name="CodeManagerCiPipelineManage" key="CodeManagerCiPipelineManage" />
   <CodeManagerHeader />
   <SelectApp />
-  <Content className="c7ncd-code-manager-content">
-    <CodeManagerCiPipelineManage />
-  </Content>
+  <CodeManagerCiPipelineManage />
 </TabPage>);
 
 export default CiPipelineManage;

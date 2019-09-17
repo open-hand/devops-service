@@ -166,15 +166,13 @@ class CodeQuality extends Component {
     const titleName = app ? app.name : name;
     return (
       <Page
-        className="c7n-region c7n-codeQuality-wrapper"
+        className="c7n-region c7n-codeQuality-wrapper page-container"
         service={[
           'devops-service.app-service.getSonarQube',
         ]}
       >
         {getAppData && getAppData.length && getSelectApp ? <Fragment>
-          <Content className="c7n-codeQuality-content">
-            {getLoading ? <Loading display /> : this.getDetail()}
-          </Content>
+          {getLoading ? <Loading display /> : this.getDetail()}
         </Fragment> : <Loading display={DevPipelineStore.getLoading} />}
       </Page>
     );

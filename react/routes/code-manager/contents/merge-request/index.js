@@ -392,9 +392,65 @@ class MergeRequestHome extends Component {
       >
         {hasAppData && appId
           ? <Fragment>
-            <Content values={{ name: titleName }} className="c7n-merge-content">
-              <Tabs activecKey={tabKey} onChange={this.tabChange} animated={false} className="c7n-merge-tabs" type="card" size="small" tabBarStyle={{ marginRight: '0' }}>
-                <TabPane tab={`${intl.formatMessage({ id: 'merge.tab1' })}(${openCount || 0})`} key="opened">
+            <Tabs activecKey={tabKey} onChange={this.tabChange} animated={false} className="c7n-merge-tabs" type="card" size="small" tabBarStyle={{ marginRight: '0' }}>
+              <TabPane tab={`${intl.formatMessage({ id: 'merge.tab1' })}(${openCount || 0})`} key="opened">
+                <Table
+                  filterBarPlaceholder={intl.formatMessage({ id: 'filter' })}
+                  onChange={this.tableChange}
+                  loading={getIsLoading}
+                  columns={columnsOpen}
+                  pagination={false}
+                  filters={param || []}
+                  dataSource={od.slice()}
+                  rowKey={(record) => record.id}
+                  filterBar={false}
+                  rowClassName="c7ncd-table-row-font-color"
+                />
+              </TabPane>
+              <TabPane tab={`${intl.formatMessage({ id: 'merge.tab2' })}(${mergeCount || 0})`} key="merged">
+                <Table
+                  filterBarPlaceholder={intl.formatMessage({ id: 'filter' })}
+                  onChange={this.tableChange}
+                  loading={getIsLoading}
+                  columns={columns}
+                  pagination={mp}
+                  filters={param || []}
+                  dataSource={md.slice()}
+                  rowKey={(record) => record.id}
+                  filterBar={false}
+                  rowClassName="c7ncd-table-row-font-color"
+                />
+              </TabPane>
+              <TabPane tab={`${intl.formatMessage({ id: 'merge.tab3' })}(${closeCount || 0})`} key="closed">
+                <Table
+                  filterBarPlaceholder={intl.formatMessage({ id: 'filter' })}
+                  onChange={this.tableChange}
+                  loading={getIsLoading}
+                  columns={columns}
+                  pagination={cp}
+                  filters={param || []}
+                  dataSource={cd.slice()}
+                  rowKey={(record) => record.id}
+                  filterBar={false}
+                  rowClassName="c7ncd-table-row-font-color"
+                />
+              </TabPane>
+              <TabPane tab={`${intl.formatMessage({ id: 'merge.tab4' })}(${totalCount || 0})`} key="all">
+                <Table
+                  filterBarPlaceholder={intl.formatMessage({ id: 'filter' })}
+                  onChange={this.tableChange}
+                  loading={getIsLoading}
+                  columns={columnsAll}
+                  pagination={ap}
+                  filters={param || []}
+                  dataSource={ad.slice()}
+                  rowKey={(record) => record.id}
+                  filterBar={false}
+                  rowClassName="c7ncd-table-row-font-color"
+                />
+              </TabPane>
+              {getAssigneeCount !== 0
+                ? <TabPane tab={`${intl.formatMessage({ id: 'merge.tab5' })}(${getAssigneeCount || 0})`} key="assignee">
                   <Table
                     filterBarPlaceholder={intl.formatMessage({ id: 'filter' })}
                     onChange={this.tableChange}
@@ -402,71 +458,13 @@ class MergeRequestHome extends Component {
                     columns={columnsOpen}
                     pagination={false}
                     filters={param || []}
-                    dataSource={od.slice()}
+                    dataSource={getAssignee.slice()}
                     rowKey={(record) => record.id}
                     filterBar={false}
                     rowClassName="c7ncd-table-row-font-color"
                   />
-                </TabPane>
-                <TabPane tab={`${intl.formatMessage({ id: 'merge.tab2' })}(${mergeCount || 0})`} key="merged">
-                  <Table
-                    filterBarPlaceholder={intl.formatMessage({ id: 'filter' })}
-                    onChange={this.tableChange}
-                    loading={getIsLoading}
-                    columns={columns}
-                    pagination={mp}
-                    filters={param || []}
-                    dataSource={md.slice()}
-                    rowKey={(record) => record.id}
-                    filterBar={false}
-                    rowClassName="c7ncd-table-row-font-color"
-                  />
-                </TabPane>
-                <TabPane tab={`${intl.formatMessage({ id: 'merge.tab3' })}(${closeCount || 0})`} key="closed">
-                  <Table
-                    filterBarPlaceholder={intl.formatMessage({ id: 'filter' })}
-                    onChange={this.tableChange}
-                    loading={getIsLoading}
-                    columns={columns}
-                    pagination={cp}
-                    filters={param || []}
-                    dataSource={cd.slice()}
-                    rowKey={(record) => record.id}
-                    filterBar={false}
-                    rowClassName="c7ncd-table-row-font-color"
-                  />
-                </TabPane>
-                <TabPane tab={`${intl.formatMessage({ id: 'merge.tab4' })}(${totalCount || 0})`} key="all">
-                  <Table
-                    filterBarPlaceholder={intl.formatMessage({ id: 'filter' })}
-                    onChange={this.tableChange}
-                    loading={getIsLoading}
-                    columns={columnsAll}
-                    pagination={ap}
-                    filters={param || []}
-                    dataSource={ad.slice()}
-                    rowKey={(record) => record.id}
-                    filterBar={false}
-                    rowClassName="c7ncd-table-row-font-color"
-                  />
-                </TabPane>
-                {getAssigneeCount !== 0
-                  ? <TabPane tab={`${intl.formatMessage({ id: 'merge.tab5' })}(${getAssigneeCount || 0})`} key="assignee">
-                    <Table
-                      filterBarPlaceholder={intl.formatMessage({ id: 'filter' })}
-                      onChange={this.tableChange}
-                      loading={getIsLoading}
-                      columns={columnsOpen}
-                      pagination={false}
-                      filters={param || []}
-                      dataSource={getAssignee.slice()}
-                      rowKey={(record) => record.id}
-                      filterBar={false}
-                      rowClassName="c7ncd-table-row-font-color"
-                    />
-                  </TabPane> : null}
-              </Tabs>
-            </Content>
+                </TabPane> : null}
+            </Tabs>
           </Fragment>
           : <Loading display={DevPipelineStore.getLoading} />}
       </Page>

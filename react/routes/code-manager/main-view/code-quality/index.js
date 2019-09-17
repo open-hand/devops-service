@@ -13,9 +13,7 @@ const CodeQuality = observer(() => <TabPage>
   <CodeManagerToolBar name="CodeQuality" key="CodeQuality" />
   <CodeManagerHeader />
   <SelectApp />
-  <Content className="c7ncd-code-manager-content">
-    <CodeQualityContent />
-  </Content>
+  <CodeQualityContent />
 </TabPage>);
 
 export default CodeQuality;

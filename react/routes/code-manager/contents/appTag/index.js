@@ -271,40 +271,38 @@ class AppTag extends Component {
     const empty = appData && appData.length ? 'tag' : 'app';
     return (
       <Page
-        className="c7n-tag-wrapper"
+        className="c7n-tag-wrapper page-container"
         service={['devops-service.devops-git.pageTagsByOptions']}
       >
         {appData && appData.length && appId ? <Fragment>
-          <Content className="c7n-tag-content">
-            {loading || _.isNull(loading) ? <Loading display /> : <Fragment>
-              {tagList.length ? <Fragment>
-                <Collapse bordered={false}>{tagList}</Collapse>
-                <div className="c7n-tag-pagin">
-                  <Pagination
-                    total={total}
-                    current={current}
-                    pageSize={pageSize}
-                    onChange={this.handlePaginChange}
-                    onShowSizeChange={this.handlePaginChange}
-                  />
-                </div>
-              </Fragment> : (<div className="c7n-tag-empty">
-                <div>
-                  <Icon type="info" className="c7n-tag-empty-icon" />
-                  <span className="c7n-tag-empty-text">{formatMessage({ id: `apptag.${empty}.empty` })}</span>
-                </div>
-                {empty === 'tag' ? (
-                  <Button
-                    type="primary"
-                    funcType="raised"
-                    onClick={() => this.displayCreateModal(true, empty)}
-                  >
-                    <FormattedMessage id="apptag.create" />
-                  </Button>
-                ) : null}
-              </div>)}
-            </Fragment>}
-          </Content>
+          {loading || _.isNull(loading) ? <Loading display /> : <Fragment>
+            {tagList.length ? <Fragment>
+              <Collapse bordered={false}>{tagList}</Collapse>
+              <div className="c7n-tag-pagin">
+                <Pagination
+                  total={total}
+                  current={current}
+                  pageSize={pageSize}
+                  onChange={this.handlePaginChange}
+                  onShowSizeChange={this.handlePaginChange}
+                />
+              </div>
+            </Fragment> : (<div className="c7n-tag-empty">
+              <div>
+                <Icon type="info" className="c7n-tag-empty-icon" />
+                <span className="c7n-tag-empty-text">{formatMessage({ id: `apptag.${empty}.empty` })}</span>
+              </div>
+              {empty === 'tag' ? (
+                <Button
+                  type="primary"
+                  funcType="raised"
+                  onClick={() => this.displayCreateModal(true, empty)}
+                >
+                  <FormattedMessage id="apptag.create" />
+                </Button>
+              ) : null}
+            </div>)}
+          </Fragment>}
           <Modal
             confirmLoading={deleteLoading}
             visible={visible}
