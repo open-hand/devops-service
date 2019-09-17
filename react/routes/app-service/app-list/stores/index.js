@@ -23,7 +23,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
       children,
     } = props;
     const intlPrefix = 'c7ncd.appService';
-    const AppStore = useMemo(() => useStore(), []);
+    const AppStore = useStore();
     const listDs = useMemo(() => new DataSet(ListDataSet(intlPrefix, formatMessage, projectId)), [formatMessage, projectId]);
     const importTableDs = useMemo(() => new DataSet(ImportTableDataSet(intlPrefix, formatMessage, projectId)), [formatMessage, projectId]);
     const selectedDs = useMemo(() => new DataSet(selectedDataSet(intlPrefix, formatMessage, projectId)), [projectId]);
