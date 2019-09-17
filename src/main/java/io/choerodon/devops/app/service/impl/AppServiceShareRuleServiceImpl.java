@@ -71,7 +71,6 @@ public class AppServiceShareRuleServiceImpl implements AppServiceShareRuleServic
             if (t.getProjectId() != null) {
                 ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(t.getProjectId());
                 t.setProjectName(projectDTO.getName());
-                t.setAppName(projectDTO.getApplicationVO().getName());
             }
         }).collect(Collectors.toList());
         shareRuleVOPageInfo.setList(appServiceShareRuleVOS);
