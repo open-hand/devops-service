@@ -6,7 +6,6 @@ import Modals from './modals';
 import PageTitle from '../../../../../components/page-title';
 import StatusDot from '../../../../../components/status-dot';
 
-
 const { TabPane } = Tabs;
 
 const NodeList = lazy(() => import('./node-list'));

@@ -1019,7 +1019,9 @@ const cluster = {
   'c7ncd.cluster.check.error': '校验出错',
   'c7ncd.cluster.action.edit': '修改集群',
   'c7ncd.cluster.action.delete': '删除集群',
-  'c7ncd.cluster.action.delete.msg': '您确认删除该集群吗',
+  'c7ncd.cluster.action.delete.title': '删除集群“{name}”',
+  'c7ncd.cluster.action.delete.msg': '确定要删除该集群吗？',
+  'c7ncd.cluster.empty.msg': '请先创建集群',
 };
 
 const zhCN = {
@@ -1591,6 +1593,7 @@ const zhCN = {
     ' 即热修分支，用于产品发布后修复缺陷。基于master分支创建，结束分支时合并到master分支和develop分支',
   'branch.customDes': ' 即自定义分支',
   'branch.delete.tooltip': '确定要删除该分支吗？',
+  'branch.action.delete.title': '删除分支“{name}”',
   'branch.action.delete': '删除分支',
   'branch.issue.story': '用户故事',
   'branch.issue.task': '任务',
@@ -1799,6 +1802,7 @@ const zhCN = {
   'apptag.checkName': '标记名称已存在',
   'apptag.branch': '分支',
   'apptag.action.delete': '删除标记',
+  'apptag.action.delete.title': '删除标记“{name}”',
   'apptag.delete.tooltip': '确定要删除该标记吗？',
   'apptag.checkNameReg':
     '支持x.x.x格式，其中x只能为非负整数；若使用语义化标记，建议格式：x.x.x-alpha.1',
@@ -2191,7 +2195,7 @@ const zhCN = {
   'pipeline.flow.stopped': '强制失败',
   'pipeline.action.detail': '执行记录',
   'pipeline.action.run': '执行',
-  'pipeline.delete': '删除流水线',
+  'pipeline.delete': '删除流水线“{name}”',
   'pipeline.delete.message': '确定删除该流水线吗？',
   'pipeline.invalid': '停用流水线 ',
   'pipeline.invalid.message': '确定停用该流水线吗？',

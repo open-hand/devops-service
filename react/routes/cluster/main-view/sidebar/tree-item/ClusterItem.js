@@ -10,6 +10,7 @@ import ActivateCluster from '../../contents/cluster-content/modals/activate-clus
 import { useTreeStore } from './stores';
 import { handlePromptError } from '../../../../../utils';
 import EditCluster from '../../contents/cluster-content/modals/create-cluster';
+import CustomConfirm from '../../../../../components/custom-confirm';
 
 const ActivateClusterModalKey = Modal.key();
 const EditClusterModalKey = Modal.key();
@@ -23,6 +24,9 @@ function ClusterItem({
   const { mainStore, ClusterDetailDs } = useClusterMainStore();
 
   const { projectId, treeItemStore } = useTreeStore();
+
+  const customConfirm = useMemo(() => new CustomConfirm({ formatMessage }), []);
+
   function getStatus() {
     const connect = record.get('connect');
     const upgrade = record.get('upgrade');
@@ -40,19 +44,20 @@ function ClusterItem({
   }
 
   function deleteItem() {
-    // treeDs.remove(record);
-    Modal.confirm({
-      title: 'Confirm',
-      children: formatMessage({ id: `${intlPrefix}.action.delete.msg` }),
-    }).then((button) => {
-      if (button === 'ok') {
-        mainStore.deleteCluster({ projectId, clusterId: record.get('id') })
+    customConfirm.delete({
+      titleId: `${intlPrefix}.action.delete.title`,
+      titleVal: {
+        name: record.data.name,
+      },
+      contentId: `${intlPrefix}.action.delete.msg`,
+      handleOk: () => {
+        mainStore.deleteCluster({ projectId, clusterId: record.data.id })
           .then((res) => {
             if (handlePromptError(res, false)) {
               freshMenu();
             }
           });
-      }
+      },
     });
   }
 

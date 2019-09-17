@@ -12,6 +12,7 @@ import UserInfo from '../../../../components/userInfo';
 import DevPipelineStore from '../../stores/DevPipelineStore';
 import handleMapStore from '../../main-view/store/handleMapStore';
 import StatusIcon from '../../../../components/StatusIcon/StatusIcon';
+import CustomConfirm from '../../../../components/custom-confirm';
 import AppTagStore from './stores';
 import '../../../main.less';
 import './style/AppTag.less';
@@ -25,6 +26,8 @@ const { Panel } = Collapse;
 class AppTag extends Component {
   constructor(props) {
     super(props);
+    const { formatMessage } = this.props.intl;
+    this.customConfirm = new CustomConfirm({ formatMessage });
     handleMapStore.setCodeManagerAppTag({
       refresh: this.handleRefresh,
       select: this.handleSelect,
@@ -137,16 +140,16 @@ class AppTag extends Component {
   deleteTag = () => {
     const { projectId } = AppState.currentMenuType;
     const { tag } = this.state;
-    this.setState({ deleteLoading: true });
+    AppTagStore.setLoading(true);
     AppTagStore.deleteTag(projectId, tag).then((data) => {
+      AppTagStore.setLoading(false);
       if (data && data.failed) {
         Choerodon.prompt(data.message);
       } else {
         this.loadTagData();
       }
-      this.setState({ deleteLoading: false, visible: false });
     }).catch((error) => {
-      this.setState({ deleteLoading: false });
+      AppTagStore.setLoading(false);
       Choerodon.handleResponseError(error);
     });
   };
@@ -219,7 +222,16 @@ class AppTag extends Component {
                   ],
                   text: formatMessage({ id: 'delete' }),
                   action: () => { 
-                    this.openRemove(release.tagName);
+                    this.setState({ tag: release.tagName });
+                    this.customConfirm.delete({
+                      titleId: 'apptag.action.delete.title',
+                      titleVal: {
+                        name: release.tagName,
+                      },
+                      contentId: 'apptag.delete.tooltip',
+                      handleOk: this.deleteTag,
+                    });
+                    // this.openRemove(release.tagName);
                   },
                 },
               ]}

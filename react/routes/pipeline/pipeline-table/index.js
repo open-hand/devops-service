@@ -8,6 +8,7 @@ import _ from 'lodash';
 import StatusTags from '../../../components/status-tag';
 import TimePopover from '../../../components/timePopover';
 import UserInfo from '../../../components/userInfo';
+import CustomConfirm from '../../../components/custom-confirm';
 import { handlePromptError } from '../../../utils';
 import { FAST_SEARCH } from '../components/Constants';
 import PipelineCreate from '../pipeline-create';
@@ -32,6 +33,12 @@ const TriggerType = ['auto', 'manual'];
 @inject('AppState')
 @observer
 export default class Pipeline extends Component {
+  constructor(props) {
+    super(props);
+    const { intl: { formatMessage } } = this.props;
+    this.customConfirm = new CustomConfirm({ formatMessage });
+  }
+
   state = {
     page: 1,
     pageSize: NaN,
@@ -153,19 +160,7 @@ export default class Pipeline extends Component {
       triggerType
     );
   };
-
-  /**
-   * 删除
-   * @param {} id
-   * @param {*} name
-   */
-  openRemove(id, name) {
-    this.setState({
-      showDelete: true,
-      deleteName: name,
-      deleteId: id,
-    });
-  }
+ 
 
   closeRemove = () => {
     this.setState({ deleteId: null, deleteName: '', showDelete: false });
@@ -422,10 +417,22 @@ export default class Pipeline extends Component {
       remove: {
         service: ['devops-service.pipeline.delete'],
         text: formatMessage({ id: 'delete' }),
-        action: this.openRemove.bind(this, id, name),
+        action: () => {
+          this.setState({
+            deleteName: name,
+            deleteId: id,
+          });
+          this.customConfirm.delete({
+            titleId: 'pipeline.delete',
+            titleVal: {
+              name,
+            },
+            contentId: 'pipeline.delete.message',
+            handleOk: this.handleDelete,
+          });
+        },
       },
     };
-
     let actionItem = _.keys(action);
     actionItem = filterItem(actionItem, isEnabled ? 'enable' : 'disabled');
 
@@ -632,28 +639,6 @@ export default class Pipeline extends Component {
       {
         pipelineCreateStore.editId ? <PipelineEdit visible={pipelineCreateStore.editVisible} PipelineCreateStore={pipelineCreateStore} refreshTable={this.handleRefresh} /> : null
       }
-      {showDelete && (<Modal
-        visible={showDelete}
-        title={`${formatMessage({ id: 'pipeline.delete' })}“${deleteName}”`}
-        closable={false}
-        footer={[
-          <Button key="back" onClick={this.closeRemove} disabled={deleteLoading}>
-            <FormattedMessage id="cancel" />
-          </Button>,
-          <Button
-            key="submit"
-            type="danger"
-            onClick={this.handleDelete}
-            loading={deleteLoading}
-          >
-            <FormattedMessage id="delete" />
-          </Button>,
-        ]}
-      >
-        <div className="c7n-padding-top_8">
-          <FormattedMessage id="pipeline.delete.message" />
-        </div>
-      </Modal>)}
       {showExecute && (<Modal
         visible={showExecute}
         title={`${formatMessage({ id: 'pipeline.execute' })}“${executeName}”`}

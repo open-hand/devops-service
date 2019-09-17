@@ -1,12 +1,10 @@
 /* eslint-disable no-plusplus */
 import omit from 'lodash/omit';
 import isEmpty from 'lodash/isEmpty';
-import pick from 'lodash/pick';
-import map from 'lodash/map';
-import { itemTypeMappings, viewTypeMappings, RES_TYPES, ENV_KEYS } from './mappings';
+import { itemTypeMappings, viewTypeMappings } from './mappings';
 
-const { IST_VIEW_TYPE, RES_VIEW_TYPE, CLU_VIEW_TYPE } = viewTypeMappings;
-const { ENV_ITEM, APP_ITEM, IST_ITEM, CLU_ITEM, NODE_ITEM } = itemTypeMappings;
+const { CLU_VIEW_TYPE } = viewTypeMappings;
+const { APP_ITEM, IST_ITEM, CLU_ITEM, NODE_ITEM } = itemTypeMappings;
 
 function formatCluster(value, expandsKeys) {
   if (isEmpty(value)) return [];
@@ -67,6 +65,7 @@ export default (store, type) => {
     selection: 'single',
     parentField: 'parentId',
     expandField: 'expand',
+    dateKey: null,
     idField: 'key',
     fields: [
       { name: 'id', type: 'number' },
@@ -97,12 +96,14 @@ export default (store, type) => {
         // TODO: 让后端返回需要的数据，前端不再做处理
         //   或者添加加载错误处理
         transformResponse(response) {
-          const res = JSON.parse(response);
-          const expandsKeys = store.getExpandedKeys;
-          const result = formatMaps[type](res, expandsKeys);
-          return {
-            list: result,
-          };
+          try {
+            const res = JSON.parse(response);
+            const expandsKeys = store.getExpandedKeys;
+            const result = formatMaps[type](res, expandsKeys);
+            return result;
+          } catch (e) {
+            return response;
+          }
         },
       },
     },
