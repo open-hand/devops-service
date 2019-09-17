@@ -38,34 +38,6 @@ const Platform = injectIntl(observer((props) => {
     });
   }
 
-  function renderName({ value, record }) {
-    return (
-      <div
-        className={`${prefixCls}-import-wrap-column ${prefixCls}-import-wrap-column-name `}
-      >
-        <span className={`${prefixCls}-import-wrap-column-text`}>{value}</span>
-        {record.get('nameFailed') && (
-          <Tooltip title={formatMessage({ id: `${intlPrefix}.import.failed` })}>
-            <Icon type="info" className={`${prefixCls}-import-platform-failed`} />
-          </Tooltip>
-        )}
-      </div>
-    );
-  }
-
-  function renderCode({ value, record }) {
-    return (
-      <div className={`${prefixCls}-import-wrap-column`}>
-        <span className={`${prefixCls}-import-wrap-column-text`}>{value}</span>
-        {record.get('codeFailed') && (
-          <Tooltip title={formatMessage({ id: `${intlPrefix}.import.failed` })}>
-            <Icon type="info" className={`${prefixCls}-import-platform-failed`} />
-          </Tooltip>
-        )}
-      </div>
-    );
-  }
-
   function renderVersion({ value, record }) {
     const { id: versionId } = value ? record.get('versions')[0] : {};
     const selectOptions = map(value, ({ id, version }) => (
