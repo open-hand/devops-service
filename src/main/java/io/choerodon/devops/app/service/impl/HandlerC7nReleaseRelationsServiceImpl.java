@@ -186,18 +186,18 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         OrganizationDTO organization = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 
-        List<AppServiceDTO> applications = agentMsgHandlerService.getApplication(c7nHelmRelease.getSpec().getChartName(), projectId, organization.getId());
+        List<AppServiceDTO> appServices = agentMsgHandlerService.getApplication(c7nHelmRelease.getSpec().getChartName(), projectId, organization.getId());
 
-        if (applications.isEmpty()) {
+        if (appServices.isEmpty()) {
             throw new GitOpsExplainException("app.not.exist.in.database", filePath, c7nHelmRelease.getSpec().getChartName());
         }
         AppServiceVersionDTO appServiceVersionDTO = null;
         AppServiceDTO applicationDTO = null;
-        for (AppServiceDTO application : applications) {
+        for (AppServiceDTO appServiceDTO : appServices) {
             appServiceVersionDTO = appServiceVersionService
-                    .baseQueryByAppIdAndVersion(application.getId(), c7nHelmRelease.getSpec().getChartVersion());
+                    .baseQueryByAppIdAndVersion(appServiceDTO.getId(), c7nHelmRelease.getSpec().getChartVersion());
             if (appServiceVersionDTO != null) {
-                applicationDTO = application;
+                applicationDTO = appServiceDTO;
                 break;
             }
         }
