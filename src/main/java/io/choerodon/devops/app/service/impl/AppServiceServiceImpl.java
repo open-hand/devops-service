@@ -1999,7 +1999,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         } else {
             Set<Long> appIds = appServiceDTOList.stream().map(appServiceDTO -> appServiceDTO.getMktAppId()).collect(Collectors.toSet());
-            List<ApplicationDTO> applicationDTOS = baseServiceClientOperator.queryByServiceIds(projectId, appIds);
+            List<ApplicationDTO> applicationDTOS = baseServiceClientOperator.listApplicationInfoByAppIds(projectId, appIds);
             projects = ConvertUtils.convertList(applicationDTOS,ProjectDTO.class);
         }
         List<AppServiceVersionDTO> versionList = appServiceVersionService.listServiceVersionByAppServiceIds(appServiceIds, shareString);
@@ -2232,7 +2232,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         } else {
             appServiceDTOList = appServiceMapper.queryMarketDownloadApps(null, null, false, null);
             Set<Long> appServiceIds = appServiceDTOList.stream().map(appServiceDTO -> appServiceDTO.getId()).collect(Collectors.toSet());
-            List<ApplicationDTO> applicationDTOS = baseServiceClientOperator.queryByServiceIds(projectId, appServiceIds);
+            List<ApplicationDTO> applicationDTOS = baseServiceClientOperator.listApplicationInfoByAppIds(projectId, appServiceIds);
             if (!CollectionUtils.isEmpty(applicationDTOS)) {
                 projectDTOS = ConvertUtils.convertList(applicationDTOS, ProjectDTO.class);
             }

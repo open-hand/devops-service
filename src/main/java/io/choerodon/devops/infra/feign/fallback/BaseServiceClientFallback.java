@@ -202,7 +202,7 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
-    public ResponseEntity<List<ApplicationDTO>> queryByServiceIds(Long projectId, Set<Long> serviceIds) {
+    public ResponseEntity<List<ApplicationDTO>> listApplicationInfoByAppIds(Long projectId, Set<Long> serviceIds) {
         throw new CommonException("error.application.query");
     }
 

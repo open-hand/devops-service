@@ -368,9 +368,9 @@ public class BaseServiceClientOperator {
         }
     }
 
-    public List<ApplicationDTO> queryByServiceIds(Long projectId, Set<Long> serviceIds){
+    public List<ApplicationDTO> listApplicationInfoByAppIds(Long projectId, Set<Long> serviceIds){
         try {
-            return baseServiceClient.queryByServiceIds(projectId,serviceIds).getBody();
+            return baseServiceClient.listApplicationInfoByAppIds(projectId,serviceIds).getBody();
         } catch (Exception e) {
             return null;
         }
