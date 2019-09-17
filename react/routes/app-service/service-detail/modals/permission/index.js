@@ -70,7 +70,7 @@ export default observer(({ dataSet, refresh, record, store, projectId, formatMes
           {map(dataSet.created, (userRecord) => (
             <div className={`${prefixCls}-permission-form-item`}>
               <Form record={userRecord}>
-                <Select name="iamUserId" optionsFilter={handleUserFilter} />
+                <Select name="iamUserId" optionsFilter={handleUserFilter} searchable />
               </Form>
               <Button
                 icon="delete"

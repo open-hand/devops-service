@@ -4,6 +4,7 @@ import { Button } from 'choerodon-ui';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import map from 'lodash/map';
+import some from 'lodash/some';
 
 import './index.less';
 
@@ -34,12 +35,17 @@ export default injectIntl(observer(({ dataSet, optionsDs, intlPrefix, prefixCls,
     dataSet.create();
   }
 
+  function handleFilter(record) {
+    const flag = some(dataSet.created, (creatRecord) => creatRecord.get('project') === record.get('id'));
+    return !flag;
+  }
+
   return (
     <div className={`${prefixCls}-project-add`}>
       {map(dataSet.created, (record) => (
         <div className={`${prefixCls}-project-add-item`}>
           <Form record={record}>
-            <Select name="project" />
+            <Select name="project" searchable optionsFilter={handleFilter} />
           </Form>
           <Button
             icon="delete"

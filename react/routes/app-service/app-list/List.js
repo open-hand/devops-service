@@ -36,7 +36,6 @@ const AppService = withRouter(observer((props) => {
     importDs,
     importTableDs,
     AppStore,
-    versionOptions,
     selectedDs,
   } = useAppServiceStore();
 
@@ -170,7 +169,6 @@ const AppService = withRouter(observer((props) => {
         intlPrefix={intlPrefix}
         prefixCls={prefixCls}
         refresh={refresh}
-        versionOptions={versionOptions}
         selectedDs={selectedDs}
       />,
       okText: formatMessage({ id: 'import' }),
