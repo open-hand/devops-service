@@ -198,9 +198,7 @@ public class IamServiceImpl implements IamService {
     @Override
     public Long queryRoleIdByCode(String roleCode) {
         try {
-            RoleSearchVO roleSearchVO = new RoleSearchVO();
-            roleSearchVO.setCode(roleCode);
-            return baseServiceClient.queryRoleIdByCode(roleSearchVO).getBody().getList().get(0).getId();
+            return baseServiceClient.queryRoleIdByCode(roleCode).getBody().getList().get(0).getId();
         } catch (FeignException e) {
             LOGGER.error("get role id by code {} error", roleCode);
             return null;
