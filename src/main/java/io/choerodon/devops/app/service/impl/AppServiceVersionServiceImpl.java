@@ -62,8 +62,6 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     @Autowired
     private DevopsEnvCommandService devopsEnvCommandService;
     @Autowired
-    private UserAttrService userAttrService;
-    @Autowired
     private DevopsGitlabCommitService devopsGitlabCommitService;
     @Autowired
     private PipelineAppDeployService pipelineAppDeployService;
@@ -186,26 +184,29 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
                         .map(PipelineTaskDTO::getStageId)
                         .distinct()
                         .collect(Collectors.toList());
+                if (!stageList.isEmpty()) {
+                    List<Long> pipelineList = stageList.stream()
+                            .map(stageId -> pipelineStageService.baseQueryById(stageId).getPipelineId())
+                            .distinct()
+                            .collect(Collectors.toList());
 
-                List<Long> pipelineList = stageList.stream()
-                        .map(stageId -> pipelineStageService.baseQueryById(stageId).getPipelineId())
-                        .distinct()
-                        .collect(Collectors.toList());
+                    List<PipelineDTO> devopsPipelineDTOS = new ArrayList<>();
+                    if (!pipelineList.isEmpty()) {
+                        pipelineList.forEach(pipelineId -> {
+                            PipelineDTO pipelineE = pipelineService.baseQueryById(pipelineId);
+                            if (pipelineE.getIsEnabled() == 1 && "auto".equals(pipelineE.getTriggerType())) {
+                                devopsPipelineDTOS.add(pipelineE);
+                            }
+                        });
 
-                List<PipelineDTO> devopsPipelineDTOS = new ArrayList<>();
-                pipelineList.forEach(pipelineId -> {
-                    PipelineDTO pipelineE = pipelineService.baseQueryById(pipelineId);
-                    if (pipelineE.getIsEnabled() == 1 && "auto".equals(pipelineE.getTriggerType())) {
-                        devopsPipelineDTOS.add(pipelineE);
+                        devopsPipelineDTOS.forEach(pipelineDTO -> {
+                            if (pipelineService.checkDeploy(pipelineDTO.getProjectId(), pipelineDTO.getId()).getVersions()) {
+                                LOGGER.info("autoDeploy: versionId:{}, version:{} pipelineId:{}", insertAppServiceVersionDTO.getId(), insertAppServiceVersionDTO.getVersion(), pipelineDTO.getId());
+                                pipelineService.executeAutoDeploy(pipelineDTO.getId());
+                            }
+                        });
                     }
-                });
-
-                devopsPipelineDTOS.forEach(pipelineDTO -> {
-                    if (pipelineService.checkDeploy(pipelineDTO.getProjectId(), pipelineDTO.getId()).getVersions()) {
-                        LOGGER.info("autoDeploy: versionId:{}, version:{} pipelineId:{}", insertAppServiceVersionDTO.getId(), insertAppServiceVersionDTO.getVersion(), pipelineDTO.getId());
-                        pipelineService.executeAutoDeploy(pipelineDTO.getId());
-                    }
-                });
+                }
             }
         }
     }
@@ -396,7 +397,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
 
     @Override
     public List<AppServiceVersionVO> listServiceVersionVoByIds(Set<Long> ids) {
-        return ConvertUtils.convertList(listServiceVersionByAppServiceIds(ids,null),AppServiceVersionVO.class);
+        return ConvertUtils.convertList(listServiceVersionByAppServiceIds(ids, null), AppServiceVersionVO.class);
     }
 
     private AppServiceVersionVO dtoToVo(AppServiceVersionDTO appServiceVersionDTO) {

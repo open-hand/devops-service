@@ -71,7 +71,7 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
     @Override
     public PageInfo<DevopsDeployValueVO> pageByOptions(Long projectId, Long appServiceId, Long envId, PageRequest pageRequest, String params) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedEnvList();
+        List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedClusterList();
         Long userId = null;
         if (!baseServiceClientOperator.isProjectOwner(DetailsHelper.getUserDetails().getUserId(), projectDTO)) {
             userId = DetailsHelper.getUserDetails().getUserId();

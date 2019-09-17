@@ -58,7 +58,7 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
 
     @Override
     public PageInfo<DevopsEnvPodVO> pageByOptions(Long projectId, Long envId, Long appServiceId, Long instanceId, PageRequest pageRequest, String searchParam) {
-        List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedEnvList();
+        List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedClusterList();
         PageInfo<DevopsEnvPodDTO> devopsEnvPodDTOPageInfo = basePageByIds(projectId, envId, appServiceId, instanceId, pageRequest, searchParam);
         PageInfo<DevopsEnvPodVO> devopsEnvPodVOPageInfo = ConvertUtils.convertPage(devopsEnvPodDTOPageInfo, DevopsEnvPodVO.class);
 

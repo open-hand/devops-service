@@ -211,29 +211,34 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
 
     private void handleEnvPod(V1Pod v1Pod, AppServiceInstanceDTO appServiceInstanceDTO, String resourceVersion, DevopsEnvPodDTO devopsEnvPodDTO, Boolean flag, List<DevopsEnvPodDTO> devopsEnvPodDTOS) {
-
-        if (devopsEnvPodDTOS == null || devopsEnvPodDTOS.isEmpty()) {
-            devopsEnvPodDTO.setInstanceId(appServiceInstanceDTO.getId());
-            devopsEnvPodService.baseCreate(devopsEnvPodDTO);
+        //如果pod的状态是被驱逐的，则应该直接删掉
+        if ((v1Pod.getStatus().getPhase() != null && v1Pod.getStatus().getPhase().equals(EVICTED)) || (v1Pod.getStatus().getReason() != null && v1Pod.getStatus().getReason().equals(EVICTED))) {
+            devopsEnvPodService.baseDeleteByName(v1Pod.getMetadata().getName(), appServiceInstanceDTO.getEnvCode());
+            devopsEnvResourceService.deleteByKindAndNameAndInstanceId(ResourceType.POD.getType(), v1Pod.getMetadata().getName(), appServiceInstanceDTO.getId());
         } else {
-            for (DevopsEnvPodDTO pod : devopsEnvPodDTOS) {
-                if (pod.getName().equals(v1Pod.getMetadata().getName())
-                        && pod.getNamespace().equals(v1Pod.getMetadata().getNamespace())) {
-                    if ((v1Pod.getStatus().getPhase() != null && v1Pod.getStatus().getPhase().equals(EVICTED)) || (v1Pod.getStatus().getReason() != null && v1Pod.getStatus().getReason().equals(EVICTED))) {
-                        devopsEnvPodService.baseDeleteById(pod.getId());
-                        devopsEnvResourceService.deleteByKindAndNameAndInstanceId(ResourceType.POD.getType(), pod.getName(), pod.getInstanceId());
-                    } else if (!resourceVersion.equals(pod.getResourceVersion())) {
-                        devopsEnvPodDTO.setId(pod.getId());
-                        devopsEnvPodDTO.setInstanceId(pod.getInstanceId());
-                        devopsEnvPodDTO.setObjectVersionNumber(pod.getObjectVersionNumber());
-                        devopsEnvPodService.baseUpdate(devopsEnvPodDTO);
-                    }
-                    flag = true;
-                }
-            }
-            if (!flag) {
+            if (devopsEnvPodDTOS == null || devopsEnvPodDTOS.isEmpty()) {
                 devopsEnvPodDTO.setInstanceId(appServiceInstanceDTO.getId());
                 devopsEnvPodService.baseCreate(devopsEnvPodDTO);
+            } else {
+                for (DevopsEnvPodDTO pod : devopsEnvPodDTOS) {
+                    if (pod.getName().equals(v1Pod.getMetadata().getName())
+                            && pod.getNamespace().equals(v1Pod.getMetadata().getNamespace())) {
+                        if ((v1Pod.getStatus().getPhase() != null && v1Pod.getStatus().getPhase().equals(EVICTED)) || (v1Pod.getStatus().getReason() != null && v1Pod.getStatus().getReason().equals(EVICTED))) {
+                            devopsEnvPodService.baseDeleteById(pod.getId());
+                            devopsEnvResourceService.deleteByKindAndNameAndInstanceId(ResourceType.POD.getType(), pod.getName(), pod.getInstanceId());
+                        } else if (!resourceVersion.equals(pod.getResourceVersion())) {
+                            devopsEnvPodDTO.setId(pod.getId());
+                            devopsEnvPodDTO.setInstanceId(pod.getInstanceId());
+                            devopsEnvPodDTO.setObjectVersionNumber(pod.getObjectVersionNumber());
+                            devopsEnvPodService.baseUpdate(devopsEnvPodDTO);
+                        }
+                        flag = true;
+                    }
+                }
+                if (!flag) {
+                    devopsEnvPodDTO.setInstanceId(appServiceInstanceDTO.getId());
+                    devopsEnvPodService.baseCreate(devopsEnvPodDTO);
+                }
             }
         }
     }
@@ -541,7 +546,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             return;
         }
         AppServiceInstanceDTO instanceDTO = appServiceInstanceService.baseQueryByCodeAndEnv(releaseName, envId);
-        if (instanceDTO != null) {
+        if (instanceDTO != null && !instanceDTO.getStatus().equals(InstanceStatus.RUNNING.getStatus())) {
             instanceDTO.setStatus(instanceStatus);
             appServiceInstanceService.baseUpdate(instanceDTO);
             DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService
@@ -948,8 +953,11 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 .baseQueryByEnvIdAndResourceId(envId, appServiceInstanceDTO.getId(), "C7NHelmRelease");
         if (updateEnvCommandStatus(resourceCommitVO, appServiceInstanceDTO.getCommandId(),
                 devopsEnvFileResourceDTO, C7NHELMRELEASE_KIND, appServiceInstanceDTO.getCode(), null, errorDevopsFiles)) {
-            appServiceInstanceDTO.setStatus(InstanceStatus.FAILED.getStatus());
-            appServiceInstanceService.updateStatus(appServiceInstanceDTO);
+            // 屏蔽运行时的实例错误信息
+            if (!appServiceInstanceDTO.getStatus().equals(InstanceStatus.RUNNING.getStatus())) {
+                appServiceInstanceDTO.setStatus(InstanceStatus.FAILED.getStatus());
+                appServiceInstanceService.baseUpdate(appServiceInstanceDTO);
+            }
         }
     }
 

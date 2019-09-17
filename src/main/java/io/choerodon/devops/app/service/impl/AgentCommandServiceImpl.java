@@ -357,7 +357,7 @@ public class AgentCommandServiceImpl implements AgentCommandService {
 
     @Override
     public void getTestAppStatus(Map<Long, List<String>> testReleases) {
-        List<Long> connected = clusterConnectionHandler.getConnectedEnvList();
+        List<Long> connected = clusterConnectionHandler.getConnectedClusterList();
         testReleases.forEach((key, value) -> {
             if (connected.contains(key)) {
                 AgentMsgVO msg = new AgentMsgVO();

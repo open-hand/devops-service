@@ -369,8 +369,8 @@ class DevopsIngressControllerSpec extends Specification {
         List<Long> envList = new ArrayList<>()
         envList.add(1L)
         envList.add(2L)
-        envUtil.getConnectedEnvList() >> envList
-        envUtil.getUpdatedEnvList() >> envList
+        envUtil.getConnectedClusterList() >> envList
+        envUtil.getUpdatedClusterList() >> envList
 
         when: '环境总览域名查询'
         def page = restTemplate.postForObject("/v1/projects/1/ingress/1/page_by_env", strEntity, PageInfo.class)

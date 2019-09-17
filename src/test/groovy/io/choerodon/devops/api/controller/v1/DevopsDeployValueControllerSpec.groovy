@@ -152,7 +152,7 @@ class DevopsDeployValueControllerSpec extends Specification {
     }
 
     def mock() {
-        PowerMockito.when(clusterConnectionHandler.getUpdatedEnvList()).thenReturn([1])
+        PowerMockito.when(clusterConnectionHandler.getUpdatedClusterList()).thenReturn([1])
 
         PowerMockito.when(mockBaseServiceClientOperator.queryIamProjectById(eq(1))).thenReturn(new ProjectDTO())
         PowerMockito.when(mockBaseServiceClientOperator.isProjectOwner(anyLong(), any(ProjectDTO))).thenReturn(true)

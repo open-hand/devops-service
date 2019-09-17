@@ -53,8 +53,6 @@ public interface DevopsConfigService {
 
     DevopsConfigDTO baseCreate(DevopsConfigDTO devopsConfigDTO);
 
-    Boolean baseCheckByName(DevopsConfigDTO devopsConfigDTO);
-
     DevopsConfigDTO baseUpdate(DevopsConfigDTO devopsConfigDTO);
 
     DevopsConfigDTO baseQuery(Long id);
@@ -67,12 +65,6 @@ public interface DevopsConfigService {
 
     void baseDelete(Long id);
 
-    List<DevopsConfigDTO> baseListByIdAndType(Long projectId, String type);
-
-    void baseCheckByName(Long projectId, String name);
-
-    Boolean baseCheckUsed(Long checkIsUsed);
-
     DevopsConfigDTO baseQueryByResourceAndType(Long resourceId, String resourceType, String configType);
 
     DevopsConfigVO dtoToVo(DevopsConfigDTO devopsConfigDTO);
@@ -81,18 +73,11 @@ public interface DevopsConfigService {
 
     /***
      * 查询 仓库配置
-     * @param resourceId
-     * @param resourceType
-     * @return
      */
     DevopsConfigRepVO queryConfig(Long resourceId, String resourceType);
 
     /**
      * 操作 仓库配置
-     *
-     * @param organizationId
-     * @param resourceType
-     * @param devopsConfigRepVO 配置分装类
      */
     void operateConfig(Long organizationId, String resourceType, DevopsConfigRepVO devopsConfigRepVO);
 }

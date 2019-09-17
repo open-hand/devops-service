@@ -1,15 +1,16 @@
 package io.choerodon.devops.infra.util;
 
-import org.springframework.util.StringUtils;
-
 /**
  * @author: 25499
  * @date: 2019/9/4 9:35
  * @description:
  */
-public class HumpToUnderlineUtil {
+public final class HumpToUnderlineUtil {
+    private HumpToUnderlineUtil() {
+    }
+
     public static String toUnderLine(String str) {
-        if(str==null||str.isEmpty()){
+        if (str == null || str.isEmpty()) {
             return null;
         }
         StringBuffer newString = new StringBuffer();
@@ -28,5 +29,4 @@ public class HumpToUnderlineUtil {
         newString.append(" ").append(split[1]);
         return String.valueOf(newString);
     }
-
 }

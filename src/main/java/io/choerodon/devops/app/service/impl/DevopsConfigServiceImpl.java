@@ -215,9 +215,9 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                         MemberUser memberUser = new MemberUser();
                         memberUser.setUsername(username);
                         projectMember.setMemberUser(memberUser);
-                        result = harborClient.setProjectMember(projects.body().get(0).getProjectId(), new ProjectMember()).execute();
+                        result = harborClient.setProjectMember(projects.body().get(0).getProjectId(), projectMember).execute();
                     }
-                    if (result.raw().code() != 200) {
+                    if (result.raw().code() != 201) {
                         throw new CommonException(result.errorBody().string());
                     }
                 }
@@ -228,7 +228,6 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
             //更新项目表
             if (devopsProjectDTO.getHarborProjectUserPassword() == null) {
                 devopsProjectDTO.setHarborProjectUserName(user.getUsername());
-                devopsProjectDTO.setHarborProjectIsPrivate(true);
                 devopsProjectDTO.setHarborProjectUserPassword(user.getPassword());
                 devopsProjectDTO.setHarborProjectUserEmail(user.getEmail());
             }
@@ -374,15 +373,6 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
         return devopsConfigDTO;
     }
 
-    /**
-     * @param devopsConfigDTO
-     * @return true为不存在同名值  false存在
-     */
-    @Override
-    public Boolean baseCheckByName(DevopsConfigDTO devopsConfigDTO) {
-        return ObjectUtils.isEmpty(devopsConfigMapper.selectOne(devopsConfigDTO));
-    }
-
     @Override
     public DevopsConfigDTO baseUpdate(DevopsConfigDTO devopsConfigDTO) {
         if (devopsConfigMapper.updateByPrimaryKeySelective(devopsConfigDTO) != 1) {
@@ -427,21 +417,6 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
     }
 
     @Override
-    public List<DevopsConfigDTO> baseListByIdAndType(Long projectId, String type) {
-        return devopsConfigMapper.listByIdAndType(projectId, type);
-    }
-
-    @Override
-    public void baseCheckByName(Long projectId, String name) {
-        DevopsConfigDTO devopsConfigDTO = new DevopsConfigDTO();
-        devopsConfigDTO.setProjectId(projectId);
-        devopsConfigDTO.setName(name);
-        if (devopsConfigMapper.selectOne(devopsConfigDTO) != null) {
-            throw new CommonException("error.project.config.exist");
-        }
-    }
-
-    @Override
     public DevopsConfigDTO baseQueryByResourceAndType(Long resourceId, String resourceType, String type) {
         DevopsConfigDTO devopsConfigDTO = new DevopsConfigDTO();
         setResourceId(resourceId, resourceType, devopsConfigDTO);
@@ -462,11 +437,6 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
         } else {
             devopsConfigDTO.setAppServiceId(resourceId);
         }
-    }
-
-    @Override
-    public Boolean baseCheckUsed(Long checkIsUsed) {
-        return devopsConfigMapper.checkIsUsed(checkIsUsed).isEmpty();
     }
 
     public List<DevopsConfigDTO> baseListByResource(Long resourceId, String resourceType) {

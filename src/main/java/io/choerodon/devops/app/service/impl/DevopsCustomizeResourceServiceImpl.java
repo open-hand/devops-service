@@ -231,7 +231,7 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
     @Override
     public PageInfo<DevopsCustomizeResourceVO> pageResources(Long envId, PageRequest pageRequest, String params) {
         PageInfo<DevopsCustomizeResourceDTO> devopsCustomizeResourceDTOPageInfo = pageDevopsCustomizeResourceE(envId, pageRequest, params);
-        List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedEnvList();
+        List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedClusterList();
         PageInfo<DevopsCustomizeResourceVO> devopsCustomizeResourceVOPageInfo = ConvertUtils.convertPage(devopsCustomizeResourceDTOPageInfo, DevopsCustomizeResourceVO.class);
         devopsCustomizeResourceVOPageInfo.getList().forEach(devopsCustomizeResourceVO-> {
             DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
