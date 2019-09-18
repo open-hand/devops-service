@@ -22,10 +22,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.FeignException;
 import io.choerodon.devops.api.vo.OrganizationSimplifyVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
-import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO;
-import io.choerodon.devops.api.vo.iam.RemoteTokenAuthorizationVO;
-import io.choerodon.devops.api.vo.iam.RoleVO;
-import io.choerodon.devops.api.vo.iam.UserWithRoleVO;
+import io.choerodon.devops.api.vo.iam.*;
 import io.choerodon.devops.api.vo.kubernetes.ProjectCreateDTO;
 import io.choerodon.devops.infra.dto.iam.*;
 import io.choerodon.devops.infra.feign.BaseServiceClient;
@@ -333,9 +330,9 @@ public class BaseServiceClientOperator {
         }
     }
 
-    public void completeDownloadApplication(Long publishAppVersionId, Long appVersionId, Set<Long> serviceVersionIds) {
+    public void completeDownloadApplication(Long publishAppVersionId, Long appVersionId, List<AppDownloadDevopsReqVO> appDownloadDevopsReqVOS) {
         try {
-            baseServiceClient.completeDownloadApplication(publishAppVersionId, appVersionId, serviceVersionIds);
+            baseServiceClient.completeDownloadApplication(publishAppVersionId, appVersionId, appDownloadDevopsReqVOS);
         } catch (Exception e) {
             throw new CommonException("error.application.download.complete", e.getMessage());
         }
