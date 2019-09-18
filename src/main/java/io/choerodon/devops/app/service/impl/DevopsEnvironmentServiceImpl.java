@@ -658,7 +658,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
         GitlabProjectDTO gitlabProjectDO = gitlabServiceClientOperator.queryProjectByName(organizationDTO.getCode()
                 + "-" + projectDTO.getCode() + "-gitops", devopsEnvironmentDTO.getCode(), gitlabProjectPayload.getUserId());
-        if (gitlabProjectDO.getId() == null) {
+        if (gitlabProjectDO == null || gitlabProjectDO.getId() == null) {
             gitlabProjectDO = gitlabServiceClientOperator.createProject(
                     gitlabProjectPayload.getGroupId(),
                     gitlabProjectPayload.getPath(),
