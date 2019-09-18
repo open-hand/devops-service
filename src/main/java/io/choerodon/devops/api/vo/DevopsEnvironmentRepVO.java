@@ -4,7 +4,7 @@ package io.choerodon.devops.api.vo;
 /**
  * Created by younger on 2018/4/9.
  */
-public class DevopsEnviromentRepVO {
+public class DevopsEnvironmentRepVO {
     private Long id;
     private String name;
     private String description;
@@ -59,14 +59,6 @@ public class DevopsEnviromentRepVO {
 
     public void setActive(Boolean active) {
         isActive = active;
-    }
-
-    public Boolean getConnect() {
-        return isConnected;
-    }
-
-    public void setConnect(Boolean connect) {
-        isConnected = connect;
     }
 
     public String getCode() {

@@ -38,10 +38,9 @@ public interface DevopsEnvironmentService {
      *
      * @param projectId 项目id
      * @param groupId   分组id
-     * @param active    是否可用
      * @return
      */
-    List<DevopsEnviromentRepVO> listByGroupAndActive(Long projectId, Long groupId, Boolean active);
+    List<DevopsEnvironmentRepVO> listByGroupAndActive(Long projectId, Long groupId);
 
     /**
      * 项目下查询环境
@@ -50,7 +49,7 @@ public interface DevopsEnvironmentService {
      * @param active    是否可用
      * @return List
      */
-    List<DevopsEnviromentRepVO> listByProjectIdAndActive(Long projectId, Boolean active);
+    List<DevopsEnvironmentRepVO> listByProjectIdAndActive(Long projectId, Boolean active);
 
     /**
      * 项目下环境配置树形目录
@@ -66,7 +65,7 @@ public interface DevopsEnvironmentService {
      * @param projectId 项目id
      * @return List
      */
-    List<DevopsEnviromentRepVO> listDeployed(Long projectId);
+    List<DevopsEnvironmentRepVO> listDeployed(Long projectId);
 
     /**
      * 实例视图查询项目下环境及其应用及实例
@@ -142,7 +141,7 @@ public interface DevopsEnvironmentService {
      * @param projectId 项目id
      * @return List
      */
-    List<DevopsEnviromentRepVO> listByProjectId(Long projectId, Long appServiceId);
+    List<DevopsEnvironmentRepVO> listByProjectId(Long projectId, Long appServiceId);
 
     /**
      * 创建环境saga事件
@@ -240,7 +239,7 @@ public interface DevopsEnvironmentService {
      * @param code      环境code
      * @return 环境信息
      */
-    DevopsEnviromentRepVO queryByCode(Long clusterId, String code);
+    DevopsEnvironmentRepVO queryByCode(Long clusterId, String code);
 
 
     /**

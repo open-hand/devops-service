@@ -13,7 +13,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
@@ -217,7 +216,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 setEnvStatus(upgradeClusterList, t)
         )
                 .collect(Collectors.toList());
-        List<DevopsEnviromentRepVO> devopsEnviromentRepDTOS = ConvertUtils.convertList(devopsEnvironmentDTOS, DevopsEnviromentRepVO.class);
+        List<DevopsEnvironmentRepVO> devopsEnviromentRepDTOS = ConvertUtils.convertList(devopsEnvironmentDTOS, DevopsEnvironmentRepVO.class);
         if (!active) {
             DevopsEnvGroupEnvsVO devopsEnvGroupEnvsDTO = new DevopsEnvGroupEnvsVO();
             devopsEnvGroupEnvsDTO.setDevopsEnviromentRepDTOs(devopsEnviromentRepDTOS);
@@ -233,8 +232,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             }
         });
         //按照环境组分组查询，有环境的环境组放前面，没环境的环境组放后面
-        Map<Long, List<DevopsEnviromentRepVO>> resultMaps = devopsEnviromentRepDTOS.stream()
-                .collect(Collectors.groupingBy(DevopsEnviromentRepVO::getDevopsEnvGroupId));
+        Map<Long, List<DevopsEnvironmentRepVO>> resultMaps = devopsEnviromentRepDTOS.stream()
+                .collect(Collectors.groupingBy(DevopsEnvironmentRepVO::getDevopsEnvGroupId));
         List<Long> envGroupIds = new ArrayList<>();
         resultMaps.forEach((key, value) -> {
             envGroupIds.add(key);
@@ -261,7 +260,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     public List<DevopsEnvGroupEnvsVO> listEnvTreeMenu(Long projectId) {
-        DevopsEnvGroupEnvsVO devopsEnvGroupEnvsDTO = new DevopsEnvGroupEnvsVO();
         List<DevopsEnvGroupEnvsVO> devopsEnvGroupEnvsDTOS = new ArrayList<>();
         // 获得环境列表(包含激活与不激活)
         List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedClusterList();
@@ -276,44 +274,44 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             return devopsEnvGroupEnvsDTOS;
         }
 
-        List<DevopsEnviromentRepVO> devopsEnvironmentRepDTOS = ConvertUtils.convertList(devopsEnvironmentDTOS, DevopsEnviromentRepVO.class);
+        List<DevopsEnvironmentRepVO> devopsEnvironmentRepDTOS = ConvertUtils.convertList(devopsEnvironmentDTOS, DevopsEnvironmentRepVO.class);
 
         List<DevopsEnvGroupDTO> devopsEnvGroupES = devopsEnvGroupService.baseListByProjectId(projectId);
         devopsEnvironmentRepDTOS
                 .stream().forEach(devopsEnvironmentRepDTO -> {
-                    DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(devopsEnvironmentRepDTO.getClusterId());
-                    devopsEnvironmentRepDTO.setClusterName(devopsClusterDTO == null ? null : devopsClusterDTO.getName());
-                    if (devopsEnvironmentRepDTO.getDevopsEnvGroupId() == null) {
-                        devopsEnvironmentRepDTO.setDevopsEnvGroupId(0L);
-                    }
-                });
+            DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(devopsEnvironmentRepDTO.getClusterId());
+            devopsEnvironmentRepDTO.setClusterName(devopsClusterDTO == null ? null : devopsClusterDTO.getName());
+            if (devopsEnvironmentRepDTO.getDevopsEnvGroupId() == null) {
+                devopsEnvironmentRepDTO.setDevopsEnvGroupId(0L);
+            }
+        });
 
         //按分组选出未激活环境
-        Map<Long, List<DevopsEnviromentRepVO>> notActiveResultMaps = devopsEnvironmentRepDTOS
+        Map<Long, List<DevopsEnvironmentRepVO>> notActiveResultMaps = devopsEnvironmentRepDTOS
                 .stream()
                 .filter(i -> !i.getActive())
-                .collect(Collectors.groupingBy(DevopsEnviromentRepVO::getDevopsEnvGroupId));
+                .collect(Collectors.groupingBy(DevopsEnvironmentRepVO::getDevopsEnvGroupId));
 
         //按环境分组环境列表
-        Map<Long, List<DevopsEnviromentRepVO>> resultMaps = devopsEnvironmentRepDTOS
+        Map<Long, List<DevopsEnvironmentRepVO>> resultMaps = devopsEnvironmentRepDTOS
                 .stream()
-                .filter(DevopsEnviromentRepVO::getActive)
+                .filter(DevopsEnvironmentRepVO::getActive)
                 .sorted(
-                        Comparator.comparing(DevopsEnviromentRepVO::getConnect)
-                                .thenComparing(DevopsEnviromentRepVO::getSynchro)
-                                .thenComparing(DevopsEnviromentRepVO::getId)
+                        Comparator.comparing(DevopsEnvironmentRepVO::getConnected)
+                                .thenComparing(DevopsEnvironmentRepVO::getSynchro)
+                                .thenComparing(DevopsEnvironmentRepVO::getId)
                                 .reversed()
                 )
-                .collect(Collectors.groupingBy(DevopsEnviromentRepVO::getDevopsEnvGroupId));
+                .collect(Collectors.groupingBy(DevopsEnvironmentRepVO::getDevopsEnvGroupId));
 
         List<Long> envGroupIds = new ArrayList<>();
 
         // 把按分组选出的未激活环境加入到激活环境分组中
         notActiveResultMaps.forEach((key, value) -> {
-            List<DevopsEnviromentRepVO> devopsEnviromentRepVOList = resultMaps.get(key);
-            if (devopsEnviromentRepVOList != null) {
-                devopsEnviromentRepVOList.addAll(value);
-                resultMaps.put(key, devopsEnviromentRepVOList);
+            List<DevopsEnvironmentRepVO> devopsEnvironmentRepVOList = resultMaps.get(key);
+            if (devopsEnvironmentRepVOList != null) {
+                devopsEnvironmentRepVOList.addAll(value);
+                resultMaps.put(key, devopsEnvironmentRepVOList);
             }
         });
 
@@ -344,17 +342,17 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     @Override
-    public List<DevopsEnviromentRepVO> listByGroupAndActive(Long projectId, Long groupId, Boolean active) {
+    public List<DevopsEnvironmentRepVO> listByGroupAndActive(Long projectId, Long groupId) {
         List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedClusterList();
-        List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = devopsEnvironmentMapper.listByProjectIdAndGroupIdAndActive(projectId, groupId, active)
+        List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = devopsEnvironmentMapper.listByProjectIdAndGroupIdAndActive(projectId, groupId)
                 .stream()
                 .peek(t -> setEnvStatus(upgradeClusterList, t))
                 .collect(Collectors.toList());
-        return ConvertUtils.convertList(devopsEnvironmentDTOS, DevopsEnviromentRepVO.class);
+        return ConvertUtils.convertList(devopsEnvironmentDTOS, DevopsEnvironmentRepVO.class);
     }
 
     @Override
-    public List<DevopsEnviromentRepVO> listByProjectIdAndActive(Long projectId, Boolean active) {
+    public List<DevopsEnvironmentRepVO> listByProjectIdAndActive(Long projectId, Boolean active) {
 
         // 查询当前用户的环境权限
         List<Long> permissionEnvIds = devopsEnvUserPermissionService
@@ -374,11 +372,11 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                     setPermission(t, permissionEnvIds, isProjectOwner);
                 })
                 .collect(Collectors.toList());
-        return ConvertUtils.convertList(devopsEnvironmentDTOS, DevopsEnviromentRepVO.class);
+        return ConvertUtils.convertList(devopsEnvironmentDTOS, DevopsEnvironmentRepVO.class);
     }
 
     @Override
-    public List<DevopsEnviromentRepVO> listDeployed(Long projectId) {
+    public List<DevopsEnvironmentRepVO> listDeployed(Long projectId) {
         List<Long> envList = devopsServiceService.baseListEnvByRunningService();
         return listByProjectIdAndActive(projectId, true).stream().filter(t ->
                 envList.contains(t.getId())).collect(Collectors.toList());
@@ -647,8 +645,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     @Override
-    public List<DevopsEnviromentRepVO> listByProjectId(Long projectId, Long appServiceId) {
-        List<DevopsEnviromentRepVO> devopsEnviromentRepDTOList = listByProjectIdAndActive(projectId, true);
+    public List<DevopsEnvironmentRepVO> listByProjectId(Long projectId, Long appServiceId) {
+        List<DevopsEnvironmentRepVO> devopsEnviromentRepDTOList = listByProjectIdAndActive(projectId, true);
 
         if (appServiceId == null) {
             return devopsEnviromentRepDTOList.stream().filter(t ->
@@ -720,7 +718,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         baseUpdate(devopsEnvironmentDTO);
     }
 
-    private void initUserPermissionWhenCreatingEnv(EnvGitlabProjectPayload gitlabProjectPayload, Long envId, Long projectId) {
+    private void initUserPermissionWhenCreatingEnv(EnvGitlabProjectPayload gitlabProjectPayload, Long envId, Long
+            projectId) {
 
         // 跳过权限检查，项目下所有成员自动分配权限
         if (Boolean.TRUE.equals(gitlabProjectPayload.getSkipCheckPermission())) {
@@ -842,7 +841,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     @Override
-    public PageInfo<DevopsUserPermissionVO> pageUserPermissionByEnvId(Long projectId, PageRequest pageRequest, String params, Long envId) {
+    public PageInfo<DevopsUserPermissionVO> pageUserPermissionByEnvId(Long projectId, PageRequest
+            pageRequest, String params, Long envId) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentMapper.selectByPrimaryKey(envId);
 
         RoleAssignmentSearchVO roleAssignmentSearchVO = new RoleAssignmentSearchVO();
@@ -1202,8 +1202,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     @Override
-    public DevopsEnviromentRepVO queryByCode(Long clusterId, String code) {
-        return ConvertUtils.convertObject(baseQueryByProjectIdAndCode(clusterId, code), DevopsEnviromentRepVO.class);
+    public DevopsEnvironmentRepVO queryByCode(Long clusterId, String code) {
+        return ConvertUtils.convertObject(baseQueryByProjectIdAndCode(clusterId, code), DevopsEnvironmentRepVO.class);
     }
 
 
