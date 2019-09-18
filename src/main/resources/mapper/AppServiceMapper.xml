@@ -261,11 +261,11 @@
                 <if test="searchParam.active == 1">
                     AND da.is_active = 1
                     AND da.is_synchro = 1
-                    AND (da.is_failed IS NULL OR is_failed=0)
+                    AND da.is_failed = 0
                 </if>
                 <if test="searchParam.active == 2">
                     AND da.is_synchro = 0
-                    AND (da.is_failed IS NULL OR is_failed=0)
+                    AND da.is_failed = 0
                 </if>
             </if>
         </if>
@@ -621,11 +621,11 @@
                      <if test="searchParam.status == '启用'">
                          is_active = 1
                          AND is_synchro = 1
-                         AND (is_failed IS NULL OR is_failed=0)
+                         AND is_failed = 0
                      </if>
                      <if test="searchParam.status == '创建中'">
                          is_synchro = 0
-                         AND (is_failed IS NULL OR is_failed=0)
+                         AND is_failed = 0
                      </if>
                  </if>
              </if>
@@ -656,11 +656,11 @@
                     <if test="searchParam.status == '启用'">
                         is_active = 1
                         AND is_synchro = 1
-                        AND (is_failed IS NULL OR is_failed=0)
+                        AND is_failed = 0
                     </if>
                     <if test="searchParam.status == '创建中'">
                         is_synchro = 0
-                        AND (is_failed IS NULL OR is_failed=0)
+                        AND is_failed = 0
                     </if>
                 </if>
             </if>
