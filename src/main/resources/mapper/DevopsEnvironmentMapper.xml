@@ -321,6 +321,12 @@
         )
     </select>
 
+    <update id="updateIsSynchroToTrueWhenFailed">
+        UPDATE devops_env env
+        SET env.is_synchro = 1
+        WHERE env.is_failed = 1
+    </update>
+
     <select id="listByProjectIdAndGroupIdAndActive"
             resultType="io.choerodon.devops.infra.dto.DevopsEnvironmentDTO">
         SELECT

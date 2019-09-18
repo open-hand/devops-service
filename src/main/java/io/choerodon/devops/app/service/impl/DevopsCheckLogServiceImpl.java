@@ -69,6 +69,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private DevopsCertificationMapper devopsCertificationMapper;
     @Autowired
     private DevopsBranchMapper devopsBranchMapper;
+    @Autowired
+    private DevopsEnvironmentMapper devopsEnvironmentMapper;
 
 
     @Override
@@ -103,6 +105,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 //                syncDeployRecord(logs);
 //                syncClusterAndCertifications(logs);
 //                syncConfig();
+                syncEnvAndAppServiceStatus();
                 syncBranch();
 
             } else {
@@ -195,6 +198,18 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 }
                 logs.add(checkLog);
             });
+        }
+
+        /**
+         * 修复应用服务和环境的状态字段
+         */
+        private void syncEnvAndAppServiceStatus() {
+            // 为应用服务的 `is_failed` 字段在迁移数据中修复 null 值为0
+            appServiceMapper.updateIsFailedNullToFalse();
+
+            // 将`is_failed`为1的值的应用服务和环境的纪录的`is_synchro`字段设为1
+            appServiceMapper.updateIsSynchroToTrueWhenFailed();
+            devopsEnvironmentMapper.updateIsSynchroToTrueWhenFailed();
         }
 
         private void syncAppShare(List<CheckLog> logs) {

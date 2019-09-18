@@ -686,4 +686,16 @@
             </foreach>
          </if>
     </select>
+
+    <update id="updateIsFailedNullToFalse">
+        UPDATE devops_app_service das
+        SET das.is_failed = 0
+        WHERE das.is_failed IS NULL
+    </update>
+
+    <update id="updateIsSynchroToTrueWhenFailed">
+        UPDATE devops_app_service das
+        SET das.is_synchro = 1
+        WHERE das.is_failed = 1
+    </update>
 </mapper>
