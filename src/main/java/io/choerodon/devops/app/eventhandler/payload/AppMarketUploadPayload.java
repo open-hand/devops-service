@@ -22,14 +22,8 @@ public class AppMarketUploadPayload {
     @ApiModelProperty("市场应用版本Id")
     private Long mktAppVersionId;
 
-    @ApiModelProperty("应用Id")
-    private Long appId;
-
     @ApiModelProperty("projectId")
     private Long projectId;
-
-    @ApiModelProperty("应用code")
-    private String appCode;
 
     @ApiModelProperty("应用服务")
     private List<AppServiceUploadPayload> appServiceUploadPayloads;
@@ -60,28 +54,12 @@ public class AppMarketUploadPayload {
         this.projectId = projectId;
     }
 
-    public String getAppCode() {
-        return appCode;
-    }
-
-    public void setAppCode(String appCode) {
-        this.appCode = appCode;
-    }
-
     public RobotUser getUser() {
         return user;
     }
 
     public void setUser(RobotUser user) {
         this.user = user;
-    }
-
-    public Long getAppId() {
-        return appId;
-    }
-
-    public void setAppId(Long appId) {
-        this.appId = appId;
     }
 
     public List<AppServiceUploadPayload> getAppServiceUploadPayloads() {

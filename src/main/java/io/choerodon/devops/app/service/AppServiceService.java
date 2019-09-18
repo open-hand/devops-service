@@ -105,10 +105,9 @@ public interface AppServiceService {
     /**
      * 设置服务创建失败状态
      *
-     * @param gitlabProjectEventDTO 服务信息
-     * @param projectId             可为空
+     * @param appServiceId 服务信息
      */
-    void setAppErrStatus(String gitlabProjectEventDTO, Long projectId);
+    void setAppErrStatus(Long appServiceId);
 
     /**
      * 项目下服务查询ci脚本文件

@@ -66,6 +66,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
@@ -623,19 +624,13 @@ public class AppServiceServiceImpl implements AppServiceService {
 
 
     @Override
-    @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_APP_FAIL,
-            description = "Devops设置application状态为创建失败(devops set app status create err)", inputSchema = "{}")
-    public void setAppErrStatus(String input, Long projectId) {
-        producer.applyAndReturn(
-                StartSagaBuilder
-                        .newBuilder()
-                        .withLevel(ResourceLevel.PROJECT)
-                        .withRefType("")
-                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_APP_FAIL),
-                builder -> builder
-                        .withJson(input)
-                        .withRefId("")
-                        .withSourceId(projectId));
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
+    public void setAppErrStatus(Long appServiceId) {
+        AppServiceDTO applicationDTO = baseQuery(appServiceId);
+        applicationDTO.setSynchro(true);
+        applicationDTO.setFailed(true);
+        baseUpdate(applicationDTO);
+        LOGGER.info("================应用服务创建失败执行回写失败状态成功，serviceId：{}", appServiceId);
     }
 
     @Override

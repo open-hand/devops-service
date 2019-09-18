@@ -27,7 +27,6 @@ import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.app.service.impl.UpdateAppUserPermissionServiceImpl;
 import io.choerodon.devops.app.service.impl.UpdateEnvUserPermissionServiceImpl;
 import io.choerodon.devops.app.service.impl.UpdateUserPermissionService;
-import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.PipelineStageRecordDTO;
 import io.choerodon.devops.infra.dto.PipelineTaskRecordDTO;
@@ -151,7 +150,7 @@ public class DevopsSagaHandler {
         try {
             appServiceService.operationApplication(devOpsAppServicePayload);
         } catch (Exception e) {
-            appServiceService.setAppErrStatus(data, devOpsAppServicePayload.getIamProjectId());
+            appServiceService.setAppErrStatus(devOpsAppServicePayload.getAppServiceId());
             throw e;
         }
         return data;
@@ -170,13 +169,8 @@ public class DevopsSagaHandler {
         try {
             appServiceService.operationAppServiceImport(devOpsAppImportPayload);
         } catch (Exception e) {
-            appServiceService.setAppErrStatus(data, devOpsAppImportPayload.getIamProjectId());
+            appServiceService.setAppErrStatus(devOpsAppImportPayload.getAppServiceId());
             throw e;
-        }
-        AppServiceDTO applicationDTO = appServiceService.baseQuery(devOpsAppImportPayload.getAppServiceId());
-        if (applicationDTO.getFailed() != null && applicationDTO.getFailed()) {
-            applicationDTO.setFailed(false);
-            appServiceService.baseUpdate(applicationDTO);
         }
         return data;
     }
@@ -221,23 +215,6 @@ public class DevopsSagaHandler {
             throw e;
         }
         return payload;
-    }
-
-    /**
-     * GitOps 应用创建失败处理
-     */
-    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_CREATE_GITLAB_PROJECT_ERROR,
-            description = "GitOps 应用创建失败处理",
-            sagaCode = SagaTopicCodeConstants.DEVOPS_CREATE_APP_FAIL,
-            maxRetryCount = 3,
-            seq = 1)
-    public String setAppErr(String data) {
-        DevOpsAppServicePayload devOpsAppServicePayload = gson.fromJson(data, DevOpsAppServicePayload.class);
-        AppServiceDTO applicationDTO = appServiceService.baseQuery(devOpsAppServicePayload.getAppServiceId());
-        applicationDTO.setSynchro(true);
-        applicationDTO.setFailed(true);
-        appServiceService.baseUpdate(applicationDTO);
-        return data;
     }
 
 
@@ -373,7 +350,12 @@ public class DevopsSagaHandler {
             seq = 1)
     public String importAppServiceGitlab(String data) {
         AppServiceImportPayload appServiceImportPayload = gson.fromJson(data, AppServiceImportPayload.class);
-        appServiceService.importAppServiceGitlab(appServiceImportPayload);
+        try {
+            appServiceService.importAppServiceGitlab(appServiceImportPayload);
+        } catch (Exception e) {
+            appServiceService.setAppErrStatus(appServiceImportPayload.getAppServiceId());
+            throw e;
+        }
         return data;
     }
 }
