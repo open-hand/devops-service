@@ -2,25 +2,56 @@ import React, { Fragment, useCallback, useState, useEffect } from 'react';
 import { Form, TextField, Select, SelectBox } from 'choerodon-ui/pro';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
+import keys from 'lodash/keys';
+import countBy from 'lodash/countBy';
+import pickBy from 'lodash/pickBy';
+import isEmpty from 'lodash/isEmpty';
+import includes from 'lodash/includes';
 import PlatForm from './Platform';
+import { handlePromptError } from '../../../../../utils';
 
 import './index.less';
 
 const { Option } = Select;
 
 const ImportForm = injectIntl(observer((props) => {
-  const { dataSet, selectedDs, record, AppStore, projectId, intl: { formatMessage }, intlPrefix, prefixCls, refresh } = props;
+  const { dataSet, selectedDs, record, AppStore, projectId, intl: { formatMessage }, intlPrefix, prefixCls, refresh, modal } = props;
   const [hasFailed, setHasFailed] = useState(false);
 
-  props.modal.handleOk(async () => {
+  modal.handleOk(async () => {
     if (record.get('platformType') === 'share' || record.get('platformType') === 'market') {
-      if (!selectedDs.length) {
-        return true;
-      } else if (await selectedDs.validate() !== false) {
-        setHasFailed(false);
-        record.set('appServiceList', selectedDs.toData());
-      } else {
-        setHasFailed(true);
+      if (!selectedDs.length) return true;
+
+      const lists = selectedDs.toData();
+      const { listName, listCode, repeatCode, repeatName } = getRepeatData(lists);
+
+      try {
+        const res = await AppStore.batchCheck(projectId, listCode, listName);
+        if (handlePromptError(res)) {
+          if (isEmpty(repeatName) && isEmpty(repeatCode) && isEmpty(res.listCode) && isEmpty(res.listName)) {
+            setHasFailed(false);
+            record.set('appServiceList', lists);
+          } else {
+            selectedDs.forEach((item) => {
+              if (includes(repeatName.concat(res.listName), item.get('name'))) {
+                item.set('nameFailed', true);
+              } else {
+                item.set('nameFailed', false);
+              }
+              if (includes(repeatCode.concat(res.listCode), item.get('code'))) {
+                item.set('codeFailed', true);
+              } else {
+                item.set('codeFailed', false);
+              }
+            });
+            setHasFailed(true);
+            return false;
+          }
+        } else {
+          return false;
+        }
+      } catch (e) {
+        Choerodon.handleResponseError(e);
         return false;
       }
     }
@@ -35,6 +66,18 @@ const ImportForm = injectIntl(observer((props) => {
       return false;
     }
   });
+
+  function getRepeatData(lists) {
+    const nameData = countBy(lists, 'name');
+    const codeData = countBy(lists, 'code');
+    const listName = keys(nameData);
+    const listCode = keys(codeData);
+    const repeatName = keys(pickBy(nameData, (value) => value > 1) || {});
+    const repeatCode = keys(pickBy(codeData, (value) => value > 1) || {});
+
+    return { listCode, listName, repeatName, repeatCode };
+  }
+
 
   return (
     <div className={`${prefixCls}-import-wrap`}>

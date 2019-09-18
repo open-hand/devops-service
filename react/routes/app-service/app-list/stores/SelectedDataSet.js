@@ -51,6 +51,8 @@ export default ((intlPrefix, formatMessage, projectId) => {
       { name: 'share', type: 'boolean', label: formatMessage({ id: `${intlPrefix}.source` }) },
       { name: 'versionId', type: 'number' },
       { name: 'versions', type: 'object', label: formatMessage({ id: `${intlPrefix}.version` }) },
+      { name: 'nameFailed', type: 'boolean', defaultValue: false },
+      { name: 'codeFailed', type: 'boolean', defaultValue: false },
     ],
   });
 });
