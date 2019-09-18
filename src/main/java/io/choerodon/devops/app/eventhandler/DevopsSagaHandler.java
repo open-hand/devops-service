@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import io.choerodon.asgard.saga.SagaDefinition;
 import io.choerodon.asgard.saga.annotation.SagaTask;
@@ -27,6 +28,7 @@ import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.app.service.impl.UpdateAppUserPermissionServiceImpl;
 import io.choerodon.devops.app.service.impl.UpdateEnvUserPermissionServiceImpl;
 import io.choerodon.devops.app.service.impl.UpdateUserPermissionService;
+import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.PipelineStageRecordDTO;
 import io.choerodon.devops.infra.dto.PipelineTaskRecordDTO;
@@ -150,7 +152,7 @@ public class DevopsSagaHandler {
         try {
             appServiceService.operationApplication(devOpsAppServicePayload);
         } catch (Exception e) {
-            appServiceService.setAppErrStatus(devOpsAppServicePayload.getAppServiceId());
+            appServiceService.setAppErrStatus(data, devOpsAppServicePayload.getIamProjectId());
             throw e;
         }
         return data;
@@ -169,7 +171,7 @@ public class DevopsSagaHandler {
         try {
             appServiceService.operationAppServiceImport(devOpsAppImportPayload);
         } catch (Exception e) {
-            appServiceService.setAppErrStatus(devOpsAppImportPayload.getAppServiceId());
+            appServiceService.setAppErrStatus(data, devOpsAppImportPayload.getIamProjectId());
             throw e;
         }
         return data;
@@ -353,9 +355,29 @@ public class DevopsSagaHandler {
         try {
             appServiceService.importAppServiceGitlab(appServiceImportPayload);
         } catch (Exception e) {
-            appServiceService.setAppErrStatus(appServiceImportPayload.getAppServiceId());
+            DevOpsAppServicePayload devOpsAppServicePayload = new DevOpsAppServicePayload();
+            devOpsAppServicePayload.setAppServiceId(appServiceImportPayload.getAppServiceId());
+            appServiceService.setAppErrStatus(gson.toJson(devOpsAppServicePayload), appServiceImportPayload.getProjectId());
             throw e;
         }
+        return data;
+    }
+
+    /**
+     * GitOps 应用创建失败处理
+     */
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_CREATE_GITLAB_PROJECT_ERROR,
+            description = "GitOps 应用创建失败处理",
+            sagaCode = SagaTopicCodeConstants.DEVOPS_CREATE_APP_FAIL,
+            maxRetryCount = 3,
+            seq = 1)
+    public String setAppErr(String data) {
+        DevOpsAppServicePayload devOpsAppServicePayload = gson.fromJson(data, DevOpsAppServicePayload.class);
+        AppServiceDTO applicationDTO = appServiceService.baseQuery(devOpsAppServicePayload.getAppServiceId());
+        applicationDTO.setSynchro(true);
+        applicationDTO.setFailed(true);
+        appServiceService.baseUpdate(applicationDTO);
+        LOGGER.info("================应用服务创建失败执行回写失败状态成功，serviceId：{}", devOpsAppServicePayload.getAppServiceId());
         return data;
     }
 }
