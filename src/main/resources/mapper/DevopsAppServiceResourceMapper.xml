@@ -12,4 +12,10 @@
             #{resourceId}
         </foreach>
     </select>
+
+    <select id="countRelatedResource" resultType="int">
+        SELECT count(1)
+        FROM devops_app_service_resource dasr
+        WHERE dasr.app_service_id = #{appServiceId}
+    </select>
 </mapper>
