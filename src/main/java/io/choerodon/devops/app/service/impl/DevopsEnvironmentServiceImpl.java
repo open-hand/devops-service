@@ -272,49 +272,63 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
         // 没有环境列表则返回空列表
         if (devopsEnvironmentDTOS.isEmpty()) {
-            devopsEnvGroupEnvsDTOS.add(new DevopsEnvGroupEnvsVO(false));
-            devopsEnvGroupEnvsDTOS.add(new DevopsEnvGroupEnvsVO(true));
+            devopsEnvGroupEnvsDTOS.add(new DevopsEnvGroupEnvsVO());
             return devopsEnvGroupEnvsDTOS;
         }
 
         List<DevopsEnviromentRepVO> devopsEnvironmentRepDTOS = ConvertUtils.convertList(devopsEnvironmentDTOS, DevopsEnviromentRepVO.class);
-        //选出未激活的环境列表
-        devopsEnvGroupEnvsDTO.setDevopsEnviromentRepDTOs(devopsEnvironmentRepDTOS
-                .stream()
-                .filter(i -> !i.getActive())
-                .collect(Collectors.toList()));
-        devopsEnvGroupEnvsDTO.setActive(false);
-        devopsEnvGroupEnvsDTOS.add(devopsEnvGroupEnvsDTO);
 
         List<DevopsEnvGroupDTO> devopsEnvGroupES = devopsEnvGroupService.baseListByProjectId(projectId);
         devopsEnvironmentRepDTOS
-                .stream()
-                .filter(DevopsEnviromentRepVO::getActive)
-                .forEach(devopsEnvironmentRepDTO -> {
+                .stream().forEach(devopsEnvironmentRepDTO -> {
                     DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(devopsEnvironmentRepDTO.getClusterId());
                     devopsEnvironmentRepDTO.setClusterName(devopsClusterDTO == null ? null : devopsClusterDTO.getName());
                     if (devopsEnvironmentRepDTO.getDevopsEnvGroupId() == null) {
                         devopsEnvironmentRepDTO.setDevopsEnvGroupId(0L);
                     }
                 });
+
+        //按分组选出未激活环境
+        Map<Long, List<DevopsEnviromentRepVO>> notActiveResultMaps = devopsEnvironmentRepDTOS
+                .stream()
+                .filter(i -> !i.getActive())
+                .collect(Collectors.groupingBy(DevopsEnviromentRepVO::getDevopsEnvGroupId));
+
         //按环境分组环境列表
         Map<Long, List<DevopsEnviromentRepVO>> resultMaps = devopsEnvironmentRepDTOS
                 .stream()
                 .filter(DevopsEnviromentRepVO::getActive)
+                .sorted(
+                        Comparator.comparing(DevopsEnviromentRepVO::getConnect)
+                                .thenComparing(DevopsEnviromentRepVO::getSynchro)
+                                .thenComparing(DevopsEnviromentRepVO::getId)
+                                .reversed()
+                )
                 .collect(Collectors.groupingBy(DevopsEnviromentRepVO::getDevopsEnvGroupId));
+
         List<Long> envGroupIds = new ArrayList<>();
+
+        // 把按分组选出的未激活环境加入到激活环境分组中
+        notActiveResultMaps.forEach((key, value) -> {
+            List<DevopsEnviromentRepVO> devopsEnviromentRepVOList = resultMaps.get(key);
+            if (devopsEnviromentRepVOList != null) {
+                devopsEnviromentRepVOList.addAll(value);
+                resultMaps.put(key, devopsEnviromentRepVOList);
+            }
+        });
+
         //有环境的分组
         resultMaps.forEach((key, value) -> {
             envGroupIds.add(key);
             DevopsEnvGroupEnvsVO devopsEnvGroupEnvsDTO1 = new DevopsEnvGroupEnvsVO();
             DevopsEnvGroupDTO devopsEnvGroupDTO = new DevopsEnvGroupDTO();
             if (key != 0) {
-                devopsEnvGroupDTO = devopsEnvGroupService.baseQuery(key);
+                devopsEnvGroupDTO = Optional.ofNullable(devopsEnvGroupService.baseQuery(key))
+                        .orElseThrow(() -> new CommonException("error.env.group.not.exist"));
             }
             devopsEnvGroupEnvsDTO1.setDevopsEnvGroupId(devopsEnvGroupDTO.getId());
             devopsEnvGroupEnvsDTO1.setDevopsEnvGroupName(devopsEnvGroupDTO.getName());
             devopsEnvGroupEnvsDTO1.setDevopsEnviromentRepDTOs(value);
-            devopsEnvGroupEnvsDTO1.setActive(true);
             devopsEnvGroupEnvsDTOS.add(devopsEnvGroupEnvsDTO1);
         });
         //没有环境的分组
@@ -323,7 +337,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 DevopsEnvGroupEnvsVO devopsEnvGroupEnvsDTO2 = new DevopsEnvGroupEnvsVO();
                 devopsEnvGroupEnvsDTO2.setDevopsEnvGroupId(devopsEnvGroupE.getId());
                 devopsEnvGroupEnvsDTO2.setDevopsEnvGroupName(devopsEnvGroupE.getName());
-                devopsEnvGroupEnvsDTO2.setActive(true);
                 devopsEnvGroupEnvsDTOS.add(devopsEnvGroupEnvsDTO2);
             }
         });
