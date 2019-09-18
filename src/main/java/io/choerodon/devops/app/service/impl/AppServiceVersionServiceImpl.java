@@ -234,14 +234,21 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     }
 
     @Override
-    public PageInfo<AppServiceVersionVO> pageByOptions(Long projectId, Long appServiceId, Boolean deployOnly, Boolean doPage, Long appServiceVersionId, String version, PageRequest pageRequest) {
+    public PageInfo<AppServiceVersionVO> pageByOptions(Long projectId, Long appServiceId, Boolean deployOnly, Boolean doPage,String params, PageRequest pageRequest) {
         PageInfo<AppServiceVersionDTO> applicationVersionDTOPageInfo;
+        Map<String, Object> mapParams = TypeUtil.castMapParams(params);
         if (doPage) {
-            applicationVersionDTOPageInfo = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), null)
-                    .doSelectPageInfo(() -> appServiceVersionMapper.listByAppIdAndVersion(appServiceId, deployOnly, appServiceVersionId, version));
+            applicationVersionDTOPageInfo = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest))
+                    .doSelectPageInfo(() -> appServiceVersionMapper.listByAppIdAndVersion(appServiceId, deployOnly,
+                            TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
+                            TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)),
+                            PageRequestUtil.checkSortIsEmpty(pageRequest)));
         } else {
             applicationVersionDTOPageInfo = new PageInfo<>();
-            applicationVersionDTOPageInfo.setList(appServiceVersionMapper.listByAppIdAndVersion(appServiceId, deployOnly, appServiceVersionId, version));
+            applicationVersionDTOPageInfo.setList(appServiceVersionMapper.listByAppIdAndVersion(appServiceId, deployOnly,
+                    TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
+                    TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)),
+                    PageRequestUtil.checkSortIsEmpty(pageRequest)));
         }
         return ConvertUtils.convertPage(applicationVersionDTOPageInfo, AppServiceVersionVO.class);
     }

@@ -1492,7 +1492,9 @@ public class AppServiceServiceImpl implements AppServiceService {
                 appServiceDTO.setId(appServiceId);
                 appServiceDTO.setSkipCheckPermission(false);
                 appServiceMapper.updateByPrimaryKeySelective(appServiceDTO);
-                applicationPermissionVO.getUserIds().forEach(u -> appServiceUserPermissionService.baseCreate(u, appServiceId));
+                if(!CollectionUtils.isEmpty(applicationPermissionVO.getUserIds())) {
+                    applicationPermissionVO.getUserIds().stream().filter(v -> v !=null).forEach(u -> appServiceUserPermissionService.baseCreate(u, appServiceId));
+                }
                 devOpsUserPayload.setIamUserIds(applicationPermissionVO.getUserIds());
                 devOpsUserPayload.setOption(3);
             }
@@ -1506,7 +1508,9 @@ public class AppServiceServiceImpl implements AppServiceService {
                 devOpsUserPayload.setOption(2);
             } else {
                 //原来不跳过权限检查，现在也不跳过权限检查，新增用户权限
-                applicationPermissionVO.getUserIds().forEach(u -> appServiceUserPermissionService.baseCreate(u, appServiceId));
+                if(!CollectionUtils.isEmpty(applicationPermissionVO.getUserIds())){
+                    applicationPermissionVO.getUserIds().stream().filter(v -> v !=null).forEach(u -> appServiceUserPermissionService.baseCreate(u, appServiceId));
+                }
                 devOpsUserPayload.setIamUserIds(applicationPermissionVO.getUserIds());
                 devOpsUserPayload.setOption(3);
 
@@ -1970,12 +1974,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         if (Boolean.TRUE.equals(share)) {
             appServiceDTOList = listSharedAppService(projectId, searchProjectId, param);
         } else {
-            if (ObjectUtils.isEmpty(searchProjectId)) {
-                appServiceDTOList = appServiceMapper.queryMarketDownloadApps(null, param, false, null);
-            } else {
-                Set<Long> appServiceIds = baseServiceClientOperator.listAppServiceByAppId(projectId, searchProjectId);
-                appServiceDTOList = appServiceMapper.listMarketDownloadAppsByServiceIds(appServiceIds, param, false);
-            }
+            appServiceDTOList = appServiceMapper.queryMarketDownloadApps(null, param, false, searchProjectId);
         }
         List<AppServiceGroupInfoVO> appServiceGroupInfoVOS = new ArrayList<>();
 

@@ -114,9 +114,7 @@ public interface AppServiceMapper extends Mapper<AppServiceDTO> {
                                                @Param("searchParam") Map<String, Object> searchParam,
                                                @Param("params") List<String> params);
 
-    List<AppServiceDTO> listServiceByVersionIds(@Param("ids") Set<Long> ids);
-
-    List<AppServiceDTO> listMarketDownloadAppsByServiceIds(@Param("appServiceIds") Set<Long> appServiceIds, @Param("param") String param, @Param("deployOnly") Boolean deployOnly);
+    List<AppServiceDTO> listServiceByVersionIds(@Param("ids")Set<Long> ids);
 
     int updateIsFailedNullToFalse();
 
