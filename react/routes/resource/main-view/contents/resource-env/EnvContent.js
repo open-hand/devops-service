@@ -1,9 +1,9 @@
-import React, { Fragment, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { observer } from 'mobx-react-lite';
 import { Icon, Tooltip } from 'choerodon-ui';
-import StatusDot from '../../../../../components/status-dot';
 import PageTitle from '../../../../../components/page-title';
+import EnvTitle from '../../../../../components/env-title';
 import Modals from './modals';
 import { useResourceStore } from '../../../stores';
 import { useREStore } from './stores';
@@ -116,13 +116,7 @@ const Content = observer(() => {
       const connect = record.get('connect');
       const synchronize = record.get('synchronize');
 
-      return <Fragment>
-        <StatusDot
-          connect={connect}
-          synchronize={synchronize}
-        />
-        <span className="c7ncd-page-title-text">{name}</span>
-      </Fragment>;
+      return <EnvTitle connect={connect} synchronize={synchronize} name={name} />;
     }
     return null;
   }
@@ -130,9 +124,7 @@ const Content = observer(() => {
   return (
     <div className={`${prefixCls}-re`}>
       <Modals />
-      <PageTitle>
-        {getTitle()}
-      </PageTitle>
+      <PageTitle content={getTitle()} />
       <div className={`${prefixCls}-re-card-wrap`}>
         <div className={`${prefixCls}-re-card ${prefixCls}-re-card_left`}>
           <div className={`${prefixCls}-re-card-title`}>{formatMessage({ id: `${intlPrefix}.resource.deploy` })}</div>

@@ -1,10 +1,11 @@
-import React, { Fragment, lazy, Suspense } from 'react';
+import React, { lazy, Suspense } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Tabs, Spin } from 'choerodon-ui';
+import { Tabs, Spin, message } from 'choerodon-ui';
 import { useEnvironmentStore } from './stores';
 import { useResourceStore } from '../../../stores';
-import StatusDot from '../../../../../components/status-dot';
 import PageTitle from '../../../../../components/page-title';
+import EnvTitle from '../../../../../components/env-title';
+import openWarnModal from '../../../../../utils/openWarnModal';
 import Modals from './modals';
 
 const { TabPane } = Tabs;
@@ -17,6 +18,7 @@ const EnvContent = observer(() => {
     prefixCls,
     intlPrefix,
     treeDs,
+    resourceStore: { getSelectedMenu },
   } = useResourceStore();
   const {
     intl: { formatMessage },
@@ -32,40 +34,51 @@ const EnvContent = observer(() => {
     envStore.setTabKey(key);
   }
 
+  function refresh() {
+    treeDs.query();
+  }
+
   function getTitle() {
     const record = baseInfoDs.current;
     if (record) {
       const id = record.get('id');
       const name = record.get('name');
+      const active = record.get('active');
       const connect = record.get('connect');
       const synchronize = record.get('synchronize');
-
       const menuItem = treeDs.find((item) => item.get('id') === id);
-      if (menuItem
-        && (menuItem.get('connect') !== connect
+
+      if (menuItem) {
+        // 清除已经停用的环境
+        if (!active) {
+          openWarnModal(refresh, formatMessage);
+        } else if ((menuItem.get('connect') !== connect
           || menuItem.get('synchronize') !== synchronize
           || menuItem.get('name') !== name)) {
-        menuItem.set('connect', connect);
-        menuItem.set('synchronize', synchronize);
-        menuItem.set('name', name);
+          menuItem.set('connect', connect);
+          menuItem.set('synchronize', synchronize);
+          menuItem.set('name', name);
+          message.info('基本数据发生变化，已更新。');
+        }
       }
 
-      return <Fragment>
-        <StatusDot
-          connect={connect}
-          synchronize={synchronize}
-        />
-        <span className="c7ncd-page-title-text">{name}</span>
-      </Fragment>;
+      return <EnvTitle name={name} connect={connect} synchronize={synchronize} />;
     }
     return null;
   }
 
+  function getFallBack() {
+    const {
+      name,
+      connect,
+      synchronize,
+    } = getSelectedMenu;
+    return <EnvTitle name={name} synchronize={synchronize} connect={connect} />;
+  }
+
   return (
     <div className={`${prefixCls}-environment`}>
-      <PageTitle>
-        {getTitle()}
-      </PageTitle>
+      <PageTitle fallback={getFallBack()} content={getTitle()} />
       <Tabs
         animated={false}
         activeKey={envStore.getTabKey}

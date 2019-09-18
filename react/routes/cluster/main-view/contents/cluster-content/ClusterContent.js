@@ -27,7 +27,7 @@ export default observer((props) => {
   const handleChange = (key) => {
     contentStore.setTabKey(key);
   };
-  
+
   const title = useMemo(() => {
     const record = ClusterDetailDs.current;
     if (record) {
@@ -52,14 +52,12 @@ export default observer((props) => {
     }
     return null;
   }, [ClusterDetailDs.current]);
-  
+
 
   return (
     <Fragment>
       <Modals />
-      <PageTitle>
-        {title}
-      </PageTitle>
+      <PageTitle content={title} />
       <Tabs
         animated={false}
         activeKey={contentStore.getTabKey}

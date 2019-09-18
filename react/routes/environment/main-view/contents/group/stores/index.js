@@ -18,16 +18,16 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const {
       intlPrefix,
       envStore: {
-        getSelectedMenu: { id, active },
+        getSelectedMenu: { id },
       },
     } = useEnvironmentStore();
     const groupDs = useMemo(() => new DataSet(TableDataSet({ formatMessage, intlPrefix })), []);
 
     useEffect(() => {
-      const param = typeof id === 'number' && id ? `&group_id=${id}` : '';
-      groupDs.transport.read.url = `/devops/v1/projects/${projectId}/envs/list_by_group?active=${active}${param}`;
+      const param = typeof id === 'number' && id ? `?group_id=${id}` : '';
+      groupDs.transport.read.url = `/devops/v1/projects/${projectId}/envs/list_by_group${param}`;
       groupDs.query();
-    }, [id, projectId, active]);
+    }, [id, projectId]);
 
     const value = {
       ...props,

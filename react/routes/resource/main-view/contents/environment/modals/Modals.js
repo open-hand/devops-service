@@ -142,12 +142,13 @@ const EnvModals = observer(() => {
     if (record) {
       isSync = record.get('synchronize');
     }
+    const notReady = !baseInfoDs.current;
     return [{
       name: formatMessage({ id: `${intlPrefix}.modal.service.link` }),
       icon: 'relate',
       handler: openLinkService,
       display: true,
-      disabled: !isSync,
+      disabled: !isSync || notReady,
       group: 1,
     }, {
       permissions: ['devops-service.devops-environment.pageEnvUserPermissions'],
@@ -155,9 +156,10 @@ const EnvModals = observer(() => {
       icon: 'authority',
       handler: openPermission,
       display: true,
-      disabled: !isSync,
+      disabled: !isSync || notReady,
       group: 1,
     }, {
+      disabled: notReady,
       name: formatMessage({ id: `${intlPrefix}.modal.env-detail` }),
       icon: 'find_in_page',
       handler: openEnvDetail,

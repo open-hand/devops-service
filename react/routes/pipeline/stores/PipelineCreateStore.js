@@ -92,7 +92,7 @@ class PipelineCreateStore {
   @computed get getStageIndex() {
     return this.stageIndex;
   }
- 
+
 
   /**
    * 添加阶段
@@ -244,7 +244,7 @@ class PipelineCreateStore {
 
     const newTaskList = _.filter(
       this.taskList[stage],
-      (item) => item.Layout !== id,
+      (item) => item.index !== id,
     );
 
     if (isHead && newTaskList[0]) {
@@ -436,7 +436,7 @@ class PipelineCreateStore {
       this.setEnvData(_.sortBy(response, (value) => Number(!value.connect)));
     }
   }
-  
+
   async loadAppData(projectId) {
     this.setLoading('app', true);
     const response = await axios

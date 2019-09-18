@@ -1,20 +1,16 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { Progress } from 'choerodon-ui';
 
 import './index.less';
 
-export const TitleWrap = ({ children }) => (<div className="c7ncd-page-title">
-  {children}
-</div>);
-
-export const FailBack = () => <TitleWrap>
-  <Progress type="loading" size="small" />
-</TitleWrap>;
-
-export default function PageTitle({ children }) {
-  return !children
-    ? <FailBack />
-    : <TitleWrap>
-      {children}
-    </TitleWrap>;
+export default function PageTitle({ fallback, content }) {
+  return <div className="c7ncd-page-title">
+    {content || fallback || <Progress type="loading" size="small" />}
+  </div>;
 }
+
+PageTitle.propTypes = {
+  fallback: PropTypes.any,
+  content: PropTypes.any,
+};

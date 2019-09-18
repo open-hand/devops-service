@@ -35,7 +35,7 @@ const MainView = observer(() => {
     viewTypeMappings: {
       IST_VIEW_TYPE,
     },
-    itemType: {
+    itemTypes: {
       ENV_ITEM,
       APP_ITEM,
       IST_ITEM,

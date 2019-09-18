@@ -1,9 +1,9 @@
-import React, { Fragment, lazy, Suspense } from 'react';
+import React, { Fragment, lazy, Suspense, memo } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Tabs, Icon, Spin } from 'choerodon-ui';
+import { Tabs, Icon, Spin, message } from 'choerodon-ui';
+import PageTitle from '../../../../../components/page-title';
 import { useApplicationStore } from './stores';
 import { useResourceStore } from '../../../stores';
-import PageTitle from '../../../../../components/page-title';
 import Modals from './modals';
 
 import './index.less';
@@ -13,6 +13,11 @@ const { TabPane } = Tabs;
 const Configs = lazy(() => import('./configs'));
 const Cipher = lazy(() => import('./cipher'));
 const NetContent = lazy(() => import('./net'));
+
+const AppTitle = memo(({ name }) => (<Fragment>
+  <Icon type="widgets" />
+  <span className="c7ncd-page-title-text">{name}</span>
+</Fragment>));
 
 const AppContent = observer(() => {
   const {
@@ -28,6 +33,8 @@ const AppContent = observer(() => {
   const {
     prefixCls,
     intlPrefix,
+    resourceStore,
+    treeDs,
   } = useResourceStore();
 
   function handleChange(key) {
@@ -37,19 +44,28 @@ const AppContent = observer(() => {
   function getTitle() {
     const record = baseInfoDs.current;
     if (record) {
+      const id = record.get('id');
       const name = record.get('name');
-      return <Fragment>
-        <Icon type="widgets" />
-        <span className="c7ncd-page-title-text">{name}</span>
-      </Fragment>;
+      const menuItem = treeDs.find((item) => item.get('id') === id);
+
+      if (menuItem && menuItem.get('name') !== name) {
+        menuItem.set('name', name);
+        message.info(formatMessage({ id: 'data.changed' }));
+      }
+
+      return <AppTitle name={name} />;
     }
     return null;
   }
+
+  function getFallBack() {
+    const { name } = resourceStore.getSelectedMenu;
+    return <AppTitle name={name} />;
+  }
+
   return (
     <div className={`${prefixCls}-application`}>
-      <PageTitle>
-        {getTitle()}
-      </PageTitle>
+      <PageTitle fallback={getFallBack()} content={getTitle()} />
       <Tabs
         className={`${prefixCls}-application-tabs`}
         animated={false}
