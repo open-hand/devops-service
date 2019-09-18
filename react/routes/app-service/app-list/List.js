@@ -136,11 +136,12 @@ const AppService = withRouter(observer((props) => {
   }
 
   function openModal(record) {
+    const isModify = record.status !== 'add';
     Modal.open({
       key: modalKey1,
       drawer: true,
       style: modalStyle1,
-      title: <FormattedMessage id={`${intlPrefix}.${record.status !== 'add' ? 'edit' : 'create'}`} />,
+      title: <FormattedMessage id={`${intlPrefix}.${isModify ? 'edit' : 'create'}`} />,
       children: <CreateForm
         dataSet={listDs}
         record={record}
@@ -149,6 +150,7 @@ const AppService = withRouter(observer((props) => {
         intlPrefix={intlPrefix}
         prefixCls={prefixCls}
       />,
+      okText: formatMessage({ id: isModify ? 'save' : 'create' }),
       onCancel: () => handleCancel(listDs),
     });
   }

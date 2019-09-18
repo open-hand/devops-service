@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, useMemo } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { Header, Permission } from '@choerodon/master';
 import { Button, Tooltip } from 'choerodon-ui';
@@ -24,6 +24,8 @@ const HeaderButtons = observer(({ children }) => {
     detailDs,
     AppStore,
   } = useServiceDetailStore();
+
+  const serviceActive = useMemo(() => detailDs.current && detailDs.current.get('active'), [detailDs.current]);
 
   function openDetail() {
     const detailModal = Modal.open({
@@ -64,7 +66,7 @@ const HeaderButtons = observer(({ children }) => {
   }
 
   function getActiveText() {
-    const active = detailDs.current && detailDs.current.get('active') ? 'disable' : 'enable';
+    const active = serviceActive ? 'disable' : 'enable';
     return <FormattedMessage id={`${intlPrefix}.${active}`} />;
   }
 
@@ -82,13 +84,13 @@ const HeaderButtons = observer(({ children }) => {
         service={['devops-service.app-service.update']}
       >
         <Tooltip
-          title={detailDs.current && !detailDs.current.get('active') ? <FormattedMessage id={`${intlPrefix}.button.disabled`} /> : ''}
+          title={!serviceActive ? <FormattedMessage id={`${intlPrefix}.button.disabled`} /> : ''}
           placement="bottom"
         >
           <Button
             icon="mode_edit "
             onClick={openEdit}
-            disabled={detailDs.current && !detailDs.current.get('active')}
+            disabled={!serviceActive}
           >
             <FormattedMessage id={`${intlPrefix}.edit`} />
           </Button>
@@ -98,7 +100,7 @@ const HeaderButtons = observer(({ children }) => {
         service={['devops-service.app-service.updateActive']}
       >
         <Button
-          icon="remove_circle_outline"
+          icon={serviceActive ? 'remove_circle_outline' : 'finished'}
           onClick={changeActive}
         >
           {getActiveText()}

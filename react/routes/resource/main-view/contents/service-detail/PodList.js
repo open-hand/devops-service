@@ -73,6 +73,7 @@ const PodList = observer(() => {
 
   function getOption(value, timeList, name) {
     return ({
+      color: '#7885cb',
       xAxis: {
         type: 'category',
         boundaryGap: false,
@@ -151,11 +152,11 @@ const PodList = observer(() => {
             <li className="service-detail-pod-echarts">
               <ReactEcharts
                 option={getOption(cpuUsedList, timeList, 'CPU 1500m')}
-                style={{ height: '0.42rem' }}
+                style={{ height: '0.42rem', width: '1.2rem' }}
               />
               <ReactEcharts
                 option={getOption(memoryUsedList, timeList, 'Memory 1600MiB')}
-                style={{ height: '0.42rem' }}
+                style={{ height: '0.42rem', width: '1.2rem' }}
               />
             </li>
           </ul>

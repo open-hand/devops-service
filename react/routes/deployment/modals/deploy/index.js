@@ -29,7 +29,7 @@ const DeployModal = injectIntl(observer(({ record, dataSet, store, projectId, re
 
   modal.handleOk(async () => {
     if (hasYamlFailed) return false;
-
+    let result = true;
     let hasDomain = false;
     let hasNet = false;
     const { getFieldValue, validateFieldsAndScroll } = form;
@@ -43,7 +43,7 @@ const DeployModal = injectIntl(observer(({ record, dataSet, store, projectId, re
       hasDomain = true;
     }
     if (fieldNames.length) {
-      form.validateFieldsAndScroll(fieldNames, async (err, data) => {
+      form.validateFieldsAndScroll(fieldNames, (err, data) => {
         if (!err) {
           const {
             networkName,
@@ -112,21 +112,23 @@ const DeployModal = injectIntl(observer(({ record, dataSet, store, projectId, re
             };
             record.set('devopsIngressVO', ingress);
           }
-          handleSubmit();
         }
+        result = !err;
       });
-    } else {
-      handleSubmit();
     }
-    return false;
+    if (!result) {
+      return false;
+    }
+    try {
+      if (await dataSet.submit() !== false) {
+        refresh();
+      } else {
+        return false;
+      }
+    } catch (e) {
+      return false;
+    }
   });
-
-  async function handleSubmit() {
-    if (await dataSet.submit() !== false) {
-      modal.close();
-      refresh();
-    }
-  }
 
   function ChangeConfigValue(value) {
     record.set('values', value);
