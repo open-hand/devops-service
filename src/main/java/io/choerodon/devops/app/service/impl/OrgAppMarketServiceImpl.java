@@ -45,7 +45,6 @@ import io.choerodon.devops.infra.dto.gitlab.GitlabProjectDTO;
 import io.choerodon.devops.infra.dto.gitlab.GroupDTO;
 import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
 import io.choerodon.devops.infra.dto.harbor.User;
-import io.choerodon.devops.infra.dto.iam.ApplicationDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.AccessLevel;
@@ -546,8 +545,8 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
      */
     private void packageRepo(AppServiceUploadPayload appServiceMarketVO, String appFilePath) {
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceMarketVO.getAppServiceId());
-        ApplicationDTO applicationDTO = baseServiceClientOperator.queryAppById(appServiceDTO.getProjectId());
-        OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(applicationDTO.getOrganizationId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
+        OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 
         //1.创建目录 应用服务仓库
         FileUtil.createDirectory(appFilePath, appServiceDTO.getCode());
@@ -556,7 +555,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
         String token = gitlabServiceClientOperator.getAdminToken();
         appServiceDTO.setRepoUrl(repoUrl + organizationDTO.getCode()
-                + "-" + applicationDTO.getCode() + "/" + appServiceDTO.getCode() + GIT);
+                + "-" + projectDTO.getCode() + "/" + appServiceDTO.getCode() + GIT);
         appServiceMarketVO.getAppServiceVersionUploadPayloads().forEach(appServiceMarketVersionVO -> {
             AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQuery(appServiceMarketVersionVO.getId());
             //2. 创建目录 应用服务版本
