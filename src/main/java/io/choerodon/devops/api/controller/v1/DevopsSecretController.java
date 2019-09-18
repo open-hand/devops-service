@@ -48,7 +48,7 @@ public class DevopsSecretController {
      */
     @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "创建或更新密钥")
+    @ApiOperation(value = "创建密钥")
     @PostMapping
     public ResponseEntity<SecretRespVO> create(
             @ApiParam(value = "项目id", required = true)
