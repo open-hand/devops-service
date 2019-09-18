@@ -1171,23 +1171,21 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         return devopsClusterRepVOS;
     }
 
-    /**
-     * 这个方法用于设置环境失败状态，不使用外层事务，新启动一个事务用于提交失败状态的更新，
-     * 以免使用外部事务导致失败状态被外层事务回滚。
-     * 注意不能在同一个service中调用此方法，事务会失效。
-     *
-     * @param data {@link GitlabProjectPayload} 类型的数据
-     */
     @Override
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void setEnvErrStatus(String data) {
-        GitlabProjectPayload gitlabProjectPayload = gson.fromJson(data, GitlabProjectPayload.class);
-        LOGGER.info("To set error status for environment with code: {}", gitlabProjectPayload.getPath());
+    @Saga(code = SagaTopicCodeConstants.DEVOPS_SET_ENV_ERR,
+            description = "devops创建环境失败(devops set env status create err)", inputSchemaClass = GitlabProjectPayload.class)
+    public void setEnvErrStatus(String data, Long projectId) {
+        producer.applyAndReturn(
+                StartSagaBuilder
+                        .newBuilder()
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withRefType("")
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_SET_ENV_ERR),
+                builder -> builder
+                        .withJson(data)
+                        .withRefId("")
+                        .withSourceId(projectId));
 
-        DevopsEnvironmentDTO devopsEnvironmentDTO = baseQueryByClusterIdAndCode(gitlabProjectPayload.getClusterId(), gitlabProjectPayload.getPath());
-        devopsEnvironmentDTO.setSynchro(true);
-        devopsEnvironmentDTO.setFailed(true);
-        baseUpdate(devopsEnvironmentDTO);
     }
 
     @Override
