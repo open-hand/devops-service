@@ -210,6 +210,10 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             // 将`is_failed`为1的值的应用服务和环境的纪录的`is_synchro`字段设为1
             appServiceMapper.updateIsSynchroToTrueWhenFailed();
             devopsEnvironmentMapper.updateIsSynchroToTrueWhenFailed();
+
+            // 将`is_active` 为 null 的应用服务和环境纪录该字段设为 1(true)
+            appServiceMapper.updateIsActiveNullToTrue();
+            devopsEnvironmentMapper.updateIsActiveNullToTrue();
         }
 
         private void syncAppShare(List<CheckLog> logs) {

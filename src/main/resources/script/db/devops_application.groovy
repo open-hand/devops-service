@@ -102,4 +102,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_application.groovy') {
     changeSet(author: 'zmf', id: '2019-09-18-add-default-value-for-failed') {
         addDefaultValue(tableName: "devops_app_service", columnName: "is_failed", defaultValue: "0")
     }
+
+    changeSet(author: 'zmf', id: '2019-09-18-add-default-value-for-app-service-active') {
+        addDefaultValue(tableName: "devops_app_service", columnName: "is_active", defaultValue: "1")
+    }
 }

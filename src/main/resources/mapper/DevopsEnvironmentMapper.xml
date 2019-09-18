@@ -327,6 +327,12 @@
         WHERE env.is_failed = 1
     </update>
 
+    <update id="updateIsActiveNullToTrue">
+        UPDATE devops_env env
+        SET env.is_active = 1
+        WHERE env.is_active IS NULL
+    </update>
+
     <select id="listByProjectIdAndGroupIdAndActive"
             resultType="io.choerodon.devops.infra.dto.DevopsEnvironmentDTO">
         SELECT

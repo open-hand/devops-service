@@ -698,4 +698,10 @@
         SET das.is_synchro = 1
         WHERE das.is_failed = 1
     </update>
+
+    <update id="updateIsActiveNullToTrue">
+        UPDATE devops_app_service das
+        SET das.is_active = 1
+        WHERE das.is_active IS NULL
+    </update>
 </mapper>

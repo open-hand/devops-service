@@ -121,5 +121,7 @@ public interface AppServiceMapper extends Mapper<AppServiceDTO> {
     int updateIsFailedNullToFalse();
 
     int updateIsSynchroToTrueWhenFailed();
+
+    int updateIsActiveNullToTrue();
 }
 
