@@ -1,7 +1,7 @@
 import React, { useCallback, Fragment, useState } from 'react';
 import { Page, Content, Header, Permission, Action, Breadcrumb } from '@choerodon/master';
 import { Table, Modal } from 'choerodon-ui/pro';
-import { Button } from 'choerodon-ui';
+import { Button, Tooltip } from 'choerodon-ui';
 import { FormattedMessage } from 'react-intl';
 import { withRouter } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
@@ -211,6 +211,10 @@ const Deployment = withRouter(observer((props) => {
     );
   }
 
+  function renderPipelineName({ value }) {
+    return <Tooltip title={value}><span>{value}</span></Tooltip>;
+  }
+
   function renderTime({ value }) {
     return <TimePopover content={value} />;
   }
@@ -308,7 +312,7 @@ const Deployment = withRouter(observer((props) => {
           <Column renderer={renderActions} width="0.7rem" />
           <Column name="deployType" renderer={renderDeployType} />
           <Column name="deployStatus" renderer={renderDeployStatus} />
-          <Column name="pipelineName" />
+          <Column name="pipelineName" renderer={renderPipelineName} />
           <Column name="pipelineTriggerType" renderer={renderTriggerType} />
           <Column name="userName" renderer={renderExecutor} />
           <Column name="deployTime" renderer={renderTime} />

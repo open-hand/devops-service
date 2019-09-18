@@ -511,8 +511,8 @@ const deploy = {
   'c7ncd.deploy.ingress': '域名配置',
   'c7ncd.deploy.source': '服务来源',
   'c7ncd.deploy.source.project': '项目应用服务',
-  'c7ncd.deploy.source.organization': '组织共享',
-  'c7ncd.deploy.source.market': '市场下载',
+  'c7ncd.deploy.source.organization': '共享应用',
+  'c7ncd.deploy.source.market': '市场应用',
   'c7ncd.deploy.process.search': '请输入查询条件',
 };
 

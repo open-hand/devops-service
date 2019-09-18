@@ -3,6 +3,7 @@ import { Table } from 'choerodon-ui/pro';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import map from 'lodash/map';
+import isEmpty from 'lodash/isEmpty';
 import UserInfo from '../../../../components/userInfo';
 
 const { Column } = Table;
@@ -14,6 +15,9 @@ export default injectIntl(observer(({ store, dataSet, refresh, projectId, intlPr
 
   modal.handleOk(async () => {
     const pipelineIds = map(dataSet.selected, (record) => record.get('id'));
+    if (isEmpty(pipelineIds)) {
+      return true;
+    }
     try {
       if (await store.startPipeline(projectId, pipelineIds) !== false) {
         refresh();

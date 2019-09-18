@@ -53,7 +53,7 @@ export default ((intlPrefix, formatMessage, projectId, id) => ({
       formatData(data);
       return ({
         url: `/devops/v1/projects/${projectId}/app_service_share`,
-        method: 'post',
+        method: 'put',
         data,
       });
     },
