@@ -1970,12 +1970,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         if (Boolean.TRUE.equals(share)) {
             appServiceDTOList = listSharedAppService(projectId, searchProjectId, param);
         } else {
-            if (ObjectUtils.isEmpty(searchProjectId)) {
-                appServiceDTOList = appServiceMapper.queryMarketDownloadApps(null, param, false, null);
-            } else {
-                Set<Long> appServiceIds = baseServiceClientOperator.listAppServiceByAppId(projectId, searchProjectId);
-                appServiceDTOList = appServiceMapper.listMarketDownloadAppsByServiceIds(appServiceIds, param, false);
-            }
+            appServiceDTOList = appServiceMapper.queryMarketDownloadApps(null, param, false, searchProjectId);
         }
         List<AppServiceGroupInfoVO> appServiceGroupInfoVOS = new ArrayList<>();
 
