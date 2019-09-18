@@ -890,7 +890,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
 
 
         when: "查询"
-        def response = restTemplate.getForObject(url, DevopsEnviromentRepVO.class, map)
+        def response = restTemplate.getForObject(url, DevopsEnvironmentRepVO.class, map)
 
         then: "校验"
         response != null

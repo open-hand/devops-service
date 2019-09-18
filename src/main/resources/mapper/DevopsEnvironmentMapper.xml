@@ -350,7 +350,6 @@
             AND
             env.devops_env_group_id = #{groupId}
         </if>
-        AND env.is_active = #{active}
     </select>
 
     <!-- 此方法不需要在mapper接口中有 -->
