@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSONArray;
@@ -61,6 +62,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private static final String ERROR_CODE_EXIST = "error.code.exist";
     private static final String LOGIN_NAME = "loginName";
     private static final String REAL_NAME = "realName";
+    private static final Pattern CODE = Pattern.compile("[a-z]([-a-z0-9]*[a-z0-9])?");
+
 
     @Value("${services.gateway.url}")
     private String gatewayUrl;
@@ -607,6 +610,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     public void checkCode(Long projectId, Long clusterId, String code) {
+        if(!CODE.matcher(code).matches()){
+            throw new CommonException("error.env.code.notMatch");
+        }
         DevopsEnvironmentDTO devopsEnvironmentDTO = new DevopsEnvironmentDTO();
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
         devopsEnvironmentDTO.setProjectId(projectId);
