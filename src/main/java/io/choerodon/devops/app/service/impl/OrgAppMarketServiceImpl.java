@@ -264,8 +264,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                 String applicationDir = APPLICATION + System.currentTimeMillis();
                 String accessToken = appServiceService.getToken(appServiceDTO.getGitlabProjectId(), applicationDir, userAttrDTO);
                 LOGGER.info("=========应用下载，获取token成功=========");
-                Set<Long> appServiceVersionIds = createAppServiceVersion(downloadPayload, appServiceDTO, groupPath, isFirst, accessToken, appMarketDownloadVO.getDownloadAppType());
-                appDownloadDevopsReqVO.setServiceVersionIds(new ArrayList<>(appServiceVersionIds));
+                appDownloadDevopsReqVO.setServiceVersionIds(createAppServiceVersion(downloadPayload, appServiceDTO, groupPath, isFirst, accessToken, appMarketDownloadVO.getDownloadAppType()));
                 LOGGER.info("==========应用下载文件上传成功==========");
                 appDownloadDevopsReqVOS.add(appDownloadDevopsReqVO);
             });
