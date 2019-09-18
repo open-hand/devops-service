@@ -65,6 +65,7 @@ const ClusterModals = observer(() => {
 
   function refresh() {
     resreshTree();
+    ClusterDetailDs.query();
     if (getTabKey === NODE_TAB) {
       NodeListDs.query();
     } else {

@@ -31,7 +31,7 @@ const NodeContent = observer((props) => {
 
   return (
     <Fragment>
-      <Modals />
+      {/* <Modals /> */}
       <h1>{name}</h1>
       <div className="c7n-node-content">
         <div className="c7n-node-title">{formatMessage({ id: 'node.res' })}</div>

@@ -1,8 +1,9 @@
 import { useLocalStore } from 'mobx-react-lite';
-import { viewTypeMappings } from './mappings';
+import { viewTypeMappings, itemTypeMappings } from './mappings';
 
 const NO_HEADER = [];
 const { CLU_VIEW_TYPE } = viewTypeMappings;
+const { CLU_ITEM } = itemTypeMappings;
 
 export default function useStore() {
   return useLocalStore(() => ({
@@ -43,6 +44,10 @@ export default function useStore() {
     },
     get getSearchValue() {
       return this.searchValue;
+    },
+    get getShowHeaderButton() {
+      const { menuType } = this.selectedMenu;
+      return menuType === CLU_ITEM;
     },
   }));
 }

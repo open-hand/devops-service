@@ -19,7 +19,7 @@ const NodeList = () => {
       <Fragment>
         <StatusTags name={status} colorCode={status} />
         <Tooltip title={nodeName}>
-          <span className="c7n-cls-table-one-line-omit c7n-cls-span-omit">
+          <span>
             {nodeName}
           </span>
         </Tooltip>
@@ -27,20 +27,29 @@ const NodeList = () => {
     );   
   };
 
-  const renderCm = (record, type) => (<div className="c7n-cls-table-cm">
-    <span className="c7n-cls-up" />
-    <Tooltip title={`${record.get(`${type}Limit`)} (${record.get(`${type}LimitPercentage`)})`}>
+  const renderCm = (record, type) => {
+    const content = (<div className="c7n-cls-table-cm">
+      <span className="c7n-cls-up" />
       <span>{`${record.get(`${type}Request`)} (${record.get(`${type}RequestPercentage`)})`}</span>
-    </Tooltip>
-    <span className="c7n-cls-down" />
-    <Tooltip title={`${record.get(`${type}Limit`)} (${record.get(`${type}LimitPercentage`)})`}>
+      <span className="c7n-cls-down" />
       <span className="c7n-cls-table-one-line-omit">{`${record.get(`${type}Limit`)} (${record.get(`${type}LimitPercentage`)})`}</span>
-    </Tooltip>
-  </div>);
+    </div>);
+    return (
+      <Tooltip title={content}>
+        {content}
+      </Tooltip>
+    );
+  };
 
   const renderType = ({ value: type }) => (
     <Tooltip title={type}>
-      <span className="c7n-cls-table-one-line-omit c7n-cls-span-omit">{type}</span>
+      <span>{type}</span>
+    </Tooltip>
+  );
+
+  const renderTime = ({ value: time }) => (
+    <Tooltip title={time}>
+      <span>{time}</span>
     </Tooltip>
   );
 
@@ -53,11 +62,11 @@ const NodeList = () => {
       border={false}
       queryBar="none"
     >
-      <Column width={100} header={formatMessage({ id: `${intlPrefix}.node.ip` })} renderer={renderStatusName} />
-      <Column name="type" width={90} renderer={renderType} />
+      <Column width={120} header={formatMessage({ id: `${intlPrefix}.node.ip` })} renderer={renderStatusName} />
+      <Column name="type" minWidth={80} renderer={renderType} />
       <Column header={formatMessage({ id: `${intlPrefix}.node.cpu` })} renderer={renderCpu} />
       <Column header={formatMessage({ id: `${intlPrefix}.node.memory` })} renderer={renderMemory} />
-      <Column name="createTime" width={140} />
+      <Column name="createTime" minWidthth={140} renderer={renderTime} />
     </Table>
   );
 };
