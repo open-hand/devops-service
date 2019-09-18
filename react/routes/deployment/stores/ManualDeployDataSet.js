@@ -1,5 +1,6 @@
 import omit from 'lodash/omit';
 import uuidV1 from 'uuid/v1';
+import { axios } from '@choerodon/master';
 
 function getRandomName(prefix) {
   const randomString = uuidV1();
@@ -25,6 +26,7 @@ export default ((intlPrefix, formatMessage, projectId, envOptionsDs, valueIdOpti
         record.get('appServiceId') && record.set('appServiceId', null);
         break;
       case 'environmentId':
+        record.validate(false, true);
         loadValueList(record);
         break;
       case 'appServiceId':
@@ -69,6 +71,25 @@ export default ((intlPrefix, formatMessage, projectId, envOptionsDs, valueIdOpti
     record.set('valueId', null);
   }
 
+  async function checkName(value, name, record) {
+    const pa = /^[a-z]([-a-z0-9]*[a-z0-9])?$/;
+    if (value && pa.test(value)) {
+      if (!record.get('environmentId')) return;
+      try {
+        const res = await axios.get(`/devops/v1/projects/${projectId}/app_service_instances/check_name?instance_name=${value}&env_id=${record.get('environmentId')}`);
+        if (res && res.failed) {
+          return formatMessage({ id: 'checkNameExist' });
+        } else {
+          return true;
+        }
+      } catch (err) {
+        return formatMessage({ id: 'checkNameFailed' });
+      }
+    } else {
+      return formatMessage({ id: 'checkCodeReg' });
+    }
+  }
+
   return ({
     paging: false,
     transport: {
@@ -87,7 +108,7 @@ export default ((intlPrefix, formatMessage, projectId, envOptionsDs, valueIdOpti
       { name: 'appServiceId', type: 'string', label: formatMessage({ id: `${intlPrefix}.app` }), required: true },
       { name: 'appServiceVersionId', type: 'number', textField: 'version', valueField: 'id', label: formatMessage({ id: `${intlPrefix}.app.version` }), required: true, options: versionOptionsDs },
       { name: 'environmentId', type: 'number', textField: 'name', valueField: 'id', label: formatMessage({ id: 'environment' }), required: true, options: envOptionsDs },
-      { name: 'instanceName', type: 'string', label: formatMessage({ id: `${intlPrefix}.instance.name` }), required: true },
+      { name: 'instanceName', type: 'string', label: formatMessage({ id: `${intlPrefix}.instance.name` }), required: true, validator: checkName },
       { name: 'valueId', type: 'number', textField: 'name', valueField: 'id', label: formatMessage({ id: `${intlPrefix}.config` }), options: valueIdOptionsDs },
       { name: 'values', type: 'string' },
       { name: 'devopsServiceReqVO', type: 'object' },

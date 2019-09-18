@@ -36,7 +36,7 @@ const CreateForm = ({ certId, intl: { formatMessage }, form, store, projectId, m
       const { name } = store.getCert || {};
       if (value && value !== name) {
         try {
-          const res = await store.checkCertName(projectId, value);
+          const res = await store.checkCertName(projectId, encodeURIComponent(value));
           if (res && res.failed) {
             callback(formatMessage({ id: 'checkNameExist' }));
           } else {
@@ -73,9 +73,10 @@ const CreateForm = ({ certId, intl: { formatMessage }, form, store, projectId, m
   }
 
   modal.handleOk(async () => {
-    validateFieldsAndScroll(async (err, data) => {
+    let result = true;
+    const formData = new FormData();
+    validateFieldsAndScroll((err, data) => {
       if (!err) {
-        const formData = new FormData();
         const excludeProps = ['domainArr', 'cert', 'key'];
 
         if (uploadMode) {
@@ -91,7 +92,6 @@ const CreateForm = ({ certId, intl: { formatMessage }, form, store, projectId, m
           }
         });
 
-        let method;
         if (certId) {
           const { skipCheckProjectPermission, objectVersionNumber, id } = store.getCert || {};
           formData.append('skipCheckProjectPermission', skipCheckProjectPermission);
@@ -102,19 +102,24 @@ const CreateForm = ({ certId, intl: { formatMessage }, form, store, projectId, m
           formData.append('skipCheckProjectPermission', true);
           formData.append('type', 'create');
         }
-
-        try {
-          const result = await store.createCert(projectId, formData);
-          if (handlePromptError(result, false)) {
-            refresh();
-            modal.close();
-          }
-        } catch (error) {
-          Choerodon.handleResponseError(error);
-        }
       }
+      result = !err;
     });
-    return false;
+    if (!result) {
+      return false;
+    }
+
+    try {
+      const res = await store.createCert(projectId, formData);
+      if (handlePromptError(res, false)) {
+        refresh();
+      } else {
+        return false;
+      }
+    } catch (error) {
+      Choerodon.handleResponseError(error);
+      return false;
+    }
   });
 
   function changeUploadMode() {
