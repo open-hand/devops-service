@@ -5,6 +5,7 @@ import { injectIntl, FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import { Button, Icon, Tooltip } from 'choerodon-ui';
 import map from 'lodash/map';
+import classnames from 'classnames';
 import SourceTable from './SourceTable';
 
 const { Column } = Table;
@@ -16,7 +17,7 @@ const modalStyle1 = {
 };
 
 const Platform = injectIntl(observer((props) => {
-  const { tableDs, selectedDs, intl: { formatMessage }, intlPrefix, prefixCls, AppStore, projectId, record: importRecord } = props;
+  const { tableDs, selectedDs, intl: { formatMessage }, intlPrefix, prefixCls, AppStore, projectId, record: importRecord, checkData } = props;
 
   function openModal() {
     Modal.open({
@@ -31,11 +32,25 @@ const Platform = injectIntl(observer((props) => {
         store={AppStore}
         projectId={projectId}
         importRecord={importRecord}
+        checkData={checkData}
       />,
       style: modalStyle1,
       okText: formatMessage({ id: 'add' }),
-      afterClose: () => tableDs.removeAll(),
+      afterClose: () => {
+        tableDs.removeAll();
+        selectedDs.length && checkData();
+      },
     });
+  }
+
+  function renderNameOrCode({ value, name, record }) {
+    const flag = name === 'name' ? record.get('nameFailed') : record.get('codeFailed');
+    const nameClass = classnames({
+      [`${prefixCls}-import-platform-input`]: true,
+      [`${prefixCls}-import-platform-input-failed`]: flag,
+      'c7n-pro-output-invalid': flag,
+    });
+    return <span className={nameClass}>{value}</span>;
   }
 
   function renderVersion({ value, record }) {
@@ -89,8 +104,8 @@ const Platform = injectIntl(observer((props) => {
         dataSet={selectedDs}
         queryBar="none"
       >
-        <Column name="name" editor />
-        <Column name="code" editor />
+        <Column name="name" editor renderer={renderNameOrCode} />
+        <Column name="code" editor renderer={renderNameOrCode} />
         <Column name="versions" renderer={renderVersion} />
         <Column name="projectName" width="1.5rem" />
         <Column renderer={renderAction} width="0.7rem" />

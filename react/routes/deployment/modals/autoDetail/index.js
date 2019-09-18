@@ -22,6 +22,7 @@ export default injectIntl(observer(({
   PipelineStore,
   projectId,
   id,
+  intlPrefix,
   intl: { formatMessage },
 }) => {
   const [showPendingCheck, setShowPendingCheck] = useState(false);
@@ -208,7 +209,7 @@ export default injectIntl(observer(({
         </div>
         {renderUserInfo()}
         <div className="c7ncd-pipeline-detail-item">
-          <span className="c7ncd-pipeline-detail-label">{formatMessage({ id: 'pipeline.process.status' })}</span>
+          <span className="c7ncd-pipeline-detail-label">{formatMessage({ id: `${intlPrefix}.result` })}</span>
           {data.status && <span className={`c7ncd-pipeline-status-tag c7ncd-pipeline-status-tag_${data.status}`}>
             <FormattedMessage id={`pipelineRecord.status.${data.status}`} />
           </span>}

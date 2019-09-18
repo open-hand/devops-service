@@ -29,11 +29,29 @@
         border: none;
       }
     }
+
+    .c7n-pro-output-invalid {
+      border: none;
+    }
+
+    &-input {
+      border: 1px solid rgba(0, 0, 0, 0.2);
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      padding: 0 .1rem;
+
+      &-failed {
+        border: .01rem solid #d50000 !important;
+      }
+    }
   }
 
   &-failed {
     color: #d50000;
-    margin-top: .07rem;
+    margin-top: .2rem;
     display: block;
   }
 
