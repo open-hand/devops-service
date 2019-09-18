@@ -92,4 +92,14 @@ databaseChangeLog(logicalFilePath: 'dba/devops_application.groovy') {
     changeSet(author: 'Younger', id: '2019-8-05-drop-column') {
         dropColumn(columnName: "app_template_id", tableName: "devops_app_service")
     }
+
+    changeSet(author: 'scp', id: '2019-09-17-add-column') {
+        addColumn(tableName: 'devops_app_service') {
+            column(name: 'mkt_app_id', type:  'BIGINT UNSIGNED', remarks: '应用市场应用Id', afterColumn: 'is_failed')
+        }
+    }
+
+    changeSet(author: 'zmf', id: '2019-09-18-add-default-value-for-failed') {
+        addDefaultValue(tableName: "devops_app_service", columnName: "is_failed", defaultValue: "0")
+    }
 }

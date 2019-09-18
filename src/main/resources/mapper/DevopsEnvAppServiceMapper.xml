@@ -41,7 +41,7 @@
                            WHERE env_app.env_id = #{envId}
                            ) related_app ON app_service.id = related_app.app_service_id
         WHERE app_service.project_id = #{projectId}
-          AND (app_service.is_failed IS NULL OR app_service.is_failed = FALSE)
+          AND app_service.is_failed = FALSE
           AND app_service.is_active = TRUE
           AND app_service.is_synchro = TRUE
           AND related_app.app_service_id IS NULL;

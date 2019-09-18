@@ -261,11 +261,11 @@
                 <if test="searchParam.active == 1">
                     AND da.is_active = 1
                     AND da.is_synchro = 1
-                    AND (da.is_failed IS NULL OR is_failed=0)
+                    AND da.is_failed = 0
                 </if>
                 <if test="searchParam.active == 2">
                     AND da.is_synchro = 0
-                    AND (da.is_failed IS NULL OR is_failed=0)
+                    AND da.is_failed = 0
                 </if>
             </if>
         </if>
@@ -621,11 +621,11 @@
                      <if test="searchParam.status == '启用'">
                          is_active = 1
                          AND is_synchro = 1
-                         AND (is_failed IS NULL OR is_failed=0)
+                         AND is_failed = 0
                      </if>
                      <if test="searchParam.status == '创建中'">
                          is_synchro = 0
-                         AND (is_failed IS NULL OR is_failed=0)
+                         AND is_failed = 0
                      </if>
                  </if>
              </if>
@@ -656,11 +656,11 @@
                     <if test="searchParam.status == '启用'">
                         is_active = 1
                         AND is_synchro = 1
-                        AND (is_failed IS NULL OR is_failed=0)
+                        AND is_failed = 0
                     </if>
                     <if test="searchParam.status == '创建中'">
                         is_synchro = 0
-                        AND (is_failed IS NULL OR is_failed=0)
+                        AND is_failed = 0
                     </if>
                 </if>
             </if>
@@ -686,4 +686,22 @@
             </foreach>
          </if>
     </select>
+
+    <update id="updateIsFailedNullToFalse">
+        UPDATE devops_app_service das
+        SET das.is_failed = 0
+        WHERE das.is_failed IS NULL
+    </update>
+
+    <update id="updateIsSynchroToTrueWhenFailed">
+        UPDATE devops_app_service das
+        SET das.is_synchro = 1
+        WHERE das.is_failed = 1
+    </update>
+
+    <update id="updateIsActiveNullToTrue">
+        UPDATE devops_app_service das
+        SET das.is_active = 1
+        WHERE das.is_active IS NULL
+    </update>
 </mapper>

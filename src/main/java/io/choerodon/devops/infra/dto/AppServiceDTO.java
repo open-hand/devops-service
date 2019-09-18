@@ -5,6 +5,15 @@ import javax.persistence.*;
 import io.choerodon.mybatis.entity.BaseDTO;
 
 /**
+ * if (!isSynchro) {
+ *     // 处理中
+ * } else {
+ *     if (isFailed) {
+ *         // 失败
+ *     } else {
+ *         // 成功
+ *     }
+ * }
  * @author younger
  * @date 2018/3/28
  */

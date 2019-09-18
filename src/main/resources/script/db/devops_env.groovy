@@ -130,4 +130,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env.groovy') {
             column(name: 'is_skip_check_permission', type: 'TINYINT UNSIGNED', defaultValue: '0', remarks: '是否跳过环境权限校验', afterColumn: 'is_failed')
         }
     }
+
+    changeSet(author: 'zmf', id: '2019-09-18-add-default-value-for-env-active') {
+        addDefaultValue(tableName: "devops_env", columnName: "is_active", defaultValue: "1")
+    }
 }
