@@ -89,32 +89,18 @@ public class DevopsSagaHandler {
         try {
             devopsEnvironmentService.handleCreateEnvSaga(gitlabProjectPayload);
         } catch (Exception e) {
-            devopsEnvironmentService.setEnvErrStatus(data, gitlabProjectPayload.getIamProjectId());
+            devopsEnvironmentService.setEnvErrStatus(data);
             throw e;
         }
+
+        // 执行到此处说明创建环境成功了
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService
                 .baseQueryByClusterIdAndCode(gitlabProjectPayload.getClusterId(), gitlabProjectPayload.getPath());
         if (devopsEnvironmentDTO.getFailed() != null && devopsEnvironmentDTO.getFailed()) {
+            devopsEnvironmentDTO.setSynchro(true);
             devopsEnvironmentDTO.setFailed(false);
             devopsEnvironmentService.baseUpdate(devopsEnvironmentDTO);
         }
-        return data;
-    }
-
-    /**
-     * 环境创建失败
-     */
-    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_CREATE_ENV_ERROR,
-            description = "环境创建失败",
-            sagaCode = SagaTopicCodeConstants.DEVOPS_SET_ENV_ERR,
-            maxRetryCount = 3,
-            seq = 1)
-    public String setEnvErr(String data) {
-        GitlabProjectPayload gitlabProjectPayload = gson.fromJson(data, GitlabProjectPayload.class);
-        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService
-                .baseQueryByClusterIdAndCode(gitlabProjectPayload.getClusterId(), gitlabProjectPayload.getPath());
-        devopsEnvironmentDTO.setFailed(true);
-        devopsEnvironmentService.baseUpdate(devopsEnvironmentDTO);
         return data;
     }
 

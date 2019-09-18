@@ -7,10 +7,13 @@ import java.util.stream.Collectors;
 import com.alibaba.fastjson.JSONArray;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
@@ -27,6 +30,7 @@ import io.choerodon.devops.api.vo.iam.UserVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.DevopsEnvUserPayload;
 import io.choerodon.devops.app.eventhandler.payload.EnvGitlabProjectPayload;
+import io.choerodon.devops.app.eventhandler.payload.GitlabProjectPayload;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
@@ -48,6 +52,7 @@ import io.choerodon.devops.infra.util.*;
  */
 @Service
 public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsEnvironmentServiceImpl.class);
 
     private static final Gson gson = new Gson();
     private static final String MEMBER = "member";
@@ -610,7 +615,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     public void checkCode(Long projectId, Long clusterId, String code) {
-        if(!CODE.matcher(code).matches()){
+        if (!CODE.matcher(code).matches()) {
             throw new CommonException("error.env.code.notMatch");
         }
         DevopsEnvironmentDTO devopsEnvironmentDTO = new DevopsEnvironmentDTO();
@@ -1166,20 +1171,23 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         return devopsClusterRepVOS;
     }
 
+    /**
+     * 这个方法用于设置环境失败状态，不使用外层事务，新启动一个事务用于提交失败状态的更新，
+     * 以免使用外部事务导致失败状态被外层事务回滚。
+     * 注意不能在同一个service中调用此方法，事务会失效。
+     *
+     * @param data {@link GitlabProjectPayload} 类型的数据
+     */
     @Override
-    @Saga(code = SagaTopicCodeConstants.DEVOPS_SET_ENV_ERR,
-            description = "devops创建环境失败(devops set env status create err)", inputSchema = "{}")
-    public void setEnvErrStatus(String data, Long projectId) {
-        producer.applyAndReturn(
-                StartSagaBuilder
-                        .newBuilder()
-                        .withLevel(ResourceLevel.PROJECT)
-                        .withRefType("")
-                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_SET_ENV_ERR),
-                builder -> builder
-                        .withJson(data)
-                        .withRefId("")
-                        .withSourceId(projectId));
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void setEnvErrStatus(String data) {
+        GitlabProjectPayload gitlabProjectPayload = gson.fromJson(data, GitlabProjectPayload.class);
+        LOGGER.info("To set error status for environment with code: {}", gitlabProjectPayload.getPath());
+
+        DevopsEnvironmentDTO devopsEnvironmentDTO = baseQueryByClusterIdAndCode(gitlabProjectPayload.getClusterId(), gitlabProjectPayload.getPath());
+        devopsEnvironmentDTO.setSynchro(true);
+        devopsEnvironmentDTO.setFailed(true);
+        baseUpdate(devopsEnvironmentDTO);
     }
 
     @Override
@@ -1199,18 +1207,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Override
     public DevopsEnvironmentDTO baseQueryById(Long id) {
         return devopsEnvironmentMapper.selectByPrimaryKey(id);
-    }
-
-    @Override
-    public Boolean baseUpdateActive(Long environmentId, Boolean active) {
-        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentMapper.selectByPrimaryKey(environmentId);
-        devopsEnvironmentDTO.setId(environmentId);
-        devopsEnvironmentDTO.setActive(active);
-        devopsEnvironmentDTO.setObjectVersionNumber(devopsEnvironmentDTO.getObjectVersionNumber());
-        if (devopsEnvironmentMapper.updateByPrimaryKeySelective(devopsEnvironmentDTO) != 1) {
-            throw new CommonException("error.environment.update");
-        }
-        return true;
     }
 
     @Override
@@ -1275,11 +1271,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Override
     public DevopsEnvironmentDTO baseQueryByToken(String token) {
         return devopsEnvironmentMapper.queryByToken(token);
-    }
-
-    @Override
-    public List<DevopsEnvironmentDTO> baseListAll() {
-        return devopsEnvironmentMapper.selectAll();
     }
 
     @Override
