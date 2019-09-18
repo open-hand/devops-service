@@ -643,12 +643,6 @@
          select * from devops_app_service
         <where>
             project_id = #{projectId}
-            <if test="ids != null and ids.size > 0">
-                AND
-                <foreach collection="ids" item="id" open="(" separator=" OR " close=")">
-                    id = #{id}
-                </foreach>
-            </if>
             <if test="searchParam != null">
                 <if test='searchParam.status != null'>
                     AND
