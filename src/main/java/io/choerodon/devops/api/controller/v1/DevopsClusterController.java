@@ -38,7 +38,7 @@ public class DevopsClusterController {
      * @param projectId          项目Id
      * @param devopsClusterReqVO 集群信息
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_ADMINISTRATOR})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下创建集群")
     @PostMapping
     public ResponseEntity<String> create(
@@ -57,7 +57,7 @@ public class DevopsClusterController {
      * @param projectId             项目Id
      * @param devopsClusterUpdateVO 集群对象
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_ADMINISTRATOR})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "更新集群")
     @PutMapping("/{cluster_id}")
     public void update(
@@ -76,7 +76,7 @@ public class DevopsClusterController {
      * @param projectId 项目Id
      * @param clusterId 集群Id
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_ADMINISTRATOR})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "查询单个集群信息")
     @GetMapping("/{cluster_id}")
     public ResponseEntity<DevopsClusterRepVO> query(
@@ -95,7 +95,7 @@ public class DevopsClusterController {
      * @param projectId 项目Id
      * @param code      集群Code
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_ADMINISTRATOR})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "根据code查询集群")
     @GetMapping("/query_by_code")
     public ResponseEntity<DevopsClusterRepVO> queryByCode(
@@ -114,7 +114,7 @@ public class DevopsClusterController {
      * @param projectId 项目id
      * @param name      集群name
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_ADMINISTRATOR})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "校验集群名唯一性")
     @GetMapping(value = "/check_name")
     public void checkName(
@@ -131,7 +131,7 @@ public class DevopsClusterController {
      * @param projectId 项目id
      * @param code      集群code
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_ADMINISTRATOR})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "校验集群code唯一性")
     @GetMapping(value = "/check_code")
     public void checkCode(
@@ -149,7 +149,7 @@ public class DevopsClusterController {
 //     * @param projectId 项目id
 //     * @return List
 //     */
-//    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_ADMINISTRATOR})
+//    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
 //    @ApiOperation(value = "查询集群下已有权限的项目列表")
 //    @GetMapping("/list_cluster_projects/{cluster_id}")
 //    public ResponseEntity<List<ProjectReqVO>> listClusterProjects(
@@ -171,7 +171,7 @@ public class DevopsClusterController {
      * @param params      查询参数
      * @return page
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_ADMINISTRATOR})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "分页查询集群下已有权限的项目列表")
     @PostMapping("/{cluster_id}/permission/page_related")
     public ResponseEntity<PageInfo<ProjectReqVO>> pageRelatedProjects(
@@ -260,7 +260,7 @@ public class DevopsClusterController {
      * @param clusterId 集群Id
      * @return String
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_ADMINISTRATOR})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "查询shell脚本")
     @CustomPageRequest
     @GetMapping("/query_shell/{cluster_id}")
@@ -296,7 +296,7 @@ public class DevopsClusterController {
      * @param projectId 项目ID
      * @return Page
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_ADMINISTRATOR})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "集群列表查询")
     @CustomPageRequest
     @PostMapping("/page_cluster")
@@ -322,7 +322,7 @@ public class DevopsClusterController {
      * @param clusterId 集群Id
      * @return String
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_ADMINISTRATOR})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "删除集群")
     @DeleteMapping("/{cluster_id}")
     public void deleteCluster(
@@ -340,7 +340,7 @@ public class DevopsClusterController {
      * @param clusterId 集群Id
      * @return String
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_ADMINISTRATOR})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "查询集群下是否关联已连接环境")
     @GetMapping("/{cluster_id}/check_connect_envs")
     public ResponseEntity<Boolean> checkConnectEnvs(
@@ -363,7 +363,7 @@ public class DevopsClusterController {
      * @param searchParam 查询参数
      * @return pods
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_ADMINISTRATOR})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "分页查询节点下的Pod")
     @CustomPageRequest
     @PostMapping(value = "/page_node_pods")
@@ -391,7 +391,7 @@ public class DevopsClusterController {
      * @param pageRequest 分页参数
      * @return Page
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_ADMINISTRATOR})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "分页查询集群下的节点")
     @CustomPageRequest
     @GetMapping("/page_nodes")
@@ -414,7 +414,7 @@ public class DevopsClusterController {
      * @param nodeName  节点名称
      * @return node information
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_ADMINISTRATOR})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "根据集群id和节点名查询节点状态信息")
     @GetMapping(value = "/nodes")
     public ResponseEntity<ClusterNodeInfoVO> queryNodeInfo(
