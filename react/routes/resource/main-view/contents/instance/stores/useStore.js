@@ -34,7 +34,7 @@ export default function useStore() {
     },
 
     upgrade(projectId, data) {
-      return axios.post(`/devops/v1/projects/${projectId}/app_service_instances`, JSON.stringify(data));
+      return axios.put(`/devops/v1/projects/${projectId}/app_service_instances`, JSON.stringify(data));
     },
 
     async loadValue(projectId, id, versionId) {
