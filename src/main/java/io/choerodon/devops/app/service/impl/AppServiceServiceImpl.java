@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import static java.util.Comparator.comparing;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,6 +16,28 @@ import java.util.stream.Collectors;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+import io.kubernetes.client.JSON;
+import org.apache.commons.io.filefilter.IOFileFilter;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.ListBranchCommand;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.Ref;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
+import retrofit2.Call;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -52,32 +76,6 @@ import io.choerodon.devops.infra.mapper.AppServiceMapper;
 import io.choerodon.devops.infra.mapper.AppServiceUserRelMapper;
 import io.choerodon.devops.infra.mapper.UserAttrMapper;
 import io.choerodon.devops.infra.util.*;
-import io.kubernetes.client.JSON;
-import org.apache.commons.io.filefilter.IOFileFilter;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.ListBranchCommand;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.lib.Ref;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
-import retrofit2.Call;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-
-import static java.util.Comparator.comparing;
-import static java.util.stream.Collectors.collectingAndThen;
-import static java.util.stream.Collectors.toCollection;
 
 
 /**
@@ -621,7 +619,6 @@ public class AppServiceServiceImpl implements AppServiceService {
             throw new CommonException(e.getMessage(), e);
         }
     }
-
 
 
     @Override
@@ -1557,7 +1554,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 organizationId,
                 0, 0, null,
                 new String[0]);
-        PageInfo<ProjectVO> pageInfo = ConvertUtils.convertPage(projectDTOPageInfo,ProjectVO.class);
+        PageInfo<ProjectVO> pageInfo = ConvertUtils.convertPage(projectDTOPageInfo, ProjectVO.class);
         if (pageInfo == null) {
             return new ArrayList<>();
         }
@@ -1691,7 +1688,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         Git git = gitUtil.initGit(new File(workingDirectory));
         //push 到远程仓库
         GitLabUserDTO gitLabUserDTO = gitlabServiceClientOperator.queryUserById(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
-        gitUtil.push(git, applicationDir, oldAppServiceVersionDTO.getVersion(), repositoryUrl, gitLabUserDTO.getUsername(), pushToken);
+        gitUtil.push(git, applicationDir, "The template version:" + oldAppServiceVersionDTO.getVersion(), repositoryUrl, gitLabUserDTO.getUsername(), pushToken);
     }
 
     @Override
@@ -1997,18 +1994,18 @@ public class AppServiceServiceImpl implements AppServiceService {
             shareString = "share";
             // 组织共享的应用服务去查找所属的项目信息
             Set<Long> projectIds = appServiceDTOList.stream().map(AppServiceDTO::getProjectId).collect(Collectors.toSet());
-            projects= baseServiceClientOperator.queryProjectsByIds(projectIds);
+            projects = baseServiceClientOperator.queryProjectsByIds(projectIds);
 
         } else {
             Set<Long> appIds = appServiceDTOList.stream().map(appServiceDTO -> appServiceDTO.getMktAppId()).collect(Collectors.toSet());
             List<ApplicationDTO> applicationDTOS = baseServiceClientOperator.listApplicationInfoByAppIds(projectId, appIds);
-            projects = ConvertUtils.convertList(applicationDTOS,ProjectDTO.class);
+            projects = ConvertUtils.convertList(applicationDTOS, ProjectDTO.class);
         }
         List<AppServiceVersionDTO> versionList = appServiceVersionService.listServiceVersionByAppServiceIds(appServiceIds, shareString);
         Map<Long, List<AppServiceVersionDTO>> versionMap = versionList.stream().collect(Collectors.groupingBy(AppServiceVersionDTO::getAppServiceId));
         Map<Long, ProjectDTO> projectDTOMap = new HashMap<>();
         if (!CollectionUtils.isEmpty(projects)) {
-            projectDTOMap =  projects.stream().collect(Collectors.toMap(ProjectDTO::getId, Function.identity()));
+            projectDTOMap = projects.stream().collect(Collectors.toMap(ProjectDTO::getId, Function.identity()));
         }
 
         Map<Long, ProjectDTO> finalProjectDTOMap = projectDTOMap;
@@ -2020,13 +2017,12 @@ public class AppServiceServiceImpl implements AppServiceService {
                 // 获取项目信息，并传入项目名
                 AppServiceGroupInfoVO appServiceGroupInfoVO = dtoToGroupInfoVO(appServiceDTO);
                 ProjectDTO projectDTO = new ProjectDTO();
-                if(share){
+                if (share) {
                     projectDTO = finalProjectDTOMap.get(appServiceDTO.getProjectId());
-                }
-                else {
+                } else {
                     projectDTO = finalProjectDTOMap.get(appServiceDTO.getMktAppId());
                 }
-                if(!ObjectUtils.isEmpty(projectDTO)){
+                if (!ObjectUtils.isEmpty(projectDTO)) {
                     appServiceGroupInfoVO.setProjectName(projectDTO.getName());
                 }
 
