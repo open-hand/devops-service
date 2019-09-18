@@ -76,6 +76,11 @@ public class SagaTopicCodeConstants {
     public static final String DEVOPS_CREATE_ENV = "devops-create-env";
 
     /**
+     * devops创建环境失败(devops set env status create err)
+     */
+    public static final String DEVOPS_SET_ENV_ERR = "devops-set-env-err";
+
+    /**
      * gitlab pipeline创建到数据库
      */
     public static final String DEVOPS_GITLAB_PIPELINE = "devops-gitlab-pipeline";

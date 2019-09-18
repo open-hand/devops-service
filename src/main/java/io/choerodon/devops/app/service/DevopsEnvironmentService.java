@@ -228,9 +228,10 @@ public interface DevopsEnvironmentService {
     /**
      * 设置环境状态为错误
      *
-     * @param data {@link GitlabProjectPayload} 类型的数据
+     * @param data      {@link GitlabProjectPayload} 类型的数据
+     * @param projectId 可为空
      */
-    void setEnvErrStatus(String data);
+    void setEnvErrStatus(String data, Long projectId);
 
     /**
      * 根据集群id和环境code查询环境
