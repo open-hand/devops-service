@@ -32,10 +32,7 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.validator.ApplicationValidator;
 import io.choerodon.devops.api.vo.ConfigVO;
-import io.choerodon.devops.api.vo.iam.AppServiceAndVersionVO;
-import io.choerodon.devops.api.vo.iam.MarketAppServiceImageVO;
-import io.choerodon.devops.api.vo.iam.MarketAppServiceVersionImageVO;
-import io.choerodon.devops.api.vo.iam.MarketImageUrlVO;
+import io.choerodon.devops.api.vo.iam.*;
 import io.choerodon.devops.api.vo.kubernetes.MockMultipartFile;
 import io.choerodon.devops.app.eventhandler.payload.*;
 import io.choerodon.devops.app.service.*;
@@ -243,9 +240,9 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void downLoadApp(AppMarketDownloadPayload appMarketDownloadVO) {
-        Set<Long> appServiceVersionIds = new HashSet<>();
-
+        List<AppDownloadDevopsReqVO> appDownloadDevopsReqVOS = new ArrayList<>();
         try {
+            AppDownloadDevopsReqVO appDownloadDevopsReqVO = new AppDownloadDevopsReqVO();
             //创建应用
             String groupPath = String.format(SITE_APP_GROUP_NAME_FORMAT, appMarketDownloadVO.getAppCode());
             GroupDTO groupDTO = gitlabGroupService.createSiteAppGroup(appMarketDownloadVO.getIamUserId(), groupPath);
@@ -263,19 +260,21 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                     appServiceDTO = createGitlabProject(downloadPayload, appMarketDownloadVO.getAppCode(), TypeUtil.objToInteger(groupDTO.getId()), userAttrDTO.getGitlabUserId());
                     LOGGER.info("==========应用下载，创建gitlab Project成功！！==========");
                 }
+                appDownloadDevopsReqVO.setServiceId(appServiceDTO.getId());
                 String applicationDir = APPLICATION + System.currentTimeMillis();
                 String accessToken = appServiceService.getToken(appServiceDTO.getGitlabProjectId(), applicationDir, userAttrDTO);
                 LOGGER.info("=========应用下载，获取token成功=========");
-
-                appServiceVersionIds.addAll(createAppServiceVersion(downloadPayload, appServiceDTO, groupPath, isFirst, accessToken, appMarketDownloadVO.getDownloadAppType()));
+                Set<Long> appServiceVersionIds = createAppServiceVersion(downloadPayload, appServiceDTO, groupPath, isFirst, accessToken, appMarketDownloadVO.getDownloadAppType());
+                appDownloadDevopsReqVO.setServiceVersionIds(new ArrayList<>(appServiceVersionIds));
                 LOGGER.info("==========应用下载文件上传成功==========");
+                appDownloadDevopsReqVOS.add(appDownloadDevopsReqVO);
             });
             if (!appMarketDownloadVO.getDownloadAppType().equals(DOWNLOAD_ONLY)) {
                 pushImageForDownload(appMarketDownloadVO);
                 LOGGER.info("==========应用下载镜像推送成功==========");
             }
             LOGGER.info("==========应用下载开始调用回传接口==========");
-            baseServiceClientOperator.completeDownloadApplication(appMarketDownloadVO.getAppDownloadRecordId(), appMarketDownloadVO.getAppVersionId(), appServiceVersionIds);
+            baseServiceClientOperator.completeDownloadApplication(appMarketDownloadVO.getAppDownloadRecordId(), appMarketDownloadVO.getAppVersionId(), appDownloadDevopsReqVOS);
             LOGGER.info("==========应用下载完成==========");
         } catch (Exception e) {
             baseServiceClientOperator.failToDownloadApplication(appMarketDownloadVO.getAppDownloadRecordId(), appMarketDownloadVO.getMktAppVersionId());
