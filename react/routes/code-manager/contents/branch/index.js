@@ -62,23 +62,23 @@ class Branch extends Component {
 
   /**
    * 生成特殊的自定义tool-bar
-   * 为选择应用或者该应用是空仓库那么就不显示 创建分支按钮
+   * 未选择应用那么就不显示 创建分支按钮
+   * 如果是空仓库显示不可用的创建分支按钮
    */
-  getSelfToolBar= () => (
-    !(DevPipelineStore.getSelectApp && BranchStore.getBranchList.length > 0)
-      ? null
-      : <Permission
-        service={['devops-service.devops-git.createBranch',
-        ]}
+  getSelfToolBar= () => (!(DevPipelineStore.getSelectApp)
+    ? null
+    : <Permission
+      service={['devops-service.devops-git.createBranch',
+      ]}
+    >
+      <Button
+        onClick={this.showSidebar}
+        icon="playlist_add"
+        disabled={!(DevPipelineStore.getSelectApp && BranchStore.getBranchList.length > 0)}
       >
-        <Button
-          onClick={this.showSidebar}
-          icon="playlist_add"
-          disabled={!DevPipelineStore.getSelectApp}
-        >
-          <FormattedMessage id="branch.create" />
-        </Button>
-      </Permission>)
+        <FormattedMessage id="branch.create" />
+      </Button>
+    </Permission>)
   
 
   /**

@@ -1638,6 +1638,7 @@ const zhCN = {
   'container.term.ex': '命令行',
   'container.term.log': '日志',
   'container.log.header.title': '查看容器日志',
+  'log.header.title': '查看日志',
   'container.chooseEnv': '选择环境',
   'container.chooseIst': '选择实例',
   'container.ist.empty': '请先选择应用',

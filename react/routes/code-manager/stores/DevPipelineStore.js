@@ -135,7 +135,6 @@ class DevPipelineStore {
       DeploymentPipelineStore.setProRole('app', '');
     }
     this.setAppData([]);
-    this.setSelectApp(null);
     this.setPreProId(projectId);
     this.setLoading(true);
     axios.get(`/devops/v1/projects/${projectId}/app_service/list_by_active`)
