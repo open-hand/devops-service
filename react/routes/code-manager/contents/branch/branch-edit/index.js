@@ -175,6 +175,7 @@ class BranchEdit extends Component {
         okText={<FormattedMessage id="save" />}
         cancelText={<FormattedMessage id="cancel" />}
         confirmLoading={this.state.submitting}
+        width={740}
       >
         <Content code="branch.edit" values={{ name }} className="sidebar-content c7n-createBranch">
           <Form layout="vertical" onSubmit={this.handleOk} className="c7n-sidebar-form">

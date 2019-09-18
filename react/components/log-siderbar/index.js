@@ -237,7 +237,7 @@ export default class LogSidebar extends Component {
 
     return (<Sidebar
       visible={visible}
-      title={<FormattedMessage id="container.log.header.title" />}
+      title={<FormattedMessage id="log.header.title" />}
       onOk={onClose}
       className="c7n-container-sidebar c7n-region"
       okText={<FormattedMessage id="close" />}

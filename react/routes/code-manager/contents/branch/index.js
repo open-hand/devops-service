@@ -57,29 +57,30 @@ class Branch extends Component {
   }
 
   componentWillUnmount() {
-    
+
   }
 
   /**
    * 生成特殊的自定义tool-bar
-   * 为选择应用或者该应用是空仓库那么就不显示 创建分支按钮
+   * 未选择应用那么就不显示 创建分支按钮
+   * 如果是空仓库显示不可用的创建分支按钮
+   * 如果是使用了过滤条 导致没有数据，那么仍然可以看到创建分支按钮
    */
-  getSelfToolBar= () => (
-    !(DevPipelineStore.getSelectApp && BranchStore.getBranchList.length > 0)
-      ? null
-      : <Permission
-        service={['devops-service.devops-git.createBranch',
-        ]}
+  getSelfToolBar = () => (!(DevPipelineStore.getSelectApp)
+    ? null
+    : <Permission
+      service={['devops-service.devops-git.createBranch',
+      ]}
+    >
+      <Button
+        onClick={this.showSidebar}
+        icon="playlist_add"
+        disabled={!(DevPipelineStore.getSelectApp && (BranchStore.getBranchList.length > 0 || this.hasFilters()))}
       >
-        <Button
-          onClick={this.showSidebar}
-          icon="playlist_add"
-          disabled={!DevPipelineStore.getSelectApp}
-        >
-          <FormattedMessage id="branch.create" />
-        </Button>
-      </Permission>)
-  
+        <FormattedMessage id="branch.create" />
+      </Button>
+    </Permission>)
+
 
   /**
    * 获取issue的options
@@ -174,7 +175,7 @@ class Branch extends Component {
     ];
     // 分支如果是master  禁止创建合并请求 否认：会造成跳转到 gitlab，gailab页面报错的问题
     if (record.branchName === 'master') {
-      action.shift(); 
+      action.shift();
     }
 
     // 如果仅有一个分支那么禁止删除
@@ -251,7 +252,7 @@ class Branch extends Component {
               <div style={{ display: 'inline-block' }}>
                 <span style={{ paddingRight: 5 }}>{record.createUserName}</span>
                 {record.createUserName !== record.createUserRealName
-                && <span>{record.createUserRealName}</span>}
+                  && <span>{record.createUserRealName}</span>}
               </div>
             </React.Fragment>
             : <React.Fragment>
@@ -262,7 +263,7 @@ class Branch extends Component {
                 <div style={{ display: 'inline-block' }}>
                   <span style={{ paddingRight: 5 }}>{record.createUserName}</span>
                   {record.createUserName !== record.createUserRealName
-                  && <span>{record.createUserRealName}</span>}
+                    && <span>{record.createUserRealName}</span>}
                 </div>
               </div> : null}
             </React.Fragment>}
@@ -287,10 +288,11 @@ class Branch extends Component {
    */
   get tableBranch() {
     const { intl: { formatMessage } } = this.props;
-    
+
     const menu = AppState.currentMenuType;
 
     const { getBranchList, loading, getPageInfo } = BranchStore;
+
     return (
       <div>
         <Table
@@ -302,7 +304,7 @@ class Branch extends Component {
           dataSource={getBranchList}
           rowKey={({ creationDate, branchName }) => `${branchName}-${creationDate}`}
           onChange={this.tableChange}
-          locale={{ emptyText: formatMessage({ id: 'branch.empty' }) }}
+          locale={{ emptyText: this.hasFilters() ? formatMessage({ id: 'branch.empty.data' }) : formatMessage({ id: 'branch.empty' }) }}
           noFilter
         />
       </div>
@@ -374,7 +376,7 @@ class Branch extends Component {
    * @param name
    */
   openRemove = (name) => {
-    
+
   };
 
   /**
@@ -447,6 +449,11 @@ class Branch extends Component {
       });
   };
 
+  hasFilters = () => {
+    const { filters, paras } = this.state;
+    return !(_.isEmpty(filters) && _.isEmpty(paras));
+  }
+
   render() {
     const { name } = AppState.currentMenuType;
     const { intl: { formatMessage }, history: { location: { state } } } = this.props;
@@ -463,7 +470,7 @@ class Branch extends Component {
           'devops-service.devops-git.pageBranchByOptions',
           'devops-service.devops-git.pageTagsByOptions',
         ]}
-      > 
+      >
         {!(DevPipelineStore.getAppData && DevPipelineStore.getAppData.length > 0) ? <Loading display={DevPipelineStore.getLoading} />
           : <Fragment>
             {this.tableBranch}
@@ -503,7 +510,7 @@ class Branch extends Component {
                 ]}
               >
                 <div className="c7n-padding-top_8">{formatMessage({ id: 'branch.delete.tooltip' })}</div>
-              </Modal> 
+              </Modal>
             </Fragment> : null}
           </Fragment>}
       </Page>

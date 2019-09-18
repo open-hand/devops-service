@@ -335,6 +335,7 @@ class BranchCreate extends Component {
         okText={<FormattedMessage id="create" />}
         cancelText={<FormattedMessage id="cancel" />}
         confirmLoading={this.state.submitting}
+        width={740}
       >
         <Content
           code="branch.create"

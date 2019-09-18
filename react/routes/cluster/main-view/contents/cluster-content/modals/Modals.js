@@ -17,7 +17,7 @@ const modalKey3 = Modal.key();
 
 const ClusterModals = observer(() => {
   const modalStyle = useMemo(() => ({
-    width: 500,
+    width: 380,
   }), []);
   const {
     intlPrefix,
@@ -65,6 +65,7 @@ const ClusterModals = observer(() => {
 
   function refresh() {
     resreshTree();
+    ClusterDetailDs.query();
     if (getTabKey === NODE_TAB) {
       NodeListDs.query();
     } else {

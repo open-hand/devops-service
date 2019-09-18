@@ -11,6 +11,16 @@ import { Consumer } from './EditableContext';
 const { TextArea } = Input;
 const { Item: FormItem } = Form;
 
+const formItemLayout = {
+  labelCol: {
+    xs: { span: 24 },
+    sm: { span: 100 },
+  },
+  wrapperCol: {
+    xs: { span: 24 },
+    sm: { span: 26 },
+  },
+};
 
 @injectIntl
 export default class EditableCell extends React.Component {
@@ -80,10 +90,9 @@ export default class EditableCell extends React.Component {
    * @param e
    */
   onChange = (e) => {
-    const { add } = this.props;
+    const { add, record } = this.props;
     const { oldValue, pasting } = this.state;
-
-    if (pasting) {
+    if (pasting && record.key === 'key') {
       const value = oldValue !== '' ? (e.target.value.substring(oldValue.length) || e.target.value) : e.target.value;
       if (value.includes('=')) {
         const KValue = _.map(value.split('\n'), (str) => {
@@ -144,7 +153,7 @@ export default class EditableCell extends React.Component {
               this.form = form;
               return (
                 editing ? (
-                  <FormItem style={{ margin: 0 }}>
+                  <FormItem className="c7ncd-edit-table-form-item">
                     {form.getFieldDecorator(dataIndex, {
                       initialValue: record[dataIndex],
                       rules: [
@@ -159,7 +168,8 @@ export default class EditableCell extends React.Component {
                         autosize
                         onKeyDown={this.onKeyDown}
                         onChange={this.onChange}
-                      />,
+                      />
+                      
                     )}
                   </FormItem>
                 ) : (

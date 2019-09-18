@@ -21,7 +21,12 @@ export default function useStore() {
     },
 
     postKV(projectId, data) {
-      return axios.post(`/devops/v1/projects/${projectId}/config_maps`, JSON.stringify(data));
+      const { id } = data;
+      if (id) {
+        return axios.put(`/devops/v1/projects/${projectId}/config_maps`, JSON.stringify(data));
+      } else {
+        return axios.post(`/devops/v1/projects/${projectId}/config_maps`, JSON.stringify(data));
+      }
     },
 
     checkName(projectId, envId, name) {
