@@ -17,7 +17,7 @@ const modalKey3 = Modal.key();
 
 const ClusterModals = observer(() => {
   const modalStyle = useMemo(() => ({
-    width: 500,
+    width: 380,
   }), []);
   const {
     intlPrefix,

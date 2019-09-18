@@ -5,6 +5,7 @@ import { useClusterContentStore } from './stores';
 import Modals from './modals';
 import PageTitle from '../../../../../components/page-title';
 import StatusDot from '../../../../../components/status-dot';
+import './index.less';
 
 const { TabPane } = Tabs;
 
@@ -63,13 +64,16 @@ export default observer((props) => {
         animated={false}
         activeKey={contentStore.getTabKey}
         onChange={handleChange}
+        className="c7ncd-cluster-tab-content"
       >
         <TabPane
           key={NODE_TAB}
           tab={formatMessage({ id: `${intlPrefix}.node.list` })}
         >
           <Suspense fallback={<Spin />}>
-            <NodeList />
+            <div className="c7ncd-cluster-node-list">
+              <NodeList />
+            </div>
           </Suspense>
         </TabPane>
         <TabPane
@@ -77,7 +81,9 @@ export default observer((props) => {
           tab={formatMessage({ id: `${intlPrefix}.permission.assign` })}
         >
           <Suspense fallback={<Spin />}>
+            
             <PermissionList />
+            
           </Suspense>
         </TabPane>
       </Tabs>

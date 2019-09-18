@@ -197,12 +197,13 @@ export default class Pipeline extends Component {
   renderStatus = (record, data) => {
     const { intl: { formatMessage } } = this.props;
     const id = data.id;
+    const { isEnabled } = data;
     return <div>
       <StatusTags
         name={formatMessage({ id: record ? 'active' : 'stop' })}
         color={record ? '#00bfa5' : '#cecece'}
       />
-      <a className="c7ncd-pipeline-status-a" onClick={(e) => { this.handleClickName(e, id); }}>{data.name}</a>
+      {isEnabled ? <a className="c7ncd-pipeline-status-a" onClick={(e) => { this.handleClickName(e, id); }}>{data.name}</a> : <span style={{ marginLeft: '0.08rem' }}>{data.name}</span> }
     </div>;
   };
 
@@ -399,11 +400,6 @@ export default class Pipeline extends Component {
         text: formatMessage({ id: 'pipeline.action.run' }),
         action: this.openExecuteCheck.bind(this, id, name),
       },
-      edit: {
-        service: ['devops-service.pipeline.update'],
-        text: formatMessage({ id: 'edit' }),
-        action: this.linkToEdit.bind(this, id),
-      },
       disabled: {
         service: ['devops-service.pipeline.updateIsEnabled'],
         text: formatMessage({ id: 'stop' }),
@@ -441,13 +437,13 @@ export default class Pipeline extends Component {
     }
 
     if (!edit) {
-      actionItem = filterItem(actionItem, ['edit', 'remove']);
+      actionItem = filterItem(actionItem, ['remove']);
     }
 
     // 停用的流水线不能修改
-    if (!isEnabled) {
-      actionItem = filterItem(actionItem, 'edit');
-    }
+    // if (!isEnabled) {
+    //   actionItem = filterItem(actionItem, 'edit');
+    // }
 
     return (<Action data={_.map(actionItem, (item) => ({ ...action[item] }))} />);
   };

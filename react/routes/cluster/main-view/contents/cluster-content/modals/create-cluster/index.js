@@ -6,6 +6,7 @@ import _ from 'lodash';
 import { Modal } from 'choerodon-ui/pro';
 import { handlePromptError } from '../../../../../../../utils';
 import ActivateCluster from '../activate-cluster';
+import './index.less';
 
 const { TextArea } = Input;
 const FormItem = Form.Item;
@@ -90,7 +91,7 @@ const CreateCluster = observer((props) => {
       children: <ActivateCluster cmd={cmd} intlPrefix={intlPrefix} formatMessage={formatMessage} />,
       drawer: true,
       style: {
-        width: 500,
+        width: 380,
       },
       okCancel: false,
       okText: formatMessage({ id: 'close' }),
@@ -98,11 +99,10 @@ const CreateCluster = observer((props) => {
   };
 
   const checkName = useMemo(() => _.debounce((rule, value, callback) => {
-    const pa = /^[a-z]([-a-z0-9]*[a-z0-9])?$/;
     if (formData && value === formData.name) {
       callback();
-    } else if (value && pa.test(value)) {
-      mainStore.checkClusterName({ projectId, clusterName: value })
+    } else if (value) {
+      mainStore.checkClusterName({ projectId, clusterName: window.encodeURIComponent(value) })
         .then((res) => {
           if (res && res.failed) {
             callback(`名称${formatMessage({ id: `${intlPrefix}.check.exist` })}`);
@@ -113,8 +113,6 @@ const CreateCluster = observer((props) => {
         .catch((e) => {
           callback(`${formatMessage({ id: `${intlPrefix}.check.error` })}`);
         });
-    } else if (value && !pa.test(value)) {
-      callback(`名称${formatMessage({ id: `${intlPrefix}.check.failed` })}`);
     } else {
       callback();
     }
@@ -146,7 +144,7 @@ const CreateCluster = observer((props) => {
 
   return (
     <Fragment>
-      <Form>
+      <Form className="c7ncd-cluster-create-form">
         <FormItem>
           {getFieldDecorator('name', {
             rules: [

@@ -172,7 +172,7 @@ export default class FormView extends Component {
    */
   handleSave = (row) => {
     const newData = [...this.state.dataSource];
-    const index = _.findIndex(newData, ['index', row.Layout]);
+    const index = _.findIndex(newData, ['index', row.index]);
 
     newData.splice(index, 1, {
       ...newData[index],
@@ -302,23 +302,25 @@ export default class FormView extends Component {
     let hasKVError = false;
     let hasConfigRuleError = false;
 
-    if (!isYamlEdit) {
-      hasKVError = this.checkErrorData();
-      const allData = [...dataSource.filter(item => !_.isEmpty(item.key))];
-      configData = _.uniqBy(allData, 'index');
-    } else {
-      hasConfigRuleError = this.checkConfigRuleError();
-      configData = yamlToObj(dataYaml);
-    }
-
-    if (hasYamlError || hasKVError || hasConfigRuleError) return;
-
-    this.setState({
-      submitting: true,
-      hasItemError: false,
-    });
+    
 
     form.validateFieldsAndScroll(async (err, { name, description }) => {
+      if (!isYamlEdit) {
+        hasKVError = this.checkErrorData();
+        const allData = [...dataSource.filter(item => !_.isEmpty(item.key))];
+        configData = _.uniqBy(allData, 'index');
+      } else {
+        hasConfigRuleError = this.checkConfigRuleError();
+        configData = yamlToObj(dataYaml);
+      }
+  
+      if (hasYamlError || hasKVError || hasConfigRuleError) return;
+  
+      this.setState({
+        submitting: true,
+        hasItemError: false,
+      });
+      
       if (!err) {
         const _value = takeObject(configData);
 
@@ -369,9 +371,7 @@ export default class FormView extends Component {
       title,
     } = this.props;
     const { data } = this.state;
-
-
-    return (<Form className={title === 'mapping' ? 'c7n-sidebar-form' : ''} layout="vertical">
+    return (<Form className='c7n-sidebar-form' layout="vertical">
       <FormItem
         {...formItemLayout}
       >
@@ -437,17 +437,17 @@ export default class FormView extends Component {
       const baseColumns = [{
         title: 'key',
         dataIndex: 'key',
-        width: title === 'mapping' ? '25%' : 230,
+        width: '25%',
         editable: true,
       }, {
         title: '',
-        width: title === 'mapping' ? '5%' : 60,
+        width: '5%',
         className: 'icon-equal',
         align: 'center',
         dataIndex: 'temp',
       }, {
         title,
-        width: title === 'mapping' ? '100%' : 230,
+        width: '100%',
         dataIndex: 'value',
         editable: true,
       }, {
@@ -622,7 +622,6 @@ export default class FormView extends Component {
           visible={visible}
           title={<FormattedMessage id={titleCode} />}
           confirmLoading={submitting}
-          width={title === 'mapping' ? null : 380}
           footer={[
             <Button
               disabled={disableBtn}

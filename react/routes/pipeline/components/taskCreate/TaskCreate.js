@@ -836,6 +836,7 @@ export default class TaskCreate extends Component {
         destroyOnClose
         title={<FormattedMessage id={`pipeline.task.${isEdit ? 'edit' : 'create'}.head`} />}
         visible={visible}
+        width={740}
         footer={
           [<Button
             key="submit"

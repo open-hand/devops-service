@@ -68,7 +68,7 @@ function ClusterItem({
       children: <EditCluster isEdit record={res || ClusterDetailDs.current} mainStore={mainStore} afterOk={freshMenu} intlPrefix={intlPrefix} formatMessage={formatMessage} treeItemStore={treeItemStore} projectId={projectId} />,
       drawer: true,
       style: {
-        width: 500,
+        width: 380,
       },
       okText: formatMessage({ id: 'save' }),
     });
@@ -92,7 +92,7 @@ function ClusterItem({
         children: <ActivateCluster cmd={res} intlPrefix={intlPrefix} formatMessage={formatMessage} />,
         drawer: true,
         style: {
-          width: 500,
+          width: 380,
         },
         okCancel: false,
         okText: formatMessage({ id: 'close' }),

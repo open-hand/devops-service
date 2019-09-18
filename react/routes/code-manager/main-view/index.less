@@ -25,9 +25,22 @@
     .page-container {
         height: ~"calc(100% - 190px)";
         position: absolute;
-        top: 190px;
-        padding-left: 20px;
+        top: 1.84rem;
+        padding-left: 0.2rem;
         overflow: auto;
-        padding-bottom: 30px;
+        padding-bottom: 0.3rem;
+        padding-right: 0.2rem;
+        .c7n-table-filter-bar {
+            .c7n-table-filter-select {
+                .c7n-select {
+                    padding-top: 0.04rem;
+                }
+            }
+            .c7n-select-selection__rendered {
+                height: 100% !important;
+                min-height: unset;
+                padding: 0 !important;
+            }
+        }
     }
 }

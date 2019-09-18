@@ -1277,7 +1277,7 @@ const zhCN = {
   'deploy.appName': '应用名称',
   'deploy.instance': '实例名称',
   'deploy.envName': '环境名称',
-  'deploy.app': '应用',
+  'deploy.app': '应用服务',
   'deploy.ver': '版本',
   'deploy.env': '环境',
   'deploy.pod': 'Pod状态',
@@ -1602,6 +1602,7 @@ const zhCN = {
   'branch.issue.epic': '史诗',
   'branch.issue.subtask': '子任务',
   'branch.empty': '该应用服务仓库为空，暂无分支',
+  'branch.empty.data': '暂无数据',
 
   // ciPipeline
   'ciPipeline.head': '持续集成',
