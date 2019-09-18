@@ -13,6 +13,7 @@ public class AppServiceImportPayload {
     private String orgCode;
     private String proCode;
     private Long oldAppServiceId;
+    private Long projectId;
 
     public Long getAppServiceId() {
         return appServiceId;
@@ -68,5 +69,13 @@ public class AppServiceImportPayload {
 
     public void setOldAppServiceId(Long oldAppServiceId) {
         this.oldAppServiceId = oldAppServiceId;
+    }
+
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
     }
 }

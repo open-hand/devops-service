@@ -623,14 +623,21 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
 
+
     @Override
-    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
-    public void setAppErrStatus(Long appServiceId) {
-        AppServiceDTO applicationDTO = baseQuery(appServiceId);
-        applicationDTO.setSynchro(true);
-        applicationDTO.setFailed(true);
-        baseUpdate(applicationDTO);
-        LOGGER.info("================应用服务创建失败执行回写失败状态成功，serviceId：{}", appServiceId);
+    @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_APP_FAIL,
+            description = "Devops设置application状态为创建失败(devops set app status create err)", inputSchema = "{}")
+    public void setAppErrStatus(String input, Long projectId) {
+        producer.applyAndReturn(
+                StartSagaBuilder
+                        .newBuilder()
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withRefType("")
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_APP_FAIL),
+                builder -> builder
+                        .withJson(input)
+                        .withRefId("")
+                        .withSourceId(projectId));
     }
 
     @Override
@@ -1610,6 +1617,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             appServiceImportPayload.setIamUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
             appServiceImportPayload.setVersionId(importInternalVO.getVersionId());
             appServiceImportPayload.setOrgCode(organizationDTO.getCode());
+            appServiceImportPayload.setProjectId(projectId);
             appServiceImportPayload.setProCode(projectDTO.getCode());
             appServiceImportPayload.setOldAppServiceId(importInternalVO.getAppServiceId());
             producer.apply(

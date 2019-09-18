@@ -105,9 +105,9 @@ public interface AppServiceService {
     /**
      * 设置服务创建失败状态
      *
-     * @param appServiceId 服务信息
+     * @param input 服务信息
      */
-    void setAppErrStatus(Long appServiceId);
+    void setAppErrStatus(String input, Long projectId);
 
     /**
      * 项目下服务查询ci脚本文件
