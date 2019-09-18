@@ -1,6 +1,6 @@
 package io.choerodon.devops.api.vo.iam;
 
-import java.util.List;
+import java.util.Set;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -10,7 +10,7 @@ import java.util.List;
 public class AppDownloadDevopsReqVO {
     private Long serviceId;
 
-    private List<Long> serviceVersionIds;
+    private Set<Long> serviceVersionIds;
 
     public Long getServiceId() {
         return serviceId;
@@ -20,11 +20,11 @@ public class AppDownloadDevopsReqVO {
         this.serviceId = serviceId;
     }
 
-    public List<Long> getServiceVersionIds() {
+    public Set<Long> getServiceVersionIds() {
         return serviceVersionIds;
     }
 
-    public void setServiceVersionIds(List<Long> serviceVersionIds) {
+    public void setServiceVersionIds(Set<Long> serviceVersionIds) {
         this.serviceVersionIds = serviceVersionIds;
     }
 }
