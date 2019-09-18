@@ -7,6 +7,7 @@ import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.eventhandler.payload.EnvGitlabProjectPayload;
+import io.choerodon.devops.app.eventhandler.payload.GitlabProjectPayload;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
 
@@ -227,21 +228,24 @@ public interface DevopsEnvironmentService {
     /**
      * 设置环境状态为错误
      *
-     * @param data      数据
-     * @param projectId 可为空
+     * @param data {@link GitlabProjectPayload} 类型的数据
      */
-    void setEnvErrStatus(String data, Long projectId);
+    void setEnvErrStatus(String data);
 
     /**
-     * @param clusterId
-     * @param code
-     * @return
+     * 根据集群id和环境code查询环境
+     *
+     * @param clusterId 集群id
+     * @param code      环境code
+     * @return 环境信息
      */
     DevopsEnviromentRepVO queryByCode(Long clusterId, String code);
 
 
     /**
-     * @param envId
+     * 重试GitOps同步
+     *
+     * @param envId 环境id
      */
     void retryGitOps(Long envId);
 
@@ -276,8 +280,6 @@ public interface DevopsEnvironmentService {
 
     DevopsEnvironmentDTO baseQueryById(Long id);
 
-    Boolean baseUpdateActive(Long environmentId, Boolean active);
-
     DevopsEnvironmentDTO baseUpdate(DevopsEnvironmentDTO devopsEnvironmentDTO);
 
     void baseCheckCode(DevopsEnvironmentDTO devopsEnvironmentDTO);
@@ -291,8 +293,6 @@ public interface DevopsEnvironmentService {
     DevopsEnvironmentDTO baseQueryByProjectIdAndCode(Long projectId, String code);
 
     DevopsEnvironmentDTO baseQueryByToken(String token);
-
-    List<DevopsEnvironmentDTO> baseListAll();
 
     void baseUpdateSagaSyncEnvCommit(DevopsEnvironmentDTO devopsEnvironmentDTO);
 
