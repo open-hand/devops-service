@@ -14,23 +14,9 @@ public class DevopsEnvGroupEnvsVO {
     @ApiModelProperty("环境组内的环境")
     private List<DevopsEnviromentRepVO> devopsEnviromentRepDTOs;
 
-    @ApiModelProperty("组内的环境是否启用")
-    private boolean active;
-
     public DevopsEnvGroupEnvsVO() {
     }
 
-    public DevopsEnvGroupEnvsVO(boolean active) {
-        this.active = active;
-    }
-
-    public boolean isActive() {
-        return active;
-    }
-
-    public void setActive(boolean active) {
-        this.active = active;
-    }
 
     public Long getDevopsEnvGroupId() {
         return devopsEnvGroupId;
