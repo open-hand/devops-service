@@ -67,11 +67,18 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     @Override
     @Transactional
     public String createCluster(Long projectId, DevopsClusterReqVO devopsClusterReqVO) {
+        ProjectDTO iamProject = baseServiceClientOperator.queryIamProjectById(projectId);
+
+        // 继续判断id是够为空是因为可能会返回 CommonException 但是也会被反序列化为  ProjectDTO
+        if (iamProject == null || iamProject.getId() == null) {
+            throw new CommonException("error.project.query.by.id", projectId);
+        }
 
         // 插入记录
         DevopsClusterDTO devopsClusterDTO = ConvertUtils.convertObject(devopsClusterReqVO, DevopsClusterDTO.class);
         devopsClusterDTO.setToken(GenerateUUID.generateUUID());
         devopsClusterDTO.setProjectId(projectId);
+        devopsClusterDTO.setOrganizationId(iamProject.getOrganizationId());
         devopsClusterDTO.setSkipCheckProjectPermission(true);
         devopsClusterDTO = baseCreateCluster(devopsClusterDTO);
 

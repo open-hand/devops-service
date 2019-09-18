@@ -5,7 +5,7 @@
     <select id="listByProjectId" resultType="io.choerodon.devops.infra.dto.DevopsClusterDTO">
         select dc.id,dc.`name` from devops_cluster dc where dc.skip_check_project_permission is true and
         dc.organization_id = #{organizationId}
-        UNION
+        UNION ALL
         select dc.id,dc.`name` from devops_cluster dc
         join devops_cluster_pro_rel dcp on dc.id = dcp.cluster_id
         where dcp.project_id = #{projectId}
