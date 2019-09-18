@@ -174,21 +174,24 @@
                 AND dav.`commit` IS NOT NULL
             </otherwise>
         </choose>
-        <if test="version != null">
-            AND
-            dav.version LIKE CONCAT(CONCAT('%', #{version, jdbcType=VARCHAR}),'%')
+        <include refid="sqlparam"/>
+        <if test="index != null and index !=''">
+            ORDER BY dav.version desc
         </if>
-        <choose>
-            <when test="appServiceVersionId!=null and appServiceVersionId!=''">
-                ORDER BY dav.id != ${appServiceVersionId}, dav.id DESC
-            </when>
-            <otherwise>
-                ORDER BY dav.id DESC
-            </otherwise>
-        </choose>
-
     </select>
-
+    <sql id="sqlparam">
+        <if test='searchParam != null'>
+            <if test='searchParam.version != null and searchParam.version.length > 0'>
+                AND dav.version LIKE CONCAT(CONCAT('%', #{searchParam.version, jdbcType=VARCHAR}),'%')
+            </if>
+        </if>
+        <if test='params != null and params.size > 0'>
+            AND
+            <foreach collection="params" item="param" open="(" separator=" OR " close=")">
+                dav.version LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            </foreach>
+        </if>
+    </sql>
     <select id="listAppDeployedVersion" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
         SELECT DISTINCT
         dav.id,

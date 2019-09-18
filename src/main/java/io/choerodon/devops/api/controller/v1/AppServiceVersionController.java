@@ -45,8 +45,6 @@ public class AppServiceVersionController {
      * @param projectId
      * @param appServiceId
      * @param deployOnly
-     * @param appServiceVersionId
-     * @param version
      * @param pageRequest
      * @return
      */
@@ -65,14 +63,12 @@ public class AppServiceVersionController {
             @RequestParam(value = "deploy_only") Boolean deployOnly,
             @ApiParam(value = "是否分页")
             @RequestParam(value = "do_page", required = false, defaultValue = "false") Boolean doPage,
-            @ApiParam(value = "版本Id")
-            @RequestParam(value = "app_service_version_id", required = false) Long appServiceVersionId,
             @ApiParam(value = "查询参数")
-            @RequestParam(value = "version", required = false) String version,
+            @RequestBody(required = false) String params,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageRequest) {
         return Optional.ofNullable(appServiceVersionService.pageByOptions(
-                projectId, appServiceId, deployOnly, doPage, appServiceVersionId, version, pageRequest))
+                projectId, appServiceId, deployOnly, doPage,params, pageRequest))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(VERSION_QUERY_ERROR));
     }
