@@ -510,7 +510,8 @@
         das.project_id,
         das.`name`,
         das.CODE,
-        das.type
+        das.type,
+        das.mkt_app_id
         FROM
         devops_app_service das
         JOIN devops_app_service_version dasv ON dasv.app_service_id = das.id
