@@ -88,7 +88,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
 
     @Override
     public ResponseEntity<GitlabProjectDTO> queryProjectById(Integer projectId) {
-        throw new CommonException("error.project.get");
+        throw new CommonException("error.project.query.by.id", projectId);
     }
 
     @Override

@@ -25,10 +25,11 @@ import io.choerodon.devops.infra.feign.BaseServiceClient;
 @Component
 public class BaseServiceClientFallback implements BaseServiceClient {
     private static final String ERROR_PROJECT_GET = "error.project.get";
+    private static final String ERROR_PROJECT_QUERY_BY_ID = "error.project.query.by.id";
 
     @Override
     public ResponseEntity<ProjectDTO> queryIamProject(Long projectId) {
-        throw new CommonException(ERROR_PROJECT_GET);
+        throw new CommonException(ERROR_PROJECT_QUERY_BY_ID, projectId);
     }
 
     @Override

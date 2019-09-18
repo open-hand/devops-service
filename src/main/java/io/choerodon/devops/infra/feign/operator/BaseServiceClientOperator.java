@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -23,7 +22,10 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.FeignException;
 import io.choerodon.devops.api.vo.OrganizationSimplifyVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
-import io.choerodon.devops.api.vo.iam.*;
+import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO;
+import io.choerodon.devops.api.vo.iam.RemoteTokenAuthorizationVO;
+import io.choerodon.devops.api.vo.iam.RoleVO;
+import io.choerodon.devops.api.vo.iam.UserWithRoleVO;
 import io.choerodon.devops.api.vo.kubernetes.ProjectCreateDTO;
 import io.choerodon.devops.infra.dto.iam.*;
 import io.choerodon.devops.infra.feign.BaseServiceClient;
@@ -44,7 +46,7 @@ public class BaseServiceClientOperator {
     public ProjectDTO queryIamProjectById(Long projectId) {
         ResponseEntity<ProjectDTO> projectDTOResponseEntity = baseServiceClient.queryIamProject(projectId);
         if (!projectDTOResponseEntity.getStatusCode().is2xxSuccessful()) {
-            throw new CommonException("error.project.get");
+            throw new CommonException("error.project.query.by.id", projectId);
         }
         return projectDTOResponseEntity.getBody();
     }
@@ -367,17 +369,17 @@ public class BaseServiceClientOperator {
         }
     }
 
-    public List<ApplicationDTO> listApplicationInfoByAppIds(Long projectId, Set<Long> serviceIds){
+    public List<ApplicationDTO> listApplicationInfoByAppIds(Long projectId, Set<Long> serviceIds) {
         try {
-            return baseServiceClient.listApplicationInfoByAppIds(projectId,serviceIds).getBody();
+            return baseServiceClient.listApplicationInfoByAppIds(projectId, serviceIds).getBody();
         } catch (Exception e) {
             return null;
         }
     }
 
-    public Set<Long> listAppServiceByAppId(Long projectId,Long appId){
+    public Set<Long> listAppServiceByAppId(Long projectId, Long appId) {
         try {
-            return baseServiceClient.listAppServiceByAppId(projectId,appId).getBody();
+            return baseServiceClient.listAppServiceByAppId(projectId, appId).getBody();
         } catch (Exception e) {
             return null;
         }

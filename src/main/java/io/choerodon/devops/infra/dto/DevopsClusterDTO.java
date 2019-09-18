@@ -15,6 +15,9 @@ public class DevopsClusterDTO extends BaseDTO {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    /**
+     * 这个集群所属项目的组织id， 不能为空
+     */
     private Long organizationId;
     private String name;
     private String code;
