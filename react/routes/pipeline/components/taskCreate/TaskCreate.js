@@ -142,7 +142,7 @@ export default class TaskCreate extends Component {
      * 针对自动触发时，首个阶段的首个任务必须是部署任务
      */
     const isHeadStage = (_.head(getStageList) || {}).tempId === stageId;
-    const isHeadTask = _.isEmpty(getTaskList) || (_.head(getTaskList[stageId]) || {}).Layout === taskId;
+    const isHeadTask = _.isEmpty(getTaskList) || (_.head(getTaskList[stageId]) || {}).index === taskId;
     if (isHeadStage && isHeadTask) {
       this.setState({ isHead: true });
     }

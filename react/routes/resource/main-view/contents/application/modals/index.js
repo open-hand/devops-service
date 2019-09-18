@@ -37,6 +37,7 @@ const AppModals = observer(() => {
     mappingDs,
     cipherDs,
     appStore,
+    checkAppExist,
   } = useApplicationStore();
   const { id, parentId } = resourceStore.getSelectedMenu;
 
@@ -45,21 +46,25 @@ const AppModals = observer(() => {
   const [showNetwork, setShowNetwork] = useState(false);
 
   function refresh() {
-    treeDs.query();
-    baseInfoDs.query();
-    const current = appStore.getTabKey;
-    switch (current) {
-      case NET_TAB:
-        netDs.query();
-        break;
-      case MAPPING_TAB:
-        mappingDs.query();
-        break;
-      case CIPHER_TAB:
-        cipherDs.query();
-        break;
-      default:
-    }
+    checkAppExist().then((query) => {
+      if (query) {
+        treeDs.query();
+        baseInfoDs.query();
+        const current = appStore.getTabKey;
+        switch (current) {
+          case NET_TAB:
+            netDs.query();
+            break;
+          case MAPPING_TAB:
+            mappingDs.query();
+            break;
+          case CIPHER_TAB:
+            cipherDs.query();
+            break;
+          default:
+        }
+      }
+    });
   }
 
   function setTabKey(key) {
@@ -114,7 +119,8 @@ const AppModals = observer(() => {
     const envRecord = treeDs.find((record) => record.get('key') === parentId);
     const connect = envRecord.get('connect');
     const synchronize = envRecord.get('synchronize');
-    const disabled = !connect || !synchronize;
+    const notReady = !baseInfoDs.current;
+    const disabled = !connect || !synchronize || notReady;
 
     return [{
       disabled,
@@ -145,7 +151,7 @@ const AppModals = observer(() => {
       display: true,
       group: 1,
     }, {
-      disabled: !baseInfoDs.current,
+      disabled: notReady,
       name: formatMessage({ id: `${intlPrefix}.service.detail` }),
       icon: 'find_in_page',
       handler: openDetail,

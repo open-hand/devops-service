@@ -3,8 +3,8 @@ import { observer } from 'mobx-react-lite';
 import { Tabs, Spin } from 'choerodon-ui';
 import { useEnvironmentStore } from '../../../stores';
 import { useDetailStore } from './stores';
-import StatusDot from '../../../../../components/status-dot';
 import PageTitle from '../../../../../components/page-title';
+import EnvTitle from '../../../../../components/env-title';
 import Modals from './modals';
 
 const { TabPane } = Tabs;
@@ -41,14 +41,7 @@ const EnvContent = observer(() => {
 
   return (
     <Fragment>
-      <PageTitle>
-        <StatusDot
-          connect={connect}
-          synchronize={synchro}
-          active={active}
-        />
-        <span className="c7ncd-page-title-text">{name}</span>
-      </PageTitle>
+      <PageTitle content={<EnvTitle name={name} synchronize={synchro} connect={connect} />} />
       <Tabs
         animated={false}
         activeKey={detailStore.getTabKey}

@@ -1,4 +1,5 @@
 import { useLocalStore } from 'mobx-react-lite';
+import { axios } from '@choerodon/master';
 import { viewTypeMappings } from './mappings';
 
 const { IST_VIEW_TYPE } = viewTypeMappings;
@@ -41,6 +42,19 @@ export default function useStore() {
     },
     get getSearchValue() {
       return this.searchValue;
+    },
+
+    async checkExist({ projectId, envId, type, id }) {
+      try {
+        const res = await axios.get(`/devops/v1/projects/${projectId}/envs/${envId}/check/${type}/${id}`);
+        if (typeof res === 'boolean') {
+          return res;
+        }
+        // 只有请求到false，才返回false
+        return true;
+      } catch (e) {
+        return true;
+      }
     },
   }));
 }

@@ -20,7 +20,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
           parentId,
         },
       },
-      itemType: {
+      itemTypes: {
         SERVICES_ITEM,
         INGRESS_ITEM,
         CERT_ITEM,

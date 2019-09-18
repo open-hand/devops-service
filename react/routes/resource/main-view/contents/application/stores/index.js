@@ -12,6 +12,7 @@ import useConfigMapStore from './useConfigMapStore';
 import useSecretStore from './useSecretStore';
 import useDomainStore from './useDomainStore';
 import useNetworkStore from './useNetworkStore';
+import openWarnModal from '../../../../../../utils/openWarnModal';
 
 const Store = createContext();
 
@@ -23,9 +24,14 @@ export const StoreProvider = injectIntl(observer((props) => {
   const { children, intl: { formatMessage } } = props;
   const {
     AppState: { currentMenuType: { id: projectId } },
-    resourceStore: { getSelectedMenu: { id, parentId } },
+    resourceStore,
     intlPrefix,
+    itemTypes: {
+      APP_ITEM,
+    },
+    treeDs,
   } = useResourceStore();
+  const { getSelectedMenu: { id, parentId, itemType } } = resourceStore;
   const tabs = useMemo(() => ({
     NET_TAB: 'net',
     MAPPING_TAB: 'mapping',
@@ -58,47 +64,77 @@ export const StoreProvider = injectIntl(observer((props) => {
     }
   }
 
+  function freshTree() {
+    treeDs.query();
+  }
+
+  function checkAppExist() {
+    return resourceStore.checkExist({
+      projectId,
+      type: 'app',
+      envId: parentId,
+      id,
+    }).then((isExist) => {
+      if (!isExist) {
+        openWarnModal(freshTree, formatMessage);
+      }
+      return isExist;
+    });
+  }
+
   useEffect(() => {
-    baseInfoDs.transport.read.url = `/devops/v1/projects/${projectId}/app_service/${id}`;
-    baseInfoDs.query();
-    netDs.transport.read = ({ data }) => {
-      const postData = getTablePostData(data);
-      return ({
-        url: `/devops/v1/projects/${projectId}/service/page_by_instance?env_id=${parentId}&app_service_id=${id}`,
-        method: 'post',
-        data: postData,
+    if (itemType === APP_ITEM) {
+      checkAppExist().then((query) => {
+        if (query) {
+          baseInfoDs.transport.read.url = `/devops/v1/projects/${projectId}/app_service/${id}`;
+          baseInfoDs.query();
+          netDs.transport.read = ({ data }) => {
+            const postData = getTablePostData(data);
+            return ({
+              url: `/devops/v1/projects/${projectId}/service/page_by_instance?env_id=${parentId}&app_service_id=${id}`,
+              method: 'post',
+              data: postData,
+            });
+          };
+          netDs.transport.destroy = ({ data: [data] }) => ({
+            url: `/devops/v1/projects/${projectId}/service/${data.id}`,
+            method: 'delete',
+          });
+          mappingDs.transport.read = ({ data }) => {
+            const postData = getTablePostData(data);
+            return ({
+              url: `/devops/v1/projects/${projectId}/config_maps/page_by_options?env_id=${parentId}&app_service_id=${id}`,
+              method: 'post',
+              data: postData,
+            });
+          };
+          mappingDs.transport.destroy = ({ data: [data] }) => ({
+            url: `/devops/v1/projects/${projectId}/config_maps/${data.id}`,
+            method: 'delete',
+          });
+          cipherDs.transport.read = ({ data }) => {
+            const postData = getTablePostData(data);
+            return ({
+              url: `/devops/v1/projects/${projectId}/secret/page_by_options?env_id=${parentId}&app_service_id=${id}`,
+              method: 'post',
+              data: postData,
+            });
+          };
+          cipherDs.transport.destroy = ({ data: [data] }) => ({
+            url: `/devops/v1/projects/${projectId}/secret/${parentId}/${data.id}`,
+            method: 'delete',
+          });
+          queryData();
+        }
       });
-    };
-    netDs.transport.destroy = ({ data: [data] }) => ({
-      url: `/devops/v1/projects/${projectId}/service/${data.id}`,
-      method: 'delete',
-    });
-    mappingDs.transport.read = ({ data }) => {
-      const postData = getTablePostData(data);
-      return ({
-        url: `/devops/v1/projects/${projectId}/config_maps/page_by_options?env_id=${parentId}&app_service_id=${id}`,
-        method: 'post',
-        data: postData,
-      });
-    };
-    mappingDs.transport.destroy = ({ data: [data] }) => ({
-      url: `/devops/v1/projects/${projectId}/config_maps/${data.id}`,
-      method: 'delete',
-    });
-    cipherDs.transport.read = ({ data }) => {
-      const postData = getTablePostData(data);
-      return ({
-        url: `/devops/v1/projects/${projectId}/secret/page_by_options?env_id=${parentId}&app_service_id=${id}`,
-        method: 'post',
-        data: postData,
-      });
-    };
-    cipherDs.transport.destroy = ({ data: [data] }) => ({
-      url: `/devops/v1/projects/${projectId}/secret/${parentId}/${data.id}`,
-      method: 'delete',
-    });
-    queryData();
-  }, [projectId, id, parentId, appStore.getTabKey]);
+    }
+  }, [
+    projectId,
+    id,
+    parentId,
+    itemType,
+    appStore.getTabKey,
+  ]);
 
   const value = {
     ...props,
@@ -112,6 +148,7 @@ export const StoreProvider = injectIntl(observer((props) => {
     cipherStore,
     domainStore,
     networkStore,
+    checkAppExist,
   };
   return (
     <Store.Provider value={value}>

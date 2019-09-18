@@ -65,6 +65,8 @@ export const SimpleSelect = injectIntl(({ intl, uid, label, options, onDelete, r
     })(<Select
       required
       searchable
+      filter
+      optionFilterProp="children"
       notFoundContent={notFoundContent}
       label={label}
       getPopupContainer={(triggerNode) => triggerNode.parentNode}

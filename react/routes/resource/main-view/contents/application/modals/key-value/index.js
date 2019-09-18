@@ -488,7 +488,7 @@ export default class FormView extends Component {
           className="c7n-editable-table"
           dataSource={dataSource}
           columns={columns}
-          rowKey={record => record.Layout}
+          rowKey={record => record.index}
         />
         <Button icon="add" onClick={this.handleAdd} type="primary">
           <FormattedMessage id={`${intlPrefix}.${title}.add`} />

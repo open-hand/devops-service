@@ -16,21 +16,53 @@ const Cases = lazy(() => import('./cases'));
 const Details = lazy(() => import('./details'));
 const PodsDetails = lazy(() => import('./pods-details'));
 
-const InstanceContent = observer(() => {
+const InstanceTitle = ({
+  podRunningCount,
+  podUnlinkCount,
+  status,
+  name,
+  errorText,
+}) => {
   const podSize = useMemo(() => ({
     width: 22,
     height: 22,
   }), []);
-  const {
-    prefixCls,
-    intlPrefix,
-  } = useResourceStore();
+  const { prefixCls } = useResourceStore();
   const {
     podColor: {
       RUNNING_COLOR,
       PADDING_COLOR,
     },
   } = useMainStore();
+
+  return <Fragment>
+    <PodCircle
+      style={podSize}
+      dataSource={[{
+        name: 'running',
+        value: podRunningCount,
+        stroke: RUNNING_COLOR,
+      }, {
+        name: 'unlink',
+        value: podUnlinkCount,
+        stroke: PADDING_COLOR,
+      }]}
+    />
+    <span className="c7ncd-page-title-text">{name}</span>
+    {status === 'failed' && (
+      <Tooltip title={errorText}>
+        <Icon type="error" className={`${prefixCls}-instance-page-title-icon`} />
+      </Tooltip>
+    )}
+  </Fragment>;
+};
+
+const InstanceContent = observer(() => {
+  const {
+    prefixCls,
+    intlPrefix,
+    resourceStore: { getSelectedMenu },
+  } = useResourceStore();
   const {
     intl: { formatMessage },
     tabs: {
@@ -49,45 +81,34 @@ const InstanceContent = observer(() => {
   function getTitle() {
     const record = baseDs.current;
     if (record) {
-      const code = record.get('code');
       const podRunningCount = record.get('podRunningCount');
       const podCount = record.get('podCount');
       const podUnlinkCount = podCount - podRunningCount;
-      const status = record.get('status');
-      const commandType = record.get('commandType');
-      const commandVersionId = record.get('commandVersionId');
-      const commandVersion = record.get('commandVersion');
-      const appServiceVersionId = record.get('appServiceVersionId');
 
-      return <Fragment>
-        <PodCircle
-          style={podSize}
-          dataSource={[{
-            name: 'running',
-            value: podRunningCount,
-            stroke: RUNNING_COLOR,
-          }, {
-            name: 'unlink',
-            value: podUnlinkCount,
-            stroke: PADDING_COLOR,
-          }]}
-        />
-        <span className="c7ncd-page-title-text">{code}</span>
-        {commandType === 'update' && status === 'failed' && appServiceVersionId && commandVersionId && commandVersionId !== appServiceVersionId && (
-          <Tooltip title={formatMessage({ id: `${intlPrefix}.instance.version.failed` }, { text: commandVersion })}>
-            <Icon type="error" className={`${prefixCls}-instance-page-title-icon`} />
-          </Tooltip>
-        )}
-      </Fragment>;
+      return <InstanceTitle
+        status={record.get('status')}
+        name={record.get('code')}
+        podRunningCount={podRunningCount}
+        podUnlinkCount={podUnlinkCount}
+        errorText={record.get('error')}
+      />;
     }
     return null;
   }
 
+  function getFallBack() {
+    const {
+      name,
+      podRunningCount,
+      podCount,
+    } = getSelectedMenu;
+
+    return <InstanceTitle name={name} podRunningCount={podRunningCount} podUnlinkCount={podCount - podRunningCount} />;
+  }
+
   return (
     <div className={`${prefixCls}-instance`}>
-      <PageTitle>
-        {getTitle()}
-      </PageTitle>
+      <PageTitle content={getTitle()} fallback={getFallBack()} />
       <Tabs
         className={`${prefixCls}-environment-tabs`}
         animated={false}

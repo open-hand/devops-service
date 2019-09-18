@@ -23,7 +23,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const resourceStore = useStore();
     const viewType = resourceStore.getViewType;
     const viewTypeMemo = useMemo(() => viewTypeMappings, []);
-    const itemType = useMemo(() => itemTypeMappings, []);
+    const itemTypes = useMemo(() => itemTypeMappings, []);
     const treeDs = useMemo(() => new DataSet(TreeDataSet({ store: resourceStore, type: viewType, projectId: id, formatMessage })), [viewType]);
 
     const value = {
@@ -32,7 +32,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
       intlPrefix: 'c7ncd.deployment',
       permissions: [],
       viewTypeMappings: viewTypeMemo,
-      itemType,
+      itemTypes,
       resourceStore,
       treeDs,
     };

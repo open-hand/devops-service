@@ -17,7 +17,7 @@ import ConfigItem from './ConfigItem';
 const TreeItem = observer(({ record, search }) => {
   const {
     intlPrefix,
-    itemType: {
+    itemTypes: {
       ENV_ITEM,
       APP_ITEM,
       IST_ITEM,

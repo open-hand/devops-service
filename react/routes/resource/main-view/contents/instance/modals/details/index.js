@@ -28,7 +28,7 @@ export default function DetailsModal({ intlPrefix, record, prefixCls, formatMess
         title = formatMessage({ id: `${intlPrefix}.instance.status.failed.upgrade.describe` }, { version: commandVersion });
       } else if (appServiceVersionId !== commandVersionId) {
         code = 'failed.deploy';
-        title = formatMessage({ id: `${intlPrefix}.instance.status.failed.deploy.describe` }, { version: versionName });
+        title = formatMessage({ id: `${intlPrefix}.instance.status.failed.deploy.describe` }, { version: commandVersion });
       }
       return <span className={`${prefixCls}-modals-value ${prefixCls}-modals-cell`}>
         <Tooltip placement="bottom" title={title}>

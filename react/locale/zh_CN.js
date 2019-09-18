@@ -428,7 +428,7 @@ const envrionment = {
   'c7ncd.env.modify': '修改环境',
   'c7ncd.env.create.config': '创建部署配置',
   'c7ncd.env.modify.config': '修改部署配置',
-  'c7ncd.env.group.default': '默认分组',
+  'c7ncd.env.group.default': '未分组',
   'c7ncd.env.group.name': '分组名称',
   'c7ncd.env.group.stopped': '环境配置停用区',
   'c7ncd.env.group.create': '创建分组',
@@ -2371,8 +2371,6 @@ const zhCN = {
   'ingress.delete': '删除域名',
   'service.delete': '删除网络',
   'certificate.delete': '删除证书',
-
-
   'captcha.send': '发送验证码',
   'captcha.error': '验证码错误',
   'captcha.resend': '秒后重新发送',
@@ -2389,6 +2387,11 @@ const zhCN = {
   'certificate.delete.message': '删除证书后，将会导致与此证书相关的域名失效。确定要删除该证书吗？',
   'configMap.delete.message': '确认删除配置映射吗？',
   'secret.delete.message': '确认删除密文吗？',
+
+  // 0.19
+  'data.changed': '基本数据发生变化，已更新。',
+  'data.lost': '数据已经不存在',
+  'data.lost.warn': '关闭后会获取最新数据！',
 
   ...commonField,
   ...deployment,
