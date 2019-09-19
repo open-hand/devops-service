@@ -85,7 +85,7 @@ public interface DevopsEnvironmentMapper extends Mapper<DevopsEnvironmentDTO> {
      * @param groupId   分组id
      * @return
      */
-    List<DevopsEnvironmentDTO> listByProjectIdAndGroupIdAndActive(@Param("projectId") Long projectId, @Param("groupId") Long groupId);
+    List<DevopsEnvironmentDTO> listByProjectIdAndGroupId(@Param("projectId") Long projectId, @Param("groupId") Long groupId);
 
     int updateIsSynchroToTrueWhenFailed();
 

@@ -597,7 +597,7 @@ public class DevopsEnvironmentController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分组id")
             @RequestParam(value = "group_id", required = false) Long groupId) {
-        return Optional.ofNullable(devopsEnvironmentService.listByGroupAndActive(projectId, groupId))
+        return Optional.ofNullable(devopsEnvironmentService.listByGroup(projectId, groupId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_ENVIRONMENT_GET));
     }
@@ -645,7 +645,7 @@ public class DevopsEnvironmentController {
             @PathVariable(value = "object_id") Long objectId,
             @ApiParam(value = "环境id")
             @PathVariable(value = "env_id") Long envId) {
-        return Optional.ofNullable(devopsEnvironmentService.checkExist(projectId, envId,objectId,type))
+        return Optional.ofNullable(devopsEnvironmentService.checkExist(projectId, envId, objectId, type))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_ENVIRONMENT_GET));
     }

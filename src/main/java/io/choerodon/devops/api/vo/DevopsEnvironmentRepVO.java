@@ -61,6 +61,14 @@ public class DevopsEnvironmentRepVO {
         isActive = active;
     }
 
+    public Boolean getConnect() {
+        return isConnected;
+    }
+
+    public void setConnect(Boolean connect) {
+        isConnected = connect;
+    }
+
     public String getCode() {
         return code;
     }
