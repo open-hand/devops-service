@@ -96,7 +96,7 @@ public class CertificationServiceImpl implements CertificationService {
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
         //校验环境相关信息
-        devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
+//        devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
 
 
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
@@ -140,6 +140,7 @@ public class CertificationServiceImpl implements CertificationService {
         //如果创建的时候选择证书
         if (certificationDTO.getCertId() != null) {
             certificationDTO.setType(UPLOAD);
+            type = certificationDTO.getType();
             certificationFileDTO = baseQueryCertFile(baseQueryById(certificationDTO.getCertId()).getId());
         }
 
