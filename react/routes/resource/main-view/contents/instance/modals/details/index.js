@@ -6,13 +6,11 @@ import './index.less';
 export default function DetailsModal({ intlPrefix, record, prefixCls, formatMessage }) {
   function getStatus() {
     let status;
-    let versionName;
     let appServiceVersionId;
     let commandVersionId;
     let commandVersion;
     if (record) {
       status = record.get('status');
-      versionName = record.get('versionName');
       appServiceVersionId = record.get('appServiceVersionId');
       commandVersionId = record.get('commandVersionId');
       commandVersion = record.get('commandVersion');

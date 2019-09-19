@@ -430,7 +430,6 @@ const envrionment = {
   'c7ncd.env.modify.config': '修改部署配置',
   'c7ncd.env.group.default': '未分组',
   'c7ncd.env.group.name': '分组名称',
-  'c7ncd.env.group.stopped': '环境配置停用区',
   'c7ncd.env.group.create': '创建分组',
   'c7ncd.env.group.edit': '修改分组',
   'c7ncd.env.group.delete': '删除分组“{name}”',

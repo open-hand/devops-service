@@ -10,18 +10,16 @@ function formatTreeData({ data, expandedKeys, formatMessage, intlPrefix }) {
   forEach(data, ({
     devopsEnvGroupId: id,
     devopsEnvGroupName,
-    devopsEnviromentRepDTOs: envs,
-    active,
+    devopsEnvironmentRepDTOs: envs,
   }) => {
-    const groupKey = `group-${active ? 'active' : 'stopped'}-${id}`;
+    const groupKey = `group-${id}`;
     let name = devopsEnvGroupName || '';
     if (!name && !id) {
-      name = formatMessage({ id: `${intlPrefix}.group.${active ? 'default' : 'stopped'}` });
+      name = formatMessage({ id: `${intlPrefix}.group.default` });
     }
     result.push({
       id,
       name,
-      active,
       key: groupKey,
       itemType: 'group',
       parentId: '',
@@ -74,10 +72,6 @@ export default (projectId, store, formatMessage, intlPrefix) => ({
         try {
           const expandedKeys = store.getExpandedKeys;
           const groups = JSON.parse(response);
-          if (last(groups) && last(groups).active) {
-            const stoppedGroup = remove(groups, ({ active }) => !active);
-            groups.push(...stoppedGroup);
-          }
 
           if (groups[0] && groups[0].devopsEnvGroupId) {
             const defaultGroup = remove(groups, ({ active, devopsEnvGroupId }) => active && !devopsEnvGroupId);

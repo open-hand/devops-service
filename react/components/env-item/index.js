@@ -2,7 +2,7 @@ import React, { Fragment, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import StatusDot from '../status-dot';
 
-export default function EnvironmentItem({ name, connect, synchronize, active }) {
+export default function EnvironmentItem({ name, connect, synchronize, active, failed }) {
   const getPrefix = useMemo(() => <StatusDot
     active={active}
     connect={connect}
@@ -21,4 +21,5 @@ EnvironmentItem.propTypes = {
   active: PropTypes.bool,
   connect: PropTypes.bool,
   synchronize: PropTypes.bool,
+  failed: PropTypes.bool,
 };
