@@ -275,7 +275,6 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
                 .baseQueryByEnvIdAndResourceId(devopsEnvironmentDTO.getId(), secretId, SECRET);
         if (devopsEnvFileResourceDTO == null) {
             baseDelete(secretId);
-            devopsApplicationResourceService.baseDeleteByResourceIdAndType(secretId, ObjectType.SECRET.getType());
             if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER,
                     "sct-" + devopsSecretDTO.getName() + ".yaml")) {
                 gitlabServiceClientOperator.deleteFile(
@@ -289,7 +288,6 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
             if (!gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER,
                     devopsEnvFileResourceDTO.getFilePath())) {
                 baseDelete(secretId);
-                devopsApplicationResourceService.baseDeleteByResourceIdAndType(secretId, ObjectType.SECRET.getType());
                 devopsEnvFileResourceService.baseDeleteById(devopsEnvFileResourceDTO.getId());
                 return true;
             }
@@ -327,7 +325,6 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         clusterConnectionHandler.checkEnvConnection(devopsEnvironmentDTO.getClusterId());
         devopsEnvCommandService.baseListByObject(HelmObjectKind.SECRET.toValue(), devopsSecretDTO.getId()).forEach(t -> devopsEnvCommandService.baseDeleteByEnvCommandId(t));
         baseDelete(secretId);
-        devopsApplicationResourceService.baseDeleteByResourceIdAndType(secretId, ObjectType.SECRET.getType());
     }
 
     @Override
@@ -444,6 +441,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     @Override
     public void baseDelete(Long secretId) {
         devopsSecretMapper.deleteByPrimaryKey(secretId);
+        devopsApplicationResourceService.baseDeleteByResourceIdAndType(secretId, ObjectType.SECRET.getType());
         devopsSecretMapper.delete(new DevopsSecretDTO(secretId));
     }
 

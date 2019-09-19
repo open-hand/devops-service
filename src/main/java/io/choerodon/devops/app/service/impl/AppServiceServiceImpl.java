@@ -71,10 +71,7 @@ import io.choerodon.devops.infra.feign.SonarClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
-import io.choerodon.devops.infra.mapper.AppServiceInstanceMapper;
-import io.choerodon.devops.infra.mapper.AppServiceMapper;
-import io.choerodon.devops.infra.mapper.AppServiceUserRelMapper;
-import io.choerodon.devops.infra.mapper.UserAttrMapper;
+import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
 
 
@@ -174,6 +171,10 @@ public class AppServiceServiceImpl implements AppServiceService {
     private DevopsConfigService devopsConfigService;
     @Autowired
     private DevopsBranchService devopsBranchService;
+    @Autowired
+    private DevopsEnvAppServiceMapper devopsEnvAppServiceMapper;
+    @Autowired
+    private DevopsAppServiceResourceMapper devopsAppServiceResourceMapper;
     @Autowired
     private AppServiceVersionService appServiceVersionService;
     @Value("${services.helm.url}")
@@ -349,17 +350,36 @@ public class AppServiceServiceImpl implements AppServiceService {
             return false;
         }
 
-        // 如果不相等，且将停用应用服务，检查该应用服务是否有不处于删除状态的实例
+        // 如果不相等，且将停用应用服务，检查该应用服务是否可以被停用
         if (!toUpdateValue) {
-            int nonDeleteInstancesCount = appServiceInstanceMapper.countNonDeletedInstances(appServiceId);
-            if (nonDeleteInstancesCount > 0) {
-                throw new CommonException("error.disable.application.service", appServiceId);
-            }
+            checkCanDisable(appServiceId);
+            // 如果能停用，删除其和其他环境之间的关联关系
+            DevopsEnvAppServiceDTO deleteCondition = new DevopsEnvAppServiceDTO();
+            deleteCondition.setAppServiceId(appServiceId);
+            devopsEnvAppServiceMapper.delete(deleteCondition);
         }
 
         appServiceDTO.setActive(toUpdateValue);
         baseUpdate(appServiceDTO);
         return true;
+    }
+
+    /**
+     * 检查当前应用服务是否还有相关的资源
+     * 不能停用则会抛出异常 {@link CommonException}
+     *
+     * @param appServiceId 服务id
+     */
+    private void checkCanDisable(Long appServiceId) {
+        int nonDeleteInstancesCount = appServiceInstanceMapper.countNonDeletedInstances(appServiceId);
+        if (nonDeleteInstancesCount > 0) {
+            throw new CommonException("error.disable.application.service", appServiceId);
+        }
+
+        int relatedResources = devopsAppServiceResourceMapper.countRelatedResource(appServiceId);
+        if (relatedResources > 0) {
+            throw new CommonException("error.disable.application.service.due.to.resources");
+        }
     }
 
     @Override

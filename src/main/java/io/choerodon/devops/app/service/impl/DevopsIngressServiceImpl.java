@@ -430,7 +430,6 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
                 .baseQueryByEnvIdAndResourceId(devopsEnvironmentDTO.getId(), ingressId, INGRESS);
         if (devopsEnvFileResourceDTO == null) {
             baseDelete(ingressId);
-            devopsApplicationResourceService.baseDeleteByResourceIdAndType(ingressId, ObjectType.INGRESS.getType());
             baseDeletePathByIngressId(ingressId);
             if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER,
                     INGRESS_PREFIX + ingressDO.getName() + YAML_SUFFIX)) {
@@ -446,7 +445,6 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
             if (!gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER,
                     devopsEnvFileResourceDTO.getFilePath())) {
                 baseDelete(ingressId);
-                devopsApplicationResourceService.baseDeleteByResourceIdAndType(ingressId, ObjectType.INGRESS.getType());
 
                 baseDeletePathByIngressId(ingressId);
                 devopsEnvFileResourceService.baseDeleteById(devopsEnvFileResourceDTO.getId());
@@ -495,7 +493,6 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
         devopsEnvCommandService.baseListByObject(ObjectType.INGRESS.getType(), ingressId).forEach(devopsEnvCommandDTO -> devopsEnvCommandService.baseDelete(devopsEnvCommandDTO.getId()));
         baseDelete(ingressId);
-        devopsApplicationResourceService.baseDeleteByResourceIdAndType(ingressId, ObjectType.INGRESS.getType());
     }
 
 
@@ -828,6 +825,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     @Override
     public void baseDelete(Long ingressId) {
         devopsIngressMapper.deleteByPrimaryKey(ingressId);
+        devopsApplicationResourceService.baseDeleteByResourceIdAndType(ingressId, ObjectType.INGRESS.getType());
         devopsIngressPathMapper.delete(new DevopsIngressPathDTO(ingressId));
     }
 

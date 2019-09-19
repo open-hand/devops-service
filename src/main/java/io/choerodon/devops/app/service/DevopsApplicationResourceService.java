@@ -16,6 +16,4 @@ public interface DevopsApplicationResourceService {
     void baseDeleteByResourceIdAndType(Long resourceId, String type);
 
     List<DevopsAppServiceResourceDTO> baseQueryByResourceIdAndType(Long resourceId, String type);
-
-    List<DevopsAppServiceResourceDTO> baseQueryByApplicationAndType(Long appServiceId, String type);
 }
