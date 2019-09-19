@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { FormattedMessage } from 'react-intl';
 import { Button } from 'choerodon-ui';
 import classnames from 'classnames';
+import ClickText from '../../../../components/click-text';
 
 import './StageTitle.less';
 
@@ -39,19 +40,12 @@ export default class StageTitle extends PureComponent {
     return (
       <div className={titleClass}>
         <div className="c7ncd-pipeline-stage-title">
-          <h3 className="c7ncd-pipeline-stage-name">{name}</h3>
+          <h3 className="c7ncd-pipeline-stage-name"><ClickText value={name} onClick={onChange} clickAble /></h3>
           <div className="c7ncd-pipeline-stage-type">
             {type && <FormattedMessage id={`pipeline.flow.${type}`} />}
           </div>
         </div>
         <div className="c7ncd-pipeline-stage-op">
-          <Button
-            className="c7ncd-pipeline-stage-btn"
-            size="small"
-            icon="mode_edit"
-            shape="circle"
-            onClick={onChange}
-          />
           {allowDelete && <Button
             size="small"
             icon="delete_forever"
