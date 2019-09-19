@@ -1507,7 +1507,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         DevOpsUserPayload devOpsUserPayload = new DevOpsUserPayload();
         devOpsUserPayload.setIamProjectId(projectId);
-        devOpsUserPayload.setAppId(appServiceId);
+        devOpsUserPayload.setAppServiceId(appServiceId);
         devOpsUserPayload.setGitlabProjectId(appServiceDTO.getGitlabProjectId());
 
         //原先是否跳过权限检查
@@ -1521,11 +1521,11 @@ public class AppServiceServiceImpl implements AppServiceService {
                 appServiceDTO.setId(appServiceId);
                 appServiceDTO.setSkipCheckPermission(false);
                 appServiceMapper.updateByPrimaryKeySelective(appServiceDTO);
-                if(!CollectionUtils.isEmpty(applicationPermissionVO.getUserIds())) {
-                    applicationPermissionVO.getUserIds().stream().filter(v -> v !=null).forEach(u -> appServiceUserPermissionService.baseCreate(u, appServiceId));
+                if (!CollectionUtils.isEmpty(applicationPermissionVO.getUserIds())) {
+                    applicationPermissionVO.getUserIds().stream().filter(Objects::nonNull).forEach(u -> appServiceUserPermissionService.baseCreate(u, appServiceId));
                 }
                 devOpsUserPayload.setIamUserIds(applicationPermissionVO.getUserIds());
-                devOpsUserPayload.setOption(3);
+                devOpsUserPayload.setOption(1);
             }
         } else {
             if (applicationPermissionVO.getSkipCheckPermission()) {
@@ -1537,12 +1537,11 @@ public class AppServiceServiceImpl implements AppServiceService {
                 devOpsUserPayload.setOption(2);
             } else {
                 //原来不跳过权限检查，现在也不跳过权限检查，新增用户权限
-                if(!CollectionUtils.isEmpty(applicationPermissionVO.getUserIds())){
-                    applicationPermissionVO.getUserIds().stream().filter(v -> v !=null).forEach(u -> appServiceUserPermissionService.baseCreate(u, appServiceId));
+                if (!CollectionUtils.isEmpty(applicationPermissionVO.getUserIds())) {
+                    applicationPermissionVO.getUserIds().stream().filter(Objects::nonNull).forEach(u -> appServiceUserPermissionService.baseCreate(u, appServiceId));
                 }
                 devOpsUserPayload.setIamUserIds(applicationPermissionVO.getUserIds());
                 devOpsUserPayload.setOption(3);
-
             }
         }
 
@@ -1565,7 +1564,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         //原来不跳，现在也不跳，删除用户在gitlab权限
         DevOpsUserPayload devOpsUserPayload = new DevOpsUserPayload();
         devOpsUserPayload.setIamProjectId(projectId);
-        devOpsUserPayload.setAppId(appServiceId);
+        devOpsUserPayload.setAppServiceId(appServiceId);
         devOpsUserPayload.setGitlabProjectId(appServiceDTO.getGitlabProjectId());
         devOpsUserPayload.setIamUserIds(Arrays.asList(userId));
         devOpsUserPayload.setOption(4);
@@ -1749,8 +1748,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public AppServiceDTO baseQuery(Long applicationId) {
-        return appServiceMapper.selectByPrimaryKey(applicationId);
+    public AppServiceDTO baseQuery(Long appServiceId) {
+        return appServiceMapper.selectByPrimaryKey(appServiceId);
     }
 
     @Override

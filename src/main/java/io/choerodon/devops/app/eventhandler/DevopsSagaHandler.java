@@ -12,7 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import io.choerodon.asgard.saga.SagaDefinition;
 import io.choerodon.asgard.saga.annotation.SagaTask;
@@ -74,6 +73,8 @@ public class DevopsSagaHandler {
     private DevopsIngressService devopsIngressService;
     @Autowired
     private UpdateEnvUserPermissionServiceImpl updateUserEnvPermissionService;
+    @Autowired
+    private UpdateUserPermissionService updateUserPermissionService = new UpdateAppUserPermissionServiceImpl();
 
 
     /**
@@ -194,9 +195,8 @@ public class DevopsSagaHandler {
     public String updateGitlabUser(String data) {
         DevOpsUserPayload devOpsUserPayload = gson.fromJson(data, DevOpsUserPayload.class);
         try {
-            UpdateUserPermissionService updateUserPermissionService = new UpdateAppUserPermissionServiceImpl();
             updateUserPermissionService
-                    .updateUserPermission(devOpsUserPayload.getIamProjectId(), devOpsUserPayload.getAppId(),
+                    .updateUserPermission(devOpsUserPayload.getIamProjectId(), devOpsUserPayload.getAppServiceId(),
                             devOpsUserPayload.getIamUserIds(), devOpsUserPayload.getOption());
         } catch (Exception e) {
             LOGGER.error("update gitlab users {} error", devOpsUserPayload.getIamUserIds());

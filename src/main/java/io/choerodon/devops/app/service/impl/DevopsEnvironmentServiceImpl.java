@@ -1352,7 +1352,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             devopsEnvAppServiceDTO.setAppServiceId(objectId);
             return devopsEnvAppServiceMapper.selectOne(devopsEnvAppServiceDTO) != null;
         }
-        Boolean check = false;
+        boolean check = false;
         ObjectType objectType = ObjectType.valueOf(type.toUpperCase());
         switch (objectType) {
             case INSTANCE:
