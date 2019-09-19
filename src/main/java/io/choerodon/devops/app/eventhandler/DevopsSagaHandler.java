@@ -73,8 +73,6 @@ public class DevopsSagaHandler {
     private DevopsIngressService devopsIngressService;
     @Autowired
     private UpdateEnvUserPermissionServiceImpl updateUserEnvPermissionService;
-    @Autowired
-    private UpdateUserPermissionService updateUserPermissionService = new UpdateAppUserPermissionServiceImpl();
 
 
     /**
@@ -195,6 +193,7 @@ public class DevopsSagaHandler {
     public String updateGitlabUser(String data) {
         DevOpsUserPayload devOpsUserPayload = gson.fromJson(data, DevOpsUserPayload.class);
         try {
+            UpdateUserPermissionService updateUserPermissionService = new UpdateAppUserPermissionServiceImpl();
             updateUserPermissionService
                     .updateUserPermission(devOpsUserPayload.getIamProjectId(), devOpsUserPayload.getAppServiceId(),
                             devOpsUserPayload.getIamUserIds(), devOpsUserPayload.getOption());
