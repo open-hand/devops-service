@@ -13,6 +13,16 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.env.YamlPropertySourceLoader;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -41,15 +51,6 @@ import io.choerodon.devops.infra.mapper.AppServiceInstanceMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvAppServiceMapper;
 import io.choerodon.devops.infra.mapper.PipelineAppServiceDeployMapper;
 import io.choerodon.devops.infra.util.*;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.env.YamlPropertySourceLoader;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 
 /**
@@ -58,19 +59,19 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class AppServiceInstanceServiceImpl implements AppServiceInstanceService {
 
-    private static final String MASTER = "master";
     public static final String CREATE = "create";
     public static final String UPDATE = "update";
     public static final String CHOERODON = "choerodon-test";
     public static final String HARBOR = "harbor";
     public static final String CHART = "chart";
+    public static final String APP_SERVICE = "appService";
+    public static final String HELM_RELEASE = "C7NHelmRelease";
+    private static final String MASTER = "master";
     private static final String YAML_SUFFIX = ".yaml";
     private static final String RELEASE_PREFIX = "release-";
     private static final String FILE_SEPARATOR = "file.separator";
     private static final String C7NHELM_RELEASE = "C7NHelmRelease";
     private static final String RELEASE_NAME = "ReleaseName";
-    public static final String APP_SERVICE = "appService";
-    public static final String HELM_RELEASE = "C7NHelmRelease";
     private static Gson gson = new Gson();
 
     @Value("${services.helm.url}")
@@ -658,8 +659,10 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             }
 
             //插入部署记录
-            DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(devopsEnvironmentDTO.getProjectId(), "manual", devopsEnvCommandDTO.getId(), devopsEnvironmentDTO.getId().toString(), devopsEnvCommandDTO.getCreationDate());
-            devopsDeployRecordService.baseCreate(devopsDeployRecordDTO);
+            if (!isFromPipeline) {
+                DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(devopsEnvironmentDTO.getProjectId(), "manual", devopsEnvCommandDTO.getId(), devopsEnvironmentDTO.getId().toString(), devopsEnvCommandDTO.getCreationDate());
+                devopsDeployRecordService.baseCreate(devopsDeployRecordDTO);
+            }
 
             appServiceDeployVO.setInstanceId(appServiceInstanceDTO.getId());
             appServiceDeployVO.setInstanceName(code);
@@ -884,7 +887,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-
     public void deleteInstance(Long instanceId) {
         AppServiceInstanceDTO appServiceInstanceDTO = baseQuery(instanceId);
 
@@ -894,14 +896,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(appServiceInstanceDTO.getEnvId());
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-
-        // 校验是否关联流水线
-        PipelineAppServiceDeployDTO appDeployDTO = new PipelineAppServiceDeployDTO();
-        appDeployDTO.setInstanceName(appServiceInstanceDTO.getCode());
-        appDeployDTO.setEnvId(appServiceInstanceDTO.getEnvId());
-        if (!pipelineAppServiceDeployMapper.select(appDeployDTO).isEmpty()) {
-            throw new CommonException("error.delete.instance.related.pipeline");
-        }
 
         // 校验环境相关信息
         devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
@@ -923,10 +917,10 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
                 .baseQueryByEnvIdAndResourceId(devopsEnvironmentDTO.getId(), instanceId, C7NHELM_RELEASE);
 
+        appServiceInstanceMapper.deleteByPrimaryKey(instanceId);
+        appServiceInstanceMapper.deleteInstanceRelInfo(instanceId);
         //如果文件对象对应关系不存在，证明没有部署成功，删掉gitops文件,删掉资源
         if (devopsEnvFileResourceDTO == null) {
-            appServiceInstanceMapper.deleteByPrimaryKey(instanceId);
-            appServiceInstanceMapper.deleteInstanceRelInfo(instanceId);
             if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER,
                     RELEASE_PREFIX + appServiceInstanceDTO.getCode() + YAML_SUFFIX)) {
                 gitlabServiceClientOperator.deleteFile(
@@ -940,8 +934,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             //如果文件对象对应关系存在，但是gitops文件不存在，也直接删掉资源
             if (!gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER,
                     devopsEnvFileResourceDTO.getFilePath())) {
-                appServiceInstanceMapper.deleteByPrimaryKey(instanceId);
-                appServiceInstanceMapper.deleteInstanceRelInfo(instanceId);
                 devopsEnvFileResourceService.baseDeleteById(devopsEnvFileResourceDTO.getId());
                 return;
             }
