@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service;
 
 
 import com.github.pagehelper.PageInfo;
+
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.DevopsDeployRecordVO;
 import io.choerodon.devops.infra.dto.DevopsDeployRecordDTO;
@@ -18,4 +19,5 @@ public interface DevopsDeployRecordService {
 
     void baseCreate(DevopsDeployRecordDTO devopsDeployRecordDTO);
 
+    void baseDelete(DevopsDeployRecordDTO devopsDeployRecordDTO);
 }

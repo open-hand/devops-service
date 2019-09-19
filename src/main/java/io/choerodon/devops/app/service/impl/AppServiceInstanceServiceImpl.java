@@ -63,7 +63,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     public static final String UPDATE = "update";
     public static final String CHOERODON = "choerodon-test";
     public static final String HARBOR = "harbor";
-    public static final String CHART = "chart";
+    public static final String MANUAL = "manual";
     public static final String APP_SERVICE = "appService";
     public static final String HELM_RELEASE = "C7NHelmRelease";
     private static final String MASTER = "master";
@@ -660,7 +660,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
             //插入部署记录
             if (!isFromPipeline) {
-                DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(devopsEnvironmentDTO.getProjectId(), "manual", devopsEnvCommandDTO.getId(), devopsEnvironmentDTO.getId().toString(), devopsEnvCommandDTO.getCreationDate());
+                DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(devopsEnvironmentDTO.getProjectId(), MANUAL, devopsEnvCommandDTO.getId(), devopsEnvironmentDTO.getId().toString(), devopsEnvCommandDTO.getCreationDate());
                 devopsDeployRecordService.baseCreate(devopsDeployRecordDTO);
             }
 
@@ -797,7 +797,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
 
         //插入部署记录
-        DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(devopsEnvironmentDTO.getProjectId(), "manual", devopsEnvCommandDTO.getId(), devopsEnvironmentDTO.getId().toString(), devopsEnvCommandDTO.getCreationDate());
+        DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(devopsEnvironmentDTO.getProjectId(), MANUAL, devopsEnvCommandDTO.getId(), devopsEnvironmentDTO.getId().toString(), devopsEnvCommandDTO.getCreationDate());
         devopsDeployRecordService.baseCreate(devopsDeployRecordDTO);
 
 
@@ -858,13 +858,13 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         String secretCode = getSecret(applicationDTO, null, devopsEnvironmentDTO);
 
         //插入部署记录
-        DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(devopsEnvironmentDTO.getProjectId(), "manual", devopsEnvCommandDTO.getId(), devopsEnvironmentDTO.getId().toString(), devopsEnvCommandDTO.getCreationDate());
+        DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(devopsEnvironmentDTO.getProjectId(), MANUAL, devopsEnvCommandDTO.getId(), devopsEnvironmentDTO.getId().toString(), devopsEnvCommandDTO.getCreationDate());
         devopsDeployRecordService.baseCreate(devopsDeployRecordDTO);
 
         AppServiceDeployVO appServiceDeployVO = new AppServiceDeployVO();
         appServiceDeployVO.setInstanceId(appServiceInstanceDTO.getId());
         appServiceDeployVO.setValues(value);
-        appServiceDeployVO.setType("update");
+        appServiceDeployVO.setType(UPDATE);
         appServiceDeployVO.setAppServiceVersionId(appServiceVersionDTO.getId());
         appServiceDeployVO.setInstanceName(appServiceInstanceDTO.getCode());
         InstanceSagaPayload instanceSagaPayload = new InstanceSagaPayload(applicationDTO.getProjectId(), userAttrDTO.getGitlabUserId(), secretCode, devopsEnvCommandDTO.getId().intValue());
@@ -917,10 +917,14 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
                 .baseQueryByEnvIdAndResourceId(devopsEnvironmentDTO.getId(), instanceId, C7NHELM_RELEASE);
 
-        appServiceInstanceMapper.deleteByPrimaryKey(instanceId);
-        appServiceInstanceMapper.deleteInstanceRelInfo(instanceId);
+        DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO();
+        devopsDeployRecordDTO.setDeployId(devopsEnvCommandDTO.getId());
+        devopsDeployRecordDTO.setDeployType(MANUAL);
         //如果文件对象对应关系不存在，证明没有部署成功，删掉gitops文件,删掉资源
         if (devopsEnvFileResourceDTO == null) {
+            appServiceInstanceMapper.deleteByPrimaryKey(instanceId);
+            appServiceInstanceMapper.deleteInstanceRelInfo(instanceId);
+            devopsDeployRecordService.baseDelete(devopsDeployRecordDTO);
             if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER,
                     RELEASE_PREFIX + appServiceInstanceDTO.getCode() + YAML_SUFFIX)) {
                 gitlabServiceClientOperator.deleteFile(
@@ -934,6 +938,9 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             //如果文件对象对应关系存在，但是gitops文件不存在，也直接删掉资源
             if (!gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER,
                     devopsEnvFileResourceDTO.getFilePath())) {
+                appServiceInstanceMapper.deleteByPrimaryKey(instanceId);
+                appServiceInstanceMapper.deleteInstanceRelInfo(instanceId);
+                devopsDeployRecordService.baseDelete(devopsDeployRecordDTO);
                 devopsEnvFileResourceService.baseDeleteById(devopsEnvFileResourceDTO.getId());
                 return;
             }
@@ -992,6 +999,12 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         appServiceInstanceMapper.deleteInstanceRelInfo(instanceId);
         appServiceInstanceMapper.deleteByPrimaryKey(instanceId);
+
+        DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(instanceId);
+        DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO();
+        devopsDeployRecordDTO.setDeployId(devopsEnvCommandDTO.getId());
+        devopsDeployRecordDTO.setDeployType(MANUAL);
+        devopsDeployRecordService.baseDelete(devopsDeployRecordDTO);
     }
 
 
