@@ -13,6 +13,7 @@ import { useResourceStore } from '../../../../stores';
 import { useApplicationStore } from '../stores';
 import DomainModal from '../modals/domain';
 import EditNetwork from '../modals/network/network-edit';
+import ClickText from '../../../../../../components/click-text';
 
 import './index.less';
 
@@ -47,13 +48,14 @@ const Networking = observer(() => {
     const status = record.get('status');
     const error = record.get('error');
 
-    return (
+    return (<div>
+      <ClickText value={name} clickAble={status !== 'operating'} onClick={openNetworkEdit} />
       <StatusIcon
-        name={name}
+        name=""
         status={status || ''}
         error={error || ''}
       />
-    );
+    </div>);
   }
 
   function renderTargetType({ record }) {
@@ -132,6 +134,7 @@ const Networking = observer(() => {
                       arrowPointAtCenter
                       placement="bottomRight"
                       content={<Fragment>{item}</Fragment>}
+                      overlayClassName={`${prefixCls}-application-net`}
                     >
                       <Icon type="expand_more" className="net-expend-icon" />
                     </Popover>
@@ -241,12 +244,7 @@ const Networking = observer(() => {
   function renderAction() {
     const buttons = [
       {
-        service: [],
-        text: formatMessage({ id: 'edit' }),
-        action: openNetworkEdit,
-      },
-      {
-        service: [],
+        service: ['devops-service.devops-service.delete'],
         text: formatMessage({ id: 'delete' }),
         action: handleDelete,
       },
@@ -307,12 +305,7 @@ const Networking = observer(() => {
       _.map(devopsIngressDTOS, ({ id: itemId, name, domain, error, status, pathList }) => {
         const buttons = [
           {
-            service: [],
-            text: formatMessage({ id: 'edit' }),
-            action: () => openDomainEdit(itemId),
-          },
-          {
-            service: [],
+            service: ['devops-service.devops-ingress.delete'],
             text: formatMessage({ id: 'delete' }),
             action: () => openIngressDelete(itemId),
           },
@@ -321,8 +314,9 @@ const Networking = observer(() => {
           <div key={itemId} className="net-expandedRow-detail">
             <FormattedMessage id={`${intlPrefix}.application.net.ingress`} />：
             <div className="net-ingress-text">
+              <ClickText value={name} clickAble={status !== 'operating'} onClick={() => openDomainEdit(itemId)} />
               <StatusIcon
-                name={name}
+                name=""
                 status={status}
                 error={error}
               />
@@ -360,7 +354,7 @@ const Networking = observer(() => {
         expandedRowRenderer={renderExpandedRow}
       >
         <Column name="name" renderer={renderName} />
-        <Column renderer={renderAction} />
+        <Column renderer={renderAction} width={70} />
         <Column renderer={renderTargetType} header={formatMessage({ id: `${intlPrefix}.application.net.targetType` })} />
         <Column renderer={renderTarget} header={formatMessage({ id: `${intlPrefix}.application.net.target` })} />
         <Column name="type" renderer={renderConfigType} />

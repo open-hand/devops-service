@@ -925,11 +925,11 @@ class EditNetwork extends Component {
       <div key={`port-${k}`} className="network-port-wrap">
         {configType !== 'ClusterIP' ? (
           <FormItem
-            className="c7n-select_80 network-panel-form network-port-form"
+            className="c7n-select_115 network-panel-form network-port-form"
             {...formItemLayout}
           >
             {getFieldDecorator(`nport[${k}]`, {
-              initialValue: nPort[k],
+              initialValue: _.toString(nPort[k]),
               rules: [
                 {
                   validator: (rule, value, callback) => this.checkPort(rule, value, callback, 'nport'),
@@ -946,11 +946,11 @@ class EditNetwork extends Component {
           </FormItem>
         ) : null}
         <FormItem
-          className="c7n-select_80 network-panel-form network-port-form"
+          className="c7n-select_115 network-panel-form network-port-form"
           {...formItemLayout}
         >
           {getFieldDecorator(`port[${k}]`, {
-            initialValue: pPort[k],
+            initialValue: _.toString(pPort[k]),
             rules: [
               {
                 required: true,
@@ -971,11 +971,11 @@ class EditNetwork extends Component {
           )}
         </FormItem>
         <FormItem
-          className="c7n-select_80 network-panel-form network-port-form"
+          className="c7n-select_115 network-panel-form network-port-form"
           {...formItemLayout}
         >
           {getFieldDecorator(`tport[${k}]`, {
-            initialValue: tPort[k],
+            initialValue: _.toString(tPort[k]),
             rules: [
               {
                 required: true,
@@ -997,7 +997,7 @@ class EditNetwork extends Component {
         </FormItem>
         {configType === 'NodePort' ? (
           <FormItem
-            className="c7n-select_80 network-panel-form network-port-form"
+            className="c7n-select_115 network-panel-form network-port-form"
             {...formItemLayout}
           >
             {getFieldDecorator(`protocol[${k}]`, {
@@ -1191,11 +1191,10 @@ class EditNetwork extends Component {
           onOk={this.handleSubmit}
           onCancel={this.handleClose.bind(this, false)}
           confirmLoading={submitting}
-          className="c7ncd-deployment-network-form-wrap"
           maskClosable={false}
-          width={415}
+          width={740}
         >
-          <Form layout="vertical">
+          <Form layout="vertical" className="c7ncd-deployment-network-form-wrap">
             <FormItem
               className="network-form-name"
               {...formItemLayout}

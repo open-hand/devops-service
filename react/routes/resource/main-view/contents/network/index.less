@@ -12,31 +12,35 @@
     align-items: center;
     height: 100%;
 
-    .net-target-item {
-      background: rgba(0, 0, 0, 0.08);
-      border-radius: .1rem;
-      padding: 0 .12rem;
-      height: .2rem;
-      line-height: .2rem;
-      margin-bottom: .08rem;
-
-      &:last-child {
-        margin-bottom: 0;
-      }
-    }
-
-    .net-target-item-failed {
-      color: #d50000;
-      background: rgba(244, 67, 54, 0.3) !important;
-    }
-
-    .net-target-ip {
-      margin-left: .08rem;
-    }
-
     & > .net-target-item {
       margin-bottom: 0;
+      max-width: 1.5rem;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
     }
+  }
+
+  .net-target-item {
+    background: rgba(0, 0, 0, 0.08);
+    border-radius: .1rem;
+    padding: 0 .12rem;
+    height: .2rem;
+    line-height: .2rem;
+    margin-bottom: .08rem;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  .net-target-item-failed {
+    color: #d50000;
+    background: rgba(244, 67, 54, 0.3) !important;
+  }
+
+  .net-target-ip {
+    margin-left: .08rem;
   }
 
   .net-config-content {

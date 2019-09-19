@@ -611,13 +611,8 @@ export default class Index extends Component {
       );
     });
 
-    const formClass = classnames({
-      'c7ncd-application-domain-modal': true,
-      'c7ncd-domain-modal-deployPage': isDeployPage,
-    });
-
     return (
-      <Form layout="vertical" className={formClass}>
+      <Form layout="vertical" className="c7ncd-application-domain-modal">
         <FormItem
           {...formItemLayout}
         >

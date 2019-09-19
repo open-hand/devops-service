@@ -8,6 +8,7 @@ const commonField = {
   updateDate: '更新时间',
   createDate: '创建时间',
   description: '描述',
+  number: '编号',
 
   // 操作
   active: '启用',
@@ -173,8 +174,6 @@ const commonField = {
   configMaps: '配置映射',
   secrets: '密文',
   customResources: '自定义资源',
-
-  number: '编号',
 };
 
 const deployment = {
@@ -540,6 +539,12 @@ const repository = {
   'c7ncd.repository.private': '私有',
   'c7ncd.repository.type': '仓库类型',
   'c7ncd.repository.project.failed': '由小写字母，数字，\'-\'、\'_\'或\'.\'组成，以字母、数字开始和结束',
+  'c7ncd.repository.tab.info': '组织信息',
+  'c7ncd.repository.tab.ldap': 'LDAP设置',
+  'c7ncd.repository.tab.calendar': '工作日历',
+  'c7ncd.repository.tab.repo': '仓库',
+  'c7ncd.repository.tab.info.project': '项目信息',
+  'c7ncd.repository.tab.application': '应用配置',
 };
 
 
@@ -1231,8 +1236,8 @@ const zhCN = {
   'network.ip.check.failed':
     '请输入正确的ip，类似 (0-255).(0-255).(0-255).(0-255)',
   'network.instance.check.failed': '请移除不可用实例',
-  'network.port.check.failed': '端口号必须是数字且在0-65535之间',
-  'network.nport.check.failed': '节点端口号必须是数字且在30000-32767之间',
+  'network.port.check.failed': '端口在0-65535之间',
+  'network.nport.check.failed': '在30000-32767之间',
   'network.label.check.failed': '输入有误，详细规则见框后提示',
   'network.label.check.repeat': '关键字不能重复',
   'network.label.key.rule':

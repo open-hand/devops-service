@@ -1,5 +1,5 @@
 import React, { useCallback, Fragment } from 'react';
-import { PageWrap, PageTab } from '@choerodon/master';
+import { PageWrap, PageTab, Page } from '@choerodon/master';
 import { observer } from 'mobx-react-lite';
 import { useServiceDetailStore } from './stores';
 import Version from './Version';
@@ -14,7 +14,23 @@ const DetailContent = observer((props) => {
     detailDs,
   } = useServiceDetailStore();
 
-  return (
+  return (<Page
+    service={[
+      'devops-service.app-service.query',
+      'devops-service.app-service.update',
+      'devops-service.app-service.updateActive',
+      'devops-service.app-service-version.pageByOptions',
+      'devops-service.app-share-rule.create',
+      'devops-service.app-share-rule.update',
+      'devops-service.app-share-rule.delete',
+      'devops-service.app-share-rule.query',
+      'devops-service.app-share-rule.pageByOptions',
+      'devops-service.app-service.pagePermissionUsers',
+      'devops-service.app-service.updatePermission',
+      'devops-service.app-service.deletePermission',
+      'devops-service.app-service.listNonPermissionUsers',
+    ]}
+  >
     <PageWrap noHeader={[]} cache>
       <PageTab
         title={formatMessage({ id: `${intlPrefix}.version` })}
@@ -35,7 +51,7 @@ const DetailContent = observer((props) => {
         alwaysShow={AppStore.getProjectRole === 'owner' && detailDs.current && detailDs.current.get('type') === 'normal'}
       />
     </PageWrap>
-  );
+  </Page>);
 });
 
 export default DetailContent;

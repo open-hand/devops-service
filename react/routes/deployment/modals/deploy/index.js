@@ -165,9 +165,21 @@ const DeployModal = injectIntl(observer(({ record, dataSet, store, projectId, re
     <div className={`${prefixCls}-manual-deploy`}>
       <Form record={record} columns={3}>
         <SelectBox name="appServiceSource" colSpan={3}>
-          <Option value="normal_service">{formatMessage({ id: `${intlPrefix}.source.project` })}</Option>
-          <Option value="share_service">{formatMessage({ id: `${intlPrefix}.source.organization` })}</Option>
-          <Option value="market_service">{formatMessage({ id: `${intlPrefix}.source.market` })}</Option>
+          <Option value="normal_service">
+            <span className={`${prefixCls}-manual-deploy-radio`}>
+              {formatMessage({ id: `${intlPrefix}.source.project` })}
+            </span>
+          </Option>
+          <Option value="share_service">
+            <span className={`${prefixCls}-manual-deploy-radio`}>
+              {formatMessage({ id: `${intlPrefix}.source.organization` })}
+            </span>
+          </Option>
+          <Option value="market_service">
+            <span className={`${prefixCls}-manual-deploy-radio`}>
+              {formatMessage({ id: `${intlPrefix}.source.market` })}
+            </span>
+          </Option>
         </SelectBox>
         <Select name="appServiceId" searchable newLine>
           {record.get('appServiceSource') === 'normal_service' ? (

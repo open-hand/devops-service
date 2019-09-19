@@ -153,7 +153,7 @@ class CreateNetwork extends Component {
           confirmLoading={submitting}
           className="c7ncd-deployment-network-form"
           maskClosable={false}
-          width={415}
+          width={740}
         >
           <NetworkForm
             wrappedComponentRef={(form) => this.formRef = form}

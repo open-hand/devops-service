@@ -302,7 +302,7 @@ const Deployment = withRouter(observer((props) => {
         </Button>
       </Header>
       <Breadcrumb />
-      <Content>
+      <Content className={`${prefixCls}-content`}>
         <Table
           dataSet={listDs}
           queryBar="bar"
