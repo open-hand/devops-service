@@ -66,7 +66,7 @@ export default ((intlPrefix, formatMessage, projectId, id) => ({
   fields: [
     { name: 'versionType', type: 'string', label: formatMessage({ id: `${intlPrefix}.version.type` }) },
     { name: 'version', type: 'string', textField: 'version', valueField: 'version', label: formatMessage({ id: `${intlPrefix}.version.specific` }) },
-    { name: 'id', type: 'number' },
+    { name: 'id', type: 'number', label: formatMessage({ id: 'number' }) },
     { name: 'projectId', type: 'number' },
     { name: 'projectName', type: 'string', label: formatMessage({ id: `${intlPrefix}.share.range` }) },
     { name: 'shareLevel', type: 'object', textField: 'name', valueField: 'id', label: formatMessage({ id: `${intlPrefix}.share.range` }), required: true },

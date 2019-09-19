@@ -160,7 +160,7 @@ class CreateDomain extends Component {
           onOk={this.handleSubmit}
           confirmLoading={submitting}
           maskClosable={false}
-          width={380}
+          width={740}
         >
           <DomainForm
             wrappedComponentRef={(form) => {

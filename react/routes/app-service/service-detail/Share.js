@@ -6,6 +6,7 @@ import { FormattedMessage } from 'react-intl';
 import { useServiceDetailStore } from './stores';
 import HeaderButtons from './HeaderButtons';
 import ShareRule from './modals/share-rule';
+import ClickText from '../../../components/click-text';
 
 const { Column } = Table;
 
@@ -44,15 +45,14 @@ const Share = (props) => {
     }
   }
 
+  function renderNumber({ value }) {
+    return <ClickText value={`#${value}`} onClick={openModal} clickAble />;
+  }
+
   function renderAction() {
     const actionData = [
       {
-        service: [],
-        text: formatMessage({ id: 'edit' }),
-        action: openModal,
-      },
-      {
-        service: [],
+        service: ['devops-service.app-share-rule.delete'],
         text: formatMessage({ id: 'delete' }),
         action: handleDelete,
       },
@@ -101,7 +101,7 @@ const Share = (props) => {
     const isStop = detailDs.current && !detailDs.current.get('active');
     return (
       <Permission
-        service={['devops-service.app-share-rule.createOrUpdate']}
+        service={['devops-service.app-share-rule.create']}
       >
         <Tooltip
           title={isStop ? <FormattedMessage id={`${intlPrefix}.button.disabled`} /> : ''}
@@ -125,7 +125,16 @@ const Share = (props) => {
 
   return (
     <TabPage
-      service={['devops-service.app-share-rule.createOrUpdate']}
+      service={[
+        'devops-service.app-service.query',
+        'devops-service.app-service.update',
+        'devops-service.app-service.updateActive',
+        'devops-service.app-share-rule.create',
+        'devops-service.app-share-rule.update',
+        'devops-service.app-share-rule.delete',
+        'devops-service.app-share-rule.query',
+        'devops-service.app-share-rule.pageByOptions',
+      ]}
     >
       <HeaderButtons>
         {renderButtons()}
@@ -139,6 +148,7 @@ const Share = (props) => {
       <Breadcrumb title="服务详情" />
       <Content>
         <Table dataSet={shareDs} filter={handleTableFilter}>
+          <Column name="id" renderer={renderNumber} align="left" />
           <Column name="versionType" />
           <Column renderer={renderAction} />
           <Column name="version" sortable />

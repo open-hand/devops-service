@@ -158,7 +158,7 @@ class CreateNetwork extends Component {
           onCancel={this.handleClose.bind(this, false)}
           confirmLoading={submitting}
           maskClosable={false}
-          width={415}
+          width={740}
         >
           <NetworkForm
             wrappedComponentRef={(form) => {

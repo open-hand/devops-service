@@ -110,7 +110,15 @@ const Allocation = observer((props) => {
 
   return (
     <TabPage
-      service={['devops-service.app-service.updatePermission']}
+      service={[
+        'devops-service.app-service.query',
+        'devops-service.app-service.update',
+        'devops-service.app-service.updateActive',
+        'devops-service.app-service.pagePermissionUsers',
+        'devops-service.app-service.updatePermission',
+        'devops-service.app-service.deletePermission',
+        'devops-service.app-service.listNonPermissionUsers',
+      ]}
     >
       <HeaderButtons>
         {renderButtons()}

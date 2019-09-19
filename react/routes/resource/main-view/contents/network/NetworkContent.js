@@ -134,6 +134,7 @@ const NetworkContent = observer(() => {
                       arrowPointAtCenter
                       placement="bottomRight"
                       content={<Fragment>{item}</Fragment>}
+                      overlayClassName={`${prefixCls}-network-table`}
                     >
                       <Icon type="expand_more" className="net-expend-icon" />
                     </Popover>

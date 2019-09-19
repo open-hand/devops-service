@@ -7,12 +7,15 @@ import countBy from 'lodash/countBy';
 import pickBy from 'lodash/pickBy';
 import isEmpty from 'lodash/isEmpty';
 import includes from 'lodash/includes';
+import map from 'lodash/map';
 import PlatForm from './Platform';
 import { handlePromptError } from '../../../../../utils';
 
 import './index.less';
 
 const { Option } = Select;
+
+const IMPORT_METHOD = ['share', 'github', 'gitlab', 'market'];
 
 const ImportForm = injectIntl(observer((props) => {
   const { dataSet, selectedDs, record, AppStore, projectId, intl: { formatMessage }, intlPrefix, prefixCls, refresh, modal } = props;
@@ -92,18 +95,13 @@ const ImportForm = injectIntl(observer((props) => {
     <div className={`${prefixCls}-import-wrap`}>
       <Form record={record}>
         <SelectBox name="platformType">
-          <Option value="share">
-            <FormattedMessage id={`${intlPrefix}.import.type.share`} />
-          </Option>
-          <Option value="github">
-            <FormattedMessage id={`${intlPrefix}.import.type.github`} />
-          </Option>
-          <Option value="gitlab">
-            <FormattedMessage id={`${intlPrefix}.import.type.gitlab`} />
-          </Option>
-          <Option value="market">
-            <FormattedMessage id={`${intlPrefix}.import.type.market`} />
-          </Option>
+          {map(IMPORT_METHOD, (item) => (
+            <Option value={item}>
+              <span className={`${prefixCls}-import-wrap-radio`}>
+                {formatMessage({ id: `${intlPrefix}.import.type.${item}` })}
+              </span>
+            </Option>
+          ))}
         </SelectBox>
       </Form>
       {record.get('platformType') === 'share' || record.get('platformType') === 'market' ? (

@@ -11,6 +11,7 @@ import CreateForm from './modals/create-form';
 
 import './index.less';
 import StatusIcon from '../../components/StatusIcon/StatusIcon';
+import ClickText from '../../components/click-text';
 
 const { Column } = Table;
 const modalKey1 = Modal.key();
@@ -42,10 +43,7 @@ const AppService = withRouter(observer((props) => {
 
   function renderName({ value }) {
     return (
-      <StatusIcon
-        name={value}
-        handleAtagClick={() => openModal('edit')}
-      />
+      <ClickText value={value} clickAble onClick={() => openModal('edit')} />
     );
   }
 
@@ -124,15 +122,18 @@ const AppService = withRouter(observer((props) => {
     <Page
       service={[
         'devops-service.project-certification.pageOrgCert',
-        'devops-service.project-certification.create',
+        'devops-service.project-certification.createOrUpdate',
         'devops-service.project-certification.query',
         'devops-service.project-certification.deleteOrgCert',
         'devops-service.project-certification.assignPermission',
+        'devops-service.project-certification.deletePermissionOfProject',
+        'devops-service.project-certification.pageRelatedProjects',
+        'devops-service.project-certification.listAllNonRelatedMembers',
       ]}
     >
       <Header title={<FormattedMessage id="app.head" />}>
         <Permission
-          service={['devops-service.project-certification.create']}
+          service={['devops-service.project-certification.createOrUpdate']}
         >
           <Button
             icon="playlist_add"
@@ -149,12 +150,12 @@ const AppService = withRouter(observer((props) => {
         </Button>
       </Header>
       <Breadcrumb />
-      <Content>
+      <Content className={`${prefixCls}-content`}>
         <Table
           dataSet={listDs}
           border={false}
           queryBar="bar"
-          className={`${prefixCls}.table`}
+          className={`${prefixCls}-table`}
         >
           <Column name="name" sortable renderer={renderName} />
           <Column renderer={renderActions} width="0.7rem" />

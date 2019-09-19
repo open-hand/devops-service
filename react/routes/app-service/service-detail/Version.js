@@ -26,7 +26,14 @@ const Version = (props) => {
   }
 
   return (
-    <TabPage>
+    <TabPage
+      service={[
+        'devops-service.app-service.query',
+        'devops-service.app-service.update',
+        'devops-service.app-service.updateActive',
+        'devops-service.app-service-version.pageByOptions',
+      ]}
+    >
       <HeaderButtons>
         <Button
           icon="refresh"

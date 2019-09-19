@@ -259,7 +259,7 @@ const AppService = withRouter(observer((props) => {
         </Button>
       </Header>
       <Breadcrumb />
-      <Content>
+      <Content className={`${prefixCls}-content`}>
         <Table
           dataSet={listDs}
           border={false}
@@ -274,7 +274,7 @@ const AppService = withRouter(observer((props) => {
           <Column name="type" renderer={renderType} />
           <Column name="repoUrl" renderer={renderUrl} />
           <Column name="creationDate" renderer={renderDate} />
-          <Column name="active" renderer={renderStatus} width="0.7rem" />
+          <Column name="active" renderer={renderStatus} width="0.7rem" align="left" />
         </Table>
       </Content>
     </Page>
