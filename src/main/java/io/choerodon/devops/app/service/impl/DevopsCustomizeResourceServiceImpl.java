@@ -121,7 +121,11 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
 
             }
         } catch (Exception e) {
-            throw new CommonException("error.load.yaml.content");
+            if (e instanceof CommonException) {
+                throw e;
+            } else {
+                throw new CommonException("error.load.yaml.content");
+            }
         }
 
         if (devopsCustomizeResourceReqVO.getType().equals(CREATE)) {
@@ -235,7 +239,7 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
         PageInfo<DevopsCustomizeResourceDTO> devopsCustomizeResourceDTOPageInfo = pageDevopsCustomizeResourceE(envId, pageRequest, params);
         List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedClusterList();
         PageInfo<DevopsCustomizeResourceVO> devopsCustomizeResourceVOPageInfo = ConvertUtils.convertPage(devopsCustomizeResourceDTOPageInfo, DevopsCustomizeResourceVO.class);
-        devopsCustomizeResourceVOPageInfo.getList().forEach(devopsCustomizeResourceVO-> {
+        devopsCustomizeResourceVOPageInfo.getList().forEach(devopsCustomizeResourceVO -> {
             DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
             devopsCustomizeResourceVO.setEnvStatus(updatedEnvList.contains(devopsEnvironmentDTO.getClusterId()));
         });
