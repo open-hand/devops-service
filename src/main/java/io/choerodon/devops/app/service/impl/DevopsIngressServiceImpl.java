@@ -819,6 +819,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
             CertificationDTO certificationDTO = certificationService.baseQueryById(certId);
             if (certificationDTO != null) {
+                devopsIngressVO.setCertId(certId);
                 devopsIngressVO.setCertName(certificationDTO.getName());
                 devopsIngressVO.setCertStatus(certificationDTO.getStatus());
             }
