@@ -130,30 +130,4 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
             devopsBranchMapper.delete(devopsBranchDTO);
         }
     }
-
-    @Override
-    public List<DevopsBranchDTO> baseListByAppId(Long appServiceId) {
-        DevopsBranchDTO devopsBranchDTO = new DevopsBranchDTO();
-        devopsBranchDTO.setAppServiceId(appServiceId);
-        return devopsBranchMapper.select(devopsBranchDTO);
-    }
-
-
-    @Override
-    public List<DevopsBranchDTO> baseListByAppIdAndBranchName(Long appServiceId, String branchName) {
-        DevopsBranchDTO devopsBranchDTO = new DevopsBranchDTO();
-        devopsBranchDTO.setAppServiceId(appServiceId);
-        devopsBranchDTO.setBranchName(branchName);
-        return devopsBranchMapper.select(devopsBranchDTO);
-    }
-
-
-    @Override
-    public DevopsBranchDTO baseQueryByBranchNameAndCommit(String branchName, String commit) {
-        DevopsBranchDTO devopsBranchDTO = new DevopsBranchDTO();
-        devopsBranchDTO.setBranchName(branchName);
-        devopsBranchDTO.setCheckoutCommit(commit);
-        return devopsBranchMapper.selectOne(devopsBranchDTO);
-    }
-
 }

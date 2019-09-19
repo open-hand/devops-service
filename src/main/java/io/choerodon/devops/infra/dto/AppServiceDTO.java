@@ -56,6 +56,12 @@ public class AppServiceDTO extends BaseDTO {
     @Transient
     private String version;
 
+    /**
+     * 是否是空仓库(是否没有分支)
+     */
+    @Transient
+    private Boolean emptyRepository;
+
     public String getVersion() {
         return version;
     }
@@ -254,5 +260,13 @@ public class AppServiceDTO extends BaseDTO {
 
     public void setMktAppId(Long mktAppId) {
         this.mktAppId = mktAppId;
+    }
+
+    public Boolean getEmptyRepository() {
+        return emptyRepository;
+    }
+
+    public void setEmptyRepository(Boolean emptyRepository) {
+        this.emptyRepository = emptyRepository;
     }
 }
