@@ -9,7 +9,6 @@ public class DevopsEnvironmentViewDTO {
     private Long id;
     private String name;
     private Long clusterId;
-    private Boolean synchronize;
     private List<DevopsApplicationViewDTO> apps;
 
     public Long getId() {
@@ -42,13 +41,5 @@ public class DevopsEnvironmentViewDTO {
 
     public void setApps(List<DevopsApplicationViewDTO> apps) {
         this.apps = apps;
-    }
-
-    public Boolean getSynchronize() {
-        return synchronize;
-    }
-
-    public void setSynchronize(Boolean synchronize) {
-        this.synchronize = synchronize;
     }
 }

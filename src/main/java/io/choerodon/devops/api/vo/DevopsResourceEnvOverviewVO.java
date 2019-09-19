@@ -2,56 +2,42 @@ package io.choerodon.devops.api.vo;
 
 import java.util.List;
 
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * 资源视图下环境目录信息
  *
  * @author zmf
  */
 public class DevopsResourceEnvOverviewVO {
-    /**
-     * 环境id
-     */
+    @ApiModelProperty("环境id")
     private Long id;
-    /**
-     * 环境名称
-     */
-    private String name;
-    /**
-     * 环境是否连接
-     */
-    private Boolean connect;
-    /**
-     * 环境是否同步
-     */
-    private Boolean synchronize;
 
-    /**
-     * 实例基本信息
-     */
+    @ApiModelProperty("环境名称")
+    private String name;
+
+    @ApiModelProperty("环境是否连接")
+    private Boolean connect;
+
+    @ApiModelProperty("实例基本信息")
     private List<DevopsAppServiceInstanceViewVO> instances;
-    /**
-     * 网络基本信息
-     */
+
+    @ApiModelProperty("网络基本信息")
     private List<DevopsResourceBasicInfoVO> services;
-    /**
-     * 域名基本信息
-     */
+
+    @ApiModelProperty("域名基本信息")
     private List<DevopsResourceBasicInfoVO> ingresses;
-    /**
-     * 证书基本信息
-     */
+
+    @ApiModelProperty("证书基本信息")
     private List<DevopsResourceBasicInfoVO> certifications;
-    /**
-     * 配置映射基本信息
-     */
+
+    @ApiModelProperty("配置映射基本信息")
     private List<DevopsResourceBasicInfoVO> configMaps;
-    /**
-     * 密文基本信息
-     */
+
+    @ApiModelProperty("密文基本信息")
     private List<DevopsResourceBasicInfoVO> secrets;
-    /**
-     * 自定义资源基本信息
-     */
+
+    @ApiModelProperty("自定义资源基本信息")
     private List<DevopsResourceBasicInfoVO> customResources;
 
     public Long getId() {
@@ -76,14 +62,6 @@ public class DevopsResourceEnvOverviewVO {
 
     public void setConnect(Boolean connect) {
         this.connect = connect;
-    }
-
-    public Boolean getSynchronize() {
-        return synchronize;
-    }
-
-    public void setSynchronize(Boolean synchronize) {
-        this.synchronize = synchronize;
     }
 
     public List<DevopsAppServiceInstanceViewVO> getInstances() {
