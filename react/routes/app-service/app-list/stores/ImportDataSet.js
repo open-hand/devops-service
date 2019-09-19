@@ -53,7 +53,7 @@ export default ((intlPrefix, formatMessage, projectId, selectedDs) => {
           return true;
         }
       } catch (err) {
-        return formatMessage({ id: 'checkNameFailed' });
+        return formatMessage({ id: `${intlPrefix}.name.failed` });
       }
     } else {
       return formatMessage({ id: 'nameCanNotHasSpaces' });
