@@ -82,6 +82,9 @@ public class AppServiceRepVO {
     @ApiModelProperty("此应用服务是够跳过权限检查，true表示允许项目下所有的项目成员及项目所有者访问")
     private Boolean skipCheckPermission;
 
+    @ApiModelProperty("是否是空仓库(是否没有分支)")
+    private Boolean emptyRepository;
+
     public DevopsConfigVO getHarbor() {
         return harbor;
     }
@@ -280,5 +283,13 @@ public class AppServiceRepVO {
 
     public void setSkipCheckPermission(Boolean skipCheckPermission) {
         this.skipCheckPermission = skipCheckPermission;
+    }
+
+    public Boolean getEmptyRepository() {
+        return emptyRepository;
+    }
+
+    public void setEmptyRepository(Boolean emptyRepository) {
+        this.emptyRepository = emptyRepository;
     }
 }

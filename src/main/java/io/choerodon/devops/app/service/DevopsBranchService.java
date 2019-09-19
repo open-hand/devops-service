@@ -27,11 +27,4 @@ public interface DevopsBranchService {
     PageInfo<DevopsBranchDTO> basePageBranch(Long appServiceId, PageRequest pageRequest, String params);
 
     void baseDelete(Long appServiceId, String branchName);
-
-    List<DevopsBranchDTO> baseListByAppId(Long appServiceId);
-
-    List<DevopsBranchDTO> baseListByAppIdAndBranchName(Long appServiceId, String branchName);
-
-    DevopsBranchDTO baseQueryByBranchNameAndCommit(String branchName, String commit);
-
 }
