@@ -182,13 +182,16 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
 
         devopsEnvCommandService.baseListByObject(ObjectType.CONFIGMAP.getType(), configMapId).forEach(devopsEnvCommandDTO -> devopsEnvCommandService.baseDelete(devopsEnvCommandDTO.getId()));
         baseDelete(configMapId);
-        devopsApplicationResourceService.baseDeleteByResourceIdAndType(configMapId, ObjectType.CONFIGMAP.getType());
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void delete(Long configMapId) {
         DevopsConfigMapDTO devopsConfigMapDTO = baseQueryById(configMapId);
+
+        if (devopsConfigMapDTO == null) {
+            return;
+        }
 
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsConfigMapDTO.getEnvId());
 
@@ -213,7 +216,6 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
                 .baseQueryByEnvIdAndResourceId(devopsEnvironmentDTO.getId(), configMapId, CONFIGMAP);
         if (devopsEnvFileResourceDTO == null) {
             baseDelete(configMapId);
-            devopsApplicationResourceService.baseDeleteByResourceIdAndType(configMapId, ObjectType.CONFIGMAP.getType());
             if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER,
                     CONFIG_MAP_PREFIX + devopsConfigMapDTO.getName() + ".yaml")) {
                 gitlabServiceClientOperator.deleteFile(
@@ -227,7 +229,6 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
             if (!gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER,
                     devopsEnvFileResourceDTO.getFilePath())) {
                 baseDelete(configMapId);
-                devopsApplicationResourceService.baseDeleteByResourceIdAndType(configMapId, ObjectType.CONFIGMAP.getType());
                 devopsEnvFileResourceService.baseDeleteById(devopsEnvFileResourceDTO.getId());
                 return;
             }
@@ -303,6 +304,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
     @Override
     public void baseDelete(Long id) {
         devopsConfigMapMapper.deleteByPrimaryKey(id);
+        devopsApplicationResourceService.baseDeleteByResourceIdAndType(id, ObjectType.CONFIGMAP.getType());
     }
 
     @Override

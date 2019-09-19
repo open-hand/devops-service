@@ -59,14 +59,4 @@ public class DevopsApplicationResourceServiceImpl implements DevopsApplicationRe
         resourceDTO.setResourceType(type);
         return resourceMapper.select(resourceDTO);
     }
-
-
-    @Override
-    public List<DevopsAppServiceResourceDTO> baseQueryByApplicationAndType(Long appServiceId, String type) {
-        DevopsAppServiceResourceDTO resourceDO = new DevopsAppServiceResourceDTO();
-        resourceDO.setAppServiceId(appServiceId);
-        resourceDO.setResourceType(type);
-        return resourceMapper.select(resourceDO);
-    }
-
 }
