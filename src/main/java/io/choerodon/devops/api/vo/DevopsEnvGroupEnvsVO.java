@@ -12,7 +12,7 @@ public class DevopsEnvGroupEnvsVO {
     private String devopsEnvGroupName;
 
     @ApiModelProperty("环境组内的环境")
-    private List<DevopsEnvironmentRepVO> devopsEnviromentRepDTOs;
+    private List<DevopsEnvironmentRepVO> devopsEnvironmentRepDTOs;
 
     public DevopsEnvGroupEnvsVO() {
     }
@@ -34,11 +34,11 @@ public class DevopsEnvGroupEnvsVO {
         this.devopsEnvGroupName = devopsEnvGroupName;
     }
 
-    public List<DevopsEnvironmentRepVO> getDevopsEnviromentRepDTOs() {
-        return devopsEnviromentRepDTOs;
+    public List<DevopsEnvironmentRepVO> getDevopsEnvironmentRepDTOs() {
+        return devopsEnvironmentRepDTOs;
     }
 
-    public void setDevopsEnviromentRepDTOs(List<DevopsEnvironmentRepVO> devopsEnviromentRepDTOs) {
-        this.devopsEnviromentRepDTOs = devopsEnviromentRepDTOs;
+    public void setDevopsEnvironmentRepDTOs(List<DevopsEnvironmentRepVO> devopsEnvironmentRepDTOs) {
+        this.devopsEnvironmentRepDTOs = devopsEnvironmentRepDTOs;
     }
 }

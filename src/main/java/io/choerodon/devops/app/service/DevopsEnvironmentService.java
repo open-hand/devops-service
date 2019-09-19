@@ -40,7 +40,7 @@ public interface DevopsEnvironmentService {
      * @param groupId   分组id
      * @return
      */
-    List<DevopsEnvironmentRepVO> listByGroupAndActive(Long projectId, Long groupId);
+    List<DevopsEnvironmentRepVO> listByGroup(Long projectId, Long groupId);
 
     /**
      * 项目下查询环境

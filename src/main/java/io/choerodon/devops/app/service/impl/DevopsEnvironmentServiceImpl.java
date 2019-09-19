@@ -219,7 +219,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         List<DevopsEnvironmentRepVO> devopsEnviromentRepDTOS = ConvertUtils.convertList(devopsEnvironmentDTOS, DevopsEnvironmentRepVO.class);
         if (!active) {
             DevopsEnvGroupEnvsVO devopsEnvGroupEnvsDTO = new DevopsEnvGroupEnvsVO();
-            devopsEnvGroupEnvsDTO.setDevopsEnviromentRepDTOs(devopsEnviromentRepDTOS);
+            devopsEnvGroupEnvsDTO.setDevopsEnvironmentRepDTOs(devopsEnviromentRepDTOS);
             devopsEnvGroupEnvsDTOS.add(devopsEnvGroupEnvsDTO);
             return devopsEnvGroupEnvsDTOS;
         }
@@ -244,7 +244,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             }
             devopsEnvGroupEnvsDTO.setDevopsEnvGroupId(devopsEnvGroupDTO.getId());
             devopsEnvGroupEnvsDTO.setDevopsEnvGroupName(devopsEnvGroupDTO.getName());
-            devopsEnvGroupEnvsDTO.setDevopsEnviromentRepDTOs(value);
+            devopsEnvGroupEnvsDTO.setDevopsEnvironmentRepDTOs(value);
             devopsEnvGroupEnvsDTOS.add(devopsEnvGroupEnvsDTO);
         });
         devopsEnvGroupES.forEach(devopsEnvGroupE -> {
@@ -326,7 +326,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             }
             devopsEnvGroupEnvsDTO1.setDevopsEnvGroupId(devopsEnvGroupDTO.getId());
             devopsEnvGroupEnvsDTO1.setDevopsEnvGroupName(devopsEnvGroupDTO.getName());
-            devopsEnvGroupEnvsDTO1.setDevopsEnviromentRepDTOs(value);
+            devopsEnvGroupEnvsDTO1.setDevopsEnvironmentRepDTOs(value);
             devopsEnvGroupEnvsDTOS.add(devopsEnvGroupEnvsDTO1);
         });
         //没有环境的分组
@@ -342,9 +342,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     @Override
-    public List<DevopsEnvironmentRepVO> listByGroupAndActive(Long projectId, Long groupId) {
+    public List<DevopsEnvironmentRepVO> listByGroup(Long projectId, Long groupId) {
         List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedClusterList();
-        List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = devopsEnvironmentMapper.listByProjectIdAndGroupIdAndActive(projectId, groupId)
+        List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = devopsEnvironmentMapper.listByProjectIdAndGroupId(projectId, groupId)
                 .stream()
                 .peek(t -> setEnvStatus(upgradeClusterList, t))
                 .collect(Collectors.toList());

@@ -333,7 +333,7 @@
         WHERE env.is_active IS NULL
     </update>
 
-    <select id="listByProjectIdAndGroupIdAndActive"
+    <select id="listByProjectIdAndGroupId"
             resultType="io.choerodon.devops.infra.dto.DevopsEnvironmentDTO">
         SELECT
         env.*,
