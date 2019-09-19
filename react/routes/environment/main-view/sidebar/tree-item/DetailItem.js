@@ -130,10 +130,12 @@ function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
   function getName() {
     const itemName = record.get('name') || '';
     const connect = record.get('connect');
+    const failed = record.get('failed');
     const synchronize = record.get('synchro');
     const active = record.get('active');
     const name = <TreeItemName name={itemName} search={search} />;
     return <EnvItem
+      // disabled={failed}
       name={name}
       active={active}
       connect={connect}

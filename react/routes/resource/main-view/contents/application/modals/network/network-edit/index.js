@@ -214,7 +214,7 @@ class EditNetwork extends Component {
 
         const oldNetwork = {
           name: oldName,
-          appId: oldAppId || null,
+          appServiceId: oldAppId || null,
           instances: oldIst.length ? oldIst : null,
           envId: oldEnvId,
           externalIp: oldIps,
@@ -225,7 +225,7 @@ class EditNetwork extends Component {
         };
         const newNetwork = {
           name,
-          appId: appServiceId || null,
+          appServiceId: appServiceId || null,
           instances: appIst,
           envId,
           externalIp: _externalIps.length ? _externalIps.join(',') : null,
