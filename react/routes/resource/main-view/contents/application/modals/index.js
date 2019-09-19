@@ -145,7 +145,7 @@ const AppModals = observer(() => {
       group: 1,
     }, {
       disabled,
-      name: formatMessage({ id: `${intlPrefix}.create.secret` }),
+      name: formatMessage({ id: `${intlPrefix}.create.cipher` }),
       icon: 'playlist_add',
       handler: () => openKeyValue(CIPHER_TAB),
       display: true,

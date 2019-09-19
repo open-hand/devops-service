@@ -24,8 +24,13 @@ export default function useStore() {
     },
 
     createData(projectId, data) {
-      return axios.post(`/devops/v1/projects/${projectId}/customize_resource`,
-        data, { headers: { 'Content-Type': 'multipart/form-data' } });
+      if (data.get('resourceId')) {
+        return axios.put(`/devops/v1/projects/${projectId}/customize_resource`,
+          data, { headers: { 'Content-Type': 'multipart/form-data' } });  
+      } else {
+        return axios.post(`/devops/v1/projects/${projectId}/customize_resource`,
+          data, { headers: { 'Content-Type': 'multipart/form-data' } });
+      }
     },
   }));
 }

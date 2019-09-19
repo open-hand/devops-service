@@ -173,6 +173,8 @@ const commonField = {
   configMaps: '配置映射',
   secrets: '密文',
   customResources: '自定义资源',
+
+  number: '编号',
 };
 
 const deployment = {
@@ -295,7 +297,7 @@ const deployment = {
   'c7ncd.deployment.create.network': '创建网络',
   'c7ncd.deployment.create.ingress': '创建域名',
   'c7ncd.deployment.create.configMap': '创建配置映射',
-  'c7ncd.deployment.create.secret': '创建密文',
+  'c7ncd.deployment.create.cipher': '创建密文',
   'c7ncd.deployment.create.custom': '创建自定义资源',
   'c7ncd.deployment.service.detail': '服务详情',
   'c7ncd.deployment.service.status': '服务状态',
@@ -305,7 +307,7 @@ const deployment = {
   'c7ncd.deployment.certificate.name': '证书名称',
   'c7ncd.deployment.create.certificate': '创建证书',
   'c7ncd.deployment.configMap': '配置映射',
-  'c7ncd.deployment.secret': '密文',
+  'c7ncd.deployment.cipher': '密文',
   'c7ncd.deployment.resource.type': '资源类型',
   'c7ncd.deployment.instance.name': '实例名称',
   'c7ncd.deployment.instance.pod.status': 'Pods状态',
@@ -348,6 +350,11 @@ const deployment = {
   'c7ncd.deployment.delete.ingress.tips': '确定要删除该域名吗？',
   'c7ncd.deployment.modal.redeploy.tips': '确定要重新部署该实例吗？',
   'c7ncd.deployment.instance.version.failed': '升级至版本 “{text}” 失败',
+  'c7ncd.deployment.configMap.head': '配置映射',
+  'c7ncd.deployment.configMap.create': '创建配置映射',
+  'c7ncd.deployment.configMap.add': '添加配置映射',
+  'c7ncd.deployment.configMap.edit': '编辑配置映射',
+  'c7ncd.deployment.configMap.help.tooltip': '您可粘贴多行“键=值”格式的字段至任何键框中，以便于批量输入键值对。',
 };
 
 const appService = {
@@ -892,7 +899,7 @@ const pageDetail = {
   'configMap.create.link': `${docServer}/user-guide/deployment-pipeline/config-map/`,
   'configMap.help.tooltip':
     '您可粘贴多行“键=值”格式的字段至任何键框中，以便于批量输入键值对。',
-
+  
   // 密文
   'secret.title': '环境"{name}"的密文',
   'secret.create.title': '在项目"{name}"中创建密文',
@@ -2057,8 +2064,8 @@ const zhCN = {
   // 配置映射
   'configMap.head': '配置映射',
   'configMap.create': '创建配置映射',
-  'configMap.edit': '修改配置映射',
   'configMap.add': '添加配置映射',
+  'configMap.edit': '修改配置映射',
   'configMap.updateAt': '更新时间',
   'configMap.key': '键',
   'configMap.des': '描述',

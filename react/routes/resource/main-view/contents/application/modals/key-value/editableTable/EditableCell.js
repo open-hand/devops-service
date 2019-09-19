@@ -180,7 +180,7 @@ export default class EditableCell extends React.Component {
                     onClick={this.toggleEdit}
                     onFocus={this.toggleEdit}
                     value={
-                      title === 'secret'
+                      title === 'cipher'
                       && dataIndex === 'value'
                       && restProps.children.filter((a) => typeof (a) === 'string').length
                         ? '******'

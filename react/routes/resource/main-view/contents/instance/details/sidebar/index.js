@@ -399,14 +399,14 @@ function volumesItem(name, data, isBool = false) {
 
 function volumesTemplate(data) {
   let template = null;
-  const VOL_TYPE = ['configMap', 'persistentVolumeClaim', 'secret', 'hostPath'];
+  const VOL_TYPE = ['configMap', 'persistentVolumeClaim', 'cipher', 'hostPath'];
   const vKey = Object.keys(data);
   const { name } = data;
 
   let type = _.toString(_.filter(VOL_TYPE, (item) => vKey.includes(item)));
   switch (type) {
     case 'configMap':
-    case 'secret': {
+    case 'cipher': {
       const { defaultMode, items, optional } = data[type];
       let itemDom = null;
       if (items && items.length) {

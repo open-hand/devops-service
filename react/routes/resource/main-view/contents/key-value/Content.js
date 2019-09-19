@@ -142,6 +142,7 @@ const ConfigMap = observer((props) => {
         envId={parentId}
         onClose={closeModal}
         store={formStore}
+        intlPrefix={intlPrefix}
       />}
     </div>
   );

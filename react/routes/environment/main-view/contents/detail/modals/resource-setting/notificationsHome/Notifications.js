@@ -11,14 +11,15 @@ import {
   Content,
   Header,
   Page,
+  Action,
 } from '@choerodon/master';
 import { Table, Button, Modal, Tooltip, Select } from 'choerodon-ui';
 import _ from 'lodash';
+import ClickText from '../../../../../../../../components/click-text';
 import NotificationSidebar from '../notificationSidebar';
 import UserList from '../components/userList';
 import TableTags from '../components/tableTags';
 import { handlePromptError } from '../../../../../../../../utils';
-import { EVENT, METHOD_OPTIONS, TARGET_OPTIONS } from '../Constants';
 import NotificationsStore from '../store';
 
 import './Notifications.less';
@@ -93,7 +94,7 @@ export default class Notifications extends Component {
     });
   };
 
-  openEdit(id) {
+  openEdit= (id) => {
     this.setState({
       showSidebar: true,
       sidebarType: 'edit',
@@ -106,7 +107,7 @@ export default class Notifications extends Component {
       showSidebar: false,
       sidebarType: 'create',
     });
-    reload ? this.loadData(1) : this.loadData();
+    reload ? this.loadData(1) : null;
   };
 
   handleRefresh = (e, page) => {
@@ -212,6 +213,8 @@ export default class Notifications extends Component {
 
   renderMethod = ({ notifyType }) => this.renderTags(notifyType, 'method');
 
+  renderNumber = ({ id }) => <ClickText value={`#${id}`} clickAble onClick={this.openEdit} record={id} />
+
   renderAction = ({ id }) => {
     const {
       AppState: {
@@ -221,49 +224,22 @@ export default class Notifications extends Component {
           organizationId,
         },
       },
+      intl: { formatMessage },
     } = this.props;
-    return <Fragment>
-      <Permission
-        service={['devops-service.devops-notification.update']}
-        type={type}
-        projectId={projectId}
-        organizationId={organizationId}
-      >
-        <Tooltip
-          trigger="hover"
-          placement="bottom"
-          title={<FormattedMessage id="edit" />}
-        >
-          <Button
-            shape="circle"
-            size="small"
-            funcType="flat"
-            icon="mode_edit"
-            onClick={this.openEdit.bind(this, id)}
-          />
-        </Tooltip>
-      </Permission>
-      <Permission
-        service={['devops-service.devops-notification.delete']}
-        type={type}
-        projectId={projectId}
-        organizationId={organizationId}
-      >
-        <Tooltip
-          trigger="hover"
-          placement="bottom"
-          title={<FormattedMessage id="delete" />}
-        >
-          <Button
-            shape="circle"
-            size="small"
-            funcType="flat"
-            icon="delete_forever"
-            onClick={this.openRemove.bind(this, id)}
-          />
-        </Tooltip>
-      </Permission>
-    </Fragment>;
+
+    const actionData = [
+      {
+        service: ['devops-service.devops-notification.update'],
+        text: formatMessage({ id: 'edit' }),
+        action: this.openEdit.bind(this, id),
+      },
+      {
+        service: ['devops-service.devops-notification.delete'],
+        text: formatMessage({ id: 'delete' }),
+        action: this.openRemove.bind(this, id),
+      },
+    ];
+    return <Action data={actionData} />;
   };
 
   get getColumns() {
@@ -272,51 +248,31 @@ export default class Notifications extends Component {
     const { intl: { formatMessage } } = this.props;
 
     return [{
+      title: <FormattedMessage id="number" />,
+      key: 'id',  
+      render: this.renderNumber,
+    },
+    {
+      key: 'action',
+      render: this.renderAction,
+    },
+    {
       title: <FormattedMessage id="notification.event" />,
       key: 'notifyTriggerEvent',
-      filters: _.map(EVENT, (item) => ({
-        text: formatMessage({ id: `notification.event.${item}` }),
-        value: item,
-      })),
-      filteredValue: filters.notifyTriggerEvent || [],
       render: this.renderEvent,
     }, {
       title: <FormattedMessage id="notification.method" />,
       key: 'notifyType',
-      filters: _.map(METHOD_OPTIONS, (item) => ({
-        text: formatMessage({ id: `notification.method.${item}` }),
-        value: item,
-      })),
-      filteredValue: filters.notifyType || [],
       render: this.renderMethod,
     }, {
       title: <FormattedMessage id="notification.target" />,
       key: 'notifyObject',
-      filters: _.map(TARGET_OPTIONS, (item) => ({
-        text: formatMessage({ id: `notification.target.${item}` }),
-        value: item,
-      })),
-      filteredValue: filters.notifyObject || [],
       render: this.renderUser,
-    }, {
-      key: 'action',
-      align: 'right',
-      width: 88,
-      render: this.renderAction,
     }];
   }
 
   render() {
     const {
-      AppState: {
-        currentMenuType: {
-          name,
-          type,
-          id: projectId,
-          organizationId,
-        },
-      },
-      intl: { formatMessage },
       envId,
     } = this.props;
     const {
