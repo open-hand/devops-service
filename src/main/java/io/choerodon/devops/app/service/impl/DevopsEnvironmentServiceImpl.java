@@ -1279,11 +1279,11 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     public DevopsEnvironmentDTO baseUpdate(DevopsEnvironmentDTO devopsEnvironmentDTO) {
-        devopsEnvironmentDTO.setObjectVersionNumber(devopsEnvironmentMapper.selectByPrimaryKey(
-                devopsEnvironmentDTO.getId()).getObjectVersionNumber());
         if (devopsEnvironmentDTO.getDevopsEnvGroupId() == null) {
             devopsEnvironmentMapper.updateDevopsEnvGroupId(devopsEnvironmentDTO.getId());
         }
+        devopsEnvironmentDTO.setObjectVersionNumber(devopsEnvironmentMapper.selectByPrimaryKey(
+                devopsEnvironmentDTO.getId()).getObjectVersionNumber());
         if (devopsEnvironmentMapper.updateByPrimaryKeySelective(devopsEnvironmentDTO) != 1) {
             throw new CommonException("error.environment.update");
         }
