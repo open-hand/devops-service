@@ -390,7 +390,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
         List<DevopsEnvironmentViewVO> connectedEnvs = new ArrayList<>();
         List<DevopsEnvironmentViewVO> unConnectedEnvs = new ArrayList<>();
-        List<DevopsEnvironmentViewVO> unSynchronizedEnvs = new ArrayList<>();
 
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         boolean isOwner = baseServiceClientOperator.isProjectOwner(DetailsHelper.getUserDetails().getUserId(), projectDTO);
@@ -421,12 +420,15 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 return appVO;
             }).collect(Collectors.toList()));
 
-            classifyEnv(connectedEnvs, unConnectedEnvs, unSynchronizedEnvs, vo, vo.getSynchronize(), vo.getConnect());
+            if (connected) {
+                connectedEnvs.add(vo);
+            } else {
+                unConnectedEnvs.add(vo);
+            }
         });
 
-        // 为了将环境按照状态排序: 连接（运行中） > 未连接 > 处理中（未同步完成的）
+        // 为了将环境按照状态排序: 连接（运行中） > 未连接
         connectedEnvs.addAll(unConnectedEnvs);
-        connectedEnvs.addAll(unSynchronizedEnvs);
         return connectedEnvs;
     }
 
@@ -436,7 +438,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
         List<DevopsResourceEnvOverviewVO> connectedEnvs = new ArrayList<>();
         List<DevopsResourceEnvOverviewVO> unConnectedEnvs = new ArrayList<>();
-        List<DevopsResourceEnvOverviewVO> unSynchronizedEnvs = new ArrayList<>();
 
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         boolean isOwner = baseServiceClientOperator.isProjectOwner(DetailsHelper.getUserDetails().getUserId(), projectDTO);
@@ -455,41 +456,16 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             boolean connected = upgradeClusterList.contains(e.getClusterId());
             vo.setConnect(connected);
 
-            classifyEnv(connectedEnvs, unConnectedEnvs, unSynchronizedEnvs, vo, vo.getSynchronize(), vo.getConnect());
+            if (connected) {
+                connectedEnvs.add(vo);
+            } else {
+                unConnectedEnvs.add(vo);
+            }
         });
 
-        // 为了将环境按照状态排序: 连接（运行中） > 未连接 > 处理中（未同步完成的）
+        // 为了将环境按照状态排序: 连接（运行中） > 未连接
         connectedEnvs.addAll(unConnectedEnvs);
-        connectedEnvs.addAll(unSynchronizedEnvs);
         return connectedEnvs;
-    }
-
-
-    /**
-     * 将环境进行分类
-     *
-     * @param connectedEnvs      已连接
-     * @param unConnectedEnvs    未连接
-     * @param unSynchronizedEnvs 处理中
-     * @param toBeClassified     待分类的环境
-     * @param isSynchronized     是否同步
-     * @param connect            是否连接
-     */
-    private <C> void classifyEnv(List<C> connectedEnvs,
-                                 List<C> unConnectedEnvs,
-                                 List<C> unSynchronizedEnvs,
-                                 C toBeClassified,
-                                 Boolean isSynchronized,
-                                 Boolean connect) {
-        if (Boolean.TRUE.equals(isSynchronized)) {
-            if (Boolean.TRUE.equals(connect)) {
-                connectedEnvs.add(toBeClassified);
-            } else {
-                unConnectedEnvs.add(toBeClassified);
-            }
-        } else {
-            unSynchronizedEnvs.add(toBeClassified);
-        }
     }
 
     @Override

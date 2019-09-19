@@ -23,10 +23,6 @@ public class DevopsResourceEnvOverviewDTO {
      * 环境是否连接
      */
     private Boolean connect;
-    /**
-     * 环境是否同步
-     */
-    private Boolean synchronize;
 
     private Long clusterId;
 
@@ -81,14 +77,6 @@ public class DevopsResourceEnvOverviewDTO {
 
     public void setConnect(Boolean connect) {
         this.connect = connect;
-    }
-
-    public Boolean getSynchronize() {
-        return synchronize;
-    }
-
-    public void setSynchronize(Boolean synchronize) {
-        this.synchronize = synchronize;
     }
 
     public List<DevopsAppServiceInstanceViewVO> getInstances() {
