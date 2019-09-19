@@ -241,9 +241,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         });
 
         //处理应用服务关联网络信息
-        if (devopsServiceDTO.getAppServiceId() != null) {
-            devopsAppServiceResourceService.handleAppServiceResource(Arrays.asList(devopsServiceDTO.getAppServiceId()), devopsServiceDTO.getId(), ObjectType.SERVICE.getType());
-        }
+        devopsAppServiceResourceService.handleAppServiceResource(Arrays.asList(devopsServiceDTO.getAppServiceId()), devopsServiceDTO.getId(), ObjectType.SERVICE.getType());
         return true;
     }
 
@@ -327,9 +325,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         });
 
         //处理应用服务关联网络信息
-        if (devopsServiceDTO.getAppServiceId() != null) {
-            devopsAppServiceResourceService.handleAppServiceResource(Arrays.asList(devopsServiceDTO.getAppServiceId()), devopsServiceDTO.getId(), ObjectType.SERVICE.getType());
-        }
+        devopsAppServiceResourceService.handleAppServiceResource(Arrays.asList(devopsServiceDTO.getAppServiceId()), devopsServiceDTO.getId(), ObjectType.SERVICE.getType());
         return true;
     }
 
@@ -372,6 +368,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                         "DELETE FILE",
                         TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
             }
+            //删除网络的关联关系
+            devopsAppServiceResourceService.baseDeleteByResourceIdAndType(id, ObjectType.SERVICE.getType());
             return;
         } else {
             if (!gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER,
@@ -379,6 +377,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
                 baseDelete(id);
                 devopsEnvFileResourceService.baseDeleteById(devopsEnvFileResourceDTO.getId());
+                //删除网络的关联关系
+                devopsAppServiceResourceService.baseDeleteByResourceIdAndType(id, ObjectType.SERVICE.getType());
                 return;
             }
         }
@@ -424,6 +424,11 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
         devopsEnvCommandService.baseListByObject(ObjectType.SERVICE.getType(), devopsServiceDTO.getId()).forEach(devopsEnvCommandDTO -> devopsEnvCommandService.baseDelete(devopsEnvCommandDTO.getId()));
         baseDelete(id);
+
+        //删除应用服务关联网络信息
+        devopsAppServiceResourceService.baseDeleteByResourceIdAndType(id, ObjectType.SERVICE.getType());
+
+
     }
 
 
@@ -1079,9 +1084,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
 
         //处理应用服务关联网络信息
-        if (devopsServiceDTO.getAppServiceId() != null) {
-            devopsAppServiceResourceService.handleAppServiceResource(Arrays.asList(devopsServiceDTO.getAppServiceId()), devopsServiceDTO.getId(), ObjectType.SERVICE.getType());
-        }
+        devopsAppServiceResourceService.handleAppServiceResource(Arrays.asList(devopsServiceDTO.getAppServiceId()), devopsServiceDTO.getId(), ObjectType.SERVICE.getType());
 
         ServiceSagaPayLoad serviceSagaPayLoad = new ServiceSagaPayLoad(devopsEnvironmentDTO.getProjectId(), userAttrDTO.getGitlabUserId());
         serviceSagaPayLoad.setDevopsServiceDTO(devopsServiceDTO);

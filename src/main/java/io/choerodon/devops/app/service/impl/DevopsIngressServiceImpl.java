@@ -203,9 +203,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
 
         //处理应用服务关联域名信息
-        if (devopsIngressVO.getAppServiceId() != null) {
-            devopsAppServiceResourceService.handleAppServiceResource(new ArrayList<>(devopsIngressVO.getAppServiceIds()), ingressId, ObjectType.INGRESS.getType());
-        }
+        devopsAppServiceResourceService.handleAppServiceResource(new ArrayList<>(devopsIngressVO.getAppServiceIds()), ingressId, ObjectType.INGRESS.getType());
 
     }
 
@@ -320,9 +318,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         baseUpdateIngressAndIngressPath(devopsIngressDO);
 
         //处理应用服务关联域名信息
-        if (devopsIngressVO.getAppServiceId() != null) {
-            devopsAppServiceResourceService.handleAppServiceResource(new ArrayList<>(devopsIngressVO.getAppServiceIds()), id, ObjectType.INGRESS.getType());
-        }
+        devopsAppServiceResourceService.handleAppServiceResource(new ArrayList<>(devopsIngressVO.getAppServiceIds()), id, ObjectType.INGRESS.getType());
     }
 
 
@@ -587,9 +583,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         }
 
         //处理应用服务关联域名信息
-        if (!appServiceIds.isEmpty()) {
-            devopsAppServiceResourceService.handleAppServiceResource(new ArrayList<>(appServiceIds), ingressId, ObjectType.INGRESS.getType());
-        }
+        devopsAppServiceResourceService.handleAppServiceResource(new ArrayList<>(appServiceIds), ingressId, ObjectType.INGRESS.getType());
 
         IngressSagaPayload ingressSagaPayload = new IngressSagaPayload(devopsEnvironmentDTO.getProjectId(), userAttrDTO.getGitlabUserId());
         ingressSagaPayload.setDevopsIngressDTO(devopsIngressDTO);
