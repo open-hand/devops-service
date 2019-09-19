@@ -279,6 +279,44 @@
         </if>
     </sql>
 
+
+    <sql id="sqlparams">
+        <if test="searchParam != null">
+            <if test="searchParam.name != null and searchParam.name != ''">
+                AND   name LIKE CONCAT(CONCAT('%', #{searchParam.name, jdbcType=VARCHAR}),'%')
+            </if>
+            <if test="searchParam.code != null and searchParam.code != ''">
+                AND  code LIKE CONCAT(CONCAT('%', #{searchParam.code, jdbcType=VARCHAR}),'%')
+            </if>
+            <if test='searchParam.status != null'>
+                AND
+                <if test='searchParam.status == "失败"'>
+                    is_failed = 1
+                </if>
+                <if test="searchParam.status == '停用'">
+                    is_active = 0
+                </if>
+                <if test="searchParam.status == '启用'">
+                    is_active = 1
+                    AND is_synchro = 1
+                    AND is_failed = 0
+                </if>
+                <if test="searchParam.status == '创建中'">
+                    is_synchro = 0
+                    AND is_failed = 0
+                </if>
+            </if>
+        </if>
+        <if test='params != null and params.size > 0'>
+            AND
+            <foreach collection="params" item="param" open="(" separator=" OR " close=")">
+                type LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                OR  name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                OR code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            </foreach>
+        </if>
+    </sql>
+
     <select id="basePageByActiveAndPubAndHasVersion" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
         SELECT
         da.`id`,
@@ -572,74 +610,21 @@
          select * from devops_app_service
          <where>
              <if test="ids != null and ids.size > 0">
-                AND
-                 <foreach collection="ids" item="id" open="(" separator=" OR " close=")">
-                    id = #{id}
-                 </foreach>
-             </if>
-             <if test="searchParam != null">
-                 <if test='searchParam.status != null'>
-                     AND
-                     <if test='searchParam.status == "失败"'>
-                         is_failed = 1
-                     </if>
-                     <if test="searchParam.status == '停用'">
-                         is_active = 0
-                     </if>
-                     <if test="searchParam.status == '启用'">
-                         is_active = 1
-                         AND is_synchro = 1
-                         AND is_failed = 0
-                     </if>
-                     <if test="searchParam.status == '创建中'">
-                         is_synchro = 0
-                         AND is_failed = 0
-                     </if>
-                 </if>
-             </if>
-             <if test='params != null and params.size > 0'>
                  AND
-                 <foreach collection="params" item="param" open="(" separator=" OR " close=")">
-                     type LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-                     OR  name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-                     OR code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                 <foreach collection="ids" item="id" open="(" separator=" OR " close=")">
+                     id = #{id}
                  </foreach>
              </if>
+             <include refid="sqlparams"/>
          </where>
     </select>
+
 
     <select id="pageServiceByProjectId" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
          select * from devops_app_service
         <where>
             project_id = #{projectId}
-            <if test="searchParam != null">
-                <if test='searchParam.status != null'>
-                    AND
-                    <if test='searchParam.status == "失败"'>
-                        is_failed = 1
-                    </if>
-                    <if test="searchParam.status == '停用'">
-                        is_active = 0
-                    </if>
-                    <if test="searchParam.status == '启用'">
-                        is_active = 1
-                        AND is_synchro = 1
-                        AND is_failed = 0
-                    </if>
-                    <if test="searchParam.status == '创建中'">
-                        is_synchro = 0
-                        AND is_failed = 0
-                    </if>
-                </if>
-            </if>
-            <if test='params != null and params.size > 0'>
-                AND
-                <foreach collection="params" item="param" open="(" separator=" OR " close=")">
-                    type LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-                    OR  name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-                    OR code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-                </foreach>
-            </if>
+            <include refid="sqlparams" />
         </where>
     </select>
 

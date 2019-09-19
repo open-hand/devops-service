@@ -463,18 +463,17 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public AppServiceBatchCheckVO checkCodeByProjectId(Long projectId, AppServiceBatchCheckVO appServiceBatchCheckVO) {
         AppServiceBatchCheckVO batchCheckVO = new AppServiceBatchCheckVO();
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         batchCheckVO.setListCode(
                 appServiceBatchCheckVO.getListCode().stream().filter(code -> {
                     AppServiceDTO appServiceDTO = new AppServiceDTO();
-                    appServiceDTO.setProjectId(projectDTO.getApplicationId());
+                    appServiceDTO.setProjectId(projectId);
                     appServiceDTO.setCode(code);
                     List<AppServiceDTO> list = appServiceMapper.select(appServiceDTO);
                     return list != null && !list.isEmpty();
                 }).collect(Collectors.toList()));
         batchCheckVO.setListName(appServiceBatchCheckVO.getListName().stream().filter(name -> {
             AppServiceDTO appServiceDTO = new AppServiceDTO();
-            appServiceDTO.setProjectId(projectDTO.getApplicationId());
+            appServiceDTO.setProjectId(projectId);
             appServiceDTO.setName(name);
             List<AppServiceDTO> list = appServiceMapper.select(appServiceDTO);
             return list != null && !list.isEmpty();
