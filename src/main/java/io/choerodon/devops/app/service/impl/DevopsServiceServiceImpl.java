@@ -241,9 +241,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         });
 
         //处理应用服务关联网络信息
-        if (devopsServiceDTO.getAppServiceId() != null) {
-            devopsAppServiceResourceService.handleAppServiceResource(Arrays.asList(devopsServiceDTO.getAppServiceId()), devopsServiceDTO.getId(), ObjectType.SERVICE.getType());
-        }
+        devopsAppServiceResourceService.handleAppServiceResource(Arrays.asList(devopsServiceDTO.getAppServiceId()), devopsServiceDTO.getId(), ObjectType.SERVICE.getType());
         return true;
     }
 
@@ -327,9 +325,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         });
 
         //处理应用服务关联网络信息
-        if (devopsServiceDTO.getAppServiceId() != null) {
-            devopsAppServiceResourceService.handleAppServiceResource(Arrays.asList(devopsServiceDTO.getAppServiceId()), devopsServiceDTO.getId(), ObjectType.SERVICE.getType());
-        }
+        devopsAppServiceResourceService.handleAppServiceResource(Arrays.asList(devopsServiceDTO.getAppServiceId()), devopsServiceDTO.getId(), ObjectType.SERVICE.getType());
         return true;
     }
 
@@ -1079,9 +1075,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
 
         //处理应用服务关联网络信息
-        if (devopsServiceDTO.getAppServiceId() != null) {
-            devopsAppServiceResourceService.handleAppServiceResource(Arrays.asList(devopsServiceDTO.getAppServiceId()), devopsServiceDTO.getId(), ObjectType.SERVICE.getType());
-        }
+        devopsAppServiceResourceService.handleAppServiceResource(Arrays.asList(devopsServiceDTO.getAppServiceId()), devopsServiceDTO.getId(), ObjectType.SERVICE.getType());
 
         ServiceSagaPayLoad serviceSagaPayLoad = new ServiceSagaPayLoad(devopsEnvironmentDTO.getProjectId(), userAttrDTO.getGitlabUserId());
         serviceSagaPayLoad.setDevopsServiceDTO(devopsServiceDTO);
