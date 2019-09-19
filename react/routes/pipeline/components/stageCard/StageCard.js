@@ -8,6 +8,8 @@ import TaskCreate from '../taskCreate';
 import StageTitle from '../stageTitle';
 import StageCreateModal from '../stageCreateModal';
 import Tips from '../../../../components/Tips/Tips';
+import ClickText from '../../../../components/click-text';
+
 import {
   TASK_SERIAL,
   TASK_PARALLEL,
@@ -129,16 +131,9 @@ export default class StageCard extends Component {
           placement="top"
         >
           <span className="c7ncd-stagecard-title">
-            【{formatMessage({ id: `pipeline.mode.${type}` })}】{name}
+            <ClickText value={`【${formatMessage({ id: `pipeline.mode.${type}` })}】${name}`} onClick={this.openTaskSidebar.bind(this, null, index, isHead)} clickAble />
           </span>
         </Tooltip>
-        <Button
-          onClick={this.openTaskSidebar.bind(this, null, index, isHead)}
-          className="c7ncd-stagecard-btn"
-          size="small"
-          icon="mode_edit"
-          shape="circle"
-        />
         <Button
           onClick={this.openTaskRemove.bind(this, index, name, isHead)}
           size="small"

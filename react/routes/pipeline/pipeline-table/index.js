@@ -453,7 +453,7 @@ export default class Pipeline extends Component {
     const { columnKey, order } = sorter || {};
 
     return [{
-      title: <FormattedMessage id="status" />,
+      title: <FormattedMessage id="pipeline.head" />,
       key: 'isEnabled',
       dataIndex: 'isEnabled',
       sorter: true,
