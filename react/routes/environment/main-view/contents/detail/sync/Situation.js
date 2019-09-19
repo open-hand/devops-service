@@ -118,7 +118,7 @@ const SyncSituation = observer(() => {
                 />
               </Tooltip>
             </Permission>
-            <div className="c7n-log-arrow-detail">→</div>
+            <div className="c7n-log-arrow-detail c7n-log-arrow-detail-absolute">→</div>
           </div>
           <div className="log-sync-line-card">
             <div className="log-sync-line-card-title">
