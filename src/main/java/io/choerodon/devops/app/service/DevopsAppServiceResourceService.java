@@ -7,7 +7,7 @@ import io.choerodon.devops.infra.dto.DevopsAppServiceResourceDTO;
 /**
  * @author zmf
  */
-public interface DevopsApplicationResourceService {
+public interface DevopsAppServiceResourceService {
 
     void handleAppServiceResource(List<Long> appServiceIds, Long resourceId, String type);
 

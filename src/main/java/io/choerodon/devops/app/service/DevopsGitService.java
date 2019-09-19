@@ -53,9 +53,9 @@ public interface DevopsGitService {
     /**
      * 删除标签
      *
-     * @param projectId
-     * @param appServiceId
-     * @param tag
+     * @param projectId    项目id
+     * @param appServiceId 应用服务id
+     * @param tag          tag名称
      */
     void deleteTag(Long projectId, Long appServiceId, String tag);
 
@@ -63,10 +63,10 @@ public interface DevopsGitService {
      * 创建分支
      *
      * @param projectId      项目ID
-     * @param applicationId  应用ID
+     * @param appServiceId   应用服务ID
      * @param devopsBranchVO 分支
      */
-    void createBranch(Long projectId, Long applicationId, DevopsBranchVO devopsBranchVO);
+    void createBranch(Long projectId, Long appServiceId, DevopsBranchVO devopsBranchVO);
 
     /**
      * 获取工程下所有分支名

@@ -965,6 +965,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     public void deletePermissionOfUser(Long envId, Long userId) {
+        if (envId == null || userId == null) {
+            return;
+        }
         DevopsEnvUserPermissionDTO devopsEnvUserPermissionDTO = new DevopsEnvUserPermissionDTO();
         devopsEnvUserPermissionDTO.setEnvId(envId);
         devopsEnvUserPermissionDTO.setIamUserId(userId);
@@ -1122,7 +1125,12 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Transactional(rollbackFor = Exception.class)
     public void deleteDeactivatedEnvironment(Long envId) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = baseQueryById(envId);
-        if (devopsEnvironmentDTO.getActive() != null && devopsEnvironmentDTO.getActive()) {
+
+        if (devopsEnvironmentDTO == null) {
+            return;
+        }
+
+        if (!Boolean.FALSE.equals(devopsEnvironmentDTO.getActive())) {
             throw new CommonException("error.env.is.active.and.delete.forbidden");
         }
 

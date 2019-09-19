@@ -92,7 +92,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     @Autowired
     private ResourceFileCheckHandler resourceFileCheckHandler;
     @Autowired
-    private DevopsApplicationResourceService devopsApplicationResourceService;
+    private DevopsAppServiceResourceService devopsAppServiceResourceService;
     @Autowired
     private DevopsIngressMapper devopsIngressMapper;
     @Autowired
@@ -204,7 +204,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
         //处理应用服务关联域名信息
         if (devopsIngressVO.getAppServiceId() != null) {
-            devopsApplicationResourceService.handleAppServiceResource(new ArrayList<>(devopsIngressVO.getAppServiceIds()), ingressId, ObjectType.INGRESS.getType());
+            devopsAppServiceResourceService.handleAppServiceResource(new ArrayList<>(devopsIngressVO.getAppServiceIds()), ingressId, ObjectType.INGRESS.getType());
         }
 
     }
@@ -321,7 +321,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
         //处理应用服务关联域名信息
         if (devopsIngressVO.getAppServiceId() != null) {
-            devopsApplicationResourceService.handleAppServiceResource(new ArrayList<>(devopsIngressVO.getAppServiceIds()), id, ObjectType.INGRESS.getType());
+            devopsAppServiceResourceService.handleAppServiceResource(new ArrayList<>(devopsIngressVO.getAppServiceIds()), id, ObjectType.INGRESS.getType());
         }
     }
 
@@ -401,8 +401,11 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteIngress(Long ingressId) {
-
         DevopsIngressDTO ingressDO = baseQuery(ingressId);
+
+        if (ingressDO == null) {
+            return;
+        }
 
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(ingressDO.getEnvId()
         );
@@ -585,7 +588,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
         //处理应用服务关联域名信息
         if (!appServiceIds.isEmpty()) {
-            devopsApplicationResourceService.handleAppServiceResource(new ArrayList<>(appServiceIds), ingressId, ObjectType.INGRESS.getType());
+            devopsAppServiceResourceService.handleAppServiceResource(new ArrayList<>(appServiceIds), ingressId, ObjectType.INGRESS.getType());
         }
 
         IngressSagaPayload ingressSagaPayload = new IngressSagaPayload(devopsEnvironmentDTO.getProjectId(), userAttrDTO.getGitlabUserId());
@@ -825,7 +828,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     @Override
     public void baseDelete(Long ingressId) {
         devopsIngressMapper.deleteByPrimaryKey(ingressId);
-        devopsApplicationResourceService.baseDeleteByResourceIdAndType(ingressId, ObjectType.INGRESS.getType());
+        devopsAppServiceResourceService.baseDeleteByResourceIdAndType(ingressId, ObjectType.INGRESS.getType());
         devopsIngressPathMapper.delete(new DevopsIngressPathDTO(ingressId));
     }
 

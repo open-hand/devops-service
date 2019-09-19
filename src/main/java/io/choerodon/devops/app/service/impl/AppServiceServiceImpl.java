@@ -266,11 +266,20 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Transactional
     @Override
     public void delete(Long projectId, Long appServiceId) {
+        AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
+
+        if (appServiceDTO == null) {
+            return;
+        }
+
+        // 禁止删除未失败的应用
+        if (!Boolean.TRUE.equals(appServiceDTO.getFailed())) {
+            throw new CommonException("error.delete.nonfailed.app.service", appServiceDTO.getName());
+        }
 
         //删除应用服务权限
         appServiceUserPermissionService.baseDeleteByAppServiceId(appServiceId);
         //删除gitlab project
-        AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
         if (appServiceDTO.getGitlabProjectId() != null) {
             Integer gitlabProjectId = appServiceDTO.getGitlabProjectId();
             GitlabProjectDTO gitlabProjectDTO = gitlabServiceClientOperator.queryProjectById(gitlabProjectId);

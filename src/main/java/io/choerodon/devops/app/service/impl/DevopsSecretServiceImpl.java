@@ -71,7 +71,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
-    private DevopsApplicationResourceService devopsApplicationResourceService;
+    private DevopsAppServiceResourceService devopsAppServiceResourceService;
     @Autowired
     private DevopsSecretMapper devopsSecretMapper;
     @Autowired
@@ -226,7 +226,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
                 applicationResourceDTO.setAppServiceId(appServiceId);
                 applicationResourceDTO.setResourceType(ObjectType.SECRET.getType());
                 applicationResourceDTO.setResourceId(secretId);
-                devopsApplicationResourceService.baseCreate(applicationResourceDTO);
+                devopsAppServiceResourceService.baseCreate(applicationResourceDTO);
             }
             devopsEnvCommandDTO.setObjectId(secretId);
             devopsSecretDTO.setId(secretId);
@@ -251,6 +251,11 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean deleteSecret(Long envId, Long secretId) {
+        DevopsSecretDTO devopsSecretDTO = baseQuery(secretId);
+
+        if (devopsSecretDTO == null) {
+            return false;
+        }
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
@@ -263,7 +268,6 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
 
         // 更新secret
         devopsEnvCommandDTO.setObjectId(secretId);
-        DevopsSecretDTO devopsSecretDTO = baseQuery(secretId);
         devopsSecretDTO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());
         baseUpdate(devopsSecretDTO);
 
@@ -441,7 +445,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     @Override
     public void baseDelete(Long secretId) {
         devopsSecretMapper.deleteByPrimaryKey(secretId);
-        devopsApplicationResourceService.baseDeleteByResourceIdAndType(secretId, ObjectType.SECRET.getType());
+        devopsAppServiceResourceService.baseDeleteByResourceIdAndType(secretId, ObjectType.SECRET.getType());
         devopsSecretMapper.delete(new DevopsSecretDTO(secretId));
     }
 

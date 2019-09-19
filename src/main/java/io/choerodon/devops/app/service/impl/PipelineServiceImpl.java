@@ -198,6 +198,10 @@ public class PipelineServiceImpl implements PipelineService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void delete(Long projectId, Long pipelineId) {
+        if (pipelineMapper.selectByPrimaryKey(pipelineId) == null) {
+            return;
+        }
+
         pipelineRecordService.baseQueryByPipelineId(pipelineId).forEach(t -> {
             t.setStatus(WorkFlowStatus.DELETED.toValue());
             pipelineRecordService.baseUpdate(t);

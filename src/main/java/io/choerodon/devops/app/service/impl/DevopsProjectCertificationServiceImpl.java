@@ -261,6 +261,10 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
 
     @Override
     public void deleteCert(Long certId) {
+        if (certificationService.baseQueryById(certId) == null) {
+            return;
+        }
+
         List<CertificationDTO> certificationDTOS = certificationService.baseListByOrgCertId(certId);
         if (certificationDTOS.isEmpty()) {
             devopsCertificationProRelationshipService.baseDeleteByCertificationId(certId);
@@ -272,6 +276,9 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
 
     @Override
     public void deletePermissionOfProject(Long projectId, Long certId) {
+        if (projectId == null || certId == null) {
+            return;
+        }
         DevopsCertificationProRelationshipDTO devopsCertificationProRelationshipDTO = new DevopsCertificationProRelationshipDTO();
         devopsCertificationProRelationshipDTO.setProjectId(projectId);
         devopsCertificationProRelationshipDTO.setCertId(certId);

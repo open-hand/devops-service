@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.app.service.DevopsApplicationResourceService;
+import io.choerodon.devops.app.service.DevopsAppServiceResourceService;
 import io.choerodon.devops.infra.dto.DevopsAppServiceResourceDTO;
 import io.choerodon.devops.infra.mapper.DevopsAppServiceResourceMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
  * @author zmf
  */
 @Service
-public class DevopsApplicationResourceServiceImpl implements DevopsApplicationResourceService {
+public class DevopsAppServiceResourceServiceImpl implements DevopsAppServiceResourceService {
     @Autowired
     private DevopsAppServiceResourceMapper resourceMapper;
 

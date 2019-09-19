@@ -81,6 +81,11 @@ public class DevopsEnvGroupServiceImpl implements DevopsEnvGroupService {
     @Override
     public void delete(Long id) {
         DevopsEnvGroupDTO devopsEnvGroupDTO = baseQuery(id);
+
+        if (devopsEnvGroupDTO == null) {
+            return;
+        }
+
         baseDelete(id);
         //删除环境组，将原环境组内所有环境放到默认组内
         List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = devopsEnvironmentService.baseListByProjectIdAndActive(devopsEnvGroupDTO.getProjectId(), true);

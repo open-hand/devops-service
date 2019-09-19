@@ -58,7 +58,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
     @Autowired
     private DevopsEnvCommandService devopsEnvCommandService;
     @Autowired
-    private DevopsApplicationResourceService devopsApplicationResourceService;
+    private DevopsAppServiceResourceService devopsAppServiceResourceService;
     @Autowired
     private DevopsEnvFileResourceService devopsEnvFileResourceService;
     @Autowired
@@ -304,7 +304,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
     @Override
     public void baseDelete(Long id) {
         devopsConfigMapMapper.deleteByPrimaryKey(id);
-        devopsApplicationResourceService.baseDeleteByResourceIdAndType(id, ObjectType.CONFIGMAP.getType());
+        devopsAppServiceResourceService.baseDeleteByResourceIdAndType(id, ObjectType.CONFIGMAP.getType());
     }
 
     @Override
@@ -351,7 +351,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
                 devopsAppServiceResourceDTO.setAppServiceId(appServiceId);
                 devopsAppServiceResourceDTO.setResourceType(ObjectType.CONFIGMAP.getType());
                 devopsAppServiceResourceDTO.setResourceId(configMapId);
-                devopsApplicationResourceService.baseCreate(devopsAppServiceResourceDTO);
+                devopsAppServiceResourceService.baseCreate(devopsAppServiceResourceDTO);
             }
             devopsEnvCommandDTO.setObjectId(configMapId);
             devopsConfigMapDTO.setId(configMapId);

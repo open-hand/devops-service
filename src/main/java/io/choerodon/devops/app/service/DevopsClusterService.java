@@ -80,9 +80,9 @@ public interface DevopsClusterService {
      * 删除该项目对该集群的权限
      *
      * @param clusterId 集群id
-     * @param projectId 项目id
+     * @param relatedProjectId 项目id
      */
-    void deletePermissionOfProject(Long clusterId, Long projectId);
+    void deletePermissionOfProject(Long clusterId, Long relatedProjectId);
 
     /**
      * 查询项目下的集群以及所有节点信息
