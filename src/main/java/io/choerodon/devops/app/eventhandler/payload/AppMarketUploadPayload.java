@@ -13,8 +13,6 @@ import io.choerodon.devops.infra.dto.harbor.User;
  * Description:
  */
 public class AppMarketUploadPayload {
-    @ApiModelProperty("市场应用Id")
-    private Long mktAppId;
 
     @ApiModelProperty("市场应用code")
     private String mktAppCode;
@@ -92,14 +90,6 @@ public class AppMarketUploadPayload {
 
     public void setAppVersion(String appVersion) {
         this.appVersion = appVersion;
-    }
-
-    public Long getMktAppId() {
-        return mktAppId;
-    }
-
-    public void setMktAppId(Long mktAppId) {
-        this.mktAppId = mktAppId;
     }
 
     public Boolean getUpdateVersion() {

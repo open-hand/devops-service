@@ -314,9 +314,9 @@ public class BaseServiceClientOperator {
         }
     }
 
-    public void publishFail(Long projectId, Long mktAppId, Long mktAppVersionId, String code, Boolean fixFlag) {
+    public void publishFail(Long projectId, Long mktAppVersionId, String code, Boolean fixFlag) {
         try {
-            baseServiceClient.publishFail(projectId, mktAppId, mktAppVersionId, code, fixFlag).getBody();
+            baseServiceClient.publishFail(projectId, mktAppVersionId, code, fixFlag).getBody();
         } catch (Exception e) {
             throw new CommonException("error.insert.failed.message", e.getMessage());
         }

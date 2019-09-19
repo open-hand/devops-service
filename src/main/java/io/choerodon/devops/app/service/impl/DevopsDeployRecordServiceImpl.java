@@ -116,4 +116,9 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
             throw new CommonException("error.deploy.record.insert");
         }
     }
+
+    @Override
+    public void baseDelete(DevopsDeployRecordDTO devopsDeployRecordDTO) {
+        devopsDeployRecordMapper.delete(devopsDeployRecordDTO);
+    }
 }
