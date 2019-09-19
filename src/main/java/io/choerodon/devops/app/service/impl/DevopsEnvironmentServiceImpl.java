@@ -14,6 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.asgard.saga.annotation.Saga;
@@ -263,16 +265,15 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         List<DevopsEnvGroupEnvsVO> devopsEnvGroupEnvsDTOS = new ArrayList<>();
         // 获得环境列表(包含激活与不激活)
         List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedClusterList();
-        List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = baseListByProjectId(projectId)
-                .stream()
-                .peek(t -> setEnvStatus(upgradeClusterList, t))
-                .collect(Collectors.toList());
-
+        List<DevopsEnvironmentDTO> devopsEnvironmentList = baseListByProjectId(projectId);
         // 没有环境列表则返回空列表
-        if (devopsEnvironmentDTOS.isEmpty()) {
+        if (devopsEnvironmentList.isEmpty()) {
             devopsEnvGroupEnvsDTOS.add(new DevopsEnvGroupEnvsVO());
             return devopsEnvGroupEnvsDTOS;
         }
+        List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = devopsEnvironmentList.stream()
+                .peek(t -> setEnvStatus(upgradeClusterList, t))
+                .collect(Collectors.toList());
 
         List<DevopsEnvironmentRepVO> devopsEnvironmentRepDTOS = ConvertUtils.convertList(devopsEnvironmentDTOS, DevopsEnvironmentRepVO.class);
 
