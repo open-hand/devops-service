@@ -173,6 +173,8 @@ const commonField = {
   configMaps: '配置映射',
   secrets: '密文',
   customResources: '自定义资源',
+
+  number: '编号',
 };
 
 const deployment = {
