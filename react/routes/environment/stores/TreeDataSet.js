@@ -1,6 +1,9 @@
+import { runInAction } from 'mobx';
 import forEach from 'lodash/forEach';
-import last from 'lodash/last';
 import remove from 'lodash/remove';
+
+const GROUP_ITEM = 'group';
+const ENV_ITEM = 'detail';
 
 /**
  * 通过DataSet创建Record
@@ -21,7 +24,7 @@ function formatTreeData({ data, expandedKeys, formatMessage, intlPrefix }) {
       id,
       name,
       key: groupKey,
-      itemType: 'group',
+      itemType: GROUP_ITEM,
       parentId: '',
       expand: expandedKeys.includes(groupKey),
     });
@@ -32,7 +35,7 @@ function formatTreeData({ data, expandedKeys, formatMessage, intlPrefix }) {
         id: envId,
         key,
         parentId: groupKey,
-        itemType: 'detail',
+        itemType: ENV_ITEM,
         expand: false,
       });
     });
@@ -41,10 +44,21 @@ function formatTreeData({ data, expandedKeys, formatMessage, intlPrefix }) {
   return result;
 }
 
-function handleSelect(record, store) {
+function handleSelect(record, store, previous) {
   if (record) {
-    const data = record.toData();
-    store.setSelectedMenu(data);
+    const itemType = record.get('itemType');
+    const synchro = record.get('synchro');
+    const failed = record.get('failed');
+    if (itemType === GROUP_ITEM || (synchro && !failed)) {
+      const data = record.toData();
+      store.setSelectedMenu(data);
+    } else {
+      runInAction(() => {
+        // 处理中和创建失败的环境不允许选中
+        record.isSelected = false;
+        previous.isSelected = true;
+      });
+    }
   }
 }
 
@@ -57,8 +71,8 @@ export default (projectId, store, formatMessage, intlPrefix) => ({
   expandField: 'expand',
   idField: 'key',
   events: {
-    select: ({ record }) => {
-      handleSelect(record, store);
+    select: ({ record, previous }) => {
+      handleSelect(record, store, previous);
     },
     unSelect: ({ record }) => {
       record.isSelected = true;
@@ -74,7 +88,7 @@ export default (projectId, store, formatMessage, intlPrefix) => ({
           const groups = JSON.parse(response);
 
           if (groups[0] && groups[0].devopsEnvGroupId) {
-            const defaultGroup = remove(groups, ({ active, devopsEnvGroupId }) => active && !devopsEnvGroupId);
+            const defaultGroup = remove(groups, ({ devopsEnvGroupId }) => !devopsEnvGroupId);
             groups.unshift(...defaultGroup);
           }
           return formatTreeData({

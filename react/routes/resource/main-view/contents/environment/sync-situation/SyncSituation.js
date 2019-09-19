@@ -10,11 +10,6 @@ const SyncSituation = observer(() => {
   const {
     prefixCls,
     intlPrefix,
-    resourceStore: {
-      getSelectedMenu: {
-        synchronize,
-      },
-    },
     treeDs,
   } = useResourceStore();
   const {
@@ -87,7 +82,6 @@ const SyncSituation = observer(() => {
             >
               <Tooltip title={<FormattedMessage id={`${intlPrefix}.environment.retry`} />}>
                 <Button
-                  disabled={!synchronize}
                   icon="replay"
                   color="primary"
                   funcType="flat"

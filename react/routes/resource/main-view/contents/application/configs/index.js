@@ -34,8 +34,7 @@ const AppConfigs = observer(() => {
   function getEnvIsNotRunning() {
     const envRecord = treeDs.find((record) => record.get('key') === parentId);
     const connect = envRecord.get('connect');
-    const synchronize = envRecord.get('synchronize');
-    return !connect || !synchronize;
+    return !connect;
   }
 
   function closeSideBar(fresh) {

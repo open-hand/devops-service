@@ -39,9 +39,7 @@ export default function Permissions() {
   function getActionColumn() {
     const envRecord = baseInfoDs.current;
     const isSkip = envRecord.get('skipCheckPermission');
-    const synchro = envRecord.get('synchronize');
-    const isDisplay = !isSkip && synchro;
-    return isDisplay && <Column renderer={renderActions} />;
+    return !isSkip && <Column renderer={renderActions} />;
   }
 
   return (

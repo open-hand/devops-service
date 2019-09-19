@@ -5,8 +5,10 @@ import { injectIntl } from 'react-intl';
 import { Action } from '@choerodon/master';
 import { Modal } from 'choerodon-ui/pro';
 import { handlePromptError } from '../../../../../utils';
+import eventStopProp from '../../../../../utils/eventStopProp';
 import TreeItemName from '../../../../../components/treeitem-name';
 import EnvItem from '../../../../../components/env-item';
+import { statusMappings, getEnvStatus } from '../../../../../components/status-dot';
 import EnvModifyForm from '../../modals/env-modify';
 import { useEnvironmentStore } from '../../../stores';
 import { useMainStore } from '../../stores';
@@ -102,44 +104,84 @@ function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
     });
   }
 
-
-  function getSuffix() {
-    const synchronize = record.get('synchro');
-    const active = record.get('active');
-
-    if (!synchronize && active) return null;
-
-    const actionData = [{
-      service: [],
-      text: formatMessage({ id: `${intlPrefix}.modal.detail.${active ? 'stop' : 'start'}` }),
-      action: () => {
-        if (active) {
-          openEffectModal();
-        } else {
-          handleEffect(true);
-        }
-      },
-    }, {
-      service: [],
-      text: formatMessage({ id: `${intlPrefix}.modal.detail.${active ? 'modify' : 'delete'}` }),
-      action: active ? openModifyModal : handleDelete,
-    }];
-    return <Action placement="bottomRight" data={actionData} />;
-  }
-
-  function getName() {
-    const itemName = record.get('name') || '';
+  function getStatusInRecord() {
     const connect = record.get('connect');
     const failed = record.get('failed');
     const synchronize = record.get('synchro');
     const active = record.get('active');
-    const name = <TreeItemName name={itemName} search={search} />;
+
+    return {
+      connect,
+      failed,
+      synchronize,
+      active,
+    };
+  }
+
+  function getSuffix() {
+    const { RUNNING, STOPPED, OPERATING, FAILED, DISCONNECTED } = statusMappings;
+    const status = getStatusInRecord();
+    const result = getEnvStatus(status);
+
+    if (result === OPERATING) return null;
+
+    let actionData = [];
+
+    switch (result) {
+      case RUNNING:
+      case DISCONNECTED:
+        actionData = [{
+          service: [],
+          text: formatMessage({ id: `${intlPrefix}.modal.detail.stop` }),
+          action: openEffectModal,
+        }, {
+          service: [],
+          text: formatMessage({ id: `${intlPrefix}.modal.detail.modify` }),
+          action: openModifyModal,
+        }];
+        break;
+      case STOPPED:
+        actionData = [{
+          service: [],
+          text: formatMessage({ id: `${intlPrefix}.modal.detail.start` }),
+          action: () => handleEffect(true),
+        }, {
+          service: [],
+          text: formatMessage({ id: `${intlPrefix}.modal.detail.delete` }),
+          action: handleDelete,
+        }];
+        break;
+      case FAILED:
+        actionData = [{
+          service: [],
+          text: formatMessage({ id: `${intlPrefix}.modal.detail.delete` }),
+          action: handleDelete,
+        }];
+        break;
+      default:
+    }
+
+    return <Action
+      placement="bottomRight"
+      data={actionData}
+      onClick={eventStopProp}
+    />;
+  }
+
+  function getName() {
+    const { OPERATING, FAILED } = statusMappings;
+    const itemName = record.get('name') || '';
+    const status = getStatusInRecord();
+    const result = getEnvStatus(status);
+    const disabled = result === OPERATING || result === FAILED;
+    const name = <TreeItemName
+      disabled={disabled}
+      name={itemName}
+      search={search}
+    />;
     return <EnvItem
-      // disabled={failed}
       name={name}
-      active={active}
-      connect={connect}
-      synchronize={synchronize}
+      {...status}
     />;
   }
 

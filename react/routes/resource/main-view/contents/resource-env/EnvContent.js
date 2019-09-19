@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { observer } from 'mobx-react-lite';
 import { Icon, Tooltip } from 'choerodon-ui';
 import PageTitle from '../../../../../components/page-title';
-import EnvTitle from '../../../../../components/env-title';
+import EnvItem from '../../../../../components/env-item';
 import Modals from './modals';
 import { useResourceStore } from '../../../stores';
 import { useREStore } from './stores';
@@ -114,9 +114,8 @@ const Content = observer(() => {
     if (record) {
       const name = record.get('name');
       const connect = record.get('connect');
-      const synchronize = record.get('synchronize');
 
-      return <EnvTitle connect={connect} synchronize={synchronize} name={name} />;
+      return <EnvItem isTitle connect={connect} name={name} />;
     }
     return null;
   }

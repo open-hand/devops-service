@@ -3,14 +3,14 @@ import { observer } from 'mobx-react-lite';
 import { Action } from '@choerodon/master';
 import { Modal, Table } from 'choerodon-ui/pro';
 import StatusTag from '../../../../../components/status-tag';
-import { getEnvStatus } from '../../../../../components/status-dot';
+import { getEnvStatus, statusMappings } from '../../../../../components/status-dot';
 import ClickText from '../../../../../components/click-text';
+import { handlePromptError } from '../../../../../utils';
+import EnvModifyForm from '../../modals/env-modify';
+import Modals from './modals';
 import { useEnvironmentStore } from '../../../stores';
 import { useMainStore } from '../../stores';
 import { useEnvGroupStore } from './stores';
-import Modals from './modals';
-import EnvModifyForm from '../../modals/env-modify';
-import { handlePromptError } from '../../../../../utils';
 
 const { Column } = Table;
 const envKey = Modal.key;
@@ -108,11 +108,22 @@ const Group = observer(() => {
     });
   }
 
-  function renderName({ value, record }) {
+  function getStatusInRecord(record) {
     const active = record.get('active');
     const connect = record.get('connect');
+    const failed = record.get('failed');
     const synchronize = record.get('synchro');
-    const status = getEnvStatus(connect, synchronize, active);
+    return getEnvStatus({
+      active,
+      connect,
+      failed,
+      synchronize,
+    });
+  }
+
+  function renderName({ value, record }) {
+    const { RUNNING, DISCONNECTED } = statusMappings;
+    const status = getStatusInRecord(record);
     return (
       <Fragment>
         <StatusTag
@@ -121,7 +132,7 @@ const Group = observer(() => {
         />
         <ClickText
           value={value}
-          clickAble={active && synchronize}
+          clickAble={status === RUNNING || status === DISCONNECTED}
           onClick={openModifyModal}
           record={record}
         />
@@ -130,25 +141,43 @@ const Group = observer(() => {
   }
 
   function renderActions({ record }) {
+    const { RUNNING, DISCONNECTED, FAILED, OPERATING, STOPPED } = statusMappings;
     const envId = record.get('id');
-    const active = record.get('active');
-    const synchronize = record.get('synchro');
+    const status = getStatusInRecord(record);
 
-    if (!synchronize && active) return null;
+    if (status === OPERATING) return null;
 
-    const actionData = active ? [{
-      service: [],
-      text: formatMessage({ id: 'stop' }),
-      action: () => openEffectModal(envId),
-    }] : [{
-      service: [],
-      text: formatMessage({ id: 'active' }),
-      action: () => handleEffect(envId, true),
-    }, {
-      service: [],
-      text: formatMessage({ id: 'delete' }),
-      action: () => handleDelete(envId),
-    }];
+    let actionData = [];
+    switch (status) {
+      case RUNNING:
+      case DISCONNECTED:
+        actionData = [{
+          service: [],
+          text: formatMessage({ id: 'stop' }),
+          action: () => openEffectModal(envId),
+        }];
+        break;
+      case STOPPED:
+        actionData = [{
+          service: [],
+          text: formatMessage({ id: 'active' }),
+          action: () => handleEffect(envId, true),
+        }, {
+          service: [],
+          text: formatMessage({ id: 'delete' }),
+          action: () => handleDelete(envId),
+        }];
+        break;
+      case FAILED:
+        actionData = [{
+          service: [],
+          text: formatMessage({ id: 'delete' }),
+          action: () => handleDelete(envId),
+        }];
+        break;
+      default:
+    }
+
     return <Action data={actionData} />;
   }
 

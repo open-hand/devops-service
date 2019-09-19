@@ -8,7 +8,7 @@ import './index.less';
 function EnvDetail({ record, intl: { formatMessage }, isRecord }) {
   let data = record;
   if (isRecord) {
-    data = record ? record.toData() : {};
+    data = record ? record.toData() : null;
   }
   const { name,
     connect,
@@ -17,8 +17,8 @@ function EnvDetail({ record, intl: { formatMessage }, isRecord }) {
     active,
     code,
     description,
-    clusterName } = data;
-  const status = getEnvStatus(connect, synchronize || synchro, active);
+    clusterName } = data || {};
+  const status = data ? getEnvStatus({ connect, synchronize: synchronize || synchro, active }) : '';
 
   return (
     <ul className="c7ncd-env-detail">
@@ -32,7 +32,7 @@ function EnvDetail({ record, intl: { formatMessage }, isRecord }) {
         <span className="c7ncd-env-detail-item-text">
           {formatMessage({ id: 'c7ncd.env.status' })}:
         </span>
-        <StatusTag name={formatMessage({ id: status })} colorCode={status} />
+        {status && <StatusTag name={formatMessage({ id: status })} colorCode={status} />}
       </li>
       <li className="c7ncd-env-detail-item">
         <span className="c7ncd-env-detail-item-text">
