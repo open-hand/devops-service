@@ -23,11 +23,11 @@ public class DevOpsUserPayload {
         this.iamProjectId = iamProjectId;
     }
 
-    public Long getAppId() {
+    public Long getAppServiceId() {
         return appServiceId;
     }
 
-    public void setAppId(Long appServiceId) {
+    public void setAppServiceId(Long appServiceId) {
         this.appServiceId = appServiceId;
     }
 

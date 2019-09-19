@@ -94,7 +94,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     @Autowired
     private DevopsIngressService devopsIngressService;
     @Autowired
-    private DevopsApplicationResourceService devopsApplicationResourceService;
+    private DevopsAppServiceResourceService devopsAppServiceResourceService;
     @Autowired
     private DevopsServiceMapper devopsServiceMapper;
     @Autowired
@@ -242,7 +242,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
         //处理应用服务关联网络信息
         if (devopsServiceDTO.getAppServiceId() != null) {
-            devopsApplicationResourceService.handleAppServiceResource(Arrays.asList(devopsServiceDTO.getAppServiceId()), devopsServiceDTO.getId(), ObjectType.SERVICE.getType());
+            devopsAppServiceResourceService.handleAppServiceResource(Arrays.asList(devopsServiceDTO.getAppServiceId()), devopsServiceDTO.getId(), ObjectType.SERVICE.getType());
         }
         return true;
     }
@@ -328,7 +328,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
         //处理应用服务关联网络信息
         if (devopsServiceDTO.getAppServiceId() != null) {
-            devopsApplicationResourceService.handleAppServiceResource(Arrays.asList(devopsServiceDTO.getAppServiceId()), devopsServiceDTO.getId(), ObjectType.SERVICE.getType());
+            devopsAppServiceResourceService.handleAppServiceResource(Arrays.asList(devopsServiceDTO.getAppServiceId()), devopsServiceDTO.getId(), ObjectType.SERVICE.getType());
         }
         return true;
     }
@@ -337,6 +337,10 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     @Transactional(rollbackFor = Exception.class)
     public void delete(Long id) {
         DevopsServiceDTO devopsServiceDTO = baseQuery(id);
+
+        if (devopsServiceDTO == null) {
+            return;
+        }
 
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsServiceDTO.getEnvId());
 
@@ -523,7 +527,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     public void baseDelete(Long id) {
         devopsServiceMapper.deleteByPrimaryKey(id);
         //删除网络的关联关系
-        devopsApplicationResourceService.baseDeleteByResourceIdAndType(id, ObjectType.SERVICE.getType());
+        devopsAppServiceResourceService.baseDeleteByResourceIdAndType(id, ObjectType.SERVICE.getType());
     }
 
     @Override
@@ -1076,7 +1080,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
         //处理应用服务关联网络信息
         if (devopsServiceDTO.getAppServiceId() != null) {
-            devopsApplicationResourceService.handleAppServiceResource(Arrays.asList(devopsServiceDTO.getAppServiceId()), devopsServiceDTO.getId(), ObjectType.SERVICE.getType());
+            devopsAppServiceResourceService.handleAppServiceResource(Arrays.asList(devopsServiceDTO.getAppServiceId()), devopsServiceDTO.getId(), ObjectType.SERVICE.getType());
         }
 
         ServiceSagaPayLoad serviceSagaPayLoad = new ServiceSagaPayLoad(devopsEnvironmentDTO.getProjectId(), userAttrDTO.getGitlabUserId());

@@ -173,17 +173,17 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Override
     @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_BRANCH,
             description = "devops创建分支", inputSchema = "{}")
-    public void createBranch(Long projectId, Long applicationId, DevopsBranchVO devopsBranchVO) {
+    public void createBranch(Long projectId, Long appServiceId, DevopsBranchVO devopsBranchVO) {
 
         DevopsBranchDTO devopsBranchDTO = ConvertUtils.convertObject(devopsBranchVO, DevopsBranchDTO.class);
 
-        checkBranchName(projectId, applicationId, devopsBranchVO.getBranchName());
+        checkBranchName(projectId, appServiceId, devopsBranchVO.getBranchName());
 
         Long gitLabUser = TypeUtil.objToLong(getGitlabUserId());
         devopsBranchDTO.setUserId(gitLabUser);
-        devopsBranchDTO.setAppServiceId(applicationId);
+        devopsBranchDTO.setAppServiceId(appServiceId);
         devopsBranchDTO.setStatus(CommandStatus.OPERATING.getStatus());
-        AppServiceDTO applicationDTO = appServiceService.baseQuery(applicationId);
+        AppServiceDTO applicationDTO = appServiceService.baseQuery(appServiceId);
         devopsBranchDTO = devopsBranchService.baseCreate(devopsBranchDTO);
         Long devopsBranchId = devopsBranchDTO.getId();
 

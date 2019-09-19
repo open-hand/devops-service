@@ -251,6 +251,11 @@ public class CertificationServiceImpl implements CertificationService {
     @Transactional(rollbackFor = Exception.class)
     public void deleteById(Long certId) {
         CertificationDTO certificationDTO = baseQueryById(certId);
+
+        if (certificationDTO == null) {
+            return;
+        }
+
         Long certEnvId = certificationDTO.getEnvId();
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentMapper.selectByPrimaryKey(certEnvId);
 

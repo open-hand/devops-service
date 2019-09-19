@@ -418,7 +418,7 @@ public class DevopsEnvironmentController {
             @PathVariable(value = "env_id") Long envId,
             @ApiParam(value = "用户id", required = true)
             @RequestParam(value = "user_id") Long userId) {
-        devopsEnvironmentService.deletePermissionOfUser(envId, userId);
+        devopsEnvironmentService.deletePermissionOfUser(projectId, envId, userId);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
@@ -495,14 +495,14 @@ public class DevopsEnvironmentController {
      */
     @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "删除已停用的环境")
+    @ApiOperation(value = "删除已停用/失败的环境")
     @DeleteMapping(value = "/{env_id}")
     public ResponseEntity deleteDeactivatedEnvironment(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)
             @PathVariable(value = "env_id") Long envId) {
-        devopsEnvironmentService.deleteDeactivatedEnvironment(envId);
+        devopsEnvironmentService.deleteDeactivatedOrFailedEnvironment(envId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 

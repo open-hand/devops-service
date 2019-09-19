@@ -188,10 +188,11 @@ public interface DevopsEnvironmentService {
     /**
      * 删除环境下该用户的权限
      *
-     * @param envId  环境id
-     * @param userId 用户id
+     * @param projectId 项目id
+     * @param envId     环境id
+     * @param userId    用户id
      */
-    void deletePermissionOfUser(Long envId, Long userId);
+    void deletePermissionOfUser(Long projectId, Long envId, Long userId);
 
 
     /**
@@ -210,11 +211,11 @@ public interface DevopsEnvironmentService {
     void updateEnvUserPermission(DevopsEnvPermissionUpdateVO devopsEnvPermissionUpdateVO);
 
     /**
-     * 删除已停用的环境
+     * 删除已停用或失败的环境
      *
      * @param envId 环境id
      */
-    void deleteDeactivatedEnvironment(Long envId);
+    void deleteDeactivatedOrFailedEnvironment(Long envId);
 
     /**
      * 项目下查询集群信息

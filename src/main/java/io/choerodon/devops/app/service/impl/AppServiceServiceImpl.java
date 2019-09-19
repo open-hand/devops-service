@@ -266,11 +266,20 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Transactional
     @Override
     public void delete(Long projectId, Long appServiceId) {
+        AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
+
+        if (appServiceDTO == null) {
+            return;
+        }
+
+        // 禁止删除未失败的应用
+        if (!Boolean.TRUE.equals(appServiceDTO.getFailed())) {
+            throw new CommonException("error.delete.nonfailed.app.service", appServiceDTO.getName());
+        }
 
         //删除应用服务权限
         appServiceUserPermissionService.baseDeleteByAppServiceId(appServiceId);
         //删除gitlab project
-        AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
         if (appServiceDTO.getGitlabProjectId() != null) {
             Integer gitlabProjectId = appServiceDTO.getGitlabProjectId();
             GitlabProjectDTO gitlabProjectDTO = gitlabServiceClientOperator.queryProjectById(gitlabProjectId);
@@ -1497,7 +1506,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         DevOpsUserPayload devOpsUserPayload = new DevOpsUserPayload();
         devOpsUserPayload.setIamProjectId(projectId);
-        devOpsUserPayload.setAppId(appServiceId);
+        devOpsUserPayload.setAppServiceId(appServiceId);
         devOpsUserPayload.setGitlabProjectId(appServiceDTO.getGitlabProjectId());
 
         //原先是否跳过权限检查
@@ -1511,11 +1520,11 @@ public class AppServiceServiceImpl implements AppServiceService {
                 appServiceDTO.setId(appServiceId);
                 appServiceDTO.setSkipCheckPermission(false);
                 appServiceMapper.updateByPrimaryKeySelective(appServiceDTO);
-                if(!CollectionUtils.isEmpty(applicationPermissionVO.getUserIds())) {
-                    applicationPermissionVO.getUserIds().stream().filter(v -> v !=null).forEach(u -> appServiceUserPermissionService.baseCreate(u, appServiceId));
+                if (!CollectionUtils.isEmpty(applicationPermissionVO.getUserIds())) {
+                    applicationPermissionVO.getUserIds().stream().filter(Objects::nonNull).forEach(u -> appServiceUserPermissionService.baseCreate(u, appServiceId));
                 }
                 devOpsUserPayload.setIamUserIds(applicationPermissionVO.getUserIds());
-                devOpsUserPayload.setOption(3);
+                devOpsUserPayload.setOption(1);
             }
         } else {
             if (applicationPermissionVO.getSkipCheckPermission()) {
@@ -1527,12 +1536,11 @@ public class AppServiceServiceImpl implements AppServiceService {
                 devOpsUserPayload.setOption(2);
             } else {
                 //原来不跳过权限检查，现在也不跳过权限检查，新增用户权限
-                if(!CollectionUtils.isEmpty(applicationPermissionVO.getUserIds())){
-                    applicationPermissionVO.getUserIds().stream().filter(v -> v !=null).forEach(u -> appServiceUserPermissionService.baseCreate(u, appServiceId));
+                if (!CollectionUtils.isEmpty(applicationPermissionVO.getUserIds())) {
+                    applicationPermissionVO.getUserIds().stream().filter(Objects::nonNull).forEach(u -> appServiceUserPermissionService.baseCreate(u, appServiceId));
                 }
                 devOpsUserPayload.setIamUserIds(applicationPermissionVO.getUserIds());
                 devOpsUserPayload.setOption(3);
-
             }
         }
 
@@ -1555,7 +1563,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         //原来不跳，现在也不跳，删除用户在gitlab权限
         DevOpsUserPayload devOpsUserPayload = new DevOpsUserPayload();
         devOpsUserPayload.setIamProjectId(projectId);
-        devOpsUserPayload.setAppId(appServiceId);
+        devOpsUserPayload.setAppServiceId(appServiceId);
         devOpsUserPayload.setGitlabProjectId(appServiceDTO.getGitlabProjectId());
         devOpsUserPayload.setIamUserIds(Arrays.asList(userId));
         devOpsUserPayload.setOption(4);
@@ -1739,8 +1747,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public AppServiceDTO baseQuery(Long applicationId) {
-        return appServiceMapper.selectByPrimaryKey(applicationId);
+    public AppServiceDTO baseQuery(Long appServiceId) {
+        return appServiceMapper.selectByPrimaryKey(appServiceId);
     }
 
     @Override
