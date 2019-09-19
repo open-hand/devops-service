@@ -11,7 +11,7 @@ export default (data) => {
   let searchParam = {};
 
   if (!isEmpty(data)) {
-    params = data.params;
+    params = typeof data.params === 'string' ? [data.params] : data.params;
     searchParam = omit(data, ['params']);
   }
 

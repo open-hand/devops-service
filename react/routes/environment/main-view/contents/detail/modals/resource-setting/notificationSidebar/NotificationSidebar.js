@@ -190,7 +190,6 @@ export default class NotificationSidebar extends Component {
         width={400}
       >
         <Content
-          code={`notification.${type}`}
           className="sidebar-content"
         >
           <Form layout="vertical">
