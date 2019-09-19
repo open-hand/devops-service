@@ -12,7 +12,7 @@ import getTablePostData from '../../../../../../utils/getTablePostData';
 
 const TYPE = {
   group_configMaps: 'configMap',
-  group_secrets: 'secret',
+  group_secrets: 'cipher',
 };
 
 const Store = createContext();
@@ -84,7 +84,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
         },
         formStore: useConfigMapStore(),
       },
-      secret: {
+      cipher: {
         permissions: {
           edit: ['devops-service.devops-secret.createOrUpdate'],
           delete: ['devops-service.devops-secret.deleteSecret'],

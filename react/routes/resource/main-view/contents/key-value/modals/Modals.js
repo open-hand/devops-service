@@ -74,6 +74,7 @@ const KeyValueModals = observer(() => {
         envId={parentId}
         onClose={closeModal}
         store={formStore}
+        intlPrefix={intlPrefix}
       />}
     </Fragment>
   );

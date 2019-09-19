@@ -14,7 +14,7 @@ function ConfigItem({
   intlPrefix,
   intl: { formatMessage },
 }) {
-  const { treeDs, itemType: { MAP_ITEM } } = useResourceStore();
+  const { treeDs, itemTypes: { MAP_ITEM } } = useResourceStore();
   const { configMapStore, secretStore, childrenStore, testStore } = useMainStore();
   const [showModal, setShowModal] = useState(false);
 
@@ -40,7 +40,7 @@ function ConfigItem({
     const isConfigPage = record.get('itemType') === MAP_ITEM;
     return ({
       modeSwitch: isConfigPage,
-      title: isConfigPage ? 'configMap' : 'secret',
+      title: isConfigPage ? 'configMap' : 'cipher',
       store: isConfigPage ? configMapStore : secretStore,
     });
   }
@@ -67,6 +67,7 @@ function ConfigItem({
       id={record.get('id')}
       envId={record.get('parentId').split('-')[0]}
       onClose={closeModal}
+      intlPrefix={intlPrefix}
       {...getParam()}
     />}
   </Fragment>;

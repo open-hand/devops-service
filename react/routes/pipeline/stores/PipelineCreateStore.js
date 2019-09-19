@@ -524,7 +524,7 @@ class PipelineCreateStore {
    * @param data
    * @returns {Promise<void>}
    */
-  editConfigValue = (projectId, data) => axios.post(`/devops/v1/projects/${projectId}/deploy_value`, JSON.stringify(data));
+  editConfigValue = (projectId, data) => axios.put(`/devops/v1/projects/${projectId}/deploy_value`, JSON.stringify(data));
 
   /**
    * 项目所有者和项目成员
