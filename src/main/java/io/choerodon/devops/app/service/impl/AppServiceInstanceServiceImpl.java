@@ -141,11 +141,11 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Override
     public AppServiceInstanceInfoVO queryInfoById(Long instanceId) {
         AppServiceInstanceInfoDTO appServiceInstanceInfoDTO = appServiceInstanceMapper.queryInfoById(instanceId);
+        AppServiceInstanceInfoVO appServiceInstanceInfoVO = new AppServiceInstanceInfoVO();
         if (appServiceInstanceInfoDTO == null) {
-            return null;
+            return appServiceInstanceInfoVO;
         }
         List<Long> updatedEnv = clusterConnectionHandler.getUpdatedClusterList();
-        AppServiceInstanceInfoVO appServiceInstanceInfoVO = new AppServiceInstanceInfoVO();
         BeanUtils.copyProperties(appServiceInstanceInfoDTO, appServiceInstanceInfoVO);
         appServiceInstanceInfoVO.setConnect(updatedEnv.contains(appServiceInstanceInfoDTO.getClusterId()));
         return appServiceInstanceInfoVO;
