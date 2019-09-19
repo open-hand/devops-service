@@ -31,17 +31,6 @@ const TreeItem = observer(({ record, search }) => {
   } = useResourceStore();
   const { podColor } = useMainStore();
 
-  function getEnvItem(name) {
-    const connect = record.get('connect');
-    const synchronize = record.get('synchronize');
-
-    return <EnvItem
-      name={name}
-      connect={connect}
-      synchronize={synchronize}
-    />;
-  }
-
   function getNormalItem(type, param) {
     const mappings = {
       [SERVICES_ITEM]: () => <NetworkItem {...param} />,
@@ -75,7 +64,10 @@ const TreeItem = observer(({ record, search }) => {
     let treeItem;
     switch (type) {
       case ENV_ITEM: {
-        treeItem = getEnvItem(name);
+        treeItem = <EnvItem
+          name={name}
+          connect={record.get('connect')}
+        />;
         break;
       }
       case SERVICES_ITEM:

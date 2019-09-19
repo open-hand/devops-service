@@ -4,7 +4,7 @@ import { Tabs, Spin } from 'choerodon-ui';
 import { useEnvironmentStore } from '../../../stores';
 import { useDetailStore } from './stores';
 import PageTitle from '../../../../../components/page-title';
-import EnvTitle from '../../../../../components/env-title';
+import EnvItem from '../../../../../components/env-item';
 import Modals from './modals';
 
 const { TabPane } = Tabs;
@@ -18,6 +18,7 @@ const EnvContent = observer(() => {
     envStore: {
       getSelectedMenu: {
         active,
+        failed,
         name,
         connect,
         synchro,
@@ -41,7 +42,16 @@ const EnvContent = observer(() => {
 
   return (
     <Fragment>
-      <PageTitle content={<EnvTitle name={name} synchronize={synchro} connect={connect} />} />
+      <PageTitle
+        content={<EnvItem
+          isTitle
+          name={name}
+          synchronize={synchro}
+          connect={connect}
+          active={active}
+          failed={failed}
+        />}
+      />
       <Tabs
         animated={false}
         activeKey={detailStore.getTabKey}

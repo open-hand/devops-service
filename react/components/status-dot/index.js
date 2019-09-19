@@ -6,32 +6,56 @@ import { Tooltip } from 'choerodon-ui/pro';
 
 import './index.less';
 
-export function getEnvStatus(connect, synchronize, active) {
-  if (active === false) {
-    return 'stopped';
-  } else if (!synchronize) {
-    return 'operating';
+export const statusMappings = {
+  STOPPED: 'stopped',
+  OPERATING: 'operating',
+  FAILED: 'failed',
+  RUNNING: 'running',
+  DISCONNECTED: 'disconnect',
+};
+
+/**
+ * @param connect
+ * @param synchronize
+ * @param active
+ * @param failed
+ * @returns {string}
+ *
+ * 四个字段分成三个层次，组合判断状态
+ *
+ *   - synchronize 与 failed 是集群创建层面：[false, -] 处理中，[true, true] 创建成功，[true, false] 创建失败
+ *   - connect 环境与集群连接层面
+ *   - active 环境本身层面，表示环境自身停启用
+ *
+ * 判断逻辑
+ *
+ *   1. 是否在处理中（创建中，删除中，变更中）
+ *   2. 是否创建失败
+ *   3. 是否为停用 （停用的环境不用管连接未连接）
+ *   4. 是否已连接集群
+ *
+ */
+export function getEnvStatus({ connect, synchronize, active, failed }) {
+  if (!synchronize) {
+    return statusMappings.OPERATING;
+  } else if (failed) {
+    return statusMappings.FAILED;
+  } else if (!active) {
+    return statusMappings.STOPPED;
   } else if (connect) {
-    return 'running';
+    return statusMappings.RUNNING;
   } else {
-    return 'disconnect';
+    return statusMappings.DISCONNECTED;
   }
 }
 
-const StatusDot = memo(({ connect, synchronize, active, size, getStatus }) => {
-  /**
-   *
-   * [connect: true, synchronize: true]   已连接 #0bc2a8
-   * [connect: false, synchronize: true]  未连接 #ff9915
-   * [synchronize: false]                 处理中 #4d90fe
-   * [active: false]                      已停用 #rgba(0,0,0,.26)
-   */
+const StatusDot = memo(({ connect, synchronize, active, size, getStatus, failed }) => {
   let status;
   let text;
   if (getStatus && typeof getStatus === 'function') {
     [status, text] = getStatus();
   } else {
-    status = getEnvStatus(connect, synchronize, active);
+    status = getEnvStatus({ connect, synchronize, active, failed });
   }
 
   const styled = classnames({
@@ -52,6 +76,7 @@ StatusDot.propTypes = {
   connect: PropTypes.bool,
   synchronize: PropTypes.bool,
   active: PropTypes.bool,
+  failed: PropTypes.bool,
   size: PropTypes.string,
   getStatus: PropTypes.func,
 };
@@ -59,6 +84,7 @@ StatusDot.propTypes = {
 StatusDot.defaultProps = {
   size: 'normal',
   active: true,
+  failed: false,
 };
 
 export default StatusDot;

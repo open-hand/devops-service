@@ -5,7 +5,6 @@ export default () => ({
   fields: [
     { name: 'name', type: 'string' },
     { name: 'connect', type: 'boolean' },
-    { name: 'synchronize', type: 'boolean' },
     { name: 'id', type: 'number' },
   ],
   transport: {

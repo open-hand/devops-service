@@ -64,7 +64,7 @@ function GroupItem({ record, search, intl: { formatMessage }, intlPrefix }) {
 
   function getName() {
     const itemName = record.get('name');
-    return <TreeItemName name={itemName} search={search} />;
+    return <TreeItemName headSpace={false} name={itemName} search={search} />;
   }
 
   function getSuffix() {
@@ -85,9 +85,7 @@ function GroupItem({ record, search, intl: { formatMessage }, intlPrefix }) {
 
   return <Fragment>
     {getName()}
-    <Permission service={[]}>
-      {getSuffix()}
-    </Permission>
+    {getSuffix()}
   </Fragment>;
 }
 

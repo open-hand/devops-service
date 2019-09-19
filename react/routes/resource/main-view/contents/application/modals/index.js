@@ -118,9 +118,8 @@ const AppModals = observer(() => {
   function getButtons() {
     const envRecord = treeDs.find((record) => record.get('key') === parentId);
     const connect = envRecord.get('connect');
-    const synchronize = envRecord.get('synchronize');
     const notReady = !baseInfoDs.current;
-    const disabled = !connect || !synchronize || notReady;
+    const disabled = !connect || notReady;
 
     return [{
       disabled,

@@ -75,10 +75,15 @@ const EnvModals = observer(() => {
   }
 
   function openEnvDetail() {
+    const record = baseInfoDs.current;
+    const data = record ? {
+      ...record.toData(),
+      synchronize: true,
+    } : null;
     Modal.open({
       key: modalKey1,
       title: formatMessage({ id: `${intlPrefix}.modal.env-detail` }),
-      children: <EnvDetail record={baseInfoDs.current} />,
+      children: <EnvDetail record={data} isRecord={false} />,
       drawer: true,
       style: modalStyle,
       okCancel: false,
@@ -137,18 +142,13 @@ const EnvModals = observer(() => {
   }
 
   function getButtons() {
-    let isSync;
-    const record = baseInfoDs.current;
-    if (record) {
-      isSync = record.get('synchronize');
-    }
     const notReady = !baseInfoDs.current;
     return [{
       name: formatMessage({ id: `${intlPrefix}.modal.service.link` }),
       icon: 'relate',
       handler: openLinkService,
       display: true,
-      disabled: !isSync || notReady,
+      disabled: notReady,
       group: 1,
     }, {
       permissions: ['devops-service.devops-environment.pageEnvUserPermissions'],
@@ -156,7 +156,7 @@ const EnvModals = observer(() => {
       icon: 'authority',
       handler: openPermission,
       display: true,
-      disabled: !isSync || notReady,
+      disabled: notReady,
       group: 1,
     }, {
       disabled: notReady,

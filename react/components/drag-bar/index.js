@@ -1,6 +1,7 @@
 import React, { Fragment, useMemo } from 'react';
 import classnames from 'classnames';
 import Draggable from 'react-draggable';
+import { Divider } from 'choerodon-ui';
 import { useResize, X_AXIS_WIDTH, X_AXIS_WIDTH_MAX } from './useResize';
 
 import './index.less';
@@ -39,7 +40,7 @@ export default function DragBar({ parentRef, store }) {
           onDrag={handleDrag}
           onStop={handleUnsetDrag}
         >
-          <div className={draggableClass} />
+          <div className={draggableClass}><div className="c7ncd-draggers-gun">丨</div></div>
         </Draggable>
         {isDragging && <div className="c7ncd-draggers-blocker" />}
       </Fragment>

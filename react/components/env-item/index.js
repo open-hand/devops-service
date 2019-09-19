@@ -1,25 +1,34 @@
-import React, { Fragment, useMemo } from 'react';
+import React, { Fragment, memo } from 'react';
 import PropTypes from 'prop-types';
 import StatusDot from '../status-dot';
 
-export default function EnvironmentItem({ name, connect, synchronize, active, failed }) {
-  const getPrefix = useMemo(() => <StatusDot
+import './index.less';
+
+const EnvironmentItem = memo(({ name, connect, synchronize, active, failed, isTitle }) => <Fragment>
+  <StatusDot
     active={active}
     connect={connect}
+    failed={failed}
     synchronize={synchronize}
-    size="small"
-  />, [connect, synchronize]);
-
-  return <Fragment>
-    {getPrefix}
-    {name}
-  </Fragment>;
-}
+    size={isTitle ? 'normal' : 'small'}
+  />
+  {isTitle ? <span className="c7ncd-env-title">{name}</span> : name}
+</Fragment>);
 
 EnvironmentItem.propTypes = {
-  name: PropTypes.any,
+  name: PropTypes.any.isRequired,
   active: PropTypes.bool,
   connect: PropTypes.bool,
   synchronize: PropTypes.bool,
   failed: PropTypes.bool,
+  isTitle: PropTypes.bool,
 };
+
+EnvironmentItem.defaultProps = {
+  active: true,
+  failed: false,
+  isTitle: false,
+  synchronize: true,
+};
+
+export default EnvironmentItem;

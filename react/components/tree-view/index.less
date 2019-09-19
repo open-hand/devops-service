@@ -1,7 +1,7 @@
 @import '~choerodon-ui/lib/style/themes/default';
 
 .c7ncd-menu-scroll {
-  height: ~"calc(100% - 46px)";
+  height: ~"calc(100% - .46rem)";
   min-height: 1.9rem;
 }
 
@@ -15,14 +15,16 @@
   &.@{c7n-prefix}-tree {
     li {
       .@{c7n-prefix}-tree-node-content-wrapper {
-        width: ~"calc(100% - 22px)";
-        padding: 4px 5px;
-        height: 32px;
+        width: ~"calc(100% - .22rem)";
+        padding: .04rem .05rem;
+        height: .32rem;
+        border-radius: 0.02rem 0 0 0.02rem;
 
-        // &.@{c7n-prefix}-tree-node-selected {
-        //   background-color: unset !important;
-        // }
-      .@{c7n-prefix}-tree-title {
+        &.@{c7n-prefix}-tree-node-selected {
+          background-color: rgba(0, 0, 0, .04);
+        }
+
+        .@{c7n-prefix}-tree-title {
           user-select: none;
           display: flex;
           align-items: center;
@@ -34,13 +36,13 @@
       }
 
       span.@{c7n-prefix}-tree-switcher {
-        height: 32px;
-        padding: 5px 0;
+        height: .32rem;
+        padding: .05rem 0;
       }
 
-      li {
-        padding: 0;
-      }
+      //li {
+      //  padding: 0;
+      //}
     }
   }
 }

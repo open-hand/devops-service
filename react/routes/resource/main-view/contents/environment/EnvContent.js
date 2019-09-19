@@ -4,7 +4,7 @@ import { Tabs, Spin, message } from 'choerodon-ui';
 import { useEnvironmentStore } from './stores';
 import { useResourceStore } from '../../../stores';
 import PageTitle from '../../../../../components/page-title';
-import EnvTitle from '../../../../../components/env-title';
+import EnvItem from '../../../../../components/env-item';
 import openWarnModal from '../../../../../utils/openWarnModal';
 import Modals from './modals';
 
@@ -45,7 +45,6 @@ const EnvContent = observer(() => {
       const name = record.get('name');
       const active = record.get('active');
       const connect = record.get('connect');
-      const synchronize = record.get('synchronize');
       const menuItem = treeDs.find((item) => item.get('id') === id);
 
       if (menuItem) {
@@ -53,16 +52,14 @@ const EnvContent = observer(() => {
         if (!active) {
           openWarnModal(refresh, formatMessage);
         } else if ((menuItem.get('connect') !== connect
-          || menuItem.get('synchronize') !== synchronize
           || menuItem.get('name') !== name)) {
           menuItem.set('connect', connect);
-          menuItem.set('synchronize', synchronize);
           menuItem.set('name', name);
           message.info('基本数据发生变化，已更新。');
         }
       }
 
-      return <EnvTitle name={name} connect={connect} synchronize={synchronize} />;
+      return <EnvItem isTitle name={name} connect={connect} />;
     }
     return null;
   }
@@ -71,9 +68,8 @@ const EnvContent = observer(() => {
     const {
       name,
       connect,
-      synchronize,
     } = getSelectedMenu;
-    return <EnvTitle name={name} synchronize={synchronize} connect={connect} />;
+    return <EnvItem isTitle name={name} connect={connect} />;
   }
 
   return (
