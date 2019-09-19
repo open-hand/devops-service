@@ -418,7 +418,7 @@ public class DevopsEnvironmentController {
             @PathVariable(value = "env_id") Long envId,
             @ApiParam(value = "用户id", required = true)
             @RequestParam(value = "user_id") Long userId) {
-        devopsEnvironmentService.deletePermissionOfUser(envId, userId);
+        devopsEnvironmentService.deletePermissionOfUser(projectId, envId, userId);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 

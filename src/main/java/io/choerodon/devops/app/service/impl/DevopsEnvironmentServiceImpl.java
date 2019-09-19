@@ -5,6 +5,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import org.slf4j.Logger;
@@ -964,14 +965,61 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     @Override
-    public void deletePermissionOfUser(Long envId, Long userId) {
+    public void deletePermissionOfUser(Long projectId, Long envId, Long userId) {
         if (envId == null || userId == null) {
             return;
         }
+
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(DetailsHelper.getUserDetails().getUserId());
+
+        if (userAttrDTO == null) {
+            return;
+        }
+
+        DevopsEnvironmentDTO environmentDTO = devopsEnvironmentMapper.selectByPrimaryKey(envId);
+
+        if (environmentDTO == null) {
+            return;
+        }
+
+        if (userAttrDTO.getGitlabUserId() == null) {
+            throw new CommonException("error.gitlab.user.sync.failed");
+        }
+
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+
+        if (baseServiceClientOperator.isProjectOwner(userAttrDTO.getIamUserId(), projectDTO)) {
+            throw new CommonException("error.delete.permission.of.project.owner");
+        }
+
+        // 删除数据库中的纪录
         DevopsEnvUserPermissionDTO devopsEnvUserPermissionDTO = new DevopsEnvUserPermissionDTO();
         devopsEnvUserPermissionDTO.setEnvId(envId);
         devopsEnvUserPermissionDTO.setIamUserId(userId);
         devopsEnvUserPermissionMapper.delete(devopsEnvUserPermissionDTO);
+
+
+        // 删除GitLab对应的项目的权限
+        DevopsEnvUserPayload userPayload = new DevopsEnvUserPayload();
+        userPayload.setIamProjectId(projectId);
+        userPayload.setGitlabProjectId(environmentDTO.getGitlabEnvProjectId().intValue());
+        userPayload.setEnvId(envId);
+        userPayload.setAddGitlabUserIds(Collections.emptyList());
+        // 待删除的用户
+        userPayload.setDeleteGitlabUserIds(Collections.singletonList(userAttrDTO.getGitlabUserId().intValue()));
+        userPayload.setOption(3);
+
+        // 发送saga进行相应的gitlab侧的数据处理
+        producer.apply(
+                StartSagaBuilder.newBuilder()
+                        .withSourceId(projectId)
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withRefType("env")
+                        .withRefId(String.valueOf(envId))
+                        .withJson(JSONObject.toJSONString(userPayload))
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_UPDATE_ENV_PERMISSION),
+                builder -> {
+                });
     }
 
     @Override

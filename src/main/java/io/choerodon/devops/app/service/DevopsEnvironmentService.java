@@ -188,10 +188,11 @@ public interface DevopsEnvironmentService {
     /**
      * 删除环境下该用户的权限
      *
-     * @param envId  环境id
-     * @param userId 用户id
+     * @param projectId 项目id
+     * @param envId     环境id
+     * @param userId    用户id
      */
-    void deletePermissionOfUser(Long envId, Long userId);
+    void deletePermissionOfUser(Long projectId, Long envId, Long userId);
 
 
     /**
