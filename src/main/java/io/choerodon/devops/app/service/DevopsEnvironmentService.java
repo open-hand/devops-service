@@ -211,11 +211,11 @@ public interface DevopsEnvironmentService {
     void updateEnvUserPermission(DevopsEnvPermissionUpdateVO devopsEnvPermissionUpdateVO);
 
     /**
-     * 删除已停用的环境
+     * 删除已停用或失败的环境
      *
      * @param envId 环境id
      */
-    void deleteDeactivatedEnvironment(Long envId);
+    void deleteDeactivatedOrFailedEnvironment(Long envId);
 
     /**
      * 项目下查询集群信息

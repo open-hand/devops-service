@@ -1171,15 +1171,15 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void deleteDeactivatedEnvironment(Long envId) {
+    public void deleteDeactivatedOrFailedEnvironment(Long envId) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = baseQueryById(envId);
 
         if (devopsEnvironmentDTO == null) {
             return;
         }
 
-        if (!Boolean.FALSE.equals(devopsEnvironmentDTO.getActive())) {
-            throw new CommonException("error.env.is.active.and.delete.forbidden");
+        if (!Boolean.FALSE.equals(devopsEnvironmentDTO.getActive()) || !Boolean.TRUE.equals(devopsEnvironmentDTO.getFailed())) {
+            throw new CommonException("error.env.delete");
         }
 
         // 删除环境对应的实例
