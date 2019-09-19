@@ -148,9 +148,8 @@ public interface BaseServiceClient {
     @GetMapping(value = "/v1/applications/list")
     ResponseEntity<List<ApplicationDTO>> getAppByIds(@RequestParam(value = "app_ids") Set<Long> appIds);
 
-    @PutMapping(value = "/v1/projects/{project_id}/publish_apps/{publish_app_id}/versions/{id}/fail")
+    @PutMapping(value = "/v1/projects/{project_id}/publish_version_infos/{id}/fail")
     ResponseEntity<Boolean> publishFail(@PathVariable("project_id") Long projectId,
-                                        @PathVariable("publish_app_id") Long publishAppId,
                                         @PathVariable("id") Long id,
                                         @RequestParam("error_code") String errorCode,
                                         @RequestParam("fix_flag") Boolean fixFlag);
