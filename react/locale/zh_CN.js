@@ -426,6 +426,7 @@ const appService = {
   'c7ncd.appService.stop.tips': '确定要停用该应用服务吗？',
   'c7ncd.appService.project.failed': '由小写字母，数字，\'-\'、\'_\'或\'.\'组成，以字母、数字开始和结束',
   'c7ncd.appService.param': '请输入查询条件',
+  'c7ncd.appService.name.failed': '输入内容不合规则，请重新输入',
 };
 
 const envrionment = {
