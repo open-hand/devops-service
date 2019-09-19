@@ -50,6 +50,12 @@ class DevPipelineStore {
 
   @observable loading = false;
 
+  @observable selectAppData = {};
+
+  @computed get getSelectAppData() {
+    return this.selectAppData;
+  }
+
   @action setAppData(data) {
     this.appData = data;
   }
@@ -60,6 +66,9 @@ class DevPipelineStore {
 
   @action setSelectApp(app) {
     this.selectedApp = app;
+    if (app) {
+      this.selectAppData = _.find(this.appData, (item) => item.id === app);
+    }
   }
 
   @action setPreProId(id) {
