@@ -2001,7 +2001,8 @@ public class AppServiceServiceImpl implements AppServiceService {
         if (Boolean.TRUE.equals(share)) {
             appServiceDTOList = listSharedAppService(projectId, searchProjectId, param);
         } else {
-            appServiceDTOList = appServiceMapper.queryMarketDownloadApps(null, param, false, searchProjectId);
+            List<AppServiceDTO> marketServices = appServiceMapper.queryMarketDownloadApps(null, param, false, searchProjectId);
+            appServiceDTOList = marketServices.stream().filter(v -> !ObjectUtils.isEmpty(v.getMktAppId())).collect(Collectors.toList());
         }
         List<AppServiceGroupInfoVO> appServiceGroupInfoVOS = new ArrayList<>();
 
@@ -2023,8 +2024,15 @@ public class AppServiceServiceImpl implements AppServiceService {
             projects = baseServiceClientOperator.queryProjectsByIds(projectIds);
 
         } else {
-            Set<Long> appIds = appServiceDTOList.stream().map(appServiceDTO -> appServiceDTO.getMktAppId()).collect(Collectors.toSet());
-            List<ApplicationDTO> applicationDTOS = baseServiceClientOperator.listApplicationInfoByAppIds(projectId, appIds);
+            List<ApplicationDTO> applicationDTOS = new ArrayList<>();
+            appServiceDTOList.stream()
+                    .map(appServiceDTO -> appServiceDTO.getMktAppId())
+                    .forEach(v -> {
+                        ApplicationDTO applicationDTO = baseServiceClientOperator.queryAppById(v);
+                        if (!ObjectUtils.isEmpty(applicationDTO)) {
+                            applicationDTOS.add(applicationDTO);
+                        }
+                    });
             projects = ConvertUtils.convertList(applicationDTOS, ProjectDTO.class);
         }
         List<AppServiceVersionDTO> versionList = appServiceVersionService.listServiceVersionByAppServiceIds(appServiceIds, shareString);
