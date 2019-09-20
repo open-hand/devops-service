@@ -27,7 +27,7 @@ public interface MarketServicePublicClient {
     Call<ResponseBody> updateAppPublishInfoFix(@Query("remote_token") String remoteToken,
                                                @Query("app_code") String code,
                                                @Query("version") String version,
-                                               @Part("marketApplicationVOStr") String marketApplicationVOStr,
+                                               @Part("marketApplicationVersionVOStr") String marketApplicationVersionVOStr,
                                                @Part List<MultipartBody.Part> list,
                                                @Part("imageUrl") String imageUrl);
 

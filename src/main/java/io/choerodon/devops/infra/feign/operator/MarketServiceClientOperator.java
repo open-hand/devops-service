@@ -38,12 +38,12 @@ public class MarketServiceClientOperator {
 
     public Boolean updateAppPublishInfoFix(String code,
                                            String version,
-                                           String marketApplicationVOStr,
+                                           String marketApplicationVersionVOStr,
                                            MultipartFile[] multipartFiles,
                                            String imageUrl) {
         try {
             Map<String, Object> map = new HashMap<>();
-            map.put("marketApplicationVOStr", marketApplicationVOStr);
+            map.put("marketApplicationVersionVOStr", marketApplicationVersionVOStr);
             map.put("files", multipartFiles);
             map.put("imageUrl", imageUrl);
             return marketServiceClient.updateAppPublishInfoFix(code, version, map).getBody();

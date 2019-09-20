@@ -727,13 +727,13 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
     private void fileUploadFixVersion(List<String> zipFileList, AppMarketFixVersionPayload appMarketFixVersionPayload, MarketImageUrlVO marketImageUrlVO) {
         Boolean result = null;
         String imageJson = marketImageUrlVO != null ? gson.toJson(marketImageUrlVO) : null;
-        String appJson = gson.toJson(appMarketFixVersionPayload.getMarketApplicationVO());
+        String appVersionJson = gson.toJson(appMarketFixVersionPayload.getMarketApplicationVO().getMarketApplicationVersionVO());
         if (appMarketFixVersionPayload.getFixVersionUploadPayload().getMarketSaaSPlatform()) {
             MultipartFile[] files = createMockMultipartFile(zipFileList);
             result = marketServiceClientOperator.updateAppPublishInfoFix(
                     appMarketFixVersionPayload.getMarketApplicationVO().getCode(),
                     appMarketFixVersionPayload.getMarketApplicationVO().getVersion(),
-                    appJson,
+                    appVersionJson,
                     files,
                     imageJson);
         } else {
@@ -746,7 +746,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                     remoteToken,
                     appMarketFixVersionPayload.getMarketApplicationVO().getCode(),
                     appMarketFixVersionPayload.getMarketApplicationVO().getVersion(),
-                    appJson,
+                    appVersionJson,
                     files,
                     imageJson);
             result = RetrofitCallExceptionParse.executeCall(responseCall, ERROR_UPLOAD, Boolean.class);
