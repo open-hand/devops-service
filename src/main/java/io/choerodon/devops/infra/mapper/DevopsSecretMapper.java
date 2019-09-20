@@ -15,7 +15,7 @@ import org.apache.ibatis.annotations.Param;
  */
 public interface DevopsSecretMapper extends Mapper<DevopsSecretDTO> {
 
-    DevopsSecretDTO selectById(@Param("secretId") Long secretId);
+    DevopsSecretDTO queryById(@Param("secretId") Long secretId);
 
     List<DevopsSecretDTO> listByOption(@Param("envId") Long envId,
                                        @Param("searchParam") Map<String, Object> searchParam,

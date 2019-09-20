@@ -19,6 +19,7 @@ public class SecretRespVO extends DevopsResourceDataInfoVO {
     private Map<String, String> value;
     private String commandStatus;
     private String commandType;
+    private String error;
 
     public Long getId() {
         return id;
@@ -82,5 +83,13 @@ public class SecretRespVO extends DevopsResourceDataInfoVO {
 
     public void setCommandType(String commandType) {
         this.commandType = commandType;
+    }
+
+    public String getError() {
+        return error;
+    }
+
+    public void setError(String error) {
+        this.error = error;
     }
 }

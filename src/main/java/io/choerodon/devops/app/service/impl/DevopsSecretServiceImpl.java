@@ -461,7 +461,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
 
     @Override
     public DevopsSecretDTO baseQuery(Long secretId) {
-        return devopsSecretMapper.selectById(secretId);
+        return devopsSecretMapper.queryById(secretId);
     }
 
     @Override
