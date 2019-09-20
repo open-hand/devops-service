@@ -176,7 +176,7 @@ class Branch extends Component {
     ];
     // 分支如果是master  禁止创建合并请求 否认：会造成跳转到 gitlab，gailab页面报错的问题
     if (record.branchName === 'master') {
-      action.shift();
+      return null;
     }
 
     // 如果仅有一个分支那么禁止删除

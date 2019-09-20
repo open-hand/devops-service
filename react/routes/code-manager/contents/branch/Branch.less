@@ -1,8 +1,38 @@
 @import '~choerodon-ui/lib/style/themes/default';
 
 .c7n-branch {
-  .c7n-table-filter-bar {
-    border-top: 0;
+  &-table {
+    .@{c7n-prefix}-table-filter-bar {
+      height: 40px;
+    }
+    .@{c7n-prefix}-table-filter-select {
+      .@{c7n-prefix}-select-selection__rendered {
+        padding-top: 0;
+        padding-left: 0;
+        .@{c7n-prefix}-select-selection__placeholder {
+          height: 40px;
+          line-height: 40px;
+        }
+        ul > li {
+          margin-top: 9px;
+        }
+        .@{c7n-prefix}-select-search {
+          margin-top: 0;
+        }
+      }
+    }
+    .@{c7n-prefix}-table-filter-select-icon {
+      height: 100%;
+      i {
+        line-height: 40px;
+      }
+    }
+    .c7n-select {
+      .c7n-select-search {
+        height: 40px !important;
+        line-height: 40px !important;
+      }
+    }
   }
   .c7n-header-table {
     font-size: 16px;
