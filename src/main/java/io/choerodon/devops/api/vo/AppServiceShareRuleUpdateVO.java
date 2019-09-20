@@ -32,11 +32,9 @@ public class AppServiceShareRuleUpdateVO {
     private String version;
 
     @ApiModelProperty("共享到指定项目,项目Id/必填")
-    @NotNull(message = "error.app.share.project.null")
     private Long projectId;
 
     @ApiModelProperty("共享到指定项目,项目名称")
-    @NotBlank(message = "error.app.share.projectName.null")
     private String projectName;
 
     @ApiModelProperty("共享到指定应用,应用名称")

@@ -828,7 +828,7 @@ public class PipelineServiceImpl implements PipelineService {
         params.put("projectName", projectDTO.getName());
         params.put("organizationId", projectDTO.getOrganizationId().toString());
         notifyVO.setParams(params);
-//        notifyClient.sendMessage(notifyVO);
+        notifyClient.sendMessage(notifyVO);
     }
 
     private void sendFailedSiteMessage(Long pipelineRecordId, Long userId) {

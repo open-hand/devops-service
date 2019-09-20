@@ -44,7 +44,12 @@ public class AppServiceShareRuleServiceImpl implements AppServiceShareRuleServic
     @Transactional
     public AppServiceShareRuleVO createOrUpdate(Long projectId, AppServiceShareRuleVO appServiceShareRuleVO) {
         AppServiceShareRuleDTO appServiceShareRuleDTO = ConvertUtils.convertObject(appServiceShareRuleVO, AppServiceShareRuleDTO.class);
+
         if (appServiceShareRuleDTO.getId() == null) {
+            int count = appServiceShareRuleMapper.selectCount(appServiceShareRuleDTO);
+            if (count > 0) {
+                throw new CommonException("error.share.rule.already.exist");
+            }
             if (appServiceShareRuleMapper.insert(appServiceShareRuleDTO) != 1) {
                 throw new CommonException("error.insert.application.share.rule.insert");
             }
