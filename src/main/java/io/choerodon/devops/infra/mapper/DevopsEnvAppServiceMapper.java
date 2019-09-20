@@ -43,4 +43,14 @@ public interface DevopsEnvAppServiceMapper extends Mapper<DevopsEnvAppServiceDTO
      * @return 应用列表
      */
     List<BaseApplicationServiceVO> listNonRelatedApplications(@Param("projectId") Long projectId, @Param("envId") Long envId);
+
+    int countInstances(@Param("appServiceId") Long appServiceId, @Param("envId") Long envId);
+
+    int countRelatedService(@Param("appServiceId") Long appServiceId, @Param("envId") Long envId);
+
+    int countRelatedSecret(@Param("appServiceId") Long appServiceId, @Param("envId") Long envId);
+
+    int countRelatedIngress(@Param("appServiceId") Long appServiceId, @Param("envId") Long envId);
+
+    int countRelatedConfigMap(@Param("appServiceId") Long appServiceId, @Param("envId") Long envId);
 }
