@@ -2,6 +2,7 @@ import React from 'react';
 import { injectIntl } from 'react-intl';
 
 import './index.less';
+import MouserOverWrapper from '../../../../components/MouseOverWrapper';
 
 export default injectIntl(({ record, intlPrefix, prefixCls, intl: { formatMessage } }) => (
   <ul className={`${prefixCls}-detail-manual`}>
@@ -11,11 +12,13 @@ export default injectIntl(({ record, intlPrefix, prefixCls, intl: { formatMessag
       </span>
       <span>{record.get('appServiceName')}</span>
     </li>
-    <li className={`${prefixCls}-detail-manual-item`}>
+    <li className={`${prefixCls}-detail-manual-item ${prefixCls}-detail-manual-item-flex`}>
       <span className={`${prefixCls}-detail-manual-text`}>
         {formatMessage({ id: `${intlPrefix}.version` })}:
       </span>
-      <span>{record.get('appServiceVersion')}</span>
+      <MouserOverWrapper text={record.get('appServiceVersion')} width="230px">
+        <span>{record.get('appServiceVersion')}</span>
+      </MouserOverWrapper>
     </li>
     <li className={`${prefixCls}-detail-manual-item`}>
       <span className={`${prefixCls}-detail-manual-text`}>

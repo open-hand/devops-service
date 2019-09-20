@@ -12,9 +12,7 @@ function getRandomName(prefix) {
 
 export default ((intlPrefix, formatMessage, projectId, envOptionsDs, valueIdOptionsDs, versionOptionsDs, deployStore) => {
   function handleCreate({ dataSet, record }) {
-    envOptionsDs.transport.read.url = `/devops/v1/projects/${projectId}/envs/list_by_active?active=true`;
     envOptionsDs.query();
-
     deployStore.loadAppService(projectId, record.get('appServiceSource'));
   }
   

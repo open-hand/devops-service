@@ -130,7 +130,7 @@ const Allocation = observer((props) => {
         </Button>
       </HeaderButtons>
       <Breadcrumb title="服务详情" />
-      <Content>
+      <Content className={`${prefixCls}-detail-content`}>
         <Table dataSet={permissionDs} filter={handleTableFilter}>
           <Column name="realName" sortable />
           <Column renderer={renderAction} width="0.7rem" />

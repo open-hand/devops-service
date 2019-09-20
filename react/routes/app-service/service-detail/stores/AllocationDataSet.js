@@ -1,4 +1,5 @@
 import { axios } from '@choerodon/master';
+import map from 'lodash/map';
 import getTablePostData from '../../../../utils/getTablePostData';
 
 export default ((formatMessage, intlPrefix, projectId, id) => ({

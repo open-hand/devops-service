@@ -25,18 +25,41 @@ export default observer(({ dataSet, refresh, record, store, projectId, formatMes
   }, [record.get('skipCheckPermission')]);
 
   modal.handleOk(async () => {
-    try {
-      const data = {
-        skipCheckPermission: record.get('skipCheckPermission'),
-        userIds: map(dataSet.created, (item) => item.get('iamUserId')),
-      };
-      if (await store.updatePermission(projectId, record.get('id'), data)) {
-        refresh();
-      } else {
+    if (record.get('skipCheckPermission')) {
+      try {
+        const data = {
+          skipCheckPermission: true,
+          userIds: [],
+        };
+        if (await store.updatePermission(projectId, record.get('id'), data)) {
+          refresh();
+        } else {
+          return false;
+        }
+      } catch (e) {
         return false;
       }
-    } catch (e) {
-      return false;
+    } else {
+      dataSet.transport.create = ({ data }) => {
+        const res = {
+          skipCheckPermission: false,
+          userIds: map(data, 'iamUserId'),
+        };
+        return {
+          url: `/devops/v1/projects/${projectId}/app_service/${record.get('id')}/update_permission`,
+          method: 'post',
+          data: res,
+        };
+      };
+      try {
+        if (await dataSet.submit() !== false) {
+          refresh();
+        } else {
+          return false;
+        }
+      } catch (e) {
+        return false;
+      }
     }
   });
 
