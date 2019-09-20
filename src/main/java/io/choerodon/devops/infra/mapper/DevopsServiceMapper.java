@@ -24,7 +24,7 @@ public interface DevopsServiceMapper extends Mapper<DevopsServiceDTO> {
             @Param("sort") String sort,
             @Param("appServiceId") Long appServiceId);
 
-    List<DevopsServiceQueryDTO> listRunningService(@Param("envId") Long envId);
+    List<DevopsServiceQueryDTO> listRunningService(@Param("envId") Long envId, @Param("appServiceId") Long appServiceId);
 
     List<Long> selectDeployedEnv();
 
@@ -41,7 +41,7 @@ public interface DevopsServiceMapper extends Mapper<DevopsServiceDTO> {
 
     Boolean checkEnvContainingService(@Param("envId") Long envId);
 
-    int countNonDeletedServiceWithEnv(@Param("envId")Long envId,@Param("serviceId")Long serviceId);
+    int countNonDeletedServiceWithEnv(@Param("envId") Long envId, @Param("serviceId") Long serviceId);
 
     void updateLabelsToNull(@Param("serviceId") Long serviceId);
 

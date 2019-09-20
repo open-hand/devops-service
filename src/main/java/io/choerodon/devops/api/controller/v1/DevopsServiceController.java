@@ -142,8 +142,10 @@ public class DevopsServiceController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境ID", required = true)
-            @RequestParam(value = "env_id") Long envId) {
-        return Optional.ofNullable(devopsServiceService.listByEnvId(envId))
+            @RequestParam(value = "env_id") Long envId,
+            @ApiParam(value = "服务id",required = false)
+            @RequestParam(value = "app_service_id" ,required = false) Long appServiceId) {
+        return Optional.ofNullable(devopsServiceService.listByEnvIdAndAppServiceId(envId, appServiceId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.app.k8s.service.env.query"));
     }

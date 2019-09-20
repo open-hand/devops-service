@@ -85,9 +85,10 @@ public interface DevopsServiceService {
      * 分页查询网络列表
      *
      * @param envId 参数
+     * @param appServiceId app应用id
      * @return List of DevopsServiceVO
      */
-    List<DevopsServiceVO> listByEnvId(Long envId);
+    List<DevopsServiceVO> listByEnvIdAndAppServiceId(Long envId,Long appServiceId);
 
     /**
      * 查询单个网络
@@ -148,8 +149,6 @@ public interface DevopsServiceService {
 
     PageInfo<DevopsServiceQueryDTO> basePageByOptions(Long projectId, Long envId, Long instanceId, PageRequest pageRequest,
                                                       String searchParam, Long appServiceId);
-
-    List<DevopsServiceQueryDTO> baseListRunningService(Long envId);
 
     List<DevopsServiceDTO> baseListByEnvId(Long envId);
 

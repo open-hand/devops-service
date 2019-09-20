@@ -64,9 +64,15 @@
         ds.ports
         FROM
         devops_service ds
+        <if test="appServiceId != null">
+            JOIN devops_app_service_resource dasr
+            ON ds.id=dasr.resource_id
+        </if>
         WHERE ds.`status` = 'running'
-        <if test="envId != null">
-            AND ds.env_id = #{envId}
+        AND ds.env_id = #{envId}
+        <if test="appServiceId != null">
+            AND ds.app_service_id=#{appServiceId}
+            AND dasr.resource_type='service'
         </if>
     </select>
 
