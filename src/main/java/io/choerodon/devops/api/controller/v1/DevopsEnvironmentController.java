@@ -592,7 +592,7 @@ public class DevopsEnvironmentController {
             roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下查询环境")
     @GetMapping(value = "/list_by_group")
-    public ResponseEntity<List<DevopsEnvironmentRepVO>> listByGroupAndActive(
+    public ResponseEntity<List<DevopsEnvironmentRepVO>> listByGroup(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分组id")

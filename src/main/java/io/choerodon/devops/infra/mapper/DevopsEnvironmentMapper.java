@@ -78,6 +78,8 @@ public interface DevopsEnvironmentMapper extends Mapper<DevopsEnvironmentDTO> {
 
     List<DevopsEnvironmentDTO> listByIds(@Param("envIds") List<Long> envIds);
 
+    List<DevopsEnvironmentDTO> listByProjectId(@Param("projectId") Long projectId);
+
     /**
      * 查询指定分组的相关环境
      *

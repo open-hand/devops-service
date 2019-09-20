@@ -337,7 +337,7 @@
         env.*,
         dc.name as cluster_name
         FROM devops_env env
-        join devops_cluster dc
+        LEFT JOIN devops_cluster dc
         on env.cluster_id = dc.id
         WHERE env.project_id = #{projectId}
         <if test="groupId ==null">
@@ -348,6 +348,16 @@
             AND
             env.devops_env_group_id = #{groupId}
         </if>
+    </select>
+
+    <select id="listByProjectId" resultType="io.choerodon.devops.infra.dto.DevopsEnvironmentDTO">
+        SELECT
+        env.*,
+        dc.name AS cluster_name
+        FROM devops_env env
+        LEFT JOIN devops_cluster dc
+        ON env.cluster_id = dc.id
+        WHERE env.project_id = #{projectId}
     </select>
 
     <!-- 此方法不需要在mapper接口中有 -->

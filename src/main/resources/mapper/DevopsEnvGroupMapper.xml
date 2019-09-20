@@ -3,4 +3,11 @@
 
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsEnvGroupMapper">
 
+    <select id="listByIdList" resultType="io.choerodon.devops.infra.dto.DevopsEnvGroupDTO">
+        SELECT * FROM devops_env_group
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
 </mapper>
