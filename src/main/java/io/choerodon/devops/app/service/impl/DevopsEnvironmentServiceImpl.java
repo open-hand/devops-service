@@ -1200,7 +1200,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             return;
         }
 
-        if (!Boolean.FALSE.equals(devopsEnvironmentDTO.getActive()) || !Boolean.TRUE.equals(devopsEnvironmentDTO.getFailed())) {
+        if (!Boolean.FALSE.equals(devopsEnvironmentDTO.getActive()) && !Boolean.TRUE.equals(devopsEnvironmentDTO.getFailed())) {
             throw new CommonException("error.env.delete");
         }
 
