@@ -782,6 +782,7 @@ public class PipelineServiceImpl implements PipelineService {
 
         DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(pipelineRecordDTOS.get(0).getProjectId(), "auto", pipelineRecordDTO.getId(), pipelineRecordDTOS.get(0).getEnv(), pipelineRecordDTO.getCreationDate());
         devopsDeployRecordService.baseCreate(devopsDeployRecordDTO);
+        LOGGER.info("++++++++++++流水线创建++++++++devopsDeployRecordDTO+++++，deployId：{}",pipelineRecordDTO.getId());
     }
 
     @Override

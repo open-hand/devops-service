@@ -14,6 +14,7 @@ import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -58,7 +59,6 @@ import io.choerodon.devops.infra.util.*;
  */
 @Service
 public class AppServiceInstanceServiceImpl implements AppServiceInstanceService {
-
     public static final String CREATE = "create";
     public static final String UPDATE = "update";
     public static final String CHOERODON = "choerodon-test";
@@ -66,6 +66,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     public static final String MANUAL = "manual";
     public static final String APP_SERVICE = "appService";
     public static final String HELM_RELEASE = "C7NHelmRelease";
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AppServiceInstanceServiceImpl.class);
     private static final String MASTER = "master";
     private static final String YAML_SUFFIX = ".yaml";
     private static final String RELEASE_PREFIX = "release-";
@@ -662,6 +663,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             if (!isFromPipeline) {
                 DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(devopsEnvironmentDTO.getProjectId(), MANUAL, devopsEnvCommandDTO.getId(), devopsEnvironmentDTO.getId().toString(), devopsEnvCommandDTO.getCreationDate());
                 devopsDeployRecordService.baseCreate(devopsDeployRecordDTO);
+                LOGGER.info("++++++++++++非流水线创建实例devopsDeployRecordDTO+++++，deployId：{}", devopsEnvCommandDTO.getId());
             }
 
             appServiceDeployVO.setInstanceId(appServiceInstanceDTO.getId());
@@ -799,6 +801,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         //插入部署记录
         DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(devopsEnvironmentDTO.getProjectId(), MANUAL, devopsEnvCommandDTO.getId(), devopsEnvironmentDTO.getId().toString(), devopsEnvCommandDTO.getCreationDate());
         devopsDeployRecordService.baseCreate(devopsDeployRecordDTO);
+        LOGGER.info("++++++++++++非流水线创建实例gitOps+++gitOps+++devopsDeployRecordDTO+++++，deployId：{}", devopsEnvCommandDTO.getId());
 
 
         return ConvertUtils.convertObject(appServiceInstanceDTO, AppServiceInstanceVO.class);
@@ -860,6 +863,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         //插入部署记录
         DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(devopsEnvironmentDTO.getProjectId(), MANUAL, devopsEnvCommandDTO.getId(), devopsEnvironmentDTO.getId().toString(), devopsEnvCommandDTO.getCreationDate());
         devopsDeployRecordService.baseCreate(devopsDeployRecordDTO);
+        LOGGER.info("++++++++++++非流水线创建实例重试+++重试+++devopsDeployRecordDTO+++++，deployId：{}", devopsEnvCommandDTO.getId());
+
 
         AppServiceDeployVO appServiceDeployVO = new AppServiceDeployVO();
         appServiceDeployVO.setInstanceId(appServiceInstanceDTO.getId());
