@@ -2,11 +2,12 @@ import React, { Fragment, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { observer } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
-import { Form, Modal, TextField } from 'choerodon-ui/pro';
-import { Action, Permission } from '@choerodon/master';
+import { Modal } from 'choerodon-ui/pro';
+import { Action } from '@choerodon/master';
 import TreeItemName from '../../../../../components/treeitem-name';
 import GroupForm from '../../modals/GroupForm';
 import { handlePromptError } from '../../../../../utils';
+import eventStopProp from '../../../../../utils/eventStopProp';
 import { useEnvironmentStore } from '../../../stores';
 import { useTreeItemStore } from './stores';
 
@@ -80,7 +81,11 @@ function GroupItem({ record, search, intl: { formatMessage }, intlPrefix }) {
       text: formatMessage({ id: `${intlPrefix}.modal.group.delete` }),
       action: confirmDelete,
     }];
-    return <Action placement="bottomRight" data={actionData} />;
+    return <Action
+      placement="bottomRight"
+      data={actionData}
+      onClick={eventStopProp}
+    />;
   }
 
   return <Fragment>
