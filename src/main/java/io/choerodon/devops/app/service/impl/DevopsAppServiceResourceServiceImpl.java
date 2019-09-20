@@ -8,6 +8,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.DevopsAppServiceResourceService;
 import io.choerodon.devops.infra.dto.DevopsAppServiceResourceDTO;
 import io.choerodon.devops.infra.mapper.DevopsAppServiceResourceMapper;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -38,7 +39,9 @@ public class DevopsAppServiceResourceServiceImpl implements DevopsAppServiceReso
                     baseCreate(devopsAppServiceResourceDTO);
                 });
             } else {
-                baseDeleteByResourceIdAndType(resourceId, type);
+                oldAppServiceIds.stream().forEach(e -> {
+                    baseDeleteByResourceIdAndType(resourceId, type);
+                });
             }
 
         } else {
