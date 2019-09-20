@@ -138,6 +138,10 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private DevopsCustomizeResourceMapper devopsCustomizeResourceMapper;
     @Autowired
     private DevopsEnvAppServiceMapper devopsEnvAppServiceMapper;
+    @Autowired
+    private DevopsEnvGroupMapper devopsEnvGroupMapper;
+    @Autowired
+    private DevopsClusterMapper devopsClusterMapper;
 
     @Override
     @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_ENV, description = "创建环境", inputSchema = "{}")
@@ -237,6 +241,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         //按照环境组分组查询，有环境的环境组放前面，没环境的环境组放后面
         Map<Long, List<DevopsEnvironmentRepVO>> resultMaps = devopsEnviromentRepDTOS.stream()
                 .collect(Collectors.groupingBy(DevopsEnvironmentRepVO::getDevopsEnvGroupId));
+
         List<Long> envGroupIds = new ArrayList<>();
         resultMaps.forEach((key, value) -> {
             envGroupIds.add(key);
@@ -266,7 +271,12 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         List<DevopsEnvGroupEnvsVO> devopsEnvGroupEnvsDTOS = new ArrayList<>();
         // 获得环境列表(包含激活与不激活)
         List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedClusterList();
-        List<DevopsEnvironmentDTO> devopsEnvironmentList = baseListByProjectId(projectId);
+
+        List<DevopsEnvironmentDTO> devopsEnvironmentList = devopsEnvironmentMapper.listByProjectId(projectId)
+                .stream()
+                .peek(t -> setEnvStatus(upgradeClusterList, t))
+                .collect(Collectors.toList());
+
         // 没有环境列表则返回空列表
         if (devopsEnvironmentList.isEmpty()) {
             devopsEnvGroupEnvsDTOS.add(new DevopsEnvGroupEnvsVO());
@@ -279,43 +289,16 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         List<DevopsEnvironmentRepVO> devopsEnvironmentRepDTOS = ConvertUtils.convertList(devopsEnvironmentDTOS, DevopsEnvironmentRepVO.class);
 
         List<DevopsEnvGroupDTO> devopsEnvGroupES = devopsEnvGroupService.baseListByProjectId(projectId);
-        devopsEnvironmentRepDTOS
-                .stream().forEach(devopsEnvironmentRepDTO -> {
-            DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(devopsEnvironmentRepDTO.getClusterId());
-            devopsEnvironmentRepDTO.setClusterName(devopsClusterDTO == null ? null : devopsClusterDTO.getName());
-            if (devopsEnvironmentRepDTO.getDevopsEnvGroupId() == null) {
-                devopsEnvironmentRepDTO.setDevopsEnvGroupId(0L);
-            }
-        });
 
-        //按分组选出未激活环境
-        Map<Long, List<DevopsEnvironmentRepVO>> notActiveResultMaps = devopsEnvironmentRepDTOS
-                .stream()
-                .filter(i -> !i.getActive())
-                .collect(Collectors.groupingBy(DevopsEnvironmentRepVO::getDevopsEnvGroupId));
+        Map<Long, List<DevopsEnvironmentRepVO>> resultMaps = sort(devopsEnvironmentRepDTOS);
 
-        //按环境分组环境列表
-        Map<Long, List<DevopsEnvironmentRepVO>> resultMaps = devopsEnvironmentRepDTOS
+        List<Long> groupIds = new ArrayList<>(resultMaps.keySet());
+        Map<Long, DevopsEnvGroupDTO> devopsEnvGroupDTOMap = new HashMap<>();
+        devopsEnvGroupMapper.listByIdList(groupIds)
                 .stream()
-                .filter(DevopsEnvironmentRepVO::getActive)
-                .sorted(
-                        Comparator.comparing(DevopsEnvironmentRepVO::getConnected)
-                                .thenComparing(DevopsEnvironmentRepVO::getSynchro)
-                                .thenComparing(DevopsEnvironmentRepVO::getId)
-                                .reversed()
-                )
-                .collect(Collectors.groupingBy(DevopsEnvironmentRepVO::getDevopsEnvGroupId));
+                .forEach(i -> devopsEnvGroupDTOMap.put(i.getId(), i));
 
         List<Long> envGroupIds = new ArrayList<>();
-
-        // 把按分组选出的未激活环境加入到激活环境分组中
-        notActiveResultMaps.forEach((key, value) -> {
-            List<DevopsEnvironmentRepVO> devopsEnvironmentRepVOList = resultMaps.get(key);
-            if (devopsEnvironmentRepVOList != null) {
-                devopsEnvironmentRepVOList.addAll(value);
-                resultMaps.put(key, devopsEnvironmentRepVOList);
-            }
-        });
 
         //有环境的分组
         resultMaps.forEach((key, value) -> {
@@ -323,8 +306,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             DevopsEnvGroupEnvsVO devopsEnvGroupEnvsDTO1 = new DevopsEnvGroupEnvsVO();
             DevopsEnvGroupDTO devopsEnvGroupDTO = new DevopsEnvGroupDTO();
             if (key != 0) {
-                devopsEnvGroupDTO = Optional.ofNullable(devopsEnvGroupService.baseQuery(key))
-                        .orElseThrow(() -> new CommonException("error.env.group.not.exist"));
+                devopsEnvGroupDTO = Optional.ofNullable(devopsEnvGroupDTOMap.get(key)).
+                        orElseThrow(() -> new CommonException("error.env.group.not.exist"));
             }
             devopsEnvGroupEnvsDTO1.setDevopsEnvGroupId(devopsEnvGroupDTO.getId());
             devopsEnvGroupEnvsDTO1.setDevopsEnvGroupName(devopsEnvGroupDTO.getName());
@@ -350,7 +333,69 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 .stream()
                 .peek(t -> setEnvStatus(upgradeClusterList, t))
                 .collect(Collectors.toList());
-        return ConvertUtils.convertList(devopsEnvironmentDTOS, DevopsEnvironmentRepVO.class);
+        if (devopsEnvironmentDTOS == null) {
+            return new ArrayList<>();
+        }
+
+        // 如果没有传入groupId，则赋值0
+        if (groupId == null) {
+            groupId = 0L;
+        }
+        return sort(ConvertUtils.convertList(devopsEnvironmentDTOS, DevopsEnvironmentRepVO.class)).get(groupId);
+    }
+
+    private Map<Long, List<DevopsEnvironmentRepVO>> sort(List<DevopsEnvironmentRepVO> devopsEnvironmentRepDTOS) {
+
+        devopsEnvironmentRepDTOS.forEach(devopsEnvironmentRepDTO -> {
+            if (devopsEnvironmentRepDTO.getDevopsEnvGroupId() == null) {
+                devopsEnvironmentRepDTO.setDevopsEnvGroupId(0L);
+            }
+        });
+
+        // 按分组选出处理中以及失败的环境
+        Map<Long, List<DevopsEnvironmentRepVO>> synchroAndFailResultMaps = devopsEnvironmentRepDTOS
+                .stream()
+                .filter(i -> (!i.getSynchro()) || (i.getSynchro() && i.getFailed()))
+                .sorted(Comparator.comparing(DevopsEnvironmentRepVO::getId).reversed())
+                .collect(Collectors.groupingBy(DevopsEnvironmentRepVO::getDevopsEnvGroupId));
+        // 按分组选出创建成功、没有停用的环境列表环境列表
+        Map<Long, List<DevopsEnvironmentRepVO>> resultMaps = devopsEnvironmentRepDTOS
+                .stream()
+                .filter(i -> i.getSynchro() && !i.getFailed() && i.getActive())
+                .sorted(
+                        Comparator.comparing(DevopsEnvironmentRepVO::getConnected)
+                                .thenComparing(DevopsEnvironmentRepVO::getId)
+                                .reversed()
+                )
+                .collect(Collectors.groupingBy(DevopsEnvironmentRepVO::getDevopsEnvGroupId));
+        // 按分组选出未激活环境
+        Map<Long, List<DevopsEnvironmentRepVO>> notActiveResultMaps = devopsEnvironmentRepDTOS
+                .stream()
+                .filter(i -> i.getSynchro() && !i.getFailed() && !i.getActive())
+                .collect(Collectors.groupingBy(DevopsEnvironmentRepVO::getDevopsEnvGroupId));
+
+        synchroAndFailResultMaps.forEach((key, value) -> {
+            List<DevopsEnvironmentRepVO> devopsEnvironmentRepVOList = resultMaps.get(key);
+            if (devopsEnvironmentRepVOList != null) {
+                devopsEnvironmentRepVOList.addAll(value);
+                resultMaps.put(key, devopsEnvironmentRepVOList);
+            } else {
+                resultMaps.put(key, value);
+            }
+        });
+
+        // 把按分组选出的停用环境加入到激活环境分组中
+        notActiveResultMaps.forEach((key, value) -> {
+            List<DevopsEnvironmentRepVO> devopsEnvironmentRepVOList = resultMaps.get(key);
+            if (devopsEnvironmentRepVOList != null) {
+                devopsEnvironmentRepVOList.addAll(value);
+                resultMaps.put(key, devopsEnvironmentRepVOList);
+            } else {
+                resultMaps.put(key, value);
+            }
+        });
+
+        return resultMaps;
     }
 
     @Override
