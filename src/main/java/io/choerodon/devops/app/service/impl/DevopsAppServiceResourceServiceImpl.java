@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,30 +23,32 @@ public class DevopsAppServiceResourceServiceImpl implements DevopsAppServiceReso
     @Override
     public void handleAppServiceResource(List<Long> appServiceIds, Long resourceId, String type) {
         List<Long> oldAppServiceIds = baseQueryByResourceIdAndType(resourceId, type).stream().map(DevopsAppServiceResourceDTO::getAppServiceId).collect(Collectors.toList());
+        List<Long> appServiceIdscollect = appServiceIds.stream().filter(e -> e != null).collect(Collectors.toList());
+        //更新
         if (!oldAppServiceIds.isEmpty()) {
-            //过滤掉为null的元素
-            List<Long> collect = appServiceIds.stream().filter(e -> e != null).collect(Collectors.toList());
-            System.out.println(!collect.isEmpty());
-            if (collect != null && !collect.isEmpty()) {
-                appServiceIds.forEach(aLong -> {
+            if (!appServiceIdscollect.isEmpty()) {
+                List<Long> addlist = new ArrayList<>();
+                appServiceIdscollect.forEach(aLong -> {
                     if (!oldAppServiceIds.contains(aLong)) {
-                        DevopsAppServiceResourceDTO devopsAppServiceResourceDTO = new DevopsAppServiceResourceDTO(aLong, type, resourceId);
-                        baseCreate(devopsAppServiceResourceDTO);
+                        addlist.add(aLong);
                     }
                 });
-                oldAppServiceIds.forEach(aLong -> {
-                    if (!appServiceIds.contains(aLong)) {
-                        baseDeleteByResourceIdAndType(resourceId, type);
-                    }
+                addlist.stream().forEach(e -> {
+                    DevopsAppServiceResourceDTO devopsAppServiceResourceDTO = new DevopsAppServiceResourceDTO(e, type, resourceId);
+                    baseCreate(devopsAppServiceResourceDTO);
                 });
             } else {
-                oldAppServiceIds.stream().forEach(e -> baseDeleteByResourceIdAndType(resourceId, type));
+                baseDeleteByResourceIdAndType(resourceId, type);
             }
+
         } else {
-            appServiceIds.forEach(aLong -> {
-                DevopsAppServiceResourceDTO devopsAppServiceResourceDTO = new DevopsAppServiceResourceDTO(aLong, type, resourceId);
-                baseCreate(devopsAppServiceResourceDTO);
-            });
+            //创建
+            if (!appServiceIdscollect.isEmpty()) {
+                appServiceIds.forEach(aLong -> {
+                    DevopsAppServiceResourceDTO devopsAppServiceResourceDTO = new DevopsAppServiceResourceDTO(aLong, type, resourceId);
+                    baseCreate(devopsAppServiceResourceDTO);
+                });
+            }
         }
     }
 
