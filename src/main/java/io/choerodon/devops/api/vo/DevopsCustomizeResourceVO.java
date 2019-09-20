@@ -14,7 +14,8 @@ public class DevopsCustomizeResourceVO extends DevopsResourceDataInfoVO{
     private String resourceContent;
     private String k8sKind;
     private String commandStatus;
-    private String commandErrors;
+    private String commandType;
+    private String error;
     private String name;
     private String description;
 
@@ -66,12 +67,12 @@ public class DevopsCustomizeResourceVO extends DevopsResourceDataInfoVO{
         this.commandStatus = commandStatus;
     }
 
-    public String getCommandErrors() {
-        return commandErrors;
+    public String getError() {
+        return error;
     }
 
-    public void setCommandErrors(String commandErrors) {
-        this.commandErrors = commandErrors;
+    public void setError(String error) {
+        this.error = error;
     }
 
     public String getName() {
@@ -112,5 +113,13 @@ public class DevopsCustomizeResourceVO extends DevopsResourceDataInfoVO{
 
     public void setEnvCode(String envCode) {
         this.envCode = envCode;
+    }
+
+    public String getCommandType() {
+        return commandType;
+    }
+
+    public void setCommandType(String commandType) {
+        this.commandType = commandType;
     }
 }

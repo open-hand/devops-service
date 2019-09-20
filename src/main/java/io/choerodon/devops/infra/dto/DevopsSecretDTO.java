@@ -29,6 +29,8 @@ public class DevopsSecretDTO extends BaseDTO {
     @Transient
     private String commandType;
     @Transient
+    private String error;
+    @Transient
     private Map<String, String> valueMap;
 
     public Map<String, String> getValueMap() {
@@ -108,5 +110,13 @@ public class DevopsSecretDTO extends BaseDTO {
 
     public void setCommandType(String commandType) {
         this.commandType = commandType;
+    }
+
+    public String getError() {
+        return error;
+    }
+
+    public void setError(String error) {
+        this.error = error;
     }
 }

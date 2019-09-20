@@ -31,5 +31,13 @@ public interface DevopsCertificationMapper extends Mapper<CertificationDTO> {
 
     void updateStatus(@Param("certId") Long certId, @Param("status") String status);
 
-    CertificationDTO queryById(@Param("certId")Long certId);
+    CertificationDTO queryById(@Param("certId") Long certId);
+
+    /**
+     * 查询证书信息及其command字段
+     *
+     * @param certId 证书id
+     * @return 证书信息
+     */
+    CertificationDTO queryDetailById(@Param("certId") Long certId);
 }

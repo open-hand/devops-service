@@ -171,13 +171,17 @@
            AND dp.is_ready = TRUE) pod_running_count,
         dai.last_update_date AS ins_last_update_date,
         dai.object_version_number AS ins_object_version_number,
-        dai.status AS ins_status
+        dai.status AS ins_status,
+        command.status AS commandStatus,
+        command.command_type AS commandType,
+        command.error
         FROM
         devops_service ds
         INNER JOIN devops_env de ON ds.env_id = de.id
         LEFT JOIN devops_service_instance dsai ON dsai.service_id = ds.id
         LEFT JOIN devops_app_service_instance dai ON dai.id = dsai.instance_id
         LEFT JOIN devops_app_service da ON da.id = dai.app_service_id
+        LEFT JOIN devops_env_command command ON ds.command_id = command.id
         WHERE
         ds.id = #{id}
         AND ds.`status` != 'deleted'

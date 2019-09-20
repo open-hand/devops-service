@@ -27,6 +27,15 @@ public class CertificationRespVO extends DevopsResourceDataInfoVO {
     @ApiModelProperty("过期时间")
     private Date validUntil;
 
+    @ApiModelProperty("命令类型")
+    private String commandType;
+
+    @ApiModelProperty("命令状态")
+    private String commandStatus;
+
+    @ApiModelProperty("命令错误")
+    private String error;
+
     public Long getId() {
         return id;
     }
@@ -85,5 +94,29 @@ public class CertificationRespVO extends DevopsResourceDataInfoVO {
 
     public void setValidUntil(Date validUntil) {
         this.validUntil = validUntil;
+    }
+
+    public String getCommandType() {
+        return commandType;
+    }
+
+    public void setCommandType(String commandType) {
+        this.commandType = commandType;
+    }
+
+    public String getCommandStatus() {
+        return commandStatus;
+    }
+
+    public void setCommandStatus(String commandStatus) {
+        this.commandStatus = commandStatus;
+    }
+
+    public String getError() {
+        return error;
+    }
+
+    public void setError(String error) {
+        this.error = error;
     }
 }

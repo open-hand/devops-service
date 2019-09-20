@@ -19,6 +19,9 @@ public class CertificationDTO extends BaseDTO {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private Long certificationFileId;
+    /**
+     * 项目层证书需要组织id
+     */
     private Long organizationId;
     private String name;
     private Long envId;

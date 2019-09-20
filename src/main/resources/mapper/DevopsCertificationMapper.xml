@@ -97,6 +97,13 @@
         WHERE dc.id = #{certId}
     </select>
 
+    <select id="queryDetailById" resultType="io.choerodon.devops.infra.dto.CertificationDTO">
+        SELECT dc.*, cmd.error, cmd.command_type, cmd.status AS command_status
+        FROM devops_certification dc
+        LEFT JOIN devops_env_command cmd ON dc.command_id = cmd.id
+        WHERE dc.id = #{certId}
+    </select>
+
     <update id="updateStatus">
         UPDATE devops_certification dc
         SET dc.status=#{status}

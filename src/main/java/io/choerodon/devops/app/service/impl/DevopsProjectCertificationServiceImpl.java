@@ -1,18 +1,27 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.ProjectCertificationPermissionUpdateVO;
-import io.choerodon.devops.api.vo.ProjectCertificationUpdateVO;
 import io.choerodon.devops.api.vo.ProjectCertificationVO;
 import io.choerodon.devops.api.vo.ProjectReqVO;
 import io.choerodon.devops.app.service.CertificationService;
@@ -27,14 +36,6 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCertificationFileMapper;
 import io.choerodon.devops.infra.mapper.DevopsCertificationMapper;
 import io.choerodon.devops.infra.util.*;
-
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class DevopsProjectCertificationServiceImpl implements DevopsProjectCertificationService {
@@ -193,10 +194,11 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
         FileUtil.deleteFile(keyPath);
 
         if (projectCertificationVO.getType().equals(CREATE)) {
-
             CertificationDTO certificationDTO = new CertificationDTO();
             certificationDTO.setName(projectCertificationVO.getName());
             certificationDTO.setProjectId(projectId);
+            // 创建项目层证书需要组织id
+            certificationDTO.setOrganizationId(organizationDTO.getId());
             certificationDTO.setSkipCheckProjectPermission(true);
             certificationDTO.setDomains(gson.toJson(Collections.singletonList(projectCertificationVO.getDomain())));
             certificationDTO.setCertificationFileId(certificationService.baseStoreCertFile(new CertificationFileDTO(projectCertificationVO.getCertValue(), projectCertificationVO.getKeyValue())));

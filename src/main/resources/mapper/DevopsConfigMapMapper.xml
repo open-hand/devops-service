@@ -2,6 +2,13 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsConfigMapMapper">
+    <select id="queryById" resultType="io.choerodon.devops.infra.dto.DevopsConfigMapDTO">
+        SELECT dcm.*, cmd.command_type, cmd.status AS command_status, cmd.error
+        FROM devops_config_map dcm
+        LEFT JOIN devops_env_command cmd ON dcm.command_id = cmd.id
+        WHERE dcm.id = #{configMapId}
+    </select>
+
     <select id="listByEnv" resultType="io.choerodon.devops.infra.dto.DevopsConfigMapDTO">
         SELECT
         dcm.id,
@@ -12,7 +19,8 @@
         dcm.last_update_date,
         de.code envCode,
         dc.command_type commandType,
-        dc.status commandStatus
+        dc.status commandStatus,
+        dc.error
         FROM
         devops_config_map dcm
         LEFT JOIN devops_env de ON dcm.env_id = de.id

@@ -14,4 +14,6 @@ public interface DevopsConfigMapMapper extends Mapper<DevopsConfigMapDTO> {
                                        @Param("searchParam") Map<String, Object> searchParam,
                                        @Param("params") List<String> params,
                                        @Param("appServiceId") Long appServiceId);
+
+    DevopsConfigMapDTO queryById(@Param("configMapId") Long configMapId);
 }

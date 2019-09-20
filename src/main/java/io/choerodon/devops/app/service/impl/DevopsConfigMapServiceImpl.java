@@ -138,12 +138,13 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
 
     @Override
     public DevopsConfigMapRespVO query(Long configMapId) {
-        DevopsConfigMapDTO devopsConfigMapDTO = baseQueryById(configMapId);
-        DevopsConfigMapRespVO devopsConfigMapRespVO = ConvertUtils.convertObject(devopsConfigMapDTO, DevopsConfigMapRespVO.class);
+        DevopsConfigMapDTO devopsConfigMapDTO = devopsConfigMapMapper.queryById(configMapId);
 
-        if (devopsConfigMapRespVO == null) {
+        if (configMapId == null) {
             return null;
         }
+
+        DevopsConfigMapRespVO devopsConfigMapRespVO = ConvertUtils.convertObject(devopsConfigMapDTO, DevopsConfigMapRespVO.class);
 
         devopsConfigMapRespVO.setValue(gson.fromJson(devopsConfigMapDTO.getValue(), new TypeToken<Map<String, String>>() {
         }.getType()));
