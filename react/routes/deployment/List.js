@@ -1,10 +1,11 @@
 import React, { useCallback, Fragment, useState } from 'react';
 import { Page, Content, Header, Permission, Action, Breadcrumb } from '@choerodon/master';
-import { Table, Modal } from 'choerodon-ui/pro';
+import { Table, Modal, Form, Select } from 'choerodon-ui/pro';
 import { Button, Tooltip } from 'choerodon-ui';
 import { FormattedMessage } from 'react-intl';
 import { withRouter } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
+import map from 'lodash/map';
 import { useDeployStore } from './stores';
 import StatusTag from '../../components/status-tag';
 import TimePopover from '../../components/timePopover/TimePopover';
@@ -19,6 +20,7 @@ import PendingCheckModal from './components/pendingCheckModal';
 import './index.less';
 
 const { Column } = Table;
+const { Option } = Select;
 const modalKey1 = Modal.key();
 const modalKey2 = Modal.key();
 const modalKey3 = Modal.key();
@@ -33,6 +35,7 @@ const statusTagsStyle = {
   minWidth: 40,
   marginRight: 8,
 };
+const STATUS = ['success', 'failed', 'deleted', 'pendingcheck', 'stop', 'running'];
 
 const Deployment = withRouter(observer((props) => {
   const {
@@ -46,11 +49,16 @@ const Deployment = withRouter(observer((props) => {
     deployStore,
     pipelineStore,
     manualDeployDs,
+    tableSelectDs,
+    envOptionsDs,
+    pipelineOptionsDs,
   } = useDeployStore();
 
   const [showPendingCheck, serShowPendingCheck] = useState(false);
 
   function refresh() {
+    envOptionsDs.query();
+    pipelineOptionsDs.query();
     listDs.query();
   }
   
@@ -303,9 +311,44 @@ const Deployment = withRouter(observer((props) => {
       </Header>
       <Breadcrumb />
       <Content className={`${prefixCls}-content`}>
+        <div className={`${prefixCls}-content-select`}>
+          <Select
+            dataSet={tableSelectDs}
+            name="env"
+            searchable
+            className={`${prefixCls}-content-select-item`}
+            placeholder={formatMessage({ id: `${intlPrefix}.search.env` })}
+          />
+          <Select
+            dataSet={tableSelectDs}
+            name="deployType"
+            className={`${prefixCls}-content-select-item`}
+            placeholder={formatMessage({ id: `${intlPrefix}.search.type` })}
+          >
+            <Option value="auto">{formatMessage({ id: `${intlPrefix}.auto` })}</Option>
+            <Option value="manual">{formatMessage({ id: `${intlPrefix}.manual` })}</Option>
+          </Select>
+          <Select
+            dataSet={tableSelectDs}
+            name="deployStatus"
+            className={`${prefixCls}-content-select-item`}
+            placeholder={formatMessage({ id: `${intlPrefix}.search.result` })}
+          >
+            {map(STATUS, (item) => (
+              <Option value={item}>{formatMessage({ id: `${intlPrefix}.status.${item}` })}</Option>
+            ))}
+          </Select>
+          <Select
+            dataSet={tableSelectDs}
+            name="pipelineName"
+            searchable
+            className={`${prefixCls}-content-select-item`}
+            placeholder={formatMessage({ id: `${intlPrefix}.search.pipeline` })}
+          />
+        </div>
         <Table
           dataSet={listDs}
-          queryBar="bar"
+          queryBar="none"
           className={`${prefixCls}-table`}
         >
           <Column name="deployId" renderer={renderNumber} align="left" />

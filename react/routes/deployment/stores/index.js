@@ -9,6 +9,7 @@ import useStore from './useStore';
 import usePipelineStore from './usePipelineStore';
 import ManualDeployDataSet from './ManualDeployDataSet';
 import OptionsDataSet from './OptionsDataSet';
+import TableSelectDataSet from './TableSelectDataSet';
 
 const Store = createContext();
 
@@ -31,11 +32,20 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const envOptionsDs = useMemo(() => new DataSet(OptionsDataSet()), []);
     const valueIdOptionsDs = useMemo(() => new DataSet(OptionsDataSet()), []);
     const versionOptionsDs = useMemo(() => new DataSet(OptionsDataSet()), []);
+    const pipelineOptionsDs = useMemo(() => new DataSet(OptionsDataSet()), []);
 
     const listDs = useMemo(() => new DataSet(ListDataSet(intlPrefix, formatMessage, projectId)), [projectId]);
     const pipelineDs = useMemo(() => new DataSet(PipelineDataSet(intlPrefix, formatMessage, projectId)), [projectId]);
     const detailDs = useMemo(() => new DataSet(DetailDataSet()), []);
     const manualDeployDs = useMemo(() => new DataSet(ManualDeployDataSet(intlPrefix, formatMessage, projectId, envOptionsDs, valueIdOptionsDs, versionOptionsDs, deployStore)), [projectId]);
+    const tableSelectDs = useMemo(() => new DataSet(TableSelectDataSet(intlPrefix, formatMessage, envOptionsDs, pipelineOptionsDs, listDs)), []);
+
+    useEffect(() => {
+      envOptionsDs.transport.read.url = `/devops/v1/projects/${projectId}/envs/list_by_active?active=true`;
+      pipelineOptionsDs.transport.read.url = `/devops/v1/projects/${projectId}/pipeline/list_all`;
+      envOptionsDs.query();
+      pipelineOptionsDs.query();
+    }, [projectId]);
 
     const value = {
       ...props,
@@ -47,6 +57,9 @@ export const StoreProvider = injectIntl(inject('AppState')(
       deployStore,
       pipelineStore,
       manualDeployDs,
+      tableSelectDs,
+      envOptionsDs,
+      pipelineOptionsDs,
     };
     return (
       <Store.Provider value={value}>

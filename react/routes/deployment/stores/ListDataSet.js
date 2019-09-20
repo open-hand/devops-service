@@ -4,14 +4,10 @@ export default ((intlPrefix, formatMessage, projectId) => ({
   autoQuery: true,
   selection: false,
   transport: {
-    read: ({ data }) => {
-      const postData = getTablePostData(data);
-
-      return ({
-        url: `/devops/v1/projects/${projectId}/deploy_record/page_by_options`,
-        method: 'post',
-        data: postData,
-      });
+    read: {
+      url: `/devops/v1/projects/${projectId}/deploy_record/page_by_options`,
+      method: 'post',
+      data: getTablePostData(),
     },
   },
   fields: [

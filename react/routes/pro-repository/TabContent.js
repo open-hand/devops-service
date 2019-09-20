@@ -13,7 +13,6 @@ export default observer((props) => {
   return (
     <PageWrap noHeader={[]}>
       <PageTab title={formatMessage({ id: `${intlPrefix}.tab.info.project` })} tabKey="choerodon.code.project.general-info" component={Content} />
-      <PageTab title={formatMessage({ id: `${intlPrefix}.tab.application` })} tabKey="choerodon.code.project.general-application" component={Content} />
       <PageTab title={formatMessage({ id: `${intlPrefix}.tab.repo` })} tabKey="choerodon.code.project.general-repository" component={Content} />
     </PageWrap>
   );

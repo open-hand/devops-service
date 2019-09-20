@@ -146,7 +146,7 @@ const Share = (props) => {
         </Button>
       </HeaderButtons>
       <Breadcrumb title="服务详情" />
-      <Content>
+      <Content className={`${prefixCls}-detail-content`}>
         <Table dataSet={shareDs} filter={handleTableFilter}>
           <Column name="id" renderer={renderNumber} align="left" />
           <Column name="versionType" />
