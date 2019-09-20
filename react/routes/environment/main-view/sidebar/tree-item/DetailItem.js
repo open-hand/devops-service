@@ -23,7 +23,6 @@ function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
   const {
     treeDs,
     AppState: { currentMenuType: { id: projectId } },
-    envStore,
   } = useEnvironmentStore();
   const { mainStore } = useMainStore();
 
@@ -32,9 +31,9 @@ function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
   }
 
   async function handleDelete() {
-    const { getSelectedMenu: { id } } = envStore;
+    const envId = record.get('id');
     try {
-      const res = await mainStore.deleteEnv(projectId, id);
+      const res = await mainStore.deleteEnv(projectId, envId);
       handlePromptError(res);
     } catch (e) {
       Choerodon.handleResponseError(e);
@@ -46,11 +45,11 @@ function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
   function openModifyModal() {
     Modal.open({
       key: formKey,
-      title: formatMessage({ id: `${intlPrefix}.create` }),
+      title: formatMessage({ id: `${intlPrefix}.modify` }),
       children: <EnvModifyForm
         intlPrefix={intlPrefix}
         refresh={refresh}
-        envStore={envStore}
+        record={record}
       />,
       drawer: true,
       style: modalStyle,
@@ -58,9 +57,9 @@ function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
   }
 
   async function handleEffect(target) {
-    const { getSelectedMenu } = envStore;
     try {
-      const res = await mainStore.effectEnv(projectId, getSelectedMenu.id, target);
+      const envId = record.get('id');
+      const res = await mainStore.effectEnv(projectId, envId, target);
       handlePromptError(res);
     } catch (e) {
       Choerodon.handleResponseError(e);
@@ -70,12 +69,12 @@ function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
   }
 
   async function openEffectModal() {
-    const { id } = envStore.getSelectedMenu;
     let children;
     let title;
     let disabled = true;
+    const envId = record.get('id');
     try {
-      const res = await mainStore.checkEffect(projectId, id);
+      const res = await mainStore.checkEffect(projectId, envId);
       if (handlePromptError(res)) {
         title = '确认停用';
         children = '当你点击确认后，该环境将被停用！';
@@ -109,7 +108,6 @@ function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
     const failed = record.get('failed');
     const synchronize = record.get('synchro');
     const active = record.get('active');
-
     return {
       connect,
       failed,

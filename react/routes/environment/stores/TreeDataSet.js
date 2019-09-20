@@ -44,12 +44,16 @@ function formatTreeData({ data, expandedKeys, formatMessage, intlPrefix }) {
   return result;
 }
 
-function handleSelect(record, store, previous) {
+function handleSelect({ record, store, previous, dataSet }) {
   if (record) {
     const itemType = record.get('itemType');
     const synchro = record.get('synchro');
     const failed = record.get('failed');
-    if (itemType === GROUP_ITEM || (synchro && !failed)) {
+    if (itemType === GROUP_ITEM) {
+      const data = record.toData();
+      store.setSelectedMenu(data);
+      dataSet.query();
+    } else if (synchro && !failed) {
       const data = record.toData();
       store.setSelectedMenu(data);
     } else {
@@ -71,8 +75,8 @@ export default (projectId, store, formatMessage, intlPrefix) => ({
   expandField: 'expand',
   idField: 'key',
   events: {
-    select: ({ record, previous }) => {
-      handleSelect(record, store, previous);
+    select: ({ dataSet, record, previous }) => {
+      handleSelect({ record, store, previous, dataSet });
     },
     unSelect: ({ record }) => {
       record.isSelected = true;

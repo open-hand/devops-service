@@ -101,7 +101,6 @@ const Group = observer(() => {
         record={record}
         intlPrefix={intlPrefix}
         refresh={refresh}
-        envStore={envStore}
       />,
       drawer: true,
       style: modalStyle,
