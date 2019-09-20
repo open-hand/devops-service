@@ -71,6 +71,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
       podsDs,
       istStore,
       detailsStore,
+      intlPrefix,
       instanceId: id,
       envId: parentId.split('-')[0],
       treeDs,

@@ -6,6 +6,7 @@ import flatten from 'lodash/flatten';
 import map from 'lodash/map';
 import { Header, Permission } from '@choerodon/master';
 import { Button } from 'choerodon-ui/pro';
+import { Divider } from 'choerodon-ui';
 
 import './index.less';
 
@@ -15,8 +16,8 @@ const HeaderButtons = ({ items, children }) => {
   const displayBtn = useMemo(() => items.filter(({ display }) => display), [items]);
 
   const btnNodes = useMemo(() => {
-    const btnGroups = map(groupBy(displayBtn, 'group'), (value, index) => {
-      const Split = <div key={index} className="c7ncd-header-split" />;
+    const btnGroups = map(groupBy(displayBtn, 'group'), (value) => {
+      const Split = <Divider type="vertical" className="c7ncd-header-split" />;
 
       const btns = map(value, ({ name, handler, permissions, display, ...props }) => {
         const btn = <Button

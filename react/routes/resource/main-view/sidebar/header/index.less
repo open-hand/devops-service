@@ -1,23 +1,42 @@
 @import '~choerodon-ui/lib/style/themes/default';
 
 .c7ncd-deployment-sidebar-head {
-  height: 43px;
+  height: .42rem;
 
-  .c7ncd-deployment-sidebar-drop {
-    padding: 6px 0;
+  .c7ncd-deployment-sidebar-box {
+    padding: .1rem 0 0;
     width: 100%;
+    text-align: center;
 
-    .@{c7n-pro-prefix}-select {
-      display: block;
-      border: none;
-      cursor: pointer;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+    .c7ncd-deployment-sidebar-option {
+      display: inline-block;
+      vertical-align: middle;
+      margin-left: .02rem;
+      line-height: 1;
+      font-weight: 500;
     }
 
-    .@{c7n-pro-prefix}-select-trigger {
-      font-size: 20px;
+    .@{c7n-pro-prefix}-select-box {
+      height: .3rem;
+
+      .@{c7n-pro-prefix}-radio-inner {
+        border: none !important;
+      }
+
+      .@{c7n-pro-prefix}-radio-label {
+        color: @primary-color;
+      }
+
+      .@{c7n-pro-prefix}-radio {
+        &:checked + .@{c7n-pro-prefix}-radio-inner {
+          background: @primary-color;
+
+          & + span {
+            color: #fff !important;
+            z-index: 1;
+          }
+        }
+      }
     }
   }
 }

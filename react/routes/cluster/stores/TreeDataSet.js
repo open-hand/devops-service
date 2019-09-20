@@ -17,7 +17,7 @@ function formatCluster(value, expandsKeys) {
       let key;
       let peerNode = null;
       if (Object.prototype.toString.call(node) !== '[object String]') {
-        peerNode = omit(node, ['nodes']); 
+        peerNode = omit(node, ['nodes']);
         key = prevKey ? `${prevKey}-${node.id}` : String(node.id);
       } else {
         key = prevKey ? `${prevKey}-${node}` : String(node);
@@ -79,28 +79,25 @@ export default (store, type) => {
         handleSelect(record, store);
       },
       unSelect: ({ record }) => {
-        // 禁用取消选中
-        // 实际上依然会取消只是又重新选中
         record.isSelected = true;
       },
       load: ({ dataSet }) => {
         const record = dataSet.current;
-        // record.ready();
-        // record &&
         handleSelect(record, store);
       },
     },
     transport: {
       read: {
         method: 'get',
-        // TODO: 让后端返回需要的数据，前端不再做处理
-        //   或者添加加载错误处理
         transformResponse(response) {
           try {
             const res = JSON.parse(response);
-            const expandsKeys = store.getExpandedKeys;
-            const result = formatMaps[type](res, expandsKeys);
-            return result;
+            if (res && res.failed) {
+              return res;
+            } else {
+              const expandsKeys = store.getExpandedKeys;
+              return formatMaps[type](res, expandsKeys);
+            }
           } catch (e) {
             return response;
           }

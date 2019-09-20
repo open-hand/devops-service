@@ -345,6 +345,7 @@ export default class Details extends Component {
       detailsStore: {
         getLoading,
       },
+      intlPrefix,
     } = this.context;
     const { visible } = this.state;
 
@@ -387,11 +388,11 @@ export default class Details extends Component {
               </div>
               {main}
             </Fragment> : null))}
-            {!hasContent ? (
+            {!hasContent && (
               <div className="c7n-deploy-expanded-empty">
-                <FormattedMessage id="ist.expand.empty" />
+                <FormattedMessage id={`${intlPrefix}.instance.detail.empty`} />
               </div>
-            ) : null}
+            )}
           </div>
         </Spin>
         {visible && <DetailsSidebar
