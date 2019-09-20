@@ -7,6 +7,7 @@ import { removeEndsChar } from '../../../../../utils';
 import { useResourceStore } from '../../../stores';
 import { useCustomDetailStore } from './stores';
 import Modals from './modals';
+import ResourceTitle from '../../components/resource-title';
 
 import './index.less';
 
@@ -81,15 +82,7 @@ const Content = observer(() => {
 
   function getTitle() {
     const record = detailDs.current;
-    return record ? <Fragment>
-      <div className={`${prefixCls}-detail-content-title`}>
-        <Icon type="filter_b_and_w" className={`${prefixCls}-detail-content-title-icon`} />
-        <span>{record.get('name')}</span>
-      </div>
-      <div className={`${prefixCls}-detail-content-section-title`}>
-        <span>Description</span>
-      </div>
-    </Fragment> : null;
+    return record ? <ResourceTitle iconType="filter_b_and_w" record={record} statusKey="commandStatus" errorKey="commandErrors" /> : null;
   }
   return (
     <div className={`${prefixCls}-custom-detail`}>

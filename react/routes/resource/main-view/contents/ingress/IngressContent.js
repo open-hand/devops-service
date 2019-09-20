@@ -2,20 +2,15 @@ import React, { Fragment, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import { Action } from '@choerodon/master';
-import {
-  Tooltip,
-  Icon,
-  Popover,
-} from 'choerodon-ui';
 import { Table } from 'choerodon-ui/pro';
 import map from 'lodash/map';
-import classnames from 'classnames';
 import StatusIcon from '../../../../../components/StatusIcon';
+import StatusTags from '../../../../../components/status-tag';
+
 import { useResourceStore } from '../../../stores';
 import { useIngressStore } from './stores';
 import Modals from './modals';
 import MouserOverWrapper from '../../../../../components/MouseOverWrapper';
-import StatusTags from '../../../../../components/status-tag';
 import DomainModal from '../application/modals/domain';
 import { useMainStore } from '../../stores';
 
@@ -52,13 +47,24 @@ const IngressContent = observer(() => {
     ingressDs.query();
   }
 
-  function renderName({ value, record }) {
+  function renderName({ record }) {
+    const name = record.get('name');
+    const status = record.get('status');
+    const error = record.get('error');
+    const commandStatus = record.get('commandStatus');
     return (
-      <StatusIcon
-        name={value}
-        status={record.get('commandStatus') || ''}
-        error={record.get('error') || ''}
-      />
+      <Fragment>
+        <StatusTags
+          name={formatMessage({ id: commandStatus || 'null' })}
+          colorCode={commandStatus || 'success'}
+          style={{ minWidth: 40, marginRight: '0.08rem', height: '0.16rem', lineHeight: '0.16rem' }}
+        />
+        <StatusIcon
+          name={name}
+          status={status || ''}
+          error={error || ''}
+        />
+      </Fragment>
     );
   }
 
@@ -96,6 +102,10 @@ const IngressContent = observer(() => {
   }
 
   function renderAction({ record }) {
+    const commandStatus = record.get('commandStatus');
+    if (commandStatus === 'operating') {
+      return null;
+    }
     const buttons = [
       {
         service: [],

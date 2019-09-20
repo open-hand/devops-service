@@ -11,6 +11,8 @@ import { Table } from 'choerodon-ui/pro';
 import _ from 'lodash';
 import classnames from 'classnames';
 import StatusIcon from '../../../../../components/StatusIcon';
+import StatusTags from '../../../../../components/status-tag';
+
 import { useResourceStore } from '../../../stores';
 import { useNetworkStore } from './stores';
 import Modals from './modals';
@@ -48,13 +50,20 @@ const NetworkContent = observer(() => {
     const name = record.get('name');
     const status = record.get('status');
     const error = record.get('error');
-
+    const commandStatus = record.get('commandStatus');
     return (
-      <StatusIcon
-        name={name}
-        status={status || ''}
-        error={error || ''}
-      />
+      <div>
+        <StatusTags
+          name={formatMessage({ id: commandStatus || 'null' })}
+          colorCode={commandStatus || 'success'}
+          style={{ minWidth: 40, marginRight: '0.08rem', height: '0.16rem', lineHeight: '0.16rem' }}
+        />
+        <StatusIcon
+          name={name}
+          status={status || ''}
+          error={error || ''}
+        />
+      </div>
     );
   }
 
@@ -241,7 +250,11 @@ const NetworkContent = observer(() => {
     );
   }
 
-  function renderAction() {
+  function renderAction({ record }) {
+    const commandStatus = record.get('commandStatus');
+    if (commandStatus === 'operating') {
+      return null;
+    }
     const buttons = [
       {
         service: [],

@@ -1,13 +1,14 @@
 import React from 'react';
 import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
-import { Icon } from 'choerodon-ui';
+import { Icon, Tooltip } from 'choerodon-ui';
 import { useResourceStore } from '../../../stores';
 import { useNetworkDetailStore } from './stores';
 import Modals from './modals';
 import PortsList from './PortsList';
 import LoadList from './LoadList';
 import PodList from './PodList';
+import ResourceTitle from '../../components/resource-title';
 
 import './index.less';
 
@@ -28,10 +29,7 @@ const ServiceDetail = observer(() => {
   return (
     <div className={`${prefixCls}-service-detail`}>
       <Modals />
-      <div className={`${prefixCls}-detail-content-title`}>
-        <Icon type="router" className={`${prefixCls}-detail-content-title-icon`} />
-        <span>{record && record.get('name')}</span>
-      </div>
+      <ResourceTitle iconType="router" record={record} />
       <ul className={`${prefixCls}-service-detail-content`}>
         <li><PortsList /></li>
         <li><LoadList /></li>

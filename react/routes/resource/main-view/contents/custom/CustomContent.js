@@ -10,6 +10,8 @@ import { useCustomStore } from './stores';
 import Modals from './modals';
 import CustomForm from './modals/form-view';
 import { useMainStore } from '../../stores';
+import StatusTags from '../../../../../components/status-tag';
+
 
 import './index.less';
 
@@ -36,12 +38,21 @@ const CustomContent = observer(() => {
   }
 
   function renderName({ value, record }) {
+    const commandStatus = record.get('commandStatus');
     return (
-      <StatusIcon
-        status={record.get('commandStatus')}
-        name={value}
-        error={record.get('commandErrors')}
-      />
+      <Fragment>
+        <StatusTags
+          name={formatMessage({ id: commandStatus || 'null' })}
+          colorCode={commandStatus || 'success'}
+          style={{ minWidth: 40, marginRight: '0.08rem', height: '0.16rem', lineHeight: '0.16rem' }}
+        />
+        <StatusIcon
+          status={commandStatus}
+          name={value}
+          error={record.get('commandErrors')}
+        />
+      </Fragment>
+      
     );
   }
 
@@ -49,7 +60,11 @@ const CustomContent = observer(() => {
     return <TimePopover content={value} />;
   }
 
-  function renderAction() {
+  function renderAction({ record }) {
+    const commandStatus = record.get('commandStatus');
+    if (commandStatus === 'operating') {
+      return null;
+    }
     const buttons = [
       {
         service: [],
