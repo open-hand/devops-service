@@ -14,10 +14,14 @@
     dcr.created_by,
     dcr.last_update_date,
     dcr.creation_date,
-    dcr.last_updated_by
+    dcr.last_updated_by,
+    cmd.status AS command_status,
+    cmd.error,
+    cmd.command_type
 FROM
 	devops_customize_resource dcr
 	LEFT JOIN devops_customize_resource_content dcrc ON dcr.content_id = dcrc.id
+    LEFT JOIN devops_env_command cmd ON dcr.command_id = cmd.id
 	where dcr.id = #{resourceId}
     </select>
 
@@ -31,8 +35,9 @@ FROM
         dcr.`name`,
         dcr.last_update_date,
         dc.id commandId,
-        dc.`status` commandStatus,
-        dc.error commandError
+        dc.`status` command_status,
+        dc.command_type,
+        dc.error
         FROM
         devops_customize_resource dcr
         LEFT JOIN devops_env_command dc ON dcr.command_id = dc.id

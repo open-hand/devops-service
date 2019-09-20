@@ -29,7 +29,9 @@ public class DevopsCustomizeResourceDTO extends BaseDTO {
     @Transient
     private String commandStatus;
     @Transient
-    private String commandError;
+    private String error;
+    @Transient
+    private String commandType;
     @Transient
     private String resourceContent;
 
@@ -126,12 +128,12 @@ public class DevopsCustomizeResourceDTO extends BaseDTO {
         this.commandStatus = commandStatus;
     }
 
-    public String getCommandError() {
-        return commandError;
+    public String getError() {
+        return error;
     }
 
-    public void setCommandError(String commandError) {
-        this.commandError = commandError;
+    public void setError(String error) {
+        this.error = error;
     }
 
     public String getFilePath() {
@@ -150,6 +152,13 @@ public class DevopsCustomizeResourceDTO extends BaseDTO {
         this.resourceContent = resourceContent;
     }
 
+    public String getCommandType() {
+        return commandType;
+    }
+
+    public void setCommandType(String commandType) {
+        this.commandType = commandType;
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -163,6 +172,6 @@ public class DevopsCustomizeResourceDTO extends BaseDTO {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, projectId, envId, contentId, commandId, k8sKind, name, filePath, description, commandStatus, commandError, resourceContent);
+        return Objects.hash(id, projectId, envId, contentId, commandId, k8sKind, name, filePath, description, commandStatus, error, resourceContent);
     }
 }
