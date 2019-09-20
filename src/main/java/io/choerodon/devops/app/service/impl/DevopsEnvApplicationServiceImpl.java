@@ -7,6 +7,14 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import io.kubernetes.client.JSON;
+import io.kubernetes.client.models.V1Container;
+import io.kubernetes.client.models.V1ContainerPort;
+import io.kubernetes.client.models.V1beta2Deployment;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.iam.DevopsEnvMessageVO;
@@ -15,14 +23,6 @@ import io.choerodon.devops.app.service.DevopsEnvApplicationService;
 import io.choerodon.devops.infra.dto.DevopsEnvAppServiceDTO;
 import io.choerodon.devops.infra.mapper.DevopsEnvAppServiceMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
-
-import io.kubernetes.client.JSON;
-import io.kubernetes.client.models.V1Container;
-import io.kubernetes.client.models.V1ContainerPort;
-import io.kubernetes.client.models.V1beta2Deployment;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author lizongwei
@@ -51,8 +51,32 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void delete(Long envId, Long appServiceId) {
-        DevopsEnvAppServiceDTO devopsEnvAppServiceDTO = new DevopsEnvAppServiceDTO(appServiceId, envId);
-        devopsEnvAppServiceMapper.delete(devopsEnvAppServiceDTO);
+        DevopsEnvAppServiceDTO searchCondition = new DevopsEnvAppServiceDTO(appServiceId, envId);
+        DevopsEnvAppServiceDTO recordInDb = devopsEnvAppServiceMapper.selectOne(searchCondition);
+        if (recordInDb == null) {
+            return;
+        }
+
+        if (!checkCanDelete(envId, appServiceId)) {
+            throw new CommonException("error.delete.env.app-service.relationship");
+        }
+
+        devopsEnvAppServiceMapper.delete(searchCondition);
+    }
+
+    /**
+     * 删除环境和应用服务之间的关联关系时，应用服务在该环境下不能有实例和相关资源
+     *
+     * @param envId        环境id
+     * @param appServiceId 应用服务id
+     * @return true 可以删除
+     */
+    private boolean checkCanDelete(Long envId, Long appServiceId) {
+        return devopsEnvAppServiceMapper.countInstances(appServiceId, envId) == 0 &&
+                devopsEnvAppServiceMapper.countRelatedConfigMap(appServiceId, envId) == 0 &&
+                devopsEnvAppServiceMapper.countRelatedIngress(appServiceId, envId) == 0 &&
+                devopsEnvAppServiceMapper.countRelatedSecret(appServiceId, envId) == 0 &&
+                devopsEnvAppServiceMapper.countRelatedService(appServiceId, envId) == 0;
     }
 
     @Override

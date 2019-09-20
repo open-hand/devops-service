@@ -45,4 +45,44 @@
           AND app_service.is_synchro = TRUE
           AND related_app.app_service_id IS NULL;
     </select>
+
+    <select id="countInstances" resultType="int">
+        SELECT COUNT(1)
+        FROM devops_app_service_instance dasi
+        WHERE dasi.env_id = #{envId} AND dasi.app_service_id = #{appServiceId}
+    </select>
+
+    <select id="countRelatedService" resultType="int">
+        SELECT COUNT(1)
+        FROM devops_app_service_resource dasr
+        LEFT JOIN devops_service ds ON dasr.resource_id = ds.id AND dasr.resource_type = 'service'
+        WHERE dasr.app_service_id = #{appServiceId}
+        AND ds.env_id = #{envId}
+    </select>
+
+
+    <select id="countRelatedSecret" resultType="int">
+        SELECT COUNT(1)
+        FROM devops_app_service_resource dasr
+        LEFT JOIN devops_secret ds ON dasr.resource_id = ds.id AND dasr.resource_type = 'secret'
+        WHERE dasr.app_service_id = #{appServiceId}
+        AND ds.env_id = #{envId}
+    </select>
+
+
+    <select id="countRelatedIngress" resultType="int">
+        SELECT COUNT(1)
+        FROM devops_app_service_resource dasr
+        LEFT JOIN devops_ingress di ON dasr.resource_id = di.id AND dasr.resource_type = 'ingress'
+        WHERE dasr.app_service_id = #{appServiceId}
+        AND di.env_id = #{envId}
+    </select>
+
+    <select id="countRelatedConfigMap" resultType="int">
+        SELECT COUNT(1)
+        FROM devops_app_service_resource dasr
+        LEFT JOIN devops_config_map dcm ON dasr.resource_id = dcm.id AND dasr.resource_type = 'configMap'
+        WHERE dasr.app_service_id = #{appServiceId}
+        AND dcm.env_id = #{envId}
+    </select>
 </mapper>

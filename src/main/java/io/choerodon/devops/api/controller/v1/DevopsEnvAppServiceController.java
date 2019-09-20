@@ -53,7 +53,7 @@ public class DevopsEnvAppServiceController {
     }
 
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "删除指定环境关联的多个服务")
+    @ApiOperation(value = "删除指定环境关联的服务")
     @DeleteMapping
     public ResponseEntity delete(
             @ApiParam(value = "环境Id", required = true)
