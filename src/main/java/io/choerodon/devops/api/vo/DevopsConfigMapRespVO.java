@@ -11,6 +11,7 @@ public class DevopsConfigMapRespVO extends DevopsResourceDataInfoVO {
     private String commandStatus;
     private String envCode;
     private String commandType;
+    private String error;
     private Boolean envStatus;
     private String name;
     private List<String> key;
@@ -103,5 +104,13 @@ public class DevopsConfigMapRespVO extends DevopsResourceDataInfoVO {
 
     public void setEnvCode(String envCode) {
         this.envCode = envCode;
+    }
+
+    public String getError() {
+        return error;
+    }
+
+    public void setError(String error) {
+        this.error = error;
     }
 }

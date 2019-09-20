@@ -26,6 +26,8 @@ public class DevopsConfigMapDTO extends BaseDTO {
     @Transient
     private String commandStatus;
     @Transient
+    private String error;
+    @Transient
     private List<String> key;
 
     public List<String> getKey() {
@@ -106,6 +108,14 @@ public class DevopsConfigMapDTO extends BaseDTO {
 
     public void setCommandType(String commandType) {
         this.commandType = commandType;
+    }
+
+    public String getError() {
+        return error;
+    }
+
+    public void setError(String error) {
+        this.error = error;
     }
 }
 
