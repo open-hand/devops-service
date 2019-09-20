@@ -194,6 +194,8 @@ export default class CertificateCreate extends Component {
       pattern = /^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*)$/;
     }
 
+    if (!value) callback();
+
     if (pattern.test(value)) {
       if (this.isUniqCheck(value)) {
         callback();
@@ -405,7 +407,7 @@ export default class CertificateCreate extends Component {
         className="creation-panel-group c7n-form-domains"
       >
         <FormItem
-          className="creation-form-item"
+          className="creation-form-item c7ncd-certificate-form-domain"
           {...formItemLayout}
         >
           {getFieldDecorator(`domains[${k}]`, {
@@ -448,7 +450,7 @@ export default class CertificateCreate extends Component {
           title={<FormattedMessage id="ctf.sidebar.create" />}
           visible={visible}
           onOk={this.handleSubmit}
-          onCancel={this.handleClose}
+          onCancel={this.handleClose.bind(this, false)}
           confirmLoading={submitting}
           maskClosable={false}
           width={380}

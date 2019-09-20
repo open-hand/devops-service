@@ -20,6 +20,7 @@ const ProRepository = withRouter(observer((props) => {
     AppState: { currentMenuType: { id } },
     intlPrefix,
     prefixCls,
+    permissions,
     homeDs,
     detailDs,
     repositoryStore,
@@ -52,11 +53,7 @@ const ProRepository = withRouter(observer((props) => {
 
   return (
     <TabPage
-      service={[
-        'devops-service.devops-project-config.queryProjectDefaultConfig',
-        'devops-service.devops-project-config.create',
-        'devops-service.devops-project-config.query',
-      ]}
+      service={permissions}
     >
       <Header>
         <Permission

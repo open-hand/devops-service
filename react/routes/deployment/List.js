@@ -43,6 +43,7 @@ const Deployment = withRouter(observer((props) => {
     AppState: { currentMenuType: { id } },
     intlPrefix,
     prefixCls,
+    permissions,
     listDs,
     pipelineDs,
     detailDs,
@@ -267,19 +268,13 @@ const Deployment = withRouter(observer((props) => {
   }
 
   function closePendingCheck(isLoad) {
+    serShowPendingCheck(false);
     isLoad && refresh();
   }
 
   return (
     <Page
-      service={[
-        'devops-service.devops-deploy-record.pageByOptions',
-        'devops-service.app-service-instance.deploy',
-        'devops-service.pipeline.batchExecute',
-        'devops-service.pipeline.audit',
-        'devops-service.pipeline.retry',
-        'devops-service.pipeline.failed',
-      ]}
+      service={permissions}
     >
       <Header title={<FormattedMessage id="app.head" />}>
         <Permission

@@ -29,6 +29,7 @@ const AppService = withRouter(observer((props) => {
     AppState: { currentMenuType: { id } },
     intlPrefix,
     prefixCls,
+    permissions,
     listDs,
     allProjectDs,
     permissionProjectDs,
@@ -120,16 +121,7 @@ const AppService = withRouter(observer((props) => {
 
   return (
     <Page
-      service={[
-        'devops-service.project-certification.pageOrgCert',
-        'devops-service.project-certification.createOrUpdate',
-        'devops-service.project-certification.query',
-        'devops-service.project-certification.deleteOrgCert',
-        'devops-service.project-certification.assignPermission',
-        'devops-service.project-certification.deletePermissionOfProject',
-        'devops-service.project-certification.pageRelatedProjects',
-        'devops-service.project-certification.listAllNonRelatedMembers',
-      ]}
+      service={permissions}
     >
       <Header title={<FormattedMessage id="app.head" />}>
         <Permission

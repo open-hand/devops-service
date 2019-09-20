@@ -34,6 +34,16 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const value = {
       ...props,
       prefixCls: 'c7ncd-certificate',
+      permissions: [
+        'devops-service.project-certification.pageOrgCert',
+        'devops-service.project-certification.createOrUpdate',
+        'devops-service.project-certification.query',
+        'devops-service.project-certification.deleteOrgCert',
+        'devops-service.project-certification.assignPermission',
+        'devops-service.project-certification.deletePermissionOfProject',
+        'devops-service.project-certification.pageRelatedProjects',
+        'devops-service.project-certification.listAllNonRelatedMembers',
+      ],
       intlPrefix,
       listDs,
       allProjectDs,
