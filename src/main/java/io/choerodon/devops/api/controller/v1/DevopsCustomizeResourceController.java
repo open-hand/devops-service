@@ -40,7 +40,7 @@ public class DevopsCustomizeResourceController {
     private DevopsCustomizeResourceService devopsCustomizeResourceService;
 
     /**
-     * 创建其他k8s资源
+     * 创建或更新其他k8s资源
      *
      * @param projectId   项目id
      * @param contentFile 内容文件
@@ -58,33 +58,8 @@ public class DevopsCustomizeResourceController {
         if (bindingResult.hasErrors()) {
             throw new CommonException(Objects.requireNonNull(bindingResult.getFieldError()).getDefaultMessage());
         }
-        devopsCustomizeResourceReqVO.setType("create");
         devopsCustomizeResourceService.createOrUpdateResource(projectId, devopsCustomizeResourceReqVO, contentFile);
-        return new ResponseEntity(HttpStatus.CREATED);
-    }
-
-    /**
-     * 更新其他k8s资源
-     *
-     * @param projectId   项目id
-     * @param contentFile 内容文件
-     * @return 201状态码
-     */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
-            InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "更新其他k8s资源")
-    @PutMapping
-    public ResponseEntity updateResource(@PathVariable(value = "project_id") Long projectId,
-                                         @ModelAttribute @Valid DevopsCustomizeResourceUpdateVO devopsCustomizeResourceUpdateVO,
-                                         BindingResult bindingResult,
-                                         @RequestParam(value = "contentFile", required = false) MultipartFile contentFile) {
-        // 底层不能捕获BindException异常，所以这里手动处理抛出CommonException
-        if (bindingResult.hasErrors()) {
-            throw new CommonException(Objects.requireNonNull(bindingResult.getFieldError()).getDefaultMessage());
-        }
-        devopsCustomizeResourceUpdateVO.setType("update");
-        devopsCustomizeResourceService.createOrUpdateResource(projectId, ConvertUtils.convertObject(devopsCustomizeResourceUpdateVO, DevopsCustomizeResourceReqVO.class), contentFile);
-        return new ResponseEntity(HttpStatus.CREATED);
+        return new ResponseEntity(HttpStatus.OK);
     }
 
     /**
