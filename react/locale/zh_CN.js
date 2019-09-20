@@ -245,12 +245,14 @@ const deployment = {
   'c7ncd.deployment.instance.status.failed.upgrade.describe': '变更至版本{version}失败',
   'c7ncd.deployment.instance.status.stopped': '已停用',
   'c7ncd.deployment.instance.status.deleted': '已删除',
-  'c7ncd.deployment.instance.cases.empty': '暂无实例事件',
   'c7ncd.deployment.instance.cases.record': '操作记录',
   'c7ncd.deployment.instance.cases.result': '部署结果',
   'c7ncd.deployment.instance.cases.time': '部署时间',
   'c7ncd.deployment.instance.cases.operator': '操作人员',
+  'c7ncd.deployment.instance.cases.empty': '暂无实例事件。',
+  'c7ncd.deployment.instance.cases.none': '暂无该条操作记录的详情。',
   'c7ncd.deployment.instance.cases.ignore': '当前仅保留最近4条操作记录的详情。',
+  'c7ncd.deployment.instance.detail.empty': '暂无部署详细信息。',
   'c7ncd.deployment.instance.cases.log': '查看日志详情',
   'c7ncd.deployment.instance.cases.create': '部署实例',
   'c7ncd.deployment.instance.cases.update': '更新实例',
@@ -916,7 +918,7 @@ const pageDetail = {
   'configMap.create.link': `${docServer}/user-guide/deployment-pipeline/config-map/`,
   'configMap.help.tooltip':
     '您可粘贴多行“键=值”格式的字段至任何键框中，以便于批量输入键值对。',
-  
+
   // 密文
   'secret.title': '环境"{name}"的密文',
   'secret.create.title': '在项目"{name}"中创建密文',
@@ -1116,7 +1118,7 @@ const zhCN = {
   'ist.expand.stop.title': '停止Deployment {name}',
   'ist.expand.stop.describe': '确认停止该 Deployment 吗？',
   'ist.expand.name': '名称',
-  'ist.expand.empty': '暂无部署详细信息',
+  'ist.expand.empty': '暂无部署详细信息。',
   'ist.expand.link': '点击查看详情',
   'ist.expand.date': '更新时间',
   'ist.expand.net.type': '类型',

@@ -33,7 +33,7 @@ const HeaderAction = memo(({ menuClick, items, placement, style, buttonStyle }) 
       overlay={getMenuItem()}
     >
       <Button
-        style={{ color: '#000', ...buttonStyle }}
+        style={{ ...buttonStyle }}
         size="small"
         shape="circle"
         funcType="flat"

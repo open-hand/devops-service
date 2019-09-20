@@ -127,8 +127,12 @@ export default ({ store, type, projectId, formatMessage }) => {
         transformResponse(response) {
           try {
             const data = JSON.parse(response);
-            const expandsKeys = store.getExpandedKeys;
-            return formatMaps[type]({ value: data, expandsKeys, formatMessage });
+            if (data && data.failed) {
+              return data;
+            } else {
+              const expandsKeys = store.getExpandedKeys;
+              return formatMaps[type]({ value: data, expandsKeys, formatMessage });
+            }
           } catch (e) {
             return response;
           }

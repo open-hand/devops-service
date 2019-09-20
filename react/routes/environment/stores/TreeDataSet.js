@@ -87,16 +87,20 @@ export default (projectId, store, formatMessage, intlPrefix) => ({
           const expandedKeys = store.getExpandedKeys;
           const groups = JSON.parse(response);
 
-          if (groups[0] && groups[0].devopsEnvGroupId) {
-            const defaultGroup = remove(groups, ({ devopsEnvGroupId }) => !devopsEnvGroupId);
-            groups.unshift(...defaultGroup);
+          if (groups && groups.failed) {
+            return groups;
+          } else {
+            if (groups[0] && groups[0].devopsEnvGroupId) {
+              const defaultGroup = remove(groups, ({ devopsEnvGroupId }) => !devopsEnvGroupId);
+              groups.unshift(...defaultGroup);
+            }
+            return formatTreeData({
+              data: groups,
+              expandedKeys,
+              intlPrefix,
+              formatMessage,
+            });
           }
-          return formatTreeData({
-            data: groups,
-            expandedKeys,
-            intlPrefix,
-            formatMessage,
-          });
         } catch (e) {
           return response;
         }

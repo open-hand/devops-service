@@ -1,4 +1,4 @@
-import React, { Fragment, useState, useCallback, useEffect } from 'react';
+import React, { Fragment, useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { FormattedMessage } from 'react-intl';
 import { Tooltip, Icon, Progress, Modal } from 'choerodon-ui/pro';
@@ -117,7 +117,11 @@ const Cases = observer(() => {
   }
 
   function istEventDom(data) {
-    if (ignore) return formatMessage({ id: `${intlPrefix}.instance.cases.ignore` });
+    if (ignore) {
+      return <div className={`${prefixCls}-instance-cases-empty`}>
+        {formatMessage({ id: `${intlPrefix}.instance.cases.ignore` })}
+      </div>;
+    }
 
     const podEventVO = data.get('podEventVO');
     const events = _.map(podEventVO, ({ name, log, event, jobPodStatus }, index) => {
@@ -126,9 +130,10 @@ const Cases = observer(() => {
       return <InstanceEvent {...eventData} />;
     });
 
-    return events.length ? events : <div>无操作记录详情。</div>;
+    return events.length ? events : <div className={`${prefixCls}-instance-cases-empty`}>
+      {formatMessage({ id: `${intlPrefix}.instance.cases.none` })}
+    </div>;
   }
-
 
   function getContent() {
     const record = casesDs.data;

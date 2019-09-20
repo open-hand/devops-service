@@ -3,12 +3,22 @@
 .c7ncd-draggers {
   &-gun {
     position: absolute;
-    left: .025rem;
-    font-weight: bold;
-    color: #7a869a;
-    height: .24rem;
-    line-height: .24rem;
+    left: .08rem;
+    width: .03rem;
+    height: .32rem;
+    line-height: .32rem;
     background: #fff;
+
+    &::after {
+      content: ' ';
+      position: absolute;
+      top: .1rem;
+      right: 1px;
+      height: .12rem;
+      width: 0;
+      color: #7a869a;
+      border: 1px solid;
+    }
   }
 
   &-blocker {

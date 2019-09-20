@@ -1,11 +1,11 @@
 import React from 'react';
 import { runInAction } from 'mobx';
-import { Select } from 'choerodon-ui/pro';
+import { SelectBox, Icon } from 'choerodon-ui/pro';
 import { useResourceStore } from '../../../stores';
 
 import './index.less';
 
-const { Option } = Select;
+const { Option } = SelectBox;
 
 const SidebarHeader = () => {
   const {
@@ -29,20 +29,21 @@ const SidebarHeader = () => {
   }
 
   return <div className={`${prefixCls}-sidebar-head`}>
-    <Select
-      className={`${prefixCls}-sidebar-drop`}
-      dropdownMatchSelectWidth
+    <SelectBox
+      mode="button"
+      className={`${prefixCls}-sidebar-box`}
       onChange={handleChoose}
       value={resourceStore.getViewType}
-      clearButton={false}
     >
       <Option value={IST_VIEW_TYPE} key={IST_VIEW_TYPE}>
-        {formatMessage({ id: `${intlPrefix}.viewer.${IST_VIEW_TYPE}` })}
+        <Icon type="instance_outline" />
+        <span className={`${prefixCls}-sidebar-option`}>{formatMessage({ id: `${intlPrefix}.viewer.${IST_VIEW_TYPE}` })}</span>
       </Option>,
       <Option value={RES_VIEW_TYPE} key={RES_VIEW_TYPE}>
-        {formatMessage({ id: `${intlPrefix}.viewer.${RES_VIEW_TYPE}` })}
+        <Icon type="folder_open" />
+        <span className={`${prefixCls}-sidebar-option`}>{formatMessage({ id: `${intlPrefix}.viewer.${RES_VIEW_TYPE}` })}</span>
       </Option>,
-    </Select>
+    </SelectBox>
   </div>;
 };
 
