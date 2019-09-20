@@ -76,7 +76,11 @@ const ConfigMap = observer((props) => {
     return <TimePopover content={value} />;
   }
 
-  function renderAction() {
+  function renderAction({ record }) {
+    const commandStatus = record.get('commandStatus');
+    if (commandStatus === 'operating') {
+      return null;
+    }
     const buttons = [
       {
         service: permissions.edit,

@@ -7,6 +7,8 @@ import { useResourceStore } from '../../../stores';
 import { useMainStore } from '../../stores/index';
 import { useSecretDetailStore } from './stores'; 
 import Modals from './modals';
+import ResourceTitle from '../../components/resource-title';
+
 
 import './index.less';
 
@@ -32,10 +34,7 @@ const Content = observer(() => {
   return (
     <div className={`${prefixCls}-secret-detail`}>
       <Modals />
-      <div className={`${prefixCls}-detail-content-title`}>
-        <Icon type="vpn_key" className={`${prefixCls}-detail-content-title-icon`} />
-        <span>{record.get('name')}</span>
-      </div>
+      <ResourceTitle iconType="vpn_key" record={record} statusKey="commandStatus" errorKey="commandErrors" />
       <div className={`${prefixCls}-detail-content-section-title`}>
         <FormattedMessage id={`${intlPrefix}.key.value`} />
       </div>

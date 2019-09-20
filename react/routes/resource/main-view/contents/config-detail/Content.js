@@ -6,6 +6,8 @@ import map from 'lodash/map';
 import { useResourceStore } from '../../../stores';
 import { useConfigDetailStore } from './stores';
 import Modals from './modals';
+import ResourceTitle from '../../components/resource-title';
+
 
 import './index.less';
 
@@ -24,10 +26,7 @@ const Content = observer(() => {
   return (
     <div className={`${prefixCls}-configMap-detail`}>
       <Modals />
-      <div className={`${prefixCls}-detail-content-title`}>
-        <Icon type="compare_arrows" className={`${prefixCls}-detail-content-title-icon`} />
-        <span>{record.get('name')}</span>
-      </div>
+      <ResourceTitle iconType="compare_arrows" record={record} />
       <div className={`${prefixCls}-detail-content-section-title`}>
         <FormattedMessage id={`${intlPrefix}.key.value`} />
       </div>

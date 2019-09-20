@@ -12,6 +12,8 @@ import { useCertificateStore } from './stores';
 import Modals from './modals';
 import MouserOverWrapper from '../../../../../components/MouseOverWrapper';
 import { getTimeLeft } from '../../../../../utils';
+import StatusTags from '../../../../../components/status-tag';
+
 
 import './index.less';
 
@@ -35,8 +37,14 @@ const CertContent = observer(() => {
   }
 
   function renderName({ value, record }) {
+    const commandStatus = record.get('commandStatus');
     return (
       <div className="c7n-network-service">
+        <StatusTags
+          name={formatMessage({ id: commandStatus || 'null' })}
+          colorCode={commandStatus || 'success'}
+          style={{ minWidth: 40, marginRight: '0.08rem', height: '0.16rem', lineHeight: '0.16rem' }}
+        />
         <StatusIcon
           name={value}
           status={record.get('commandStatus') || ''}
@@ -93,7 +101,11 @@ const CertContent = observer(() => {
     );
   }
 
-  function renderAction() {
+  function renderAction({ record }) {
+    const commandStatus = record.get('commandStatus');
+    if (commandStatus === 'operating') {
+      return null;
+    }
     const buttons = [
       {
         service: ['devops-service.certification.delete'],

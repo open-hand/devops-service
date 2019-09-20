@@ -6,6 +6,8 @@ import map from 'lodash/map';
 import { useResourceStore } from '../../../stores';
 import { useCertDetailStore } from './stores';
 import Modals from './modals';
+import ResourceTitle from '../../components/resource-title';
+
 
 import './index.less';
 
@@ -22,10 +24,7 @@ const Content = observer(() => {
   return (
     <div className={`${prefixCls}-certificate-detail`}>
       <Modals />
-      <div className={`${prefixCls}-detail-content-title`}>
-        <Icon type="class" className={`${prefixCls}-detail-content-title-icon`} />
-        <span>{record.get('name')}</span>
-      </div>
+      <ResourceTitle iconType="class" record={record} statusKey="commandStatus" />
       <div>
         <div className={`${prefixCls}-detail-content-section-title`}>
           <FormattedMessage id={`${intlPrefix}.domains`} />

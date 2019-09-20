@@ -8,6 +8,8 @@ import { useResourceStore } from '../../../stores';
 import { useCustomDetailStore } from './stores';
 import Modals from './modals';
 import StatusTags from '../../../../../components/status-tag';
+import ResourceTitle from '../../components/resource-title';
+
 
 import './index.less';
 
@@ -41,10 +43,7 @@ const Content = observer(() => {
   return (
     <div className={`${prefixCls}-ingress-detail`}>
       <Modals />
-      <div className={`${prefixCls}-detail-content-title`}>
-        <Icon type="language" className={`${prefixCls}-detail-content-title-icon`} />
-        <span>{record.get('name')}</span>
-      </div>
+      <ResourceTitle iconType="language" record={record} />
       <div>
         <div className={`${prefixCls}-detail-content-section-title`}>
           <FormattedMessage id="routing" />

@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Table } from 'choerodon-ui/pro';
 import StatusIcon from '../../../../../components/StatusIcon';
+import StatusTags from '../../../../../components/status-tag';
 import AppName from '../../../../../components/appName';
 import PodStatus from './components/pod-status';
 import { useResourceStore } from '../../../stores';
@@ -27,13 +28,21 @@ const Content = observer(() => {
   } = useIstListStore();
 
   function renderName({ value, record }) {
+    const status = record.get('status');
     return (
-      <StatusIcon
-        name={value}
-        width={0.2}
-        status={record.get('status') || ''}
-        error={record.get('error') || ''}
-      />
+      <Fragment>
+        <StatusTags
+          name={formatMessage({ id: status || 'null' })}
+          colorCode={status || 'success'}
+          style={{ minWidth: 40, marginRight: '0.08rem', height: '0.16rem', lineHeight: '0.16rem' }}
+        />
+        <StatusIcon
+          name={value}
+          width={0.2}
+          status={record.get('status') || ''}
+          error={record.get('error') || ''}
+        />
+      </Fragment>
     );
   }
 
