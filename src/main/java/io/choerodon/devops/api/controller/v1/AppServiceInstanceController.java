@@ -58,9 +58,7 @@ public class AppServiceInstanceController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "实例ID", required = true)
             @PathVariable(value = "instance_id") Long instanceId) {
-        return Optional.ofNullable(appServiceInstanceService.queryInfoById(instanceId))
-                .map(info -> new ResponseEntity<>(info, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.query.instance.by.id"));
+        return new ResponseEntity<>(appServiceInstanceService.queryInfoById(instanceId),HttpStatus.OK);
     }
 
 
