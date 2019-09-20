@@ -152,7 +152,7 @@ class EditNetwork extends Component {
 
         let appIst;
         if (!_.isEmpty(appInstance)) {
-          appIst = appInstance[0] === 'all_instance' ? _.map(store.getIst, (item) => item.code) : appInstance;
+          appIst = appInstance === 'all_instance' ? _.map(store.getIst, (item) => item.code) : appInstance;
         }
         const ports = [];
         const label = {};
@@ -1242,8 +1242,8 @@ class EditNetwork extends Component {
                           .indexOf(input.toLowerCase()) >= 0}
                       >
                         {istOption.concat(initIstOption).length > 1 && (
-                          <Option key="all_instance" value={['all_instance']}>
-                            {intl.formatMessage({ id: 'all' })}
+                          <Option key="all_instance" value="all_instance">
+                            {intl.formatMessage({ id: 'all_instance' })}
                           </Option>
                         )}
                         {initIstOption}

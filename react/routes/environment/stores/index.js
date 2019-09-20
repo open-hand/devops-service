@@ -26,7 +26,13 @@ export const StoreProvider = injectIntl(inject('AppState')(
       ...props,
       intlPrefix,
       prefixCls: 'c7ncd-env',
-      permissions: [],
+      permissions: [
+        'devops-service.devops-environment.create',
+        'devops-service.devops-environment.update',
+        'devops-service.devops-environment.listEnvTreeMenu',
+        'devops-service.devops-environment.deleteDeactivatedEnvironment',
+        'devops-service.devops-environment.checkCode',
+      ],
       itemType: {
         DETAIL_ITEM: 'detail',
         GROUP_ITEM: 'group',

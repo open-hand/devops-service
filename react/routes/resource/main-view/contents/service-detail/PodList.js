@@ -73,6 +73,16 @@ const PodList = observer(() => {
 
   function getOption(value, timeList, name) {
     return ({
+      grid: {
+        top: 42,
+      },
+      tooltip: {
+        trigger: 'item',
+        backgroundColor: '#fff',
+        textStyle: {
+          color: '#000',
+        },
+      },
       color: '#7885cb',
       xAxis: {
         type: 'category',

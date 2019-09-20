@@ -35,6 +35,11 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const value = {
       ...props,
       prefixCls: 'c7ncd-repository',
+      permissions: [
+        'devops-service.devops-organization-config.queryOrganizationDefaultConfig',
+        'devops-service.devops-organization-config.create',
+        'devops-service.devops-organization-config.query',
+      ],
       intlPrefix,
       homeDs,
       detailDs,

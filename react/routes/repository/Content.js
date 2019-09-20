@@ -20,6 +20,7 @@ const Repository = withRouter(observer((props) => {
     AppState: { currentMenuType: { organizationId } },
     intlPrefix,
     prefixCls,
+    permissions,
     homeDs,
     detailDs,
     repositoryStore,
@@ -51,11 +52,7 @@ const Repository = withRouter(observer((props) => {
 
   return (
     <TabPage
-      service={[
-        'devops-service.devops-organization-config.queryOrganizationDefaultConfig',
-        'devops-service.devops-organization-config.create',
-        'devops-service.devops-organization-config.query',
-      ]}
+      service={permissions}
     >
       <Header>
         <Permission

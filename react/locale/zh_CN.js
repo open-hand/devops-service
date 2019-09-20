@@ -165,6 +165,8 @@ const commonField = {
   notCovered: '不覆盖',
   container: '容器',
   'search.placeholder': '请输入搜索条件',
+  all_instance: '所有实例',
+  appService: '应用服务',
 
   // 资源树名称
   instances: '实例',
@@ -1275,7 +1277,7 @@ const zhCN = {
   'network.target.type': '目标对象类型',
   'network.target.instance': '选择实例',
   'network.target.param': '填写标签',
-  'network.form.app': '应用名称',
+  'network.form.app': '应用服务名称',
   'network.config': '网络配置',
   'network.target.ip': '目标IP',
   'network.target.portName': '端口名称',

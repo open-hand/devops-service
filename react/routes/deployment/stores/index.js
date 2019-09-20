@@ -50,6 +50,14 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const value = {
       ...props,
       prefixCls: 'c7ncd-deploy',
+      permissions: [
+        'devops-service.devops-deploy-record.pageByOptions',
+        'devops-service.app-service-instance.deploy',
+        'devops-service.pipeline.batchExecute',
+        'devops-service.pipeline.audit',
+        'devops-service.pipeline.retry',
+        'devops-service.pipeline.failed',
+      ],
       intlPrefix,
       listDs,
       pipelineDs,

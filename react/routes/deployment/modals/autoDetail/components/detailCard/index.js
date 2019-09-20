@@ -46,7 +46,7 @@ export default class DetailCard extends PureComponent {
         taskType,
         isCountersigned,
         userDTOList,
-        appName,
+        appServiceName,
         envName,
         version,
         instanceStatus,
@@ -127,8 +127,8 @@ export default class DetailCard extends PureComponent {
           </Fragment>),
           auto: () => (<Fragment>
             <div className="c7ncd-pipeline-task">
-              <span className="c7ncd-pipeline-task-label">{formatMessage({ id: 'app' })}：</span>
-              {appName}
+              <span className="c7ncd-pipeline-task-label">{formatMessage({ id: 'appService' })}：</span>
+              {appServiceName}
             </div>
             <div className="c7ncd-pipeline-task">
               <span className="c7ncd-pipeline-task-label">{formatMessage({ id: 'version' })}：</span>

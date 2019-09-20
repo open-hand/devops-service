@@ -85,8 +85,8 @@ export default class CreateNetwork extends Component {
             });
             if (data.length > 1) {
               initIstOption.unshift(
-                <Option key="all_instance" value={['all_instance']}>
-                  {formatMessage({ id: 'all' })}
+                <Option key="all_instance" value="all_instance">
+                  {formatMessage({ id: 'all_instance' })}
                 </Option>
               );
             }

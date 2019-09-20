@@ -55,7 +55,7 @@ class CreateNetwork extends Component {
         } = data;
         let appIst;
         if (!_.isEmpty(appInstance)) {
-          appIst = appInstance[0] === 'all_instance' ? _.map(store.getIst, (item) => item.code) : appInstance;
+          appIst = appInstance === 'all_instance' ? _.map(store.getIst, (item) => item.code) : appInstance;
         }
         const ports = [];
         const label = {};
