@@ -37,20 +37,20 @@ public interface AppServiceVersionMapper extends Mapper<AppServiceVersionDTO> {
 
     String queryValue(@Param("versionId") Long versionId);
 
-    List<AppServiceVersionDTO> listByAppId(@Param("appServiceId") Long appServiceId);
+    List<AppServiceVersionDTO> listByAppServiceId(@Param("appServiceId") Long appServiceId);
 
-    List<AppServiceVersionDTO> listByAppIdAndVersion(@Param("appServiceId") Long appServiceId,
-                                                     @Param("deployOnly") Boolean deployOnly,
-                                                     @Param("searchParam") Map<String,String> map,
-                                                     @Param("params") List<String> params,
-                                                     @Param("index") String index);
+    List<AppServiceVersionDTO> listByAppServiceIdAndVersion(@Param("appServiceId") Long appServiceId,
+                                                            @Param("deployOnly") Boolean deployOnly,
+                                                            @Param("searchParam") Map<String,String> map,
+                                                            @Param("params") List<String> params,
+                                                            @Param("index") String index);
 
-    List<AppServiceVersionDTO> listAppDeployedVersion(@Param("projectId") Long projectId,
-                                                      @Param("appServiceId") Long appServiceId);
+    List<AppServiceVersionDTO> listAppServiceDeployedVersion(@Param("projectId") Long projectId,
+                                                             @Param("appServiceId") Long appServiceId);
 
     List<AppServiceVersionDTO> listByPublished(@Param("applicationId") Long applicationId);
 
-    List<Long> listByAppIdAndVersionIds(@Param("applicationId") Long applicationId);
+    List<Long> listByAppServiceIdAndVersionIds(@Param("applicationId") Long applicationId);
 
     List<AppServiceVersionDTO> listUpgradeVersion(@Param("appServiceServiceId") Long appServiceServiceId);
 
@@ -58,9 +58,9 @@ public interface AppServiceVersionMapper extends Mapper<AppServiceVersionDTO> {
 
     AppServiceVersionDTO queryNewestVersion(@Param("appServiceId") Long appServiceId);
 
-    List<AppServiceVersionDTO> listByAppVersionIds(@Param("appServiceServiceIds") List<Long> appServiceServiceIds);
+    List<AppServiceVersionDTO> listByAppServiceVersionIds(@Param("appServiceServiceIds") List<Long> appServiceServiceIds);
 
-    List<AppServiceVersionDTO> listByAppIdAndBranch(@Param("appServiceId") Long appServiceId, @Param("branch") String branch);
+    List<AppServiceVersionDTO> listByAppServiceIdAndBranch(@Param("appServiceId") Long appServiceId, @Param("branch") String branch);
 
     String queryByPipelineId(@Param("pipelineId") Long pipelineId, @Param("branch") String branch, @Param("appServiceId") Long appServiceId);
 

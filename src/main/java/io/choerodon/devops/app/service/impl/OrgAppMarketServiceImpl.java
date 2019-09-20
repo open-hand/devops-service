@@ -331,7 +331,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         Set<Long> serviceVersionIds = new HashSet<>();
         FileUtil.createDirectory(APPLICATION);
         downloadPayload.getAppServiceVersionDownloadPayloads().forEach(appServiceVersionPayload -> {
-            AppServiceVersionDTO versionDTO = appServiceVersionService.baseQueryByAppIdAndVersion(appServiceId, appServiceVersionPayload.getVersion());
+            AppServiceVersionDTO versionDTO = appServiceVersionService.baseQueryByAppServiceIdAndVersion(appServiceId, appServiceVersionPayload.getVersion());
             versionDTO = versionDTO == null ? new AppServiceVersionDTO() : versionDTO;
             if (!downloadType.equals(DOWNLOAD_ONLY)) {
                 String chartFilePath = String.format("%s%s%s%s", APPLICATION, File.separator, APPLICATION + System.currentTimeMillis(), TGZ);

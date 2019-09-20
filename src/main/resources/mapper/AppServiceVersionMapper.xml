@@ -26,7 +26,7 @@
         </if>
     </select>
 
-    <select id="listByAppId" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
+    <select id="listByAppServiceId" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
         SELECT
         dav.id,
         dav.version,
@@ -156,7 +156,7 @@
         AND dav.id = #{versionId}
     </select>
 
-    <select id="listByAppIdAndVersion" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
+    <select id="listByAppServiceIdAndVersion" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
         SELECT
         dav.id,
         dav.version,
@@ -192,7 +192,7 @@
             </foreach>
         </if>
     </sql>
-    <select id="listAppDeployedVersion" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
+    <select id="listAppServiceDeployedVersion" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
         SELECT DISTINCT
         dav.id,
         dav.version
@@ -220,7 +220,7 @@
         and dav.is_publish=1
     </select>
 
-    <select id="listByAppIdAndVersionIds" resultType="java.lang.Long">
+    <select id="listByAppServiceIdAndVersionIds" resultType="java.lang.Long">
         SELECT
         dav.id
         FROM
@@ -265,7 +265,7 @@
     </select>
 
 
-    <select id="listByAppVersionIds" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
+    <select id="listByAppServiceVersionIds" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
         SELECT *
         FROM
         devops_app_service_version dav
@@ -280,7 +280,7 @@
         </if>
     </select>
 
-    <select id="listByAppIdAndBranch" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
+    <select id="listByAppServiceIdAndBranch" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
         SELECT
         *
         FROM
