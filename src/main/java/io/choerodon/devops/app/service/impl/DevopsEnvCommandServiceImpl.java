@@ -5,8 +5,10 @@ import java.util.List;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.DevopsCommandEventService;
 import io.choerodon.devops.app.service.DevopsEnvCommandLogService;
@@ -14,9 +16,8 @@ import io.choerodon.devops.app.service.DevopsEnvCommandService;
 import io.choerodon.devops.app.service.DevopsEnvCommandValueService;
 import io.choerodon.devops.infra.dto.DevopsEnvCommandDTO;
 import io.choerodon.devops.infra.mapper.DevopsEnvCommandMapper;
+import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.PageRequestUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -80,7 +81,7 @@ public class DevopsEnvCommandServiceImpl implements DevopsEnvCommandService {
     @Override
     public List<DevopsEnvCommandDTO> baseListByEnvId(Long envId) {
         DevopsEnvCommandDTO devopsEnvCommandDO = new DevopsEnvCommandDTO();
-        return ConvertHelper.convertList(devopsEnvCommandMapper.select(devopsEnvCommandDO), DevopsEnvCommandDTO.class);
+        return ConvertUtils.convertList(devopsEnvCommandMapper.select(devopsEnvCommandDO), DevopsEnvCommandDTO.class);
     }
 
     @Override

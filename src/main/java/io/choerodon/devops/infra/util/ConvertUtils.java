@@ -39,7 +39,7 @@ public class ConvertUtils {
             BeanUtils.copyProperties(source, destination);
             return destination;
         } catch (InstantiationException | IllegalAccessException e) {
-            throw new CommonException("Can not instantiate the class type: {}", destinationClass.getName());
+            throw new CommonException("Can not instantiate the class type: {} with no-arg constructor.", destinationClass.getName());
         }
     }
 

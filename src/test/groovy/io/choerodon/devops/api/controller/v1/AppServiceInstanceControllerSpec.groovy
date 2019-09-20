@@ -969,19 +969,19 @@ class AppServiceInstanceControllerSpec extends Specification {
         notThrown(CommonException)
     }
 
-    def "ListByEnv"() {
-        given: 'mock envUtil'
-        List<Long> connectedEnvList = new ArrayList<>()
-        connectedEnvList.add(1L)
-        envUtil.getConnectedClusterList() >> connectedEnvList
-        envUtil.getUpdatedClusterList() >> connectedEnvList
-
-        when: '环境总览实例查询'
-        def dto = restTemplate.postForObject("/v1/projects/1/app_instances/1/listByEnv", "{\"searchParam\":{},\"param\":\"\"}", DevopsEnvPreviewVO.class)
-
-        then: '校验返回值'
-        dto.getDevopsEnvPreviewAppVOS().get(0)["appName"] == "appName"
-    }
+//    def "ListByEnv"() {
+//        given: 'mock envUtil'
+//        List<Long> connectedEnvList = new ArrayList<>()
+//        connectedEnvList.add(1L)
+//        envUtil.getConnectedClusterList() >> connectedEnvList
+//        envUtil.getUpdatedClusterList() >> connectedEnvList
+//
+//        when: '环境总览实例查询'
+//        def dto = restTemplate.postForObject("/v1/projects/1/app_instances/1/listByEnv", "{\"searchParam\":{},\"param\":\"\"}", DevopsEnvPreviewVO.class)
+//
+//        then: '校验返回值'
+//        dto.getDevopsEnvPreviewAppVOS().get(0)["appName"] == "appName"
+//    }
 
     def "ListDeployTime"() {
         given: 'appIds'
