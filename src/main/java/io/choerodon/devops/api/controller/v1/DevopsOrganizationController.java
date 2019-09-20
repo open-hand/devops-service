@@ -24,14 +24,14 @@ import java.util.Set;
  * @since 2019/9/20
  */
 @RestController
-@RequestMapping(value = "/v1/organizations")
+@RequestMapping(value = "/v1/organizations/{organization_id}")
 public class DevopsOrganizationController {
     @Autowired
     AppServiceService applicationServiceService;
 
     @Permission(type = ResourceType.SITE, permissionWithin = true)
     @ApiOperation(value = "批量查询应用服务")
-    @PostMapping(value = "/{organization_id}/app_service/list_app_service_ids")
+    @PostMapping(value = "/app_service/list_app_service_ids")
     public ResponseEntity<PageInfo<AppServiceVO>> batchQueryAppService(
             @ApiParam(value = "项目Id")
             @PathVariable(value = "organization_id") Long organizationId,
