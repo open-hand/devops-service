@@ -135,21 +135,11 @@ public interface AppServiceVersionService {
 
     String baseQueryValue(Long versionId);
 
-    AppServiceVersionDTO baseQueryByAppIdAndVersion(Long appServiceId, String version);
-
-    void baseUpdatePublishLevelByIds(List<Long> appServiceServiceIds, Long level);
+    AppServiceVersionDTO baseQueryByAppServiceIdAndVersion(Long appServiceId, String version);
 
     PageInfo<AppServiceVersionDTO> basePageByOptions(Long projectId, Long appServiceId, PageRequest pageRequest,
                                                      String searchParam, Boolean isProjectOwner,
                                                      Long userId);
-
-    List<AppServiceVersionDTO> baseListByPublished(Long applicationId);
-
-    Boolean baseCheckByAppIdAndVersionIds(Long appServiceId, List<Long> appServiceServiceIds);
-
-    Long baseCreateReadme(String readme);
-
-    String baseQueryReadme(Long readmeValueId);
 
     void baseUpdate(AppServiceVersionDTO appServiceVersionDTO);
 
@@ -161,13 +151,11 @@ public interface AppServiceVersionService {
 
     AppServiceVersionDTO baseQueryNewestVersion(Long appServiceId);
 
-    List<AppServiceVersionDTO> baseListByAppVersionIds(List<Long> appServiceServiceIds);
+    List<AppServiceVersionDTO> baseListByAppServiceVersionIds(List<Long> appServiceServiceIds);
 
-    List<AppServiceVersionDTO> baseListByAppIdAndBranch(Long appServiceId, String branch);
+    List<AppServiceVersionDTO> baseListByAppServiceIdAndBranch(Long appServiceId, String branch);
 
     String baseQueryByPipelineId(Long pipelineId, String branch, Long appServiceId);
-
-    String baseQueryValueByAppId(Long appServiceId);
 
     List<AppServiceVersionDTO> baseListVersions(List<Long> appServiceVersionIds);
 

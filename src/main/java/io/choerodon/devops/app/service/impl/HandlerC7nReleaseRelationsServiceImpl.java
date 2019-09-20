@@ -195,7 +195,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
         AppServiceDTO applicationDTO = null;
         for (AppServiceDTO appServiceDTO : appServices) {
             appServiceVersionDTO = appServiceVersionService
-                    .baseQueryByAppIdAndVersion(appServiceDTO.getId(), c7nHelmRelease.getSpec().getChartVersion());
+                    .baseQueryByAppServiceIdAndVersion(appServiceDTO.getId(), c7nHelmRelease.getSpec().getChartVersion());
             if (appServiceVersionDTO != null) {
                 applicationDTO = appServiceDTO;
                 break;

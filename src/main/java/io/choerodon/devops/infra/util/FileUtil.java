@@ -356,6 +356,42 @@ public class FileUtil {
     }
 
     /**
+     * 删除多个文件
+     *
+     * @param fileNames 文件名称数组
+     */
+    public static void deleteDirectories(String... fileNames) {
+        if (fileNames == null) {
+            return;
+        }
+
+        for (String filename: fileNames) {
+            if (filename == null) {
+                continue;
+            }
+            deleteDirectory(new File(filename));
+        }
+    }
+
+    /**
+     * 删除多个文件
+     *
+     * @param files 文件数组
+     */
+    public static void deleteDirectories(File... files) {
+        if (files == null) {
+            return;
+        }
+
+        for (File file: files) {
+            if (file == null) {
+                continue;
+            }
+            deleteDirectory(file);
+        }
+    }
+
+    /**
      * 获取文件总行数
      *
      * @param file 目标文件
