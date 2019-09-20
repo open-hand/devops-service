@@ -194,18 +194,14 @@ export default class StageCard extends Component {
             onChange={this.handleSelect}
           >
             <Option value={_.toString(TASK_SERIAL)}>
-              <FormattedMessage id="pipeline.task.serial" />
+              {formatMessage({ id: 'pipeline.task.serial' })}
             </Option>
             <Option
               disabled={!!hasManualTask}
               value={_.toString(TASK_PARALLEL)}
+              title={hasManualTask ? formatMessage({ id: 'pipeline.task.type.change' }) : ''}
             >
-              <Tooltip
-                title={hasManualTask ? formatMessage({ id: 'pipeline.task.type.change' }) : ''}
-                placement="right"
-              >
-                <span><FormattedMessage id="pipeline.task.parallel" /></span>
-              </Tooltip>
+              {formatMessage({ id: 'pipeline.task.parallel' })}
             </Option>
           </Select>
           <Tips type="form" data="pipeline.task.serial.tip" />

@@ -541,6 +541,7 @@ export default class TaskCreate extends Component {
       key={id}
       value={id}
       disabled={!permission}
+      title={name}
     >
       <span className={classnames({
         'c7ncd-status': true,
@@ -557,7 +558,7 @@ export default class TaskCreate extends Component {
       <Option key={id} value={String(id)}>{realName || loginName}</Option>));
 
     const configOptions = _.map(getConfigList, ({ id, name }) => (<Option key={id} value={id}>
-      <span>{name}</span>
+      {name}
     </Option>));
     /** ********** end ************** */
 
@@ -817,11 +818,11 @@ export default class TaskCreate extends Component {
                   label={<FormattedMessage id="pipeline.task.auditMode" />}
                   getPopupContainer={(triggerNode) => triggerNode.parentNode}
                 >
-                  <Option value={AUDIT_MODE_SING}>
-                    <FormattedMessage id="pipeline.audit.sign" />
+                  <Option value={AUDIT_MODE_SING} title={formatMessage({ id: 'pipeline.audit.sign' })}>
+                    {formatMessage({ id: 'pipeline.audit.sign' })}
                   </Option>
-                  <Option value={AUDIT_MODE_ORSING}>
-                    <FormattedMessage id="pipeline.audit.orSign" />
+                  <Option value={AUDIT_MODE_ORSING} title={formatMessage({ id: 'pipeline.audit.orSign' })}>
+                    {formatMessage({ id: 'pipeline.audit.orSign' })}
                   </Option>
                 </Select>,
               )}
@@ -872,13 +873,14 @@ export default class TaskCreate extends Component {
                   getPopupContainer={(triggerNode) => triggerNode.parentNode}
                   onChange={this.changeTaskType}
                 >
-                  <Option value={TASK_TYPE_DEPLOY}>
-                    <FormattedMessage id="pipeline.mode.auto" />
+                  <Option value={TASK_TYPE_DEPLOY} title={formatMessage({ id: 'pipeline.mode.auto' })}>
+                    {formatMessage({ id: 'pipeline.mode.auto' })}
                   </Option>
                   <Option
                     // 并行任务不可以选择人工卡点
                     disabled={disableChooseManual}
                     value={TASK_TYPE_MANUAL}
+                    title={formatMessage({ id: 'pipeline.mode.manual' })}
                   >
                     <Tooltip
                       title={disableChooseManual

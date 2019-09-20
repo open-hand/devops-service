@@ -79,23 +79,19 @@ class BranchCreate extends Component {
     }
     return (
       <span>
-        <Tooltip title={mes}>
-          <div style={{ color }} className="branch-issue">
-            <i className={`icon icon-${icon}`} />
-          </div>
-        </Tooltip>
-        <Tooltip title={s.summary}>
-          <span className="branch-issue-content">
-            <span style={{ color: 'rgb(0,0,0,0.65)' }}>{s.issueNum}</span>
-            <MouserOverWrapper
-              style={{ display: 'inline-block', verticalAlign: 'sub' }}
-              width="350px"
-              text={s.summary}
-            >
-              {s.summary}
-            </MouserOverWrapper>
-          </span>
-        </Tooltip>
+        <div style={{ color }} className="branch-issue">
+          <i className={`icon icon-${icon}`} />
+        </div>
+        <span className="branch-issue-content">
+          <span style={{ color: 'rgb(0,0,0,0.65)' }}>{s.issueNum}</span>
+          <MouserOverWrapper
+            style={{ display: 'inline-block', verticalAlign: 'sub' }}
+            width="350px"
+            text={s.summary}
+          >
+            {s.summary}
+          </MouserOverWrapper>
+        </span>
       </span>
     );
   };
@@ -364,7 +360,7 @@ class BranchCreate extends Component {
                   filterOption={false}
                 >
                   {issue.map((s) => (
-                    <Option value={s.issueId} key={s.typeCode}>
+                    <Option value={s.issueId} key={s.typeCode} title={s.summary}>
                       {this.getOptionContent(s)}
                     </Option>
                   ))}
@@ -396,14 +392,14 @@ class BranchCreate extends Component {
                     key="proGroup"
                   >
                     {branches.list.map((s) => (
-                      <Option value={s.branchName} key={s.branchName}>
+                      <Option value={s.branchName} key={s.branchName} title={s.branchName}>
                         <i className="icon icon-branch c7n-branch-formItem-icon" />
                         {s.branchName}
                       </Option>
                     ))}
                     {branches.total > branches.size
                     && branches.size > 0 ? (
-                      <Option key="more">
+                      <Option key="more"> 
                         <div
                           role="none"
                           onClick={this.changeSize.bind(this, 'branch')}
@@ -419,13 +415,13 @@ class BranchCreate extends Component {
                     key="more"
                   >
                     {tags.list.map((s) => (s.release
-                      ? <Option value={s.release.tagName} key={s.release.tagName}>
+                      ? <Option value={s.release.tagName} key={s.release.tagName} title={s.release.tagName}>
                         <i className="icon icon-local_offer c7n-branch-formItem-icon" />
                         {s.release.tagName}
                       </Option> : null))}
                     {tags.total > tags.size
                     && tags.size > 0 ? (
-                      <Option value="more">
+                      <Option value="more" title={intl.formatMessage({ id: 'loadMore' })}>
                         <div
                           role="none"
                           onClick={this.changeSize.bind(this, 'tag')}
@@ -460,7 +456,7 @@ class BranchCreate extends Component {
                 >
                   {['feature', 'bugfix', 'release', 'hotfix', 'custom'].map(
                     (s) => (
-                      <Option value={s} key={s}>
+                      <Option value={s} key={s} title={s}>
                         {this.getIcon(s)}
                         <span className="c7n-branch-text">{s}</span>
                       </Option>

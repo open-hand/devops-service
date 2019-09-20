@@ -75,13 +75,11 @@ class BranchEdit extends Component {
         color = '#4d90fe';
     }
     return (<span>
-      <Tooltip title={mes}>
-        <div style={{ color, marginRight: 5 }} className="branch-issue"><i className={`icon icon-${icon}`} /></div>
-        <span className="branch-issue-content">
-          <span style={{ color: 'rgb(0,0,0,0.65)' }}>{s.issueNum}</span>
-          <MouserOverWrapper style={{ display: 'inline-block', verticalAlign: 'sub' }} width="350px" text={s.summary}>{s.summary}</MouserOverWrapper>
-        </span>
-      </Tooltip>
+      <div style={{ color, marginRight: 5 }} className="branch-issue"><i className={`icon icon-${icon}`} /></div>
+      <span className="branch-issue-content">
+        <span style={{ color: 'rgb(0,0,0,0.65)' }}>{s.issueNum}</span>
+        <MouserOverWrapper style={{ display: 'inline-block', verticalAlign: 'sub' }} width="350px" text={s.summary}>{s.summary}</MouserOverWrapper>
+      </span>
     </span>);
   };
 
@@ -204,6 +202,7 @@ class BranchEdit extends Component {
                     <Option
                       key={s.issueId}
                       value={s.issueId}
+                      title={s.summary}
                     >
                       {this.getOptionContent(s)}
                     </Option>
