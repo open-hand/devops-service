@@ -172,7 +172,6 @@ public class GitlabServiceClientOperator {
     /**
      * 从gitlab项目创建access token
      *
-     * @param gitlabProjectId gitlab 项目id
      * @param userId          用户id
      * @return access token
      */
@@ -495,6 +494,13 @@ public class GitlabServiceClientOperator {
         List<TagDTO> tagTotalList = listTags(gitlabProjectId, userId);
         List<TagDTO> tagList = tagTotalList.stream()
                 .filter(t -> filterTag(t, params))
+                .peek(t -> {
+                    if (t.getRelease() == null) {
+                        ReleaseDO releaseDO = new ReleaseDO();
+                        releaseDO.setTagName(t.getName());
+                        t.setRelease(releaseDO);
+                    }
+                })
                 .collect(Collectors.toCollection(ArrayList::new));
 
         PageInfo<TagDTO> resp = PageInfoUtil.createPageFromList(tagList, new PageRequest(page, size));

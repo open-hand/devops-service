@@ -333,7 +333,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 .stream()
                 .peek(t -> setEnvStatus(upgradeClusterList, t))
                 .collect(Collectors.toList());
-        if (devopsEnvironmentDTOS == null) {
+        if (devopsEnvironmentDTOS.isEmpty()) {
             return new ArrayList<>();
         }
 
