@@ -132,9 +132,7 @@ export const SelectApp = injectIntl(inject('AppState')(observerLite((props) => {
               key={`recent-${id}`}
               value={id}
             >
-              <Tooltip title={code}>
-                <span className="c7n-ib-width_100">{opName}</span>
-              </Tooltip>
+              {opName}
             </Option>))
         }
     </OptGroup>
@@ -145,9 +143,7 @@ export const SelectApp = injectIntl(inject('AppState')(observerLite((props) => {
               value={id}
               key={index}
             >
-              <Tooltip title={code}>
-                <span className="c7n-ib-width_100">{opName}</span>
-              </Tooltip>
+              {opName}
             </Option>))
         }
     </OptGroup>

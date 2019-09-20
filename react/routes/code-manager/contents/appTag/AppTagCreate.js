@@ -204,11 +204,12 @@ class AppTagCreate extends Component {
                       _.map(list, (item) => (<Option
                         key={item.branchName}
                         value={item.branchName}
+                        title={item.branchName}
                       >
                         <Icon className="apptag-branch-icon" type="branch" />{item.branchName}
                       </Option>))
                     }
-                  {(total > size && size > 0) ? <Option key="more">
+                  {(total > size && size > 0) ? <Option key="more" title={formatMessage({ id: 'loadMore' })}>
                     <div
                       role="none"
                       onClick={this.changeSize}

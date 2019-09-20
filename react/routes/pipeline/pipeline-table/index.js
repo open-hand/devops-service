@@ -615,7 +615,7 @@ export default class Pipeline extends Component {
               key={value}
               value={value}
             >
-              <FormattedMessage id={`c7ncd.deploy.trigger.${value}`} />
+              {formatMessage({ id: `c7ncd.deploy.trigger.${value}` })}
             </Option>
           ))}
         </Select>
