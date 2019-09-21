@@ -1,111 +1,126 @@
 @import '~choerodon-ui/lib/style/themes/default';
 
-.c7n-deploy-expanded {
+.c7ncd-instance-details {
   padding: 0 .2rem;
+  overflow: auto;
 
-  ul,
-  li {
-    margin: 0;
-    padding: 0;
+  &-inner {
+    min-width: 6.5rem;
   }
 
-  .c7n-deploy-expanded-title {
+  &-empty {
+    padding: 20px 0;
+    color: rgba(0, 0, 0, .65);
+  }
+
+  &-title {
     margin-bottom: .16rem;
     border-bottom: 1px solid rgba(0, 0, 0, .12);
-    line-height: .2rem;
     font-size: .15rem;
+    color: #000;
+    font-weight: 500;
+
+    span {
+      line-height: .28rem;
+    }
   }
 
-  .c7n-deploy-expanded-item {
-    display: flex;
-    margin-bottom: .2rem;
+  &-panel {
+    margin-bottom: .1rem;
+  }
+
+  &-grid {
+    display: grid;
+    grid-template-columns: 2fr minmax(1.1rem, 1fr);
+    justify-content: space-between;
+    grid-column-gap: .36rem;
+    margin-bottom: .1rem;
+  }
+
+  &-item {
+    display: grid;
+    grid-template-columns: minmax(2.8rem, 1fr) minmax(2.4rem, 1fr);
+    justify-content: space-between;
+    grid-gap: .06rem .36rem;
+  }
+
+  &-block,
+  &-inline {
+    display: grid;
+    grid-template-columns: .88rem 1fr;
+    justify-content: space-between;
+    grid-gap: .1rem;
+  }
+
+  &-block {
+    grid-template-columns: .68rem 1fr;
+    margin-bottom: .12rem;
     width: 100%;
-    flex-wrap: wrap;
-
-    .c7n-deploy-expanded-text {
-      flex: 1;
-      margin-right: .6rem;
-      list-style: none;
-    }
-
-    .c7n-deploy-expanded-pod {
-      flex: 1;
-    }
+    font-weight: 500;
   }
 
-  .c7n-deploy-expanded-lists {
-    display: flex;
-    margin-bottom: .06rem;
+  &-key {
+    color: rgba(0, 0, 0, .65);
+  }
 
-    .c7n-deploy-expanded-keys {
-      flex: 0 0 1.1rem;
-      margin-right: .10rem;
-      width: 1.1rem;
-      color: #000;
-    }
+  &-value {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    color: #000;
+  }
 
-    .c7n-deploy-expanded-values {
-      text-overflow: ellipsis;
-      overflow: hidden;
-      white-space: nowrap;
-      color: rgba(0, 0, 0, .65);
-    }
+  &-label {
+    display: grid;
+    grid-template-columns: 1fr .24rem;
 
     .c7ncd-deployment-popover-labels {
       display: flex;
+      overflow: hidden;
 
       span {
         flex: 1;
-        margin-right: .2rem;
+        overflow: hidden;
         white-space: nowrap;
-        color: rgba(0, 0, 0, .65);
+        text-overflow: ellipsis;
 
-        &:last-child {
-          margin-right: 0;
+        & + span {
+          margin-left: .2rem;
         }
       }
     }
-
-    .c7ncd-deployment-popover-port {
-      color: rgba(0, 0, 0, .65);
-    }
-
-    .c7n-deploy-pvc {
-      padding: 2px 6px;
-      font-size: 12px;
-      line-height: 16px;
-      font-weight: bold;
-
-      &_Pending {
-        color: #4d90fe;
-        background: rgba(77, 144, 254, .20);
-      }
-
-      &_Lost {
-        color: rgba(0, 0, 0, 0.54);
-        background: rgba(0, 0, 0, .08);
-      }
-
-      &_Bound {
-        color: #0bc2a8;
-        background: rgba(11, 194, 168, .2);
-      }
-
-      &_undefined {
-        background: transparent;
-      }
-    }
   }
 
-  .c7n-expanded-text_bold {
-    font-weight: 600;
-    color: #000;
+  &-port {
+    display: grid;
+    grid-template-columns: .6rem .24rem;
   }
 }
 
-.c7n-deploy-expanded-empty {
-  padding: 20px 0;
-  color: rgba(0, 0, 0, .65);
+.c7ncd-deploy-pvc {
+  padding: 2px 6px;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: bold;
+
+  &_Pending {
+    color: #4d90fe;
+    background: rgba(77, 144, 254, .20);
+  }
+
+  &_Lost {
+    color: rgba(0, 0, 0, 0.54);
+    background: rgba(0, 0, 0, .08);
+  }
+
+  &_Bound {
+    color: #0bc2a8;
+    background: rgba(11, 194, 168, .2);
+  }
+
+  &_undefined {
+    background: transparent;
+  }
 }
 
 .c7ncd-detail-btn {
