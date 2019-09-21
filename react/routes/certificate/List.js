@@ -90,6 +90,7 @@ const AppService = withRouter(observer((props) => {
       key: modalKey2,
       style: modalStyle2,
       drawer: true,
+      className: 'c7ncd-modal-wrapper',
       title: <FormattedMessage id={`${intlPrefix}.permission`} />,
       children: <PermissionManage
         dataSet={detailDs}

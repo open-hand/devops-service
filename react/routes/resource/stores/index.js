@@ -30,7 +30,10 @@ export const StoreProvider = injectIntl(inject('AppState')(
       ...props,
       prefixCls: 'c7ncd-deployment',
       intlPrefix: 'c7ncd.deployment',
-      permissions: [],
+      permissions: [
+        'devops-service.devops-environment.listEnvTree',
+        'devops-service.devops-environment.listResourceEnvTree',
+      ],
       viewTypeMappings: viewTypeMemo,
       itemTypes,
       resourceStore,

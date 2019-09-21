@@ -237,7 +237,7 @@ const deployment = {
   'c7ncd.deployment.instance.status.running': '运行中',
   'c7ncd.deployment.instance.action.stop': '停用实例',
   'c7ncd.deployment.instance.action.stop.tips': '确定要停用该实例吗？',
-  'c7ncd.deployment.instance.action.start': '重启实例',
+  'c7ncd.deployment.instance.action.start': '启用实例',
   'c7ncd.deployment.instance.action.start.tips': '确定要重启该实例吗？',
   'c7ncd.deployment.instance.action.delete': '删除实例',
   'c7ncd.deployment.instance.action.delete.tips': '删除实例后将不可恢复，同时与其相关的网络也将失效，确定要删除该实例吗？',

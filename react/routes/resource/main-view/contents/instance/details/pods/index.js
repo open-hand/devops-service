@@ -161,7 +161,7 @@ export default class Pods extends PureComponent {
       || status !== 'running';
 
     return (
-      <Fragment>
+      <div className="c7ncd-pod">
         <div className="c7ncd-pod-wrap">
           <div className="c7ncd-pod-content">
             {this.renderCircle}
@@ -193,7 +193,7 @@ export default class Pods extends PureComponent {
             </span>
           </div>
         ) : null}
-      </Fragment>
+      </div>
     );
   }
 }
