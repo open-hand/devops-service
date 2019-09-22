@@ -24,6 +24,9 @@ public class DevopsAppServiceResourceServiceImpl implements DevopsAppServiceReso
     @Override
     public void handleAppServiceResource(List<Long> appServiceIds, Long resourceId, String type) {
         List<Long> oldAppServiceIds = baseQueryByResourceIdAndType(resourceId, type).stream().map(DevopsAppServiceResourceDTO::getAppServiceId).collect(Collectors.toList());
+        if(appServiceIds==null){
+            appServiceIds = new ArrayList<>();
+        }
         List<Long> appServiceIdscollect = appServiceIds.stream().filter(e -> e != null).collect(Collectors.toList());
         //更新
         if (!oldAppServiceIds.isEmpty()) {
