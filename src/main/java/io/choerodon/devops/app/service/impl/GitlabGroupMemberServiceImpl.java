@@ -176,7 +176,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
         MemberDTO newGroupMemberDTO = gitlabServiceClientOperator.getProjectMember(
                 TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
                 TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
-        if (newGroupMemberDTO == null || (newGroupMemberDTO.getAccessLevel().equals(AccessLevel.MASTER.toValue()))) {
+        if (newGroupMemberDTO == null || !(newGroupMemberDTO.getAccessLevel().equals(AccessLevel.MASTER.toValue()))) {
             throw new CommonException("error.user.not.env.pro.owner");
         }
     }
