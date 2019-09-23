@@ -250,7 +250,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
             }
             String deployValue = applicationInstanceRepository.queryValueByInstanceId(applicationInstanceE.getId());
             ReplaceResult replaceResult = applicationInstanceService.getReplaceResult(deployValue, applicationDeployDTO.getValues());
-            if (deployValue != null && (replaceResult.getNewLines().isEmpty()||replaceResult.getDeltaYaml().equals(COMPARE_VALUES)) && applicationVersionE.getId().equals(devopsEnvCommandE.getObjectVersionId())) {
+            if (deployValue != null && (replaceResult.getNewLines().isEmpty()||replaceResult.getDeltaYaml().trim().equals(COMPARE_VALUES)) && applicationVersionE.getId().equals(devopsEnvCommandE.getObjectVersionId())) {
                 applicationDeployDTO.setIsNotChange(true);
             }
             applicationDeployDTO.setAppInstanceId(applicationInstanceE.getId());
