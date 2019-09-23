@@ -13,6 +13,7 @@ public class PipelineSearchVO {
     private Boolean manager;
     private Long envId;
     private String triggerType;
+    private Boolean enabled;
     private List<String> name;
 
     public Boolean getCreator() {
@@ -61,5 +62,13 @@ public class PipelineSearchVO {
 
     public void setName(List<String> name) {
         this.name = name;
+    }
+
+    public Boolean getEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
     }
 }
