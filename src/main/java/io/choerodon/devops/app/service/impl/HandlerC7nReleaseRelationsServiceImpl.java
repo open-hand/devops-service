@@ -237,6 +237,10 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
             LOGGER.info(instanceValueVO.getDeltaYaml());
             LOGGER.info("======================已部署versionId=========================={}", devopsEnvCommandDTO.getObjectVersionId());
             LOGGER.info("======================应该部署versionId=========================={}", appServiceVersionDTO.getId());
+            LOGGER.info("============{}",instanceValueVO.getDeltaYaml().trim());
+            if(instanceValueVO.getDeltaYaml().trim().equals(COMPARE_VALUES)){
+                LOGGER.info("+++++++++++对比成功！！！");
+            }
             if (deployValue != null && (instanceValueVO.getDeltaYaml() == null || instanceValueVO.getDeltaYaml().equals("") || instanceValueVO.getDeltaYaml().trim().equals(COMPARE_VALUES)) && appServiceVersionDTO.getId().equals(devopsEnvCommandDTO.getObjectVersionId())) {
                 appServiceDeployVO.setIsNotChange(true);
             }
