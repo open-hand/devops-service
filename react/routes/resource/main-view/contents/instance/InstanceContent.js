@@ -88,6 +88,7 @@ const InstanceContent = observer(() => {
 
     if (!isEqual(previous, update)) {
       forEach(update, ({ value, key }) => menuItem.set(`${key}`, value));
+      // message.info(formatMessage({ id: 'data.changed' }));
     }
   }
 

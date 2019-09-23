@@ -49,7 +49,6 @@ const EnvContent = observer(() => {
         || menuItem.get('name') !== name)) {
         menuItem.set('connect', connect);
         menuItem.set('name', name);
-        message.info(formatMessage({ id: 'data.changed' }));
       }
     }
   }

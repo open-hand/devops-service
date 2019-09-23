@@ -7,6 +7,7 @@ import { Icon } from 'choerodon-ui';
 import { useResourceStore } from '../../../stores';
 import EditNetwork from '../../contents/network/modals/network-edit';
 import { useMainStore } from '../../stores';
+import eventStopProp from '../../../../../utils/eventStopProp';
 
 function NetworkItem({
   record,
@@ -46,7 +47,7 @@ function NetworkItem({
       text: formatMessage({ id: 'delete' }),
       action: deleteItem,
     }];
-    return <Action placement="bottomRight" data={actionData} />;
+    return <Action placement="bottomRight" data={actionData} onClick={eventStopProp} />;
   }
 
   return <Fragment>

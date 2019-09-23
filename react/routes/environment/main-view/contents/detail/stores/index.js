@@ -3,11 +3,13 @@ import { inject } from 'mobx-react';
 import { observer } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
 import { DataSet } from 'choerodon-ui/pro';
+import getTablePostData from '../../../../../../utils/getTablePostData';
 import { useEnvironmentStore } from '../../../../stores';
 import { RetryDataSet, GitopsLogDataSet, GitopsSyncDataSet } from './SyncDataSet';
 import PermissionsDataSet from './PermissionsDataSet';
 import ConfigDataSet from './ConfigDataSet';
 import ConfigFormDataSet from './ConfigFormDataSet';
+import BaseDataSet from './BaseDataSet';
 import useStore from './useStore';
 
 const Store = createContext();
@@ -21,10 +23,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const prefixCls = 'c7ncd-deployment';
     const intlPrefix = 'c7ncd.deployment';
     const { intl: { formatMessage }, AppState: { currentMenuType: { id: projectId } }, children } = props;
-    const {
-      intlPrefix: currentIntlPrefix,
-      envStore: { getSelectedMenu: { id } },
-    } = useEnvironmentStore();
+    const { intlPrefix: currentIntlPrefix, envStore: { getSelectedMenu: { id } } } = useEnvironmentStore();
 
     const tabs = useMemo(() => ({
       SYNC_TAB: 'sync',
@@ -32,12 +31,8 @@ export const StoreProvider = injectIntl(inject('AppState')(
       ASSIGN_TAB: 'assign',
     }), []);
     const detailStore = useStore(tabs);
-    const permissionsDs = useMemo(() => new DataSet(PermissionsDataSet({
-      formatMessage,
-      intlPrefix,
-      projectId,
-      id,
-    })), [projectId, id]);
+    const baseDs = useMemo(() => new DataSet(BaseDataSet()), []);
+    const permissionsDs = useMemo(() => new DataSet(PermissionsDataSet({ formatMessage, intlPrefix })), []);
     const configDs = useMemo(() => new DataSet(ConfigDataSet({
       formatMessage,
       intlPrefix: currentIntlPrefix,
@@ -49,36 +44,52 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const retryDs = useMemo(() => new DataSet(RetryDataSet()), []);
     const configFormDs = useMemo(() => new DataSet(ConfigFormDataSet({ formatMessage, intlPrefix, projectId, store: detailStore })), [projectId]);
 
-    useEffect(() => {
-      retryDs.transport.read.url = `/devops/v1/projects/${projectId}/envs/${id}/retry`;
-    }, [projectId, id]);
-
-    const tabKey = detailStore.getTabKey;
-
-    useEffect(() => {
+    function queryData() {
+      const tabKey = detailStore.getTabKey;
       switch (tabKey) {
         case tabs.SYNC_TAB: {
+          retryDs.transport.read.url = `/devops/v1/projects/${projectId}/envs/${id}/retry`;
+          gitopsLogDs.transport.read.url = `/devops/v1/projects/${projectId}/envs/${id}/error_file/page_by_env`;
           gitopsSyncDs.transport.read.url = `/devops/v1/projects/${projectId}/envs/${id}/status`;
           gitopsSyncDs.query();
-          gitopsLogDs.transport.read.url = `/devops/v1/projects/${projectId}/envs/${id}/error_file/page_by_env`;
           gitopsLogDs.query();
           break;
         }
         case tabs.CONFIG_TAB:
           configDs.query();
           break;
-        case tabs.ASSIGN_TAB:
+        case tabs.ASSIGN_TAB: {
+          permissionsDs.transport.destroy = ({ data: [data] }) => ({
+            url: `/devops/v1/projects/${projectId}/envs/${id}/permission?user_id=${data.iamUserId}`,
+            method: 'delete',
+          });
+          permissionsDs.transport.read = ({ data }) => {
+            const postData = getTablePostData(data);
+            return {
+              url: `/devops/v1/projects/${projectId}/envs/${id}/permission/page_by_options`,
+              method: 'post',
+              data: postData,
+            };
+          };
           permissionsDs.query();
           break;
+        }
         default:
       }
-    }, [projectId, id, tabKey]);
+    }
+
+    useEffect(() => {
+      baseDs.transport.read.url = `/devops/v1/projects/${projectId}/envs/${id}/info`;
+      baseDs.query();
+      queryData();
+    }, [projectId, id, detailStore.getTabKey]);
 
     const value = {
       ...props,
       prefixCls,
       intlPrefix,
       tabs,
+      baseDs,
       permissionsDs,
       configDs,
       gitopsLogDs,

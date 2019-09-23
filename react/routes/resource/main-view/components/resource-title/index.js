@@ -6,9 +6,15 @@ import './index.less';
 
 export default function ResourceTitle(props) {
   const { iconType, record, nameKey, statusKey, errorKey } = props;
-  const name = record ? record.get(nameKey) : '';
-  const status = record ? record.get(statusKey) : '';
-  const error = record ? record.get(errorKey) : '';
+  let name = '';
+  let status = '';
+  let error = '';
+
+  if (record) {
+    name = record.get(nameKey);
+    status = record.get(statusKey);
+    error = record.get(errorKey);
+  }
   return (
     <div className="c7ncd-deployment-detail-content-title">
       <Icon type={iconType} className="c7ncd-deployment-detail-content-title-icon" />

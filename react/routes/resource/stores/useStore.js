@@ -57,7 +57,7 @@ export default function useStore() {
 
     async checkExist({ projectId, envId, type, id }) {
       try {
-        const res = await axios.get(`/devops/v1/projects/${projectId}/envs/${envId}/check/${type}/${id}`);
+        const res = await axios.get(`/devops/v1/projects/${projectId}/envs/${envId}/check?type=${type}&object_id=${id}`);
         if (typeof res === 'boolean') {
           return res;
         }

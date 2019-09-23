@@ -7,6 +7,7 @@ import { Icon } from 'choerodon-ui';
 import { useResourceStore } from '../../../stores';
 import { useMainStore } from '../../stores';
 import KeyValueModal from '../../contents/application/modals/key-value';
+import eventStopProp from '../../../../../utils/eventStopProp';
 
 function ConfigItem({
   record,
@@ -55,7 +56,7 @@ function ConfigItem({
       text: formatMessage({ id: 'delete' }),
       action: deleteItem,
     }];
-    return <Action placement="bottomRight" data={actionData} />;
+    return <Action placement="bottomRight" data={actionData} onClick={eventStopProp} />;
   }
 
   return <Fragment>

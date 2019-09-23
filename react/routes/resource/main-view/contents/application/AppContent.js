@@ -46,7 +46,6 @@ const AppContent = observer(() => {
 
     if (menuItem && menuItem.get('name') !== name) {
       menuItem.set('name', name);
-      message.info(formatMessage({ id: 'data.changed' }));
     }
   }
 
