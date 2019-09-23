@@ -3,12 +3,19 @@ import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import map from 'lodash/map';
 import compact from 'lodash/compact';
-import { Button, Icon, Popover } from 'choerodon-ui';
+import isEmpty from 'lodash/isEmpty';
+import { Button, Icon, Popover, Tooltip } from 'choerodon-ui';
+import { Modal } from 'choerodon-ui/pro';
 import ReactEcharts from 'echarts-for-react';
 import { useResourceStore } from '../../../stores';
 import { useNetworkDetailStore } from './stores';
 import TimePopover from '../../../../../components/timePopover';
-import LogSiderbar from '../../../../../components/log-siderbar';
+import LogSidebar from '../../../../../components/log-siderbar';
+
+const modalKey = Modal.key();
+const modalStyle = {
+  width: '50%',
+};
 
 const PodList = observer(() => {
   const {
@@ -34,6 +41,24 @@ const PodList = observer(() => {
   function handleLogClick(index, containerIndex) {
     setData({ ...record.get('podLiveInfos')[index], containerIndex });
     openLog();
+  }
+
+
+  function openModal(value, timeList, name) {
+    Modal.open({
+      key: modalKey,
+      style: modalStyle,
+      header: false,
+      children: <div>
+        <ReactEcharts
+          option={getOption(value, timeList, name, true)}
+          style={{ height: '4rem' }}
+        />
+      </div>,
+      okCancel: false,
+      footer: null,
+      maskClosable: true,
+    });
   }
 
   function renderRegistry(containers, index) {
@@ -71,10 +96,10 @@ const PodList = observer(() => {
     );
   }
 
-  function getOption(value, timeList, name) {
+  function getOption(value, timeList, name, show = false) {
     return ({
       grid: {
-        top: 42,
+        bottom: 30,
       },
       tooltip: {
         trigger: 'item',
@@ -87,20 +112,23 @@ const PodList = observer(() => {
       xAxis: {
         type: 'category',
         boundaryGap: false,
-        show: false,
+        show,
         data: timeList,
       },
       yAxis: {
         type: 'value',
         name,
+        nameTextStyle: {
+          fontSize: show ? 13 : 10,
+        },
         axisLine: {
-          show: false,
+          show,
         },
         axisTick: {
-          show: false,
+          show,
         },
         axisLabel: {
-          show: false,
+          show,
         },
         splitLine: {
           show: false,
@@ -117,8 +145,8 @@ const PodList = observer(() => {
     });
   }
 
-  return (
-    <Fragment>
+  return (!isEmpty(record.get('podLiveInfos'))
+    ? <Fragment>
       <div className={`${prefixCls}-detail-content-section-title`}>
         <FormattedMessage id={`${intlPrefix}.pods`} />
       </div>
@@ -160,20 +188,28 @@ const PodList = observer(() => {
               {renderRegistry(containers, index)}
             </li>
             <li className="service-detail-pod-echarts">
-              <ReactEcharts
-                option={getOption(cpuUsedList, timeList, 'CPU 1500m')}
-                style={{ height: '0.42rem', width: '1.2rem' }}
-              />
-              <ReactEcharts
-                option={getOption(memoryUsedList, timeList, 'Memory 1600MiB')}
-                style={{ height: '0.42rem', width: '1.2rem' }}
-              />
+              <Tooltip title="查看CPU使用量">
+                <div onClick={() => openModal(cpuUsedList, timeList, 'CPU 1500m')}>
+                  <ReactEcharts
+                    option={getOption(cpuUsedList, timeList, 'CPU 1500m')}
+                    style={{ height: '0.42rem', width: '1.2rem' }}
+                  />
+                </div>
+              </Tooltip>
+              <Tooltip title="查看内存使用量">
+                <div onClick={() => openModal(memoryUsedList, timeList, 'Memory 1600MiB')}>
+                  <ReactEcharts
+                    option={getOption(memoryUsedList, timeList, 'Memory 1600MiB')}
+                    style={{ height: '0.42rem', width: '1.2rem' }}
+                  />
+                </div>
+              </Tooltip>
             </li>
           </ul>
         ))}
       </div>
-      {visible && <LogSiderbar visible={visible} onClose={closeLog} record={data} />}
-    </Fragment>
+      {visible && <LogSidebar visible={visible} onClose={closeLog} record={data} />}
+    </Fragment> : null
   );
 });
 

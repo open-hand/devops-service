@@ -335,7 +335,7 @@ const Deployment = withRouter(observer((props) => {
           </Select>
           <Select
             dataSet={tableSelectDs}
-            name="pipelineName"
+            name="pipelineId"
             searchable
             className={`${prefixCls}-content-select-item`}
             placeholder={formatMessage({ id: `${intlPrefix}.search.pipeline` })}

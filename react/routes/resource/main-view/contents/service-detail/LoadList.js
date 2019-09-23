@@ -18,7 +18,7 @@ const PortsList = observer(() => {
   const record = baseInfoDs.current;
 
   return (
-    record.get('target').instances.length && (
+    record.get('target').instances.length ? (
       <Fragment>
         <div className={`${prefixCls}-detail-content-section-title`}>
           <FormattedMessage id={`${intlPrefix}.load`} />
@@ -60,7 +60,7 @@ const PortsList = observer(() => {
           ))}
         </div>
       </Fragment>
-    )
+    ) : null
   );
 });
 

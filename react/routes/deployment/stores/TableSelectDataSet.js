@@ -3,10 +3,10 @@ export default ((intlPrefix, formatMessage, envOptions, pipelineOptions, listDs)
     listDs.transport.read.data = {
       param: [],
       searchParam: {
-        env: record.get('env'),
+        env: record.get('env') ? String(record.get('env')) : null,
         deployType: record.get('deployType'),
         deployStatus: record.get('deployStatus'),
-        pipeline: record.get('pipeline'),
+        pipeline: record.get('pipelineId'),
       },
     };
     listDs.query();
@@ -21,7 +21,7 @@ export default ((intlPrefix, formatMessage, envOptions, pipelineOptions, listDs)
       { name: 'env', type: 'number', textField: 'name', valueField: 'id', label: formatMessage({ id: `${intlPrefix}.env` }), options: envOptions },
       { name: 'deployType', type: 'string', label: formatMessage({ id: `${intlPrefix}.type` }) },
       { name: 'deployStatus', type: 'string', label: formatMessage({ id: `${intlPrefix}.result` }) },
-      { name: 'pipeline', type: 'number', textField: 'name', valueField: 'id', label: formatMessage({ id: `${intlPrefix}.pipeline.name` }), options: pipelineOptions },
+      { name: 'pipelineId', type: 'number', textField: 'name', valueField: 'id', label: formatMessage({ id: `${intlPrefix}.pipeline.name` }), options: pipelineOptions },
     ],
     events: {
       update: handleUpdate,
