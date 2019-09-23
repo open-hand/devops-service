@@ -1418,6 +1418,11 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     public Boolean checkExist(Long projectId, Long envId, Long objectId, String type) {
+        // type为null表示查询环境是否存在
+        if (type == null) {
+            return devopsEnvironmentMapper.selectByPrimaryKey(envId) != null;
+        }
+        // type为app表示查询应用服务是否存在
         if ("app".equals(type)) {
             DevopsEnvAppServiceDTO devopsEnvAppServiceDTO = new DevopsEnvAppServiceDTO();
             devopsEnvAppServiceDTO.setEnvId(envId);

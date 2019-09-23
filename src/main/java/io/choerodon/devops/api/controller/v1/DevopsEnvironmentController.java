@@ -635,14 +635,14 @@ public class DevopsEnvironmentController {
     @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "检查资源是否存在")
-    @GetMapping(value = "/{env_id}/check/{type}/{object_id}")
+    @GetMapping(value = "/{env_id}/check")
     public ResponseEntity<Boolean> checkExist(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "对象类型")
-            @PathVariable(value = "type") String type,
+            @ApiParam(value = "对象类型,对象类型为空时，表示查询环境是否存在")
+            @RequestParam(value = "type", required = false) String type,
             @ApiParam(value = "对象id")
-            @PathVariable(value = "object_id") Long objectId,
+            @RequestParam(value = "object_id", required = false) Long objectId,
             @ApiParam(value = "环境id")
             @PathVariable(value = "env_id") Long envId) {
         return Optional.ofNullable(devopsEnvironmentService.checkExist(projectId, envId, objectId, type))
