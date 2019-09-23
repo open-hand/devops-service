@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import com.github.pagehelper.PageInfo;
+
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.domain.Sort;
@@ -17,6 +18,7 @@ import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.infra.enums.GitPlatformType;
 import io.choerodon.mybatis.annotation.SortDefault;
 import io.choerodon.swagger.annotation.CustomPageRequest;
+
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.http.HttpStatus;
@@ -694,7 +696,7 @@ public class AppServiceController {
                 .orElseThrow(() -> new CommonException("error.list.app.projectId.query"));
     }
 
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询所有应用服务(应用服务导入、应用部署)")
     @GetMapping(value = "/list_all_app_services")
     public ResponseEntity<List<AppServiceGroupVO>> listAllAppServices(
@@ -742,7 +744,7 @@ public class AppServiceController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "导入应用服务类型")
             @RequestParam(value = "share") Boolean share) {
-        return new ResponseEntity<>(applicationServiceService.listProjectByShare(projectId, share),HttpStatus.OK);
+        return new ResponseEntity<>(applicationServiceService.listProjectByShare(projectId, share), HttpStatus.OK);
     }
 
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})

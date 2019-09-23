@@ -148,9 +148,6 @@ public class DevopsEnvGroupServiceImpl implements DevopsEnvGroupService {
 
     @Override
     public Boolean checkExist(Long id) {
-        if (devopsEnvGroupMapper.selectByPrimaryKey(id) != null) {
-            return true;
-        }
-        return false;
+        return devopsEnvGroupMapper.selectByPrimaryKey(id) != null;
     }
 }
