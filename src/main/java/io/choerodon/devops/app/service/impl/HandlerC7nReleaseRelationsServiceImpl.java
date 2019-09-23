@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import io.kubernetes.client.models.V1Endpoints;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +29,7 @@ import io.choerodon.devops.infra.util.TypeUtil;
 
 @Service
 public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileRelationsService<C7nHelmRelease> {
+    private static final Logger LOGGER = LoggerFactory.getLogger(HandlerC7nReleaseRelationsServiceImpl.class);
 
     private static final String C7N_HELM_RELEASE = "C7NHelmRelease";
     private static final String GIT_SUFFIX = "/.git";
@@ -224,7 +227,13 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
                 devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(appServiceInstanceDTO.getCommandId());
             }
             String deployValue = appServiceInstanceService.baseQueryValueByInstanceId(appServiceInstanceDTO.getId());
+            LOGGER.info("======================已部署values==========================");
+            LOGGER.info(deployValue);
             InstanceValueVO instanceValueVO = appServiceInstanceService.getReplaceResult(deployValue, appServiceDeployVO.getValues());
+            LOGGER.info("======================应该部署values==========================");
+            LOGGER.info(instanceValueVO.getDeltaYaml());
+            LOGGER.info("======================已部署versionId=========================={}",devopsEnvCommandDTO.getObjectVersionId());
+            LOGGER.info("======================应该部署versionId=========================={}",appServiceVersionDTO.getId());
             if (deployValue != null && (instanceValueVO.getDeltaYaml() == null || instanceValueVO.getDeltaYaml().equals("")) && appServiceVersionDTO.getId().equals(devopsEnvCommandDTO.getObjectVersionId())) {
                 appServiceDeployVO.setIsNotChange(true);
             }
