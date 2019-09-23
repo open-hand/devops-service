@@ -1999,7 +1999,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     public PageInfo<AppServiceGroupInfoVO> pageAppServiceByMode(Long projectId, Boolean share, Long searchProjectId, String param, PageRequest pageRequest) {
         List<AppServiceDTO> appServiceDTOList;
         if (Boolean.TRUE.equals(share)) {
-            appServiceDTOList = listSharedAppService(projectId, searchProjectId, param);
+            appServiceDTOList = listSharedAppService(projectId, searchProjectId, param).stream()
+                    .filter(v -> !projectId.equals(v.getProjectId())).collect(Collectors.toList());
         } else {
             List<AppServiceDTO> marketServices = appServiceMapper.queryMarketDownloadApps(null, param, false, searchProjectId);
             appServiceDTOList = marketServices.stream().filter(v -> !ObjectUtils.isEmpty(v.getMktAppId())).collect(Collectors.toList());
@@ -2087,9 +2088,11 @@ public class AppServiceServiceImpl implements AppServiceService {
             case SHARE_SERVICE: {
                 Long organizationId = baseServiceClientOperator.queryIamProjectById(projectId).getOrganizationId();
                 List<Long> appServiceIds = new ArrayList<>();
-                baseServiceClientOperator.listIamProjectByOrgId(organizationId, null, null).forEach(pro ->
-                        baseListAll(pro.getId()).forEach(appServiceDTO -> appServiceIds.add(appServiceDTO.getId()))
-                );
+                baseServiceClientOperator.listIamProjectByOrgId(organizationId, null, null).stream()
+                        .filter(v -> !projectId.equals(v.getId()))
+                        .forEach(pro ->
+                                baseListAll(pro.getId()).forEach(appServiceDTO -> appServiceIds.add(appServiceDTO.getId()))
+                        );
                 list.addAll(appServiceMapper.listShareApplicationService(appServiceIds, projectId, serviceType, params));
                 Map<Long, List<AppServiceGroupInfoVO>> map = list.stream()
                         .map(this::dtoToGroupInfoVO)
@@ -2279,7 +2282,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         List<ProjectDTO> projectDTOS = new ArrayList<>();
         if (!StringUtils.isEmpty(share) && share) {
             appServiceDTOList = listSharedAppService(projectId, null, null);
-            projectIds = appServiceDTOList.stream().map(appServiceDTO -> appServiceDTO.getProjectId()).collect(Collectors.toSet());
+            projectIds = appServiceDTOList.stream().filter(v -> !projectId.equals(v.getProjectId())).map(appServiceDTO -> appServiceDTO.getProjectId()).collect(Collectors.toSet());
             projectDTOS = baseServiceClientOperator.queryProjectsByIds(projectIds);
         } else {
             appServiceDTOList = appServiceMapper.queryMarketDownloadApps(null, null, false, null);
