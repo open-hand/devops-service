@@ -897,7 +897,11 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         IamUserDTO assigneeUser = baseServiceClientOperator.queryUserByUserId(assigneeId);
         if (assigneeUser != null) {
             AssigneeVO assigneeVO = new AssigneeVO();
-            assigneeVO.setUsername(assigneeUser.getLoginName());
+            if(assigneeUser.getLdap()){
+                assigneeVO.setUsername(assigneeUser.getLoginName());
+            }else {
+                assigneeVO.setUsername(assigneeUser.getEmail());
+            }
             assigneeVO.setName(assigneeUser.getRealName());
             assigneeVO.setId(assigneeId.intValue());
             assigneeVO.setWebUrl(assigneeUser.getImageUrl());
@@ -914,7 +918,11 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         String createUserName = null;
         String createUserRealName = null;
         if (userDTO != null) {
-            createUserName = userDTO.getLoginName();
+            if(userDTO.getLdap()){
+                createUserName = userDTO.getLoginName();
+            }else {
+                createUserName = userDTO.getEmail();
+            }
             createUserUrl = userDTO.getImageUrl();
             createUserRealName = userDTO.getRealName();
         }
