@@ -34,6 +34,7 @@ import io.choerodon.devops.infra.dto.PipelineTaskRecordDTO;
 import io.choerodon.devops.infra.enums.PipelineNoticeType;
 import io.choerodon.devops.infra.enums.WorkFlowStatus;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
+import io.choerodon.devops.infra.util.TypeUtil;
 
 
 /**
@@ -279,7 +280,13 @@ public class DevopsSagaHandler {
             pipelineTaskRecordDTO.setId(appServiceDeployVO.getRecordId());
             pipelineTaskRecordDTO.setStatus(WorkFlowStatus.FAILED.toValue());
             pipelineTaskRecordService.baseCreateOrUpdateRecord(pipelineTaskRecordDTO);
-            pipelineService.updateStatus(pipelineRecordId, stageRecordId, WorkFlowStatus.FAILED.toValue(), e.getMessage());
+
+            Long time = System.currentTimeMillis() - TypeUtil.objToLong(stageRecordDTO.getExecutionTime());
+            stageRecordDTO.setStatus(WorkFlowStatus.FAILED.toValue());
+            stageRecordDTO.setExecutionTime(time.toString());
+            pipelineStageRecordService.baseCreateOrUpdate(stageRecordDTO);
+            
+            pipelineService.updateStatus(pipelineRecordId, null, WorkFlowStatus.FAILED.toValue(), e.getMessage());
             NoticeSendDTO.User user = new NoticeSendDTO.User();
             user.setEmail(GitUserNameUtil.getEmail());
             user.setId(GitUserNameUtil.getUserId().longValue());
