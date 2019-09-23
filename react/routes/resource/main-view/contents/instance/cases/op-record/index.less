@@ -1,7 +1,5 @@
 @import '~choerodon-ui/lib/style/themes/default';
 
-@active-color: #5266d4;
-
 .c7ncd-deployment-cases-record {
   position: relative;
   display: flex;
@@ -73,7 +71,7 @@
           display: inline-block;
           width: .11rem;
           height: .11rem;
-          color: @active-color;
+          color: @primary-color;
           border: .025rem solid;
           border-radius: 50%;
           background: #fff;
@@ -84,17 +82,17 @@
       &-active {
         .operation-record-time,
         .operation-record-title {
-          color: @active-color;
+          color: @primary-color;
         }
 
         .operation-record-user {
           .c7ncd-userinfo-name {
-            color: @active-color;
+            color: @primary-color;
           }
         }
 
         .operation-record-icon {
-          background: @active-color !important;
+          background: @primary-color !important;
         }
       }
     }

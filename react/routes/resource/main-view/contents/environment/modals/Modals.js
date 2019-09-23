@@ -9,7 +9,7 @@ import { useResourceStore } from '../../../../stores';
 import { useEnvironmentStore } from '../stores';
 import { useModalStore } from './stores';
 
-import '../../../../../../components/dynamic-select/style';
+import '../../../../../../components/dynamic-select/style/index.less';
 
 const modalKey1 = Modal.key();
 const modalKey2 = Modal.key();
