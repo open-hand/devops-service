@@ -36,8 +36,8 @@
         FROM
         devops_env_command d
         WHERE
-        d.object = #{objectType} and d.object_id = #{objectId}
-        and d.command_type in ('update','create')
+        d.object = #{objectType} AND d.object_id = #{objectId}
+        AND d.command_type IN ('update','create')
         ORDER BY d.id DESC
     </select>
 
@@ -57,13 +57,10 @@ WHERE
 	AND command_type IN ( 'update', 'create' )
     </select>
 
-
     <update id="updateSha">
         UPDATE devops_env_command dc
-        SET dc.error = null ,
+        SET dc.error = NULL ,
          dc.sha = #{sha}
         WHERE dc.id = #{id}
     </update>
-
-
 </mapper>
