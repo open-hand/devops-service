@@ -33,6 +33,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
 
     private static final String C7N_HELM_RELEASE = "C7NHelmRelease";
     private static final String GIT_SUFFIX = "/.git";
+    private static final String COMPARE_VALUES = "{}";
     @Autowired
     private DevopsEnvCommandService devopsEnvCommandService;
     @Autowired
@@ -236,7 +237,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
             LOGGER.info(instanceValueVO.getDeltaYaml());
             LOGGER.info("======================已部署versionId=========================={}",devopsEnvCommandDTO.getObjectVersionId());
             LOGGER.info("======================应该部署versionId=========================={}",appServiceVersionDTO.getId());
-            if (deployValue != null && (instanceValueVO.getDeltaYaml() == null || instanceValueVO.getDeltaYaml().equals("")) && appServiceVersionDTO.getId().equals(devopsEnvCommandDTO.getObjectVersionId())) {
+            if (deployValue != null && (instanceValueVO.getDeltaYaml() == null || instanceValueVO.getDeltaYaml().equals("")||instanceValueVO.getDeltaYaml().equals(COMPARE_VALUES)) && appServiceVersionDTO.getId().equals(devopsEnvCommandDTO.getObjectVersionId())) {
                 appServiceDeployVO.setIsNotChange(true);
             }
             appServiceDeployVO.setInstanceId(appServiceInstanceDTO.getId());
