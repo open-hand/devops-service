@@ -1058,16 +1058,18 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         String path = "deployfile";
         FileUtil.saveDataToFile(path, fileName, versionValue + "\n" + "---" + "\n" + deployValue);
         InstanceValueVO instanceValueVO;
+        String absoluteFilePath = path + System.getProperty(FILE_SEPARATOR) + fileName;
         try {
-            instanceValueVO = FileUtil.replaceNew(path + System.getProperty(FILE_SEPARATOR) + fileName);
+            instanceValueVO = FileUtil.replaceNew(absoluteFilePath);
         } catch (Exception e) {
+            FileUtil.deleteFile(absoluteFilePath);
             throw new CommonException(e.getMessage(), e);
         }
         if (instanceValueVO.getHighlightMarkers() == null) {
             instanceValueVO.setHighlightMarkers(new ArrayList<>());
         }
         instanceValueVO.setTotalLine(FileUtil.getFileTotalLine(instanceValueVO.getYaml()));
-        FileUtil.deleteFile(path + System.getProperty(FILE_SEPARATOR) + fileName);
+        FileUtil.deleteFile(absoluteFilePath);
         return instanceValueVO;
     }
 
