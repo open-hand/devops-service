@@ -946,14 +946,22 @@ public class ApplicationServiceImpl implements ApplicationService {
         }
         try {
             ProjectE projectE = iamRepository.queryIamProject(applicationE.getProjectE().getId());
+            DevopsProjectE devopsProjectE = devopsProjectRepository.queryDevopsProject(projectE.getId());
             Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
             InputStream inputStream;
-            ProjectConfigDTO harborProjectConfig;
-            ProjectConfigDTO chartProjectConfig;
+            ProjectConfigDTO harborProjectConfig = null;
+            ProjectConfigDTO chartProjectConfig = null;
             if (applicationE.getHarborConfigE() != null) {
-                harborProjectConfig = devopsProjectConfigRepository.queryByPrimaryKey(applicationE.getHarborConfigE().getId()).getConfig();
+                DevopsProjectConfigE devopsProjectConfigE = devopsProjectConfigRepository.queryByPrimaryKey(applicationE.getHarborConfigE().getId());
+                if(devopsProjectConfigE.getName().equals("harbor_default")) {
+                    harborProjectConfig = devopsProjectConfigE.getConfig();
+                    harborProjectConfig.setUserName(devopsProjectE.getHarborProjectUserName());
+                    harborProjectConfig.setPassword(devopsProjectE.getHarborProjectUserPassword());
+                }
             } else {
                 harborProjectConfig = devopsProjectConfigRepository.queryByIdAndType(null, ProjectConfigType.HARBOR.getType()).get(0).getConfig();
+                harborProjectConfig.setUserName(devopsProjectE.getHarborProjectUserName());
+                harborProjectConfig.setPassword(devopsProjectE.getHarborProjectUserPassword());
             }
             if (applicationE.getChartConfigE() != null) {
                 chartProjectConfig = devopsProjectConfigRepository.queryByPrimaryKey(applicationE.getChartConfigE().getId()).getConfig();

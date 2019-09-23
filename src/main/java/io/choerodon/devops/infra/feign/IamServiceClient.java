@@ -32,6 +32,10 @@ public interface IamServiceClient {
     @GetMapping("/v1/organizations/{organizationId}")
     ResponseEntity<OrganizationDO> queryOrganizationById(@PathVariable("organizationId") Long organizationId);
 
+    @GetMapping("v1/organizations")
+    ResponseEntity<PageInfo<OrganizationDO>>  listOrganizations(@RequestParam("page") Integer page,
+                                                      @RequestParam("size") Integer size);
+
     @PostMapping(value = "/v1/project/{projectId}/memberRoles/single")
     ResponseEntity<MemberRoleV> addMemberRole(@PathVariable("projectId") Long projectId, @RequestBody @Valid MemberRoleV memberRoleVo);
 

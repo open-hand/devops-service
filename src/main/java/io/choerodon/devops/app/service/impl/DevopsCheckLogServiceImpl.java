@@ -4,10 +4,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -21,6 +18,7 @@ import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.base.domain.PageRequest;
+import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.dto.gitlab.MemberDTO;
@@ -35,16 +33,25 @@ import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
 import io.choerodon.devops.domain.application.event.IamAppPayLoad;
 import io.choerodon.devops.domain.application.repository.*;
-import io.choerodon.devops.domain.application.valueobject.*;
+import io.choerodon.devops.domain.application.valueobject.CheckLog;
+import io.choerodon.devops.domain.application.valueobject.Organization;
+import io.choerodon.devops.domain.application.valueobject.ProjectHook;
+import io.choerodon.devops.domain.application.valueobject.Stage;
 import io.choerodon.devops.infra.common.util.*;
 import io.choerodon.devops.infra.common.util.enums.ResourceType;
+import io.choerodon.devops.infra.config.ConfigurationProperties;
+import io.choerodon.devops.infra.config.HarborConfigurationProperties;
 import io.choerodon.devops.infra.config.RetrofitHandler;
 import io.choerodon.devops.infra.dataobject.*;
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
 import io.choerodon.devops.infra.dataobject.gitlab.CommitDO;
 import io.choerodon.devops.infra.dataobject.gitlab.CommitStatuseDO;
 import io.choerodon.devops.infra.dataobject.gitlab.GroupDO;
+import io.choerodon.devops.infra.dataobject.harbor.*;
+import io.choerodon.devops.infra.dataobject.iam.OrganizationDO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
+import io.choerodon.devops.infra.feign.HarborClient;
+import io.choerodon.devops.infra.feign.IamServiceClient;
 import io.choerodon.devops.infra.feign.SonarClient;
 import io.choerodon.devops.infra.mapper.*;
 import io.kubernetes.client.models.V1Pod;
@@ -60,6 +67,8 @@ import org.springframework.stereotype.Service;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.nodes.Tag;
+import retrofit2.Response;
+import retrofit2.Retrofit;
 
 @Service
 public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
@@ -174,11 +183,15 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private DevopsEnvCommandRepository devopsEnvCommandRepository;
     @Autowired
     private DevopsEnvCommandValueRepository devopsEnvCommandValueRepository;
+    @Autowired
+    private IamServiceClient iamServiceClient;
+    @Autowired
+    private HarborConfigurationProperties harborConfigurationProperties;
 
     @Override
     public void checkLog(String version) {
         LOGGER.info("start upgrade task");
-        executorService.submit(new UpgradeTask(version));
+        executorService.execute(new UpgradeTask(version));
     }
 
 
@@ -542,6 +555,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 syncSonarProject(logs);
             } else if ("0.18.0".equals(version)) {
                 syncDeployValues(logs);
+            } else if ("0.18.13".equals(version)) {
+                syncHarbor();
             } else {
                 LOGGER.info("version not matched");
             }
@@ -569,6 +584,100 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 }
             });
         }
+
+
+        private void syncHarbor() {
+            LOGGER.info("开始同步创建harbor用户账号");
+            ConfigurationProperties configurationProperties = new ConfigurationProperties(harborConfigurationProperties);
+            configurationProperties.setType("harbor");
+            Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
+            HarborClient harborClient = retrofit.create(HarborClient.class);
+            ResponseEntity<PageInfo<OrganizationDO>> organizationDOS = iamServiceClient.listOrganizations(0, 0);
+            if (organizationDOS.getStatusCode().is2xxSuccessful()) {
+                try {
+                    for (OrganizationDO organizationDO : organizationDOS.getBody().getList()) {
+                        Organization organization = iamRepository.queryOrganizationById(organizationDO.getId());
+                        PageInfo<ProjectE> projectEPageInfo = iamRepository.queryProjectByOrgId(organizationDO.getId(), 0, 0, null, null);
+                        for (ProjectE projectE : projectEPageInfo.getList()) {
+                            LOGGER.info("开始创建{}{}{}的用户", projectE.getId(), projectE.getName(), projectE.getCode());
+                            DevopsProjectE devopsProjectE = null;
+                            try {
+                                devopsProjectE = devopsProjectRepository.queryDevopsProject(projectE.getId());
+                            } catch (CommonException e) {
+                                //未同步成功的项目不处理
+                            }
+                            if (devopsProjectE != null) {
+                                String username = devopsProjectE.getHarborProjectUserName() == null ? String.format("user%s%s", organization.getId(), projectE.getId()) : devopsProjectE.getHarborProjectUserName();
+                                String email = devopsProjectE.getHarborProjectUserEmail() == null ? String.format("%s@harbor.com", username) : devopsProjectE.getHarborProjectUserEmail();
+                                String password = devopsProjectE.getHarborProjectUserPassword() == null ? String.format("%spassword", username) : devopsProjectE.getHarborProjectUserPassword();
+                                User user = new User(username, email, password, username);
+                                //创建用户
+                                Response<Void> result = null;
+                                try {
+                                    Response<List<User>> users = harborClient.listUser(username).execute();
+                                    if (users.raw().code() != 200) {
+                                        throw new CommonException(users.errorBody().string());
+                                    }
+                                    if (users.body().isEmpty()) {
+                                        result = harborClient.insertUser(user).execute();
+                                        if (result.raw().code() != 201) {
+                                            throw new CommonException(result.errorBody().string());
+                                        }
+                                    }else {
+                                        Boolean exist = users.body().stream().anyMatch(user1 -> user1.getUsername().equals(username));
+                                        if(!exist) {
+                                            result = harborClient.insertUser(user).execute();
+                                            if (result.raw().code() != 201) {
+                                                throw new CommonException(result.errorBody().string());
+                                            }
+                                        }
+                                    }
+                                    //给项目绑定角色
+                                    Response<List<ProjectDetail>> projects = harborClient.listProject(organization.getCode() + "-" + projectE.getCode()).execute();
+                                    if (projects.body() != null && !projects.body().isEmpty()) {
+                                        Response<SystemInfo> systemInfoResponse = harborClient.getSystemInfo().execute();
+                                        if (systemInfoResponse.raw().code() != 200) {
+                                            throw new CommonException(systemInfoResponse.errorBody().string());
+                                        }
+
+                                        if (systemInfoResponse.body().getHarborVersion().equals("v1.4.0")) {
+                                            Role role = new Role();
+                                            role.setUsername(user.getUsername());
+                                            role.setRoles(Arrays.asList(1));
+                                            result = harborClient.setProjectMember(projects.body().get(0).getProjectId(), role).execute();
+                                        } else {
+                                            ProjectMember projectMember = new ProjectMember();
+                                            MemberUser memberUser = new MemberUser();
+                                            memberUser.setUsername(username);
+                                            projectMember.setMemberUser(memberUser);
+                                            result = harborClient.setProjectMember(projects.body().get(0).getProjectId(), projectMember).execute();
+                                        }
+                                        if (result.raw().code() != 201 && result.raw().code() != 200 && result.raw().code() != 409) {
+                                            throw new CommonException(result.errorBody().string());
+                                        }
+                                    }
+                                    if (devopsProjectE.getHarborProjectUserPassword() == null) {
+                                        devopsProjectE.setHarborProjectUserName(user.getUsername());
+                                        devopsProjectE.setHarborProjectIsPrivate(true);
+                                        devopsProjectE.setHarborProjectUserPassword(user.getPassword());
+                                        devopsProjectE.setHarborProjectUserEmail(user.getEmail());
+                                    }
+                                    devopsProjectRepository.updateProjectAttr(ConvertHelper.convert(devopsProjectE, DevopsProjectDO.class));
+                                    LOGGER.info("创建{}的用户成功", projectE.getName());
+                                } catch (IOException e) {
+                                    throw new CommonException(e);
+                                }
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    LOGGER.info("failed", e);
+                    throw new CommonException(e);
+                }
+            }
+            LOGGER.info("同步创建harbor用户账号成功");
+        }
+
 
         /**
          * 同步devops应用表数据到iam应用表数据
@@ -625,7 +734,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                     {
                         CheckLog checkLog = new CheckLog();
                         checkLog.setContent(String.format("Sync instance deploy value of %s", applicationInstanceE.getCode()));
-                        LOGGER.info("Sync instance deploy value of {}",applicationInstanceE.getCode());
+                        LOGGER.info("Sync instance deploy value of {}", applicationInstanceE.getCode());
                         try {
                             DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(applicationInstanceE.getCommandId());
                             String versionValue = applicationVersionRepository.queryValue(devopsEnvCommandE.getObjectVersionId());
@@ -634,7 +743,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                             checkLog.setResult("success");
                         } catch (Exception e) {
                             checkLog.setResult("fail");
-                            LOGGER.info(e.getMessage(),e);
+                            LOGGER.info(e.getMessage(), e);
                         }
                         logs.add(checkLog);
                     }

@@ -37,6 +37,11 @@ public class IamServiceClientFallback implements IamServiceClient {
     }
 
     @Override
+    public ResponseEntity<PageInfo<OrganizationDO>> listOrganizations(Integer page, Integer size) {
+        return new ResponseEntity("error.organization.get", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Override
     public ResponseEntity<MemberRoleV> addMemberRole(Long projectId, MemberRoleV memberRoleVo) {
         return new ResponseEntity("error.memberRole.add", HttpStatus.INTERNAL_SERVER_ERROR);
     }
