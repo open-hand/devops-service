@@ -57,7 +57,7 @@ WHERE
 				AND
 					t.pipelineName LIKE CONCAT(CONCAT('%', #{searchParam.pipelineName, jdbcType=VARCHAR}),'%')
 			</if>
-			<if test='searchParam.env != null and searchParam.env.length > 0'>
+			<if test='searchParam.env != null'>
 				AND
 					t.env LIKE CONCAT(CONCAT('%', #{searchParam.env, jdbcType=VARCHAR}),'%')
 			</if>
