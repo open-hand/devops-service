@@ -6,7 +6,7 @@ export default ((intlPrefix, formatMessage, envOptions, pipelineOptions, listDs)
         env: record.get('env') ? String(record.get('env')) : null,
         deployType: record.get('deployType'),
         deployStatus: record.get('deployStatus'),
-        pipeline: record.get('pipelineId'),
+        pipelineId: record.get('pipelineId'),
       },
     };
     listDs.query();

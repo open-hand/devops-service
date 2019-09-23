@@ -44,11 +44,12 @@ const PodList = observer(() => {
   }
 
 
-  function openModal(value, timeList, name) {
+  function openModal(value, timeList, type) {
+    const name = type === 'cpu' ? 'CPU /m' : 'Memory /MiB';
     Modal.open({
       key: modalKey,
       style: modalStyle,
-      header: false,
+      title: formatMessage({ id: `${intlPrefix}.report.${type}` }),
       children: <div>
         <ReactEcharts
           option={getOption(value, timeList, name, true)}
@@ -97,10 +98,7 @@ const PodList = observer(() => {
   }
 
   function getOption(value, timeList, name, show = false) {
-    return ({
-      grid: {
-        bottom: 30,
-      },
+    const optionData = show ? {
       tooltip: {
         trigger: 'item',
         backgroundColor: '#fff',
@@ -108,6 +106,13 @@ const PodList = observer(() => {
           color: '#000',
         },
       },
+    } : {
+      grid: {
+        bottom: 30,
+      },
+    };
+    return ({
+      ...optionData,
       color: '#7885cb',
       xAxis: {
         type: 'category',
@@ -188,18 +193,18 @@ const PodList = observer(() => {
               {renderRegistry(containers, index)}
             </li>
             <li className="service-detail-pod-echarts">
-              <Tooltip title="查看CPU使用量">
-                <div onClick={() => openModal(cpuUsedList, timeList, 'CPU 1500m')}>
+              <Tooltip title={formatMessage({ id: `${intlPrefix}.report.cpu.click` })}>
+                <div onClick={() => openModal(cpuUsedList, timeList, 'cpu')}>
                   <ReactEcharts
-                    option={getOption(cpuUsedList, timeList, 'CPU 1500m')}
+                    option={getOption(cpuUsedList, timeList, 'CPU /m')}
                     style={{ height: '0.42rem', width: '1.2rem' }}
                   />
                 </div>
               </Tooltip>
-              <Tooltip title="查看内存使用量">
-                <div onClick={() => openModal(memoryUsedList, timeList, 'Memory 1600MiB')}>
+              <Tooltip title={formatMessage({ id: `${intlPrefix}.report.memory.click` })}>
+                <div onClick={() => openModal(memoryUsedList, timeList, 'memory')}>
                   <ReactEcharts
-                    option={getOption(memoryUsedList, timeList, 'Memory 1600MiB')}
+                    option={getOption(memoryUsedList, timeList, 'Memory /MiB')}
                     style={{ height: '0.42rem', width: '1.2rem' }}
                   />
                 </div>
