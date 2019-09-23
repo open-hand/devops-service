@@ -24,7 +24,7 @@ public class DevopsAppServiceResourceServiceImpl implements DevopsAppServiceReso
     @Override
     public void handleAppServiceResource(List<Long> appServiceIds, Long resourceId, String type) {
         List<Long> oldAppServiceIds = baseQueryByResourceIdAndType(resourceId, type).stream().map(DevopsAppServiceResourceDTO::getAppServiceId).collect(Collectors.toList());
-        if(appServiceIds==null){
+        if (appServiceIds == null) {
             appServiceIds = new ArrayList<>();
         }
         List<Long> appServiceIdscollect = appServiceIds.stream().filter(e -> e != null).collect(Collectors.toList());
@@ -34,12 +34,16 @@ public class DevopsAppServiceResourceServiceImpl implements DevopsAppServiceReso
                 List<Long> addlist = new ArrayList<>();
                 appServiceIdscollect.forEach(aLong -> {
                     if (!oldAppServiceIds.contains(aLong)) {
-                        addlist.add(aLong);
+                        //添加新的
+                        DevopsAppServiceResourceDTO devopsAppServiceResourceDTO = new DevopsAppServiceResourceDTO(aLong, type, resourceId);
+                        baseCreate(devopsAppServiceResourceDTO);
                     }
                 });
-                addlist.stream().forEach(e -> {
-                    DevopsAppServiceResourceDTO devopsAppServiceResourceDTO = new DevopsAppServiceResourceDTO(e, type, resourceId);
-                    baseCreate(devopsAppServiceResourceDTO);
+                //删除旧的
+                oldAppServiceIds.forEach(aLong -> {
+                    if (!appServiceIdscollect.contains(aLong)) {
+                        baseDeleteByResourceIdAndType(resourceId, type);
+                    }
                 });
             } else {
                 oldAppServiceIds.stream().forEach(e -> {
