@@ -2283,8 +2283,14 @@ public class AppServiceServiceImpl implements AppServiceService {
             projectDTOS = baseServiceClientOperator.queryProjectsByIds(projectIds);
         } else {
             appServiceDTOList = appServiceMapper.queryMarketDownloadApps(null, null, false, null);
-            Set<Long> appServiceIds = appServiceDTOList.stream().map(appServiceDTO -> appServiceDTO.getId()).collect(Collectors.toSet());
-            List<ApplicationDTO> applicationDTOS = baseServiceClientOperator.listApplicationInfoByAppIds(projectId, appServiceIds);
+            Set<Long> appServiceIds = appServiceDTOList.stream().filter(v -> !ObjectUtils.isEmpty(v.getMktAppId())).map(appServiceDTO -> appServiceDTO.getMktAppId()).collect(Collectors.toSet());
+            List<ApplicationDTO> applicationDTOS = new ArrayList<>();
+            appServiceIds.stream().forEach(v -> {
+                ApplicationDTO applicationDTO = baseServiceClientOperator.queryAppById(v);
+                if (!ObjectUtils.isEmpty(applicationDTO)) {
+                    applicationDTOS.add(applicationDTO);
+                }
+            });
             if (!CollectionUtils.isEmpty(applicationDTOS)) {
                 projectDTOS = ConvertUtils.convertList(applicationDTOS, ProjectDTO.class);
             }
