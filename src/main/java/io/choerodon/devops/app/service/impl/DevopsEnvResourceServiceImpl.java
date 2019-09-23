@@ -21,6 +21,7 @@ import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.mapper.DevopsEnvResourceMapper;
 import io.choerodon.devops.infra.util.K8sUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
+import org.springframework.util.ObjectUtils;
 
 /**
  * Created by younger on 2018/4/25.
@@ -43,7 +44,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
     @Autowired
     private DevopsEnvCommandLogService devopsEnvCommandLogService;
     @Autowired
-    private DevopsEnvResourceDetailService  devopsEnvResourceDetailService;
+    private DevopsEnvResourceDetailService devopsEnvResourceDetailService;
     @Autowired
     private AppServiceInstanceService appServiceInstanceService;
     @Autowired
@@ -94,9 +95,9 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
      * 处理获取的资源详情，将资源详情根据类型进行数据处理填入 devopsEnvResourceDTO 中
      *
      * @param devopsEnvResourceDetailDTO 资源详情
-     * @param devopsEnvResourceDTO  资源
-     * @param devopsEnvResourceVO     存放处理结果的dto
-     * @param envId                    环境id
+     * @param devopsEnvResourceDTO       资源
+     * @param devopsEnvResourceVO        存放处理结果的dto
+     * @param envId                      环境id
      */
     private void dealWithResource(DevopsEnvResourceDetailDTO devopsEnvResourceDetailDTO, DevopsEnvResourceDTO devopsEnvResourceDTO, DevopsEnvResourceVO devopsEnvResourceVO, Long envId) {
         ResourceType resourceType = ResourceType.forString(devopsEnvResourceDTO.getKind());
@@ -194,8 +195,10 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
         devopsEnvCommandDTOS.forEach(devopsEnvCommandDTO -> {
             InstanceEventVO instanceEventVO = new InstanceEventVO();
             IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(devopsEnvCommandDTO.getCreatedBy());
-            instanceEventVO.setLoginName(iamUserDTO == null ? null : iamUserDTO.getLoginName());
-            instanceEventVO.setRealName(iamUserDTO == null ? null : iamUserDTO.getRealName());
+            if (!ObjectUtils.isEmpty(iamUserDTO)) {
+                instanceEventVO.setLoginName(iamUserDTO.getLdap() ? iamUserDTO.getLoginName() : iamUserDTO.getEmail());
+                instanceEventVO.setRealName(iamUserDTO.getRealName());
+            }
             instanceEventVO.setStatus(devopsEnvCommandDTO.getStatus());
             instanceEventVO.setUserImage(iamUserDTO == null ? null : iamUserDTO.getImageUrl());
             instanceEventVO.setCreateTime(devopsEnvCommandDTO.getCreationDate());
@@ -565,7 +568,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
     @Override
     public DevopsEnvResourceDTO baseQueryOptions(Long instanceId, Long commandId, Long envId, String kind, String name) {
         List<DevopsEnvResourceDTO> devopsEnvResourceDTOS = devopsEnvResourceMapper.queryResource(instanceId, commandId, envId, kind, name);
-        if(devopsEnvResourceDTOS.isEmpty()) {
+        if (devopsEnvResourceDTOS.isEmpty()) {
             return null;
         }
         return devopsEnvResourceDTOS.get(0);

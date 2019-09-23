@@ -131,7 +131,7 @@ public class PipelineServiceImpl implements PipelineService {
 
         pageInfo.setList(pageInfo.getList().stream().peek(t -> {
             IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(t.getCreatedBy());
-            t.setCreateUserName(iamUserDTO.getLoginName());
+            t.setCreateUserName(iamUserDTO.getLdap() ? iamUserDTO.getLoginName() : iamUserDTO.getEmail());
             t.setCreateUserRealName(iamUserDTO.getRealName());
             t.setCreateUserUrl(iamUserDTO.getImageUrl());
             List<Long> pipelineEnvIds = getAllAppDeploy(t.getId()).stream().map(PipelineAppServiceDeployDTO::getEnvId).collect(Collectors.toList());
@@ -783,7 +783,7 @@ public class PipelineServiceImpl implements PipelineService {
 
         DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(pipelineRecordDTOS.get(0).getProjectId(), "auto", pipelineRecordDTO.getId(), pipelineRecordDTOS.get(0).getEnv(), pipelineRecordDTO.getCreationDate());
         devopsDeployRecordService.baseCreate(devopsDeployRecordDTO);
-        LOGGER.info("++++++++++++流水线创建++++++++devopsDeployRecordDTO+++++，deployId：{}",pipelineRecordDTO.getId());
+        LOGGER.info("++++++++++++流水线创建++++++++devopsDeployRecordDTO+++++，deployId：{}", pipelineRecordDTO.getId());
     }
 
     @Override

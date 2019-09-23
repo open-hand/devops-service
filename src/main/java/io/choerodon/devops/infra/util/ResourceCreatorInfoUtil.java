@@ -23,6 +23,10 @@ public class ResourceCreatorInfoUtil {
      */
     public static String getOperatorName(BaseServiceClientOperator baseServiceClientOperator, Long userId) {
         IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(userId);
-        return iamUserDTO.getLoginName() + " " + iamUserDTO.getRealName();
+        if (iamUserDTO.getLdap()) {
+            return iamUserDTO.getLoginName() + " " + iamUserDTO.getRealName();
+        } else {
+            return iamUserDTO.getEmail() + " " + iamUserDTO.getRealName();
+        }
     }
 }
