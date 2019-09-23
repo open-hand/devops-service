@@ -49,6 +49,12 @@
         </if>
     </sql>
 
+    <sql id="sqlparamEnable">
+        <if test='pipelineSearchVO!=null and pipelineSearchVO.enabled != null'>
+            AND dp.is_enabled = #{pipelineSearchVO.enabled}
+        </if>
+    </sql>
+
     <sql id="sqlparamTriggerType">
         <if test='pipelineSearchVO!=null and pipelineSearchVO.triggerType != null and pipelineSearchVO.triggerType!=""'>
             AND dp.trigger_type=#{pipelineSearchVO.triggerType}
@@ -86,6 +92,7 @@
         WHERE
         dp.project_id = #{projectId}
         <include refid="sqlparamName"/>
+        <include refid="sqlparamEnable"/>
         <include refid="sqlparamTriggerType"/>
     </sql>
 
@@ -95,6 +102,7 @@
         WHERE
         dp.project_id = #{projectId}
         <include refid="sqlparamName"/>
+        <include refid="sqlparamEnable"/>
         <include refid="sqlparamTriggerType"/>
         AND dp.created_by = #{userId}
     </sql>
@@ -104,6 +112,7 @@
         <include refid="sqlparamEnvId"/>
         WHERE
         dp.project_id = #{projectId}
+        <include refid="sqlparamEnable"/>
         <include refid="sqlparamTriggerType"/>
         <include refid="sqlparamName"/>
     </sql>

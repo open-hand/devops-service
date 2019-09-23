@@ -235,9 +235,9 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
             InstanceValueVO instanceValueVO = appServiceInstanceService.getReplaceResult(deployValue, appServiceDeployVO.getValues());
             LOGGER.info("======================应该部署values==========================");
             LOGGER.info(instanceValueVO.getDeltaYaml());
-            LOGGER.info("======================已部署versionId=========================={}",devopsEnvCommandDTO.getObjectVersionId());
-            LOGGER.info("======================应该部署versionId=========================={}",appServiceVersionDTO.getId());
-            if (deployValue != null && (instanceValueVO.getDeltaYaml() == null || instanceValueVO.getDeltaYaml().equals("")||instanceValueVO.getDeltaYaml().equals(COMPARE_VALUES)) && appServiceVersionDTO.getId().equals(devopsEnvCommandDTO.getObjectVersionId())) {
+            LOGGER.info("======================已部署versionId=========================={}", devopsEnvCommandDTO.getObjectVersionId());
+            LOGGER.info("======================应该部署versionId=========================={}", appServiceVersionDTO.getId());
+            if (deployValue != null && (instanceValueVO.getDeltaYaml() == null || instanceValueVO.getDeltaYaml().equals("") || instanceValueVO.getDeltaYaml().trim().equals(COMPARE_VALUES)) && appServiceVersionDTO.getId().equals(devopsEnvCommandDTO.getObjectVersionId())) {
                 appServiceDeployVO.setIsNotChange(true);
             }
             appServiceDeployVO.setInstanceId(appServiceInstanceDTO.getId());
