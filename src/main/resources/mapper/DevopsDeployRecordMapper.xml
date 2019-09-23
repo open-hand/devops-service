@@ -15,7 +15,8 @@ SELECT
 	dc.`status` deployStatus,
 	dc.created_by deployCreatedBy,
 	NULL pipelineName,
-	NULL pipelineTriggerType
+	NULL pipelineTriggerType,
+	NULL pipelineId
 FROM
 	devops_deploy_record ddr
 	LEFT JOIN devops_env_command dc ON ddr.deploy_id = dc.id
@@ -31,7 +32,8 @@ SELECT
 	dpc.`status` deployStatus,
 	dpc.created_by deployCreatedBy,
 	dpc.pipeline_name pipelineName,
-	dpc.trigger_type pipelineTriggerType
+	dpc.trigger_type pipelineTriggerType,
+	dpc.pipeline_id pipelineId
 FROM
 	devops_deploy_record ddr
 	LEFT JOIN devops_pipeline_record dpc ON ddr.deploy_id = dpc.id
@@ -64,6 +66,10 @@ WHERE
 			<if test='searchParam.deployId != null'>
 				AND
 				t.deploy_id =#{searchParam.deployId}
+			</if>
+			<if test='searchParam.pipelineId != null'>
+				AND
+				t.pipelineId =#{searchParam.pipelineId}
 			</if>
 		</if>
 		<if test='params != null and params.size > 0'>
