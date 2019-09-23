@@ -1,6 +1,6 @@
-import React, { Fragment, lazy, Suspense, memo } from 'react';
+import React, { Fragment, lazy, Suspense, memo, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Tabs, Icon, Spin, message } from 'choerodon-ui';
+import { Tabs, Icon, Spin } from 'choerodon-ui';
 import PageTitle from '../../../../../components/page-title';
 import { useApplicationStore } from './stores';
 import { useResourceStore } from '../../../stores';
@@ -41,22 +41,31 @@ const AppContent = observer(() => {
     appStore.setTabKey(key);
   }
 
-  function updateTreeItem(id, name) {
-    const menuItem = treeDs.find((item) => item.get('id') === id);
-
-    if (menuItem && menuItem.get('name') !== name) {
-      menuItem.set('name', name);
-    }
-  }
-
-  function getTitle() {
+  function getCurrent() {
     const record = baseInfoDs.current;
     if (record) {
       const id = record.get('id');
       const name = record.get('name');
-      updateTreeItem(id, name);
+      return { id, name };
+    }
+    return null;
+  }
 
-      return <AppTitle name={name} />;
+  useEffect(() => {
+    const current = getCurrent();
+    if (current) {
+      const menuItem = treeDs.find((item) => item.get('id') === current.id);
+
+      if (menuItem && menuItem.get('name') !== current.name) {
+        menuItem.set('name', current.name);
+      }
+    }
+  });
+
+  function getTitle() {
+    const current = getCurrent();
+    if (current) {
+      return <AppTitle name={current.name} />;
     }
     return null;
   }

@@ -1,15 +1,13 @@
-import React, { Fragment, lazy, Suspense } from 'react';
+import React, { Fragment, lazy, Suspense, useEffect } from 'react';
 import { runInAction } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import pick from 'lodash/pick';
-import { Tabs, Spin, message } from 'choerodon-ui';
+import { Tabs, Spin } from 'choerodon-ui';
 import isEqual from 'lodash/isEqual';
-import forEach from 'lodash/forEach';
 import { useEnvironmentStore } from '../../../stores';
 import { useDetailStore } from './stores';
 import PageTitle from '../../../../../components/page-title';
 import EnvItem from '../../../../../components/env-item';
-import openWarnModal from '../../../../../utils/openWarnModal';
 import Modals from './modals';
 
 const { TabPane } = Tabs;
@@ -20,9 +18,7 @@ const Permissions = lazy(() => import('./Permissions'));
 
 const EnvContent = observer(() => {
   const {
-    envStore: {
-      getSelectedMenu,
-    },
+    envStore,
     treeDs,
   } = useEnvironmentStore();
   const {
@@ -41,17 +37,7 @@ const EnvContent = observer(() => {
     detailStore.setTabKey(key);
   }
 
-  function updateTreeItem(update) {
-    const menuItem = treeDs.find((item) => item.get('id') === update.id);
-    if (menuItem) {
-      const previous = pick(menuItem.toData(), ['id', 'active', 'name', 'connect', 'synchro', 'failed']);
-      if (!isEqual(previous, update)) {
-        forEach(update, ({ value, key }) => menuItem.set(`${key}`, value));
-      }
-    }
-  }
-
-  function getTitle() {
+  function getCurrent() {
     const record = baseDs.current;
     if (record) {
       const id = record.get('id');
@@ -60,15 +46,44 @@ const EnvContent = observer(() => {
       const connect = record.get('connect');
       const synchro = record.get('synchronize');
       const failed = record.get('failed');
-      updateTreeItem({ id, name, active, connect, synchro, failed: failed || false });
-      return <EnvItem
-        isTitle
-        name={name}
-        connect={connect}
-        failed={failed}
-        active={active}
-        synchronize={synchro}
-      />;
+
+      return {
+        id,
+        name,
+        active,
+        connect,
+        synchro,
+        failed: failed || false,
+      };
+    }
+
+    return null;
+  }
+
+  useEffect(() => {
+    const update = getCurrent();
+    if (update) {
+      const menuItem = treeDs.find((item) => item.get('id') === update.id);
+      if (menuItem) {
+        const previous = pick(menuItem.toData(), ['id', 'active', 'name', 'connect', 'synchro', 'failed']);
+        if (!isEqual(previous, update)) {
+          runInAction(() => {
+            menuItem.set(update);
+            const newState = {
+              ...envStore.getSelectedMenu,
+              ...update,
+            };
+            envStore.setSelectedMenu(newState);
+          });
+        }
+      }
+    }
+  });
+
+  function getTitle() {
+    const current = getCurrent();
+    if (current) {
+      return <EnvItem isTitle {...current} />;
     }
     return null;
   }
@@ -78,7 +93,7 @@ const EnvContent = observer(() => {
       name,
       connect,
       active,
-    } = getSelectedMenu;
+    } = envStore.getSelectedMenu;
     return <EnvItem
       isTitle
       name={name}

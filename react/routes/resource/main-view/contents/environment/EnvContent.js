@@ -1,6 +1,7 @@
-import React, { lazy, Suspense } from 'react';
+import React, { lazy, Suspense, useEffect } from 'react';
+import { runInAction } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import { Tabs, Spin, message } from 'choerodon-ui';
+import { Tabs, Spin } from 'choerodon-ui';
 import { useEnvironmentStore } from './stores';
 import { useResourceStore } from '../../../stores';
 import PageTitle from '../../../../../components/page-title';
@@ -18,7 +19,7 @@ const EnvContent = observer(() => {
     prefixCls,
     intlPrefix,
     treeDs,
-    resourceStore: { getSelectedMenu },
+    resourceStore,
   } = useResourceStore();
   const {
     intl: { formatMessage },
@@ -38,30 +39,46 @@ const EnvContent = observer(() => {
     treeDs.query();
   }
 
-  function updateTreeItem({ id, name, active, connect }) {
-    const menuItem = treeDs.find((item) => item.get('id') === id);
-
-    if (menuItem) {
-      // 清除已经停用的环境
-      if (!active) {
-        openWarnModal(refresh, formatMessage);
-      } else if ((menuItem.get('connect') !== connect
-        || menuItem.get('name') !== name)) {
-        menuItem.set('connect', connect);
-        menuItem.set('name', name);
-      }
-    }
-  }
-
-  function getTitle() {
+  function getCurrent() {
     const record = baseInfoDs.current;
     if (record) {
       const id = record.get('id');
       const name = record.get('name');
       const active = record.get('active');
       const connect = record.get('connect');
-      updateTreeItem({ id, name, active, connect });
-      return <EnvItem isTitle name={name} connect={connect} />;
+      return { id, name, active, connect };
+    }
+    return null;
+  }
+
+  useEffect(() => {
+    const currentBase = getCurrent();
+    if (currentBase) {
+      const { id, name, active, connect } = currentBase;
+      const menuItem = treeDs.find((item) => item.get('id') === id);
+      if (menuItem) {
+        // 清除已经停用的环境
+        if (!active) {
+          openWarnModal(refresh, formatMessage);
+        } else if ((menuItem.get('connect') !== connect
+          || menuItem.get('name') !== name)) {
+          runInAction(() => {
+            menuItem.set({ name, connect });
+            resourceStore.setSelectedMenu({
+              ...resourceStore.getSelectedMenu,
+              name,
+              connect,
+            });
+          });
+        }
+      }
+    }
+  });
+
+  function getTitle() {
+    const current = getCurrent();
+    if (current) {
+      return <EnvItem isTitle name={current.name} connect={current.connect} />;
     }
     return null;
   }
@@ -70,7 +87,7 @@ const EnvContent = observer(() => {
     const {
       name,
       connect,
-    } = getSelectedMenu;
+    } = resourceStore.getSelectedMenu;
     return <EnvItem isTitle name={name} connect={connect} />;
   }
 

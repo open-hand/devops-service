@@ -1,9 +1,10 @@
-import React, { Fragment, lazy, Suspense, useMemo } from 'react';
+import React, { Fragment, lazy, Suspense, useEffect, useMemo } from 'react';
+import { runInAction } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import { Tabs, Tooltip, Icon, Spin, message } from 'choerodon-ui';
+import { Tabs, Tooltip, Icon, Spin } from 'choerodon-ui';
 import isEqual from 'lodash/isEqual';
-import forEach from 'lodash/forEach';
 import pick from 'lodash/pick';
+import omit from 'lodash/omit';
 import PageTitle from '../../../../../components/page-title';
 import PodCircle from '../../components/pod-circle';
 import Modals from './modals';
@@ -64,7 +65,7 @@ const InstanceContent = observer(() => {
   const {
     prefixCls,
     intlPrefix,
-    resourceStore: { getSelectedMenu },
+    resourceStore,
     treeDs,
   } = useResourceStore();
   const {
@@ -82,17 +83,7 @@ const InstanceContent = observer(() => {
     istStore.setTabKey(key);
   }
 
-  function updateTreeItem(update) {
-    const menuItem = treeDs.find((item) => item.get('id') === update.id);
-    const previous = pick(menuItem.toData(), ['id', 'status', 'name', 'podRunningCount', 'podCount']);
-
-    if (!isEqual(previous, update)) {
-      forEach(update, ({ value, key }) => menuItem.set(`${key}`, value));
-      // message.info(formatMessage({ id: 'data.changed' }));
-    }
-  }
-
-  function getTitle() {
+  function getCurrent() {
     const record = baseDs.current;
     if (record) {
       const id = record.get('id');
@@ -100,21 +91,56 @@ const InstanceContent = observer(() => {
       const code = record.get('code');
       const podRunningCount = record.get('podRunningCount');
       const podCount = record.get('podCount');
-      const podUnlinkCount = podCount - podRunningCount;
-      updateTreeItem({
+      const error = record.get('error');
+      return {
         id,
         status,
-        name: code,
+        code,
         podRunningCount,
         podCount,
-      });
+        error,
+      };
+    }
 
+    return null;
+  }
+
+  useEffect(() => {
+    const current = getCurrent();
+    if (current) {
+      const menuItem = treeDs.find((item) => item.get('id') === current.id);
+      const previous = pick(menuItem.toData(), ['status', 'name', 'podRunningCount', 'podCount']);
+      const next = omit(current, ['id', 'error']);
+
+      if (!isEqual(previous, next)) {
+        runInAction(() => {
+          menuItem.set(next);
+          resourceStore.setSelectedMenu({
+            ...resourceStore.getSelectedMenu,
+            ...next,
+          });
+        });
+      }
+    }
+  });
+
+  function getTitle() {
+    const current = getCurrent();
+    if (current) {
+      const {
+        status,
+        code,
+        podRunningCount,
+        podCount,
+        error,
+      } = current;
+      const podUnlinkCount = podCount - podRunningCount;
       return <InstanceTitle
         status={status}
         name={code}
         podRunningCount={podRunningCount}
         podUnlinkCount={podUnlinkCount}
-        errorText={record.get('error')}
+        errorText={error}
       />;
     }
     return null;
@@ -125,7 +151,7 @@ const InstanceContent = observer(() => {
       name,
       podRunningCount,
       podCount,
-    } = getSelectedMenu;
+    } = resourceStore.getSelectedMenu;
 
     return <InstanceTitle name={name} podRunningCount={podRunningCount} podUnlinkCount={podCount - podRunningCount} />;
   }
