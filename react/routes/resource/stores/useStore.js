@@ -43,6 +43,17 @@ export default function useStore() {
     get getSearchValue() {
       return this.searchValue;
     },
+    upTarget: {},
+    /**
+     * 设置需要更新的模块信息
+     * @param data { type, id }
+     */
+    setUpTarget(data) {
+      this.upTarget = data;
+    },
+    get getUpTarget() {
+      return this.upTarget;
+    },
 
     async checkExist({ projectId, envId, type, id }) {
       try {

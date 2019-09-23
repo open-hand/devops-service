@@ -38,6 +38,22 @@ const EnvContent = observer(() => {
     treeDs.query();
   }
 
+  function updateTreeItem({ id, name, active, connect }) {
+    const menuItem = treeDs.find((item) => item.get('id') === id);
+
+    if (menuItem) {
+      // 清除已经停用的环境
+      if (!active) {
+        openWarnModal(refresh, formatMessage);
+      } else if ((menuItem.get('connect') !== connect
+        || menuItem.get('name') !== name)) {
+        menuItem.set('connect', connect);
+        menuItem.set('name', name);
+        message.info(formatMessage({ id: 'data.changed' }));
+      }
+    }
+  }
+
   function getTitle() {
     const record = baseInfoDs.current;
     if (record) {
@@ -45,20 +61,7 @@ const EnvContent = observer(() => {
       const name = record.get('name');
       const active = record.get('active');
       const connect = record.get('connect');
-      const menuItem = treeDs.find((item) => item.get('id') === id);
-
-      if (menuItem) {
-        // 清除已经停用的环境
-        if (!active) {
-          openWarnModal(refresh, formatMessage);
-        } else if ((menuItem.get('connect') !== connect
-          || menuItem.get('name') !== name)) {
-          menuItem.set('connect', connect);
-          menuItem.set('name', name);
-          message.info('基本数据发生变化，已更新。');
-        }
-      }
-
+      updateTreeItem({ id, name, active, connect });
       return <EnvItem isTitle name={name} connect={connect} />;
     }
     return null;

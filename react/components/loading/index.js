@@ -7,8 +7,8 @@ import './index.less';
 
 function Loading({ display = false }) {
   const spinClass = classNames({
-    'spin-hidden': !display,
-    'spin-container': display,
+    'c7ncd-spin-hidden': !display,
+    'c7ncd-spin-container': display,
   });
   return (
     <div className={spinClass}>

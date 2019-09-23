@@ -1,58 +1,67 @@
 import React, { Fragment } from 'react';
-import { Tooltip } from 'choerodon-ui/pro';
 
 import './index.less';
 
+const UPDATE_FAILED = 'failed.upgrade';
+const DEPLOY_FAILED = 'failed.deploy';
+
 export default function DetailsModal({ intlPrefix, record, prefixCls, formatMessage }) {
-  function getStatus() {
+  function getStatusCode() {
     let status;
-    let appServiceVersionId;
-    let commandVersionId;
-    let commandVersion;
     if (record) {
       status = record.get('status');
-      appServiceVersionId = record.get('appServiceVersionId');
-      commandVersionId = record.get('commandVersionId');
-      commandVersion = record.get('commandVersion');
-    }
 
-    if (!status) return null;
-
-    if (status === 'failed') {
-      let code;
-      let title = '';
-      if (appServiceVersionId) {
-        code = 'failed.upgrade';
-        title = formatMessage({ id: `${intlPrefix}.instance.status.failed.upgrade.describe` }, { version: commandVersion });
-      } else if (appServiceVersionId !== commandVersionId) {
-        code = 'failed.deploy';
-        title = formatMessage({ id: `${intlPrefix}.instance.status.failed.deploy.describe` }, { version: commandVersion });
+      if (!status) {
+        return '';
+      } else if (status === 'failed') {
+        const appServiceVersionId = record.get('appServiceVersionId');
+        const commandVersionId = record.get('commandVersionId');
+        if (appServiceVersionId) {
+          return UPDATE_FAILED;
+        } else if (appServiceVersionId !== commandVersionId) {
+          return DEPLOY_FAILED;
+        }
+      } else {
+        return status;
       }
-      return <span className={`${prefixCls}-modals-value ${prefixCls}-modals-cell`}>
-        <Tooltip placement="bottom" title={title}>
-          <span>
-            {formatMessage({ id: `${intlPrefix}.instance.status.${code}` })}
-          </span>
-        </Tooltip>
+    }
+    return '';
+  }
+
+  function getStatus() {
+    const statusCode = getStatusCode();
+
+    return statusCode && <span className={`${prefixCls}-modals-value ${prefixCls}-modals-cell`}>
+        {formatMessage({ id: `${intlPrefix}.instance.status.${statusCode}` })}
       </span>;
+  }
+
+  function getVersion() {
+    const statusCode = getStatusCode();
+    if (!statusCode) return '';
+    const commandVersion = record.get('commandVersion');
+    if (statusCode === UPDATE_FAILED) {
+      return formatMessage({ id: `${intlPrefix}.instance.status.failed.upgrade.describe` }, { version: commandVersion });
+    } else if (statusCode === DEPLOY_FAILED) {
+      return formatMessage({ id: `${intlPrefix}.instance.status.failed.deploy.describe` }, { version: commandVersion });
     } else {
-      return <span className={`${prefixCls}-modals-value ${prefixCls}-modals-cell`}>
-        {formatMessage({ id: `${intlPrefix}.instance.status.${status}` })}
-      </span>;
+      return commandVersion;
     }
   }
 
   return <Fragment>
     <div className={`${prefixCls}-modals-row`}>
-      <span
-        className={`${prefixCls}-modals-key ${prefixCls}-modals-cell`}
-      >{formatMessage({ id: `${intlPrefix}.instance.status` })}：</span>
+      <span className={`${prefixCls}-modals-key ${prefixCls}-modals-cell`}>
+        {formatMessage({ id: `${intlPrefix}.instance.status` })}：
+      </span>
       {getStatus()}
     </div>
     <div className={`${prefixCls}-modals-row`}>
-      <span className={`${prefixCls}-modals-key ${prefixCls}-modals-cell`}>{formatMessage({ id: 'version' })}：</span>
+      <span className={`${prefixCls}-modals-key ${prefixCls}-modals-cell`}>
+        {formatMessage({ id: 'version' })}：
+      </span>
       <span className={`${prefixCls}-modals-value ${prefixCls}-modals-cell`}>
-        {record ? record.get('versionName') : ''}
+        {getVersion()}
       </span>
     </div>
   </Fragment>;

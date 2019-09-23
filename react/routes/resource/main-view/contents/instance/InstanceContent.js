@@ -1,6 +1,9 @@
 import React, { Fragment, lazy, Suspense, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Tabs, Tooltip, Icon, Spin } from 'choerodon-ui';
+import { Tabs, Tooltip, Icon, Spin, message } from 'choerodon-ui';
+import isEqual from 'lodash/isEqual';
+import forEach from 'lodash/forEach';
+import pick from 'lodash/pick';
 import PageTitle from '../../../../../components/page-title';
 import PodCircle from '../../components/pod-circle';
 import Modals from './modals';
@@ -62,6 +65,7 @@ const InstanceContent = observer(() => {
     prefixCls,
     intlPrefix,
     resourceStore: { getSelectedMenu },
+    treeDs,
   } = useResourceStore();
   const {
     intl: { formatMessage },
@@ -78,16 +82,35 @@ const InstanceContent = observer(() => {
     istStore.setTabKey(key);
   }
 
+  function updateTreeItem(update) {
+    const menuItem = treeDs.find((item) => item.get('id') === update.id);
+    const previous = pick(menuItem.toData(), ['id', 'status', 'name', 'podRunningCount', 'podCount']);
+
+    if (!isEqual(previous, update)) {
+      forEach(update, ({ value, key }) => menuItem.set(`${key}`, value));
+    }
+  }
+
   function getTitle() {
     const record = baseDs.current;
     if (record) {
+      const id = record.get('id');
+      const status = record.get('status');
+      const code = record.get('code');
       const podRunningCount = record.get('podRunningCount');
       const podCount = record.get('podCount');
       const podUnlinkCount = podCount - podRunningCount;
+      updateTreeItem({
+        id,
+        status,
+        name: code,
+        podRunningCount,
+        podCount,
+      });
 
       return <InstanceTitle
-        status={record.get('status')}
-        name={record.get('code')}
+        status={status}
+        name={code}
         podRunningCount={podRunningCount}
         podUnlinkCount={podUnlinkCount}
         errorText={record.get('error')}
