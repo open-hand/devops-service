@@ -15,6 +15,8 @@ import GroupForm from '../../../modals/GroupForm';
 import DeployConfigForm from './deploy-config';
 import { isNotRunning } from '../../../../util';
 
+import '../../../../../../components/dynamic-select/style/index.less';
+
 const detailKey = Modal.key();
 const envKey = Modal.key();
 const groupKey = Modal.key();
@@ -144,6 +146,7 @@ const EnvModals = observer(() => {
       key: permissionKey,
       title: formatMessage({ id: `${intlPrefix}.modal.permission` }),
       drawer: true,
+      className: 'c7ncd-modal-wrapper',
       style: modalStyle,
       children: <Permission
         store={modalStore}

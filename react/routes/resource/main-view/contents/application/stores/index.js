@@ -3,6 +3,7 @@ import { DataSet } from 'choerodon-ui/pro';
 import { observer } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
 import getTablePostData from '../../../../../../utils/getTablePostData';
+import openWarnModal from '../../../../../../utils/openWarnModal';
 import BaseInfoDataSet from './BaseInfoDataSet';
 import NetDataSet from './NetDataSet';
 import ConfigDataSet from './ConfigDataSet';
@@ -12,7 +13,6 @@ import useConfigMapStore from './useConfigMapStore';
 import useSecretStore from './useSecretStore';
 import useDomainStore from './useDomainStore';
 import useNetworkStore from './useNetworkStore';
-import openWarnModal from '../../../../../../utils/openWarnModal';
 
 const Store = createContext();
 

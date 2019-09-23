@@ -101,8 +101,7 @@ export default class DetailsSidebar extends Component {
     ];
 
     let hasEnv = false;
-    let envContent = _.map(containers, (item) => {
-      const { name, env } = item;
+    let envContent = _.map(containers, ({ name, env }) => {
       if (env && env.length) {
         hasEnv = true;
       }
@@ -431,7 +430,7 @@ function volumesTemplate(data) {
       } else {
         itemDom = (
           <p className="c7ncd-deploy-detail-text">
-            {/* <FormattedMessage id="ist.deploy.none" /> */}
+            <FormattedMessage id="null" />
           </p>
         );
       }

@@ -1,11 +1,9 @@
 import React from 'react';
 import { runInAction } from 'mobx';
-import { SelectBox, Icon } from 'choerodon-ui/pro';
+import { Button } from 'choerodon-ui';
 import { useResourceStore } from '../../../stores';
 
 import './index.less';
-
-const { Option } = SelectBox;
 
 const SidebarHeader = () => {
   const {
@@ -18,6 +16,7 @@ const SidebarHeader = () => {
     intl: { formatMessage },
     resourceStore,
   } = useResourceStore();
+  const { getViewType } = resourceStore;
 
   function handleChoose(choose) {
     runInAction(() => {
@@ -28,22 +27,29 @@ const SidebarHeader = () => {
     });
   }
 
+  function chooseInstance() {
+    getViewType !== IST_VIEW_TYPE && handleChoose(IST_VIEW_TYPE);
+  }
+
+  function chooseResource() {
+    getViewType !== RES_VIEW_TYPE && handleChoose(RES_VIEW_TYPE);
+  }
+
   return <div className={`${prefixCls}-sidebar-head`}>
-    <SelectBox
-      mode="button"
-      className={`${prefixCls}-sidebar-box`}
-      onChange={handleChoose}
-      value={resourceStore.getViewType}
+    <Button
+      type="primary"
+      onClick={chooseInstance}
+      className={getViewType === IST_VIEW_TYPE ? `${prefixCls}-sidebar-active` : ''}
     >
-      <Option value={IST_VIEW_TYPE} key={IST_VIEW_TYPE}>
-        <Icon type="instance_outline" />
-        <span className={`${prefixCls}-sidebar-option`}>{formatMessage({ id: `${intlPrefix}.viewer.${IST_VIEW_TYPE}` })}</span>
-      </Option>,
-      <Option value={RES_VIEW_TYPE} key={RES_VIEW_TYPE}>
-        <Icon type="folder_open" />
-        <span className={`${prefixCls}-sidebar-option`}>{formatMessage({ id: `${intlPrefix}.viewer.${RES_VIEW_TYPE}` })}</span>
-      </Option>,
-    </SelectBox>
+      {formatMessage({ id: `${intlPrefix}.viewer.${IST_VIEW_TYPE}` })}
+    </Button>
+    <Button
+      type="primary"
+      onClick={chooseResource}
+      className={getViewType === RES_VIEW_TYPE ? `${prefixCls}-sidebar-active` : ''}
+    >
+      {formatMessage({ id: `${intlPrefix}.viewer.${RES_VIEW_TYPE}` })}
+    </Button>
   </div>;
 };
 

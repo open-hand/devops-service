@@ -9,11 +9,10 @@ import { useModalStore } from './stores';
 import CreateCluster from './create-cluster';
 import PermissionManage from './permission-manage';
 
-import '../../../../../../components/dynamic-select/style';
+import '../../../../../../components/dynamic-select/style/index.less';
 
 const modalKey1 = Modal.key();
 const modalKey2 = Modal.key();
-const modalKey3 = Modal.key();
 
 const ClusterModals = observer(() => {
   const modalStyle = useMemo(() => ({
