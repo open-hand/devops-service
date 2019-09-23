@@ -487,7 +487,7 @@ public class GitlabServiceClientOperator {
                     gitlabProjectId,
                     userId);
             if (memberDTO == null) {
-                throw new CommonException("error.user.not.in.project");
+                throw new CommonException("error.user.not.in.gitlab.project");
             }
         }
 
