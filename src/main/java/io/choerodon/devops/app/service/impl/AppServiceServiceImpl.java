@@ -2492,7 +2492,12 @@ public class AppServiceServiceImpl implements AppServiceService {
     private DevopsUserPermissionVO iamUserTOUserPermissionVO(IamUserDTO iamUserDTO, String role, Date creationDate) {
         DevopsUserPermissionVO devopsUserPermissionVO = new DevopsUserPermissionVO();
         devopsUserPermissionVO.setIamUserId(iamUserDTO.getId());
-        devopsUserPermissionVO.setLoginName(iamUserDTO.getLoginName());
+        if (iamUserDTO.getLdap()) {
+            devopsUserPermissionVO.setLoginName(iamUserDTO.getLoginName());
+        }
+        else {
+            devopsUserPermissionVO.setLoginName(iamUserDTO.getEmail());
+        }
         devopsUserPermissionVO.setRealName(iamUserDTO.getRealName());
         devopsUserPermissionVO.setRole(role);
         devopsUserPermissionVO.setCreationDate(creationDate);

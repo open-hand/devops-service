@@ -29,6 +29,7 @@ import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsGitlabCommitMapper;
 import io.choerodon.devops.infra.util.PageRequestUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
+import org.springframework.util.ObjectUtils;
 
 
 @Service
@@ -186,12 +187,15 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
         }
         map.forEach((userId, list) -> {
             IamUserDTO iamUserDTO = userMap.get(userId);
-            String name = iamUserDTO == null ? null : iamUserDTO.getRealName() + iamUserDTO.getLoginName();
-            String imgUrl = iamUserDTO == null ? null : iamUserDTO.getImageUrl();
-            // 遍历list，将每个用户的所有commit date取出放入List<Date>，然后保存为DTO
-            List<Date> date = new ArrayList<>();
-            list.forEach(e -> date.add(e.getCommitDate()));
-            commitFormUserVOS.add(new CommitFormUserVO(userId, name, imgUrl, date));
+            if(ObjectUtils.isEmpty(iamUserDTO)){
+                String loginName = iamUserDTO.getLdap() ? iamUserDTO.getLoginName() : iamUserDTO.getEmail() ;
+                String name = loginName + iamUserDTO.getLoginName();
+                String imgUrl = iamUserDTO.getImageUrl();
+                // 遍历list，将每个用户的所有commit date取出放入List<Date>，然后保存为DTO
+                List<Date> date = new ArrayList<>();
+                list.forEach(e -> date.add(e.getCommitDate()));
+                commitFormUserVOS.add(new CommitFormUserVO(userId, name, imgUrl, date));
+            }
         });
         return commitFormUserVOS;
     }
@@ -251,8 +255,9 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
             IamUserDTO user = userMap.get(userId);
             CommitFormRecordVO commitFormRecordVO;
             if (user != null) {
+                String loginName = user.getLdap() ? user.getLoginName() : user.getEmail();
                 commitFormRecordVO = new CommitFormRecordVO(
-                        userId, user.getImageUrl(), user.getRealName() + " " + user.getLoginName(), e);
+                        userId, user.getImageUrl(), user.getRealName() + " " + loginName, e);
             } else {
                 commitFormRecordVO = new CommitFormRecordVO(
                         null, null, null, e);
