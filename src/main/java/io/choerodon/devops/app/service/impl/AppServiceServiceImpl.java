@@ -2287,7 +2287,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             List<ApplicationDTO> applicationDTOS = new ArrayList<>();
             appServiceIds.stream().forEach(v -> {
                 ApplicationDTO applicationDTO = baseServiceClientOperator.queryAppById(v);
-                if(!ObjectUtils.isEmpty(applicationDTO)){
+                if (!ObjectUtils.isEmpty(applicationDTO)) {
                     applicationDTOS.add(applicationDTO);
                 }
             });
