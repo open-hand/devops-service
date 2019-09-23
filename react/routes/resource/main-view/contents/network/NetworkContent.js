@@ -17,9 +17,9 @@ import { useResourceStore } from '../../../stores';
 import { useNetworkStore } from './stores';
 import Modals from './modals';
 import EditNetwork from './modals/network-edit';
+import { useMainStore } from '../../stores';
 
 import './index.less';
-import { useMainStore } from '../../stores';
 
 const { Column } = Table;
 
