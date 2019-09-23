@@ -214,6 +214,8 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
         appServiceDeployVO.setEnvironmentId(envId);
         appServiceDeployVO.setType(type);
         appServiceDeployVO.setValues(appServiceInstanceService.getReplaceResult(versionValue, c7nHelmRelease.getSpec().getValues()).getYaml());
+        LOGGER.info("======================应该部署values==========================");
+        LOGGER.info(appServiceDeployVO.getValues());
         appServiceDeployVO.setAppServiceId(applicationDTO.getId());
         appServiceDeployVO.setAppServiceVersionId(appServiceVersionDTO.getId());
         appServiceDeployVO.setInstanceName(c7nHelmRelease.getMetadata().getName());
