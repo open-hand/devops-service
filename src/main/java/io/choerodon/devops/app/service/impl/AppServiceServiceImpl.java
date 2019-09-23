@@ -2091,8 +2091,8 @@ public class AppServiceServiceImpl implements AppServiceService {
                 baseServiceClientOperator.listIamProjectByOrgId(organizationId, null, null).stream()
                         .filter(v -> !projectId.equals(v.getId()))
                         .forEach(pro ->
-                        baseListAll(pro.getId()).forEach(appServiceDTO -> appServiceIds.add(appServiceDTO.getId()))
-                );
+                                baseListAll(pro.getId()).forEach(appServiceDTO -> appServiceIds.add(appServiceDTO.getId()))
+                        );
                 list.addAll(appServiceMapper.listShareApplicationService(appServiceIds, projectId, serviceType, params));
                 Map<Long, List<AppServiceGroupInfoVO>> map = list.stream()
                         .map(this::dtoToGroupInfoVO)
