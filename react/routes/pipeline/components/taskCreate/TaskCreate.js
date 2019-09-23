@@ -122,7 +122,7 @@ export default class TaskCreate extends Component {
     if (instanceId) {
       this.setState({
         // initValue 可以接受undefined表示无初始值，但是不能为null
-        initIstId: String(instanceId) || undefined,
+        initIstId: instanceId || undefined,
       });
     }
 
@@ -205,7 +205,7 @@ export default class TaskCreate extends Component {
         if (type === TASK_TYPE_DEPLOY) {
           let istName = instanceName;
           if (instanceId) {
-            istName = _.find(PipelineCreateStore.getInstance, ['id', String(instanceId)]).code;
+            istName = _.find(PipelineCreateStore.getInstance, ['id', instanceId]).code;
           }
 
           pipelineAppServiceDeployVO = {
@@ -320,7 +320,7 @@ export default class TaskCreate extends Component {
     if (selectApp === appServiceId && selectEnv === envId) {
       if (instanceId) {
         this.setState({
-          initIstId: String(instanceId) || undefined,
+          initIstId: instanceId || undefined,
           mode: MODE_TYPE_UPDATE,
         });
       } else {
@@ -921,7 +921,7 @@ export default class TaskCreate extends Component {
             {deployFields}
             {manualFields}
           </Form>
-          {taskType === TASK_TYPE_DEPLOY && getLoading.value ? <Spin /> : this.renderYamlEditor()}
+          {taskType === TASK_TYPE_DEPLOY && (getLoading.value ? <Spin /> : this.renderYamlEditor())}
         </Content>
       </Sidebar>
       {showEditValue && (

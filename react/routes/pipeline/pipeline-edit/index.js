@@ -202,7 +202,7 @@ export default class PipelineEdit extends Component {
     return (
       <Sidebar
         className="c7n-region c7n-pipeline-creat"
-        title={formatMessage({ id: 'pipeline.header.edit' }) + getPipeline.name}
+        title={`${formatMessage({ id: 'pipeline.header.edit' })}"${getPipeline.name}"`}
         visible={visible}
         onOk={this.onSubmit}
         onCancel={this.goBack}
