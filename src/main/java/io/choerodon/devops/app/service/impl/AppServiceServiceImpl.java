@@ -2088,13 +2088,13 @@ public class AppServiceServiceImpl implements AppServiceService {
             case SHARE_SERVICE: {
                 Long organizationId = baseServiceClientOperator.queryIamProjectById(projectId).getOrganizationId();
                 List<Long> appServiceIds = new ArrayList<>();
-                baseServiceClientOperator.listIamProjectByOrgId(organizationId, null, null).stream()
-                        .filter(v -> !projectId.equals(v.getId()))
+                baseServiceClientOperator.listIamProjectByOrgId(organizationId, null, null)
                         .forEach(pro ->
                                 baseListAll(pro.getId()).forEach(appServiceDTO -> appServiceIds.add(appServiceDTO.getId()))
                         );
                 list.addAll(appServiceMapper.listShareApplicationService(appServiceIds, projectId, serviceType, params));
                 Map<Long, List<AppServiceGroupInfoVO>> map = list.stream()
+                        .filter(v -> !projectId.equals(v.getProjectId()))
                         .map(this::dtoToGroupInfoVO)
                         .collect(Collectors.groupingBy(AppServiceGroupInfoVO::getProjectId));
 
