@@ -32,6 +32,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
 
     private static final String C7NHELM_RELEASE = "C7NHelmRelease";
     private static final String GIT_SUFFIX = "/.git";
+    private static final String COMPARE_VALUES = "{}";
     @Autowired
     private ApplicationInstanceRepository applicationInstanceRepository;
     @Autowired
@@ -249,7 +250,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
             }
             String deployValue = applicationInstanceRepository.queryValueByInstanceId(applicationInstanceE.getId());
             ReplaceResult replaceResult = applicationInstanceService.getReplaceResult(deployValue, applicationDeployDTO.getValues());
-            if (deployValue != null && replaceResult.getNewLines().isEmpty() && applicationVersionE.getId().equals(devopsEnvCommandE.getObjectVersionId())) {
+            if (deployValue != null && (replaceResult.getNewLines().isEmpty()||replaceResult.getDeltaYaml().equals(COMPARE_VALUES)) && applicationVersionE.getId().equals(devopsEnvCommandE.getObjectVersionId())) {
                 applicationDeployDTO.setIsNotChange(true);
             }
             applicationDeployDTO.setAppInstanceId(applicationInstanceE.getId());
