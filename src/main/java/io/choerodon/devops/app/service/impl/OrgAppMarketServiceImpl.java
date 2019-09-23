@@ -275,7 +275,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             baseServiceClientOperator.completeDownloadApplication(appMarketDownloadVO.getAppDownloadRecordId(), appMarketDownloadVO.getAppVersionId(), appDownloadDevopsReqVOS);
             LOGGER.info("==========应用下载完成==========");
         } catch (Exception e) {
-            baseServiceClientOperator.failToDownloadApplication(appMarketDownloadVO.getAppDownloadRecordId(), appMarketDownloadVO.getMktAppVersionId());
+            baseServiceClientOperator.failToDownloadApplication(appMarketDownloadVO.getAppDownloadRecordId(), appMarketDownloadVO.getAppVersionId());
             throw new CommonException("error.download.app", e);
         }
     }

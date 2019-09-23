@@ -168,7 +168,7 @@ public interface BaseServiceClient {
 
     @PutMapping(value = "/v1/applications/{app_download_record_id}/fail_downloading")
     ResponseEntity failToDownloadApplication(@PathVariable("app_download_record_id") Long appDownloadRecordId,
-                                             @RequestParam("mkt_app_version_id") Long mktVersionId);
+                                             @RequestParam("app_version_id") Long appVersionId);
 
     @GetMapping(value = "/v1/remote_token/authorization/check/latest")
     ResponseEntity<RemoteTokenAuthorizationVO> checkLatestToken();
