@@ -338,9 +338,9 @@ public class BaseServiceClientOperator {
         }
     }
 
-    public void failToDownloadApplication(Long publishAppVersionId, Long mktVersionId) {
+    public void failToDownloadApplication(Long publishAppVersionId, Long appVersionId) {
         try {
-            baseServiceClient.failToDownloadApplication(publishAppVersionId, mktVersionId);
+            baseServiceClient.failToDownloadApplication(publishAppVersionId, appVersionId);
         } catch (Exception e) {
             throw new CommonException("error.application.download.failed", e.getMessage());
         }
