@@ -477,7 +477,8 @@ public class PipelineServiceImpl implements PipelineService {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         if (!baseServiceClientOperator.isProjectOwner(userId, projectDTO)) {
             List<Long> envIds = devopsEnvUserPermissionService
-                    .listByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId())).stream()
+                    .listByUserId(userId)
+                    .stream()
                     .filter(DevopsEnvUserPermissionDTO::getPermitted)
                     .map(DevopsEnvUserPermissionDTO::getEnvId).collect(Collectors.toList());
             for (PipelineAppServiceDeployDTO appDeployDTO : allAppDeploys) {
