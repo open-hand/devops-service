@@ -358,6 +358,10 @@ const deployment = {
   'c7ncd.deployment.configMap.add': '添加配置映射',
   'c7ncd.deployment.configMap.edit': '编辑配置映射',
   'c7ncd.deployment.configMap.help.tooltip': '您可粘贴多行“键=值”格式的字段至任何键框中，以便于批量输入键值对。',
+  'c7ncd.deployment.report.cpu': '查看CPU使用量',
+  'c7ncd.deployment.report.memory': '查看内存使用量',
+  'c7ncd.deployment.report.cpu.click': '点击查看内存使用量',
+  'c7ncd.deployment.report.memory.click': '点击查看内存使用量',
 };
 
 const appService = {

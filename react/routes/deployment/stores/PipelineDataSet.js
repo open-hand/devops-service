@@ -4,7 +4,7 @@ export default ((intlPrefix, formatMessage, projectId) => ({
     read: ({ data }) => ({
       url: `/devops/v1/projects/${projectId}/pipeline/page_by_options`,
       method: 'post',
-      data: { triggerType: 'manual', executor: true, name: typeof data.params === 'string' ? [data.params] : data.params },
+      data: { triggerType: 'manual', executor: true, enabled: true, name: typeof data.params === 'string' ? [data.params] : data.params },
     }),
 
   },
