@@ -607,8 +607,11 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     @Override
     public void operateIngressBySaga(IngressSagaPayload ingressSagaPayload) {
         try {
-            //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-            String filePath = clusterConnectionHandler.handDevopsEnvGitRepository(ingressSagaPayload.getProjectId(), ingressSagaPayload.getDevopsEnvironmentDTO().getCode(), ingressSagaPayload.getDevopsEnvironmentDTO().getEnvIdRsa());
+            //更新域名时判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
+            String filePath = null;
+            if(!ingressSagaPayload.getCreated()) {
+                filePath = clusterConnectionHandler.handDevopsEnvGitRepository(ingressSagaPayload.getProjectId(), ingressSagaPayload.getDevopsEnvironmentDTO().getCode(), ingressSagaPayload.getDevopsEnvironmentDTO().getEnvIdRsa());
+            }
             //在gitops库处理instance文件
             ResourceConvertToYamlHandler<V1beta1Ingress> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
             resourceConvertToYamlHandler.setType(ingressSagaPayload.getV1beta1Ingress());

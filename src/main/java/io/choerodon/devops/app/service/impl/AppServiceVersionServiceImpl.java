@@ -10,15 +10,6 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
-
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.domain.Sort;
 import io.choerodon.core.exception.CommonException;
@@ -33,8 +24,14 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.AppServiceMapper;
 import io.choerodon.devops.infra.mapper.AppServiceVersionMapper;
 import io.choerodon.devops.infra.mapper.AppServiceVersionReadmeMapper;
-import io.choerodon.devops.infra.mapper.DevopsConfigMapper;
 import io.choerodon.devops.infra.util.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class AppServiceVersionServiceImpl implements AppServiceVersionService {
@@ -42,13 +39,13 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
 
     private static final String DESTINATION_PATH = "devops";
     private static final String STORE_PATH = "stores";
+    private static final String APP_SERVICE = "appService";
+    private static final String CHART = "chart";
 
     private static final String ERROR_VERSION_INSERT = "error.version.insert";
 
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
-    @Value("${services.helm.url}")
-    private String helmUrl;
 
     @Autowired
     private AppServiceService applicationService;
@@ -81,7 +78,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     @Autowired
     private AppServiceMapper appServiceMapper;
     @Autowired
-    private DevopsConfigMapper devopsConfigMapper;
+    private DevopsConfigService devopsConfigService;
 
 
     private Gson gson = new Gson();
@@ -113,10 +110,9 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         appServiceVersionDTO.setImage(image);
         appServiceVersionDTO.setCommit(commit);
         appServiceVersionDTO.setVersion(version);
-        if (appServiceDTO.getChartConfigId() != null) {
-            DevopsConfigDTO devopsConfigDTO = devopsConfigMapper.selectByPrimaryKey((appServiceDTO.getChartConfigId()));
-            helmUrl = gson.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class).getUrl();
-        }
+
+        DevopsConfigDTO devopsConfigDTO = devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, CHART);
+        String helmUrl = gson.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class).getUrl();
 
         appServiceVersionDTO.setRepository(helmUrl.endsWith("/") ? helmUrl : helmUrl + "/" + organization.getCode() + "/" + projectDTO.getCode() + "/");
         String storeFilePath = STORE_PATH + version;

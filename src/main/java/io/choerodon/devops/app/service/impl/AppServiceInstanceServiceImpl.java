@@ -724,9 +724,11 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     public void createInstanceBySaga(InstanceSagaPayload instanceSagaPayload) {
 
         try {
-            //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-            String filePath = clusterConnectionHandler.handDevopsEnvGitRepository(instanceSagaPayload.getProjectId(), instanceSagaPayload.getDevopsEnvironmentDTO().getCode(), instanceSagaPayload.getDevopsEnvironmentDTO().getEnvIdRsa());
-
+            //更新实例的时候判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
+            String filePath = null;
+            if(instanceSagaPayload.getAppServiceDeployVO().getType().equals(UPDATE)) {
+                filePath = clusterConnectionHandler.handDevopsEnvGitRepository(instanceSagaPayload.getProjectId(), instanceSagaPayload.getDevopsEnvironmentDTO().getCode(), instanceSagaPayload.getDevopsEnvironmentDTO().getEnvIdRsa());
+            }
             //在gitops库处理instance文件
             ResourceConvertToYamlHandler<C7nHelmRelease> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
             resourceConvertToYamlHandler.setType(getC7NHelmRelease(
