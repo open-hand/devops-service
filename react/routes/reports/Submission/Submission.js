@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { withRouter } from 'react-router-dom';
 import { observer } from 'mobx-react';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { Page, Header, Content, stores } from '@choerodon/master';
+import { Page, Header, Content, stores, Breadcrumb } from '@choerodon/master';
 import { Select, Button, Popover } from 'choerodon-ui';
 import _ from 'lodash';
 import moment from 'moment';
@@ -215,7 +215,7 @@ class Submission extends Component {
       ReportsStore,
     } = this.props;
     const {
-      location: { state },
+      location: { state, search },
     } = history;
     const backPath = state && state.backPath;
     const {
@@ -323,7 +323,7 @@ class Submission extends Component {
           title={formatMessage({ id: 'report.submission.head' })}
           backPath={
             backPath
-            || `/devops/reports?type=${type}&id=${id}&name=${name}&organizationId=${organizationId}`
+            || `/charts${search}`
           }
         >
           <ChartSwitch history={history} current="submission" />
@@ -331,6 +331,7 @@ class Submission extends Component {
             <FormattedMessage id="refresh" />
           </Button>
         </Header>
+        <Breadcrumb />
         <Content>
           {getIsRefresh ? <LoadingBar display="getIsRefresh" /> : content}
         </Content>

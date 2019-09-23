@@ -116,7 +116,7 @@ export const SelectApp = injectIntl(inject('AppState')(observerLite((props) => {
   const { getAppData, getRecentApp, getSelectApp } = DevPipelineStore;
   return <Select
     filter
-    filterOption={(input, option) => option.props.children.props.children.props.children
+    filterOption={(input, option) => option.props.children
       .toLowerCase().indexOf(input.toLowerCase()) >= 0}
     placeholder={formatMessage({ id: 'ist.noApp' })}
     disabled={getAppData.length === 0}

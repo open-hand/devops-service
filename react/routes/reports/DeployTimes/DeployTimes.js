@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { observer } from 'mobx-react';
 import { observable, action, configure } from 'mobx';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { Page, Header, Content, stores } from '@choerodon/master';
+import { Page, Header, Content, stores, Breadcrumb } from '@choerodon/master';
 import { Select, Button, Table, Spin } from 'choerodon-ui';
 import ReactEcharts from 'echarts-for-react';
 import _ from 'lodash';
@@ -419,8 +419,8 @@ class DeployTimes extends Component {
     const envs = _.filter(envData, ['permission', true]);
     const isRefresh = ReportsStore.getIsRefresh;
     const backPath = search.includes('deploy-overview')
-      ? 'deploy-overview'
-      : 'reports';
+      ? '/devops/deploy-overview'
+      : '/charts';
 
     const envDom = this.env.length ? _.map(this.env, (d) => (<Option key={d.id} value={d.id}>{d.name}</Option>)) : null;
 
@@ -490,7 +490,7 @@ class DeployTimes extends Component {
     >
       <Header
         title={formatMessage({ id: 'report.deploy-times.head' })}
-        backPath={`/devops/${backPath}?type=${type}&id=${id}&name=${name}&organizationId=${organizationId}`}
+        backPath={`${backPath}${search}`}
       >
         <ChartSwitch
           history={history}
@@ -503,6 +503,7 @@ class DeployTimes extends Component {
           <FormattedMessage id="refresh" />
         </Button>
       </Header>
+      <Breadcrumb />
       <Content>
         {isRefresh ? <LoadingBar display={isRefresh} /> : content}
       </Content>

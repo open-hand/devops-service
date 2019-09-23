@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { observer } from 'mobx-react';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { Page, Header, Content, stores } from '@choerodon/master';
+import { Page, Header, Content, stores, Breadcrumb } from '@choerodon/master';
 import { Select, Button, Tooltip, Spin } from 'choerodon-ui';
 import ReactEcharts from 'echarts-for-react';
 import _ from 'lodash';
@@ -244,7 +244,7 @@ class BuildDuration extends Component {
   };
 
   render() {
-    const { intl: { formatMessage }, history, ReportsStore } = this.props;
+    const { intl: { formatMessage }, history, ReportsStore, location: { search } } = this.props;
     const { dateType } = this.state;
     const { id, name, type, organizationId } = AppState.currentMenuType;
     const { getAllApps, appId, echartsLoading, isRefresh } = ReportsStore;
@@ -299,7 +299,7 @@ class BuildDuration extends Component {
     >
       <Header
         title={formatMessage({ id: 'report.build-duration.head' })}
-        backPath={`/devops/reports?type=${type}&id=${id}&name=${name}&organizationId=${organizationId}`}
+        backPath={`/charts${search}`}
       >
         <ChartSwitch
           history={history}
@@ -312,6 +312,7 @@ class BuildDuration extends Component {
           <FormattedMessage id="refresh" />
         </Button>
       </Header>
+      <Breadcrumb />
       <Content className="c7n-buildDuration-content">
         {isRefresh ? <LoadingBar display={isRefresh} /> : content}
       </Content>

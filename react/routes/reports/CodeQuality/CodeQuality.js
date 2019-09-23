@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import { observer, inject } from 'mobx-react';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { Page, Header, Content } from '@choerodon/master';
+import { Page, Header, Content, Breadcrumb } from '@choerodon/master';
 import { Select, Button, Tooltip, Spin } from 'choerodon-ui';
 import ReactEcharts from 'echarts-for-react';
 import _ from 'lodash';
@@ -310,7 +310,7 @@ class CodeQuality extends Component {
         search,
       },
     } = this.props;
-    const backPath = `/devops/${state && state.appId ? 'code-quality' : 'reports'}${search}`;
+    const backPath = state && state.appId ? '/devops/code-quality' : '/charts';
     const { dateType, objectType } = this.state;
     const {
       getAllApps,
@@ -384,7 +384,7 @@ class CodeQuality extends Component {
     >
       <Header
         title={formatMessage({ id: 'report.code-quality.head' })}
-        backPath={backPath}
+        backPath={`${backPath}${search}`}
       >
         <ChartSwitch
           history={history}
@@ -397,6 +397,7 @@ class CodeQuality extends Component {
           <FormattedMessage id="refresh" />
         </Button>
       </Header>
+      <Breadcrumb />
       <Content>
         {isRefresh ? <LoadingBar display={isRefresh} /> : content}
       </Content>

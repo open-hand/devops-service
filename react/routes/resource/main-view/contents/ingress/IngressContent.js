@@ -147,7 +147,7 @@ const IngressContent = observer(() => {
         <Column renderer={renderAction} width="0.7rem" />
         <Column name="domain" />
         <Column name="pathList" renderer={renderPath} />
-        <Column name="pathList" renderer={renderService} header={formatMessage({ id: 'network' })} />
+        <Column renderer={renderService} header={formatMessage({ id: 'network' })} />
       </Table>
       {showModal && (
         <DomainModal

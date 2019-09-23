@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Select, Table } from 'choerodon-ui/pro';
+import { Tooltip } from 'choerodon-ui';
 import { useResourceStore } from '../../../stores';
 import { useREStore } from './stores';
 import TimePopover from '../../../../../components/timePopover';
@@ -48,14 +49,16 @@ export default observer(() => {
     const [wrap, color] = statusMap[status] || [true, 'rgba(0, 0, 0, 0.36)'];
 
     return (
-      <div>
+      <div className={`${prefixCls}-re-table-pod`}>
         <StatusTag
           ellipsis={wrap}
           color={color}
           name={status}
           style={wrapStyle}
         />
-        <span>{value}</span>
+        <Tooltip title={value}>
+          <span className={`${prefixCls}-re-table-name`}>{value}</span>
+        </Tooltip>
       </div>
     );
   }
