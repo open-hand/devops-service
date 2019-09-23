@@ -46,7 +46,7 @@ class CodeQuality extends Component {
     const {
       ReportsStore,
     } = this.props;
-    
+
     this.loadDatas();
   }
 

@@ -7,6 +7,7 @@ import { Icon } from 'choerodon-ui';
 import { useResourceStore } from '../../../stores';
 import { useMainStore } from '../../stores';
 import CustomForm from '../../contents/custom/modals/form-view';
+import eventStopProp from '../../../../../utils/eventStopProp';
 
 function CustomItem({
   record,
@@ -49,6 +50,7 @@ function CustomItem({
     return <Action
       placement="bottomRight"
       data={actionData}
+      onClick={eventStopProp}
     />;
   }
 

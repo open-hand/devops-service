@@ -5,6 +5,7 @@ import { injectIntl } from 'react-intl';
 import { Action } from '@choerodon/master';
 import { Icon } from 'choerodon-ui';
 import { useResourceStore } from '../../../stores';
+import eventStopProp from '../../../../../utils/eventStopProp';
 
 function CertItem({
   record,
@@ -28,7 +29,7 @@ function CertItem({
       text: formatMessage({ id: 'delete' }),
       action: deleteItem,
     }];
-    return <Action placement="bottomRight" data={actionData} />;
+    return <Action placement="bottomRight" data={actionData} onClick={eventStopProp} />;
   }
 
   return <Fragment>

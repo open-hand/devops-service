@@ -7,6 +7,7 @@ import { Icon } from 'choerodon-ui';
 import { useResourceStore } from '../../../stores';
 import { useMainStore } from '../../stores';
 import DomainModal from '../../contents/application/modals/domain';
+import eventStopProp from '../../../../../utils/eventStopProp';
 
 function IngressItem({
   record,
@@ -46,7 +47,7 @@ function IngressItem({
       text: formatMessage({ id: 'delete' }),
       action: deleteItem,
     }];
-    return <Action placement="bottomRight" data={actionData} />;
+    return <Action placement="bottomRight" data={actionData} onClick={eventStopProp} />;
   }
 
   return <Fragment>

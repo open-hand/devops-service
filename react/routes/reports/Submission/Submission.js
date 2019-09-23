@@ -196,7 +196,7 @@ class Submission extends Component {
     loadCommits(projectId, startTime, endTime, this.state.appId);
     loadCommitsRecord(projectId, startTime, endTime, this.state.appId, this.state.page);
   }
-  
+
 
   /**
    * 选择今天、近7天和近30天的选项，当使用DatePick的时候清空type
@@ -281,7 +281,7 @@ class Submission extends Component {
             onChange={this.handleDateChoose}
           />
         </div>
-        
+
         <div className="c7n-report-submission clearfix">
           <div className="c7n-report-submission-overview">
             <LineChart

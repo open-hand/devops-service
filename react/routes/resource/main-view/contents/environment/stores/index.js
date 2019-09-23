@@ -44,9 +44,24 @@ export const StoreProvider = injectIntl(inject('AppState')(
     function queryData() {
       const tabKey = envStore.getTabKey;
       if (tabKey === tabs.SYNC_TAB) {
+        retryDs.transport.read.url = `/devops/v1/projects/${projectId}/envs/${id}/retry`;
+        gitopsLogDs.transport.read.url = `/devops/v1/projects/${projectId}/envs/${id}/error_file/page_by_env`;
+        gitopsSyncDs.transport.read.url = `/devops/v1/projects/${projectId}/envs/${id}/status`;
         gitopsSyncDs.query();
         gitopsLogDs.query();
       } else if (tabKey === tabs.ASSIGN_TAB) {
+        permissionsDs.transport.destroy = ({ data: [data] }) => ({
+          url: `/devops/v1/projects/${projectId}/envs/${id}/permission?user_id=${data.iamUserId}`,
+          method: 'delete',
+        });
+        permissionsDs.transport.read = ({ data }) => {
+          const postData = getTablePostData(data);
+          return {
+            url: `/devops/v1/projects/${projectId}/envs/${id}/permission/page_by_options`,
+            method: 'post',
+            data: postData,
+          };
+        };
         permissionsDs.query();
       }
     }
@@ -54,21 +69,6 @@ export const StoreProvider = injectIntl(inject('AppState')(
     useEffect(() => {
       baseInfoDs.transport.read.url = `/devops/v1/projects/${projectId}/envs/${id}/info`;
       baseInfoDs.query();
-      retryDs.transport.read.url = `/devops/v1/projects/${projectId}/envs/${id}/retry`;
-      gitopsLogDs.transport.read.url = `/devops/v1/projects/${projectId}/envs/${id}/error_file/page_by_env`;
-      gitopsSyncDs.transport.read.url = `/devops/v1/projects/${projectId}/envs/${id}/status`;
-      permissionsDs.transport.read = ({ data }) => {
-        const postData = getTablePostData(data);
-        return {
-          url: `/devops/v1/projects/${projectId}/envs/${id}/permission/page_by_options`,
-          method: 'post',
-          data: postData,
-        };
-      };
-      permissionsDs.transport.destroy = ({ data: [data] }) => ({
-        url: `/devops/v1/projects/${projectId}/envs/${id}/permission?user_id=${data.iamUserId}`,
-        method: 'delete',
-      });
       queryData();
     }, [projectId, id, envStore.getTabKey]);
 
