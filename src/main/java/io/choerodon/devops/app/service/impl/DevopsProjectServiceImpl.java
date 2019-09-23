@@ -2,11 +2,13 @@ package io.choerodon.devops.app.service.impl;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -19,6 +21,7 @@ import io.choerodon.devops.api.vo.iam.UserVO;
 import io.choerodon.devops.app.eventhandler.payload.ProjectPayload;
 import io.choerodon.devops.app.service.DevopsProjectService;
 import io.choerodon.devops.infra.dto.DevopsProjectDTO;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsProjectMapper;
@@ -138,6 +141,17 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
 
     @Override
     public List<UserVO> listAllOwnerAndMembers(Long projectId) {
-        return ConvertUtils.convertList(baseServiceClientOperator.getAllMember(projectId), UserVO.class);
+        List<IamUserDTO> allMember = baseServiceClientOperator.getAllMember(projectId);
+        return allMember.stream().map(e->userDTOTOVO(e)).collect(Collectors.toList());
+    }
+    private UserVO userDTOTOVO(IamUserDTO iamUserDTOList){
+        UserVO userVO = new UserVO();
+        BeanUtils.copyProperties(iamUserDTOList,userVO);
+        if(iamUserDTOList.getLdap()){
+            userVO.setLoginName(iamUserDTOList.getLoginName());
+        }else {
+            userVO.setLoginName(iamUserDTOList.getEmail());
+        }
+        return userVO;
     }
 }

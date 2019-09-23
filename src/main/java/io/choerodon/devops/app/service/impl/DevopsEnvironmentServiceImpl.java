@@ -924,8 +924,15 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
         // 项目成员加上项目所有者
         List<DevopsUserPermissionVO> owners = projectOwners.getList()
-                .stream()
-                .map(iamUser -> new DevopsUserPermissionVO(iamUser.getId(), iamUser.getLoginName(), iamUser.getRealName(), devopsEnvironmentDTO.getCreationDate()))
+                .stream().map(iamUser -> {
+                    DevopsUserPermissionVO devopsUserPermissionVO = new DevopsUserPermissionVO();
+                    if (iamUser.getLdap()){
+                        devopsUserPermissionVO= new DevopsUserPermissionVO(iamUser.getId(), iamUser.getLoginName(), iamUser.getRealName(), devopsEnvironmentDTO.getCreationDate());
+                    }else{
+                        devopsUserPermissionVO=  new DevopsUserPermissionVO(iamUser.getId(), iamUser.getEmail(), iamUser.getRealName(), devopsEnvironmentDTO.getCreationDate());
+                    }
+                    return devopsUserPermissionVO;
+                })
                 .peek(p -> p.setRole(OWNER))
                 .collect(Collectors.toList());
         members.addAll(owners);
