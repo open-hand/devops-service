@@ -15,12 +15,17 @@ const valuesKey = Modal.key();
 const upgradeKey = Modal.key();
 const redeployKey = Modal.key();
 
-const EnvModals = injectIntl(observer(() => {
+const IstModals = injectIntl(observer(() => {
   const {
     prefixCls,
     intlPrefix,
     intl: { formatMessage },
-    resourceStore,
+    resourceStore: {
+      getSelectedMenu: {
+        id,
+        parentId,
+      },
+    },
     treeDs,
   } = useResourceStore();
   const {
@@ -34,6 +39,7 @@ const EnvModals = injectIntl(observer(() => {
       DETAILS_TAB,
       PODS_TAB,
     },
+    checkIstExist,
     AppState: { currentMenuType: { id: projectId } },
   } = useInstanceStore();
   const modalStyle = useMemo(() => ({
@@ -44,7 +50,6 @@ const EnvModals = injectIntl(observer(() => {
     const record = baseDs.current;
     if (!record) return false;
 
-    const { id, parentId } = resourceStore.getSelectedMenu;
     const appServiceVersionId = record.get('commandVersionId');
     const appServiceId = record.get('appServiceId');
     istStore.loadValue(projectId, id, appServiceVersionId);
@@ -81,7 +86,6 @@ const EnvModals = injectIntl(observer(() => {
     const record = baseDs.current;
     if (!record) return false;
 
-    const { id, parentId } = resourceStore.getSelectedMenu;
     const appServiceVersionId = record.get('commandVersionId');
     const appServiceId = record.get('appServiceId');
     const deployVo = {
@@ -137,16 +141,19 @@ const EnvModals = injectIntl(observer(() => {
   }
 
   function refresh() {
-    const activeKey = istStore.getTabKey;
-    const { id } = resourceStore.getSelectedMenu;
-    baseDs.query();
-    treeDs.query();
-    if (activeKey === DETAILS_TAB) {
-      detailsStore.loadResource(projectId, id);
-    } else {
-      const ds = getDs(activeKey);
-      ds && ds.query();
-    }
+    checkIstExist().then((query) => {
+      if (query) {
+        treeDs.query();
+        baseDs.query();
+        const activeKey = istStore.getTabKey;
+        if (activeKey === DETAILS_TAB) {
+          detailsStore.loadResource(projectId, id);
+        } else {
+          const ds = getDs(activeKey);
+          ds && ds.query();
+        }
+      }
+    });
   }
 
   function openRedeploy() {
@@ -159,7 +166,6 @@ const EnvModals = injectIntl(observer(() => {
   }
 
   async function redeploy() {
-    const { id } = resourceStore.getSelectedMenu;
     try {
       const result = await istStore.redeploy(projectId, id);
       if (handlePromptError(result, false)) {
@@ -171,8 +177,9 @@ const EnvModals = injectIntl(observer(() => {
   }
 
   function getHeader() {
-    const { id } = resourceStore.getSelectedMenu;
-    const btnDisabled = !id;
+    const record = baseDs.current;
+    const status = record ? record.get('status') : '';
+    const btnDisabled = !status || (status !== 'failed' && status !== 'running');
 
     const buttons = [{
       name: formatMessage({ id: `${intlPrefix}.modal.values` }),
@@ -202,17 +209,15 @@ const EnvModals = injectIntl(observer(() => {
       name: formatMessage({ id: `${intlPrefix}.modal.detail` }),
       icon: 'find_in_page',
       handler: openDetailModal,
-      permissions: [],
       display: true,
       group: 2,
-      disabled: btnDisabled,
+      disabled: !status,
     }, {
       name: formatMessage({ id: 'refresh' }),
       icon: 'refresh',
       handler: refresh,
       display: true,
       group: 2,
-      disabled: btnDisabled,
     }];
 
     return <HeaderButtons items={buttons} />;
@@ -221,4 +226,4 @@ const EnvModals = injectIntl(observer(() => {
   return getHeader();
 }));
 
-export default EnvModals;
+export default IstModals;

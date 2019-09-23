@@ -26,9 +26,6 @@ export const StoreProvider = injectIntl(observer((props) => {
     AppState: { currentMenuType: { id: projectId } },
     resourceStore,
     intlPrefix,
-    itemTypes: {
-      APP_ITEM,
-    },
     treeDs,
   } = useResourceStore();
   const { getSelectedMenu: { id, parentId, itemType } } = resourceStore;
@@ -83,56 +80,53 @@ export const StoreProvider = injectIntl(observer((props) => {
   }
 
   useEffect(() => {
-    if (itemType === APP_ITEM) {
-      checkAppExist().then((query) => {
-        if (query) {
-          baseInfoDs.transport.read.url = `/devops/v1/projects/${projectId}/app_service/${id}`;
-          baseInfoDs.query();
-          netDs.transport.read = ({ data }) => {
-            const postData = getTablePostData(data);
-            return ({
-              url: `/devops/v1/projects/${projectId}/service/page_by_instance?env_id=${parentId}&app_service_id=${id}`,
-              method: 'post',
-              data: postData,
-            });
-          };
-          netDs.transport.destroy = ({ data: [data] }) => ({
-            url: `/devops/v1/projects/${projectId}/service/${data.id}`,
-            method: 'delete',
+    checkAppExist().then((query) => {
+      if (query) {
+        baseInfoDs.transport.read.url = `/devops/v1/projects/${projectId}/app_service/${id}`;
+        baseInfoDs.query();
+        netDs.transport.read = ({ data }) => {
+          const postData = getTablePostData(data);
+          return ({
+            url: `/devops/v1/projects/${projectId}/service/page_by_instance?env_id=${parentId}&app_service_id=${id}`,
+            method: 'post',
+            data: postData,
           });
-          mappingDs.transport.read = ({ data }) => {
-            const postData = getTablePostData(data);
-            return ({
-              url: `/devops/v1/projects/${projectId}/config_maps/page_by_options?env_id=${parentId}&app_service_id=${id}`,
-              method: 'post',
-              data: postData,
-            });
-          };
-          mappingDs.transport.destroy = ({ data: [data] }) => ({
-            url: `/devops/v1/projects/${projectId}/config_maps/${data.id}`,
-            method: 'delete',
+        };
+        netDs.transport.destroy = ({ data: [data] }) => ({
+          url: `/devops/v1/projects/${projectId}/service/${data.id}`,
+          method: 'delete',
+        });
+        mappingDs.transport.read = ({ data }) => {
+          const postData = getTablePostData(data);
+          return ({
+            url: `/devops/v1/projects/${projectId}/config_maps/page_by_options?env_id=${parentId}&app_service_id=${id}`,
+            method: 'post',
+            data: postData,
           });
-          cipherDs.transport.read = ({ data }) => {
-            const postData = getTablePostData(data);
-            return ({
-              url: `/devops/v1/projects/${projectId}/secret/page_by_options?env_id=${parentId}&app_service_id=${id}`,
-              method: 'post',
-              data: postData,
-            });
-          };
-          cipherDs.transport.destroy = ({ data: [data] }) => ({
-            url: `/devops/v1/projects/${projectId}/secret/${parentId}/${data.id}`,
-            method: 'delete',
+        };
+        mappingDs.transport.destroy = ({ data: [data] }) => ({
+          url: `/devops/v1/projects/${projectId}/config_maps/${data.id}`,
+          method: 'delete',
+        });
+        cipherDs.transport.read = ({ data }) => {
+          const postData = getTablePostData(data);
+          return ({
+            url: `/devops/v1/projects/${projectId}/secret/page_by_options?env_id=${parentId}&app_service_id=${id}`,
+            method: 'post',
+            data: postData,
           });
-          queryData();
-        }
-      });
-    }
+        };
+        cipherDs.transport.destroy = ({ data: [data] }) => ({
+          url: `/devops/v1/projects/${projectId}/secret/${parentId}/${data.id}`,
+          method: 'delete',
+        });
+        queryData();
+      }
+    });
   }, [
     projectId,
     id,
     parentId,
-    itemType,
     appStore.getTabKey,
   ]);
 

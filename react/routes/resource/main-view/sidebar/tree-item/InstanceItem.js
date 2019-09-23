@@ -25,6 +25,7 @@ function InstanceItem({
 }) {
   const {
     treeDs,
+    resourceStore,
     AppState: { currentMenuType: { id } },
   } = useResourceStore();
   const { treeItemStore } = useTreeItemStore();
@@ -40,7 +41,7 @@ function InstanceItem({
     name: 'unlink',
     value: podUnlinkCount,
     stroke: PADDING_COLOR,
-  }], [podUnlinkCount, podRunningCount]);
+  }], [podUnlinkCount, podRunningCount, podCount]);
 
   async function deleteItem() {
     try {
@@ -77,9 +78,14 @@ function InstanceItem({
 
   async function handleChangeActive(active) {
     try {
-      const result = await treeItemStore.changeIstActive(id, record.get('id'), active);
+      const istId = record.get('id');
+      const result = await treeItemStore.changeIstActive(id, istId, active);
       if (handlePromptError(result, false)) {
         treeDs.query();
+        resourceStore.setUpTarget({
+          type: 'instances',
+          id: istId,
+        });
       }
     } catch (error) {
       Choerodon.handleResponseError(error);

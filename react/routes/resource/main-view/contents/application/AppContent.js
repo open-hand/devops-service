@@ -41,17 +41,21 @@ const AppContent = observer(() => {
     appStore.setTabKey(key);
   }
 
+  function updateTreeItem(id, name) {
+    const menuItem = treeDs.find((item) => item.get('id') === id);
+
+    if (menuItem && menuItem.get('name') !== name) {
+      menuItem.set('name', name);
+      message.info(formatMessage({ id: 'data.changed' }));
+    }
+  }
+
   function getTitle() {
     const record = baseInfoDs.current;
     if (record) {
       const id = record.get('id');
       const name = record.get('name');
-      const menuItem = treeDs.find((item) => item.get('id') === id);
-
-      if (menuItem && menuItem.get('name') !== name) {
-        menuItem.set('name', name);
-        message.info(formatMessage({ id: 'data.changed' }));
-      }
+      updateTreeItem(id, name);
 
       return <AppTitle name={name} />;
     }
