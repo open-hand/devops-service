@@ -61,7 +61,7 @@ WHERE
 			</if>
 			<if test='searchParam.env != null'>
 				AND
-					t.env LIKE CONCAT(CONCAT('%', #{searchParam.env, jdbcType=VARCHAR}),'%')
+					t.env =#{searchParam.env}
 			</if>
 			<if test='searchParam.deployId != null'>
 				AND
