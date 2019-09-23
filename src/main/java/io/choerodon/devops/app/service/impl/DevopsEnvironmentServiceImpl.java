@@ -1184,7 +1184,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     private void setPermission(DevopsEnvironmentDTO devopsEnvironmentDTO, List<Long> permissionEnvIds,
                                Boolean isProjectOwner) {
-        if (permissionEnvIds.contains(devopsEnvironmentDTO.getId()) || isProjectOwner) {
+        if (devopsEnvironmentDTO.getSkipCheckPermission()) {
+            devopsEnvironmentDTO.setPermission(true);
+        } else if (permissionEnvIds.contains(devopsEnvironmentDTO.getId()) || isProjectOwner) {
             devopsEnvironmentDTO.setPermission(true);
         } else {
             devopsEnvironmentDTO.setPermission(false);
