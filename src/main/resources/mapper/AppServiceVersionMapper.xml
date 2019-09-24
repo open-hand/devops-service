@@ -430,6 +430,13 @@
                <foreach collection="ids" item="id" open="(" separator="," close=")">
                    #{id}
                </foreach>
+               <if test="share == 'share'">
+                   and dassr.share_level = 'organization'
+               </if>
+               <if test="share == 'project'">
+                   and dassr.share_level = 'project'
+                   and dassr.project_id = #{projectId}
+               </if>
                AND dassr.version IS NULL
                AND version.version LIKE CONCAT('%', CONCAT(dassr.version_type,'%'))
                )
