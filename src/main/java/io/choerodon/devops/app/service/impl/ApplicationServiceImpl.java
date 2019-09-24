@@ -949,12 +949,12 @@ public class ApplicationServiceImpl implements ApplicationService {
             DevopsProjectE devopsProjectE = devopsProjectRepository.queryDevopsProject(projectE.getId());
             Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
             InputStream inputStream;
-            ProjectConfigDTO harborProjectConfig = null;
-            ProjectConfigDTO chartProjectConfig = null;
+            ProjectConfigDTO harborProjectConfig;
+            ProjectConfigDTO chartProjectConfig;
             if (applicationE.getHarborConfigE() != null) {
                 DevopsProjectConfigE devopsProjectConfigE = devopsProjectConfigRepository.queryByPrimaryKey(applicationE.getHarborConfigE().getId());
+                harborProjectConfig = devopsProjectConfigE.getConfig();
                 if(devopsProjectConfigE.getName().equals("harbor_default")) {
-                    harborProjectConfig = devopsProjectConfigE.getConfig();
                     harborProjectConfig.setUserName(devopsProjectE.getHarborProjectUserName());
                     harborProjectConfig.setPassword(devopsProjectE.getHarborProjectUserPassword());
                 }
