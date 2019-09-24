@@ -105,7 +105,7 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
         if (cast.get("deployType") != null && cast.get("deployStatus") != null) {
             if ("manual".equals(cast.get("deployType"))&&"running".equals(cast.get("deployStatus"))) {
                 cast.put("deployStatus", "operating");
-            } else {
+            } else if("auto".equals(cast.get("deployType"))&&"running".equals(cast.get("deployStatus"))) {
                 cast.put("deployStatus", "running");
             }
         }
