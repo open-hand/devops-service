@@ -14,5 +14,5 @@ public interface HarborService {
 
     void createHarborForProject(HarborPayload harborPayload);
 
-    void createHarbor(HarborClient harborClient, String projectCode);
+    void createHarbor(HarborClient harborClient, Long projectId, String projectCode);
 }
