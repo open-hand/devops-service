@@ -39,6 +39,7 @@ public class AppServiceShareRuleServiceImpl implements AppServiceShareRuleServic
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
     private AppServiceShareRuleMapper appServiceShareRuleMapper;
+    private static final String PROJECT_NAME = "组织下所有项目";
 
     @Override
     @Transactional
@@ -85,7 +86,11 @@ public class AppServiceShareRuleServiceImpl implements AppServiceShareRuleServic
     @Override
     public AppServiceShareRuleVO query(Long projectId, Long ruleId) {
         AppServiceShareRuleVO appServiceShareRuleVO = ConvertUtils.convertObject(appServiceShareRuleMapper.selectByPrimaryKey(ruleId), AppServiceShareRuleVO.class);
-        appServiceShareRuleVO.setProjectName(baseServiceClientOperator.queryIamProjectById(appServiceShareRuleVO.getProjectId()).getName());
+        if(appServiceShareRuleVO.getProjectId() == null){
+            appServiceShareRuleVO.setProjectName(PROJECT_NAME);
+        }else {
+            appServiceShareRuleVO.setProjectName(baseServiceClientOperator.queryIamProjectById(appServiceShareRuleVO.getProjectId()).getName());
+        }
         return appServiceShareRuleVO;
     }
 
