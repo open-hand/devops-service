@@ -47,14 +47,22 @@ WHERE
 
 	<sql id="sqlparam">
 		<if test='searchParam != null'>
-			<if test='searchParam.deployType != null and searchParam.deployType.length > 0'>
-				AND
-					t.deploy_type LIKE CONCAT(CONCAT('%', #{searchParam.deployType, jdbcType=VARCHAR}),'%')
-			</if>
-			<if test='searchParam.deployStatus != null and searchParam.deployStatus.length > 0'>
-				AND
-					t.deployStatus LIKE CONCAT(CONCAT('%', #{searchParam.deployStatus, jdbcType=VARCHAR}),'%')
-			</if>
+			<choose>
+				<when test="searchParam.deployType == null and searchParam.deployStatus != null">
+						AND	t.deployStatus ='running' OR t.deployStatus ='operating'
+				</when>
+				<otherwise>
+					<if test='searchParam.deployType != null and searchParam.deployType.length > 0'>
+						AND
+						t.deploy_type LIKE CONCAT(CONCAT('%', #{searchParam.deployType, jdbcType=VARCHAR}),'%')
+					</if>
+					<if test='searchParam.deployStatus != null and searchParam.deployStatus.length > 0'>
+						AND
+						t.deployStatus =#{searchParam.deployStatus}
+					</if>
+				</otherwise>
+			</choose>
+
 			<if test='searchParam.pipelineName != null and searchParam.pipelineName.length > 0'>
 				AND
 					t.pipelineName LIKE CONCAT(CONCAT('%', #{searchParam.pipelineName, jdbcType=VARCHAR}),'%')
