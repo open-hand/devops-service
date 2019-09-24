@@ -25,18 +25,6 @@ export default ((intlPrefix, formatMessage, projectId, id) => ({
         url: `/devops/v1/projects/${projectId}/app_service_share/page_by_options?app_service_id=${id}`,
         method: 'post',
         data: postData,
-        transformResponse(res) {
-          const arr = JSON.parse(res).list;
-          forEach(arr, (item) => {
-            item.shareLevel = {
-              id: item.projectId,
-              name: item.projectName,
-            };
-          });
-          return {
-            list: arr,
-          };
-        },
       };
     },
     create: ({ data: [data] }) => {

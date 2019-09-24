@@ -4,18 +4,13 @@ import { observer } from 'mobx-react-lite';
 import { Action } from '@choerodon/master';
 import { Popover } from 'choerodon-ui';
 import { Table } from 'choerodon-ui/pro';
-import map from 'lodash/map';
-import findIndex from 'lodash/findIndex';
-import find from 'lodash/find';
-import filter from 'lodash/filter';
 import StatusIcon from '../../../../../components/StatusIcon';
 import { useResourceStore } from '../../../stores';
 import { useCertificateStore } from './stores';
 import Modals from './modals';
 import MouserOverWrapper from '../../../../../components/MouseOverWrapper';
-import { getTimeLeft, handlePromptError } from '../../../../../utils';
+import { getTimeLeft } from '../../../../../utils';
 import StatusTags from '../../../../../components/status-tag';
-import DeleteModal from '../../components/delete-modal';
 
 
 import './index.less';
@@ -28,39 +23,15 @@ const CertContent = observer(() => {
     prefixCls,
     intlPrefix,
     treeDs,
-    resourceStore,
   } = useResourceStore();
   const {
     certificateDs,
     intl: { formatMessage },
     AppState: { currentMenuType: { projectId } },
   } = useCertificateStore();
-  const { certStore } = useMainStore();
-
   const {
-    getSelectedMenu: { parentId },
-    getDeleteArr,
-    openDeleteModal,
-    closeDeleteModal,
-    removeDeleteModal,
-  } = resourceStore;
-  const [deleteLoading, setDeleteLoading] = useState(false);
-
-  const deleteModals = useMemo(() => (
-    map(getDeleteArr, ({ name, display, deleteId }) => (<DeleteModal
-      key={deleteId}
-      envId={parentId.split('-')[0]}
-      store={resourceStore}
-      title={`${formatMessage({ id: 'certificate.delete' })}“${name}”`}
-      visible={display}
-      objectId={deleteId}
-      loading={deleteLoading}
-      objectType="certificate"
-      onClose={closeDeleteModal}
-      onOk={handleDelete}
-    />))
-  ), [getDeleteArr]);
-
+    mainStore: { openDeleteModal },
+  } = useMainStore();
 
   function refresh() {
     treeDs.query();
@@ -134,8 +105,8 @@ const CertContent = observer(() => {
 
   function renderAction({ record }) {
     const commandStatus = record.get('commandStatus');
-    const id = certificateDs.current.get('id');
-    const name = certificateDs.current.get('certName');
+    const id = record.get('id');
+    const name = record.get('certName');
     if (commandStatus === 'operating') {
       return null;
     }
@@ -143,27 +114,11 @@ const CertContent = observer(() => {
       {
         service: ['devops-service.certification.delete'],
         text: formatMessage({ id: 'delete' }),
-        action: () => openDeleteModal(id, name),
+        action: () => openDeleteModal(id, name, 'certificate', refresh),
       },
     ];
 
     return (<Action data={buttons} />);
-  }
-
-  async function handleDelete(id, callback) {
-    setDeleteLoading(true);
-    try {
-      const res = await certStore.deleteData(projectId, id);
-      if (handlePromptError(res)) {
-        removeDeleteModal(id);
-        refresh();
-      }
-      setDeleteLoading(false);
-    } catch (e) {
-      setDeleteLoading(false);
-      callback && callback();
-      Choerodon.handleResponseError(e);
-    }
   }
 
   return (
@@ -179,7 +134,6 @@ const CertContent = observer(() => {
         <Column name="domains" renderer={renderDomains} />
         <Column renderer={renderValid} header={formatMessage({ id: 'validDate' })} />
       </Table>
-      {deleteModals}
     </div>
   );
 });

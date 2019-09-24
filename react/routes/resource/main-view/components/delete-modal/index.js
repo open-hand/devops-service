@@ -20,12 +20,7 @@ class DeleteModal extends Component {
     visible: PropTypes.bool.isRequired,
     title: PropTypes.string.isRequired,
     objectId: PropTypes.number,
-    loading: PropTypes.bool,
     envId: PropTypes.number.isRequired,
-  };
-
-  static defaultProps = {
-    loading: false,
   };
 
   constructor(props) {
@@ -47,6 +42,7 @@ class DeleteModal extends Component {
       user: null,
       method: null,
       notificationId: null,
+      loading: false,
     };
   }
 
@@ -158,6 +154,36 @@ class DeleteModal extends Component {
     });
   };
 
+  deleteData = async (flag = false) => {
+    const {
+      AppState: { currentMenuType: { projectId } },
+      refresh,
+      objectId,
+      objectType,
+      store,
+    } = this.props;
+    this.setState({ loading: true });
+    try {
+      const res = await store.deleteData(projectId, objectId, objectType);
+      if (handlePromptError(res)) {
+        store.removeDeleteModal(objectId, objectType);
+        if (flag) {
+          this.clearTimer();
+          this.setState({
+            count: 60,
+            canSendMessage: true,
+            canDelete: false,
+          });
+        }
+        refresh();
+      }
+      this.setState({ loading: false });
+    } catch (e) {
+      this.setState({ loading: false });
+      Choerodon.handleResponseError(e);
+    }
+  };
+
   handleDelete = (e) => {
     e.preventDefault();
 
@@ -166,7 +192,6 @@ class DeleteModal extends Component {
       AppState: {
         currentMenuType: { id: projectId },
       },
-      onOk,
       objectId,
       objectType,
       envId,
@@ -176,7 +201,7 @@ class DeleteModal extends Component {
     const { isVerification } = this.state;
 
     if (!isVerification) {
-      onOk(objectId, HAS_VALID);
+      this.deleteData();
       return;
     }
 
@@ -190,14 +215,8 @@ class DeleteModal extends Component {
               this.setState({ isError: true, canDelete: false });
             } else {
               this.clearTimer();
-              onOk(objectId, HAS_VALID, () => {
-                this.clearTimer();
-                this.setState({
-                  count: 60,
-                  canSendMessage: true,
-                  canDelete: false,
-                });
-              });
+              this.deleteData();
+              this.deleteData(true);
             }
             this.setState({ validateLoading: false });
           })
@@ -214,10 +233,11 @@ class DeleteModal extends Component {
   closeModal = () => {
     const {
       form: { resetFields },
-      onClose,
       objectId,
+      objectType,
+      store,
     } = this.props;
-    onClose(objectId);
+    store.closeDeleteModal(objectId, objectType);
     resetFields(['captcha']);
     this.setState({ isError: false });
   };
@@ -293,12 +313,12 @@ class DeleteModal extends Component {
     const {
       visible,
       title,
-      loading: deleteLoading,
     } = this.props;
     const {
       validateLoading,
       canDelete,
       isVerification,
+      loading: deleteLoading,
     } = this.state;
 
     return (

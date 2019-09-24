@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useMemo } from 'react';
+import React, { createContext, useContext, useEffect, useMemo } from 'react';
 import { DataSet } from 'choerodon-ui/pro';
 import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
@@ -18,7 +18,8 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const {
       intlPrefix,
       intl: { formatMessage },
-      resourceStore: { getSelectedMenu: { parentId } },
+      resourceStore: { getSelectedMenu: { parentId }, setUpTarget, getUpTarget },
+      itemTypes: { CERT_GROUP },
     } = useResourceStore();
     const certificateDs = useMemo(() => new DataSet(TableDataSet({
       formatMessage,
@@ -31,6 +32,14 @@ export const StoreProvider = injectIntl(inject('AppState')(
       ...props,
       certificateDs,
     };
+
+    useEffect(() => {
+      const { type } = getUpTarget;
+      if (type === CERT_GROUP) {
+        certificateDs.query();
+        setUpTarget({});
+      }
+    }, [getUpTarget]);
 
     return (
       <Store.Provider value={value}>
