@@ -79,9 +79,7 @@ export default observer((props) => {
           tab={formatMessage({ id: `${intlPrefix}.permission.assign` })}
         >
           <Suspense fallback={<Spin />}>
-            
             <PermissionList />
-            
           </Suspense>
         </TabPane>
       </Tabs>

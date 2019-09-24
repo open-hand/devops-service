@@ -23,20 +23,20 @@ export const StoreProvider = injectIntl(inject('AppState')(
       NODE_TAB: 'node',
       ASSIGN_TAB: 'assign',
     }), []);
-    const { intl: { formatMessage }, AppState: { currentMenuType: { id } }, children } = props;
+    const { intl: { formatMessage }, AppState: { currentMenuType: { id: projectId } }, children } = props;
     const { ClusterDetailDs } = useClusterMainStore();
     const { intlPrefix, clusterStore } = useClusterStore();
-    const { getSelectedMenu: { menuId } } = clusterStore;
-    
+    const { getSelectedMenu: { id } } = clusterStore;
+
     const record = ClusterDetailDs.current;
-    const NodeListDs = useMemo(() => new DataSet(NodeListDataSet({ formatMessage, intlPrefix, id })), []);
-    const PermissionDs = useMemo(() => new DataSet(PermissionDataSet({ formatMessage, intlPrefix, id, menuId, skipCheckProjectPermission: record && record.get('skipCheckProjectPermission') })), [record]);
+    const NodeListDs = useMemo(() => new DataSet(NodeListDataSet({ formatMessage, intlPrefix })), []);
+    const PermissionDs = useMemo(() => new DataSet(PermissionDataSet({ formatMessage, intlPrefix, projectId, id, skipCheckProjectPermission: record && record.get('skipCheckProjectPermission') })), [record]);
 
     const contentStore = useStore(tabs);
     const tabkey = contentStore.getTabKey;
     useEffect(() => {
       if (tabkey === tabs.NODE_TAB) {
-        NodeListDs.transport.read.url = `/devops/v1/projects/${id}/clusters/page_nodes?cluster_id=${menuId}`;
+        NodeListDs.transport.read.url = `/devops/v1/projects/${projectId}/clusters/page_nodes?cluster_id=${id}`;
         NodeListDs.query();
       } else {
         if (!record) {
@@ -44,9 +44,9 @@ export const StoreProvider = injectIntl(inject('AppState')(
         }
         let URL = '';
         if (record.get('skipCheckProjectPermission')) {
-          URL = `/devops/v1/projects/${id}/page_projects`;
+          URL = `/devops/v1/projects/${projectId}/page_projects`;
         } else {
-          URL = `/devops/v1/projects/${id}/clusters/${menuId}/permission/page_related`;
+          URL = `/devops/v1/projects/${projectId}/clusters/${id}/permission/page_related`;
         }
         PermissionDs.transport.read = ({ data }) => {
           const postData = getTablePostData(data);
@@ -57,13 +57,12 @@ export const StoreProvider = injectIntl(inject('AppState')(
           };
         };
         PermissionDs.transport.destroy = {
-          url: `/devops/v1/projects/${id}/clusters/${menuId}/permission`,
+          url: `/devops/v1/projects/${projectId}/clusters/${id}/permission`,
           method: 'delete',
         };
         PermissionDs.query();
       }
-    }, [id, menuId, tabkey, record]);
-    
+    }, [projectId, id, tabkey, record]);
 
     const value = {
       ...props,
@@ -74,8 +73,8 @@ export const StoreProvider = injectIntl(inject('AppState')(
       intlPrefix,
       formatMessage,
       ClusterDetailDs,
-      projectId: id,
-      clusterId: menuId,
+      projectId,
+      clusterId: id,
     };
     return (
       <Store.Provider value={value}>

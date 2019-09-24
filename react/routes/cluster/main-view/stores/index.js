@@ -7,7 +7,6 @@ import { useClusterStore } from '../../stores';
 import useStore from './useStore';
 import ClusterDetailDataSet from './ClusterDetailDataSet';
 
-
 const Store = createContext();
 
 export function useClusterMainStore() {
@@ -15,18 +14,18 @@ export function useClusterMainStore() {
 }
 
 export const StoreProvider = injectIntl(inject('AppState')(observer((props) => {
-  const { intl: { formatMessage }, AppState: { currentMenuType: { projectId } }, children } = props;
-  const { clusterStore } = useClusterStore();
-  const { getSelectedMenu: { menuId } } = clusterStore;
-  const ClusterDetailDs = useMemo(() => new DataSet(ClusterDetailDataSet()), []);  
+  const { AppState: { currentMenuType: { projectId } }, children } = props;
+  const { clusterStore: { getSelectedMenu: { id } } } = useClusterStore();
+
+  const ClusterDetailDs = useMemo(() => new DataSet(ClusterDetailDataSet()), []);
   const mainStore = useStore();
 
   useEffect(() => {
-    if (menuId) {
-      ClusterDetailDs.transport.read.url = `devops/v1/projects/${projectId}/clusters/${menuId}`;
+    if (id) {
+      ClusterDetailDs.transport.read.url = `devops/v1/projects/${projectId}/clusters/${id}`;
       ClusterDetailDs.query();
     }
-  }, [projectId, menuId]);
+  }, [projectId, id]);
 
   const value = {
     ...props,
@@ -36,7 +35,7 @@ export const StoreProvider = injectIntl(inject('AppState')(observer((props) => {
     mainStore,
     ClusterDetailDs,
   };
-  
+
   return (
     <Store.Provider value={value}>
       {children}

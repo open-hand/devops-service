@@ -36,6 +36,9 @@ export const StoreProvider = injectIntl(inject('AppState')(
       try {
         const res = await axios.get(`/devops/v1/projects/${projectId}/env_groups/${id}/check`);
         if (typeof res === 'boolean') {
+          if (!res) {
+            openWarnModal(freshTree, formatMessage);
+          }
           return res;
         }
         // 只有请求到false，才返回false
@@ -47,9 +50,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
 
     useEffect(() => {
       checkGroupExist().then((query) => {
-        if (!query) {
-          openWarnModal(freshTree, formatMessage);
-        } else {
+        if (query) {
           const param = typeof id === 'number' && id ? `?group_id=${id}` : '';
           groupDs.transport.read.url = `/devops/v1/projects/${projectId}/envs/list_by_group${param}`;
           groupDs.query();
@@ -60,7 +61,6 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const value = {
       ...props,
       groupDs,
-      checkGroupExist,
     };
     return (
       <Store.Provider value={value}>

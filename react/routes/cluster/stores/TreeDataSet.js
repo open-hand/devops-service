@@ -47,12 +47,12 @@ function formatCluster(value, expandsKeys) {
 
 
 function handleSelect(record, store) {
-  const menuId = record.get('id');
-  const menuType = record.get('itemType');
+  const id = record.get('id');
+  const itemType = record.get('itemType');
   const parentId = record.get('parentId');
   const key = record.get('key');
   const name = record.get('name');
-  store.setSelectedMenu({ menuId, menuType, parentId, key, name });
+  store.setSelectedMenu({ id, itemType, parentId, key, name });
 }
 
 

@@ -6,6 +6,7 @@
     color: rgba(0, 0, 0, 1);
     line-height: .22rem;
   }
+
   .c7ncd-deployment-application-detail-modal {
     list-style: none;
     margin: 0;
@@ -15,13 +16,16 @@
       margin-bottom: .16rem;
       list-style: none;
       font-size: .14rem;
+
       &-one-to-many {
         display: flex;
+
         p {
           line-height: .14rem;
           margin-bottom: .02rem;
         }
       }
+
       &-text {
         color: rgba(0, 0, 0, 0.65);
         width: .88rem;
@@ -39,6 +43,7 @@
       &-has-url {
         display: flex;
       }
+
       &-url {
         width: ~"calc(100% - 0.88rem)";
         overflow: hidden;
@@ -48,6 +53,7 @@
       }
     }
   }
+
   .net-hr {
     margin: 0 -0.24rem;
     color: #d8d8d8;
@@ -55,30 +61,27 @@
   }
 
   .c7ncd-deployment-application-label {
-    height: 0.21rem;
-    background: rgba(239, 244, 249, 1);
+    display: inline-block;
+    margin: 0 .08rem .06rem 0;
+    padding: .02rem .06rem .02rem .02rem;
+    height: .21rem;
     border-radius: .03rem;
-    font-size: .16rem;
-    display: inline-flex;
-    width: fit-content;
-    margin-right: .08rem;
-    margin-top: .12rem;
-    &-head {
-      font-family: PingFangSC-Medium;
-      height: .17rem;
-      background: rgba(121, 142, 161, 1);
-      border-radius: .01rem;
-      line-height: .16rem;
-      padding: 0 .06rem;
-      color: #fff;
-      margin: .02rem .02rem;
-    }
+    font-size: .12rem;
+    background: #eff4f9;
+    color: #242e42;
+    overflow: hidden;
+    max-width: 100%;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 
-    &-text {
-      font-family: PingFangSC-Medium;
-      line-height: .16rem;
-      margin: .02rem .02rem;
+    span {
+      line-height: .17rem;
+      font-weight: 500;
+      margin-right: .06rem;
       padding: 0 .06rem;
+      border-radius: .01rem;
+      color: #fff;
+      background: #798ea1;
     }
   }
 }

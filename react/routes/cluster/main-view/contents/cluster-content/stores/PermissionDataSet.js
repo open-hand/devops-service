@@ -1,6 +1,6 @@
 import getTablePostData from '../../../../../../utils/getTablePostData';
 
-export default ({ formatMessage, intlPrefix, id: projectId, menuId, skipCheckProjectPermission }) => ({
+export default ({ formatMessage, projectId, id, skipCheckProjectPermission }) => ({
   selection: false,
   pageSize: 10,
   transport: {
@@ -10,7 +10,7 @@ export default ({ formatMessage, intlPrefix, id: projectId, menuId, skipCheckPro
       if (skipCheckProjectPermission) {
         URL = `/devops/v1/projects/${projectId}/page_projects`;
       } else {
-        URL = `/devops/v1/projects/${projectId}/clusters/${menuId}/permission/page_related`;
+        URL = `/devops/v1/projects/${projectId}/clusters/${id}/permission/page_related`;
       }
       return {
         url: URL,

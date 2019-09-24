@@ -64,25 +64,30 @@ const EnvModals = observer(() => {
     gitopsSyncDs,
     configDs,
     configFormDs,
+    checkEnvExist,
   } = useDetailStore();
 
   function refresh() {
-    const { getTabKey } = detailStore;
-    switch (getTabKey) {
-      case SYNC_TAB: {
-        gitopsSyncDs.query();
-        gitopsLogDs.query();
-        break;
+    checkEnvExist().then(query => {
+      if (query) {
+        const { getTabKey } = detailStore;
+        switch (getTabKey) {
+          case SYNC_TAB: {
+            gitopsSyncDs.query();
+            gitopsLogDs.query();
+            break;
+          }
+          case CONFIG_TAB:
+            configDs.query();
+            break;
+          case ASSIGN_TAB:
+            permissionsDs.query();
+            break;
+          default:
+        }
+        treeDs.query();
       }
-      case CONFIG_TAB:
-        configDs.query();
-        break;
-      case ASSIGN_TAB:
-        permissionsDs.query();
-        break;
-      default:
-    }
-    treeDs.query();
+    });
   }
   const disabled = isNotRunning(getSelectedMenu || {});
 

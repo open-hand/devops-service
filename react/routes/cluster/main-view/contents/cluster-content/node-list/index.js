@@ -9,8 +9,11 @@ import './index.less';
 
 const { Column } = Table;
 const NodeList = () => {
-  const { intlPrefix, formatMessage,
-    NodeListDs } = useClusterContentStore();
+  const {
+    intlPrefix,
+    formatMessage,
+    NodeListDs,
+  } = useClusterContentStore();
 
   const renderStatusName = ({ record }) => {
     const status = record.get('status');
@@ -24,7 +27,7 @@ const NodeList = () => {
           </span>
         </Tooltip>
       </Fragment>
-    );   
+    );
   };
 
   const renderCm = (record, type) => {
@@ -55,19 +58,21 @@ const NodeList = () => {
 
   const renderCpu = ({ record }) => renderCm(record, 'cpu');
   const renderMemory = ({ record }) => renderCm(record, 'memory');
-  
+
   return (
-    <Table
-      dataSet={NodeListDs}
-      border={false}
-      queryBar="none"
-    >
-      <Column width={120} header={formatMessage({ id: `${intlPrefix}.node.ip` })} renderer={renderStatusName} />
-      <Column name="type" minWidth={80} renderer={renderType} />
-      <Column header={formatMessage({ id: `${intlPrefix}.node.cpu` })} renderer={renderCpu} />
-      <Column header={formatMessage({ id: `${intlPrefix}.node.memory` })} renderer={renderMemory} />
-      <Column name="createTime" minWidthth={140} renderer={renderTime} />
-    </Table>
+    <div className="c7ncd-cluster-table">
+      <Table
+        dataSet={NodeListDs}
+        border={false}
+        queryBar="none"
+      >
+        <Column width={120} header={formatMessage({ id: `${intlPrefix}.node.ip` })} renderer={renderStatusName} />
+        <Column name="type" minWidth={80} renderer={renderType} />
+        <Column header={formatMessage({ id: `${intlPrefix}.node.cpu` })} renderer={renderCpu} />
+        <Column header={formatMessage({ id: `${intlPrefix}.node.memory` })} renderer={renderMemory} />
+        <Column name="createTime" minWidthth={140} renderer={renderTime} />
+      </Table>
+    </div>
   );
 };
 
