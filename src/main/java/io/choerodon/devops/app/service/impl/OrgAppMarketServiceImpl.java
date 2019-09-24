@@ -322,6 +322,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         appServiceDTO.setGitlabProjectId(gitlabProjectDTO.getId());
         appServiceDTO.setSynchro(true);
         appServiceDTO.setFailed(false);
+        appServiceDTO.setMktAppId(downloadPayload.getAppId());
         appServiceService.baseCreate(appServiceDTO);
         return appServiceDTO;
     }
