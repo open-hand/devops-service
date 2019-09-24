@@ -1,29 +1,11 @@
 package io.choerodon.devops.app.service.impl;
 
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.text.DecimalFormat;
-import java.util.*;
-import java.util.stream.Collectors;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.env.YamlPropertySourceLoader;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -52,6 +34,23 @@ import io.choerodon.devops.infra.mapper.AppServiceInstanceMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvAppServiceMapper;
 import io.choerodon.devops.infra.mapper.PipelineAppServiceDeployMapper;
 import io.choerodon.devops.infra.util.*;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.env.YamlPropertySourceLoader;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.text.DecimalFormat;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
@@ -726,7 +725,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         try {
             //更新实例的时候判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
             String filePath = null;
-            if(instanceSagaPayload.getAppServiceDeployVO().getType().equals(UPDATE)) {
+            if (instanceSagaPayload.getAppServiceDeployVO().getType().equals(UPDATE)) {
                 filePath = clusterConnectionHandler.handDevopsEnvGitRepository(instanceSagaPayload.getProjectId(), instanceSagaPayload.getDevopsEnvironmentDTO().getCode(), instanceSagaPayload.getDevopsEnvironmentDTO().getEnvIdRsa());
             }
             //在gitops库处理instance文件
@@ -1490,6 +1489,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                     getDeployTime(deployDTO.getLastUpdateDate().getTime() - deployDTO.getCreationDate().getTime()));
             if (deployDTO.getCreatedBy() != 0) {
                 IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(deployDTO.getCreatedBy());
+                deployDetailTableVO.setUserUrl(iamUserDTO.getImageUrl());
+                deployDetailTableVO.setUserLoginName(iamUserDTO.getLdap() ? iamUserDTO.getLoginName() : iamUserDTO.getEmail());
                 deployDetailTableVO.setLastUpdatedName(iamUserDTO.getRealName());
             }
             deployDetailTableVOS.add(deployDetailTableVO);

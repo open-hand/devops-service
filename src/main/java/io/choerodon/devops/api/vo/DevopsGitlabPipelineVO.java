@@ -13,11 +13,13 @@ public class DevopsGitlabPipelineVO {
     private Long pipelineId;
     private Long gitlabProjectId;
     private String pipelineUserUrl;
+    private String pipelineUserLoginName;
     private String pipelineUserName;
     private String gitlabUrl;
     private String ref;
     private String commit;
     private String commitUserUrl;
+    private String commitUserLoginName;
     private String commitUserName;
     private String commitContent;
     private Boolean latest;
@@ -25,6 +27,21 @@ public class DevopsGitlabPipelineVO {
     private Date creationDate;
     private List<Stage> stages;
 
+    public String getCommitUserLoginName() {
+        return commitUserLoginName;
+    }
+
+    public void setCommitUserLoginName(String commitUserLoginName) {
+        this.commitUserLoginName = commitUserLoginName;
+    }
+
+    public String getPipelineUserLoginName() {
+        return pipelineUserLoginName;
+    }
+
+    public void setPipelineUserLoginName(String pipelineUserLoginName) {
+        this.pipelineUserLoginName = pipelineUserLoginName;
+    }
 
     public String getStatus() {
         return status;

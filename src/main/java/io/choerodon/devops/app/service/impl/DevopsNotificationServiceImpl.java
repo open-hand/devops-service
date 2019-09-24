@@ -142,7 +142,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
                     if (iamUserDTO != null) {
                         u.setImageUrl(iamUserDTO.getImageUrl());
                         u.setRealName(iamUserDTO.getRealName());
-                        u.setLoginName(iamUserDTO.getLoginName());
+                        u.setLoginName(iamUserDTO.getLdap() ? iamUserDTO.getLoginName() : iamUserDTO.getEmail());
                     }
                 }).collect(Collectors.toList());
                 t.setUserRelDTOS(userRelVOS);
