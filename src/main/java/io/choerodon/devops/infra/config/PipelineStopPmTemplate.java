@@ -39,6 +39,6 @@ public class PipelineStopPmTemplate implements PmTemplate {
     @Override
     public String content() {
         return "<p>流水线“${pipelineName}”在【${stageName}】阶段被${auditName}:${realName}终止<p>" +
-                "<p><a href=#/devops/pipeline-record/detail/${pipelineId}/${pipelineRecordId}?type=project&id=${projectId}&name=${projectName}&category=undefined&organizationId=${organizationId}>查看详情</a >";
+                "<p><a href=#/devops/deployment-operation?type=project&id=${projectId}&name=${projectName}&category=undefined&organizationId=${organizationId}&orgId=${organizationId}&pipelineRecordId=${pipelineRecordId}>查看详情</a >";
     }
 }
