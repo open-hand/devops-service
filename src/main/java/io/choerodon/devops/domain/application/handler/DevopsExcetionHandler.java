@@ -4,6 +4,7 @@ import io.choerodon.core.exception.ExceptionResponse;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.resource.handler.ControllerExceptionHandler;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +35,7 @@ public class DevopsExcetionHandler {
      */
     @ExceptionHandler(DevopsCiInvalidException.class)
     public ResponseEntity<ExceptionResponse> process(DevopsCiInvalidException exception) {
-        LOGGER.info("exception info {}", exception.getTrace());
+        LOGGER.info("CI exception info {}", exception.getTrace());
         String message = null;
         try {
             message = messageSource.getMessage(exception.getCode(), exception.getParameters(), locale());
@@ -42,7 +43,7 @@ public class DevopsExcetionHandler {
             LOGGER.trace("exception message {}", exception);
         }
         return new ResponseEntity<>(
-                new ExceptionResponse(true, exception.getCode(), message != null ? message : exception.getMessage()),
+                new ExceptionResponse(true, exception.getCode(), message != null ? message : exception.getTrace()),
                 HttpStatus.BAD_REQUEST);
     }
 

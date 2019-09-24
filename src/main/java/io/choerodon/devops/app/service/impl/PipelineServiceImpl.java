@@ -546,7 +546,7 @@ public class PipelineServiceImpl implements PipelineService {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         if (!iamRepository.isProjectOwner(userId, projectE)) {
             List<Long> envIds = devopsEnvUserPermissionRepository
-                    .listByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId())).stream()
+                    .listByUserId(userId).stream()
                     .filter(DevopsEnvUserPermissionE::getPermitted)
                     .map(DevopsEnvUserPermissionE::getEnvId).collect(Collectors.toList());
             for (PipelineAppDeployE appDeployE : allAppDeploys) {

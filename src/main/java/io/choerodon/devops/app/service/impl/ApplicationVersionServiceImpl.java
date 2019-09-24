@@ -64,8 +64,6 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     @Autowired
     private DevopsGitlabCommitRepository devopsGitlabCommitRepository;
     @Autowired
-    private SagaClient sagaClient;
-    @Autowired
     private DevopsProjectConfigRepository devopsProjectConfigRepository;
     @Autowired
     private PipelineAppDeployRepository appDeployRepository;
@@ -79,15 +77,9 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     private ChartUtil chartUtil;
     @Autowired
     private PipelineService pipelineService;
-    @Autowired
-    private DevopsProjectRepository devopsProjectRepository;
-    @Autowired
-    private DevopsEnvironmentService devopsEnvironmentService;
 
     @Value("${services.helm.url}")
     private String helmUrl;
-
-    private Gson gson = new Gson();
 
     /**
      * 方法中抛出runtime Exception而不是CommonException是为了返回非200的状态码。
@@ -100,7 +92,7 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
             if (e instanceof CommonException) {
                 throw new DevopsCiInvalidException(((CommonException) e).getCode(), e.getCause());
             }
-            throw new DevopsCiInvalidException(e.getMessage(), e);
+            throw new DevopsCiInvalidException(e);
         }
     }
 
