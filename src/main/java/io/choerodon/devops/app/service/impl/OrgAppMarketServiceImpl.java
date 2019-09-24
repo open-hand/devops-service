@@ -337,7 +337,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                 String chartFilePath = String.format("%s%s%s%s", APPLICATION, File.separator, APPLICATION + System.currentTimeMillis(), TGZ);
                 fileDownload(appServiceVersionPayload.getChartFilePath(), chartFilePath);
                 LOGGER.info("=========应用下载，文件下载成功=========");
-                AppServiceVersionDTO appServiceVersionDTO = chartResolver(appServiceVersionPayload, appServiceId, appCode, downloadPayload.getAppServiceCode(), new File(chartFilePath), versionDTO);
+                AppServiceVersionDTO appServiceVersionDTO = chartResolver(appServiceVersionPayload, downloadPayload.getAppId(), appServiceId, appCode, downloadPayload.getAppServiceCode(), new File(chartFilePath), versionDTO);
                 serviceVersionIds.add(appServiceVersionDTO.getId());
             }
             if (!downloadType.equals(DEPLOY_ONLY)) {
@@ -470,7 +470,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
      * @param file                     chart文件
      * @return
      */
-    private AppServiceVersionDTO chartResolver(AppServiceVersionDownloadPayload appServiceVersionPayload, Long appServiceId, String appCode, String appServiceCode, File file, AppServiceVersionDTO versionDTO) {
+    private AppServiceVersionDTO chartResolver(AppServiceVersionDownloadPayload appServiceVersionPayload, Long appId, Long appServiceId, String appCode, String appServiceCode, File file, AppServiceVersionDTO versionDTO) {
         String unZipPath = String.format(APP_TEMP_PATH_FORMAT, file.getParentFile().getAbsolutePath(), File.separator, System.currentTimeMillis());
         FileUtil.createDirectory(unZipPath);
         LOGGER.info("==========应用下载，chart.zip解压成功==========");
@@ -494,7 +494,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                         .collect(Collectors.toCollection(ArrayList::new));
                 if (!appMarkets.isEmpty() && appMarkets.size() == 1) {
                     File valuesFile = appMarkets.get(0);
-                    String imageRepository = String.format("%s%s-%s/%s", getDomain(harborUrl), MARKET_PRO, appCode, appServiceCode);
+                    String imageRepository = String.format("%s%s-%s/%s", getDomain(harborUrl), MARKET_PRO, appId, appServiceCode);
                     Map<String, String> params = new HashMap<>();
                     params.put(appServiceVersionPayload.getImage().substring(0, appServiceVersionPayload.getImage().indexOf(":")), imageRepository);
 
@@ -681,7 +681,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
     }
 
     private void pushImageForDownload(AppMarketDownloadPayload appMarketDownloadVO) {
-        String harborProjectName = String.format(SITE_APP_GROUP_NAME_FORMAT, appMarketDownloadVO.getAppCode());
+        String harborProjectName = String.format(SITE_APP_GROUP_NAME_FORMAT, appMarketDownloadVO.getAppId());
         HarborPayload harborPayload = new HarborPayload(null, harborProjectName);
         harborService.createHarborForProject(harborPayload);
         appMarketDownloadVO.getAppServiceDownloadPayloads().forEach(appServiceMarketVO -> {
