@@ -179,6 +179,14 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
                     if (result.raw().code() != 201) {
                         throw new CommonException(result.errorBody().string());
                     }
+                }else {
+                    Boolean exist = users.body().stream().anyMatch(user1 -> user1.getUsername().equals(username));
+                    if(!exist) {
+                        result = harborClient.insertUser(user).execute();
+                        if (result.raw().code() != 201) {
+                            throw new CommonException(result.errorBody().string());
+                        }
+                    }
                 }
                 //给项目绑定角色
                 Response<List<ProjectDetail>> projects = harborClient.listProject(organization.getCode() + "-" + projectE.getCode()).execute();
@@ -208,7 +216,7 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
                         projectMember.setMemberUser(memberUser);
                         result = harborClient.setProjectMember(projects.body().get(0).getProjectId(), projectMember).execute();
                     }
-                    if (result.raw().code() != 201) {
+                    if (result.raw().code() != 201 && result.raw().code() != 200 && result.raw().code() != 409) {
                         throw new CommonException(result.errorBody().string());
                     }
                 }
