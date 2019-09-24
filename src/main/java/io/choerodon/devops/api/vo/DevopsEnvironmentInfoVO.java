@@ -19,10 +19,28 @@ public class DevopsEnvironmentInfoVO {
     private String description;
     private Long objectVersionNumber;
     private Boolean active;
+    private Boolean failed;
+    private Long groupId;
     /**
      * value from {@link EnvironmentGitopsStatus}
      */
     private String gitopsStatus;
+
+    public Boolean getFailed() {
+        return failed;
+    }
+
+    public void setFailed(Boolean failed) {
+        this.failed = failed;
+    }
+
+    public Long getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(Long groupId) {
+        this.groupId = groupId;
+    }
 
     public Long getId() {
         return id;

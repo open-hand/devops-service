@@ -19,6 +19,24 @@ public class DevopsEnvironmentInfoDTO {
     private Long objectVersionNumber;
     private String description;
     private Boolean active;
+    private Boolean failed;
+    private Long groupId;
+
+    public Boolean getFailed() {
+        return failed;
+    }
+
+    public void setFailed(Boolean failed) {
+        this.failed = failed;
+    }
+
+    public Long getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(Long groupId) {
+        this.groupId = groupId;
+    }
 
     public Boolean getActive() {
         return active;
