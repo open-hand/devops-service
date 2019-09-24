@@ -67,9 +67,9 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
     private static final String APPLICATION = "application";
     private static final String CHART = "chart";
     private static final String REPO = "repo";
-    private static final String MARKET_PRO = "market-downloaded-app";
+    private static final String MARKET_PRO = "choerodon-market";
     private static final String HARBOR_NAME = "harbor_default";
-    private static final String SITE_APP_GROUP_NAME_FORMAT = "market-downloaded-app-%s";
+    private static final String SITE_APP_GROUP_NAME_FORMAT = "choerodon-market-%s";
     private static final String APP_OUT_FILE_FORMAT = "%s%s%s-%s-%s%s";
     private static final String APP_FILE_PATH_FORMAT = "%s%s%s%s%s";
     private static final String APP_TEMP_PATH_FORMAT = "%s%s%s";
