@@ -883,13 +883,17 @@ public class PipelineServiceImpl implements PipelineService {
                 }
             });
             userRecordList.forEach(u -> {
-                PipelineUserVO userDTO = ConvertUtils.convertObject(baseServiceClientOperator.queryUserByUserId(u), PipelineUserVO.class);
+                IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(u);
+                PipelineUserVO userDTO = ConvertUtils.convertObject(iamUserDTO, PipelineUserVO.class);
                 userDTO.setAudit(true);
+                userDTO.setLoginName(iamUserDTO.getLdap()?iamUserDTO.getLoginName():iamUserDTO.getEmail());
                 userDTOS.add(userDTO);
             });
             userListUnExe.forEach(u -> {
-                PipelineUserVO userDTO = ConvertUtils.convertObject(baseServiceClientOperator.queryUserByUserId(u), PipelineUserVO.class);
+                IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(u);
+                PipelineUserVO userDTO = ConvertUtils.convertObject(iamUserDTO, PipelineUserVO.class);
                 userDTO.setAudit(false);
+                userDTO.setLoginName(iamUserDTO.getLdap()?iamUserDTO.getLoginName():iamUserDTO.getEmail());
                 userDTOS.add(userDTO);
             });
             return false;
