@@ -21,4 +21,6 @@ public interface AppServiceShareRuleMapper extends Mapper<AppServiceShareRuleDTO
     void updatePublishLevel();
 
     void deleteAll();
+
+    int countShareRulesByAppServiceId(@Param("appServiceId") Long appServiceId);
 }
