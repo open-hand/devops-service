@@ -17,7 +17,6 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import io.kubernetes.client.JSON;
-import org.apache.commons.io.filefilter.IOFileFilter;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ListBranchCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -89,12 +88,10 @@ public class AppServiceServiceImpl implements AppServiceService {
     private static final String GIT = ".git";
     private static final String SONAR_KEY = "%s-%s:%s";
     private static final Pattern REPOSITORY_URL_PATTERN = Pattern.compile("^http.*\\.git");
-    private static final String GITLAB_CI_FILE = ".gitlab-ci.yml";
     private static final String SITE_APP_GROUP_NAME_FORMAT = "site_%s";
     private static final String DOCKER_FILE_NAME = "Dockerfile";
     private static final String ISSUE = "issue";
     private static final String COVERAGE = "coverage";
-    private static final String CHART_DIR = "charts";
     private static final String SONAR = "sonar";
     private static final String MEMBER = "member";
     private static final String OWNER = "owner";
@@ -109,24 +106,9 @@ public class AppServiceServiceImpl implements AppServiceService {
     private static final String SHARE_SERVICE = "share_service";
     private static final String MARKET_SERVICE = "market_service";
 
-    private static final IOFileFilter filenameFilter = new IOFileFilter() {
-
-        @Override
-        public boolean accept(File file) {
-            return accept(null, file.getName());
-        }
-
-        @Override
-        public boolean accept(File dir, String name) {
-            return DOCKER_FILE_NAME.equals(name);
-        }
-    };
-    private static final String MASTER = "master";
     private static final String APPLICATION = "application";
-    private static final String ERROR_UPDATE_APP = "error.application.update";
     private static final String TEST = "test-application";
     private static final String DUPLICATE = "duplicate";
-    private static final String FILE_SEPARATOR = "/";
     @Autowired
     DevopsSagaHandler devopsSagaHandler;
     private Gson gson = new Gson();
@@ -179,6 +161,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     private AppServiceVersionService appServiceVersionService;
     @Value("${services.helm.url}")
     private String helmUrl;
+    @Autowired
+    private AppServiceShareRuleMapper appServiceShareRuleMapper;
 
     @Override
     @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_APPLICATION_SERVICE,
@@ -374,7 +358,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     /**
-     * 检查当前应用服务是否还有相关的资源
+     * 检查当前应用服务是否还有相关的资源和共享规则
      * 不能停用则会抛出异常 {@link CommonException}
      *
      * @param appServiceId 服务id
@@ -388,6 +372,11 @@ public class AppServiceServiceImpl implements AppServiceService {
         int relatedResources = devopsAppServiceResourceMapper.countRelatedResource(appServiceId);
         if (relatedResources > 0) {
             throw new CommonException("error.disable.application.service.due.to.resources");
+        }
+
+        int shareRulesCount = appServiceShareRuleMapper.countShareRulesByAppServiceId(appServiceId);
+        if (shareRulesCount > 0) {
+            throw new CommonException("error.disable.application.service.due.to.share");
         }
     }
 
@@ -2494,8 +2483,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         devopsUserPermissionVO.setIamUserId(iamUserDTO.getId());
         if (iamUserDTO.getLdap()) {
             devopsUserPermissionVO.setLoginName(iamUserDTO.getLoginName());
-        }
-        else {
+        } else {
             devopsUserPermissionVO.setLoginName(iamUserDTO.getEmail());
         }
         devopsUserPermissionVO.setRealName(iamUserDTO.getRealName());
