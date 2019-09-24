@@ -13,6 +13,7 @@ import Modals from './modals';
 
 import './index.less';
 import KeyValueModal from '../application/modals/key-value';
+import { useMainStore } from '../../stores';
 
 const { Column } = Table;
 
@@ -31,6 +32,7 @@ const ConfigMap = observer((props) => {
     SecretTableDs,
     ConfigMapTableDs,
   } = useKeyValueStore();
+  const { mainStore: { openDeleteModal } } = useMainStore();
 
   const [showModal, setShowModal] = useState(false);
 
@@ -81,6 +83,9 @@ const ConfigMap = observer((props) => {
     if (commandStatus === 'operating') {
       return null;
     }
+    const id = record.get('id');
+    const name = record.get('name');
+    const type = itemType === 'configMap' ? itemType : 'secret';
     const buttons = [
       {
         service: permissions.edit,
@@ -90,7 +95,7 @@ const ConfigMap = observer((props) => {
       {
         service: permissions.delete,
         text: formatMessage({ id: 'delete' }),
-        action: handleDelete,
+        action: () => openDeleteModal(parentId, id, name, type, refresh),
       },
     ];
     return <Action data={buttons} />;

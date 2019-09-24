@@ -62,12 +62,12 @@ const MainView = observer(() => {
   const rootRef = useRef(null);
 
   const { getSelectedMenu: { parentId } } = resourceStore;
-  const { getDeleteArr, closeDeleteModal, deleteData } = mainStore;
+  const { getDeleteArr } = mainStore;
 
   const deleteModals = useMemo(() => (
-    map(getDeleteArr, ({ name, display, deleteId, type, refresh }) => (<DeleteModal
+    map(getDeleteArr, ({ name, display, deleteId, type, refresh, envId }) => (<DeleteModal
       key={deleteId}
-      envId={parentId.split('-')[0]}
+      envId={envId || parentId.split('-')[0]}
       store={mainStore}
       title={`${formatMessage({ id: `${type}.delete` })}“${name}”`}
       visible={display}

@@ -34,8 +34,8 @@ export const StoreProvider = injectIntl(inject('AppState')(
     };
 
     useEffect(() => {
-      const { type } = getUpTarget;
-      if (type === CERT_GROUP) {
+      const { type, id: envId } = getUpTarget;
+      if (type === CERT_GROUP && envId === parentId) {
         certificateDs.query();
         setUpTarget({});
       }

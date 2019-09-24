@@ -9,6 +9,7 @@ import PodCircle from '../../components/pod-circle';
 import { useResourceStore } from '../../../stores';
 import { useTreeItemStore } from './stores';
 import { handlePromptError } from '../../../../../utils';
+import { useMainStore } from '../../stores';
 
 const stopKey = Modal.key();
 const deleteKey = Modal.key();
@@ -27,8 +28,12 @@ function InstanceItem({
     treeDs,
     resourceStore,
     AppState: { currentMenuType: { id } },
+    itemTypes: { IST_GROUP },
   } = useResourceStore();
   const { treeItemStore } = useTreeItemStore();
+  const {
+    mainStore: { openDeleteModal },
+  } = useMainStore();
 
   const podRunningCount = record.get('podRunningCount');
   const podCount = record.get('podCount');
@@ -43,26 +48,16 @@ function InstanceItem({
     stroke: PADDING_COLOR,
   }], [podUnlinkCount, podRunningCount, podCount]);
 
-  async function deleteItem() {
-    try {
-      const result = await treeItemStore.deleteInstance(id, record.get('id'));
-      if (handlePromptError(result, false)) {
-        treeDs.query();
-      }
-    } catch (e) {
-      Choerodon.handleResponseError(e);
+  function freshMenu() {
+    treeDs.query();
+    const { getSelectedMenu: { itemType, parentId } } = resourceStore;
+    const [envId] = record.get('parentId').split('-');
+    if (itemType === IST_GROUP && envId === parentId) {
+      resourceStore.setUpTarget({
+        type: IST_GROUP,
+        id: parentId,
+      });
     }
-  }
-
-  function openDeleteModal() {
-    Modal.open({
-      movable: false,
-      closable: false,
-      key: deleteKey,
-      title: formatMessage({ id: `${intlPrefix}.instance.action.delete` }),
-      children: formatMessage({ id: `${intlPrefix}.instance.action.delete.tips` }),
-      onOk: deleteItem,
-    });
   }
 
   function openChangeActive(active) {
@@ -93,6 +88,9 @@ function InstanceItem({
   }
 
   function getSuffix() {
+    const istId = record.get('id');
+    const istName = record.get('name');
+    const [envId] = record.get('parentId').split('-');
     let actionData;
     const actionItems = {
       stop: {
@@ -108,7 +106,7 @@ function InstanceItem({
       delete: {
         service: ['devops-service.app-service-instance.delete'],
         text: formatMessage({ id: `${intlPrefix}.instance.action.delete` }),
-        action: openDeleteModal,
+        action: () => openDeleteModal(envId, istId, istName, 'instance', freshMenu),
       },
     };
     switch (record.get('status')) {

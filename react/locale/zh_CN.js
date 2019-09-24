@@ -382,6 +382,7 @@ const appService = {
   'c7ncd.appService.share': '共享设置',
   'c7ncd.appService.permission.manage': '权限管理',
   'c7ncd.appService.share.rule.add': '添加共享规则',
+  'c7ncd.appService.share.rule.edit': '修改共享规则',
   'c7ncd.appService.create.settings': '高级设置',
   'c7ncd.appService.create.settings.tips': '操作高级设置存在一定风险，若无实质需求，请使用默认仓库！',
   'c7ncd.appService.docker': 'Docker仓库配置',
@@ -399,7 +400,7 @@ const appService = {
   'c7ncd.appService.repoUrl': '仓库地址',
   'c7ncd.appService.import.type': '导入方式',
   'c7ncd.appService.import.type.share': '共享应用',
-  'c7ncd.appService.import.type.market': '市场下载',
+  'c7ncd.appService.import.type.market': '市场应用',
   'c7ncd.appService.import.type.github': '从GitHub导入',
   'c7ncd.appService.import.type.gitlab': '从GitLab导入',
   'c7ncd.appService.url.gitlab': 'GitLab地址',
@@ -516,7 +517,7 @@ const deploy = {
   'c7ncd.deploy.retry': '重试',
   'c7ncd.deploy.failed.tips': '确定要将此流程置为失败状态？强制失败后，您可继续重试当前流程。',
   'c7ncd.deploy.retry.tips': '确定重新执行该流程吗？',
-  'c7ncd.deploy.app': '服务',
+  'c7ncd.deploy.app': '应用服务',
   'c7ncd.deploy.app.version': '服务版本',
   'c7ncd.deploy.instance.name': '实例名称',
   'c7ncd.deploy.config': '部署配置',
@@ -2396,7 +2397,7 @@ const zhCN = {
 
 
   // 删除弹框确认信息
-  'ist.delete': '删除实例',
+  'instance.delete': '删除实例',
   'secret.delete': '删除密文',
   'configMap.delete': '删除配置映射',
   'ingress.delete': '删除域名',

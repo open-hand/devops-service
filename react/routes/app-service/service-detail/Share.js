@@ -62,9 +62,10 @@ const Share = (props) => {
   }
 
   function openModal(record) {
+    const type = shareDs.current.status !== 'add' ? 'edit' : 'add';
     Modal.open({
       key: modalKey,
-      title: formatMessage({ id: `${intlPrefix}.share.rule.add` }),
+      title: formatMessage({ id: `${intlPrefix}.share.rule.${type}` }),
       children: <ShareRule
         versionOptions={shareVersionsDs}
         levelOptions={shareLevelDs}
