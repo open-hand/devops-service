@@ -40,8 +40,10 @@ public interface AppServiceVersionMapper extends Mapper<AppServiceVersionDTO> {
     List<AppServiceVersionDTO> listByAppServiceId(@Param("appServiceId") Long appServiceId);
 
     List<AppServiceVersionDTO> listByAppServiceIdAndVersion(@Param("appServiceId") Long appServiceId,
+                                                            @Param("projectId") Long projectId,
+                                                            @Param("share") Boolean share,
                                                             @Param("deployOnly") Boolean deployOnly,
-                                                            @Param("searchParam") Map<String,String> map,
+                                                            @Param("searchParam") Map<String, String> map,
                                                             @Param("params") List<String> params,
                                                             @Param("index") String index);
 
@@ -94,5 +96,5 @@ public interface AppServiceVersionMapper extends Mapper<AppServiceVersionDTO> {
      */
     List<AppServiceVersionDTO> queryServiceVersionByAppServiceIdAndShare(@Param("appServiceId") Long appServiceId, @Param("share") String share);
 
-    List<AppServiceVersionDTO> listVersions( @Param("appServiceVersionIds") List<Long> appServiceVersionIds);
+    List<AppServiceVersionDTO> listVersions(@Param("appServiceVersionIds") List<Long> appServiceVersionIds);
 }
