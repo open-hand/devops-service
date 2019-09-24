@@ -403,28 +403,46 @@
 
 
     <select id="listServiceVersionByAppServiceIds" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
-        SELECT
-        a.id,
-        a.app_service_id,
-        a.version
-        FROM
-        devops_app_service_version a
-        <if test="share!=null and share !=''">
-         left join devops_app_service_share_rule c on c.app_service_id=a.app_service_id and c.version=a.version
-        </if>
-        <where>
-         a.app_service_id is not null
-        <if test="share != null and share != ''">
-            and c.id is not null
-        </if>
-        <if test='ids != null and ids.size > 0'>
-            AND
-            <foreach collection="ids" item="id" open="(" separator=" OR " close=")">
-                a.app_service_id=#{id}
-            </foreach>
-        </if>
-        </where>
-        ORDER BY a.app_service_id,a.version desc
+       <choose>
+           <when test="share != null and share != ''">
+               (SELECT version.*
+               FROM devops_app_service_share_rule dassr
+               LEFT JOIN devops_app_service_version version ON dassr.app_service_id = version.app_service_id
+               WHERE dassr.app_service_id in
+               <foreach collection="ids" item="id" open="(" separator="," close=")">
+                   #{id}
+                </foreach>
+               <if test="share == 'share'">
+                and dassr.share_level = 'organization'
+               </if>
+               <if test="share == 'project'">
+                and dassr.share_level = 'project'
+                and dassr.project_id = #{projectId}
+               </if>
+               AND dassr.version IS NOT NULL
+               AND dassr.version = version.version)
+               UNION
+               (
+               SELECT version.*
+               FROM devops_app_service_share_rule dassr
+               LEFT JOIN devops_app_service_version version ON dassr.app_service_id = version.app_service_id
+               WHERE dassr.app_service_id in
+               <foreach collection="ids" item="id" open="(" separator="," close=")">
+                   #{id}
+               </foreach>
+               AND dassr.version IS NULL
+               AND version.version LIKE CONCAT('%', CONCAT(dassr.version_type,'%'))
+               )
+           </when>
+           <otherwise>
+               select * from  devops_app_service_version
+               WHERE app_service_id in
+               <foreach collection="ids" item="id" open="(" separator="," close=")">
+                   #{id}
+               </foreach>
+           </otherwise>
+
+       </choose>
     </select>
 
     <select id="queryServiceVersionByAppServiceIdAndShare" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">

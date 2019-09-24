@@ -82,7 +82,7 @@ public interface AppServiceMapper extends Mapper<AppServiceDTO> {
 
     void updateChartConfigNullByServiceId(@Param("appServiceId") Long appServiceId);
 
-    List<AppServiceDTO> queryOrganizationShareApps(@Param("appServiceIds") List<Long> appServiceIds, @Param("param") String param, @Param("searchProjectId") Long searchProjectId);
+    List<AppServiceDTO> queryOrganizationShareApps(@Param("projectIds") List<Long> projectIds, @Param("param") String param, @Param("searchProjectId") Long searchProjectId);
 
     List<AppServiceDTO> queryMarketDownloadApps(@Param("type") String type, @Param("param") String param, @Param("deployOnly") Boolean deployOnly, @Param("searchProjectId") Long searchProjectId);
 
