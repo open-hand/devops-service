@@ -32,10 +32,10 @@ const NetworkContent = observer(() => {
   } = useResourceStore();
   const {
     networkStore,
+    mainStore: { openDeleteModal },
   } = useMainStore();
   const {
     networkDs,
-    // networkStore,
     intl: { formatMessage },
   } = useNetworkStore();
 
@@ -255,6 +255,8 @@ const NetworkContent = observer(() => {
     if (commandStatus === 'operating') {
       return null;
     }
+    const id = record.get('id');
+    const name = record.get('name');
     const buttons = [
       {
         service: [],
@@ -264,7 +266,7 @@ const NetworkContent = observer(() => {
       {
         service: ['devops-service.devops-service.delete'],
         text: formatMessage({ id: 'delete' }),
-        action: handleDelete,
+        action: () => openDeleteModal(parentId, id, name, 'service', refresh),
       },
     ];
 

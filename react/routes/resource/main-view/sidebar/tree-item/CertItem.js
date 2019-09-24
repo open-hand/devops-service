@@ -16,7 +16,7 @@ function CertItem({
 }) {
   const {
     treeDs,
-    resourceStore: { getSelectedMenu: { itemType }, setUpTarget },
+    resourceStore: { getSelectedMenu: { itemType, parentId }, setUpTarget },
     itemTypes: { CERT_GROUP },
   } = useResourceStore();
   const {
@@ -25,9 +25,11 @@ function CertItem({
 
   function freshMenu() {
     treeDs.query();
-    if (itemType === CERT_GROUP) {
+    const [envId] = record.get('parentId').split('-');
+    if (itemType === CERT_GROUP && envId === parentId) {
       setUpTarget({
         type: CERT_GROUP,
+        id: parentId,
       });
     }
   }
@@ -35,10 +37,11 @@ function CertItem({
   function getSuffix() {
     const id = record.get('id');
     const certName = record.get('name');
+    const [envId] = record.get('parentId').split('-');
     const actionData = [{
       service: ['devops-service.certification.delete'],
       text: formatMessage({ id: 'delete' }),
-      action: () => openDeleteModal(id, certName, 'certificate', freshMenu),
+      action: () => openDeleteModal(envId, id, certName, 'certificate', freshMenu),
     }];
     return <Action placement="bottomRight" data={actionData} onClick={eventStopProp} />;
   }

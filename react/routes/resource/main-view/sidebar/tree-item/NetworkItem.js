@@ -15,17 +15,32 @@ function NetworkItem({
   intlPrefix,
   intl: { formatMessage },
 }) {
-  const { treeDs } = useResourceStore();
-  const { networkStore } = useMainStore();
+  const {
+    treeDs,
+    resourceStore: { getSelectedMenu: { itemType, parentId }, setUpTarget },
+    itemTypes: { SERVICES_GROUP, SERVICES_ITEM },
+  } = useResourceStore();
+  const {
+    networkStore,
+    mainStore: { openDeleteModal },
+  } = useMainStore();
 
   const [showModal, setShowModal] = useState(false);
 
   function freshMenu() {
     treeDs.query();
-  }
-
-  function deleteItem() {
-    treeDs.delete(record);
+    const [envId] = record.get('parentId').split('-');
+    if (itemType === SERVICES_GROUP && envId === parentId) {
+      setUpTarget({
+        type: SERVICES_GROUP,
+        id: parentId,
+      });
+    } else {
+      setUpTarget({
+        type: SERVICES_ITEM,
+        id: record.get('id'),
+      });
+    }
   }
 
   function openModal() {
@@ -38,6 +53,9 @@ function NetworkItem({
   }
 
   function getSuffix() {
+    const id = record.get('id');
+    const netName = record.get('name');
+    const [envId] = record.get('parentId').split('-');
     const actionData = [{
       service: [],
       text: formatMessage({ id: 'edit' }),
@@ -45,7 +63,7 @@ function NetworkItem({
     }, {
       service: ['devops-service.devops-service.delete'],
       text: formatMessage({ id: 'delete' }),
-      action: deleteItem,
+      action: () => openDeleteModal(envId, id, netName, 'service', freshMenu),
     }];
     return <Action placement="bottomRight" data={actionData} onClick={eventStopProp} />;
   }

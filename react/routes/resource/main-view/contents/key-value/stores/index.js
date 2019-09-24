@@ -27,7 +27,8 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const { AppState: { currentMenuType: { id } }, children, contentType } = props;
     const {
       intl: { formatMessage },
-      resourceStore: { getSelectedMenu: { parentId } },
+      resourceStore: { getSelectedMenu: { parentId }, setUpTarget, getUpTarget },
+      itemTypes: { MAP_GROUP, CIPHER_GROUP },
     } = useResourceStore();
     
     const itemType = TYPE[contentType];
@@ -101,6 +102,19 @@ export const StoreProvider = injectIntl(inject('AppState')(
       SecretTableDs,
       ConfigMapTableDs,
     };
+
+    useEffect(() => {
+      const { type, id: envId } = getUpTarget;
+      if (parentId === envId) {
+        if (type === MAP_GROUP) {
+          ConfigMapTableDs.query();
+          setUpTarget({});
+        } else if (type === CIPHER_GROUP) {
+          SecretTableDs.query();
+          setUpTarget({});
+        }
+      }
+    }, [getUpTarget]);
 
     return (
       <Store.Provider value={value}>

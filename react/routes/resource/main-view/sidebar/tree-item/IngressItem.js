@@ -15,17 +15,32 @@ function IngressItem({
   intlPrefix,
   intl: { formatMessage },
 }) {
-  const { treeDs } = useResourceStore();
-  const { ingressStore } = useMainStore();
+  const {
+    treeDs,
+    resourceStore: { getSelectedMenu: { itemType, parentId }, setUpTarget },
+    itemTypes: { INGRESS_GROUP, INGRESS_ITEM },
+  } = useResourceStore();
+  const {
+    ingressStore,
+    mainStore: { openDeleteModal },
+  } = useMainStore();
 
   const [showModal, setShowModal] = useState(false);
 
   function freshMenu() {
     treeDs.query();
-  }
-
-  function deleteItem() {
-    treeDs.delete(record);
+    const [envId] = record.get('parentId').split('-');
+    if (itemType === INGRESS_GROUP && envId === parentId) {
+      setUpTarget({
+        type: INGRESS_GROUP,
+        id: parentId,
+      });
+    } else {
+      setUpTarget({
+        type: INGRESS_ITEM,
+        id: record.get('id'),
+      });
+    }
   }
 
   function openModal() {
@@ -38,6 +53,9 @@ function IngressItem({
   }
 
   function getSuffix() {
+    const id = record.get('id');
+    const ingressName = record.get('name');
+    const [envId] = record.get('parentId').split('-');
     const actionData = [{
       service: [],
       text: formatMessage({ id: 'edit' }),
@@ -45,7 +63,7 @@ function IngressItem({
     }, {
       service: ['devops-service.devops-ingress.delete'],
       text: formatMessage({ id: 'delete' }),
-      action: deleteItem,
+      action: () => openDeleteModal(envId, id, ingressName, 'ingress', freshMenu),
     }];
     return <Action placement="bottomRight" data={actionData} onClick={eventStopProp} />;
   }

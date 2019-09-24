@@ -23,6 +23,7 @@ const CertContent = observer(() => {
     prefixCls,
     intlPrefix,
     treeDs,
+    resourceStore: { getSelectedMenu: { parentId } },
   } = useResourceStore();
   const {
     certificateDs,
@@ -114,7 +115,7 @@ const CertContent = observer(() => {
       {
         service: ['devops-service.certification.delete'],
         text: formatMessage({ id: 'delete' }),
-        action: () => openDeleteModal(id, name, 'certificate', refresh),
+        action: () => openDeleteModal(parentId, id, name, 'certificate', refresh),
       },
     ];
 

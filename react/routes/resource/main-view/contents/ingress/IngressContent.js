@@ -38,7 +38,10 @@ const IngressContent = observer(() => {
     ingressDs,
     intl: { formatMessage },
   } = useIngressStore();
-  const { ingressStore } = useMainStore();
+  const {
+    ingressStore,
+    mainStore: { openDeleteModal },
+  } = useMainStore();
 
   const [showModal, setShowModal] = useState(false);
 
@@ -106,6 +109,8 @@ const IngressContent = observer(() => {
     if (commandStatus === 'operating') {
       return null;
     }
+    const id = record.get('id');
+    const name = record.get('name');
     const buttons = [
       {
         service: [],
@@ -115,7 +120,7 @@ const IngressContent = observer(() => {
       {
         service: ['devops-service.devops-ingress.delete'],
         text: formatMessage({ id: 'delete' }),
-        action: handleDelete,
+        action: () => openDeleteModal(parentId, id, name, 'ingress', refresh),
       },
     ];
 

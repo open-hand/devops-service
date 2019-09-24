@@ -34,7 +34,7 @@ export default function useStore() {
       return axios.get(`/devops/v1/projects/${projectId}/notification/validate_captcha?env_id=${envId}&object_id=${objectId}&captcha=${captcha}&object_type=${objectType}`);
     },
 
-    openDeleteModal(id, name, type, refresh) {
+    openDeleteModal(envId, id, name, type, refresh) {
       const newDeleteArr = [...this.deleteArr];
 
       const currentIndex = findIndex(newDeleteArr, (item) => id === item.deleteId && type === item.type);
@@ -53,6 +53,7 @@ export default function useStore() {
           name,
           type,
           refresh,
+          envId,
         };
         newDeleteArr.push(newItem);
       }
@@ -71,9 +72,14 @@ export default function useStore() {
       this.setDeleteArr(newDeleteArr);
     },
 
-    deleteData(projectId, id, type) {
+    deleteData(projectId, id, type, envId) {
       const url = {
+        instance: `/devops/v1/projects/${projectId}/app_service_instances/${id}/delete`,
+        service: `/devops/v1/projects/${projectId}/service/${id}`,
+        ingress: `/devops/v1/projects/${projectId}/ingress/${id}`,
         certificate: `/devops/v1/projects/${projectId}/certifications?cert_id=${id}`,
+        configMap: `/devops/v1/projects/${id}/config_maps/${id}`,
+        secret: `/devops/v1/projects/${id}/secret/${envId}/${id}`,
       };
       return axios.delete(url[type]);
     },

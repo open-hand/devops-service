@@ -15,17 +15,32 @@ function ConfigItem({
   intlPrefix,
   intl: { formatMessage },
 }) {
-  const { treeDs, itemTypes: { MAP_ITEM } } = useResourceStore();
-  const { configMapStore, secretStore, childrenStore, testStore } = useMainStore();
+  const {
+    treeDs,
+    itemTypes: { MAP_ITEM, CIPHER_GROUP, CERT_GROUP },
+    resourceStore: { getSelectedMenu: { itemType, parentId }, setUpTarget },
+  } = useResourceStore();
+  const {
+    configMapStore,
+    secretStore,
+    mainStore: { openDeleteModal },
+  } = useMainStore();
   const [showModal, setShowModal] = useState(false);
 
   function freshMenu() {
     treeDs.query();
-    childrenStore.getDetailDs.query();
-  }
-
-  function deleteItem() {
-    treeDs.delete(record);
+    const [envId] = record.get('parentId').split('-');
+    if ((itemType === CERT_GROUP || itemType === CIPHER_GROUP) && envId === parentId) {
+      setUpTarget({
+        type: itemType,
+        id: parentId,
+      });
+    } else {
+      setUpTarget({
+        type: itemType,
+        id: record.get('id'),
+      });
+    }
   }
 
   function openModal() {
@@ -47,6 +62,10 @@ function ConfigItem({
   }
 
   function getSuffix() {
+    const id = record.get('id');
+    const recordName = record.get('name');
+    const type = record.get('itemType') === MAP_ITEM ? 'configMap' : 'secret';
+    const [envId] = record.get('parentId').split('-');
     const actionData = [{
       service: [],
       text: formatMessage({ id: 'edit' }),
@@ -54,7 +73,7 @@ function ConfigItem({
     }, {
       service: ['devops-service.devops-service.delete'],
       text: formatMessage({ id: 'delete' }),
-      action: deleteItem,
+      action: () => openDeleteModal(envId, id, recordName, type, freshMenu),
     }];
     return <Action placement="bottomRight" data={actionData} onClick={eventStopProp} />;
   }

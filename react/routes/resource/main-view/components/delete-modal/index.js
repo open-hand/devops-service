@@ -161,10 +161,11 @@ class DeleteModal extends Component {
       objectId,
       objectType,
       store,
+      envId,
     } = this.props;
     this.setState({ loading: true });
     try {
-      const res = await store.deleteData(projectId, objectId, objectType);
+      const res = await store.deleteData(projectId, objectId, objectType, envId);
       if (handlePromptError(res)) {
         store.removeDeleteModal(objectId, objectType);
         if (flag) {
@@ -215,7 +216,6 @@ class DeleteModal extends Component {
               this.setState({ isError: true, canDelete: false });
             } else {
               this.clearTimer();
-              this.deleteData();
               this.deleteData(true);
             }
             this.setState({ validateLoading: false });
