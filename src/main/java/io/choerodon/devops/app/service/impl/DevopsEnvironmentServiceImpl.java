@@ -999,7 +999,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             return;
         }
 
-        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(DetailsHelper.getUserDetails().getUserId());
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(userId);
 
         if (userAttrDTO == null) {
             return;
