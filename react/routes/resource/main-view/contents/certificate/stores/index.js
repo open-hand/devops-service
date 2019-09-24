@@ -5,7 +5,6 @@ import { injectIntl } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import TableDataSet from './TableDataSet';
 import { useResourceStore } from '../../../../stores';
-import useStore from './useStore';
 
 const Store = createContext();
 
@@ -28,12 +27,9 @@ export const StoreProvider = injectIntl(inject('AppState')(
       envId: parentId,
     })), [id, parentId]);
 
-    const formStore = useStore();
-
     const value = {
       ...props,
       certificateDs,
-      formStore,
     };
 
     return (

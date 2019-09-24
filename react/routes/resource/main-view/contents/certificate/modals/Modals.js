@@ -8,6 +8,7 @@ import { useResourceStore } from '../../../../stores';
 import { useModalStore } from './stores';
 import { useCertificateStore } from '../stores';
 import FormView from './form-view';
+import { useMainStore } from '../../../stores';
 
 const modalStyle = {
   width: '26%',
@@ -23,8 +24,8 @@ const EnvModals = observer(() => {
   } = useResourceStore();
   const {
     certificateDs,
-    formStore,
   } = useCertificateStore();
+  const { certStore } = useMainStore();
   const {
     permissions,
     AppState: { currentMenuType: { projectId } },
@@ -68,7 +69,7 @@ const EnvModals = observer(() => {
       {showModal && (
         <FormView
           visible={showModal}
-          store={formStore}
+          store={certStore}
           envId={parentId}
           onClose={closeModal}
         />
