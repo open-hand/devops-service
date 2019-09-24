@@ -23,6 +23,17 @@ export default observer(({ record, dataSet, versionOptions, levelOptions, projec
         Choerodon.handleResponseError(e);
       }
     }
+    if (record.get('shareLevel') === 'organization') {
+      record.set('shareLevel', {
+        id: 'all',
+        name: formatMessage({ id: `${intlPrefix}.project.all` }),
+      });
+    } else {
+      record.set('shareLevel', {
+        id: record.get('projectId'),
+        name: record.get('projectName'),
+      });
+    }
     record.status !== 'add' && loadShareById();
   }, []);
 

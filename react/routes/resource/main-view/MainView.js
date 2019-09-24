@@ -1,10 +1,12 @@
 import React, { useRef, lazy, Suspense, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
+import map from 'lodash/map';
 import Sidebar from './sidebar';
 import DragBar from '../../../components/drag-bar';
 import Loading from '../../../components/loading';
 import { useResourceStore } from '../stores';
 import { useMainStore } from './stores';
+import DeleteModal from './components/delete-modal';
 
 import './index.less';
 
@@ -54,9 +56,26 @@ const MainView = observer(() => {
       IST_GROUP,
     },
     treeDs,
+    intl: { formatMessage },
   } = useResourceStore();
   const { mainStore } = useMainStore();
   const rootRef = useRef(null);
+
+  const { getSelectedMenu: { parentId } } = resourceStore;
+  const { getDeleteArr, closeDeleteModal, deleteData } = mainStore;
+
+  const deleteModals = useMemo(() => (
+    map(getDeleteArr, ({ name, display, deleteId, type, refresh }) => (<DeleteModal
+      key={deleteId}
+      envId={parentId.split('-')[0]}
+      store={mainStore}
+      title={`${formatMessage({ id: `${type}.delete` })}“${name}”`}
+      visible={display}
+      objectId={deleteId}
+      objectType={type}
+      refresh={refresh}
+    />))
+  ), [getDeleteArr]);
 
   const content = useMemo(() => {
     const {
@@ -107,6 +126,7 @@ const MainView = observer(() => {
         <div className={`${prefixCls}-main ${prefixCls}-animate`}>
           {content}
         </div>
+        {deleteModals}
       </div>;
     }
   }
