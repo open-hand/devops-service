@@ -12,8 +12,8 @@ export default function useStore() {
     noHeader: true,
     setSelectedMenu(data) {
       this.selectedMenu = data;
-      this.noHeader = NO_HEADER.includes(menuType);
-      const { menuType } = data;
+      const { itemType } = data;
+      this.noHeader = NO_HEADER.includes(itemType);
     },
     get getSelectedMenu() {
       return this.selectedMenu;
@@ -30,7 +30,7 @@ export default function useStore() {
     get getNoHeader() {
       return this.noHeader;
     },
-  
+
     expandedKeys: [],
     searchValue: '',
     setExpandedKeys(keys) {
@@ -46,8 +46,8 @@ export default function useStore() {
       return this.searchValue;
     },
     get getShowHeaderButton() {
-      const { menuType } = this.selectedMenu;
-      return menuType === CLU_ITEM;
+      const { itemType } = this.selectedMenu;
+      return itemType === CLU_ITEM;
     },
   }));
 }

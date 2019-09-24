@@ -60,7 +60,7 @@ export default class FormView extends Component {
    * @param value
    * @param callback
    */
-  checkName = _.debounce(async (rule, value, callback) => {
+  checkName = _.debounce((rule, value, callback) => {
     const {
       intl: {
         formatMessage,
@@ -78,16 +78,18 @@ export default class FormView extends Component {
     if (value && !pattern.test(value)) {
       callback(formatMessage({ id: 'network.name.check.failed' }));
     } else if (value && pattern.test(value)) {
-      try {
-        const res = await store.checkName(projectId, envId, value);
-        if (handlePromptError(res, false)) {
-          callback();
-        } else {
-          callback(formatMessage({ id: 'checkNameExist' }));
-        }
-      } catch (err) {
-        callback(formatMessage({ id: 'checkNameFailed' }));
-      }
+      store.checkName(projectId, envId, value)
+        .then(res => {
+          if (handlePromptError(res, false)) {
+            callback();
+          } else {
+            callback(formatMessage({ id: 'checkNameExist' }));
+          }
+        })
+        .catch(error => {
+          callback(formatMessage({ id: 'checkNameFailed' }));
+
+        });
     } else {
       callback();
     }
@@ -302,7 +304,7 @@ export default class FormView extends Component {
     let hasKVError = false;
     let hasConfigRuleError = false;
 
-    
+
 
     form.validateFieldsAndScroll(async (err, { name, description }) => {
       if (!isYamlEdit) {
@@ -313,14 +315,14 @@ export default class FormView extends Component {
         hasConfigRuleError = this.checkConfigRuleError();
         configData = yamlToObj(dataYaml);
       }
-  
+
       if (hasYamlError || hasKVError || hasConfigRuleError) return;
-  
+
       this.setState({
         submitting: true,
         hasItemError: false,
       });
-      
+
       if (!err) {
         const _value = takeObject(configData);
 

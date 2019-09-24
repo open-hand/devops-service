@@ -1,6 +1,4 @@
-import getTablePostData from '../../../../../../utils/getTablePostData';
-
-export default ({ formatMessage, intlPrefix, projectId }) => ({
+export default ({ formatMessage, intlPrefix }) => ({
   selection: false,
   pageSize: 10,
   transport: {
@@ -27,6 +25,6 @@ export default ({ formatMessage, intlPrefix, projectId }) => ({
       name: 'createTime',
       type: 'string',
       label: formatMessage({ id: 'createDate' }),
-    }, 
+    },
   ],
 });

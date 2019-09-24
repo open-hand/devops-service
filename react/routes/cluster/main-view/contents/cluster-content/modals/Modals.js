@@ -22,7 +22,9 @@ const ClusterModals = observer(() => {
     intlPrefix,
     prefixCls,
     intl: { formatMessage },
-    clusterStore,
+    clusterStore: {
+      getSelectedMenu: { id },
+    },
     AppState: { currentMenuType: { id: projectId } },
     treeDs,
   } = useClusterStore();
@@ -30,10 +32,7 @@ const ClusterModals = observer(() => {
     contentStore: {
       getTabKey,
     },
-    tabs: {
-      NODE_TAB,
-      ASSIGN_TAB,
-    },
+    tabs: { NODE_TAB },
     PermissionDs,
     NodeListDs,
     ClusterDetailDs,
@@ -45,15 +44,13 @@ const ClusterModals = observer(() => {
     NonPermissionDs,
   } = useModalStore();
 
-  const { menuId } = clusterStore.getSelectedMenu;
-
   function permissionUpdate(data) {
     const record = ClusterDetailDs.current;
     if (record) {
       const objectVersionNumber = record.get('objectVersionNumber');
       const PermissionData = {
         projectId,
-        clusterId: menuId,
+        clusterId: id,
         objectVersionNumber,
         ...data,
       };

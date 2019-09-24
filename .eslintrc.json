@@ -74,6 +74,7 @@
     "react/prop-types": "off",
     "react/jsx-filename-extension": "off",
     "react/require-default-props": "off",
+    "arrow-parens": "off",
     "no-unused-vars": "off",
     "no-underscore-dangle": "off",
     "no-console": "error",

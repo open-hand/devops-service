@@ -1,7 +1,8 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
+import { runInAction } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import { Icon, Tooltip } from 'choerodon-ui';
+import { Icon, Tooltip, Spin } from 'choerodon-ui';
 import PageTitle from '../../../../../components/page-title';
 import EnvItem from '../../../../../components/env-item';
 import Modals from './modals';
@@ -10,6 +11,7 @@ import { useREStore } from './stores';
 import DosageTable from './DosageTable';
 
 import './index.less';
+import openWarnModal from '../../../../../utils/openWarnModal';
 
 function countDisplay(count, max) {
   return count > max ? <Tooltip title={count}>{`${max}+`}</Tooltip> : count;
@@ -74,6 +76,8 @@ const Content = observer(() => {
     prefixCls,
     intlPrefix,
     intl: { formatMessage },
+    treeDs,
+    resourceStore,
   } = useResourceStore();
   const {
     baseInfoDs,
@@ -109,6 +113,46 @@ const Content = observer(() => {
     });
   }
 
+  function refresh() {
+    treeDs.query();
+  }
+
+  function getCurrent() {
+    const record = baseInfoDs.current;
+    if (record) {
+      const id = record.get('id');
+      const name = record.get('name');
+      const active = record.get('active');
+      const connect = record.get('connect');
+      return { id, name, active, connect };
+    }
+    return null;
+  }
+
+  useEffect(() => {
+    const currentBase = getCurrent();
+    if (currentBase) {
+      const { id, name, active, connect } = currentBase;
+      const menuItem = treeDs.find((item) => item.get('id') === id);
+      if (menuItem) {
+        // 清除已经停用的环境
+        if (!active) {
+          openWarnModal(refresh, formatMessage);
+        } else if ((menuItem.get('connect') !== connect
+          || menuItem.get('name') !== name)) {
+          runInAction(() => {
+            menuItem.set({ name, connect });
+            resourceStore.setSelectedMenu({
+              ...resourceStore.getSelectedMenu,
+              name,
+              connect,
+            });
+          });
+        }
+      }
+    }
+  }, [baseInfoDs.current]);
+
   function getTitle() {
     const record = baseInfoDs.current;
     if (record) {
@@ -120,23 +164,33 @@ const Content = observer(() => {
     return null;
   }
 
+  function getFallBack() {
+    const {
+      name,
+      connect,
+    } = resourceStore.getSelectedMenu;
+    return <EnvItem isTitle name={name} connect={connect} />;
+  }
+
   return (
     <div className={`${prefixCls}-re`}>
-      <Modals />
-      <PageTitle content={getTitle()} />
-      <div className={`${prefixCls}-re-card-wrap`}>
-        <div className={`${prefixCls}-re-card ${prefixCls}-re-card_left`}>
-          <div className={`${prefixCls}-re-card-title`}>{formatMessage({ id: `${intlPrefix}.resource.deploy` })}</div>
-          <div className={`${prefixCls}-re-grid-left`}>
-            {getCounts()}
+      <PageTitle content={getTitle()} fallback={getFallBack()} />
+      <Spin spinning={resourceCountDs.status === 'loading'}>
+        <div className={`${prefixCls}-re-card-wrap`}>
+          <div className={`${prefixCls}-re-card ${prefixCls}-re-card_left`}>
+            <div className={`${prefixCls}-re-card-title`}>{formatMessage({ id: `${intlPrefix}.resource.deploy` })}</div>
+            <div className={`${prefixCls}-re-grid-left`}>
+              {getCounts()}
+            </div>
+          </div>
+          <div className={`${prefixCls}-re-card ${prefixCls}-re-card_right`}>
+            <div className={`${prefixCls}-re-card-title`}>{formatMessage({ id: `${intlPrefix}.instance.status` })}</div>
+            <div className={`${prefixCls}-re-grid-right`}>{getCounts('status')}</div>
           </div>
         </div>
-        <div className={`${prefixCls}-re-card ${prefixCls}-re-card_right`}>
-          <div className={`${prefixCls}-re-card-title`}>{formatMessage({ id: `${intlPrefix}.instance.status` })}</div>
-          <div className={`${prefixCls}-re-grid-right`}>{getCounts('status')}</div>
-        </div>
-      </div>
+      </Spin>
       <DosageTable />
+      <Modals />
     </div>
   );
 });
