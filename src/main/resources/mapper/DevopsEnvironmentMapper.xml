@@ -200,7 +200,9 @@
                cluster.name as cluster_name,
                env.is_skip_check_permission,
                env.object_version_number,
-               env.description
+               env.description,
+               env.is_failed as failed,
+               env.devops_env_group_id as group_id
         FROM devops_env env
         LEFT JOIN devops_cluster cluster ON env.cluster_id = cluster.id
         WHERE env.id = #{envId};
