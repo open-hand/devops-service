@@ -109,7 +109,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                             projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
                             organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
                         }
-                        harborService.createHarbor(harborClient, organizationDTO.getCode() + "-" + projectDTO.getCode());
+                        harborService.createHarbor(harborClient, projectDTO.getId(),organizationDTO.getCode() + "-" + projectDTO.getCode());
                     }
                 }
                 //根据配置所在的资源层级，查询出数据库中是否存在，存在则更新，不存在则新建
@@ -172,7 +172,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
         if (harborPrivate) {
             //设置为私有后将harbor项目设置为私有
             DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
-            String username = devopsProjectDTO.getHarborProjectUserName() == null ? String.format(USER_PREFIX, organizationDTO.getId(), projectId) : devopsProjectDTO.getHarborProjectUserName();
+            String username = devopsProjectDTO.getHarborProjectUserName() == null ? String.format("user%s%s", organizationDTO.getId(), projectId) : devopsProjectDTO.getHarborProjectUserName();
             String email = devopsProjectDTO.getHarborProjectUserEmail() == null ? String.format("%s@choerodon.com", username) : devopsProjectDTO.getHarborProjectUserEmail();
             String password = devopsProjectDTO.getHarborProjectUserPassword() == null ? String.format("%sAAA", username) : devopsProjectDTO.getHarborProjectUserPassword();
             User user = new User(username, email, password, username);
@@ -187,6 +187,14 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                     result = harborClient.insertUser(user).execute();
                     if (result.raw().code() != 201) {
                         throw new CommonException(result.errorBody().string());
+                    }
+                }else {
+                    Boolean exist = users.body().stream().anyMatch(user1 -> user1.getUsername().equals(username));
+                    if(!exist) {
+                        result = harborClient.insertUser(user).execute();
+                        if (result.raw().code() != 201) {
+                            throw new CommonException(result.errorBody().string());
+                        }
                     }
                 }
                 //给项目绑定角色
@@ -325,19 +333,19 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                     HarborClient harborClient = retrofit.create(HarborClient.class);
                     projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
                     organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-                    harborService.createHarbor(harborClient, organizationDTO.getCode() + "-" + projectDTO.getCode());
+                    harborService.createHarbor(harborClient, projectDTO.getId(), organizationDTO.getCode() + "-" + projectDTO.getCode());
                 }
                 return organizationConfig;
             }
             //若应用服务最后查出来的配置是最高级的默认harbor配置，需要校验项目层是否将默认harbor设置成了私有，如设为私有，需要读取私有的授权信息，用于ci推镜像和部署secret
             if (configType.equals(HARBOR)) {
                 DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectDTO.getId());
+                ConfigVO configVO = gson.fromJson(defaultConfig.getConfig(), ConfigVO.class);
+                configVO.setUserName(devopsProjectDTO.getHarborProjectUserName());
+                configVO.setPassword(devopsProjectDTO.getHarborProjectUserPassword());
+                configVO.setEmail(devopsProjectDTO.getHarborProjectUserEmail());
                 if (devopsProjectDTO.getHarborProjectIsPrivate() != null && devopsProjectDTO.getHarborProjectIsPrivate()) {
-                        ConfigVO configVO = gson.fromJson(defaultConfig.getConfig(), ConfigVO.class);
-                        configVO.setPrivate(true);
-                    configVO.setUserName(devopsProjectDTO.getHarborProjectUserName());
-                    configVO.setPassword(devopsProjectDTO.getHarborProjectUserPassword());
-                    configVO.setEmail(devopsProjectDTO.getHarborProjectUserEmail());
+                    configVO.setPrivate(true);
                     defaultConfig.setConfig(gson.toJson(configVO));
                 }
             }

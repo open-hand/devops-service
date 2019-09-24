@@ -1,10 +1,19 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.google.gson.Gson;
+import io.choerodon.devops.app.service.DevopsProjectService;
+import io.choerodon.devops.infra.dto.DevopsProjectDTO;
+import io.choerodon.devops.infra.dto.harbor.*;
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import org.checkerframework.checker.units.qual.A;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +30,6 @@ import io.choerodon.devops.app.service.DevopsConfigService;
 import io.choerodon.devops.app.service.HarborService;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
 import io.choerodon.devops.infra.config.HarborConfigurationProperties;
-import io.choerodon.devops.infra.dto.harbor.Project;
 import io.choerodon.devops.infra.feign.HarborClient;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
 
@@ -42,6 +50,11 @@ public class HarborServiceImpl implements HarborService {
     private HarborConfigurationProperties harborConfigurationProperties;
     @Autowired
     private DevopsConfigService devopsConfigService;
+    @Autowired
+    private DevopsProjectService devopsProjectService;
+    @Autowired
+    private BaseServiceClientOperator baseServiceClientOperator;
+
     @Value("${services.harbor.baseUrl}")
     private String baseUrl;
     @Value("${services.harbor.username}")
@@ -68,13 +81,15 @@ public class HarborServiceImpl implements HarborService {
         configurationProperties.setType(HARBOR);
         Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
         HarborClient harborClient = retrofit.create(HarborClient.class);
-        createHarbor(harborClient, harborPayload.getProjectCode());
+        createHarbor(harborClient, harborPayload.getProjectId(), harborPayload.getProjectCode());
     }
 
 
     @Override
-    public void createHarbor(HarborClient harborClient, String projectCode) {
+    public void createHarbor(HarborClient harborClient, Long projectId, String projectCode) {
         //创建harbor仓库
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         try {
             Response<Void> result = null;
             LOGGER.info(harborConfigurationProperties.getParams());
@@ -88,6 +103,51 @@ public class HarborServiceImpl implements HarborService {
             if (result.raw().code() != 201 && result.raw().code() != 409) {
                 throw new CommonException(result.message());
             }
+            DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
+            String username =  String.format("user%s%s", organizationDTO.getId(), projectId);
+            String email = String.format("%s@choerodon.com", username);
+            String password = String.format("%sAAA", username);
+            User user = new User(username, email, password, username);
+            //创建用户
+            try {
+                result = harborClient.insertUser(user).execute();
+                if (result.raw().code() != 201) {
+                    throw new CommonException(result.errorBody().string());
+                }
+                //给项目绑定角色
+                Response<List<ProjectDetail>> projects = harborClient.listProject(organizationDTO.getCode() + "-" + projectDTO.getCode()).execute();
+                if (!projects.body().isEmpty()) {
+                    Response<SystemInfo> systemInfoResponse = harborClient.getSystemInfo().execute();
+                    if (systemInfoResponse.raw().code() != 200) {
+                        throw new CommonException(systemInfoResponse.errorBody().string());
+                    }
+                    if (systemInfoResponse.body().getHarborVersion().equals("v1.4.0")) {
+                        Role role = new Role();
+                        role.setUsername(user.getUsername());
+                        role.setRoles(Arrays.asList(1));
+                        result = harborClient.setProjectMember(projects.body().get(0).getProjectId(), role).execute();
+                    } else {
+                        ProjectMember projectMember = new ProjectMember();
+                        MemberUser memberUser = new MemberUser();
+                        memberUser.setUsername(username);
+                        projectMember.setMemberUser(memberUser);
+                        result = harborClient.setProjectMember(projects.body().get(0).getProjectId(), projectMember).execute();
+                    }
+                    if (result.raw().code() != 201 && result.raw().code() != 200 && result.raw().code() != 409) {
+                        throw new CommonException(result.errorBody().string());
+                    }
+                }
+            } catch (IOException e) {
+                throw new CommonException(e);
+            }
+
+            //更新项目表
+            if (devopsProjectDTO.getHarborProjectUserPassword() == null) {
+                devopsProjectDTO.setHarborProjectUserName(user.getUsername());
+                devopsProjectDTO.setHarborProjectUserPassword(user.getPassword());
+                devopsProjectDTO.setHarborProjectUserEmail(user.getEmail());
+            }
+            devopsProjectService.baseUpdate(devopsProjectDTO);
         } catch (IOException e) {
             throw new CommonException(e);
         }
