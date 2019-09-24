@@ -20,4 +20,11 @@ public interface DevopsDeployRecordService {
     void baseCreate(DevopsDeployRecordDTO devopsDeployRecordDTO);
 
     void baseDelete(DevopsDeployRecordDTO devopsDeployRecordDTO);
+
+    /**
+     * 删除手动部署生成的实例相关的部署纪录
+     *
+     * @param instanceId 实例id
+     */
+    void deleteRelatedRecordOfInstance(Long instanceId);
 }

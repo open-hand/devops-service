@@ -34,7 +34,7 @@ public class DevopsExcetionHandler {
      */
     @ExceptionHandler(DevopsCiInvalidException.class)
     public ResponseEntity<ExceptionResponse> process(DevopsCiInvalidException exception) {
-        LOGGER.info("exception info {}", exception.getTrace());
+        LOGGER.info("CI exception info {}", exception.getTrace());
         String message = null;
         try {
             message = messageSource.getMessage(exception.getCode(), exception.getParameters(), locale());
