@@ -529,7 +529,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             FileUtil.deleteFile(newTgzFile + TGZ);
         }
         //创建version
-        versionDTO.setRepository(String.format("%s/%s/%s/", helmUrl, MARKET_PRO, appCode));
+        versionDTO.setRepository(String.format("%s%s/%s/", helmUrl, MARKET_PRO, appCode));
         appServiceVersionService.baseCreateOrUpdate(versionDTO);
         LOGGER.info("==========应用下载，chart解析完结==========");
         return versionDTO;
@@ -619,7 +619,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             if (!appMarkets.isEmpty() && appMarkets.size() == 1) {
                 Map<String, String> params = new HashMap<>();
                 String image = appServiceVersionDTO.getImage().replace(":" + appServiceVersionDTO.getVersion(), "");
-                params.put(image, String.format(APP_REPOSITORY_PATH_FORMAT, harborUrl, appServiceVersionDTO.getVersion()));
+                params.put(image, harborUrl);
                 FileUtil.fileToInputStream(appMarkets.get(0), params);
             }
         } else {
