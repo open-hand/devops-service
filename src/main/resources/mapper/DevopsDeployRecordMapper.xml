@@ -91,4 +91,16 @@ WHERE
 			</foreach>
 		</if>
 	</sql>
+
+	<delete id="deleteRelatedRecordOfInstance">
+		DELETE
+		FROM devops_deploy_record record
+		WHERE record.id = (SELECT ddr.id
+						   FROM devops_deploy_record ddr
+						   WHERE ddr.deploy_type = 'manual'
+							 AND ddr.deploy_id IN (SELECT command.id
+												   FROM devops_env_command command
+												   WHERE command.object = 'instance'
+													 AND command.object_id = #{instanceId,jdbcType=BIGINT}) LIMIT 1)
+	</delete>
 </mapper>

@@ -923,14 +923,11 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
                 .baseQueryByEnvIdAndResourceId(devopsEnvironmentDTO.getId(), instanceId, C7NHELM_RELEASE);
 
-        DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO();
-        devopsDeployRecordDTO.setDeployId(devopsEnvCommandDTO.getId());
-        devopsDeployRecordDTO.setDeployType(MANUAL);
         //如果文件对象对应关系不存在，证明没有部署成功，删掉gitops文件,删掉资源
         if (devopsEnvFileResourceDTO == null) {
             appServiceInstanceMapper.deleteByPrimaryKey(instanceId);
             appServiceInstanceMapper.deleteInstanceRelInfo(instanceId);
-            devopsDeployRecordService.baseDelete(devopsDeployRecordDTO);
+            devopsDeployRecordService.deleteRelatedRecordOfInstance(instanceId);
             if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER,
                     RELEASE_PREFIX + appServiceInstanceDTO.getCode() + YAML_SUFFIX)) {
                 gitlabServiceClientOperator.deleteFile(
@@ -946,7 +943,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                     devopsEnvFileResourceDTO.getFilePath())) {
                 appServiceInstanceMapper.deleteByPrimaryKey(instanceId);
                 appServiceInstanceMapper.deleteInstanceRelInfo(instanceId);
-                devopsDeployRecordService.baseDelete(devopsDeployRecordDTO);
+                devopsDeployRecordService.deleteRelatedRecordOfInstance(instanceId);
                 devopsEnvFileResourceService.baseDeleteById(devopsEnvFileResourceDTO.getId());
                 return;
             }
@@ -1005,12 +1002,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         appServiceInstanceMapper.deleteInstanceRelInfo(instanceId);
         appServiceInstanceMapper.deleteByPrimaryKey(instanceId);
-
-        DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(instanceId);
-        DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO();
-        devopsDeployRecordDTO.setDeployId(devopsEnvCommandDTO.getId());
-        devopsDeployRecordDTO.setDeployType(MANUAL);
-        devopsDeployRecordService.baseDelete(devopsDeployRecordDTO);
+        devopsDeployRecordService.deleteRelatedRecordOfInstance(instanceId);
     }
 
 

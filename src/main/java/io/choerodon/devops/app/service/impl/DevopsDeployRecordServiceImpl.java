@@ -130,4 +130,9 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
     public void baseDelete(DevopsDeployRecordDTO devopsDeployRecordDTO) {
         devopsDeployRecordMapper.delete(devopsDeployRecordDTO);
     }
+
+    @Override
+    public void deleteRelatedRecordOfInstance(Long instanceId) {
+        devopsDeployRecordMapper.deleteRelatedRecordOfInstance(instanceId);
+    }
 }
