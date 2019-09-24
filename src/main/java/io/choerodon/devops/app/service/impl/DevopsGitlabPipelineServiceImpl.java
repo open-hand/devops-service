@@ -330,11 +330,13 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
             devopsGitlabPipelineDTO.setCommitContent(devopsGitlabPipelineDO.getContent());
             userES.stream().filter(userE -> userE.getId().equals(devopsGitlabPipelineDO.getCommitUserId())).forEach(userE -> {
                 devopsGitlabPipelineDTO.setCommitUserUrl(userE.getImageUrl());
+                devopsGitlabPipelineDTO.setCommitUserLoginName(userE.getLdap() ? userE.getLoginName() : userE.getEmail());
                 devopsGitlabPipelineDTO.setCommitUserName(userE.getRealName());
             });
 
             userES.stream().filter(userE -> userE.getId().equals(devopsGitlabPipelineDO.getPipelineCreateUserId())).forEach(userE -> {
                 devopsGitlabPipelineDTO.setPipelineUserUrl(userE.getImageUrl());
+                devopsGitlabPipelineDTO.setPipelineUserLoginName(userE.getLdap() ? userE.getLoginName() : userE.getEmail());
                 devopsGitlabPipelineDTO.setPipelineUserName(userE.getRealName());
             });
 

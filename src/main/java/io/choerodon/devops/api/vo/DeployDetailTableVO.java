@@ -10,6 +10,8 @@ public class DeployDetailTableVO {
     private String appServiceVersion;
     private Date creationDate;
     private String deployTime;
+    private String userUrl;
+    private String userLoginName;
     private String lastUpdatedName;
     private String status;
     private String error;
@@ -55,6 +57,21 @@ public class DeployDetailTableVO {
         this.creationDate = creationDate;
     }
 
+    public String getUserUrl() {
+        return userUrl;
+    }
+
+    public void setUserUrl(String userUrl) {
+        this.userUrl = userUrl;
+    }
+
+    public String getUserLoginName() {
+        return userLoginName;
+    }
+
+    public void setUserLoginName(String userLoginName) {
+        this.userLoginName = userLoginName;
+    }
 
     public String getDeployTime() {
         return deployTime;
