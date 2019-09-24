@@ -22,7 +22,6 @@ import io.choerodon.devops.infra.util.TypeUtil;
 @Service
 public class GitlabGroupServiceImpl implements GitlabGroupService {
     private static final String GROUP_NAME_FORMAT = "%s-%s%s";
-    private static final String GROUP_APP_MARKET = "site-application-market";
     private static final String ENV_GROUP_SUFFIX = "-gitops";
 
     @Autowired
