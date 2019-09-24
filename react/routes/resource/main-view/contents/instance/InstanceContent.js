@@ -88,14 +88,14 @@ const InstanceContent = observer(() => {
     if (record) {
       const id = record.get('id');
       const status = record.get('status');
-      const code = record.get('code');
+      const name = record.get('code');
       const podRunningCount = record.get('podRunningCount');
       const podCount = record.get('podCount');
       const error = record.get('error');
       return {
         id,
         status,
-        code,
+        name,
         podRunningCount,
         podCount,
         error,
@@ -129,15 +129,15 @@ const InstanceContent = observer(() => {
     if (current) {
       const {
         status,
-        code,
+        name,
         podRunningCount,
         podCount,
         error,
       } = current;
-      const podUnlinkCount = podCount - podRunningCount;
+      const podUnlinkCount = computeUnlinkPod(podCount, podRunningCount);
       return <InstanceTitle
         status={status}
-        name={code}
+        name={name}
         podRunningCount={podRunningCount}
         podUnlinkCount={podUnlinkCount}
         errorText={error}
@@ -152,8 +152,13 @@ const InstanceContent = observer(() => {
       podRunningCount,
       podCount,
     } = resourceStore.getSelectedMenu;
+    const podUnlinkCount = computeUnlinkPod(podCount, podRunningCount);
 
-    return <InstanceTitle name={name} podRunningCount={podRunningCount} podUnlinkCount={podCount - podRunningCount} />;
+    return <InstanceTitle
+      name={name}
+      podRunningCount={podRunningCount}
+      podUnlinkCount={podRunningCount}
+    />;
   }
 
   return (
@@ -194,5 +199,9 @@ const InstanceContent = observer(() => {
     </div>
   );
 });
+
+function computeUnlinkPod(run, all) {
+  return all - run;
+}
 
 export default InstanceContent;
