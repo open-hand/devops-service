@@ -244,17 +244,22 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
 
     @Override
     public PageInfo<AppServiceVersionVO> pageByOptions(Long projectId, Long appServiceId, Boolean deployOnly, Boolean doPage, String params, PageRequest pageRequest) {
+        AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
+        Boolean share = !(appServiceDTO.getProjectId() == null || appServiceDTO.getProjectId().equals(projectId));
         PageInfo<AppServiceVersionDTO> applicationVersionDTOPageInfo;
         Map<String, Object> mapParams = TypeUtil.castMapParams(params);
         if (doPage) {
             applicationVersionDTOPageInfo = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest))
-                    .doSelectPageInfo(() -> appServiceVersionMapper.listByAppServiceIdAndVersion(appServiceId, deployOnly,
+                    .doSelectPageInfo(() -> appServiceVersionMapper.listByAppServiceIdAndVersion(appServiceId,
+                            projectId,
+                            share,
+                            deployOnly,
                             TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
                             TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)),
                             PageRequestUtil.checkSortIsEmpty(pageRequest)));
         } else {
             applicationVersionDTOPageInfo = new PageInfo<>();
-            applicationVersionDTOPageInfo.setList(appServiceVersionMapper.listByAppServiceIdAndVersion(appServiceId, deployOnly,
+            applicationVersionDTOPageInfo.setList(appServiceVersionMapper.listByAppServiceIdAndVersion(appServiceId, projectId, share, deployOnly,
                     TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
                     TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)),
                     PageRequestUtil.checkSortIsEmpty(pageRequest)));

@@ -164,6 +164,17 @@
         dav.creation_date
         FROM
         devops_app_service_version dav
+        <if test="share!=null and share==true">
+            JOIN devops_app_service_share_rule dassr ON dassr.app_service_id = dav.app_service_id
+            AND (
+            dassr.share_level = 'organization'
+            OR dassr.project_id = #{projectId}
+            )
+            AND (
+            dassr.version = dav.version
+            OR dav.version LIKE CONCAT('%', dassr.version_type, '%')
+            )
+        </if>
         WHERE
         dav.app_service_id = #{appServiceId}
         <choose>
