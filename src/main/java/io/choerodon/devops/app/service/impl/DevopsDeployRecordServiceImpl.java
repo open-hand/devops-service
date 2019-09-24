@@ -103,7 +103,7 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
         Map<String, Object> maps = TypeUtil.castMapParams(params);
         Map<String, Object> cast = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
         if (cast.get("deployType") != null && cast.get("deployStatus") != null) {
-            if ("manual".equals(cast.get("deployType"))) {
+            if ("manual".equals(cast.get("deployType"))&&"running".equals(cast.get("deployStatus"))) {
                 cast.put("deployStatus", "operating");
             } else {
                 cast.put("deployStatus", "running");
