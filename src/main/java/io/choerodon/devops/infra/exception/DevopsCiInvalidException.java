@@ -16,6 +16,7 @@ public class DevopsCiInvalidException extends RuntimeException {
     private final transient Object[] parameters;
 
     private String code;
+    private String traceMessage;
 
     /**
      * 构造器
@@ -56,11 +57,14 @@ public class DevopsCiInvalidException extends RuntimeException {
     }
 
     public String getTrace() {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        PrintStream ps = new PrintStream(baos);
-        this.printStackTrace(ps);
-        ps.flush();
-        return new String(baos.toByteArray());
+        if(this.traceMessage == null) {
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            PrintStream ps = new PrintStream(outputStream);
+            this.printStackTrace(ps);
+            ps.flush();
+            this.traceMessage = new String(outputStream.toByteArray());
+        }
+        return traceMessage;
     }
 
     public Map<String, Object> toMap() {
