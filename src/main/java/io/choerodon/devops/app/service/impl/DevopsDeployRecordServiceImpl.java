@@ -101,6 +101,15 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
     @Override
     public PageInfo<DevopsDeployRecordDTO> basePageByProjectId(Long projectId, String params, PageRequest pageRequest) {
         Map<String, Object> maps = TypeUtil.castMapParams(params);
+        Map<String, Object> cast = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
+        if (cast.get("deployType") != null && cast.get("deployStatus") != null) {
+            if ("manual".equals(cast.get("deployType"))) {
+                cast.put("deployStatus", "operating");
+            } else {
+                cast.put("deployStatus", "running");
+            }
+        }
+        maps.put(TypeUtil.SEARCH_PARAM, cast);
         return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(
                 () -> devopsDeployRecordMapper.listByProjectId(projectId,
                         TypeUtil.cast(maps.get(TypeUtil.PARAMS)),

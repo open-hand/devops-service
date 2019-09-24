@@ -22,6 +22,7 @@ public class BranchVO {
     private Date creationDate;
     private String commitUserUrl;
     private String commitUserName;
+    private String commitEmail;
     private String createUserUrl;
     private String createUserName;
     private String createUserRealName;
@@ -58,6 +59,7 @@ public class BranchVO {
         this.createUserUrl = createUserUrl;
         this.typeCode = issue == null ? null : issue.getTypeCode();
         this.commitUserName = commitUserE.getRealName();
+        this.commitEmail = commitUserE.getEmail();
         this.createUserName = createUserName;
         this.createUserRealName = realName;
         this.status = status;
@@ -207,5 +209,13 @@ public class BranchVO {
 
     public void setObjectVersionNumber(Long objectVersionNumber) {
         this.objectVersionNumber = objectVersionNumber;
+    }
+
+    public String getCommitEmail() {
+        return commitEmail;
+    }
+
+    public void setCommitEmail(String commitEmail) {
+        this.commitEmail = commitEmail;
     }
 }
