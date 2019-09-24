@@ -48,7 +48,7 @@ WHERE
 	<sql id="sqlparam">
 		<if test='searchParam != null'>
 			<choose>
-				<when test="searchParam.deployType == null and searchParam.deployStatus != null">
+				<when test="searchParam.deployType == null and searchParam.deployStatus == 'running'">
 						AND	t.deployStatus ='running' OR t.deployStatus ='operating'
 				</when>
 				<otherwise>
