@@ -8,6 +8,7 @@ import useIngressStore from './useIngressStore';
 import useConfigMapStore from './useConfigMapStore';
 import useSecretStore from './useSecretStore';
 import useChildrenContextStore from './useChildrenContextStore';
+import useCertStore from './useCertStore';
 
 const Store = createContext();
 
@@ -25,6 +26,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const ingressStore = useIngressStore();
     const configMapStore = useConfigMapStore();
     const secretStore = useSecretStore();
+    const certStore = useCertStore();
     const childrenStore = useChildrenContextStore();
     const testStore = {
       ceshi: 'ceshi',
@@ -46,6 +48,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
       secretStore,
       childrenStore,
       testStore,
+      certStore,
     };
     return (
       <Store.Provider value={value}>

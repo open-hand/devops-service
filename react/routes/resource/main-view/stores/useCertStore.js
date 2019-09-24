@@ -1,8 +1,8 @@
 import { useLocalStore } from 'mobx-react-lite';
 import { axios } from '@choerodon/master';
-import { handlePromptError } from '../../../../../../utils';
+import { handlePromptError } from '../../../../utils';
 
-export default function useStore() {
+export default function useCertStore() {
   return useLocalStore(() => ({
     cert: [],
     setCert(data) {
@@ -33,6 +33,10 @@ export default function useStore() {
       return axios.post(`/devops/v1/projects/${projectId}/certifications`, data, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
+    },
+
+    deleteData(projectId, id) {
+      return axios.delete(`/devops/v1/projects/${projectId}/certifications?cert_id=${id}`);
     },
 
   }));
