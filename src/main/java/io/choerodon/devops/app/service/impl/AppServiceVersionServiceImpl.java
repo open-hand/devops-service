@@ -10,6 +10,14 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.domain.Sort;
 import io.choerodon.core.exception.CommonException;
@@ -25,13 +33,6 @@ import io.choerodon.devops.infra.mapper.AppServiceMapper;
 import io.choerodon.devops.infra.mapper.AppServiceVersionMapper;
 import io.choerodon.devops.infra.mapper.AppServiceVersionReadmeMapper;
 import io.choerodon.devops.infra.util.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class AppServiceVersionServiceImpl implements AppServiceVersionService {
@@ -114,13 +115,13 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         DevopsConfigDTO devopsConfigDTO = devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, CHART);
         String helmUrl = gson.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class).getUrl();
 
-        appServiceVersionDTO.setRepository(helmUrl.endsWith("/") ? helmUrl : helmUrl + "/" + organization.getCode() + "/" + projectDTO.getCode() + "/");
+        appServiceVersionDTO.setRepository(helmUrl.endsWith("/") ? helmUrl + organization.getCode() + "/" + projectDTO.getCode() + "/" : helmUrl + "/" + organization.getCode() + "/" + projectDTO.getCode() + "/");
         String storeFilePath = STORE_PATH + version;
 
         String destFilePath = DESTINATION_PATH + version;
         String path = FileUtil.multipartFileToFile(storeFilePath, files);
         //上传chart包到chartmuseum
-        chartUtil.uploadChart(organization.getCode(), projectDTO.getCode(), new File(path));
+        chartUtil.uploadChart(helmUrl, organization.getCode(), projectDTO.getCode(), new File(path));
 
         // 有需求让重新上传chart包，所以校验重复推后
         if (newApplicationVersion != null) {

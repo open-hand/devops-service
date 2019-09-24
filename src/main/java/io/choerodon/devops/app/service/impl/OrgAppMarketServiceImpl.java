@@ -518,7 +518,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             LOGGER.info("==========应用下载，chart 开始上传chart包==========");
             newTgzFile = String.format("%s%s%s", APPLICATION, File.separator, CHART + System.currentTimeMillis());
             FileUtil.toTgz(String.format(APP_TEMP_PATH_FORMAT, unZipPath, File.separator, appServiceCode), newTgzFile);
-            chartUtil.uploadChart(MARKET_PRO, appServiceCode, new File(newTgzFile + TGZ));
+            chartUtil.uploadChart(helmUrl,MARKET_PRO, appServiceCode, new File(newTgzFile + TGZ));
             LOGGER.info("==========应用下载，chart包删除成功==========");
         } catch (Exception e) {
             throw new CommonException("error.resolver.chart", e.getMessage());

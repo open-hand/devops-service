@@ -42,10 +42,11 @@ public class ChartUtil {
     private String helmUrl;
 
 
-    public void uploadChart(String organizationCode, String projectCode, File file) {
+    public void uploadChart(String repository, String organizationCode, String projectCode, File file) {
         ConfigurationProperties configurationProperties = new ConfigurationProperties();
         configurationProperties.setType(CHART);
-        configurationProperties.setBaseUrl(helmUrl);
+        repository = repository.endsWith("/") ? repository.substring(0, repository.length() - 1) : repository;
+        configurationProperties.setBaseUrl(repository);
         Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
         file = new File(file.getAbsolutePath());
         RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), file);
