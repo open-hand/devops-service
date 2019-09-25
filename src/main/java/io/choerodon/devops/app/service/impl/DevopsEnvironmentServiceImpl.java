@@ -321,6 +321,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 devopsEnvGroupEnvsDTOS.add(devopsEnvGroupEnvsDTO2);
             }
         });
+        if (!resultMaps.containsKey(0L)) {
+            devopsEnvGroupEnvsDTOS.add(new DevopsEnvGroupEnvsVO());
+        }
         return devopsEnvGroupEnvsDTOS;
     }
 
@@ -936,10 +939,10 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         List<DevopsUserPermissionVO> owners = projectOwners.getList()
                 .stream().map(iamUser -> {
                     DevopsUserPermissionVO devopsUserPermissionVO = new DevopsUserPermissionVO();
-                    if (iamUser.getLdap()){
-                        devopsUserPermissionVO= new DevopsUserPermissionVO(iamUser.getId(), iamUser.getLoginName(), iamUser.getRealName(), devopsEnvironmentDTO.getCreationDate());
-                    }else{
-                        devopsUserPermissionVO=  new DevopsUserPermissionVO(iamUser.getId(), iamUser.getEmail(), iamUser.getRealName(), devopsEnvironmentDTO.getCreationDate());
+                    if (iamUser.getLdap()) {
+                        devopsUserPermissionVO = new DevopsUserPermissionVO(iamUser.getId(), iamUser.getLoginName(), iamUser.getRealName(), devopsEnvironmentDTO.getCreationDate());
+                    } else {
+                        devopsUserPermissionVO = new DevopsUserPermissionVO(iamUser.getId(), iamUser.getEmail(), iamUser.getRealName(), devopsEnvironmentDTO.getCreationDate());
                     }
                     return devopsUserPermissionVO;
                 })
