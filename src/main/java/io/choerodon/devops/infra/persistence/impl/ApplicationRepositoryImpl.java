@@ -6,6 +6,11 @@ import java.util.Map;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+import io.kubernetes.client.JSON;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
@@ -17,10 +22,6 @@ import io.choerodon.devops.infra.common.util.PageRequestUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.ApplicationDO;
 import io.choerodon.devops.infra.mapper.ApplicationMapper;
-import io.kubernetes.client.JSON;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 /**
  * Created by younger on 2018/3/28.
@@ -241,5 +242,10 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
     @Override
     public void updateAppHarborConfig(Long projectId, Long newConfigId, Long oldConfigId, boolean harborPrivate) {
         applicationMapper.updateAppHarborConfig(projectId, newConfigId, oldConfigId, harborPrivate);
+    }
+
+    @Override
+    public List<Long> listGitlabProjectIdByAppPermission(Long gitlabGroupId, Long iamUserId) {
+        return applicationMapper.listGitlabProjectIdByAppPermission(gitlabGroupId, iamUserId);
     }
 }

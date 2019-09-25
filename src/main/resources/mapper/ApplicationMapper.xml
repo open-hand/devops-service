@@ -287,4 +287,27 @@
         </if>
         AND da.project_id = #{projectId}
     </update>
+
+    <select id="listGitlabProjectIdByAppPermission" resultType="java.util.List">
+        SELECT
+        da.gitlab_project_id
+        FROM
+            devops_application da
+        JOIN devops_project dp ON dp.devops_app_group_id = #{gitlabGroupId}
+        AND dp.iam_project_id = da.project_id
+        WHERE
+            da.is_skip_check_permission = 1
+        OR (
+            da.is_skip_check_permission = 0
+            AND EXISTS (
+                SELECT
+                    daur.app_id
+                FROM
+                    devops_app_user_rel daur
+                WHERE
+                    daur.app_id = da.id
+                AND daur.iam_user_id = #{iamUserId}
+            )
+        )
+    </select>
 </mapper>

@@ -1,11 +1,12 @@
 package io.choerodon.devops.infra.mapper;
 
-import io.choerodon.devops.infra.dataobject.ApplicationDO;
-import io.choerodon.mybatis.common.Mapper;
-import org.apache.ibatis.annotations.Param;
-
 import java.util.List;
 import java.util.Map;
+
+import org.apache.ibatis.annotations.Param;
+
+import io.choerodon.devops.infra.dataobject.ApplicationDO;
+import io.choerodon.mybatis.common.Mapper;
 
 /**
  * Created by younger on 2018/3/28.
@@ -57,4 +58,12 @@ public interface ApplicationMapper extends Mapper<ApplicationDO> {
                    @Param("isSynchro") Boolean isSynchro);
 
     void updateAppHarborConfig(@Param("projectId") Long projectId, @Param("newConfigId") Long newConfigId, @Param("oldConfigId") Long oldConfigId, @Param("harborPrivate") boolean harborPrivate);
+
+    /**
+     * 根据gitlabGroupId和iamUserId获取
+     * 在整个项目组用权限的应用对应的gitlabProjectId
+     *
+     * @return
+     */
+    List<Long> listGitlabProjectIdByAppPermission(@Param("gitlabGroupId") Long gitlabGroupId, @Param("iamUserId") Long iamUserId);
 }

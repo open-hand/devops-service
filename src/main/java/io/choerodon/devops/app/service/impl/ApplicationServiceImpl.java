@@ -14,13 +14,31 @@ import java.util.stream.Collectors;
 
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.IOFileFilter;
+import org.apache.commons.io.filefilter.TrueFileFilter;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.ListBranchCommand;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.Ref;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import retrofit2.Call;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -57,24 +75,6 @@ import io.choerodon.devops.infra.feign.ChartClient;
 import io.choerodon.devops.infra.feign.HarborClient;
 import io.choerodon.devops.infra.feign.SonarClient;
 import io.choerodon.websocket.tool.UUIDTool;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.filefilter.IOFileFilter;
-import org.apache.commons.io.filefilter.TrueFileFilter;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.ListBranchCommand;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.Ref;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import retrofit2.Call;
-import retrofit2.Response;
-import retrofit2.Retrofit;
 
 /**
  * Created by younger on 2018/3/28.
@@ -614,43 +614,41 @@ public class ApplicationServiceImpl implements ApplicationService {
      * @param devOpsAppPayload 此次操作相关信息
      */
     private void operateGitlabMemberPermission(DevOpsAppPayload devOpsAppPayload) {
+        List<Long> iamUserIds = null;
         // 不跳过权限检查，则为gitlab项目分配项目成员权限
         if (!devOpsAppPayload.getSkipCheckPermission()) {
-            if (!devOpsAppPayload.getUserIds().isEmpty()) {
-                List<Long> gitlabUserIds = userAttrRepository.listByUserIds(devOpsAppPayload.getUserIds()).stream()
-                        .map(UserAttrE::getGitlabUserId).collect(Collectors.toList());
-                gitlabUserIds.forEach(e -> {
-                    GitlabMemberE gitlabGroupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(devOpsAppPayload.getGroupId(), TypeUtil.objToInteger(e));
-                    if (gitlabGroupMemberE != null) {
-                        gitlabGroupMemberRepository.deleteMember(devOpsAppPayload.getGroupId(), TypeUtil.objToInteger(e));
-                    }
-                    GitlabMemberE gitlabProjectMemberE = gitlabProjectRepository
-                            .getProjectMember(devOpsAppPayload.getGitlabProjectId(), TypeUtil.objToInteger(e));
-                    if (gitlabProjectMemberE == null || gitlabProjectMemberE.getId() == null) {
-                        gitlabRepository.addMemberIntoProject(devOpsAppPayload.getGitlabProjectId(),
-                                new MemberDTO(TypeUtil.objToInteger(e), 30, ""));
-                    }
-                });
-            }
+            iamUserIds = devOpsAppPayload.getUserIds();
+        } else {
+            // 跳过权限检查，项目下所有成员自动分配权限
+            iamUserIds = iamRepository.getAllMemberIdsWithoutOwner(devOpsAppPayload.getIamProjectId());
         }
-        // 跳过权限检查，项目下所有成员自动分配权限
-        else {
-            List<Long> iamUserIds = iamRepository.getAllMemberIdsWithoutOwner(devOpsAppPayload.getIamProjectId());
-            List<Integer> gitlabUserIds = userAttrRepository.listByUserIds(iamUserIds).stream()
-                    .map(UserAttrE::getGitlabUserId).map(TypeUtil::objToInteger).collect(Collectors.toList());
-
-            gitlabUserIds.forEach(e -> {
-                        GitlabMemberE gitlabGroupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(devOpsAppPayload.getGroupId(), TypeUtil.objToInteger(e));
-                        if (gitlabGroupMemberE != null) {
-                            gitlabGroupMemberRepository.deleteMember(devOpsAppPayload.getGroupId(), TypeUtil.objToInteger(e));
-                        }
-                        GitlabMemberE gitlabProjectMemberE = gitlabProjectRepository.getProjectMember(devOpsAppPayload.getGitlabProjectId(), TypeUtil.objToInteger(e));
-                        if (gitlabProjectMemberE == null || gitlabProjectMemberE.getId() == null) {
-                            gitlabRepository.addMemberIntoProject(devOpsAppPayload.getGitlabProjectId(),
-                                    new MemberDTO(TypeUtil.objToInteger(e), 30, ""));
-                        }
+        if (iamUserIds != null && !iamUserIds.isEmpty()) {
+            List<UserAttrE> userAttrEList = userAttrRepository.listByUserIds(devOpsAppPayload.getUserIds());
+            userAttrEList.forEach(userAttrE -> {
+                GitlabMemberE gitlabGroupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(devOpsAppPayload.getGroupId(), TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+                if (gitlabGroupMemberE != null) {
+                    //删除group中的权限
+                    gitlabGroupMemberRepository.deleteMember(devOpsAppPayload.getGroupId(), TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+                    //查出拥有权限的应用,分别添加权限
+                    List<Long> gitlabProjectIds = applicationRepository.listGitlabProjectIdByAppPermission(TypeUtil.objToLong(devOpsAppPayload.getGroupId()), userAttrE.getIamUserId());
+                    if (gitlabProjectIds != null && !gitlabProjectIds.isEmpty()) {
+                        gitlabProjectIds.forEach(gitlabProjectId -> {
+                            GitlabMemberE gitlabProjectMemberE = gitlabProjectRepository
+                                    .getProjectMember(TypeUtil.objToInteger(gitlabProjectId), TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+                            if (gitlabProjectMemberE == null || gitlabProjectMemberE.getId() == null) {
+                                gitlabRepository.addMemberIntoProject(devOpsAppPayload.getGitlabProjectId(),
+                                        new MemberDTO(TypeUtil.objToInteger(userAttrE.getGitlabUserId()), 30, ""));
+                            }
+                        });
                     }
-            );
+                }
+                GitlabMemberE gitlabProjectMemberE = gitlabProjectRepository
+                        .getProjectMember(devOpsAppPayload.getGitlabProjectId(), TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+                if (gitlabProjectMemberE == null || gitlabProjectMemberE.getId() == null) {
+                    gitlabRepository.addMemberIntoProject(devOpsAppPayload.getGitlabProjectId(),
+                            new MemberDTO(TypeUtil.objToInteger(userAttrE.getGitlabUserId()), 30, ""));
+                }
+            });
         }
     }
 
