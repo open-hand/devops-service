@@ -513,14 +513,14 @@
         FROM
         devops_app_service das
         LEFT JOIN devops_app_service_share_rule b ON das.id = b.app_service_id
-        LEFT JOIN devops_app_service_version dasv on dasv.app_service_id = b.app_service_id
+        AND b.share_level = 'organization'
         WHERE
-        das.project_id is not null and b.app_service_id is not null and dasv.version is not null
-
-        <if test='appServiceIds != null and appServiceIds.size > 0'>
+        das.project_id IS NOT NULL
+        AND b.app_service_id IS NOT NULL
+        <if test='projectIds != null and projectIds.size > 0'>
             AND
-            <foreach collection="appServiceIds" item="appServiceId" open="(" separator=" OR " close=")">
-                das.id = #{appServiceId}
+            <foreach collection="projectIds" item="projectId" open="(" separator=" OR " close=")">
+                das.project_id = #{projectId}
             </foreach>
         </if>
         <if test="searchProjectId != null and searchProjectId !=''">
