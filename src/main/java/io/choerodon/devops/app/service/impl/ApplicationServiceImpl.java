@@ -966,11 +966,9 @@ public class ApplicationServiceImpl implements ApplicationService {
             } else {
                 chartProjectConfig = devopsProjectConfigRepository.queryByIdAndType(null, ProjectConfigType.CHART.getType()).get(0).getConfig();
             }
-            if (type == null) {
-                inputStream = this.getClass().getResourceAsStream("/shell/ci.sh");
-            } else {
-                inputStream = this.getClass().getResourceAsStream("/shell/" + type + ".sh");
-            }
+
+            inputStream = this.getClass().getResourceAsStream("/shell/ci.sh");
+
             Map<String, String> params = new HashMap<>();
             String groupName = organization.getCode() + "-" + projectE.getCode();
             if (harborProjectConfig.getProject() != null) {
