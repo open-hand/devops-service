@@ -333,7 +333,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                     HarborClient harborClient = retrofit.create(HarborClient.class);
                     projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
                     organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-                    harborService.createHarbor(harborClient, projectDTO.getId(), organizationDTO.getCode() + "-" + projectDTO.getCode());
+                    harborService.createHarbor(harborClient, projectDTO.getId(), organizationDTO.getCode() + "-" + projectDTO.getCode(), false);
                 }
                 return organizationConfig;
             }
@@ -346,8 +346,8 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                 configVO.setEmail(devopsProjectDTO.getHarborProjectUserEmail());
                 if (devopsProjectDTO.getHarborProjectIsPrivate() != null && devopsProjectDTO.getHarborProjectIsPrivate()) {
                     configVO.setPrivate(true);
-                    defaultConfig.setConfig(gson.toJson(configVO));
                 }
+                defaultConfig.setConfig(gson.toJson(configVO));
             }
             return defaultConfig;
         } else if (resourceType.equals(ResourceLevel.PROJECT.value())) {
