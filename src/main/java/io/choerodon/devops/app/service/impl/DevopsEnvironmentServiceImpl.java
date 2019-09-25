@@ -902,12 +902,18 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         PageInfo<IamUserDTO> projectOwners = baseServiceClientOperator.pagingQueryUsersByRoleIdOnProjectLevel(
                 new PageRequest(0, 0), roleAssignmentSearchVO, ownerId, projectId, false);
 
+        List<Long> ownerIds = projectOwners
+                .getList()
+                .stream()
+                .map(IamUserDTO::getId)
+                .collect(Collectors.toList());
         List<DevopsUserPermissionVO> members;
         if (!devopsEnvironmentDTO.getSkipCheckPermission()) {
             // 根据搜索参数查询数据库中所有的环境权限分配数据
             List<DevopsEnvUserPermissionDTO> permissions = devopsEnvUserPermissionMapper.listUserEnvPermissionByOption(envId, searchParamMap, paramList);
             members = permissions
                     .stream()
+                    .filter(p -> !ownerIds.contains(p.getIamUserId()))
                     .map(p -> ConvertUtils.convertObject(p, DevopsUserPermissionVO.class))
                     .peek(p -> p.setRole(MEMBER))
                     .sorted(Comparator.comparing(DevopsUserPermissionVO::getCreationDate).reversed())
@@ -915,11 +921,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         } else {
             // 搜索所有的项目成员，并过滤其中的项目所有者
             Long memberRoleId = baseServiceClientOperator.queryRoleIdByCode(PROJECT_MEMBER);
-            List<Long> ownerIds = projectOwners
-                    .getList()
-                    .stream()
-                    .map(IamUserDTO::getId)
-                    .collect(Collectors.toList());
+
             members = baseServiceClientOperator.pagingQueryUsersByRoleIdOnProjectLevel(
                     new PageRequest(0, 0), roleAssignmentSearchVO, memberRoleId, projectId, false)
                     .getList()
