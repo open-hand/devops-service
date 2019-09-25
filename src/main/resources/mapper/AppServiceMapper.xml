@@ -470,6 +470,7 @@
 
     <select id="listShareApplicationService" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
         SELECT
+        DISTINCT
         da.id,
         da.`code`,
         da.`name`,
