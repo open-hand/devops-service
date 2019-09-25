@@ -76,8 +76,6 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     @Override
     public void checkLog(String version) {
         LOGGER.info("start upgrade task");
-        LOGGER.info("sync config begin!!!");
-
         executorService.submit(new UpgradeTask(version));
     }
 
@@ -119,10 +117,12 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
 
         private void syncBranch() {
+            LOGGER.info("Start syncing branches.");
             //删除状态为已删除的分支
             devopsBranchMapper.deleteByIsDelete();
             //删除重复的分支
             devopsBranchMapper.deleteDuplicateBranch();
+            LOGGER.info("End syncing branches.");
         }
 
         private void syncConfig() {
@@ -182,6 +182,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         }
 
         private void syncEnvAppRelevance(List<CheckLog> logs) {
+            LOGGER.info("Start syncing relevance.");
             List<DevopsEnvAppServiceDTO> applicationInstanceDTOS = ConvertUtils.convertList(appServiceInstanceMapper.selectAll(), DevopsEnvAppServiceDTO.class);
 
             applicationInstanceDTOS.stream().distinct().forEach(v -> {
@@ -197,12 +198,14 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 }
                 logs.add(checkLog);
             });
+            LOGGER.info("End syncing relevance.");
         }
 
         /**
          * 修复应用服务和环境的状态字段
          */
         private void syncEnvAndAppServiceStatus() {
+            LOGGER.info("Start syncing status.");
             // 为应用服务的 `is_failed` 字段在迁移数据中修复 null 值为0
             appServiceMapper.updateIsFailedNullToFalse();
 
@@ -213,6 +216,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             // 将`is_active` 为 null 的应用服务和环境纪录该字段设为 1(true)
             appServiceMapper.updateIsActiveNullToTrue();
             devopsEnvironmentMapper.updateIsActiveNullToTrue();
+            LOGGER.info("End syncing status.");
         }
 
         private void syncAppShare(List<CheckLog> logs) {
@@ -275,14 +279,14 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                     .stream()
                     .collect(Collectors.groupingBy(CertificationDTO::getOrganizationId));
 
-            List<Long> categoryIds = orgServiceClientOperator.baseProjectCategoryList(0L, "普通项目群")
-                    .getList().stream().map(ProjectCategoryDTO::getId).collect(Collectors.toList());
+            List<Long> categoryIds = Optional.ofNullable(orgServiceClientOperator.baseProjectCategoryList(0L, "普通项目群").getList()).orElse(new ArrayList<>()).stream().map(ProjectCategoryDTO::getId).collect(Collectors.toList());
 
             Set<Long> allOrgIds = new HashSet<>(clusters.keySet());
             allOrgIds.addAll(orgCertifications.keySet());
 
             allOrgIds.forEach(organizationId -> {
                 ProjectDTO projectDTO = queryOrCreateMigrationProject(organizationId, categoryIds);
+                LOGGER.info("迁移id为{}的组织下的证书和集群到id为{}的项目下.", organizationId, projectDTO.getId());
 
                 // 迁移集群
                 if (clusters.containsKey(organizationId)) {
@@ -351,6 +355,9 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             projectCreateDTO.setOrganizationId(organizationId);
 
             projectDTO = baseServiceClientOperator.createProject(organizationId, projectCreateDTO);
+            LOGGER.info("已创建项目，id为{}", projectDTO.getId());
+        } else {
+            LOGGER.info("查询到已有的项目，id为{}", projectDTO.getId());
         }
 
         return projectDTO;
