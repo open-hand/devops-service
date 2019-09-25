@@ -92,4 +92,6 @@ public interface DevopsEnvironmentMapper extends Mapper<DevopsEnvironmentDTO> {
     int updateIsSynchroToTrueWhenFailed();
 
     int updateIsActiveNullToTrue();
+
+    List<Long> listGitlabProjectIdByEnvPermission(@Param("gitlabGroupId") Long gitlabGroupId, @Param("iamUserId") Long iamUserId);
 }

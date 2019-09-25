@@ -407,4 +407,27 @@
         WHERE t.env_id = #{envId};
     </select>
 
+    <select id="listGitlabProjectIdByEnvPermission" resultType="java.util.List">
+        SELECT
+            de.gitlab_env_project_id
+        FROM
+            devops_env de
+        JOIN devops_project dp ON dp.devops_env_group_id = #{gitlabGroupId}
+        AND dp.iam_project_id = de.project_id
+        WHERE
+            de.is_skip_check_permission = 1
+        OR (
+            de.is_skip_check_permission = 0
+            AND EXISTS (
+                SELECT
+                    deup.env_id
+                FROM
+                    devops_env_user_permission deup
+                WHERE
+                    deup.env_id = de.id
+                AND deup.iam_user_id = #{iamUserId}
+            )
+        )
+    </select>
+
 </mapper>
