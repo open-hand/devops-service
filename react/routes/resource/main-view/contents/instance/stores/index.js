@@ -53,6 +53,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
     }
 
     function queryData() {
+      casesDs.reset();
       const tabKey = istStore.getTabKey;
       switch (tabKey) {
         case tabs.CASES_TAB:

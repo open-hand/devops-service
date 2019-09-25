@@ -1,13 +1,12 @@
-import React, { useState, Fragment, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Icon } from 'choerodon-ui';
 import uuidv1 from 'uuid/v1';
 import Loading from '../../../../../components/loading';
+import ResourceTitle from '../../components/resource-title';
 import { removeEndsChar } from '../../../../../utils';
 import { useResourceStore } from '../../../stores';
 import { useCustomDetailStore } from './stores';
 import Modals from './modals';
-import ResourceTitle from '../../components/resource-title';
 
 import './index.less';
 
@@ -15,7 +14,7 @@ const TIMEOUT_TIME = 50000;
 
 const Content = observer(() => {
   const { prefixCls } = useResourceStore();
-  const [value, setValue] = useState('');
+  const [value, setValue] = useState('暂无数据');
   const [loading, setLoading] = useState(true);
   const { detailDs } = useCustomDetailStore();
   let ws;
@@ -80,17 +79,18 @@ const Content = observer(() => {
     }
   }
 
-  function getTitle() {
-    const record = detailDs.current;
-    return record ? <ResourceTitle iconType="filter_b_and_w" record={record} statusKey="commandStatus" errorKey="commandErrors" /> : null;
-  }
   return (
     <div className={`${prefixCls}-custom-detail`}>
-      <Modals />
-      {getTitle()}
+      <ResourceTitle
+        iconType="filter_b_and_w"
+        record={detailDs.current}
+        statusKey="commandStatus"
+        errorKey="commandErrors"
+      />
       <pre className="custom-detail-section-content">
         {loading ? <Loading display /> : value}
       </pre>
+      <Modals />
     </div>
   );
 });

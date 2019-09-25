@@ -28,10 +28,6 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const secretStore = useSecretStore();
     const certStore = useCertStore();
     const childrenStore = useChildrenContextStore();
-    const testStore = {
-      ceshi: 'ceshi',
-      store: null,
-    };
     const value = {
       ...props,
       prefixCls: 'c7ncd-deployment',
@@ -47,7 +43,6 @@ export const StoreProvider = injectIntl(inject('AppState')(
       configMapStore,
       secretStore,
       childrenStore,
-      testStore,
       certStore,
     };
     return (

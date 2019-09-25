@@ -1,13 +1,11 @@
-import React, { Fragment, useState, useMemo } from 'react';
+import React, { Fragment } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
-import { Icon } from 'choerodon-ui';
 import map from 'lodash/map';
+import ResourceTitle from '../../components/resource-title';
 import { useResourceStore } from '../../../stores';
 import { useCertDetailStore } from './stores';
 import Modals from './modals';
-import ResourceTitle from '../../components/resource-title';
-
 
 import './index.less';
 
@@ -18,28 +16,40 @@ const Content = observer(() => {
   } = useResourceStore();
   const { detailDs } = useCertDetailStore();
 
-  const record = detailDs.current;
-  if (!record) return <span>loading</span>;
+  function getContent() {
+    const record = detailDs.current;
+    let dnsNames;
+    let ingresses;
+    let commonName;
+    if (record) {
+      dnsNames = record.get('DNSNames');
+      ingresses = record.get('ingresses');
+      commonName = record.get('commonName');
+    }
 
-  return (
-    <div className={`${prefixCls}-certificate-detail`}>
-      <Modals />
-      <ResourceTitle iconType="class" record={record} statusKey="commandStatus" />
+    const dnsNode = dnsNames ? map(dnsNames, (item) => (
+      <li className={`${prefixCls}-detail-section-li`}>
+        <span className="detail-section-li-text">DNSNames:&nbsp;</span>
+        <span>{item}</span>
+      </li>
+    )) : '暂无数据';
+    const ingressNode = ingresses ? map(ingresses, (item) => (
+      <li className={`${prefixCls}-detail-section-li`}>
+        <span>{item}</span>
+      </li>
+    )) : '暂无数据';
+
+    return <Fragment>
       <div>
         <div className={`${prefixCls}-detail-content-section-title`}>
           <FormattedMessage id={`${intlPrefix}.domains`} />
         </div>
         <div className={`${prefixCls}-detail-content-section-name`}>
           <span>CommonName:&nbsp;</span>
-          <span>{record.get('commonName')}</span>
+          <span>{commonName}</span>
         </div>
         <ul className={`${prefixCls}-detail-section-ul`}>
-          {map(record.get('DNSNames'), (item) => (
-            <li className={`${prefixCls}-detail-section-li`}>
-              <span className="detail-section-li-text">DNSNames:&nbsp;</span>
-              <span>{item}</span>
-            </li>
-          ))}
+          {dnsNode}
         </ul>
       </div>
       <div>
@@ -47,13 +57,21 @@ const Content = observer(() => {
           <FormattedMessage id={`${intlPrefix}.current.domains`} />
         </div>
         <ul className={`${prefixCls}-detail-section-ul`}>
-          {map(record.get('ingresses'), (item) => (
-            <li className={`${prefixCls}-detail-section-li`}>
-              <span>{item}</span>
-            </li>
-          ))}
+          {ingressNode}
         </ul>
       </div>
+    </Fragment>;
+  }
+
+  return (
+    <div className={`${prefixCls}-certificate-detail`}>
+      <ResourceTitle
+        iconType="class"
+        record={detailDs.current}
+        statusKey="commandStatus"
+      />
+      {getContent()}
+      <Modals />
     </div>
   );
 });
