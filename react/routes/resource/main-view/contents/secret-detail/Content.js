@@ -42,7 +42,6 @@ const Content = observer(() => {
         record={detailDs.current}
         iconType="vpn_key"
         statusKey="commandStatus"
-        errorKey="commandErrors"
       />
       <div className={`${prefixCls}-detail-content-section-title`}>
         <FormattedMessage id={`${intlPrefix}.key.value`} />

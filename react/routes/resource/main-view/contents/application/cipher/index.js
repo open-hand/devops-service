@@ -84,6 +84,11 @@ const Cipher = observer(() => {
   }
 
   function renderAction({ record }) {
+    const commandStatus = record.get('commandStatus');
+    const disabled = getEnvIsNotRunning() || commandStatus === 'operating';
+    if (disabled) {
+      return null;
+    }
     const buttons = [
       {
         service: ['devops-service.devops-secret.deleteSecret'],
@@ -93,7 +98,7 @@ const Cipher = observer(() => {
         },
       },
     ];
-    return record.get('commandStatus') !== 'operating' && <Action data={buttons} />;
+    return <Action data={buttons} />;
   }
 
   return (

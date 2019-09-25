@@ -43,16 +43,22 @@ const Networking = observer(() => {
     netDs.query();
   }
 
-  function renderName({ record }) {
-    const name = record.get('name');
+  function getEnvIsNotRunning() {
+    const envRecord = treeDs.find((record) => record.get('key') === parentId);
+    const connect = envRecord.get('connect');
+    return !connect;
+  }
+
+  function renderName({ value, record }) {
     const status = record.get('status');
     const error = record.get('error');
+    const disabled = getEnvIsNotRunning() || status === 'operating';
 
     return (<StatusIcon
-      name=""
+      name={value}
       status={status || ''}
       error={error || ''}
-      clickAble={status !== 'operating'}
+      clickAble={!disabled}
       onClick={openNetworkEdit}
       permissionCode={['devops-service.devops-service.update']}
     />);
@@ -241,7 +247,12 @@ const Networking = observer(() => {
     );
   }
 
-  function renderAction() {
+  function renderAction({ record }) {
+    const status = record.get('status');
+    const disabled = getEnvIsNotRunning() || status === 'operating';
+    if (disabled) {
+      return null;
+    }
     const buttons = [
       {
         service: ['devops-service.devops-service.delete'],
@@ -305,25 +316,26 @@ const Networking = observer(() => {
       _.map(devopsIngressDTOS, ({ id: itemId, name, domain, error, status, pathList }) => {
         const buttons = [
           {
-            service: ['devops-service.devops-ingress.delete'],
+            service: ['devops-service.devops-ingress.update'],
             text: formatMessage({ id: 'delete' }),
             action: () => openIngressDelete(itemId),
           },
         ];
+        const disabled = getEnvIsNotRunning() || status === 'operating';
         return (
           <div key={itemId} className="net-expandedRow-detail">
             <FormattedMessage id={`${intlPrefix}.application.net.ingress`} />：
             <div className="net-ingress-text">
               <StatusIcon
-                name=""
+                name={name}
                 status={status}
                 error={error}
-                clickAble={status !== 'operating'}
+                clickAble={!disabled}
                 onClick={() => openDomainEdit(itemId)}
                 permissionCode={['devops-service.devops-ingress.delete']}
               />
             </div>
-            <Action data={buttons} />
+            {!disabled && <Action data={buttons} />}
             <FormattedMessage id="address" />：
             <div className="net-ingress-text">
               <MouserOverWrapper text={domain} width={0.2}>

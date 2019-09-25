@@ -83,6 +83,11 @@ const AppConfigs = observer(() => {
   }
 
   function renderAction({ record }) {
+    const commandStatus = record.get('commandStatus');
+    const disabled = getEnvIsNotRunning() || commandStatus === 'operating';
+    if (disabled) {
+      return null;
+    }
     const buttons = [
       {
         service: ['devops-service.devops-config-map.delete'],
@@ -92,7 +97,7 @@ const AppConfigs = observer(() => {
         },
       },
     ];
-    return record.get('commandStatus') !== 'operating' && <Action data={buttons} />;
+    return <Action data={buttons} />;
   }
 
   return (
@@ -103,7 +108,7 @@ const AppConfigs = observer(() => {
         queryBar="bar"
       >
         <Column name="name" header={formatMessage({ id: `${intlPrefix}.application.tabs.mapping` })} renderer={renderName} />
-        {!getEnvIsNotRunning() ? <Column renderer={renderAction} /> : null}
+        <Column renderer={renderAction} />
         <Column name="key" renderer={renderKey} />
         <Column name="lastUpdateDate" renderer={renderDate} />
       </Table>

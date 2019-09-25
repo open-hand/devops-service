@@ -289,6 +289,7 @@ class EditNetwork extends Component {
         const initIstOption = [];
         const deletedInstance = [];
         if (instances && instances.length) {
+          store.loadInstance(id, envId, appServiceId);
           _.forEach(instances, (item) => {
             const { id: istId, code, status } = item;
             initIst.push(code);

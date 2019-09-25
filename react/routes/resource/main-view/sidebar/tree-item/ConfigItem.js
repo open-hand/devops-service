@@ -17,12 +17,11 @@ function ConfigItem({
 }) {
   const {
     treeDs,
-    itemTypes: { MAP_ITEM, CIPHER_GROUP, CERT_GROUP },
+    itemTypes: { MAP_ITEM, MAP_GROUP },
     resourceStore: { getSelectedMenu: { itemType, parentId }, setUpTarget },
   } = useResourceStore();
   const {
     configMapStore,
-    secretStore,
     mainStore: { openDeleteModal },
   } = useMainStore();
 
@@ -31,17 +30,24 @@ function ConfigItem({
   function freshMenu() {
     treeDs.query();
     const [envId] = record.get('parentId').split('-');
-    if ((itemType === CERT_GROUP || itemType === CIPHER_GROUP) && envId === parentId) {
+    if (itemType === MAP_GROUP && envId === parentId) {
       setUpTarget({
         type: itemType,
         id: parentId,
       });
     } else {
       setUpTarget({
-        type: itemType,
+        type: MAP_ITEM,
         id: record.get('id'),
       });
     }
+  }
+
+  function getEnvIsNotRunning() {
+    const [envId] = record.get('parentId').split('-');
+    const envRecord = treeDs.find((item) => item.get('key') === envId);
+    const connect = envRecord.get('connect');
+    return !connect;
   }
 
   function openModal() {
@@ -53,28 +59,23 @@ function ConfigItem({
     isLoad && freshMenu();
   }
 
-  function getParam() {
-    const isConfigPage = record.get('itemType') === MAP_ITEM;
-    return ({
-      modeSwitch: isConfigPage,
-      title: isConfigPage ? 'configMap' : 'cipher',
-      store: isConfigPage ? configMapStore : secretStore,
-    });
-  }
-
   function getSuffix() {
     const id = record.get('id');
     const recordName = record.get('name');
-    const type = record.get('itemType') === MAP_ITEM ? 'configMap' : 'secret';
     const [envId] = record.get('parentId').split('-');
+    const status = record.get('commandStatus');
+    const disabled = getEnvIsNotRunning() || status === 'operating';
+    if (disabled) {
+      return null;
+    }
     const actionData = [{
-      service: [],
+      service: ['devops-service.devops-config-map.update'],
       text: formatMessage({ id: 'edit' }),
       action: openModal,
     }, {
-      service: ['devops-service.devops-service.delete'],
+      service: ['devops-service.devops-config-map.delete'],
       text: formatMessage({ id: 'delete' }),
-      action: () => openDeleteModal(envId, id, recordName, type, freshMenu),
+      action: () => openDeleteModal(envId, id, recordName, 'configMap', freshMenu),
     }];
     return <Action placement="bottomRight" data={actionData} onClick={eventStopProp} />;
   }
@@ -89,7 +90,9 @@ function ConfigItem({
       envId={record.get('parentId').split('-')[0]}
       onClose={closeModal}
       intlPrefix={intlPrefix}
-      {...getParam()}
+      modeSwitch
+      title="configMap"
+      store={configMapStore}
     />}
   </Fragment>;
 }

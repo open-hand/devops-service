@@ -50,37 +50,39 @@ const IngressContent = observer(() => {
     ingressDs.query();
   }
 
+  function getEnvIsNotRunning() {
+    const envRecord = treeDs.find((record) => record.get('key') === parentId);
+    const connect = envRecord.get('connect');
+    return !connect;
+  }
+
   function renderName({ record }) {
     const name = record.get('name');
     const status = record.get('status');
     const error = record.get('error');
-    const commandStatus = record.get('commandStatus');
+    const disabled = getEnvIsNotRunning() || status === 'operating';
     return (
       <Fragment>
-        <StatusTags
-          name={formatMessage({ id: commandStatus || 'null' })}
-          colorCode={commandStatus || 'success'}
-          style={{ minWidth: 40, marginRight: '0.08rem', height: '0.16rem', lineHeight: '0.16rem' }}
-        />
         <StatusIcon
           name={name}
           status={status || ''}
           error={error || ''}
-          clickAble={status !== 'operating'}
+          clickAble={!disabled}
           onClick={openModal}
-          permissionCode={['devops-service.devops-ingress.delete']}
+          permissionCode={['devops-service.devops-ingress.update']}
         />
       </Fragment>
     );
   }
 
+  function renderDomain({ value }) {
+    return <MouserOverWrapper text={value} width={0.25}>{value}</MouserOverWrapper>;
+  }
+
   function renderPath({ value }) {
     return (
       map(value, ({ path }) => (
-        <div
-          className="c7n-network-col_border"
-          key={path}
-        >
+        <div key={path}>
           <span>{path}</span>
         </div>
       ))
@@ -108,8 +110,9 @@ const IngressContent = observer(() => {
   }
 
   function renderAction({ record }) {
-    const commandStatus = record.get('commandStatus');
-    if (commandStatus === 'operating') {
+    const status = record.get('status');
+    const disabled = getEnvIsNotRunning() || status === 'operating';
+    if (disabled) {
       return null;
     }
     const id = record.get('id');
@@ -123,10 +126,6 @@ const IngressContent = observer(() => {
     ];
 
     return (<Action data={buttons} />);
-  }
-
-  function handleDelete() {
-    ingressDs.delete(ingressDs.current);
   }
 
   function openModal() {
@@ -145,10 +144,11 @@ const IngressContent = observer(() => {
         dataSet={ingressDs}
         border={false}
         queryBar="bar"
+        rowHeight="auto"
       >
         <Column name="name" renderer={renderName} />
         <Column renderer={renderAction} width="0.7rem" />
-        <Column name="domain" />
+        <Column name="domain" renderer={renderDomain} />
         <Column name="pathList" renderer={renderPath} />
         <Column renderer={renderService} header={formatMessage({ id: 'network' })} />
       </Table>

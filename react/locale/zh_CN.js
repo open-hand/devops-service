@@ -362,6 +362,8 @@ const deployment = {
   'c7ncd.deployment.report.memory': '查看内存使用量',
   'c7ncd.deployment.report.cpu.click': '点击查看内存使用量',
   'c7ncd.deployment.report.memory.click': '点击查看内存使用量',
+  'c7ncd.deployment.target.ip': '目标IP',
+
 };
 
 const appService = {

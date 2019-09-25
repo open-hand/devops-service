@@ -96,7 +96,7 @@ const Content = observer(() => {
       <div>
         <div className={`${prefixCls}-detail-content-section-title`}>
           <FormattedMessage id="routing" />
-          <span className="detail-content-section-title-hover">(Rules)</span>
+          <span className={`${prefixCls}-detail-content-section-title-hover`}>(Rules)</span>
         </div>
         <div className={`${prefixCls}-detail-content-section-name`}>
           <span>{domain}</span>
@@ -108,7 +108,7 @@ const Content = observer(() => {
       <div>
         <div className={`${prefixCls}-detail-content-section-title`}>
           <FormattedMessage id="annotation" />
-          <span className="detail-content-section-title-hover">(Annotations)</span>
+          <span className={`${prefixCls}-detail-content-section-title-hover`}>(Annotations)</span>
         </div>
         <ul className={`${prefixCls}-detail-section-ul`}>
           {anno ? map(anno, renderAnno) : '暂无数据'}

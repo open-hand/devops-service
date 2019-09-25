@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import { observer } from 'mobx-react-lite';
 import map from 'lodash/map';
 import { Spin } from 'choerodon-ui';
@@ -80,10 +80,12 @@ const ServiceDetail = observer(() => {
     const record = baseInfoDs.current;
     let ports;
     let burden;
+    let endPoints;
 
     if (record) {
       ports = record.get('config').ports;
       burden = record.get('target').instances;
+      endPoints = record.get('target').endPoints;
     }
 
     return <div>
@@ -91,15 +93,24 @@ const ServiceDetail = observer(() => {
         {formatMessage({ id: 'port' })}
       </div>
       <div className="detail-content-section-detail">
-        {ports && ports.length ? map(ports, getPort) : '无数据'}
+        {ports && ports.length ? map(ports, getPort) : formatMessage({ id: 'nodata' })}
       </div>
-      <div className={`${prefixCls}-detail-content-section-title`}>
-        {formatMessage({ id: `${intlPrefix}.load` })}
-      </div>
-      <div className="detail-content-section-detail">
-        {burden && burden.length ? map(burden, getBurden) : '无数据'}
-      </div>
-      {record && <PodList />}
+      {burden && burden.length ? (<Fragment>
+        <div className={`${prefixCls}-detail-content-section-title`}>
+          {formatMessage({ id: `${intlPrefix}.load` })}
+        </div>
+        <div className="detail-content-section-detail">
+          {map(burden, getBurden)}
+        </div>
+      </Fragment>) : null}
+      {endPoints ? (<Fragment>
+        <div className={`${prefixCls}-detail-content-section-title`}>
+          Endpoints
+        </div>
+        <div className="detail-content-section-detail">
+          {formatMessage({ id: `${intlPrefix}.target.ip` })}:
+        </div>
+      </Fragment>) : (record && <PodList />)}
     </div>;
   }
 
