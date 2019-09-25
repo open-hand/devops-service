@@ -367,6 +367,12 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
     @Override
     public void deleteCluster(Long clusterId) {
+        DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(clusterId);
+        if (devopsClusterDTO == null) {
+            return;
+        }
+
+        checkConnectEnvs(clusterId);
         baseDelete(clusterId);
     }
 
