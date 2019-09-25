@@ -109,7 +109,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                             projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
                             organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
                         }
-                        harborService.createHarbor(harborClient, projectDTO.getId(),organizationDTO.getCode() + "-" + projectDTO.getCode());
+                        harborService.createHarbor(harborClient, projectDTO.getId(),organizationDTO.getCode() + "-" + projectDTO.getCode(),false);
                     }
                 }
                 //根据配置所在的资源层级，查询出数据库中是否存在，存在则更新，不存在则新建
