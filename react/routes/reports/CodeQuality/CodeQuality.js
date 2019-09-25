@@ -397,7 +397,7 @@ class CodeQuality extends Component {
           <FormattedMessage id="refresh" />
         </Button>
       </Header>
-      <Breadcrumb />
+      <Breadcrumb title={formatMessage({ id: 'report.code-quality.head' })} />
       <Content>
         {isRefresh ? <LoadingBar display={isRefresh} /> : content}
       </Content>

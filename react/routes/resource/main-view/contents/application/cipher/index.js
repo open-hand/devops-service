@@ -11,6 +11,7 @@ import { useResourceStore } from '../../../../stores';
 import { useApplicationStore } from '../stores';
 
 import '../configs/index.less';
+import ClickText from '../../../../../../components/click-text';
 
 const { Column } = Table;
 
@@ -32,6 +33,12 @@ const Cipher = observer(() => {
     return cipherDs.query();
   }
 
+  function getEnvIsNotRunning() {
+    const envRecord = treeDs.find((record) => record.get('key') === parentId);
+    const connect = envRecord.get('connect');
+    return !connect;
+  }
+
   function closeSideBar(fresh) {
     setRecordId(null);
     setShowModal(false);
@@ -45,6 +52,7 @@ const Cipher = observer(() => {
 
   function renderName({ value, record }) {
     const commandStatus = record.get('commandStatus');
+    const disabled = getEnvIsNotRunning() || commandStatus === 'operating';
     return (
       <div>
         <StatusTags
@@ -52,9 +60,13 @@ const Cipher = observer(() => {
           colorCode={commandStatus || 'success'}
           style={statusStyle}
         />
-        {commandStatus === 'operating' ? <span>{value}</span> : (
-          <a className="content-table-name" onClick={() => handleEdit(record)}>{value}</a>
-        )}
+        <ClickText
+          value={value}
+          clickAble={!disabled}
+          onClick={handleEdit}
+          record={record}
+          permissionCode={['devops-service.devops-secret.update']}
+        />
       </div>
     );
   }

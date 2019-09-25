@@ -10,6 +10,7 @@ import { useResourceStore } from '../../../../stores';
 import { useApplicationStore } from '../stores';
 
 import './index.less';
+import ClickText from '../../../../../../components/click-text';
 
 const { Column } = Table;
 
@@ -58,7 +59,13 @@ const AppConfigs = observer(() => {
           colorCode={commandStatus || 'success'}
           style={statusStyle}
         />
-        {disabled ? value : <a className="content-table-name" onClick={() => handleEdit(record)}>{value}</a>}
+        <ClickText
+          value={value}
+          clickAble={!disabled}
+          onClick={handleEdit}
+          record={record}
+          permissionCode={['devops-service.devops-config-map.update']}
+        />
       </div>
     );
   }

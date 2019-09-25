@@ -18,6 +18,7 @@ import '../../../main.less';
 import './style/AppTag.less';
 import AppTagCreate from './AppTagCreate';
 import AppTagEdit from './AppTagEdit';
+import ClickText from '../../../../components/click-text';
 
 const { AppState } = stores;
 const { Panel } = Collapse;
@@ -209,10 +210,7 @@ class AppTag extends Component {
           <div className="c7n-tag-panel-name">
             <Icon type="local_offer" />
             <div className="c7n-tag-name">
-              <StatusIcon 
-                name={release.tagName}
-                handleAtagClick={this.displayEditModal.bind(this, true, release, release.tagName)}
-              />
+              <ClickText value={release.tagName} clickAble onClick={this.displayEditModal.bind(this, true, release, release.tagName)} />
             </div>
             <div className="c7n-tag-action" onClick={stopPropagation}>
               <Action data={[

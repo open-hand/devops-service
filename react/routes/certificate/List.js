@@ -8,10 +8,9 @@ import { observer } from 'mobx-react-lite';
 import { useCertificateStore } from './stores';
 import PermissionManage from './modals/permission';
 import CreateForm from './modals/create-form';
+import ClickText from '../../components/click-text';
 
 import './index.less';
-import StatusIcon from '../../components/StatusIcon/StatusIcon';
-import ClickText from '../../components/click-text';
 
 const { Column } = Table;
 const modalKey1 = Modal.key();
@@ -44,7 +43,12 @@ const AppService = withRouter(observer((props) => {
 
   function renderName({ value }) {
     return (
-      <ClickText value={value} clickAble onClick={() => openModal('edit')} />
+      <ClickText
+        value={value}
+        clickAble
+        onClick={() => openModal('edit')}
+        permissionCode={['devops-service.project-certification.createOrUpdate']}
+      />
     );
   }
 
@@ -78,6 +82,7 @@ const AppService = withRouter(observer((props) => {
         store={certStore}
         certId={type === 'edit' ? listDs.current.get('id') : null}
       />,
+      okText: formatMessage({ id: type === 'edit' ? 'save' : 'create' }),
       afterClose: () => certStore.setCert({}),
     });
   }

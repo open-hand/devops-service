@@ -208,7 +208,9 @@ class Branch extends Component {
             error={errorMessage}
             name={branchName}
             width={0.2}
-            handleAtagClick={this.handleEdit}
+            clickAble
+            onClick={this.handleEdit}
+            record={branchName}
           />
         </div>),
       }, {

@@ -15,6 +15,7 @@ import handleMapStore from '../../main-view/store/handleMapStore';
 import Loading from '../../../../components/loading';
 import './index.less';
 import '../../../main.less';
+import ClickText from '../../../../components/click-text';
 
 const { AppState } = stores;
 const { Option, OptGroup } = Select;
@@ -148,11 +149,9 @@ class MergeRequestHome extends Component {
       title: <FormattedMessage id="app.name" />,
       dataIndex: 'title',
       key: 'title',
-      render: (text, record) => (<StatusIcon
-        name={record.title}
-        width={0.25}
-        handleAtagClick={this.linkToMerge.bind(this, record.iid)}
-      />),
+      render: (text, record) => (<MouserOverWrapper text={record.title} width={0.25}>
+        <ClickText value={record.title} clickAble onClick={this.linkToMerge} record={record.iid} />
+      </MouserOverWrapper>),
     }, {
       title: <Tips type="title" data="app.code" />,
       key: 'iid',
@@ -220,24 +219,13 @@ class MergeRequestHome extends Component {
       title: <FormattedMessage id="app.name" />,
       dataIndex: 'title',
       key: 'title',
-      render: (text, record) => (<StatusIcon
-        name={record.title}
-        width={0.25}
-        handleAtagClick={this.linkToMerge.bind(this, record.iid)}
-      />),
+      render: (text, record) => (<MouserOverWrapper text={record.title} width={0.25}>
+        <ClickText value={record.title} clickAble onClick={this.linkToMerge} record={record.iid} />
+      </MouserOverWrapper>),
     }, {
       title: <Tips type="title" data="app.code" />,
       key: 'iid',
       render: (record) => (<span>!{record.iid}</span>),
-    }, {
-      title: <FormattedMessage id="app.name" />,
-      dataIndex: 'title',
-      key: 'title',
-      render: (text, record) => (<StatusIcon
-        name={record.title}
-        width={0.25}
-        handleAtagClick={this.linkToMerge.bind(this, record.iid)}
-      />),
     }, {
       title: <Tips type="title" data="app.branch" />,
       key: 'targetBranch',
@@ -297,12 +285,9 @@ class MergeRequestHome extends Component {
       title: <FormattedMessage id="app.name" />,
       dataIndex: 'title',
       key: 'title',
-      render: (text, record) => (
-        <StatusIcon
-          name={record.title}
-          width={0.25}
-          handleAtagClick={this.linkToMerge.bind(this, record.iid)}
-        />),
+      render: (text, record) => (<MouserOverWrapper text={record.title} width={0.25}>
+        <ClickText value={record.title} clickAble onClick={this.linkToMerge} record={record.iid} />
+      </MouserOverWrapper>),
     }, {
       title: <Tips type="title" data="app.code" />,
       key: 'iid',

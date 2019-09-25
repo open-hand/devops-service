@@ -66,6 +66,9 @@ const IngressContent = observer(() => {
           name={name}
           status={status || ''}
           error={error || ''}
+          clickAble={status !== 'operating'}
+          onClick={openModal}
+          permissionCode={['devops-service.devops-ingress.delete']}
         />
       </Fragment>
     );
@@ -112,11 +115,6 @@ const IngressContent = observer(() => {
     const id = record.get('id');
     const name = record.get('name');
     const buttons = [
-      {
-        service: [],
-        text: formatMessage({ id: 'edit' }),
-        action: openModal,
-      },
       {
         service: ['devops-service.devops-ingress.delete'],
         text: formatMessage({ id: 'delete' }),

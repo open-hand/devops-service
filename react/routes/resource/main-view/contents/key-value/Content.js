@@ -14,6 +14,7 @@ import Modals from './modals';
 import './index.less';
 import KeyValueModal from '../application/modals/key-value';
 import { useMainStore } from '../../stores';
+import ClickText from '../../../../../components/click-text';
 
 const { Column } = Table;
 
@@ -53,7 +54,12 @@ const ConfigMap = observer((props) => {
           colorCode={commandStatus || 'success'}
           style={{ minWidth: 40, marginRight: '0.08rem', height: '0.16rem', lineHeight: '0.16rem' }}
         />
-        <span>{value}</span>
+        <ClickText
+          value={value}
+          clickAble={commandStatus !== 'operating'}
+          onClick={openModal}
+          permissionCode={permissions.edit}
+        />
       </div>
     );
   }
@@ -87,11 +93,6 @@ const ConfigMap = observer((props) => {
     const name = record.get('name');
     const type = itemType === 'configMap' ? itemType : 'secret';
     const buttons = [
-      {
-        service: permissions.edit,
-        text: formatMessage({ id: 'edit' }),
-        action: openModal,
-      },
       {
         service: permissions.delete,
         text: formatMessage({ id: 'delete' }),

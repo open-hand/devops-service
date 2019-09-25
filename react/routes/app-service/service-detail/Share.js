@@ -46,7 +46,14 @@ const Share = (props) => {
   }
 
   function renderNumber({ value }) {
-    return <ClickText value={`#${value}`} onClick={openModal} clickAble />;
+    return (
+      <ClickText
+        value={`#${value}`}
+        onClick={openModal}
+        clickAble
+        permissionCode={['devops-service.app-share-rule.update']}
+      />
+    );
   }
 
   function renderAction() {
@@ -63,9 +70,10 @@ const Share = (props) => {
 
   function openModal(record) {
     const type = shareDs.current.status !== 'add' ? 'edit' : 'add';
+    const isModify = shareDs.current.status !== 'add';
     Modal.open({
       key: modalKey,
-      title: formatMessage({ id: `${intlPrefix}.share.rule.${type}` }),
+      title: formatMessage({ id: `${intlPrefix}.share.rule.${isModify ? 'edit' : 'add'}` }),
       children: <ShareRule
         versionOptions={shareVersionsDs}
         levelOptions={shareLevelDs}
@@ -80,7 +88,7 @@ const Share = (props) => {
       />,
       drawer: true,
       style: modalStyle,
-      okText: formatMessage({ id: 'save' }),
+      okText: formatMessage({ id: isModify ? 'save' : 'add' }),
       onCancel: handleCancel,
     });
   }

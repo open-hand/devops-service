@@ -48,14 +48,14 @@ const Networking = observer(() => {
     const status = record.get('status');
     const error = record.get('error');
 
-    return (<div>
-      <ClickText value={name} clickAble={status !== 'operating'} onClick={openNetworkEdit} />
-      <StatusIcon
-        name=""
-        status={status || ''}
-        error={error || ''}
-      />
-    </div>);
+    return (<StatusIcon
+      name=""
+      status={status || ''}
+      error={error || ''}
+      clickAble={status !== 'operating'}
+      onClick={openNetworkEdit}
+      permissionCode={['devops-service.devops-service.update']}
+    />);
   }
 
   function renderTargetType({ record }) {
@@ -314,11 +314,13 @@ const Networking = observer(() => {
           <div key={itemId} className="net-expandedRow-detail">
             <FormattedMessage id={`${intlPrefix}.application.net.ingress`} />：
             <div className="net-ingress-text">
-              <ClickText value={name} clickAble={status !== 'operating'} onClick={() => openDomainEdit(itemId)} />
               <StatusIcon
                 name=""
                 status={status}
                 error={error}
+                clickAble={status !== 'operating'}
+                onClick={() => openDomainEdit(itemId)}
+                permissionCode={['devops-service.devops-ingress.delete']}
               />
             </div>
             <Action data={buttons} />

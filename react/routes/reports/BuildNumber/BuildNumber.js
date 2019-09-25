@@ -179,7 +179,7 @@ class BuildNumber extends Component {
           <FormattedMessage id="refresh" />
         </Button>
       </Header>
-      <Breadcrumb />
+      <Breadcrumb title={formatMessage({ id: 'report.build-number.head' })} />
       <Content className="c7n-buildNumber-content">
         {isRefresh ? <LoadingBar display={isRefresh} /> : content}
       </Content>

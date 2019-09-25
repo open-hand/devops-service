@@ -577,6 +577,20 @@ const codeManagement = {
   'code-management.code-quality': '代码质量',
 };
 
+const emptyPage = {
+  'empty.title.app': '暂无应用服务',
+  'empty.title.env': '暂无环境',
+  'empty.no.permission': '暂无权限',
+  'empty.tips.app.owner': '当前项目下无应用服务，请创建',
+  'empty.tips.env.owner': '当前项目下无环境，请创建',
+  'empty.tips.app.member':
+    '您当前暂无此项目下任何应用服务的权限，若需查看某个应用服务的相关内容，请联系项目所有者添加权限',
+  'empty.tips.env.member':
+    '您当前暂无此项目下任何环境的权限，若需查看某个环境的相关内容，请联系项目所有者添加权限',
+  'empty.create.app': '创建应用服务',
+  'empty.create.env': '创建环境',
+};
+
 // 文档地址前缀
 const docServer = 'http://v0-18.choerodon.io/zh/docs';
 // 界面标题描述统一管理
@@ -1841,7 +1855,7 @@ const zhCN = {
   'apptag.delete.tooltip': '确定要删除该标记吗？',
   'apptag.checkNameReg':
     '支持x.x.x格式，其中x只能为非负整数；若使用语义化标记，建议格式：x.x.x-alpha.1',
-  'apptag.noRefBranch': '该应用还没有分支，请先创建分支',
+  'apptag.noRefBranch': '该应用服务暂无分支，请先创建分支',
   'apptag.tag.empty': '暂无任何标记，您可在此页面基于某一分支创建标记。',
   'apptag.app.empty':
     '当前项目下无应用，请使用项目所有者角色登录去创建一个应用。',
@@ -2221,10 +2235,10 @@ const zhCN = {
   'pipeline.record': '流水线执行记录总览',
   'pipeline.trigger': '触发方式',
   'pipeline.trigger.tip':
-    '选择自动触发后，整条流水线会在满足条件后自动执行，但自动触发流水线中阶段一里的任务一不能设置为人工卡点；选择手动触发后，需指定审核人员手动触发该流水线',
+    '选择自动触发后，整条流水线会在满足条件后自动执行，但自动触发流水线中阶段一里的任务一不能设置为人工卡点；选择人工触发后，需指定审核人员手动触发该流水线',
   'pipeline.trigger.member': '触发人员',
   'pipeline.trigger.auto': '自动触发',
-  'pipeline.trigger.manual': '手动触发',
+  'pipeline.trigger.manual': '人工触发',
   'pipeline.flow.auto': '自动流转',
   'pipeline.flow.manual': '手动流转',
   'pipeline.flow.stopped': '强制失败',
@@ -2435,6 +2449,7 @@ const zhCN = {
   ...deploy,
   ...repository,
   ...codeManagement,
+  ...emptyPage,
 };
 
 export default zhCN;

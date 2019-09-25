@@ -5,6 +5,7 @@ import { Tooltip, Progress, Icon } from 'choerodon-ui';
 import classnames from 'classnames';
 import MouseOverWrapper from '../MouseOverWrapper';
 import './StatusIcon.less';
+import ClickText from '../click-text';
 
 function StatusIcon(props) {
   const {
@@ -14,6 +15,10 @@ function StatusIcon(props) {
     intl: { formatMessage },
     width,
     handleAtagClick,
+    clickAble,
+    onClick,
+    record,
+    permissionCode,
   } = props;
   let statusDom = null;
   const statusClass = classnames({
@@ -64,8 +69,14 @@ function StatusIcon(props) {
         width={width || 0.15}
         className="c7n-status-text"
       >
-        {!handleAtagClick ? <span>{name}</span>
-          : <a className={statusClass} onClick={handleClick}>{name}</a>}
+        {clickAble ? (
+          <ClickText
+            value={name}
+            clickAble={clickAble}
+            onClick={onClick}
+            record={record}
+            permissionCode={permissionCode}
+          />) : <span className={statusClass}>{name}</span>}
       </MouseOverWrapper>
       {statusDom}
     </React.Fragment>
@@ -80,6 +91,14 @@ StatusIcon.propTypes = {
     PropTypes.string,
     PropTypes.number,
   ]),
+  clickAble: PropTypes.bool,
+  onClick: PropTypes.func,
+  record: PropTypes.any,
+  permissionCode: PropTypes.array,
+};
+
+StatusIcon.defaultProps = {
+  clickAble: false,
 };
 
 export default injectIntl(StatusIcon);
