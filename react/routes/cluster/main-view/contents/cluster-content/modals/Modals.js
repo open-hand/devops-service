@@ -29,14 +29,13 @@ const ClusterModals = observer(() => {
     treeDs,
   } = useClusterStore();
   const {
-    contentStore: {
-      getTabKey,
-    },
-    tabs: { NODE_TAB },
+    contentStore,
+    tabs: { NODE_TAB, ASSIGN_TAB },
     PermissionDs,
     NodeListDs,
     ClusterDetailDs,
   } = useClusterContentStore();
+  const { getTabKey } = contentStore;
 
   const { mainStore } = useClusterMainStore();
   const {
@@ -73,6 +72,7 @@ const ClusterModals = observer(() => {
   }
 
   function refreshPermission() {
+    contentStore.setTabKey(ASSIGN_TAB);
     ClusterDetailDs.query();
     NonPermissionDs.query();
   }

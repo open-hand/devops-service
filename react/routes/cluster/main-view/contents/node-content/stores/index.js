@@ -7,18 +7,25 @@ import { useClusterStore } from '../../../../stores';
 import NodePodsDataSet from './NodePodsDataSet';
 import NodeInfoDataSet from './NodeInfoDataSet';
 
-
 const NodeContentStore = createContext();
 
 const useNodeContentStore = () => useContext(NodeContentStore);
 
 const NodeContentStoreProvider = injectIntl(inject('AppState')(observer((props) => {
   const { intl: { formatMessage }, AppState: { currentMenuType: { id: projectId } }, children } = props;
-  const clusterStore = useClusterStore();
-  const { parentId, name } = clusterStore.clusterStore.getSelectedMenu;
+  const {
+    clusterStore,
+  } = useClusterStore();
   const NodePodsDs = useMemo(() => new DataSet(NodePodsDataSet()), []);
   const NodeInfoDs = useMemo(() => new DataSet(NodeInfoDataSet()), []);
-  
+
+  useEffect(() => {
+    clusterStore.setNoHeader(true);
+  }, []);
+
+  const {
+    getSelectedMenu: { parentId, name },
+  } = clusterStore;
   useEffect(() => {
     NodeInfoDs.transport.read.url = `devops/v1/projects/${projectId}/clusters/nodes?cluster_id=${parentId}&node_name=${name}`;
     NodeInfoDs.query();
@@ -29,7 +36,7 @@ const NodeContentStoreProvider = injectIntl(inject('AppState')(observer((props) 
   const value = {
     formatMessage,
     projectId,
-    clusterStore: clusterStore.clusterStore,
+    clusterStore,
     NodePodsDs,
     NodeInfoDs,
   };

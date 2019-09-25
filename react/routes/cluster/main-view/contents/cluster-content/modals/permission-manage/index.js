@@ -1,8 +1,7 @@
 import React, { Fragment, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
-import { Select, SelectBox } from 'choerodon-ui/pro';
-import { Form } from 'choerodon-ui';
+import { Select, Radio, Form } from 'choerodon-ui';
 import omit from 'lodash/omit';
 import map from 'lodash/map';
 import DynamicSelect from '../../../../../../../components/dynamic-select';
@@ -12,6 +11,7 @@ import './index.less';
 
 const FormItem = Form.Item;
 const { Option } = Select;
+const RadioGroup = Radio.Group;
 
 const Permission = observer(({ refreshPermission, modal, form, tree, onOk, projectList, intlPrefix, prefixCls, formatMessage, clusterDetail }) => {
   const defaultSkip = clusterDetail.get('skipCheckProjectPermission');
@@ -48,9 +48,8 @@ const Permission = observer(({ refreshPermission, modal, form, tree, onOk, proje
   });
 
 
-  // TODO: 替换掉 SelectBox
-  function handleChange(value) {
-    setIsSkip(value);
+  function handleChange(e) {
+    setIsSkip(e.target.value);
   }
 
   function getSelector() {
@@ -61,11 +60,11 @@ const Permission = observer(({ refreshPermission, modal, form, tree, onOk, proje
 
     const options = map(projectList, ({ id, name }) => {
       const selectedValues = Object.values(omit(data, 'keys'));
-      return <Select.Option
+      return <Option
         disabled={selectedValues.includes(id)}
         key={id}
         value={id}
-      >{name}</Select.Option>;
+      >{name}</Option>;
     });
 
     return <DynamicSelect
@@ -86,16 +85,16 @@ const Permission = observer(({ refreshPermission, modal, form, tree, onOk, proje
       <Form>
         <div className={`${prefixCls}-modal-selectbox`}>
           <FormItem>
-            {getFieldDecorator('skipCheckProjectPermission', { initialValue: isSkip })(<SelectBox
-              onChange={handleChange}
-            >
-              <Option value>
-                {formatMessage({ id: `${intlPrefix}.project.all` })}
-              </Option>
-              <Option value={false}>
-                {formatMessage({ id: `${intlPrefix}.project.part` })}
-              </Option>
-            </SelectBox>)}
+            {getFieldDecorator('skipCheckProjectPermission', { initialValue: isSkip })(
+              <RadioGroup onChange={handleChange}>
+                <Radio value>
+                  {formatMessage({ id: `${intlPrefix}.project.all` })}
+                </Radio>
+                <Radio value={false}>
+                  {formatMessage({ id: `${intlPrefix}.project.part` })}
+                </Radio>
+              </RadioGroup>
+            )}
           </FormItem>
         </div>
         {getSelector()}

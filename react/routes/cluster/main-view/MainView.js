@@ -39,10 +39,8 @@ export default observer(() => {
   }, [itemType]);
 
   if (!treeDs.length && treeDs.status === 'ready') {
-    return <div
-      className={`${prefixCls}-wrap`}
-    >
-      <Suspense fallback={<Loading display />}>
+    return <div className={`${prefixCls}-wrap`}>
+      <Suspense fallback={<span />}>
         <EmptyPage />
       </Suspense>
       <div><FormattedMessage id="c7ncd.cluster.empty.msg" /></div>
