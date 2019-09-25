@@ -23,4 +23,14 @@
       select * from devops_env de where de.token = #{token}
     </select>
 
+    <select id="listGitlabProjectIdByEnvPermission" resultType="java.util.List">
+        SELECT
+            de.gitlab_env_project_id
+        FROM
+            devops_env de
+        JOIN devops_project dp ON dp.devops_env_group_id = #{gitlabGroupId}
+        AND dp.iam_project_id = de.project_id
+        JOIN devops_env_user_permission deup ON deup.env_id = de.id
+        AND deup.iam_user_id = #{iamUserId}
+    </select>
 </mapper>

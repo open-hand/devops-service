@@ -636,7 +636,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                             GitlabMemberE gitlabProjectMemberE = gitlabProjectRepository
                                     .getProjectMember(TypeUtil.objToInteger(gitlabProjectId), TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
                             if (gitlabProjectMemberE == null || gitlabProjectMemberE.getId() == null) {
-                                gitlabRepository.addMemberIntoProject(devOpsAppPayload.getGitlabProjectId(),
+                                gitlabRepository.addMemberIntoProject(TypeUtil.objToInteger(gitlabProjectId),
                                         new MemberDTO(TypeUtil.objToInteger(userAttrE.getGitlabUserId()), 30, ""));
                             }
                         });

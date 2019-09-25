@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.mapper;
 
+import java.util.List;
+
 import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
 import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -20,4 +22,7 @@ public interface DevopsEnvironmentMapper extends Mapper<DevopsEnvironmentDO> {
     void updateDevopsSyncEnvCommit(@Param("envId") Long envId, @Param("devopsSyncCommit") Long devopsSyncCommit);
 
     void updateAgentSyncEnvCommit(@Param("envId") Long envId, @Param("agentSyncCommit") Long agentSyncCommit);
+
+    List<Long> listGitlabProjectIdByEnvPermission(@Param("gitlabGroupId") Long gitlabGroupId, @Param("iamUserId") Long iamUserId);
+
 }

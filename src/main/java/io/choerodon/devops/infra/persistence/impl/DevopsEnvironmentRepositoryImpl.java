@@ -152,4 +152,9 @@ public class DevopsEnvironmentRepositoryImpl implements DevopsEnvironmentReposit
         return ConvertHelper.convertList(devopsEnvironmentMapper.select(devopsEnvironmentDO), DevopsEnvironmentE.class);
     }
 
+
+    @Override
+    public List<Long> listGitlabProjectIdByEnvPermission(Long gitlabGroupId, Long iamUserId) {
+        return devopsEnvironmentMapper.listGitlabProjectIdByEnvPermission(gitlabGroupId, iamUserId);
+    }
 }
