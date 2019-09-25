@@ -503,7 +503,7 @@ class DeployTimes extends Component {
           <FormattedMessage id="refresh" />
         </Button>
       </Header>
-      <Breadcrumb />
+      <Breadcrumb title={formatMessage({ id: 'report.deploy-times.head' })} />
       <Content>
         {isRefresh ? <LoadingBar display={isRefresh} /> : content}
       </Content>

@@ -17,7 +17,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
     } = useKeyValueStore();
     const permissions = {
       configMap: ['devops-service.devops-config-map.create'],
-      secret: ['devops-service.devops-secret.createOrUpdate'],
+      secret: ['devops-service.devops-secret.create'],
     };
 
     const value = {

@@ -331,7 +331,7 @@ class Submission extends Component {
             <FormattedMessage id="refresh" />
           </Button>
         </Header>
-        <Breadcrumb />
+        <Breadcrumb title={formatMessage({ id: 'report.submission.head' })} />
         <Content>
           {getIsRefresh ? <LoadingBar display="getIsRefresh" /> : content}
         </Content>

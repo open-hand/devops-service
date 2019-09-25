@@ -312,7 +312,7 @@ class BuildDuration extends Component {
           <FormattedMessage id="refresh" />
         </Button>
       </Header>
-      <Breadcrumb />
+      <Breadcrumb title={formatMessage({ id: 'report.build-duration.head' })} />
       <Content className="c7n-buildDuration-content">
         {isRefresh ? <LoadingBar display={isRefresh} /> : content}
       </Content>

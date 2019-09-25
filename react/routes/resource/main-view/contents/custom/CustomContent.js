@@ -50,6 +50,9 @@ const CustomContent = observer(() => {
           status={commandStatus}
           name={value}
           error={record.get('commandErrors')}
+          clickAble={commandStatus !== 'operating'}
+          onClick={openShow}
+          permissionCode={['devops-service.devops-customize-resource.createResource']}
         />
       </Fragment>
       
@@ -66,11 +69,6 @@ const CustomContent = observer(() => {
       return null;
     }
     const buttons = [
-      {
-        service: [],
-        text: formatMessage({ id: 'edit' }),
-        action: openShow,
-      },
       {
         service: ['devops-service.devops-customize-resource.deleteResource'],
         text: formatMessage({ id: 'delete' }),

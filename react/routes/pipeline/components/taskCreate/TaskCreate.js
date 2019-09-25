@@ -23,6 +23,7 @@ import {
 } from '../Constants';
 
 import './TaskCreate.less';
+import StatusDot from '../../../../components/status-dot';
 
 const { Sidebar } = Modal;
 const { Item: FormItem } = Form;
@@ -537,19 +538,19 @@ export default class TaskCreate extends Component {
     </Option>
     ));
 
-    const envOptions = _.map(getEnvData, ({ id, connect, permission, name }) => (<Option
+    const envOptions = _.map(getEnvData, ({ id, connect, permission, name, synchro, active }) => (<Option
       key={id}
       value={id}
-      disabled={!permission}
+      disabled={!connect || !synchro || !permission}
       title={name}
     >
-      <span className={classnames({
-        'c7ncd-status': true,
-        'c7ncd-status-success': connect,
-        'c7ncd-status-disconnect': !connect,
-      })}
+      <StatusDot
+        connect={connect}
+        synchronize={synchro}
+        active={active}
+        size="small"
       />
-      {name}
+      <span className="c7ncd-pipeline-create-env">{name}</span>
     </Option>));
 
     const instanceOptions = _.map(getInstance, ({ id, code }) => (<Option value={id} key={id}>{code}</Option>));
@@ -594,7 +595,7 @@ export default class TaskCreate extends Component {
             initialValue: appOptions.length ? appServiceId : undefined,
           })(
             <Select
-              label={formatMessage({ id: 'app' })}
+              label={formatMessage({ id: 'appService' })}
               optionFilterProp="children"
               onChange={this.handleChangeApp}
               loading={getLoading.app}

@@ -123,7 +123,7 @@ const AppService = withRouter(observer((props) => {
     } else {
       actionItems = pick(actionData, ['run']);
     }
-    return (AppStore.getProjectRole === 'owner' ? <Action data={Object.values(actionItems)} /> : null);
+    return <Action data={Object.values(actionItems)} />;
   }
 
   function handleCancel(dataSet) {

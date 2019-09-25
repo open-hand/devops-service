@@ -1,4 +1,4 @@
-import React, { useCallback, Fragment, useState } from 'react';
+import React, { useCallback, Fragment, useState, useEffect } from 'react';
 import { Page, Content, Header, Permission, Action, Breadcrumb } from '@choerodon/master';
 import { Table, Modal, Form, Select } from 'choerodon-ui/pro';
 import { Button, Tooltip } from 'choerodon-ui';
@@ -18,6 +18,7 @@ import Deploy from './modals/deploy';
 import PendingCheckModal from './components/pendingCheckModal';
 
 import './index.less';
+import ClickText from '../../components/click-text';
 
 const { Column } = Table;
 const { Option } = Select;
@@ -181,12 +182,11 @@ const Deployment = withRouter(observer((props) => {
         <div className={`${prefixCls}-table-mark ${prefixCls}-table-mark-${record.get('deployType')}`}>
           <span>{record.get('deployType') === 'auto' ? 'A' : 'M'}</span>
         </div>
-        <span
+        <ClickText
+          value={`#${value}`}
+          clickAble
           onClick={openDetail}
-          className={`${prefixCls}-table-number`}
-        >
-          #{value}
-        </span>
+        />
       </div>
     );
   }

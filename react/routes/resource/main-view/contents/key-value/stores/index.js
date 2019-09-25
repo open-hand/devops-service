@@ -80,14 +80,14 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const itemData = {
       configMap: {
         permissions: {
-          edit: ['devops-service.devops-config-map.create'],
+          edit: ['devops-service.devops-config-map.update'],
           delete: ['devops-service.devops-config-map.delete'],
         },
         formStore: useConfigMapStore(),
       },
       cipher: {
         permissions: {
-          edit: ['devops-service.devops-secret.createOrUpdate'],
+          edit: ['devops-service.devops-secret.update'],
           delete: ['devops-service.devops-secret.deleteSecret'],
         },
         formStore: useSecretStore(),

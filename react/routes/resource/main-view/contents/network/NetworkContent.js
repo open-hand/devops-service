@@ -62,6 +62,9 @@ const NetworkContent = observer(() => {
           name={name}
           status={status || ''}
           error={error || ''}
+          clickAble={status !== 'operating'}
+          onClick={openModal}
+          permissionCode={['devops-service.devops-service.update']}
         />
       </div>
     );
@@ -259,11 +262,6 @@ const NetworkContent = observer(() => {
     const name = record.get('name');
     const buttons = [
       {
-        service: [],
-        text: formatMessage({ id: 'edit' }),
-        action: openModal,
-      },
-      {
         service: ['devops-service.devops-service.delete'],
         text: formatMessage({ id: 'delete' }),
         action: () => openDeleteModal(parentId, id, name, 'service', refresh),
@@ -271,10 +269,6 @@ const NetworkContent = observer(() => {
     ];
 
     return (<Action data={buttons} />);
-  }
-
-  function handleDelete() {
-    networkDs.delete(networkDs.current);
   }
 
   function openModal() {

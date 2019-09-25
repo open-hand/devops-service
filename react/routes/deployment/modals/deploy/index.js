@@ -143,7 +143,7 @@ const DeployModal = injectIntl(observer(({ record, dataSet, store, projectId, re
   }
 
   function renderEnvOption({ record: envRecord, text, value }) {
-    const isAvailable = envRecord.get('connect') && envRecord.get('synchro');
+    const isAvailable = envRecord.get('connect') && envRecord.get('synchro') && record.get('permission');
     const envClass = classnames({
       [`${prefixCls}-manual-deploy-available`]: isAvailable,
       [`${prefixCls}-manual-deploy-disabled`]: !isAvailable,
@@ -196,7 +196,7 @@ const DeployModal = injectIntl(observer(({ record, dataSet, store, projectId, re
             ))
           )}
         </Select>
-        <Select name="appServiceVersionId" searchable />
+        <Select name="appServiceVersionId" searchable disabled={!record.get('appServiceId')} />
         <Select
           name="environmentId"
           searchable
