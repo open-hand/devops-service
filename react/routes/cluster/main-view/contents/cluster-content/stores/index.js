@@ -28,6 +28,10 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const { intlPrefix, clusterStore } = useClusterStore();
     const { getSelectedMenu: { id } } = clusterStore;
 
+    useEffect(() => {
+      clusterStore.setNoHeader(false);
+    }, []);
+
     const record = ClusterDetailDs.current;
     const NodeListDs = useMemo(() => new DataSet(NodeListDataSet({ formatMessage, intlPrefix })), []);
     const PermissionDs = useMemo(() => new DataSet(PermissionDataSet({ formatMessage, intlPrefix, projectId, id, skipCheckProjectPermission: record && record.get('skipCheckProjectPermission') })), [record]);

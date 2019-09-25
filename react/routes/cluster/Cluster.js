@@ -9,7 +9,7 @@ export default observer(() => {
   const { permission, clusterStore } = useClusterStore();
   return (
     <Page service={permission}>
-      <CustomHeader show={clusterStore.getShowHeaderButton} />
+      <CustomHeader show={!clusterStore.getNoHeader} />
       <MainView />
     </Page>
   );

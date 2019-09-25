@@ -4,32 +4,25 @@ import { observer } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
 import { DataSet } from 'choerodon-ui/pro';
 import useStore from './useStore';
-import { viewTypeMappings, itemTypeMappings } from './mappings';
+import { itemTypeMappings } from './mappings';
 import TreeDataSet from './TreeDataSet';
 
-const { CLU_VIEW_TYPE } = viewTypeMappings;
 const Store = createContext();
 
 export function useClusterStore() {
   return useContext(Store);
 }
 
-
 export const StoreProvider = injectIntl(inject('AppState')(observer(
   (props) => {
     const { AppState: { currentMenuType: { id } }, children } = props;
     const clusterStore = useStore();
-    const viewType = clusterStore.getViewType;
-    const viewTypeMemo = useMemo(() => viewTypeMappings, []);
     const itemType = useMemo(() => itemTypeMappings, []);
-    const treeDs = useMemo(() => new DataSet(TreeDataSet(clusterStore, viewType)), [viewType]);
+    const treeDs = useMemo(() => new DataSet(TreeDataSet(clusterStore)), []);
     useEffect(() => {
-      const urlMaps = {
-        [CLU_VIEW_TYPE]: `/devops/v1/projects/${id}/clusters/tree_menu`,
-      };
-      treeDs.transport.read.url = urlMaps[viewType];
+      treeDs.transport.read.url = `/devops/v1/projects/${id}/clusters/tree_menu`;
       treeDs.query();
-    }, [id, viewType]);
+    }, [id]);
     const value = {
       ...props,
       prefixCls: 'c7ncd-cluster',
@@ -52,8 +45,6 @@ export const StoreProvider = injectIntl(inject('AppState')(observer(
       ],
       clusterStore,
       itemType,
-      viewTypeMemo,
-      viewType,
       treeDs,
     };
     return (
@@ -61,5 +52,5 @@ export const StoreProvider = injectIntl(inject('AppState')(observer(
         {children}
       </Store.Provider>
     );
-  } 
+  }
 )));
