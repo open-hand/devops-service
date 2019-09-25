@@ -20,6 +20,8 @@ import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
+import io.choerodon.devops.infra.mapper.AppServiceMapper;
+import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
 import io.choerodon.devops.infra.util.TypeUtil;
 
 
@@ -37,10 +39,12 @@ public class UpdateEnvUserPermissionServiceImpl extends UpdateUserPermissionServ
     private final DevopsProjectService devopsProjectService;
     private final GitlabServiceClientOperator gitlabServiceClientOperator;
     private final BaseServiceClientOperator baseServiceClientOperator;
+    private AppServiceMapper appServiceMapper;
+    private DevopsEnvironmentMapper devopsEnvironmentMapper;
 
     @Autowired
-    public UpdateEnvUserPermissionServiceImpl(DevopsEnvironmentService devopsEnvironmentService, DevopsEnvUserPermissionService devopsEnvUserPermissionService, UserAttrService userAttrService, DevopsProjectService devopsProjectService, GitlabServiceClientOperator gitlabServiceClientOperator, BaseServiceClientOperator baseServiceClientOperator) {
-        super(gitlabServiceClientOperator);
+    public UpdateEnvUserPermissionServiceImpl(DevopsEnvironmentService devopsEnvironmentService, DevopsEnvUserPermissionService devopsEnvUserPermissionService, UserAttrService userAttrService, DevopsProjectService devopsProjectService, GitlabServiceClientOperator gitlabServiceClientOperator, BaseServiceClientOperator baseServiceClientOperator, AppServiceMapper appServiceMapper, DevopsEnvironmentMapper devopsEnvironmentMapper) {
+        super(gitlabServiceClientOperator, userAttrService, appServiceMapper, devopsEnvironmentMapper);
         this.devopsEnvironmentService = devopsEnvironmentService;
         this.devopsEnvUserPermissionService = devopsEnvUserPermissionService;
         this.userAttrService = userAttrService;

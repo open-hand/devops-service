@@ -32,11 +32,14 @@ public abstract class UpdateUserPermissionService {
         this.devopsEnvironmentMapper = ApplicationContextHelper.getSpringFactory().getBean(DevopsEnvironmentMapper.class);
     }
 
-    protected UpdateUserPermissionService(GitlabServiceClientOperator gitlabServiceClientOperator) {
+    protected UpdateUserPermissionService(GitlabServiceClientOperator gitlabServiceClientOperator,
+                                          UserAttrService userAttrService,
+                                          AppServiceMapper appServiceMapper,
+                                          DevopsEnvironmentMapper devopsEnvironmentMapper) {
         this.gitlabServiceClientOperator = gitlabServiceClientOperator;
-        this.userAttrService = ApplicationContextHelper.getSpringFactory().getBean(UserAttrService.class);
-        this.appServiceMapper = ApplicationContextHelper.getSpringFactory().getBean(AppServiceMapper.class);
-        this.devopsEnvironmentMapper = ApplicationContextHelper.getSpringFactory().getBean(DevopsEnvironmentMapper.class);
+        this.userAttrService = userAttrService;
+        this.appServiceMapper = appServiceMapper;
+        this.devopsEnvironmentMapper = devopsEnvironmentMapper;
     }
 
     public abstract Boolean updateUserPermission(Long projectId, Long id, List<Long> userIds, Integer option);
@@ -48,12 +51,12 @@ public abstract class UpdateUserPermissionService {
             if (memberDTO != null) {
                 gitlabServiceClientOperator.deleteGroupMember(gitlabGroupId, TypeUtil.objToInteger(e));
                 UserAttrDTO userAttrE = userAttrService.baseQueryByGitlabUserId(TypeUtil.objToLong(e));
-                List<Long> gitlabProjectIds = type.equals("env") ?
-                        devopsEnvironmentMapper.listGitlabProjectIdByEnvPermission(TypeUtil.objToLong(gitlabGroupId), userAttrE.getIamUserId())
-                        : appServiceMapper.listGitlabProjectIdByAppPermission(TypeUtil.objToLong(gitlabGroupId), userAttrE.getIamUserId());
-                if (gitlabProjectIds != null && !gitlabProjectIds.isEmpty()) {
-                    gitlabProjectIds.forEach(aLong -> addGitlabMember(type, TypeUtil.objToInteger(aLong), TypeUtil.objToInteger(userAttrE.getGitlabUserId())));
-                }
+//                List<Long> gitlabProjectIds = type.equals("env") ?
+//                        devopsEnvironmentMapper.listGitlabProjectIdByEnvPermission(TypeUtil.objToLong(gitlabGroupId), userAttrE.getIamUserId())
+//                        : appServiceMapper.listGitlabProjectIdByAppPermission(TypeUtil.objToLong(gitlabGroupId), userAttrE.getIamUserId());
+//                if (gitlabProjectIds != null && !gitlabProjectIds.isEmpty()) {
+//                    gitlabProjectIds.forEach(aLong -> addGitlabMember(type, TypeUtil.objToInteger(aLong), TypeUtil.objToInteger(userAttrE.getGitlabUserId())));
+//                }
             }
             addGitlabMember(type, TypeUtil.objToInteger(gitlabProjectId), e);
         });
