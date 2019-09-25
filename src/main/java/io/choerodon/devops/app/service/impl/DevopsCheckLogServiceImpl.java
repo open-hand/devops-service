@@ -271,11 +271,19 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             LOGGER.info("修复部署记录数据结束");
         }
 
+        private <T> List<T> peekListSize(List<T> objects, String message) {
+            LOGGER.info(message,  objects.size());
+            return objects;
+        }
+
         private void syncClusterAndCertifications(List<CheckLog> checkLogs) {
             LOGGER.info("开始迁移集群和证书到项目下!");
-            Map<Long, List<DevopsClusterDTO>> clusters = devopsClusterMapper.selectAll().stream()
+            Map<Long, List<DevopsClusterDTO>> clusters = peekListSize(devopsClusterMapper.listAllClustersToMigrate(),
+                    "There are {} clusters to be migrated.")
+                    .stream()
                     .collect(Collectors.groupingBy(DevopsClusterDTO::getOrganizationId));
-            Map<Long, List<CertificationDTO>> orgCertifications = devopsCertificationMapper.listAllOrgCertification()
+
+            Map<Long, List<CertificationDTO>> orgCertifications = peekListSize(devopsCertificationMapper.listAllOrgCertification(), "There are {} certifications to be migrated.")
                     .stream()
                     .collect(Collectors.groupingBy(CertificationDTO::getOrganizationId));
 
@@ -283,6 +291,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
             Set<Long> allOrgIds = new HashSet<>(clusters.keySet());
             allOrgIds.addAll(orgCertifications.keySet());
+            LOGGER.info("The number of organizations involved is {}", allOrgIds.size());
 
             allOrgIds.forEach(organizationId -> {
                 ProjectDTO projectDTO = queryOrCreateMigrationProject(organizationId, categoryIds);
