@@ -2,11 +2,10 @@ package io.choerodon.devops.api.vo;
 
 import java.util.Date;
 
-import io.swagger.annotations.ApiModelProperty;
-
 import io.choerodon.devops.infra.dto.DevopsBranchDTO;
 import io.choerodon.devops.infra.dto.agile.IssueDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  * Created by Sheep on 2019/7/18.
@@ -49,7 +48,7 @@ public class BranchVO {
         this.branchName = devopsBranchDTO.getBranchName();
         this.sha = devopsBranchDTO.getLastCommit();
         this.commitContent = devopsBranchDTO.getLastCommitMsg();
-        this.commitUserUrl = commitUserE.getImageUrl();
+        this.commitUserUrl = commitUserE == null ? null : commitUserE.getImageUrl();
         this.creationDate = devopsBranchDTO.getCreationDate();
         this.commitUrl = lastCommitUrl;
         this.issueId = devopsBranchDTO.getIssueId();
@@ -58,8 +57,8 @@ public class BranchVO {
         this.commitDate = devopsBranchDTO.getLastCommitDate();
         this.createUserUrl = createUserUrl;
         this.typeCode = issue == null ? null : issue.getTypeCode();
-        this.commitUserName = commitUserE.getRealName();
-        this.commitUserRealName = commitUserE.getLdap()?commitUserE.getLoginName():commitUserE.getEmail();
+        this.commitUserName = commitUserE == null ? null : commitUserE.getRealName();
+        this.commitUserRealName = commitUserE == null ? null : commitUserE.getLdap() ? commitUserE.getLoginName() : commitUserE.getEmail();
         this.createUserName = createUserName;
         this.createUserRealName = realName;
         this.status = status;

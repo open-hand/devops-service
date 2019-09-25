@@ -187,7 +187,7 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
         }
         map.forEach((userId, list) -> {
             IamUserDTO iamUserDTO = userMap.get(userId);
-            if(ObjectUtils.isEmpty(iamUserDTO)){
+            if(!ObjectUtils.isEmpty(iamUserDTO)){
                 String loginName = iamUserDTO.getLdap() ? iamUserDTO.getLoginName() : iamUserDTO.getEmail() ;
                 String name = loginName + iamUserDTO.getLoginName();
                 String imgUrl = iamUserDTO.getImageUrl();

@@ -2,25 +2,25 @@ package io.choerodon.devops.app.service.impl;
 
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.enums.ObjectType;
+import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.mapper.DevopsEnvResourceMapper;
+import io.choerodon.devops.infra.util.K8sUtil;
+import io.choerodon.devops.infra.util.TypeUtil;
 import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.infra.enums.ObjectType;
-import io.choerodon.devops.infra.enums.ResourceType;
-import io.choerodon.devops.infra.mapper.DevopsEnvResourceMapper;
-import io.choerodon.devops.infra.util.K8sUtil;
-import io.choerodon.devops.infra.util.TypeUtil;
 import org.springframework.util.ObjectUtils;
 
 /**
@@ -192,15 +192,19 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
         List<InstanceEventVO> instanceEventVOS = new ArrayList<>();
         List<DevopsEnvCommandDTO> devopsEnvCommandDTOS = devopsEnvCommandService
                 .baseListInstanceCommand(ObjectType.INSTANCE.getType(), instanceId);
+        List<Long> userIds = devopsEnvCommandDTOS.stream().filter(devopsEnvCommandDTO -> devopsEnvCommandDTO.getCreatedBy() != 0).map(DevopsEnvCommandDTO::getCreatedBy).collect(Collectors.toList());
+        List<IamUserDTO> users = baseServiceClientOperator.listUsersByIds(userIds);
         devopsEnvCommandDTOS.forEach(devopsEnvCommandDTO -> {
             InstanceEventVO instanceEventVO = new InstanceEventVO();
-            IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(devopsEnvCommandDTO.getCreatedBy());
-            if (!ObjectUtils.isEmpty(iamUserDTO)) {
-                instanceEventVO.setLoginName(iamUserDTO.getLdap() ? iamUserDTO.getLoginName() : iamUserDTO.getEmail());
-                instanceEventVO.setRealName(iamUserDTO.getRealName());
+            Optional<IamUserDTO> iamUserDTO = users.stream().filter(user->user.getId().equals(devopsEnvCommandDTO.getCreatedBy())).findFirst();
+            IamUserDTO iamUser = null;
+            if (iamUserDTO.isPresent()) {
+                iamUser = iamUserDTO.get();
+                instanceEventVO.setLoginName(iamUser.getLdap() ? iamUser.getLoginName() : iamUser.getEmail());
+                instanceEventVO.setRealName(iamUser.getRealName());
             }
             instanceEventVO.setStatus(devopsEnvCommandDTO.getStatus());
-            instanceEventVO.setUserImage(iamUserDTO == null ? null : iamUserDTO.getImageUrl());
+            instanceEventVO.setUserImage(iamUser == null ? null : iamUser.getImageUrl());
             instanceEventVO.setCreateTime(devopsEnvCommandDTO.getCreationDate());
             instanceEventVO.setType(devopsEnvCommandDTO.getCommandType());
             List<PodEventVO> podEventVOS = new ArrayList<>();

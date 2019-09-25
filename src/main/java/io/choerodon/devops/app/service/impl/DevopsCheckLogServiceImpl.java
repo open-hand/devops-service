@@ -76,7 +76,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     @Override
     public void checkLog(String version) {
         LOGGER.info("start upgrade task");
-        executorService.submit(new UpgradeTask(version));
+        executorService.execute(new UpgradeTask(version));
+
     }
 
     class UpgradeTask implements Runnable {
@@ -123,6 +124,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             //删除重复的分支
             devopsBranchMapper.deleteDuplicateBranch();
             LOGGER.info("End syncing branches.");
+
         }
 
         private void syncConfig() {
