@@ -86,4 +86,10 @@
             dc.organization_id = #{orgId}
     </update>
 
+    <select id="listAllClustersToMigrate" resultType="io.choerodon.devops.infra.dto.DevopsClusterDTO">
+        SELECT devops_cluster.*
+        FROM devops_cluster
+        WHERE project_id IS NULL
+    </select>
+
 </mapper>

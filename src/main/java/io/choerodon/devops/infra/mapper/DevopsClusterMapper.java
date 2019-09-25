@@ -35,4 +35,7 @@ public interface DevopsClusterMapper extends Mapper<DevopsClusterDTO> {
 
     void updateProjectId(@Param("orgId") Long orgId,
                          @Param("proId") Long proId);
+
+
+    List<DevopsClusterDTO> listAllClustersToMigrate();
 }
