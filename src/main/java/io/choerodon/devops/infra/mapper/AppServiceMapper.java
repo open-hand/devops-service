@@ -121,5 +121,13 @@ public interface AppServiceMapper extends Mapper<AppServiceDTO> {
     int updateIsSynchroToTrueWhenFailed();
 
     int updateIsActiveNullToTrue();
+
+    /**
+     * 根据gitlabGroupId和iamUserId获取
+     * 在整个项目组用权限的应用对应的gitlabProjectId
+     *
+     * @return
+     */
+    List<Long> listGitlabProjectIdByAppPermission(@Param("gitlabGroupId") Long gitlabGroupId, @Param("iamUserId") Long iamUserId);
 }
 

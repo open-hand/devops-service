@@ -15,8 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.asgard.saga.annotation.Saga;
@@ -793,9 +791,19 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
      */
     private void updateGitlabMemberPermission(Integer gitlabGroupId, Integer gitlabProjectId, Integer gitlabUserId) {
         // 删除组和用户之间的关系，如果存在
-        MemberDTO memberDTO = gitlabGroupMemberService.queryByUserId(gitlabGroupId, TypeUtil.objToInteger(gitlabUserId));
+        MemberDTO memberDTO = gitlabServiceClientOperator.queryGroupMember(gitlabGroupId, TypeUtil.objToInteger(gitlabUserId));
         if (memberDTO != null) {
-            gitlabGroupMemberService.delete(gitlabGroupId, TypeUtil.objToInteger(gitlabUserId));
+            gitlabServiceClientOperator.deleteGroupMember(gitlabGroupId, TypeUtil.objToInteger(gitlabUserId));
+            UserAttrDTO userAttrDTO = userAttrService.baseQueryByGitlabUserId(TypeUtil.objToLong(gitlabUserId));
+            List<Long> gitlabProjectIds = devopsEnvironmentMapper.listGitlabProjectIdByEnvPermission(TypeUtil.objToLong(gitlabGroupId), userAttrDTO.getIamUserId());
+            if (gitlabProjectIds != null && !gitlabProjectIds.isEmpty()) {
+                gitlabProjectIds.forEach(aLong -> {
+                    MemberDTO gitlabMemberDTO = gitlabServiceClientOperator.getProjectMember(gitlabProjectId, TypeUtil.objToInteger(aLong));
+                    if (gitlabMemberDTO == null || gitlabMemberDTO.getId() == null) {
+                        gitlabServiceClientOperator.createProjectMember(gitlabProjectId, new MemberDTO(TypeUtil.objToInteger(aLong), 40, ""));
+                    }
+                });
+            }
         }
         // 当项目不存在用户权限纪录时(防止失败重试时报成员已存在异常)，添加gitlab用户权限
         MemberDTO gitlabMemberDTO = gitlabServiceClientOperator.getProjectMember(gitlabProjectId, TypeUtil.objToInteger(gitlabUserId));

@@ -18,5 +18,4 @@ public interface GitlabUserService {
 
     Boolean doesEmailExists(String email);
 
-    GitLabUserDTO getGitlabUserByUserId(Integer userId);
 }

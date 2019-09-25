@@ -99,8 +99,4 @@ public class GitlabUserServiceImpl implements GitlabUserService {
         return gitlabServiceClientOperator.checkEmail(email);
     }
 
-    @Override
-    public GitLabUserDTO getGitlabUserByUserId(Integer userId) {
-        return gitlabServiceClientOperator.queryUserById(userId);
-    }
 }

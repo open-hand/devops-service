@@ -3,8 +3,12 @@ package io.choerodon.devops.app.service.impl;
 import java.util.List;
 
 import io.choerodon.core.convertor.ApplicationContextHelper;
+import io.choerodon.devops.app.service.UserAttrService;
+import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
+import io.choerodon.devops.infra.mapper.AppServiceMapper;
+import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
 import io.choerodon.devops.infra.util.TypeUtil;
 
 
@@ -17,14 +21,22 @@ import io.choerodon.devops.infra.util.TypeUtil;
 public abstract class UpdateUserPermissionService {
 
     private GitlabServiceClientOperator gitlabServiceClientOperator;
+    private UserAttrService userAttrService;
+    private AppServiceMapper appServiceMapper;
+    private DevopsEnvironmentMapper devopsEnvironmentMapper;
 
     protected UpdateUserPermissionService() {
-        this.gitlabServiceClientOperator = ApplicationContextHelper.getSpringFactory()
-                .getBean(GitlabServiceClientOperator.class);
+        this.gitlabServiceClientOperator = ApplicationContextHelper.getSpringFactory().getBean(GitlabServiceClientOperator.class);
+        this.userAttrService = ApplicationContextHelper.getSpringFactory().getBean(UserAttrService.class);
+        this.appServiceMapper = ApplicationContextHelper.getSpringFactory().getBean(AppServiceMapper.class);
+        this.devopsEnvironmentMapper = ApplicationContextHelper.getSpringFactory().getBean(DevopsEnvironmentMapper.class);
     }
 
     protected UpdateUserPermissionService(GitlabServiceClientOperator gitlabServiceClientOperator) {
         this.gitlabServiceClientOperator = gitlabServiceClientOperator;
+        this.userAttrService = ApplicationContextHelper.getSpringFactory().getBean(UserAttrService.class);
+        this.appServiceMapper = ApplicationContextHelper.getSpringFactory().getBean(AppServiceMapper.class);
+        this.devopsEnvironmentMapper = ApplicationContextHelper.getSpringFactory().getBean(DevopsEnvironmentMapper.class);
     }
 
     public abstract Boolean updateUserPermission(Long projectId, Long id, List<Long> userIds, Integer option);
@@ -35,6 +47,13 @@ public abstract class UpdateUserPermissionService {
             MemberDTO memberDTO = gitlabServiceClientOperator.queryGroupMember(gitlabGroupId, TypeUtil.objToInteger(e));
             if (memberDTO != null) {
                 gitlabServiceClientOperator.deleteGroupMember(gitlabGroupId, TypeUtil.objToInteger(e));
+                UserAttrDTO userAttrE = userAttrService.baseQueryByGitlabUserId(TypeUtil.objToLong(e));
+                List<Long> gitlabProjectIds = type.equals("env") ?
+                        devopsEnvironmentMapper.listGitlabProjectIdByEnvPermission(TypeUtil.objToLong(gitlabGroupId), userAttrE.getIamUserId())
+                        : appServiceMapper.listGitlabProjectIdByAppPermission(TypeUtil.objToLong(gitlabGroupId), userAttrE.getIamUserId());
+                if (gitlabProjectIds != null && !gitlabProjectIds.isEmpty()) {
+                    gitlabProjectIds.forEach(aLong -> addGitlabMember(type, TypeUtil.objToInteger(aLong), TypeUtil.objToInteger(userAttrE.getGitlabUserId())));
+                }
             }
             addGitlabMember(type, TypeUtil.objToInteger(gitlabProjectId), e);
         });
