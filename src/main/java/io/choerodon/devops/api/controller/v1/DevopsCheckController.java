@@ -26,8 +26,7 @@ public class DevopsCheckController {
      *
      * @param version   版本
      */
-    @Permission(type= ResourceType.PROJECT,
-            roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(permissionLogin = true)
     @ApiOperation(value = "平滑升级")
     @GetMapping
     public ResponseEntity<String> checkLog(
