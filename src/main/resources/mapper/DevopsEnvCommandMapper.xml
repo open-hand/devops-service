@@ -39,6 +39,7 @@
         d.object = #{objectType} AND d.object_id = #{objectId}
         AND d.command_type IN ('update','create')
         ORDER BY d.id DESC
+        limit 30
     </select>
 
     <select id="listAllInstanceCommand" resultType="io.choerodon.devops.infra.dto.DevopsEnvCommandDTO">

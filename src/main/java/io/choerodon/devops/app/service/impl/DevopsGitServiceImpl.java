@@ -926,9 +926,6 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             createUserUrl = userDTO.getImageUrl();
             createUserRealName = userDTO.getRealName();
         }
-        if (commitUserDTO == null) {
-            commitUserDTO = new IamUserDTO();
-        }
         return new BranchVO(
                 devopsBranchDTO,
                 lastCommitUrl,
