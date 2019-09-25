@@ -40,7 +40,7 @@ const MainView = observer(() => {
       return <div
         className={`${prefixCls}-wrap`}
       >
-        <Suspense fallback={<spin />}>
+        <Suspense fallback={<span />}>
           <EmptyPage />
         </Suspense>
         <div>请先创建分组！</div>

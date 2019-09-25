@@ -25,6 +25,7 @@ function ConfigItem({
     secretStore,
     mainStore: { openDeleteModal },
   } = useMainStore();
+
   const [showModal, setShowModal] = useState(false);
 
   function freshMenu() {

@@ -1,7 +1,6 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
-import { Icon } from 'choerodon-ui';
 import map from 'lodash/map';
 import { Tooltip } from 'choerodon-ui';
 import { useResourceStore } from '../../../stores';
@@ -25,76 +24,85 @@ const Content = observer(() => {
   const {
     prefixCls,
     intlPrefix,
-    treeDs,
   } = useResourceStore();
   const {
     detailDs,
     intl: { formatMessage },
   } = useCustomDetailStore();
 
-  const record = detailDs.current;
-  if (!record) return <span>loading</span>;
-
-  function refresh() {
-    treeDs.query();
-    detailDs.query();
+  function renderService({ path, serviceName, servicePort, serviceStatus, domain }) {
+    return <li className={`${prefixCls}-detail-section-li`}>
+      <table className="detail-section-li-table">
+        <tbody>
+          <td className="td-width-30">
+            <span className="detail-section-li-text">
+              {formatMessage({ id: 'path' })}:&nbsp;
+            </span>
+            <span>{path}</span>
+          </td>
+          <td className="detail-section-service">
+            <span className="detail-section-li-text">
+              {formatMessage({ id: 'network' })}:&nbsp;
+            </span>
+            <div className="detail-section-service">
+              <StatusTags
+                colorCode={serviceStatus}
+                name={formatMessage({ id: serviceStatus })}
+                style={statusTagsStyle}
+              />
+              <span>{serviceName}</span>
+            </div>
+          </td>
+          <td className="td-width-20">
+            <span className="detail-section-li-text">
+              {formatMessage({ id: 'port' })}:&nbsp;
+            </span>
+            <span>{servicePort}</span>
+          </td>
+          <td className="td-width-6px">
+            <a
+              rel="nofollow me noopener noreferrer"
+              target="_blank"
+              href={`http://${domain}${path}`}
+            >
+              <FormattedMessage id={`${intlPrefix}.click.visit`} />
+            </a>
+          </td>
+        </tbody>
+      </table>
+    </li>;
   }
 
-  return (
-    <div className={`${prefixCls}-ingress-detail`}>
-      <Modals />
-      <ResourceTitle iconType="language" record={record} />
+  function renderAnno(value, key) {
+    return <li className={`${prefixCls}-detail-section-li`}>
+      <span className="ingress-detail-annotation">{key}</span>
+      <Tooltip title={<div className={`${prefixCls}-detail-section-li-tooltip`}>{value}</div>} arrowPointAtCenter>
+        <span className="ingress-detail-annotation-value">{value}</span>
+      </Tooltip>
+    </li>;
+  }
+
+  function getContent() {
+    const record = detailDs.current;
+    let domain;
+    let paths;
+    let anno;
+    if (record) {
+      domain = record.get('domain');
+      paths = record.get('pathList');
+      anno = record.get('annotations');
+    }
+    return <Fragment>
       <div>
         <div className={`${prefixCls}-detail-content-section-title`}>
           <FormattedMessage id="routing" />
           <span className="detail-content-section-title-hover">(Rules)</span>
         </div>
         <div className={`${prefixCls}-detail-content-section-name`}>
-          <span>{record.get('domain')}</span>
+          <span>{domain}</span>
         </div>
         <ul className={`${prefixCls}-detail-section-ul`}>
-          {map(record.get('pathList'), ({ path, serviceName, servicePort, serviceStatus }) => (
-            <li className={`${prefixCls}-detail-section-li`}>
-              <table className="detail-section-li-table">
-                <tbody>
-                  <td className="td-width-30">
-                    <span className="detail-section-li-text">
-                      {formatMessage({ id: 'path' })}:&nbsp;
-                    </span>
-                    <span>{path}</span>
-                  </td>
-                  <td className="detail-section-service">
-                    <span className="detail-section-li-text">
-                      {formatMessage({ id: 'network' })}:&nbsp;
-                    </span>
-                    <div className="detail-section-service">
-                      <StatusTags
-                        colorCode={serviceStatus}
-                        name={formatMessage({ id: serviceStatus })}
-                        style={statusTagsStyle}
-                      />
-                      <span>{serviceName}</span>
-                    </div>
-                  </td>
-                  <td className="td-width-20">
-                    <span className="detail-section-li-text">
-                      {formatMessage({ id: 'port' })}:&nbsp;
-                    </span>
-                    <span>{servicePort}</span>
-                  </td>
-                  <td className="td-width-6px">
-                    <a
-                      rel="nofollow me noopener noreferrer"
-                      target="_blank"
-                      href={`http://${record.get('domain')}${path}`}
-                    >
-                      <FormattedMessage id={`${intlPrefix}.click.visit`} />
-                    </a>
-                  </td>
-                </tbody>
-              </table>
-            </li>
-          ))}
+          {paths ? map(paths, item => renderService({ ...item, domain })) : '暂无数据'}
         </ul>
       </div>
       <div>
@@ -103,16 +111,17 @@ const Content = observer(() => {
           <span className="detail-content-section-title-hover">(Annotations)</span>
         </div>
         <ul className={`${prefixCls}-detail-section-ul`}>
-          {map(record.get('annotations'), (value, key) => (
-            <li className={`${prefixCls}-detail-section-li`}>
-              <span className="ingress-detail-annotation">{key}</span>
-              <Tooltip title={<div className={`${prefixCls}-detail-section-li-tooltip`}>{value}</div>} arrowPointAtCenter>
-                <span className="ingress-detail-annotation-value">{value}</span>
-              </Tooltip>
-            </li>
-          ))}
+          {anno ? map(anno, renderAnno) : '暂无数据'}
         </ul>
       </div>
+    </Fragment>;
+  }
+
+  return (
+    <div className={`${prefixCls}-ingress-detail`}>
+      <ResourceTitle iconType="language" record={detailDs.current} />
+      {getContent()}
+      <Modals />
     </div>
   );
 });

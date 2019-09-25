@@ -17,12 +17,11 @@ const HeaderButtons = ({ items, children }) => {
 
   const btnNodes = useMemo(() => {
     const btnGroups = map(groupBy(displayBtn, 'group'), (value) => {
-      const Split = <Divider type="vertical" className="c7ncd-header-split" />;
+      const Split = <Divider key={Math.random()} type="vertical" className="c7ncd-header-split" />;
 
       const btns = map(value, ({ name, handler, permissions, display, ...props }) => {
         const btn = <Button
           {...props}
-          key={name}
           className="c7ncd-header-btn"
           funcType="flat"
           onClick={handler}

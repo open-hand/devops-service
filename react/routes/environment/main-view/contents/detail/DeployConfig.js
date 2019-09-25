@@ -3,6 +3,7 @@ import { Action } from '@choerodon/master';
 import { Table, Modal } from 'choerodon-ui/pro';
 import TimePopover from '../../../../../components/time-popover';
 import UserInfo from '../../../../../components/userInfo';
+import ClickText from '../../../../../components/click-text';
 import DeployConfigForm from './modals/deploy-config';
 import { isNotRunning } from '../../../util';
 import { handlePromptError } from '../../../../../utils';
@@ -95,19 +96,21 @@ export default function DeployConfig() {
     });
   }
 
+  function renderName({ value, record }) {
+    return <ClickText
+      clickAble={!disabled}
+      value={value}
+      onClick={openModifyModal}
+      record={record}
+    />;
+  }
+
   function renderActions({ record }) {
-    const actionData = [
-      {
-        service: [],
-        text: formatMessage({ id: 'edit' }),
-        action: () => openModifyModal(record),
-      },
-      {
-        service: [],
-        text: formatMessage({ id: 'delete' }),
-        action: () => checkDelete(record),
-      },
-    ];
+    const actionData = [{
+      service: [],
+      text: formatMessage({ id: 'delete' }),
+      action: () => checkDelete(record),
+    }];
     return <Action data={actionData} />;
   }
 
@@ -126,7 +129,7 @@ export default function DeployConfig() {
       border={false}
       queryBar="bar"
     >
-      <Column name="name" sortable />
+      <Column name="name" sortable renderer={renderName} />
       {!disabled && <Column renderer={renderActions} />}
       <Column name="description" sortable />
       <Column name="appServiceName" />
