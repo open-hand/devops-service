@@ -1,14 +1,15 @@
-import React, { Fragment } from 'react';
+import React, { Fragment, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import { observer } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
 import { Action } from '@choerodon/master';
 import { Icon } from 'choerodon-ui';
 import { useResourceStore } from '../../../stores';
-import eventStopProp from '../../../../../utils/eventStopProp';
 import { useMainStore } from '../../stores';
+import KeyValueModal from '../../contents/application/modals/key-value';
+import eventStopProp from '../../../../../utils/eventStopProp';
 
-function CertItem({
+function ConfigItem({
   record,
   name,
   intlPrefix,
@@ -16,20 +17,28 @@ function CertItem({
 }) {
   const {
     treeDs,
+    itemTypes: { CIPHER_GROUP, CIPHER_ITEM },
     resourceStore: { getSelectedMenu: { itemType, parentId }, setUpTarget },
-    itemTypes: { CERT_GROUP },
   } = useResourceStore();
   const {
+    secretStore,
     mainStore: { openDeleteModal },
   } = useMainStore();
+
+  const [showModal, setShowModal] = useState(false);
 
   function freshMenu() {
     treeDs.query();
     const [envId] = record.get('parentId').split('-');
-    if (itemType === CERT_GROUP && envId === parentId) {
+    if (itemType === CIPHER_GROUP && envId === parentId) {
       setUpTarget({
-        type: CERT_GROUP,
+        type: itemType,
         id: parentId,
+      });
+    } else {
+      setUpTarget({
+        type: CIPHER_ITEM,
+        id: record.get('id'),
       });
     }
   }
@@ -41,9 +50,18 @@ function CertItem({
     return !connect;
   }
 
+  function openModal() {
+    setShowModal(true);
+  }
+
+  function closeModal(isLoad) {
+    setShowModal(false);
+    isLoad && freshMenu();
+  }
+
   function getSuffix() {
     const id = record.get('id');
-    const certName = record.get('name');
+    const recordName = record.get('name');
     const [envId] = record.get('parentId').split('-');
     const status = record.get('commandStatus');
     const disabled = getEnvIsNotRunning() || status === 'operating';
@@ -51,22 +69,36 @@ function CertItem({
       return null;
     }
     const actionData = [{
-      service: ['devops-service.certification.delete'],
+      service: ['devops-service.devops-secret.update'],
+      text: formatMessage({ id: 'edit' }),
+      action: openModal,
+    }, {
+      service: ['devops-service.devops-secret.deleteSecret'],
       text: formatMessage({ id: 'delete' }),
-      action: () => openDeleteModal(envId, id, certName, 'certificate', freshMenu),
+      action: () => openDeleteModal(envId, id, recordName, 'secret', freshMenu),
     }];
     return <Action placement="bottomRight" data={actionData} onClick={eventStopProp} />;
   }
 
   return <Fragment>
-    <Icon type="class" />
+    <Icon type="vpn_key" />
     {name}
     {getSuffix()}
+    {showModal && <KeyValueModal
+      visible={showModal}
+      id={record.get('id')}
+      envId={record.get('parentId').split('-')[0]}
+      onClose={closeModal}
+      intlPrefix={intlPrefix}
+      modeSwitch={false}
+      title="cipher"
+      store={secretStore}
+    />}
   </Fragment>;
 }
 
-CertItem.propTypes = {
+ConfigItem.propTypes = {
   name: PropTypes.any,
 };
 
-export default injectIntl(observer(CertItem));
+export default injectIntl(observer(ConfigItem));

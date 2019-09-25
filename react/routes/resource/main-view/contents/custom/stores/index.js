@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useMemo } from 'react';
+import React, { createContext, useContext, useEffect, useMemo } from 'react';
 import { DataSet } from 'choerodon-ui/pro';
 import { inject } from 'mobx-react';
 import { observer } from 'mobx-react-lite';
@@ -18,7 +18,8 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const {
       intlPrefix,
       intl: { formatMessage },
-      resourceStore: { getSelectedMenu: { parentId } },
+      resourceStore: { getSelectedMenu: { parentId }, getUpTarget, setUpTarget },
+      itemTypes: { CUSTOM_GROUP },
     } = useResourceStore();
     const customDs = useMemo(() => new DataSet(TableDataSet({
       formatMessage,
@@ -31,6 +32,14 @@ export const StoreProvider = injectIntl(inject('AppState')(
       ...props,
       customDs,
     };
+
+    useEffect(() => {
+      const { type, id: envId } = getUpTarget;
+      if (type === CUSTOM_GROUP && envId === parentId) {
+        customDs.query();
+        setUpTarget({});
+      }
+    }, [getUpTarget]);
 
     return (
       <Store.Provider value={value}>

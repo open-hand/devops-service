@@ -15,13 +15,36 @@ function CustomItem({
   intlPrefix,
   intl: { formatMessage },
 }) {
-  const { treeDs } = useResourceStore();
+  const {
+    treeDs,
+    resourceStore: { getSelectedMenu: { itemType, parentId }, setUpTarget },
+    itemTypes: { CUSTOM_GROUP, CUSTOM_ITEM },
+  } = useResourceStore();
   const { customStore } = useMainStore();
 
   const [showModal, setShowModal] = useState(false);
 
   function freshMenu() {
     treeDs.query();
+    const [envId] = record.get('parentId').split('-');
+    if (itemType === CUSTOM_GROUP && envId === parentId) {
+      setUpTarget({
+        type: CUSTOM_GROUP,
+        id: parentId,
+      });
+    } else {
+      setUpTarget({
+        type: CUSTOM_ITEM,
+        id: record.get('id'),
+      });
+    }
+  }
+
+  function getEnvIsNotRunning() {
+    const [envId] = record.get('parentId').split('-');
+    const envRecord = treeDs.find((item) => item.get('key') === envId);
+    const connect = envRecord.get('connect');
+    return !connect;
   }
 
   function deleteItem() {
@@ -38,8 +61,13 @@ function CustomItem({
   }
 
   function getSuffix() {
+    const status = record.get('commandStatus');
+    const disabled = getEnvIsNotRunning() || status === 'operating';
+    if (disabled) {
+      return null;
+    }
     const actionData = [{
-      service: [],
+      service: ['devops-service.devops-customize-resource.createResource'],
       text: formatMessage({ id: 'edit' }),
       action: openModal,
     }, {

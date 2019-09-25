@@ -45,8 +45,15 @@ const ConfigMap = observer((props) => {
     return SecretTableDs.query();
   }
 
+  function getEnvIsNotRunning() {
+    const envRecord = treeDs.find((record) => record.get('key') === parentId);
+    const connect = envRecord.get('connect');
+    return !connect;
+  }
+
   function renderName({ value, record }) {
     const commandStatus = record.get('commandStatus');
+    const disabled = getEnvIsNotRunning() || commandStatus === 'operating';
     return (
       <div>
         <StatusTags
@@ -56,7 +63,7 @@ const ConfigMap = observer((props) => {
         />
         <ClickText
           value={value}
-          clickAble={commandStatus !== 'operating'}
+          clickAble={!disabled}
           onClick={openModal}
           permissionCode={permissions.edit}
         />
@@ -86,7 +93,8 @@ const ConfigMap = observer((props) => {
 
   function renderAction({ record }) {
     const commandStatus = record.get('commandStatus');
-    if (commandStatus === 'operating') {
+    const disabled = getEnvIsNotRunning() || commandStatus === 'operating';
+    if (disabled) {
       return null;
     }
     const id = record.get('id');

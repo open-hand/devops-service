@@ -13,6 +13,7 @@ import CustomItem from './CustomItem';
 import CertItem from './CertItem';
 import IngressItem from './IngressItem';
 import ConfigItem from './ConfigItem';
+import SecretItem from './SecretItem';
 
 const TreeItem = observer(({ record, search }) => {
   const {
@@ -37,7 +38,7 @@ const TreeItem = observer(({ record, search }) => {
       [INGRESS_ITEM]: () => <IngressItem {...param} />,
       [CERT_ITEM]: () => <CertItem {...param} />,
       [MAP_ITEM]: () => <ConfigItem {...param} />,
-      [CIPHER_ITEM]: () => <ConfigItem {...param} />,
+      [CIPHER_ITEM]: () => <SecretItem {...param} />,
       [CUSTOM_ITEM]: () => <CustomItem {...param} />,
     };
     return mappings[type]();

@@ -49,24 +49,31 @@ const KeyValueModals = observer(() => {
     isLoad && refresh();
   }
 
-  const buttons = useMemo(() => ([{
-    name: formatMessage({ id: `${intlPrefix}.create.${itemType}` }),
-    icon: 'playlist_add',
-    handler: openModal,
-    display: true,
-    group: 1,
-    service: permissions,
-  }, {
-    name: formatMessage({ id: 'refresh' }),
-    icon: 'refresh',
-    handler: refresh,
-    display: true,
-    group: 1,
-  }]), [formatMessage, intlPrefix, itemType, openModal, permissions, refresh]);
+  function getButtons() {
+    const envRecord = treeDs.find((record) => record.get('key') === parentId);
+    const connect = envRecord.get('connect');
+    const disabled = !connect;
+
+    return ([{
+      name: formatMessage({ id: `${intlPrefix}.create.${itemType}` }),
+      icon: 'playlist_add',
+      handler: openModal,
+      display: true,
+      group: 1,
+      service: permissions,
+      disabled,
+    }, {
+      name: formatMessage({ id: 'refresh' }),
+      icon: 'refresh',
+      handler: refresh,
+      display: true,
+      group: 1,
+    }]);
+  }
 
   return (
     <Fragment>
-      <HeaderButtons items={buttons} />
+      <HeaderButtons items={getButtons()} />
       {showModal && <KeyValueModal
         modeSwitch={itemType === 'configMap'}
         title={itemType}

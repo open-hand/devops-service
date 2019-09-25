@@ -37,25 +37,25 @@ const CustomContent = observer(() => {
     customDs.query();
   }
 
+  function getEnvIsNotRunning() {
+    const envRecord = treeDs.find((record) => record.get('key') === parentId);
+    const connect = envRecord.get('connect');
+    return !connect;
+  }
+
   function renderName({ value, record }) {
     const commandStatus = record.get('commandStatus');
+    const error = record.get('commandErrors');
+    const disabled = getEnvIsNotRunning() || commandStatus === 'operating';
     return (
-      <Fragment>
-        <StatusTags
-          name={formatMessage({ id: commandStatus || 'null' })}
-          colorCode={commandStatus || 'success'}
-          style={{ minWidth: 40, marginRight: '0.08rem', height: '0.16rem', lineHeight: '0.16rem' }}
-        />
-        <StatusIcon
-          status={commandStatus}
-          name={value}
-          error={record.get('commandErrors')}
-          clickAble={commandStatus !== 'operating'}
-          onClick={openShow}
-          permissionCode={['devops-service.devops-customize-resource.createResource']}
-        />
-      </Fragment>
-      
+      <StatusIcon
+        status={commandStatus}
+        name={value}
+        error={error}
+        clickAble={!disabled}
+        onClick={openShow}
+        permissionCode={['devops-service.devops-customize-resource.createResource']}
+      />
     );
   }
 
@@ -65,7 +65,8 @@ const CustomContent = observer(() => {
 
   function renderAction({ record }) {
     const commandStatus = record.get('commandStatus');
-    if (commandStatus === 'operating') {
+    const disabled = getEnvIsNotRunning() || commandStatus === 'operating';
+    if (disabled) {
       return null;
     }
     const buttons = [

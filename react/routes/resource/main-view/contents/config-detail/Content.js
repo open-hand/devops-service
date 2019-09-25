@@ -30,7 +30,11 @@ const Content = observer(() => {
 
   return (
     <div className={`${prefixCls}-configMap-detail`}>
-      <ResourceTitle iconType="compare_arrows" record={detailDs.current} />
+      <ResourceTitle
+        iconType="compare_arrows"
+        record={detailDs.current}
+        statusKey="commandStatus"
+      />
       <div className={`${prefixCls}-detail-content-section-title`}>
         <FormattedMessage id={`${intlPrefix}.key.value`} />
       </div>

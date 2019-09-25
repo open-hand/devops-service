@@ -43,6 +43,13 @@ function IngressItem({
     }
   }
 
+  function getEnvIsNotRunning() {
+    const [envId] = record.get('parentId').split('-');
+    const envRecord = treeDs.find((item) => item.get('key') === envId);
+    const connect = envRecord.get('connect');
+    return !connect;
+  }
+
   function openModal() {
     setShowModal(true);
   }
@@ -56,8 +63,13 @@ function IngressItem({
     const id = record.get('id');
     const ingressName = record.get('name');
     const [envId] = record.get('parentId').split('-');
+    const status = record.get('status');
+    const disabled = getEnvIsNotRunning() || status === 'operating';
+    if (disabled) {
+      return null;
+    }
     const actionData = [{
-      service: [],
+      service: ['devops-service.devops-ingress.update'],
       text: formatMessage({ id: 'edit' }),
       action: openModal,
     }, {

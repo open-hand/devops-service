@@ -9,7 +9,7 @@ export default function useStore() {
       this.ist = data;
     },
     get getIst() {
-      return this.ist.splice();
+      return this.ist.slice();
     },
 
     singleData: {},

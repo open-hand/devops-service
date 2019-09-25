@@ -46,27 +46,26 @@ const NetworkContent = observer(() => {
     networkDs.query();
   }
 
+  function getEnvIsNotRunning() {
+    const envRecord = treeDs.find((record) => record.get('key') === parentId);
+    const connect = envRecord.get('connect');
+    return !connect;
+  }
+
   function renderName({ record }) {
     const name = record.get('name');
     const status = record.get('status');
     const error = record.get('error');
-    const commandStatus = record.get('commandStatus');
+    const disabled = getEnvIsNotRunning() || status === 'operating';
     return (
-      <div>
-        <StatusTags
-          name={formatMessage({ id: commandStatus || 'null' })}
-          colorCode={commandStatus || 'success'}
-          style={{ minWidth: 40, marginRight: '0.08rem', height: '0.16rem', lineHeight: '0.16rem' }}
-        />
-        <StatusIcon
-          name={name}
-          status={status || ''}
-          error={error || ''}
-          clickAble={status !== 'operating'}
-          onClick={openModal}
-          permissionCode={['devops-service.devops-service.update']}
-        />
-      </div>
+      <StatusIcon
+        name={name}
+        status={status || ''}
+        error={error || ''}
+        clickAble={!disabled}
+        onClick={openModal}
+        permissionCode={['devops-service.devops-service.update']}
+      />
     );
   }
 
@@ -254,8 +253,9 @@ const NetworkContent = observer(() => {
   }
 
   function renderAction({ record }) {
-    const commandStatus = record.get('commandStatus');
-    if (commandStatus === 'operating') {
+    const status = record.get('status');
+    const disabled = getEnvIsNotRunning() || status === 'operating';
+    if (disabled) {
       return null;
     }
     const id = record.get('id');

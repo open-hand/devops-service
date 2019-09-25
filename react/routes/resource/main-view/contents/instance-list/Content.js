@@ -29,20 +29,14 @@ const Content = observer(() => {
 
   function renderName({ value, record }) {
     const status = record.get('status');
+    const error = record.get('error');
     return (
-      <Fragment>
-        <StatusTags
-          name={formatMessage({ id: status || 'null' })}
-          colorCode={status || 'success'}
-          style={{ minWidth: 40, marginRight: '0.08rem', height: '0.16rem', lineHeight: '0.16rem' }}
-        />
-        <StatusIcon
-          name={value}
-          width={0.2}
-          status={record.get('status') || ''}
-          error={record.get('error') || ''}
-        />
-      </Fragment>
+      <StatusIcon
+        name={value}
+        width={0.2}
+        status={status || ''}
+        error={error || ''}
+      />
     );
   }
 

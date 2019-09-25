@@ -41,17 +41,13 @@ const CertContent = observer(() => {
 
   function renderName({ value, record }) {
     const commandStatus = record.get('commandStatus');
+    const error = record.get('error');
     return (
       <div className="c7n-network-service">
-        <StatusTags
-          name={formatMessage({ id: commandStatus || 'null' })}
-          colorCode={commandStatus || 'success'}
-          style={{ minWidth: 40, marginRight: '0.08rem', height: '0.16rem', lineHeight: '0.16rem' }}
-        />
         <StatusIcon
           name={value}
-          status={record.get('commandStatus') || ''}
-          error={record.get('error') || ''}
+          status={commandStatus || ''}
+          error={error || ''}
         />
       </div>
     );
