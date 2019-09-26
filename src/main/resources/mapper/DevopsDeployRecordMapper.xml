@@ -3,46 +3,46 @@
 
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsDeployRecordMapper">
     <select id="listByProjectId" resultType="io.choerodon.devops.infra.dto.DevopsDeployRecordDTO">
-SELECT
-	* from (
-SELECT
-	ddr.id,
-	ddr.project_id,
-	ddr.env,
-	ddr.deploy_type,
-	ddr.deploy_id,
-	ddr.deploy_time,
-	dc.`status` deployStatus,
-	dc.created_by deployCreatedBy,
-	NULL pipelineName,
-	NULL pipelineTriggerType,
-	NULL pipelineId
-FROM
-	devops_deploy_record ddr
-	LEFT JOIN devops_env_command dc ON ddr.deploy_id = dc.id
-WHERE
-	ddr.deploy_type = 'manual' UNION
-SELECT
-	ddr.id,
-	ddr.project_id,
-	ddr.env,
-	ddr.deploy_type,
-	ddr.deploy_id,
-	ddr.deploy_time,
-	dpc.`status` deployStatus,
-	dpc.created_by deployCreatedBy,
-	dpc.pipeline_name pipelineName,
-	dpc.trigger_type pipelineTriggerType,
-	dpc.pipeline_id pipelineId
-FROM
-	devops_deploy_record ddr
-	LEFT JOIN devops_pipeline_record dpc ON ddr.deploy_id = dpc.id
-WHERE
-	ddr.deploy_type = 'auto'
-	) t
-	where t.project_id=#{projectId}
-		<include refid="sqlparam"/>
-	ORDER BY t.id desc
+		SELECT
+			* from (
+		SELECT
+			ddr.id,
+			ddr.project_id,
+			ddr.env,
+			ddr.deploy_type,
+			ddr.deploy_id,
+			ddr.deploy_time,
+			dc.`status` deployStatus,
+			dc.created_by deployCreatedBy,
+			NULL pipelineName,
+			NULL pipelineTriggerType,
+			NULL pipelineId
+		FROM
+			devops_deploy_record ddr
+			LEFT JOIN devops_env_command dc ON ddr.deploy_id = dc.id
+		WHERE
+			ddr.deploy_type = 'manual' UNION
+		SELECT
+			ddr.id,
+			ddr.project_id,
+			ddr.env,
+			ddr.deploy_type,
+			ddr.deploy_id,
+			ddr.deploy_time,
+			dpc.`status` deployStatus,
+			dpc.created_by deployCreatedBy,
+			dpc.pipeline_name pipelineName,
+			dpc.trigger_type pipelineTriggerType,
+			dpc.pipeline_id pipelineId
+		FROM
+			devops_deploy_record ddr
+			LEFT JOIN devops_pipeline_record dpc ON ddr.deploy_id = dpc.id
+		WHERE
+			ddr.deploy_type = 'auto'
+			) t
+			where t.project_id=#{projectId}
+				<include refid="sqlparam"/>
+			ORDER BY t.id desc
     </select>
 
 	<sql id="sqlparam">
