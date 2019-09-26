@@ -565,7 +565,7 @@ public class DevopsEnvironmentController {
      * @return boolean
      */
     @Permission(type = ResourceType.PROJECT,
-            roles = {InitRoleCode.PROJECT_OWNER})
+            roles = {InitRoleCode.PROJECT_OWNER,InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "检查资源是否存在")
     @GetMapping(value = "/{env_id}/check")
     public ResponseEntity<Boolean> checkExist(
