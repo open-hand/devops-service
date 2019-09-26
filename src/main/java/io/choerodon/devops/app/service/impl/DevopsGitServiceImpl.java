@@ -888,7 +888,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         IamUserDTO authorUser = baseServiceClientOperator.queryUserByUserId(authorUserId);
         if (authorUser != null) {
             AuthorVO authorVO = new AuthorVO();
-            authorVO.setUsername(authorUser.getLoginName());
+            authorVO.setUsername(authorUser.getLdap() ? authorUser.getLoginName() : authorUser.getEmail());
             authorVO.setName(authorUser.getRealName());
             authorVO.setId(authorUser.getId() == null ? null : authorUser.getId().intValue());
             authorVO.setWebUrl(authorUser.getImageUrl());
@@ -898,7 +898,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         if (assigneeUser != null) {
             AssigneeVO assigneeVO = new AssigneeVO();
             if(assigneeUser.getLdap()){
-                assigneeVO.setUsername(assigneeUser.getLoginName());
+                assigneeVO.setUsername(assigneeUser.getLdap() ? assigneeUser.getLoginName() : assigneeUser.getEmail());
             }else {
                 assigneeVO.setUsername(assigneeUser.getEmail());
             }

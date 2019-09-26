@@ -1572,11 +1572,14 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     @Override
     public List<ProjectVO> listProjects(Long organizationId, Long projectId, String params) {
-        List<ProjectVO> projectVOList = ConvertUtils.convertList(baseServiceClientOperator.listIamProjectByOrgId(organizationId, null, null, params), ProjectVO.class);
-        if (projectVOList == null) {
+        List<ProjectDTO> projectDTOS = baseServiceClientOperator.listIamProjectByOrgId(organizationId, null,null, params).stream()
+                .filter(v -> v.getEnabled())
+                .filter(v -> !projectId.equals(v.getId())).collect(Collectors.toList());;
+        List<ProjectVO> projectVOS = ConvertUtils.convertList(projectDTOS,ProjectVO.class);
+        if (projectVOS == null) {
             return new ArrayList<>();
         }
-        return projectVOList.stream().filter(t -> !t.getId().equals(projectId)).collect(Collectors.toList());
+        return projectVOS;
     }
 
 
