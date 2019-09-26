@@ -1,5 +1,7 @@
-import React, { Fragment } from 'react';
+import React, { Fragment, useEffect, useState } from 'react';
+import checkPermission from '../../../../../utils/checkPermission';
 import EmptyPage from '../../../../../components/empty-page';
+import Loading from '../../../../../components/loading';
 import HeaderButtons from '../../../../../components/header-buttons';
 import { useResourceStore } from '../../../stores';
 
@@ -7,7 +9,34 @@ export default function EmptyShown() {
   const {
     intl: { formatMessage },
     treeDs,
+    AppState: {
+      currentMenuType: {
+        id: projectId,
+        organizationId,
+      },
+    },
   } = useResourceStore();
+  const [access, setAccess] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function judgeRole() {
+      const data = {
+        code: 'devops-service.devops-environment.create',
+        projectId,
+        organizationId,
+        resourceType: 'project',
+      };
+      try {
+        const res = await checkPermission(data);
+        setAccess(res);
+        setLoading(false);
+      } catch (e) {
+        setAccess(false);
+      }
+    }
+    judgeRole();
+  }, []);
 
   function refresh() {
     treeDs.query();
@@ -25,9 +54,12 @@ export default function EmptyShown() {
 
   return <Fragment>
     <HeaderButtons items={getButtons()} />
-    <EmptyPage
-      title="暂无环境"
-      describe="当前项目下无环境，请创建"
-    />
+    {!loading ? <EmptyPage
+      title={formatMessage({ id: `empty.title.${access ? 'env' : 'prohibited'}` })}
+      describe={formatMessage({ id: `empty.tips.env.${access ? 'owner' : 'member'}` })}
+      pathname="/devops/environment"
+      access={access}
+      btnText={formatMessage({ id: 'empty.create.env' })}
+    /> : <Loading display />}
   </Fragment>;
 }

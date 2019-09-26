@@ -1,17 +1,16 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
-import { injectIntl } from 'react-intl';
 import { Button } from 'choerodon-ui/pro';
 
 import './index.less';
 
-const EmptyPage = withRouter(injectIntl(((props) => {
+const EmptyPage = withRouter(((props) => {
   const {
     history,
     location: { search },
     pathname,
-    approve,
+    access,
     title,
     describe,
     btnText,
@@ -27,7 +26,7 @@ const EmptyPage = withRouter(injectIntl(((props) => {
 
   return <div className="c7ncd-empty-page-wrap">
     <div className="c7ncd-empty-page">
-      <div className={`c7ncd-empty-page-image c7ncd-empty-page-image-${approve ? 'owner' : 'member'}`} />
+      <div className={`c7ncd-empty-page-image c7ncd-empty-page-image-${access ? 'owner' : 'member'}`} />
       <div className="c7ncd-empty-page-text">
         <div className="c7ncd-empty-page-title">
           {title}
@@ -35,7 +34,7 @@ const EmptyPage = withRouter(injectIntl(((props) => {
         <div className="c7ncd-empty-page-des">
           {describe}
         </div>
-        {approve && (
+        {access && (
           <Button
             color="primary"
             onClick={handleClick}
@@ -47,11 +46,11 @@ const EmptyPage = withRouter(injectIntl(((props) => {
       </div>
     </div>
   </div>;
-})));
+}));
 
 EmptyPage.propTypes = {
   pathname: PropTypes.string,
-  approve: PropTypes.bool,
+  access: PropTypes.bool,
   title: PropTypes.string,
   btnText: PropTypes.string,
   describe: PropTypes.string,
@@ -59,7 +58,7 @@ EmptyPage.propTypes = {
 
 EmptyPage.defaultProps = {
   pathname: '',
-  approve: false,
+  access: false,
   btnText: 'Ok',
 };
 
