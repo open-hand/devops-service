@@ -1689,7 +1689,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
         String oldGroup;
         if (oldApplicationDTO == null) {
-            OrganizationDTO oldOrganizationDTO = baseServiceClientOperator.queryOrganizationById(oldApplicationDTO.getOrganizationId());
+            OrganizationDTO oldOrganizationDTO = baseServiceClientOperator.queryOrganizationById(oldProjectDTO.getOrganizationId());
             oldGroup = oldOrganizationDTO.getCode() + "-" + oldProjectDTO.getCode();
         } else {
             oldGroup = String.format(SITE_APP_GROUP_NAME_FORMAT, oldApplicationDTO.getCode());
