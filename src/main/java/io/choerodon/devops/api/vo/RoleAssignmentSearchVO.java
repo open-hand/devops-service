@@ -22,6 +22,17 @@ public class RoleAssignmentSearchVO {
     @ApiModelProperty(value = "参数")
     private String[] param;
 
+    @ApiModelProperty(value = "用户是否启用")
+    private Boolean enabled;
+
+    public Boolean getEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
+    }
+
     public RoleAssignmentSearchVO() {
         this.param = new String[]{};
     }
