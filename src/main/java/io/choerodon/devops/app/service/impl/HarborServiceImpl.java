@@ -63,7 +63,7 @@ public class HarborServiceImpl implements HarborService {
             DevopsProjectE devopsProjectE = devopsProjectRepository.queryDevopsProject(harborPayload.getProjectId());
             String username = String.format("user%s%s", organization.getId(), harborPayload.getProjectId());
             String email = String.format("%s@harbor.com", username);
-            String password = String.format("%sA", username);
+            String password = String.format("%spassword", username);
             User user = new User(username, email, password, username);
             LOGGER.info(harborConfigurationProperties.getParams());
             //创建项目
