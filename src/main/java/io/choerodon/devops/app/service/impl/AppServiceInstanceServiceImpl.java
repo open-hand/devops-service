@@ -588,9 +588,11 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
             //如果部署时，也指定了创建网络和域名
             if (appServiceDeployVO.getDevopsServiceReqVO() != null) {
+                appServiceDeployVO.getDevopsServiceReqVO().setAppServiceId(applicationDTO.getId());
                 devopsServiceService.create(devopsEnvironmentDTO.getProjectId(), appServiceDeployVO.getDevopsServiceReqVO());
             }
             if (appServiceDeployVO.getDevopsIngressVO() != null) {
+                appServiceDeployVO.getDevopsIngressVO().setAppServiceId(applicationDTO.getId());
                 List<DevopsIngressPathVO> devopsIngressPathVOS = appServiceDeployVO.getDevopsIngressVO().getPathList();
                 devopsIngressPathVOS.forEach(devopsIngressPathVO -> {
                     DevopsServiceDTO devopsServiceDTO = devopsServiceService.baseQueryByNameAndEnvId(devopsIngressPathVO.getServiceName(), appServiceDeployVO.getEnvironmentId());
