@@ -40,4 +40,6 @@ public interface DevopsCertificationMapper extends Mapper<CertificationDTO> {
      * @return 证书信息
      */
     CertificationDTO queryDetailById(@Param("certId") Long certId);
+
+    List<CertificationDTO> listAllOrgCertificationToMigrate();
 }
