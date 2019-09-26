@@ -106,8 +106,8 @@ public class HarborServiceImpl implements HarborService {
                 OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
                 DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
                 String username = String.format("user%s%s", organizationDTO.getId(), projectId);
-                String email = String.format("%s@choerodon.com", username);
-                String password = String.format("%sAAA", username);
+                String email = String.format("%s@harbor.com", username);
+                String password = String.format("%spassword", username);
                 User user = new User(username, email, password, username);
                 //创建用户
                 try {
