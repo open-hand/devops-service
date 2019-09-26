@@ -45,7 +45,9 @@ public class AppServiceShareRuleServiceImpl implements AppServiceShareRuleServic
     @Transactional
     public AppServiceShareRuleVO createOrUpdate(Long projectId, AppServiceShareRuleVO appServiceShareRuleVO) {
         AppServiceShareRuleDTO appServiceShareRuleDTO = ConvertUtils.convertObject(appServiceShareRuleVO, AppServiceShareRuleDTO.class);
-
+        if (appServiceShareRuleDTO.getVersion() != null && appServiceShareRuleDTO.getVersion() != null) {
+            appServiceShareRuleDTO.setVersionType(null);
+        }
         if (appServiceShareRuleDTO.getId() == null) {
             int count = appServiceShareRuleMapper.selectCount(appServiceShareRuleDTO);
             if (count > 0) {
@@ -86,9 +88,9 @@ public class AppServiceShareRuleServiceImpl implements AppServiceShareRuleServic
     @Override
     public AppServiceShareRuleVO query(Long projectId, Long ruleId) {
         AppServiceShareRuleVO appServiceShareRuleVO = ConvertUtils.convertObject(appServiceShareRuleMapper.selectByPrimaryKey(ruleId), AppServiceShareRuleVO.class);
-        if(appServiceShareRuleVO.getProjectId() == null){
+        if (appServiceShareRuleVO.getProjectId() == null) {
             appServiceShareRuleVO.setProjectName(PROJECT_NAME);
-        }else {
+        } else {
             appServiceShareRuleVO.setProjectName(baseServiceClientOperator.queryIamProjectById(appServiceShareRuleVO.getProjectId()).getName());
         }
         return appServiceShareRuleVO;
