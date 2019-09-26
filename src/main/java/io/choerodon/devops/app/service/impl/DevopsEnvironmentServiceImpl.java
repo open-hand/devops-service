@@ -586,7 +586,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                     gitlabGroupMemberRepository.deleteMember(gitlabProjectPayload.getGroupId(), TypeUtil.objToInteger(gitlabUserId));
                     List<Long> gitlabProjectIds = devopsEnviromentRepository.listGitlabProjectIdByEnvPermission(TypeUtil.objToLong(gitlabProjectPayload.getGroupId()), userAttrE.getIamUserId());
                     if (gitlabProjectIds != null && !gitlabProjectIds.isEmpty()) {
-                        gitlabProjectIds.forEach(aLong -> {
+                        gitlabProjectIds.stream().filter(Objects::nonNull).forEach(aLong -> {
                             GitlabMemberE gitlabProjectMemberE = gitlabProjectRepository
                                     .getProjectMember(TypeUtil.objToInteger(aLong), TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
                             if (gitlabProjectMemberE == null || gitlabProjectMemberE.getId() == null) {

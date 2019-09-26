@@ -1,6 +1,7 @@
 package io.choerodon.devops.domain.service;
 
 import java.util.List;
+import java.util.Objects;
 
 import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.devops.api.dto.gitlab.MemberDTO;
@@ -46,7 +47,7 @@ public abstract class UpdateUserPermissionService {
                         environmentRepository.listGitlabProjectIdByEnvPermission(TypeUtil.objToLong(gitlabGroupId), userAttrE.getIamUserId())
                         : applicationRepository.listGitlabProjectIdByAppPermission(TypeUtil.objToLong(gitlabGroupId), userAttrE.getIamUserId());
                 if (gitlabProjectIds != null && !gitlabProjectIds.isEmpty()) {
-                    gitlabProjectIds.forEach(aLong -> addGitlabMember(type, TypeUtil.objToInteger(aLong), TypeUtil.objToInteger(userAttrE.getGitlabUserId())));
+                    gitlabProjectIds.stream().filter(Objects::nonNull).forEach(aLong -> addGitlabMember(type, TypeUtil.objToInteger(aLong), TypeUtil.objToInteger(userAttrE.getGitlabUserId())));
                 }
 
             }

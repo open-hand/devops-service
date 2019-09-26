@@ -632,7 +632,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                     //查出拥有权限的应用,分别添加权限
                     List<Long> gitlabProjectIds = applicationRepository.listGitlabProjectIdByAppPermission(TypeUtil.objToLong(devOpsAppPayload.getGroupId()), userAttrE.getIamUserId());
                     if (gitlabProjectIds != null && !gitlabProjectIds.isEmpty()) {
-                        gitlabProjectIds.forEach(gitlabProjectId -> {
+                        gitlabProjectIds.stream().filter(Objects::nonNull).forEach(gitlabProjectId -> {
                             GitlabMemberE gitlabProjectMemberE = gitlabProjectRepository
                                     .getProjectMember(TypeUtil.objToInteger(gitlabProjectId), TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
                             if (gitlabProjectMemberE == null || gitlabProjectMemberE.getId() == null) {
