@@ -133,7 +133,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
         // 校验创建应用下域名时，所选的网络是否都是同一个应用下的
         if (devopsIngressVO.getAppServiceId() != null) {
-            List<Long> serviceIds = devopsIngressVO.getPathList().stream().map(DevopsIngressPathVO::getServiceId).collect(Collectors.toList());
+            Set<Long> serviceIds = devopsIngressVO.getPathList().stream().map(DevopsIngressPathVO::getServiceId).collect(Collectors.toSet());
             if (!isAllServiceInApp(devopsIngressVO.getAppServiceId(), serviceIds)) {
                 throw new CommonException("error.ingress.service.application");
             }
@@ -161,8 +161,8 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
      * @param serviceIds   网络id
      * @return false 如果某个网络不存在和应用的关系或所有网络不在同一个应用下
      */
-    private boolean isAllServiceInApp(Long appServiceId, List<Long> serviceIds) {
-        return devopsAppResourceMapper.queryResourceIdsInApp(appServiceId, ResourceType.SERVICE.getType(), serviceIds).size() == serviceIds.size();
+    private boolean isAllServiceInApp(Long appServiceId, Set<Long> serviceIds) {
+        return devopsAppResourceMapper.queryResourceIdsInApp(appServiceId, ResourceType.SERVICE.getType(), new ArrayList<>(serviceIds)).size() == serviceIds.size();
     }
 
 
@@ -246,7 +246,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
         // 校验创建应用下域名时，所选的网络是否都是同一个应用下的
         if (devopsIngressVO.getAppServiceId() != null) {
-            List<Long> serviceIds = devopsIngressVO.getPathList().stream().map(DevopsIngressPathVO::getServiceId).collect(Collectors.toList());
+            Set<Long> serviceIds = devopsIngressVO.getPathList().stream().map(DevopsIngressPathVO::getServiceId).collect(Collectors.toSet());
             if (!isAllServiceInApp(devopsIngressVO.getAppServiceId(), serviceIds)) {
                 throw new CommonException("error.ingress.service.application");
             }
