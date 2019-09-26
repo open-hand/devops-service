@@ -1,7 +1,7 @@
 import React, { Fragment } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Form as ProForm, TextField, TextArea, Select as ProSelect } from 'choerodon-ui/pro';
-import { Select, Form, Popover } from 'choerodon-ui';
+import { Select, Form } from 'choerodon-ui';
 import StatusDot from '../../../../../components/status-dot';
 import { useFormStore } from './stores';
 

@@ -11,6 +11,7 @@ export default ({ formatMessage, intlPrefix, projectId }) => ({
       maxLength: 10,
     },
     {
+      maxLength: 60,
       name: 'description',
       type: 'string',
       label: '环境描述',
