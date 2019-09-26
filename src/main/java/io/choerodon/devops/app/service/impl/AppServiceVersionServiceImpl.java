@@ -195,7 +195,9 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
                         .collect(Collectors.toList());
                 if (!stageList.isEmpty()) {
                     List<Long> pipelineList = stageList.stream()
-                            .map(stageId -> pipelineStageService.baseQueryById(stageId).getPipelineId())
+                            .map(stageId -> pipelineStageService.baseQueryById(stageId))
+                            .filter(Objects::nonNull)
+                            .map(PipelineStageDTO::getPipelineId)
                             .distinct()
                             .collect(Collectors.toList());
 
