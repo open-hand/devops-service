@@ -7,13 +7,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.gson.Gson;
-import io.choerodon.devops.app.service.DevopsProjectService;
-import io.choerodon.devops.infra.dto.DevopsProjectDTO;
-import io.choerodon.devops.infra.dto.harbor.*;
-import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
-import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import org.checkerframework.checker.units.qual.A;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,10 +20,16 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.DevopsConfigVO;
 import io.choerodon.devops.app.eventhandler.payload.HarborPayload;
 import io.choerodon.devops.app.service.DevopsConfigService;
+import io.choerodon.devops.app.service.DevopsProjectService;
 import io.choerodon.devops.app.service.HarborService;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
 import io.choerodon.devops.infra.config.HarborConfigurationProperties;
+import io.choerodon.devops.infra.dto.DevopsProjectDTO;
+import io.choerodon.devops.infra.dto.harbor.*;
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.HarborClient;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
 
 /**
@@ -81,15 +80,14 @@ public class HarborServiceImpl implements HarborService {
         configurationProperties.setType(HARBOR);
         Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
         HarborClient harborClient = retrofit.create(HarborClient.class);
-        createHarbor(harborClient, harborPayload.getProjectId(), harborPayload.getProjectCode(), true);
+        Boolean createUser = harborPayload.getProjectId() != null;
+        createHarbor(harborClient, harborPayload.getProjectId(), harborPayload.getProjectCode(), createUser);
     }
 
 
     @Override
     public void createHarbor(HarborClient harborClient, Long projectId, String projectCode, Boolean createUser) {
         //创建harbor仓库
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         try {
             Response<Void> result = null;
             LOGGER.info(harborConfigurationProperties.getParams());
@@ -103,7 +101,9 @@ public class HarborServiceImpl implements HarborService {
             if (result.raw().code() != 201 && result.raw().code() != 409) {
                 throw new CommonException(result.message());
             }
-            if(createUser) {
+            if (createUser) {
+                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+                OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
                 DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
                 String username = String.format("user%s%s", organizationDTO.getId(), projectId);
                 String email = String.format("%s@choerodon.com", username);
