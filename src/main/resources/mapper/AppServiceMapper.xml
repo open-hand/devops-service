@@ -688,20 +688,20 @@
             <if test="appService.type != null">
                 `type` = #{appService.type,jdbcType=VARCHAR},
             </if>
-            <if test="appService.isActive != null">
-                is_active = #{appService.isActive,jdbcType=TINYINT},
+            <if test="appService.active != null">
+                is_active = #{appService.active,jdbcType=TINYINT},
             </if>
-            <if test="appService.isSynchro != null">
-                is_synchro = #{appService.isSynchro,jdbcType=TINYINT},
+            <if test="appService.synchro != null">
+                is_synchro = #{appService.synchro,jdbcType=TINYINT},
             </if>
-            <if test="appService.isFailed != null">
-                is_failed = #{appService.isFailed,jdbcType=TINYINT},
+            <if test="appService.failed != null">
+                is_failed = #{appService.failed,jdbcType=TINYINT},
             </if>
             <if test="appService.imgUrl != null">
                 img_url = #{appService.imgUrl,jdbcType=VARCHAR},
             </if>
-            <if test="appService.isSkipCheckPermission != null">
-                is_skip_check_permission = #{appService.isSkipCheckPermission,jdbcType=TINYINT},
+            <if test="appService.skipCheckPermission != null">
+                is_skip_check_permission = #{appService.skipCheckPermission,jdbcType=TINYINT},
             </if>
             <if test="appService.gitlabProjectId != null">
                 gitlab_project_id = #{appService.gitlabProjectId,jdbcType=BIGINT},
