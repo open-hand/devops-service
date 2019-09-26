@@ -65,7 +65,7 @@ function getRequestData(data, res) {
   }
 }
 
-export default ((intlPrefix, formatMessage, projectId) => {
+export default ((intlPrefix, formatMessage, projectId, dataKey) => {
   async function checkCode(value) {
     const pa = /^[a-z]([-a-z0-9]*[a-z0-9])?$/;
     if (value && pa.test(value)) {
@@ -119,6 +119,7 @@ export default ((intlPrefix, formatMessage, projectId) => {
   return ({
     autoQuery: false,
     selection: false,
+    dataKey,
     transport: {
       create: ({ data: [data] }) => {
         const res = pick(data, ['type', 'code', 'name', 'imgUrl', 'templateAppServiceId', 'templateAppServiceVersionId']);

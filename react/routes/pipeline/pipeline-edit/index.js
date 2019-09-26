@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { observer, inject } from 'mobx-react';
 import { withRouter, Prompt } from 'react-router-dom';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { Button, Icon, Form, Input, Select, Radio } from 'choerodon-ui';
+import { Button, Icon, Form, Input, Select, Radio, Tooltip } from 'choerodon-ui';
 import { Content, Header, Page } from '@choerodon/master';
 import _ from 'lodash';
 import Sidebar from 'choerodon-ui/lib/modal/Sidebar';
@@ -196,7 +196,10 @@ export default class PipelineEdit extends Component {
       : (getPipeline.triggerType === STAGE_FLOW_MANUAL);
 
     const user = _.map(getUser, ({ id, realName, loginName }) => (
-      <Option key={id} value={String(id)}>{realName || loginName}</Option>));
+      <Option key={id} value={String(id)}>
+        <Tooltip title={loginName}>{realName || loginName}</Tooltip>
+      </Option>
+    ));
     const initUser = _.map(getPipeline.pipelineUserRels, (item) => String(item));
 
     return (
@@ -255,7 +258,7 @@ export default class PipelineEdit extends Component {
                     label={formatMessage({ id: 'pipeline.trigger.member' })}
                     loading={getLoading.user}
                     getPopupContainer={(triggerNode) => triggerNode.parentNode}
-                    filterOption={(input, option) => option.props.children
+                    filterOption={(input, option) => option.props.children.props.children
                       .toLowerCase()
                       .indexOf(input.toLowerCase()) >= 0}
                   >

@@ -78,6 +78,7 @@ export default ((intlPrefix, formatMessage, url) => {
     autoQuery: false,
     selection: false,
     paging: false,
+    dataKey: null,
     transport: {
       read: {
         url,

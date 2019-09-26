@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Page, Content, Header, Permission, Action, Breadcrumb } from '@choerodon/master';
 import { Table, Modal, Select } from 'choerodon-ui/pro';
 import { Button, Tooltip } from 'choerodon-ui';
@@ -58,6 +58,15 @@ const Deployment = withRouter(observer((props) => {
 
   const [showPendingCheck, serShowPendingCheck] = useState(false);
 
+  useEffect(() => {
+    const { location: { search } } = props;
+    const param = search.match(/(^|&)pipelineRecordId=([^&]*)(&|$)/);
+    const newDeployId = param && param[2];
+    if (newDeployId) {
+      openDetail(newDeployId, 'auto');
+    }
+  }, []);
+
   function refresh() {
     envOptionsDs.query();
     pipelineOptionsDs.query();
@@ -82,22 +91,24 @@ const Deployment = withRouter(observer((props) => {
     });
   }
 
-  async function openDetail() {
-    const deployType = listDs.current.get('deployType');
+  async function openDetail(pipelineRecordId, type) {
+    const deployType = type || listDs.current.get('deployType');
+    const deployId = pipelineRecordId || listDs.current.get('deployId');
     let params;
     if (deployType === 'auto') {
-      detailDs.transport.read.url = `/devops/v1/projects/${id}/pipeline/${listDs.current.get('deployId')}/record_detail`;
+      detailDs.transport.read.url = `/devops/v1/projects/${id}/pipeline/${deployId}/record_detail`;
       await detailDs.query();
 
       params = {
         style: modalStyle2,
         children: <AutoDetail
           dataSet={detailDs}
-          id={listDs.current.get('deployId')}
+          id={deployId}
           projectId={id}
           PipelineStore={pipelineStore}
           intlPrefix={intlPrefix}
           prefixCls={prefixCls}
+          refresh={refresh}
         />,
       };
     } else {
@@ -120,7 +131,7 @@ const Deployment = withRouter(observer((props) => {
       drawer: true,
       okCancel: false,
       okText: formatMessage({ id: 'close' }),
-      title: formatMessage({ id: `${intlPrefix}.detail.${deployType}.title` }, { name: listDs.current.get('deployId') }),
+      title: formatMessage({ id: `${intlPrefix}.detail.${deployType}.title` }, { name: deployId }),
       ...params,
     });
   }

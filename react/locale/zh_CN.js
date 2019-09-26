@@ -376,7 +376,7 @@ const appService = {
   'c7ncd.appService.type.test': '测试服务',
   'c7ncd.appService.icon': '服务图标',
   'c7ncd.appService.create': '创建应用服务',
-  'c7ncd.appService.edit': '修改服务',
+  'c7ncd.appService.edit': '修改应用服务',
   'c7ncd.appService.detail': '服务详情',
   'c7ncd.appService.disable': '停用服务',
   'c7ncd.appService.enable': '启用服务',

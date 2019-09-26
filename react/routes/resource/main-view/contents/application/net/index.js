@@ -13,7 +13,6 @@ import { useResourceStore } from '../../../../stores';
 import { useApplicationStore } from '../stores';
 import DomainModal from '../modals/domain';
 import EditNetwork from '../modals/network/network-edit';
-import ClickText from '../../../../../../components/click-text';
 
 import './index.less';
 
@@ -343,10 +342,17 @@ const Networking = observer(() => {
               </MouserOverWrapper>
             </div>
             <FormattedMessage id="path" />：
-            <div className="net-ingress-text">
+            <div className="net-ingress-text net-ingress-path">
               <MouserOverWrapper text={pathList[0] ? pathList[0].path : ''} width={0.2}>
                 {pathList[0] ? pathList[0].path : ''}
               </MouserOverWrapper>
+              {pathList.length > 1 && (
+                <Popover
+                  content={_.map(pathList, ({ path }) => <div>{path}</div>)}
+                >
+                  <Icon type="expand_more" className="net-expend-icon" />
+                </Popover>
+              )}
             </div>
           </div>
         );

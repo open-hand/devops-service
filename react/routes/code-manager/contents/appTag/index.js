@@ -209,8 +209,8 @@ class AppTag extends Component {
         <div className="c7n-tag-panel-info">
           <div className="c7n-tag-panel-name">
             <Icon type="local_offer" />
-            <div className="c7n-tag-name">
-              <ClickText value={release.tagName} clickAble onClick={this.displayEditModal.bind(this, true, release, release.tagName)} />
+            <div className="c7n-tag-name" onClick={this.displayEditModal.bind(this, true, release, release.tagName)}>
+              <span className="c7n-tag-name-text">{release.tagName}</span>
             </div>
             <div className="c7n-tag-action" onClick={stopPropagation}>
               <Action data={[

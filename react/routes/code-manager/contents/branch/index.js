@@ -176,7 +176,7 @@ class Branch extends Component {
       },
     ];
     // 分支如果是master  禁止创建合并请求 否认：会造成跳转到 gitlab，gailab页面报错的问题
-    if (record.branchName === 'master') {
+    if (record.branchName === 'master' || record.status === 'operating') {
       return null;
     }
 
@@ -209,7 +209,7 @@ class Branch extends Component {
             error={errorMessage}
             name={branchName}
             width={0.2}
-            clickAble
+            clickAble={status !== 'operating'}
             onClick={this.handleEdit}
             record={branchName}
           />
