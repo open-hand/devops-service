@@ -1994,6 +1994,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             List<Long> projectIds = new ArrayList<>();
             if (ObjectUtils.isEmpty(searchProjectId)) {
                 projectIds = baseServiceClientOperator.listIamProjectByOrgId(organizationId, null, null).stream()
+                        .filter(v -> v.getEnabled())
                         .filter(v -> !projectId.equals(v.getId()))
                         .map(ProjectDTO::getId).collect(Collectors.toList());
             } else {
@@ -2272,7 +2273,8 @@ public class AppServiceServiceImpl implements AppServiceService {
         List<ProjectDTO> projectDTOS = new ArrayList<>();
         if (!StringUtils.isEmpty(share) && share) {
             Long organizationId = baseServiceClientOperator.queryIamProjectById(projectId).getOrganizationId();
-            List<Long> projectIds = baseServiceClientOperator.listIamProjectByOrgId(organizationId, null, null).stream()
+            List<Long>  projectIds = baseServiceClientOperator.listIamProjectByOrgId(organizationId, null, null).stream()
+                    .filter(v -> v.getEnabled())
                     .filter(v -> !projectId.equals(v.getId()))
                     .map(ProjectDTO::getId).collect(Collectors.toList());
             List<AppServiceDTO> organizationAppServices = appServiceMapper.queryOrganizationShareApps(projectIds, null, null);
