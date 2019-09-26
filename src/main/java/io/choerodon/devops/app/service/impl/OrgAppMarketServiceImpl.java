@@ -733,8 +733,8 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         if (appMarketFixVersionPayload.getFixVersionUploadPayload().getMarketSaaSPlatform()) {
             MultipartFile[] files = createMockMultipartFile(zipFileList);
             result = marketServiceClientOperator.updateAppPublishInfoFix(
-                    appMarketFixVersionPayload.getMarketApplicationVO().getCode(),
-                    appMarketFixVersionPayload.getMarketApplicationVO().getVersion(),
+                    appMarketFixVersionPayload.getMarketApplicationVO().getMarketApplicationVersionVO().getMarketAppCode(),
+                    appMarketFixVersionPayload.getMarketApplicationVO().getMarketApplicationVersionVO().getVersion(),
                     appVersionJson,
                     files,
                     imageJson);
@@ -746,8 +746,8 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             String remoteToken = baseServiceClientOperator.checkLatestToken();
             Call<ResponseBody> responseCall = marketServiceClient.updateAppPublishInfoFix(
                     remoteToken,
-                    appMarketFixVersionPayload.getMarketApplicationVO().getCode(),
-                    appMarketFixVersionPayload.getMarketApplicationVO().getVersion(),
+                    appMarketFixVersionPayload.getMarketApplicationVO().getMarketApplicationVersionVO().getMarketAppCode(),
+                    appMarketFixVersionPayload.getMarketApplicationVO().getMarketApplicationVersionVO().getVersion(),
                     appVersionJson,
                     files,
                     imageJson);
