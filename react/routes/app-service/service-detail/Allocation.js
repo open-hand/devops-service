@@ -108,6 +108,12 @@ const Allocation = observer((props) => {
     return record.status !== 'add';
   }
 
+  function getTitle() {
+    if (detailDs.current) {
+      return detailDs.current.get('name');
+    }
+  }
+
   return (
     <TabPage
       service={[
@@ -129,7 +135,7 @@ const Allocation = observer((props) => {
           <FormattedMessage id="refresh" />
         </Button>
       </HeaderButtons>
-      <Breadcrumb title="服务详情" />
+      <Breadcrumb title={getTitle()} />
       <Content className={`${prefixCls}-detail-content`}>
         <Table dataSet={permissionDs} filter={handleTableFilter}>
           <Column name="realName" sortable />

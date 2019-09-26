@@ -144,18 +144,20 @@ const PodDetail = memo(() => {
 
   return (
     <Fragment>
-      <Table
-        dataSet={podsDs}
-        border={false}
-        queryBar="bar"
-        className={`${prefixCls}-instance-pods`}
-      >
-        <Column name="name" renderer={renderName} />
-        <Column renderer={renderAction} width="0.7rem" />
-        <Column name="containers" renderer={renderContainers} />
-        <Column name="ip" />
-        <Column name="creationDate" renderer={renderDate} width="1rem" />
-      </Table>
+      <div className="c7ncd-tab-table">
+        <Table
+          dataSet={podsDs}
+          border={false}
+          queryBar="bar"
+          className={`${prefixCls}-instance-pods`}
+        >
+          <Column name="name" renderer={renderName} />
+          <Column renderer={renderAction} width="0.7rem" />
+          <Column name="containers" renderer={renderContainers} />
+          <Column name="ip" />
+          <Column name="creationDate" renderer={renderDate} width="1rem" />
+        </Table>
+      </div>
       {visible && <LogSiderbar visible={visible} onClose={closeLog} record={podsDs.current.toData()} />}
       {shellVisible && <TermSiderbar visible={shellVisible} onClose={closeShell} record={podsDs.current.toData()} />}
     </Fragment>

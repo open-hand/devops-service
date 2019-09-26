@@ -4,6 +4,8 @@ import { inject } from 'mobx-react';
 import { asyncRouter, asyncLocaleProvider, nomatch } from '@choerodon/master';
 import { ModalContainer } from 'choerodon-ui/pro';
 
+import './index.less';
+
 const AppService = asyncRouter(() => import('./routes/app-service'));
 const Code = asyncRouter(() => import('./routes/code-manager'));
 const Resource = asyncRouter(() => import('./routes/resource'));

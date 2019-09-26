@@ -123,7 +123,7 @@ export default function DeployConfig() {
     return value ? <TimePopover datetime={value} /> : null;
   }
 
-  return (
+  return (<div className="c7ncd-tab-table">
     <Table
       dataSet={configDs}
       border={false}
@@ -137,5 +137,5 @@ export default function DeployConfig() {
       <Column name="createUserRealName" renderer={renderUser} />
       <Column name="lastUpdateDate" renderer={renderDate} />
     </Table>
-  );
+  </div>);
 }

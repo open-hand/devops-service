@@ -9,6 +9,7 @@ import { useResourceStore } from '../../../stores';
 import { useIstListStore } from './stores';
 import Modals from './modals';
 import UploadIcon from './components/upload-icon';
+import ResourceListTitle from '../../components/resource-list-title';
 
 import './index.less';
 
@@ -63,6 +64,7 @@ const Content = observer(() => {
   return (
     <div className={`${prefixCls}-instance-table`}>
       <Modals />
+      <ResourceListTitle type="instances" />
       <Table
         dataSet={istListDs}
         border={false}

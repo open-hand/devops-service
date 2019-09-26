@@ -46,7 +46,7 @@ export default function Permissions() {
     return !disabled && <Column renderer={renderActions} />;
   }
 
-  return (
+  return (<div className="c7ncd-tab-table">
     <Table
       dataSet={tableDs}
       border={false}
@@ -58,5 +58,5 @@ export default function Permissions() {
       <Column name="role" renderer={renderRole} />
       <Column name="creationDate" renderer={renderDate} />
     </Table>
-  );
+  </div>);
 }

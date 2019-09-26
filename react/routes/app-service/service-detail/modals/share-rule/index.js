@@ -54,12 +54,12 @@ export default observer(({ record, dataSet, versionOptions, levelOptions, projec
     createOption();
     record.getField('version').set('options', versionOptions);
     record.getField('shareLevel').set('options', levelOptions);
+    versionOptions.transport.read.url = `/devops/v1/projects/${projectId}/app_service_versions/page_by_options?app_service_id=${appServiceId}&deploy_only=false`;
+    versionOptions.transport.read.method = 'post';
   }, []);
 
   useEffect(() => {
-    const url = record.get('versionType') ? `&version=${record.get('versionType')}` : '';
-    versionOptions.transport.read.method = 'post';
-    versionOptions.transport.read.url = `/devops/v1/projects/${projectId}/app_service_versions/page_by_options?app_service_id=${appServiceId}&deploy_only=false${url}`;
+    versionOptions.transport.read.data = { params: [], searchParam: { version: record.get('versionType') } };
     versionOptions.query();
   }, [record.get('versionType')]);
 

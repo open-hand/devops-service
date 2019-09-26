@@ -10,8 +10,7 @@ import { useCustomStore } from './stores';
 import Modals from './modals';
 import CustomForm from './modals/form-view';
 import { useMainStore } from '../../stores';
-import StatusTags from '../../../../../components/status-tag';
-
+import ResourceListTitle from '../../components/resource-list-title';
 
 import './index.less';
 
@@ -96,6 +95,7 @@ const CustomContent = observer(() => {
   return (
     <div className={`${prefixCls}-ingress-table`}>
       <Modals />
+      <ResourceListTitle type="customResources" />
       <Table
         dataSet={customDs}
         border={false}

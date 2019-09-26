@@ -43,16 +43,18 @@ export default function Permissions() {
   }
 
   return (
-    <Table
-      dataSet={tableDs}
-      border={false}
-      queryBar="bar"
-    >
-      <Column name="realName" />
-      {getActionColumn()}
-      <Column name="loginName" />
-      <Column name="role" renderer={renderRole} />
-      <Column name="creationDate" renderer={renderDate} />
-    </Table>
+    <div className="c7ncd-tab-table">
+      <Table
+        dataSet={tableDs}
+        border={false}
+        queryBar="bar"
+      >
+        <Column name="realName" />
+        {getActionColumn()}
+        <Column name="loginName" />
+        <Column name="role" renderer={renderRole} />
+        <Column name="creationDate" renderer={renderDate} />
+      </Table>
+    </div>
   );
 }

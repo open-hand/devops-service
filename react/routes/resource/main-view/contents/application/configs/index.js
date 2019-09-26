@@ -102,16 +102,18 @@ const AppConfigs = observer(() => {
 
   return (
     <div className={`${prefixCls}-mapping-content`}>
-      <Table
-        dataSet={mappingDs}
-        border={false}
-        queryBar="bar"
-      >
-        <Column name="name" header={formatMessage({ id: `${intlPrefix}.application.tabs.mapping` })} renderer={renderName} />
-        <Column renderer={renderAction} />
-        <Column name="key" renderer={renderKey} />
-        <Column name="lastUpdateDate" renderer={renderDate} />
-      </Table>
+      <div className="c7ncd-tab-table">
+        <Table
+          dataSet={mappingDs}
+          border={false}
+          queryBar="bar"
+        >
+          <Column name="name" header={formatMessage({ id: `${intlPrefix}.application.tabs.mapping` })} renderer={renderName} />
+          <Column renderer={renderAction} />
+          <Column name="key" renderer={renderKey} />
+          <Column name="lastUpdateDate" renderer={renderDate} />
+        </Table>
+      </div>
       {showModal && <KeyValueModal
         modeSwitch
         intlPrefix={intlPrefix}

@@ -10,11 +10,10 @@ import { useCertificateStore } from './stores';
 import Modals from './modals';
 import MouserOverWrapper from '../../../../../components/MouseOverWrapper';
 import { getTimeLeft } from '../../../../../utils';
-import StatusTags from '../../../../../components/status-tag';
-
+import { useMainStore } from '../../stores';
+import ResourceListTitle from '../../components/resource-list-title';
 
 import './index.less';
-import { useMainStore } from '../../stores';
 
 const { Column } = Table;
 
@@ -121,6 +120,7 @@ const CertContent = observer(() => {
   return (
     <div className={`${prefixCls}-ingress-table`}>
       <Modals />
+      <ResourceListTitle type="certifications" />
       <Table
         dataSet={certificateDs}
         border={false}
