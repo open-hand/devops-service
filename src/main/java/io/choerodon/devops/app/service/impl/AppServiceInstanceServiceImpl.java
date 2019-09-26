@@ -828,8 +828,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         //如果文件对象对应关系不存在，证明没有部署成功，删掉gitops文件,删掉资源
         if (devopsEnvFileResourceDTO == null) {
             appServiceInstanceMapper.deleteByPrimaryKey(instanceId);
-            appServiceInstanceMapper.deleteInstanceRelInfo(instanceId);
             devopsDeployRecordService.deleteRelatedRecordOfInstance(instanceId);
+            appServiceInstanceMapper.deleteInstanceRelInfo(instanceId);
             if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER,
                     RELEASE_PREFIX + appServiceInstanceDTO.getCode() + YAML_SUFFIX)) {
                 gitlabServiceClientOperator.deleteFile(
@@ -844,8 +844,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             if (!gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER,
                     devopsEnvFileResourceDTO.getFilePath())) {
                 appServiceInstanceMapper.deleteByPrimaryKey(instanceId);
-                appServiceInstanceMapper.deleteInstanceRelInfo(instanceId);
                 devopsDeployRecordService.deleteRelatedRecordOfInstance(instanceId);
+                appServiceInstanceMapper.deleteInstanceRelInfo(instanceId);
                 devopsEnvFileResourceService.baseDeleteById(devopsEnvFileResourceDTO.getId());
                 return;
             }
@@ -902,9 +902,9 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         //校验环境是否连接
         clusterConnectionHandler.checkEnvConnection(devopsEnvironmentDTO.getClusterId());
 
+        devopsDeployRecordService.deleteRelatedRecordOfInstance(instanceId);
         appServiceInstanceMapper.deleteInstanceRelInfo(instanceId);
         appServiceInstanceMapper.deleteByPrimaryKey(instanceId);
-        devopsDeployRecordService.deleteRelatedRecordOfInstance(instanceId);
     }
 
 
