@@ -109,4 +109,11 @@
         SET dc.status=#{status}
         WHERE dc.id = #{certId}
     </update>
+
+    <select id="listAllOrgCertificationToMigrate" resultType="io.choerodon.devops.infra.dto.CertificationDTO">
+        SELECT dc.*
+        FROM devops_certification dc
+        WHERE dc.organization_id IS NOT NULL
+        AND dc.project_id IS NULL
+    </select>
 </mapper>

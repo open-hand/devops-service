@@ -2,6 +2,7 @@ package io.choerodon.devops.infra.util;
 
 import java.io.*;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -186,7 +187,7 @@ public class FileUtil {
         Yaml yaml = new Yaml();
         Gson gs = new Gson();
         ByteArrayInputStream stream = new ByteArrayInputStream(yamlString.getBytes());
-        Map<String, Object> loaded = (Map<String, Object>) yaml.load(stream);
+        Map<String, Object> loaded = yaml.load(stream);
         return gs.toJson(loaded);
     }
 
@@ -365,7 +366,7 @@ public class FileUtil {
             return;
         }
 
-        for (String filename: fileNames) {
+        for (String filename : fileNames) {
             if (filename == null) {
                 continue;
             }
@@ -383,7 +384,7 @@ public class FileUtil {
             return;
         }
 
-        for (File file: files) {
+        for (File file : files) {
             if (file == null) {
                 continue;
             }
@@ -644,7 +645,7 @@ public class FileUtil {
         }
         //写入
         try (FileOutputStream fileOutputStream = new FileOutputStream(file, false)) {
-            try (OutputStreamWriter outputStreamWriter = new OutputStreamWriter(fileOutputStream, "UTF-8")) {
+            try (OutputStreamWriter outputStreamWriter = new OutputStreamWriter(fileOutputStream, StandardCharsets.UTF_8)) {
                 try (BufferedWriter writer = new BufferedWriter(outputStreamWriter)) {
                     writer.write(data);
                 }
@@ -970,8 +971,7 @@ public class FileUtil {
         DumperOptions options = new DumperOptions();
         options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
         options.setAllowReadOnlyProperties(true);
-        Yaml newYaml = new Yaml(options);
-        return newYaml;
+        return new Yaml(options);
     }
 
     /**
@@ -1034,7 +1034,6 @@ public class FileUtil {
             while ((read = bis.read(buffer)) != -1) {
                 tos.write(buffer, 0, read);
             }
-            bis.close();
         }
         tos.closeArchiveEntry();//这里必须写，否则会失败
     }

@@ -10,14 +10,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.HarborMarketVO;
 import io.choerodon.devops.api.vo.iam.AppServiceAndVersionVO;
 import io.choerodon.devops.app.eventhandler.payload.*;
 import io.choerodon.devops.app.service.OrgAppMarketService;

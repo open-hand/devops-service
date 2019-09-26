@@ -1,12 +1,10 @@
 package io.choerodon.devops.infra.util;
 
-import com.google.gson.Gson;
-import org.apache.commons.lang.StringUtils;
-
 import java.util.HashMap;
 import java.util.Map;
-import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
+
+import com.google.gson.Gson;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * Created by younger on 2018/3/29.
@@ -101,7 +99,7 @@ public class TypeUtil {
         }
     }
 
-    public static Map<String,Object> castMapParams(String params){
+    public static Map<String, Object> castMapParams(String params) {
         Map<String, Object> mapParams = new HashMap<>();
         mapParams.put(TypeUtil.SEARCH_PARAM, null);
         mapParams.put(TypeUtil.PARAMS, null);

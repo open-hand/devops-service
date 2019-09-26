@@ -5,7 +5,6 @@ import java.util.List;
 import io.swagger.annotations.ApiModelProperty;
 
 import io.choerodon.devops.infra.dto.harbor.RobotUser;
-import io.choerodon.devops.infra.dto.harbor.User;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -114,6 +113,7 @@ public class AppMarketDownloadPayload {
     public void setDownloadAppType(String downloadAppType) {
         this.downloadAppType = downloadAppType;
     }
+
     public Long getMktAppVersionId() {
         return mktAppVersionId;
     }

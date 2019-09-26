@@ -1,7 +1,5 @@
 package io.choerodon.devops.api.vo;
 
-import io.choerodon.devops.infra.enums.AppServiceStatus;
-
 import java.util.List;
 
 /**

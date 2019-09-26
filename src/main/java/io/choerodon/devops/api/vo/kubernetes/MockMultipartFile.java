@@ -136,7 +136,7 @@ public class MockMultipartFile implements MultipartFile {
     }
 
     @Override
-    public void transferTo(File dest) throws IOException, IllegalStateException {
+    public void transferTo(File dest) throws IOException {
         FileCopyUtils.copy(this.content, dest);
     }
 

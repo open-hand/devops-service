@@ -1995,7 +1995,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             if (ObjectUtils.isEmpty(searchProjectId)) {
                 projectIds = baseServiceClientOperator.listIamProjectByOrgId(organizationId, null, null).stream()
                         .filter(v -> !projectId.equals(v.getId()))
-                        .map(v -> v.getId()).collect(Collectors.toList());
+                        .map(ProjectDTO::getId).collect(Collectors.toList());
             } else {
                 projectIds.add(searchProjectId);
             }
@@ -2036,7 +2036,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         } else {
             List<ApplicationDTO> applicationDTOS = new ArrayList<>();
             appServiceDTOList.stream()
-                    .map(appServiceDTO -> appServiceDTO.getMktAppId())
+                    .map(AppServiceDTO::getMktAppId)
                     .forEach(v -> {
                         ApplicationDTO applicationDTO = baseServiceClientOperator.queryAppById(v);
                         if (!ObjectUtils.isEmpty(applicationDTO)) {
@@ -2274,20 +2274,20 @@ public class AppServiceServiceImpl implements AppServiceService {
             Long organizationId = baseServiceClientOperator.queryIamProjectById(projectId).getOrganizationId();
             List<Long> projectIds = baseServiceClientOperator.listIamProjectByOrgId(organizationId, null, null).stream()
                     .filter(v -> !projectId.equals(v.getId()))
-                    .map(v -> v.getId()).collect(Collectors.toList());
+                    .map(ProjectDTO::getId).collect(Collectors.toList());
             List<AppServiceDTO> organizationAppServices = appServiceMapper.queryOrganizationShareApps(projectIds, null, null);
             List<AppServiceDTO> projectAppServices = appServiceMapper.listShareProjectApps(projectId, null, null);
             organizationAppServices.addAll(projectAppServices);
             // 去重
             ArrayList<AppServiceDTO> collect = organizationAppServices.stream().collect(collectingAndThen(
                     toCollection(() -> new TreeSet<>(comparing(AppServiceDTO::getId))), ArrayList::new));
-            Set<Long> projectsSet = collect.stream().map(v -> v.getProjectId()).collect(Collectors.toSet());
+            Set<Long> projectsSet = collect.stream().map(AppServiceDTO::getProjectId).collect(Collectors.toSet());
             projectDTOS = baseServiceClientOperator.queryProjectsByIds(projectsSet);
         } else {
             appServiceDTOList = appServiceMapper.queryMarketDownloadApps(null, null, false, null);
-            Set<Long> appServiceIds = appServiceDTOList.stream().filter(v -> !ObjectUtils.isEmpty(v.getMktAppId())).map(appServiceDTO -> appServiceDTO.getMktAppId()).collect(Collectors.toSet());
+            Set<Long> appServiceIds = appServiceDTOList.stream().filter(v -> !ObjectUtils.isEmpty(v.getMktAppId())).map(AppServiceDTO::getMktAppId).collect(Collectors.toSet());
             List<ApplicationDTO> applicationDTOS = new ArrayList<>();
-            appServiceIds.stream().forEach(v -> {
+            appServiceIds.forEach(v -> {
                 ApplicationDTO applicationDTO = baseServiceClientOperator.queryAppById(v);
                 if (!ObjectUtils.isEmpty(applicationDTO)) {
                     applicationDTOS.add(applicationDTO);

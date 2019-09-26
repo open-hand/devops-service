@@ -7,7 +7,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.ProjectCertificationPermissionUpdateVO;
-import io.choerodon.devops.api.vo.ProjectCertificationUpdateVO;
 import io.choerodon.devops.api.vo.ProjectCertificationVO;
 import io.choerodon.devops.api.vo.ProjectReqVO;
 

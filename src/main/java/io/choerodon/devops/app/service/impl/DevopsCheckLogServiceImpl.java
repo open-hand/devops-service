@@ -19,10 +19,8 @@ import io.choerodon.devops.api.vo.kubernetes.ProjectCreateDTO;
 import io.choerodon.devops.app.service.DevopsCheckLogService;
 import io.choerodon.devops.app.service.DevopsDeployRecordService;
 import io.choerodon.devops.infra.dto.*;
-import io.choerodon.devops.infra.dto.iam.ProjectCategoryDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.choerodon.devops.infra.feign.operator.OrgServiceClientOperator;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.ConvertUtils;
 
@@ -59,8 +57,6 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private DevopsDeployRecordMapper devopsDeployRecordMapper;
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
-    @Autowired
-    private OrgServiceClientOperator orgServiceClientOperator;
     @Autowired
     private DevopsConfigMapper devopsConfigMapper;
     @Autowired
@@ -274,7 +270,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         }
 
         private <T> List<T> peekListSize(List<T> objects, String message) {
-            LOGGER.info(message,  objects.size());
+            LOGGER.info(message, objects.size());
             return objects;
         }
 
@@ -285,23 +281,22 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                     .stream()
                     .collect(Collectors.groupingBy(DevopsClusterDTO::getOrganizationId));
 
-            Map<Long, List<CertificationDTO>> orgCertifications = peekListSize(devopsCertificationMapper.listAllOrgCertification(), "There are {} certifications to be migrated.")
+            Map<Long, List<CertificationDTO>> orgCertifications = peekListSize(devopsCertificationMapper.listAllOrgCertificationToMigrate(), "There are {} certifications to be migrated.")
                     .stream()
                     .collect(Collectors.groupingBy(CertificationDTO::getOrganizationId));
-
-            List<Long> categoryIds = Optional.ofNullable(orgServiceClientOperator.baseProjectCategoryList(0L, "普通项目群").getList()).orElse(new ArrayList<>()).stream().map(ProjectCategoryDTO::getId).collect(Collectors.toList());
 
             Set<Long> allOrgIds = new HashSet<>(clusters.keySet());
             allOrgIds.addAll(orgCertifications.keySet());
             LOGGER.info("The number of organizations involved is {}", allOrgIds.size());
 
             allOrgIds.forEach(organizationId -> {
-                ProjectDTO projectDTO = queryOrCreateMigrationProject(organizationId, categoryIds);
+                ProjectDTO projectDTO = queryOrCreateMigrationProject(organizationId);
                 LOGGER.info("迁移id为{}的组织下的证书和集群到id为{}的项目下.", organizationId, projectDTO.getId());
 
                 // 迁移集群
                 if (clusters.containsKey(organizationId)) {
                     clusters.get(organizationId).forEach(cluster -> {
+                        LOGGER.info("Sync cluster migration to the project,clusterId: %s, organizationId: %s", cluster.getId(), organizationId);
                         CheckLog checkLog = new CheckLog();
                         checkLog.setContent(String.format(
                                 "Sync cluster migration to the project,clusterId: %s, organizationId: %s", cluster.getId(), organizationId));
@@ -323,6 +318,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 // 迁移证书
                 if (orgCertifications.containsKey(organizationId)) {
                     orgCertifications.get(organizationId).forEach(cert -> {
+                        LOGGER.info("Migrate organization certification to the project, org-cert-id: %s, organizationId: %s", cert.getId(), organizationId);
                         CheckLog checkLog = new CheckLog();
                         checkLog.setContent(String.format("Migrate organization certification to the project, org-cert-id: %s, organizationId: %s", cert.getId(), organizationId));
                         if (projectDTO != null) {
@@ -348,12 +344,12 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
      * 查询或创建用于迁移数据的项目
      *
      * @param organizationId 组织id
-     * @param categoryIds    类型id
      * @return 项目信息
      */
-    private ProjectDTO queryOrCreateMigrationProject(Long organizationId, List<Long> categoryIds) {
+    private ProjectDTO queryOrCreateMigrationProject(Long organizationId) {
         final String migrationProjectName = "默认运维项目";
         final String migrationProjectCode = "def-ops-proj";
+        final String category = "GENERAL";
 
         ProjectDTO projectDTO = baseServiceClientOperator.queryProjectByCodeAndOrganizationId(migrationProjectCode, organizationId);
 
@@ -362,13 +358,13 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             ProjectCreateDTO projectCreateDTO = new ProjectCreateDTO();
             projectCreateDTO.setName(migrationProjectName);
             projectCreateDTO.setCode(migrationProjectCode);
-            projectCreateDTO.setCategoryIds(categoryIds);
+            projectCreateDTO.setCategory(category);
             projectCreateDTO.setOrganizationId(organizationId);
 
             projectDTO = baseServiceClientOperator.createProject(organizationId, projectCreateDTO);
             LOGGER.info("已创建项目，id为{}", projectDTO.getId());
         } else {
-            LOGGER.info("查询到已有的项目，id为{}", projectDTO.getId());
+            LOGGER.info("查询当前组织下已有code为{}的项目，id为{}，该组织下的证书和集群将迁移至该项目", migrationProjectCode, projectDTO.getId());
         }
 
         return projectDTO;

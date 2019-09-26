@@ -6,10 +6,8 @@ import java.util.Optional;
 import java.util.Set;
 
 import com.github.pagehelper.PageInfo;
-import io.choerodon.devops.infra.dto.AppServiceVersionDTO;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.apache.commons.collections.ListUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +20,10 @@ import io.choerodon.base.domain.Sort;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.AppServiceVersionAndCommitVO;
+import io.choerodon.devops.api.vo.AppServiceVersionRespVO;
+import io.choerodon.devops.api.vo.AppServiceVersionVO;
+import io.choerodon.devops.api.vo.DeployVersionVO;
 import io.choerodon.devops.app.service.AppServiceVersionService;
 import io.choerodon.mybatis.annotation.SortDefault;
 import io.choerodon.swagger.annotation.CustomPageRequest;
@@ -38,7 +39,6 @@ public class AppServiceVersionController {
 
     @Autowired
     private AppServiceVersionService appServiceVersionService;
-
 
 
     /**
@@ -68,7 +68,7 @@ public class AppServiceVersionController {
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageRequest) {
         return Optional.ofNullable(appServiceVersionService.pageByOptions(
-                projectId, appServiceId, deployOnly, doPage,params, pageRequest))
+                projectId, appServiceId, deployOnly, doPage, params, pageRequest))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(VERSION_QUERY_ERROR));
     }
@@ -348,7 +348,7 @@ public class AppServiceVersionController {
                 .orElseThrow(() -> new CommonException("error.remote.application.versions.get"));
     }
 
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,InitRoleCode.PROJECT_MEMBER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据应用服务Id集合查询所有应用版本")
     @GetMapping(value = "/list_by_service_ids")
     public ResponseEntity<List<AppServiceVersionVO>> listVersionByIds(

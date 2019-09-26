@@ -172,7 +172,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
         if (harborPrivate) {
             //设置为私有后将harbor项目设置为私有
             DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
-            String username = devopsProjectDTO.getHarborProjectUserName() == null ? String.format("user%s%s", organizationDTO.getId(), projectId) : devopsProjectDTO.getHarborProjectUserName();
+            String username = devopsProjectDTO.getHarborProjectUserName() == null ? String.format(USER_PREFIX, organizationDTO.getId(), projectId) : devopsProjectDTO.getHarborProjectUserName();
             String email = devopsProjectDTO.getHarborProjectUserEmail() == null ? String.format("%s@choerodon.com", username) : devopsProjectDTO.getHarborProjectUserEmail();
             String password = devopsProjectDTO.getHarborProjectUserPassword() == null ? String.format("%sAAA", username) : devopsProjectDTO.getHarborProjectUserPassword();
             User user = new User(username, email, password, username);
