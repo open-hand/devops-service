@@ -288,7 +288,7 @@
         AND da.project_id = #{projectId}
     </update>
 
-    <select id="listGitlabProjectIdByAppPermission" resultType="java.util.List">
+    <select id="listGitlabProjectIdByAppPermission" resultType="java.lang.Long">
         SELECT
         da.gitlab_project_id
         FROM
