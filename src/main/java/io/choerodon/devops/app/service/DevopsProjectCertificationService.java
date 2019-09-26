@@ -33,8 +33,6 @@ public interface DevopsProjectCertificationService {
 
     void checkName(Long projectId, String name);
 
-    List<ProjectReqVO> listCertProjects(Long certId);
-
     /**
      * 列出组织下所有项目中在数据库中没有权限关联关系的项目(不论当前数据库中是否跳过权限检查)
      *
@@ -49,8 +47,6 @@ public interface DevopsProjectCertificationService {
 
     void deletePermissionOfProject(Long projectId, Long certId);
 
-    PageInfo<ProjectReqVO> pageProjects(Long projectId, Long clusterId, PageRequest pageRequest,
-                                        String[] params);
 
     PageInfo<ProjectCertificationVO> pageCerts(Long projectId, PageRequest pageRequest,
                                                String params);

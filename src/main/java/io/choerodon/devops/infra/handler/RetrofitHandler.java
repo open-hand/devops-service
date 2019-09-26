@@ -95,9 +95,7 @@ public class RetrofitHandler {
                     if (sslContext != null) {
                         sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
                     }
-                } catch (NoSuchAlgorithmException e) {
-                    LOGGER.error(e.getMessage());
-                } catch (KeyManagementException e) {
+                } catch (NoSuchAlgorithmException | KeyManagementException e) {
                     LOGGER.error(e.getMessage());
                 }
 

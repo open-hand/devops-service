@@ -54,15 +54,6 @@ public interface AppServiceInstanceService {
                                                        Long envId, Long versionId, Long appServiceId, Long instanceId, String params);
 
     /**
-     * 查询应用部署
-     *
-     * @param projectId    项目id
-     * @param appServiceId 应用id
-     * @return page of ApplicationInstanceOverViewVO
-     */
-    List<AppServiceInstanceOverViewVO> listApplicationInstanceOverView(Long projectId, Long appServiceId);
-
-    /**
      * 查询value列表
      *
      * @param type       部署类型
@@ -164,16 +155,6 @@ public interface AppServiceInstanceService {
      */
     List<ErrorLineVO> formatValue(InstanceValueVO instanceValueVO);
 
-
-    /**
-     * 环境总览实例查询
-     *
-     * @param projectId 项目id
-     * @param envId     环境Id
-     * @param params    搜索参数
-     * @return DevopsEnvPreviewVO
-     */
-    DevopsEnvPreviewVO listByEnv(Long projectId, Long envId, String params);
 
     /**
      * 校验实例名唯一性

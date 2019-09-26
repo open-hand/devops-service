@@ -65,6 +65,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private static final String PROJECT_OWNER = "role/project/default/project-owner";
     private static final String PROJECT_MEMBER = "role/project/default/project-member";
     private static final String ERROR_CODE_EXIST = "error.code.exist";
+    private static final String ERROR_GITLAB_USER_SYNC_FAILED = "error.gitlab.user.sync.failed";
     private static final String LOGIN_NAME = "loginName";
     private static final String REAL_NAME = "realName";
     private static final Pattern CODE = Pattern.compile("[a-z]([-a-z0-9]*[a-z0-9])?");
@@ -165,7 +166,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         if (userAttrDTO == null) {
-            throw new CommonException("error.gitlab.user.sync.failed");
+            throw new CommonException(ERROR_GITLAB_USER_SYNC_FAILED);
         }
 
         // 查询创建应用所在的gitlab应用组
@@ -424,13 +425,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     @Override
-    public List<DevopsEnvironmentRepVO> listDeployed(Long projectId) {
-        List<Long> envList = devopsServiceService.baseListEnvByRunningService();
-        return listByProjectIdAndActive(projectId, true).stream().filter(t ->
-                envList.contains(t.getId())).collect(Collectors.toList());
-    }
-
-    @Override
     public List<DevopsEnvironmentViewVO> listInstanceEnvTree(Long projectId) {
         List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedClusterList();
 
@@ -625,7 +619,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         DevopsEnvironmentDTO devopsEnvironmentDTO = baseQueryById(envId);
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(GitUserNameUtil.getUserId().longValue());
         if (userAttrDTO == null) {
-            throw new CommonException("error.gitlab.user.sync.failed");
+            throw new CommonException(ERROR_GITLAB_USER_SYNC_FAILED);
         }
         CommitDTO commitDO = gitlabServiceClientOperator.listCommits(devopsEnvironmentDTO.getGitlabEnvProjectId().intValue(), userAttrDTO.getGitlabUserId().intValue(), 1, 1).get(0);
         PushWebHookVO pushWebHookVO = new PushWebHookVO();
@@ -846,35 +840,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     @Override
-    public PageInfo<DevopsEnvUserVO> listUserPermissionByEnvId(Long projectId, PageRequest pageRequest,
-                                                               String searchParams, Long envId) {
-        if (envId == null) {
-            // 根据项目成员id查询项目下所有的项目成员
-            PageInfo<UserVO> allProjectMemberPage = getMembersFromProject(pageRequest, projectId, searchParams);
-
-            PageInfo<DevopsEnvUserVO> devopsEnvUserPermissionDTOPage = new PageInfo<>();
-            List<DevopsEnvUserVO> allProjectMemberList = allProjectMemberPage.getList()
-                    .stream()
-                    .map(iamUser -> new DevopsEnvUserVO(iamUser.getId(), iamUser.getLoginName(), iamUser.getRealName()))
-                    .collect(Collectors.toList());
-            BeanUtils.copyProperties(allProjectMemberPage, devopsEnvUserPermissionDTOPage);
-            devopsEnvUserPermissionDTOPage.setList(allProjectMemberList);
-            return devopsEnvUserPermissionDTOPage;
-        } else {
-            // 普通分页需要带上iam中的所有项目成员，如果iam中的项目所有者也带有项目成员的身份，则需要去掉
-            PageInfo<UserVO> allProjectMemberPage = getMembersFromProject(pageRequest, projectId, searchParams);
-            List<DevopsEnvUserVO> retureUsersDTOList = allProjectMemberPage.getList()
-                    .stream()
-                    .map(iamUser -> new DevopsEnvUserVO(iamUser.getId(), iamUser.getLoginName(), iamUser.getRealName()))
-                    .collect(Collectors.toList());
-            PageInfo<DevopsEnvUserVO> devopsEnvUserPermissionDTOPage = new PageInfo<>();
-            BeanUtils.copyProperties(allProjectMemberPage, devopsEnvUserPermissionDTOPage);
-            devopsEnvUserPermissionDTOPage.setList(retureUsersDTOList);
-            return devopsEnvUserPermissionDTOPage;
-        }
-    }
-
-    @Override
     public PageInfo<DevopsUserPermissionVO> pageUserPermissionByEnvId(Long projectId, PageRequest
             pageRequest, String params, Long envId) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentMapper.selectByPrimaryKey(envId);
@@ -1025,7 +990,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         }
 
         if (userAttrDTO.getGitlabUserId() == null) {
-            throw new CommonException("error.gitlab.user.sync.failed");
+            throw new CommonException(ERROR_GITLAB_USER_SYNC_FAILED);
         }
 
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);

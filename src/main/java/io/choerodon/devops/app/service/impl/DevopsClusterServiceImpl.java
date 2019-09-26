@@ -289,15 +289,6 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     }
 
     @Override
-    public List<ProjectReqVO> listClusterProjects(Long projectId, Long clusterId) {
-        return devopsClusterProPermissionService.baseListByClusterId(clusterId).stream()
-                .map(devopsClusterProPermissionDTO -> {
-                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsClusterProPermissionDTO.getProjectId());
-                    return new ProjectReqVO(devopsClusterProPermissionDTO.getProjectId(), projectDTO.getName(), projectDTO.getCode(), null);
-                }).collect(Collectors.toList());
-    }
-
-    @Override
     public PageInfo<ProjectReqVO> pageRelatedProjects(Long projectId, Long clusterId, PageRequest pageRequest, String params) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(clusterId);
         if (devopsClusterDTO == null) {

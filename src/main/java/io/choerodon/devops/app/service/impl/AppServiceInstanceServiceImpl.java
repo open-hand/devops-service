@@ -1,11 +1,28 @@
 package io.choerodon.devops.app.service.impl;
 
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.text.DecimalFormat;
+import java.util.*;
+import java.util.stream.Collectors;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.env.YamlPropertySourceLoader;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -23,7 +40,6 @@ import io.choerodon.devops.app.eventhandler.payload.InstanceSagaPayload;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
-import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
@@ -34,23 +50,6 @@ import io.choerodon.devops.infra.mapper.AppServiceInstanceMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvAppServiceMapper;
 import io.choerodon.devops.infra.mapper.PipelineAppServiceDeployMapper;
 import io.choerodon.devops.infra.util.*;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.env.YamlPropertySourceLoader;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.text.DecimalFormat;
-import java.util.*;
-import java.util.stream.Collectors;
 
 
 /**
@@ -58,13 +57,13 @@ import java.util.stream.Collectors;
  */
 @Service
 public class AppServiceInstanceServiceImpl implements AppServiceInstanceService {
-    public static final String CREATE = "create";
-    public static final String UPDATE = "update";
-    public static final String CHOERODON = "choerodon-test";
-    public static final String HARBOR = "harbor";
-    public static final String MANUAL = "manual";
-    public static final String APP_SERVICE = "appService";
-    public static final String HELM_RELEASE = "C7NHelmRelease";
+    private static final String CREATE = "create";
+    private static final String UPDATE = "update";
+    private static final String CHOERODON = "choerodon-test";
+    private static final String HARBOR = "harbor";
+    private static final String MANUAL = "manual";
+    private static final String APP_SERVICE = "appService";
+    private static final String HELM_RELEASE = "C7NHelmRelease";
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AppServiceInstanceServiceImpl.class);
     private static final String MASTER = "master";
     private static final String YAML_SUFFIX = ".yaml";
@@ -183,66 +182,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         return devopsEnvPreviewInstanceDTOPageInfo;
 
     }
-
-
-    @Override
-    public List<AppServiceInstanceOverViewVO> listApplicationInstanceOverView(Long projectId, Long appServiceId) {
-
-
-        //查询出当前用户有权限的环境列表，如果是项目所有者，则有全部环境权限
-        List<Long> permissionEnvIds = devopsEnvUserPermissionService
-                .listByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId())).stream()
-                .filter(DevopsEnvUserPermissionDTO::getPermitted).map(DevopsEnvUserPermissionDTO::getEnvId)
-                .collect(Collectors.toList());
-
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        if (baseServiceClientOperator.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectDTO)) {
-            permissionEnvIds = devopsEnvironmentService.baseListByProjectId(projectId).stream()
-                    .map(DevopsEnvironmentDTO::getId).collect(Collectors.toList());
-        }
-
-        List<AppServiceInstanceOverViewDTO> appServiceInstanceOverViewDTOS = baseListApplicationInstanceOverView(projectId, appServiceId,
-                permissionEnvIds);
-
-        List<AppServiceLatestVersionDTO> appLatestVersionList = appServiceVersionService.baseListAppNewestVersion(projectId);
-
-        Map<Long, AppServiceLatestVersionDTO> latestVersionList = appLatestVersionList.stream()
-                .collect(Collectors.toMap(AppServiceLatestVersionDTO::getAppServiceId, t -> t, (a, b) -> b));
-
-        //查询部署总览，每个应用最新的版本以及在每个环境每个实例部署的版本
-        Map<Long, Integer> appServiceInstancesListMap = new HashMap<>();
-        List<AppServiceInstanceOverViewVO> appServiceInstanceOverViewVOS = new ArrayList<>();
-        appServiceInstanceOverViewDTOS.forEach(t -> {
-            AppServiceInstanceOverViewVO appServiceInstanceOverViewVO = new AppServiceInstanceOverViewVO();
-            if (appServiceInstancesListMap.get(t.getAppServiceId()) == null) {
-                if (t.getInstanceId() != null
-                        || t.getVersionId().equals(latestVersionList.get(t.getAppServiceId()).getVersionId())) {
-                    appServiceInstanceOverViewVO = new AppServiceInstanceOverViewVO(
-                            t.getAppServiceId(),
-                            t.getPublishLevel(),
-                            t.getAppServiceName(),
-                            t.getAppServiceCode(),
-                            latestVersionList.get(t.getAppServiceId()).getVersionId(),
-                            latestVersionList.get(t.getAppServiceId()).getVersion());
-                    appServiceInstanceOverViewVO.setProjectId(t.getProjectId());
-                    if (t.getInstanceId() != null) {
-                        initInstanceOverView(appServiceInstanceOverViewVO, t, latestVersionList.get(t.getAppServiceId()).getVersionId());
-                    }
-                    appServiceInstancesListMap.put(t.getAppServiceId(), appServiceInstanceOverViewVOS.size());
-                    appServiceInstanceOverViewVOS.add(appServiceInstanceOverViewVO);
-                }
-            } else {
-                appServiceInstanceOverViewVO = appServiceInstanceOverViewVOS.get(appServiceInstancesListMap.get(t.getAppServiceId()));
-                initInstanceOverViewIfNotExist(appServiceInstanceOverViewVO, t);
-            }
-            if (t.getInstanceId() != null
-                    && t.getVersion().equalsIgnoreCase(appServiceInstanceOverViewVO.getLatestVersion())) {
-                appServiceInstanceOverViewVO.addLatestVersionRunning();
-            }
-        });
-        return appServiceInstanceOverViewVOS;
-    }
-
 
     @Override
     public InstanceValueVO queryDeployValue(String type, Long instanceId, Long appServiceVersionId) {
@@ -500,43 +439,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         }
         return new ArrayList<>();
     }
-
-
-    @Override
-    public DevopsEnvPreviewVO listByEnv(Long projectId, Long envId, String params) {
-
-        Map<String, Object> maps = gson.fromJson(params, new TypeToken<Map<String, Object>>() {
-        }.getType());
-
-
-        Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
-
-        List<AppServiceInstanceDTO> appServiceInstanceDTOS = appServiceInstanceMapper
-                .listApplicationInstance(projectId, envId, null, null, null, searchParamMap, TypeUtil.cast(maps.get(TypeUtil.PARAMS)));
-
-        List<AppServiceInstanceVO> appServiceInstanceVOS =
-                ConvertUtils.convertList(appServiceInstanceDTOS, AppServiceInstanceVO.class);
-
-        //以app为维度给实例分组
-        Map<Long, List<AppServiceInstanceVO>> resultMaps = appServiceInstanceVOS.stream()
-                .collect(Collectors.groupingBy(AppServiceInstanceVO::getAppServiceId));
-        DevopsEnvPreviewVO devopsEnvPreviewVO = new DevopsEnvPreviewVO();
-        List<DevopsEnvPreviewAppVO> devopsEnvPreviewAppVOS = new ArrayList<>();
-        resultMaps.forEach((key, value) -> {
-            DevopsEnvPreviewAppVO devopsEnvPreviewAppVO = new DevopsEnvPreviewAppVO();
-            devopsEnvPreviewAppVO.setAppServiceName(value.get(0).getAppServiceName());
-            devopsEnvPreviewAppVO.setAppServiceCode(value.get(0).getAppServiceCode());
-            devopsEnvPreviewAppVO.setProjectId(value.get(0).getProjectId());
-
-            //设置应用所属的实例
-            devopsEnvPreviewAppVO.setAppServiceInstanceVOS(appServiceInstanceVOS);
-
-            devopsEnvPreviewAppVOS.add(devopsEnvPreviewAppVO);
-        });
-        devopsEnvPreviewVO.setDevopsEnvPreviewAppVOS(devopsEnvPreviewAppVOS);
-        return devopsEnvPreviewVO;
-    }
-
 
     @Override
     public DevopsEnvResourceVO listResourcesInHelmRelease(Long instanceId) {

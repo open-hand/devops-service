@@ -129,27 +129,6 @@ public class AppServiceInstanceController {
                 .orElseThrow(() -> new CommonException("error.application.version.query"));
     }
 
-//    /** TODO 发版前删除
-//     * 查询部署总览
-//     *
-//     * @param projectId    项目id
-//     * @param appServiceId 服务id
-//     * @return page of ApplicationInstancesVO
-//     */
-//    @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT,
-//            roles = {InitRoleCode.PROJECT_OWNER,
-//                    InitRoleCode.PROJECT_MEMBER})
-//    @ApiOperation(value = "查询部署总览")
-//    @GetMapping(value = "/list_application_instance_overView")
-//    public ResponseEntity<List<AppServiceInstanceOverViewVO>> listApplicationInstanceOverView(
-//            @ApiParam(value = "项目ID", required = true)
-//            @PathVariable(value = "project_id") Long projectId,
-//            @ApiParam(value = "服务ID")
-//            @RequestParam(value = "app_service_id", required = false) Long appServiceId) {
-//        return Optional.ofNullable(appServiceInstanceService.listApplicationInstanceOverView(projectId, appServiceId))
-//                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-//                .orElseThrow(() -> new CommonException("error.application.version.query"));
-//    }
 
     /**
      * 获取实例上次部署配置
@@ -637,31 +616,6 @@ public class AppServiceInstanceController {
         appServiceInstanceService.checkName(instanceName, envId);
     }
 
-//    /**
-//     * TODO 发版前删除
-//     * 环境总览实例查询
-//     *
-//     * @param projectId 项目id
-//     * @param envId     环境Id
-//     * @param params    搜索参数
-//     * @return DevopsEnvPreviewDTO
-//     */
-//    @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT,
-//            roles = {InitRoleCode.PROJECT_OWNER,
-//                    InitRoleCode.PROJECT_MEMBER})
-//    @ApiOperation(value = "环境总览实例查询")
-//    @PostMapping(value = "/{env_id}/listByEnv")
-//    public ResponseEntity<DevopsEnvPreviewVO> listByEnv(
-//            @ApiParam(value = "项目 ID", required = true)
-//            @PathVariable(value = "project_id") Long projectId,
-//            @ApiParam(value = "envId", required = true)
-//            @PathVariable(value = "env_id") Long envId,
-//            @ApiParam(value = "查询参数")
-//            @RequestBody(required = false) String params) {
-//        return Optional.ofNullable(appServiceInstanceService.listByEnv(projectId, envId, params))
-//                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-//                .orElseThrow(() -> new CommonException(ERROR_APP_INSTANCE_QUERY));
-//    }
 
     /**
      * 获取部署时长报表

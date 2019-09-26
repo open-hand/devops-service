@@ -142,26 +142,6 @@ public class DevopsClusterController {
         devopsClusterService.checkCode(projectId, code);
     }
 
-
-//    /**
-//     * 查询集群下已有权限的项目列表
-//     *
-//     * @param projectId 项目id
-//     * @return List
-//     */
-//    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
-//    @ApiOperation(value = "查询集群下已有权限的项目列表")
-//    @GetMapping("/list_cluster_projects/{cluster_id}")
-//    public ResponseEntity<List<ProjectReqVO>> listClusterProjects(
-//            @ApiParam(value = "项目ID", required = true)
-//            @PathVariable(value = "project_id") Long projectId,
-//            @ApiParam(value = "集群Id")
-//            @PathVariable(value = "cluster_id") Long clusterId) {
-//        return Optional.ofNullable(devopsClusterService.listClusterProjects(projectId, clusterId))
-//                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-//                .orElseThrow(() -> new CommonException("error.project.query"));
-//    }
-
     /**
      * 分页查询集群下已有权限的项目列表
      *

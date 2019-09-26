@@ -60,14 +60,6 @@ public interface DevopsEnvironmentService {
     List<DevopsEnvGroupEnvsVO> listEnvTreeMenu(Long projectId);
 
     /**
-     * 项目下查询环境
-     *
-     * @param projectId 项目id
-     * @return List
-     */
-    List<DevopsEnvironmentRepVO> listDeployed(Long projectId);
-
-    /**
      * 实例视图查询项目下环境及其应用及实例
      *
      * @param projectId 项目id
@@ -151,18 +143,6 @@ public interface DevopsEnvironmentService {
     void handleCreateEnvSaga(EnvGitlabProjectPayload gitlabProjectPayload);
 
     EnvSyncStatusVO queryEnvSyncStatus(Long projectId, Long envId);
-
-    /**
-     * 分页查询项目下用户权限
-     *
-     * @param projectId   项目id
-     * @param pageRequest 分页参数
-     * @param envId       环境id
-     * @return page
-     */
-    PageInfo<DevopsEnvUserVO> listUserPermissionByEnvId(Long projectId, PageRequest pageRequest,
-                                                        String params, Long envId);
-
 
     /**
      * 分页查询环境下用户权限
