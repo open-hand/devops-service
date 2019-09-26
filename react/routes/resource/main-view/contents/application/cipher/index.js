@@ -9,9 +9,10 @@ import TimePopover from '../../../../../../components/timePopover/TimePopover';
 import KeyValueModal from '../modals/key-value';
 import { useResourceStore } from '../../../../stores';
 import { useApplicationStore } from '../stores';
+import ClickText from '../../../../../../components/click-text';
+import { useMainStore } from '../../../stores';
 
 import '../configs/index.less';
-import ClickText from '../../../../../../components/click-text';
 
 const { Column } = Table;
 
@@ -24,6 +25,7 @@ const Cipher = observer(() => {
     treeDs,
   } = useResourceStore();
   const { cipherStore, cipherDs } = useApplicationStore();
+  const { mainStore: { openDeleteModal } } = useMainStore();
   const statusStyle = useMemo(() => ({ marginRight: '0.08rem' }), []);
   const [showModal, setShowModal] = useState(false);
   const [recordId, setRecordId] = useState(null);
@@ -85,6 +87,8 @@ const Cipher = observer(() => {
 
   function renderAction({ record }) {
     const commandStatus = record.get('commandStatus');
+    const secretId = record.get('id');
+    const name = record.get('name');
     const disabled = getEnvIsNotRunning() || commandStatus === 'operating';
     if (disabled) {
       return null;
@@ -93,9 +97,7 @@ const Cipher = observer(() => {
       {
         service: ['devops-service.devops-secret.deleteSecret'],
         text: formatMessage({ id: 'delete' }),
-        action: () => {
-          cipherDs.delete(record);
-        },
+        action: () => openDeleteModal(parentId, secretId, name, 'secret', refresh),
       },
     ];
     return <Action data={buttons} />;

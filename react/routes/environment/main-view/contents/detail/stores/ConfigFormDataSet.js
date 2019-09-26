@@ -29,6 +29,7 @@ export default ({ formatMessage, intlPrefix, projectId, store }) => {
 
   return {
     paging: false,
+    dataKey: null,
     fields: [{
       name: 'name',
       type: 'string',
