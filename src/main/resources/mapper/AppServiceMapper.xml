@@ -671,4 +671,59 @@
             )
         )
     </select>
+
+    <update id="updateByIdSelectiveWithoutAudit" parameterType="io.choerodon.devops.infra.dto.AppServiceDTO">
+        UPDATE devops_app_service
+        <set>
+            <if test="appService.projectId != null">
+                project_id = #{appService.projectId,jdbcType=BIGINT},
+            </if>
+            <if test="appService.name != null">
+                `name` = #{appService.name,jdbcType=VARCHAR},
+            </if>
+            <if test="appService.code != null">
+                code = #{appService.code,jdbcType=VARCHAR},
+            </if>
+            <if test="appService.type != null">
+                `type` = #{appService.type,jdbcType=VARCHAR},
+            </if>
+            <if test="appService.isActive != null">
+                is_active = #{appService.isActive,jdbcType=TINYINT},
+            </if>
+            <if test="appService.isSynchro != null">
+                is_synchro = #{appService.isSynchro,jdbcType=TINYINT},
+            </if>
+            <if test="appService.isFailed != null">
+                is_failed = #{appService.isFailed,jdbcType=TINYINT},
+            </if>
+            <if test="appService.imgUrl != null">
+                img_url = #{appService.imgUrl,jdbcType=VARCHAR},
+            </if>
+            <if test="appService.isSkipCheckPermission != null">
+                is_skip_check_permission = #{appService.isSkipCheckPermission,jdbcType=TINYINT},
+            </if>
+            <if test="appService.gitlabProjectId != null">
+                gitlab_project_id = #{appService.gitlabProjectId,jdbcType=BIGINT},
+            </if>
+            <if test="appService.hookId != null">
+                hook_id = #{appService.hookId,jdbcType=BIGINT},
+            </if>
+            <if test="appService.harborConfigId != null">
+                harbor_config_id = #{appService.harborConfigId,jdbcType=BIGINT},
+            </if>
+            <if test="appService.chartConfigId != null">
+                chart_config_id = #{appService.chartConfigId,jdbcType=BIGINT},
+            </if>
+            <if test="appService.uuid != null">
+                uuid = #{appService.uuid,jdbcType=VARCHAR},
+            </if>
+            <if test="appService.mktAppId != null">
+                mkt_app_id = #{appService.mktAppId,jdbcType=BIGINT},
+            </if>
+            <if test="appService.token != null">
+                token = #{appService.token,jdbcType=CHAR},
+            </if>
+        </set>
+        WHERE id = #{appService.id,jdbcType=BIGINT}
+    </update>
 </mapper>

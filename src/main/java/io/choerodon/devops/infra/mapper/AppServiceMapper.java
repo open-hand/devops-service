@@ -13,6 +13,8 @@ import io.choerodon.mybatis.common.Mapper;
  * Created by younger on 2018/3/28.
  */
 public interface AppServiceMapper extends Mapper<AppServiceDTO> {
+    void updateByIdSelectiveWithoutAudit(@Param("appService") AppServiceDTO appService);
+
     List<AppServiceDTO> list(@Param("projectId") Long projectId,
                              @Param("isActive") Boolean isActive,
                              @Param("hasVersion") Boolean hasVersion,
