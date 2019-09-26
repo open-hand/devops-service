@@ -21,7 +21,7 @@ export DOCKER_CONFIG=/kaniko/.docker/
 mkdir -p $DOCKER_CONFIG /root/.docker
 # 设成kaniko认证配置文件
 echo "{\"auths\":{\"$DOCKER_REGISTRY\":{\"username\":\"$DOCKER_USERNAME\",\"password\":\"$DOCKER_PASSWORD\"}}}" > /kaniko/.docker/config.json
-cp /kaniko/.docker/config.json /root/.docker
+cp -rf /kaniko/.docker/config.json /root/.docker
 
 # 获取commit时间
 C7N_COMMIT_TIMESTAMP=$(git log -1 --pretty=format:"%ci"| awk '{print $1$2}' | sed 's/[-:]//g')
