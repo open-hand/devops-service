@@ -4,7 +4,7 @@ import { observer } from 'mobx-react-lite';
 import map from 'lodash/map';
 import some from 'lodash/some';
 import { SelectBox, Select, Form } from 'choerodon-ui/pro';
-import { Button } from 'choerodon-ui';
+import { Button, Tooltip } from 'choerodon-ui';
 
 import './index.less';
 
@@ -80,6 +80,10 @@ export default observer(({ dataSet, refresh, record, store, projectId, formatMes
     return !flag;
   }
 
+  function renderUserOption({ record: optionRecord }) {
+    return <Tooltip title={optionRecord.get('loginName')}>{optionRecord.get('realName')}</Tooltip>;
+  }
+
   return (
     <div className={`${prefixCls}-permission-form`}>
       <Form record={record}>
@@ -93,7 +97,7 @@ export default observer(({ dataSet, refresh, record, store, projectId, formatMes
           {map(dataSet.created, (userRecord) => (
             <div className={`${prefixCls}-permission-form-item`}>
               <Form record={userRecord}>
-                <Select name="iamUserId" optionsFilter={handleUserFilter} searchable />
+                <Select name="iamUserId" optionsFilter={handleUserFilter} searchable optionRenderer={renderUserOption} />
               </Form>
               <Button
                 icon="delete"

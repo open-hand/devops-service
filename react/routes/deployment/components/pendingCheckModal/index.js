@@ -104,7 +104,7 @@ export default class PendingCheckModal extends Component {
               unCheck: [],
             };
             _.forEach(data, ({ audit, loginName, realName }) => {
-              users[audit ? 'check' : 'unCheck'].push(`${loginName} ${realName}`);
+              users[audit ? 'check' : 'unCheck'].push(realName);
             });
             this.setState({
               canCheck: false,

@@ -68,6 +68,9 @@ export const SimpleSelect = injectIntl(({ intl, uid, label, options, onDelete, r
       filter
       optionFilterProp="children"
       notFoundContent={notFoundContent}
+      filterOption={(input, option) => option.props.children.props.children
+        .toLowerCase()
+        .indexOf(input.toLowerCase()) >= 0}
       label={label}
       getPopupContainer={(triggerNode) => triggerNode.parentNode}
     >

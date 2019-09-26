@@ -1,7 +1,7 @@
 import React, { Fragment, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
-import { Select, Radio, Form } from 'choerodon-ui';
+import { Select, Radio, Form, Tooltip } from 'choerodon-ui';
 import omit from 'lodash/omit';
 import map from 'lodash/map';
 import DynamicSelect from '../../../../../../../components/dynamic-select';
@@ -58,13 +58,17 @@ const Permission = observer(({ refreshPermission, modal, form, tree, onOk, proje
     const { getFieldsValue } = form;
     const data = getFieldsValue();
 
-    const options = map(projectList, ({ id, name }) => {
+    const options = map(projectList, ({ id, name, code }) => {
       const selectedValues = Object.values(omit(data, 'keys'));
-      return <Option
-        disabled={selectedValues.includes(id)}
-        key={id}
-        value={id}
-      >{name}</Option>;
+      return (
+        <Option
+          disabled={selectedValues.includes(id)}
+          key={id}
+          value={id}
+        >
+          <Tooltip title={code}>{name}</Tooltip>
+        </Option>
+      );
     });
 
     return <DynamicSelect
