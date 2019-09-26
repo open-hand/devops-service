@@ -48,7 +48,7 @@ const Allocation = observer((props) => {
   }
 
   function renderAction({ record }) {
-    if (detailDs.current.get('skipCheckPermission') || record.get('role') === 'owner') return;
+    if ((detailDs.current && detailDs.current.get('skipCheckPermission')) || record.get('role') === 'owner') return;
     const actionData = [{
       service: ['devops-service.app-service.deletePermission'],
       text: formatMessage({ id: 'delete' }),

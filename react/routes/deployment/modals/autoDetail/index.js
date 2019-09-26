@@ -4,6 +4,7 @@ import { injectIntl, FormattedMessage } from 'react-intl';
 import { Button } from 'choerodon-ui';
 import { Modal } from 'choerodon-ui/pro';
 import { Permission } from '@choerodon/master';
+import { withRouter } from 'react-router-dom';
 import pick from 'lodash/pick';
 import map from 'lodash/map';
 import UserInfo from '../../../../components/userInfo';
@@ -17,21 +18,36 @@ import './index.less';
 
 const modalKey = Modal.key();
 
-export default injectIntl(observer(({
+export default withRouter(injectIntl(observer(({
   dataSet,
   PipelineStore,
   projectId,
   id,
   intlPrefix,
   intl: { formatMessage },
+  modal,
+  refresh: freshTable,
+  location: { search, pathname },
 }) => {
   const [showPendingCheck, setShowPendingCheck] = useState(false);
   const [checkData, setCheckData] = useState({});
+  const [isChange, setIsChange] = useState(false);
   const data = useMemo(() => dataSet.current.toData(), [dataSet.current]);
 
   function refresh() {
     dataSet.query();
+    setIsChange(true);
   }
+
+  modal.handleOk(() => {
+    const param = search.match(/(^|&)pipelineRecordId=([^&]*)(&|$)/);
+    if (param) {
+      const newSearch = search.replace(param[0], '');
+      window.location.hash = `${pathname}${newSearch}`;
+    } else if (isChange) {
+      freshTable();
+    }
+  });
 
   function openModal(type) {
     Modal.open({
@@ -230,4 +246,4 @@ export default injectIntl(observer(({
       />
     )}
   </div>);
-}));
+})));

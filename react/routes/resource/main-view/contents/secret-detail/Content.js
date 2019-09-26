@@ -46,7 +46,7 @@ const Content = observer(() => {
       <div className={`${prefixCls}-detail-content-section-title`}>
         <FormattedMessage id={`${intlPrefix}.key.value`} />
       </div>
-      {getContent}
+      {getContent()}
       <Modals />
     </div>
   );

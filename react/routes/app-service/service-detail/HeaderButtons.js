@@ -10,6 +10,7 @@ import CreateForm from '../modals/creat-form';
 
 
 const modalKey1 = Modal.key();
+const modalKey2 = Modal.key();
 const modalStyle = {
   width: 380,
 };
@@ -72,8 +73,30 @@ const HeaderButtons = observer(({ children }) => {
 
   async function changeActive() {
     const { current } = detailDs;
-    if (await AppStore.changeActive(id, current.get('id'), !current.get('active')) !== false) {
-      detailDs.query();
+    if (current.get('active')) {
+      Modal.open({
+        key: modalKey2,
+        title: formatMessage({ id: `${intlPrefix}.stop` }, { name: current.get('name') }),
+        children: <FormattedMessage id={`${intlPrefix}.stop.tips`} />,
+        onOk: () => handleChangeActive(false),
+        okText: formatMessage({ id: 'stop' }),
+      });
+    } else {
+      handleChangeActive(true);
+    }
+  }
+
+  async function handleChangeActive(active) {
+    const { current } = detailDs;
+    try {
+      if (await AppStore.changeActive(id, current.get('id'), active) !== false) {
+        detailDs.query();
+      } else {
+        return false;
+      }
+    } catch (e) {
+      Choerodon.handleResponseError(e);
+      return false;
     }
   }
 

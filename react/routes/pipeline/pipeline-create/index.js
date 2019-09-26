@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { observer, inject } from 'mobx-react';
 import { withRouter, Prompt } from 'react-router-dom';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { Modal, Button, Icon, Form, Input, Select, Radio } from 'choerodon-ui';
+import { Modal, Button, Icon, Form, Input, Select, Radio, Tooltip } from 'choerodon-ui';
 import { Content, Header, Page } from '@choerodon/master';
 import _ from 'lodash';
 import StageCard from '../components/stageCard';
@@ -214,7 +214,10 @@ export default class PipelineCreate extends Component {
     } = PipelineCreateStore;
 
     const user = _.map(getUser, ({ id, realName, loginName }) => (
-      <Option key={id} value={String(id)}>{realName || loginName}</Option>));
+      <Option key={id} value={String(id)}>
+        <Tooltip title={loginName}>{realName || loginName}</Tooltip>
+      </Option>
+    ));
 
     return (
       <Sidebar
@@ -289,7 +292,7 @@ export default class PipelineCreate extends Component {
                   label={formatMessage({ id: 'pipeline.trigger.member' })}
                   loading={getLoading.user}
                   getPopupContainer={(triggerNode) => triggerNode.parentNode}
-                  filterOption={(input, option) => option.props.children
+                  filterOption={(input, option) => option.props.children.props.children
                     .toLowerCase()
                     .indexOf(input.toLowerCase()) >= 0}
                 >

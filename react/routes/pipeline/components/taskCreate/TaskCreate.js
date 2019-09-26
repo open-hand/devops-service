@@ -556,7 +556,10 @@ export default class TaskCreate extends Component {
     const instanceOptions = _.map(getInstance, ({ id, code }) => (<Option value={id} key={id}>{code}</Option>));
 
     const userOptions = _.map(getUser, ({ id, realName, loginName }) => (
-      <Option key={id} value={String(id)}>{realName || loginName}</Option>));
+      <Option key={id} value={String(id)}>
+        <Tooltip title={loginName}>{realName || loginName}</Tooltip>
+      </Option>
+    ));
 
     const configOptions = _.map(getConfigList, ({ id, name }) => (<Option key={id} value={id}>
       {name}
@@ -793,7 +796,7 @@ export default class TaskCreate extends Component {
               optionFilterProp="children"
               className="c7n-select_512"
               label={<FormattedMessage id="pipeline.task.auditor" />}
-              filterOption={(input, option) => option.props.children
+              filterOption={(input, option) => option.props.children.props.children
                 .toLowerCase()
                 .indexOf(input.toLowerCase()) >= 0}
             >

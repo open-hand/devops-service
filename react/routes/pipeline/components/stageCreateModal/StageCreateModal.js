@@ -3,7 +3,7 @@ import { injectIntl, FormattedMessage } from 'react-intl';
 import PropTypes from 'prop-types';
 import _ from 'lodash';
 import Sidebar from 'choerodon-ui/lib/modal/Sidebar';
-import { Button, Modal, Form, Input, Select, Radio } from 'choerodon-ui';
+import { Button, Modal, Form, Input, Select, Radio, Tooltip } from 'choerodon-ui';
 import { Content } from '@choerodon/master';
 import { STAGE_FLOW_MANUAL, STAGE_FLOW_AUTO } from '../Constants';
 import '../../../main.less';
@@ -99,7 +99,10 @@ export default class StageCreateModal extends Component {
 
     const createOrEdit = (prevId || prevId === 0) ? 'create' : 'edit';
     const user = _.map(store.getUser, ({ id, realName, loginName }) => (
-      <Option key={id} value={String(id)}>{realName || loginName}</Option>));
+      <Option key={id} value={String(id)}>
+        <Tooltip title={loginName}>{realName || loginName}</Tooltip>
+      </Option>
+    ));
 
     let initUsers;
     if (stageUserRels) {
@@ -167,7 +170,7 @@ export default class StageCreateModal extends Component {
                 optionFilterProp="children"
                 label={formatMessage({ id: 'pipeline.flow.member' })}
                 // getPopupContainer={(triggerNode) => triggerNode.parentNode}
-                filterOption={(input, option) => option.props.children
+                filterOption={(input, option) => option.props.children.props.children
                   .toLowerCase()
                   .indexOf(input.toLowerCase()) >= 0}
               >
