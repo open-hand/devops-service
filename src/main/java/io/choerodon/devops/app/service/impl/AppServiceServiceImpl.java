@@ -1414,6 +1414,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                     String realName = TypeUtil.objToString(searchParamMap.get("realName"));
                     roleAssignmentSearchVO.setRealName(realName);
                 }
+                roleAssignmentSearchVO.setEnabled(true);
             }
         }
 
