@@ -4,9 +4,10 @@ import map from 'lodash/map';
 import Sidebar from './sidebar';
 import DragBar from '../../../components/drag-bar';
 import Loading from '../../../components/loading';
+import EmptyPage from '../../../components/empty-page';
+import DeleteModal from './components/delete-modal';
 import { useResourceStore } from '../stores';
 import { useMainStore } from './stores';
-import DeleteModal from './components/delete-modal';
 
 import './index.less';
 
@@ -29,6 +30,8 @@ const CertDetail = lazy(() => import('./contents/certificate-detail'));
 const ConfigMapDetail = lazy(() => import('./contents/config-detail'));
 const SecretDetail = lazy(() => import('./contents/secret-detail'));
 const ServiceDetail = lazy(() => import('./contents/service-detail'));
+
+const EmptyShown = lazy(() => import('./contents/empty'));
 
 const MainView = observer(() => {
   const {
@@ -105,33 +108,30 @@ const MainView = observer(() => {
     };
     return cmMaps[itemType]
       ? <Suspense fallback={<Loading display />}>{cmMaps[itemType]}</Suspense>
-      : <div>未找到资源！</div>;
+      : <EmptyPage
+        title="没有该类型资源"
+        describe="请稍后重试"
+      />;
   }, [resourceStore.getViewType, resourceStore.getSelectedMenu.itemType]);
 
-  function getMainView() {
-    if (!treeDs.length && treeDs.status === 'ready') {
-      resourceStore.setShowHeader(false);
-      return <div>当前项目下没有可运行环境，请先去创建环境！</div>;
-    } else {
-      resourceStore.setShowHeader(true);
-      return <div
-        ref={rootRef}
-        className={`${prefixCls}-wrap`}
-      >
-        <DragBar
-          parentRef={rootRef}
-          store={mainStore}
-        />
-        <Sidebar />
-        <div className={`${prefixCls}-main ${prefixCls}-animate`}>
-          {content}
-        </div>
-        {deleteModals}
-      </div>;
-    }
-  }
-
-  return getMainView();
+  return (!treeDs.length && treeDs.status === 'ready') ? <div className={`${prefixCls}-wrap`}>
+    <Suspense fallback={<span />}>
+      <EmptyShown />
+    </Suspense>
+  </div> : <div
+    ref={rootRef}
+    className={`${prefixCls}-wrap`}
+  >
+    <DragBar
+      parentRef={rootRef}
+      store={mainStore}
+    />
+    <Sidebar />
+    <div className={`${prefixCls}-main ${prefixCls}-animate`}>
+      {content}
+    </div>
+    {deleteModals}
+  </div>;
 });
 
 export default MainView;

@@ -53,7 +53,8 @@ function handleSelect(record, store) {
   store.setSelectedMenu({ id, itemType, parentId, key, name });
 }
 
-export default (store) => ({
+export default (store, projectId) => ({
+  autoQuery: true,
   paging: false,
   selection: 'single',
   parentField: 'parentId',
@@ -77,6 +78,7 @@ export default (store) => ({
   },
   transport: {
     read: {
+      url: `/devops/v1/projects/${projectId}/clusters/tree_menu`,
       method: 'get',
       transformResponse(response) {
         try {

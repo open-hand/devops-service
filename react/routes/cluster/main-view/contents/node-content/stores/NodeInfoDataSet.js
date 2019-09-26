@@ -1,4 +1,5 @@
 const NodeInfoDataSet = () => ({
+  dataKey: null,
   transport: {
     read: {
       method: 'get',

@@ -114,7 +114,7 @@ export default class TaskCreate extends Component {
       form: { setFields },
     } = this.props;
     const { getTaskList, getStageList } = PipelineCreateStore;
-    const { pipelineAppServiceDeployVO, type } = _.find(getTaskList[stageId], ['index', taskId]) || {};
+    const { pipelineAppServiceDeployVO, type } = _.find(getTaskList[stageId], ['empty.js', taskId]) || {};
     const { appServiceId, envId, instanceId, valueId, instanceName } = pipelineAppServiceDeployVO || {};
     this.setState({
       initIstName: instanceName,
@@ -143,7 +143,7 @@ export default class TaskCreate extends Component {
      * 针对自动触发时，首个阶段的首个任务必须是部署任务
      */
     const isHeadStage = (_.head(getStageList) || {}).tempId === stageId;
-    const isHeadTask = _.isEmpty(getTaskList) || (_.head(getTaskList[stageId]) || {}).index === taskId;
+    const isHeadTask = _.isEmpty(getTaskList) || (_.head(getTaskList[stageId]) || {}).empty === taskId;
     if (isHeadStage && isHeadTask) {
       this.setState({ isHead: true });
     }
@@ -313,7 +313,7 @@ export default class TaskCreate extends Component {
     } = this.props;
     const { appId: selectApp, envId: selectEnv } = this.state;
     const { getTaskList } = PipelineCreateStore;
-    const { pipelineAppServiceDeployVO } = _.find(getTaskList[stageId], ['index', taskId]) || {};
+    const { pipelineAppServiceDeployVO } = _.find(getTaskList[stageId], ['empty.js', taskId]) || {};
     const { appServiceId, envId, instanceId, valueId } = pipelineAppServiceDeployVO || {};
     const { code } = _.find(PipelineCreateStore.getAppData, ['id', selectApp]) || {};
     const initIstName = code ? `${code}-${uuidv1().substring(0, 5)}` : uuidv1().substring(0, 30);
@@ -530,7 +530,7 @@ export default class TaskCreate extends Component {
       initIstName,
     } = this.state;
 
-    const { pipelineAppServiceDeployVO, type, name: taskName, isCountersigned, taskUserRels } = _.find(getTaskList[stageId], ['index', taskId]) || {};
+    const { pipelineAppServiceDeployVO, type, name: taskName, isCountersigned, taskUserRels } = _.find(getTaskList[stageId], ['empty.js', taskId]) || {};
     const { instanceId, appServiceId, triggerVersion, envId, valueId } = pipelineAppServiceDeployVO || {};
     /** ********* 生成选择器的选项 ********* */
     const appOptions = _.map(getAppData, ({ id, name }) => (<Option key={id} value={id}>

@@ -12,33 +12,32 @@ const NodeContentStore = createContext();
 const useNodeContentStore = () => useContext(NodeContentStore);
 
 const NodeContentStoreProvider = injectIntl(inject('AppState')(observer((props) => {
-  const { intl: { formatMessage }, AppState: { currentMenuType: { id: projectId } }, children } = props;
   const {
-    clusterStore,
-  } = useClusterStore();
-  const NodePodsDs = useMemo(() => new DataSet(NodePodsDataSet()), []);
-  const NodeInfoDs = useMemo(() => new DataSet(NodeInfoDataSet()), []);
+    intl: { formatMessage },
+    AppState: { currentMenuType: { id: projectId } },
+    children,
+  } = props;
+  const { clusterStore } = useClusterStore();
+  const { getSelectedMenu: { parentId, name } } = clusterStore;
+  const nodePodsDs = useMemo(() => new DataSet(NodePodsDataSet()), []);
+  const nodeInfoDs = useMemo(() => new DataSet(NodeInfoDataSet()), []);
 
   useEffect(() => {
     clusterStore.setNoHeader(true);
   }, []);
 
-  const {
-    getSelectedMenu: { parentId, name },
-  } = clusterStore;
   useEffect(() => {
-    NodeInfoDs.transport.read.url = `devops/v1/projects/${projectId}/clusters/nodes?cluster_id=${parentId}&node_name=${name}`;
-    NodeInfoDs.query();
-    NodePodsDs.transport.read.url = `devops/v1/projects/${projectId}/clusters/page_node_pods?cluster_id=${parentId}&node_name=${name}`;
-    NodePodsDs.query();
+    nodeInfoDs.transport.read.url = `devops/v1/projects/${projectId}/clusters/nodes?cluster_id=${parentId}&node_name=${name}`;
+    nodeInfoDs.query();
+    nodePodsDs.transport.read.url = `devops/v1/projects/${projectId}/clusters/page_node_pods?cluster_id=${parentId}&node_name=${name}`;
+    nodePodsDs.query();
   }, [projectId, name, parentId]);
 
   const value = {
     formatMessage,
     projectId,
-    clusterStore,
-    NodePodsDs,
-    NodeInfoDs,
+    nodePodsDs,
+    nodeInfoDs,
   };
 
   return (

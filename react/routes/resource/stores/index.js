@@ -24,8 +24,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const viewType = resourceStore.getViewType;
     const viewTypeMemo = useMemo(() => viewTypeMappings, []);
     const itemTypes = useMemo(() => itemTypeMappings, []);
-    const treeDs = useMemo(() => new DataSet(TreeDataSet({ store: resourceStore, type: viewType, projectId: id, formatMessage })), [viewType]);
-
+    const treeDs = useMemo(() => new DataSet(TreeDataSet({ store: resourceStore, type: viewType, projectId: id, formatMessage })), [viewType, id]);
     const value = {
       ...props,
       prefixCls: 'c7ncd-deployment',

@@ -1071,7 +1071,8 @@ const cluster = {
   'c7ncd.cluster.action.delete': '删除集群',
   'c7ncd.cluster.action.delete.title': '删除集群“{name}”',
   'c7ncd.cluster.action.delete.msg': '确定要删除该集群吗？',
-  'c7ncd.cluster.empty.msg': '请先创建集群',
+  'c7ncd.cluster.empty.title': '暂无集群',
+  'c7ncd.cluster.empty.describe': '当前项目下无集群，请创建',
 };
 
 const zhCN = {

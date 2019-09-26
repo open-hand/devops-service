@@ -219,7 +219,7 @@ class PipelineCreateStore {
 
   @action updateTaskList(stage, id, data) {
     const task = this.taskList[stage];
-    const current = _.findIndex(task, ['index', id]);
+    const current = _.findIndex(task, ['empty.js', id]);
 
     if (current || current === 0) {
       task[current] = data;
@@ -244,7 +244,7 @@ class PipelineCreateStore {
 
     const newTaskList = _.filter(
       this.taskList[stage],
-      (item) => item.index !== id,
+      (item) => item.empty !== id,
     );
 
     if (isHead && newTaskList[0]) {
