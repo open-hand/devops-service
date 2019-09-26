@@ -13,9 +13,12 @@ import Tips from '../../../../components/Tips';
 import MergeRequestStore from './stores';
 import handleMapStore from '../../main-view/store/handleMapStore';
 import Loading from '../../../../components/loading';
+import ClickText from '../../../../components/click-text';
+import TimePopover from '../../../../components/timePopover';
+
 import './index.less';
 import '../../../main.less';
-import ClickText from '../../../../components/click-text';
+import UserInfo from '../../../../components/userInfo';
 
 const { AppState } = stores;
 const { Option, OptGroup } = Select;
@@ -175,24 +178,16 @@ class MergeRequestHome extends Component {
     }, {
       title: <Tips type="title" data="create" />,
       key: 'createdAt',
-      render: (record) => (
-        <div>
-          {record.author ? (<Tooltip
-            title={record.author.username !== record.author.name ? `${record.author.username} ${record.author.name}` : record.author.name}
-          >
-            {record.author.avatarUrl
-              ? <img className="c7n-merge-avatar" src={record.author.avatarUrl} alt="avatar" />
-              : <span className="apptag-commit apptag-commit-avatar">{record.author.name.toString().substr(0, 1)}</span>}
-          </Tooltip>) : <span className="apptag-commit apptag-commit-avatar">?</span>}
-          <Tooltip
-            title={record.createdAt}
-          >
-            <TimeAgo
-              className="c7n-merge-time"
-              datetime={record.createdAt}
-              locale={this.props.intl.formatMessage({ id: 'language' })}
-            />
-          </Tooltip>
+      render: ({ author, createdAt }) => (
+        <div className="c7ncd-merge-create-info">
+          {author ? (
+            <Tooltip title={`${author.name}${author.username ? `(${author.username})` : ''}`}>
+              {author.avatarUrl
+                ? <img className="c7n-merge-avatar" src={author.avatarUrl} alt="avatar" />
+                : <span className="apptag-commit apptag-commit-avatar">{author.name.toString().substr(0, 1)}</span>}
+            </Tooltip>
+          ) : <span className="apptag-commit apptag-commit-avatar">?</span>}
+          <TimePopover content={createdAt} />
         </div>),
     }, {
       title: <Tips type="title" data="merge.commit" />,
@@ -204,15 +199,7 @@ class MergeRequestHome extends Component {
     }, {
       title: <FormattedMessage id="merge.upDate" />,
       key: 'updatedAt',
-      render: (record) => (
-        <div>
-          <Tooltip title={record.updatedAt}>
-            <TimeAgo
-              datetime={record.updatedAt}
-              locale={this.props.intl.formatMessage({ id: 'language' })}
-            />
-          </Tooltip>
-        </div>),
+      render: (record) => <TimePopover content={record.updatedAt} />,
     }];
 
     const columns = [{
@@ -241,22 +228,16 @@ class MergeRequestHome extends Component {
     }, {
       title: <Tips type="title" data="create" />,
       key: 'createdAt',
-      render: (record) => (
-        <div>
-          {record.author ? (<Tooltip
-            title={record.author.username !== record.author.name ? `${record.author.username} ${record.author.name}` : record.author.name}
-          >
-            {record.author.avatarUrl
-              ? <img className="c7n-merge-avatar" src={record.author.avatarUrl} alt="avatar" />
-              : <span className="apptag-commit apptag-commit-avatar">{record.author.name.toString().substr(0, 1)}</span>}
-          </Tooltip>) : <span className="apptag-commit apptag-commit-avatar">?</span>}
-          <Tooltip title={record.createdAt}>
-            <TimeAgo
-              className="c7n-merge-time"
-              datetime={record.createdAt}
-              locale={this.props.intl.formatMessage({ id: 'language' })}
-            />
-          </Tooltip>
+      render: ({ author, createdAt }) => (
+        <div className="c7ncd-merge-create-info">
+          {author ? (
+            <Tooltip title={`${author.name}${author.username ? `(${author.username})` : ''}`}>
+              {author.avatarUrl
+                ? <img className="c7n-merge-avatar" src={author.avatarUrl} alt="avatar" />
+                : <span className="apptag-commit apptag-commit-avatar">{author.name.toString().substr(0, 1)}</span>}
+            </Tooltip>
+          ) : <span className="apptag-commit apptag-commit-avatar">?</span>}
+          <TimePopover content={createdAt} />
         </div>),
     }, {
       title: <Tips type="title" data="merge.commit" />,
@@ -268,17 +249,7 @@ class MergeRequestHome extends Component {
     }, {
       title: <FormattedMessage id="merge.upDate" />,
       key: 'updatedAt',
-      render: (record) => (
-        <div>
-          <Tooltip
-            title={record.updatedAt}
-          >
-            <TimeAgo
-              datetime={record.updatedAt}
-              locale={this.props.intl.formatMessage({ id: 'language' })}
-            />
-          </Tooltip>
-        </div>),
+      render: (record) => <TimePopover content={record.updatedAt} />,
     }];
 
     const columnsOpen = [{
@@ -307,22 +278,16 @@ class MergeRequestHome extends Component {
     }, {
       title: <Tips type="title" data="create" />,
       key: 'createdAt',
-      render: (record) => (
-        <div>
-          {record.author ? (<Tooltip
-            title={record.author.username !== record.author.name ? `${record.author.username} ${record.author.name}` : record.author.name}
-          >
-            {record.author.avatarUrl
-              ? <img className="c7n-merge-avatar" src={record.author.avatarUrl} alt="avatar" />
-              : <span className="apptag-commit apptag-commit-avatar">{record.author.name.toString().substr(0, 1)}</span>}
-          </Tooltip>) : <span className="apptag-commit apptag-commit-avatar">?</span>}
-          <Tooltip title={record.createdAt}>
-            <TimeAgo
-              className="c7n-merge-time"
-              datetime={record.createdAt}
-              locale={this.props.intl.formatMessage({ id: 'language' })}
-            />
-          </Tooltip>
+      render: ({ author, createdAt }) => (
+        <div className="c7ncd-merge-create-info">
+          {author ? (
+            <Tooltip title={`${author.name}${author.username ? `(${author.username})` : ''}`}>
+              {author.avatarUrl
+                ? <img className="c7n-merge-avatar" src={author.avatarUrl} alt="avatar" />
+                : <span className="apptag-commit apptag-commit-avatar">{author.name.toString().substr(0, 1)}</span>}
+            </Tooltip>
+          ) : <span className="apptag-commit apptag-commit-avatar">?</span>}
+          <TimePopover content={createdAt} />
         </div>),
     }, {
       title: <Tips type="title" data="merge.commit" />,
@@ -334,35 +299,13 @@ class MergeRequestHome extends Component {
     }, {
       title: <FormattedMessage id="merge.upDate" />,
       key: 'updatedAt',
-      render: (record) => (
-        <div>
-          <Tooltip
-            title={record.updatedAt}
-          >
-            <TimeAgo
-              datetime={record.updatedAt}
-              locale={this.props.intl.formatMessage({ id: 'language' })}
-            />
-          </Tooltip>
-        </div>),
+      render: (record) => <TimePopover content={record.updatedAt} />,
     }, {
       title: <FormattedMessage id="merge.assignee" />,
       key: 'assignee',
-      render: (record) => (
-        <div>
-          {record.assignee ? (<div>
-            <Tooltip
-              title={record.assignee.username !== record.assignee.name ? `${record.assignee.username} ${record.assignee.name}` : record.assignee.name}
-            >
-              {record.assignee.avatarUrl
-                ? <img className="c7n-merge-avatar" src={record.assignee.avatarUrl} alt="avatar" />
-                : <span
-                  className="apptag-commit apptag-commit-avatar"
-                >{record.assignee.name.toString().substr(0, 1)}</span>}
-            </Tooltip>
-            {record.assignee.username !== record.assignee.name ? `${record.assignee.username} ${record.assignee.name}` : record.assignee.name}
-          </div>) : <FormattedMessage id="merge.noAssignee" />}
-        </div>),
+      render: ({ assignee }) => (assignee ? (
+        <UserInfo name={assignee.name || ''} id={assignee.username} avatar={assignee.avatarUrl} />
+      ) : <FormattedMessage id="merge.noAssignee" />),
     }];
 
     const hasAppData = appData && appData.length;

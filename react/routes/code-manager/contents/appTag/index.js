@@ -244,7 +244,7 @@ class AppTag extends Component {
             <span className="c7n-divide-point">&bull;</span>
             <span className="c7n-tag-panel-person">
               <UserInfo
-                name={authorName}
+                name={authorName || ''}
                 avatar={commitUserImage}
               />
             </span>

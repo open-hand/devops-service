@@ -234,7 +234,7 @@ class CiPipelineTable extends Component {
         </span>
         <Tooltip
           placement="top"
-          title={record.pipelineUserName ? record.pipelineUserName : ''}
+          title={record.pipelineUserName ? `${record.pipelineUserName}${record.pipelineUserLoginName ? `(${record.pipelineUserLoginName})` : ''}` : ''}
           trigger="hover"
         >
           {
@@ -297,7 +297,7 @@ class CiPipelineTable extends Component {
       <div className="c7n-des-commit">
         <Tooltip
           placement="top"
-          title={record.commitUserName ? record.commitUserName : ''}
+          title={record.commitUserName ? `${record.commitUserName}${record.commitUserLoginName ? `(${record.commitUserLoginName})` : ''}` : ''}
           trigger="hover"
         >
           {

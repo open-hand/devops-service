@@ -32,7 +32,7 @@ export default injectIntl(observer(({ store, dataSet, refresh, projectId, intlPr
   function renderCreator({ value, record }) {
     return (
       <UserInfo
-        name={record.get('createUserRealName') || 'admin'}
+        name={record.get('createUserRealName') || ''}
         id={value}
         avatar={record.get('createUserUrl')}
       />

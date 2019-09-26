@@ -2,6 +2,7 @@ import React, { PureComponent, Fragment } from 'react';
 import PropTypes from 'prop-types';
 
 import './UserInfo.less';
+import { Tooltip } from 'choerodon-ui';
 
 class UserInfo extends PureComponent {
   static propTypes = {
@@ -22,9 +23,10 @@ class UserInfo extends PureComponent {
     return (
       <div className="c7ncd-userinfo-wrap">
         {name && (<Fragment>
-          {ava}
+          <Tooltip title={`${name}${id ? ` (${id})` : ''}`}>
+            {ava}
+          </Tooltip>
           <div className="c7ncd-userinfo-name">
-            {id || ''}
             {name}
           </div>
         </Fragment>)}

@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
-import { Form, Select } from 'choerodon-ui';
+import { Form, Select, Tooltip } from 'choerodon-ui';
 import omit from 'lodash/omit';
 import map from 'lodash/map';
 import DynamicSelect from '../../../../../../../components/dynamic-select';
@@ -42,7 +42,7 @@ const LinkService = observer(({ modal, form, store, tree, onOk, intlPrefix, intl
       disabled={selectedValues.includes(id)}
       key={id}
       value={id}
-    >{name}</Select.Option>;
+    ><Tooltip title={name}>{name}</Tooltip></Select.Option>;
   }), [data, getServices]);
   form.getFieldDecorator('keys', { initialValue: ['key0'] });
   return (

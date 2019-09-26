@@ -114,14 +114,17 @@ export default function ({ intlPrefix, record, prefixCls, formatMessage }) {
       </ul>
       <hr className="net-hr" />
       <p className={`${prefixCls}-net-title`}>标签</p>
-      {record
-      && record.get('labels')
-      && _.map(record.get('labels'), (value, key) => (
-        <div key={key} className={`${prefixCls}-application-label`}>
-          <span>{key}</span>
-          {value}
-        </div>
-      ))}
+      {record && record.get('labels')
+        ? (_.map(record.get('labels'), (value, key) => (
+          <div key={key} className={`${prefixCls}-application-label`}>
+            <span>{key}</span>
+            {value}
+          </div>)))
+        : (
+          <span className="detail-item-text">
+            {formatMessage({ id: `${intlPrefix}.no.label` })}
+          </span>
+        )}
     </div>
   );
 }

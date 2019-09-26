@@ -42,10 +42,6 @@ export const StoreProvider = injectIntl(inject('AppState')(
       listDs.query();
     }, [projectId]);
 
-    useEffect(() => {
-      AppStore.judgeRole(organizationId, projectId);
-    }, [organizationId, projectId]);
-
     const value = {
       ...props,
       prefixCls: 'c7ncd-appService',

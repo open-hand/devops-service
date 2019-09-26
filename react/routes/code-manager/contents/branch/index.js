@@ -19,6 +19,7 @@ import CustomConfirm from '../../../../components/custom-confirm';
 import '../../../main.less';
 import './Branch.less';
 import './index.less';
+import UserInfo from '../../../../components/userInfo';
 
 const { AppState } = stores;
 
@@ -235,9 +236,9 @@ class Branch extends Component {
               style={{ display: 'inline-block', color: 'rgba(0, 0, 0, 0.65)' }}
             />
           </div>
-          {record.commitUserUrl && record.commitUserName ? <Tooltip title={record.commitUserName}>
+          {record.commitUserUrl && record.commitUserName ? <Tooltip title={`${record.commitUserName}${record.commitUserRealName ? ` (${record.commitUserRealName})` : ''}`}>
             <div className="branch-user-img" style={{ backgroundImage: `url(${record.commitUserUrl})` }} />
-          </Tooltip> : <Tooltip title={record.commitUserName}>
+          </Tooltip> : <Tooltip title={record.commitUserName ? `${record.commitUserName}${record.commitUserRealName ? ` (${record.commitUserRealName})` : ''}` : ''}>
             <div className="branch-user-img">{record.commitUserName && record.commitUserName.slice(0, 1)}</div>
           </Tooltip>}
           <MouserOverWrapper text={record.commitContent} width={0.2} className="branch-col-icon">
@@ -248,29 +249,9 @@ class Branch extends Component {
       {
         title: <FormattedMessage id="branch.time" />,
         dataIndex: 'commit.committedDate',
-        render: (text, record) => (<div>
-          {record.createUserName && record.createUserUrl
-            ? <React.Fragment>
-              <div className="branch-user-img" style={{ backgroundImage: `url(${record.createUserUrl})` }} />
-              <div style={{ display: 'inline-block' }}>
-                <span style={{ paddingRight: 5 }}>{record.createUserName}</span>
-                {record.createUserName !== record.createUserRealName
-                  && <span>{record.createUserRealName}</span>}
-              </div>
-            </React.Fragment>
-            : <React.Fragment>
-              {record.createUserName ? <div>
-                <div
-                  className="branch-user-img"
-                >{record.createUserRealName && record.createUserRealName.slice(0, 1).toUpperCase()}</div>
-                <div style={{ display: 'inline-block' }}>
-                  <span style={{ paddingRight: 5 }}>{record.createUserName}</span>
-                  {record.createUserName !== record.createUserRealName
-                    && <span>{record.createUserRealName}</span>}
-                </div>
-              </div> : null}
-            </React.Fragment>}
-        </div>),
+        render: (text, { createUserName, createUserRealName, createUserUrl }) => (
+          <UserInfo name={createUserRealName || ''} avatar={createUserUrl} id={createUserName} />
+        ),
       },
       {
         title: <FormattedMessage id="branch.issue" />,

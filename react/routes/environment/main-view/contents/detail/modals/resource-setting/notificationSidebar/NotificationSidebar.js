@@ -304,7 +304,7 @@ export default class NotificationSidebar extends Component {
                     optionFilterProp="children"
                     allowClear
                     filter
-                    filterOption={(input, option) => option.props.children
+                    filterOption={(input, option) => option.props.children.props.children
                       .toLowerCase()
                       .indexOf(input.toLowerCase()) >= 0}
                   >
@@ -314,7 +314,9 @@ export default class NotificationSidebar extends Component {
                           key={id}
                           value={id}
                         >
-                          {`${loginName} ${realName}`}
+                          <Tooltip title={loginName}>
+                            {realName}
+                          </Tooltip>
                         </Option>
                       ))
                     }
