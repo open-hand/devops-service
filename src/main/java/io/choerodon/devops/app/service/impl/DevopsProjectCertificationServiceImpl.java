@@ -246,7 +246,7 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
         List<String> paramList = TypeUtil.cast(searchMap.get(TypeUtil.PARAMS));
         ProjectDTO iamProjectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(iamProjectDTO.getOrganizationId());
-        PageInfo<ProjectDTO> projectDTOPageInfo = baseServiceClientOperator.listProject(organizationDTO.getId(), new PageRequest(0, 0), paramList == null ? null : paramList.toArray(new String[0]));
+        PageInfo<ProjectDTO> projectDTOPageInfo = baseServiceClientOperator.listProject(organizationDTO.getId(), new PageRequest(0, 0));
 
         //查询已经分配权限的项目
         List<Long> permitted = devopsCertificationProRelationshipService.baseListByCertificationId(certId)

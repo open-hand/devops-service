@@ -143,7 +143,7 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
-    public ResponseEntity<PageInfo<ProjectDTO>> listProject(Long organizationId, Map<String, Object> pageRequest, String name, String code, String typeName, Boolean enabled, String category, String[] params) {
+    public ResponseEntity<PageInfo<ProjectDTO>> listProject(Long organizationId, Map<String, Object> pageRequest, String name, String code, Boolean enabled) {
         return null;
     }
 
