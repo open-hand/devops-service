@@ -226,15 +226,6 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
     }
 
     @Override
-    public List<ProjectReqVO> listCertProjects(Long certId) {
-        return devopsCertificationProRelationshipService.baseListByCertificationId(certId).stream()
-                .map(devopsCertificationProRelE -> {
-                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsCertificationProRelE.getProjectId());
-                    return new ProjectReqVO(devopsCertificationProRelE.getProjectId(), projectDTO.getName(), projectDTO.getCode(), null);
-                }).collect(Collectors.toList());
-    }
-
-    @Override
     public List<ProjectReqVO> listNonRelatedMembers(Long projectId, Long certId, String params) {
         CertificationDTO certificationDTO = certificationService.baseQueryById(certId);
         if (certificationDTO == null) {
@@ -288,34 +279,6 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
     }
 
     @Override
-    public PageInfo<ProjectReqVO> pageProjects(Long projectId, Long certId, PageRequest pageRequest,
-                                               String[] params) {
-        ProjectDTO currentProjectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        PageInfo<ProjectDTO> projectDTOPageInfo = baseServiceClientOperator
-                .pageProjectByOrgId(currentProjectDTO.getOrganizationId(), pageRequest.getPage(), pageRequest.getSize(), null, params);
-        PageInfo<ProjectReqVO> pageProjectDTOS = new PageInfo<>();
-        List<ProjectReqVO> projectDTOS = new ArrayList<>();
-        if (!projectDTOPageInfo.getList().isEmpty()) {
-            BeanUtils.copyProperties(projectDTOPageInfo, pageProjectDTOS);
-            List<Long> projectIds;
-            if (certId != null) {
-                projectIds = devopsCertificationProRelationshipService.baseListByCertificationId(certId).stream()
-                        .map(DevopsCertificationProRelationshipDTO::getProjectId).collect(Collectors.toList());
-            } else {
-                projectIds = new ArrayList<>();
-            }
-            projectDTOPageInfo.getList().forEach(projectDO -> {
-                ProjectReqVO projectDTO = new ProjectReqVO(projectDO.getId(), projectDO.getName(), projectDO.getCode(), projectIds.contains(projectDO.getId()));
-                projectDTOS.add(projectDTO);
-            });
-        }
-        BeanUtils.copyProperties(projectDTOPageInfo, pageProjectDTOS);
-        pageProjectDTOS.setList(projectDTOS);
-        return pageProjectDTOS;
-    }
-
-
-    @Override
     public PageInfo<ProjectCertificationVO> pageCerts(Long projectId, PageRequest pageRequest,
                                                       String params) {
         PageInfo<CertificationDTO> certificationDTOS = certificationService
@@ -336,7 +299,6 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
         return orgCertificationDTOS;
     }
 
-    // TODO projectId验证
     @Override
     public ProjectCertificationVO queryCert(Long certId) {
         CertificationDTO certificationDTO = devopsCertificationMapper.queryById(certId);

@@ -30,6 +30,11 @@ import io.choerodon.devops.infra.util.TypeUtil;
 @Service
 public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService {
     private static final String COMMA = ",";
+    private static final String DEPLOY_STATUS = "deployStatus";
+    private static final String DEPLOY_TYPE = "deployType";
+    private static final String RUNNING = "running";
+    private static final String MANUAL = "manual";
+
 
     @Autowired
     private DevopsDeployRecordMapper devopsDeployRecordMapper;
@@ -102,11 +107,11 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
     public PageInfo<DevopsDeployRecordDTO> basePageByProjectId(Long projectId, String params, PageRequest pageRequest) {
         Map<String, Object> maps = TypeUtil.castMapParams(params);
         Map<String, Object> cast = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
-        if (cast.get("deployType") != null && cast.get("deployStatus") != null) {
-            if ("manual".equals(cast.get("deployType"))&&"running".equals(cast.get("deployStatus"))) {
-                cast.put("deployStatus", "operating");
-            } else if("auto".equals(cast.get("deployType"))&&"running".equals(cast.get("deployStatus"))) {
-                cast.put("deployStatus", "running");
+        if (cast.get(DEPLOY_TYPE) != null && cast.get(DEPLOY_STATUS) != null) {
+            if (MANUAL.equals(cast.get(DEPLOY_TYPE)) && RUNNING.equals(cast.get(DEPLOY_STATUS))) {
+                cast.put(DEPLOY_STATUS, "operating");
+            } else if ("auto".equals(cast.get(DEPLOY_TYPE)) && RUNNING.equals(cast.get(DEPLOY_STATUS))) {
+                cast.put(DEPLOY_STATUS, RUNNING);
             }
         }
         maps.put(TypeUtil.SEARCH_PARAM, cast);

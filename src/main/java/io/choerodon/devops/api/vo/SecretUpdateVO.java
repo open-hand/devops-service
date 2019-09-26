@@ -37,7 +37,6 @@ public class SecretUpdateVO {
     @ApiModelProperty(value = "应用id/非必填")
     private Long appServiceId;
 
-    // TODO objectVersionNumber问题
 
     public Long getId() {
         return id;

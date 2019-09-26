@@ -95,13 +95,13 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             List<CheckLog> logs = new ArrayList<>();
             devopsCheckLogDTO.setBeginCheckDate(new Date());
             if ("0.19.0".equals(version)) {
-//                syncEnvAppRelevance(logs);
-//                syncAppShare(logs);
-//                syncDeployRecord(logs);
+                syncEnvAppRelevance(logs);
+                syncAppShare(logs);
+                syncDeployRecord(logs);
                 syncClusterAndCertifications(logs);
-//                syncConfig();
-//                syncEnvAndAppServiceStatus();
-//                syncBranch();
+                syncConfig();
+                syncEnvAndAppServiceStatus();
+                syncBranch();
             } else {
                 LOGGER.info("version not matched");
             }

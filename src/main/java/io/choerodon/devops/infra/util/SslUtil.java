@@ -13,14 +13,14 @@ import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
-import io.choerodon.core.exception.CommonException;
-
 import org.apache.commons.codec.binary.Base64;
 import org.bouncycastle.asn1.pkcs.RSAPrivateKey;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.choerodon.core.exception.CommonException;
 
 /**
  * Created by Sheep on 2019/5/30.
@@ -65,11 +65,7 @@ public class SslUtil {
             Certificate crt = cf.generateCertificate(fin);
             PublicKey publicKey = crt.getPublicKey();
             return publicKey;
-        } catch (CertificateException e) {
-            logger.info(e.getMessage(), e);
-        } catch (FileNotFoundException e) {
-            logger.info(e.getMessage(), e);
-        } catch (IOException e) {
+        } catch (CertificateException | IOException e) {
             logger.info(e.getMessage(), e);
         }
         return null;
@@ -136,19 +132,7 @@ public class SslUtil {
                 offSet = i * MAX_ENCRYPT_BLOCK;
             }
             return out.toByteArray();
-        } catch (NoSuchAlgorithmException e) {
-            logger.info(e.getMessage(), e);
-            return null;
-        } catch (NoSuchPaddingException e) {
-            logger.info(e.getMessage(), e);
-            return null;
-        } catch (InvalidKeyException e) {
-            logger.info(e.getMessage(), e);
-            return null;
-        } catch (IllegalBlockSizeException | IOException e) {
-            logger.info(e.getMessage(), e);
-            return null;
-        } catch (BadPaddingException e) {
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | IOException | BadPaddingException e) {
             logger.info(e.getMessage(), e);
             return null;
         }
@@ -200,19 +184,7 @@ public class SslUtil {
                 offSet = i * MAX_DECRYPT_BLOCK;
             }
             return new String(out.toByteArray(), DEFAULT_CHARSET);
-        } catch (NoSuchAlgorithmException e) {
-            logger.info(e.getMessage(), e);
-            return null;
-        } catch (NoSuchPaddingException e) {
-            logger.info(e.getMessage(), e);
-            return null;
-        } catch (InvalidKeyException e) {
-            logger.info(e.getMessage(), e);
-            return null;
-        } catch (IllegalBlockSizeException | IOException e) {
-            logger.info(e.getMessage(), e);
-            return null;
-        } catch (BadPaddingException e) {
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | IOException | BadPaddingException e) {
             logger.info(e.getMessage(), e);
             return null;
         }

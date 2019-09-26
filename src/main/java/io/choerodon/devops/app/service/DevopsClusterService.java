@@ -93,16 +93,6 @@ public interface DevopsClusterService {
     List<DevopsClusterBasicInfoVO> queryClustersAndNodes(Long projectId);
 
     /**
-     * 查询集群下已有权限的项目列表
-     *
-     * @param projectId 项目id
-     * @param clusterId 集群id
-     * @return 项目
-     */
-    List<ProjectReqVO> listClusterProjects(Long projectId, Long clusterId);
-
-
-    /**
      * 分页查询组织下在数据库中已有关联关系项目列表
      *
      * @param projectId   项目id
