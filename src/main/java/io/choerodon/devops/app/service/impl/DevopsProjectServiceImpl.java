@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -135,7 +136,7 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
         PageInfo<ProjectDTO> projectDTOPageInfo = baseServiceClientOperator.pageProjectByOrgId(
                 iamProjectDTO.getOrganizationId(),
                 pageRequest.getPage(), pageRequest.getSize(), null, null,
-                paramList == null ? null : paramList.get(0));
+                paramList.isEmpty() ? null : paramList.get(0));
         return ConvertUtils.convertPage(projectDTOPageInfo, ProjectReqVO.class);
     }
 
@@ -155,4 +156,6 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
         }
         return userVO;
     }
+
+
 }
