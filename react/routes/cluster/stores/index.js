@@ -1,6 +1,5 @@
-import React, { useEffect, createContext, useMemo, useContext } from 'react';
+import React, { createContext, useMemo, useContext } from 'react';
 import { inject } from 'mobx-react';
-import { observer } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
 import { DataSet } from 'choerodon-ui/pro';
 import useStore from './useStore';
@@ -13,16 +12,13 @@ export function useClusterStore() {
   return useContext(Store);
 }
 
-export const StoreProvider = injectIntl(inject('AppState')(observer(
+export const StoreProvider = injectIntl(inject('AppState')(
   (props) => {
     const { AppState: { currentMenuType: { id } }, children } = props;
     const clusterStore = useStore();
     const itemType = useMemo(() => itemTypeMappings, []);
-    const treeDs = useMemo(() => new DataSet(TreeDataSet(clusterStore)), []);
-    useEffect(() => {
-      treeDs.transport.read.url = `/devops/v1/projects/${id}/clusters/tree_menu`;
-      treeDs.query();
-    }, [id]);
+    const treeDs = useMemo(() => new DataSet(TreeDataSet(clusterStore, id)), [id]);
+
     const value = {
       ...props,
       prefixCls: 'c7ncd-cluster',
@@ -53,4 +49,4 @@ export const StoreProvider = injectIntl(inject('AppState')(observer(
       </Store.Provider>
     );
   }
-)));
+));

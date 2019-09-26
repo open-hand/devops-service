@@ -1,43 +1,32 @@
-import React, { Fragment, useMemo, useEffect } from 'react';
+import React, { Fragment } from 'react';
 import { observer } from 'mobx-react-lite';
 import ReactEcharts from 'echarts-for-react';
-import { injectIntl, FormattedMessage } from 'react-intl';
-import { Table, Tooltip, Button, Icon } from 'choerodon-ui';
-import { Content, Header, Page, stores } from '@choerodon/master';
+import { useClusterStore } from '../../../stores';
 import { useNodeContentStore } from './stores';
 import NodePodsTable from './node-pods-table';
-import Modals from './modals';
 
 import './NodeDetail.less';
 
-
-const NodeContent = observer((props) => {
+const NodeContent = observer(() => {
   const {
     formatMessage,
-    projectId,
-    clusterStore,
-    NodeInfoDs,
+    nodeInfoDs,
   } = useNodeContentStore();
-  const {
-    prefixCls,
-    intlPrefix,
-    permissions,
-    getSelectedMenu,
-  } = clusterStore;
+  const { clusterStore: { getSelectedMenu } } = useClusterStore();
   const { name } = getSelectedMenu;
-  
-  const node = NodeInfoDs.current;
-  // const node = { type: 'etcdmaster', nodeName: '192.168.100.27', status: 'Ready', createTime: '2019-07-31 18:39:50', cpuTotal: '2', cpuRequest: '0.650', cpuLimit: '0.100', cpuRequestPercentage: '32.50%', cpuLimitPercentage: '5.00%', memoryTotal: '7.542Gi', memoryRequest: '3.549Gi', memoryLimit: '5.049Gi', memoryRequestPercentage: '47.05%', memoryLimitPercentage: '66.94%', podTotal: 110, podCount: 9, podPercentage: '8.18%' };
+
+  const node = nodeInfoDs.current;
 
   return (
     <Fragment>
-      {/* <Modals /> */}
       <h1>{name}</h1>
       <div className="c7n-node-content">
-        <div className="c7n-node-title">{formatMessage({ id: 'node.res' })}</div>
-        <div className="c7n-node-pie">
-          {node ? podPies(formatMessage, node.toData()) : null}
-        </div>
+        {node ? <Fragment>
+          <div className="c7n-node-title">{formatMessage({ id: 'node.res' })}</div>
+          <div className="c7n-node-pie">
+            {podPies(formatMessage, node.toData())}
+          </div>
+        </Fragment> : null}
         <div className="c7n-node-title">{formatMessage({ id: 'node.pods' })}</div>
         <NodePodsTable />
       </div>
@@ -45,10 +34,7 @@ const NodeContent = observer((props) => {
   );
 });
 
-export default NodeContent;
-
-
-const podPies = (formatMessage, node) => {
+function podPies(formatMessage, node) {
   if (!node) { return; }
   const cpuData = {
     rv: node.cpuRequest,
@@ -134,9 +120,9 @@ const podPies = (formatMessage, node) => {
       </div>
     </div>
   </Fragment>);
-};
+}
 
-const getOption = (data) => {
+function getOption(data) {
   const lmvSeries = data.total - data.lmv > 0 ? {
     type: 'pie',
     radius: ['40%', '68%'],
@@ -198,49 +184,54 @@ const getOption = (data) => {
       rvSeries,
     ],
   };
-};
+}
 
 
-const pieDes = (formatMessage, data) => (<Fragment>
-  <div className="c7n-node-pie-info">
-    <span className="c7n-node-pie-info-span rv" />
-    <span>{formatMessage({ id: 'node.rv' })}</span>
-    <span>{data.rv}</span>
-  </div>
-  <div className="c7n-node-pie-info">
-    <span className="c7n-node-pie-info-span lmv" />
-    <span>{formatMessage({ id: 'node.lmv' })}</span>
-    <span>{data.lmv}</span>
-  </div>
-  <div className="c7n-node-pie-info">
-    <span className="c7n-node-pie-info-span" />
-    <span>{formatMessage({ id: 'node.allV' })}</span>
-    <span>{data.total}</span>
-  </div>
-</Fragment>);
+function pieDes(formatMessage, data) {
+  return <Fragment>
+    <div className="c7n-node-pie-info">
+      <span className="c7n-node-pie-info-span rv" />
+      <span>{formatMessage({ id: 'node.rv' })}</span>
+      <span>{data.rv}</span>
+    </div>
+    <div className="c7n-node-pie-info">
+      <span className="c7n-node-pie-info-span lmv" />
+      <span>{formatMessage({ id: 'node.lmv' })}</span>
+      <span>{data.lmv}</span>
+    </div>
+    <div className="c7n-node-pie-info">
+      <span className="c7n-node-pie-info-span" />
+      <span>{formatMessage({ id: 'node.allV' })}</span>
+      <span>{data.total}</span>
+    </div>
+  </Fragment>;
+}
 
-
-const getPodOption = (node) => ({
-  tooltip: {
-    show: false,
-  },
-  legend: {
-    show: false,
-  },
-  series: [
-    {
-      hoverAnimation: false,
-      type: 'pie',
-      radius: ['75%', '95%'],
-      label: { show: false },
-      data: [
-        {
-          value: node.podCount,
-          name: 'requestValue',
-          itemStyle: { color: '#00BFA5' },
-        },
-        { value: node.podTotal, name: 'value', itemStyle: { color: 'rgba(0,0,0,0.08)' } },
-      ],
+function getPodOption(node) {
+  return {
+    tooltip: {
+      show: false,
     },
-  ],
-});
+    legend: {
+      show: false,
+    },
+    series: [
+      {
+        hoverAnimation: false,
+        type: 'pie',
+        radius: ['75%', '95%'],
+        label: { show: false },
+        data: [
+          {
+            value: node.podCount,
+            name: 'requestValue',
+            itemStyle: { color: '#00BFA5' },
+          },
+          { value: node.podTotal, name: 'value', itemStyle: { color: 'rgba(0,0,0,0.08)' } },
+        ],
+      },
+    ],
+  };
+}
+
+export default NodeContent;

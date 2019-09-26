@@ -1,14 +1,15 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, Fragment } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Modal } from 'choerodon-ui/pro';
 import HeaderButtons from '../../../../../components/header-buttons';
+import EmptyPage from '../../../../../components/empty-page';
 import { useClusterStore } from '../../../stores';
 import CreateCluster from '../cluster-content/modals/create-cluster';
 import { useClusterMainStore } from '../../stores';
 
 const modalKey1 = Modal.key();
 
-const EmptyPage = observer(() => {
+const EmptyShown = observer(() => {
   const modalStyle = useMemo(() => ({
     width: 380,
   }), []);
@@ -58,7 +59,13 @@ const EmptyPage = observer(() => {
     }];
   }
 
-  return <HeaderButtons items={getButtons()} />;
+  return <Fragment>
+    <HeaderButtons items={getButtons()} />
+    <EmptyPage
+      title={formatMessage({ id: 'c7ncd.cluster.empty.title' })}
+      describe={formatMessage({ id: 'c7ncd.cluster.empty.describe' })}
+    />
+  </Fragment>;
 });
 
-export default EmptyPage;
+export default EmptyShown;

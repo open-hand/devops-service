@@ -1,6 +1,5 @@
 import React, { useRef, useMemo, lazy, Suspense } from 'react';
 import { observer } from 'mobx-react-lite';
-import { FormattedMessage } from 'react-intl';
 import Sidebar from './sidebar';
 import DragBar from '../../../components/drag-bar';
 import Loading from '../../../components/loading';
@@ -11,7 +10,7 @@ import './index.less';
 
 const ClusterContent = lazy(() => import('./contents/cluster-content'));
 const NodeContent = lazy(() => import('./contents/node-content'));
-const EmptyPage = lazy(() => import('./contents/empty'));
+const EmptyShown = lazy(() => import('./contents/empty'));
 
 export default observer(() => {
   const {
@@ -25,6 +24,7 @@ export default observer(() => {
     },
     treeDs,
   } = useClusterStore();
+
   const { mainStore } = useClusterMainStore();
   const rootRef = useRef(null);
 
@@ -38,26 +38,21 @@ export default observer(() => {
       : <Loading display />;
   }, [itemType]);
 
-  if (!treeDs.length && treeDs.status === 'ready') {
-    return <div className={`${prefixCls}-wrap`}>
-      <Suspense fallback={<span />}>
-        <EmptyPage />
-      </Suspense>
-      <div><FormattedMessage id="c7ncd.cluster.empty.msg" /></div>
-    </div>;
-  } else {
-    return (<div
-      ref={rootRef}
-      className={`${prefixCls}-wrap`}
-    >
-      <DragBar
-        parentRef={rootRef}
-        store={mainStore}
-      />
-      <Sidebar />
-      <div className={`${prefixCls}-main ${prefixCls}-animate`}>
-        {content}
-      </div>
-    </div>);
-  }
+  return (!treeDs.length && treeDs.status === 'ready') ? <div className={`${prefixCls}-wrap`}>
+    <Suspense fallback={<span />}>
+      <EmptyShown />
+    </Suspense>
+  </div> : <div
+    ref={rootRef}
+    className={`${prefixCls}-wrap`}
+  >
+    <DragBar
+      parentRef={rootRef}
+      store={mainStore}
+    />
+    <Sidebar />
+    <div className={`${prefixCls}-main ${prefixCls}-animate`}>
+      {content}
+    </div>
+  </div>;
 });

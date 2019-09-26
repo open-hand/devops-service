@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { runInAction } from 'mobx';
-import { Button } from 'choerodon-ui';
+import { Button } from 'choerodon-ui/pro';
 import { useResourceStore } from '../../../stores';
 
 import './index.less';
@@ -15,8 +15,13 @@ const SidebarHeader = () => {
     prefixCls,
     intl: { formatMessage },
     resourceStore,
+    treeDs,
   } = useResourceStore();
   const { getViewType } = resourceStore;
+  const buttonProps = useMemo(() => ({
+    disabled: treeDs.status === 'loading',
+    color: 'primary',
+  }), [treeDs.status]);
 
   function handleChoose(choose) {
     runInAction(() => {
@@ -37,14 +42,14 @@ const SidebarHeader = () => {
 
   return <div className={`${prefixCls}-sidebar-head`}>
     <Button
-      type="primary"
+      {...buttonProps}
       onClick={chooseInstance}
       className={getViewType === IST_VIEW_TYPE ? `${prefixCls}-sidebar-active` : ''}
     >
       {formatMessage({ id: `${intlPrefix}.viewer.${IST_VIEW_TYPE}` })}
     </Button>
     <Button
-      type="primary"
+      {...buttonProps}
       onClick={chooseResource}
       className={getViewType === RES_VIEW_TYPE ? `${prefixCls}-sidebar-active` : ''}
     >

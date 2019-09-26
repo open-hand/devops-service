@@ -194,7 +194,7 @@ class Submission extends Component {
       .split('T')[0]
       .replace(/-/g, '/');
     loadCommits(projectId, startTime, endTime, this.state.appId);
-    loadCommitsRecord(projectId, startTime, endTime, this.state.appId, this.state.page);
+    loadCommitsRecord(projectId, startTime, endTime, this.state.appId, this.state.index);
   }
 
 

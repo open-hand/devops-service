@@ -22,9 +22,9 @@ const LOG_OPTIONS = {
 const Sidebar = Modal.Sidebar;
 const { Option } = Select;
 
-@observer
-@injectIntl
 @inject('AppState')
+@injectIntl
+@observer
 export default class LogSidebar extends Component {
   constructor(props) {
     super(props);
