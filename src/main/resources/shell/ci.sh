@@ -19,8 +19,8 @@ export DOCKER_CONFIG=/kaniko/.docker/
 
 # 创建kaniko认证配置文件目录
 mkdir -p $DOCKER_CONFIG /root/.docker
-# 设成kaniko认证配置文件
-echo "{\"auths\":{\"$DOCKER_REGISTRY\":{\"username\":\"$DOCKER_USERNAME\",\"password\":\"$DOCKER_PASSWORD\"}}}" > /kaniko/.docker/config.json
+# 设成docekr认证配置文件
+echo "{\"auths\":{\"$DOCKER_REGISTRY\":{\"auth\":\"$(echo -n $DOCKER_USERNAME:$DOCKER_PASSWORD | base64)\"}}}" > /kaniko/.docker/config.json
 cp -rf /kaniko/.docker/config.json /root/.docker
 
 # 获取commit时间
