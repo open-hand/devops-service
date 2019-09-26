@@ -17,6 +17,7 @@ const Version = (props) => {
     intlPrefix,
     prefixCls,
     versionDs,
+    detailDs,
   } = useServiceDetailStore();
 
   function refresh() {
@@ -25,6 +26,12 @@ const Version = (props) => {
 
   function renderTime({ value }) {
     return <TimePopover content={value} />;
+  }
+
+  function getTitle() {
+    if (detailDs.current) {
+      return detailDs.current.get('name');
+    }
   }
 
   return (
@@ -44,7 +51,7 @@ const Version = (props) => {
           <FormattedMessage id="refresh" />
         </Button>
       </HeaderButtons>
-      <Breadcrumb title="服务详情" />
+      <Breadcrumb title={getTitle()} />
       <Content className={`${prefixCls}-detail-content`}>
         <Table dataSet={versionDs}>
           <Column name="version" sortable />

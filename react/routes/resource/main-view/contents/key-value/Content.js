@@ -10,11 +10,12 @@ import TimePopover from '../../../../../components/timePopover/TimePopover';
 import { useResourceStore } from '../../../stores';
 import { useKeyValueStore } from './stores';
 import Modals from './modals';
-
-import './index.less';
 import KeyValueModal from '../application/modals/key-value';
 import { useMainStore } from '../../stores';
 import ClickText from '../../../../../components/click-text';
+import ResourceListTitle from '../../components/resource-list-title';
+
+import './index.less';
 
 const { Column } = Table;
 
@@ -129,6 +130,7 @@ const ConfigMap = observer((props) => {
   return (
     <div className={`${prefixCls}-keyValue-table`}>
       <Modals />
+      <ResourceListTitle type={itemType === 'configMap' ? 'configMaps' : 'secrets'} />
       {itemType === 'configMap'
         ? <Table
           dataSet={store}

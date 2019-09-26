@@ -6,13 +6,13 @@ import { Table } from 'choerodon-ui/pro';
 import map from 'lodash/map';
 import StatusIcon from '../../../../../components/StatusIcon';
 import StatusTags from '../../../../../components/status-tag';
-
 import { useResourceStore } from '../../../stores';
 import { useIngressStore } from './stores';
 import Modals from './modals';
 import MouserOverWrapper from '../../../../../components/MouseOverWrapper';
 import DomainModal from '../application/modals/domain';
 import { useMainStore } from '../../stores';
+import ResourceListTitle from '../../components/resource-list-title';
 
 import './index.less';
 
@@ -140,6 +140,7 @@ const IngressContent = observer(() => {
   return (
     <div className={`${prefixCls}-ingress-table`}>
       <Modals />
+      <ResourceListTitle type="ingresses" />
       <Table
         dataSet={ingressDs}
         border={false}

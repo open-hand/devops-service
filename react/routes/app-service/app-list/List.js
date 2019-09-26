@@ -13,7 +13,6 @@ import ImportForm from './modal/import-form';
 import StatusTag from '../components/status-tag';
 
 import './index.less';
-import '../../main.less';
 
 const { Column } = Table;
 const modalKey1 = Modal.key();

@@ -11,8 +11,7 @@ import { Table } from 'choerodon-ui/pro';
 import _ from 'lodash';
 import classnames from 'classnames';
 import StatusIcon from '../../../../../components/StatusIcon';
-import StatusTags from '../../../../../components/status-tag';
-
+import ResourceListTitle from '../../components/resource-list-title';
 import { useResourceStore } from '../../../stores';
 import { useNetworkStore } from './stores';
 import Modals from './modals';
@@ -20,6 +19,7 @@ import EditNetwork from './modals/network-edit';
 import { useMainStore } from '../../stores';
 
 import './index.less';
+
 
 const { Column } = Table;
 
@@ -283,6 +283,7 @@ const NetworkContent = observer(() => {
   return (
     <div className={`${prefixCls}-network-table`}>
       <Modals />
+      <ResourceListTitle type="services" />
       <Table
         dataSet={networkDs}
         border={false}
