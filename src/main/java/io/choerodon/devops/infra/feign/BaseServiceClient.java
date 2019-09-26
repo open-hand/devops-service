@@ -128,10 +128,7 @@ public interface BaseServiceClient {
                                                      @RequestParam Map<String, Object> pageRequest,
                                                      @RequestParam(name = "name", required = false) String name,
                                                      @RequestParam(name = "code", required = false) String code,
-                                                     @RequestParam(name = "type_name", required = false) String typeName,
-                                                     @RequestParam(name = "enabled", required = false) Boolean enabled,
-                                                     @RequestParam(name = "category", required = false) String category,
-                                                     @RequestParam(name = "params", required = false) String[] params);
+                                                     @RequestParam(name = "enabled", required = false) Boolean enabled);
 
     @PostMapping("/v1/organizations/all")
     ResponseEntity<PageInfo<OrganizationSimplifyVO>> getAllOrgs(

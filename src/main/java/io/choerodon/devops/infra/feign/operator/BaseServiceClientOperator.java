@@ -268,10 +268,10 @@ public class BaseServiceClientOperator {
         }
     }
 
-    public PageInfo<ProjectDTO> listProject(Long organizationId, PageRequest pageRequest, String[] params) {
+    public PageInfo<ProjectDTO> listProject(Long organizationId, PageRequest pageRequest) {
         try {
             ResponseEntity<PageInfo<ProjectDTO>> projectDTOResponseEntity = baseServiceClient
-                    .listProject(organizationId, FeignParamUtils.encodePageRequest(pageRequest), null, null, null, true, null, params);
+                    .listProject(organizationId, FeignParamUtils.encodePageRequest(pageRequest), null, null, null);
             return projectDTOResponseEntity.getBody();
         } catch (FeignException e) {
             LOGGER.error("error.create.iam.project");
