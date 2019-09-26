@@ -124,10 +124,10 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
             ProjectDTO iamProjectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
 
             // 手动查出所有组织下的项目
-            PageInfo<ProjectDTO> filteredProjects = baseServiceClientOperator.pageProjectByOrgId(
+            List<ProjectDTO> filteredProjects = baseServiceClientOperator.listIamProjectByOrgId(
                     iamProjectDTO.getOrganizationId(),
-                    0, 0, null,
-                    paramList.toArray(new String[0]));
+                    null, null,
+                    paramList.get(0));
 
             // 数据库中的有权限的项目
             List<Long> permissions = devopsCertificationProRelationshipService.baseListByCertificationId(certId)
@@ -136,7 +136,7 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
                     .collect(Collectors.toList());
 
             // 过滤出在数据库中有权限的项目信息
-            List<ProjectReqVO> allMatched = filteredProjects.getList()
+            List<ProjectReqVO> allMatched = filteredProjects
                     .stream()
                     .filter(p -> permissions.contains(p.getId()))
                     .map(p -> ConvertUtils.convertObject(p, ProjectReqVO.class))
@@ -234,10 +234,9 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
 
         //查询出该项目所属组织下的所有项目
         Map<String, Object> searchMap = TypeUtil.castMapParams(params);
-        List<String> paramList = TypeUtil.cast(searchMap.get(TypeUtil.PARAMS));
         ProjectDTO iamProjectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(iamProjectDTO.getOrganizationId());
-        PageInfo<ProjectDTO> projectDTOPageInfo = baseServiceClientOperator.listProject(organizationDTO.getId(), new PageRequest(0, 0));
+        List<ProjectDTO> projectDTOList = baseServiceClientOperator.listIamProjectByOrgId(organizationDTO.getId());
 
         //查询已经分配权限的项目
         List<Long> permitted = devopsCertificationProRelationshipService.baseListByCertificationId(certId)
@@ -246,7 +245,7 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
                 .collect(Collectors.toList());
 
         //把组织下有权限的项目过滤掉再返回
-        return projectDTOPageInfo.getList().stream()
+        return projectDTOList.stream()
                 .filter(i -> !permitted.contains(i.getId()))
                 .map(i -> new ProjectReqVO(i.getId(), i.getName(), i.getCode(), null))
                 .collect(Collectors.toList());

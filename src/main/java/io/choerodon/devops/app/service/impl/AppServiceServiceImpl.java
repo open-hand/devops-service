@@ -1381,7 +1381,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         Long organizationId = baseServiceClientOperator.queryIamProjectById(projectId).getOrganizationId();
         List<Long> appServiceIds = new ArrayList<>();
-        baseServiceClientOperator.listIamProjectByOrgId(organizationId, null, null).forEach(proId ->
+        baseServiceClientOperator.listIamProjectByOrgId(organizationId).forEach(proId ->
                 baseListAll(projectId).forEach(appServiceDTO -> appServiceIds.add(appServiceDTO.getId()))
         );
         PageInfo<AppServiceDTO> applicationServiceDTOPageInfo = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> appServiceMapper.listShareApplicationService(appServiceIds, projectId, null, TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS))));
@@ -1571,15 +1571,11 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     @Override
     public List<ProjectVO> listProjects(Long organizationId, Long projectId, String params) {
-        PageInfo<ProjectDTO> projectDTOPageInfo = baseServiceClientOperator.pageProjectByOrgId(
-                organizationId,
-                0, 0, null,
-                new String[0]);
-        PageInfo<ProjectVO> pageInfo = ConvertUtils.convertPage(projectDTOPageInfo, ProjectVO.class);
-        if (pageInfo == null) {
+        List<ProjectVO> projectVOList = ConvertUtils.convertList(baseServiceClientOperator.listIamProjectByOrgId(organizationId, null, null, params), ProjectVO.class);
+        if (projectVOList == null) {
             return new ArrayList<>();
         }
-        return pageInfo.getList().stream().filter(t -> !t.getId().equals(projectId)).collect(Collectors.toList());
+        return projectVOList.stream().filter(t -> !t.getId().equals(projectId)).collect(Collectors.toList());
     }
 
 
@@ -1993,7 +1989,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             Long organizationId = baseServiceClientOperator.queryIamProjectById(projectId).getOrganizationId();
             List<Long> projectIds = new ArrayList<>();
             if (ObjectUtils.isEmpty(searchProjectId)) {
-                projectIds = baseServiceClientOperator.listIamProjectByOrgId(organizationId, null, null).stream()
+                projectIds = baseServiceClientOperator.listIamProjectByOrgId(organizationId).stream()
                         .filter(v -> v.getEnabled())
                         .filter(v -> !projectId.equals(v.getId()))
                         .map(ProjectDTO::getId).collect(Collectors.toList());
@@ -2098,7 +2094,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             case SHARE_SERVICE: {
                 Long organizationId = baseServiceClientOperator.queryIamProjectById(projectId).getOrganizationId();
                 List<Long> appServiceIds = new ArrayList<>();
-                baseServiceClientOperator.listIamProjectByOrgId(organizationId, null, null)
+                baseServiceClientOperator.listIamProjectByOrgId(organizationId)
                         .forEach(pro ->
                                 baseListAll(pro.getId()).forEach(appServiceDTO -> appServiceIds.add(appServiceDTO.getId()))
                         );
@@ -2273,7 +2269,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         List<ProjectDTO> projectDTOS = new ArrayList<>();
         if (!StringUtils.isEmpty(share) && share) {
             Long organizationId = baseServiceClientOperator.queryIamProjectById(projectId).getOrganizationId();
-            List<Long> projectIds = baseServiceClientOperator.listIamProjectByOrgId(organizationId, null, null).stream()
+            List<Long> projectIds = baseServiceClientOperator.listIamProjectByOrgId(organizationId).stream()
                     .filter(v -> v.getEnabled())
                     .filter(v -> !projectId.equals(v.getId()))
                     .map(ProjectDTO::getId).collect(Collectors.toList());

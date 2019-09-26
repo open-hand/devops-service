@@ -29,10 +29,6 @@ public interface IamService {
 
     IamUserDTO queryByLoginName(String userName);
 
-    List<ProjectDTO> listIamProjectByOrgId(Long organizationId, String name, String[] params);
-
-    PageInfo<ProjectDTO> queryProjectByOrgId(Long organizationId, int page, int size, String name, String[] params);
-
     List<IamUserDTO> listUsersByIds(List<Long> ids);
 
     IamUserDTO queryUserByUserId(Long id);

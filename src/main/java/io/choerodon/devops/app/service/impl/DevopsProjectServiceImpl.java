@@ -134,8 +134,8 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
 
         PageInfo<ProjectDTO> projectDTOPageInfo = baseServiceClientOperator.pageProjectByOrgId(
                 iamProjectDTO.getOrganizationId(),
-                pageRequest.getPage(), pageRequest.getSize(), null,
-                paramList == null ? null : paramList.toArray(new String[0]));
+                pageRequest.getPage(), pageRequest.getSize(), null, null,
+                paramList == null ? null : paramList.get(0));
         return ConvertUtils.convertPage(projectDTOPageInfo, ProjectReqVO.class);
     }
 
@@ -144,12 +144,13 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
         List<IamUserDTO> allMember = baseServiceClientOperator.getAllMember(projectId);
         return allMember.stream().map(this::userDTOTOVO).collect(Collectors.toList());
     }
-    private UserVO userDTOTOVO(IamUserDTO iamUserDTOList){
+
+    private UserVO userDTOTOVO(IamUserDTO iamUserDTOList) {
         UserVO userVO = new UserVO();
-        BeanUtils.copyProperties(iamUserDTOList,userVO);
-        if(iamUserDTOList.getLdap()){
+        BeanUtils.copyProperties(iamUserDTOList, userVO);
+        if (iamUserDTOList.getLdap()) {
             userVO.setLoginName(iamUserDTOList.getLoginName());
-        }else {
+        } else {
             userVO.setLoginName(iamUserDTOList.getEmail());
         }
         return userVO;

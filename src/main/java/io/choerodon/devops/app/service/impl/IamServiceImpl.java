@@ -89,31 +89,6 @@ public class IamServiceImpl implements IamService {
     }
 
     @Override
-    public List<ProjectDTO> listIamProjectByOrgId(Long organizationId, String name, String[] params) {
-        List<ProjectDTO> returnList = new ArrayList<>();
-        int page = 0;
-        int size = 0;
-        ResponseEntity<PageInfo<ProjectDTO>> pageResponseEntity =
-                baseServiceClient.queryProjectByOrgId(organizationId, page, size, name, null);
-        PageInfo<ProjectDTO> projectDOPage = pageResponseEntity.getBody();
-        List<ProjectDTO> projectEList = projectDOPage.getList();
-        if (!projectEList.isEmpty()) {
-            returnList.addAll(projectEList);
-        }
-        return returnList;
-    }
-
-    @Override
-    public PageInfo<ProjectDTO> queryProjectByOrgId(Long organizationId, int page, int size, String name, String[] params) {
-        try {
-            ResponseEntity<PageInfo<ProjectDTO>> pageInfoResponseEntity = baseServiceClient.queryProjectByOrgId(organizationId, page, size, name, params);
-            return pageInfoResponseEntity.getBody();
-        } catch (FeignException e) {
-            throw new CommonException(e);
-        }
-    }
-
-    @Override
     public List<ProjectWithRoleVO> listProjectWithRoleDTO(Long userId) {
         List<ProjectWithRoleVO> returnList = new ArrayList<>();
         int page = 0;

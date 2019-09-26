@@ -62,10 +62,6 @@ public class BaseServiceClientFallback implements BaseServiceClient {
         throw new CommonException("error.userInProject.get");
     }
 
-    @Override
-    public ResponseEntity<PageInfo<ProjectDTO>> queryProjectByOrgId(Long id, int page, int size, String name, String[] params) {
-        throw new CommonException(ERROR_PROJECT_GET);
-    }
 
     @Override
     public ResponseEntity<List<ApplicationDTO>> queryAppsByOrgId(Long organizationId, Boolean doPage, int page, int size, String name, String code, String type, String[] params) {
@@ -143,7 +139,7 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
-    public ResponseEntity<PageInfo<ProjectDTO>> listProject(Long organizationId, Map<String, Object> pageRequest, String name, String code, Boolean enabled) {
+    public ResponseEntity<PageInfo<ProjectDTO>> pageProjectsByOrgId(Long organizationId, Map<String, Object> pageRequest, String name, String code, Boolean enabled, String params) {
         return null;
     }
 

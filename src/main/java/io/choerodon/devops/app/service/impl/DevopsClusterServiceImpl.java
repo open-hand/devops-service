@@ -35,19 +35,14 @@ import io.choerodon.devops.infra.util.*;
 @Service
 public class DevopsClusterServiceImpl implements DevopsClusterService {
 
+    private static final String UPGRADE_MESSAGE = "Version is too low, please upgrade!";
+    private static final String ERROR_CLUSTER_NOT_EXIST = "error.cluster.not.exist";
     @Value("${agent.version}")
     private String agentExpectVersion;
-
     @Value("${agent.serviceUrl}")
     private String agentServiceUrl;
-
     @Value("${agent.repoUrl}")
     private String agentRepoUrl;
-
-    private static final String UPGRADE_MESSAGE = "Version is too low, please upgrade!";
-
-    private static final String ERROR_CLUSTER_NOT_EXIST = "error.cluster.not.exist";
-
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
@@ -182,9 +177,8 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         ProjectDTO iamProjectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
 
         // 查出组织下所有符合条件的项目
-        PageInfo<ProjectDTO> filteredProjects = baseServiceClientOperator.pageProjectByOrgId(
-                iamProjectDTO.getOrganizationId(), 0, 0, null,
-                paramList == null ? null : paramList.toArray(new String[0]));
+        List<ProjectDTO> filteredProjects = baseServiceClientOperator.listIamProjectByOrgId(
+                iamProjectDTO.getOrganizationId(), null, null, paramList == null ? null : paramList.get(0));
 
         // 查出数据库中已经分配权限的项目
         List<Long> permitted = devopsClusterProPermissionService.baseListByClusterId(clusterId)
@@ -193,7 +187,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
                 .collect(Collectors.toList());
 
         // 将已经分配权限的项目过滤
-        return filteredProjects.getList()
+        return filteredProjects
                 .stream()
                 .filter(p -> !permitted.contains(p.getId()))
                 .map(p -> new ProjectReqVO(p.getId(), p.getName(), p.getCode()))
@@ -311,10 +305,10 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
             ProjectDTO iamProjectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
 
             // 手动查出所有组织下的项目
-            PageInfo<ProjectDTO> filteredProjects = baseServiceClientOperator.pageProjectByOrgId(
+            List<ProjectDTO> filteredProjects = baseServiceClientOperator.listIamProjectByOrgId(
                     iamProjectDTO.getOrganizationId(),
-                    0, 0, null,
-                    paramList.toArray(new String[0]));
+                    null, null,
+                    paramList.get(0));
 
             // 数据库中的有权限的项目
             List<Long> permissions = devopsClusterProPermissionService.baseListByClusterId(clusterId)
@@ -323,7 +317,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
                     .collect(Collectors.toList());
 
             // 过滤出在数据库中有权限的项目信息
-            List<ProjectReqVO> allMatched = filteredProjects.getList()
+            List<ProjectReqVO> allMatched = filteredProjects
                     .stream()
                     .filter(p -> permissions.contains(p.getId()))
                     .map(p -> ConvertUtils.convertObject(p, ProjectReqVO.class))
