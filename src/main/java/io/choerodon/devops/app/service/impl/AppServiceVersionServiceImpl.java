@@ -430,7 +430,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     @Override
     public List<AppServiceLatestVersionDTO> baseListAppNewestVersion(Long projectId) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        List<ProjectDTO> projectEList = baseServiceClientOperator.listIamProjectByOrgId(projectDTO.getOrganizationId(), null, null);
+        List<ProjectDTO> projectEList = baseServiceClientOperator.listIamProjectByOrgId(projectDTO.getOrganizationId());
         List<Long> projectIds = projectEList.stream().map(ProjectDTO::getId)
                 .collect(Collectors.toCollection(ArrayList::new));
         return appServiceVersionMapper.listAppNewestVersion(projectId, projectIds);

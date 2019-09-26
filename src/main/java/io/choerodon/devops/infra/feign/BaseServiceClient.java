@@ -47,9 +47,6 @@ public interface BaseServiceClient {
     @GetMapping(value = "v1/projects/{project_id}/users?id={id}")
     ResponseEntity<PageInfo<IamUserDTO>> queryInProjectById(@PathVariable("project_id") Long projectId, @PathVariable("id") Long id);
 
-    @GetMapping(value = "/v1/organizations/{id}/projects")
-    ResponseEntity<PageInfo<ProjectDTO>> queryProjectByOrgId(@PathVariable("id") Long id, @RequestParam("page") int page, @RequestParam("size") int size, @RequestParam("name") String name, @RequestParam("params") String[] params);
-
     @GetMapping(value = "/v1/organizations/{organization_id}/applications")
     ResponseEntity<List<ApplicationDTO>> queryAppsByOrgId(@PathVariable("organization_id") Long organizationId,
                                                           @RequestParam(value = "doPage", required = false) Boolean doPage,
@@ -124,11 +121,12 @@ public interface BaseServiceClient {
 
 
     @GetMapping("/v1/organizations/{organization_id}/projects")
-    ResponseEntity<PageInfo<ProjectDTO>> listProject(@PathVariable(name = "organization_id") Long organizationId,
-                                                     @RequestParam Map<String, Object> pageRequest,
-                                                     @RequestParam(name = "name", required = false) String name,
-                                                     @RequestParam(name = "code", required = false) String code,
-                                                     @RequestParam(name = "enabled", required = false) Boolean enabled);
+    ResponseEntity<PageInfo<ProjectDTO>> pageProjectsByOrgId(@PathVariable(name = "organization_id") Long organizationId,
+                                                             @RequestParam Map<String, Object> pageRequest,
+                                                             @RequestParam(name = "name", required = false) String name,
+                                                             @RequestParam(name = "code", required = false) String code,
+                                                             @RequestParam(name = "enabled", required = false) Boolean enabled,
+                                                             @RequestParam(value = "params", required = false) String params);
 
     @PostMapping("/v1/organizations/all")
     ResponseEntity<PageInfo<OrganizationSimplifyVO>> getAllOrgs(
@@ -161,11 +159,13 @@ public interface BaseServiceClient {
     @PostMapping(value = "/v1/applications/{app_download_recode_id}/complete_downloading")
     ResponseEntity completeDownloadApplication(@PathVariable("app_download_recode_id") Long appDownloadRecordId,
                                                @RequestParam("app_version_id") Long appVersionId,
+                                               @RequestParam("organization_id") Long organizationId,
                                                @RequestBody List<AppDownloadDevopsReqVO> appDownloadDevopsReqVOS);
 
     @PutMapping(value = "/v1/applications/{app_download_record_id}/fail_downloading")
     ResponseEntity failToDownloadApplication(@PathVariable("app_download_record_id") Long appDownloadRecordId,
-                                             @RequestParam("app_version_id") Long appVersionId);
+                                             @RequestParam("app_version_id") Long appVersionId,
+                                             @RequestParam("organization_id") Long organizationId);
 
     @GetMapping(value = "/v1/remote_token/authorization/check/latest")
     ResponseEntity<RemoteTokenAuthorizationVO> checkLatestToken();

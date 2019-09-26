@@ -39,6 +39,9 @@ public class AppMarketDownloadPayload {
     @ApiModelProperty("SasS端应用版本Id")
     private Long mktAppVersionId;
 
+    @ApiModelProperty("下载的组织Id")
+    private Long organizationId;
+
     @ApiModelProperty("应用服务")
     private List<AppServiceDownloadPayload> appServiceDownloadPayloads;
 
@@ -120,5 +123,13 @@ public class AppMarketDownloadPayload {
 
     public void setMktAppVersionId(Long mktAppVersionId) {
         this.mktAppVersionId = mktAppVersionId;
+    }
+
+    public Long getOrganizationId() {
+        return organizationId;
+    }
+
+    public void setOrganizationId(Long organizationId) {
+        this.organizationId = organizationId;
     }
 }

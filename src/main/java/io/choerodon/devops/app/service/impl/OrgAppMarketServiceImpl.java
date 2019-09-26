@@ -272,10 +272,10 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                 LOGGER.info("==========应用下载镜像推送成功==========");
             }
             LOGGER.info("==========应用下载开始调用回传接口==========");
-            baseServiceClientOperator.completeDownloadApplication(appMarketDownloadVO.getAppDownloadRecordId(), appMarketDownloadVO.getAppVersionId(), appDownloadDevopsReqVOS);
+            baseServiceClientOperator.completeDownloadApplication(appMarketDownloadVO.getAppDownloadRecordId(), appMarketDownloadVO.getAppVersionId(), appMarketDownloadVO.getOrganizationId(), appDownloadDevopsReqVOS);
             LOGGER.info("==========应用下载完成==========");
         } catch (Exception e) {
-            baseServiceClientOperator.failToDownloadApplication(appMarketDownloadVO.getAppDownloadRecordId(), appMarketDownloadVO.getAppVersionId());
+            baseServiceClientOperator.failToDownloadApplication(appMarketDownloadVO.getAppDownloadRecordId(), appMarketDownloadVO.getAppVersionId(), appMarketDownloadVO.getOrganizationId());
             throw new CommonException("error.download.app", e);
         }
     }
@@ -517,7 +517,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                 throw new CommonException("error.zip.empty");
             }
             LOGGER.info("==========应用下载，chart 开始上传chart包==========");
-            newTgzFile = String.format(APP_TEMP_PATH_FORMAT, APPLICATION, File.separator, CHART + System.currentTimeMillis());
+            newTgzFile = String.format("%s%s%s", APPLICATION, File.separator, CHART + System.currentTimeMillis());
             FileUtil.toTgz(String.format(APP_TEMP_PATH_FORMAT, unZipPath, File.separator, appServiceCode), newTgzFile);
             chartUtil.uploadChart(helmUrl, MARKET_PRO, appCode, new File(newTgzFile + TGZ));
             LOGGER.info("==========应用下载，chart包删除成功==========");

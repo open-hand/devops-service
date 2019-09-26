@@ -57,17 +57,23 @@ public class BaseServiceClientOperator {
         }
     }
 
-    public List<ProjectDTO> listIamProjectByOrgId(Long organizationId, String name, String[] params) {
-        int page = 0;
-        int size = 0;
+    public List<ProjectDTO> listIamProjectByOrgId(Long organizationId) {
+        return listIamProjectByOrgId(organizationId, null, null, null);
+    }
+
+
+    public List<ProjectDTO> listIamProjectByOrgId(Long organizationId, String name, String code, String params) {
+        PageRequest pageRequest = new PageRequest(0, 0);
         ResponseEntity<PageInfo<ProjectDTO>> pageResponseEntity =
-                baseServiceClient.queryProjectByOrgId(organizationId, page, size, name, null);
+                baseServiceClient.pageProjectsByOrgId(organizationId, FeignParamUtils.encodePageRequest(pageRequest), name, code, true, params);
         return pageResponseEntity.getBody().getList();
     }
 
-    public PageInfo<ProjectDTO> pageProjectByOrgId(Long organizationId, int page, int size, String name, String[] params) {
+    public PageInfo<ProjectDTO> pageProjectByOrgId(Long organizationId, int page, int size, String name, String code, String params) {
+        PageRequest pageRequest = new PageRequest(page, size);
         try {
-            ResponseEntity<PageInfo<ProjectDTO>> pageInfoResponseEntity = baseServiceClient.queryProjectByOrgId(organizationId, page, size, name, params);
+            ResponseEntity<PageInfo<ProjectDTO>> pageInfoResponseEntity = baseServiceClient.pageProjectsByOrgId(organizationId,
+                    FeignParamUtils.encodePageRequest(pageRequest), name, code, true, params);
             return pageInfoResponseEntity.getBody();
         } catch (FeignException e) {
             throw new CommonException(e);
@@ -268,17 +274,6 @@ public class BaseServiceClientOperator {
         }
     }
 
-    public PageInfo<ProjectDTO> listProject(Long organizationId, PageRequest pageRequest) {
-        try {
-            ResponseEntity<PageInfo<ProjectDTO>> projectDTOResponseEntity = baseServiceClient
-                    .listProject(organizationId, FeignParamUtils.encodePageRequest(pageRequest), null, null, null);
-            return projectDTOResponseEntity.getBody();
-        } catch (FeignException e) {
-            LOGGER.error("error.create.iam.project");
-            return null;
-        }
-    }
-
     public PageInfo<OrganizationSimplifyVO> getAllOrgs(Integer page, Integer size) {
         try {
             ResponseEntity<PageInfo<OrganizationSimplifyVO>> simplifyDTOs = baseServiceClient
@@ -330,17 +325,17 @@ public class BaseServiceClientOperator {
         }
     }
 
-    public void completeDownloadApplication(Long publishAppVersionId, Long appVersionId, List<AppDownloadDevopsReqVO> appDownloadDevopsReqVOS) {
+    public void completeDownloadApplication(Long publishAppVersionId, Long appVersionId, Long organizationId, List<AppDownloadDevopsReqVO> appDownloadDevopsReqVOS) {
         try {
-            baseServiceClient.completeDownloadApplication(publishAppVersionId, appVersionId, appDownloadDevopsReqVOS);
+            baseServiceClient.completeDownloadApplication(publishAppVersionId, appVersionId, organizationId, appDownloadDevopsReqVOS);
         } catch (Exception e) {
             throw new CommonException("error.application.download.complete", e.getMessage());
         }
     }
 
-    public void failToDownloadApplication(Long publishAppVersionId, Long appVersionId) {
+    public void failToDownloadApplication(Long publishAppVersionId, Long appVersionId, Long organizationId) {
         try {
-            baseServiceClient.failToDownloadApplication(publishAppVersionId, appVersionId);
+            baseServiceClient.failToDownloadApplication(publishAppVersionId, appVersionId, organizationId);
         } catch (Exception e) {
             throw new CommonException("error.application.download.failed", e.getMessage());
         }
