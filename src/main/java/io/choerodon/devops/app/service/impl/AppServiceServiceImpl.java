@@ -1572,10 +1572,11 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     @Override
     public List<ProjectVO> listProjects(Long organizationId, Long projectId, String params) {
-        List<ProjectDTO> projectDTOS = baseServiceClientOperator.listIamProjectByOrgId(organizationId, null,null, params).stream()
+        List<ProjectDTO> projectDTOS = baseServiceClientOperator.listIamProjectByOrgId(organizationId, null, null, params).stream()
                 .filter(v -> v.getEnabled())
-                .filter(v -> !projectId.equals(v.getId())).collect(Collectors.toList());;
-        List<ProjectVO> projectVOS = ConvertUtils.convertList(projectDTOS,ProjectVO.class);
+                .filter(v -> !projectId.equals(v.getId())).collect(Collectors.toList());
+        ;
+        List<ProjectVO> projectVOS = ConvertUtils.convertList(projectDTOS, ProjectVO.class);
         if (projectVOS == null) {
             return new ArrayList<>();
         }
@@ -2264,7 +2265,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 .map(appServiceDTO -> dtoTOVo(appServiceDTO, appVerisonMap))
                 .collect(Collectors.toList());
         if (doPage == null || doPage) {
-            if(ObjectUtils.isEmpty(pageRequest.getSize())){
+            if (ObjectUtils.isEmpty(pageRequest.getSize())) {
                 pageRequest.setSize(20);
             }
             return PageInfoUtil.createPageFromList(collect, pageRequest);
