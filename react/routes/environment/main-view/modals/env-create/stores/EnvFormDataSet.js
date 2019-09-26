@@ -1,4 +1,6 @@
 import { axios } from '@choerodon/master';
+import { Select as ProSelect } from 'choerodon-ui/pro';
+import React from 'react';
 
 export default ({ formatMessage, intlPrefix, projectId }) => {
   const codeValidator = async (value, name, record) => {
@@ -27,6 +29,7 @@ export default ({ formatMessage, intlPrefix, projectId }) => {
         name: 'code',
         type: 'string',
         label: '环境编码',
+        maxLength: 30,
         validator: codeValidator,
         required: true,
         cascadeMap: { parentCodeValueId: 'clusterId' },
@@ -43,6 +46,7 @@ export default ({ formatMessage, intlPrefix, projectId }) => {
         name: 'description',
         type: 'string',
         label: '环境描述',
+        maxLength: 60,
       },
       {
         name: 'devopsEnvGroupId',

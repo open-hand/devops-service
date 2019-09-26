@@ -1,40 +1,40 @@
-/* eslint-disable no-undef */
-import React, { Fragment, useState, useMemo, useEffect } from 'react';
-import { Input, Form, Row, Col } from 'choerodon-ui';
+import React, { Fragment, useState, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
-import _ from 'lodash';
+import { Input, Form } from 'choerodon-ui';
 import { Modal } from 'choerodon-ui/pro';
+import _ from 'lodash';
 import { handlePromptError } from '../../../../../../../utils';
 import ActivateCluster from '../activate-cluster';
+
 import './index.less';
 
 const { TextArea } = Input;
 const FormItem = Form.Item;
-
 const formDataModal = {
-  name: String,
-  code: String,
-  description: String,
+  name: '',
+  code: '',
+  description: '',
 };
 
 const ActivateClusterModalKey = Modal.key();
 
 const CreateCluster = observer((props) => {
-  const { isEdit,
-    resreshTree,
+  const {
+    isEdit,
     afterOk,
     mainStore,
     projectId,
-    formatMessage, 
+    formatMessage,
     intlPrefix,
     modal,
     record,
-    form } = props;
+    form,
+  } = props;
 
   const { getFieldDecorator, validateFields } = form;
-  
+
   const [formData, setFormData] = useState(record ? toData(record) : formDataModal);
-  
+
   modal.handleOk(() => {
     validateFields(async (err, values) => {
       if (!err) {
@@ -46,7 +46,7 @@ const CreateCluster = observer((props) => {
             modal.close();
           }
         } else {
-        // 更新集群
+          // 更新集群
           const data = {
             projectId,
             ...formData,
@@ -102,7 +102,10 @@ const CreateCluster = observer((props) => {
     if (formData && value === formData.name) {
       callback();
     } else if (value) {
-      mainStore.checkClusterName({ projectId, clusterName: window.encodeURIComponent(value) })
+      mainStore.checkClusterName({
+        projectId,
+        clusterName: window.encodeURIComponent(value),
+      })
         .then((res) => {
           if (res && res.failed) {
             callback(`名称${formatMessage({ id: `${intlPrefix}.check.exist` })}`);
@@ -123,7 +126,10 @@ const CreateCluster = observer((props) => {
     if (formData && value === formData.code) {
       callback();
     } else if (value && pa.test(value)) {
-      mainStore.checkClusterCode({ projectId, clusterCode: value })
+      mainStore.checkClusterCode({
+        projectId,
+        clusterCode: value,
+      })
         .then((res) => {
           if (res && res.failed) {
             callback(`编码${formatMessage({ id: `${intlPrefix}.check.exist` })}`);
@@ -158,7 +164,7 @@ const CreateCluster = observer((props) => {
             ],
             initialValue: isEdit ? formData.name : '',
           })(
-            <Input maxLength={30} label={formatMessage({ id: `${intlPrefix}.name` })} onChange={handleNameChange} />
+            <Input maxLength={30} label={formatMessage({ id: `${intlPrefix}.name` })} onChange={handleNameChange} />,
           )} </FormItem>
         <FormItem>
           {getFieldDecorator('code', {
@@ -173,30 +179,30 @@ const CreateCluster = observer((props) => {
             ],
             initialValue: isEdit ? formData.code : '',
           })(
-            <Input readOnly={isEdit} maxLength={10} label={formatMessage({ id: `${intlPrefix}.code` })} onChange={handleCodeChange} />
+            <Input
+              readOnly={isEdit}
+              maxLength={30}
+              label={formatMessage({ id: `${intlPrefix}.code` })}
+              onChange={handleCodeChange}
+            />,
           )} </FormItem>
         <FormItem>
           {getFieldDecorator('description', {
             initialValue: isEdit ? formData.description : '',
           })(
-            <TextArea label={formatMessage({ id: `${intlPrefix}.dec` })} onChange={handleDescriptionChange} />
+            <TextArea
+              maxLength={100}
+              label={formatMessage({ id: `${intlPrefix}.dec` })}
+              onChange={handleDescriptionChange}
+            />,
           )}
         </FormItem>
       </Form>
     </Fragment>);
 });
 
-/**
- * 根据obj是否拥有toData属性函数
- * 将DataSet的record数据转换成JSON
- * 或是将obj直接返回
- * @param {数据对象} obj 
- */
 function toData(obj) {
-  if (obj.toData) {
-    return obj.toData();
-  }
-  return obj;
+  return obj.toData ? obj.toData() : obj;
 }
 
 export default Form.create({})(CreateCluster);

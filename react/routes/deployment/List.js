@@ -1,6 +1,6 @@
-import React, { useCallback, Fragment, useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Page, Content, Header, Permission, Action, Breadcrumb } from '@choerodon/master';
-import { Table, Modal, Form, Select } from 'choerodon-ui/pro';
+import { Table, Modal, Select } from 'choerodon-ui/pro';
 import { Button, Tooltip } from 'choerodon-ui';
 import { FormattedMessage } from 'react-intl';
 import { withRouter } from 'react-router-dom';
@@ -15,10 +15,10 @@ import Process from './modals/process';
 import ManualDetail from './modals/manualDetail';
 import AutoDetail from './modals/autoDetail';
 import Deploy from './modals/deploy';
+import ClickText from '../../components/click-text';
 import PendingCheckModal from './components/pendingCheckModal';
 
 import './index.less';
-import ClickText from '../../components/click-text';
 
 const { Column } = Table;
 const { Option } = Select;
@@ -63,7 +63,7 @@ const Deployment = withRouter(observer((props) => {
     pipelineOptionsDs.query();
     listDs.query();
   }
-  
+
   function openProcess() {
     Modal.open({
       key: modalKey1,
@@ -115,6 +115,7 @@ const Deployment = withRouter(observer((props) => {
     }
 
     Modal.open({
+      maskClosable: false,
       key: modalKey2,
       drawer: true,
       okCancel: false,
