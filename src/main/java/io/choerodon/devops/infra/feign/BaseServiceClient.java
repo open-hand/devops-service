@@ -161,11 +161,13 @@ public interface BaseServiceClient {
     @PostMapping(value = "/v1/applications/{app_download_recode_id}/complete_downloading")
     ResponseEntity completeDownloadApplication(@PathVariable("app_download_recode_id") Long appDownloadRecordId,
                                                @RequestParam("app_version_id") Long appVersionId,
+                                               @RequestParam("organization_id") Long organizationId,
                                                @RequestBody List<AppDownloadDevopsReqVO> appDownloadDevopsReqVOS);
 
     @PutMapping(value = "/v1/applications/{app_download_record_id}/fail_downloading")
     ResponseEntity failToDownloadApplication(@PathVariable("app_download_record_id") Long appDownloadRecordId,
-                                             @RequestParam("app_version_id") Long appVersionId);
+                                             @RequestParam("app_version_id") Long appVersionId,
+                                             @RequestParam("organization_id") Long organizationId);
 
     @GetMapping(value = "/v1/remote_token/authorization/check/latest")
     ResponseEntity<RemoteTokenAuthorizationVO> checkLatestToken();

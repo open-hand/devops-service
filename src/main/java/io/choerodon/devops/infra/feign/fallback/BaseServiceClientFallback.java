@@ -178,12 +178,12 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
-    public ResponseEntity completeDownloadApplication(Long publishAppVersionId, Long appVersionId, List<AppDownloadDevopsReqVO> appDownloadDevopsReqVOS) {
+    public ResponseEntity completeDownloadApplication(Long publishAppVersionId, Long appVersionId, Long organizationId, List<AppDownloadDevopsReqVO> appDownloadDevopsReqVOS) {
         throw new CommonException("error.application.download.complete");
     }
 
     @Override
-    public ResponseEntity failToDownloadApplication(Long publishAppVersionId, Long appVersionId) {
+    public ResponseEntity failToDownloadApplication(Long publishAppVersionId, Long appVersionId, Long organizationId) {
         throw new CommonException("error.application.download.failed");
     }
 
