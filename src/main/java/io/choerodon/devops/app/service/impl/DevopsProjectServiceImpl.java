@@ -142,7 +142,7 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
     @Override
     public List<UserVO> listAllOwnerAndMembers(Long projectId) {
         List<IamUserDTO> allMember = baseServiceClientOperator.getAllMember(projectId);
-        return allMember.stream().map(e->userDTOTOVO(e)).collect(Collectors.toList());
+        return allMember.stream().map(this::userDTOTOVO).collect(Collectors.toList());
     }
     private UserVO userDTOTOVO(IamUserDTO iamUserDTOList){
         UserVO userVO = new UserVO();

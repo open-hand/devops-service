@@ -2,7 +2,6 @@ package io.choerodon.devops.api.vo;
 
 import java.util.List;
 
-import com.alibaba.fastjson.annotation.JSONField;
 import com.google.gson.annotations.SerializedName;
 
 /**

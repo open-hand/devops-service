@@ -1,19 +1,20 @@
 package io.choerodon.devops.infra.util;
 
-import feign.RequestTemplate;
-import feign.codec.EncodeException;
-import feign.codec.Encoder;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import feign.RequestTemplate;
+import feign.codec.EncodeException;
+import feign.codec.Encoder;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpEntity;
@@ -22,7 +23,6 @@ import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -36,7 +36,7 @@ public class FeignSpringFormEncoder implements Encoder {
 
     private final List<HttpMessageConverter<?>> converters = new RestTemplate().getMessageConverters();
 
-    public static final Charset UTF_8 = Charset.forName("UTF-8");
+    public static final Charset UTF_8 = StandardCharsets.UTF_8;
 
     public FeignSpringFormEncoder() {
     }
@@ -45,7 +45,7 @@ public class FeignSpringFormEncoder implements Encoder {
      * {@inheritDoc }
      */
     @Override
-    public void encode(Object object, Type bodyType, RequestTemplate template) throws EncodeException {
+    public void encode(Object object, Type bodyType, RequestTemplate template) {
         if (bodyType.equals(Map.class)) {
             final HttpHeaders multipartHeaders = new HttpHeaders();
             multipartHeaders.setContentType(MediaType.MULTIPART_FORM_DATA);
@@ -65,7 +65,7 @@ public class FeignSpringFormEncoder implements Encoder {
      * @param template
      * @throws EncodeException
      */
-    private void encodeMultipartFormRequest(Map<String, ?> formMap, HttpHeaders multipartHeaders, RequestTemplate template) throws EncodeException {
+    private void encodeMultipartFormRequest(Map<String, ?> formMap, HttpHeaders multipartHeaders, RequestTemplate template) {
         if (formMap == null) {
             throw new EncodeException("Cannot encode request with null form.");
         }
@@ -113,8 +113,8 @@ public class FeignSpringFormEncoder implements Encoder {
      * Fills the request map with {@link HttpEntity}s containing the given {@link MultipartFile}s.
      * Sets the {@code Content-type} header to {@code application/octet-stream} for each file.
      *
-     * @param the current request map.
-     * @param name the name of the array field in the multipart form.
+     * @param map   current request map.
+     * @param name  the name of the array field in the multipart form.
      * @param files
      */
     private void encodeMultipartFiles(LinkedMultiValueMap<String, Object> map, String name, List<? extends MultipartFile> files) {
@@ -153,7 +153,7 @@ public class FeignSpringFormEncoder implements Encoder {
      * @param template
      * @throws EncodeException
      */
-    private void encodeRequest(Object value, HttpHeaders requestHeaders, RequestTemplate template) throws EncodeException {
+    private void encodeRequest(Object value, HttpHeaders requestHeaders, RequestTemplate template) {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         HttpOutputMessage dummyRequest = new HttpOutputMessageImpl(outputStream, requestHeaders);
         try {
@@ -240,7 +240,7 @@ public class FeignSpringFormEncoder implements Encoder {
         }
 
         @Override
-        public InputStream getInputStream() throws IOException, IllegalStateException {
+        public InputStream getInputStream() throws IOException {
             return super.getInputStream();
             //To change body of generated methods, choose Tools | Templates.
         }

@@ -6,6 +6,11 @@ import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.kubernetes.client.JSON;
+import io.kubernetes.client.models.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.*;
@@ -17,11 +22,6 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsEnvResourceMapper;
 import io.choerodon.devops.infra.util.K8sUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.kubernetes.client.JSON;
-import io.kubernetes.client.models.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.ObjectUtils;
 
 /**
  * Created by younger on 2018/4/25.
@@ -196,7 +196,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
         List<IamUserDTO> users = baseServiceClientOperator.listUsersByIds(userIds);
         devopsEnvCommandDTOS.forEach(devopsEnvCommandDTO -> {
             InstanceEventVO instanceEventVO = new InstanceEventVO();
-            Optional<IamUserDTO> iamUserDTO = users.stream().filter(user->user.getId().equals(devopsEnvCommandDTO.getCreatedBy())).findFirst();
+            Optional<IamUserDTO> iamUserDTO = users.stream().filter(user -> user.getId().equals(devopsEnvCommandDTO.getCreatedBy())).findFirst();
             IamUserDTO iamUser = null;
             if (iamUserDTO.isPresent()) {
                 iamUser = iamUserDTO.get();

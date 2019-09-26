@@ -3,6 +3,7 @@ package io.choerodon.devops.api.ws;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.websocket.helper.WebSocketHelper;
 import org.slf4j.Logger;
@@ -38,7 +39,7 @@ public class AgentExecAndLogSocketHandler {
         //校验ws连接参数是否正确
         String key = request.getParameter("key");
         if (key == null || key.trim().isEmpty()) {
-            throw new RuntimeException("Key is null");
+            throw new CommonException("Key is null");
         }
 
         return true;

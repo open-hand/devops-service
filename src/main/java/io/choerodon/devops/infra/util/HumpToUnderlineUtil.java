@@ -19,7 +19,7 @@ public final class HumpToUnderlineUtil {
         for (int i = 0; i < splitString.length(); i++) {
             if (splitString.charAt(i) >= 'A' && splitString.charAt(i) <= 'Z') {
                 char a = Character.toLowerCase(splitString.charAt(i));
-                String s = "_" + String.valueOf(a);
+                String s = "_" + a;
                 newString.append(s);
             } else {
                 String s = String.valueOf(splitString.charAt(i));

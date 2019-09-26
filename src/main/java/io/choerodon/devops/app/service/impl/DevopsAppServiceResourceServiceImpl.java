@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import io.choerodon.core.exception.CommonException;
@@ -27,11 +28,10 @@ public class DevopsAppServiceResourceServiceImpl implements DevopsAppServiceReso
         if (appServiceIds == null) {
             appServiceIds = new ArrayList<>();
         }
-        List<Long> appServiceIdscollect = appServiceIds.stream().filter(e -> e != null).collect(Collectors.toList());
+        List<Long> appServiceIdscollect = appServiceIds.stream().filter(Objects::nonNull).collect(Collectors.toList());
         //更新
         if (!oldAppServiceIds.isEmpty()) {
             if (!appServiceIdscollect.isEmpty()) {
-                List<Long> addlist = new ArrayList<>();
                 appServiceIdscollect.forEach(aLong -> {
                     if (!oldAppServiceIds.contains(aLong)) {
                         //添加新的
@@ -46,7 +46,7 @@ public class DevopsAppServiceResourceServiceImpl implements DevopsAppServiceReso
                     }
                 });
             } else {
-                oldAppServiceIds.stream().forEach(e -> {
+                oldAppServiceIds.forEach(e -> {
                     baseDeleteByResourceIdAndType(resourceId, type);
                 });
             }

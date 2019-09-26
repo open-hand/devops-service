@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import io.choerodon.devops.api.vo.AppServiceRepVO;
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.infra.dto.AppServiceDTO;
@@ -114,7 +113,7 @@ public interface AppServiceMapper extends Mapper<AppServiceDTO> {
                                                @Param("searchParam") Map<String, Object> searchParam,
                                                @Param("params") List<String> params);
 
-    List<AppServiceDTO> listServiceByVersionIds(@Param("ids")Set<Long> ids);
+    List<AppServiceDTO> listServiceByVersionIds(@Param("ids") Set<Long> ids);
 
     int updateIsFailedNullToFalse();
 

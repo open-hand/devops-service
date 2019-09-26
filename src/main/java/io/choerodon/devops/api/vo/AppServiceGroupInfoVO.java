@@ -1,9 +1,8 @@
 package io.choerodon.devops.api.vo;
 
-import io.choerodon.devops.infra.dto.AppServiceVersionDTO;
-
 import java.util.List;
-import java.util.Objects;
+
+import io.choerodon.devops.infra.dto.AppServiceVersionDTO;
 
 /**
  * @author zhaotianxin
@@ -18,7 +17,7 @@ public class AppServiceGroupInfoVO {
     private String type;
     private List<AppServiceVersionDTO> versions;
     private Boolean share;
-    private String  projectName;
+    private String projectName;
 
     public List<AppServiceVersionDTO> getVersions() {
         return versions;

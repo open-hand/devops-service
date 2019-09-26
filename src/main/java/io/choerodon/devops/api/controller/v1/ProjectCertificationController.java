@@ -6,19 +6,6 @@ import java.util.Optional;
 import javax.validation.Valid;
 
 import com.github.pagehelper.PageInfo;
-
-import io.choerodon.base.annotation.Permission;
-import io.choerodon.base.domain.PageRequest;
-import io.choerodon.base.enums.ResourceType;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.vo.ProjectCertificationPermissionUpdateVO;
-import io.choerodon.devops.api.vo.ProjectCertificationUpdateVO;
-import io.choerodon.devops.api.vo.ProjectCertificationVO;
-import io.choerodon.devops.api.vo.ProjectReqVO;
-import io.choerodon.devops.app.service.DevopsProjectCertificationService;
-import io.choerodon.swagger.annotation.CustomPageRequest;
-
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +15,17 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
+
+import io.choerodon.base.annotation.Permission;
+import io.choerodon.base.domain.PageRequest;
+import io.choerodon.base.enums.ResourceType;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.InitRoleCode;
+import io.choerodon.devops.api.vo.ProjectCertificationPermissionUpdateVO;
+import io.choerodon.devops.api.vo.ProjectCertificationVO;
+import io.choerodon.devops.api.vo.ProjectReqVO;
+import io.choerodon.devops.app.service.DevopsProjectCertificationService;
+import io.choerodon.swagger.annotation.CustomPageRequest;
 
 /**
  * 泛域名证书

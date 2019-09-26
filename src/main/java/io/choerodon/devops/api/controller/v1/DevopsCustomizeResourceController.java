@@ -22,10 +22,8 @@ import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.DevopsCustomizeResourceReqVO;
-import io.choerodon.devops.api.vo.DevopsCustomizeResourceUpdateVO;
 import io.choerodon.devops.api.vo.DevopsCustomizeResourceVO;
 import io.choerodon.devops.app.service.DevopsCustomizeResourceService;
-import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.mybatis.annotation.SortDefault;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 

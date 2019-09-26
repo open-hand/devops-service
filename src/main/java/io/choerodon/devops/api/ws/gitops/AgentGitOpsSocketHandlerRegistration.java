@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.servlet.http.HttpServletRequest;
 
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.ClusterSessionVO;
 import io.choerodon.devops.api.ws.WebSocketTool;
 import io.choerodon.devops.app.service.AgentCommandService;
@@ -80,19 +81,19 @@ public class AgentGitOpsSocketHandlerRegistration implements SocketHandlerRegist
         String token = request.getParameter("token");
         String version = request.getParameter("version");
         if (key == null || key.trim().isEmpty()) {
-            throw new RuntimeException("Key is null");
+            throw new CommonException("Key is null");
         }
         if (!KeyParseUtil.matchPattern(key)) {
-            throw new RuntimeException("Key not match the pattern");
+            throw new CommonException("Key not match the pattern");
         }
         if (clusterId == null || clusterId.trim().isEmpty()) {
-            throw new RuntimeException("ClusterId is null");
+            throw new CommonException("ClusterId is null");
         }
         if (token == null || token.trim().isEmpty()) {
-            throw new RuntimeException("Token is null");
+            throw new CommonException("Token is null");
         }
         if (version == null || version.trim().isEmpty()) {
-            throw new RuntimeException("Version is null");
+            throw new CommonException("Version is null");
         }
         //检验连接过来的agent和集群是否匹配
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(TypeUtil.objToLong(clusterId));

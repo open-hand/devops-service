@@ -33,7 +33,6 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.GitConfigVO;
 import io.choerodon.devops.api.vo.GitEnvConfigVO;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
-import io.choerodon.devops.app.service.impl.DevopsGitServiceImpl;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
@@ -51,7 +50,7 @@ public class GitUtil {
     private static final String GIT_SUFFIX = "/.git";
     private static final String ERROR_GIT_CLONE = "error.git.clone";
     private static final String REPO_NAME = "devops-service-repo";
-    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsGitServiceImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(GitUtil.class);
     private Pattern pattern = Pattern.compile("^[-\\+]?[\\d]*$");
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
@@ -357,7 +356,7 @@ public class GitUtil {
      * @param accessToken token
      * @throws CommonException 异常发生时，应捕获此异常，关闭资源
      */
-    public void commitAndPush(Git git, String repoUrl, String accessToken, String refName) throws CommonException {
+    public void commitAndPush(Git git, String repoUrl, String accessToken, String refName) {
         try {
             git.add().addFilepattern(".").call();
             git.add().setUpdate(true).addFilepattern(".").call();
@@ -422,7 +421,7 @@ public class GitUtil {
             git.add().setUpdate(true).addFilepattern(".").call();
             git.commit().setMessage(commitMessage).call();
             PushCommand pushCommand = git.push();
-            pushCommand.add("master");
+            pushCommand.add(MASTER);
             pushCommand.setRemote(repoUrl);
             pushCommand.setCredentialsProvider(new UsernamePasswordCredentialsProvider("", accessToken));
             pushCommand.call();
@@ -463,7 +462,7 @@ public class GitUtil {
                 pushCommand.add(ref);
             }
             pushCommand.setRemote(url[0] + "://gitlab-ci-token:" + accessToken + "@" + url[1]);
-            LOGGER.info("push remote is:" + pushCommand.getRemote());
+            LOGGER.info("push remote is: {}", pushCommand.getRemote());
             pushCommand.setCredentialsProvider(new UsernamePasswordCredentialsProvider(
                     userName, accessToken));
             pushCommand.call();
@@ -522,7 +521,6 @@ public class GitUtil {
      * Git克隆
      */
     public String clone(String name, String remoteUrl, String accessToken) {
-        Git git = null;
         String workingDirectory = getWorkingDirectory(name);
         File oldLocalPathFile = new File(workingDirectory);
         deleteDirectory(oldLocalPathFile);

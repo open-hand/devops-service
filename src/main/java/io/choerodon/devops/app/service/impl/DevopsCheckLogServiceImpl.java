@@ -274,7 +274,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         }
 
         private <T> List<T> peekListSize(List<T> objects, String message) {
-            LOGGER.info(message,  objects.size());
+            LOGGER.info(message, objects.size());
             return objects;
         }
 
