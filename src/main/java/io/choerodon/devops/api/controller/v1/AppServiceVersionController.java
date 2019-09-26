@@ -63,10 +63,10 @@ public class AppServiceVersionController {
             @RequestParam(value = "deploy_only") Boolean deployOnly,
             @ApiParam(value = "是否分页")
             @RequestParam(value = "do_page", required = false, defaultValue = "false") Boolean doPage,
-            @ApiParam(value = "查询参数")
-            @RequestBody(required = false) String params,
             @ApiParam(value = "分页参数")
-            @ApiIgnore PageRequest pageRequest) {
+            @ApiIgnore PageRequest pageRequest,
+            @ApiParam(value = "查询参数")
+            @RequestBody(required = false) String params) {
         return Optional.ofNullable(appServiceVersionService.pageByOptions(
                 projectId, appServiceId, deployOnly, doPage, params, pageRequest))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
