@@ -2254,13 +2254,19 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public PageInfo<AppServiceVO> listAppServiceByIds(Set<Long> ids, Boolean doPage, PageRequest pageRequest, String params) {
         Map<String, Object> mapParams = TypeUtil.castMapParams(params);
+
         List<AppServiceDTO> appServiceDTOList = appServiceMapper.listAppServiceByIds(ids,
                 TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
                 TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)));
         List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceVersionService.listServiceVersionByAppServiceIds(ids, null, null);
         Map<Long, List<AppServiceVersionDTO>> appVerisonMap = appServiceVersionDTOS.stream().collect(Collectors.groupingBy(AppServiceVersionDTO::getAppServiceId));
-        List<AppServiceVO> collect = appServiceDTOList.stream().map(appServiceDTO -> dtoTOVo(appServiceDTO, appVerisonMap)).collect(Collectors.toList());
+        List<AppServiceVO> collect = appServiceDTOList.stream()
+                .map(appServiceDTO -> dtoTOVo(appServiceDTO, appVerisonMap))
+                .collect(Collectors.toList());
         if (doPage == null || doPage) {
+            if(ObjectUtils.isEmpty(pageRequest.getSize())){
+                pageRequest.setSize(20);
+            }
             return PageInfoUtil.createPageFromList(collect, pageRequest);
         } else {
             return new PageInfo<>(collect);
