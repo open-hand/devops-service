@@ -14,14 +14,13 @@ export DOCKER_USERNAME={{ DOCKER_USERNAME }}
 export DOCKER_PASSWORD={{ DOCKER_PASSWORD }}
 # 获取的组织编码-项目编码(harbor Project地址)
 export GROUP_NAME={{ GROUP_NAME }}
-# 设置kaniko认证配置文件目录
-export DOCKER_CONFIG=/kaniko/.docker/
+# 设置docekr认证配置文件目录
+export DOCKER_CONFIG=$PWD/.choerodon/.docker
 
-# 创建kaniko认证配置文件目录
-mkdir -p $DOCKER_CONFIG /root/.docker
+# 创建docekr认证配置文件目录
+mkdir -p $DOCKER_CONFIG
 # 设成docekr认证配置文件
-echo "{\"auths\":{\"$DOCKER_REGISTRY\":{\"auth\":\"$(echo -n $DOCKER_USERNAME:$DOCKER_PASSWORD | base64)\"}}}" > /kaniko/.docker/config.json
-cp -rf /kaniko/.docker/config.json /root/.docker
+echo "{\"auths\":{\"$DOCKER_REGISTRY\":{\"auth\":\"$(echo -n $DOCKER_USERNAME:$DOCKER_PASSWORD | base64)\"}}}" > $DOCKER_CONFIG/config.json
 
 # 获取commit时间
 C7N_COMMIT_TIMESTAMP=$(git log -1 --pretty=format:"%ci"| awk '{print $1$2}' | sed 's/[-:]//g')
