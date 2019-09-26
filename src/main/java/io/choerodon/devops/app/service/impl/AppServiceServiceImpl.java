@@ -1572,11 +1572,15 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     @Override
     public List<ProjectVO> listProjects(Long organizationId, Long projectId, String params) {
-        List<ProjectVO> projectVOList = ConvertUtils.convertList(baseServiceClientOperator.listIamProjectByOrgId(organizationId, null, null, params), ProjectVO.class);
-        if (projectVOList == null) {
+        List<ProjectDTO> projectDTOS = baseServiceClientOperator.listIamProjectByOrgId(organizationId, null, null, params).stream()
+                .filter(v -> v.getEnabled())
+                .filter(v -> !projectId.equals(v.getId())).collect(Collectors.toList());
+        ;
+        List<ProjectVO> projectVOS = ConvertUtils.convertList(projectDTOS, ProjectVO.class);
+        if (projectVOS == null) {
             return new ArrayList<>();
         }
-        return projectVOList.stream().filter(t -> !t.getId().equals(projectId)).collect(Collectors.toList());
+        return projectVOS;
     }
 
 
@@ -2251,13 +2255,19 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public PageInfo<AppServiceVO> listAppServiceByIds(Set<Long> ids, Boolean doPage, PageRequest pageRequest, String params) {
         Map<String, Object> mapParams = TypeUtil.castMapParams(params);
+
         List<AppServiceDTO> appServiceDTOList = appServiceMapper.listAppServiceByIds(ids,
                 TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
                 TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)));
         List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceVersionService.listServiceVersionByAppServiceIds(ids, null, null);
         Map<Long, List<AppServiceVersionDTO>> appVerisonMap = appServiceVersionDTOS.stream().collect(Collectors.groupingBy(AppServiceVersionDTO::getAppServiceId));
-        List<AppServiceVO> collect = appServiceDTOList.stream().map(appServiceDTO -> dtoTOVo(appServiceDTO, appVerisonMap)).collect(Collectors.toList());
+        List<AppServiceVO> collect = appServiceDTOList.stream()
+                .map(appServiceDTO -> dtoTOVo(appServiceDTO, appVerisonMap))
+                .collect(Collectors.toList());
         if (doPage == null || doPage) {
+            if (ObjectUtils.isEmpty(pageRequest.getSize())) {
+                pageRequest.setSize(20);
+            }
             return PageInfoUtil.createPageFromList(collect, pageRequest);
         } else {
             return new PageInfo<>(collect);
