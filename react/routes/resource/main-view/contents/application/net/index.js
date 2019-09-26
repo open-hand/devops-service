@@ -15,6 +15,7 @@ import DomainModal from '../modals/domain';
 import EditNetwork from '../modals/network/network-edit';
 
 import './index.less';
+import { useMainStore } from '../../../stores';
 
 const { Column } = Table;
 
@@ -32,6 +33,7 @@ const Networking = observer(() => {
     domainStore,
     networkStore,
   } = useApplicationStore();
+  const { mainStore: { openDeleteModal } } = useMainStore();
 
   const [showDomain, setShowDomain] = useState(false);
   const [domainId, setDomainId] = useState(null);
@@ -248,6 +250,8 @@ const Networking = observer(() => {
 
   function renderAction({ record }) {
     const status = record.get('status');
+    const netId = record.get('id');
+    const name = record.get('name');
     const disabled = getEnvIsNotRunning() || status === 'operating';
     if (disabled) {
       return null;
@@ -256,37 +260,11 @@ const Networking = observer(() => {
       {
         service: ['devops-service.devops-service.delete'],
         text: formatMessage({ id: 'delete' }),
-        action: handleDelete,
+        action: () => openDeleteModal(parentId, netId, name, 'service', refresh),
       },
     ];
 
     return (<Action data={buttons} />);
-  }
-
-  function handleDelete() {
-    netDs.delete(netDs.current);
-  }
-
-  function openIngressDelete(itemId) {
-    Modal.open({
-      key: Modal.key(),
-      title: formatMessage({ id: `${intlPrefix}.delete.ingress` }),
-      children: <FormattedMessage id={`${intlPrefix}.delete.ingress.tips`} />,
-      onOk: () => handleIngressDelete(itemId),
-    });
-  }
-
-  async function handleIngressDelete(itemId) {
-    try {
-      const res = await domainStore.deleteIngress(projectId, itemId);
-      if (handlePromptError(res, false)) {
-        netDs.query();
-      } else {
-        return false;
-      }
-    } catch (e) {
-      return false;
-    }
   }
 
   function openDomainEdit(itemId) {
@@ -317,7 +295,7 @@ const Networking = observer(() => {
           {
             service: ['devops-service.devops-ingress.update'],
             text: formatMessage({ id: 'delete' }),
-            action: () => openIngressDelete(itemId),
+            action: () => openDeleteModal(parentId, itemId, name, 'ingress', refresh),
           },
         ];
         const disabled = getEnvIsNotRunning() || status === 'operating';

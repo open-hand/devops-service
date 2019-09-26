@@ -8,9 +8,10 @@ import TimePopover from '../../../../../../components/timePopover/TimePopover';
 import KeyValueModal from '../modals/key-value';
 import { useResourceStore } from '../../../../stores';
 import { useApplicationStore } from '../stores';
+import ClickText from '../../../../../../components/click-text';
+import { useMainStore } from '../../../stores';
 
 import './index.less';
-import ClickText from '../../../../../../components/click-text';
 
 const { Column } = Table;
 
@@ -23,6 +24,7 @@ const AppConfigs = observer(() => {
     treeDs,
   } = useResourceStore();
   const { mappingStore, mappingDs } = useApplicationStore();
+  const { mainStore: { openDeleteModal } } = useMainStore();
   const statusStyle = useMemo(() => ({ marginRight: '0.08rem' }), []);
   const [showModal, setShowModal] = useState(false);
   const [recordId, setRecordId] = useState(null);
@@ -84,6 +86,8 @@ const AppConfigs = observer(() => {
 
   function renderAction({ record }) {
     const commandStatus = record.get('commandStatus');
+    const configId = record.get('id');
+    const name = record.get('name');
     const disabled = getEnvIsNotRunning() || commandStatus === 'operating';
     if (disabled) {
       return null;
@@ -92,9 +96,7 @@ const AppConfigs = observer(() => {
       {
         service: ['devops-service.devops-config-map.delete'],
         text: formatMessage({ id: 'delete' }),
-        action: () => {
-          mappingDs.delete(record);
-        },
+        action: () => openDeleteModal(parentId, configId, name, 'configMap', refresh),
       },
     ];
     return <Action data={buttons} />;

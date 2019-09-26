@@ -2,6 +2,7 @@ export default ({ formatMessage, intlPrefix, projectId }) => ({
   autoCreate: true,
   selection: false,
   paging: false,
+  dataKey: null,
   fields: [
     {
       name: 'name',

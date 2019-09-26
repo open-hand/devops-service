@@ -78,8 +78,8 @@ export default function useStore() {
         service: `/devops/v1/projects/${projectId}/service/${id}`,
         ingress: `/devops/v1/projects/${projectId}/ingress/${id}`,
         certificate: `/devops/v1/projects/${projectId}/certifications?cert_id=${id}`,
-        configMap: `/devops/v1/projects/${id}/config_maps/${id}`,
-        secret: `/devops/v1/projects/${id}/secret/${envId}/${id}`,
+        configMap: `/devops/v1/projects/${projectId}/config_maps/${id}`,
+        secret: `/devops/v1/projects/${projectId}/secret/${envId}/${id}`,
       };
       return axios.delete(url[type]);
     },
