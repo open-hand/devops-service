@@ -45,6 +45,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
     public static final String CREATE_TYPE = "create";
     public static final String UPDATE_TYPE = "update";
+    public static final String EVICTED = "Evicted";
     private static final String CHOERODON_IO_NETWORK_SERVICE_INSTANCES = "choerodon.io/network-service-instances";
     private static final String SERVICE_LABLE = "choerodon.io/network";
     private static final String PENDING = "Pending";
@@ -60,17 +61,15 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     private static final Logger logger = LoggerFactory.getLogger(AgentMsgHandlerServiceImpl.class);
     private static final String RESOURCE_VERSION = "resourceVersion";
     private static final String ENV_NOT_EXIST = "env not exists: {}";
-    public static final String EVICTED = "Evicted";
     private static JSON json = new JSON();
     private static ObjectMapper objectMapper = new ObjectMapper();
+    @Autowired
+    DevopsCommandEventService devopsCommandEventService;
     private Gson gson = new Gson();
-
     @Value("${services.helm.url}")
     private String helmUrl;
     @Value("${agent.repoUrl}")
     private String agentRepoUrl;
-
-
     @Autowired
     private DevopsEnvPodService devopsEnvPodService;
     @Autowired
@@ -127,8 +126,6 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     private AgentPodService agentPodService;
     @Autowired
     private AgentCommandService agentCommandService;
-    @Autowired
-    DevopsCommandEventService devopsCommandEventService;
     @Autowired
     private AppServiceMapper appServiceMapper;
 
@@ -1147,7 +1144,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         if (applicationDTO != null) {
             applications.add(applicationDTO);
         }
-        
+
         Long organizationId = baseServiceClientOperator.queryIamProjectById(projectId).getOrganizationId();
         List<Long> appServiceIds = new ArrayList<>();
         baseServiceClientOperator.listIamProjectByOrgId(organizationId).forEach(pro ->
@@ -1155,7 +1152,11 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         );
         applications.addAll(appServiceMapper.listShareApplicationService(appServiceIds, projectId, null, null));
 
-        applications.addAll(appServiceMapper.queryMarketDownloadApps(null, null, true, null));
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        List<Long> mktAppServiceIds = baseServiceClientOperator.listServicesForMarket(projectDTO.getOrganizationId(), true);
+        if (mktAppServiceIds != null && !mktAppServiceIds.isEmpty()) {
+            applications.addAll(appServiceMapper.queryMarketDownloadApps(null, null, mktAppServiceIds));
+        }
         return applications;
     }
 

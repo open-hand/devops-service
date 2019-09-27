@@ -318,6 +318,13 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                     downloadPayload.getAppServiceCode(),
                     TypeUtil.objToInteger(gitlabUserId),
                     true);
+        } else {
+            //防止一次下载不成功，版本commit不一致
+            gitlabServiceClientOperator.deleteProjectById(gitlabProjectDTO.getId(), TypeUtil.objToInteger(gitlabUserId));
+            gitlabProjectDTO = gitlabServiceClientOperator.createProject(gitlabGroupId,
+                    downloadPayload.getAppServiceCode(),
+                    TypeUtil.objToInteger(gitlabUserId),
+                    true);
         }
         appServiceDTO.setGitlabProjectId(gitlabProjectDTO.getId());
         appServiceDTO.setSynchro(true);

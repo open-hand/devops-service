@@ -2008,9 +2008,14 @@ public class AppServiceServiceImpl implements AppServiceService {
                     toCollection(() -> new TreeSet<>(comparing(AppServiceDTO::getId))), ArrayList::new));
             initAppServiceGroupInfoVOList(appServiceGroupInfoVOS, collect, share, projectId);
         } else {
-            List<AppServiceDTO> marketServices = appServiceMapper.queryMarketDownloadApps(null, param, false, searchProjectId);
-            List<AppServiceDTO> appServiceDTOList = marketServices.stream().filter(v -> !ObjectUtils.isEmpty(v.getMktAppId())).collect(Collectors.toList());
-            initAppServiceGroupInfoVOList(appServiceGroupInfoVOS, appServiceDTOList, share, projectId);
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+            List<Long> appServiceIds = baseServiceClientOperator.listServicesForMarket(projectDTO.getOrganizationId(), false);
+            if (appServiceIds != null && !appServiceIds.isEmpty()) {
+                List<AppServiceDTO> marketServices = appServiceMapper.queryMarketDownloadApps(null, param, appServiceIds);
+                List<AppServiceDTO> appServiceDTOList = marketServices.stream().filter(v -> !ObjectUtils.isEmpty(v.getMktAppId())).collect(Collectors.toList());
+                initAppServiceGroupInfoVOList(appServiceGroupInfoVOS, appServiceDTOList, share, projectId);
+            }
+
         }
 
         return PageInfoUtil.createPageFromList(appServiceGroupInfoVOS, pageRequest);
@@ -2121,20 +2126,24 @@ public class AppServiceServiceImpl implements AppServiceService {
                 break;
             }
             case MARKET_SERVICE: {
-                list.addAll(appServiceMapper.queryMarketDownloadApps(serviceType, null, deployOnly, null));
-                Map<Long, List<AppServiceGroupInfoVO>> map = list.stream()
-                        .map(this::dtoToGroupInfoVO)
-                        .filter(appServiceGroupInfoVO -> appServiceGroupInfoVO.getMktAppId() != null)
-                        .collect(Collectors.groupingBy(AppServiceGroupInfoVO::getMktAppId));
+                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+                List<Long> appServiceIds = baseServiceClientOperator.listServicesForMarket(projectDTO.getOrganizationId(), deployOnly);
+                if (appServiceIds != null && !appServiceIds.isEmpty()) {
+                    list.addAll(appServiceMapper.queryMarketDownloadApps(serviceType, null, appServiceIds));
+                    Map<Long, List<AppServiceGroupInfoVO>> map = list.stream()
+                            .map(this::dtoToGroupInfoVO)
+                            .filter(appServiceGroupInfoVO -> appServiceGroupInfoVO.getMktAppId() != null)
+                            .collect(Collectors.groupingBy(AppServiceGroupInfoVO::getMktAppId));
 
-                for (Map.Entry<Long, List<AppServiceGroupInfoVO>> entry : map.entrySet()) {
-                    ApplicationDTO applicationDTO = baseServiceClientOperator.queryAppById(entry.getKey());
-                    AppServiceGroupVO appServiceGroupVO = new AppServiceGroupVO();
-                    appServiceGroupVO.setName(applicationDTO.getName());
-                    appServiceGroupVO.setCode(applicationDTO.getCode());
-                    appServiceGroupVO.setId(applicationDTO.getId());
-                    appServiceGroupVO.setAppServiceList(entry.getValue());
-                    appServiceGroupList.add(appServiceGroupVO);
+                    for (Map.Entry<Long, List<AppServiceGroupInfoVO>> entry : map.entrySet()) {
+                        ApplicationDTO applicationDTO = baseServiceClientOperator.queryAppById(entry.getKey());
+                        AppServiceGroupVO appServiceGroupVO = new AppServiceGroupVO();
+                        appServiceGroupVO.setName(applicationDTO.getName());
+                        appServiceGroupVO.setCode(applicationDTO.getCode());
+                        appServiceGroupVO.setId(applicationDTO.getId());
+                        appServiceGroupVO.setAppServiceList(entry.getValue());
+                        appServiceGroupList.add(appServiceGroupVO);
+                    }
                 }
                 break;
             }
@@ -2304,22 +2313,21 @@ public class AppServiceServiceImpl implements AppServiceService {
                     .map(AppServiceDTO::getProjectId).collect(Collectors.toSet());
             projectDTOS = baseServiceClientOperator.queryProjectsByIds(projectsSet);
         } else {
-            appServiceDTOList = appServiceMapper.queryMarketDownloadApps(null, null, false, null);
-            Set<Long> appServiceIds = appServiceDTOList.stream()
-                    .filter(v -> !ObjectUtils.isEmpty(v.getMktAppId()))
-                    .map(AppServiceDTO::getMktAppId).collect(Collectors.toSet());
-            Map<Long, List<AppServiceVersionDTO>> versionMap = appServiceVersionService.listServiceVersionByAppServiceIds(appServiceIds, "project", null)
-                    .stream().collect(groupingBy(AppServiceVersionDTO::getId));
-            List<ApplicationDTO> applicationDTOS = new ArrayList<>();
-            appServiceIds.stream().forEach(v -> {
-                if(CollectionUtils.isEmpty(versionMap.get(v))){ return;}
-                ApplicationDTO applicationDTO = baseServiceClientOperator.queryAppById(v);
-                if (!ObjectUtils.isEmpty(applicationDTO)) {
-                    applicationDTOS.add(applicationDTO);
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+            List<Long> mktAppServiceIds = baseServiceClientOperator.listServicesForMarket(projectDTO.getOrganizationId(), false);
+            if (mktAppServiceIds != null && !mktAppServiceIds.isEmpty()) {
+                appServiceDTOList = appServiceMapper.queryMarketDownloadApps(null, null, mktAppServiceIds);
+                Set<Long> appServiceIds = appServiceDTOList.stream().filter(v -> !ObjectUtils.isEmpty(v.getMktAppId())).map(AppServiceDTO::getMktAppId).collect(Collectors.toSet());
+                List<ApplicationDTO> applicationDTOS = new ArrayList<>();
+                appServiceIds.forEach(v -> {
+                    ApplicationDTO applicationDTO = baseServiceClientOperator.queryAppById(v);
+                    if (!ObjectUtils.isEmpty(applicationDTO)) {
+                        applicationDTOS.add(applicationDTO);
+                    }
+                });
+                if (!CollectionUtils.isEmpty(applicationDTOS)) {
+                    projectDTOS = ConvertUtils.convertList(applicationDTOS, ProjectDTO.class);
                 }
-            });
-            if (!CollectionUtils.isEmpty(applicationDTOS)) {
-                projectDTOS = ConvertUtils.convertList(applicationDTOS, ProjectDTO.class);
             }
         }
         return ConvertUtils.convertList(projectDTOS, ProjectVO.class);

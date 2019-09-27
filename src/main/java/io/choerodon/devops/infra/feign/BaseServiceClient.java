@@ -175,11 +175,12 @@ public interface BaseServiceClient {
 
     @GetMapping(value = "/v1/projects/{project_id}/publish_applications/list_by_ids")
     ResponseEntity<List<ApplicationDTO>> listApplicationInfoByAppIds(@PathVariable("project_id") Long projectId,
-                                                                    @RequestParam(value = "ids") Set<Long> serviceIds);
+                                                                     @RequestParam(value = "ids") Set<Long> serviceIds);
 
     @GetMapping(value = "/v1/projects/{project_id}/applications/{application_id}/services/ids")
     ResponseEntity<Set<Long>> listAppServiceByAppId(@PathVariable("project_id") Long projectId,
                                                     @PathVariable("application_id") Long applicationId);
+
     /**
      * 根据组织Id及项目code查询项目
      *
@@ -190,4 +191,11 @@ public interface BaseServiceClient {
     @GetMapping(value = "/v1/organization/{organization_id}/projects/by_code")
     ResponseEntity<ProjectDTO> queryProjectByCodeAndOrgId(@PathVariable(name = "organization_id") Long organizationId,
                                                           @RequestParam(name = "code") String projectCode);
+
+    @GetMapping("/v1/organizations/{organization_id}/services/{app_type}")
+    public ResponseEntity<Set<Long>> listService(@PathVariable("organization_id") Long organizationId, @PathVariable("app_type") String appType);
+
+    @GetMapping("/v1/organizations/{organization_id}/services/{app_type}/versions")
+    public ResponseEntity<Set<Long>> listSvcVersion(@PathVariable("organization_id") Long organizationId, @PathVariable("app_type") String appType);
+
 }
