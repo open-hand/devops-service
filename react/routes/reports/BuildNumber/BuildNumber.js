@@ -59,9 +59,8 @@ class BuildNumber extends Component {
     }
     const { id } = AppState.currentMenuType;
     ReportsStore.loadAllApps(id).then((data) => {
-      const appData = data && data.length ? _.filter(data, ['permission', true]) : [];
-      if (appData.length) {
-        let selectApp = appData[0].id;
+      if (data && data.length) {
+        let selectApp = data[0].id;
         if (historyAppId) {
           selectApp = historyAppId;
         }
