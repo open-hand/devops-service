@@ -75,14 +75,8 @@ class CodeQuality extends Component {
     ReportsStore.loadAllApps(projectId)
       .then((data) => {
         ReportsStore.changeIsRefresh(false);
-        const appData = data && data.length ? _.filter(data, ['permission', true]) : [];
-        if (appData.length) {
-          const selectApp = appId || appData[0].id;
-          ReportsStore.setAppId(selectApp);
-          this.loadCharts();
-        }
-        if (appData.length) {
-          const selectApp = appId || appData[0].id;
+        if (data && data.length) {
+          const selectApp = appId || data[0].id;
           ReportsStore.setAppId(selectApp);
           this.loadCharts();
         }
@@ -310,7 +304,7 @@ class CodeQuality extends Component {
         search,
       },
     } = this.props;
-    const backPath = state && state.appId ? '/devops/code-quality' : '/charts';
+    const backPath = state && state.appId ? '/devops/code-management' : '/charts';
     const { dateType, objectType } = this.state;
     const {
       getAllApps,
