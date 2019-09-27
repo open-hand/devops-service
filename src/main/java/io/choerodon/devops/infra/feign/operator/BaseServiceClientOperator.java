@@ -328,7 +328,10 @@ public class BaseServiceClientOperator {
 
     public void completeDownloadApplication(Long publishAppVersionId, Long appVersionId, Long organizationId, List<AppDownloadDevopsReqVO> appDownloadDevopsReqVOS) {
         try {
-            baseServiceClient.completeDownloadApplication(publishAppVersionId, appVersionId, organizationId, appDownloadDevopsReqVOS);
+            ResponseEntity responseEntity = baseServiceClient.completeDownloadApplication(publishAppVersionId, appVersionId, organizationId, appDownloadDevopsReqVOS);
+            if (!responseEntity.getStatusCode().is2xxSuccessful()) {
+                throw new CommonException("error.application.download.complete");
+            }
         } catch (Exception e) {
             throw new CommonException("error.application.download.complete", e.getMessage());
         }
@@ -336,7 +339,10 @@ public class BaseServiceClientOperator {
 
     public void failToDownloadApplication(Long publishAppVersionId, Long appVersionId, Long organizationId) {
         try {
-            baseServiceClient.failToDownloadApplication(publishAppVersionId, appVersionId, organizationId);
+            ResponseEntity responseEntity = baseServiceClient.failToDownloadApplication(publishAppVersionId, appVersionId, organizationId);
+            if (!responseEntity.getStatusCode().is2xxSuccessful()) {
+                throw new CommonException("error.application.download.failed");
+            }
         } catch (Exception e) {
             throw new CommonException("error.application.download.failed", e.getMessage());
         }
