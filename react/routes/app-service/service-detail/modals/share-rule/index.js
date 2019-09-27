@@ -61,6 +61,7 @@ export default observer(({ record, dataSet, versionOptions, levelOptions, projec
   useEffect(() => {
     versionOptions.transport.read.data = { params: [], searchParam: { version: record.get('versionType') } };
     versionOptions.query();
+    record.get('version') && record.set('version', null);
   }, [record.get('versionType')]);
 
   useEffect(() => {

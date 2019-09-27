@@ -1,6 +1,7 @@
 import React, { Fragment } from 'react';
 import { observer } from 'mobx-react-lite';
 import map from 'lodash/map';
+import keys from 'lodash/keys';
 import { Spin } from 'choerodon-ui';
 import { useResourceStore } from '../../../stores';
 import { useNetworkDetailStore } from './stores';
@@ -76,6 +77,15 @@ const ServiceDetail = observer(() => {
     </ul>;
   }
 
+  function getEndpoints(endPoints) {
+    return (
+      <div>
+        <span className="service-detail-endpoints">{formatMessage({ id: `${intlPrefix}.target.ip` })}:</span>
+        <span>{keys(endPoints).join()}</span>
+      </div>
+    );
+  }
+
   function getPorts() {
     const record = baseInfoDs.current;
     let ports;
@@ -108,7 +118,7 @@ const ServiceDetail = observer(() => {
           Endpoints
         </div>
         <div className="detail-content-section-detail">
-          {formatMessage({ id: `${intlPrefix}.target.ip` })}:
+          {getEndpoints(endPoints)}
         </div>
       </Fragment>) : (record && <PodList />)}
     </div>;
