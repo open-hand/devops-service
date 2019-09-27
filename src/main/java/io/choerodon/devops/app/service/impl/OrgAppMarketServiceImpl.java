@@ -260,6 +260,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                     LOGGER.info("==========应用下载，创建gitlab Project成功！！==========");
                 }
                 appDownloadDevopsReqVO.setServiceId(appServiceDTO.getId());
+                LOGGER.info("==========serviceId{}",appServiceDTO.getId());
                 String applicationDir = APPLICATION + System.currentTimeMillis();
                 String accessToken = appServiceService.getToken(appServiceDTO.getGitlabProjectId(), applicationDir, userAttrDTO);
                 LOGGER.info("=========应用下载，获取token成功=========");
@@ -275,7 +276,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             baseServiceClientOperator.completeDownloadApplication(appMarketDownloadVO.getAppDownloadRecordId(), appMarketDownloadVO.getAppVersionId(), appMarketDownloadVO.getOrganizationId(), appDownloadDevopsReqVOS);
             LOGGER.info("==========应用下载完成==========");
         } catch (Exception e) {
-//            baseServiceClientOperator.failToDownloadApplication(appMarketDownloadVO.getAppDownloadRecordId(), appMarketDownloadVO.getAppVersionId(), appMarketDownloadVO.getOrganizationId());
+            baseServiceClientOperator.failToDownloadApplication(appMarketDownloadVO.getAppDownloadRecordId(), appMarketDownloadVO.getAppVersionId(), appMarketDownloadVO.getOrganizationId());
             UserAttrDTO userAttrDTO = userAttrService.baseQueryById(appMarketDownloadVO.getIamUserId());
             appMarketDownloadVO.getAppServiceDownloadPayloads().forEach(downloadPayload -> {
                 deleteGitlabProject(downloadPayload, appMarketDownloadVO.getAppCode(), userAttrDTO.getGitlabUserId());
