@@ -15,7 +15,7 @@ public interface DevopsEnvCommandMapper extends Mapper<DevopsEnvCommandDTO> {
 
     List<DevopsEnvCommandDTO> listByObject(@Param("objectType") String objectType, @Param("objectId") Long objectId, @Param("startTime") Date startTime, @Param("endTime") Date endTime);
 
-    List<DevopsEnvCommandDTO> listAllInstanceCommand();
+    List<DevopsEnvCommandDTO> listAllInstanceCommandToMigrate();
 
     void updateSha(@Param("id") Long commandId, @Param("sha") String sha);
 }

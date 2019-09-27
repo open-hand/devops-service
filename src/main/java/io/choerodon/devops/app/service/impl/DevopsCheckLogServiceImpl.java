@@ -54,8 +54,6 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     @Autowired
     private DevopsDeployRecordService devopsDeployRecordService;
     @Autowired
-    private DevopsDeployRecordMapper devopsDeployRecordMapper;
-    @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
     private DevopsConfigMapper devopsConfigMapper;
@@ -243,28 +241,31 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         }
 
 
+        /**
+         * 迁移部署纪录数据，已经完成容错处理
+         */
         private void syncDeployRecord(List<CheckLog> checkLogs) {
-            LOGGER.info("修复部署记录数据开始");
-            //部署实例的记录
-            List<DevopsDeployRecordDTO> devopsDeployRecordDTOS = devopsEnvCommandMapper.listAllInstanceCommand()
+            LOGGER.info("修复部署记录数据开始。此过程耗时稍长");
+            // 查出数据库中需要修复的手动部署实例的记录
+            List<DevopsDeployRecordDTO> manualRecords = devopsEnvCommandMapper.listAllInstanceCommandToMigrate()
                     .stream()
-                    .filter(devopsEnvCommandDTO -> devopsEnvCommandDTO.getProjectId() != null)
                     .map(devopsEnvCommandDTO -> new DevopsDeployRecordDTO(devopsEnvCommandDTO.getProjectId(), "manual", devopsEnvCommandDTO.getId(), devopsEnvCommandDTO.getEnvId().toString(), devopsEnvCommandDTO.getCreationDate()))
                     .collect(Collectors.toList());
+            LOGGER.info("共{}条手动部署的纪录需要迁移。", manualRecords.size());
 
 
-            //流水线内部署实例的记录
-            devopsDeployRecordDTOS.addAll(
-                    pipelineRecordMapper.listAllPipelineRecordAndEnv(null)
-                            .stream()
-                            .map(pipelineRecordDTO -> new DevopsDeployRecordDTO(pipelineRecordDTO.getProjectId(), "auto", pipelineRecordDTO.getId(), pipelineRecordDTO.getEnv(), pipelineRecordDTO.getCreationDate()))
-                            .collect(Collectors.toList()));
+            // 查出数据库中需要修复的自动部署的纪录
+            List<DevopsDeployRecordDTO> autoRecords = pipelineRecordMapper.listAllPipelineRecordToMigrate()
+                    .stream()
+                    .map(pipelineRecordDTO -> new DevopsDeployRecordDTO(pipelineRecordDTO.getProjectId(), "auto", pipelineRecordDTO.getId(), pipelineRecordDTO.getEnv(), pipelineRecordDTO.getCreationDate()))
+                    .collect(Collectors.toList());
+            LOGGER.info("共{}条自动部署的纪录需要迁移。", autoRecords.size());
 
-            // 防止二次调用数据修复逻辑时的重复插入
-            devopsDeployRecordDTOS = devopsDeployRecordDTOS.stream().filter(r -> devopsDeployRecordMapper.selectOne(r) == null).collect(Collectors.toList());
+            // 所有待插入的纪录
+            manualRecords.addAll(autoRecords);
 
-            devopsDeployRecordDTOS.stream().sorted(Comparator.comparing(DevopsDeployRecordDTO::getDeployTime)).forEach(
-                    devopsDeployRecordDTO -> devopsDeployRecordService.baseCreate(devopsDeployRecordDTO));
+            manualRecords.stream().sorted(Comparator.comparing(DevopsDeployRecordDTO::getDeployTime)).forEach(
+                    record -> devopsDeployRecordService.baseCreate(record));
 
             LOGGER.info("修复部署记录数据结束");
         }
