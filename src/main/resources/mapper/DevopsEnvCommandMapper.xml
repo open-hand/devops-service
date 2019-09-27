@@ -42,7 +42,7 @@
         limit 30
     </select>
 
-    <select id="listAllInstanceCommand" resultType="io.choerodon.devops.infra.dto.DevopsEnvCommandDTO">
+    <select id="listAllInstanceCommandToMigrate" resultType="io.choerodon.devops.infra.dto.DevopsEnvCommandDTO">
    SELECT
 	dc.id,
 	dc.STATUS,
@@ -53,9 +53,12 @@ FROM
 	devops_env_command dc
 	LEFT JOIN devops_app_service_instance dai ON dc.object_id = dai.id
 	LEFT JOIN devops_env de ON de.id = dai.env_id
+    LEFT JOIN devops_deploy_record ddr ON dc.id = ddr.deploy_id AND ddr.deploy_type = 'manual'
 WHERE
 	dc.object = 'instance'
 	AND command_type IN ( 'update', 'create' )
+    AND ddr.id IS NULL
+    AND de.project_id IS NOT NULL
     </select>
 
     <update id="updateSha">
