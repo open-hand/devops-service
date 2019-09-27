@@ -7,6 +7,7 @@ import { axios } from '@choerodon/master';
 import pick from 'lodash/pick';
 import isEmpty from 'lodash/isEmpty';
 import includes from 'lodash/includes';
+import forEach from 'lodash/forEach';
 import Settings from './Settings';
 import Source from './Source';
 import { handlePromptError } from '../../../../utils';
@@ -110,23 +111,32 @@ const CreateForm = injectIntl(observer((props) => {
   }
 
   async function handleTestHarbor() {
-    try {
-      const postData = pick(record.toData(), ['url', 'userName', 'password', 'email', 'project']);
-      const res = await AppStore.checkHarbor(projectId, postData);
-      if (handlePromptError(res, false)) {
-        record.set('harborStatus', 'success');
-        return true;
-      } else {
+    if (record.get('url') && record.get('userName') && record.get('password') && record.get('email')) {
+      try {
+        const postData = pick(record.toData(), ['url', 'userName', 'password', 'email', 'project']);
+        const res = await AppStore.checkHarbor(projectId, postData);
+        if (handlePromptError(res, false)) {
+          record.set('harborStatus', 'success');
+          return true;
+        } else {
+          record.set('harborStatus', 'failed');
+          return false;
+        }
+      } catch (e) {
         record.set('harborStatus', 'failed');
         return false;
       }
-    } catch (e) {
+    } else {
       record.set('harborStatus', 'failed');
       return false;
     }
   }
 
   async function handleTestChart() {
+    if (!record.get('chartUrl')) {
+      record.set('chartStatus', 'failed');
+      return false;
+    }
     try {
       const res = await AppStore.checkChart(projectId, record.get('chartUrl'));
       if (handlePromptError(res, false)) {

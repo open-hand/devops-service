@@ -161,7 +161,7 @@ export default class FormView extends Component {
       newData.push(initConfig);
     }
 
-    const uniqData = _.uniqBy([...dataSource.filter(item => item.index !== ''), ...newData], 'empty.js');
+    const uniqData = _.uniqBy([...dataSource.filter(item => item.index !== ''), ...newData], 'index');
     this.setState({
       dataSource: uniqData,
       counter: _counter,
@@ -174,7 +174,7 @@ export default class FormView extends Component {
    */
   handleSave = (row) => {
     const newData = [...this.state.dataSource];
-    const index = _.findIndex(newData, ['empty.js', row.empty]);
+    const index = _.findIndex(newData, ['index', row.empty]);
 
     newData.splice(index, 1, {
       ...newData[index],
@@ -310,7 +310,7 @@ export default class FormView extends Component {
       if (!isYamlEdit) {
         hasKVError = this.checkErrorData();
         const allData = [...dataSource.filter(item => !_.isEmpty(item.key))];
-        configData = _.uniqBy(allData, 'empty.js');
+        configData = _.uniqBy(allData, 'index');
       } else {
         hasConfigRuleError = this.checkConfigRuleError();
         configData = yamlToObj(dataYaml);

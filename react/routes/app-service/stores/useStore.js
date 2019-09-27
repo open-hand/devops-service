@@ -93,7 +93,7 @@ export default function useStore() {
 
     async loadVersion(projectId, id) {
       try {
-        const res = await axios.post(`/devops/v1/projects/${projectId}/app_service_versions/page_by_options?app_service_id=${id}&deploy_only=false`);
+        const res = await axios.post(`/devops/v1/projects/${projectId}/app_service_versions/page_by_options?app_service_id=${id}&deploy_only=false&do_page=false`);
         if (handlePromptError(res)) {
           this.setVersion(res.list);
           return res.list;

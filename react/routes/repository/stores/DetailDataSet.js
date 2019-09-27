@@ -20,7 +20,11 @@ function handleUpdate({ record, name, value }) {
         record.set('chartStatus', '');
       }
       break;
-    case 'url' || 'userName' || 'password' || 'email' || 'project':
+    case 'url':
+    case 'userName':
+    case 'password':
+    case 'email':
+    case 'project':
       record.set('harborStatus', '');
       break;
     case 'chartUrl':
