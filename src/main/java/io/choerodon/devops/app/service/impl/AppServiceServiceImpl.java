@@ -2053,7 +2053,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                         if (!ObjectUtils.isEmpty(applicationDTO)) {
                             applicationDTOS.add(applicationDTO);
                         }
-                        versionListTemp.addAll(appServiceVersionMapper.listByAppServiceVersionIdForMarket(appServiceId, appServiceVersionIds, null, null, null));
+                        versionListTemp.addAll(appServiceVersionMapper.listByAppServiceVersionIdForMarket(appServiceId, appServiceVersionIds, null, null, null,null));
                     });
             projects = ConvertUtils.convertList(applicationDTOS, ProjectDTO.class);
             versionList.addAll(versionListTemp);
