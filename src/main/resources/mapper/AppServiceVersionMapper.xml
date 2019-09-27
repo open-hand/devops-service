@@ -208,7 +208,7 @@
         <if test='appServiceVersionIds != null and appServiceVersionIds.size > 0'>
             AND
             dav.id in
-            <foreach collection="appServiceVersionIds" item="versionId" open="(" separator=" OR " close=")">
+            <foreach collection="appServiceVersionIds" item="versionId" open="(" separator="," close=")">
                 #{versionId}
             </foreach>
         </if>
