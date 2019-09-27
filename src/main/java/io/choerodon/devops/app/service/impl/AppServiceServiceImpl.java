@@ -925,9 +925,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         try {
             sonarClient.getUser().execute();
         } catch (IOException e) {
-            if (e.getCause().getMessage().equals("Connection refused: connect")) {
-                throw new CommonException("error.connect.sonarqube.fail");
-            }
+            return new SonarContentsVO();
         }
 
         try {

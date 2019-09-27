@@ -575,7 +575,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             instanceSagaPayload.setAppServiceDeployVO(appServiceDeployVO);
             instanceSagaPayload.setDevopsEnvironmentDTO(devopsEnvironmentDTO);
 
-
             producer.apply(
                     StartSagaBuilder
                             .newBuilder()
@@ -586,23 +585,23 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                             .withPayloadAndSerialize(instanceSagaPayload)
                             .withRefId(devopsEnvironmentDTO.getId().toString()));
 
-            //如果部署时，也指定了创建网络和域名
-            if (appServiceDeployVO.getDevopsServiceReqVO() != null) {
-                appServiceDeployVO.getDevopsServiceReqVO().setAppServiceId(applicationDTO.getId());
-                devopsServiceService.create(devopsEnvironmentDTO.getProjectId(), appServiceDeployVO.getDevopsServiceReqVO());
-            }
-            if (appServiceDeployVO.getDevopsIngressVO() != null) {
-                appServiceDeployVO.getDevopsIngressVO().setAppServiceId(applicationDTO.getId());
-                List<DevopsIngressPathVO> devopsIngressPathVOS = appServiceDeployVO.getDevopsIngressVO().getPathList();
-                devopsIngressPathVOS.forEach(devopsIngressPathVO -> {
-                    DevopsServiceDTO devopsServiceDTO = devopsServiceService.baseQueryByNameAndEnvId(devopsIngressPathVO.getServiceName(), appServiceDeployVO.getEnvironmentId());
-                    if (devopsServiceDTO != null) {
-                        devopsIngressPathVO.setServiceId(devopsServiceDTO.getId());
-                    }
-                });
-                appServiceDeployVO.getDevopsIngressVO().setPathList(devopsIngressPathVOS);
-                devopsIngressService.createIngress(devopsEnvironmentDTO.getProjectId(), appServiceDeployVO.getDevopsIngressVO());
-            }
+            //如果部署时，也指定了创建网络和域名，目前的实现方式会导致创文件同步问题，后续更改逻辑
+//            if (appServiceDeployVO.getDevopsServiceReqVO() != null) {
+//                appServiceDeployVO.getDevopsServiceReqVO().setAppServiceId(applicationDTO.getId());
+//                devopsServiceService.create(devopsEnvironmentDTO.getProjectId(), appServiceDeployVO.getDevopsServiceReqVO());
+//            }
+//            if (appServiceDeployVO.getDevopsIngressVO() != null) {
+//                appServiceDeployVO.getDevopsIngressVO().setAppServiceId(applicationDTO.getId());
+//                List<DevopsIngressPathVO> devopsIngressPathVOS = appServiceDeployVO.getDevopsIngressVO().getPathList();
+//                devopsIngressPathVOS.forEach(devopsIngressPathVO -> {
+//                    DevopsServiceDTO devopsServiceDTO = devopsServiceService.baseQueryByNameAndEnvId(devopsIngressPathVO.getServiceName(), appServiceDeployVO.getEnvironmentId());
+//                    if (devopsServiceDTO != null) {
+//                        devopsIngressPathVO.setServiceId(devopsServiceDTO.getId());
+//                    }
+//                });
+//                appServiceDeployVO.getDevopsIngressVO().setPathList(devopsIngressPathVOS);
+//                devopsIngressService.createIngress(devopsEnvironmentDTO.getProjectId(), appServiceDeployVO.getDevopsIngressVO());
+//            }
 
         }
 
