@@ -8,6 +8,7 @@ import { useResourceStore } from '../../../stores';
 import { useMainStore } from '../../stores';
 import CustomForm from '../../contents/custom/modals/form-view';
 import eventStopProp from '../../../../../utils/eventStopProp';
+import openWarnModal from '../../../../../utils/openWarnModal';
 
 function CustomItem({
   record,
@@ -17,15 +18,20 @@ function CustomItem({
 }) {
   const {
     treeDs,
-    resourceStore: { getSelectedMenu: { itemType, parentId }, setUpTarget },
+    resourceStore: { getSelectedMenu: { itemType, parentId }, setUpTarget, checkExist },
     itemTypes: { CUSTOM_GROUP, CUSTOM_ITEM },
+    AppState: { currentMenuType: { projectId } },
   } = useResourceStore();
   const { customStore } = useMainStore();
 
   const [showModal, setShowModal] = useState(false);
 
-  function freshMenu() {
+  function freshTree() {
     treeDs.query();
+  }
+
+  function freshMenu() {
+    freshTree();
     const [envId] = record.get('parentId').split('-');
     if (itemType === CUSTOM_GROUP && envId === parentId) {
       setUpTarget({
@@ -51,8 +57,26 @@ function CustomItem({
     treeDs.delete(record);
   }
 
+  function checkDataExist() {
+    return checkExist({
+      projectId,
+      type: 'custom',
+      envId: record.get('parentId').split('-')[0],
+      id: record.get('id'),
+    }).then((isExist) => {
+      if (!isExist) {
+        openWarnModal(freshTree, formatMessage);
+      }
+      return isExist;
+    });
+  }
+
   function openModal() {
-    setShowModal(true);
+    checkDataExist().then((query) => {
+      if (query) {
+        setShowModal(true);
+      }
+    });
   }
 
   function closeModal(isLoad) {

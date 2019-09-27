@@ -282,7 +282,7 @@ export default class Index extends Component {
    */
   checkPorts = (ports, rule, value, callback) => {
     const { intl: { formatMessage } } = this.props;
-    if (ports && !ports.includes(value)) {
+    if (value && ports && !ports.includes(value)) {
       callback(formatMessage({ id: 'domain.network.check.failed' }));
     } else {
       callback();

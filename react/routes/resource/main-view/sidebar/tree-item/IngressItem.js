@@ -8,6 +8,7 @@ import { useResourceStore } from '../../../stores';
 import { useMainStore } from '../../stores';
 import DomainModal from '../../contents/application/modals/domain';
 import eventStopProp from '../../../../../utils/eventStopProp';
+import openWarnModal from '../../../../../utils/openWarnModal';
 
 function IngressItem({
   record,
@@ -17,8 +18,9 @@ function IngressItem({
 }) {
   const {
     treeDs,
-    resourceStore: { getSelectedMenu: { itemType, parentId }, setUpTarget },
+    resourceStore: { getSelectedMenu: { itemType, parentId }, setUpTarget, checkExist },
     itemTypes: { INGRESS_GROUP, INGRESS_ITEM },
+    AppState: { currentMenuType: { projectId } },
   } = useResourceStore();
   const {
     ingressStore,
@@ -27,8 +29,12 @@ function IngressItem({
 
   const [showModal, setShowModal] = useState(false);
 
-  function freshMenu() {
+  function freshTree() {
     treeDs.query();
+  }
+
+  function freshMenu() {
+    freshTree();
     const [envId] = record.get('parentId').split('-');
     if (itemType === INGRESS_GROUP && envId === parentId) {
       setUpTarget({
@@ -50,8 +56,26 @@ function IngressItem({
     return !connect;
   }
 
+  function checkDataExist() {
+    return checkExist({
+      projectId,
+      type: 'ingress',
+      envId: record.get('parentId').split('-')[0],
+      id: record.get('id'),
+    }).then((isExist) => {
+      if (!isExist) {
+        openWarnModal(freshTree, formatMessage);
+      }
+      return isExist;
+    });
+  }
+
   function openModal() {
-    setShowModal(true);
+    checkDataExist().then((query) => {
+      if (query) {
+        setShowModal(true);
+      }
+    });
   }
 
   function closeModal(isLoad) {

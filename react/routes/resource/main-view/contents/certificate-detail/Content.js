@@ -2,6 +2,7 @@ import React, { Fragment } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import map from 'lodash/map';
+import { Spin } from 'choerodon-ui';
 import ResourceTitle from '../../components/resource-title';
 import { useResourceStore } from '../../../stores';
 import { useCertDetailStore } from './stores';
@@ -70,7 +71,9 @@ const Content = observer(() => {
         record={detailDs.current}
         statusKey="commandStatus"
       />
-      {getContent()}
+      <Spin spinning={detailDs.status === 'loading'}>
+        {getContent()}
+      </Spin>
       <Modals />
     </div>
   );

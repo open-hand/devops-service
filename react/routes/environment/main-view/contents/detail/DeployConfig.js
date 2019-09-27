@@ -78,7 +78,7 @@ export default function DeployConfig() {
       drawer: true,
       key: modifyModalKey,
       style: configModalStyle,
-      title: formatMessage({ id: `${intlPrefix}.create.config` }),
+      title: formatMessage({ id: `${intlPrefix}.modify.config` }),
       children: <DeployConfigForm
         isModify
         store={detailStore}

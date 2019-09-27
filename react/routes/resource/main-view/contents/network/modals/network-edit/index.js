@@ -288,8 +288,10 @@ class EditNetwork extends Component {
         // 将默认选项直接生成，避免加载带来的异步问题
         const initIstOption = [];
         const deletedInstance = [];
-        if (instances && instances.length) {
+        if (appServiceId) {
           store.loadInstance(id, envId, appServiceId);
+        }
+        if (instances && instances.length) {
           _.forEach(instances, (item) => {
             const { id: istId, code, status } = item;
             initIst.push(code);

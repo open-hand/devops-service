@@ -46,12 +46,12 @@ export default ({ formatMessage, intlPrefix, projectId, store }) => {
       name: 'appServiceId',
       type: 'number',
       textField: 'text',
-      label: '服务',
+      label: '应用服务',
       required: true,
     }, {
       name: 'appServiceName',
       type: 'string',
-      label: '服务',
+      label: '应用服务',
       readOnly: true,
       ignore: 'always',
     }, {
