@@ -343,18 +343,6 @@
         da.token = #{token}
     </select>
 
-    <select id="checkAppCanDisable" resultType="java.lang.Integer">
-        SELECT
-        count( 1 )
-        FROM
-        devops_app_service da
-        WHERE
-        NOT EXISTS ( SELECT 1 FROM devops_app_service_share_rule dam WHERE dam.app_service_id = da.id )
-        AND NOT EXISTS ( SELECT 1 FROM devops_app_service_instance dai JOIN devops_app_service_version dav ON dav.id =
-        dai.app_service_version_id WHERE dai.`status` != 'deleted' AND dav.app_service_id = da.id )
-        AND da.id = #{appServiceId}
-    </select>
-
     <select id="listByCode" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
         SELECT
                da.`id`, da.project_id
