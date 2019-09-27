@@ -109,8 +109,6 @@ export default ((intlPrefix, formatMessage, projectId, envOptionsDs, valueIdOpti
       { name: 'instanceName', type: 'string', label: formatMessage({ id: `${intlPrefix}.instance.name` }), required: true, validator: checkName },
       { name: 'valueId', type: 'number', textField: 'name', valueField: 'id', label: formatMessage({ id: `${intlPrefix}.config` }), options: valueIdOptionsDs },
       { name: 'values', type: 'string' },
-      { name: 'devopsServiceReqVO', type: 'object' },
-      { name: 'devopsIngressVO', type: 'object' },
       { name: 'type', type: 'string', defaultValue: 'create' },
       { name: 'isNotChange', type: 'boolean', defaultValue: false },
       { name: 'appServiceSource', type: 'string', defaultValue: 'normal_service', label: formatMessage({ id: `${intlPrefix}.source` }) },
