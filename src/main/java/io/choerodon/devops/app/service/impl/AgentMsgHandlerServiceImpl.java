@@ -1147,9 +1147,11 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
         Long organizationId = baseServiceClientOperator.queryIamProjectById(projectId).getOrganizationId();
         List<Long> appServiceIds = new ArrayList<>();
-        baseServiceClientOperator.listIamProjectByOrgId(organizationId).forEach(pro ->
-                appServiceMapper.listAll(pro.getId()).forEach(dto -> appServiceIds.add(dto.getId()))
-        );
+        baseServiceClientOperator.listIamProjectByOrgId(organizationId).forEach(pro -> {
+            AppServiceDTO appServiceDTO = new AppServiceDTO();
+            appServiceDTO.setProjectId(pro.getId());
+            appServiceIds.addAll(appServiceMapper.select(appServiceDTO).stream().map(AppServiceDTO::getId).collect(Collectors.toList()));
+        });
         applications.addAll(appServiceMapper.listShareApplicationService(appServiceIds, projectId, null, null));
 
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);

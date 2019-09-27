@@ -133,6 +133,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Autowired
     private AppServiceInstanceMapper appServiceInstanceMapper;
     @Autowired
+    private AppServiceVersionMapper appServiceVersionMapper;
+    @Autowired
     private UserAttrMapper userAttrMapper;
     @Autowired
     private AppServiceUserRelMapper appServiceUserRelMapper;
@@ -2040,17 +2042,21 @@ public class AppServiceServiceImpl implements AppServiceService {
             versionList = appServiceVersionDTOS.stream().collect(collectingAndThen(
                     toCollection(() -> new TreeSet<>(Comparator.comparing(AppServiceVersionDTO::getId))), ArrayList::new));
         } else {
+            List<AppServiceVersionDTO> versionListTemp = new ArrayList<>();
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+            List<Long> appServiceVersionIds = baseServiceClientOperator.listServiceVersionsForMarket(projectDTO.getOrganizationId(), false);
             List<ApplicationDTO> applicationDTOS = new ArrayList<>();
             appServiceDTOList.stream()
                     .map(AppServiceDTO::getMktAppId)
-                    .forEach(v -> {
-                        ApplicationDTO applicationDTO = baseServiceClientOperator.queryAppById(v);
+                    .forEach(appServiceId -> {
+                        ApplicationDTO applicationDTO = baseServiceClientOperator.queryAppById(appServiceId);
                         if (!ObjectUtils.isEmpty(applicationDTO)) {
                             applicationDTOS.add(applicationDTO);
                         }
+                        versionListTemp.addAll(appServiceVersionMapper.listByAppServiceVersionIdForMarket(appServiceId, appServiceVersionIds, null, null, null));
                     });
             projects = ConvertUtils.convertList(applicationDTOS, ProjectDTO.class);
-            versionList = appServiceVersionService.listServiceVersionByAppServiceIds(appServiceIds, null, projectId);
+            versionList.addAll(versionListTemp);
         }
         // 将版本信息集合和项目信息集合 转为 Map类型
         Map<Long, List<AppServiceVersionDTO>> versionMap = versionList.stream().collect(Collectors.groupingBy(AppServiceVersionDTO::getAppServiceId));
@@ -2064,7 +2070,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             // 根据应用服务的ID查询出versionList中对应的版本信息
             List<AppServiceVersionDTO> appServiceVersionDTOS = versionMap.get(appServiceDTO.getId());
             // 应用服务的版本不为空才加入List
-            if(!CollectionUtils.isEmpty(appServiceVersionDTOS)){
+            if (!CollectionUtils.isEmpty(appServiceVersionDTOS)) {
                 AppServiceGroupInfoVO appServiceGroupInfoVO = dtoToGroupInfoVO(appServiceDTO);
                 ProjectDTO projectDTO = new ProjectDTO();
                 if (share != null) {
@@ -2156,7 +2162,9 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     private List<AppServiceDTO> baseListAll(Long projectId) {
-        return appServiceMapper.listAll(projectId);
+        AppServiceDTO appServiceDTO = new AppServiceDTO();
+        appServiceDTO.setProjectId(projectId);
+        return appServiceMapper.select(appServiceDTO);
     }
 
     private AppServiceDTO fromImportVoToDto(AppServiceImportVO appServiceImportVO) {
