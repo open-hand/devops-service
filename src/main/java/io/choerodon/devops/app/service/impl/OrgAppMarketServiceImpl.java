@@ -275,10 +275,10 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             baseServiceClientOperator.completeDownloadApplication(appMarketDownloadVO.getAppDownloadRecordId(), appMarketDownloadVO.getAppVersionId(), appMarketDownloadVO.getOrganizationId(), appDownloadDevopsReqVOS);
             LOGGER.info("==========应用下载完成==========");
         } catch (Exception e) {
-            baseServiceClientOperator.failToDownloadApplication(appMarketDownloadVO.getAppDownloadRecordId(), appMarketDownloadVO.getAppVersionId(), appMarketDownloadVO.getOrganizationId());
+//            baseServiceClientOperator.failToDownloadApplication(appMarketDownloadVO.getAppDownloadRecordId(), appMarketDownloadVO.getAppVersionId(), appMarketDownloadVO.getOrganizationId());
             UserAttrDTO userAttrDTO = userAttrService.baseQueryById(appMarketDownloadVO.getIamUserId());
             appMarketDownloadVO.getAppServiceDownloadPayloads().forEach(downloadPayload -> {
-                    deleteGitlabProject(downloadPayload, appMarketDownloadVO.getAppCode(), userAttrDTO.getGitlabUserId());
+                deleteGitlabProject(downloadPayload, appMarketDownloadVO.getAppCode(), userAttrDTO.getGitlabUserId());
             });
             throw new CommonException("error.download.app", e);
         }
@@ -336,7 +336,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                 String.format(SITE_APP_GROUP_NAME_FORMAT, appCode),
                 downloadPayload.getAppServiceCode(),
                 TypeUtil.objToInteger(gitlabUserId));
-        if(gitlabProjectDTO!=null) {
+        if (gitlabProjectDTO.getId() != null) {
             gitlabServiceClientOperator.deleteProjectById(gitlabProjectDTO.getId(), TypeUtil.objToInteger(gitlabUserId));
         }
     }
