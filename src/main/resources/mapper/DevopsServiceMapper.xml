@@ -324,4 +324,10 @@
         SET ds.status=#{status}
         WHERE ds.id = #{serviceId}
     </update>
+
+    <update id="updateAppServiceIdToNull">
+        UPDATE devops_service ds
+        SET ds.app_service_id = NULL
+        WHERE ds.id = #{serviceId}
+    </update>
 </mapper>
