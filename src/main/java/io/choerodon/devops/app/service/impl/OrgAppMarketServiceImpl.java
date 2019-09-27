@@ -260,6 +260,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                     LOGGER.info("==========应用下载，创建gitlab Project成功！！==========");
                 }
                 appDownloadDevopsReqVO.setServiceId(appServiceDTO.getId());
+                LOGGER.info("==========serviceId{}",appServiceDTO.getId());
                 String applicationDir = APPLICATION + System.currentTimeMillis();
                 String accessToken = appServiceService.getToken(appServiceDTO.getGitlabProjectId(), applicationDir, userAttrDTO);
                 LOGGER.info("=========应用下载，获取token成功=========");
