@@ -30,9 +30,9 @@
             AND dc.env_id = #{envId}
         </if>
         <if test='searchParam != null'>
-            <if test='searchParam.certName != null and searchParam.certName.length > 0'>
+            <if test='searchParam.name != null and searchParam.name.length > 0'>
                 AND
-                    dc.`name` LIKE CONCAT(CONCAT('%', #{searchParam.certName, jdbcType=VARCHAR}),'%')
+                    dc.`name` LIKE CONCAT(CONCAT('%', #{searchParam.name, jdbcType=VARCHAR}),'%')
             </if>
             <if test='searchParam.envName != null and searchParam.envName.length > 0'>
                 AND
