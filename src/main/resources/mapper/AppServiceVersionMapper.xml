@@ -480,8 +480,8 @@
                    #{id}
                </foreach>
            </otherwise>
-
        </choose>
+        order by id desc
     </select>
 
     <select id="queryServiceVersionByAppServiceIdAndShare" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
