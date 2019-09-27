@@ -59,7 +59,7 @@ public class AppServiceShareRuleServiceImpl implements AppServiceShareRuleServic
         } else {
             AppServiceShareRuleDTO oldappServiceShareRuleDTO = appServiceShareRuleMapper.selectByPrimaryKey(appServiceShareRuleDTO.getId());
             appServiceShareRuleDTO.setObjectVersionNumber(oldappServiceShareRuleDTO.getObjectVersionNumber());
-            if (appServiceShareRuleMapper.updateByPrimaryKeySelective(appServiceShareRuleDTO) != 1) {
+            if (appServiceShareRuleMapper.updateByPrimaryKey(appServiceShareRuleDTO) != 1) {
                 throw new CommonException("error.insert.application.share.rule.update");
             }
         }
