@@ -144,15 +144,16 @@
         da.id,
         da.`code`,
         da.`name` ,
-        dam.share_level,
         da.project_id project_id
         FROM
         devops_app_service da
         JOIN devops_app_service_instance dai ON dai.app_service_id = da.id
         JOIN devops_env de ON de.id = dai.env_id
-        left join devops_app_service_share_rule dam on dam.app_service_id = da.id
         WHERE
         de.project_id = #{projectId}
+        <if test="status != null">
+            AND dai.status=#{status}
+        </if>
         AND de.id = #{envId}
         <if test="appServiceId!=null and appServiceId !=''">
             ORDER BY da.id not in (#{appServiceId}),da.id ASC
