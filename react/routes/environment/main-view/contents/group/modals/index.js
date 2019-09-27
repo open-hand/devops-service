@@ -1,5 +1,6 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
+import { withRouter } from 'react-router-dom';
 import { Modal } from 'choerodon-ui/pro';
 import HeaderButtons from '../../../../../../components/header-buttons';
 import EnvCreateForm from '../../../modals/env-create';
@@ -11,7 +12,7 @@ import { useEnvGroupStore } from '../stores';
 const groupKey = Modal.key();
 const envKey = Modal.key();
 
-const GroupModal = observer(() => {
+const GroupModal = observer((props) => {
   const modalStyle = useMemo(() => ({
     width: 380,
   }), []);
@@ -22,6 +23,16 @@ const GroupModal = observer(() => {
   } = useEnvironmentStore();
   const { groupFormDs } = useMainStore();
   const { groupDs } = useEnvGroupStore();
+
+  useEffect(() => {
+    const {
+      location: { state },
+    } = props;
+
+    if (state && state.openCreate) {
+      openEnvModal();
+    }
+  }, []);
 
   function refresh() {
     groupDs.query();
@@ -78,4 +89,4 @@ const GroupModal = observer(() => {
   </div>);
 });
 
-export default GroupModal;
+export default withRouter(GroupModal);

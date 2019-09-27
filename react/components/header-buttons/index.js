@@ -27,6 +27,7 @@ const HeaderButtons = ({ items, children }) => {
           onClick={handler}
           wait={WAIT_TIME}
           waitType="throttle"
+          color="primary"
         >
           {name}
         </Button>;
