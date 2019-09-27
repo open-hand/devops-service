@@ -19,8 +19,9 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const {
       resourceStore,
       treeDs,
+      itemTypes: { CIPHER_ITEM },
     } = useResourceStore();
-    const { getSelectedMenu: { id, parentId } } = resourceStore;
+    const { getSelectedMenu: { id, parentId }, getUpTarget, setUpTarget } = resourceStore;
     const detailDs = useMemo(() => new DataSet(DetailDataSet()), []);
 
     function freshTree() {
@@ -49,6 +50,14 @@ export const StoreProvider = injectIntl(inject('AppState')(
         }
       });
     }, [projectId, id]);
+
+    useEffect(() => {
+      const { type, id: secretId } = getUpTarget;
+      if (type === CIPHER_ITEM && secretId === id) {
+        detailDs.query();
+        setUpTarget({});
+      }
+    }, [getUpTarget]);
 
     const value = {
       ...props,

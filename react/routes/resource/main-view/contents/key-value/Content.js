@@ -139,9 +139,9 @@ const ConfigMap = observer((props) => {
           key="1"
         >
           <Column name="name" header={formatMessage({ id: `${intlPrefix}.${itemType}` })} renderer={renderName} />
-          <Column renderer={renderAction} />
+          <Column renderer={renderAction} width="0.7rem" />
           <Column name="key" renderer={renderKey} />
-          <Column name="lastUpdateDate" renderer={renderDate} />
+          <Column name="lastUpdateDate" renderer={renderDate} width="1rem" />
         </Table>
         : <Table
           dataSet={store}
@@ -150,9 +150,9 @@ const ConfigMap = observer((props) => {
           key="2"
         >
           <Column name="name" header={formatMessage({ id: `${intlPrefix}.${itemType}` })} renderer={renderName} />
-          <Column renderer={renderAction} />
-          <Column name="value" renderer={renderValue} />
-          <Column name="lastUpdateDate" renderer={renderDate} />
+          <Column renderer={renderAction} width="0.7rem" />
+          <Column name="value" renderer={renderValue} header={formatMessage({ id: 'key' })} />
+          <Column name="lastUpdateDate" renderer={renderDate} width="1rem" />
         </Table>}
       {showModal && <KeyValueModal
         modeSwitch={itemType === 'configMap'}

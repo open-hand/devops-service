@@ -312,7 +312,11 @@ const Networking = observer(() => {
                 permissionCode={['devops-service.devops-ingress.delete']}
               />
             </div>
-            {!disabled && <Action data={buttons} />}
+            {!disabled && (
+              <div className="net-ingress-action">
+                <Action data={buttons} />
+              </div>
+            )}
             <FormattedMessage id="address" />：
             <div className="net-ingress-text">
               <MouserOverWrapper text={domain} width={0.2}>
