@@ -1857,13 +1857,6 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public void baseCheckAppCanDisable(Long appServiceId) {
-        if (appServiceMapper.checkAppCanDisable(appServiceId) == 0) {
-            throw new CommonException("error.app.publishedOrDeployed");
-        }
-    }
-
-    @Override
     public List<AppServiceDTO> baseListByCode(String code) {
         return appServiceMapper.listByCode(code);
     }

@@ -49,8 +49,6 @@ public interface AppServiceMapper extends Mapper<AppServiceDTO> {
 
     List<AppServiceDTO> listDeployedApp(@Param("projectId") Long projectId);
 
-    Integer checkAppCanDisable(@Param("appServiceId") Long appServiceId);
-
     List<AppServiceDTO> listByCode(@Param("code") String code);
 
     AppServiceDTO queryByCodeWithNoProject(@Param("code") String code);
@@ -65,7 +63,10 @@ public interface AppServiceMapper extends Mapper<AppServiceDTO> {
                                  @Param("hookId") Long hookId,
                                  @Param("isSynchro") Boolean isSynchro);
 
-    void updateHarborConfig(@Param("projectId") Long projectId, @Param("newConfigId") Long newConfigId, @Param("oldConfigId") Long oldConfigId, @Param("harborPrivate") boolean harborPrivate);
+    void updateHarborConfig(@Param("projectId") Long projectId,
+                            @Param("newConfigId") Long newConfigId,
+                            @Param("oldConfigId") Long oldConfigId,
+                            @Param("harborPrivate") boolean harborPrivate);
 
 
     List<AppServiceDTO> listShareApplicationService(@Param("appServiceIds") List<Long> appServiceIds,
@@ -81,9 +82,13 @@ public interface AppServiceMapper extends Mapper<AppServiceDTO> {
 
     void updateChartConfigNullByServiceId(@Param("appServiceId") Long appServiceId);
 
-    List<AppServiceDTO> queryOrganizationShareApps(@Param("projectIds") List<Long> projectIds, @Param("param") String param, @Param("searchProjectId") Long searchProjectId);
+    List<AppServiceDTO> queryOrganizationShareApps(@Param("projectIds") List<Long> projectIds,
+                                                   @Param("param") String param,
+                                                   @Param("searchProjectId") Long searchProjectId);
 
-    List<AppServiceDTO> queryMarketDownloadApps(@Param("type") String type, @Param("param") String param, @Param("appServiceIds") List<Long> appServiceIds);
+    List<AppServiceDTO> queryMarketDownloadApps(@Param("type") String type,
+                                                @Param("param") String param,
+                                                @Param("appServiceIds") List<Long> appServiceIds);
 
     /**
      * 根据ProjectID 查询可用的项目共享Apps
@@ -91,7 +96,9 @@ public interface AppServiceMapper extends Mapper<AppServiceDTO> {
      * @param projectId
      * @return
      */
-    List<AppServiceDTO> listShareProjectApps(@Param("projectId") Long projectId, @Param("param") String param, @Param("searchProjectId") Long searchProjectId);
+    List<AppServiceDTO> listShareProjectApps(@Param("projectId") Long projectId,
+                                             @Param("param") String param,
+                                             @Param("searchProjectId") Long searchProjectId);
 
     List<AppServiceDTO> listProjectMembersAppService(@Param("projectId") Long projectId,
                                                      @Param("isActive") Boolean isActive,
@@ -107,7 +114,8 @@ public interface AppServiceMapper extends Mapper<AppServiceDTO> {
                                             @Param("searchParam") Map<String, Object> searchParam,
                                             @Param("params") List<String> params);
 
-    List<AppServiceDTO> listProjectMembersAppServiceByActive(@Param("projectId") Long projectId, @Param("userId") Long userId);
+    List<AppServiceDTO> listProjectMembersAppServiceByActive(@Param("projectId") Long projectId,
+                                                             @Param("userId") Long userId);
 
     List<AppServiceDTO> pageServiceByProjectId(@Param("projectId") Long projectId,
                                                @Param("searchParam") Map<String, Object> searchParam,
@@ -127,6 +135,7 @@ public interface AppServiceMapper extends Mapper<AppServiceDTO> {
      *
      * @return
      */
-    List<Long> listGitlabProjectIdByAppPermission(@Param("gitlabGroupId") Long gitlabGroupId, @Param("iamUserId") Long iamUserId);
+    List<Long> listGitlabProjectIdByAppPermission(@Param("gitlabGroupId") Long gitlabGroupId,
+                                                  @Param("iamUserId") Long iamUserId);
 }
 

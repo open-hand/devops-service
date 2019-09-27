@@ -384,8 +384,6 @@ public interface AppServiceService {
 
     AppServiceDTO baseQueryByToken(String token);
 
-    void baseCheckAppCanDisable(Long applicationId);
-
     List<AppServiceDTO> baseListByCode(String code);
 
     List<AppServiceDTO> baseListByGitLabProjectIds(List<Long> gitLabProjectIds);

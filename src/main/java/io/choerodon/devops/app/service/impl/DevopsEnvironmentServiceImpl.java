@@ -1193,6 +1193,11 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             throw new CommonException("error.env.delete");
         }
 
+        // 删除对应的环境-应用服务关联关系
+        DevopsEnvAppServiceDTO deleteCondition = new DevopsEnvAppServiceDTO();
+        deleteCondition.setEnvId(envId);
+        devopsEnvAppServiceMapper.delete(deleteCondition);
+
         // 删除环境对应的实例
         appServiceInstanceService.baseListByEnvId(envId).forEach(instanceE ->
                 devopsEnvCommandService.baseListByObject(HelmObjectKind.INSTANCE.toValue(), instanceE.getId()).forEach(t -> devopsEnvCommandService.baseDeleteByEnvCommandId(t)));
