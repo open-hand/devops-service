@@ -58,13 +58,4 @@ public class DevopsServiceApplication {
         return container;
     }
 
-    //清空agent连接信息
-    @PostConstruct
-    public void start() {
-        Set<Object> keySet = redisTemplate.opsForHash().keys(CLUSTER_SESSION);
-        if (!keySet.isEmpty()) {
-            redisTemplate.opsForHash().delete(CLUSTER_SESSION, keySet.toArray());
-        }
-    }
-
 }

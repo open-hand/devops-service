@@ -37,6 +37,9 @@ public class ConvertC7nSecretServiceImpl extends ConvertK8sObjectService<V1Secre
         if (v1Secret.getApiVersion() == null) {
             throw new GitOpsExplainException(GitOpsObjectError.SECRET_API_VERSION_NOT_FOUND.getError(), filePath);
         } else {
+            if(v1Secret.getType()==null) {
+                throw new GitOpsExplainException(GitOpsObjectError.SECRET_TYPE_NOT_FOUND.getError(), filePath);
+            }
             if (v1Secret.getMetadata().getName() == null) {
                 throw new GitOpsExplainException(GitOpsObjectError.SECRET_NAME_NOT_FOUND.getError(), filePath);
             }
