@@ -14,25 +14,6 @@ import java.util.stream.Collectors;
 
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.filefilter.IOFileFilter;
-import org.apache.commons.io.filefilter.TrueFileFilter;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.ListBranchCommand;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.Ref;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import retrofit2.Call;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
@@ -75,6 +56,24 @@ import io.choerodon.devops.infra.feign.ChartClient;
 import io.choerodon.devops.infra.feign.HarborClient;
 import io.choerodon.devops.infra.feign.SonarClient;
 import io.choerodon.websocket.tool.UUIDTool;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.IOFileFilter;
+import org.apache.commons.io.filefilter.TrueFileFilter;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.ListBranchCommand;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.Ref;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import retrofit2.Call;
+import retrofit2.Response;
+import retrofit2.Retrofit;
 
 /**
  * Created by younger on 2018/3/28.
@@ -342,7 +341,6 @@ public class ApplicationServiceImpl implements ApplicationService {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
-
 
 
         initApplicationParams(projectE, organization, applicationES.getList(), urlSlash);
@@ -623,7 +621,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             iamUserIds = iamRepository.getAllMemberIdsWithoutOwner(devOpsAppPayload.getIamProjectId());
         }
         if (iamUserIds != null && !iamUserIds.isEmpty()) {
-            List<UserAttrE> userAttrEList = userAttrRepository.listByUserIds(devOpsAppPayload.getUserIds());
+            List<UserAttrE> userAttrEList = userAttrRepository.listByUserIds(iamUserIds);
             userAttrEList.forEach(userAttrE -> {
                 GitlabMemberE gitlabGroupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(devOpsAppPayload.getGroupId(), TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
                 if (gitlabGroupMemberE != null) {
@@ -641,15 +639,18 @@ public class ApplicationServiceImpl implements ApplicationService {
                             }
                         });
                     }
-                }
-                GitlabMemberE gitlabProjectMemberE = gitlabProjectRepository
-                        .getProjectMember(devOpsAppPayload.getGitlabProjectId(), TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
-                if (gitlabProjectMemberE == null || gitlabProjectMemberE.getId() == null) {
-                    gitlabRepository.addMemberIntoProject(devOpsAppPayload.getGitlabProjectId(),
-                            new MemberDTO(TypeUtil.objToInteger(userAttrE.getGitlabUserId()), 30, ""));
+                } else {
+                    GitlabMemberE gitlabProjectMemberE = gitlabProjectRepository
+                            .getProjectMember(devOpsAppPayload.getGitlabProjectId(), TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+                    if (gitlabProjectMemberE == null || gitlabProjectMemberE.getId() == null) {
+                        gitlabRepository.addMemberIntoProject(devOpsAppPayload.getGitlabProjectId(),
+                                new MemberDTO(TypeUtil.objToInteger(userAttrE.getGitlabUserId()), 30, ""));
+                    }
                 }
             });
+
         }
+
     }
 
     /**
@@ -952,7 +953,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             if (applicationE.getHarborConfigE() != null) {
                 DevopsProjectConfigE devopsProjectConfigE = devopsProjectConfigRepository.queryByPrimaryKey(applicationE.getHarborConfigE().getId());
                 harborProjectConfig = devopsProjectConfigE.getConfig();
-                if(devopsProjectConfigE.getName().equals("harbor_default")) {
+                if (devopsProjectConfigE.getName().equals("harbor_default")) {
                     harborProjectConfig.setUserName(devopsProjectE.getHarborProjectUserName());
                     harborProjectConfig.setPassword(devopsProjectE.getHarborProjectUserPassword());
                 }
@@ -1024,7 +1025,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     public PageInfo<ApplicationReqDTO> listByActiveAndPubAndVersion(Long projectId, PageRequest pageRequest,
-                                                                String params) {
+                                                                    String params) {
         return ConvertPageHelper.convertPageInfo(applicationRepository
                         .listByActiveAndPubAndVersion(projectId, true, pageRequest, params),
                 ApplicationReqDTO.class);
