@@ -8,6 +8,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+import io.choerodon.devops.infra.feign.BaseServiceClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -883,7 +884,15 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             members = permissions
                     .stream()
                     .filter(p -> !ownerIds.contains(p.getIamUserId()))
-                    .map(p -> ConvertUtils.convertObject(p, DevopsUserPermissionVO.class))
+                    .map(p -> {
+                        DevopsUserPermissionVO permissionVO = new DevopsUserPermissionVO();
+                        BeanUtils.copyProperties(p,permissionVO);
+                        IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(p.getIamUserId());
+                        if(!iamUserDTO.getLdap()){
+                            permissionVO.setLoginName(iamUserDTO.getEmail());
+                        }
+                        return permissionVO;
+                    })
                     .peek(p -> p.setRole(MEMBER))
                     .sorted(Comparator.comparing(DevopsUserPermissionVO::getCreationDate).reversed())
                     .collect(Collectors.toList());

@@ -157,7 +157,7 @@
     </select>
 
     <select id="listByAppServiceIdAndVersion" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
-        SELECT
+        SELECT distinct
         dav.id,
         dav.version,
         dav.publish_time,
