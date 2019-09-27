@@ -38,9 +38,9 @@
                 AND
                     de.`name` LIKE CONCAT(CONCAT('%', #{searchParam.envName, jdbcType=VARCHAR}),'%')
             </if>
-            <if test='searchParam.domains != null and searchParam.domains.length > 0'>
+            <if test='searchParam.domain != null and searchParam.domain.length > 0'>
                 AND
-                    dc.domains LIKE CONCAT(CONCAT('%', #{searchParam.domains, jdbcType=VARCHAR}),'%')
+                    dc.domains LIKE CONCAT(CONCAT('%', #{searchParam.domain, jdbcType=VARCHAR}),'%')
             </if>
         </if>
         <if test='params != null and params.size > 0'>
