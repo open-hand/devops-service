@@ -1,4 +1,4 @@
-import React, { Fragment, useState } from 'react';
+import React, { Fragment, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { observer } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
@@ -8,6 +8,7 @@ import { useResourceStore } from '../../../stores';
 import EditNetwork from '../../contents/network/modals/network-edit';
 import { useMainStore } from '../../stores';
 import eventStopProp from '../../../../../utils/eventStopProp';
+import openWarnModal from '../../../../../utils/openWarnModal';
 
 function NetworkItem({
   record,
@@ -17,8 +18,9 @@ function NetworkItem({
 }) {
   const {
     treeDs,
-    resourceStore: { getSelectedMenu: { itemType, parentId }, setUpTarget },
+    resourceStore: { getSelectedMenu: { itemType, parentId }, setUpTarget, checkExist },
     itemTypes: { SERVICES_GROUP, SERVICES_ITEM },
+    AppState: { currentMenuType: { projectId } },
   } = useResourceStore();
   const {
     networkStore,
@@ -27,8 +29,12 @@ function NetworkItem({
 
   const [showModal, setShowModal] = useState(false);
 
-  function freshMenu() {
+  function freshTree() {
     treeDs.query();
+  }
+
+  function freshMenu() {
+    freshTree();
     const [envId] = record.get('parentId').split('-');
     if (itemType === SERVICES_GROUP && envId === parentId) {
       setUpTarget({
@@ -50,8 +56,26 @@ function NetworkItem({
     return !connect;
   }
 
+  function checkDataExist() {
+    return checkExist({
+      projectId,
+      type: 'service',
+      envId: record.get('parentId').split('-')[0],
+      id: record.get('id'),
+    }).then((isExist) => {
+      if (!isExist) {
+        openWarnModal(freshTree, formatMessage);
+      }
+      return isExist;
+    });
+  }
+
   function openModal() {
-    setShowModal(true);
+    checkDataExist().then((query) => {
+      if (query) {
+        setShowModal(true);
+      }
+    });
   }
 
   function closeModal(isLoad) {

@@ -8,6 +8,7 @@ import { useResourceStore } from '../../../stores';
 import { useMainStore } from '../../stores';
 import KeyValueModal from '../../contents/application/modals/key-value';
 import eventStopProp from '../../../../../utils/eventStopProp';
+import openWarnModal from '../../../../../utils/openWarnModal';
 
 function ConfigItem({
   record,
@@ -18,7 +19,8 @@ function ConfigItem({
   const {
     treeDs,
     itemTypes: { CIPHER_GROUP, CIPHER_ITEM },
-    resourceStore: { getSelectedMenu: { itemType, parentId }, setUpTarget },
+    resourceStore: { getSelectedMenu: { itemType, parentId }, setUpTarget, checkExist },
+    AppState: { currentMenuType: { projectId } },
   } = useResourceStore();
   const {
     secretStore,
@@ -27,8 +29,12 @@ function ConfigItem({
 
   const [showModal, setShowModal] = useState(false);
 
-  function freshMenu() {
+  function freshTree() {
     treeDs.query();
+  }
+
+  function freshMenu() {
+    freshTree();
     const [envId] = record.get('parentId').split('-');
     if (itemType === CIPHER_GROUP && envId === parentId) {
       setUpTarget({
@@ -50,8 +56,26 @@ function ConfigItem({
     return !connect;
   }
 
+  function checkDataExist() {
+    return checkExist({
+      projectId,
+      type: 'secret',
+      envId: record.get('parentId').split('-')[0],
+      id: record.get('id'),
+    }).then((isExist) => {
+      if (!isExist) {
+        openWarnModal(freshTree, formatMessage);
+      }
+      return isExist;
+    });
+  }
+
   function openModal() {
-    setShowModal(true);
+    checkDataExist().then((query) => {
+      if (query) {
+        setShowModal(true);
+      }
+    });
   }
 
   function closeModal(isLoad) {

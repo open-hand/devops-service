@@ -2,6 +2,7 @@ import React from 'react';
 import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import map from 'lodash/map';
+import { Spin } from 'choerodon-ui';
 import ResourceTitle from '../../components/resource-title';
 import { useResourceStore } from '../../../stores';
 import { useMainStore } from '../../stores';
@@ -46,7 +47,9 @@ const Content = observer(() => {
       <div className={`${prefixCls}-detail-content-section-title`}>
         <FormattedMessage id={`${intlPrefix}.key.value`} />
       </div>
-      {getContent()}
+      <Spin spinning={detailDs.status === 'loading'}>
+        {getContent()}
+      </Spin>
       <Modals />
     </div>
   );

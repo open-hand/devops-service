@@ -10,6 +10,7 @@ import { useResourceStore } from '../../../stores';
 import { useTreeItemStore } from './stores';
 import { handlePromptError } from '../../../../../utils';
 import { useMainStore } from '../../stores';
+import openWarnModal from '../../../../../utils/openWarnModal';
 
 const stopKey = Modal.key();
 const deleteKey = Modal.key();
@@ -29,6 +30,7 @@ function InstanceItem({
     resourceStore,
     AppState: { currentMenuType: { id } },
     itemTypes: { IST_GROUP },
+    AppState: { currentMenuType: { projectId } },
   } = useResourceStore();
   const { treeItemStore } = useTreeItemStore();
   const {
@@ -48,8 +50,12 @@ function InstanceItem({
     stroke: PADDING_COLOR,
   }], [podUnlinkCount, podRunningCount, podCount]);
 
-  function freshMenu() {
+  function freshTree() {
     treeDs.query();
+  }
+
+  function freshMenu() {
+    freshTree();
     const { getSelectedMenu: { itemType, parentId } } = resourceStore;
     const [envId] = record.get('parentId').split('-');
     if (itemType === IST_GROUP && envId === parentId) {
@@ -60,14 +66,32 @@ function InstanceItem({
     }
   }
 
+  function checkDataExist() {
+    return resourceStore.checkExist({
+      projectId,
+      type: 'instance',
+      envId: record.get('parentId').split('-')[0],
+      id: record.get('id'),
+    }).then((isExist) => {
+      if (!isExist) {
+        openWarnModal(freshTree, formatMessage);
+      }
+      return isExist;
+    });
+  }
+
   function openChangeActive(active) {
-    Modal.open({
-      movable: false,
-      closable: false,
-      key: stopKey,
-      title: formatMessage({ id: `${intlPrefix}.instance.action.${active}` }),
-      children: formatMessage({ id: `${intlPrefix}.instance.action.${active}.tips` }),
-      onOk: () => handleChangeActive(active),
+    checkDataExist().then((query) => {
+      if (query) {
+        Modal.open({
+          movable: false,
+          closable: false,
+          key: stopKey,
+          title: formatMessage({ id: `${intlPrefix}.instance.action.${active}` }),
+          children: formatMessage({ id: `${intlPrefix}.instance.action.${active}.tips` }),
+          onOk: () => handleChangeActive(active),
+        });
+      }
     });
   }
 

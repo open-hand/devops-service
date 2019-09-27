@@ -2,16 +2,14 @@ import React, { Fragment } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import map from 'lodash/map';
-import { Tooltip } from 'choerodon-ui';
+import { Spin, Tooltip } from 'choerodon-ui';
 import { useResourceStore } from '../../../stores';
 import { useCustomDetailStore } from './stores';
 import Modals from './modals';
 import StatusTags from '../../../../../components/status-tag';
 import ResourceTitle from '../../components/resource-title';
 
-
 import './index.less';
-
 
 const statusTagsStyle = {
   minWidth: 40,
@@ -120,7 +118,9 @@ const Content = observer(() => {
   return (
     <div className={`${prefixCls}-ingress-detail`}>
       <ResourceTitle iconType="language" record={detailDs.current} />
-      {getContent()}
+      <Spin spinning={detailDs.status === 'loading'}>
+        {getContent()}
+      </Spin>
       <Modals />
     </div>
   );
