@@ -845,6 +845,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentMapper.selectByPrimaryKey(envId);
 
         RoleAssignmentSearchVO roleAssignmentSearchVO = new RoleAssignmentSearchVO();
+        roleAssignmentSearchVO.setEnabled(true);
         Map<String, Object> searchParamMap = null;
         List<String> paramList = null;
         // 处理搜索参数

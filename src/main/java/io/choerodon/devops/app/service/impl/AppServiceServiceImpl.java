@@ -1391,6 +1391,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
 
         RoleAssignmentSearchVO roleAssignmentSearchVO = new RoleAssignmentSearchVO();
+        roleAssignmentSearchVO.setEnabled(true);
         Map<String, Object> searchParamMap;
         // 处理搜索参数
         if (!org.springframework.util.StringUtils.isEmpty(searchParam)) {
@@ -1411,7 +1412,6 @@ public class AppServiceServiceImpl implements AppServiceService {
                     String realName = TypeUtil.objToString(searchParamMap.get("realName"));
                     roleAssignmentSearchVO.setRealName(realName);
                 }
-                roleAssignmentSearchVO.setEnabled(true);
             }
         }
 
