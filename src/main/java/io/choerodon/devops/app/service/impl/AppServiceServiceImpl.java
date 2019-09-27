@@ -1458,6 +1458,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     public List<DevopsUserPermissionVO> listMembers(Long projectId, Long appServiceId, String params) {
         RoleAssignmentSearchVO roleAssignmentSearchVO = new RoleAssignmentSearchVO();
         roleAssignmentSearchVO.setParam(new String[]{params});
+        roleAssignmentSearchVO.setEnabled(true);
 
         // 根据参数搜索所有的项目成员
         Long memberRoleId = baseServiceClientOperator.queryRoleIdByCode(PROJECT_MEMBER);
@@ -1484,7 +1485,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 .collect(Collectors.toList());
 
         return ConvertUtils.convertList(members,
-                iamUserDTO -> new DevopsUserPermissionVO(iamUserDTO.getId(), iamUserDTO.getLoginName(), iamUserDTO.getRealName()));
+                iamUserDTO -> new DevopsUserPermissionVO(iamUserDTO.getId(), iamUserDTO.getLdap()?iamUserDTO.getLoginName():iamUserDTO.getEmail(), iamUserDTO.getRealName()));
     }
 
     @Override
