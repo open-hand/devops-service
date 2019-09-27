@@ -179,7 +179,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                 if (i == 0 || i == v1Endpoints1.getSubsets().get(0).getAddresses().size() - 1) {
                     keyBuilder.append(v1Endpoints1.getSubsets().get(0).getAddresses().get(i).getIp());
                 } else {
-                    keyBuilder.append(v1Endpoints1.getSubsets().get(0).getAddresses().get(i).getIp() + ",");
+                    keyBuilder.append(v1Endpoints1.getSubsets().get(0).getAddresses().get(i).getIp()).append(",");
                 }
             }
             endPoints.put(keyBuilder.toString(), v1Endpoints1.getSubsets().get(0).getPorts().stream().map(v1EndpointPort -> {

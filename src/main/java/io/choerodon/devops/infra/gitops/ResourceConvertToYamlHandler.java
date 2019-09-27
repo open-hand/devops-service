@@ -120,6 +120,9 @@ public class ResourceConvertToYamlHandler<T> {
                     case "Secret":
                         handleSecret(t, objectType, operationType, resultBuilder, jsonObject);
                         break;
+                    case "Endpoints":
+                        // 忽视掉Endpoints
+                        break;
                     default:
                         handleCustom(t, objectType, operationType, resultBuilder, jsonObject);
                         break;
