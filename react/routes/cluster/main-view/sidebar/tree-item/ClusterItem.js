@@ -38,7 +38,6 @@ function ClusterItem({
     return ['disconnect'];
   }
 
-  
   function freshMenu() {
     treeDs.query();
   }
@@ -125,7 +124,7 @@ function ClusterItem({
     }
     return <Action placement="bottomRight" data={Data} />;
   }, []);
-  
+
   const clearClick = (e) => {
     e.stopPropagation();
   };

@@ -1,12 +1,16 @@
-import React, { useCallback, Fragment } from 'react';
-import { Page, Content, Header, Permission, Action, Breadcrumb } from '@choerodon/master';
+import React, { useEffect, useState } from 'react';
 import { Table, Modal } from 'choerodon-ui/pro';
-import { Button } from 'choerodon-ui';
+import { observer } from 'mobx-react-lite';
 import { FormattedMessage } from 'react-intl';
 import { withRouter, Link } from 'react-router-dom';
-import { observer } from 'mobx-react-lite';
+import { Page, Content, Header, Permission, Action, Breadcrumb } from '@choerodon/master';
+import { Button, Spin } from 'choerodon-ui';
 import pick from 'lodash/pick';
+import checkPermission from '../../../utils/checkPermission';
+import Loading from '../../../components/loading';
 import TimePopover from '../../../components/timePopover';
+import EmptyPage from '../../../components/empty-page';
+import { useAppTopStore } from '../stores';
 import { useAppServiceStore } from './stores';
 import CreateForm from '../modals/creat-form';
 import ImportForm from './modal/import-form';
@@ -27,16 +31,47 @@ const modalStyle2 = {
 
 const AppService = withRouter(observer((props) => {
   const {
-    intl: { formatMessage },
-    AppState: { currentMenuType: { id } },
     intlPrefix,
     prefixCls,
     listDs,
+    listPermissions,
+  } = useAppTopStore();
+  const {
+    intl: { formatMessage },
+    AppState: {
+      currentMenuType: {
+        id: projectId,
+        organizationId,
+      },
+    },
     importDs,
     importTableDs,
     AppStore,
     selectedDs,
   } = useAppServiceStore();
+
+  const [access, setAccess] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function judgeRole() {
+      const data = {
+        code: 'devops-service.app-service.create',
+        projectId,
+        organizationId,
+        resourceType: 'project',
+      };
+      try {
+        const res = await checkPermission(data);
+        setAccess(res);
+        setLoading(false);
+      } catch (e) {
+        setAccess(false);
+      }
+    }
+    judgeRole();
+  }, []);
+
 
   function refresh() {
     listDs.query();
@@ -145,7 +180,7 @@ const AppService = withRouter(observer((props) => {
         dataSet={listDs}
         record={record}
         AppStore={AppStore}
-        projectId={id}
+        projectId={projectId}
         intlPrefix={intlPrefix}
         prefixCls={prefixCls}
       />,
@@ -166,7 +201,7 @@ const AppService = withRouter(observer((props) => {
         tableDs={importTableDs}
         record={importDs.current}
         AppStore={AppStore}
-        projectId={id}
+        projectId={projectId}
         intlPrefix={intlPrefix}
         prefixCls={prefixCls}
         refresh={refresh}
@@ -203,7 +238,7 @@ const AppService = withRouter(observer((props) => {
 
   async function handleChangeActive(active) {
     try {
-      if (await AppStore.changeActive(id, listDs.current.get('id'), active)) {
+      if (await AppStore.changeActive(projectId, listDs.current.get('id'), active)) {
         refresh();
       } else {
         return false;
@@ -218,63 +253,69 @@ const AppService = withRouter(observer((props) => {
     return record.status !== 'add';
   }
 
-  return (
-    <Page
-      service={[
-        'devops-service.app-service.pageByOptions',
-        'devops-service.app-service.create',
-        'devops-service.app-service.importApp',
-        'devops-service.app-service.update',
-        'devops-service.app-service.updateActive',
-        'devops-service.app-service.delete',
-      ]}
-    >
-      <Header title={<FormattedMessage id="app.head" />}>
-        <Permission
-          service={['devops-service.app-service.create']}
-        >
-          <Button
-            icon="playlist_add"
-            onClick={() => openModal(listDs.create())}
-          >
-            <FormattedMessage id={`${intlPrefix}.create`} />
-          </Button>
-        </Permission>
-        <Permission
-          service={['devops-service.app-service.importApp']}
-        >
-          <Button
-            icon="archive"
-            onClick={openImport}
-          >
-            <FormattedMessage id={`${intlPrefix}.import`} />
-          </Button>
-        </Permission>
+  function getHeader() {
+    return <Header title={<FormattedMessage id="app.head" />}>
+      <Permission
+        service={['devops-service.app-service.create']}
+      >
         <Button
-          icon="refresh"
-          onClick={() => refresh()}
+          icon="playlist_add"
+          onClick={() => openModal(listDs.create())}
         >
-          <FormattedMessage id="refresh" />
+          <FormattedMessage id={`${intlPrefix}.create`} />
         </Button>
-      </Header>
+      </Permission>
+      <Permission
+        service={['devops-service.app-service.importApp']}
+      >
+        <Button
+          icon="archive"
+          onClick={openImport}
+        >
+          <FormattedMessage id={`${intlPrefix}.import`} />
+        </Button>
+      </Permission>
+      <Button
+        icon="refresh"
+        onClick={() => refresh()}
+      >
+        <FormattedMessage id="refresh" />
+      </Button>
+    </Header>;
+  }
+
+  function getContent() {
+    if (loading) return <Loading />;
+
+    return access ? <Table
+      dataSet={listDs}
+      border={false}
+      queryBar="bar"
+      filter={handleTableFilter}
+      className={`${prefixCls}.table`}
+      rowClassName="c7ncd-table-row-font-color"
+    >
+      <Column name="name" renderer={renderName} sortable />
+      <Column renderer={renderActions} width="0.7rem" />
+      <Column name="code" sortable />
+      <Column name="type" renderer={renderType} />
+      <Column name="repoUrl" renderer={renderUrl} />
+      <Column name="creationDate" renderer={renderDate} />
+      <Column name="active" renderer={renderStatus} width="0.7rem" align="left" />
+    </Table> : <Spin spinning={listDs.status === 'loading'}>
+      <EmptyPage
+        title={formatMessage({ id: 'empty.title.prohibited' })}
+        describe={formatMessage({ id: 'empty.tips.app.member' })}
+      />
+    </Spin>;
+  }
+
+  return (
+    <Page service={listPermissions}>
+      {getHeader()}
       <Breadcrumb />
       <Content className={`${prefixCls}-content`}>
-        <Table
-          dataSet={listDs}
-          border={false}
-          queryBar="bar"
-          filter={handleTableFilter}
-          className={`${prefixCls}.table`}
-          rowClassName="c7ncd-table-row-font-color"
-        >
-          <Column name="name" renderer={renderName} sortable />
-          <Column renderer={renderActions} width="0.7rem" />
-          <Column name="code" sortable />
-          <Column name="type" renderer={renderType} />
-          <Column name="repoUrl" renderer={renderUrl} />
-          <Column name="creationDate" renderer={renderDate} />
-          <Column name="active" renderer={renderStatus} width="0.7rem" align="left" />
-        </Table>
+        {getContent()}
       </Content>
     </Page>
   );

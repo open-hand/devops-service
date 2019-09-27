@@ -20,7 +20,7 @@ const EmptyPage = withRouter(((props) => {
     history.push({
       pathname,
       search,
-      state: { isCreate: true },
+      state: { openCreate: true },
     });
   }
 
@@ -34,7 +34,7 @@ const EmptyPage = withRouter(((props) => {
         <div className="c7ncd-empty-page-des">
           {describe}
         </div>
-        {access && (
+        {(access && btnText) && (
           <Button
             color="primary"
             onClick={handleClick}
@@ -59,7 +59,7 @@ EmptyPage.propTypes = {
 EmptyPage.defaultProps = {
   pathname: '',
   access: false,
-  btnText: 'Ok',
+  btnText: '',
 };
 
 export default EmptyPage;

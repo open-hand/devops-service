@@ -1,12 +1,19 @@
-import React, { useCallback, Fragment } from 'react';
-import { PageWrap, PageTab, Page } from '@choerodon/master';
+import React, { Fragment } from 'react';
+import { PageWrap, PageTab, Page, Breadcrumb, Content } from '@choerodon/master';
 import { observer } from 'mobx-react-lite';
+import Loading from '../../../components/loading';
+import EmptyPage from '../../../components/empty-page';
+import { useAppTopStore } from '../stores';
 import { useServiceDetailStore } from './stores';
 import Version from './Version';
 import Allocation from './Allocation';
 import Share from './Share';
 
-const DetailContent = observer((props) => {
+const DetailContent = observer(() => {
+  const {
+    listDs,
+    detailPermissions,
+  } = useAppTopStore();
   const {
     intl: { formatMessage },
     intlPrefix,
@@ -14,24 +21,10 @@ const DetailContent = observer((props) => {
     detailDs,
   } = useServiceDetailStore();
 
-  return (<Page
-    service={[
-      'devops-service.app-service.query',
-      'devops-service.app-service.update',
-      'devops-service.app-service.updateActive',
-      'devops-service.app-service-version.pageByOptions',
-      'devops-service.app-share-rule.create',
-      'devops-service.app-share-rule.update',
-      'devops-service.app-share-rule.delete',
-      'devops-service.app-share-rule.query',
-      'devops-service.app-share-rule.pageByOptions',
-      'devops-service.app-service.pagePermissionUsers',
-      'devops-service.app-service.updatePermission',
-      'devops-service.app-service.deletePermission',
-      'devops-service.app-service.listNonPermissionUsers',
-    ]}
-  >
-    <PageWrap noHeader={[]} cache>
+  function getContent() {
+    if (listDs.status === 'loading') return <Loading display />;
+
+    return listDs.length ? <PageWrap noHeader={[]} cache>
       <PageTab
         title={formatMessage({ id: `${intlPrefix}.version` })}
         tabKey="Version"
@@ -50,7 +43,21 @@ const DetailContent = observer((props) => {
         component={Share}
         alwaysShow={AppStore.getProjectRole === 'owner' && detailDs.current && detailDs.current.get('type') === 'normal'}
       />
-    </PageWrap>
+    </PageWrap> : <Fragment>
+      <Breadcrumb />
+      <Content>
+        <EmptyPage
+          title={formatMessage({ id: 'empty.title.app' })}
+          describe={formatMessage({ id: 'empty.tips.app.owner' })}
+        />
+      </Content>
+    </Fragment>;
+  }
+
+  return (<Page
+    service={detailPermissions}
+  >
+    {getContent()}
   </Page>);
 });
 

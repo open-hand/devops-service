@@ -7,12 +7,8 @@ import './index.less';
 const CodeManagerHeader = observer(() => {
   const {
     prefixCls,
-    codeManagerStore: {
-      getSelectedMenu: { menuType },
-      getNoHeader,
-    },
+    codeManagerStore: { getNoHeader },
   } = useCodeManagerStore();
-  
 
   return <div className="c7ncd-code-manager">
     {!getNoHeader && <div className={`${prefixCls}-header-placeholder`} />}
