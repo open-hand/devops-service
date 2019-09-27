@@ -277,10 +277,8 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         } catch (Exception e) {
             baseServiceClientOperator.failToDownloadApplication(appMarketDownloadVO.getAppDownloadRecordId(), appMarketDownloadVO.getAppVersionId(), appMarketDownloadVO.getOrganizationId());
             UserAttrDTO userAttrDTO = userAttrService.baseQueryById(appMarketDownloadVO.getIamUserId());
-            GroupDTO groupDTO = gitlabServiceClientOperator.queryGroupByName(groupPath, TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
             appMarketDownloadVO.getAppServiceDownloadPayloads().forEach(downloadPayload -> {
-                AppServiceDTO appServiceDTO = appServiceService.baseQueryByMktAppId(downloadPayload.getAppServiceCode(), appMarketDownloadVO.getAppId());
-                    deleteGitlabProject(downloadPayload, appMarketDownloadVO.getAppCode(), TypeUtil.objToInteger(groupDTO.getId()), userAttrDTO.getGitlabUserId());
+                    deleteGitlabProject(downloadPayload, appMarketDownloadVO.getAppCode(), userAttrDTO.getGitlabUserId());
             });
             throw new CommonException("error.download.app", e);
         }
@@ -333,12 +331,14 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         return appServiceDTO;
     }
 
-    private void deleteGitlabProject(AppServiceDownloadPayload downloadPayload, String appCode, Integer gitlabGroupId, Long gitlabUserId) {
+    private void deleteGitlabProject(AppServiceDownloadPayload downloadPayload, String appCode, Long gitlabUserId) {
         GitlabProjectDTO gitlabProjectDTO = gitlabServiceClientOperator.queryProjectByName(
                 String.format(SITE_APP_GROUP_NAME_FORMAT, appCode),
                 downloadPayload.getAppServiceCode(),
                 TypeUtil.objToInteger(gitlabUserId));
-        gitlabServiceClientOperator.deleteProjectById(gitlabProjectDTO.getId(), TypeUtil.objToInteger(gitlabUserId));
+        if(gitlabProjectDTO!=null) {
+            gitlabServiceClientOperator.deleteProjectById(gitlabProjectDTO.getId(), TypeUtil.objToInteger(gitlabUserId));
+        }
     }
 
     private Set<Long> createAppServiceVersion(AppServiceDownloadPayload downloadPayload, AppServiceDTO appServiceDTO, String appCode, Boolean isFirst, String accessToken, String downloadType) {
