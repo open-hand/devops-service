@@ -4,23 +4,18 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.PostConstruct;
 
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.util.StreamUtils;
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.validator.ApplicationValidator;
 import io.choerodon.devops.api.vo.AppServiceRepVO;
 import io.choerodon.devops.api.vo.AppServiceReqVO;
 import io.choerodon.devops.api.vo.DemoDataVO;
+import io.choerodon.devops.api.vo.TagVO;
 import io.choerodon.devops.api.vo.kubernetes.MockMultipartFile;
 import io.choerodon.devops.app.eventhandler.DevopsSagaHandler;
 import io.choerodon.devops.app.eventhandler.payload.DevOpsAppServicePayload;
@@ -40,6 +35,12 @@ import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StreamUtils;
 
 /**
  * 为搭建Demo环境初始化项目中的一些数据，包含应用，分支，提交，版本，应用市场等
@@ -132,8 +133,10 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
         mergeBranch(gitlabProjectId);
 
         // 6. 创建标记，由于选择人工造版本数据而不是通过ci，此处tag-name不使用正确的。
-        devopsGitService.createTag(projectId, applicationRepDTO.getId(), demoDataVO.getTagInfo().getTag() + "-alpha.1", demoDataVO.getTagInfo().getRef(), demoDataVO.getTagInfo().getMsg(), demoDataVO.getTagInfo().getReleaseNotes());
-
+        Optional<TagVO> tagVO = devopsGitService.pageTagsByOptions(projectId, applicationRepDTO.getId(), null, 0, 100).getList().stream().filter(tagVO1 -> tagVO1.getName().equals(demoDataVO.getTagInfo().getTag() + "-alpha.1")).findFirst();
+        if (!tagVO.isPresent()) {
+            devopsGitService.createTag(projectId, applicationRepDTO.getId(), demoDataVO.getTagInfo().getTag() + "-alpha.1", demoDataVO.getTagInfo().getRef(), demoDataVO.getTagInfo().getMsg(), demoDataVO.getTagInfo().getReleaseNotes());
+        }
         createFakeApplicationVersion(applicationRepDTO.getId());
 
         // 7. 发布应用
