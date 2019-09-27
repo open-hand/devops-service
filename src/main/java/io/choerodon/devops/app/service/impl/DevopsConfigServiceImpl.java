@@ -225,7 +225,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                         projectMember.setMemberUser(memberUser);
                         result = harborClient.setProjectMember(projects.body().get(0).getProjectId(), projectMember).execute();
                     }
-                    if (result.raw().code() != 201) {
+                    if (result.raw().code() != 201 && result.raw().code() != 200 && result.raw().code() != 409) {
                         throw new CommonException(result.errorBody().string());
                     }
                 }
