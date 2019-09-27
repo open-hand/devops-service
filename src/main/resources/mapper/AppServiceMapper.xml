@@ -580,13 +580,10 @@
         das.project_id IS NULL
         <if test="appServiceIds!=null and appServiceIds.size>0">
             AND
-            das.app_service_id in
+            das.id in
             <foreach collection="appServiceIds" item="appServiceId" open="(" close=")" separator=",">
                 #{appServiceId}
             </foreach>
-        </if>
-        <if test="searchProjectId != null and searchProjectId !=''">
-            AND das.mkt_app_id = #{searchProjectId}
         </if>
         <if test="type != null and type != ''">
             AND das.type = #{type}
