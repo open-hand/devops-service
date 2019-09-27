@@ -895,7 +895,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                     .getList()
                     .stream()
                     .filter(u -> !ownerIds.contains(u.getId()))
-                    .map(iamUser -> new DevopsUserPermissionVO(iamUser.getId(), iamUser.getLoginName(), iamUser.getRealName(), devopsEnvironmentDTO.getCreationDate()))
+                    .map(iamUser -> new DevopsUserPermissionVO(iamUser.getId(), iamUser.getLdap()?iamUser.getLoginName():iamUser.getEmail(), iamUser.getRealName(), devopsEnvironmentDTO.getCreationDate()))
                     .peek(p -> p.setRole(MEMBER))
                     .collect(Collectors.toList());
         }
