@@ -253,7 +253,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         Map<String, Object> mapParams = TypeUtil.castMapParams(params);
         if (!market) {
             Boolean share = !(appServiceDTO.getProjectId() == null || appServiceDTO.getProjectId().equals(projectId));
-            if (doPage) {
+            if (doPage != null && doPage) {
                 applicationVersionDTOPageInfo = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest))
                         .doSelectPageInfo(() -> appServiceVersionMapper.listByAppServiceIdAndVersion(appServiceId,
                                 projectId,
@@ -279,7 +279,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
             ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
             List<Long> appServiceVersionIds = baseServiceClientOperator.listServiceVersionsForMarket(projectDTO.getOrganizationId(), deployOnly);
             if (appServiceVersionIds != null && !appServiceVersionIds.isEmpty()) {
-                if (doPage) {
+                if (doPage != null && doPage) {
                     applicationVersionDTOPageInfo = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest))
                             .doSelectPageInfo(() -> appServiceVersionMapper.listByAppServiceVersionIdForMarket(appServiceId,
                                     appServiceVersionIds,
