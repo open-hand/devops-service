@@ -85,7 +85,7 @@ public interface AppServiceMapper extends Mapper<AppServiceDTO> {
 
     List<AppServiceDTO> queryOrganizationShareApps(@Param("projectIds") List<Long> projectIds, @Param("param") String param, @Param("searchProjectId") Long searchProjectId);
 
-    List<AppServiceDTO> queryMarketDownloadApps(@Param("type") String type, @Param("param") String param, @Param("deployOnly") Boolean deployOnly, @Param("searchProjectId") Long searchProjectId);
+    List<AppServiceDTO> queryMarketDownloadApps(@Param("type") String type, @Param("param") String param, @Param("appServiceIds") List<Long> appServiceIds);
 
     /**
      * 根据ProjectID 查询可用的项目共享Apps

@@ -25,6 +25,7 @@ import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
 import io.choerodon.devops.api.vo.iam.*;
 import io.choerodon.devops.api.vo.kubernetes.ProjectCreateDTO;
 import io.choerodon.devops.infra.dto.iam.*;
+import io.choerodon.devops.infra.enums.OrgPublishMarketStatus;
 import io.choerodon.devops.infra.feign.BaseServiceClient;
 import io.choerodon.devops.infra.util.FeignParamUtils;
 
@@ -391,6 +392,27 @@ public class BaseServiceClientOperator {
             return resp == null ? null : resp.getBody();
         } catch (Exception ex) {
             LOGGER.info("Exception occurred when querying project by code {} and organization id {}", projectCode, organizationId);
+            return null;
+        }
+    }
+
+    public List<Long> listServicesForMarket(@Nonnull Long organizationId, Boolean deployOnly) {
+        String status = deployOnly ? OrgPublishMarketStatus.DEPLOY_ONLY.getType() : OrgPublishMarketStatus.DOWNLOAD_ONLY.getType();
+        try {
+            ResponseEntity<Set<Long>> resp = baseServiceClient.listService(organizationId, status);
+
+            return resp == null || resp.getBody() == null ? null : new ArrayList<>(resp.getBody());
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
+    public List<Long> listServiceVersionsForMarket(@Nonnull Long organizationId, Boolean deployOnly) {
+        String status = deployOnly ? OrgPublishMarketStatus.DEPLOY_ONLY.getType() : OrgPublishMarketStatus.DOWNLOAD_ONLY.getType();
+        try {
+            ResponseEntity<Set<Long>> resp = baseServiceClient.listSvcVersion(organizationId, status);
+            return resp == null || resp.getBody() == null ? null : new ArrayList<>(resp.getBody());
+        } catch (Exception ex) {
             return null;
         }
     }

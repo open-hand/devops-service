@@ -207,4 +207,14 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     public ResponseEntity<Set<Long>> listAppServiceByAppId(Long projectId, Long applicationId) {
         throw new CommonException("error.app.service.id.query");
     }
+
+    @Override
+    public ResponseEntity<Set<Long>> listService(Long organizationId, String appType) {
+        throw new CommonException("error.app.service.market.list");
+    }
+
+    @Override
+    public ResponseEntity<Set<Long>> listSvcVersion(Long organizationId, String appType) {
+        throw new CommonException("error.app.service.version.market.list");
+    }
 }
