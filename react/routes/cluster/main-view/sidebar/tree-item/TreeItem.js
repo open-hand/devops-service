@@ -55,7 +55,7 @@ const TreeItem = observer(({ record, search }) => {
 
 
   function getCluIcon() {
-    return <ClusterItem name={name} record={record} intlPrefix={intlPrefix} />; 
+    return <ClusterItem name={name} record={record} intlPrefix={intlPrefix} prefixCls={prefixCls} />;
   }
 
 

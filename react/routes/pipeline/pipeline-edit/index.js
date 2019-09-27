@@ -213,6 +213,26 @@ export default class PipelineEdit extends Component {
         cancelText={<FormattedMessage id="cancel" />}
         confirmLoading={submitLoading}
         keyboard={false}
+        footer={[
+          <Button
+            key="submit"
+            type="primary"
+            funcType="raised"
+            onClick={this.onSubmit}
+            loading={submitLoading}
+            disabled={getIsDisabled || !getCanSubmit}
+          >
+            <FormattedMessage id="save" />
+          </Button>,
+          <Button
+            key="cancel"
+            funcType="raised"
+            onClick={this.goBack}
+            disabled={submitLoading}
+          >
+            <FormattedMessage id="cancel" />
+          </Button>,
+        ]}
       >
         { _.isNull(getPipeline) ? <EmptyPage /> : <Fragment>
           <Content className="c7n-pipeline-content">

@@ -88,7 +88,7 @@ export default class DetailCard extends PureComponent {
           } else {
             instanceNode = <Link
               to={{
-                pathname: '/devops/instance',
+                pathname: '/devops/resource',
                 search,
                 state: {
                   ...recordRouteState,
