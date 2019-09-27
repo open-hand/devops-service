@@ -552,8 +552,14 @@ WHERE
     <select id="countNonDeletedInstances" resultType="java.lang.Integer">
         SELECT COUNT(1)
         FROM devops_app_service_instance ins
+        <if test="projectId != null">
+            INNER JOIN devops_env de ON ins.env_id = de.id
+        </if>
         WHERE ins.app_service_id = #{appServiceId}
           AND ins.status != 'deleted'
+        <if test="projectId != null">
+            AND de.project_id = #{projectId}
+        </if>
     </select>
 
     <select id="countNonDeletedInstancesWithEnv" resultType="java.lang.Integer">

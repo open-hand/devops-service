@@ -31,4 +31,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_secret.groovy') {
         modifyDataType(tableName: 'devops_secret', columnName: 'name', newDataType: 'VARCHAR(128)')
     }
 
+    changeSet(author: 'zmf', id: ' 2019-09-27-secret-add-app-service-id') {
+        addColumn(tableName: 'devops_secret') {
+            column(name: 'app_service_id', type: 'BIGINT UNSIGNED', remarks: '应用服务id / 可为空', afterColumn: 'value')
+        }
+    }
 }

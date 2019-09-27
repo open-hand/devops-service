@@ -8,6 +8,18 @@ import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import io.kubernetes.client.JSON;
+import io.kubernetes.client.custom.IntOrString;
+import io.kubernetes.client.models.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -29,7 +41,6 @@ import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 import io.choerodon.devops.infra.gitops.ResourceFileCheckHandler;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
-import io.choerodon.devops.infra.mapper.DevopsAppServiceResourceMapper;
 import io.choerodon.devops.infra.mapper.DevopsIngressMapper;
 import io.choerodon.devops.infra.mapper.DevopsIngressPathMapper;
 import io.choerodon.devops.infra.mapper.DevopsServiceMapper;
@@ -37,17 +48,6 @@ import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.ResourceCreatorInfoUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.kubernetes.client.JSON;
-import io.kubernetes.client.custom.IntOrString;
-import io.kubernetes.client.models.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 @Component
 public class DevopsIngressServiceImpl implements DevopsIngressService {
@@ -92,13 +92,9 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     @Autowired
     private ResourceFileCheckHandler resourceFileCheckHandler;
     @Autowired
-    private DevopsAppServiceResourceService devopsAppServiceResourceService;
-    @Autowired
     private DevopsIngressMapper devopsIngressMapper;
     @Autowired
     private DevopsIngressPathMapper devopsIngressPathMapper;
-    @Autowired
-    private DevopsAppServiceResourceMapper devopsAppResourceMapper;
     @Autowired
     private TransactionalProducer producer;
     @Autowired
@@ -155,14 +151,14 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
 
     /**
-     * 查询传入的网络是否全是同一个应用下
+     * 查询传入的网络是否全是同一个应用下(传入的网络id所对应的网络的app_service_id字段是否都是指定的值)
      *
      * @param appServiceId 应用id
      * @param serviceIds   网络id
      * @return false 如果某个网络不存在和应用的关系或所有网络不在同一个应用下
      */
     private boolean isAllServiceInApp(Long appServiceId, Set<Long> serviceIds) {
-        return devopsAppResourceMapper.queryResourceIdsInApp(appServiceId, ResourceType.SERVICE.getType(), new ArrayList<>(serviceIds)).size() == serviceIds.size();
+        return devopsServiceMapper.isAllServicesInTheAppService(serviceIds, appServiceId);
     }
 
 
@@ -200,11 +196,6 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         devopsIngressDO.setId(ingressId);
         devopsIngressDO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());
         baseUpdate(devopsIngressDO);
-
-
-        //处理应用服务关联域名信息
-        devopsAppServiceResourceService.handleAppServiceResource(new ArrayList<>(devopsIngressVO.getAppServiceIds()), ingressId, ObjectType.INGRESS.getType());
-
     }
 
     @Override
@@ -316,9 +307,6 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         devopsEnvCommandDTO.setCreatedBy(userId);
         devopsIngressDO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());
         baseUpdateIngressAndIngressPath(devopsIngressDO);
-
-        //处理应用服务关联域名信息
-        devopsAppServiceResourceService.handleAppServiceResource(new ArrayList<>(devopsIngressVO.getAppServiceIds()), id, ObjectType.INGRESS.getType());
     }
 
 
@@ -582,9 +570,6 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
             baseUpdateIngressAndIngressPath(devopsIngressDTO);
         }
 
-        //处理应用服务关联域名信息
-        devopsAppServiceResourceService.handleAppServiceResource(new ArrayList<>(appServiceIds), ingressId, ObjectType.INGRESS.getType());
-
         IngressSagaPayload ingressSagaPayload = new IngressSagaPayload(devopsEnvironmentDTO.getProjectId(), userAttrDTO.getGitlabUserId());
         ingressSagaPayload.setDevopsIngressDTO(devopsIngressDTO);
         ingressSagaPayload.setCreated(isCreate);
@@ -609,7 +594,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         try {
             //更新域名时判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
             String filePath = null;
-            if(!ingressSagaPayload.getCreated()) {
+            if (!ingressSagaPayload.getCreated()) {
                 filePath = clusterConnectionHandler.handDevopsEnvGitRepository(ingressSagaPayload.getProjectId(), ingressSagaPayload.getDevopsEnvironmentDTO().getCode(), ingressSagaPayload.getDevopsEnvironmentDTO().getEnvIdRsa());
             }
             //在gitops库处理instance文件
@@ -826,7 +811,6 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     @Override
     public void baseDelete(Long ingressId) {
         devopsIngressMapper.deleteByPrimaryKey(ingressId);
-        devopsAppServiceResourceService.baseDeleteByResourceIdAndType(ingressId, ObjectType.INGRESS.getType());
         devopsIngressPathMapper.delete(new DevopsIngressPathDTO(ingressId));
     }
 

@@ -72,11 +72,10 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
      * @return true 可以删除
      */
     private boolean checkCanDelete(Long envId, Long appServiceId) {
-        return devopsEnvAppServiceMapper.countInstances(appServiceId, envId) == 0 &&
-                devopsEnvAppServiceMapper.countRelatedConfigMap(appServiceId, envId) == 0 &&
-                devopsEnvAppServiceMapper.countRelatedIngress(appServiceId, envId) == 0 &&
-                devopsEnvAppServiceMapper.countRelatedSecret(appServiceId, envId) == 0 &&
-                devopsEnvAppServiceMapper.countRelatedService(appServiceId, envId) == 0;
+        return devopsEnvAppServiceMapper.countInstances(appServiceId, envId, null) == 0 &&
+                devopsEnvAppServiceMapper.countRelatedConfigMap(appServiceId, envId, null) == 0 &&
+                devopsEnvAppServiceMapper.countRelatedSecret(appServiceId, envId, null) == 0 &&
+                devopsEnvAppServiceMapper.countRelatedService(appServiceId, envId, null) == 0;
     }
 
     @Override

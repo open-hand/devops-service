@@ -3,13 +3,15 @@ package io.choerodon.devops.infra.mapper;
 import java.sql.Date;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nullable;
 
-import io.choerodon.devops.infra.dto.AppServiceInstanceInfoDTO;
+import org.apache.ibatis.annotations.Param;
+
 import io.choerodon.devops.infra.dto.AppServiceInstanceDTO;
+import io.choerodon.devops.infra.dto.AppServiceInstanceInfoDTO;
 import io.choerodon.devops.infra.dto.AppServiceInstanceOverViewDTO;
 import io.choerodon.devops.infra.dto.DeployDTO;
 import io.choerodon.mybatis.common.Mapper;
-import org.apache.ibatis.annotations.Param;
 
 
 /**
@@ -61,9 +63,10 @@ public interface AppServiceInstanceMapper extends Mapper<AppServiceInstanceDTO> 
 
     Boolean checkCodeExist(@Param("code") String code, @Param("envIds") List<Long> envIds);
 
-    int countNonDeletedInstances(@Param("appServiceId") Long appServiceId);
+    int countNonDeletedInstances(@Param("appServiceId") Long appServiceId,
+                                 @Nullable @Param("projectId") Long projectId);
 
-    int countNonDeletedInstancesWithEnv(@Param("envId")Long envId,@Param("instanceId")Long instanceId);
+    int countNonDeletedInstancesWithEnv(@Param("envId") Long envId, @Param("instanceId") Long instanceId);
 
-    void updateStatus(@Param("instanceId")Long instanceId,@Param("status") String status);
+    void updateStatus(@Param("instanceId") Long instanceId, @Param("status") String status);
 }

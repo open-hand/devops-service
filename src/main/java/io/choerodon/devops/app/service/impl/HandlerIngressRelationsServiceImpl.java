@@ -41,8 +41,6 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
     @Autowired
     private DevopsEnvFileResourceService devopsEnvFileResourceService;
     @Autowired
-    private DevopsEnvironmentService devopsEnvironmentService;
-    @Autowired
     private DevopsServiceService devopsServiceService;
     @Autowired
     private DevopsEnvCommandService devopsEnvCommandService;
@@ -238,19 +236,6 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
             devopsIngressPathVOS.add(devopsIngressPathVO);
         }
         devopsIngressVO.setPathList(devopsIngressPathVOS);
-        devopsIngressVO.setAppServiceIds(appServiceIds);
         return devopsIngressVO;
-    }
-
-    private DevopsEnvCommandDTO createDevopsEnvCommandE(String type) {
-        DevopsEnvCommandDTO devopsEnvCommandDTO = new DevopsEnvCommandDTO();
-        if (type.equals(CREATE)) {
-            devopsEnvCommandDTO.setCommandType(CommandType.CREATE.getType());
-        } else {
-            devopsEnvCommandDTO.setCommandType(CommandType.UPDATE.getType());
-        }
-        devopsEnvCommandDTO.setObject(ObjectType.INGRESS.getType());
-        devopsEnvCommandDTO.setStatus(CommandStatus.OPERATING.getStatus());
-        return devopsEnvCommandService.baseCreate(devopsEnvCommandDTO);
     }
 }

@@ -23,6 +23,7 @@ public class DevopsSecretDTO extends BaseDTO {
     private String description;
     private String value;
     private Long commandId;
+    private Long appServiceId;
 
     @Transient
     private String commandStatus;
@@ -118,5 +119,13 @@ public class DevopsSecretDTO extends BaseDTO {
 
     public void setError(String error) {
         this.error = error;
+    }
+
+    public Long getAppServiceId() {
+        return appServiceId;
+    }
+
+    public void setAppServiceId(Long appServiceId) {
+        this.appServiceId = appServiceId;
     }
 }

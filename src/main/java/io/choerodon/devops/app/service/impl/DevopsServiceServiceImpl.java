@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.asgard.saga.annotation.Saga;
@@ -94,15 +95,11 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     @Autowired
     private DevopsIngressService devopsIngressService;
     @Autowired
-    private DevopsAppServiceResourceService devopsAppServiceResourceService;
-    @Autowired
     private DevopsServiceMapper devopsServiceMapper;
     @Autowired
     private TransactionalProducer producer;
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
-    @Autowired
-    private DevopsProjectService devopsProjectService;
     @Autowired
     private DevopsEnvPodMapper devopsEnvPodMapper;
     @Autowired
@@ -192,19 +189,16 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                 }.getType()));
         V1Endpoints v1Endpoints = null;
         if (devopsServiceReqVO.getEndPoints() != null) {
+            // 应用服务下不能创建endpoints类型网络
+            if (devopsServiceReqVO.getAppServiceId() != null) {
+                throw new CommonException("error.app.create.endpoints.service");
+            }
             v1Endpoints = initV1EndPoints(devopsServiceReqVO);
         }
-
 
         // 先创建网络纪录
         baseCreate(devopsServiceDTO);
 
-        // 应用下不能创建endpoints类型网络
-        if (devopsServiceReqVO.getAppServiceId() != null && devopsServiceReqVO.getEndPoints() != null) {
-            throw new CommonException("error.app.create.endpoints.service");
-        }
-
-        devopsServiceDTO.setAppServiceId(devopsServiceReqVO.getAppServiceId());
         //在gitops库处理service文件
         operateEnvGitLabFile(v1Service, v1Endpoints, true, devopsServiceDTO, devopsServiceInstanceDTOS, beforeDevopsServiceAppInstanceDTOS, devopsEnvCommandDTO, userAttrDTO);
         return true;
@@ -239,9 +233,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             devopsServiceAppInstanceDTO.setServiceId(serviceId);
             devopsServiceInstanceService.baseCreate(devopsServiceAppInstanceDTO);
         });
-
-        //处理应用服务关联网络信息
-        devopsAppServiceResourceService.handleAppServiceResource(Arrays.asList(devopsServiceDTO.getAppServiceId()), devopsServiceDTO.getId(), ObjectType.SERVICE.getType());
         return true;
     }
 
@@ -279,6 +270,10 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                     gson.fromJson(devopsServiceDTO.getAnnotations(), new TypeToken<Map<String, String>>() {
                     }.getType()));
             if (devopsServiceReqVO.getEndPoints() != null) {
+                // 应用服务下的网络更新为EndPoints类型时，应用服务id更新为null
+                if (devopsServiceDTO.getAppServiceId() != null) {
+                    devopsServiceMapper.updateAppServiceIdToNull(devopsServiceDTO.getId());
+                }
                 v1Endpoints = initV1EndPoints(devopsServiceReqVO);
             }
             //在gitops库处理service文件
@@ -308,6 +303,12 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         if (devopsServiceDTO == null) {
             return false;
         }
+
+        if (!StringUtils.isEmpty(devopsServiceDTO.getEndPoints())) {
+            devopsServiceMapper.updateAppServiceIdToNull(devopsServiceDTO.getId());
+            devopsServiceDTO.setAppServiceId(null);
+        }
+
         //更新service对象到数据库
         devopsEnvCommandDTO.setObjectId(id);
         devopsEnvCommandDTO.setCreatedBy(userId);
@@ -323,9 +324,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             devopsServiceAppInstanceDTO.setServiceId(id);
             devopsServiceInstanceService.baseCreate(devopsServiceAppInstanceDTO);
         });
-
-        //处理应用服务关联网络信息
-        devopsAppServiceResourceService.handleAppServiceResource(Arrays.asList(devopsServiceDTO.getAppServiceId()), devopsServiceDTO.getId(), ObjectType.SERVICE.getType());
         return true;
     }
 
@@ -518,8 +516,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     @Override
     public void baseDelete(Long id) {
         devopsServiceMapper.deleteByPrimaryKey(id);
-        //删除网络的关联关系
-        devopsAppServiceResourceService.baseDeleteByResourceIdAndType(id, ObjectType.SERVICE.getType());
     }
 
     @Override
@@ -890,7 +886,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         boolean isUpdate = false;
 
         //资源视图更新网络类型为选择实例时，需要将网络和实例对应的应用服务相关联
-        if (devopsServiceReqVO.getInstances() != null && !devopsServiceReqVO.getInstances().isEmpty()) {
+        if (!ObjectUtils.isEmpty(devopsServiceReqVO.getInstances())) {
             AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQueryByCodeAndEnv(devopsServiceReqVO.getInstances().get(0), devopsServiceReqVO.getEnvId());
             if (devopsServiceReqVO.getAppServiceId() == null && appServiceInstanceDTO != null) {
                 devopsServiceReqVO.setAppServiceId(appServiceInstanceDTO.getAppServiceId());
@@ -1069,9 +1065,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             });
         }
 
-
-        //处理应用服务关联网络信息
-        devopsAppServiceResourceService.handleAppServiceResource(Arrays.asList(devopsServiceDTO.getAppServiceId()), devopsServiceDTO.getId(), ObjectType.SERVICE.getType());
 
         ServiceSagaPayLoad serviceSagaPayLoad = new ServiceSagaPayLoad(devopsEnvironmentDTO.getProjectId(), userAttrDTO.getGitlabUserId());
         serviceSagaPayLoad.setDevopsServiceDTO(devopsServiceDTO);
