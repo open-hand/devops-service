@@ -970,7 +970,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 .collect(Collectors.toList());
 
         return ConvertUtils.convertList(members,
-                iamUserDTO -> new DevopsEnvUserVO(iamUserDTO.getId(), iamUserDTO.getLoginName(), iamUserDTO.getRealName()));
+                iamUserDTO -> new DevopsEnvUserVO(iamUserDTO.getId(), iamUserDTO.getLdap()?iamUserDTO.getLoginName():iamUserDTO.getEmail(), iamUserDTO.getRealName()));
     }
 
     @Override
