@@ -71,8 +71,6 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
-    private DevopsAppServiceResourceService devopsAppServiceResourceService;
-    @Autowired
     private DevopsSecretMapper devopsSecretMapper;
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
@@ -222,11 +220,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
             Long secretId = baseCreate(devopsSecretDTO).getId();
             //创建应用资源关系
             if (appServiceId != null) {
-                DevopsAppServiceResourceDTO applicationResourceDTO = new DevopsAppServiceResourceDTO();
-                applicationResourceDTO.setAppServiceId(appServiceId);
-                applicationResourceDTO.setResourceType(ObjectType.SECRET.getType());
-                applicationResourceDTO.setResourceId(secretId);
-                devopsAppServiceResourceService.baseCreate(applicationResourceDTO);
+                devopsSecretDTO.setAppServiceId(appServiceId);
             }
             devopsEnvCommandDTO.setObjectId(secretId);
             devopsSecretDTO.setId(secretId);
@@ -445,8 +439,6 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     @Override
     public void baseDelete(Long secretId) {
         devopsSecretMapper.deleteByPrimaryKey(secretId);
-        devopsAppServiceResourceService.baseDeleteByResourceIdAndType(secretId, ObjectType.SECRET.getType());
-        devopsSecretMapper.delete(new DevopsSecretDTO(secretId));
     }
 
     @Override

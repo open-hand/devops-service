@@ -2,6 +2,7 @@ package io.choerodon.devops.infra.mapper;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import io.choerodon.devops.infra.dto.DevopsServiceDTO;
 import io.choerodon.devops.infra.dto.DevopsServiceQueryDTO;
@@ -54,4 +55,7 @@ public interface DevopsServiceMapper extends Mapper<DevopsServiceDTO> {
     void updateStatus(@Param("serviceId") Long serviceId, @Param("status") String status);
 
     void updateAppServiceIdToNull(@Param("serviceId") Long serviceId);
+
+    boolean isAllServicesInTheAppService(@Param("serviceIds") Set<Long> serviceIds,
+                                         @Param("appServiceId") Long appServiceId);
 }

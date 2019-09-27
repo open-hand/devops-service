@@ -34,8 +34,6 @@ public class DevopsIngressVO extends DevopsResourceDataInfoVO {
     @ApiModelProperty("实例名称数组")
     private List<String> instances;
 
-    private Set<Long> appServiceIds;
-
     public DevopsIngressVO() {
         this.pathList = new ArrayList<>();
     }
@@ -205,14 +203,6 @@ public class DevopsIngressVO extends DevopsResourceDataInfoVO {
 
     public void setInstances(List<String> instances) {
         this.instances = instances;
-    }
-
-    public Set<Long> getAppServiceIds() {
-        return appServiceIds;
-    }
-
-    public void setAppServiceIds(Set<Long> appServiceIds) {
-        this.appServiceIds = appServiceIds;
     }
 
     @Override

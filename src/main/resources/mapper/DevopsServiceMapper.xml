@@ -38,9 +38,6 @@
         </if>
         ) ds
         JOIN devops_env de ON ds.env_id = de.id
-        <if test="appServiceId != null">
-            LEFT JOIN devops_app_service_resource das ON ds.id = das.resource_id
-        </if>
         LEFT JOIN devops_app_service da ON da.id = ds.app_service_id
         LEFT JOIN devops_service_instance dsai ON dsai.service_id = ds.id
         LEFT JOIN devops_app_service_instance dai ON dai.id = dsai.instance_id
@@ -50,8 +47,7 @@
             AND dai.id = #{instanceId}
         </if>
         <if test="appServiceId != null">
-            AND das.app_service_id = #{appServiceId}
-            AND das.resource_type='service'
+            AND ds.app_service_id = #{appServiceId}
         </if>
         <include refid="sqlparam"/>
         ) t
@@ -64,15 +60,10 @@
         ds.ports
         FROM
         devops_service ds
-        <if test="appServiceId != null">
-            JOIN devops_app_service_resource dasr
-            ON ds.id=dasr.resource_id
-        </if>
         WHERE ds.`status` = 'running'
         AND ds.env_id = #{envId}
         <if test="appServiceId != null">
             AND ds.app_service_id=#{appServiceId}
-            AND dasr.resource_type='service'
         </if>
     </select>
 
@@ -118,9 +109,6 @@
         </if>
         ) ds
         JOIN devops_env de ON ds.env_id = de.id
-        <if test="appServiceId != null">
-            LEFT JOIN devops_app_service_resource das ON ds.id = das.resource_id
-        </if>
         LEFT JOIN devops_env_command cmd ON ds.command_id = cmd.id
         LEFT JOIN devops_app_service da ON da.id = ds.app_service_id
         LEFT JOIN devops_service_instance dsai ON dsai.service_id = ds.id
@@ -130,8 +118,7 @@
             AND dai.id = #{instanceId}
         </if>
         <if test="appServiceId != null">
-            AND das.app_service_id = #{appServiceId}
-            AND das.resource_type='service'
+            AND ds.app_service_id = #{appServiceId}
         </if>
         <include refid="sqlparam"/>
     </select>
@@ -221,7 +208,6 @@
         <result property="envCode" column="env_code"/>
         <result property="labels" column="labels"/>
         <result property="endPoints" column="end_points"/>
-        <result property="lastUpdateDate" column="last_update_by"/>
         <result property="createdBy" column="created_by"/>
         <result property="creationDate" column="creation_date"/>
         <result property="lastUpdatedBy" column="last_updated_by"/>
@@ -330,4 +316,15 @@
         SET ds.app_service_id = NULL
         WHERE ds.id = #{serviceId}
     </update>
+
+    <!-- 此处取值使用'$'而不是'#'是为了取集合的值，同时也不存在SQL注入的问题-->
+    <select id="isAllServicesInTheAppService" resultType="boolean">
+        SELECT COUNT(1) = ${serviceIds.size}
+        FROM devops_service ds
+        WHERE ds.app_service_id = #{appServiceId}
+          AND ds.id IN
+        <foreach collection="serviceIds" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
 </mapper>

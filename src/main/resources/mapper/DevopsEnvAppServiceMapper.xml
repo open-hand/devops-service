@@ -50,40 +50,70 @@
     <select id="countInstances" resultType="int">
         SELECT COUNT(1)
         FROM devops_app_service_instance dasi
-        WHERE dasi.env_id = #{envId} AND dasi.app_service_id = #{appServiceId}
+        <if test="projectId != null">
+            INNER JOIN devops_env de ON dasi.env_id = de.id
+        </if>
+        WHERE dasi.app_service_id = #{appServiceId}
+        <if test="envId != null">
+            AND dasi.env_id = #{envId}
+        </if>
+        <if test="projectId != null">
+            AND de.project_id = #{projectId}
+        </if>
     </select>
 
     <select id="countRelatedService" resultType="int">
         SELECT COUNT(1)
-        FROM devops_app_service_resource dasr
-        LEFT JOIN devops_service ds ON dasr.resource_id = ds.id AND dasr.resource_type = 'service'
-        WHERE dasr.app_service_id = #{appServiceId}
-        AND ds.env_id = #{envId}
+        FROM devops_service ds
+        <if test="projectId != null">
+            INNER JOIN devops_env de ON ds.env_id = de.id
+        </if>
+        WHERE ds.app_service_id = #{appServiceId}
+        <if test="envId != null">
+            AND ds.env_id = #{envId}
+        </if>
+        <if test="projectId != null">
+            AND de.project_id = #{projectId}
+        </if>
     </select>
 
 
     <select id="countRelatedSecret" resultType="int">
         SELECT COUNT(1)
-        FROM devops_app_service_resource dasr
-        LEFT JOIN devops_secret ds ON dasr.resource_id = ds.id AND dasr.resource_type = 'secret'
-        WHERE dasr.app_service_id = #{appServiceId}
-        AND ds.env_id = #{envId}
+        FROM devops_secret ds
+        <if test="projectId != null">
+            INNER JOIN devops_env de ON ds.env_id = de.id
+        </if>
+        WHERE ds.app_service_id = #{appServiceId}
+        <if test="envId != null">
+            AND ds.env_id = #{envId}
+        </if>
+        <if test="projectId != null">
+            AND de.project_id = #{projectId}
+        </if>
     </select>
 
-
-    <select id="countRelatedIngress" resultType="int">
-        SELECT COUNT(1)
-        FROM devops_app_service_resource dasr
-        LEFT JOIN devops_ingress di ON dasr.resource_id = di.id AND dasr.resource_type = 'ingress'
-        WHERE dasr.app_service_id = #{appServiceId}
-        AND di.env_id = #{envId}
-    </select>
 
     <select id="countRelatedConfigMap" resultType="int">
         SELECT COUNT(1)
-        FROM devops_app_service_resource dasr
-        LEFT JOIN devops_config_map dcm ON dasr.resource_id = dcm.id AND dasr.resource_type = 'configMap'
-        WHERE dasr.app_service_id = #{appServiceId}
-        AND dcm.env_id = #{envId}
+        FROM devops_config_map dcm
+        <if test="projectId != null">
+            INNER JOIN devops_env de ON dcm.env_id = de.id
+        </if>
+        WHERE dcm.app_service_id = #{appServiceId}
+        <if test="envId != null">
+            AND dcm.env_id = #{envId}
+        </if>
+        <if test="projectId != null">
+            AND de.project_id = #{projectId}
+        </if>
     </select>
+
+    <delete id="deleteRelevanceInProject">
+        DELETE devops_env_app_service
+        FROM devops_env_app_service
+               LEFT JOIN devops_env ON devops_env_app_service.env_id = devops_env.id
+        WHERE devops_env.project_id = #{projectId,jdbcType=BIGINT}
+          AND devops_env_app_service.app_service_id = #{appServiceId,jdbcType=BIGINT}
+    </delete>
 </mapper>

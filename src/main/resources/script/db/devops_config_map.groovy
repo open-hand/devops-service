@@ -28,4 +28,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_config_map.groovy') {
         modifyDataType(tableName: 'devops_config_map', columnName: 'name', newDataType: 'VARCHAR(128)')
     }
 
+    changeSet(author: 'zmf', id: ' 2019-09-27-configmap-add-app-service-id') {
+        addColumn(tableName: 'devops_config_map') {
+            column(name: 'app_service_id', type: 'BIGINT UNSIGNED', remarks: '应用服务id / 可为空', afterColumn: 'command_id')
+        }
+    }
 }

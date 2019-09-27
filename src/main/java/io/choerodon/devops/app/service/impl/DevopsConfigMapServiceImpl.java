@@ -8,11 +8,11 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import io.kubernetes.client.models.V1ConfigMap;
+import io.kubernetes.client.models.V1ObjectMeta;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import io.kubernetes.client.models.V1ConfigMap;
-import io.kubernetes.client.models.V1ObjectMeta;
 
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
@@ -23,8 +23,8 @@ import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.CommandStatus;
 import io.choerodon.devops.infra.enums.CommandType;
 import io.choerodon.devops.infra.enums.ObjectType;
-import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 import io.choerodon.devops.infra.gitops.ResourceFileCheckHandler;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
@@ -58,8 +58,6 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
     @Autowired
     private DevopsEnvCommandService devopsEnvCommandService;
     @Autowired
-    private DevopsAppServiceResourceService devopsAppServiceResourceService;
-    @Autowired
     private DevopsEnvFileResourceService devopsEnvFileResourceService;
     @Autowired
     private GitlabServiceClientOperator gitlabServiceClientOperator;
@@ -71,7 +69,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
     @Transactional(rollbackFor = Exception.class)
     public void createOrUpdate(Long projectId, Boolean sync, DevopsConfigMapVO devopsConfigMapVO) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsConfigMapVO.getEnvId());
-        UserAttrDTO userAttrDTO = null;
+        UserAttrDTO userAttrDTO;
         if (!sync) {
             userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
             //检验gitops库是否存在，校验操作人是否是有gitops库的权限
@@ -305,7 +303,6 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
     @Override
     public void baseDelete(Long id) {
         devopsConfigMapMapper.deleteByPrimaryKey(id);
-        devopsAppServiceResourceService.baseDeleteByResourceIdAndType(id, ObjectType.CONFIGMAP.getType());
     }
 
     @Override
@@ -348,11 +345,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
         if (isCreate) {
             Long configMapId = baseCreate(devopsConfigMapDTO).getId();
             if (appServiceId != null) {
-                DevopsAppServiceResourceDTO devopsAppServiceResourceDTO = new DevopsAppServiceResourceDTO();
-                devopsAppServiceResourceDTO.setAppServiceId(appServiceId);
-                devopsAppServiceResourceDTO.setResourceType(ObjectType.CONFIGMAP.getType());
-                devopsAppServiceResourceDTO.setResourceId(configMapId);
-                devopsAppServiceResourceService.baseCreate(devopsAppServiceResourceDTO);
+                devopsConfigMapDTO.setAppServiceId(appServiceId);
             }
             devopsEnvCommandDTO.setObjectId(configMapId);
             devopsConfigMapDTO.setId(configMapId);

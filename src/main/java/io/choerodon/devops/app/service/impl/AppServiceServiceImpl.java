@@ -159,8 +159,6 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Autowired
     private DevopsEnvAppServiceMapper devopsEnvAppServiceMapper;
     @Autowired
-    private DevopsAppServiceResourceMapper devopsAppServiceResourceMapper;
-    @Autowired
     private AppServiceVersionService appServiceVersionService;
     @Value("${services.helm.url}")
     private String helmUrl;
@@ -348,11 +346,9 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         // 如果不相等，且将停用应用服务，检查该应用服务是否可以被停用
         if (!toUpdateValue) {
-            checkCanDisable(appServiceId);
-            // 如果能停用，删除其和其他环境之间的关联关系
-            DevopsEnvAppServiceDTO deleteCondition = new DevopsEnvAppServiceDTO();
-            deleteCondition.setAppServiceId(appServiceId);
-            devopsEnvAppServiceMapper.delete(deleteCondition);
+            checkCanDisable(appServiceId, projectId);
+            // 如果能停用，删除其和他所属项目下的环境之间的关联关系
+            devopsEnvAppServiceMapper.deleteRelevanceInProject(appServiceId, projectId);
         }
 
         appServiceDTO.setActive(toUpdateValue);
@@ -365,21 +361,23 @@ public class AppServiceServiceImpl implements AppServiceService {
      * 不能停用则会抛出异常 {@link CommonException}
      *
      * @param appServiceId 服务id
+     * @param projectId    项目id
      */
-    private void checkCanDisable(Long appServiceId) {
-        int nonDeleteInstancesCount = appServiceInstanceMapper.countNonDeletedInstances(appServiceId);
+    private void checkCanDisable(Long appServiceId, Long projectId) {
+        int nonDeleteInstancesCount = appServiceInstanceMapper.countNonDeletedInstances(appServiceId, projectId);
         if (nonDeleteInstancesCount > 0) {
             throw new CommonException("error.disable.application.service", appServiceId);
-        }
-
-        int relatedResources = devopsAppServiceResourceMapper.countRelatedResource(appServiceId);
-        if (relatedResources > 0) {
-            throw new CommonException("error.disable.application.service.due.to.resources");
         }
 
         int shareRulesCount = appServiceShareRuleMapper.countShareRulesByAppServiceId(appServiceId);
         if (shareRulesCount > 0) {
             throw new CommonException("error.disable.application.service.due.to.share");
+        }
+
+        if (devopsEnvAppServiceMapper.countRelatedSecret(appServiceId, null, projectId) != 0
+                || devopsEnvAppServiceMapper.countRelatedService(appServiceId, null, projectId) != 0
+                || devopsEnvAppServiceMapper.countRelatedConfigMap(appServiceId, null, projectId) != 0) {
+            throw new CommonException("error.disable.application.service.due.to.resources");
         }
     }
 

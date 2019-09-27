@@ -1,6 +1,8 @@
 package io.choerodon.devops.infra.mapper;
 
 import java.util.List;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import org.apache.ibatis.annotations.Param;
 
@@ -42,15 +44,53 @@ public interface DevopsEnvAppServiceMapper extends Mapper<DevopsEnvAppServiceDTO
      * @param envId     环境id
      * @return 应用列表
      */
-    List<BaseApplicationServiceVO> listNonRelatedApplications(@Param("projectId") Long projectId, @Param("envId") Long envId);
+    List<BaseApplicationServiceVO> listNonRelatedApplications(@Param("projectId") Long projectId,
+                                                              @Param("envId") Long envId);
 
-    int countInstances(@Param("appServiceId") Long appServiceId, @Param("envId") Long envId);
+    /**
+     * 查询应用服务部署的实例个数
+     *
+     * @param appServiceId 应用服务id， 必填
+     * @param envId        环境ID， 选填，传值时查的是指定环境下的应用服务部署的实例个数
+     * @param projectId    项目id，选填，传值时查的是指定项目下所有环境的下应用服务部署的实例个数
+     * @return 个数
+     */
+    int countInstances(@Nonnull @Param("appServiceId") Long appServiceId,
+                       @Nullable @Param("envId") Long envId,
+                       @Nullable @Param("projectId") Long projectId);
 
-    int countRelatedService(@Param("appServiceId") Long appServiceId, @Param("envId") Long envId);
+    /**
+     * 查询应用服务关联的网络个数
+     *
+     * @param appServiceId 应用服务id， 必填
+     * @param envId        环境ID， 选填，传值时查的是指定环境下的应用服务关联的网络个数
+     * @param projectId    项目id，选填，传值时查的是指定项目下所有环境的下应用服务关联的网络个数
+     * @return 个数
+     */
+    int countRelatedService(@Nonnull @Param("appServiceId") Long appServiceId,
+                            @Nullable @Param("envId") Long envId,
+                            @Nullable @Param("projectId") Long projectId);
 
-    int countRelatedSecret(@Param("appServiceId") Long appServiceId, @Param("envId") Long envId);
+    /**
+     * 如上
+     */
+    int countRelatedSecret(@Nonnull @Param("appServiceId") Long appServiceId,
+                           @Nullable @Param("envId") Long envId,
+                           @Nullable @Param("projectId") Long projectId);
 
-    int countRelatedIngress(@Param("appServiceId") Long appServiceId, @Param("envId") Long envId);
+    /**
+     * 如上
+     */
+    int countRelatedConfigMap(@Nonnull @Param("appServiceId") Long appServiceId,
+                              @Nullable @Param("envId") Long envId,
+                              @Nullable @Param("projectId") Long projectId);
 
-    int countRelatedConfigMap(@Param("appServiceId") Long appServiceId, @Param("envId") Long envId);
+    /**
+     * 删除应用服务和在此项目下的环境的关联关系
+     *
+     * @param appServiceId 应用服务id
+     * @param projectId    项目id
+     */
+    void deleteRelevanceInProject(@Param("appServiceId") Long appServiceId,
+                                  @Param("projectId") Long projectId);
 }

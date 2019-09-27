@@ -17,6 +17,7 @@ public class DevopsConfigMapDTO extends BaseDTO {
     private String name;
     private String description;
     private String value;
+    private Long appServiceId;
 
 
     @Transient
@@ -116,6 +117,14 @@ public class DevopsConfigMapDTO extends BaseDTO {
 
     public void setError(String error) {
         this.error = error;
+    }
+
+    public Long getAppServiceId() {
+        return appServiceId;
+    }
+
+    public void setAppServiceId(Long appServiceId) {
+        this.appServiceId = appServiceId;
     }
 }
 
