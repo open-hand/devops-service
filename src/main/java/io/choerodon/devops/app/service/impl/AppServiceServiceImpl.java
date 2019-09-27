@@ -2314,7 +2314,10 @@ public class AppServiceServiceImpl implements AppServiceService {
                     toCollection(() -> new TreeSet<>(comparing(AppServiceDTO::getId))), ArrayList::new));
             Set<Long> ids = collect.stream().map(AppServiceDTO::getId).collect(Collectors.toSet());
             Map<Long, List<AppServiceVersionDTO>> versionMap = appServiceVersionService.listServiceVersionByAppServiceIds(ids, "share", null)
-                    .stream().collect(groupingBy(AppServiceVersionDTO::getId));
+                    .stream().collect(groupingBy(AppServiceVersionDTO::getAppServiceId));
+            Map<Long, List<AppServiceVersionDTO>> versionMap1 = appServiceVersionService.listServiceVersionByAppServiceIds(ids, "project", null)
+                    .stream().collect(groupingBy(AppServiceVersionDTO::getAppServiceId));
+            versionMap.putAll(versionMap1);
             Set<Long> projectsSet = collect.stream()
                     .filter(v -> !CollectionUtils.isEmpty(versionMap.get(v.getId())))
                     .map(AppServiceDTO::getProjectId).collect(Collectors.toSet());
