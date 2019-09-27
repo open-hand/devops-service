@@ -397,7 +397,7 @@ public class BaseServiceClientOperator {
     }
 
     public List<Long> listServicesForMarket(@Nonnull Long organizationId, Boolean deployOnly) {
-        String status = deployOnly ? OrgPublishMarketStatus.DEPLOY_ONLY.getType() : OrgPublishMarketStatus.DOWNLOAD_ONLY.getType();
+        String status = deployOnly != null && deployOnly ? OrgPublishMarketStatus.DEPLOY_ONLY.getType() : OrgPublishMarketStatus.DOWNLOAD_ONLY.getType();
         try {
             ResponseEntity<Set<Long>> resp = baseServiceClient.listService(organizationId, status);
 
@@ -408,7 +408,7 @@ public class BaseServiceClientOperator {
     }
 
     public List<Long> listServiceVersionsForMarket(@Nonnull Long organizationId, Boolean deployOnly) {
-        String status = deployOnly ? OrgPublishMarketStatus.DEPLOY_ONLY.getType() : OrgPublishMarketStatus.DOWNLOAD_ONLY.getType();
+        String status = deployOnly != null && deployOnly ? OrgPublishMarketStatus.DEPLOY_ONLY.getType() : OrgPublishMarketStatus.DOWNLOAD_ONLY.getType();
         try {
             ResponseEntity<Set<Long>> resp = baseServiceClient.listSvcVersion(organizationId, status);
             return resp == null || resp.getBody() == null ? null : new ArrayList<>(resp.getBody());

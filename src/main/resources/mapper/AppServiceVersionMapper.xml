@@ -193,7 +193,10 @@
 
     <select id="listByAppServiceVersionIdForMarket" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
         SELECT
-        *
+        dav.id,
+        dav.version,
+        dav.publish_time,
+        dav.creation_date
         FROM
         devops_app_service_version dav
         WHERE
