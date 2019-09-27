@@ -6,6 +6,7 @@ public enum ResourceType {
     POD("Pod"),
     INGRESS("Ingress"),
     CERTIFICATE("Certificate"),
+    ENDPOINTS("Endpoints"),
     C7NHELMRELEASE("C7NHelmRelease"),
     DEPLOYMENT("Deployment"),
     REPLICASET("ReplicaSet"),
@@ -56,6 +57,8 @@ public enum ResourceType {
                 return ResourceType.SECRET;
             case "PersistentVolumeClaim":
                 return ResourceType.PERSISTENT_VOLUME_CLAIM;
+            case "Endpoints":
+                return ResourceType.ENDPOINTS;
             default:
                 break;
         }
