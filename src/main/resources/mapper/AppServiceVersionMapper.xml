@@ -186,6 +186,9 @@
             </otherwise>
         </choose>
         <include refid="sqlparam"/>
+        <if test="version != null">
+          AND  dav.version = #{version}
+        </if>
         <if test="index != null and index !=''">
             ORDER BY dav.version desc
         </if>
@@ -210,6 +213,9 @@
             </foreach>
         </if>
         <include refid="sqlparam"/>
+        <if test="version != null and version != ''">
+            AND dav.version = #{version}
+        </if>
         <if test="index != null and index !=''">
             ORDER BY dav.version desc
         </if>
