@@ -27,8 +27,6 @@ public interface AppServiceMapper extends Mapper<AppServiceDTO> {
                                         @Param("searchParam") Map<String, Object> searchParam,
                                         @Param("params") List<String> params);
 
-    List<AppServiceDTO> listAll(@Param("projectId") Long projectId);
-
     List<AppServiceDTO> listCodeRepository(@Param("projectId") Long projectId,
                                            @Param("searchParam") Map<String, Object> searchParam,
                                            @Param("params") List<String> param,
