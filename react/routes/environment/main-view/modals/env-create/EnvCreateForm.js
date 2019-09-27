@@ -69,7 +69,7 @@ function EnvCreateForm({ modal, form, refresh }) {
     formDs.current.set('clusterId', Number(value));
   }
 
-  return <Fragment>
+  return <div className="c7ncd-env-form-wrap">
     <Form className="c7ncd-env-form">
       <FormItem>
         {form.getFieldDecorator('clusterId', {
@@ -103,7 +103,7 @@ function EnvCreateForm({ modal, form, refresh }) {
         {groupOptionDs.map(getGroupOption)}
       </ProSelect>
     </ProForm>
-  </Fragment>;
+  </div>;
 }
 
 export default Form.create({})(observer(EnvCreateForm));

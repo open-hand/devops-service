@@ -180,7 +180,7 @@ const CreateCluster = observer((props) => {
             initialValue: isEdit ? formData.code : '',
           })(
             <Input
-              readOnly={isEdit}
+              disabled={isEdit}
               maxLength={30}
               label={formatMessage({ id: `${intlPrefix}.code` })}
               onChange={handleCodeChange}

@@ -43,10 +43,8 @@ const HeaderButtons = ({ items, children }) => {
   }, [displayBtn]);
 
   return displayBtn.length ? <div className="c7ncd-header-btns">
-    <Header>
-      {btnNodes}
-      {children}
-    </Header>
+    {btnNodes}
+    {children}
   </div> : null;
 };
 
