@@ -923,6 +923,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Override
     public List<DevopsEnvUserVO> listNonRelatedMembers(Long projectId, Long envId, String params) {
         RoleAssignmentSearchVO roleAssignmentSearchVO = new RoleAssignmentSearchVO();
+        roleAssignmentSearchVO.setEnabled(true);
         // 处理搜索参数
         if (!StringUtils.isEmpty(params)) {
             Map maps = gson.fromJson(params, Map.class);
