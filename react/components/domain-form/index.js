@@ -630,7 +630,7 @@ export default class Index extends Component {
             initialValue: name || '',
           })(
             <Input
-              disabled={!envId}
+              disabled={!envId || type === 'edit'}
               maxLength={40}
               label={formatMessage({ id: 'domain.column.name' })}
             />,

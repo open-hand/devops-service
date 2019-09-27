@@ -112,9 +112,9 @@ const Cipher = observer(() => {
           queryBar="bar"
         >
           <Column name="name" header={formatMessage({ id: `${intlPrefix}.application.tabs.cipher` })} renderer={renderName} />
-          <Column renderer={renderAction} />
+          <Column renderer={renderAction} width="0.7rem" />
           <Column name="key" renderer={renderKey} />
-          <Column name="lastUpdateDate" renderer={renderDate} />
+          <Column name="lastUpdateDate" renderer={renderDate} width="1rem" />
         </Table>
       </div>
       {showModal && <KeyValueModal

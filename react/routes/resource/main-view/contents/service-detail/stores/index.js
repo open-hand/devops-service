@@ -19,8 +19,9 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const {
       resourceStore,
       treeDs,
+      itemTypes: { SERVICES_ITEM },
     } = useResourceStore();
-    const { getSelectedMenu: { id, parentId, itemType } } = resourceStore;
+    const { getSelectedMenu: { id, parentId, itemType }, getUpTarget, setUpTarget } = resourceStore;
 
     const baseInfoDs = useMemo(() => new DataSet(BaseInfoDataSet()), []);
 
@@ -50,6 +51,14 @@ export const StoreProvider = injectIntl(inject('AppState')(
         }
       });
     }, [projectId, id]);
+
+    useEffect(() => {
+      const { type, id: serviceId } = getUpTarget;
+      if (type === SERVICES_ITEM && serviceId === id) {
+        baseInfoDs.query();
+        setUpTarget({});
+      }
+    }, [getUpTarget]);
 
     const value = {
       ...props,

@@ -90,7 +90,6 @@ const CertContent = observer(() => {
     return (
       <Popover
         content={content}
-        getPopupContainer={(triggerNode) => triggerNode.parentNode}
         trigger="hover"
         placement="top"
       >
@@ -129,7 +128,7 @@ const CertContent = observer(() => {
         <Column name="certName" renderer={renderName} />
         <Column renderer={renderAction} width="0.7rem" />
         <Column name="domains" renderer={renderDomains} />
-        <Column renderer={renderValid} header={formatMessage({ id: 'validDate' })} />
+        <Column renderer={renderValid} header={formatMessage({ id: 'validDate' })} width="1rem" />
       </Table>
     </div>
   );

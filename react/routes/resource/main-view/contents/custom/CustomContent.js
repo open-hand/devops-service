@@ -104,7 +104,7 @@ const CustomContent = observer(() => {
         <Column name="name" renderer={renderName} />
         <Column renderer={renderAction} width="0.7rem" />
         <Column name="k8sKind" />
-        <Column name="lastUpdateDate" renderer={renderTime} />
+        <Column name="lastUpdateDate" renderer={renderTime} width="1rem" />
       </Table>
       {showModal && <CustomForm
         id={customDs.current.get('id')}
