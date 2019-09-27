@@ -19,6 +19,7 @@
 
     <select id="listResourceByEnvAndApp" resultType="io.choerodon.devops.api.vo.iam.DevopsEnvMessageVO">
         SELECT
+        DISTINCT
         der.name resourceName,
         derd.message detail
         FROM
