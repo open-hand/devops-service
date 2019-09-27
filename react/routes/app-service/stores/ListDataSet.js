@@ -10,10 +10,16 @@ function handleUpdate({ record, name, value }) {
         item !== 'project' && record.getField(item).set('required', value === 'custom');
         handleInitialValue(record, value === 'custom', record.get('harbor'), item);
       });
+      if (value === 'default') {
+        record.set('harborStatus', '');
+      }
       break;
     case 'chartType':
       record.getField('chartUrl').set('required', value === 'custom');
       handleInitialValue(record, value === 'custom', record.get('chart'), 'chartUrl');
+      if (value === 'default') {
+        record.set('chartStatus', '');
+      }
       break;
     case 'url' || 'userName' || 'password' || 'email' || 'project':
       record.set('harborStatus', '');

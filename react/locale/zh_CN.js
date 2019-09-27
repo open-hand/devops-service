@@ -466,7 +466,7 @@ const envrionment = {
   'c7ncd.env.status': '环境状态',
   'c7ncd.env.code': '环境编码',
   'c7ncd.env.description': '环境描述',
-  'c7ncd.env.config.app': '服务',
+  'c7ncd.env.config.app': '应用服务',
   'c7ncd.env.config.modify': '修改部属配置',
   'c7ncd.env.config.delete.disable': '无法删除部署配置“{name}”',
   'c7ncd.env.config.delete.describe': '仅能删除没有关联任务和关联实例的部署配置。',
