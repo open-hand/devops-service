@@ -25,5 +25,8 @@ export default function useStore() {
     deleteCluster({ projectId, clusterId }) {
       return axios.delete(`/devops/v1/projects/${projectId}/clusters/${clusterId}`);
     },
+    deleteCheck(projectId, clusterId) {
+      return axios.get(`/devops/v1/projects/${projectId}/clusters/${clusterId}/check_connect_envs`);
+    },
   }));
 }

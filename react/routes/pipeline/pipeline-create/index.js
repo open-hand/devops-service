@@ -230,6 +230,26 @@ export default class PipelineCreate extends Component {
         cancelText={<FormattedMessage id="cancel" />}
         confirmLoading={submitLoading}
         keyboard={false}
+        footer={[
+          <Button
+            key="submit"
+            type="primary"
+            funcType="raised"
+            onClick={this.onSubmit}
+            loading={submitLoading}
+            disabled={getIsDisabled || !getCanSubmit}
+          >
+            <FormattedMessage id="create" />
+          </Button>,
+          <Button
+            key="cancel"
+            funcType="raised"
+            onClick={this.goBack}
+            disabled={submitLoading}
+          >
+            <FormattedMessage id="cancel" />
+          </Button>,
+        ]}
       >
         <Form
           layout="vertical"

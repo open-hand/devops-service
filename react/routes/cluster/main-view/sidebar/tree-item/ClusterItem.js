@@ -1,8 +1,9 @@
 import React, { Fragment, useMemo } from 'react';
 import PropTypes from 'prop-types';
-import { injectIntl } from 'react-intl';
+import { injectIntl, FormattedMessage } from 'react-intl';
 import { Action } from '@choerodon/master';
-import { Modal } from 'choerodon-ui/pro';
+import { Modal, Icon } from 'choerodon-ui/pro';
+import { Input } from 'choerodon-ui';
 import { useClusterStore } from '../../../stores';
 import { useClusterMainStore } from '../../stores';
 import StatusDot from '../../../../../components/status-dot';
@@ -14,10 +15,12 @@ import CustomConfirm from '../../../../../components/custom-confirm';
 
 const ActivateClusterModalKey = Modal.key();
 const EditClusterModalKey = Modal.key();
+const deleteModalKey = Modal.key();
 function ClusterItem({
   record,
   name,
   intlPrefix,
+  prefixCls,
   intl: { formatMessage },
 }) {
   const { treeDs } = useClusterStore();
@@ -43,21 +46,53 @@ function ClusterItem({
   }
 
   function deleteItem() {
-    customConfirm.delete({
-      titleId: `${intlPrefix}.action.delete.title`,
-      titleVal: {
-        name: record.data.name,
-      },
-      contentId: `${intlPrefix}.action.delete.msg`,
-      handleOk: () => {
-        mainStore.deleteCluster({ projectId, clusterId: record.data.id })
-          .then((res) => {
-            if (handlePromptError(res, false)) {
-              freshMenu();
-            }
+    const code = record.get('code');
+    const clusterName = record.get('name');
+    const modalContent = (
+      <div>
+        <FormattedMessage id="cluster.delDes_1" />
+        <div
+          className={`${prefixCls}-delete-input`}
+        >
+          <Input
+            value={`helm del choerodon-cluster-agent-code ${code || ''} --purge`}
+            readOnly
+            copy
+          />
+        </div>
+        <div className={`${prefixCls}-delete-notice`}>
+          <Icon type="error" /><FormattedMessage id="cluster.delDes_2" />
+        </div>
+      </div>
+    );
+    mainStore.deleteCheck(projectId, record.get('id'))
+      .then(data => {
+        if (data && data.failed) {
+          Choerodon.prompt(data.message);
+        } else {
+          Modal.open({
+            key: deleteModalKey,
+            title: formatMessage({ id: `${intlPrefix}.action.delete.title` }, { name: clusterName }),
+            children: modalContent,
+            onOk: handleDelete,
+            okText: formatMessage({ id: 'cluster.del.confirm' }),
           });
-      },
-    });
+        }
+      });
+  }
+
+  async function handleDelete() {
+    try {
+      const res = await mainStore.deleteCluster({ projectId, clusterId: record.get('id') });
+      if (handlePromptError(res, false)) {
+        freshMenu();
+      } else {
+        return false;
+      }
+    } catch (e) {
+      Choerodon.handleResponseError(e);
+      return false;
+    }
   }
 
   function openEdit(res) {

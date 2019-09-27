@@ -188,6 +188,11 @@ const Deployment = withRouter(observer((props) => {
     });
   }
 
+  function linkToInstance() {
+    const { history, location: { search } } = props;
+    history.push(`/devops/resource${search}`);
+  }
+
   function renderNumber({ value, record }) {
     return (
       <div>
@@ -273,7 +278,8 @@ const Deployment = withRouter(observer((props) => {
     } else {
       actionData = [{
         text: formatMessage({ id: `${intlPrefix}.view.instance` }),
-        service: [],
+        service: ['devops-service.devops-environment.listByActive'],
+        action: linkToInstance,
       }];
     }
     return (actionData ? <Action data={actionData} /> : null);
