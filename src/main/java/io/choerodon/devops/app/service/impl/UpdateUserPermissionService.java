@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.util.List;
+import java.util.Objects;
 
 import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.devops.app.service.UserAttrService;
@@ -51,12 +52,12 @@ public abstract class UpdateUserPermissionService {
             if (memberDTO != null) {
                 gitlabServiceClientOperator.deleteGroupMember(gitlabGroupId, TypeUtil.objToInteger(e));
                 UserAttrDTO userAttrE = userAttrService.baseQueryByGitlabUserId(TypeUtil.objToLong(e));
-//                List<Long> gitlabProjectIds = type.equals("env") ?
-//                        devopsEnvironmentMapper.listGitlabProjectIdByEnvPermission(TypeUtil.objToLong(gitlabGroupId), userAttrE.getIamUserId())
-//                        : appServiceMapper.listGitlabProjectIdByAppPermission(TypeUtil.objToLong(gitlabGroupId), userAttrE.getIamUserId());
-//                if (gitlabProjectIds != null && !gitlabProjectIds.isEmpty()) {
-//                    gitlabProjectIds.forEach(aLong -> addGitlabMember(type, TypeUtil.objToInteger(aLong), TypeUtil.objToInteger(userAttrE.getGitlabUserId())));
-//                }
+                List<Long> gitlabProjectIds = type.equals("env") ?
+                        devopsEnvironmentMapper.listGitlabProjectIdByEnvPermission(TypeUtil.objToLong(gitlabGroupId), userAttrE.getIamUserId())
+                        : appServiceMapper.listGitlabProjectIdByAppPermission(TypeUtil.objToLong(gitlabGroupId), userAttrE.getIamUserId());
+                if (gitlabProjectIds != null && !gitlabProjectIds.isEmpty()) {
+                    gitlabProjectIds.stream().filter(Objects::nonNull).forEach(aLong -> addGitlabMember(type, TypeUtil.objToInteger(aLong), TypeUtil.objToInteger(userAttrE.getGitlabUserId())));
+                }
             }
             addGitlabMember(type, TypeUtil.objToInteger(gitlabProjectId), e);
         });

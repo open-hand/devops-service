@@ -242,7 +242,6 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         List<AppDownloadDevopsReqVO> appDownloadDevopsReqVOS = new ArrayList<>();
         String groupPath = String.format(SITE_APP_GROUP_NAME_FORMAT, appMarketDownloadVO.getAppCode());
         try {
-            AppDownloadDevopsReqVO appDownloadDevopsReqVO = new AppDownloadDevopsReqVO();
             //创建应用
             GroupDTO groupDTO = gitlabGroupService.createSiteAppGroup(appMarketDownloadVO.getIamUserId(), groupPath);
             LOGGER.info("==========应用下载，appMarketDownloadVO.getAppId(){}, groupId=========={}", appMarketDownloadVO.getAppId(), groupDTO.getId());
@@ -259,8 +258,9 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                     appServiceDTO = createGitlabProject(downloadPayload, appMarketDownloadVO.getAppCode(), TypeUtil.objToInteger(groupDTO.getId()), userAttrDTO.getGitlabUserId());
                     LOGGER.info("==========应用下载，创建gitlab Project成功！！==========");
                 }
+                AppDownloadDevopsReqVO appDownloadDevopsReqVO = new AppDownloadDevopsReqVO();
                 appDownloadDevopsReqVO.setServiceId(appServiceDTO.getId());
-                LOGGER.info("==========serviceId{}",appServiceDTO.getId());
+                LOGGER.info("==========serviceId{}", appServiceDTO.getId());
                 String applicationDir = APPLICATION + System.currentTimeMillis();
                 String accessToken = appServiceService.getToken(appServiceDTO.getGitlabProjectId(), applicationDir, userAttrDTO);
                 LOGGER.info("=========应用下载，获取token成功=========");
@@ -323,6 +323,8 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                     downloadPayload.getAppServiceCode(),
                     TypeUtil.objToInteger(gitlabUserId),
                     true);
+        } else {
+            throw new CommonException("error.gitlab.project.already.exit");
         }
         appServiceDTO.setGitlabProjectId(gitlabProjectDTO.getId());
         appServiceDTO.setSynchro(true);
