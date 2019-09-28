@@ -101,6 +101,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                     syncConfig();
                     syncEnvAndAppServiceStatus();
                     syncBranch();
+                    LOGGER.info("修复数据完成");
                 } else {
                     LOGGER.info("version not matched");
                 }

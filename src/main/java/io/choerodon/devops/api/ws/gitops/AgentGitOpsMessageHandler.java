@@ -188,7 +188,6 @@ public class AgentGitOpsMessageHandler implements TextMessageHandler<AgentMsgVO>
                 agentMsgHandlerService.operateDockerRegistrySecretResp(msg.getKey(), "success", TypeUtil.objToLong(msg.getClusterId()));
                 break;
             case POD_METRICS_SYNC:
-                logger.info("收到了这个指令嘿嘿:{}", helmType);
                 agentMsgHandlerService.handlePodMetricsSync(msg.getKey(),msg.getPayload(),TypeUtil.objToLong(msg.getClusterId()));
                 break;
             default:
