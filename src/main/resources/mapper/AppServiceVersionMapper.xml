@@ -199,7 +199,8 @@
         dav.id,
         dav.version,
         dav.publish_time,
-        dav.creation_date
+        dav.creation_date,
+        dav.app_service_id
         FROM
         devops_app_service_version dav
         WHERE
