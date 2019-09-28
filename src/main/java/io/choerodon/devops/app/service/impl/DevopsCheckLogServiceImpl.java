@@ -13,11 +13,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.devops.api.vo.kubernetes.CheckLog;
 import io.choerodon.devops.api.vo.kubernetes.ProjectCreateDTO;
 import io.choerodon.devops.app.service.DevopsCheckLogService;
-import io.choerodon.devops.app.service.DevopsDeployRecordService;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
@@ -52,8 +52,6 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     @Autowired
     private PipelineRecordMapper pipelineRecordMapper;
     @Autowired
-    private DevopsDeployRecordService devopsDeployRecordService;
-    @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
     private DevopsConfigMapper devopsConfigMapper;
@@ -65,6 +63,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private DevopsBranchMapper devopsBranchMapper;
     @Autowired
     private DevopsEnvironmentMapper devopsEnvironmentMapper;
+    @Autowired
+    private DevopsDeployRecordMapper devopsDeployRecordMapper;
 
 
     @Override
@@ -89,25 +89,29 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
         @Override
         public void run() {
-            DevopsCheckLogDTO devopsCheckLogDTO = new DevopsCheckLogDTO();
-            List<CheckLog> logs = new ArrayList<>();
-            devopsCheckLogDTO.setBeginCheckDate(new Date());
-            if ("0.19.0".equals(version)) {
-                syncEnvAppRelevance(logs);
-                syncAppShare(logs);
-                syncDeployRecord(logs);
-                syncClusterAndCertifications(logs);
-                syncConfig();
-                syncEnvAndAppServiceStatus();
-                syncBranch();
-            } else {
-                LOGGER.info("version not matched");
+            try {
+                DevopsCheckLogDTO devopsCheckLogDTO = new DevopsCheckLogDTO();
+                List<CheckLog> logs = new ArrayList<>();
+                devopsCheckLogDTO.setBeginCheckDate(new Date());
+                if ("0.19.0".equals(version)) {
+                    syncEnvAppRelevance(logs);
+                    syncAppShare(logs);
+                    syncDeployRecord(logs);
+                    syncClusterAndCertifications(logs);
+                    syncConfig();
+                    syncEnvAndAppServiceStatus();
+                    syncBranch();
+                } else {
+                    LOGGER.info("version not matched");
+                }
+
+                devopsCheckLogDTO.setLog(JSON.toJSONString(logs));
+                devopsCheckLogDTO.setEndCheckDate(new Date());
+
+                devopsCheckLogMapper.insert(devopsCheckLogDTO);
+            } catch (Throwable ex) {
+                LOGGER.warn("Exception occurred when applying data migration. The ex is: {}", ex);
             }
-
-            devopsCheckLogDTO.setLog(JSON.toJSONString(logs));
-            devopsCheckLogDTO.setEndCheckDate(new Date());
-
-            devopsCheckLogMapper.insert(devopsCheckLogDTO);
         }
 
 
@@ -246,7 +250,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
          */
         private void syncDeployRecord(List<CheckLog> checkLogs) {
             LOGGER.info("修复部署记录数据开始。此过程耗时稍长");
-            // 查出数据库中需要修复的手动部署实例的记录
+            // 只查出数据库中需要修复的手动部署实例的记录
             List<DevopsDeployRecordDTO> manualRecords = devopsEnvCommandMapper.listAllInstanceCommandToMigrate()
                     .stream()
                     .map(devopsEnvCommandDTO -> new DevopsDeployRecordDTO(devopsEnvCommandDTO.getProjectId(), "manual", devopsEnvCommandDTO.getId(), devopsEnvCommandDTO.getEnvId().toString(), devopsEnvCommandDTO.getCreationDate()))
@@ -254,7 +258,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             LOGGER.info("共{}条手动部署的纪录需要迁移。", manualRecords.size());
 
 
-            // 查出数据库中需要修复的自动部署的纪录
+            // 只查出数据库中需要修复的自动部署的纪录
             List<DevopsDeployRecordDTO> autoRecords = pipelineRecordMapper.listAllPipelineRecordToMigrate()
                     .stream()
                     .map(pipelineRecordDTO -> new DevopsDeployRecordDTO(pipelineRecordDTO.getProjectId(), "auto", pipelineRecordDTO.getId(), pipelineRecordDTO.getEnv(), pipelineRecordDTO.getCreationDate()))
@@ -263,9 +267,10 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
             // 所有待插入的纪录
             manualRecords.addAll(autoRecords);
-
-            manualRecords.stream().sorted(Comparator.comparing(DevopsDeployRecordDTO::getDeployTime)).forEach(
-                    record -> devopsDeployRecordService.baseCreate(record));
+            manualRecords = manualRecords.stream().sorted(Comparator.comparing(DevopsDeployRecordDTO::getDeployTime)).collect(Collectors.toList());
+            if (!CollectionUtils.isEmpty(manualRecords)) {
+                devopsDeployRecordMapper.batchInsertSelective(manualRecords);
+            }
 
             LOGGER.info("修复部署记录数据结束");
         }
