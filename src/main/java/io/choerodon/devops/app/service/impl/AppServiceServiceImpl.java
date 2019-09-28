@@ -1485,7 +1485,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 .collect(Collectors.toList());
 
         return ConvertUtils.convertList(members,
-                iamUserDTO -> new DevopsUserPermissionVO(iamUserDTO.getId(), iamUserDTO.getLdap()?iamUserDTO.getLoginName():iamUserDTO.getEmail(), iamUserDTO.getRealName()));
+                iamUserDTO -> new DevopsUserPermissionVO(iamUserDTO.getId(), iamUserDTO.getLdap() ? iamUserDTO.getLoginName() : iamUserDTO.getEmail(), iamUserDTO.getRealName()));
     }
 
     @Override
@@ -2037,14 +2037,17 @@ public class AppServiceServiceImpl implements AppServiceService {
             ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
             List<Long> appServiceVersionIds = baseServiceClientOperator.listServiceVersionsForMarket(projectDTO.getOrganizationId(), false);
             List<ApplicationDTO> applicationDTOS = new ArrayList<>();
-            appServiceIds
-                    .forEach(appServiceId -> {
-                        ApplicationDTO applicationDTO = baseServiceClientOperator.queryAppById(appServiceId);
-                        if (!ObjectUtils.isEmpty(applicationDTO)) {
-                            applicationDTOS.add(applicationDTO);
-                        }
-                        versionListTemp.addAll(appServiceVersionMapper.listByAppServiceVersionIdForMarket(appServiceId, appServiceVersionIds, null, null, null,null));
-                    });
+            if (appServiceIds != null && !appServiceIds.isEmpty() && appServiceVersionIds != null && !appServiceVersionIds.isEmpty()) {
+                versionList.addAll(appServiceVersionMapper.listByAppServiceVersionIdForMarketBatch(new ArrayList<>(appServiceIds), appServiceVersionIds, null, null, null, null));
+                appServiceIds
+                        .forEach(appServiceId -> {
+                            ApplicationDTO applicationDTO = baseServiceClientOperator.queryAppById(appServiceId);
+                            if (!ObjectUtils.isEmpty(applicationDTO)) {
+                                applicationDTOS.add(applicationDTO);
+                            }
+                        });
+            }
+
             projects = ConvertUtils.convertList(applicationDTOS, ProjectDTO.class);
             versionList.addAll(versionListTemp);
         }
