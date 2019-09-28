@@ -419,7 +419,7 @@ public class GitUtil {
         try {
             git.add().addFilepattern(".").call();
             git.add().setUpdate(true).addFilepattern(".").call();
-            git.commit().setMessage(commitMessage).call();
+            git.commit().setMessage("The download version：" + commitMessage).call();
             PushCommand pushCommand = git.push();
             pushCommand.add(MASTER);
             pushCommand.setRemote(repoUrl);

@@ -2037,8 +2037,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
             List<Long> appServiceVersionIds = baseServiceClientOperator.listServiceVersionsForMarket(projectDTO.getOrganizationId(), false);
             List<ApplicationDTO> applicationDTOS = new ArrayList<>();
-            appServiceDTOList.stream()
-                    .map(AppServiceDTO::getMktAppId)
+            appServiceIds
                     .forEach(appServiceId -> {
                         ApplicationDTO applicationDTO = baseServiceClientOperator.queryAppById(appServiceId);
                         if (!ObjectUtils.isEmpty(applicationDTO)) {
