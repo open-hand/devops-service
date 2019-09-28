@@ -407,7 +407,7 @@
         WHERE t.env_id = #{envId};
     </select>
 
-    <select id="listGitlabProjectIdByEnvPermission" resultType="java.util.List">
+    <select id="listGitlabProjectIdByEnvPermission" resultType="java.lang.Long">
         SELECT
             de.gitlab_env_project_id
         FROM

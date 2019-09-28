@@ -11,6 +11,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import com.github.pagehelper.PageInfo;
+import com.google.gson.Gson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Component;
 
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.exception.ExceptionResponse;
 import io.choerodon.core.exception.FeignException;
 import io.choerodon.devops.api.vo.OrganizationSimplifyVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
@@ -37,6 +39,8 @@ import io.choerodon.devops.infra.util.FeignParamUtils;
 public class BaseServiceClientOperator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BaseServiceClientOperator.class);
+    private static final Gson gson = new Gson();
+
 
     @Autowired
     private BaseServiceClient baseServiceClient;
@@ -328,9 +332,12 @@ public class BaseServiceClientOperator {
 
     public void completeDownloadApplication(Long publishAppVersionId, Long appVersionId, Long organizationId, List<AppDownloadDevopsReqVO> appDownloadDevopsReqVOS) {
         try {
-            ResponseEntity responseEntity = baseServiceClient.completeDownloadApplication(publishAppVersionId, appVersionId, organizationId, appDownloadDevopsReqVOS);
-            if (!responseEntity.getStatusCode().is2xxSuccessful()) {
-                throw new CommonException("error.application.download.complete");
+            ResponseEntity<String> responseEntity = baseServiceClient.completeDownloadApplication(publishAppVersionId, appVersionId, organizationId, appDownloadDevopsReqVOS);
+            if (responseEntity != null && responseEntity.getBody() != null) {
+                ExceptionResponse exceptionResponse = gson.fromJson(responseEntity.getBody(), ExceptionResponse.class);
+                if (exceptionResponse.getFailed()) {
+                    throw new CommonException("error.application.download.complete");
+                }
             }
         } catch (Exception e) {
             throw new CommonException("error.application.download.complete", e.getMessage());
@@ -339,9 +346,12 @@ public class BaseServiceClientOperator {
 
     public void failToDownloadApplication(Long publishAppVersionId, Long appVersionId, Long organizationId) {
         try {
-            ResponseEntity responseEntity = baseServiceClient.failToDownloadApplication(publishAppVersionId, appVersionId, organizationId);
-            if (!responseEntity.getStatusCode().is2xxSuccessful()) {
-                throw new CommonException("error.application.download.failed");
+            ResponseEntity<String> responseEntity = baseServiceClient.failToDownloadApplication(publishAppVersionId, appVersionId, organizationId);
+            if (responseEntity != null && responseEntity.getBody() != null) {
+                ExceptionResponse exceptionResponse = gson.fromJson(responseEntity.getBody(), ExceptionResponse.class);
+                if (exceptionResponse.getFailed()) {
+                    throw new CommonException("error.application.download.failed");
+                }
             }
         } catch (Exception e) {
             throw new CommonException("error.application.download.failed", e.getMessage());
