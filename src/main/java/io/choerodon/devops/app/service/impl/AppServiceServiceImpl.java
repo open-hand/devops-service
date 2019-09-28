@@ -2039,9 +2039,10 @@ public class AppServiceServiceImpl implements AppServiceService {
             List<ApplicationDTO> applicationDTOS = new ArrayList<>();
             if (appServiceIds != null && !appServiceIds.isEmpty() && appServiceVersionIds != null && !appServiceVersionIds.isEmpty()) {
                 versionList.addAll(appServiceVersionMapper.listByAppServiceVersionIdForMarketBatch(new ArrayList<>(appServiceIds), appServiceVersionIds, null, null, null, null));
-                appServiceIds
-                        .forEach(appServiceId -> {
-                            ApplicationDTO applicationDTO = baseServiceClientOperator.queryAppById(appServiceId);
+                Set<Long> appMktIds = appServiceDTOList.stream().map(AppServiceDTO::getMktAppId).collect(Collectors.toSet());
+                appMktIds
+                        .forEach(appMktId -> {
+                            ApplicationDTO applicationDTO = baseServiceClientOperator.queryAppById(appMktId);
                             if (!ObjectUtils.isEmpty(applicationDTO)) {
                                 applicationDTOS.add(applicationDTO);
                             }
@@ -2049,7 +2050,6 @@ public class AppServiceServiceImpl implements AppServiceService {
             }
 
             projects = ConvertUtils.convertList(applicationDTOS, ProjectDTO.class);
-            versionList.addAll(versionListTemp);
         }
         // 将版本信息集合和项目信息集合 转为 Map类型
         Map<Long, List<AppServiceVersionDTO>> versionMap = versionList.stream().collect(Collectors.groupingBy(AppServiceVersionDTO::getAppServiceId));
