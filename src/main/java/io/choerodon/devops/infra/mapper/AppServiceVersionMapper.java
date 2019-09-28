@@ -55,6 +55,13 @@ public interface AppServiceVersionMapper extends Mapper<AppServiceVersionDTO> {
                                                                   @Param("index") String index,
                                                                   @Param("version") String version);
 
+    List<AppServiceVersionDTO> listByAppServiceVersionIdForMarketBatch(@Param("appServiceIds") List<Long> appServiceIds,
+                                                                       @Param("appServiceVersionIds") List<Long> appServiceVersionIds,
+                                                                       @Param("searchParam") Map<String, String> map,
+                                                                       @Param("params") List<String> params,
+                                                                       @Param("index") String index,
+                                                                       @Param("version") String version);
+
     List<AppServiceVersionDTO> listAppServiceDeployedVersion(@Param("projectId") Long projectId,
                                                              @Param("appServiceId") Long appServiceId);
 
