@@ -101,4 +101,16 @@
         WHERE command.object = 'instance'
         AND command.object_id = #{instanceId,jdbcType=BIGINT})
 	</delete>
+
+	<insert id="batchInsertSelective">
+        INSERT INTO devops_deploy_record(project_id, env, deploy_id, deploy_type, deploy_time)
+        VALUES
+        <foreach collection="records" item="record" separator=",">
+            (#{record.projectId,jdbcType=BIGINT},
+            #{record.env,jdbcType=VARCHAR},
+            #{record.deployId,jdbcType=BIGINT},
+            #{record.deployType,jdbcType=VARCHAR},
+            #{record.deployTime})
+        </foreach>
+	</insert>
 </mapper>

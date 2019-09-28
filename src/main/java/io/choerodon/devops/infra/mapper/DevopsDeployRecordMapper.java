@@ -18,4 +18,6 @@ public interface DevopsDeployRecordMapper extends Mapper<DevopsDeployRecordDTO> 
                                                 @Param("searchParam") Map<String, Object> searchParam);
 
     void deleteRelatedRecordOfInstance(@Param("instanceId") Long instanceId);
+
+    void batchInsertSelective(@Param("records") List<DevopsDeployRecordDTO> records);
 }
