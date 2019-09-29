@@ -38,7 +38,7 @@ function ResourceTitle(props) {
       const { name, status, errorText } = current;
       return <div className="c7ncd-resource-title">
         <Icon type={iconType} className="c7ncd-resource-title-icon" />
-        <span>{name}</span>
+        <span className="c7ncd-resource-title-name">{name}</span>
         {status === 'failed' && (
           <Tooltip title={errorText || ''}>
             <Icon type="error" className="c7ncd-resource-title-error-icon" />

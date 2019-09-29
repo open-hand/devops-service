@@ -1,9 +1,10 @@
 .c7ncd-resource {
 
   &-title {
+    display: flex;
+    width: 100%;
     font-size: .2rem;
     font-weight: 500;
-    display: flex;
     align-items: center;
 
     &-error-icon {
@@ -14,6 +15,14 @@
     &-icon {
       margin-right: .05rem;
       font-size: .18rem;
+    }
+
+    &-name {
+      display: inline-block;
+      overflow: hidden;
+      white-space: nowrap;
+      width: 100%;
+      text-overflow: ellipsis;
     }
   }
 }

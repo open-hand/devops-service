@@ -1,9 +1,9 @@
 import React from 'react';
 import { StoreProvider } from './stores';
-import List from './List';
+import AppList from './AppList';
 
 export default props => (
   <StoreProvider {...props}>
-    <List />
+    <AppList />
   </StoreProvider>
 );
