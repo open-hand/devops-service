@@ -698,6 +698,10 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             File file = new File(String.format("%s/%s", path, filePath));
             try {
                 for (Object data : yaml.loadAll(new FileInputStream(file))) {
+                    if (data == null) {
+                        // 跳过只有"---"而没有内容的对象，例如"---\n---\n"
+                        continue;
+                    }
                     JSONObject jsonObject = new JSONObject((Map<String, Object>) data);
                     if (jsonObject.get("kind") == null) {
                         throw new GitOpsExplainException(GitOpsObjectError.CUSTOM_RESOURCE_KIND_NOT_FOUND.getError(), filePath);
