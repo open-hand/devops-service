@@ -663,15 +663,9 @@ public class AppServiceServiceImpl implements AppServiceService {
         try {
             ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
             OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-            InputStream inputStream;
             ConfigVO harborProjectConfig = gson.fromJson(devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, HARBOR).getConfig(), ConfigVO.class);
             ConfigVO chartProjectConfig = gson.fromJson(devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, CHART).getConfig(), ConfigVO.class);
-
-            if (type == null) {
-                inputStream = this.getClass().getResourceAsStream("/shell/ci.sh");
-            } else {
-                inputStream = this.getClass().getResourceAsStream("/shell/" + type + ".sh");
-            }
+            InputStream  inputStream = this.getClass().getResourceAsStream("/shell/ci.sh");
             Map<String, String> params = new HashMap<>();
             String groupName = organizationDTO.getCode() + "-" + projectDTO.getCode();
             if (harborProjectConfig.getProject() != null) {
@@ -2426,11 +2420,12 @@ public class AppServiceServiceImpl implements AppServiceService {
 
                         });
                     }
-                }
-                MemberDTO gitlabMemberDTO = gitlabServiceClientOperator.getProjectMember(devOpsAppServicePayload.getGitlabProjectId(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
-                if (gitlabMemberDTO == null || gitlabMemberDTO.getId() == null) {
-                    gitlabServiceClientOperator.createProjectMember(devOpsAppServicePayload.getGitlabProjectId(),
-                            new MemberDTO(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), 30, ""));
+                }else {
+                    MemberDTO gitlabMemberDTO = gitlabServiceClientOperator.getProjectMember(devOpsAppServicePayload.getGitlabProjectId(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+                    if (gitlabMemberDTO == null || gitlabMemberDTO.getId() == null) {
+                        gitlabServiceClientOperator.createProjectMember(devOpsAppServicePayload.getGitlabProjectId(),
+                                new MemberDTO(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), 30, ""));
+                    }
                 }
             });
         }

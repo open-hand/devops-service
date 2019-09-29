@@ -43,6 +43,11 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
+    public ResponseEntity<PageInfo<OrganizationDTO>> listOrganizations(Integer page, Integer size) {
+        throw new CommonException("error.organization.get");
+    }
+
+    @Override
     public ResponseEntity<MemberRoleVO> addMemberRole(Long projectId, MemberRoleVO memberRoleVo) {
         throw new CommonException("error.memberRole.add");
     }
