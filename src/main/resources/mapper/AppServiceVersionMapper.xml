@@ -186,7 +186,7 @@
             </otherwise>
         </choose>
         <include refid="sqlparam"/>
-        <if test="version != null">
+        <if test="version != null and version != ''">
           AND  dav.version = #{version}
         </if>
         <if test="index != null and index !=''">
