@@ -56,7 +56,7 @@ const ConfigMap = observer((props) => {
     const commandStatus = record.get('commandStatus');
     const disabled = getEnvIsNotRunning() || commandStatus === 'operating';
     return (
-      <div>
+      <div className={`${prefixCls}-keyValue-name`}>
         <StatusTags
           name={formatMessage({ id: commandStatus || 'null' })}
           colorCode={commandStatus || 'success'}
