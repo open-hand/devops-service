@@ -365,7 +365,10 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     public Boolean checkConnectEnvs(Long clusterId) {
         List<Long> connectedEnvList = clusterConnectionHandler.getConnectedClusterList();
         List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = devopsEnvironmentService.baseListByClusterId(clusterId);
-        if (connectedEnvList.contains(clusterId) || !devopsEnvironmentDTOS.isEmpty()) {
+        if (connectedEnvList.contains(clusterId)) {
+            throw new CommonException("error.cluster.connected");
+        }
+        if (!devopsEnvironmentDTOS.isEmpty()) {
             throw new CommonException("error.cluster.delete");
         }
         return true;
