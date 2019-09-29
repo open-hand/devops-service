@@ -1,11 +1,6 @@
 package io.choerodon.devops.app.service;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
-
 import com.github.pagehelper.PageInfo;
-
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.eventhandler.payload.AppServiceImportPayload;
@@ -14,6 +9,10 @@ import io.choerodon.devops.app.eventhandler.payload.DevOpsAppServicePayload;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.enums.GitPlatformType;
+
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Created by younger on 2018/3/28.
@@ -144,6 +143,12 @@ public interface AppServiceService {
      * @return baseList of ApplicationRepDTO
      */
     List<AppServiceRepVO> listByActive(Long projectId);
+
+    /**
+     * 项目下查询所有已经启用服务数量
+     */
+
+    Integer countByActive(Long projectId);
 
     /**
      * 项目下查询所有可选已经启用的服务
@@ -375,8 +380,6 @@ public interface AppServiceService {
 
     PageInfo<AppServiceDTO> basePageByEnvId(Long projectId, Long envId, Long appServiceId, PageRequest pageRequest);
 
-    List<AppServiceDTO> baseListByActive(Long projectId);
-
     List<AppServiceDTO> baseListDeployedApp(Long projectId);
 
     PageInfo<AppServiceDTO> basePageByActiveAndPubAndHasVersion(Long projectId, Boolean isActive,
@@ -405,7 +408,7 @@ public interface AppServiceService {
      *
      * @return List<AppServiceGroupVO>
      */
-    PageInfo<AppServiceGroupInfoVO> pageAppServiceByMode(Long projectId, Boolean share,Long searchProjectId,String param,PageRequest pageRequest);
+    PageInfo<AppServiceGroupInfoVO> pageAppServiceByMode(Long projectId, Boolean share, Long searchProjectId, String param, PageRequest pageRequest);
 
     /**
      * 查询所有应用服务
@@ -421,27 +424,31 @@ public interface AppServiceService {
 
     /**
      * 查询单个项目下的应用服务
+     *
      * @param projectId
      * @return
      */
-    PageInfo<AppServiceVO> listAppByProjectId(Long projectId,Boolean doPage,PageRequest pageRequest,String params);
+    PageInfo<AppServiceVO> listAppByProjectId(Long projectId, Boolean doPage, PageRequest pageRequest, String params);
 
     /**
      * 批量查询应用服务
+     *
      * @param ids
      * @return
      */
-    PageInfo<AppServiceVO> listAppServiceByIds(Set<Long> ids,Boolean doPage,PageRequest pageRequest,String params);
+    PageInfo<AppServiceVO> listAppServiceByIds(Set<Long> ids, Boolean doPage, PageRequest pageRequest, String params);
 
     /**
      * 根据导入应用类型查询应用所属的项目集合
+     *
      * @param share
      * @return
      */
-    List<ProjectVO> listProjectByShare(Long projectId,Boolean share);
+    List<ProjectVO> listProjectByShare(Long projectId, Boolean share);
 
     /**
      * 根据版本Id集合查询应用服务
+     *
      * @param ids
      * @return
      */

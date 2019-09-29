@@ -422,7 +422,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         Boolean projectOwner = baseServiceClientOperator.isProjectOwner(userId, projectDTO);
         List<AppServiceDTO> applicationDTOServiceList;
         if (projectOwner) {
-            applicationDTOServiceList = baseListByActive(projectId);
+            applicationDTOServiceList = appServiceMapper.listByActive(projectId);
         } else {
             applicationDTOServiceList = appServiceMapper.listProjectMembersAppServiceByActive(projectId, userId);
         }
@@ -432,6 +432,21 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         initApplicationParams(projectDTO, organizationDTO, applicationDTOServiceList, urlSlash);
         return ConvertUtils.convertList(applicationDTOServiceList, this::dtoToRepVo);
+    }
+
+    @Override
+    public Integer countByActive(Long projectId) {
+        Long userId = TypeUtil.objToLong(GitUserNameUtil.getUserId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        Boolean projectOwner = baseServiceClientOperator.isProjectOwner(userId, projectDTO);
+        int count;
+        if (projectOwner) {
+            count = appServiceMapper.countByActive(projectId);
+        } else {
+            count = appServiceMapper.countProjectMembersAppServiceByActive(projectId, userId);
+        }
+
+        return count;
     }
 
     @Override
@@ -1820,11 +1835,6 @@ public class AppServiceServiceImpl implements AppServiceService {
     public PageInfo<AppServiceDTO> basePageByEnvId(Long projectId, Long envId, Long appServiceId, PageRequest pageRequest) {
         return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> appServiceMapper.listByEnvId(projectId, envId, appServiceId, NODELETED));
 
-    }
-
-    @Override
-    public List<AppServiceDTO> baseListByActive(Long projectId) {
-        return appServiceMapper.listByActive(projectId);
     }
 
     @Override

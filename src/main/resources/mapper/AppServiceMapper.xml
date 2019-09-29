@@ -160,16 +160,16 @@
         </if>
     </select>
 
-    <select id="listByActive" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
-        SELECT da.*, (SELECT COUNT(1) = 0 FROM devops_branch db WHERE db.app_service_id = da.id) AS empty_repository
-        FROM devops_app_service da
-        WHERE da.is_active IS TRUE
-        AND da.is_synchro IS TRUE
-        AND da.gitlab_project_id IS NOT NULL
-        AND da.project_id = #{projectId}
-    </select>
+    <sql id="listByActive">
+        SELECT das.*, (SELECT COUNT(1) = 0 FROM devops_branch db WHERE db.app_service_id = das.id) AS empty_repository
+        FROM devops_app_service das
+        WHERE das.is_active IS TRUE
+        AND das.is_synchro IS TRUE
+        AND das.gitlab_project_id IS NOT NULL
+        AND das.project_id = #{projectId}
+    </sql>
 
-    <select id="listProjectMembersAppServiceByActive" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
+    <sql id="listProjectMembersAppServiceByActive">
         SELECT da.*, (SELECT COUNT(1) = 0 FROM devops_branch db WHERE db.app_service_id = da.id) AS empty_repository
 
         FROM (SELECT das.*
@@ -187,6 +187,26 @@
         WHERE da.is_active IS TRUE
         AND da.is_synchro IS TRUE
         AND da.gitlab_project_id IS NOT NULL
+    </sql>
+
+    <select id="listByActive" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
+        <include refid="listByActive"/>
+    </select>
+
+    <select id="countByActive" resultType="integer">
+        SELECT count(1) FROM(
+        <include refid="listByActive"/>
+        ) as result
+    </select>
+
+    <select id="listProjectMembersAppServiceByActive" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
+        <include refid="listProjectMembersAppServiceByActive"/>
+    </select>
+
+    <select id="countProjectMembersAppServiceByActive" resultType="integer">
+        SELECT count(1) FROM (
+        <include refid="listProjectMembersAppServiceByActive"/>
+        ) as result
     </select>
 
     <select id="listDeployedApp" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">

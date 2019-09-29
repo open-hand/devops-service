@@ -272,6 +272,24 @@ public class AppServiceController {
     }
 
     /**
+     * 项目下查询所有已经启用服务数量
+     *
+     * @param projectId 项目id
+     * @return Integer
+     */
+    @Permission(type = ResourceType.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "项目下查询所有已经启用服务数量")
+    @GetMapping("/count_by_active")
+    public ResponseEntity<Integer> countByActive(
+            @ApiParam(value = "项目 ID", required = true)
+            @PathVariable(value = "project_id") Long projectId) {
+        return Optional.ofNullable(applicationServiceService.countByActive(projectId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException(ERROR_APPLICATION_GET));
+    }
+
+    /**
      * 本项目下或者服务市场在该项目下部署过的服务
      *
      * @param projectId 项目id
