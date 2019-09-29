@@ -13,10 +13,10 @@ import './index.less';
 const { Column } = Table;
 
 const Version = () => {
-  const { versionDs } = useAppTopStore();
+  const { prefixCls } = useAppTopStore();
   const {
-    prefixCls,
     detailDs,
+    versionDs,
   } = useServiceDetailStore();
 
   function refresh() {

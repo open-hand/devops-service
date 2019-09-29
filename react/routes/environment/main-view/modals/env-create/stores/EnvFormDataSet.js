@@ -46,7 +46,7 @@ export default ({ formatMessage, intlPrefix, projectId }) => {
         name: 'description',
         type: 'string',
         label: '环境描述',
-        maxLength: 60,
+        maxLength: 200,
       },
       {
         name: 'devopsEnvGroupId',

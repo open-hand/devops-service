@@ -191,7 +191,7 @@ const CreateCluster = observer((props) => {
             initialValue: isEdit ? formData.description : '',
           })(
             <TextArea
-              maxLength={100}
+              maxLength={200}
               label={formatMessage({ id: `${intlPrefix}.dec` })}
               onChange={handleDescriptionChange}
             />,
