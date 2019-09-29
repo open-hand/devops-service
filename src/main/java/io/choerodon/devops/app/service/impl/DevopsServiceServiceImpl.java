@@ -603,7 +603,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                 AppServiceInstanceDTO appServiceInstanceDTO =
                         appServiceInstanceService.baseQueryByCodeAndEnv(appServiceInstance, devopsServiceReqVO.getEnvId());
                 //资源视图创建网络类型为选择实例时，需要将网络和实例对应的应用服务相关联
-                if (devopsServiceReqVO.getAppServiceId() == null) {
+                if (devopsServiceReqVO.getAppServiceId() == null && appServiceInstanceDTO != null) {
                     devopsServiceReqVO.setAppServiceId(appServiceInstanceDTO.getAppServiceId());
                 }
                 stringBuffer.append(appServiceInstance).append("+");
