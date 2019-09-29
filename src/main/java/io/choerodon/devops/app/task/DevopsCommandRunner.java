@@ -99,7 +99,7 @@ public class DevopsCommandRunner implements CommandLineRunner {
             try {
                 SonarClient sonarClient = RetrofitHandler.getSonarClient(sonarqubeUrl, SONAR, userName, password);
                 Map<String, String> map = new HashMap<>();
-                map.put("name", "token");
+                map.put("name", "ci-token");
                 map.put("login", "admin");
                 Call<ResponseBody> responseCall = sonarClient.createToken(map);
                 UserToken userToken = RetrofitCallExceptionParse.executeCall(responseCall, "error.create.sonar.token", UserToken.class);
