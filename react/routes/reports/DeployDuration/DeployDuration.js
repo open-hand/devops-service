@@ -153,7 +153,7 @@ class DeployDuration extends Component {
           const appArr = [];
           _.map(res.deployAppVOS, (v, index) => {
             const series = {
-              name: v.appName,
+              name: v.appServiceName,
               symbolSize: 24,
               itemStyle: {
                 color: `rgba(${COLOR[index]}, 0.6)`,
@@ -163,7 +163,7 @@ class DeployDuration extends Component {
               type: 'scatter',
             };
             const obj = {};
-            obj.name = v.appName;
+            obj.name = v.appServiceName;
             obj.icon = `image://${LENGEND[index]}`;
             seriesArr.push(series);
             appArr.push(obj);

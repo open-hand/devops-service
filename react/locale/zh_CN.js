@@ -365,6 +365,9 @@ const deployment = {
   'c7ncd.deployment.target.ip': '目标IP',
   'c7ncd.deployment.no.label': '暂无标签',
   'c7ncd.deployment.env': '环境"{name}"的',
+  'c7ncd.deployment.pod.status': 'Pod状态',
+  'c7ncd.deployment.time': '时间',
+  'c7ncd.deployment.usage': '使用量',
 
 };
 
@@ -1327,7 +1330,7 @@ const zhCN = {
   'deploy.stage': '阶段及日志',
   'deploy.status': '容器状态',
   'deploy.istStatus': '实例状态',
-  'deploy.appName': '应用名称',
+  'deploy.appName': '应用服务名称',
   'deploy.instance': '实例名称',
   'deploy.envName': '环境名称',
   'deploy.app': '应用服务',

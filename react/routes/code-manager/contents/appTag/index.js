@@ -272,7 +272,7 @@ class AppTag extends Component {
         className="c7n-tag-wrapper page-container"
         service={['devops-service.devops-git.pageTagsByOptions']}
       >
-        {appData && appData.length && appId ? <Fragment>
+        {appData && appData.length && appId ? <div className="c7ncd-tag-content">
           {loading || _.isNull(loading) ? <Loading display /> : <Fragment>
             {tagList.length ? <Fragment>
               <Collapse bordered={false}>{tagList}</Collapse>
@@ -326,7 +326,7 @@ class AppTag extends Component {
             release={editRelease}
             show={editDisplay}
             close={this.displayEditModal}
-          /> : null}</Fragment> : <Loading display={DevPipelineStore.getLoading} />}
+          /> : null}</div> : <Loading display={DevPipelineStore.getLoading} />}
       </Page>
     );
   }

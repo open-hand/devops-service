@@ -348,6 +348,7 @@ export default class Index extends Component {
     const {
       form: { setFieldsValue },
     } = this.props;
+    const { portInNetwork } = this.state;
     const portArr = [];
     _.forEach(data, (item) => {
       if (id === item.id) {
@@ -358,10 +359,11 @@ export default class Index extends Component {
       }
     });
     setFieldsValue({ [`port[${index}]`]: '' });
-    const portInNetwork = {
+    const newPortInNetwork = {
+      ...portInNetwork,
       [index]: portArr,
     };
-    this.setState({ portInNetwork });
+    this.setState({ portInNetwork: newPortInNetwork });
   };
 
   /**

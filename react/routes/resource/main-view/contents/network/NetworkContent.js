@@ -291,9 +291,9 @@ const NetworkContent = observer(() => {
       >
         <Column name="name" renderer={renderName} />
         <Column renderer={renderAction} width="0.7rem" />
-        <Column renderer={renderTargetType} header={formatMessage({ id: `${intlPrefix}.application.net.targetType` })} />
+        <Column renderer={renderTargetType} header={formatMessage({ id: `${intlPrefix}.application.net.targetType` })} width="1.2rem" />
         <Column renderer={renderTarget} header={formatMessage({ id: `${intlPrefix}.application.net.target` })} />
-        <Column name="type" renderer={renderConfigType} />
+        <Column name="type" renderer={renderConfigType} width="1.5rem" />
       </Table>
       {showModal && (
         <EditNetwork

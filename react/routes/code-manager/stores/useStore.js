@@ -48,9 +48,9 @@ export default function useStore() {
     async checkHasApp(projectId) {
       this.setLoading(true);
       try {
-        const res = await axios.get(`/devops/v1/projects/${projectId}/app_service/list_by_active`);
-        if (res && !res.failed) {
-          this.setHasApp(res.length);
+        const res = await axios.get(`/devops/v1/projects/${projectId}/app_service/count_by_active`);
+        if ((res && !res.failed) || res === 0) {
+          this.setHasApp(res);
         }
         this.setLoading(false);
       } catch (e) {

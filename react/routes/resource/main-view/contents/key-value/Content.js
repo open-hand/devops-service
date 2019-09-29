@@ -62,12 +62,14 @@ const ConfigMap = observer((props) => {
           colorCode={commandStatus || 'success'}
           style={{ minWidth: 40, marginRight: '0.08rem', height: '0.16rem', lineHeight: '0.16rem' }}
         />
-        <ClickText
-          value={value}
-          clickAble={!disabled}
-          onClick={openModal}
-          permissionCode={permissions.edit}
-        />
+        <MouserOverWrapper width={0.4} text={value}>
+          <ClickText
+            value={value}
+            clickAble={!disabled}
+            onClick={openModal}
+            permissionCode={permissions.edit}
+          />
+        </MouserOverWrapper>
       </div>
     );
   }
