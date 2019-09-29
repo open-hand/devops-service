@@ -1157,7 +1157,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         List<Long> mktAppServiceIds = baseServiceClientOperator.listServicesForMarket(projectDTO.getOrganizationId(), true);
         if (mktAppServiceIds != null && !mktAppServiceIds.isEmpty()) {
-            applications.addAll(appServiceMapper.queryMarketDownloadApps(null, null, mktAppServiceIds));
+            applications.addAll(appServiceMapper.queryMarketDownloadApps(null, null, mktAppServiceIds,null));
         }
         return applications;
     }

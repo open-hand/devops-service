@@ -576,6 +576,9 @@
         <if test="type != null and type != ''">
             AND das.type = #{type}
         </if>
+        <if test="searchProjectId != null and searchProjectId != ''">
+            AND das.mkt_app_id=#{searchProjectId}
+        </if>
         <if test="param != null and param != ''">
             AND  (das.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
             OR  das.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%'))
