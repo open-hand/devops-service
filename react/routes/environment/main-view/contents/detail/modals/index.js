@@ -34,9 +34,6 @@ const EnvModals = observer(() => {
   const actionStyle = useMemo(() => ({
     marginLeft: '.2rem',
   }), []);
-  const buttonStyle = useMemo(() => ({
-    padding: '0 0 0 .02rem',
-  }), []);
   const configModalStyle = useMemo(() => ({
     width: 'calc(100vw - 3.52rem)',
     minWidth: '2rem',
@@ -264,7 +261,6 @@ const EnvModals = observer(() => {
   return <HeaderButtons items={getButtons()}>
     <HeaderAction
       style={actionStyle}
-      buttonStyle={buttonStyle}
       items={actionItem}
       menuClick={handleMenuClick}
     />

@@ -16,13 +16,13 @@ import BranchStore from './stores';
 import handleMapStore from '../../main-view/store/handleMapStore';
 import Loading from '../../../../components/loading';
 import CustomConfirm from '../../../../components/custom-confirm';
+import UserInfo from '../../../../components/userInfo';
+
 import '../../../main.less';
 import './Branch.less';
 import './index.less';
-import UserInfo from '../../../../components/userInfo';
 
 const { AppState } = stores;
-
 
 @observer
 class Branch extends Component {
