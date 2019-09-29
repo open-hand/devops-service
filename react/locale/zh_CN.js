@@ -1953,6 +1953,7 @@ const zhCN = {
   'ctf.validDate': '证书有效期',
 
   // 报表
+  'report.bread.title': '图表',
   'report.head': 'Devops报表',
   'report.devops.total': '总次数',
   'dashboard.devops.more': '...',

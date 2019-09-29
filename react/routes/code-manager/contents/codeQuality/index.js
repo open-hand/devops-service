@@ -113,7 +113,7 @@ class CodeQuality extends Component {
                       {hasReport && (
                         <Link
                           to={{
-                            pathname: '/charts/devops/reports/code-quality',
+                            pathname: '/devops/reports/code-quality',
                             search,
                             state: { appId: getSelectApp, type: OBJECT_TYPE[objKey] },
                           }}
