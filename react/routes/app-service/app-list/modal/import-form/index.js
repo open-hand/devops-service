@@ -18,7 +18,7 @@ const { Option } = Select;
 const IMPORT_METHOD = ['share', 'github', 'gitlab', 'market'];
 
 const ImportForm = injectIntl(observer((props) => {
-  const { dataSet, selectedDs, record, AppStore, projectId, intl: { formatMessage }, intlPrefix, prefixCls, refresh, modal } = props;
+  const { dataSet, selectedDs, record, appServiceStore, projectId, intl: { formatMessage }, intlPrefix, prefixCls, refresh, modal } = props;
   const [hasFailed, setHasFailed] = useState(false);
 
   modal.handleOk(async () => {
@@ -42,13 +42,13 @@ const ImportForm = injectIntl(observer((props) => {
       return false;
     }
   });
-  
+
   async function checkData() {
     const lists = selectedDs.toData();
     const { listName, listCode, repeatCode, repeatName } = getRepeatData(lists);
 
     try {
-      const res = await AppStore.batchCheck(projectId, listCode, listName);
+      const res = await appServiceStore.batchCheck(projectId, listCode, listName);
       if (handlePromptError(res)) {
         if (isEmpty(repeatName) && isEmpty(repeatCode) && isEmpty(res.listCode) && isEmpty(res.listName)) {
           setHasFailed(false);

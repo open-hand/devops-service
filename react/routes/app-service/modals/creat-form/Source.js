@@ -1,6 +1,6 @@
-import React, { Fragment, useCallback, useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Form, Select } from 'choerodon-ui/pro';
-import { injectIntl, FormattedMessage } from 'react-intl';
+import { injectIntl } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import map from 'lodash/map';
 
@@ -9,13 +9,13 @@ import './index.less';
 const { Option, OptGroup } = Select;
 
 export default injectIntl(observer((props) => {
-  const { record, AppStore, projectId, intl: { formatMessage }, intlPrefix, prefixCls } = props;
+  const { record, appServiceStore, projectId, intl: { formatMessage }, intlPrefix, prefixCls } = props;
 
   useEffect(() => {
     if (record.get('appServiceSource')) {
-      AppStore.loadAppService(projectId, record.get('appServiceSource'));
+      appServiceStore.loadAppService(projectId, record.get('appServiceSource'));
     } else {
-      AppStore.setAppService([]);
+      appServiceStore.setAppService([]);
     }
     record.set('templateAppServiceId', null);
   }, [record.get('appServiceSource')]);
@@ -23,10 +23,10 @@ export default injectIntl(observer((props) => {
   useEffect(() => {
     async function loadVersion() {
       if (record.get('templateAppServiceId')) {
-        const res = await AppStore.loadVersion(projectId, record.get('templateAppServiceId'));
+        const res = await appServiceStore.loadVersion(projectId, record.get('templateAppServiceId'));
         res && res[0] && record.set('templateAppServiceVersionId', res[0].id);
       } else {
-        AppStore.setVersion([]);
+        appServiceStore.setVersion([]);
       }
     }
     loadVersion();
@@ -46,11 +46,11 @@ export default injectIntl(observer((props) => {
         </Select>
         <Select name="templateAppServiceId" colSpan={2} searchable disabled={!record.get('appServiceSource')}>
           {record.get('appServiceSource') === 'normal_service' ? (
-            map(AppStore.getAppService[0] && AppStore.getAppService[0].appServiceList, ({ id, name }) => (
+            map(appServiceStore.getAppService[0] && appServiceStore.getAppService[0].appServiceList, ({ id, name }) => (
               <Option value={id}>{name}</Option>
             ))
           ) : (
-            map(AppStore.getAppService, ({ id: groupId, name: groupName, appServiceList }) => (
+            map(appServiceStore.getAppService, ({ id: groupId, name: groupName, appServiceList }) => (
               <OptGroup label={groupName} key={groupId}>
                 {map(appServiceList, ({ id, name }) => (
                   <Option value={id}>{name}</Option>
@@ -60,7 +60,7 @@ export default injectIntl(observer((props) => {
           )}
         </Select>
         <Select name="templateAppServiceVersionId" colSpan={3} searchable clearButton={false} disabled={!record.get('templateAppServiceId')}>
-          {map(AppStore.getVersion, ({ id, version }) => (
+          {map(appServiceStore.getVersion, ({ id, version }) => (
             <Option value={id}>{version}</Option>
           ))}
         </Select>

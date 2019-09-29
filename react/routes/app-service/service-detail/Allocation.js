@@ -4,6 +4,7 @@ import { Table, Modal } from 'choerodon-ui/pro';
 import { Button, Tooltip } from 'choerodon-ui';
 import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
+import { useAppTopStore } from '../stores';
 import { useServiceDetailStore } from './stores';
 import HeaderButtons from './HeaderButtons';
 import TimePopover from '../../../components/timePopover/TimePopover';
@@ -18,15 +19,17 @@ const modalStyle = {
   width: 380,
 };
 
-const Allocation = observer((props) => {
+const Allocation = observer(() => {
   const {
-    intl: { formatMessage },
     intlPrefix,
     prefixCls,
+    appServiceStore,
+  } = useAppTopStore();
+  const {
+    intl: { formatMessage },
     permissionDs,
     detailDs,
     nonePermissionDs,
-    AppStore,
     AppState: { currentMenuType: { id } },
   } = useServiceDetailStore();
 
@@ -64,7 +67,7 @@ const Allocation = observer((props) => {
       children: <ServicePermission
         dataSet={permissionDs}
         record={detailDs.current}
-        store={AppStore}
+        store={appServiceStore}
         nonePermissionDS={nonePermissionDs}
         intlPrefix={intlPrefix}
         prefixCls={prefixCls}

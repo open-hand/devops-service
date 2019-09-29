@@ -7,7 +7,7 @@ import AllocationDataSet from './AllocationDataSet';
 import ShareDataSet from './ShareDataSet';
 import usePermissionStore from '../modals/stores/useStore';
 import OptionsDataSet from './OptionsDataSet';
-import useStore from '../../stores/useStore';
+import { useAppTopStore } from '../../stores';
 import ListDataSet from '../../stores/ListDataSet';
 
 const Store = createContext();
@@ -24,21 +24,15 @@ export const StoreProvider = injectIntl(inject('AppState')(
       match: { params: { id } },
       children,
     } = props;
-    const intlPrefix = 'c7ncd.appService';
-
+    const { appServiceStore, intlPrefix } = useAppTopStore();
     const shareVersionsDs = useMemo(() => new DataSet(OptionsDataSet()), []);
     const shareLevelDs = useMemo(() => new DataSet(OptionsDataSet()), []);
-
     const versionDs = useMemo(() => new DataSet(VersionDataSet(formatMessage, projectId, id)), [formatMessage, id, projectId]);
     const permissionDs = useMemo(() => new DataSet(AllocationDataSet(formatMessage, intlPrefix, projectId, id)), [formatMessage, id, projectId]);
     const shareDs = useMemo(() => new DataSet(ShareDataSet(intlPrefix, formatMessage, projectId, id)), [formatMessage, id, projectId]);
-    const detailDs = useMemo(() => new DataSet(ListDataSet(intlPrefix, formatMessage, projectId, null)), [intlPrefix, formatMessage, projectId]);
+    const detailDs = useMemo(() => new DataSet(ListDataSet(intlPrefix, formatMessage, projectId, null)), [projectId]);
     const nonePermissionDs = useMemo(() => new DataSet(OptionsDataSet()), []);
     const permissionStore = usePermissionStore();
-
-
-    const AppStore = useStore();
-
 
     useEffect(() => {
       nonePermissionDs.transport.read.url = `/devops/v1/projects/${projectId}/app_service/${id}/list_non_permission_users`;
@@ -52,13 +46,11 @@ export const StoreProvider = injectIntl(inject('AppState')(
 
     useEffect(() => {
       shareLevelDs.transport.read.url = `/devops/v1/projects/${projectId}/app_service/${organizationId}/list_projects`;
-      AppStore.judgeRole(organizationId, projectId);
+      appServiceStore.judgeRole(organizationId, projectId);
     }, [organizationId, projectId]);
 
     const value = {
       ...props,
-      prefixCls: 'c7ncd-appService',
-      intlPrefix,
       versionDs,
       permissionDs,
       shareDs,
@@ -67,7 +59,6 @@ export const StoreProvider = injectIntl(inject('AppState')(
       permissionStore,
       shareVersionsDs,
       shareLevelDs,
-      AppStore,
       params: {
         projectId,
         id,

@@ -1,11 +1,11 @@
-import React, { Fragment, useCallback, useState, useEffect } from 'react';
+import React, { Fragment } from 'react';
 import { Form, TextField, Select, SelectBox, UrlField, Password, EmailField, Icon, Button } from 'choerodon-ui/pro';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 
 const { Option } = Select;
 
-const Settings = injectIntl(observer(({ record, AppStore, projectId, intl: { formatMessage }, intlPrefix, prefixCls, handleTestHarbor, handleTestChart, isDetailPage }) => (
+const Settings = injectIntl(observer(({ record, appServiceStore, projectId, intl: { formatMessage }, intlPrefix, prefixCls, handleTestHarbor, handleTestChart, isDetailPage }) => (
   <div className="content-settings">
     <div className="content-settings-title">
       <FormattedMessage id={`${intlPrefix}.create.settings`} />

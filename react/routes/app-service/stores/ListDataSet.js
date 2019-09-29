@@ -2,7 +2,6 @@ import { axios } from '@choerodon/master';
 import pick from 'lodash/pick';
 import isEmpty from 'lodash/isEmpty';
 import forEach from 'lodash/forEach';
-import getTablePostData from '../../../utils/getTablePostData';
 
 function handleUpdate({ record, name, value }) {
   switch (name) {
@@ -128,18 +127,10 @@ export default ((intlPrefix, formatMessage, projectId, dataKey) => {
   }
 
   return ({
-    autoQuery: true,
+    autoQuery: false,
     selection: false,
     dataKey,
     transport: {
-      read: ({ data }) => {
-        const postData = getTablePostData(data);
-        return {
-          url: `/devops/v1/projects/${projectId}/app_service/page_by_options`,
-          method: 'post',
-          data: postData,
-        };
-      },
       create: ({ data: [data] }) => {
         const res = pick(data, ['type', 'code', 'name', 'imgUrl', 'templateAppServiceId', 'templateAppServiceVersionId']);
         return ({

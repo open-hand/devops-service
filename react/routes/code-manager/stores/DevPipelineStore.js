@@ -1,14 +1,10 @@
 import { observable, action, computed } from 'mobx';
 import { axios, store, stores } from '@choerodon/master';
 import _ from 'lodash';
-import moment from 'moment';
 import { handlePromptError } from '../../../utils';
-import DeploymentPipelineStore from './DeploymentPipelineStore';  
-
+import DeploymentPipelineStore from './DeploymentPipelineStore';
 
 const { AppState } = stores;
-const START = moment().subtract(6, 'days').format().split('T')[0].replace(/-/g, '/');
-const END = moment().format().split('T')[0].replace(/-/g, '/');
 
 function findDataIndex(collection, value) {
   return collection && value ? collection.findIndex(
@@ -130,13 +126,10 @@ class DevPipelineStore {
 
   /**
    * 查询该项目下的所有应用
-   * @param projectId
-   * @param type
-   * @param apps
    */
   queryAppData = (projectId = AppState.currentMenuType.id, type, refersh, isReloadApp) => {
     // 已经加载过app数据 只更新对应模块的数据， 除非主动刷新 否则不查询app数据,
-    if (!isReloadApp && this.appData.length !== 0 && type !== 'CodeManagerBranch') { 
+    if (!isReloadApp && this.appData.length !== 0 && type !== 'CodeManagerBranch') {
       refersh && refersh();
       return;
     }

@@ -3,6 +3,7 @@ import { TabPage, Content, Permission, Breadcrumb, Action } from '@choerodon/mas
 import { Table, Modal } from 'choerodon-ui/pro';
 import { Button, Tooltip } from 'choerodon-ui';
 import { FormattedMessage } from 'react-intl';
+import { useAppTopStore } from '../stores';
 import { useServiceDetailStore } from './stores';
 import HeaderButtons from './HeaderButtons';
 import ShareRule from './modals/share-rule';
@@ -15,17 +16,19 @@ const modalStyle = {
   width: 380,
 };
 
-const Share = (props) => {
+const Share = () => {
   const {
-    intl: { formatMessage },
+    appServiceStore,
     intlPrefix,
     prefixCls,
+  } = useAppTopStore();
+  const {
+    intl: { formatMessage },
     shareDs,
     shareVersionsDs,
     shareLevelDs,
     params: { id },
     AppState: { currentMenuType: { projectId } },
-    AppStore,
     detailDs,
   } = useServiceDetailStore();
 
@@ -83,7 +86,7 @@ const Share = (props) => {
         formatMessage={formatMessage}
         projectId={projectId}
         appServiceId={id}
-        store={AppStore}
+        store={appServiceStore}
         dataSet={shareDs}
       />,
       drawer: true,

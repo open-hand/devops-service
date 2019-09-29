@@ -4,6 +4,7 @@ import { Header, Permission } from '@choerodon/master';
 import { Button, Tooltip } from 'choerodon-ui';
 import { Modal } from 'choerodon-ui/pro';
 import { observer } from 'mobx-react-lite';
+import { useAppTopStore } from '../stores';
 import { useServiceDetailStore } from './stores';
 import Detail from './modals/detail';
 import CreateForm from '../modals/creat-form';
@@ -18,12 +19,14 @@ const modalStyle = {
 
 const HeaderButtons = observer(({ children }) => {
   const {
-    intl: { formatMessage },
-    AppState: { currentMenuType: { id } },
     intlPrefix,
     prefixCls,
+    appServiceStore,
+  } = useAppTopStore();
+  const {
+    intl: { formatMessage },
+    AppState: { currentMenuType: { id } },
     detailDs,
-    AppStore,
   } = useServiceDetailStore();
 
   const serviceActive = useMemo(() => detailDs.current && detailDs.current.get('active'), [detailDs.current]);
@@ -52,7 +55,7 @@ const HeaderButtons = observer(({ children }) => {
       children: <CreateForm
         dataSet={detailDs}
         record={detailDs.current}
-        AppStore={AppStore}
+        appServiceStore={appServiceStore}
         projectId={id}
         intlPrefix={intlPrefix}
         prefixCls={prefixCls}
@@ -89,7 +92,7 @@ const HeaderButtons = observer(({ children }) => {
   async function handleChangeActive(active) {
     const { current } = detailDs;
     try {
-      if (await AppStore.changeActive(id, current.get('id'), active) !== false) {
+      if (await appServiceStore.changeActive(id, current.get('id'), active) !== false) {
         detailDs.query();
       } else {
         return false;

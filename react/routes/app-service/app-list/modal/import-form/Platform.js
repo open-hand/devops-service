@@ -17,7 +17,7 @@ const modalStyle1 = {
 };
 
 const Platform = injectIntl(observer((props) => {
-  const { tableDs, selectedDs, intl: { formatMessage }, intlPrefix, prefixCls, AppStore, projectId, record: importRecord, checkData } = props;
+  const { tableDs, selectedDs, intl: { formatMessage }, intlPrefix, prefixCls, appServiceStore, projectId, record: importRecord, checkData } = props;
 
   function openModal() {
     Modal.open({
@@ -29,7 +29,7 @@ const Platform = injectIntl(observer((props) => {
         selectedDs={selectedDs}
         intlPrefix={intlPrefix}
         prefixCls={prefixCls}
-        store={AppStore}
+        store={appServiceStore}
         projectId={projectId}
         importRecord={importRecord}
         checkData={checkData}
@@ -78,7 +78,7 @@ const Platform = injectIntl(observer((props) => {
       </Tooltip>
     );
   }
-  
+
   function handleChangeVersion(value) {
     selectedDs.current.set('versionId', value);
   }
