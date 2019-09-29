@@ -699,6 +699,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             try {
                 for (Object data : yaml.loadAll(new FileInputStream(file))) {
                     JSONObject jsonObject = new JSONObject((Map<String, Object>) data);
+                    if (jsonObject.get("kind") == null) {
+                        throw new GitOpsExplainException(GitOpsObjectError.CUSTOM_RESOURCE_KIND_NOT_FOUND.getError(), filePath);
+                    }
                     String type = jsonObject.get("kind").toString();
                     switch (type) {
                         case C7NHELM_RELEASE:
