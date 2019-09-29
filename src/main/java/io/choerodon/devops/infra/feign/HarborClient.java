@@ -25,6 +25,9 @@ public interface HarborClient {
     @POST("api/users")
     Call<Void> insertUser(@Body User harborUser);
 
+    @PUT("api/users/{user_id}/password")
+    Call<Void> changePassword(@Path("user_id") Long userId, @Body Password password);
+
     @POST("api/projects/{project_id}/members")
     Call<Void> setProjectMember(@Path("project_id") Integer projectId, @Body Role role);
 

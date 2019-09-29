@@ -4,7 +4,10 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -606,10 +609,10 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                             } catch (CommonException e) {
                                 //未同步成功的项目不处理
                             }
-                            if (devopsProjectE != null) {
-                                String username = devopsProjectE.getHarborProjectUserName() == null ? String.format("user%s%s", organization.getId(), projectE.getId()) : devopsProjectE.getHarborProjectUserName();
-                                String email = devopsProjectE.getHarborProjectUserEmail() == null ? String.format("%s@harbor.com", username) : devopsProjectE.getHarborProjectUserEmail();
-                                String password = devopsProjectE.getHarborProjectUserPassword() == null ? String.format("%s%s", username,GenerateUUID.generateUUID().substring(0,5)) : devopsProjectE.getHarborProjectUserPassword();
+                            if (devopsProjectE != null && devopsProjectE.getHarborProjectUserPassword() == null) {
+                                String username = String.format("user%s%s", organization.getId(), projectE.getId());
+                                String email = String.format("%s@harbor.com", username);
+                                String password = String.format("%s%s", username, GenerateUUID.generateUUID().substring(0, 5));
                                 User user = new User(username, email, password, username);
                                 //创建用户
                                 Response<Void> result = null;
@@ -623,13 +626,15 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                                         if (result.raw().code() != 201) {
                                             throw new CommonException(result.errorBody().string());
                                         }
-                                    }else {
-                                        Boolean exist = users.body().stream().anyMatch(user1 -> user1.getUsername().equals(username));
-                                        if(!exist) {
+                                    } else {
+                                        Optional<User> userOptional = users.body().stream().filter(user1 -> user1.getUsername().equals(username)).findFirst();
+                                        if (!userOptional.isPresent()) {
                                             result = harborClient.insertUser(user).execute();
                                             if (result.raw().code() != 201) {
                                                 throw new CommonException(result.errorBody().string());
                                             }
+                                        } else {
+                                            harborClient.changePassword(userOptional.get().getUserId(), new Password(password, username + "password")).execute();
                                         }
                                     }
                                     //给项目绑定角色
@@ -656,9 +661,9 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                                             throw new CommonException(result.errorBody().string());
                                         }
                                     }
-                                    if (devopsProjectE.getHarborProjectUserPassword() == null) {
+                                    if (devopsProjectE.getHarborProjectUserPassword() == null || devopsProjectE.getHarborProjectUserPassword().contains("password")) {
                                         devopsProjectE.setHarborProjectUserName(user.getUsername());
-                                        devopsProjectE.setHarborProjectIsPrivate(true);
+                                        devopsProjectE.setHarborProjectIsPrivate(false);
                                         devopsProjectE.setHarborProjectUserPassword(user.getPassword());
                                         devopsProjectE.setHarborProjectUserEmail(user.getEmail());
                                     }
