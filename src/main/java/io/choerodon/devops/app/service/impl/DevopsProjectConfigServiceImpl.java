@@ -24,6 +24,7 @@ import io.choerodon.devops.domain.application.repository.DevopsProjectConfigRepo
 import io.choerodon.devops.domain.application.repository.DevopsProjectRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.domain.application.valueobject.Organization;
+import io.choerodon.devops.infra.common.util.GenerateUUID;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
 import io.choerodon.devops.infra.config.HarborConfigurationProperties;
 import io.choerodon.devops.infra.config.RetrofitHandler;
@@ -165,7 +166,7 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
             DevopsProjectE devopsProjectE = devopsProjectRepository.queryDevopsProject(projectId);
             String username = devopsProjectE.getHarborProjectUserName() == null ? String.format("user%s%s", organization.getId(), projectId) : devopsProjectE.getHarborProjectUserName();
             String email = devopsProjectE.getHarborProjectUserEmail() == null ? String.format("%s@harbor.com", username) : devopsProjectE.getHarborProjectUserEmail();
-            String password = devopsProjectE.getHarborProjectUserPassword() == null ? String.format("%sA", username) : devopsProjectE.getHarborProjectUserPassword();
+            String password = devopsProjectE.getHarborProjectUserPassword() == null ? String.format("%s%s", username, GenerateUUID.generateUUID().substring(0,5)) : devopsProjectE.getHarborProjectUserPassword();
             User user = new User(username, email, password, username);
             //创建用户
             Response<Void> result = null;

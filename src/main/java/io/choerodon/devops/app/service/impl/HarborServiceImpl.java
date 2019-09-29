@@ -16,6 +16,7 @@ import io.choerodon.devops.domain.application.event.HarborPayload;
 import io.choerodon.devops.domain.application.repository.DevopsProjectRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.domain.application.valueobject.Organization;
+import io.choerodon.devops.infra.common.util.GenerateUUID;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
 import io.choerodon.devops.infra.config.HarborConfigurationProperties;
 import io.choerodon.devops.infra.config.RetrofitHandler;
@@ -63,7 +64,7 @@ public class HarborServiceImpl implements HarborService {
             DevopsProjectE devopsProjectE = devopsProjectRepository.queryDevopsProject(harborPayload.getProjectId());
             String username = String.format("user%s%s", organization.getId(), harborPayload.getProjectId());
             String email = String.format("%s@harbor.com", username);
-            String password = String.format("%spassword", username);
+            String password = String.format("%s%s", username, GenerateUUID.generateUUID().substring(0,5));
             User user = new User(username, email, password, username);
             LOGGER.info(harborConfigurationProperties.getParams());
             //创建项目
