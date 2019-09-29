@@ -2,8 +2,19 @@ package io.choerodon.devops.app.task;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import com.google.gson.Gson;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.ConfigVO;
+import io.choerodon.devops.api.vo.sonar.UserToken;
+import io.choerodon.devops.api.vo.sonar.UserTokens;
+import io.choerodon.devops.app.service.DevopsConfigService;
+import io.choerodon.devops.infra.dto.DevopsConfigDTO;
+import io.choerodon.devops.infra.enums.ProjectConfigType;
+import io.choerodon.devops.infra.feign.SonarClient;
+import io.choerodon.devops.infra.handler.RetrofitHandler;
+import io.choerodon.devops.infra.util.RetrofitCallExceptionParse;
 import okhttp3.ResponseBody;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,16 +23,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import retrofit2.Call;
-
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.ConfigVO;
-import io.choerodon.devops.api.vo.sonar.UserToken;
-import io.choerodon.devops.app.service.DevopsConfigService;
-import io.choerodon.devops.infra.dto.DevopsConfigDTO;
-import io.choerodon.devops.infra.enums.ProjectConfigType;
-import io.choerodon.devops.infra.feign.SonarClient;
-import io.choerodon.devops.infra.handler.RetrofitHandler;
-import io.choerodon.devops.infra.util.RetrofitCallExceptionParse;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -101,13 +102,20 @@ public class DevopsCommandRunner implements CommandLineRunner {
                 Map<String, String> map = new HashMap<>();
                 map.put("name", "ci-token");
                 map.put("login", "admin");
-                Call<ResponseBody> responseCall = sonarClient.createToken(map);
-                UserToken userToken = RetrofitCallExceptionParse.executeCall(responseCall, "error.create.sonar.token", UserToken.class);
+                Call<ResponseBody> responseCall = sonarClient.listToken();
+                UserTokens userTokens = RetrofitCallExceptionParse.executeCall(responseCall, "error.sonar.token.get", UserTokens.class);
+                Optional<UserToken> userTokenOptional = userTokens.getUserTokens().stream().filter(userToken -> "ci-token".equals(userToken.getName())).findFirst();
+                if (userTokenOptional.isPresent()) {
+                    map.put("name", "ci-token-new");
+                }
+                Call<ResponseBody> responseCallNew = sonarClient.createToken(map);
+                UserToken  userToken = RetrofitCallExceptionParse.executeCall(responseCallNew, "error.create.sonar.token", UserToken.class);
                 DevopsConfigDTO newConfigDTO = new DevopsConfigDTO();
                 newConfigDTO.setConfig(userToken.getToken());
                 newConfigDTO.setName(SONAR_NAME);
                 newConfigDTO.setType(ProjectConfigType.SONAR.getType());
                 devopsConfigService.baseCreate(newConfigDTO);
+
             } catch (Exception e) {
                 LOGGER.error("======创建SonarQube token失败======={}", e.getMessage());
             }

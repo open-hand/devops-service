@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.feign.fallback;
 
+import java.util.List;
 import java.util.Map;
 
 import io.choerodon.devops.api.vo.sonar.*;
@@ -84,4 +85,11 @@ public class SonarClientFallback implements SonarClient {
     public Call<ResponseBody> createToken(Map<String, String> maps) {
         return null;
     }
+
+    @Override
+    public Call<ResponseBody> listToken() {
+        return null;
+    }
+
+
 }
