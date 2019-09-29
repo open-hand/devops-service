@@ -1,16 +1,15 @@
-import React, { Fragment, useCallback, useState, useEffect } from 'react';
-import { Form, TextField, Select, Upload } from 'choerodon-ui/pro';
+import React, { useEffect } from 'react';
+import { Form, TextField, Select } from 'choerodon-ui/pro';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
-import { Icon, Input, Button, Avatar } from 'choerodon-ui';
+import { Icon, Input } from 'choerodon-ui';
 import { axios } from '@choerodon/master';
 import pick from 'lodash/pick';
 import isEmpty from 'lodash/isEmpty';
 import includes from 'lodash/includes';
-import forEach from 'lodash/forEach';
+import { handlePromptError } from '../../../../utils';
 import Settings from './Settings';
 import Source from './Source';
-import { handlePromptError } from '../../../../utils';
 
 import './index.less';
 
@@ -18,13 +17,23 @@ const { Option } = Select;
 const FILE_TYPE = 'image/png, image/jpeg, image/gif, image/jpg';
 
 const CreateForm = injectIntl(observer((props) => {
-  const { modal, dataSet, record, AppStore, projectId, intl: { formatMessage }, intlPrefix, prefixCls, isDetailPage } = props;
+  const {
+    modal,
+    dataSet,
+    record,
+    appServiceStore,
+    projectId,
+    intl: { formatMessage },
+    intlPrefix,
+    prefixCls,
+    isDetailPage,
+  } = props;
   const isModify = record.status !== 'add';
 
   useEffect(() => {
     async function loadData() {
       try {
-        const res = await AppStore.loadAppById(projectId, record.get('id'));
+        const res = await appServiceStore.loadAppById(projectId, record.get('id'));
         if (handlePromptError(res)) {
           handleRes(res);
         }
@@ -32,6 +41,7 @@ const CreateForm = injectIntl(observer((props) => {
         Choerodon.handleResponseError(e);
       }
     }
+
     if (isModify && !isDetailPage) {
       loadData();
     } else {
@@ -114,7 +124,7 @@ const CreateForm = injectIntl(observer((props) => {
     if (record.get('url') && record.get('userName') && record.get('password') && record.get('email')) {
       try {
         const postData = pick(record.toData(), ['url', 'userName', 'password', 'email', 'project']);
-        const res = await AppStore.checkHarbor(projectId, postData);
+        const res = await appServiceStore.checkHarbor(projectId, postData);
         if (handlePromptError(res, false)) {
           record.set('harborStatus', 'success');
           return true;
@@ -138,7 +148,7 @@ const CreateForm = injectIntl(observer((props) => {
       return false;
     }
     try {
-      const res = await AppStore.checkChart(projectId, record.get('chartUrl'));
+      const res = await appServiceStore.checkChart(projectId, record.get('chartUrl'));
       if (handlePromptError(res, false)) {
         record.set('chartStatus', 'success');
         return true;

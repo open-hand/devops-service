@@ -1,10 +1,9 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { TabPage, Content, Header, Breadcrumb } from '@choerodon/master';
+import { TabPage } from '@choerodon/master';
 import CodeManagerHeader from '../../header';
 import CodeManagerToolBar, { SelectApp } from '../../tool-bar';
 import Branch from '../../contents/branch';
-
 
 import '../index.less';
 

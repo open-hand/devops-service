@@ -1,15 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Fragment } from 'react';
 import { Table, Modal } from 'choerodon-ui/pro';
 import { observer } from 'mobx-react-lite';
 import { FormattedMessage } from 'react-intl';
 import { withRouter, Link } from 'react-router-dom';
 import { Page, Content, Header, Permission, Action, Breadcrumb } from '@choerodon/master';
-import { Button, Spin } from 'choerodon-ui';
+import { Button } from 'choerodon-ui';
 import pick from 'lodash/pick';
 import checkPermission from '../../../utils/checkPermission';
-import Loading from '../../../components/loading';
 import TimePopover from '../../../components/timePopover';
-import EmptyPage from '../../../components/empty-page';
+import EmptyShown, { EmptyLoading } from './EmptyShown';
 import { useAppTopStore } from '../stores';
 import { useAppServiceStore } from './stores';
 import CreateForm from '../modals/creat-form';
@@ -33,8 +32,8 @@ const AppService = withRouter(observer((props) => {
   const {
     intlPrefix,
     prefixCls,
-    listDs,
     listPermissions,
+    appServiceStore,
   } = useAppTopStore();
   const {
     intl: { formatMessage },
@@ -46,8 +45,8 @@ const AppService = withRouter(observer((props) => {
     },
     importDs,
     importTableDs,
-    AppStore,
     selectedDs,
+    listDs,
   } = useAppServiceStore();
 
   const [access, setAccess] = useState(false);
@@ -65,13 +64,18 @@ const AppService = withRouter(observer((props) => {
         const res = await checkPermission(data);
         setAccess(res);
         setLoading(false);
+        // if (res) {
+        //   const { location: { state } } = props;
+        //   if (state && state.openCreate) {
+        //     openModal(listDs.create({ status: 'add' }));
+        //   }
+        // }
       } catch (e) {
         setAccess(false);
       }
     }
     judgeRole();
   }, []);
-
 
   function refresh() {
     listDs.query();
@@ -179,7 +183,7 @@ const AppService = withRouter(observer((props) => {
       children: <CreateForm
         dataSet={listDs}
         record={record}
-        AppStore={AppStore}
+        appServiceStore={appServiceStore}
         projectId={projectId}
         intlPrefix={intlPrefix}
         prefixCls={prefixCls}
@@ -200,7 +204,7 @@ const AppService = withRouter(observer((props) => {
         dataSet={importDs}
         tableDs={importTableDs}
         record={importDs.current}
-        AppStore={AppStore}
+        appServiceStore={appServiceStore}
         projectId={projectId}
         intlPrefix={intlPrefix}
         prefixCls={prefixCls}
@@ -214,7 +218,7 @@ const AppService = withRouter(observer((props) => {
   }
 
   function openEdit() {
-    AppStore.setAppServiceId(listDs.current.get('id'));
+    appServiceStore.setAppServiceId(listDs.current.get('id'));
     openModal(listDs.current);
   }
 
@@ -238,7 +242,7 @@ const AppService = withRouter(observer((props) => {
 
   async function handleChangeActive(active) {
     try {
-      if (await AppStore.changeActive(projectId, listDs.current.get('id'), active)) {
+      if (await appServiceStore.changeActive(projectId, listDs.current.get('id'), active)) {
         refresh();
       } else {
         return false;
@@ -285,38 +289,47 @@ const AppService = withRouter(observer((props) => {
   }
 
   function getContent() {
-    if (loading) return <Loading />;
+    const {
+      getLoading,
+      getHasApp: hasApp,
+    } = appServiceStore;
 
-    return access ? <Table
-      dataSet={listDs}
-      border={false}
-      queryBar="bar"
-      filter={handleTableFilter}
-      className={`${prefixCls}.table`}
-      rowClassName="c7ncd-table-row-font-color"
-    >
-      <Column name="name" renderer={renderName} sortable />
-      <Column renderer={renderActions} width="0.7rem" />
-      <Column name="code" sortable />
-      <Column name="type" renderer={renderType} />
-      <Column name="repoUrl" renderer={renderUrl} />
-      <Column name="creationDate" renderer={renderDate} />
-      <Column name="active" renderer={renderStatus} width="0.7rem" align="left" />
-    </Table> : <Spin spinning={listDs.status === 'loading'}>
-      <EmptyPage
-        title={formatMessage({ id: 'empty.title.prohibited' })}
-        describe={formatMessage({ id: 'empty.tips.app.member' })}
-      />
-    </Spin>;
+    if (getLoading || loading) return <EmptyLoading formatMessage={formatMessage} />;
+
+    let content;
+
+    if (hasApp || access) {
+      content = <Fragment>
+        {getHeader()}
+        <Breadcrumb />
+        <Content className={`${prefixCls}-content`}>
+          <Table
+            dataSet={listDs}
+            border={false}
+            queryBar="bar"
+            filter={handleTableFilter}
+            className={`${prefixCls}.table`}
+            rowClassName="c7ncd-table-row-font-color"
+          >
+            <Column name="name" renderer={renderName} sortable />
+            <Column renderer={renderActions} width="0.7rem" />
+            <Column name="code" sortable />
+            <Column name="type" renderer={renderType} />
+            <Column name="repoUrl" renderer={renderUrl} />
+            <Column name="creationDate" renderer={renderDate} />
+            <Column name="active" renderer={renderStatus} width="0.7rem" align="left" />
+          </Table>
+        </Content>
+      </Fragment>;
+    } else {
+      content = <EmptyShown />;
+    }
+    return content;
   }
 
   return (
     <Page service={listPermissions}>
-      {getHeader()}
-      <Breadcrumb />
-      <Content className={`${prefixCls}-content`}>
-        {getContent()}
-      </Content>
+      {getContent()}
     </Page>
   );
 }));

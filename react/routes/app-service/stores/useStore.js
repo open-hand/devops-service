@@ -2,6 +2,7 @@ import { useLocalStore } from 'mobx-react-lite';
 import { axios } from '@choerodon/master';
 import map from 'lodash/map';
 import { handlePromptError } from '../../../utils';
+import getTablePostData from '../../../utils/getTablePostData';
 
 export default function useStore() {
   return useLocalStore(() => ({
@@ -137,6 +138,37 @@ export default function useStore() {
           this.setAllProject(res);
         }
       } catch (e) {
+        Choerodon.handleResponseError(e);
+      }
+    },
+
+    loading: true,
+    setLoading(data) {
+      this.loading = data;
+    },
+    get getLoading() {
+      return this.loading;
+    },
+    hasApp: false,
+    setHasApp(data) {
+      this.hasApp = data;
+    },
+    get getHasApp() {
+      return this.hasApp;
+    },
+
+    async checkHasApp(projectId) {
+      this.setLoading(true);
+      const postData = getTablePostData();
+      try {
+        const res = await axios.post(`/devops/v1/projects/${projectId}/app_service/page_by_options`, JSON.stringify(postData));
+        if (res && !res.failed) {
+          const hasData = res.list && res.list.length;
+          this.setHasApp(hasData);
+        }
+        this.setLoading(false);
+      } catch (e) {
+        this.setLoading(false);
         Choerodon.handleResponseError(e);
       }
     },
