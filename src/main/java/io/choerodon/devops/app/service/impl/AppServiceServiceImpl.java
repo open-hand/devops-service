@@ -2304,6 +2304,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             List<AppServiceDTO> organizationAppServices = appServiceMapper.queryOrganizationShareApps(projectIds, null, null);
             List<AppServiceDTO> projectAppServices = appServiceMapper.listShareProjectApps(projectId, null, null);
             organizationAppServices.addAll(projectAppServices);
+            if(!CollectionUtils.isEmpty(organizationAppServices)) {
             // 去重
             ArrayList<AppServiceDTO> collect = organizationAppServices.stream().collect(collectingAndThen(
                     toCollection(() -> new TreeSet<>(comparing(AppServiceDTO::getId))), ArrayList::new));
@@ -2317,6 +2318,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                     .filter(v -> !CollectionUtils.isEmpty(versionMap.get(v.getId())))
                     .map(AppServiceDTO::getProjectId).collect(Collectors.toSet());
             projectDTOS = baseServiceClientOperator.queryProjectsByIds(projectsSet);
+            }
         } else {
             ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
             List<Long> mktAppServiceIds = baseServiceClientOperator.listServicesForMarket(projectDTO.getOrganizationId(), false);
