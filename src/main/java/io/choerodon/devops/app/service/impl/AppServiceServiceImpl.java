@@ -676,6 +676,10 @@ public class AppServiceServiceImpl implements AppServiceService {
             DevopsConfigDTO sonarConfig = devopsConfigService.baseQueryByName(null, SONAR_NAME);
             if (sonarConfig != null) {
                 params.put("{{ SONAR_LOGIN }}", sonarConfig.getConfig());
+                params.put("{{ SONAR_URL }}", sonarConfig.getConfig());
+            }else {
+                params.put("{{ SONAR_LOGIN }}", "");
+                params.put("{{ SONAR_URL }}", "");
             }
             params.put("{{ GROUP_NAME }}", groupName);
             params.put("{{ PROJECT_NAME }}", appServiceDTO.getCode());
