@@ -180,7 +180,7 @@ export default class NotificationSidebar extends Component {
       <Sidebar
         destroyOnClose
         cancelText={<FormattedMessage id="cancel" />}
-        okText={<FormattedMessage id={type} />}
+        okText={<FormattedMessage id={type === 'create' ? 'create' : 'save'} />}
         title={<FormattedMessage id={`notification.sidebar.${type}`} />}
         visible={visible}
         onOk={this.handleSubmit}

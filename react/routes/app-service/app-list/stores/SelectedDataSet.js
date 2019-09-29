@@ -1,23 +1,28 @@
 import { axios } from '@choerodon/master';
 
-function handleUpdate({ dataSet, record, name, value, oldValue }) {
-  if (name === 'name' || name === 'code') {
-    const field = `${name}Failed`;
-    const records = dataSet.filter((item) => item !== record && item.get(name) === value);
-    const oldValueRecords = dataSet.filter((item) => item !== record && item.get(name) === oldValue);
-    if (records.length) {
-      records[0].set(field, true);
-      record.set(field, true);
-    } else {
-      record.set(field, false);
-    }
-    if (oldValueRecords && oldValueRecords.length === 1 && value !== oldValue) {
-      oldValueRecords[0].set(field, false);
+export default ((intlPrefix, formatMessage, projectId) => {
+  function handleUpdate({ dataSet, record, name, value, oldValue }) {
+    if (name === 'name' || name === 'code') {
+      const field = `${name}Failed`;
+      const records = dataSet.filter((item) => item !== record && item.get(name) === value);
+      const oldValueRecords = dataSet.filter((item) => item !== record && item.get(name) === oldValue);
+      if (records.length) {
+        records[0].set(field, true);
+        record.set(field, true);
+      } else {
+        record.set(field, false);
+      }
+      if (oldValueRecords && oldValueRecords.length === 1 && value !== oldValue) {
+        oldValueRecords[0].set(field, false);
+        if (name === 'name') {
+          checkName(oldValue, name, oldValueRecords[0]);
+        } else {
+          checkCode(oldValue, name, oldValueRecords[0]);
+        }
+      }
     }
   }
-}
 
-export default ((intlPrefix, formatMessage, projectId) => {
   async function checkCode(value, name, record) {
     const pa = /^[a-z]([-a-z0-9]*[a-z0-9])?$/;
     if (value && pa.test(value)) {

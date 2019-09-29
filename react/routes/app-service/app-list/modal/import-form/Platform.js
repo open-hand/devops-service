@@ -85,6 +85,7 @@ const Platform = injectIntl(observer((props) => {
 
   function handleDelete() {
     selectedDs.remove(selectedDs.current);
+    selectedDs.length && checkData();
   }
 
   return (

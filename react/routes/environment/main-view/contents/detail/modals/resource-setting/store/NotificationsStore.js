@@ -159,8 +159,10 @@ class NotificationsStore {
     .then((data) => {
       if (handlePromptError(data)) {
         this.setSingleData(data);
+        return data;
+      } else {
+        return false;
       }
-      return false;
     });
 
   /**
