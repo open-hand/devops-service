@@ -2066,7 +2066,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             if (!CollectionUtils.isEmpty(appServiceVersionDTOS)) {
                 AppServiceGroupInfoVO appServiceGroupInfoVO = dtoToGroupInfoVO(appServiceDTO);
                 ProjectDTO projectDTO = new ProjectDTO();
-                if (share != null) {
+                if (share) {
                     projectDTO = finalProjectDTOMap.get(appServiceDTO.getProjectId());
                     appServiceGroupInfoVO.setShare(true);
                 } else {
