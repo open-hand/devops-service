@@ -189,7 +189,7 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
             IamUserDTO iamUserDTO = userMap.get(userId);
             if(!ObjectUtils.isEmpty(iamUserDTO)){
                 String loginName = iamUserDTO.getLdap() ? iamUserDTO.getLoginName() : iamUserDTO.getEmail() ;
-                String name = iamUserDTO.getRealName() + loginName;
+                String name = iamUserDTO.getRealName() + "("+loginName+")";
                 String imgUrl = iamUserDTO.getImageUrl();
                 // 遍历list，将每个用户的所有commit date取出放入List<Date>，然后保存为DTO
                 List<Date> date = new ArrayList<>();
