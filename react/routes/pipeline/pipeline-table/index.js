@@ -160,7 +160,7 @@ export default class Pipeline extends Component {
       triggerType
     );
   };
- 
+
 
   closeRemove = () => {
     this.setState({ deleteId: null, deleteName: '', showDelete: false });
@@ -565,60 +565,62 @@ export default class Pipeline extends Component {
       </Header>
       <Breadcrumb />
       <Content className="c7ncd-pipeline-content">
-        <Select
-          mode="multiple"
-          label={formatMessage({ id: 'pipeline.search' })}
-          allowClear
-          className="c7ncd-pipeline-search"
-          onChange={(value) => this.handleSearch(value, 'searchData')}
-          choiceRemove={false}
-        >
-          {
-            _.map(FAST_SEARCH, (item) => (
+        <div className="c7ncd-pipeline-selector">
+          <Select
+            mode="multiple"
+            label={formatMessage({ id: 'pipeline.search' })}
+            allowClear
+            className="c7ncd-pipeline-search"
+            onChange={(value) => this.handleSearch(value, 'searchData')}
+            choiceRemove={false}
+          >
+            {
+              _.map(FAST_SEARCH, (item) => (
+                <Option
+                  key={item}
+                  value={item}
+                >
+                  {formatMessage({ id: `pipeline.search.${item}` })}
+                </Option>
+              ))
+            }
+          </Select>
+          <Select
+            className="c7ncd-pipeline-search-one"
+            label={formatMessage({ id: 'pipeline.deploy.env' })}
+            onChange={(value) => this.setState({ envId: value }, () => this.loadData())}
+            allowClear
+            choiceRemove={false}
+            filterOption={(input, option) => option.props.children
+              .toLowerCase()
+              .indexOf(input.toLowerCase()) >= 0}
+          >
+            {_.map(getEnvData, ({ name: envName, id }) => (
               <Option
-                key={item}
-                value={item}
+                key={id}
+                value={id}
               >
-                {formatMessage({ id: `pipeline.search.${item}` })}
+                {envName}
               </Option>
-            ))
-          }
-        </Select>
-        <Select
-          className="c7ncd-pipeline-search-one"
-          label={formatMessage({ id: 'pipeline.deploy.env' })}
-          onChange={(value) => this.setState({ envId: value }, () => this.loadData())}
-          allowClear
-          choiceRemove={false}
-          filterOption={(input, option) => option.props.children
-            .toLowerCase()
-            .indexOf(input.toLowerCase()) >= 0}
-        >
-          {_.map(getEnvData, ({ name: envName, id }) => (
-            <Option
-              key={id}
-              value={id}
-            >
-              {envName}
-            </Option>
-          ))}
-        </Select>
-        <Select
-          className="c7ncd-pipeline-search-one"
-          label={formatMessage({ id: 'pipeline.trigger' })}
-          onChange={(value) => this.setState({ triggerType: value }, () => this.loadData())}
-          allowClear
-          choiceRemove={false}
-        >
-          {_.map(TriggerType, (value) => (
-            <Option
-              key={value}
-              value={value}
-            >
-              {formatMessage({ id: `c7ncd.deploy.trigger.${value}` })}
-            </Option>
-          ))}
-        </Select>
+            ))}
+          </Select>
+          <Select
+            className="c7ncd-pipeline-search-one"
+            label={formatMessage({ id: 'pipeline.trigger' })}
+            onChange={(value) => this.setState({ triggerType: value }, () => this.loadData())}
+            allowClear
+            choiceRemove={false}
+          >
+            {_.map(TriggerType, (value) => (
+              <Option
+                key={value}
+                value={value}
+              >
+                {formatMessage({ id: `c7ncd.deploy.trigger.${value}` })}
+              </Option>
+            ))}
+          </Select>
+        </div>
         <Table
           filterBar={false}
           loading={getLoading || executeLoading}
