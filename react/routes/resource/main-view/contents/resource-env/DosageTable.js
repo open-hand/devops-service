@@ -69,16 +69,18 @@ export default observer(() => {
 
   return (
     <div className={`${prefixCls}-re-card`}>
-      <div className={`${prefixCls}-re-card-title`}>{formatMessage({ id: `${intlPrefix}.resource.dosage` })}</div>
-      <Select
-        value={sortType}
-        onChange={changeSortType}
-        clearButton={false}
-        className={`${prefixCls}-re-select`}
-      >
-        <Option value="memory">{formatMessage({ id: `${intlPrefix}.sort.memory` })}</Option>
-        <Option value="cpu">{formatMessage({ id: `${intlPrefix}.sort.cpu` })}</Option>
-      </Select>
+      <div className={`${prefixCls}-re-card-table-title`}>
+        <div className={`${prefixCls}-re-card-title`}>{formatMessage({ id: `${intlPrefix}.resource.dosage` })}</div>
+        <Select
+          value={sortType}
+          onChange={changeSortType}
+          clearButton={false}
+          className={`${prefixCls}-re-select`}
+        >
+          <Option value="memory">{formatMessage({ id: `${intlPrefix}.sort.memory` })}</Option>
+          <Option value="cpu">{formatMessage({ id: `${intlPrefix}.sort.cpu` })}</Option>
+        </Select>
+      </div>
       <Table dataSet={tableDs} queryBar="none">
         <Column name="name" renderer={renderName} />
         <Column name="instanceName" width="1.5rem" />

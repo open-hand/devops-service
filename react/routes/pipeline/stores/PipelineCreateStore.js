@@ -244,7 +244,7 @@ class PipelineCreateStore {
 
     const newTaskList = _.filter(
       this.taskList[stage],
-      (item) => item.empty !== id,
+      (item) => item.index !== id,
     );
 
     if (isHead && newTaskList[0]) {

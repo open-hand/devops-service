@@ -174,7 +174,7 @@ export default class FormView extends Component {
    */
   handleSave = (row) => {
     const newData = [...this.state.dataSource];
-    const index = _.findIndex(newData, ['index', row.empty]);
+    const index = _.findIndex(newData, ['index', row.index]);
 
     newData.splice(index, 1, {
       ...newData[index],
@@ -490,7 +490,7 @@ export default class FormView extends Component {
           className="c7n-editable-table"
           dataSource={dataSource}
           columns={columns}
-          rowKey={record => record.empty}
+          rowKey={record => record.index}
         />
         <Button icon="add" onClick={this.handleAdd} type="primary">
           <FormattedMessage id={`${intlPrefix}.${title}.add`} />

@@ -1,14 +1,18 @@
 import { axios } from '@choerodon/master';
 
-function handleUpdate({ dataSet, record, name, value }) {
+function handleUpdate({ dataSet, record, name, value, oldValue }) {
   if (name === 'name' || name === 'code') {
     const field = `${name}Failed`;
     const records = dataSet.filter((item) => item !== record && item.get(name) === value);
+    const oldValueRecords = dataSet.filter((item) => item !== record && item.get(name) === oldValue);
     if (records.length) {
       records[0].set(field, true);
       record.set(field, true);
     } else {
       record.set(field, false);
+    }
+    if (oldValueRecords && oldValueRecords.length === 1 && value !== oldValue) {
+      oldValueRecords[0].set(field, false);
     }
   }
 }

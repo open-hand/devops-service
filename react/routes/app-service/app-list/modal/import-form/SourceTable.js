@@ -68,7 +68,7 @@ const SourceTable = injectIntl(observer(({ tableDs, selectedDs, store, projectId
     <div>
       <Form columns={3}>
         <Select
-          label={formatMessage({ id: `${intlPrefix}.project` })}
+          label={formatMessage({ id: `${intlPrefix}.belong.${importRecord.get('platformType')}` })}
           onChange={handleSelectProject}
         >
           {options}
@@ -86,7 +86,7 @@ const SourceTable = injectIntl(observer(({ tableDs, selectedDs, store, projectId
       >
         <Column name="name" />
         <Column name="code" />
-        <Column name="projectName" />
+        <Column name="projectName" header={formatMessage({ id: `${intlPrefix}.belong.${importRecord.get('platformType')}` })} />
       </Table>
     </div>
   );

@@ -107,7 +107,7 @@ const Platform = injectIntl(observer((props) => {
         <Column name="name" editor renderer={renderNameOrCode} />
         <Column name="code" editor renderer={renderNameOrCode} />
         <Column name="versions" renderer={renderVersion} />
-        <Column name="projectName" width="1.5rem" />
+        <Column name="projectName" width="1.5rem" header={formatMessage({ id: `${intlPrefix}.belong.${importRecord.get('platformType')}` })} />
         <Column renderer={renderAction} width="0.7rem" />
       </Table>
     </div>
