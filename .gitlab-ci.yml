@@ -81,6 +81,7 @@ release:
     cat .auto_devops.sh
     exit 1
   fi
+  cat .auto_devops.sh
   source .auto_devops.sh
 
 before_script:
