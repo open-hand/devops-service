@@ -15,9 +15,9 @@ export DOCKER_PASSWORD={{ DOCKER_PASSWORD }}
 # 获取的组织编码-项目编码(harbor Project地址)
 export GROUP_NAME={{ GROUP_NAME }}
 # SONARQUBE的地址
-export SONAR_URL= {{ SONAR_URL }}
+export SONAR_URL={{ SONAR_URL }}
 # SONARQUBE的token
-export SONAR_LOGIN= {{ SONAR_LOGIN }}
+export SONAR_LOGIN={{ SONAR_LOGIN }}
 # 设置docekr认证配置文件目录
 export DOCKER_CONFIG=$PWD/.choerodon/.docker
 
