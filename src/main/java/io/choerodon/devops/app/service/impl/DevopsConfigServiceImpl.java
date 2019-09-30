@@ -9,6 +9,7 @@ import java.util.Map;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+import io.choerodon.devops.infra.util.GenerateUUID;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -174,7 +175,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
             DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
             String username = devopsProjectDTO.getHarborProjectUserName() == null ? String.format(USER_PREFIX, organizationDTO.getId(), projectId) : devopsProjectDTO.getHarborProjectUserName();
             String email = devopsProjectDTO.getHarborProjectUserEmail() == null ? String.format("%s@choerodon.com", username) : devopsProjectDTO.getHarborProjectUserEmail();
-            String password = devopsProjectDTO.getHarborProjectUserPassword() == null ? String.format("%sAAA", username) : devopsProjectDTO.getHarborProjectUserPassword();
+            String password = devopsProjectDTO.getHarborProjectUserPassword() == null ? String.format("%s%s", username, GenerateUUID.generateUUID().substring(0,5)) : devopsProjectDTO.getHarborProjectUserPassword();
             User user = new User(username, email, password, username);
             //创建用户
             Response<Void> result = null;

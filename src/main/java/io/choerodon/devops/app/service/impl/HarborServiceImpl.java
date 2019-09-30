@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.gson.Gson;
+import io.choerodon.devops.infra.util.GenerateUUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -107,7 +108,7 @@ public class HarborServiceImpl implements HarborService {
                 DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
                 String username = String.format("user%s%s", organizationDTO.getId(), projectId);
                 String email = String.format("%s@harbor.com", username);
-                String password = String.format("%spassword", username);
+                String password = String.format("%s%s", username, GenerateUUID.generateUUID().substring(0,5));
                 User user = new User(username, email, password, username);
                 //创建用户
                 try {
