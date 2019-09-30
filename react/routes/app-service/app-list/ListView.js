@@ -45,13 +45,17 @@ const ListView = withRouter(observer((props) => {
     selectedDs,
     listDs,
   } = useAppServiceStore();
+  const [isInit, setIsInit] = useState(true);
 
-  // useEffect(() => {
-  //   const { location: { state } } = props;
-  //   if (state && state.openCreate) {
-  //     openModal(listDs.create());
-  //   }
-  // }, []);
+  useEffect(() => {
+    if (isInit && listDs.status === 'ready') {
+      const { location: { state } } = props;
+      if (state && state.openCreate) {
+        openModal(listDs.create());
+      }
+      setIsInit(false);
+    }
+  }, [listDs.status]);
 
   function refresh() {
     listDs.query();
