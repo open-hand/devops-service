@@ -62,6 +62,7 @@ const EnvModals = observer(() => {
     configDs,
     configFormDs,
     checkEnvExist,
+    baseDs,
   } = useDetailStore();
 
   function refresh() {
@@ -83,6 +84,7 @@ const EnvModals = observer(() => {
           default:
         }
         treeDs.query();
+        baseDs.query();
       }
     });
   }

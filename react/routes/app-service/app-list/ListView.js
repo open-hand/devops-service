@@ -48,6 +48,8 @@ const ListView = withRouter(observer((props) => {
   const [isInit, setIsInit] = useState(true);
 
   useEffect(() => {
+    // 确定dataset加载完毕后才打开创建框
+    // 否则会造成dataset实例丢失
     if (isInit && listDs.status === 'ready') {
       const { location: { state } } = props;
       if (state && state.openCreate) {

@@ -30,5 +30,12 @@ export default function useStore() {
     deleteGroup(projectId, groupId) {
       return axios.delete(`/devops/v1/projects/${projectId}/env_groups/${groupId}`);
     },
+    upTarget: null,
+    setUpTarget(data) {
+      this.upTarget = data;
+    },
+    get getUpTarget() {
+      return this.upTarget;
+    },
   }));
 }

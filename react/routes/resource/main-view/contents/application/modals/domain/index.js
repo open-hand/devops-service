@@ -3,7 +3,6 @@ import { observer, inject } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import { Modal } from 'choerodon-ui';
 import { injectIntl } from 'react-intl';
-import { Content } from '@choerodon/master';
 import _ from 'lodash';
 import DomainForm from '../../../../../../../components/domain-form';
 import InterceptMask from '../../../../../../../components/intercept-mask';
@@ -128,7 +127,6 @@ class CreateDomain extends Component {
 
   render() {
     const {
-      AppState: { currentMenuType: { name: menuName } },
       store,
       intl: { formatMessage },
       type,
@@ -136,11 +134,7 @@ class CreateDomain extends Component {
       envId,
       id,
     } = this.props;
-    const {
-      submitting,
-    } = this.state;
-
-    const { name } = store.getSingleData || {};
+    const { submitting } = this.state;
 
     return (
       <div className="c7n-region">

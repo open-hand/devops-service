@@ -428,7 +428,6 @@ export default class Index extends Component {
       type,
       DomainStore,
       envId,
-      isDeployPage,
     } = this.props;
     const {
       portInNetwork,
@@ -463,6 +462,7 @@ export default class Index extends Component {
         hasPathError = false;
       }
     });
+
     // 生成路径-网络-端口的表单组
     const pathItem = _.map(paths, (k, index) => {
       let delNetOption = null;
