@@ -21,7 +21,6 @@ configure({ enforceActions: 'never' });
 
 const { AppState } = stores;
 const { Option } = Select;
-const HEIGHT = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
 
 const COLOR = ['50,198,222', '116,59,231', '87,170,248', '255,177,0', '237,74,103'];
 const LENGEND = [
@@ -65,6 +64,7 @@ class DeployDuration extends Component {
   @action
   handleEnvSelect = (id) => {
     this.envId = id;
+    this.appIds = [];
     this.loadAppByEnv(id);
     this.loadCharts();
   };
@@ -406,7 +406,7 @@ class DeployDuration extends Component {
         <Select
           showCheckAll={false}
           notFoundContent={formatMessage({ id: 'report.no.app.tips' })}
-          value={this.appIds.length && this.appIds.slice()}
+          value={this.appIds.length ? this.appIds.slice() : []}
           label={formatMessage({ id: 'deploy.appName' })}
           className={`c7n-select_400 margin-more ${this.appIds.length ? 'c7n-select-multi-top' : ''}`}
           mode="multiple"
