@@ -1,11 +1,10 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import { observer, inject } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { Button, Tooltip, Radio, Input, Form, Select, Icon } from 'choerodon-ui';
 import _ from 'lodash';
-import PropTypes from 'prop-types';
-import classnames from 'classnames';
+import { Button, Tooltip, Radio, Input, Form, Select } from 'choerodon-ui';
 
 import '../../routes/main.less';
 import './index.less';
@@ -24,56 +23,39 @@ const formItemLayout = {
   },
 };
 
-@Form.create({})
 @injectIntl
 @withRouter
 @inject('AppState')
 @observer
-export default class Index extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      deletedService: {},
-      portInNetwork: {},
-      protocol: 'normal',
-      pathCountChange: false,
-      singleData: {},
-    };
-    this.pathKeys = 1;
-  }
+export default class DomainForm extends Component {
+  state = {
+    deletedService: {},
+    portInNetwork: {},
+    singleData: {},
+    protocol: 'normal',
+    pathCountChange: false,
+  };
+
+  pathKeys = 1;
 
   componentDidMount() {
     const {
-      intl: { formatMessage },
-      AppState: { currentMenuType: { projectId } },
       type,
-      form: { setFieldsValue, setFields },
       ingressId,
       DomainStore,
+      intl: { formatMessage },
+      AppState: { currentMenuType: { projectId } },
+      form: { setFieldsValue, setFields },
     } = this.props;
     if (ingressId && type === 'edit') {
       DomainStore.loadDataById(projectId, ingressId)
         .then((data) => {
-          const {
-            pathList,
-            envId: domainEnv,
-            certId,
-            certName,
-            domain,
-          } = data;
-          const deletedService = [];
-          _.forEach(pathList, (item, index) => {
-            const { serviceStatus, serviceName, serviceId } = item;
-            if (serviceStatus !== 'running') {
-              deletedService[index] = {
-                name: serviceName,
-                id: serviceId,
-                status: serviceStatus,
-              };
-            } else {
-              deletedService[index] = {};
-            }
-          });
+          const { pathList, envId: domainEnv, certId, certName, domain } = data;
+          const deletedService = _.map(pathList, ({ serviceStatus, serviceName, serviceId }) => (serviceStatus !== 'running' ? {
+            name: serviceName,
+            id: serviceId,
+            status: serviceStatus,
+          } : {}));
           this.setState({
             deletedService,
             protocol: certId ? 'secret' : 'normal',
@@ -103,7 +85,8 @@ export default class Index extends Component {
    * 确保 新添加 的一组路径已经渲染在页面上
    */
   componentDidUpdate() {
-    if (this.state.pathCountChange) {
+    const { pathCountChange } = this.state;
+    if (pathCountChange) {
       this.triggerPathCheck();
     }
   }
@@ -293,16 +276,12 @@ export default class Index extends Component {
    * 添加路径
    */
   addPath = () => {
-    const {
-      form: { getFieldValue, setFieldsValue },
-    } = this.props;
+    const { form: { getFieldValue, setFieldsValue } } = this.props;
     const keys = getFieldValue('paths');
     const uuid = this.pathKeys;
     const nextKeys = _.concat(keys, uuid);
     this.pathKeys = uuid + 1;
-    setFieldsValue({
-      paths: nextKeys,
-    });
+    setFieldsValue({ paths: nextKeys });
     this.setState({ pathCountChange: true });
   };
 
@@ -311,16 +290,10 @@ export default class Index extends Component {
    * @param k
    */
   removePath = (k) => {
-    const {
-      form: { getFieldValue, setFieldsValue },
-    } = this.props;
+    const { form: { getFieldValue, setFieldsValue } } = this.props;
     const keys = getFieldValue('paths');
-    if (keys.length === 1) {
-      return;
-    }
-    setFieldsValue({
-      paths: _.filter(keys, (key) => key !== k),
-    });
+    if (keys.length === 1) return;
+    setFieldsValue({ paths: _.filter(keys, (key) => key !== k) });
     this.setState({ pathCountChange: true });
   };
 
@@ -328,12 +301,9 @@ export default class Index extends Component {
    * 触发路径检查
    */
   triggerPathCheck = () => {
-    const {
-      form: { getFieldValue, validateFields },
-    } = this.props;
+    const { form: { getFieldValue, validateFields } } = this.props;
     const paths = getFieldValue('paths');
-    const fields = [];
-    _.forEach(paths, (item) => fields.push(`path[${item}]`));
+    const fields = _.map(paths, (item) => (`path[${item}]`));
     validateFields(fields, { force: true });
     this.setState({ pathCountChange: false });
   };
@@ -345,16 +315,12 @@ export default class Index extends Component {
    * @param id
    */
   handleSelectNetwork = (data, index, id) => {
-    const {
-      form: { setFieldsValue },
-    } = this.props;
+    const { form: { setFieldsValue } } = this.props;
     const { portInNetwork } = this.state;
     const portArr = [];
     _.forEach(data, (item) => {
       if (id === item.id) {
-        const {
-          config: { ports },
-        } = item;
+        const { config: { ports } } = item;
         _.forEach(ports, (p) => portArr.push(p.port));
       }
     });
@@ -371,13 +337,9 @@ export default class Index extends Component {
    * @param e
    */
   handleTypeChange = (e) => {
-    const {
-      form: { getFieldValue, getFieldError, setFieldsValue },
-    } = this.props;
-    const { singleData } = this.state;
-
     const protocol = e.target.value;
-
+    const { form: { getFieldValue, getFieldError, setFieldsValue } } = this.props;
+    const { singleData } = this.state;
     const domain = getFieldValue('domain');
     if (domain && !getFieldError('domain')) {
       this.loadCertByDomain(domain, protocol);
@@ -404,14 +366,11 @@ export default class Index extends Component {
       envId,
     } = this.props;
     const { protocol } = this.state;
-
     const value = e.target ? e.target.value : e;
     const type = p || protocol;
-
     if (isModifiedField('domain')) {
       resetFields('certId');
     }
-
     if (type === 'secret' && envId) {
       DomainStore.loadCertByEnv(projectId, envId, value);
     }
@@ -419,11 +378,7 @@ export default class Index extends Component {
 
   render() {
     const {
-      form: {
-        getFieldDecorator,
-        getFieldValue,
-        getFieldsError,
-      },
+      form: { getFieldDecorator, getFieldValue, getFieldsError },
       intl: { formatMessage },
       type,
       DomainStore,
@@ -523,7 +478,10 @@ export default class Index extends Component {
             })(
               <Input
                 onChange={() => this.setState({ pathCountChange: true })}
-                disabled={!getFieldValue('domain')}
+                // 编辑时，由于form是从父组件传进来的
+                // 进行禁用判断时表单中还未注册 domain 的表单，所以初次进入时路径无法进行操作
+                // 使用请求数据中的 domain 数据辅助进行判断
+                disabled={!getFieldValue('domain') && !domain}
                 maxLength={30}
                 label={formatMessage({ id: 'domain.column.path' })}
                 size="default"
@@ -602,12 +560,11 @@ export default class Index extends Component {
           </FormItem>
           {paths.length > 1 && (
             <Button
+              icon="delete"
               shape="circle"
               className="c7n-domain-icon-delete"
               onClick={this.removePath.bind(this, k)}
-            >
-              <i className="icon icon-delete" />
-            </Button>
+            />
           )}
         </div>
       );
@@ -752,13 +709,13 @@ export default class Index extends Component {
   }
 }
 
-Index.propTypes = {
+DomainForm.propTypes = {
   envId: PropTypes.number,
   ingressId: PropTypes.number,
   type: PropTypes.string,
   isInstancePage: PropTypes.bool,
 };
 
-Index.defaultProps = {
+DomainForm.defaultProps = {
   type: 'create',
 };
