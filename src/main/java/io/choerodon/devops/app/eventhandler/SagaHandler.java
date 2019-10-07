@@ -47,7 +47,9 @@ public class SagaHandler {
 
 
     private void loggerInfo(Object o) {
-        LOGGER.info("data: {}", JSONObject.toJSONString(o));
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("data: {}", JSONObject.toJSONString(o));
+        }
     }
 
     /**
