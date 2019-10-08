@@ -493,7 +493,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
      */
     @Override
     @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_INSTANCE,
-            description = "Devops创建实例", inputSchema = "{}")
+            description = "Devops创建实例", inputSchemaClass = InstanceSagaPayload.class)
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
     public AppServiceInstanceVO createOrUpdate(AppServiceDeployVO appServiceDeployVO, boolean isFromPipeline) {
 
@@ -503,7 +503,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         //校验环境相关信息
         devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
-//
+
         //校验values
         FileUtil.checkYamlFormat(appServiceDeployVO.getValues());
 
@@ -585,6 +585,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                             .withPayloadAndSerialize(instanceSagaPayload)
                             .withRefId(devopsEnvironmentDTO.getId().toString()));
 
+            // 0.19版本暂时不支持，后续优化
             //如果部署时，也指定了创建网络和域名，目前的实现方式会导致创文件同步问题，后续更改逻辑
 //            if (appServiceDeployVO.getDevopsServiceReqVO() != null) {
 //                appServiceDeployVO.getDevopsServiceReqVO().setAppServiceId(applicationDTO.getId());

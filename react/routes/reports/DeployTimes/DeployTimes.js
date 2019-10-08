@@ -23,7 +23,6 @@ configure({ enforceActions: 'never' });
 
 const { AppState } = stores;
 const { Option } = Select;
-const HEIGHT = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
 
 @observer
 class DeployTimes extends Component {
@@ -413,7 +412,6 @@ class DeployTimes extends Component {
 
   render() {
     const { intl: { formatMessage }, history, location: { search }, ReportsStore } = this.props;
-    const { id, name, type, organizationId } = AppState.currentMenuType;
     const echartsLoading = ReportsStore.getEchartsLoading;
     const envData = ReportsStore.getEnvCard;
     const envs = _.filter(envData, ['permission', true]);

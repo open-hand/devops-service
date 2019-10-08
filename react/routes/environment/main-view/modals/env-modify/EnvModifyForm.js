@@ -11,11 +11,14 @@ function EnvModifyForm() {
     groupOptionDs,
     modal,
     refresh,
+    envStore,
+    envId,
   } = useFormStore();
 
   async function handleSubmit() {
     try {
       if ((await formDs.submit()) !== false) {
+        envStore.setUpTarget(envId);
         refresh();
       } else {
         return false;

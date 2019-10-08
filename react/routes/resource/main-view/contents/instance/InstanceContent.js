@@ -157,7 +157,7 @@ const InstanceContent = observer(() => {
     return <InstanceTitle
       name={name}
       podRunningCount={podRunningCount}
-      podUnlinkCount={podRunningCount}
+      podUnlinkCount={podUnlinkCount}
     />;
   }
 

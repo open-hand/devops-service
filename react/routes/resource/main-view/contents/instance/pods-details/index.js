@@ -30,7 +30,21 @@ const PodDetail = memo(() => {
   const [shellVisible, setShellVisible] = useState(false);
 
   function renderName({ value, record }) {
-    const status = record.get('status');
+    const ready = record.get('ready');
+    return (
+      <div className="column-container-mt">
+        <Tooltip title={<FormattedMessage id={`ist.${ready ? 'y' : 'n'}`} />}>
+          <Icon
+            type={ready ? 'check_circle' : 'cancel'}
+            className={`${prefixCls}-pod-ready-${ready ? 'check' : 'cancel'}`}
+          />
+        </Tooltip>
+        <span>{value}</span>
+      </div>
+    );
+  }
+
+  function renderStatus({ value }) {
     const wrapStyle = {
       width: 54,
     };
@@ -42,18 +56,15 @@ const PodDetail = memo(() => {
       Pending: [false, '#ff9915'],
     };
 
-    const [wrap, color] = statusMap[status] || [true, 'rgba(0, 0, 0, 0.36)'];
+    const [wrap, color] = statusMap[value] || [true, 'rgba(0, 0, 0, 0.36)'];
 
     return (
-      <div>
-        <StatusTags
-          ellipsis={wrap}
-          color={color}
-          name={status}
-          style={wrapStyle}
-        />
-        <span>{value}</span>
-      </div>
+      <StatusTags
+        ellipsis={wrap}
+        color={color}
+        name={value}
+        style={wrapStyle}
+      />
     );
   }
 
@@ -86,7 +97,7 @@ const PodDetail = memo(() => {
                 className={`${prefixCls}-pod-ready-${item.ready ? 'check' : 'cancel'}`}
               />
             </Tooltip>
-            <MouserOverWrapper text={item.name} width={0.08}>
+            <MouserOverWrapper text={item.name} width={0.1}>
               {item.name}
             </MouserOverWrapper>
           </Fragment>)}
@@ -154,8 +165,9 @@ const PodDetail = memo(() => {
           <Column name="name" renderer={renderName} />
           <Column renderer={renderAction} width="0.7rem" />
           <Column name="containers" renderer={renderContainers} />
-          <Column name="ip" />
+          <Column name="ip" width="1.2rem" />
           <Column name="creationDate" renderer={renderDate} width="1rem" />
+          <Column name="status" renderer={renderStatus} width="1rem" />
         </Table>
       </div>
       {visible && <LogSiderbar visible={visible} onClose={closeLog} record={podsDs.current.toData()} />}

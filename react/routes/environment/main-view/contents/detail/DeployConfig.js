@@ -127,7 +127,6 @@ export default function DeployConfig() {
     <Table
       dataSet={configDs}
       border={false}
-      queryBar="bar"
     >
       <Column name="name" sortable renderer={renderName} />
       {!disabled && <Column renderer={renderActions} />}

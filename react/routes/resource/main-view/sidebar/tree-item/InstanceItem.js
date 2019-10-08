@@ -13,7 +13,6 @@ import { useMainStore } from '../../stores';
 import openWarnModal from '../../../../../utils/openWarnModal';
 
 const stopKey = Modal.key();
-const deleteKey = Modal.key();
 
 function InstanceItem({
   record,

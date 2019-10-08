@@ -14,6 +14,7 @@ const EmptyPage = withRouter(((props) => {
     title,
     describe,
     btnText,
+    onClick,
   } = props;
 
   function handleClick() {
@@ -37,7 +38,7 @@ const EmptyPage = withRouter(((props) => {
         {(access && btnText) && (
           <Button
             color="primary"
-            onClick={handleClick}
+            onClick={onClick || handleClick}
             funcType="raised"
           >
             {btnText}
@@ -54,6 +55,7 @@ EmptyPage.propTypes = {
   title: PropTypes.string,
   btnText: PropTypes.string,
   describe: PropTypes.string,
+  onClick: PropTypes.func,
 };
 
 EmptyPage.defaultProps = {

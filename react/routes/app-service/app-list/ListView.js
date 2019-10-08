@@ -6,9 +6,7 @@ import { withRouter, Link } from 'react-router-dom';
 import { Page, Content, Header, Permission, Action, Breadcrumb } from '@choerodon/master';
 import { Button } from 'choerodon-ui';
 import pick from 'lodash/pick';
-import checkPermission from '../../../utils/checkPermission';
 import TimePopover from '../../../components/timePopover';
-import EmptyShown, { EmptyLoading } from './EmptyShown';
 import { useAppTopStore } from '../stores';
 import { useAppServiceStore } from './stores';
 import CreateForm from '../modals/creat-form';
@@ -28,7 +26,7 @@ const modalStyle2 = {
   width: '70%',
 };
 
-const AppService = withRouter(observer((props) => {
+const ListView = withRouter(observer((props) => {
   const {
     intlPrefix,
     prefixCls,
@@ -40,7 +38,6 @@ const AppService = withRouter(observer((props) => {
     AppState: {
       currentMenuType: {
         id: projectId,
-        organizationId,
       },
     },
     importDs,
@@ -48,34 +45,19 @@ const AppService = withRouter(observer((props) => {
     selectedDs,
     listDs,
   } = useAppServiceStore();
-
-  const [access, setAccess] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [isInit, setIsInit] = useState(true);
 
   useEffect(() => {
-    async function judgeRole() {
-      const data = {
-        code: 'devops-service.app-service.create',
-        projectId,
-        organizationId,
-        resourceType: 'project',
-      };
-      try {
-        const res = await checkPermission(data);
-        setAccess(res);
-        setLoading(false);
-        // if (res) {
-        //   const { location: { state } } = props;
-        //   if (state && state.openCreate) {
-        //     openModal(listDs.create({ status: 'add' }));
-        //   }
-        // }
-      } catch (e) {
-        setAccess(false);
+    // 确定dataset加载完毕后才打开创建框
+    // 否则会造成dataset实例丢失
+    if (isInit && listDs.status === 'ready') {
+      const { location: { state } } = props;
+      if (state && state.openCreate) {
+        openModal(listDs.create());
       }
+      setIsInit(false);
     }
-    judgeRole();
-  }, []);
+  }, [listDs.status]);
 
   function refresh() {
     listDs.query();
@@ -288,50 +270,30 @@ const AppService = withRouter(observer((props) => {
     </Header>;
   }
 
-  function getContent() {
-    const {
-      getLoading,
-      getHasApp: hasApp,
-    } = appServiceStore;
-
-    if (getLoading || loading) return <EmptyLoading formatMessage={formatMessage} />;
-
-    let content;
-
-    if (hasApp || access) {
-      content = <Fragment>
-        {getHeader()}
-        <Breadcrumb />
-        <Content className={`${prefixCls}-content`}>
-          <Table
-            dataSet={listDs}
-            border={false}
-            queryBar="bar"
-            filter={handleTableFilter}
-            className={`${prefixCls}.table`}
-            rowClassName="c7ncd-table-row-font-color"
-          >
-            <Column name="name" renderer={renderName} sortable />
-            <Column renderer={renderActions} width="0.7rem" />
-            <Column name="code" sortable />
-            <Column name="type" renderer={renderType} />
-            <Column name="repoUrl" renderer={renderUrl} />
-            <Column name="creationDate" renderer={renderDate} />
-            <Column name="active" renderer={renderStatus} width="0.7rem" align="left" />
-          </Table>
-        </Content>
-      </Fragment>;
-    } else {
-      content = <EmptyShown />;
-    }
-    return content;
-  }
-
   return (
     <Page service={listPermissions}>
-      {getContent()}
+      {getHeader()}
+      <Breadcrumb />
+      <Content className={`${prefixCls}-content`}>
+        <Table
+          dataSet={listDs}
+          border={false}
+          queryBar="bar"
+          filter={handleTableFilter}
+          className={`${prefixCls}.table`}
+          rowClassName="c7ncd-table-row-font-color"
+        >
+          <Column name="name" renderer={renderName} sortable />
+          <Column renderer={renderActions} width="0.7rem" />
+          <Column name="code" sortable />
+          <Column name="type" renderer={renderType} />
+          <Column name="repoUrl" renderer={renderUrl} />
+          <Column name="creationDate" renderer={renderDate} />
+          <Column name="active" renderer={renderStatus} width="0.7rem" align="left" />
+        </Table>
+      </Content>
     </Page>
   );
 }));
 
-export default AppService;
+export default ListView;

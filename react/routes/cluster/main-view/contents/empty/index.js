@@ -65,6 +65,8 @@ const EmptyShown = observer(() => {
       access
       title={formatMessage({ id: 'c7ncd.cluster.empty.title' })}
       describe={formatMessage({ id: 'c7ncd.cluster.empty.describe' })}
+      btnText={formatMessage({ id: 'c7ncd.cluster.modal.create' })}
+      onClick={openCreate}
     />
   </Fragment>;
 });

@@ -365,6 +365,9 @@ const deployment = {
   'c7ncd.deployment.target.ip': '目标IP',
   'c7ncd.deployment.no.label': '暂无标签',
   'c7ncd.deployment.env': '环境"{name}"的',
+  'c7ncd.deployment.pod.status': 'Pod状态',
+  'c7ncd.deployment.time': '时间',
+  'c7ncd.deployment.usage': '使用量',
 
 };
 
@@ -1327,7 +1330,7 @@ const zhCN = {
   'deploy.stage': '阶段及日志',
   'deploy.status': '容器状态',
   'deploy.istStatus': '实例状态',
-  'deploy.appName': '应用名称',
+  'deploy.appName': '应用服务名称',
   'deploy.instance': '实例名称',
   'deploy.envName': '环境名称',
   'deploy.app': '应用服务',
@@ -1950,6 +1953,7 @@ const zhCN = {
   'ctf.validDate': '证书有效期',
 
   // 报表
+  'report.bread.title': '图表',
   'report.head': 'Devops报表',
   'report.devops.total': '总次数',
   'dashboard.devops.more': '...',
@@ -2379,10 +2383,10 @@ const zhCN = {
   // Notifications
   'notification.header.title': '通知设置',
   'notification.header.create': '创建通知',
-  'notification.sidebar.create': '创建通知',
-  'notification.sidebar.edit': '修改通知',
-  'notification.delete': '删除通知',
-  'notification.delete.message': '确认删除通知？',
+  'notification.sidebar.create': '创建安全设置规则',
+  'notification.sidebar.edit': '修改安全设置规则',
+  'notification.delete': '删除安全设置规则',
+  'notification.delete.message': '确认删除该安全设置规则吗？',
   'notification.event': '事件',
   'notification.method': '通知方式',
   'notification.target': '通知对象',

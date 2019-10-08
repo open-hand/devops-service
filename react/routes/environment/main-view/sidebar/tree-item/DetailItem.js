@@ -23,6 +23,7 @@ function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
   const {
     treeDs,
     AppState: { currentMenuType: { id: projectId } },
+    envStore,
   } = useEnvironmentStore();
   const { mainStore } = useMainStore();
 
@@ -50,6 +51,7 @@ function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
         intlPrefix={intlPrefix}
         refresh={refresh}
         record={record}
+        store={envStore}
       />,
       drawer: true,
       style: modalStyle,
@@ -60,7 +62,9 @@ function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
     try {
       const envId = record.get('id');
       const res = await mainStore.effectEnv(projectId, envId, target);
-      handlePromptError(res);
+      if (handlePromptError(res)) {
+        envStore.setUpTarget(envId);
+      }
     } catch (e) {
       Choerodon.handleResponseError(e);
     } finally {

@@ -6,6 +6,7 @@ export default ({ intl, intlPrefix }) => ({
     {
       name: 'status',
       type: 'string',
+      label: intl.formatMessage({ id: `${intlPrefix}.pod.status` }),
     },
     {
       name: 'name',

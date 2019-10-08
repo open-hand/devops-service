@@ -29,7 +29,9 @@ export const StoreProvider = injectIntl(inject('AppState')(
       intlPrefix: currentIntlPrefix,
       envStore: {
         getSelectedMenu: { id },
+        getUpTarget,
       },
+      envStore,
       treeDs,
     } = useEnvironmentStore();
 
@@ -69,6 +71,8 @@ export const StoreProvider = injectIntl(inject('AppState')(
     }
 
     function queryData() {
+      baseDs.transport.read.url = `/devops/v1/projects/${projectId}/envs/${id}/info`;
+      baseDs.query();
       const tabKey = detailStore.getTabKey;
       switch (tabKey) {
         case tabs.SYNC_TAB: {
@@ -80,9 +84,13 @@ export const StoreProvider = injectIntl(inject('AppState')(
           break;
         }
         case tabs.CONFIG_TAB:
+          configDs.transport.destroy = ({ data: [data] }) => ({
+            url: `/devops/v1/projects/${projectId}/deploy_value?value_id=${data.id}`,
+            method: 'delete',
+            data: null,
+          });
           configDs.transport.read = ({ data }) => {
             const postData = getTablePostData(data);
-
             return {
               url: `/devops/v1/projects/${projectId}/deploy_value/page_by_options?env_id=${id}`,
               method: 'post',
@@ -114,12 +122,17 @@ export const StoreProvider = injectIntl(inject('AppState')(
     useEffect(() => {
       checkEnvExist().then((query) => {
         if (query) {
-          baseDs.transport.read.url = `/devops/v1/projects/${projectId}/envs/${id}/info`;
-          baseDs.query();
           queryData();
         }
       });
     }, [projectId, id, detailStore.getTabKey]);
+
+    useEffect(() => {
+      if (getUpTarget === id) {
+        queryData();
+        envStore.setUpTarget(null);
+      }
+    }, [getUpTarget]);
 
     const value = {
       ...props,

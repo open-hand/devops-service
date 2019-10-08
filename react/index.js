@@ -32,9 +32,9 @@ function DEVOPSIndex({ match, AppState: { currentLanguage: language } }) {
           <Route path={`${match.url}/environment`} component={Environment} />
           <Route path={`${match.url}/cert-management`} component={Certificate} />
           <Route path={`${match.url}/cluster-management`} component={Cluster} />
-          <Route path={`${match.url}/reports`} component={Reports} />
           <Route path={`${match.url}/repository`} component={Repository} />
           <Route path={`${match.url}/project-repository`} component={ProRepository} />
+          <Route path={`${match.url}/reports`} component={Reports} />
           <Route path="*" component={nomatch} />
         </Switch>
         <ModalContainer />

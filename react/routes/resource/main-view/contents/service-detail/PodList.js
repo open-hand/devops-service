@@ -105,6 +105,13 @@ const PodList = observer(() => {
         textStyle: {
           color: '#000',
         },
+        formatter(obj) {
+          return `${formatMessage({ id: `${intlPrefix}.time` })}: ${
+            obj.name
+          }<br/>${formatMessage({ id: `${intlPrefix}.usage` })}: ${
+            obj.value
+          }`;
+        },
       },
     } : {
       grid: {
