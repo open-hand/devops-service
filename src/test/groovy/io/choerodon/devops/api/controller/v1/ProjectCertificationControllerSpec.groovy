@@ -75,12 +75,12 @@ class ProjectCertificationControllerSpec extends Specification {
         List<ProjectDTO> projectDOList = new ArrayList<>()
         projectDOList.add(projectDO)
         PageInfo<ProjectDTO> projectDOPage = new PageInfo<>(projectDOList)
-        Mockito.when(baseServiceClientOperator.pageProjectByOrgId(anyLong(), anyInt(), anyInt(), anyString(), any(String[]))).thenReturn(projectDOPage)
+        Mockito.when(baseServiceClientOperator.pageProjectByOrgId(anyLong(),anyInt(),anyInt(),anyString(),anyString(),anyString())).thenReturn(projectDOPage)
 
-        List<ProjectDTO> projectDOList2 = new ArrayList<>()
-        projectDOList.add(projectDO)
-        PageInfo<ProjectDTO> projectDOPage2 = new PageInfo<>(projectDOList2)
-        Mockito.when(baseServiceClientOperator.listProject(anyLong(), any(PageRequest.class), any(String[]))).thenReturn(projectDOPage2)
+//        List<ProjectDTO> projectDOList2 = new ArrayList<>()
+//        projectDOList.add(projectDO)
+//        PageInfo<ProjectDTO> projectDOPage2 = new PageInfo<>(projectDOList2)
+//        Mockito.when(baseServiceClientOperator.listProject(anyLong(), any(PageRequest.class), any(String[]))).thenReturn(projectDOPage2)
 
     }
 
@@ -91,6 +91,7 @@ class ProjectCertificationControllerSpec extends Specification {
         map.add("domain", "test")
         map.add("skipCheckProjectPermission", false)
         map.add("projects", 1)
+        map.add("type","create")
         map.add("keyValue", "-----BEGIN RSA PRIVATE KEY-----\n" +
                 "MIICXgIBAAKBgQC3G09zGCmlMetvNaWiHbp9d8jItkj5ik0wKcn7jBy/eOdlno5m\n" +
                 "y+eijTP/KX8D2QNj2vlF+31/AThYoxI80qUZ3imw8vDVc0cBeGLxEDLVweCQEy7C\n" +
