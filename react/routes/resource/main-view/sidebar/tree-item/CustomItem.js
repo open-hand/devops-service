@@ -4,11 +4,17 @@ import { observer } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
 import { Action } from '@choerodon/master';
 import { Icon } from 'choerodon-ui';
+import { Modal } from 'choerodon-ui/pro';
 import { useResourceStore } from '../../../stores';
 import { useMainStore } from '../../stores';
 import CustomForm from '../../contents/custom/modals/form-view';
 import eventStopProp from '../../../../../utils/eventStopProp';
 import openWarnModal from '../../../../../utils/openWarnModal';
+
+const modalKey = Modal.key();
+const modalStyle = {
+  width: '70%',
+};
 
 function CustomItem({
   record,
@@ -23,8 +29,6 @@ function CustomItem({
     AppState: { currentMenuType: { projectId } },
   } = useResourceStore();
   const { customStore } = useMainStore();
-
-  const [showModal, setShowModal] = useState(false);
 
   function freshTree() {
     treeDs.query();
@@ -74,14 +78,21 @@ function CustomItem({
   function openModal() {
     checkDataExist().then((query) => {
       if (query) {
-        setShowModal(true);
+        Modal.open({
+          key: modalKey,
+          style: modalStyle,
+          drawer: true,
+          title: formatMessage({ id: 'resource.edit.header' }),
+          children: <CustomForm
+            id={record.get('id')}
+            envId={record.get('parentId').split('-')[0]}
+            type="edit"
+            store={customStore}
+            refresh={freshMenu}
+          />,
+        });
       }
     });
-  }
-
-  function closeModal(isLoad) {
-    setShowModal(false);
-    isLoad && freshMenu();
   }
 
   function getSuffix() {
@@ -110,14 +121,6 @@ function CustomItem({
     <Icon type="filter_b_and_w" />
     {name}
     {getSuffix()}
-    {showModal && <CustomForm
-      id={record.get('id')}
-      envId={record.get('parentId').split('-')[0]}
-      type="edit"
-      store={customStore}
-      visible={showModal}
-      onClose={closeModal}
-    />}
   </Fragment>;
 }
 
