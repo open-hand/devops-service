@@ -33,6 +33,7 @@
             AND dpv.env_id = #{envId}
         </if>
         <include refid="sqlparam"/>
+        order by dpv.last_update_date desc
     </select>
 
     <sql id="sqlparam">
