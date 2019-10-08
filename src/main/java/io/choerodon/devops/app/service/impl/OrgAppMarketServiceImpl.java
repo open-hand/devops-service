@@ -269,7 +269,10 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             baseServiceClientOperator.failToDownloadApplication(appMarketDownloadVO.getAppDownloadRecordId(), appMarketDownloadVO.getAppVersionId(), appMarketDownloadVO.getOrganizationId());
             UserAttrDTO userAttrDTO = userAttrService.baseQueryById(appMarketDownloadVO.getIamUserId());
             appMarketDownloadVO.getAppServiceDownloadPayloads().forEach(downloadPayload -> {
-                deleteGitlabProject(downloadPayload, appMarketDownloadVO.getAppCode(), userAttrDTO.getGitlabUserId());
+                AppServiceDTO appServiceDTO = appServiceService.baseQueryByMktAppId(downloadPayload.getAppServiceCode(), appMarketDownloadVO.getAppId());
+                if (appServiceDTO == null) {
+                    deleteGitlabProject(downloadPayload, appMarketDownloadVO.getAppCode(), userAttrDTO.getGitlabUserId());
+                }
             });
             throw new CommonException("error.download.app", e);
         }

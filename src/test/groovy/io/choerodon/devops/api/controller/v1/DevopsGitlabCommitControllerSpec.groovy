@@ -79,6 +79,7 @@ class DevopsGitlabCommitControllerSpec extends Specification {
 
         IamUserDTO userDO = new IamUserDTO()
         userDO.setLoginName("test")
+        userDO.setLdap(false)
         userDO.setId(1L)
         List<IamUserDTO> userDOList = new ArrayList<>()
         userDOList.add(userDO)
@@ -92,6 +93,7 @@ class DevopsGitlabCommitControllerSpec extends Specification {
         and: '构造mock返回值'
         IamUserDTO iamUserDTO = new IamUserDTO()
         iamUserDTO.setId(1L)
+        iamUserDTO.setLdap(false)
         iamUserDTO.setRealName("aa")
         List<IamUserDTO> iamUserDTOList = new ArrayList<>()
         iamUserDTOList.add(iamUserDTO)
