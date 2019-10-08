@@ -199,10 +199,8 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         try {
             //解析打包
             MarketImageUrlVO marketImageUrlVO = appUploadResolver(marketUploadVO, zipFileList, appFilePath);
-            LOGGER.info("==========应用上传，解析文件成功！！==========");
             //上传删除
             fileUpload(zipFileList, marketUploadVO, marketImageUrlVO);
-            LOGGER.info("==========应用上传，上传文件！！==========");
             FileUtil.deleteDirectory(new File(appFilePath));
             zipFileList.forEach(FileUtil::deleteFile);
         } catch (Exception e) {
@@ -242,39 +240,31 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         List<AppDownloadDevopsReqVO> appDownloadDevopsReqVOS = new ArrayList<>();
         String groupPath = String.format(SITE_APP_GROUP_NAME_FORMAT, appMarketDownloadVO.getAppCode());
         try {
-            //创建应用
+            // 创建应用
             GroupDTO groupDTO = gitlabGroupService.createSiteAppGroup(appMarketDownloadVO.getIamUserId(), groupPath);
-            LOGGER.info("==========应用下载，appMarketDownloadVO.getAppId(){}, groupId=========={}", appMarketDownloadVO.getAppId(), groupDTO.getId());
             UserAttrDTO userAttrDTO = userAttrService.baseQueryById(appMarketDownloadVO.getIamUserId());
             appMarketDownloadVO.getAppServiceDownloadPayloads().forEach(downloadPayload -> {
-                //1. 校验是否已经下载过
+                // 校验是否已经下载过
                 AppServiceDTO appServiceDTO = appServiceService.baseQueryByMktAppId(downloadPayload.getAppServiceCode(), appMarketDownloadVO.getAppId());
                 downloadPayload.setAppId(appMarketDownloadVO.getAppId());
                 Boolean isFirst = appServiceDTO == null;
                 if (appServiceDTO == null) {
-                    LOGGER.info("==========应用下载=========={}", appMarketDownloadVO.getAppCode());
-                    LOGGER.info("==========应用下载=========={}", groupDTO.getId());
-                    LOGGER.info("==========应用下载=========={}", userAttrDTO.getGitlabUserId());
+                    // 创建服务
                     appServiceDTO = createGitlabProject(downloadPayload, appMarketDownloadVO.getAppCode(), TypeUtil.objToInteger(groupDTO.getId()), userAttrDTO.getGitlabUserId());
-                    LOGGER.info("==========应用下载，创建gitlab Project成功！！==========");
                 }
                 AppDownloadDevopsReqVO appDownloadDevopsReqVO = new AppDownloadDevopsReqVO();
                 appDownloadDevopsReqVO.setServiceId(appServiceDTO.getId());
-                LOGGER.info("==========serviceId{}", appServiceDTO.getId());
                 String applicationDir = APPLICATION + System.currentTimeMillis();
                 String accessToken = appServiceService.getToken(appServiceDTO.getGitlabProjectId(), applicationDir, userAttrDTO);
-                LOGGER.info("=========应用下载，获取token成功=========");
+                //推送git和上传chart
                 appDownloadDevopsReqVO.setServiceVersionIds(createAppServiceVersion(downloadPayload, appServiceDTO, appMarketDownloadVO.getAppCode(), isFirst, accessToken, appMarketDownloadVO.getDownloadAppType()));
-                LOGGER.info("==========应用下载文件上传成功==========");
                 appDownloadDevopsReqVOS.add(appDownloadDevopsReqVO);
             });
+            // 推送镜像
             if (!appMarketDownloadVO.getDownloadAppType().equals(DOWNLOAD_ONLY)) {
                 pushImageForDownload(appMarketDownloadVO);
-                LOGGER.info("==========应用下载镜像推送成功==========");
             }
-            LOGGER.info("==========应用下载开始调用回传接口==========");
             baseServiceClientOperator.completeDownloadApplication(appMarketDownloadVO.getAppDownloadRecordId(), appMarketDownloadVO.getAppVersionId(), appMarketDownloadVO.getOrganizationId(), appDownloadDevopsReqVOS);
-            LOGGER.info("==========应用下载完成==========");
         } catch (Exception e) {
             baseServiceClientOperator.failToDownloadApplication(appMarketDownloadVO.getAppDownloadRecordId(), appMarketDownloadVO.getAppVersionId(), appMarketDownloadVO.getOrganizationId());
             UserAttrDTO userAttrDTO = userAttrService.baseQueryById(appMarketDownloadVO.getIamUserId());
@@ -305,15 +295,15 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         appServiceDTO.setCode(downloadPayload.getAppServiceCode());
         appServiceDTO.setActive(true);
         appServiceDTO.setSkipCheckPermission(true);
-        //2. 第一次下载创建应用服务
-        //2. 分配所在gitlab group 用户权限
+        // 第一次下载创建应用服务
+        // 分配所在gitlab group 用户权限
         MemberDTO memberDTO = gitlabServiceClientOperator.queryGroupMember(gitlabGroupId, TypeUtil.objToInteger(gitlabUserId));
         if (memberDTO == null || memberDTO.getId() == null || !memberDTO.getAccessLevel().equals(AccessLevel.OWNER.value)) {
             memberDTO = new MemberDTO(TypeUtil.objToInteger(gitlabUserId), AccessLevel.OWNER.value);
             gitlabServiceClientOperator.createGroupMember(gitlabGroupId, memberDTO);
         }
 
-        //3. 创建gitlab project
+        // 创建gitlab project
         GitlabProjectDTO gitlabProjectDTO = gitlabServiceClientOperator.queryProjectByName(
                 String.format(SITE_APP_GROUP_NAME_FORMAT, appCode),
                 appServiceDTO.getCode(),
@@ -354,14 +344,12 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             if (!downloadType.equals(DOWNLOAD_ONLY)) {
                 String chartFilePath = String.format("%s%s%s%s", APPLICATION, File.separator, APPLICATION + System.currentTimeMillis(), TGZ);
                 fileDownload(appServiceVersionPayload.getChartFilePath(), chartFilePath);
-                LOGGER.info("=========应用下载，文件下载成功=========");
                 AppServiceVersionDTO appServiceVersionDTO = chartResolver(appServiceVersionPayload, downloadPayload.getAppId(), appServiceId, appCode, downloadPayload.getAppServiceCode(), new File(chartFilePath), versionDTO);
                 serviceVersionIds.add(appServiceVersionDTO.getId());
             }
             if (!downloadType.equals(DEPLOY_ONLY)) {
                 String repoFilePath = String.format("%s%s%s%s", APPLICATION, File.separator, APPLICATION + System.currentTimeMillis(), ZIP);
                 fileDownload(appServiceVersionPayload.getRepoFilePath(), repoFilePath);
-                LOGGER.info("=========应用下载，文件下载成功=========");
                 AppServiceVersionDTO appServiceVersionDTO = gitResolver(appServiceVersionPayload, isFirst, appCode, new File(repoFilePath), downloadPayload, accessToken, versionDTO, appServiceId);
                 serviceVersionIds.add(appServiceVersionDTO.getId());
             }
@@ -445,28 +433,21 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         String appServiceDir = null;
         try {
             FileUtil.unZipFiles(file, unZipFilePath);
-            LOGGER.info("=========应用下载，文件解压成功=========");
             String repoFilePath = String.format(APP_TEMP_PATH_FORMAT, unZipFilePath, File.separator, appServiceVersionPayload.getVersion());
             if (isFirst) {
                 git = gitUtil.initGit(new File(repoFilePath));
-                LOGGER.info("==========应用下载，git初始化成功==========");
             } else {
                 appServiceDir = APPLICATION + System.currentTimeMillis();
                 String appServiceFilePath = gitUtil.clone(appServiceDir, repositoryUrl, accessToken);
-                LOGGER.info("==========应用下载，git clone成功==========");
                 git = gitUtil.combineAppMarket(appServiceFilePath, repoFilePath);
             }
             //6. push 到远程仓库
-            LOGGER.info("==========应用下载，开始推送代码==========");
             gitUtil.commitAndPushForMaster(git, repositoryUrl, appServiceVersionPayload.getVersion(), accessToken);
-            LOGGER.info("==========应用下载，代码推送成功==========");
 
             versionDTO.setAppServiceId(appServiceId);
             BeanUtils.copyProperties(appServiceVersionPayload, versionDTO);
-            LOGGER.info("==========应用下载，创建版本成功==========");
             versionDTO.setCommit(gitUtil.getFirstCommit(git));
             appServiceVersionService.baseCreateOrUpdate(versionDTO);
-            LOGGER.info("==========应用下载，创建版本Service成功==========");
         } catch (Exception e) {
             throw new CommonException("error.resolver.git", e);
         } finally {
@@ -491,9 +472,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
     private AppServiceVersionDTO chartResolver(AppServiceVersionDownloadPayload appServiceVersionPayload, Long appId, Long appServiceId, String appCode, String appServiceCode, File file, AppServiceVersionDTO versionDTO) {
         String unZipPath = String.format(APP_TEMP_PATH_FORMAT, file.getParentFile().getAbsolutePath(), File.separator, System.currentTimeMillis());
         FileUtil.createDirectory(unZipPath);
-        LOGGER.info("==========应用下载，chart.zip解压成功==========");
         FileUtil.unTarGZ(file, unZipPath);
-        LOGGER.info("==========应用下载，chart.tgz解压成功==========");
         File zipDirectory = new File(String.format(APP_TEMP_PATH_FORMAT, unZipPath, File.separator, appServiceCode));
         helmUrl = helmUrl.endsWith("/") ? helmUrl : helmUrl + "/";
         harborUrl = harborUrl.endsWith("/") ? harborUrl : harborUrl + "/";
@@ -506,7 +485,6 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
 
                 BeanUtils.copyProperties(appServiceVersionPayload, versionDTO);
                 //9. 获取替换Repository
-                LOGGER.info("==========应用下载，chart开始解析文件==========");
                 List<File> appMarkets = Arrays.stream(listFiles).parallel()
                         .filter(k -> k.getName().equals(VALUES))
                         .collect(Collectors.toCollection(ArrayList::new));
@@ -517,7 +495,6 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                     params.put(appServiceVersionPayload.getImage().substring(0, appServiceVersionPayload.getImage().indexOf(":")), imageRepository);
 
                     FileUtil.fileToInputStream(valuesFile, params);
-                    LOGGER.info("==========应用下载，chart 参数替换成功==========");
                     //10. 创建appServiceValue
                     AppServiceVersionValueDTO versionValueDTO = new AppServiceVersionValueDTO();
                     versionValueDTO.setValue(FileUtil.getFileContent(valuesFile));
@@ -530,14 +507,11 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                 }
             } else {
                 FileUtil.deleteDirectory(zipDirectory);
-                LOGGER.info("==========应用下载，chart.tgz解压失败=========");
                 throw new CommonException("error.zip.empty");
             }
-            LOGGER.info("==========应用下载，chart 开始上传chart包==========");
             newTgzFile = String.format("%s%s%s", APPLICATION, File.separator, CHART + System.currentTimeMillis());
             FileUtil.toTgz(String.format(APP_TEMP_PATH_FORMAT, unZipPath, File.separator, appServiceCode), newTgzFile);
             chartUtil.uploadChart(helmUrl, MARKET_PRO, appCode, new File(newTgzFile + TGZ));
-            LOGGER.info("==========应用下载，chart包删除成功==========");
         } catch (Exception e) {
             throw new CommonException("error.resolver.chart", e.getMessage());
         } finally {
@@ -548,7 +522,6 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         //创建version
         versionDTO.setRepository(String.format("%s%s/%s/", helmUrl, MARKET_PRO, appCode));
         appServiceVersionService.baseCreateOrUpdate(versionDTO);
-        LOGGER.info("==========应用下载，chart解析完结==========");
         return versionDTO;
     }
 
@@ -795,21 +768,16 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         MarketServicePublicClient marketServiceClient = retrofit.create(MarketServicePublicClient.class);
         FileOutputStream fos = null;
         try {
-            LOGGER.info("============文件下载===={}", fileName);
-            LOGGER.info("============文件下载===={},====={}", map.toString(), map.size());
             Call<ResponseBody> getTaz = marketServiceClient.downloadFile(fileName, map);
             Response<ResponseBody> response = getTaz.execute();
-            LOGGER.info("============文件下载===={}", response.headers());
             fos = new FileOutputStream(downloadFilePath);
             if (response.body() != null) {
-                LOGGER.info("============文件下载=========1111");
                 InputStream is = response.body().byteStream();
                 byte[] buffer = new byte[4096];
                 int r = 0;
                 while ((r = is.read(buffer)) > 0) {
                     fos.write(buffer, 0, r);
                 }
-                LOGGER.info("============文件下载=========2222");
                 is.close();
             }
             fos.close();
