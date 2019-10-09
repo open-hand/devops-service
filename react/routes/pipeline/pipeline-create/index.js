@@ -2,7 +2,8 @@ import React, { Component } from 'react';
 import { observer, inject } from 'mobx-react';
 import { withRouter, Prompt } from 'react-router-dom';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { Modal, Button, Icon, Form, Input, Select, Radio, Tooltip } from 'choerodon-ui';
+import { Modal, Icon, Form, Input, Select, Radio, Tooltip } from 'choerodon-ui';
+import { Button } from 'choerodon-ui/pro';
 import { Content, Header, Page } from '@choerodon/master';
 import _ from 'lodash';
 import StageCard from '../components/stageCard';
@@ -233,7 +234,7 @@ export default class PipelineCreate extends Component {
         footer={[
           <Button
             key="submit"
-            type="primary"
+            color="primary"
             funcType="raised"
             onClick={this.onSubmit}
             loading={submitLoading}
@@ -246,6 +247,7 @@ export default class PipelineCreate extends Component {
             funcType="raised"
             onClick={this.goBack}
             disabled={submitLoading}
+            className="c7ncd-pipeline-btn-cancel"
           >
             <FormattedMessage id="cancel" />
           </Button>,

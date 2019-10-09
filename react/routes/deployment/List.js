@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { Fragment, useEffect, useState } from 'react';
 import { Page, Content, Header, Permission, Action, Breadcrumb } from '@choerodon/master';
 import { Table, Modal, Select } from 'choerodon-ui/pro';
 import { Button, Tooltip } from 'choerodon-ui';
@@ -196,7 +196,7 @@ const Deployment = withRouter(observer((props) => {
 
   function renderNumber({ value, record }) {
     return (
-      <div>
+      <Fragment>
         <div className={`${prefixCls}-table-mark ${prefixCls}-table-mark-${record.get('deployType')}`}>
           <span>{record.get('deployType') === 'auto' ? 'A' : 'M'}</span>
         </div>
@@ -205,7 +205,7 @@ const Deployment = withRouter(observer((props) => {
           clickAble
           onClick={openDetail}
         />
-      </div>
+      </Fragment>
     );
   }
 

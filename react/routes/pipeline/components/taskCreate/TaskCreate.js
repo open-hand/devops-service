@@ -842,24 +842,9 @@ export default class TaskCreate extends Component {
         title={<FormattedMessage id={`pipeline.task.${isEdit ? 'edit' : 'create'}.head`} />}
         visible={visible}
         width={740}
-        footer={
-          [<Button
-            key="submit"
-            type="primary"
-            funcType="raised"
-            onClick={this.handleSubmit}
-            loading={submitting}
-          >
-            <FormattedMessage id={isEdit ? 'save' : 'add'} />
-          </Button>, <Button
-            key="cancel"
-            funcType="raised"
-            onClick={onClose}
-            disabled={submitting}
-          >
-            <FormattedMessage id="cancel" />
-          </Button>]
-        }
+        onOk={this.handleSubmit}
+        onCancel={onClose}
+        okText={formatMessage({ id: isEdit ? 'save' : 'add' })}
       >
         <Content
           className="sidebar-content c7n-pipeline-task-create"
