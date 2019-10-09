@@ -16,7 +16,7 @@ import './index.less';
 const { Column } = Table;
 const modalKey = Modal.key();
 const modalStyle = {
-  width: '70%',
+  width: 'calc(100vw - 3.52rem)',
 };
 
 const AppConfigs = observer(() => {

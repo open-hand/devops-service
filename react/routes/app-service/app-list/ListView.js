@@ -23,7 +23,7 @@ const modalStyle1 = {
   width: 380,
 };
 const modalStyle2 = {
-  width: '70%',
+  width: 'calc(100vw - 3.52rem)',
 };
 
 const ListView = withRouter(observer((props) => {

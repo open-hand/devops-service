@@ -13,7 +13,7 @@ import openWarnModal from '../../../../../utils/openWarnModal';
 
 const modalKey = Modal.key();
 const modalStyle = {
-  width: '70%',
+  width: 'calc(100vw - 3.52rem)',
 };
 
 function ConfigItem({

@@ -173,9 +173,7 @@ const EnvModals = observer(() => {
       title: formatMessage({ id: `${currentIntlPrefix}.resource.setting` }),
       children: <ResourceSetting envId={id} />,
       drawer: true,
-      style: {
-        width: 1030,
-      },
+      style: configModalStyle,
     });
   }
 

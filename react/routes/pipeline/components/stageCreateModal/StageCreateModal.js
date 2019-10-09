@@ -112,7 +112,7 @@ export default class StageCreateModal extends Component {
     return <Sidebar
       visible={visible}
       title={formatMessage({ id: `pipeline.stage.${createOrEdit}` })}
-      width={400}
+      width={380}
       onOk={this.onSubmit}
       onCancel={onClose}
       okText={<FormattedMessage id={createOrEdit} />}

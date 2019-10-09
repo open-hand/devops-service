@@ -12,7 +12,7 @@ import CreateNetwork from './network';
 const modalKey1 = Modal.key();
 const modalKey2 = Modal.key();
 const modalStyle2 = {
-  width: '70%',
+  width: 'calc(100vw - 3.52rem)',
 };
 
 const AppModals = observer(() => {

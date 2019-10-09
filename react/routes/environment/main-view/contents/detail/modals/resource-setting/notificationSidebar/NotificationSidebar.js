@@ -187,7 +187,7 @@ export default class NotificationSidebar extends Component {
         onCancel={this.handleClose}
         confirmLoading={submitting}
         className="c7n-notifications-sidebar"
-        width={400}
+        width={380}
       >
         <Content
           className="sidebar-content"

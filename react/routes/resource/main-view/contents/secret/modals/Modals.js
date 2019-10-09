@@ -11,7 +11,7 @@ import KeyValueModal from '../../application/modals/key-value';
 
 const modalKey = Modal.key();
 const modalStyle = {
-  width: '70%',
+  width: 'calc(100vw - 3.52rem)',
 };
 
 const KeyValueModals = observer(() => {
