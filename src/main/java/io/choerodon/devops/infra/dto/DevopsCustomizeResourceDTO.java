@@ -9,7 +9,6 @@ import io.choerodon.mybatis.entity.BaseDTO;
 /**
  * Created by Sheep on 2019/6/26.
  */
-
 @Table(name = "devops_customize_resource")
 public class DevopsCustomizeResourceDTO extends BaseDTO {
 
@@ -24,7 +23,6 @@ public class DevopsCustomizeResourceDTO extends BaseDTO {
     private String name;
     private String filePath;
     private String description;
-
 
     @Transient
     private String commandStatus;
@@ -167,11 +165,20 @@ public class DevopsCustomizeResourceDTO extends BaseDTO {
         DevopsCustomizeResourceDTO that = (DevopsCustomizeResourceDTO) o;
         return
                 Objects.equals(k8sKind, that.k8sKind) &&
-                Objects.equals(name, that.name);
+                Objects.equals(name, that.name) &&
+                Objects.equals(id, that.id) &&
+                Objects.equals(envId, that.envId) &&
+                Objects.equals(contentId, that.contentId) &&
+                Objects.equals(commandId, that.commandId) &&
+                Objects.equals(filePath, that.filePath) &&
+                Objects.equals(description, that.description) &&
+                Objects.equals(commandStatus, that.commandStatus) &&
+                Objects.equals(error, that.error) &&
+                Objects.equals(resourceContent, that.resourceContent);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, projectId, envId, contentId, commandId, k8sKind, name, filePath, description, commandStatus, error, resourceContent);
+        return Objects.hash(id, envId, contentId, commandId, k8sKind, name, filePath, description, commandStatus, error, resourceContent);
     }
 }
