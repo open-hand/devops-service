@@ -458,6 +458,12 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         return ConvertUtils.convertList(listServiceVersionByAppServiceIds(ids, null, null), AppServiceVersionVO.class);
     }
 
+    @Override
+    public List<AppServiceVersionVO> listVersionById(Long id, String params) {
+        List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceVersionMapper.listByAppServiceId(id, params);
+        return ConvertUtils.convertList(appServiceVersionDTOS,AppServiceVersionVO.class);
+    }
+
     private AppServiceVersionVO dtoToVo(AppServiceVersionDTO appServiceVersionDTO) {
         AppServiceVersionVO appServiceVersionVO = new AppServiceVersionVO();
         BeanUtils.copyProperties(appServiceVersionDTO, appServiceVersionVO);
@@ -485,7 +491,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
 
     @Override
     public List<AppServiceVersionDTO> baseListByAppServiceId(Long appServiceId) {
-        List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceVersionMapper.listByAppServiceId(appServiceId);
+        List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceVersionMapper.listByAppServiceId(appServiceId,null);
         if (appServiceVersionDTOS.isEmpty()) {
             return Collections.emptyList();
         }

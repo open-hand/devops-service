@@ -1386,7 +1386,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public PageInfo<AppServiceRepVO> pageShareAppService(Long projectId, PageRequest pageRequest, String searchParam) {
+    public PageInfo<AppServiceRepVO> pageShareAppService(Long projectId,boolean doPage,PageRequest pageRequest, String searchParam) {
         Map<String, Object> searchParamMap = TypeUtil.castMapParams(searchParam);
         Long organizationId = baseServiceClientOperator.queryIamProjectById(projectId).getOrganizationId();
         List<Long> appServiceIds = new ArrayList<>();
@@ -1395,7 +1395,13 @@ public class AppServiceServiceImpl implements AppServiceService {
                 .forEach(proId ->
                 baseListAll(proId.getId()).forEach(appServiceDTO -> appServiceIds.add(appServiceDTO.getId()))
         );
-        PageInfo<AppServiceDTO> applicationServiceDTOPageInfo = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> appServiceMapper.listShareApplicationService(appServiceIds, projectId, null, TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS))));
+        PageInfo<AppServiceDTO> applicationServiceDTOPageInfo = new PageInfo<>();
+        if(doPage){
+            applicationServiceDTOPageInfo = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> appServiceMapper.listShareApplicationService(appServiceIds, projectId, null, TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS))));
+        }
+        else{
+            applicationServiceDTOPageInfo.setList(appServiceMapper.listShareApplicationService(appServiceIds, projectId, null, TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS))));
+        }
         return ConvertUtils.convertPage(applicationServiceDTOPageInfo, AppServiceRepVO.class);
     }
 
@@ -2359,8 +2365,14 @@ public class AppServiceServiceImpl implements AppServiceService {
         AppServiceVO appServiceVO = new AppServiceVO();
         BeanUtils.copyProperties(appServiceDTO, appServiceVO);
         if (!appVerisonMap.isEmpty()) {
-            appServiceVO.setAllAppServiceVersions(ConvertUtils.convertList(appVerisonMap.get(appServiceVO.getId()),
-                    AppServiceVersionVO.class));
+            List<AppServiceVersionVO> appServiceVersionVOS = ConvertUtils.convertList(appVerisonMap.get(appServiceVO.getId()),
+                    AppServiceVersionVO.class);
+            if(!CollectionUtils.isEmpty(appServiceVersionVOS) && appServiceVersionVOS.size()>10){
+                appServiceVO.setAllAppServiceVersions(appServiceVersionVOS.subList(0,10));
+            }
+            else{
+                appServiceVO.setAllAppServiceVersions(appServiceVersionVOS);
+            }
         }
         if (appServiceDTO.getFailed() != null && appServiceDTO.getFailed()) {
             appServiceVO.setStatus(AppServiceStatus.FAILED.getStatus());

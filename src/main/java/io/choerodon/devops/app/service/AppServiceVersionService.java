@@ -182,4 +182,6 @@ public interface AppServiceVersionService {
     List<AppServiceVersionVO> queryServiceVersionByAppServiceIdAndShare(Long appServiceId, String share);
 
     List<AppServiceVersionVO> listServiceVersionVoByIds(Set<Long> ids);
+
+    List<AppServiceVersionVO> listVersionById(Long id, String params);
 }

@@ -296,7 +296,7 @@ public interface AppServiceService {
      * @param params
      * @return
      */
-    PageInfo<AppServiceRepVO> pageShareAppService(Long projectId, PageRequest pageRequest, String params);
+    PageInfo<AppServiceRepVO> pageShareAppService(Long projectId,boolean doPage,PageRequest pageRequest, String params);
 
     /**
      * 根据appServiceId查询服务服务有权限的项目成员和项目所有者

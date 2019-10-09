@@ -574,12 +574,14 @@ public class AppServiceController {
     public ResponseEntity<PageInfo<AppServiceRepVO>> pageShareApps(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "是否分页")
+            @RequestParam(value = "doPage", required = false,defaultValue = "true") Boolean doPage,
             @ApiParam(value = "分页参数")
             @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String searchParam) {
         return Optional.ofNullable(
-                applicationServiceService.pageShareAppService(projectId, pageRequest, searchParam))
+                applicationServiceService.pageShareAppService(projectId,doPage,pageRequest, searchParam))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.share.app.service.get"));
     }

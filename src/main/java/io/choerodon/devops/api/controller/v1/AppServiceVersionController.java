@@ -363,4 +363,19 @@ public class AppServiceVersionController {
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.application.versions.get"));
     }
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "根据应用服务Id查询所有应用版本")
+    @GetMapping(value = "/list_by_service_id")
+    public ResponseEntity<List<AppServiceVersionVO>> listVersionById(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用服务id", required = true)
+            @RequestParam(value = "app_service_id", required = true) Long id,
+            @ApiParam(value = "查询参数", required = false)
+            @RequestParam(value = "params", required = false) String params) {
+        return Optional.ofNullable(
+                appServiceVersionService.listVersionById(id,params))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.application.versions.get"));
+    }
 }

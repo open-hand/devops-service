@@ -35,6 +35,9 @@
         devops_app_service_version dav
         WHERE
         dav.app_service_id = #{appServiceId}
+        <if test="param != null and param != ''">
+           and dav.version LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+        </if>
         AND dav.repository IS NOT NULL
         ORDER BY
         dav.id DESC
