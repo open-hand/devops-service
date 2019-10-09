@@ -1,13 +1,11 @@
 package io.choerodon.devops.api.controller.v1
 
 import com.github.pagehelper.PageInfo
-import com.sun.prism.j2d.print.J2DPrinterJob
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.infra.dto.DevopsProjectDTO
 import io.choerodon.devops.infra.dto.iam.ProjectDTO
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator
 import io.choerodon.devops.infra.mapper.DevopsProjectMapper
-import io.choerodon.devops.infra.util.PageInfoUtil
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
@@ -29,7 +27,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  */
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @Import(IntegrationTestConfiguration)
-@Subject(DevopsProjectControllerSpec)
+@Subject(DevopsProjectController)
 @Stepwise
 class DevopsProjectControllerSpec extends Specification {
     private static final String MAPPING = "/v1/projects/{project_id}"
