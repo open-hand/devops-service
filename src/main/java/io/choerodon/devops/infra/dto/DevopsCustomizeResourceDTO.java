@@ -166,19 +166,11 @@ public class DevopsCustomizeResourceDTO extends BaseDTO {
         return
                 Objects.equals(k8sKind, that.k8sKind) &&
                 Objects.equals(name, that.name) &&
-                Objects.equals(id, that.id) &&
-                Objects.equals(envId, that.envId) &&
-                Objects.equals(contentId, that.contentId) &&
-                Objects.equals(commandId, that.commandId) &&
-                Objects.equals(filePath, that.filePath) &&
-                Objects.equals(description, that.description) &&
-                Objects.equals(commandStatus, that.commandStatus) &&
-                Objects.equals(error, that.error) &&
-                Objects.equals(resourceContent, that.resourceContent);
+                Objects.equals(envId, that.envId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, envId, contentId, commandId, k8sKind, name, filePath, description, commandStatus, error, resourceContent);
+        return Objects.hash(envId, k8sKind, name);
     }
 }
