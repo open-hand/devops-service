@@ -9,6 +9,11 @@ import { useModalStore } from './stores';
 import { useKeyValueStore } from '../stores';
 import KeyValueModal from '../../application/modals/key-value';
 
+const modalKey = Modal.key();
+const modalStyle = {
+  width: '70%',
+};
+
 const KeyValueModals = observer(() => {
   const {
     intlPrefix,
@@ -18,10 +23,7 @@ const KeyValueModals = observer(() => {
     treeDs,
   } = useResourceStore();
   const {
-    listDs,
-    itemType,
     formStore,
-    SecretTableDs,
     ConfigMapTableDs,
   } = useKeyValueStore();
   const {
@@ -30,23 +32,27 @@ const KeyValueModals = observer(() => {
   } = useModalStore();
   const { parentId } = resourceStore.getSelectedMenu;
 
-  const [showModal, setShowModal] = useState(false);
-
   function refresh() {
     treeDs.query();
-    if (itemType === 'configMap') {
-      return ConfigMapTableDs.query();
-    }
-    return SecretTableDs.query();
+    ConfigMapTableDs.query();
   }
 
   function openModal() {
-    setShowModal(true);
-  }
-
-  function closeModal(isLoad) {
-    setShowModal(false);
-    isLoad && refresh();
+    Modal.open({
+      key: modalKey,
+      style: modalStyle,
+      drawer: true,
+      title: formatMessage({ id: `${intlPrefix}.configMap.create` }),
+      children: <KeyValueModal
+        modeSwitch
+        title="configMap"
+        envId={parentId}
+        store={formStore}
+        intlPrefix={intlPrefix}
+        refresh={refresh}
+      />,
+      okText: formatMessage({ id: 'create' }),
+    });
   }
 
   function getButtons() {
@@ -55,7 +61,7 @@ const KeyValueModals = observer(() => {
     const disabled = !connect;
 
     return ([{
-      name: formatMessage({ id: `${intlPrefix}.create.${itemType}` }),
+      name: formatMessage({ id: `${intlPrefix}.create.configMap` }),
       icon: 'playlist_add',
       handler: openModal,
       display: true,
@@ -74,15 +80,6 @@ const KeyValueModals = observer(() => {
   return (
     <Fragment>
       <HeaderButtons items={getButtons()} />
-      {showModal && <KeyValueModal
-        modeSwitch={itemType === 'configMap'}
-        title={itemType}
-        visible={showModal}
-        envId={parentId}
-        onClose={closeModal}
-        store={formStore}
-        intlPrefix={intlPrefix}
-      />}
     </Fragment>
   );
 });

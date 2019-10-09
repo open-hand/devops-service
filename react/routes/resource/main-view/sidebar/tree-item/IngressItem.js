@@ -4,11 +4,17 @@ import { observer } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
 import { Action } from '@choerodon/master';
 import { Icon } from 'choerodon-ui';
+import { Modal } from 'choerodon-ui/pro';
 import { useResourceStore } from '../../../stores';
 import { useMainStore } from '../../stores';
-import DomainModal from '../../contents/application/modals/domain';
+import DomainModal from '../../contents/ingress/modals/domain-create';
 import eventStopProp from '../../../../../utils/eventStopProp';
 import openWarnModal from '../../../../../utils/openWarnModal';
+
+const modalKey = Modal.key();
+const modalStyle = {
+  width: 740,
+};
 
 function IngressItem({
   record,
@@ -73,7 +79,21 @@ function IngressItem({
   function openModal() {
     checkDataExist().then((query) => {
       if (query) {
-        setShowModal(true);
+        Modal.open({
+          key: modalKey,
+          style: modalStyle,
+          drawer: true,
+          title: formatMessage({ id: 'domain.update.head' }),
+          children: <DomainModal
+            envId={record.get('parentId').split('-')[0]}
+            id={record.get('id')}
+            visible={showModal}
+            type="edit"
+            store={ingressStore}
+            refresh={freshMenu}
+          />,
+          okText: formatMessage({ id: 'save' }),
+        });
       }
     });
   }

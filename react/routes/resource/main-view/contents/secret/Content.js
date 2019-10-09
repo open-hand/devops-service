@@ -2,7 +2,7 @@ import React, { useMemo, useState, useCallback } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import { Action } from '@choerodon/master';
-import { Table } from 'choerodon-ui/pro';
+import { Modal, Table } from 'choerodon-ui/pro';
 import { keys } from 'lodash';
 import MouserOverWrapper from '../../../../../components/MouseOverWrapper/MouserOverWrapper';
 import StatusTags from '../../../../../components/status-tag';
@@ -18,6 +18,10 @@ import ResourceListTitle from '../../components/resource-list-title';
 import './index.less';
 
 const { Column } = Table;
+const modalKey = Modal.key();
+const modalStyle = {
+  width: '70%',
+};
 
 const ConfigMap = observer((props) => {
   const {
@@ -28,22 +32,15 @@ const ConfigMap = observer((props) => {
   } = useResourceStore();
   const {
     intl: { formatMessage },
-    itemType,
     permissions,
     formStore,
     SecretTableDs,
-    ConfigMapTableDs,
   } = useKeyValueStore();
   const { mainStore: { openDeleteModal } } = useMainStore();
 
-  const [showModal, setShowModal] = useState(false);
-
   function refresh() {
     treeDs.query();
-    if (itemType === 'configMap') {
-      return ConfigMapTableDs.query();
-    }
-    return SecretTableDs.query();
+    SecretTableDs.query();
   }
 
   function getEnvIsNotRunning() {
@@ -74,18 +71,11 @@ const ConfigMap = observer((props) => {
     );
   }
 
-  function renderKey({ value = [], record }) {
-    return (
-      <MouserOverWrapper width={0.5}>
-        {value.join(',')}
-      </MouserOverWrapper>
-    );
-  }
   function renderValue({ value = [] }) {
-    const keyarr = keys(value);
+    const keyArr = keys(value);
     return (
       <MouserOverWrapper width={0.5}>
-        {keyarr && keyarr.join(',')}
+        {keyArr && keyArr.join(',')}
       </MouserOverWrapper>
     );
   }
@@ -102,70 +92,48 @@ const ConfigMap = observer((props) => {
     }
     const id = record.get('id');
     const name = record.get('name');
-    const type = itemType === 'configMap' ? itemType : 'secret';
     const buttons = [
       {
         service: permissions.delete,
         text: formatMessage({ id: 'delete' }),
-        action: () => openDeleteModal(parentId, id, name, type, refresh),
+        action: () => openDeleteModal(parentId, id, name, 'secret', refresh),
       },
     ];
     return <Action data={buttons} />;
   }
 
-  function handleDelete() {
-    if (itemType === 'configMap') {
-      return ConfigMapTableDs.delete(ConfigMapTableDs.current);
-    }
-    return SecretTableDs.delete(SecretTableDs.current);
-  }
-
   function openModal() {
-    setShowModal(true);
+    Modal.open({
+      key: modalKey,
+      style: modalStyle,
+      drawer: true,
+      title: formatMessage({ id: `${intlPrefix}.cipher.edit` }),
+      children: <KeyValueModal
+        title="cipher"
+        id={SecretTableDs.current.get('id')}
+        envId={parentId}
+        store={formStore}
+        intlPrefix={intlPrefix}
+        refresh={refresh}
+      />,
+      okText: formatMessage({ id: 'save' }),
+    });
   }
 
-  function closeModal(isLoad) {
-    setShowModal(false);
-    isLoad && refresh();
-  }
-  const store = itemType === 'configMap' ? ConfigMapTableDs : SecretTableDs;
   return (
     <div className={`${prefixCls}-keyValue-table`}>
       <Modals />
-      <ResourceListTitle type={itemType === 'configMap' ? 'configMaps' : 'secrets'} />
-      {itemType === 'configMap'
-        ? <Table
-          dataSet={store}
-          border={false}
-          queryBar="bar"
-          key="1"
-        >
-          <Column name="name" header={formatMessage({ id: `${intlPrefix}.${itemType}` })} renderer={renderName} />
-          <Column renderer={renderAction} width="0.7rem" />
-          <Column name="key" renderer={renderKey} />
-          <Column name="lastUpdateDate" renderer={renderDate} width="1rem" />
-        </Table>
-        : <Table
-          dataSet={store}
-          border={false}
-          queryBar="bar"
-          key="2"
-        >
-          <Column name="name" header={formatMessage({ id: `${intlPrefix}.${itemType}` })} renderer={renderName} />
-          <Column renderer={renderAction} width="0.7rem" />
-          <Column name="value" renderer={renderValue} header={formatMessage({ id: 'key' })} />
-          <Column name="lastUpdateDate" renderer={renderDate} width="1rem" />
-        </Table>}
-      {showModal && <KeyValueModal
-        modeSwitch={itemType === 'configMap'}
-        title={itemType}
-        visible={showModal}
-        id={store.current.get('id')}
-        envId={parentId}
-        onClose={closeModal}
-        store={formStore}
-        intlPrefix={intlPrefix}
-      />}
+      <ResourceListTitle type="secrets" />
+      <Table
+        dataSet={SecretTableDs}
+        border={false}
+        queryBar="bar"
+      >
+        <Column name="name" header={formatMessage({ id: `${intlPrefix}.cipher` })} renderer={renderName} />
+        <Column renderer={renderAction} width="0.7rem" />
+        <Column name="value" renderer={renderValue} header={formatMessage({ id: 'key' })} />
+        <Column name="lastUpdateDate" renderer={renderDate} width="1rem" />
+      </Table>
     </div>
   );
 });

@@ -45,7 +45,7 @@ function CertItem({
     const id = record.get('id');
     const certName = record.get('name');
     const [envId] = record.get('parentId').split('-');
-    const status = record.get('commandStatus');
+    const status = record.get('status');
     const disabled = getEnvIsNotRunning() || status === 'operating';
     if (disabled) {
       return null;

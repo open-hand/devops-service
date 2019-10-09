@@ -41,7 +41,7 @@ const formItemLayout = {
 @observer
 export default class ResourceSidebar extends Component {
   state = {
-    submitting: false,
+    showError: false,
     mode: 'paste',
     changedValue: null,
     hasEditorError: false,
@@ -83,7 +83,14 @@ export default class ResourceSidebar extends Component {
       changedValue,
       mode,
     } = this.state;
-    if (hasEditorError) return;
+    if (hasEditorError) {
+      return false;
+    }
+    if (mode === 'paste' && !changedValue) {
+      this.setState({ showError: true });
+      return false;
+    }
+
     let result = true;
     const formData = new FormData();
     if (type === 'edit') {
@@ -126,14 +133,6 @@ export default class ResourceSidebar extends Component {
     }
   };
 
-  /**
-   * 关闭弹框
-   */
-  handleClose = (reload) => {
-    const { onClose } = this.props;
-    onClose(reload);
-  };
-
   checkFile = (rule, value, callback) => {
     const { intl: { formatMessage } } = this.props;
     if (!value) {
@@ -171,13 +170,14 @@ export default class ResourceSidebar extends Component {
     this.setState({
       changedValue: null,
       hasEditorError: false,
+      showError: false,
       mode,
     });
     modal.update({ okProps: { disabled: false } });
   };
 
   handleChangeValue = (value) => {
-    this.setState({ changedValue: value });
+    this.setState({ changedValue: value, showError: false });
   };
 
   handleEnableNext = (flag) => {
@@ -188,52 +188,28 @@ export default class ResourceSidebar extends Component {
 
   render() {
     const {
-      visible,
       type,
       form: { getFieldDecorator },
       intl: { formatMessage },
       AppState: { currentMenuType: { name } },
       store,
-      envId,
     } = this.props;
     const {
-      submitting,
       changedValue,
-      hasEditorError,
       fileDisabled,
       mode,
+      showError,
     } = this.state;
     const {
       getSingleData: {
         name: resourceName,
         resourceContent,
       },
-      getEnvData,
     } = store;
 
     const uploadClass = classnames({
       'c7ncd-upload-select': !fileDisabled,
       'c7ncd-upload-disabled': fileDisabled,
-    });
-
-    const envOptions = _.map(getEnvData, ({ connect, id, permission, name: envName }) => {
-      const envOptionClass = classnames({
-        'c7ncd-status': true,
-        'c7ncd-status-success': connect,
-        'c7ncd-status-disconnect': !connect,
-      });
-
-      return (<Option
-        key={id}
-        value={id}
-        disabled={!permission}
-        title={envName}
-      >
-        <Tooltip title={envName}>
-          <span className={envOptionClass} />
-          {envName}
-        </Tooltip>
-      </Option>);
     });
 
     return (
@@ -294,6 +270,9 @@ export default class ResourceSidebar extends Component {
             </FormItem>
           )}
         </Form>
+        {showError && <div className="c7ncd-resource-error">
+          <FormattedMessage id="contentCanNotBeEmpty" />
+        </div>}
       </div>
     );
   }

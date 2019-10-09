@@ -13,6 +13,14 @@ export default injectIntl(observer(({ store, dataSet, refresh, projectId, intlPr
     dataSet.query();
   }, []);
 
+  useEffect(() => {
+    if (dataSet.selected && dataSet.selected.length) {
+      modal.update({ okProps: { disabled: false } });
+    } else {
+      modal.update({ okProps: { disabled: true } });
+    }
+  }, [dataSet.selected]);
+
   modal.handleOk(async () => {
     const pipelineIds = map(dataSet.selected, (record) => record.get('id'));
     if (isEmpty(pipelineIds)) {

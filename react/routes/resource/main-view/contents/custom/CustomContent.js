@@ -94,6 +94,7 @@ const CustomContent = observer(() => {
         store={customStore}
         refresh={refresh}
       />,
+      okText: formatMessage({ id: 'save' }),
     });
   }
 

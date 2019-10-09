@@ -6,16 +6,15 @@ import { FormattedMessage } from 'react-intl';
 import HeaderButtons from '../../../../../../components/header-buttons';
 import { useResourceStore } from '../../../../stores';
 import { useModalStore } from './stores';
-import { useCustomStore } from '../stores';
-import CustomForm from './form-view';
-import { useMainStore } from '../../../stores';
+import { useKeyValueStore } from '../stores';
+import KeyValueModal from '../../application/modals/key-value';
 
 const modalKey = Modal.key();
 const modalStyle = {
   width: '70%',
 };
 
-const CustomModals = observer(() => {
+const KeyValueModals = observer(() => {
   const {
     intlPrefix,
     prefixCls,
@@ -24,9 +23,9 @@ const CustomModals = observer(() => {
     treeDs,
   } = useResourceStore();
   const {
-    customDs,
-  } = useCustomStore();
-  const { customStore } = useMainStore();
+    formStore,
+    SecretTableDs,
+  } = useKeyValueStore();
   const {
     permissions,
     AppState: { currentMenuType: { projectId } },
@@ -35,7 +34,7 @@ const CustomModals = observer(() => {
 
   function refresh() {
     treeDs.query();
-    customDs.query();
+    SecretTableDs.query();
   }
 
   function openModal() {
@@ -43,11 +42,12 @@ const CustomModals = observer(() => {
       key: modalKey,
       style: modalStyle,
       drawer: true,
-      title: formatMessage({ id: 'resource.create.header' }),
-      children: <CustomForm
+      title: formatMessage({ id: `${intlPrefix}.cipher.create` }),
+      children: <KeyValueModal
+        title="cipher"
         envId={parentId}
-        type="create"
-        store={customStore}
+        store={formStore}
+        intlPrefix={intlPrefix}
         refresh={refresh}
       />,
       okText: formatMessage({ id: 'create' }),
@@ -60,7 +60,7 @@ const CustomModals = observer(() => {
     const disabled = !connect;
 
     return ([{
-      name: formatMessage({ id: `${intlPrefix}.create.custom` }),
+      name: formatMessage({ id: `${intlPrefix}.create.cipher` }),
       icon: 'playlist_add',
       handler: openModal,
       display: true,
@@ -83,4 +83,4 @@ const CustomModals = observer(() => {
   );
 });
 
-export default CustomModals;
+export default KeyValueModals;

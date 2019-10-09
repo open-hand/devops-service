@@ -9,7 +9,11 @@ import KeyValueModal from './key-value';
 import DomainModal from './domain';
 import CreateNetwork from './network';
 
-const modalKey = Modal.key();
+const modalKey1 = Modal.key();
+const modalKey2 = Modal.key();
+const modalStyle2 = {
+  width: '70%',
+};
 
 const AppModals = observer(() => {
   const modalStyle = useMemo(() => ({
@@ -41,7 +45,6 @@ const AppModals = observer(() => {
   } = useApplicationStore();
   const { id, parentId } = resourceStore.getSelectedMenu;
 
-  const [showKeyValue, setShowKeyValue] = useState(false);
   const [showDomain, setShowDomain] = useState(false);
   const [showNetwork, setShowNetwork] = useState(false);
 
@@ -81,7 +84,7 @@ const AppModals = observer(() => {
     if (!record) return;
 
     Modal.open({
-      key: modalKey,
+      key: modalKey1,
       title: formatMessage({ id: `${intlPrefix}.service.detail` }),
       children: <Detail
         record={record}
@@ -97,12 +100,22 @@ const AppModals = observer(() => {
   }
 
   function openKeyValue(type) {
-    setShowKeyValue(type);
-  }
-
-  function closeKeyValue(isLoad) {
-    isLoad && setTabKey(showKeyValue);
-    setShowKeyValue(false);
+    Modal.open({
+      key: modalKey2,
+      style: modalStyle2,
+      drawer: true,
+      title: formatMessage({ id: `${intlPrefix}.${type}.create` }),
+      children: <KeyValueModal
+        intlPrefix={intlPrefix}
+        modeSwitch={type === MAPPING_TAB}
+        title={type}
+        envId={parentId}
+        appId={id}
+        store={type === MAPPING_TAB ? mappingStore : cipherStore}
+        refresh={() => setTabKey(type)}
+      />,
+      okText: formatMessage({ id: 'create' }),
+    });
   }
 
   function closeDomain(isLoad) {
@@ -167,16 +180,6 @@ const AppModals = observer(() => {
 
   return (<div>
     <HeaderButtons items={getButtons()} />
-    {showKeyValue && <KeyValueModal
-      intlPrefix={intlPrefix}
-      modeSwitch={showKeyValue === MAPPING_TAB}
-      title={showKeyValue}
-      visible={!!showKeyValue}
-      envId={parentId}
-      appId={id}
-      onClose={closeKeyValue}
-      store={showKeyValue === MAPPING_TAB ? mappingStore : cipherStore}
-    />}
     {showDomain && (
       <DomainModal
         envId={parentId}

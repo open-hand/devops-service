@@ -1,11 +1,17 @@
 import React, { Fragment, useState } from 'react';
 import { observer } from 'mobx-react-lite';
+import { Modal } from 'choerodon-ui/pro';
 import HeaderButtons from '../../../../../../components/header-buttons';
 import { useResourceStore } from '../../../../stores';
 import { useModalStore } from './stores';
 import { useIngressStore } from '../stores';
-import DomainModal from '../../application/modals/domain';
+import DomainModal from './domain-create';
 import { useMainStore } from '../../../stores';
+
+const modalKey = Modal.key();
+const modalStyle = {
+  width: 740,
+};
 
 const EnvModals = observer(() => {
   const {
@@ -21,20 +27,25 @@ const EnvModals = observer(() => {
   const { permissions } = useModalStore();
   const { parentId } = resourceStore.getSelectedMenu;
 
-  const [showModal, setShowModal] = useState(false);
-
   function refresh() {
     treeDs.query();
     ingressDs.query();
   }
 
   function openModal() {
-    setShowModal(true);
-  }
-
-  function closeModal(isLoad) {
-    setShowModal(false);
-    isLoad && refresh();
+    Modal.open({
+      key: modalKey,
+      style: modalStyle,
+      drawer: true,
+      title: formatMessage({ id: 'domain.create.head' }),
+      children: <DomainModal
+        envId={parentId}
+        type="create"
+        store={ingressStore}
+        refresh={refresh}
+      />,
+      okText: formatMessage({ id: 'create' }),
+    });
   }
 
   function getButtons() {
@@ -62,15 +73,6 @@ const EnvModals = observer(() => {
   return (
     <Fragment>
       <HeaderButtons items={getButtons()} />
-      {showModal && (
-        <DomainModal
-          envId={parentId}
-          visible={showModal}
-          type="create"
-          store={ingressStore}
-          onClose={closeModal}
-        />
-      )}
     </Fragment>
   );
 });

@@ -18,13 +18,12 @@ import {
 } from 'choerodon-ui';
 import { stores, Content } from '@choerodon/master';
 import AppName from '../../../../../../../components/appName';
-import InterceptMask from '../../../../../../../components/intercept-mask';
 import Tips from '../../../../../../../components/Tips/Tips';
+import { handlePromptError } from '../../../../../../../utils';
 
 import '../../../../../../main.less';
 import '../network-create/networkForm/index.less';
 import './index.less';
-import { handlePromptError } from '../../../../../../../utils';
 
 const { AppState } = stores;
 const { Sidebar } = Modal;
@@ -74,7 +73,12 @@ class EditNetwork extends Component {
   }
 
   componentDidMount() {
-    this.props.form.resetFields();
+    const {
+      form: { resetFields },
+      modal,
+    } = this.props;
+    resetFields();
+    modal.handleOk(this.handleSubmit);
     this.loadNetworkById();
   }
 
@@ -104,19 +108,14 @@ class EditNetwork extends Component {
     }
   };
 
-  handleSubmit = (e) => {
-    e.preventDefault();
-
-    const { form, store, netId, envId } = this.props;
+  formValidate = () => {
+    const { form, envId } = this.props;
     const { network } = this.state;
-    const { id } = AppState.currentMenuType;
 
     let enableSubmit = true;
-
     const _changeStatus = (flag) => {
       enableSubmit = flag;
     };
-
     const _pushUnRecordIp = (ips, ip) => {
       if (ip) {
         ips.push(ip);
@@ -126,142 +125,146 @@ class EditNetwork extends Component {
     const _unInputIp = this.checkUnRecordIp(this.ipSelect, _changeStatus);
     const _unInputEndIp = this.checkUnRecordIp(this.targetIpSelect, _changeStatus);
 
-    this.setState({ submitting: true });
-    form.validateFields((err, data) => {
-      if (!err && enableSubmit) {
-        const {
-          name,
-          appServiceId,
-          instances,
-          endPoints: endps,
-          targetIps,
-          targetport,
-          externalIps,
-          portKeys,
-          port,
-          tport,
-          nport,
-          protocol,
-          targetKeys,
-          keywords,
-          config,
-          values,
-        } = data;
+    return new Promise((resolve) => {
+      form.validateFields((err, data) => {
+        if (!err && enableSubmit) {
+          const {
+            name,
+            appServiceId,
+            instances,
+            endPoints: endps,
+            targetIps,
+            targetport,
+            externalIps,
+            portKeys,
+            port,
+            tport,
+            nport,
+            protocol,
+            targetKeys,
+            keywords,
+            config,
+            values,
+          } = data;
 
-        const _externalIps = externalIps || [];
-        const _targetIps = targetIps || [];
-        _pushUnRecordIp(_externalIps, _unInputIp);
-        _pushUnRecordIp(_targetIps, _unInputEndIp);
+          const _externalIps = externalIps || [];
+          const _targetIps = targetIps || [];
+          _pushUnRecordIp(_externalIps, _unInputIp);
+          _pushUnRecordIp(_targetIps, _unInputEndIp);
 
-        const appIst = instances ? _.map(instances, (item) => item) : null;
-        const ports = [];
-        const label = {};
-        const endPoints = {};
+          const appIst = instances ? _.map(instances, (item) => item) : null;
+          const ports = [];
+          const label = {};
+          const endPoints = {};
 
-        if (portKeys) {
-          _.forEach(portKeys, (item) => {
-            if (item || item === 0) {
-              const node = {
-                port: Number(port[item]),
-                targetPort: Number(tport[item]),
-                nodePort: nport && nport[item] ? Number(nport[item]) : null,
-              };
-              config === 'NodePort' && (node.protocol = protocol[item]);
-              ports.push(node);
-            }
-          });
-        }
-
-        if (targetKeys) {
-          _.forEach(targetKeys, (item) => {
-            if (item || item === 0) {
-              const key = keywords[item];
-              label[key] = values[item];
-            }
-          });
-        }
-
-        if (endps && endps.length && _targetIps) {
-          endPoints[_targetIps.join(',')] = _.map(
-            _.filter(endps, (item) => item || item === 0),
-            (item) => ({
-              name: null,
-              port: Number(targetport[item]),
-            })
-          );
-        }
-
-        const {
-          name: oldName,
-          appServiceId: oldAppId,
-          target: {
-            instances: oldAppInstance,
-            labels: oldLabel,
-            endPoints: oldEndPoints,
-          },
-          envId: oldEnvId,
-          config: { externalIps: oldIps, ports: oldPorts },
-          type,
-        } = network;
-
-        const oldIst = _.map(oldAppInstance, (item) => item.code);
-        const oldPortId = _.map(oldPorts, (item) => ({
-          nodePort: item.nodePort ? _.toNumber(item.nodePort) : null,
-          port: item.port ? _.toNumber(item.port) : null,
-          targetPort: item.targetPort ? _.toNumber(item.targetPort) : null,
-          protocol: item.protocol || null,
-        }));
-
-        const oldNetwork = {
-          name: oldName,
-          appServiceId: oldAppId || null,
-          instances: oldIst.length ? oldIst : null,
-          envId: oldEnvId,
-          externalIp: oldIps,
-          ports: oldPortId,
-          label: oldLabel || null,
-          endPoints: oldEndPoints,
-          type,
-        };
-        const newNetwork = {
-          name,
-          appServiceId: appServiceId || null,
-          instances: appIst,
-          envId,
-          externalIp: _externalIps.length ? _externalIps.join(',') : null,
-          ports,
-          label: !_.isEmpty(label) ? label : null,
-          endPoints: !_.isEmpty(endPoints) ? endPoints : null,
-          type: config,
-        };
-
-        if (_.isEqual(oldNetwork, newNetwork)) {
-          this.setState({ submitting: false });
-          this.handleClose();
-        } else {
-          store
-            .updateData(id, netId, newNetwork)
-            .then((res) => {
-              this.setState({ submitting: false });
-              if (handlePromptError(res)) {
-                this.handleClose();
+          if (portKeys) {
+            _.forEach(portKeys, (item) => {
+              if (item || item === 0) {
+                const node = {
+                  port: Number(port[item]),
+                  targetPort: Number(tport[item]),
+                  nodePort: nport && nport[item] ? Number(nport[item]) : null,
+                };
+                config === 'NodePort' && (node.protocol = protocol[item]);
+                ports.push(node);
               }
-            })
-            .catch((error) => {
-              this.setState({ submitting: false });
-              Choerodon.handleResponseError(error);
             });
+          }
+
+          if (targetKeys) {
+            _.forEach(targetKeys, (item) => {
+              if (item || item === 0) {
+                const key = keywords[item];
+                label[key] = values[item];
+              }
+            });
+          }
+
+          if (endps && endps.length && _targetIps) {
+            endPoints[_targetIps.join(',')] = _.map(
+              _.filter(endps, (item) => item || item === 0),
+              (item) => ({
+                name: null,
+                port: Number(targetport[item]),
+              })
+            );
+          }
+
+          const {
+            name: oldName,
+            appServiceId: oldAppId,
+            target: {
+              instances: oldAppInstance,
+              labels: oldLabel,
+              endPoints: oldEndPoints,
+            },
+            envId: oldEnvId,
+            config: { externalIps: oldIps, ports: oldPorts },
+            type,
+          } = network;
+
+          const oldIst = _.map(oldAppInstance, (item) => item.code);
+          const oldPortId = _.map(oldPorts, (item) => ({
+            nodePort: item.nodePort ? _.toNumber(item.nodePort) : null,
+            port: item.port ? _.toNumber(item.port) : null,
+            targetPort: item.targetPort ? _.toNumber(item.targetPort) : null,
+            protocol: item.protocol || null,
+          }));
+
+          const oldNetwork = {
+            name: oldName,
+            appServiceId: oldAppId || null,
+            instances: oldIst.length ? oldIst : null,
+            envId: Number(oldEnvId),
+            externalIp: oldIps,
+            ports: oldPortId,
+            label: oldLabel || null,
+            endPoints: oldEndPoints,
+            type,
+          };
+          const newNetwork = {
+            name,
+            appServiceId: appServiceId || null,
+            instances: appIst,
+            envId: Number(envId),
+            externalIp: _externalIps.length ? _externalIps.join(',') : null,
+            ports,
+            label: !_.isEmpty(label) ? label : null,
+            endPoints: !_.isEmpty(endPoints) ? endPoints : null,
+            type: config,
+          };
+
+          if (_.isEqual(oldNetwork, newNetwork)) {
+            resolve(true);
+          }
+          resolve(newNetwork);
         }
-      } else {
-        this.setState({ submitting: false });
-      }
+        resolve(false);
+      });
     });
   };
 
-  handleClose = (isload = true) => {
-    const { onClose, store } = this.props;
-    store.setSingleData([]);
-    onClose(isload);
+  handleSubmit = async () => {
+    const { store, netId, refresh } = this.props;
+    const { id } = AppState.currentMenuType;
+    const postData = await this.formValidate();
+    if (!postData) {
+      return false;
+    }
+    if (typeof postData === 'boolean') {
+      return true;
+    }
+    try {
+      const res = await store.updateData(id, netId, postData);
+      if (handlePromptError(res)) {
+        refresh();
+      } else {
+        return false;
+      }
+    } catch (e) {
+      Choerodon.handleResponseError(e);
+      return false;
+    }
   };
 
   loadNetworkById = () => {
@@ -1066,7 +1069,7 @@ class EditNetwork extends Component {
                 validator: (rule, value, callback) => this.checkPort(rule, value, callback, 'targetport'),
               },
             ],
-            initialValue: targetport[k],
+            initialValue: _.toString(targetport[k]),
           })(
             <Input
               type="text"
@@ -1185,295 +1188,281 @@ class EditNetwork extends Component {
 
     return (
       <div className="c7n-region">
-        <Sidebar
-          destroyOnClose
-          cancelText={<FormattedMessage id="cancel" />}
-          okText={<FormattedMessage id="edit" />}
-          title={<FormattedMessage id="network.header.update" />}
-          visible={visible}
-          onOk={this.handleSubmit}
-          onCancel={this.handleClose.bind(this, false)}
-          confirmLoading={submitting}
-          maskClosable={false}
-          width={740}
-        >
-          <Form layout="vertical" className="c7ncd-deployment-network-form-wrap">
+        <Form layout="vertical" className="c7ncd-deployment-network-form-wrap">
+          <FormItem
+            className="network-form-name"
+            {...formItemLayout}
+          >
+            {getFieldDecorator('name', {
+              initialValue: initName,
+              rules: [
+                {
+                  required: true,
+                  message: intl.formatMessage({ id: 'required' }),
+                },
+              ],
+            })(
+              <Input
+                disabled
+                maxLength={30}
+                type="text"
+                label={<FormattedMessage id="network.form.name" />}
+              />
+            )}
+          </FormItem>
+          <div className="network-panel-title">
+            <Icon type="instance_outline" />
+            <FormattedMessage id="network.target" />
+          </div>
+          <div className="network-radio-wrap">
             <FormItem
-              className="network-form-name"
+              className="network-radio-form"
               {...formItemLayout}
             >
-              {getFieldDecorator('name', {
-                initialValue: initName,
-                rules: [
-                  {
-                    required: true,
-                    message: intl.formatMessage({ id: 'required' }),
-                  },
-                ],
+              {getFieldDecorator('target', {
+                initialValue: targetType,
               })(
-                <Input
-                  disabled
-                  maxLength={30}
-                  type="text"
-                  label={<FormattedMessage id="network.form.name" />}
-                />
+                <RadioGroup
+                  name="target"
+                  disabled={!envId}
+                  onChange={(e) => this.handleTypeChange(e, 'targetKeys')}
+                >
+                  <Radio value="instance">
+                    <FormattedMessage id="network.target.instance" />
+                  </Radio>
+                  <Radio value="param">
+                    <FormattedMessage id="network.target.param" />
+                  </Radio>
+                  <Radio value="endPoints">Endpoints</Radio>
+                </RadioGroup>
               )}
             </FormItem>
-            <div className="network-panel-title">
-              <Icon type="instance_outline" />
-              <FormattedMessage id="network.target" />
-            </div>
-            <div className="network-radio-wrap">
-              <FormItem
-                className="network-radio-form"
-                {...formItemLayout}
-              >
-                {getFieldDecorator('target', {
-                  initialValue: targetType,
-                })(
-                  <RadioGroup
-                    name="target"
-                    disabled={!envId}
-                    onChange={(e) => this.handleTypeChange(e, 'targetKeys')}
-                  >
-                    <Radio value="instance">
-                      <FormattedMessage id="network.target.instance" />
-                    </Radio>
-                    <Radio value="param">
-                      <FormattedMessage id="network.target.param" />
-                    </Radio>
-                    <Radio value="endPoints">Endpoints</Radio>
-                  </RadioGroup>
-                )}
-              </FormItem>
-            </div>
-            <div className="network-panel">
-              {targetType === 'instance' && (
-                <Fragment>
-                  <FormItem
-                    className="network-panel-form"
-                    {...formItemLayout}
-                  >
-                    {getFieldDecorator('appServiceId', {
-                      initialValue:
-                        localAppOptions.length || storeAppOptions.length
-                          ? initApp
-                          : undefined,
-                      rules: [
-                        {
-                          required: true,
-                          message: intl.formatMessage({ id: 'required' }),
-                        },
-                      ],
-                    })(
-                      <Select
-                        filter
-                        showSearch
-                        optionFilterProp="children"
-                        disabled={!envId}
-                        onSelect={this.handleAppSelect}
-                        label={<FormattedMessage id="network.form.app" />}
-                        getPopupContainer={(triggerNode) => triggerNode.parentNode}
-                        filterOption={(input, option) => option.props.children.props.children.props.children.props.name
-                          .toLowerCase()
-                          .indexOf(input.toLowerCase()) >= 0}
+          </div>
+          <div className="network-panel">
+            {targetType === 'instance' && (
+              <Fragment>
+                <FormItem
+                  className="network-panel-form"
+                  {...formItemLayout}
+                >
+                  {getFieldDecorator('appServiceId', {
+                    initialValue:
+                      localAppOptions.length || storeAppOptions.length
+                        ? initApp
+                        : undefined,
+                    rules: [
+                      {
+                        required: true,
+                        message: intl.formatMessage({ id: 'required' }),
+                      },
+                    ],
+                  })(
+                    <Select
+                      filter
+                      showSearch
+                      optionFilterProp="children"
+                      disabled={!envId}
+                      onSelect={this.handleAppSelect}
+                      label={<FormattedMessage id="network.form.app" />}
+                      getPopupContainer={(triggerNode) => triggerNode.parentNode}
+                      filterOption={(input, option) => option.props.children.props.children.props.children.props.name
+                        .toLowerCase()
+                        .indexOf(input.toLowerCase()) >= 0}
+                    >
+                      <OptGroup
+                        label={<FormattedMessage id="project" />}
+                        key="project"
                       >
-                        <OptGroup
-                          label={<FormattedMessage id="project" />}
-                          key="project"
-                        >
-                          {localAppOptions}
-                        </OptGroup>
-                        <OptGroup
-                          label={<FormattedMessage id="market" />}
-                          key="markert"
-                        >
-                          {storeAppOptions}
-                        </OptGroup>
-                      </Select>
-                    )}
-                  </FormItem>
-                  <FormItem
-                    className="network-panel-form"
-                    {...formItemLayout}
-                  >
-                    {getFieldDecorator('instances', {
-                      initialValue: initIst.length ? initIst : undefined,
-                      trigger: ['onChange', 'onSubmit'],
-                      rules: [
-                        {
-                          required: true,
-                          message: intl.formatMessage({ id: 'required' }),
-                        },
-                        {
-                          validator: this.checkInstance,
-                        },
-                      ],
-                    })(
-                      <Select
-                        filter
-                        mode="multiple"
-                        className="network-select-instance"
-                        optionFilterProp="children"
-                        optionLabelProp="children"
-                        disabled={!envId}
-                        label={
-                          <FormattedMessage id="network.target.instance" />
-                        }
-                        notFoundContent={intl.formatMessage({
-                          id: 'network.form.instance.disable',
-                        })}
-                        getPopupContainer={(triggerNode) => triggerNode.parentNode}
-                        choiceRender={this.handleRenderInstance}
-                        filterOption={(input, option) => option.props.children.props.children
-                          .toLowerCase()
-                          .indexOf(input.toLowerCase()) >= 0}
+                        {localAppOptions}
+                      </OptGroup>
+                      <OptGroup
+                        label={<FormattedMessage id="market" />}
+                        key="markert"
                       >
-                        {initIstOption}
-                        {istOption}
-                      </Select>
-                    )}
-                  </FormItem>
-                </Fragment>
-              )}
-              {targetType === 'param' && (
-                <Fragment>
-                  {targetItems}
-                  <Button
-                    disabled={!envId}
-                    type="primary"
-                    funcType="flat"
-                    onClick={() => this.addGroup('targetKeys')}
-                    icon="add"
-                  >
-                    <FormattedMessage id="network.config.addtarget" />
-                  </Button>
-                </Fragment>
-              )}
-              {targetType === 'endPoints' && (
-                <Fragment>
-                  <FormItem
-                    className="c7n-select_480 network-panel-form"
-                    {...formItemLayout}
-                  >
-                    {getFieldDecorator('targetIps', {
-                      rules: [
-                        {
-                          required: true,
-                          message: intl.formatMessage({ id: 'required' }),
-                        },
-                        {
-                          validator: (rule, value, callback) => this.checkIP(rule, value, callback, 'targetIps'),
-                        },
-                      ],
-                      initialValue: targetIps,
-                    })(
-                      <Select
-                        mode="tags"
-                        ref={(node) => this.ipSelectRef(node, 'targetIps')}
-                        disabled={!envId}
-                        label={<FormattedMessage id="network.target.ip" />}
-                        onInputKeyDown={(e) => this.handleInputKeyDown(e, 'targetIps')}
-                        choiceRender={(liNode, value) => this.handleChoiceRender(liNode, value, 'targetIp')}
-                        onChoiceRemove={(value) => this.handleChoiceRemove(value, 'targetIp')}
-                        filterOption={false}
-                        notFoundContent={false}
-                        showNotFindInputItem={false}
-                        showNotFindSelectedItem={false}
-                        allowClear
-                      />
-                    )}
-                  </FormItem>
-                  {targetPortItems}
-                  <Button
-                    disabled={!envId}
-                    type="primary"
-                    funcType="flat"
-                    onClick={() => this.addGroup('endPoints')}
-                    icon="add"
-                  >
-                    <FormattedMessage id="network.config.addport" />
-                  </Button>
-                </Fragment>
-              )}
-            </div>
-            <div
-              className={`network-panel-title ${
-                !envId ? 'network-panel-title_disabled' : ''
-              }`}
+                        {storeAppOptions}
+                      </OptGroup>
+                    </Select>
+                  )}
+                </FormItem>
+                <FormItem
+                  className="network-panel-form"
+                  {...formItemLayout}
+                >
+                  {getFieldDecorator('instances', {
+                    initialValue: initIst.length ? initIst : undefined,
+                    trigger: ['onChange', 'onSubmit'],
+                    rules: [
+                      {
+                        required: true,
+                        message: intl.formatMessage({ id: 'required' }),
+                      },
+                      {
+                        validator: this.checkInstance,
+                      },
+                    ],
+                  })(
+                    <Select
+                      filter
+                      mode="multiple"
+                      className="network-select-instance"
+                      optionFilterProp="children"
+                      optionLabelProp="children"
+                      disabled={!envId}
+                      label={
+                        <FormattedMessage id="network.target.instance" />
+                      }
+                      notFoundContent={intl.formatMessage({
+                        id: 'network.form.instance.disable',
+                      })}
+                      getPopupContainer={(triggerNode) => triggerNode.parentNode}
+                      choiceRender={this.handleRenderInstance}
+                      filterOption={(input, option) => option.props.children.props.children
+                        .toLowerCase()
+                        .indexOf(input.toLowerCase()) >= 0}
+                    >
+                      {initIstOption}
+                      {istOption}
+                    </Select>
+                  )}
+                </FormItem>
+              </Fragment>
+            )}
+            {targetType === 'param' && (
+              <Fragment>
+                {targetItems}
+                <Button
+                  disabled={!envId}
+                  type="primary"
+                  funcType="flat"
+                  onClick={() => this.addGroup('targetKeys')}
+                  icon="add"
+                >
+                  <FormattedMessage id="network.config.addtarget" />
+                </Button>
+              </Fragment>
+            )}
+            {targetType === 'endPoints' && (
+              <Fragment>
+                <FormItem
+                  className="c7n-select_480 network-panel-form"
+                  {...formItemLayout}
+                >
+                  {getFieldDecorator('targetIps', {
+                    rules: [
+                      {
+                        required: true,
+                        message: intl.formatMessage({ id: 'required' }),
+                      },
+                      {
+                        validator: (rule, value, callback) => this.checkIP(rule, value, callback, 'targetIps'),
+                      },
+                    ],
+                    initialValue: targetIps,
+                  })(
+                    <Select
+                      mode="tags"
+                      ref={(node) => this.ipSelectRef(node, 'targetIps')}
+                      disabled={!envId}
+                      label={<FormattedMessage id="network.target.ip" />}
+                      onInputKeyDown={(e) => this.handleInputKeyDown(e, 'targetIps')}
+                      choiceRender={(liNode, value) => this.handleChoiceRender(liNode, value, 'targetIp')}
+                      onChoiceRemove={(value) => this.handleChoiceRemove(value, 'targetIp')}
+                      filterOption={false}
+                      notFoundContent={false}
+                      showNotFindInputItem={false}
+                      showNotFindSelectedItem={false}
+                      allowClear
+                    />
+                  )}
+                </FormItem>
+                {targetPortItems}
+                <Button
+                  disabled={!envId}
+                  type="primary"
+                  funcType="flat"
+                  onClick={() => this.addGroup('endPoints')}
+                  icon="add"
+                >
+                  <FormattedMessage id="network.config.addport" />
+                </Button>
+              </Fragment>
+            )}
+          </div>
+          <div
+            className={`network-panel-title ${
+              !envId ? 'network-panel-title_disabled' : ''
+            }`}
+          >
+            <Icon type="router" />
+            <FormattedMessage id="network.config" />
+          </div>
+          <div className="network-radio-wrap">
+            <FormItem
+              className="network-radio-form"
+              {...formItemLayout}
             >
-              <Icon type="router" />
-              <FormattedMessage id="network.config" />
-            </div>
-            <div className="network-radio-wrap">
-              <FormItem
-                className="network-radio-form"
-                {...formItemLayout}
-              >
-                {getFieldDecorator('config', {
-                  initialValue: configType,
-                })(
-                  <RadioGroup
-                    name="config"
-                    disabled={!envId}
-                    onChange={(e) => this.handleTypeChange(e, 'portKeys')}
-                  >
-                    <Radio value="ClusterIP">ClusterIP</Radio>
-                    <Radio value="NodePort">NodePort</Radio>
-                    <Radio value="LoadBalancer">LoadBalancer</Radio>
-                  </RadioGroup>
-                )}
-              </FormItem>
-            </div>
-            <div className="network-panel">
-              {configType === 'ClusterIP' ? (
-                <Fragment>
-                  <FormItem
-                    className="network-panel-form"
-                    {...formItemLayout}
-                  >
-                    {getFieldDecorator('externalIps', {
-                      initialValue: initIp,
-                      rules: [
-                        {
-                          validator: this.checkIP,
-                        },
-                      ],
-                    })(
-                      <Select
-                        mode="tags"
-                        ref={this.ipSelectRef}
-                        disabled={!envId}
-                        label={<FormattedMessage id="network.config.ip" />}
-                        onInputKeyDown={this.handleInputKeyDown}
-                        choiceRender={this.handleChoiceRender}
-                        onChoiceRemove={this.handleChoiceRemove}
-                        filterOption={false}
-                        notFoundContent={false}
-                        showNotFindInputItem={false}
-                        showNotFindSelectedItem={false}
-                        allowClear
-                      />
-                    )}
-                  </FormItem>
-                  {portItems}
-                </Fragment>
-              ) : (
-                portItems
+              {getFieldDecorator('config', {
+                initialValue: configType,
+              })(
+                <RadioGroup
+                  name="config"
+                  disabled={!envId}
+                  onChange={(e) => this.handleTypeChange(e, 'portKeys')}
+                >
+                  <Radio value="ClusterIP">ClusterIP</Radio>
+                  <Radio value="NodePort">NodePort</Radio>
+                  <Radio value="LoadBalancer">LoadBalancer</Radio>
+                </RadioGroup>
               )}
-              <Button
-                disabled={!envId}
-                type="primary"
-                funcType="flat"
-                onClick={() => this.addGroup('portKeys')}
-                icon="add"
-              >
-                <FormattedMessage id="network.config.addport" />
-              </Button>
-            </div>
-          </Form>
-          <InterceptMask visible={submitting} />
-        </Sidebar>
+            </FormItem>
+          </div>
+          <div className="network-panel">
+            {configType === 'ClusterIP' ? (
+              <Fragment>
+                <FormItem
+                  className="network-panel-form"
+                  {...formItemLayout}
+                >
+                  {getFieldDecorator('externalIps', {
+                    initialValue: initIp,
+                    rules: [
+                      {
+                        validator: this.checkIP,
+                      },
+                    ],
+                  })(
+                    <Select
+                      mode="tags"
+                      ref={this.ipSelectRef}
+                      disabled={!envId}
+                      label={<FormattedMessage id="network.config.ip" />}
+                      onInputKeyDown={this.handleInputKeyDown}
+                      choiceRender={this.handleChoiceRender}
+                      onChoiceRemove={this.handleChoiceRemove}
+                      filterOption={false}
+                      notFoundContent={false}
+                      showNotFindInputItem={false}
+                      showNotFindSelectedItem={false}
+                      allowClear
+                    />
+                  )}
+                </FormItem>
+                {portItems}
+              </Fragment>
+            ) : (
+              portItems
+            )}
+            <Button
+              disabled={!envId}
+              type="primary"
+              funcType="flat"
+              onClick={() => this.addGroup('portKeys')}
+              icon="add"
+            >
+              <FormattedMessage id="network.config.addport" />
+            </Button>
+          </div>
+        </Form>
       </div>
     );
   }

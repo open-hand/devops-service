@@ -90,13 +90,14 @@ function CustomItem({
             store={customStore}
             refresh={freshMenu}
           />,
+          okText: formatMessage({ id: 'save' }),
         });
       }
     });
   }
 
   function getSuffix() {
-    const status = record.get('commandStatus');
+    const status = record.get('status');
     const disabled = getEnvIsNotRunning() || status === 'operating';
     if (disabled) {
       return null;

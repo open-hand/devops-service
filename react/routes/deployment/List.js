@@ -88,6 +88,7 @@ const Deployment = withRouter(observer((props) => {
         prefixCls={prefixCls}
       />,
       okText: formatMessage({ id: 'startUp' }),
+      afterClose: () => pipelineDs.clearCachedSelected(),
     });
   }
 

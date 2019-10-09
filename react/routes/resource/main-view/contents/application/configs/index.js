@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Action } from '@choerodon/master';
-import { Table } from 'choerodon-ui/pro';
+import { Modal, Table } from 'choerodon-ui/pro';
 import MouserOverWrapper from '../../../../../../components/MouseOverWrapper/MouserOverWrapper';
 import StatusTags from '../../../../../../components/status-tag';
 import TimePopover from '../../../../../../components/timePopover/TimePopover';
@@ -14,6 +14,10 @@ import { useMainStore } from '../../../stores';
 import './index.less';
 
 const { Column } = Table;
+const modalKey = Modal.key();
+const modalStyle = {
+  width: '70%',
+};
 
 const AppConfigs = observer(() => {
   const {
@@ -26,8 +30,6 @@ const AppConfigs = observer(() => {
   const { mappingStore, mappingDs } = useApplicationStore();
   const { mainStore: { openDeleteModal } } = useMainStore();
   const statusStyle = useMemo(() => ({ marginRight: '0.08rem' }), []);
-  const [showModal, setShowModal] = useState(false);
-  const [recordId, setRecordId] = useState(null);
 
   function refresh() {
     treeDs.query();
@@ -40,15 +42,24 @@ const AppConfigs = observer(() => {
     return !connect;
   }
 
-  function closeSideBar(fresh) {
-    setRecordId(null);
-    setShowModal(false);
-    fresh && refresh();
-  }
-
   function handleEdit(record) {
-    setRecordId(record.get('id'));
-    setShowModal(true);
+    Modal.open({
+      key: modalKey,
+      style: modalStyle,
+      drawer: true,
+      title: formatMessage({ id: `${intlPrefix}.configMap.edit` }),
+      children: <KeyValueModal
+        modeSwitch
+        intlPrefix={intlPrefix}
+        title="mapping"
+        id={record.get('id')}
+        envId={parentId}
+        appId={id}
+        store={mappingStore}
+        refresh={refresh}
+      />,
+      okText: formatMessage({ id: 'save' }),
+    });
   }
 
   function renderName({ value, record }) {
@@ -116,17 +127,6 @@ const AppConfigs = observer(() => {
           <Column name="lastUpdateDate" renderer={renderDate} width="1rem" />
         </Table>
       </div>
-      {showModal && <KeyValueModal
-        modeSwitch
-        intlPrefix={intlPrefix}
-        title="mapping"
-        visible={showModal}
-        id={recordId}
-        envId={parentId}
-        appId={id}
-        onClose={closeSideBar}
-        store={mappingStore}
-      />}
     </div>
   );
 });
