@@ -298,7 +298,7 @@
         r.value_id = dv.id
     </select>
 
-    <select id="queryByInstanceId" resultType="java.lang.String">
+    <select id="queryValueByInstanceId" resultType="java.lang.String">
         SELECT
         dv.
         VALUE

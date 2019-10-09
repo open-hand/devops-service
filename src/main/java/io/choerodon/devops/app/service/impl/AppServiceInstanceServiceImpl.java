@@ -1032,7 +1032,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
     @Override
     public String baseQueryValueByInstanceId(Long instanceId) {
-        return appServiceInstanceMapper.queryByInstanceId(instanceId);
+        return appServiceInstanceMapper.queryValueByInstanceId(instanceId);
     }
 
     @Override
