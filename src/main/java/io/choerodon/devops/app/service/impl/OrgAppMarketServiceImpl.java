@@ -243,15 +243,14 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             // 创建应用
             GroupDTO groupDTO = gitlabGroupService.createSiteAppGroup(appMarketDownloadVO.getIamUserId(), groupPath);
             UserAttrDTO userAttrDTO = userAttrService.baseQueryById(appMarketDownloadVO.getIamUserId());
+            // 分配所在gitlab group 用户权限
+            MemberDTO memberDTO = gitlabServiceClientOperator.queryGroupMember(TypeUtil.objToInteger(groupDTO.getId()), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+            if (memberDTO == null || memberDTO.getId() == null || !memberDTO.getAccessLevel().equals(AccessLevel.OWNER.value)) {
+                memberDTO = new MemberDTO(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), AccessLevel.OWNER.value);
+                gitlabServiceClientOperator.createGroupMember(groupDTO.getId(), memberDTO);
+            }
+
             appMarketDownloadVO.getAppServiceDownloadPayloads().forEach(downloadPayload -> {
-
-                // 分配所在gitlab group 用户权限
-                MemberDTO memberDTO = gitlabServiceClientOperator.queryGroupMember(TypeUtil.objToInteger(groupDTO.getId()), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
-                if (memberDTO == null || memberDTO.getId() == null || !memberDTO.getAccessLevel().equals(AccessLevel.OWNER.value)) {
-                    memberDTO = new MemberDTO(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), AccessLevel.OWNER.value);
-                    gitlabServiceClientOperator.createGroupMember(groupDTO.getId(), memberDTO);
-                }
-
                 // 校验是否已经下载过
                 AppServiceDTO appServiceDTO = appServiceService.baseQueryByMktAppId(downloadPayload.getAppServiceCode(), appMarketDownloadVO.getAppId());
                 downloadPayload.setAppId(appMarketDownloadVO.getAppId());
