@@ -91,4 +91,13 @@ class DevopsOrganizationConfigControllerSpec extends Specification {
         then:
         entity.statusCode.is2xxSuccessful()
     }
+
+    def "checkChart"() {
+        given:
+        def url = BASE_URL + "/check_chart?url=https://registry.saas.hand-china.com"
+        when:
+        def entity = restTemplate.getForEntity(url, Boolean.class, 1L)
+        then:
+        entity.getStatusCode().is2xxSuccessful()
+    }
 }

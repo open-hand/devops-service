@@ -137,6 +137,7 @@ class DevopsProjectConfigControllerSpec extends Specification {
         def entity = restTemplate.getForEntity(MAPPING, DevopsConfigRepVO.class, project_id)
         then:
         entity.getStatusCode().is2xxSuccessful()
+        entity.getBody() != null
     }
 
     def "queryProjectDefaultConfig"() {
@@ -144,17 +145,26 @@ class DevopsProjectConfigControllerSpec extends Specification {
         def entity = restTemplate.getForEntity(MAPPING + "/default_config", DefaultConfigVO.class, project_id)
         then:
         entity.getStatusCode().is2xxSuccessful()
-        entity.getBody() != null
+        entity.body != null
     }
-    def "checkHarbor"(){
+
+    def "checkHarbor"() {
         given:
-        def url = MAPPING+"/check_harbor?url=https://registry.saas.hand-china.com&" +
+        def url = MAPPING + "/check_harbor?url=https://registry.saas.hand-china.com&" +
                 "userName=admin&password=Handhand1357&email=zhuang.chang@hand-china.com"
-        Map<String, Object> map = new HashMap<>()
         when:
         def entity = restTemplate.getForEntity(url, Boolean.class, 1L)
         then:
-        entity.statusCode.is2xxSuccessful()
+        entity.getStatusCode().is2xxSuccessful()
+    }
+
+    def "checkChart"() {
+        given:
+        def url = MAPPING + "/check_chart?url=https://registry.saas.hand-china.com"
+        when:
+        def entity = restTemplate.getForEntity(url, Boolean.class, 1L)
+        then:
+        entity.getStatusCode().is2xxSuccessful()
     }
 
 }
