@@ -30,25 +30,25 @@ class ProjectPipelineControllerSpec extends Specification {
     GitlabServiceClient gitlabServiceClient = Mockito.mock(GitlabServiceClient.class)
 
     def setup() {
-        DependencyInjectUtil.setAttribute(gitlabServiceClientOperator, "gitlabServiceClient", gitlabServiceClient)
-
         ResponseEntity<Boolean> responseEntity = new ResponseEntity<>(true, HttpStatus.OK)
         Mockito.doReturn(responseEntity).when(gitlabServiceClient).retryPipeline(1, 1, 1)
     }
 
     def "Retry"() {
         when: 'Retry jobs in a pipeline'
-        def result = restTemplate.postForObject("/v1/projects/1/gitlab_projects/1/pipelines/1/retry", null, Boolean.class)
+        def result = restTemplate.postForEntity("/v1/projects/1/gitlab_projects/1/pipelines/1/retry", null, Boolean.class)
 
         then: '校验返回值'
-        result
+        result.getStatusCode().is2xxSuccessful()
+        result.getBody() != null
     }
 
     def "Cancel"() {
         when: 'Cancel jobs in a pipeline'
-        def result = restTemplate.postForObject("/v1/projects/1/gitlab_projects/1/pipelines/1/cancel", null, Boolean.class)
+        def result = restTemplate.postForEntity("/v1/projects/1/gitlab_projects/1/pipelines/1/cancel", null, Boolean.class)
 
         then: '校验返回值'
-        result
+        result.getStatusCode().is2xxSuccessful()
+        result.getBody() != null
     }
 }

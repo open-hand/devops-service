@@ -285,7 +285,7 @@ class DevopsServiceControllerSpec extends Specification {
 
     def "pageByEnv"() {
         given: '设置请求头'
-        String infra = "{\"params\":[],\"searchParam\":{\"name\":\"svc\"}}"
+        String infra = "{\"params\":[],\"searchParam\":{}}"
 
         HttpHeaders headers = new HttpHeaders()
         headers.setContentType(MediaType.valueOf("application/jsonUTF-8"))
@@ -298,7 +298,7 @@ class DevopsServiceControllerSpec extends Specification {
         envUtil.getUpdatedClusterList() >> envList
 
         when: '环境总览分页查询网络'
-        def entity = restTemplate.postForEntity("/v1/projects/1/service/{env_id}/page_by_env", strEntity, PageInfo.class, 1L)
+        def entity = restTemplate.postForEntity("/v1/projects/1/service/page_by_options?app_service_id=1&page=1&size=10&env_id=1", strEntity, PageInfo.class)
 
         then: '校验返回值'
         entity.getStatusCode().is2xxSuccessful()
@@ -315,7 +315,7 @@ class DevopsServiceControllerSpec extends Specification {
         HttpEntity<String> strEntity = new HttpEntity<String>(infra, headers)
 
         when: '查询实例下关联的网络域名（不包含chart）'
-        def entity = restTemplate.postForEntity("/v1/projects/1/service/page_by_instance?instance_id=1&app_service_id=1&page=1&size=10", strEntity, PageInfo.class)
+        def entity = restTemplate.postForEntity("/v1/projects/1/service/page_by_instance?instance_id=1&app_service_id=1&page=1&size=10&env_id=1", strEntity, PageInfo.class)
 
         then: '校验返回值'
         entity.getStatusCode().is2xxSuccessful()
