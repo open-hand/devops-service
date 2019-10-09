@@ -29,7 +29,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  */
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @Import(IntegrationTestConfiguration)
-@Subject(DevopsSecretController)
+@Subject(DevopsProjectControllerSpec)
 @Stepwise
 class DevopsProjectControllerSpec extends Specification {
     private static final String MAPPING = "/v1/projects/{project_id}"
