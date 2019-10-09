@@ -21,6 +21,10 @@ const ImportForm = injectIntl(observer((props) => {
   const { dataSet, selectedDs, record, appServiceStore, projectId, intl: { formatMessage }, intlPrefix, prefixCls, refresh, modal } = props;
   const [hasFailed, setHasFailed] = useState(false);
 
+  useEffect(() => {
+    setHasFailed(false);
+  }, [record.get('platformType')]);
+
   modal.handleOk(async () => {
     if (record.get('platformType') === 'share' || record.get('platformType') === 'market') {
       if (!selectedDs.length) return true;

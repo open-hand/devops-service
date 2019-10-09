@@ -26,7 +26,16 @@ const SourceTable = injectIntl(observer(({ tableDs, selectedDs, store, projectId
   }, []);
 
   modal.handleOk(() => {
-    const records = filter(tableDs.selected, (record) => !includes(selectedId, record.get('id')));
+    const records = [];
+    const newSelectedId = [];
+    forEach(tableDs.selected, (record) => {
+      if (!includes(selectedId, record.get('id'))) {
+        records.push(record);
+      }
+      newSelectedId.push(record.get('id'));
+    });
+    const deleteRecords = selectedDs.filter(record => !includes(newSelectedId, record.get('id')));
+    selectedDs.remove(deleteRecords);
     selectedDs.push(...records);
   });
 
@@ -76,7 +85,7 @@ const SourceTable = injectIntl(observer(({ tableDs, selectedDs, store, projectId
         <TextField
           onChange={handleChangeParam}
           colSpan={2}
-          prefix={<Icon type="search" />}
+          prefix={<Icon type="search" className={`${prefixCls}-prefix-icon`} />}
           placeholder={formatMessage({ id: `${intlPrefix}.param` })}
         />
       </Form>
