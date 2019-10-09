@@ -93,6 +93,7 @@ export default function DeployConfig() {
         configFormDs.reset();
         detailStore.setValue('');
       },
+      okText: formatMessage({ id: 'save' }),
     });
   }
 

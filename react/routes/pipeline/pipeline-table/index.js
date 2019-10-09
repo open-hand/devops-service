@@ -586,7 +586,7 @@ export default class Pipeline extends Component {
             }
           </Select>
           <Select
-            className="c7ncd-pipeline-search-one"
+            className="c7ncd-pipeline-search"
             label={formatMessage({ id: 'pipeline.deploy.env' })}
             onChange={(value) => this.setState({ envId: value }, () => this.loadData())}
             allowClear
@@ -605,7 +605,7 @@ export default class Pipeline extends Component {
             ))}
           </Select>
           <Select
-            className="c7ncd-pipeline-search-one"
+            className="c7ncd-pipeline-search"
             label={formatMessage({ id: 'pipeline.trigger' })}
             onChange={(value) => this.setState({ triggerType: value }, () => this.loadData())}
             allowClear

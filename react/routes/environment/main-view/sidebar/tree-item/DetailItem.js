@@ -55,6 +55,7 @@ function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
       />,
       drawer: true,
       style: modalStyle,
+      okText: formatMessage({ id: 'save' }),
     });
   }
 

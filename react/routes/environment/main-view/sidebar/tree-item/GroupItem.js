@@ -37,6 +37,7 @@ function GroupItem({ record, search, intl: { formatMessage }, intlPrefix }) {
       children: <GroupForm dataSet={groupFormDs} treeDs={treeDs} />,
       drawer: true,
       style: modalStyle,
+      okText: formatMessage({ id: 'save' }),
     });
   }
 

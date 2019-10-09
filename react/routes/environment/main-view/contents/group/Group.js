@@ -105,6 +105,7 @@ const Group = observer(() => {
       />,
       drawer: true,
       style: modalStyle,
+      okText: formatMessage({ id: 'save' }),
     });
   }
 

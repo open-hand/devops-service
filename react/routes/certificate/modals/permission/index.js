@@ -85,8 +85,12 @@ export default injectIntl(observer(({
     <div className={`${prefixCls}-permission-wrap`}>
       <Form record={record}>
         <SelectBox name="skipCheckProjectPermission">
-          <Option value>{formatMessage({ id: `${intlPrefix}.project.all` })}</Option>
-          <Option value={false}>{formatMessage({ id: `${intlPrefix}.project.some` })}</Option>
+          <Option value>
+            <span className={`${prefixCls}-permission-wrap-radio`}>{formatMessage({ id: `${intlPrefix}.project.all` })}</span>
+          </Option>
+          <Option value={false}>
+            <span className={`${prefixCls}-permission-wrap-radio`}>{formatMessage({ id: `${intlPrefix}.project.some` })}</span>
+          </Option>
         </SelectBox>
       </Form>
       {!record.get('skipCheckProjectPermission') ? (
