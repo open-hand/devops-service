@@ -1731,7 +1731,7 @@ const zhCN = {
   'domain.domain.check.failed':
     '由小写字母，数字、和 . 组成，以字母、数字开始和结束',
   'domain.path.check.exist': '域名地址与路径的组合已经存在',
-  'domain.path.check.failed': '路径以 / 开始，且不能有空白字符',
+  'domain.path.check.failed': '以 / 开始，且不能有空白字符',
   'domain.path.check.notSet': '如不设置，请填写 /',
   'domain.path.add': '添加路径',
   'domain.path.isnull': '请先填写正确路径',

@@ -171,9 +171,12 @@ const CreateForm = injectIntl(observer((props) => {
       onClick={triggerFileBtn}
       role="none"
     >
-      <div className="create-img-mask">
-        <Icon type="photo_camera" className="create-img-icon" />
+      <div className={isModify ? 'edit-img-mask' : 'create-img-mask'}>
+        <Icon type="photo_camera" className={isModify ? 'edit-img-icon' : 'create-img-icon'} />
       </div>
+      {isModify && !record.get('imgUrl') && <div className="edit-avatar">
+        <span>{record.get('name') && record.get('name').slice(0, 1)}</span>
+      </div>}
       <Input
         id="file"
         type="file"

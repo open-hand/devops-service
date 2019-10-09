@@ -32,14 +32,16 @@ const PodDetail = memo(() => {
   function renderName({ value, record }) {
     const ready = record.get('ready');
     return (
-      <div className="column-container-mt">
+      <div className="column-containers-detail">
         <Tooltip title={<FormattedMessage id={`ist.${ready ? 'y' : 'n'}`} />}>
           <Icon
             type={ready ? 'check_circle' : 'cancel'}
             className={`${prefixCls}-pod-ready-${ready ? 'check' : 'cancel'}`}
           />
         </Tooltip>
-        <span>{value}</span>
+        <MouserOverWrapper text={value} width={0.2}>
+          {value}
+        </MouserOverWrapper>
       </div>
     );
   }
