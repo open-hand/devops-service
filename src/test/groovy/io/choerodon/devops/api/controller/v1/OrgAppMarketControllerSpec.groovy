@@ -1,26 +1,18 @@
 package io.choerodon.devops.api.controller.v1
 
+import com.github.pagehelper.PageInfo
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.HarborMarketVO
 import io.choerodon.devops.api.vo.iam.MarketApplicationVO
-import io.choerodon.devops.app.eventhandler.payload.AppMarketDownloadPayload
-import io.choerodon.devops.app.eventhandler.payload.AppMarketFixVersionPayload
-import io.choerodon.devops.app.eventhandler.payload.AppMarketUploadPayload
-import io.choerodon.devops.app.eventhandler.payload.AppServiceDownloadPayload
-import io.choerodon.devops.app.eventhandler.payload.AppServiceVersionDownloadPayload
+import io.choerodon.devops.app.eventhandler.payload.*
 import io.choerodon.devops.infra.dto.harbor.RobotUser
 import io.choerodon.devops.infra.dto.harbor.User
-import io.choerodon.devops.infra.dto.iam.ProjectDTO
-import io.choerodon.devops.infra.feign.BaseServiceClient
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.context.annotation.Import
-import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
 import spock.lang.Specification
 import spock.lang.Stepwise
 import spock.lang.Subject
@@ -52,13 +44,13 @@ class OrgAppMarketControllerSpec extends Specification {
         given:
         def app_id = 1L
         when:
-        def entity = restTemplate.postForEntity(base_url + "/page_app_services?app_id={app_id}", null, com.github.pagehelper.PageInfo, app_id)
+        def entity = restTemplate.postForEntity(base_url + "/page_app_services?app_id={app_id}", null, PageInfo.class, app_id)
         then:
         entity.statusCode.is2xxSuccessful()
 
     }
 
-    def "listVersionsByAppServiceId"(){
+    def "listVersionsByAppServiceId"() {
         given:
         def app_id = 1L
         when:
@@ -69,8 +61,7 @@ class OrgAppMarketControllerSpec extends Specification {
 
     def "Upload"() {
         given:
-        def app_id = 1L
-        MarketApplicationVO marketApplicationVO=new MarketApplicationVO()
+        MarketApplicationVO marketApplicationVO = new MarketApplicationVO()
         marketApplicationVO.setOrganizationId(1L)
         marketApplicationVO.setType("mkt_deploy_only")
         marketApplicationVO.setName("test")
@@ -79,11 +70,11 @@ class OrgAppMarketControllerSpec extends Specification {
         marketApplicationVO.setVersion(1L)
         AppMarketUploadPayload appMarketUploadPayload = new AppMarketUploadPayload()
         appMarketUploadPayload.setProjectId(1L)
-        AppMarketFixVersionPayload appMarketFixVersionPayload=new AppMarketFixVersionPayload()
+        AppMarketFixVersionPayload appMarketFixVersionPayload = new AppMarketFixVersionPayload()
         appMarketFixVersionPayload.setMarketApplicationVO(marketApplicationVO)
         appMarketFixVersionPayload.setFixVersionUploadPayload(appMarketUploadPayload)
         when:
-        def entity = restTemplate.postForEntity(base_url + "/upload_fix_version",null,null,)
+        def entity = restTemplate.postForEntity(base_url + "/upload_fix_version", null, null,)
         then:
         entity.statusCode.is2xxSuccessful()
     }
@@ -123,25 +114,25 @@ class OrgAppMarketControllerSpec extends Specification {
         user.setRobotToken("test")
 
         //3
-        AppServiceVersionDownloadPayload appServiceVersionDownloadPayload =new AppServiceVersionDownloadPayload()
+        AppServiceVersionDownloadPayload appServiceVersionDownloadPayload = new AppServiceVersionDownloadPayload()
         appServiceVersionDownloadPayload.setVersion("2019.9.27-094026-master")
         appServiceVersionDownloadPayload.setImage("registry.choerodon.com.cn/app_market_9e403fd9-22be-46d3-aeeb-7ee1a5977028/notability:2019.9.27-094026-master")
         appServiceVersionDownloadPayload.setChartFilePath("http://minio.staging.saas.hand-china.com/app-market/file_2eefe960143a47d892a371696c680762_2019.9.27-094026-master.tgz?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=admin%2F20191008%2F%24%7Bminio.region%3A%2Fs3%2Faws4_request&X-Amz-Date=20191008T073038Z&X-Amz-Expires=1800&X-Amz-SignedHeaders=host&X-Amz-Signature=53794cd2300a9afd33d3138b374cfc96fd514265f315359382afd066fc9bdfec")
 
-        List<AppServiceVersionDownloadPayload> list1=new ArrayList()
+        List<AppServiceVersionDownloadPayload> list1 = new ArrayList()
         list1.add(appServiceVersionDownloadPayload)
         //2
-        AppServiceDownloadPayload appServiceDownloadPayload=new AppServiceDownloadPayload()
+        AppServiceDownloadPayload appServiceDownloadPayload = new AppServiceDownloadPayload()
         appServiceDownloadPayload.setAppId(80L)
         appServiceDownloadPayload.setAppServiceName("Notability")
         appServiceDownloadPayload.setAppServiceCode("notability")
         appServiceDownloadPayload.setAppServiceType("normal")
         appServiceDownloadPayload.setAppServiceVersionDownloadPayloads(list1)
-        List<AppServiceDownloadPayload> list=new ArrayList()
+        List<AppServiceDownloadPayload> list = new ArrayList()
         list.add(appServiceDownloadPayload)
 
         //1
-        AppMarketDownloadPayload appMarketDownloadPayload=new AppMarketDownloadPayload()
+        AppMarketDownloadPayload appMarketDownloadPayload = new AppMarketDownloadPayload()
         appMarketDownloadPayload.setIamUserId(11543L)
         appMarketDownloadPayload.setOrganizationId(1L)
         appMarketDownloadPayload.setAppId(80L)
@@ -154,7 +145,7 @@ class OrgAppMarketControllerSpec extends Specification {
         appMarketDownloadPayload.setAppDownloadRecordId(33L)
         appMarketDownloadPayload.setAppServiceDownloadPayloads(list)
         when:
-        def entity = restTemplate.postForEntity(base_url + "/download",appMarketDownloadPayload,null)
+        def entity = restTemplate.postForEntity(base_url + "/download", appMarketDownloadPayload, null)
         then:
         entity.statusCode.is2xxSuccessful()
     }

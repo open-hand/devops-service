@@ -244,6 +244,14 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             GroupDTO groupDTO = gitlabGroupService.createSiteAppGroup(appMarketDownloadVO.getIamUserId(), groupPath);
             UserAttrDTO userAttrDTO = userAttrService.baseQueryById(appMarketDownloadVO.getIamUserId());
             appMarketDownloadVO.getAppServiceDownloadPayloads().forEach(downloadPayload -> {
+
+                // 分配所在gitlab group 用户权限
+                MemberDTO memberDTO = gitlabServiceClientOperator.queryGroupMember(TypeUtil.objToInteger(groupDTO.getId()), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+                if (memberDTO == null || memberDTO.getId() == null || !memberDTO.getAccessLevel().equals(AccessLevel.OWNER.value)) {
+                    memberDTO = new MemberDTO(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), AccessLevel.OWNER.value);
+                    gitlabServiceClientOperator.createGroupMember(groupDTO.getId(), memberDTO);
+                }
+
                 // 校验是否已经下载过
                 AppServiceDTO appServiceDTO = appServiceService.baseQueryByMktAppId(downloadPayload.getAppServiceCode(), appMarketDownloadVO.getAppId());
                 downloadPayload.setAppId(appMarketDownloadVO.getAppId());
@@ -298,14 +306,6 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         appServiceDTO.setCode(downloadPayload.getAppServiceCode());
         appServiceDTO.setActive(true);
         appServiceDTO.setSkipCheckPermission(true);
-        // 第一次下载创建应用服务
-        // 分配所在gitlab group 用户权限
-        MemberDTO memberDTO = gitlabServiceClientOperator.queryGroupMember(gitlabGroupId, TypeUtil.objToInteger(gitlabUserId));
-        if (memberDTO == null || memberDTO.getId() == null || !memberDTO.getAccessLevel().equals(AccessLevel.OWNER.value)) {
-            memberDTO = new MemberDTO(TypeUtil.objToInteger(gitlabUserId), AccessLevel.OWNER.value);
-            gitlabServiceClientOperator.createGroupMember(gitlabGroupId, memberDTO);
-        }
-
         // 创建gitlab project
         GitlabProjectDTO gitlabProjectDTO = gitlabServiceClientOperator.queryProjectByName(
                 String.format(SITE_APP_GROUP_NAME_FORMAT, appCode),
