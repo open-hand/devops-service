@@ -1388,11 +1388,12 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public PageInfo<AppServiceRepVO> pageShareAppService(Long projectId, PageRequest pageRequest, String searchParam) {
         Map<String, Object> searchParamMap = TypeUtil.castMapParams(searchParam);
-
         Long organizationId = baseServiceClientOperator.queryIamProjectById(projectId).getOrganizationId();
         List<Long> appServiceIds = new ArrayList<>();
-        baseServiceClientOperator.listIamProjectByOrgId(organizationId).forEach(proId ->
-                baseListAll(projectId).forEach(appServiceDTO -> appServiceIds.add(appServiceDTO.getId()))
+        baseServiceClientOperator.listIamProjectByOrgId(organizationId).stream()
+                .filter(projectDTO -> !projectId.equals(projectDTO.getId()))
+                .forEach(proId ->
+                baseListAll(proId.getId()).forEach(appServiceDTO -> appServiceIds.add(appServiceDTO.getId()))
         );
         PageInfo<AppServiceDTO> applicationServiceDTOPageInfo = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> appServiceMapper.listShareApplicationService(appServiceIds, projectId, null, TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS))));
         return ConvertUtils.convertPage(applicationServiceDTOPageInfo, AppServiceRepVO.class);
