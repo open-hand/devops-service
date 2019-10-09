@@ -3,6 +3,8 @@ package io.choerodon.devops.infra.dto;
 import java.util.Date;
 import javax.persistence.*;
 
+import io.swagger.annotations.ApiModelProperty;
+
 import io.choerodon.mybatis.entity.BaseDTO;
 
 /**
@@ -29,6 +31,18 @@ public class DevopsDeployRecordDTO extends BaseDTO {
     private String pipelineTriggerType;
     @Transient
     private Long deployCreatedBy;
+
+    @Transient
+    @ApiModelProperty("手动部署生成的实例id")
+    private Long instanceId;
+
+    @Transient
+    @ApiModelProperty("手动部署生成的实例的环境id")
+    private Long envId;
+
+    @Transient
+    @ApiModelProperty("手动部署的实例的应用服务id")
+    private Long appServiceId;
 
     public DevopsDeployRecordDTO() {
     }
@@ -121,5 +135,29 @@ public class DevopsDeployRecordDTO extends BaseDTO {
 
     public void setDeployTime(Date deployTime) {
         this.deployTime = deployTime;
+    }
+
+    public Long getInstanceId() {
+        return instanceId;
+    }
+
+    public void setInstanceId(Long instanceId) {
+        this.instanceId = instanceId;
+    }
+
+    public Long getEnvId() {
+        return envId;
+    }
+
+    public void setEnvId(Long envId) {
+        this.envId = envId;
+    }
+
+    public Long getAppServiceId() {
+        return appServiceId;
+    }
+
+    public void setAppServiceId(Long appServiceId) {
+        this.appServiceId = appServiceId;
     }
 }
