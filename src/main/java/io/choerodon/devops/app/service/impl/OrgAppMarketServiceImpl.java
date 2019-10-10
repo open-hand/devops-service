@@ -359,6 +359,32 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         return serviceVersionIds;
     }
 
+    /**
+     * 文件路径
+     * 源码下载后文件存放路径：
+     * ——APPLICATION + 时间戳
+     * ————repo
+     * ——————appCode
+     * ————————serviceId_serviceCode
+     * ——————————version
+     * 源码上传包存放路径：
+     * REPO+appCode+时间戳+zip
+     * <p>
+     * chart下载后文件存放路径：
+     * ——APPLICATION + 时间戳
+     * ————chart
+     * ——————appCode
+     * ————————serviceId_serviceCode
+     * ——————————serviceId_serviceCode
+     * <p>
+     * chart上传包存放路径：
+     * chart+appCode+时间戳+zip
+     *
+     * @param marketUploadVO
+     * @param zipFileList
+     * @param appFilePath
+     * @return
+     */
     private MarketImageUrlVO appUploadResolver(AppMarketUploadPayload marketUploadVO, List<String> zipFileList, String appFilePath) {
         //创建根目录 应用
         FileUtil.createDirectory(appFilePath);
