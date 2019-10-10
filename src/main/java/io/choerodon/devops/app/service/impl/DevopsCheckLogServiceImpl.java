@@ -610,9 +610,9 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                                 //未同步成功的项目不处理
                             }
                             if (devopsProjectE != null) {
-                                String username = String.format("user%s%s", organization.getId(), projectE.getId());
-                                String email = String.format("%s@harbor.com", username);
-                                String password = String.format("%s%s", username, GenerateUUID.generateUUID().substring(0, 5));
+                                String username = devopsProjectE.getHarborProjectUserName() == null ? String.format("user%s%s", organization.getId(), projectE.getId()) : devopsProjectE.getHarborProjectUserName();
+                                String email = devopsProjectE.getHarborProjectUserEmail() == null ? String.format("%s@harbor.com", username) : devopsProjectE.getHarborProjectUserEmail();
+                                String password = devopsProjectE.getHarborProjectUserPassword() == null ? String.format("%s%s", username, GenerateUUID.generateUUID().substring(0, 5)) : devopsProjectE.getHarborProjectUserPassword();
                                 User user = new User(username, email, password, username);
                                 //创建用户
                                 Response<Void> result = null;
