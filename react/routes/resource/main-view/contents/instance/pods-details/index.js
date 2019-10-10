@@ -32,7 +32,7 @@ const PodDetail = memo(() => {
   function renderName({ value, record }) {
     const ready = record.get('ready');
     return (
-      <div className="column-containers-detail">
+      <Fragment>
         <Tooltip title={<FormattedMessage id={`ist.${ready ? 'y' : 'n'}`} />}>
           <Icon
             type={ready ? 'check_circle' : 'cancel'}
@@ -42,7 +42,7 @@ const PodDetail = memo(() => {
         <MouserOverWrapper text={value} width={0.2}>
           {value}
         </MouserOverWrapper>
-      </div>
+      </Fragment>
     );
   }
 
@@ -90,7 +90,7 @@ const PodDetail = memo(() => {
       });
     }
     return (
-      <div className="column-containers-detail">
+      <Fragment>
         {item && (
           <Fragment>
             <Tooltip title={<FormattedMessage id={`ist.${item.ready ? 'y' : 'n'}`} />}>
@@ -113,7 +113,7 @@ const PodDetail = memo(() => {
             <Icon type="expand_more" className="container-expend-icon" />
           </Popover>
         )}
-      </div>
+      </Fragment>
     );
   }
 
