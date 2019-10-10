@@ -274,13 +274,6 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             baseServiceClientOperator.completeDownloadApplication(appMarketDownloadVO.getAppDownloadRecordId(), appMarketDownloadVO.getAppVersionId(), appMarketDownloadVO.getOrganizationId(), appDownloadDevopsReqVOS);
         } catch (Exception e) {
             baseServiceClientOperator.failToDownloadApplication(appMarketDownloadVO.getAppDownloadRecordId(), appMarketDownloadVO.getAppVersionId(), appMarketDownloadVO.getOrganizationId());
-            UserAttrDTO userAttrDTO = userAttrService.baseQueryById(appMarketDownloadVO.getIamUserId());
-            appMarketDownloadVO.getAppServiceDownloadPayloads().forEach(downloadPayload -> {
-                AppServiceDTO appServiceDTO = appServiceService.baseQueryByMktAppId(downloadPayload.getAppServiceCode(), appMarketDownloadVO.getAppId());
-                if (appServiceDTO == null) {
-                    deleteGitlabProject(downloadPayload, appMarketDownloadVO.getAppCode(), userAttrDTO.getGitlabUserId());
-                }
-            });
             throw new CommonException("error.download.app", e);
         }
     }
@@ -316,6 +309,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                     TypeUtil.objToInteger(gitlabUserId),
                     true);
         } else {
+            gitlabServiceClientOperator.deleteProjectById(gitlabProjectDTO.getId(), TypeUtil.objToInteger(gitlabUserId));
             throw new CommonException("error.gitlab.project.already.exit");
         }
         appServiceDTO.setGitlabProjectId(gitlabProjectDTO.getId());
