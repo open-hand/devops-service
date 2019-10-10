@@ -37,7 +37,6 @@ export default class DetailCard extends PureComponent {
     } = this.props;
     const executeType = ['serial', 'parallel'];
     const mode = ['orSign', 'sign'];
-
     const task = _.map(tasks,
       ({
         id,
@@ -50,8 +49,8 @@ export default class DetailCard extends PureComponent {
         envName,
         version,
         instanceStatus,
-        applicationId,
         envId,
+        appServiceId,
         instanceId,
         instanceName,
         envPermission,
@@ -94,7 +93,7 @@ export default class DetailCard extends PureComponent {
                   ...recordRouteState,
                   instanceId,
                   recordId: rId,
-                  applicationId,
+                  appServiceId,
                   envId,
                 },
               }}

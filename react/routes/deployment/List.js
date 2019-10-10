@@ -189,8 +189,22 @@ const Deployment = withRouter(observer((props) => {
     });
   }
 
-  function linkToInstance() {
+  function linkToInstance(record) {
     const { history, location: { search } } = props;
+    if (record) {
+      const instanceId = record.get('instanceId');
+      const appServiceId = record.get('appServiceId');
+      const envId = record.get('envId');
+      history.push({
+        pathname: '/devops/resource',
+        search,
+        state: {
+          instanceId,
+          appServiceId,
+          envId,
+        },
+      });
+    }
     history.push(`/devops/resource${search}`);
   }
 
@@ -280,7 +294,7 @@ const Deployment = withRouter(observer((props) => {
       actionData = [{
         text: formatMessage({ id: `${intlPrefix}.view.instance` }),
         service: ['devops-service.devops-environment.listByActive'],
-        action: linkToInstance,
+        action: () => linkToInstance(record),
       }];
     }
     return (actionData ? <Action data={actionData} /> : null);
