@@ -1,6 +1,6 @@
 import React, { Fragment, useEffect, useState } from 'react';
 import { Page, Content, Header, Permission, Action, Breadcrumb } from '@choerodon/master';
-import { Table, Modal, Select } from 'choerodon-ui/pro';
+import { Table, Modal, Select, Form } from 'choerodon-ui/pro';
 import { Button, Tooltip } from 'choerodon-ui';
 import { FormattedMessage } from 'react-intl';
 import { withRouter } from 'react-router-dom';
@@ -339,16 +339,16 @@ const Deployment = withRouter(observer((props) => {
       </Header>
       <Breadcrumb />
       <Content className={`${prefixCls}-content`}>
-        <div className={`${prefixCls}-content-select`}>
+        <Form className={`${prefixCls}-content-select`} dataSet={tableSelectDs} columns={4}>
           <Select
-            dataSet={tableSelectDs}
+            // dataSet={tableSelectDs}
             name="env"
             searchable
             className={`${prefixCls}-content-select-item`}
             placeholder={formatMessage({ id: `${intlPrefix}.search.env` })}
           />
           <Select
-            dataSet={tableSelectDs}
+            // dataSet={tableSelectDs}
             name="deployType"
             className={`${prefixCls}-content-select-item`}
             placeholder={formatMessage({ id: `${intlPrefix}.search.type` })}
@@ -357,7 +357,7 @@ const Deployment = withRouter(observer((props) => {
             <Option value="manual">{formatMessage({ id: `${intlPrefix}.manual` })}</Option>
           </Select>
           <Select
-            dataSet={tableSelectDs}
+            // dataSet={tableSelectDs}
             name="deployStatus"
             className={`${prefixCls}-content-select-item`}
             placeholder={formatMessage({ id: `${intlPrefix}.search.result` })}
@@ -367,13 +367,13 @@ const Deployment = withRouter(observer((props) => {
             ))}
           </Select>
           <Select
-            dataSet={tableSelectDs}
+            // dataSet={tableSelectDs}
             name="pipelineId"
             searchable
             className={`${prefixCls}-content-select-item`}
             placeholder={formatMessage({ id: `${intlPrefix}.search.pipeline` })}
           />
-        </div>
+        </Form>
         <Table
           dataSet={listDs}
           queryBar="none"

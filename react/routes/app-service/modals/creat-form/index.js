@@ -202,7 +202,7 @@ const CreateForm = injectIntl(observer((props) => {
           </Option>
         </Select>
       )}
-      {!isModify && <TextField name="code" />}
+      {!isModify && <TextField name="code" autoFocus />}
       <TextField name="name" />
     </Form>
     {!isModify && <Source {...props} />}

@@ -15,6 +15,7 @@ import handleMapStore from '../../main-view/store/handleMapStore';
 
 import './index.less';
 import '../../../main.less';
+import EmptyPage from '../../../../components/empty-page';
 
 @injectIntl
 @withRouter
@@ -129,20 +130,11 @@ class CodeQuality extends Component {
           ))}
         </div>
       ) : (
-        <div className="c7n-codeQuality-empty">
-          <Card title={formatMessage({ id: 'codeQuality.empty.title' })}>
-            <span className="codeQuality-empty-content">{formatMessage({ id: 'codeQuality.empty.content' })}</span>
-            <a
-              href={formatMessage({ id: 'codeQuality.link' })}
-              target="_blank"
-              rel="nofollow me noopener noreferrer"
-              className="codeQuality-empty-link"
-            >
-              <span className="codeQuality-empty-more">{formatMessage({ id: 'learnmore' })}</span>
-              <Icon type="open_in_new" />
-            </a>
-          </Card>
-        </div>
+        <EmptyPage
+          title={formatMessage({ id: 'codeQuality.empty.title' })}
+          describe={formatMessage({ id: 'codeQuality.empty.content' })}
+          access
+        />
       )
     );
   };

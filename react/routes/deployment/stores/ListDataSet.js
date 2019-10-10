@@ -1,6 +1,6 @@
 import getTablePostData from '../../../utils/getTablePostData';
 
-export default ((intlPrefix, formatMessage, projectId) => ({
+export default ((intlPrefix, formatMessage, projectId, envOptions, pipelineOptions) => ({
   autoQuery: true,
   selection: false,
   transport: {
@@ -25,9 +25,9 @@ export default ((intlPrefix, formatMessage, projectId) => ({
     { name: 'realName', type: 'string' },
   ],
   queryFields: [
-    { name: 'deployId', type: 'number', label: formatMessage({ id: `${intlPrefix}.number` }) },
-    { name: 'pipelineName', type: 'string', label: formatMessage({ id: `${intlPrefix}.pipeline.name` }) },
+    { name: 'env', type: 'number', textField: 'name', valueField: 'id', label: formatMessage({ id: `${intlPrefix}.env` }), options: envOptions },
     { name: 'deployType', type: 'string', label: formatMessage({ id: `${intlPrefix}.type` }) },
     { name: 'deployStatus', type: 'string', label: formatMessage({ id: `${intlPrefix}.result` }) },
+    { name: 'pipelineId', type: 'number', textField: 'name', valueField: 'id', label: formatMessage({ id: `${intlPrefix}.pipeline.name` }), options: pipelineOptions },
   ],
 }));

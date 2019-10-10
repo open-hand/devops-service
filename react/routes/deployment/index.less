@@ -1,16 +1,23 @@
+@import '~choerodon-ui/lib/style/themes/default';
+
 .c7ncd-deploy {
 
   &-content {
     padding-top: 0;
 
     &-select {
+
+      tr {
+        display: flex;
+        flex-wrap: wrap;
+
+        .@{c7n-pro-prefix}-field-wrapper {
+          margin-bottom: .12rem;
+        }
+      }
+
       &-item {
         width: 2.5rem;
-        margin: 0 .12rem .12rem 0;
-
-        &:last-child {
-          margin-right: 0;
-        }
       }
     }
   }
