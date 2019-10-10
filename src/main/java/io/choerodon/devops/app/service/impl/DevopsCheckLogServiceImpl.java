@@ -609,7 +609,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                             } catch (CommonException e) {
                                 //未同步成功的项目不处理
                             }
-                            if (devopsProjectE != null && devopsProjectE.getHarborProjectUserPassword() == null) {
+                            if (devopsProjectE != null) {
                                 String username = String.format("user%s%s", organization.getId(), projectE.getId());
                                 String email = String.format("%s@harbor.com", username);
                                 String password = String.format("%s%s", username, GenerateUUID.generateUUID().substring(0, 5));
@@ -633,8 +633,6 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                                             if (result.raw().code() != 201) {
                                                 throw new CommonException(result.errorBody().string());
                                             }
-                                        } else {
-                                            harborClient.changePassword(userOptional.get().getUserId(), new Password(password, username + "password")).execute();
                                         }
                                     }
                                     //给项目绑定角色
@@ -660,6 +658,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                                         if (result.raw().code() != 201 && result.raw().code() != 200 && result.raw().code() != 409) {
                                             throw new CommonException(result.errorBody().string());
                                         }
+                                        LOGGER.info("分配{}的角色成功", projectE.getName());
                                     }
                                     if (devopsProjectE.getHarborProjectUserPassword() == null || devopsProjectE.getHarborProjectUserPassword().contains("password")) {
                                         devopsProjectE.setHarborProjectUserName(user.getUsername());
