@@ -660,7 +660,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                                         }
                                         LOGGER.info("分配{}的角色成功", projectE.getName());
                                     }
-                                    if (devopsProjectE.getHarborProjectUserPassword() == null || devopsProjectE.getHarborProjectUserPassword().contains("password")) {
+                                    if (devopsProjectE.getHarborProjectUserPassword() == null) {
                                         devopsProjectE.setHarborProjectUserName(user.getUsername());
                                         devopsProjectE.setHarborProjectIsPrivate(false);
                                         devopsProjectE.setHarborProjectUserPassword(user.getPassword());
