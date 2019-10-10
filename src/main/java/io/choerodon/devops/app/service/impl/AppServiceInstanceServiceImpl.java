@@ -804,17 +804,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             return;
         }
 
-        //校验是否关联流水线
-        if (appServiceInstanceDTO.getEnvId() != null) {
-            PipelineAppServiceDeployDTO appServiceDeployDTO = new PipelineAppServiceDeployDTO();
-            appServiceDeployDTO.setInstanceName(appServiceInstanceDTO.getCode());
-            appServiceDeployDTO.setEnvId(appServiceInstanceDTO.getEnvId());
-            if (!pipelineAppServiceDeployMapper.select(appServiceDeployDTO).isEmpty()) {
-                throw new CommonException("error.delete.instance.related.pipeline");
-            }
-        }
-
-
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(appServiceInstanceDTO.getEnvId());
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
@@ -914,6 +903,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         //校验环境是否连接
         clusterConnectionHandler.checkEnvConnection(devopsEnvironmentDTO.getClusterId());
+
+        pipelineAppDeployService.baseUpdateWithInstanceId(instanceId);
 
         devopsDeployRecordService.deleteRelatedRecordOfInstance(instanceId);
         appServiceInstanceMapper.deleteInstanceRelInfo(instanceId);
