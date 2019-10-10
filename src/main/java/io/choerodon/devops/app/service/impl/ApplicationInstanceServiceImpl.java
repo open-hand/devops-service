@@ -1058,15 +1058,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Transactional(rollbackFor = Exception.class)
     public void instanceDelete(Long instanceId) {
         ApplicationInstanceE instanceE = applicationInstanceRepository.selectById(instanceId);
-        //校验是否关联流水线
-        if (instanceE.getDevopsEnvironmentE() != null) {
-            PipelineAppDeployDO appDeployDO = new PipelineAppDeployDO();
-            appDeployDO.setInstanceName(instanceE.getCode());
-            appDeployDO.setEnvId(instanceE.getDevopsEnvironmentE().getId());
-            if (!appDeployMapper.select(appDeployDO).isEmpty()) {
-                throw new CommonException("error.delete.instance.related.pipeline");
-            }
-        }
+
         //校验用户是否有环境的权限
         DevopsEnvironmentE devopsEnvironmentE = checkEnvPermission(instanceE.getDevopsEnvironmentE().getId());
 
