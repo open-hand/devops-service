@@ -640,7 +640,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         List<MarketAppServiceImageVO> imageVOList = new ArrayList<>();
         appMarketUploadVO.getAppServiceUploadPayloads().forEach(appServiceMarketVO -> {
             MarketAppServiceImageVO appServiceImageVO = new MarketAppServiceImageVO();
-            appServiceImageVO.setServiceCode(appServiceMarketVO.getAppServiceCode());
+            appServiceImageVO.setServiceCode(String.format("%s_%s", appServiceMarketVO.getAppServiceId(), appServiceMarketVO.getAppServiceCode()));
             List<MarketAppServiceVersionImageVO> appServiceVersionImageVOS = new ArrayList<>();
 
             //获取原仓库配置
