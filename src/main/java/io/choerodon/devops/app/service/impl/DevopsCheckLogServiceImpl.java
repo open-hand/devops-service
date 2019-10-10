@@ -275,10 +275,11 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                                         if (result.raw().code() != 201 && result.raw().code() != 200 && result.raw().code() != 409) {
                                             throw new CommonException(result.errorBody().string());
                                         }
+                                        LOGGER.info("分配{}的角色成功", projectDTO.getName());
                                     }
                                     if (devopsProjectDTO.getHarborProjectUserPassword() == null) {
                                         devopsProjectDTO.setHarborProjectUserName(user.getUsername());
-                                        devopsProjectDTO.setHarborProjectIsPrivate(true);
+                                        devopsProjectDTO.setHarborProjectIsPrivate(false);
                                         devopsProjectDTO.setHarborProjectUserPassword(user.getPassword());
                                         devopsProjectDTO.setHarborProjectUserEmail(user.getEmail());
                                     }
