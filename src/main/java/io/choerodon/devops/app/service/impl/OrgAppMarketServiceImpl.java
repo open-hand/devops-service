@@ -78,6 +78,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
     private static final String GIT = ".git";
     private static final String TGZ = ".tgz";
     private static final String VALUES = "values.yaml";
+    private static final String CHARTS = "Chart.yaml";
     private static final String DEPLOY_ONLY = "mkt_deploy_only";
     private static final String DOWNLOAD_ONLY = "mkt_code_only";
     private static final String ALL = "mkt_code_deploy";
@@ -318,16 +319,6 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         appServiceDTO.setMktAppId(downloadPayload.getAppId());
         appServiceService.baseCreate(appServiceDTO);
         return appServiceDTO;
-    }
-
-    private void deleteGitlabProject(AppServiceDownloadPayload downloadPayload, String appCode, Long gitlabUserId) {
-        GitlabProjectDTO gitlabProjectDTO = gitlabServiceClientOperator.queryProjectByName(
-                String.format(SITE_APP_GROUP_NAME_FORMAT, appCode),
-                downloadPayload.getAppServiceCode(),
-                TypeUtil.objToInteger(gitlabUserId));
-        if (gitlabProjectDTO.getId() != null) {
-            gitlabServiceClientOperator.deleteProjectById(gitlabProjectDTO.getId(), TypeUtil.objToInteger(gitlabUserId));
-        }
     }
 
     private Set<Long> createAppServiceVersion(AppServiceDownloadPayload downloadPayload, AppServiceDTO appServiceDTO, String appCode, Boolean isFirst, String accessToken, String downloadType) {
@@ -629,6 +620,17 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         //解析 解压过后的文件
         if (zipDirectory.exists() && zipDirectory.isDirectory()) {
             File[] listFiles = zipDirectory.listFiles();
+
+            List<File> chartFiles = Arrays.stream(listFiles).parallel()
+                    .filter(k -> k.getName().equals(CHARTS))
+                    .collect(Collectors.toCollection(ArrayList::new));
+            if (!chartFiles.isEmpty() && chartFiles.size() == 1) {
+                File chartFile = chartFiles.get(0);
+                Map<String, String> params = new HashMap<>();
+                params.put(appServiceCode, String.format("%s_%s", appServiceId, appServiceCode));
+                FileUtil.fileToInputStream(chartFile, params);
+            }
+
             //获取替换Repository
             List<File> appMarkets = Arrays.stream(listFiles).parallel()
                     .filter(k -> VALUES.equals(k.getName()))
