@@ -44,7 +44,7 @@ public class DevopsOrganizationController {
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(
-                applicationServiceService.listAppServiceByIds(ids, doPage, pageRequest, params))
+                applicationServiceService.listAppServiceByIds(null,ids, doPage, pageRequest, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.list.app.service.ids"));
     }

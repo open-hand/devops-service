@@ -436,7 +436,7 @@ public interface AppServiceService {
      * @param ids
      * @return
      */
-    PageInfo<AppServiceVO> listAppServiceByIds(Set<Long> ids, Boolean doPage, PageRequest pageRequest, String params);
+    PageInfo<AppServiceVO> listAppServiceByIds(Long projectId,Set<Long> ids, Boolean doPage, PageRequest pageRequest, String params);
 
     /**
      * 根据导入应用类型查询应用所属的项目集合

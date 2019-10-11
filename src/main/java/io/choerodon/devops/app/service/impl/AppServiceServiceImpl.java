@@ -2041,8 +2041,8 @@ public class AppServiceServiceImpl implements AppServiceService {
             Set<Long> projectIds = appServiceDTOList.stream().map(AppServiceDTO::getProjectId).collect(Collectors.toSet());
             projects = baseServiceClientOperator.queryProjectsByIds(projectIds);
             // 分别查询组织共享和共享到项目版本信息
-            List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceVersionService.listServiceVersionByAppServiceIds(appServiceIds, "share", projectId);
-            List<AppServiceVersionDTO> appServiceVersionDTOS1 = appServiceVersionService.listServiceVersionByAppServiceIds(appServiceIds, "project", projectId);
+            List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceVersionService.listServiceVersionByAppServiceIds(appServiceIds, "share", projectId,null);
+            List<AppServiceVersionDTO> appServiceVersionDTOS1 = appServiceVersionService.listServiceVersionByAppServiceIds(appServiceIds, "project", projectId,null);
             appServiceVersionDTOS.addAll(appServiceVersionDTOS1);
             // 去掉重复版本信息
             versionList = appServiceVersionDTOS.stream().collect(collectingAndThen(
@@ -2267,7 +2267,9 @@ public class AppServiceServiceImpl implements AppServiceService {
         Map<String, Object> mapParams = TypeUtil.castMapParams(params);
         List<AppServiceDTO> appServiceDTOList = appServiceMapper.pageServiceByProjectId(projectId,
                 TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
-                TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)));
+                TypeUtil.cast(mapParams.get(TypeUtil.PARAMS))).stream()
+                .filter(appServiceDTO -> (appServiceDTO.getActive() != null && appServiceDTO.getActive()) && (appServiceDTO.getSynchro() != null && appServiceDTO.getSynchro()) && (appServiceDTO.getFailed() == null || !appServiceDTO.getFailed()))
+                .collect(toList());
         List<AppServiceVO> list = ConvertUtils.convertList(appServiceDTOList, AppServiceVO.class);
         if (doPage) {
             return PageInfoUtil.createPageFromList(list, pageRequest);
@@ -2278,13 +2280,18 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public PageInfo<AppServiceVO> listAppServiceByIds(Set<Long> ids, Boolean doPage, PageRequest pageRequest, String params) {
+    public PageInfo<AppServiceVO> listAppServiceByIds(Long projectId,Set<Long> ids, Boolean doPage, PageRequest pageRequest, String params) {
         Map<String, Object> mapParams = TypeUtil.castMapParams(params);
-
         List<AppServiceDTO> appServiceDTOList = appServiceMapper.listAppServiceByIds(ids,
                 TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
                 TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)));
-        List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceVersionService.listServiceVersionByAppServiceIds(ids, null, null);
+        List<AppServiceVersionDTO> appServiceVersionDTOS = new ArrayList<>();
+        if(!ObjectUtils.isEmpty(projectId)){
+            appServiceVersionDTOS = appServiceVersionService.listAppServiceVersionByIdsAndProjectId(ids,projectId,null);
+        }
+        else{
+           appServiceVersionDTOS.addAll(appServiceVersionService.listServiceVersionByAppServiceIds(ids, null, null,null));
+        }
         Map<Long, List<AppServiceVersionDTO>> appVerisonMap = appServiceVersionDTOS.stream().collect(Collectors.groupingBy(AppServiceVersionDTO::getAppServiceId));
         List<AppServiceVO> collect = appServiceDTOList.stream()
                 .filter(v -> !CollectionUtils.isEmpty(appVerisonMap.get(v.getId())))
@@ -2296,9 +2303,6 @@ public class AppServiceServiceImpl implements AppServiceService {
                 .collect(Collectors.toList());
         collect.addAll(appServiceVOS);
         if (doPage == null || doPage) {
-            if (ObjectUtils.isEmpty(pageRequest.getSize())) {
-                pageRequest.setSize(20);
-            }
             return PageInfoUtil.createPageFromList(collect, pageRequest);
         } else {
             return new PageInfo<>(collect);
@@ -2324,9 +2328,9 @@ public class AppServiceServiceImpl implements AppServiceService {
             ArrayList<AppServiceDTO> collect = organizationAppServices.stream().collect(collectingAndThen(
                     toCollection(() -> new TreeSet<>(comparing(AppServiceDTO::getId))), ArrayList::new));
             Set<Long> ids = collect.stream().map(AppServiceDTO::getId).collect(Collectors.toSet());
-            Map<Long, List<AppServiceVersionDTO>> versionMap = appServiceVersionService.listServiceVersionByAppServiceIds(ids, "share", null)
+            Map<Long, List<AppServiceVersionDTO>> versionMap = appServiceVersionService.listServiceVersionByAppServiceIds(ids, "share", null,null)
                     .stream().collect(groupingBy(AppServiceVersionDTO::getAppServiceId));
-            Map<Long, List<AppServiceVersionDTO>> versionMap1 = appServiceVersionService.listServiceVersionByAppServiceIds(ids, "project", null)
+            Map<Long, List<AppServiceVersionDTO>> versionMap1 = appServiceVersionService.listServiceVersionByAppServiceIds(ids, "project", null,null)
                     .stream().collect(groupingBy(AppServiceVersionDTO::getAppServiceId));
             versionMap.putAll(versionMap1);
             Set<Long> projectsSet = collect.stream()

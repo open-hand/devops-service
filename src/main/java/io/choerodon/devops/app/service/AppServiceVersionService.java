@@ -170,7 +170,7 @@ public interface AppServiceVersionService {
      * @param share         是否是组织共享
      * @return 应用服务版本
      */
-    List<AppServiceVersionDTO> listServiceVersionByAppServiceIds(Set<Long> appServiceIds, String share, Long projectId);
+    List<AppServiceVersionDTO> listServiceVersionByAppServiceIds(Set<Long> appServiceIds, String share, Long projectId,String params);
 
     /**
      * 根据应用服务IDs和共享规则去查询应用服务的版本列表
@@ -183,5 +183,11 @@ public interface AppServiceVersionService {
 
     List<AppServiceVersionVO> listServiceVersionVoByIds(Set<Long> ids);
 
-    List<AppServiceVersionVO> listVersionById(Long id, String params);
+    List<AppServiceVersionVO> listVersionById(Long projectId,Long id, String params);
+    /**
+     * 根据应用服务id和项目Id获取服务版本
+     * @param ids
+     * @param projectId
+     */
+    public List<AppServiceVersionDTO> listAppServiceVersionByIdsAndProjectId(Set<Long> ids,Long projectId,String params);
 }

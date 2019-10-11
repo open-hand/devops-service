@@ -100,7 +100,7 @@ public interface AppServiceVersionMapper extends Mapper<AppServiceVersionDTO> {
      *
      * @return
      */
-    List<AppServiceVersionDTO> listServiceVersionByAppServiceIds(@Param("ids") Set<Long> ids, @Param("share") String share, @Param("projectId") Long projectId);
+    List<AppServiceVersionDTO> listServiceVersionByAppServiceIds(@Param("ids") Set<Long> ids, @Param("share") String share, @Param("projectId") Long projectId,@Param("params") String params);
 
     /**
      * 查询应用服务共享的所有版本

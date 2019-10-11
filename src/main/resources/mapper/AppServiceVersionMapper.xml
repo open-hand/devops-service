@@ -489,7 +489,10 @@
                 and dassr.project_id = #{projectId}
                </if>
                AND dassr.version IS NOT NULL
-               AND dassr.version = version.version)
+               AND dassr.version = version.version
+               <if test="params != null and params != ''">
+                   AND version.version LIKE CONCAT('%', CONCAT(#{params},'%'))
+               </if>)
                UNION
                (
                SELECT version.*
@@ -508,6 +511,9 @@
                </if>
                AND dassr.version IS NULL
                AND version.version LIKE CONCAT('%', CONCAT(dassr.version_type,'%'))
+               <if test="params != null and params != ''">
+                   AND version.version LIKE CONCAT('%', CONCAT(#{params},'%'))
+               </if>
                )
            </when>
            <otherwise>
@@ -516,6 +522,9 @@
                <foreach collection="ids" item="id" open="(" separator="," close=")">
                    #{id}
                </foreach>
+               <if test="params != null and params != ''">
+                   AND version.version LIKE CONCAT('%', CONCAT(#{params},'%'))
+               </if>
            </otherwise>
        </choose>
         order by id desc
