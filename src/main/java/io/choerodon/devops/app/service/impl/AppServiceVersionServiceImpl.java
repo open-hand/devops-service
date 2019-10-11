@@ -626,7 +626,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         List<AppServiceVersionDTO> appServiceVersionDTOS = new ArrayList<>();
         List<Long> appServiceIds = applicationService.listAppByProjectId(projectId, false, null, null)
                 .getList().stream().map(AppServiceVO::getId).collect(Collectors.toList());
-        List<Long> localProjectIds = new ArrayList<>();
+        Set<Long> localProjectIds = new HashSet<>();
         Set<Long> shareServiceIds = new HashSet<>();
         // 分别获取本项目的应用服务和共享服务
         ids.stream().forEach(v -> {
@@ -640,7 +640,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
             }
         });
         if(!localProjectIds.isEmpty()){
-            appServiceVersionDTOS.addAll(appServiceVersionMapper.listByAppServiceVersionIds(localProjectIds));
+            appServiceVersionDTOS.addAll(listServiceVersionByAppServiceIds(localProjectIds, null, projectId,params));
         }
         if(!shareServiceIds.isEmpty()){
             // 查询共享服务的共享出来的版本
