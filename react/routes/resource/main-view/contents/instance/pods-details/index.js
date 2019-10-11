@@ -39,7 +39,7 @@ const PodDetail = memo(() => {
             className={`${prefixCls}-pod-ready-${ready ? 'check' : 'cancel'}`}
           />
         </Tooltip>
-        <MouserOverWrapper text={value} width={0.2}>
+        <MouserOverWrapper text={value} width={0.2} style={{ display: 'inline' }}>
           {value}
         </MouserOverWrapper>
       </Fragment>
@@ -99,7 +99,7 @@ const PodDetail = memo(() => {
                 className={`${prefixCls}-pod-ready-${item.ready ? 'check' : 'cancel'}`}
               />
             </Tooltip>
-            <MouserOverWrapper text={item.name} width={0.1}>
+            <MouserOverWrapper text={item.name} width={0.1} style={{ display: 'inline' }}>
               {item.name}
             </MouserOverWrapper>
           </Fragment>)}

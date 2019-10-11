@@ -341,14 +341,12 @@ const Deployment = withRouter(observer((props) => {
       <Content className={`${prefixCls}-content`}>
         <Form className={`${prefixCls}-content-select`} dataSet={tableSelectDs} columns={4}>
           <Select
-            // dataSet={tableSelectDs}
             name="env"
             searchable
             className={`${prefixCls}-content-select-item`}
             placeholder={formatMessage({ id: `${intlPrefix}.search.env` })}
           />
           <Select
-            // dataSet={tableSelectDs}
             name="deployType"
             className={`${prefixCls}-content-select-item`}
             placeholder={formatMessage({ id: `${intlPrefix}.search.type` })}
@@ -357,7 +355,6 @@ const Deployment = withRouter(observer((props) => {
             <Option value="manual">{formatMessage({ id: `${intlPrefix}.manual` })}</Option>
           </Select>
           <Select
-            // dataSet={tableSelectDs}
             name="deployStatus"
             className={`${prefixCls}-content-select-item`}
             placeholder={formatMessage({ id: `${intlPrefix}.search.result` })}
@@ -367,7 +364,6 @@ const Deployment = withRouter(observer((props) => {
             ))}
           </Select>
           <Select
-            // dataSet={tableSelectDs}
             name="pipelineId"
             searchable
             className={`${prefixCls}-content-select-item`}

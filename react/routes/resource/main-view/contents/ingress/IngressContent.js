@@ -47,8 +47,6 @@ const IngressContent = observer(() => {
     mainStore: { openDeleteModal },
   } = useMainStore();
 
-  const [showModal, setShowModal] = useState(false);
-
   function refresh() {
     treeDs.query();
     ingressDs.query();
@@ -80,14 +78,16 @@ const IngressContent = observer(() => {
   }
 
   function renderDomain({ value }) {
-    return <MouserOverWrapper text={value} width={0.25}>{value}</MouserOverWrapper>;
+    return <MouserOverWrapper text={value} width={0.18}>{value}</MouserOverWrapper>;
   }
 
   function renderPath({ value }) {
     return (
       map(value, ({ path }) => (
         <div key={path}>
-          <span>{path}</span>
+          <MouserOverWrapper text={path} width={0.1}>
+            <span>{path}</span>
+          </MouserOverWrapper>
         </div>
       ))
     );
@@ -147,11 +147,6 @@ const IngressContent = observer(() => {
       />,
       okText: formatMessage({ id: 'save' }),
     });
-  }
-
-  function closeModal(isLoad) {
-    setShowModal(false);
-    isLoad && refresh();
   }
 
   return (

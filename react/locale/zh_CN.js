@@ -585,6 +585,8 @@ const codeManagement = {
   'code-management.ci-pipeline': '持续集成',
   'code-management.app-tag': '标记',
   'code-management.code-quality': '代码质量',
+  'code-management.tag.empty': '暂无标记',
+  'code-management.tag.empty.des': '暂无任何标记，您可在此页面基于某一分支创建标记',
 };
 
 const emptyPage = {

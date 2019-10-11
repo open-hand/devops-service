@@ -19,6 +19,7 @@ import './style/AppTag.less';
 import AppTagCreate from './AppTagCreate';
 import AppTagEdit from './AppTagEdit';
 import ClickText from '../../../../components/click-text';
+import EmptyPage from '../../../../components/empty-page';
 
 const { AppState } = stores;
 const { Panel } = Collapse;
@@ -285,21 +286,15 @@ class AppTag extends Component {
                   onShowSizeChange={this.handlePaginChange}
                 />
               </div>
-            </Fragment> : (<div className="c7n-tag-empty">
-              <div>
-                <Icon type="info" className="c7n-tag-empty-icon" />
-                <span className="c7n-tag-empty-text">{formatMessage({ id: `apptag.${empty}.empty` })}</span>
-              </div>
-              {empty === 'tag' ? (
-                <Button
-                  type="primary"
-                  funcType="raised"
-                  onClick={() => this.displayCreateModal(true, empty)}
-                >
-                  <FormattedMessage id="apptag.create" />
-                </Button>
-              ) : null}
-            </div>)}
+            </Fragment> : (
+              <EmptyPage
+                title={formatMessage({ id: 'code-management.tag.empty' })}
+                describe={formatMessage({ id: 'code-management.tag.empty.des' })}
+                btnText={formatMessage({ id: 'apptag.create' })}
+                onClick={() => this.displayCreateModal(true, empty)}
+                access
+              />
+            )}
           </Fragment>}
           <Modal
             confirmLoading={deleteLoading}
@@ -307,7 +302,9 @@ class AppTag extends Component {
             title={`${formatMessage({ id: 'apptag.action.delete' })}“${tag}”`}
             closable={false}
             footer={[
-              <Button key="back" onClick={this.closeRemove} disabled={deleteLoading}>{<FormattedMessage id="cancel" />}</Button>,
+              <Button key="back" onClick={this.closeRemove} disabled={deleteLoading}>
+                <FormattedMessage id="cancel" />
+              </Button>,
               <Button key="submit" type="danger" onClick={this.deleteTag} loading={deleteLoading}>
                 {formatMessage({ id: 'delete' })}
               </Button>,

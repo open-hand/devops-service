@@ -12,10 +12,10 @@ import Rating from '../../../../components/rating/Rating';
 import { QUALITY_LIST, OBJECT_TYPE } from './components/Constants';
 import CodeQualityStore from './stores';
 import handleMapStore from '../../main-view/store/handleMapStore';
+import EmptyPage from '../../../../components/empty-page';
 
 import './index.less';
 import '../../../main.less';
-import EmptyPage from '../../../../components/empty-page';
 
 @injectIntl
 @withRouter

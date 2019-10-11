@@ -349,18 +349,20 @@ const Networking = observer(() => {
 
   return (
     <div className={`${prefixCls}-application-net`}>
-      <Table
-        dataSet={netDs}
-        border={false}
-        queryBar="none"
-        expandedRowRenderer={renderExpandedRow}
-      >
-        <Column name="name" renderer={renderName} />
-        <Column renderer={renderAction} width={70} />
-        <Column renderer={renderTargetType} header={formatMessage({ id: `${intlPrefix}.application.net.targetType` })} />
-        <Column renderer={renderTarget} header={formatMessage({ id: `${intlPrefix}.application.net.target` })} />
-        <Column name="type" renderer={renderConfigType} />
-      </Table>
+      <div className="c7ncd-tab-table">
+        <Table
+          dataSet={netDs}
+          border={false}
+          queryBar="none"
+          expandedRowRenderer={renderExpandedRow}
+        >
+          <Column name="name" renderer={renderName} />
+          <Column renderer={renderAction} width={70} />
+          <Column renderer={renderTargetType} header={formatMessage({ id: `${intlPrefix}.application.net.targetType` })} />
+          <Column renderer={renderTarget} header={formatMessage({ id: `${intlPrefix}.application.net.target` })} />
+          <Column name="type" renderer={renderConfigType} />
+        </Table>
+      </div>
       {showDomain && (
         <DomainModal
           envId={parentId}
