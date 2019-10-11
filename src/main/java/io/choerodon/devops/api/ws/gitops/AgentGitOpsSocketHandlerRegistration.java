@@ -157,6 +157,11 @@ public class AgentGitOpsSocketHandlerRegistration implements SocketHandlerRegist
 
     }
 
+    /**
+     * DevOps会定时发送Ping消息以保持连接。目前由于基础包的问题（2019/10/11），
+     * 并没有对返回的Pong消息进行处理，（Agent发送的Ping消息DevOps没有处理）
+     * 目前能够对连接状态判断，可能是如果Agent挂了，WebSocket会自动断开，我们这边能收到断开的事件。
+     */
     @Scheduled(initialDelay = 10 * 1000, fixedRate = 10 * 1000)
     public void sendPing() {
         for (WebSocketSession session : webSocketSessions) {

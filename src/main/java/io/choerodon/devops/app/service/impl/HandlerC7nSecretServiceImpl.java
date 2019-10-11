@@ -189,6 +189,7 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
         secretReqVO.setType(type);
         secretReqVO.setEnvId(envId);
         //等待界面支持secret类型之后在区分开
+        // 支持另外一种类型secret
         if (c7nSecret.getType().equals("kubernetes.io/dockerconfigjson")) {
             Map<String, String> map = new HashMap<>();
             c7nSecret.getData().forEach((key, value) -> {

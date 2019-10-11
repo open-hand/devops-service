@@ -306,6 +306,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                         FileUtil.yamlStringtoJson(job.getManifest()));
                 saveOrUpdateResource(devopsEnvResourceDTO, newDevopsEnvResourceDTO, devopsEnvResourceDetailDTO, appServiceInstanceDTO);
             }
+            // T这里要设置Command的状态 因为811行 GitOps sync方法里改了command的状态
             DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService
                     .baseQuery(appServiceInstanceDTO.getCommandId());
             devopsEnvCommandDTO.setStatus(CommandStatus.OPERATING.getStatus());

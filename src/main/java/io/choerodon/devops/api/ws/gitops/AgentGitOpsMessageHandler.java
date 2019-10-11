@@ -158,6 +158,7 @@ public class AgentGitOpsMessageHandler implements TextMessageHandler<AgentMsgVO>
                 agentMsgHandlerService.resourceStatusSync(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
             case NAMESPACE_INFO:
+                // 只有连接时发送一次（2019/10/11）
                 agentMsgHandlerService.namespaceInfo(msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
             case UPGRADE_CLUSTER:

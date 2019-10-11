@@ -654,6 +654,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         compareResultDTO.getDiffs().forEach(t -> {
             if (t.getNewPath().contains("yaml") || t.getNewPath().contains("yml")) {
                 if (t.getDeletedFile()) {
+                    // t.getNewPath() 而不是t.getOldPath()，这里能用是因为删除的文件的两个的值一致
                     deletedFiles.add(t.getNewPath());
                 } else if (t.getRenamedFile()) {
                     deletedFiles.add(t.getOldPath());

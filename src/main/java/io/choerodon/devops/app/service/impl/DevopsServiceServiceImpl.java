@@ -828,6 +828,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         devopsServiceDTO.setAppServiceId(devopsServiceReqVO.getAppServiceId());
         AppServiceDTO applicationDTO = applicationService.baseQuery(devopsServiceReqVO.getAppServiceId());
         if (devopsServiceReqVO.getLabel() != null) {
+            // 容错逻辑，可能是以前版本将label写入当做选择器写入了labels字段中
             if (devopsServiceReqVO.getLabel().size() == 1 && devopsServiceReqVO.getLabel().containsKey(SERVICE_LABLE)) {
                 baseUpdateLabels(devopsServiceDTO.getId());
                 devopsServiceDTO.setLabels(null);
