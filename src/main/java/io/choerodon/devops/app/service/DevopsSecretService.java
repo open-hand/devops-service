@@ -85,8 +85,6 @@ public interface DevopsSecretService {
      */
     void checkName(Long envId, String name);
 
-    DevopsSecretDTO voToDto(SecretReqVO secretReqVO);
-
     SecretReqVO dtoToReqVo(DevopsSecretDTO devopsSecretDTO);
 
     SecretRespVO dtoToRespVo(DevopsSecretDTO devopsSecretDTO);

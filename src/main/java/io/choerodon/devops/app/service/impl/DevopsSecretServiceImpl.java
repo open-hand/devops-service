@@ -87,7 +87,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         //校验环境相关信息
         devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
         // 处理secret对象
-        DevopsSecretDTO devopsSecretDTO = handleSecret(secretReqVO);
+        DevopsSecretDTO devopsSecretDTO = handleSecret(secretReqVO, false);
         // 初始化V1Secret对象
         V1Secret v1Secret = initV1Secret(devopsSecretDTO);
         // 更新操作如果key-value没有改变
@@ -123,10 +123,21 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         return secretRespVO;
     }
 
-    @Override
-    public DevopsSecretDTO voToDto(SecretReqVO secretReqVO) {
+    /**
+     * 从GitOps来的VO本身值已经加密过了，不需要再进行加密
+     *
+     * @param secretReqVO  VO
+     * @param isFromGitOps 是从GitOps逻辑调用
+     * @return DTO
+     */
+    private DevopsSecretDTO voToDto(SecretReqVO secretReqVO, boolean isFromGitOps) {
         DevopsSecretDTO devopsSecretDTO = new DevopsSecretDTO();
         BeanUtils.copyProperties(secretReqVO, devopsSecretDTO);
+        if (isFromGitOps) {
+            devopsSecretDTO.setValue(gson.toJson(secretReqVO.getValue()));
+            devopsSecretDTO.setValueMap(secretReqVO.getValue());
+            return devopsSecretDTO;
+        }
         Map<String, String> encodedSecretMaps = new HashMap<>();
         if (!secretReqVO.getValue().isEmpty()) {
             for (Map.Entry<String, String> e : secretReqVO.getValue().entrySet()) {
@@ -138,6 +149,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
             }
             devopsSecretDTO.setValue(gson.toJson(encodedSecretMaps));
         }
+        devopsSecretDTO.setValueMap(encodedSecretMaps);
         return devopsSecretDTO;
     }
 
@@ -177,8 +189,14 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         return secretReqVO;
     }
 
-
-    private DevopsSecretDTO handleSecret(SecretReqVO secretReqVO) {
+    /**
+     * 处理secret vo 到 dto
+     *
+     * @param secretReqVO  VO
+     * @param isFromGitOps 是否从GitOps调用
+     * @return dto
+     */
+    private DevopsSecretDTO handleSecret(SecretReqVO secretReqVO, boolean isFromGitOps) {
         if (CREATE.equals(secretReqVO.getType())) {
             // 校验secret名字合法性和环境下唯一性
             DevopsSecretValidator.checkName(secretReqVO.getName());
@@ -189,9 +207,8 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
             DevopsSecretValidator.checkKeyName(secretReqVO.getValue().keySet());
         }
 
-        DevopsSecretDTO devopsSecretDTO = voToDto(secretReqVO);
+        DevopsSecretDTO devopsSecretDTO = voToDto(secretReqVO, isFromGitOps);
 
-        devopsSecretDTO.setValueMap(secretReqVO.getValue());
         devopsSecretDTO.setCommandStatus(SecretStatus.OPERATING.getStatus());
 
         return devopsSecretDTO;
@@ -331,7 +348,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         //校验环境是否链接
         clusterConnectionHandler.checkEnvConnection(devopsEnvironmentDTO.getClusterId());
         // 处理secret对象
-        DevopsSecretDTO devopsSecretDTO = handleSecret(secretReqVO);
+        DevopsSecretDTO devopsSecretDTO = handleSecret(secretReqVO, true);
         // 创建secret
         Long secretId = baseCreate(devopsSecretDTO).getId();
         DevopsEnvCommandDTO devopsEnvCommandDTO = new DevopsEnvCommandDTO();
@@ -356,11 +373,12 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         DevopsSecretDTO oldSecretDTO = baseQueryByEnvIdAndName(secretReqVO.getEnvId(), secretReqVO.getName());
         oldSecretDTO.setValueMap(gson.fromJson(oldSecretDTO.getValue(), new TypeToken<Map<String, String>>() {
         }.getType()));
+        // 利用加密后值比对是否相等，相等则返回
         if (oldSecretDTO.getValueMap().equals(secretReqVO.getValue())) {
             return;
         }
         // 处理secret对象
-        DevopsSecretDTO devopsSecretE = handleSecret(secretReqVO);
+        DevopsSecretDTO devopsSecretE = handleSecret(secretReqVO, true);
         DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(UPDATE);
         // 更新secret对象
         devopsEnvCommandDTO.setObjectId(id);
