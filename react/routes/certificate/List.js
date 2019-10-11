@@ -9,6 +9,7 @@ import { useCertificateStore } from './stores';
 import PermissionManage from './modals/permission';
 import CreateForm from './modals/create-form';
 import ClickText from '../../components/click-text';
+import Tips from '../../components/new-tips';
 
 import './index.less';
 
@@ -96,7 +97,10 @@ const AppService = withRouter(observer((props) => {
       style: modalStyle2,
       drawer: true,
       className: 'c7ncd-modal-wrapper',
-      title: <FormattedMessage id={`${intlPrefix}.permission`} />,
+      title: <Tips
+        helpText={formatMessage({ id: `${intlPrefix}.permission.tips` })}
+        title={formatMessage({ id: `${intlPrefix}.permission` })}
+      />,
       children: <PermissionManage
         dataSet={detailDs}
         record={detailDs.current}

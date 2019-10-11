@@ -1,10 +1,11 @@
 import React, { useEffect } from 'react';
-import { Form, Select } from 'choerodon-ui/pro';
+import { Form, Select, TextField } from 'choerodon-ui/pro';
 import { injectIntl } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import map from 'lodash/map';
 
 import './index.less';
+import Tips from '../../../../components/new-tips';
 
 const { Option, OptGroup } = Select;
 
@@ -36,7 +37,10 @@ export default injectIntl(observer((props) => {
   return (
     <div className={`${prefixCls}-create-wrap-template`}>
       <div className={`${prefixCls}-create-wrap-template-title`}>
-        <span>{formatMessage({ id: `${intlPrefix}.template` })}</span>
+        <Tips
+          helpText={formatMessage({ id: `${intlPrefix}.template.tips` })}
+          title={formatMessage({ id: `${intlPrefix}.template` })}
+        />
       </div>
       <Form record={record} columns={3}>
         <Select name="appServiceSource">

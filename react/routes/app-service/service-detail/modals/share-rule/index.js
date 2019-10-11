@@ -1,11 +1,12 @@
 import React, { useEffect, useState, Fragment } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
-import { Select, Form } from 'choerodon-ui/pro';
+import { Select, Form, TextField } from 'choerodon-ui/pro';
 import map from 'lodash/map';
 import { handlePromptError } from '../../../../../utils';
 
 import './index.less';
+import Tips from '../../../../../components/new-tips';
 
 const { Option } = Select;
 const VERSION_TYPE = ['master', 'feature', 'hotfix', 'bugfix', 'release'];
@@ -92,13 +93,25 @@ export default observer(({ record, dataSet, versionOptions, levelOptions, projec
 
   return (<Fragment>
     <Form record={record}>
-      <Select name="versionType" combo>
+      <Select
+        name="versionType"
+        combo
+        addonAfter={<Tips helpText={formatMessage({ id: `${intlPrefix}.detail.type.tips` })} />}
+      >
         {map(VERSION_TYPE, (item) => (
           <Option value={item}>{item}</Option>
         ))}
       </Select>
-      <Select name="version" searchable />
-      <Select name="shareLevel" searchable />
+      <Select
+        name="version"
+        searchable
+        addonAfter={<Tips helpText={formatMessage({ id: `${intlPrefix}.detail.version.tips` })} />}
+      />
+      <Select
+        name="shareLevel"
+        searchable
+        addonAfter={<Tips helpText={formatMessage({ id: `${intlPrefix}.detail.scope.tips` })} />}
+      />
     </Form>
     {hasFailed && (
       <span className={`${prefixCls}-share-failed`}>

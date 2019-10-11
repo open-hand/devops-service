@@ -7,6 +7,7 @@ import { Button, Icon, Tooltip } from 'choerodon-ui';
 import map from 'lodash/map';
 import classnames from 'classnames';
 import SourceTable from './SourceTable';
+import Tips from '../../../../../components/new-tips';
 
 const { Column } = Table;
 const { Option } = Select;
@@ -23,7 +24,10 @@ const Platform = injectIntl(observer((props) => {
     Modal.open({
       key: modalKey1,
       drawer: true,
-      title: formatMessage({ id: `${intlPrefix}.import` }),
+      title: <Tips
+        helpText={formatMessage({ id: `${intlPrefix}.add.tips` })}
+        title={formatMessage({ id: `${intlPrefix}.add` })}
+      />,
       children: <SourceTable
         tableDs={tableDs}
         selectedDs={selectedDs}
@@ -99,7 +103,10 @@ const Platform = injectIntl(observer((props) => {
         <FormattedMessage id={`${intlPrefix}.add`} />
       </Button>
       <div className={`${prefixCls}-import-platform-selected`}>
-        <FormattedMessage id={`${intlPrefix}.selected`} values={{ number: selectedDs.length }} />
+        <Tips
+          helpText={formatMessage({ id: `${intlPrefix}.import.tips` })}
+          title={formatMessage({ id: `${intlPrefix}.selected` }, { number: selectedDs.length })}
+        />
       </div>
       <Table
         dataSet={selectedDs}

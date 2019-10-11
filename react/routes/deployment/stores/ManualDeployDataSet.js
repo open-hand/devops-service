@@ -111,7 +111,7 @@ export default ((intlPrefix, formatMessage, projectId, envOptionsDs, valueIdOpti
       { name: 'values', type: 'string' },
       { name: 'type', type: 'string', defaultValue: 'create' },
       { name: 'isNotChange', type: 'boolean', defaultValue: false },
-      { name: 'appServiceSource', type: 'string', defaultValue: 'normal_service', label: formatMessage({ id: `${intlPrefix}.source` }) },
+      { name: 'appServiceSource', type: 'string', defaultValue: 'normal_service' },
     ],
     events: {
       create: handleCreate,

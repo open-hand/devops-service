@@ -9,6 +9,7 @@ import { useServiceDetailStore } from './stores';
 import HeaderButtons from './HeaderButtons';
 import TimePopover from '../../../components/timePopover/TimePopover';
 import ServicePermission from './modals/permission';
+import Tips from '../../../components/new-tips';
 
 
 const { Column } = Table;
@@ -63,7 +64,10 @@ const Allocation = observer(() => {
   function openDetail() {
     Modal.open({
       key: modalKey1,
-      title: formatMessage({ id: `${intlPrefix}.permission.manage` }),
+      title: <Tips
+        helpText={formatMessage({ id: `${intlPrefix}.detail.allocation.tips` })}
+        title={formatMessage({ id: `${intlPrefix}.permission.manage` })}
+      />,
       children: <ServicePermission
         dataSet={permissionDs}
         record={detailDs.current}

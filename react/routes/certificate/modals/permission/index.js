@@ -1,12 +1,13 @@
 import React, { useCallback, Fragment, useEffect } from 'react';
 import { Action } from '@choerodon/master';
-import { Table, Modal, SelectBox, Form } from 'choerodon-ui/pro';
+import { Table, Modal, SelectBox, Form, Icon } from 'choerodon-ui/pro';
 import { Button } from 'choerodon-ui';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import AddProject from './AddProject';
 
 import './index.less';
+import Tips from '../../../../components/new-tips';
 
 const { Column } = Table;
 const { Option } = SelectBox;
@@ -83,13 +84,22 @@ export default injectIntl(observer(({
 
   return (
     <div className={`${prefixCls}-permission-wrap`}>
+      <Tips
+        helpText={formatMessage({ id: `${intlPrefix}.share.tips` })}
+        title={formatMessage({ id: `${intlPrefix}.share` })}
+      />
       <Form record={record}>
         <SelectBox name="skipCheckProjectPermission">
           <Option value>
             <span className={`${prefixCls}-permission-wrap-radio`}>{formatMessage({ id: `${intlPrefix}.project.all` })}</span>
           </Option>
           <Option value={false}>
-            <span className={`${prefixCls}-permission-wrap-radio`}>{formatMessage({ id: `${intlPrefix}.project.some` })}</span>
+            <span className={`${prefixCls}-permission-wrap-radio`}>
+              <Tips
+                helpText={formatMessage({ id: `${intlPrefix}.some.tips` })}
+                title={formatMessage({ id: `${intlPrefix}.project.some` })}
+              />
+            </span>
           </Option>
         </SelectBox>
       </Form>

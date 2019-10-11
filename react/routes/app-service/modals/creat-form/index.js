@@ -10,6 +10,7 @@ import includes from 'lodash/includes';
 import { handlePromptError } from '../../../../utils';
 import Settings from './Settings';
 import Source from './Source';
+import Tips from '../../../../components/new-tips';
 
 import './index.less';
 
@@ -193,6 +194,7 @@ const CreateForm = injectIntl(observer((props) => {
         <Select
           name="type"
           clearButton={false}
+          addonAfter={<Tips helpText={formatMessage({ id: `${intlPrefix}.type.tips` })} />}
         >
           <Option value="normal">
             {formatMessage({ id: `${intlPrefix}.type.normal` })}
@@ -202,7 +204,13 @@ const CreateForm = injectIntl(observer((props) => {
           </Option>
         </Select>
       )}
-      {!isModify && <TextField name="code" autoFocus />}
+      {!isModify && (
+        <TextField
+          name="code"
+          autoFocus
+          addonAfter={<Tips helpText={formatMessage({ id: `${intlPrefix}.code.tips` })} />}
+        />
+      )}
       <TextField name="name" />
     </Form>
     {!isModify && <Source {...props} />}

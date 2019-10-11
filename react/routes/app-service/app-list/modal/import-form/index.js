@@ -10,6 +10,7 @@ import includes from 'lodash/includes';
 import map from 'lodash/map';
 import PlatForm from './Platform';
 import { handlePromptError } from '../../../../../utils';
+import Tips from '../../../../../components/new-tips';
 
 import './index.less';
 
@@ -102,7 +103,10 @@ const ImportForm = injectIntl(observer((props) => {
           {map(IMPORT_METHOD, (item) => (
             <Option value={item}>
               <span className={`${prefixCls}-import-wrap-radio`}>
-                {formatMessage({ id: `${intlPrefix}.import.type.${item}` })}
+                <Tips
+                  helpText={formatMessage({ id: `${intlPrefix}.${item}.tips` })}
+                  title={formatMessage({ id: `${intlPrefix}.import.type.${item}` })}
+                />
               </span>
             </Option>
           ))}
@@ -119,7 +123,10 @@ const ImportForm = injectIntl(observer((props) => {
         </Fragment>
       ) : (
         <Form record={record} style={{ width: '3.6rem' }}>
-          <TextField name="repositoryUrl" />
+          <TextField
+            name="repositoryUrl"
+            addonAfter={<Tips helpText={formatMessage({ id: `${intlPrefix}.address.tips` })} />}
+          />
           {record.get('platformType') === 'gitlab' && <TextField name="accessToken" />}
           <Select name="type" clearButton={false}>
             <Option value="normal">

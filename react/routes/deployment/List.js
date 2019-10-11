@@ -17,6 +17,7 @@ import AutoDetail from './modals/autoDetail';
 import Deploy from './modals/deploy';
 import ClickText from '../../components/click-text';
 import PendingCheckModal from './components/pendingCheckModal';
+import Tips from '../../components/new-tips';
 
 import './index.less';
 
@@ -78,7 +79,10 @@ const Deployment = withRouter(observer((props) => {
       key: modalKey1,
       style: modalStyle1,
       drawer: true,
-      title: formatMessage({ id: `${intlPrefix}.start` }),
+      title: <Tips
+        helpText={formatMessage({ id: `${intlPrefix}.process.tips` })}
+        title={formatMessage({ id: `${intlPrefix}.start` })}
+      />,
       children: <Process
         store={deployStore}
         refresh={refresh}

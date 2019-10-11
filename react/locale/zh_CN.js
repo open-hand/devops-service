@@ -446,6 +446,40 @@ const appService = {
   'c7ncd.appService.name.failed': '输入内容不合规则，请重新输入',
   'c7ncd.appService.belong.share': '所属项目',
   'c7ncd.appService.belong.market': '所属应用',
+  'c7ncd.appService.type.tips':
+    '测试服务是用于实现自动化测试的载体，此类服务不支持共享，同时，也不能将此类服务部署到任何环境；仅支持在代码管理中对测试服务进行开发操作。而普通服务则支持正常的开发、部署与共享',
+  'c7ncd.appService.code.tips':
+    '应用服务的自定义编码，Gitlab仓库的地址将会使用服务编码作为仓库地址的一段路径，同时此编码在项目下唯一且不可修改',
+  'c7ncd.appService.template.tips':
+    '您可在此从多个服务来源中选择一个应用服务作为模板，选择应用服务后会默认为您选中对应服务的最新版本，即此次创建的应用服务会使用所选择版本对应的代码库作为模板',
+  'c7ncd.appService.setting.tips':
+    '您可在高级设置中按需更改预置的Docker仓库或Helm仓库为自定义仓库。若无实质需求，请使用默认仓库！',
+  'c7ncd.appService.share.tips':
+    '共享应用中包含了组织内其他项目共享至本项目的所有应用服务',
+  'c7ncd.appService.github.tips':
+    '目前仅支持从GitHub公库导入应用服务。仓库为空时不可导入',
+  'c7ncd.appService.gitlab.tips':
+    '支持从GitLab公库或私库导入应用服务，填写私库地址后，还需填写私有Token',
+  'c7ncd.appService.market.tips':
+    '市场应用指的是在应用市场中已经下载好的应用',
+  'c7ncd.appService.add.tips':
+    '您可在此批量选择应用服务添加至导入列表。此处展示的均是有代码库的应用服务',
+  'c7ncd.appService.import.tips':
+    '导入至本项目下的应用服务的名称与编码具有唯一性。即在导入之前，请先确认服务的名称和编码与本项目下已有的应用服务不同',
+  'c7ncd.appService.address.tips':
+    '此处仅支持HTTPS地址',
+  'c7ncd.appService.detail.share.tips':
+    '共享设置用于为该应用服务添加共享规则，并按照共享规则分别将其共享给范围内的项目',
+  'c7ncd.appService.detail.permission.tips':
+    '当选择将权限分配至项目下所有成员时，此时便不能在列表中删除任何成员的权限；仅在选择将权限分配给项目下特定成员时，才能在下方列表中管理成员的权限。项目所有者的权限不能被删除。',
+  'c7ncd.appService.detail.allocation.tips':
+    '此操作用于为此应用服务配置特定的开发操作人员。一般默认选择为项目下所有成员，即该项目下的所有成员均能对此应用服务进行开发操作；若选择项目下特定成员，则只有被添加后的成员才有权限。项目所有者默认拥有权限',
+  'c7ncd.appService.detail.type.tips':
+    '您可在此设置共享的版本类型。若想将该类型的所有服务版本均共享出去，仅选择版本类型即可，不用再选择特定版本',
+  'c7ncd.appService.detail.version.tips':
+    '您可在此选择一个特定版本进行共享。选择后，则只有此版本会被共享出去',
+  'c7ncd.appService.detail.scope.tips':
+    '此处仅能选择共享至某个项目，或者选择共享至所有项目',
 };
 
 const envrionment = {
@@ -500,7 +534,12 @@ const certificate = {
   'c7ncd.certificate.domain.failed': '由小写字母，数字，\'-\'或\'.\'组成，以字母、数字开始和结束',
   'c7ncd.certificate.upload.mode': '切换上传模式',
   'c7ncd.certificate.add': '添加证书文件',
-  'c7ncd.certificate.add.tip': '您需在此添加对应的文件内容，目前只支持base64格式的证书内容',
+  'c7ncd.certificate.add.tips': '您需在此添加对应的文件内容，目前只支持base64格式的证书内容',
+  'c7ncd.certificate.some.tips': '若本项目想使用该证书，同样需要为本项目授权',
+  'c7ncd.certificate.permission.tips':
+    '当选择将权限分配至组织下所有项目时，此时便不能在列表中删除任何项目的权限；仅在选择将权限分配给组织下特定项目时，才能在下方列表中管理项目的权限',
+  'c7ncd.certificate.share.tips':
+    '此操作用于为此证书在该组织下配置公开范围。一般默认选择为组织下所有项目，即该证书可在所有项目下创建证书时使用；若选择组织下特定项目，则只有在被授权项目下创建证书时才有权限选择此证书',
 };
 
 const deploy = {
@@ -550,6 +589,15 @@ const deploy = {
   'c7ncd.deploy.search.type': '查询部署类型',
   'c7ncd.deploy.search.result': '查询运行结果',
   'c7ncd.deploy.search.pipeline': '查询流水线名称',
+  'c7ncd.deploy.id.tips': '平台中每条部署记录仅会对应一个编号',
+  'c7ncd.deploy.type.tips': '此处是指记录的部署类型，分为手动部署与流水线部署',
+  'c7ncd.deploy.pipeline.tips': '此处是指部署记录对应的流水线名称；手动部署的部署记录此项为空',
+  'c7ncd.deploy.trigger.tips': '此处是指流水线的部署记录所对应的触发方式，分为人工触发与自动触发；手动部署的部署记录此项为空',
+  'c7ncd.deploy.source.tips': '您可在此选择项目下已有的应用服务、组织中其他项目共享出的应用服务以及市场下载的应用服务来进行部署',
+  'c7ncd.deploy.instance.tips': '选择应用服务后，会默认生成实例名称，此名称可修改；此次部署默认为新建一个实例',
+  'c7ncd.deploy.config.tips': '您可在此选择一个部署配置并使用其中的配置信息；或者直接在已有基础上进行修改后部署',
+  'c7ncd.deploy.resource.tips': '您可在部署实例的同时，为此实例创建一个网络和一个域名，从而完成资源的配置；此步骤为可选执行',
+  'c7ncd.deploy.process.tips': '下方展示的均是人工触发流水线，您可在此批量选择并启动这些人工触发流水线',
 };
 
 const repository = {
