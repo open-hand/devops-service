@@ -107,7 +107,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_application.groovy') {
         addDefaultValue(tableName: "devops_app_service", columnName: "is_active", defaultValue: "1")
     }
 
-    changeSet(author: 'ztx', id: '2018-10-11-updateDataType') {
+    changeSet(author: 'ztx', id: '2019-10-11-updateDataType') {
         modifyDataType(tableName: 'devops_app_service', columnName: 'img_url', newDataType: 'VARCHAR(300)')
     }
 }
