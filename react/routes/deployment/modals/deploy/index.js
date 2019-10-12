@@ -41,13 +41,8 @@ const DeployModal = injectIntl(observer(({ record, dataSet, store, projectId, re
   }
 
   function renderEnvOption({ record: envRecord, text, value }) {
-    const isAvailable = envRecord.get('connect') && envRecord.get('synchro') && envRecord.get('permission');
-    const envClass = classnames({
-      [`${prefixCls}-manual-deploy-available`]: isAvailable,
-      [`${prefixCls}-manual-deploy-disabled`]: !isAvailable,
-    });
     return (
-      <div className={envClass}>
+      <Fragment>
         {value && (<StatusDot
           connect={envRecord.get('connect')}
           synchronize={envRecord.get('synchro')}
@@ -55,8 +50,15 @@ const DeployModal = injectIntl(observer(({ record, dataSet, store, projectId, re
           size="small"
         />)}
         <span className={`${prefixCls}-select-option-text`}>{text}</span>
-      </div>
+      </Fragment>
     );
+  }
+
+  function renderOptionProperty({ record: envRecord }) {
+    const isAvailable = envRecord.get('connect') && envRecord.get('synchro') && envRecord.get('permission');
+    return ({
+      disabled: !isAvailable,
+    });
   }
 
   return (
@@ -112,6 +114,7 @@ const DeployModal = injectIntl(observer(({ record, dataSet, store, projectId, re
           popupCls={`${prefixCls}-manual-deploy`}
           dropdownMenuStyle={{ cursor: 'not-allowed' }}
           notFoundContent={<FormattedMessage id={`${intlPrefix}.env.empty`} />}
+          onOption={renderOptionProperty}
         />
         <TextField
           name="instanceName"
