@@ -16,6 +16,7 @@ import DeployConfigForm from './deploy-config';
 import { isNotRunning } from '../../../../util';
 
 import '../../../../../../components/dynamic-select/style/index.less';
+import Tips from '../../../../../../components/new-tips';
 
 const detailKey = Modal.key();
 const envKey = Modal.key();
@@ -150,7 +151,10 @@ const EnvModals = observer(() => {
     modalStore.loadUsers(projectId, id);
     Modal.open({
       key: permissionKey,
-      title: formatMessage({ id: `${intlPrefix}.modal.permission` }),
+      title: <Tips
+        helpText={formatMessage({ id: `${intlPrefix}.permission.tips` })}
+        title={formatMessage({ id: `${intlPrefix}.modal.permission` })}
+      />,
       drawer: true,
       className: 'c7ncd-modal-wrapper',
       style: modalStyle,

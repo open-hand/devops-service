@@ -1,32 +1,35 @@
-import React, { Fragment, useMemo } from 'react';
-import { injectIntl, FormattedMessage } from 'react-intl';
+import React, { useMemo } from 'react';
+import { injectIntl } from 'react-intl';
 import PropTypes from 'prop-types';
-import classnames from 'classnames';
 import { Popover, Icon } from 'choerodon-ui';
 
 import './index.less';
 
-function Tips({ helpText, showHelp, title }) {
-  const iconClass = classnames({
-    'c7ncd-select-tips-icon': true,
-    'c7ncd-select-tips-icon-mr': title,
-  });
-
-  return (
-    <Fragment>
+function Tips({ helpText, showHelp, title, iconSize }) {
+  return (title ? (
+    <div className="c7ncd-tips-wrap">
       {title && <span>{title}</span>}
       {showHelp && (
         <Popover
-          content={<span>{helpText}</span>}
+          content={helpText}
           overlayClassName="c7ncd-tips-popover"
           placement="topRight"
           arrowPointAtCenter
         >
-          <Icon type="help" className={iconClass} />
+          <Icon type="help c7ncd-select-tips-icon-mr" />
         </Popover>
       )}
-    </Fragment>
-  );
+    </div>
+  ) : (
+    <Popover
+      content={helpText}
+      overlayClassName="c7ncd-tips-popover"
+      placement="topRight"
+      arrowPointAtCenter
+    >
+      <Icon type="help c7ncd-select-tips-icon" />
+    </Popover>
+  ));
 }
 
 Tips.propTypes = {

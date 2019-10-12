@@ -369,6 +369,13 @@ const deployment = {
   'c7ncd.deployment.pod.status': 'Pod状态',
   'c7ncd.deployment.time': '时间',
   'c7ncd.deployment.usage': '使用量',
+  'c7ncd.deployment.environment.sync': '提交同步情况',
+  'c7ncd.deployment.permission.tab.tips':
+    '当选择将权限分配至项目下所有成员时，此时便不能在列表中删除任何成员的权限；仅在选择将权限分配给项目下特定成员时，才能在下方列表中管理成员的权限。项目所有者的权限不能被删除',
+  'c7ncd.deployment.permission.tips':
+    '此操作用于为环境配置特定的操作人员。一般默认选择为项目下所有成员，即该项目下的所有成员均能对此环境中的资源进行操作；若选择项目下特定成员，则只有被添加后的成员才有权限。项目所有者默认拥有权限',
+  'c7ncd.deployment.service.tips':
+    '您可在此选择项目下已存在但无实例的应用服务，并将其关联到该环境下，以便为其创建相应的资源',
 
 };
 
@@ -446,6 +453,7 @@ const appService = {
   'c7ncd.appService.name.failed': '输入内容不合规则，请重新输入',
   'c7ncd.appService.belong.share': '所属项目',
   'c7ncd.appService.belong.market': '所属应用',
+  'c7ncd.appService.empty': '暂无应用服务',
   'c7ncd.appService.type.tips':
     '测试服务是用于实现自动化测试的载体，此类服务不支持共享，同时，也不能将此类服务部署到任何环境；仅支持在代码管理中对测试服务进行开发操作。而普通服务则支持正常的开发、部署与共享',
   'c7ncd.appService.code.tips':
@@ -513,6 +521,14 @@ const envrionment = {
   'c7ncd.env.sync.empty': '目前部署同步正常，暂无错误信息',
   'c7ncd.env.resource.setting': '资源安全设置',
   'c7ncd.env.resource.setting.create': '添加安全设置规则',
+  'c7ncd.env.cluster.tips': '创建环境必须先选择集群，此处集群均是已经对本项目进行授权的集群。',
+  'c7ncd.env.code.tips': '环境的自定义编码，是集群中产生的namespace的名称，限制为30个字符，且在所选集群与当前项目下唯一。',
+  'c7ncd.env.name.tips': '平台环境的显示名称。限制为10个字符',
+  'c7ncd.env.group.tips': '若要使用环境分组，请先创建分组；此处只能从已创建的分组中进行选择，从而将此环境放入该分组中',
+  'c7ncd.env.permission.tab.tips':
+    '当选择将权限分配至项目下所有成员时，此时便不能在列表中删除任何成员的权限；仅在选择将权限分配给项目下特定成员时，才能在下方列表中管理成员的权限。项目所有者的权限不能被删除',
+  'c7ncd.env.permission.tips':
+    '此操作用于为环境配置特定的操作人员。一般默认选择为项目下所有成员，即该项目下的所有成员均能对此环境中的资源进行操作；若选择项目下特定成员，则只有被添加后的成员才有权限。项目所有者默认拥有权限',
 
 };
 
@@ -589,6 +605,9 @@ const deploy = {
   'c7ncd.deploy.search.type': '查询部署类型',
   'c7ncd.deploy.search.result': '查询运行结果',
   'c7ncd.deploy.search.pipeline': '查询流水线名称',
+  'c7ncd.deploy.config.empty': '暂无部署配置',
+  'c7ncd.deploy.app.empty': '暂无可部署应用服务',
+  'c7ncd.deploy.env.empty': '暂无环境',
   'c7ncd.deploy.id.tips': '平台中每条部署记录仅会对应一个编号',
   'c7ncd.deploy.type.tips': '此处是指记录的部署类型，分为手动部署与流水线部署',
   'c7ncd.deploy.pipeline.tips': '此处是指部署记录对应的流水线名称；手动部署的部署记录此项为空',

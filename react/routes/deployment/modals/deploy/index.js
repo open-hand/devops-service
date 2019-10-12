@@ -41,13 +41,8 @@ const DeployModal = injectIntl(observer(({ record, dataSet, store, projectId, re
   }
 
   function renderEnvOption({ record: envRecord, text, value }) {
-    const isAvailable = envRecord.get('connect') && envRecord.get('synchro') && envRecord.get('permission');
-    const envClass = classnames({
-      [`${prefixCls}-manual-deploy-available`]: isAvailable,
-      [`${prefixCls}-manual-deploy-disabled`]: !isAvailable,
-    });
     return (
-      <div className={envClass}>
+      <Fragment>
         {value && (<StatusDot
           connect={envRecord.get('connect')}
           synchronize={envRecord.get('synchro')}
@@ -55,8 +50,15 @@ const DeployModal = injectIntl(observer(({ record, dataSet, store, projectId, re
           size="small"
         />)}
         <span className={`${prefixCls}-select-option-text`}>{text}</span>
-      </div>
+      </Fragment>
     );
+  }
+
+  function renderOptionProperty({ record: envRecord }) {
+    const isAvailable = envRecord.get('connect') && envRecord.get('synchro') && envRecord.get('permission');
+    return ({
+      disabled: !isAvailable,
+    });
   }
 
   return (
@@ -83,7 +85,12 @@ const DeployModal = injectIntl(observer(({ record, dataSet, store, projectId, re
             </span>
           </Option>
         </SelectBox>
-        <Select name="appServiceId" searchable newLine>
+        <Select
+          name="appServiceId"
+          searchable
+          newLine
+          notFoundContent={<FormattedMessage id={`${intlPrefix}.app.empty`} />}
+        >
           {record.get('appServiceSource') === 'normal_service' ? (
             map(store.getAppService[0] && store.getAppService[0].appServiceList, ({ id, name, code }) => (
               <Option value={`${id}__${code}`}>{name}</Option>
@@ -106,6 +113,8 @@ const DeployModal = injectIntl(observer(({ record, dataSet, store, projectId, re
           optionRenderer={renderEnvOption}
           popupCls={`${prefixCls}-manual-deploy`}
           dropdownMenuStyle={{ cursor: 'not-allowed' }}
+          notFoundContent={<FormattedMessage id={`${intlPrefix}.env.empty`} />}
+          onOption={renderOptionProperty}
         />
         <TextField
           name="instanceName"
@@ -117,6 +126,7 @@ const DeployModal = injectIntl(observer(({ record, dataSet, store, projectId, re
           colSpan={2}
           newLine
           addonAfter={<Tips helpText={formatMessage({ id: `${intlPrefix}.config.tips` })} />}
+          notFoundContent={<FormattedMessage id={`${intlPrefix}.config.empty`} />}
         />
         <YamlEditor
           colSpan={3}

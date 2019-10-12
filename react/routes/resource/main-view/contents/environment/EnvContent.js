@@ -8,6 +8,7 @@ import PageTitle from '../../../../../components/page-title';
 import EnvItem from '../../../../../components/env-item';
 import openWarnModal from '../../../../../utils/openWarnModal';
 import Modals from './modals';
+import Tips from '../../../../../components/new-tips';
 
 const { TabPane } = Tabs;
 
@@ -109,7 +110,10 @@ const EnvContent = observer(() => {
         </TabPane>
         {envStore.getPermission && <TabPane
           key={ASSIGN_TAB}
-          tab={formatMessage({ id: `${intlPrefix}.environment.tabs.assignPermissions` })}
+          tab={<Tips
+            helpText={formatMessage({ id: `${intlPrefix}.permission.tab.tips` })}
+            title={formatMessage({ id: `${intlPrefix}.environment.tabs.assignPermissions` })}
+          />}
         >
           <Suspense fallback={<Spin />}>
             <Permissions />

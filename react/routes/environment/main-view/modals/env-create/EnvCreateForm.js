@@ -2,6 +2,7 @@ import React, { Fragment } from 'react';
 import { Form, TextField, TextArea, Select } from 'choerodon-ui/pro';
 import StatusDot from '../../../../../components/status-dot';
 import { useFormStore } from './stores';
+import Tips from '../../../../../components/new-tips';
 
 import './index.less';
 
@@ -16,7 +17,7 @@ function ClusterItem({ text, connect }) {
   </Fragment>;
 }
 
-export default function EnvCreateForm({ modal, refresh }) {
+export default function EnvCreateForm({ formatMessage, intlPrefix, modal, refresh }) {
   const {
     formDs,
     clusterOptionDs,
@@ -63,8 +64,14 @@ export default function EnvCreateForm({ modal, refresh }) {
         optionRenderer={getClusterOption}
         clearButton={false}
       />
-      <TextField name="code" />
-      <TextField name="name" />
+      <TextField
+        name="code"
+        addonAfter={<Tips helpText={formatMessage({ id: `${intlPrefix}.code.tips` })} />}
+      />
+      <TextField
+        name="name"
+        addonAfter={<Tips helpText={formatMessage({ id: `${intlPrefix}.name.tips` })} />}
+      />
       <TextArea name="description" resize="vertical" />
       <Select
         searchable
@@ -72,6 +79,7 @@ export default function EnvCreateForm({ modal, refresh }) {
         optionRenderer={getGroupOption}
         renderer={getGroupOption}
         clearButton={false}
+        addonAfter={<Tips helpText={formatMessage({ id: `${intlPrefix}.group.tips` })} />}
       />
     </Form>
   </div>;

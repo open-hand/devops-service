@@ -747,9 +747,9 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
 
     private void fileUploadFixVersion(List<String> zipFileList, AppMarketFixVersionPayload appMarketFixVersionPayload, MarketImageUrlVO marketImageUrlVO) {
         Boolean result = null;
-        String imageJson = marketImageUrlVO != null ? gson.toJson(marketImageUrlVO) : null;
         String appVersionJson = gson.toJson(appMarketFixVersionPayload.getMarketApplicationVO().getMarketApplicationVersionVO());
         if (appMarketFixVersionPayload.getFixVersionUploadPayload().getMarketSaaSPlatform()) {
+            String imageJson = marketImageUrlVO != null ? gson.toJson(marketImageUrlVO) : "";
             MultipartFile[] files = createMockMultipartFile(zipFileList);
             result = marketServiceClientOperator.updateAppPublishInfoFix(
                     appMarketFixVersionPayload.getMarketApplicationVO().getMarketApplicationVersionVO().getMarketAppCode(),
@@ -758,6 +758,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                     files,
                     imageJson);
         } else {
+            String imageJson = marketImageUrlVO != null ? gson.toJson(marketImageUrlVO) : null;
             List<MultipartBody.Part> files = createMultipartBody(zipFileList);
 
             String getawayUrl = appMarketFixVersionPayload.getFixVersionUploadPayload().getSaasGetawayUrl().endsWith("/") ? appMarketFixVersionPayload.getFixVersionUploadPayload().getSaasGetawayUrl() : appMarketFixVersionPayload.getFixVersionUploadPayload().getSaasGetawayUrl() + "/";

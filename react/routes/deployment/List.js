@@ -379,12 +379,41 @@ const Deployment = withRouter(observer((props) => {
           queryBar="none"
           className={`${prefixCls}-table`}
         >
-          <Column name="deployId" renderer={renderNumber} align="left" />
+          <Column
+            name="deployId"
+            renderer={renderNumber}
+            align="left"
+            header={<Tips
+              helpText={formatMessage({ id: `${intlPrefix}.id.tips` })}
+              title={formatMessage({ id: `${intlPrefix}.number` })}
+            />}
+          />
           <Column renderer={renderActions} width="0.7rem" />
-          <Column name="deployType" renderer={renderDeployType} />
+          <Column
+            name="deployType"
+            renderer={renderDeployType}
+            header={<Tips
+              helpText={formatMessage({ id: `${intlPrefix}.type.tips` })}
+              title={formatMessage({ id: `${intlPrefix}.type` })}
+            />}
+          />
           <Column name="deployStatus" renderer={renderDeployStatus} />
-          <Column name="pipelineName" renderer={renderPipelineName} />
-          <Column name="pipelineTriggerType" renderer={renderTriggerType} />
+          <Column
+            name="pipelineName"
+            renderer={renderPipelineName}
+            header={<Tips
+              helpText={formatMessage({ id: `${intlPrefix}.pipeline.tips` })}
+              title={formatMessage({ id: `${intlPrefix}.pipeline.name` })}
+            />}
+          />
+          <Column
+            name="pipelineTriggerType"
+            renderer={renderTriggerType}
+            header={<Tips
+              helpText={formatMessage({ id: `${intlPrefix}.trigger.tips` })}
+              title={formatMessage({ id: `${intlPrefix}.pipeline.type` })}
+            />}
+          />
           <Column name="userName" renderer={renderExecutor} />
           <Column name="deployTime" renderer={renderTime} />
         </Table>

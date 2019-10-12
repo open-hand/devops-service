@@ -5,6 +5,7 @@ import { withRouter } from 'react-router-dom';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import _ from 'lodash';
 import { Button, Tooltip, Radio, Input, Form, Select } from 'choerodon-ui';
+import Tips from '../new-tips';
 
 import '../../routes/main.less';
 import './index.less';
@@ -596,7 +597,10 @@ export default class DomainForm extends Component {
           )}
         </FormItem>
         <div className="c7n-creation-title">
-          <FormattedMessage id="domain.protocol" />
+          <Tips
+            helpText={formatMessage({ id: 'domain.protocol.tip' })}
+            title={formatMessage({ id: 'domain.protocol' })}
+          />
         </div>
         <div className="c7n-creation-radio">
           <FormItem
