@@ -17,10 +17,11 @@ function ClusterItem({ text, connect }) {
   </Fragment>;
 }
 
-export default function EnvCreateForm({ formatMessage, intlPrefix, modal, refresh }) {
+export default function EnvCreateForm({ intlPrefix, modal, refresh }) {
   const {
     formDs,
     clusterOptionDs,
+    intl: { formatMessage },
   } = useFormStore();
 
   async function handleCreate() {
