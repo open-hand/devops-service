@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.vo.kubernetes.certification;
 
+import io.swagger.annotations.ApiModelProperty;
+
 import java.util.Objects;
 
 /**
@@ -9,7 +11,9 @@ import java.util.Objects;
  * Description:
  */
 public class CertificationMetadata {
+    @ApiModelProperty("名称")
     private String name;
+    @ApiModelProperty("命名空间")
     private String namespace;
 
     public CertificationMetadata() {

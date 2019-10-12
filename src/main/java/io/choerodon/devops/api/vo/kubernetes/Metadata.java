@@ -1,9 +1,13 @@
 package io.choerodon.devops.api.vo.kubernetes;
 
+import io.swagger.annotations.ApiModelProperty;
+
 import java.util.Date;
 
 public class Metadata {
+    @ApiModelProperty("创建时间")
     private Date creationTimestamp;
+    @ApiModelProperty("名称")
     private String name;
 
 

@@ -6,10 +6,28 @@ package io.choerodon.devops.api.vo;
 public class AppServiceInstanceRepVO {
 
     private Long instanceId;
+    private Long appServiceId;
+    private Long envId;
     private String appServiceName;
     private String appServiceVersion;
     private String envName;
     private String instanceName;
+
+    public Long getAppServiceId() {
+        return appServiceId;
+    }
+
+    public void setAppServiceId(Long appServiceId) {
+        this.appServiceId = appServiceId;
+    }
+
+    public Long getEnvId() {
+        return envId;
+    }
+
+    public void setEnvId(Long envId) {
+        this.envId = envId;
+    }
 
     public Long getInstanceId() {
         return instanceId;
