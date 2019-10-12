@@ -510,7 +510,7 @@
                    and dassr.project_id = #{projectId}
                </if>
                AND dassr.version IS NULL
-               AND dassr.version LIKE CONCAT('%', CONCAT(dassr.version_type,'%'))
+               AND version.version LIKE CONCAT('%', CONCAT(dassr.version_type,'%'))
                <if test="params != null and params != ''">
                    AND dassr.version LIKE CONCAT('%', CONCAT(#{params},'%'))
                </if>

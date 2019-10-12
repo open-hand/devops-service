@@ -631,7 +631,6 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         // 分别获取本项目的应用服务和共享服务
         ids.stream().forEach(v -> {
             boolean contains = appServiceIds.contains(v);
-            System.out.println(contains);
             if(appServiceIds.contains(v)){
                 localProjectIds.add(v);
             }
