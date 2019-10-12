@@ -251,7 +251,7 @@ const Deployment = withRouter(observer((props) => {
     return (
       <UserInfo
         name={value || ''}
-        id={record.get('userLoginName ')}
+        id={record.get('userLoginName')}
         avatar={record.get('userImage')}
       />
     );

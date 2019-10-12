@@ -521,8 +521,8 @@ const envrionment = {
   'c7ncd.env.sync.empty': '目前部署同步正常，暂无错误信息',
   'c7ncd.env.resource.setting': '资源安全设置',
   'c7ncd.env.resource.setting.create': '添加安全设置规则',
-  'c7ncd.env.cluster.tips': '创建环境必须先选择集群，此处集群均是已经对本项目进行授权的集群。',
-  'c7ncd.env.code.tips': '环境的自定义编码，是集群中产生的namespace的名称，限制为30个字符，且在所选集群与当前项目下唯一。',
+  'c7ncd.env.cluster.tips': '创建环境必须先选择集群，此处集群均是已经对本项目进行授权的集群',
+  'c7ncd.env.code.tips': '环境的自定义编码，是集群中产生的namespace的名称，限制为30个字符，且在所选集群与当前项目下唯一',
   'c7ncd.env.name.tips': '平台环境的显示名称。限制为10个字符',
   'c7ncd.env.group.tips': '若要使用环境分组，请先创建分组；此处只能从已创建的分组中进行选择，从而将此环境放入该分组中',
   'c7ncd.env.permission.tab.tips':
