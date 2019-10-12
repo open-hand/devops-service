@@ -1,14 +1,10 @@
 import React from 'react';
-import { observer } from 'mobx-react-lite';
 import { TextField, TextArea, Select, Form } from 'choerodon-ui/pro';
 import { useFormStore } from './stores';
-
-const Option = Select.Option;
 
 function EnvModifyForm() {
   const {
     formDs,
-    groupOptionDs,
     modal,
     refresh,
     envStore,
@@ -30,21 +26,21 @@ function EnvModifyForm() {
 
   modal.handleOk(handleSubmit);
 
-  function getGroupOption(record) {
-    const id = record.get('id');
-    const name = record.get('name');
-    return <Option key={id} value={id}>
-      {name}
-    </Option>;
+  function getGroupOption({ text }) {
+    return text;
   }
 
   return <Form dataSet={formDs}>
     <TextField name="name" />
     <TextArea name="description" resize="vertical" />
-    <Select name="devopsEnvGroupId">
-      {groupOptionDs.map(getGroupOption)}
-    </Select>
+    <Select
+      searchable
+      clearButton={false}
+      name="devopsEnvGroupId"
+      renderer={getGroupOption}
+      optionRenderer={getGroupOption}
+    />
   </Form>;
 }
 
-export default observer(EnvModifyForm);
+export default EnvModifyForm;

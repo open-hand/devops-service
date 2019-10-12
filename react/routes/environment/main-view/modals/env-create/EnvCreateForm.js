@@ -1,33 +1,28 @@
 import React, { Fragment } from 'react';
-import { observer } from 'mobx-react-lite';
-import { Form as ProForm, TextField, TextArea, Select as ProSelect } from 'choerodon-ui/pro';
-import { Select, Form } from 'choerodon-ui';
+import { Form, TextField, TextArea, Select } from 'choerodon-ui/pro';
 import StatusDot from '../../../../../components/status-dot';
 import { useFormStore } from './stores';
 
 import './index.less';
 
-const ProOption = ProSelect.Option;
-const Option = Select.Option;
-const FormItem = Form.Item;
+function ClusterItem({ text, connect }) {
+  return <Fragment>
+    {text && <StatusDot
+      active
+      synchronize
+      size="inner"
+      connect={connect}
+    />} {text}
+  </Fragment>;
+}
 
-function EnvCreateForm({ modal, form, refresh }) {
+export default function EnvCreateForm({ modal, refresh }) {
   const {
-    intl: { formatMessage },
     formDs,
     clusterOptionDs,
-    groupOptionDs,
   } = useFormStore();
 
   async function handleCreate() {
-    let result = true;
-    form.validateFields(['clusterId'], (errors) => {
-      result = !errors;
-    });
-    if (!result) {
-      return false;
-    }
-
     try {
       if ((await formDs.submit()) !== false) {
         refresh();
@@ -41,69 +36,43 @@ function EnvCreateForm({ modal, form, refresh }) {
 
   modal.handleOk(handleCreate);
 
-  function getClusterOption(record) {
-    const id = record.get('id');
-    const name = record.get('name');
+  function clusterRenderer({ record, text }) {
+    const current = clusterOptionDs.find(item => item.get('id') === record.get('clusterId'));
+    if (current) {
+      const connect = current.get('connect');
+      return <ClusterItem text={text} connect={connect} />;
+    }
+    return text;
+  }
+
+  function getClusterOption({ record, text }) {
     const connect = record.get('connect');
-
-    return <Option key={id}>
-      <StatusDot
-        active
-        synchronize
-        size="inner"
-        connect={connect}
-      />
-      {name}
-    </Option>;
+    return <ClusterItem text={text} connect={connect} />;
   }
 
-  function getGroupOption(record) {
-    const id = record.get('id');
-    const name = record.get('name');
-    return <ProOption key={id} value={id}>
-      {name}
-    </ProOption>;
-  }
-
-  function handleSelect(value) {
-    formDs.current.set('clusterId', Number(value));
+  function getGroupOption({ text }) {
+    return text;
   }
 
   return <div className="c7ncd-env-form-wrap">
-    <Form className="c7ncd-env-form">
-      <FormItem>
-        {form.getFieldDecorator('clusterId', {
-          rules: [
-            {
-              required: true,
-              message: formatMessage({ id: 'required' }),
-            },
-          ],
-        })(
-          <Select
-            allowClear={false}
-            filter
-            onSelect={handleSelect}
-            getPopupContainer={(triggerNode) => triggerNode.parentNode}
-            filterOption={(input, option) => option.props.children[1]
-              .toLowerCase()
-              .indexOf(input.toLowerCase()) >= 0}
-            label={formatMessage({ id: 'c7ncd.env.cluster.select' })}
-          >
-            {clusterOptionDs.map(getClusterOption)}
-          </Select>,
-        )}
-      </FormItem>
-    </Form>
-    <ProForm dataSet={formDs}>
+    <Form dataSet={formDs}>
+      <Select
+        searchable
+        name="clusterId"
+        renderer={clusterRenderer}
+        optionRenderer={getClusterOption}
+        clearButton={false}
+      />
       <TextField name="code" />
       <TextField name="name" />
       <TextArea name="description" resize="vertical" />
-      <ProSelect name="devopsEnvGroupId">
-        {groupOptionDs.map(getGroupOption)}
-      </ProSelect>
-    </ProForm>
+      <Select
+        searchable
+        name="devopsEnvGroupId"
+        optionRenderer={getGroupOption}
+        renderer={getGroupOption}
+        clearButton={false}
+      />
+    </Form>
   </div>;
 }
-
-export default Form.create({})(observer(EnvCreateForm));

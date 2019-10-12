@@ -23,8 +23,13 @@ export const StoreProvider = injectIntl(inject('AppState')(
       store,
     } = props;
     const envId = record.get('id');
-    const formDs = useMemo(() => new DataSet(FormDataSet({ formatMessage, intlPrefix, projectId })), [projectId]);
     const groupOptionDs = useMemo(() => new DataSet(GroupOptionDataSet(projectId)), [projectId]);
+    const formDs = useMemo(() => new DataSet(FormDataSet({
+      formatMessage,
+      intlPrefix,
+      projectId,
+      groupOptionDs,
+    })), [projectId]);
 
     useEffect(() => {
       if (record) {
@@ -37,7 +42,6 @@ export const StoreProvider = injectIntl(inject('AppState')(
       ...props,
       formDs,
       intlPrefix,
-      groupOptionDs,
       envStore: store,
       envId,
     };

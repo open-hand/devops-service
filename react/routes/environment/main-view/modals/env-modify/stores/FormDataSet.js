@@ -1,4 +1,4 @@
-export default ({ formatMessage, intlPrefix, projectId }) => ({
+export default ({ formatMessage, intlPrefix, projectId, groupOptionDs }) => ({
   autoCreate: true,
   selection: false,
   paging: false,
@@ -20,8 +20,10 @@ export default ({ formatMessage, intlPrefix, projectId }) => ({
     {
       name: 'devopsEnvGroupId',
       type: 'number',
-      textField: 'text',
+      textField: 'name',
+      valueField: 'id',
       label: '选择分组',
+      options: groupOptionDs,
     },
   ],
   transport: {
