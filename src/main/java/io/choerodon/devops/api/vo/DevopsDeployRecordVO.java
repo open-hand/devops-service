@@ -20,6 +20,7 @@ public class DevopsDeployRecordVO {
     private String pipelineTriggerType;
     private Long deployCreatedBy;
     private String userName;
+    private String userLoginName;
     private String userImage;
     private Date deployTime;
     private List<PipelineStageRecordVO> stageDTOList;
@@ -169,5 +170,13 @@ public class DevopsDeployRecordVO {
 
     public void setAppServiceId(Long appServiceId) {
         this.appServiceId = appServiceId;
+    }
+
+    public String getUserLoginName() {
+        return userLoginName;
+    }
+
+    public void setUserLoginName(String userLoginName) {
+        this.userLoginName = userLoginName;
     }
 }

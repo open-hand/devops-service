@@ -95,10 +95,11 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
 
             if (userMap.containsKey(devopsDeployRecordVO.getDeployCreatedBy())) {
                 IamUserDTO targetUser = userMap.get(devopsDeployRecordVO.getDeployCreatedBy());
+                devopsDeployRecordVO.setUserName(targetUser.getRealName());
                 if(targetUser.getLdap()) {
-                    devopsDeployRecordVO.setUserName(String.format("%s(%s)",targetUser.getRealName(),targetUser.getLoginName()));
+                    devopsDeployRecordVO.setUserLoginName(targetUser.getLoginName());
                 }else {
-                    devopsDeployRecordVO.setUserName(String.format("%s(%s)",targetUser.getRealName(),targetUser.getEmail()));
+                    devopsDeployRecordVO.setUserLoginName(targetUser.getEmail());
                 }
                 devopsDeployRecordVO.setUserImage(targetUser.getImageUrl());
             }
