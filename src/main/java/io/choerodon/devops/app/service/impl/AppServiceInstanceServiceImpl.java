@@ -671,6 +671,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         appServiceInstanceRepVO.setEnvName(devopsEnvironmentService.baseQueryById(appServiceInstanceDTO.getEnvId()).getName());
         appServiceInstanceRepVO.setInstanceName(appServiceInstanceDTO.getCode());
         appServiceInstanceRepVO.setInstanceId(appServiceInstanceDTO.getId());
+        appServiceInstanceRepVO.setAppServiceId(appServiceInstanceDTO.getAppServiceId());
+        appServiceInstanceRepVO.setEnvId(appServiceInstanceDTO.getEnvId());
         return appServiceInstanceRepVO;
     }
 
