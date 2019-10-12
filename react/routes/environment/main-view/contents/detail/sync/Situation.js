@@ -161,7 +161,7 @@ const SyncSituation = observer(() => {
     <div className={`${prefixCls}-environment-sync-detail`}>
       <div className="log-sync-title">
         <span className="log-sync-title-text">
-          {formatMessage({ id: `${intlPrefix}.environment.tabs.sync` })}
+          {formatMessage({ id: `${intlPrefix}.environment.sync` })}
         </span>
         <Popover
           overlayClassName={`${prefixCls}-environment-sync-help`}

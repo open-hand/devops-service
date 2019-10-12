@@ -369,6 +369,7 @@ const deployment = {
   'c7ncd.deployment.pod.status': 'Pod状态',
   'c7ncd.deployment.time': '时间',
   'c7ncd.deployment.usage': '使用量',
+  'c7ncd.deployment.environment.sync': '提交同步情况',
   'c7ncd.deployment.permission.tab.tips':
     '当选择将权限分配至项目下所有成员时，此时便不能在列表中删除任何成员的权限；仅在选择将权限分配给项目下特定成员时，才能在下方列表中管理成员的权限。项目所有者的权限不能被删除',
   'c7ncd.deployment.permission.tips':
