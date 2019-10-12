@@ -491,7 +491,7 @@
                AND dassr.version IS NOT NULL
                AND dassr.version = version.version
                <if test="params != null and params != ''">
-                   AND version.version LIKE CONCAT('%', CONCAT(#{params},'%'))
+                   AND dassr.version LIKE CONCAT('%', CONCAT(#{params},'%'))
                </if>)
                UNION
                (
@@ -510,9 +510,9 @@
                    and dassr.project_id = #{projectId}
                </if>
                AND dassr.version IS NULL
-               AND version.version LIKE CONCAT('%', CONCAT(dassr.version_type,'%'))
+               AND dassr.version LIKE CONCAT('%', CONCAT(dassr.version_type,'%'))
                <if test="params != null and params != ''">
-                   AND version.version LIKE CONCAT('%', CONCAT(#{params},'%'))
+                   AND dassr.version LIKE CONCAT('%', CONCAT(#{params},'%'))
                </if>
                )
            </when>
@@ -523,7 +523,7 @@
                    #{id}
                </foreach>
                <if test="params != null and params != ''">
-                   AND version.version LIKE CONCAT('%', CONCAT(#{params},'%'))
+                   AND version LIKE CONCAT('%', CONCAT(#{params},'%'))
                </if>
            </otherwise>
        </choose>
