@@ -516,7 +516,7 @@
                </if>
                )
            </when>
-           <otherwise>
+           <when test="share == null">
                select * from  devops_app_service_version
                WHERE app_service_id in
                <foreach collection="ids" item="id" open="(" separator="," close=")">
@@ -525,7 +525,7 @@
                <if test="params != null and params != ''">
                    AND version LIKE CONCAT('%', CONCAT(#{params},'%'))
                </if>
-           </otherwise>
+           </when>
        </choose>
         order by id desc
     </select>
