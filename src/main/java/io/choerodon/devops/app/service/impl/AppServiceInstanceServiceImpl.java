@@ -542,7 +542,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             }
         }
 
-        //更新时候，如果isNotChange的值为true，则直接向agent发送更新指令，不走gitops,否则走操作gitops库文件逻辑
+        //更新时候，如果isNotChange的值为true，则直接return,否则走操作gitops库文件逻辑
         if (!appServiceDeployVO.getIsNotChange()) {
             //存储数据
             if (appServiceDeployVO.getType().equals(CREATE)) {
