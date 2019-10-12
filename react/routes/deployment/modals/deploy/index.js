@@ -83,7 +83,12 @@ const DeployModal = injectIntl(observer(({ record, dataSet, store, projectId, re
             </span>
           </Option>
         </SelectBox>
-        <Select name="appServiceId" searchable newLine>
+        <Select
+          name="appServiceId"
+          searchable
+          newLine
+          notFoundContent={<FormattedMessage id={`${intlPrefix}.app.empty`} />}
+        >
           {record.get('appServiceSource') === 'normal_service' ? (
             map(store.getAppService[0] && store.getAppService[0].appServiceList, ({ id, name, code }) => (
               <Option value={`${id}__${code}`}>{name}</Option>
@@ -106,6 +111,7 @@ const DeployModal = injectIntl(observer(({ record, dataSet, store, projectId, re
           optionRenderer={renderEnvOption}
           popupCls={`${prefixCls}-manual-deploy`}
           dropdownMenuStyle={{ cursor: 'not-allowed' }}
+          notFoundContent={<FormattedMessage id={`${intlPrefix}.env.empty`} />}
         />
         <TextField
           name="instanceName"
@@ -117,6 +123,7 @@ const DeployModal = injectIntl(observer(({ record, dataSet, store, projectId, re
           colSpan={2}
           newLine
           addonAfter={<Tips helpText={formatMessage({ id: `${intlPrefix}.config.tips` })} />}
+          notFoundContent={<FormattedMessage id={`${intlPrefix}.config.empty`} />}
         />
         <YamlEditor
           colSpan={3}

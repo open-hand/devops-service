@@ -4,6 +4,7 @@ import { Form as ProForm, TextField, TextArea, Select as ProSelect } from 'choer
 import { Select, Form } from 'choerodon-ui';
 import StatusDot from '../../../../../components/status-dot';
 import { useFormStore } from './stores';
+import Tips from '../../../../../components/new-tips';
 
 import './index.less';
 
@@ -11,7 +12,7 @@ const ProOption = ProSelect.Option;
 const Option = Select.Option;
 const FormItem = Form.Item;
 
-function EnvCreateForm({ modal, form, refresh }) {
+function EnvCreateForm({ modal, form, refresh, intlPrefix }) {
   const {
     intl: { formatMessage },
     formDs,
@@ -96,10 +97,19 @@ function EnvCreateForm({ modal, form, refresh }) {
       </FormItem>
     </Form>
     <ProForm dataSet={formDs}>
-      <TextField name="code" />
-      <TextField name="name" />
+      <TextField
+        name="code"
+        addonAfter={<Tips helpText={formatMessage({ id: `${intlPrefix}.code.tips` })} />}
+      />
+      <TextField
+        name="name"
+        addonAfter={<Tips helpText={formatMessage({ id: `${intlPrefix}.name.tips` })} />}
+      />
       <TextArea name="description" resize="vertical" />
-      <ProSelect name="devopsEnvGroupId">
+      <ProSelect
+        name="devopsEnvGroupId"
+        addonAfter={<Tips helpText={formatMessage({ id: `${intlPrefix}.group.tips` })} />}
+      >
         {groupOptionDs.map(getGroupOption)}
       </ProSelect>
     </ProForm>

@@ -17,7 +17,7 @@ function Tips({ helpText, showHelp, title }) {
       {title && <span>{title}</span>}
       {showHelp && (
         <Popover
-          content={<span>{helpText}</span>}
+          content={helpText}
           overlayClassName="c7ncd-tips-popover"
           placement="topRight"
           arrowPointAtCenter

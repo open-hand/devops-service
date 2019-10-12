@@ -10,6 +10,7 @@ import { useEnvironmentStore } from '../stores';
 import { useModalStore } from './stores';
 
 import '../../../../../../components/dynamic-select/style/index.less';
+import Tips from '../../../../../../components/new-tips';
 
 const modalKey1 = Modal.key();
 const modalKey2 = Modal.key();
@@ -95,7 +96,10 @@ const EnvModals = observer(() => {
     modalStore.loadServices(projectId, id);
     Modal.open({
       key: modalKey2,
-      title: formatMessage({ id: `${intlPrefix}.modal.service.link` }),
+      title: <Tips
+        helpText={formatMessage({ id: `${intlPrefix}.service.tips` })}
+        title={formatMessage({ id: `${intlPrefix}.modal.service.link` })}
+      />,
       style: modalStyle,
       drawer: true,
       className: 'c7ncd-modal-wrapper',
@@ -116,7 +120,10 @@ const EnvModals = observer(() => {
     modalStore.loadUsers(projectId, id);
     Modal.open({
       key: modalKey3,
-      title: formatMessage({ id: `${intlPrefix}.modal.permission` }),
+      title: <Tips
+        helpText={formatMessage({ id: `${intlPrefix}.permission.tips` })}
+        title={formatMessage({ id: `${intlPrefix}.modal.permission` })}
+      />,
       drawer: true,
       style: modalStyle,
       className: 'c7ncd-modal-wrapper',

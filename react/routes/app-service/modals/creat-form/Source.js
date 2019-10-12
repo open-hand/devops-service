@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Form, Select, TextField } from 'choerodon-ui/pro';
-import { injectIntl } from 'react-intl';
+import { injectIntl, FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import map from 'lodash/map';
 
@@ -48,7 +48,13 @@ export default injectIntl(observer((props) => {
           <Option value="share_service">{formatMessage({ id: `${intlPrefix}.source.organization` })}</Option>
           <Option value="market_service">{formatMessage({ id: `${intlPrefix}.source.market` })}</Option>
         </Select>
-        <Select name="templateAppServiceId" colSpan={2} searchable disabled={!record.get('appServiceSource')}>
+        <Select
+          name="templateAppServiceId"
+          colSpan={2}
+          searchable
+          disabled={!record.get('appServiceSource')}
+          notFoundContent={<FormattedMessage id={`${intlPrefix}.empty`} />}
+        >
           {record.get('appServiceSource') === 'normal_service' ? (
             map(appServiceStore.getAppService[0] && appServiceStore.getAppService[0].appServiceList, ({ id, name }) => (
               <Option value={id}>{name}</Option>
