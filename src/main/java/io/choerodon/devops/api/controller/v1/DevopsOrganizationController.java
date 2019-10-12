@@ -33,7 +33,7 @@ public class DevopsOrganizationController {
     @ApiOperation(value = "批量查询应用服务")
     @PostMapping(value = "/app_service/list_app_service_ids")
     public ResponseEntity<PageInfo<AppServiceVO>> batchQueryAppService(
-            @ApiParam(value = "项目Id")
+            @ApiParam(value = "组织ID")
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "应用服务Ids")
             @RequestParam(value = "ids") Set<Long> ids,
