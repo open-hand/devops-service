@@ -252,10 +252,10 @@ const deployment = {
   'c7ncd.deployment.instance.cases.result': '部署结果',
   'c7ncd.deployment.instance.cases.time': '部署时间',
   'c7ncd.deployment.instance.cases.operator': '操作人员',
-  'c7ncd.deployment.instance.cases.empty': '暂无实例事件。',
-  'c7ncd.deployment.instance.cases.none': '暂无该条操作记录的详情。',
-  'c7ncd.deployment.instance.cases.ignore': '当前仅保留最近4条操作记录的详情。',
-  'c7ncd.deployment.instance.detail.empty': '暂无部署详细信息。',
+  'c7ncd.deployment.instance.cases.empty': '暂无实例事件',
+  'c7ncd.deployment.instance.cases.none': '暂无该条操作记录的详情',
+  'c7ncd.deployment.instance.cases.ignore': '当前仅保留最近4条操作记录的详情',
+  'c7ncd.deployment.instance.detail.empty': '暂无部署详细信息',
   'c7ncd.deployment.instance.cases.log': '查看日志详情',
   'c7ncd.deployment.instance.cases.create': '部署实例',
   'c7ncd.deployment.instance.cases.update': '更新实例',
@@ -266,17 +266,17 @@ const deployment = {
   'c7ncd.deployment.mapping.edit': '修改配置映射',
   'c7ncd.deployment.mapping.head': '配置映射',
   'c7ncd.deployment.mapping.add': '添加配置映射',
-  'mapping.keyValueSpan': '键值对需配对输入，请检查输入。',
-  'cipher.keyValueSpan': '键值对不能为空，请检查输入。',
+  'mapping.keyValueSpan': '键值对需配对输入，请检查输入',
+  'cipher.keyValueSpan': '键值对不能为空，请检查输入',
   'c7ncd.deployment.mapping.help.tooltip':
-    '您可粘贴多行“键=值”格式的字段至任何键框中，以便于批量输入键值对。',
+    '您可粘贴多行“键=值”格式的字段至任何键框中，以便于批量输入键值对',
   'c7ncd.deployment.mapping.yaml': '配置类型',
   'c7ncd.deployment.mapping.name.failed': '名称只能由小写字母、数字、"-"组成，且以小写字母开头，不能以"-"结尾',
   'c7ncd.deployment.cipher.create': '创建密文',
   'c7ncd.deployment.cipher.edit': '修改密文',
   'c7ncd.deployment.cipher.head': '密文',
   'c7ncd.deployment.cipher.add': '添加密文',
-  'c7ncd.deployment.cipher.help.tooltip': '您可粘贴多行“键=值”格式的字段至任何键框中，以便于批量输入键值对。',
+  'c7ncd.deployment.cipher.help.tooltip': '您可粘贴多行“键=值”格式的字段至任何键框中，以便于批量输入键值对',
   'c7ncd.deployment.modal.service.link': '关联应用服务',
   'c7ncd.deployment.modal.service.delete': '删除关联',
   'c7ncd.deployment.modal.service.delete.desc': '确定删除该应用服务与环境的关联？',
@@ -358,7 +358,7 @@ const deployment = {
   'c7ncd.deployment.configMap.create': '创建配置映射',
   'c7ncd.deployment.configMap.add': '添加配置映射',
   'c7ncd.deployment.configMap.edit': '修改配置映射',
-  'c7ncd.deployment.configMap.help.tooltip': '您可粘贴多行“键=值”格式的字段至任何键框中，以便于批量输入键值对。',
+  'c7ncd.deployment.configMap.help.tooltip': '您可粘贴多行“键=值”格式的字段至任何键框中，以便于批量输入键值对',
   'c7ncd.deployment.report.cpu': '查看CPU使用量',
   'c7ncd.deployment.report.memory': '查看内存使用量',
   'c7ncd.deployment.report.cpu.click': '点击查看CPU使用量',
@@ -479,7 +479,7 @@ const appService = {
   'c7ncd.appService.detail.share.tips':
     '共享设置用于为该应用服务添加共享规则，并按照共享规则分别将其共享给范围内的项目',
   'c7ncd.appService.detail.permission.tips':
-    '当选择将权限分配至项目下所有成员时，此时便不能在列表中删除任何成员的权限；仅在选择将权限分配给项目下特定成员时，才能在下方列表中管理成员的权限。项目所有者的权限不能被删除。',
+    '当选择将权限分配至项目下所有成员时，此时便不能在列表中删除任何成员的权限；仅在选择将权限分配给项目下特定成员时，才能在下方列表中管理成员的权限。项目所有者的权限不能被删除',
   'c7ncd.appService.detail.allocation.tips':
     '此操作用于为此应用服务配置特定的开发操作人员。一般默认选择为项目下所有成员，即该项目下的所有成员均能对此应用服务进行开发操作；若选择项目下特定成员，则只有被添加后的成员才有权限。项目所有者默认拥有权限',
   'c7ncd.appService.detail.type.tips':
@@ -1203,7 +1203,7 @@ const zhCN = {
   'ist.noAddEnv': '未添加环境',
   'ist.run': '启用实例',
   'ist.reDeploy': '重新部署',
-  'ist.nolog': '没有日志信息。',
+  'ist.nolog': '没有日志信息',
   'ist.noApp': '暂无应用服务',
   'ist.runDetial': '运行详情',
   'ist.operation.log': '操作日志',
@@ -1219,7 +1219,7 @@ const zhCN = {
   'ist.expand.stop.title': '停止Deployment {name}',
   'ist.expand.stop.describe': '确认停止该 Deployment 吗？',
   'ist.expand.name': '名称',
-  'ist.expand.empty': '暂无部署详细信息。',
+  'ist.expand.empty': '暂无部署详细信息',
   'ist.expand.link': '点击查看详情',
   'ist.expand.date': '更新时间',
   'ist.expand.net.type': '类型',
@@ -1445,7 +1445,7 @@ const zhCN = {
   'deploy.ver.tip': '实例中对应的应用版本',
   'deploy.ist.event': '实例事件',
   'deploy.ist.event.empty': '暂无实例事件',
-  'deploy.appOrVersion.empty': '请返回第一步，选择应用和版本。',
+  'deploy.appOrVersion.empty': '请返回第一步，选择应用和版本',
   'deploy.config.create.title': '创建部署配置',
   'deploy.config.create.describe': '是否需要为修改后的配置信息创建一个部署配置？创建后，您便可以在之后部署中，直接选中并应用该部署配置中的配置信息。',
   'deploy.config.create.cancel': '取消',
@@ -1456,7 +1456,7 @@ const zhCN = {
   'deploy.config.update.submit': '覆盖',
   'deploy.config.update.success': '覆盖成功！',
   'deploy.config.update.failed': '覆盖失败！',
-  'deploy.app.noresult': '无符合搜索条件的应用。',
+  'deploy.app.noresult': '无符合搜索条件的应用',
 
   // envPipeline
   'envPl.head': '环境管理',
@@ -1494,7 +1494,7 @@ const zhCN = {
   'envPl.status.restart': '重启环境',
   'envPl.status.stopped': '已停用',
   'envPl.description': '描述: ',
-  'envPl.add.description': '请添加一个环境，并填写相应的环境描述信息。',
+  'envPl.add.description': '请添加一个环境，并填写相应的环境描述信息',
   'envPl.token': '指令',
   'envPl.status.update': '版本过低，请更新',
   'envPl.active': '激活环境',
@@ -1893,7 +1893,7 @@ const zhCN = {
   'editor.mode.changer': '切换编辑器模式',
   'yaml.modify': '当前修改',
   'yaml.error.tooltip':
-    'Values文件yaml格式错误，请根据错误提示信息修改。',
+    'Values文件yaml格式错误，请根据错误提示信息修改',
 
   // merge request
   'merge.head': '合并请求',
@@ -1936,9 +1936,9 @@ const zhCN = {
   'apptag.checkNameReg':
     '支持x.x.x格式，其中x只能为非负整数；若使用语义化标记，建议格式：x.x.x-alpha.1',
   'apptag.noRefBranch': '该应用服务暂无分支，请先创建分支',
-  'apptag.tag.empty': '暂无任何标记，您可在此页面基于某一分支创建标记。',
+  'apptag.tag.empty': '暂无任何标记，您可在此页面基于某一分支创建标记',
   'apptag.app.empty':
-    '当前项目下无应用，请使用项目所有者角色登录去创建一个应用。',
+    '当前项目下无应用，请使用项目所有者角色登录去创建一个应用',
   'apptag.release.title': '发布日志',
   'apptag.release.empty': '暂无发布日志',
   'apptag.tip': '此处标记来源可以是该应用下所有的分支',
@@ -2007,12 +2007,12 @@ const zhCN = {
   'ctf.apply': '申请证书',
   'ctf.upload': '上传证书',
   'ctf.choose': '选择证书',
-  'ctf.choose.tips': '此处选择的证书为该组织下已对本项目授权的证书。',
+  'ctf.choose.tips': '此处选择的证书为该组织下已对本项目授权的证书',
   'ctf.config.add': '添加域名',
   'ctf.config.domain': '域名',
   'ctf.env.placeholder': '请选择环境',
   'ctf.add.cert': '添加证书文件',
-  'ctf.add.describe': '您可以在此选择相应的文件，并进行上传。',
+  'ctf.add.describe': '您可以在此选择相应的文件，并进行上传',
   'ctf.target.type': '选择类型',
   'ctf.keyFile': 'KEY 文件',
   'ctf.certFile': 'CERT 文件',
@@ -2083,11 +2083,11 @@ const zhCN = {
   'report.commit.num': '次数      ',
   'report.commit.none': '无提交记录',
   'report.app.noselect': '请选择应用服务',
-  'report.date.more': '报表暂支持最多查看30天，已自动截取开始日期后30天。',
+  'report.date.more': '报表暂支持最多查看30天，已自动截取开始日期后30天',
   'report.commits.unknown': '非平台用户提交汇总',
   'report.unknown.user': '非平台用户',
   'empty.member.no-env':
-    '您当前暂无任何环境的权限，若需查看某个环境的相关内容，请联系项目所有者添加权限。',
+    '您当前暂无任何环境的权限，若需查看某个环境的相关内容，请联系项目所有者添加权限',
   'report.code-quality.type': '对象类型',
   'report.code-quality.type.issue': '问题',
   'report.code-quality.type.coverage': '覆盖率',
@@ -2121,15 +2121,15 @@ const zhCN = {
   'devCs.build': '查看构建报表',
 
   // Deploy Pipeline
-  'depPl.noEnv': '当前项目下暂无环境，请创建环境。',
+  'depPl.noEnv': '当前项目下暂无环境，请创建环境',
   'depPl.noPermission': '暂无权限',
   'depPl.noPerDes':
-    '您目前还没有任何环境的管理权限，无法查看部署流水线相关内容。',
+    '您目前还没有任何环境的管理权限，无法查看部署流水线相关内容',
   'depPl.addPermission':
-    '若需查看某个环境相关内容，请联系项目所有者进行权限添加。',
-  'empty.owner.noApp': '当前项目下无应用，请创建应用。',
+    '若需查看某个环境相关内容，请联系项目所有者进行权限添加',
+  'empty.owner.noApp': '当前项目下无应用，请创建应用',
   'empty.member.no-app':
-    '您当前暂无此项目下任何应用的权限，若需查看某个应用下相关内容，请联系项目所有者添加权限。',
+    '您当前暂无此项目下任何应用的权限，若需查看某个应用下相关内容，请联系项目所有者添加权限',
   'depPl.more': '了解更多',
 
   // 集群
@@ -2192,12 +2192,12 @@ const zhCN = {
   'configMap.des': '描述',
   'configMap.keyRule': '不能含空格及-、_、.以外的特殊字符',
   'configMap.keyRuleSpan':
-    '键值不能含空格及-、_、.以外的特殊字符，请检查输入。',
-  'configMap.keyValueSpan': '键值对需配对输入，请检查输入。',
-  'configMap.keyRepeat': '存在重复键，请检查输入。',
+    '键值不能含空格及-、_、.以外的特殊字符，请检查输入',
+  'configMap.keyValueSpan': '键值对需配对输入，请检查输入',
+  'configMap.keyRepeat': '存在重复键，请检查输入',
   'configMap.mode.kv': '编辑 YAML',
   'configMap.mode.yaml': '编辑键值对',
-  'configMap.yaml.error': '内容不符合规则（检查是否使用了 Tab 键缩进）。',
+  'configMap.yaml.error': '内容不符合规则（检查是否使用了 Tab 键缩进）',
 
   // 密文
   'secret.head': '密文',
@@ -2206,7 +2206,7 @@ const zhCN = {
   'secret.add': '添加密文',
   'secret.key': '键',
   'secret.des': '描述',
-  'secret.keyValueSpan': '键值对不能为空，请检查输入。',
+  'secret.keyValueSpan': '键值对不能为空，请检查输入',
 
   // 组织层证书管理
   'certificate.head': '证书管理',

@@ -5,7 +5,7 @@ import { Popover, Icon } from 'choerodon-ui';
 
 import './index.less';
 
-function Tips({ helpText, showHelp, title, iconSize }) {
+function Tips({ helpText, showHelp, title }) {
   return (title ? (
     <div className="c7ncd-tips-wrap">
       {title && <span>{title}</span>}

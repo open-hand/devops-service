@@ -593,6 +593,7 @@ export default class DomainForm extends Component {
               disabled={!envId || type === 'edit'}
               maxLength={40}
               label={formatMessage({ id: 'domain.column.name' })}
+              autoFocus={type === 'create'}
             />,
           )}
         </FormItem>
@@ -650,6 +651,7 @@ export default class DomainForm extends Component {
               label={formatMessage({ id: 'domain.form.domain' })}
               size="default"
               onBlur={this.loadCertByDomain}
+              autoFocus={type === 'edit'}
             />,
           )}
         </FormItem>

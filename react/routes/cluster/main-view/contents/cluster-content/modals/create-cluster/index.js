@@ -164,7 +164,12 @@ const CreateCluster = observer((props) => {
             ],
             initialValue: isEdit ? formData.name : '',
           })(
-            <Input maxLength={30} label={formatMessage({ id: `${intlPrefix}.name` })} onChange={handleNameChange} />,
+            <Input
+              maxLength={30}
+              label={formatMessage({ id: `${intlPrefix}.name` })}
+              onChange={handleNameChange}
+              autoFocus
+            />,
           )} </FormItem>
         <FormItem>
           {getFieldDecorator('code', {

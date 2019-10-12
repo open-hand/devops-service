@@ -57,7 +57,12 @@ export default withRouter(injectIntl(({
         <span className={`${prefixCls}-detail-manual-text`}>
           {formatMessage({ id: `${intlPrefix}.instance` })}:
         </span>
-        <span>{record.get('instanceName')}</span>
+        <span
+          onClick={linkToInstance}
+          className={`${prefixCls}-detail-manual-instance`}
+        >
+          {record.get('instanceName')}
+        </span>
       </li>
     </ul>
   );

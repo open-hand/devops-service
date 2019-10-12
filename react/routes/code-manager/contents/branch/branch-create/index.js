@@ -26,6 +26,10 @@ const formItemLayout = {
     sm: { span: 26 },
   },
 };
+
+@Form.create()
+@withRouter
+@injectIntl
 @observer
 class BranchCreate extends Component {
   constructor(props) {
@@ -333,11 +337,7 @@ class BranchCreate extends Component {
         confirmLoading={this.state.submitting}
         width={740}
       >
-        <Content
-          code="branch.create"
-          values={{ name }}
-          className="sidebar-content c7n-createBranch"
-        >
+        <Content className="sidebar-content c7n-createBranch">
           <Form
             layout="vertical"
             onSubmit={this.handleOk}
@@ -494,4 +494,4 @@ class BranchCreate extends Component {
     );
   }
 }
-export default Form.create({})(withRouter(injectIntl(BranchCreate)));
+export default BranchCreate;

@@ -73,7 +73,7 @@ class AppTagEdit extends Component {
       confirmLoading={submitting}
       onCancel={this.handleCancel}
     >
-      <Content code="apptag.update" values={{ name: tag }} className="c7n-tag-create sidebar-content">
+      <Content className="c7n-tag-create sidebar-content">
         <div className="c7n-apptag-release-title">{formatMessage({ id: 'apptag.release.title' })}</div>
         <MdEditor
           value={notes}

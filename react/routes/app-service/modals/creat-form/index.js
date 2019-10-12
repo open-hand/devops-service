@@ -211,7 +211,7 @@ const CreateForm = injectIntl(observer((props) => {
           addonAfter={<Tips helpText={formatMessage({ id: `${intlPrefix}.code.tips` })} />}
         />
       )}
-      <TextField name="name" />
+      <TextField name="name" autoFocus={isModify} />
     </Form>
     {!isModify && <Source {...props} />}
     {isModify && <Settings {...props} handleTestHarbor={handleTestHarbor} handleTestChart={handleTestChart} />}

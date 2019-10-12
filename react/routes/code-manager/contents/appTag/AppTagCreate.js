@@ -27,6 +27,8 @@ const formItemLayout = {
   },
 };
 
+@Form.create({})
+@injectIntl
 @observer
 class AppTagCreate extends Component {
   /**
@@ -153,7 +155,7 @@ class AppTagCreate extends Component {
       confirmLoading={submitting}
       onCancel={this.handleCancel}
     >
-      <Content code="apptag.create" values={{ name }} className="c7n-tag-create sidebar-content">
+      <Content className="c7n-tag-create sidebar-content">
         <Form layout="vertical" className="c7n-sidebar-form">
           <div className="apptag-formitem">
             <Icon type="local_offer" className="c7n-apptag-icon" />
@@ -234,4 +236,4 @@ class AppTagCreate extends Component {
   }
 }
 
-export default Form.create({})(injectIntl(AppTagCreate));
+export default AppTagCreate;

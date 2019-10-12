@@ -146,6 +146,7 @@ const CreateForm = ({ certId, intl: { formatMessage }, form, store, projectId, m
               maxLength={40}
               type="text"
               label={<FormattedMessage id={`${intlPrefix}.name`} />}
+              autoFocus
             />,
           )}
         </FormItem>

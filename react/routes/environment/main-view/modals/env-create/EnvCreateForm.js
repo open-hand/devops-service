@@ -64,6 +64,7 @@ export default function EnvCreateForm({ intlPrefix, modal, refresh }) {
         renderer={clusterRenderer}
         optionRenderer={getClusterOption}
         clearButton={false}
+        addonAfter={<Tips helpText={formatMessage({ id: `${intlPrefix}.cluster.tips` })} />}
       />
       <TextField
         name="code"
