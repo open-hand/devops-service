@@ -20,19 +20,19 @@ export default function ({ intlPrefix, record, prefixCls, formatMessage }) {
     <ul className={`${prefixCls}-application-detail-modal`}>
       <li className="detail-item">
         <span className="detail-item-text">
-          {formatMessage({ id: `${intlPrefix}.service.status` })}:
+          {formatMessage({ id: `${intlPrefix}.service.status` })}
         </span>
         <FormattedMessage id={status} />
       </li>
       <li className="detail-item">
         <span className="detail-item-text">
-          {formatMessage({ id: `${intlPrefix}.service.code` })}:
+          {formatMessage({ id: `${intlPrefix}.service.code` })}
         </span>
         <span>{record.get('code')}</span>
       </li>
       <li className="detail-item detail-item-has-url">
         <span className="detail-item-text">
-          {formatMessage({ id: `${intlPrefix}.service.url` })}:
+          {formatMessage({ id: `${intlPrefix}.service.url` })}
         </span>
         <a
           href={record.get('repoUrl')}

@@ -44,26 +44,26 @@ export default function ({ record, formatMessage, prefixCls, intlPrefix }) {
       </li>
       <li className="detail-item">
         <span className="detail-item-text">
-          {formatMessage({ id: `${intlPrefix}.name` })}:
+          {formatMessage({ id: `${intlPrefix}.name` })}
         </span>
         <span>{record && record.get('name')}</span>
       </li>
       <li className="detail-item detail-item-has-url">
         <span className="detail-item-text">
-          {formatMessage({ id: 'app.status' })}:
+          {formatMessage({ id: 'app.status' })}
         </span>
         <StatusLabel {...statusLabel} />
       </li>
       <li className="detail-item">
         <span className="detail-item-text">
-          {formatMessage({ id: `${intlPrefix}.type` })}:
+          {formatMessage({ id: `${intlPrefix}.type` })}
         </span>
         <span>{record
           && record.get('type') && formatMessage({ id: `app.type.${record.get('type')}` })}</span>
       </li>
       <li className="detail-item detail-item-has-url">
         <span className="detail-item-text">
-          {formatMessage({ id: 'repository.head' })}:
+          {formatMessage({ id: 'repository.head' })}
         </span>
         {record && record.get('repoUrl')
           ? <a
@@ -77,25 +77,25 @@ export default function ({ record, formatMessage, prefixCls, intlPrefix }) {
       </li>
       <li className="detail-item">
         <span className="detail-item-text">
-          {formatMessage({ id: 'createDate' })}:
+          {formatMessage({ id: 'createDate' })}
         </span>
         <span>{(record && record.get('creationDate')) || '-'}</span>
       </li>
       <li className="detail-item">
         <span className="detail-item-text">
-          {formatMessage({ id: 'creator' })}:
+          {formatMessage({ id: 'creator' })}
         </span>
         <span>{(record && record.get('createUserName')) || '-'}</span>
       </li>
       <li className="detail-item">
         <span className="detail-item-text">
-          {formatMessage({ id: 'updateDate' })}:
+          {formatMessage({ id: 'updateDate' })}
         </span>
         <span>{(record && record.get('lastUpdateDate')) || '-'}</span>
       </li>
       <li className="detail-item">
         <span className="detail-item-text">
-          {formatMessage({ id: 'updater' })}:
+          {formatMessage({ id: 'updater' })}
         </span>
         <span>{(record && record.get('updateUserName')) || '-'}</span>
       </li>

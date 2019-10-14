@@ -69,10 +69,10 @@ const Repository = withRouter(observer((props) => {
         </Permission>
       </Header>
       <Breadcrumb />
-      <Content>
+      <Content className={`${prefixCls}-home`}>
         <div className={`${prefixCls}-home-item`}>
           <span className={`${prefixCls}-home-item-text`}>
-            {formatMessage({ id: `${intlPrefix}.harbor` })}:
+            {formatMessage({ id: `${intlPrefix}.harbor` })}
           </span>
           <span>
             {homeDs.current && homeDs.current.get('harborConfigUrl')
@@ -82,7 +82,7 @@ const Repository = withRouter(observer((props) => {
         </div>
         <div>
           <span className={`${prefixCls}-home-item-text`}>
-            {formatMessage({ id: `${intlPrefix}.chart` })}:
+            {formatMessage({ id: `${intlPrefix}.chart` })}
           </span>
           <span>
             {homeDs.current && homeDs.current.get('chartConfigUrl')

@@ -52,13 +52,13 @@ export default function DetailsModal({ intlPrefix, record, prefixCls, formatMess
   return <Fragment>
     <div className={`${prefixCls}-modals-row`}>
       <span className={`${prefixCls}-modals-key ${prefixCls}-modals-cell`}>
-        {formatMessage({ id: `${intlPrefix}.instance.status` })}：
+        {formatMessage({ id: `${intlPrefix}.instance.status` })}
       </span>
       {getStatus()}
     </div>
     <div className={`${prefixCls}-modals-row`}>
       <span className={`${prefixCls}-modals-key ${prefixCls}-modals-cell`}>
-        {formatMessage({ id: 'version' })}：
+        {formatMessage({ id: 'version' })}
       </span>
       <span className={`${prefixCls}-modals-value ${prefixCls}-modals-cell`}>
         {getVersion()}

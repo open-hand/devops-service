@@ -35,13 +35,13 @@ export default withRouter(injectIntl(({
     <ul className={`${prefixCls}-detail-manual`}>
       <li className={`${prefixCls}-detail-manual-item`}>
         <span className={`${prefixCls}-detail-manual-text`}>
-          {formatMessage({ id: `${intlPrefix}.service` })}:
+          {formatMessage({ id: `${intlPrefix}.service` })}
         </span>
         <span>{record.get('appServiceName')}</span>
       </li>
       <li className={`${prefixCls}-detail-manual-item ${prefixCls}-detail-manual-item-flex`}>
         <span className={`${prefixCls}-detail-manual-text`}>
-          {formatMessage({ id: `${intlPrefix}.version` })}:
+          {formatMessage({ id: `${intlPrefix}.version` })}
         </span>
         <MouserOverWrapper text={record.get('appServiceVersion')} width="230px">
           <span>{record.get('appServiceVersion')}</span>
@@ -49,13 +49,13 @@ export default withRouter(injectIntl(({
       </li>
       <li className={`${prefixCls}-detail-manual-item`}>
         <span className={`${prefixCls}-detail-manual-text`}>
-          {formatMessage({ id: `${intlPrefix}.env` })}:
+          {formatMessage({ id: `${intlPrefix}.env` })}
         </span>
         <span>{record.get('envName')}</span>
       </li>
       <li className={`${prefixCls}-detail-manual-item`}>
         <span className={`${prefixCls}-detail-manual-text`}>
-          {formatMessage({ id: `${intlPrefix}.instance` })}:
+          {formatMessage({ id: `${intlPrefix}.instance` })}
         </span>
         <span
           onClick={linkToInstance}

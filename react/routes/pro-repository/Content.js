@@ -70,7 +70,7 @@ const ProRepository = withRouter(observer((props) => {
         </Permission>
       </Header>
       <Breadcrumb />
-      <Content>
+      <Content className={`${prefixCls}-home`}>
         <div className={`${prefixCls}-home-item`}>
           <span className={`${prefixCls}-home-item-text`}>
             {formatMessage({ id: `${intlPrefix}.harbor` })}:

@@ -14,7 +14,7 @@ function generateManyP(arr, valueKey) {
 export default function ({ intlPrefix, record, prefixCls, formatMessage }) {
   let updater = (record && record.get('lastUpdaterName'));
   if (!updater) {
-    if (record.get('creatorDate') === record.get('lastUpdateDate')) {
+    if (record && record.get('creatorDate') === record.get('lastUpdateDate')) {
       updater = '-';
     } else {
       updater = 'GitOps';
@@ -36,7 +36,7 @@ export default function ({ intlPrefix, record, prefixCls, formatMessage }) {
           <div className="detail-item-one-to-many">
             <div>
               <span className="detail-item-text">
-                {formatMessage({ id: 'instance' })}:
+                {formatMessage({ id: 'instance' })}
               </span>
             </div>
             <div>
@@ -46,7 +46,7 @@ export default function ({ intlPrefix, record, prefixCls, formatMessage }) {
         </li>
         <li className="detail-item">
           <span className="detail-item-text">
-            {formatMessage({ id: `${intlPrefix}.application.net.configType` })}:
+            {formatMessage({ id: `${intlPrefix}.application.net.configType` })}
           </span>
           <span>{(record
             && record.get('type')) || '-'}</span>
@@ -55,7 +55,7 @@ export default function ({ intlPrefix, record, prefixCls, formatMessage }) {
           <div className="detail-item-one-to-many">
             <div>
               <span className="detail-item-text">
-                {formatMessage({ id: `${intlPrefix}.application.net.ip` })}:
+                {formatMessage({ id: `${intlPrefix}.application.net.ip` })}
               </span>
             </div>
             <div>
@@ -65,7 +65,7 @@ export default function ({ intlPrefix, record, prefixCls, formatMessage }) {
         </li>
         <li className="detail-item">
           <span className="detail-item-text">
-            {formatMessage({ id: `${intlPrefix}.net.selecter` })}:
+            {formatMessage({ id: `${intlPrefix}.net.selecter` })}
           </span>
           <span className="detail-item-more-text">{(record
             && record.get('target')
@@ -75,14 +75,14 @@ export default function ({ intlPrefix, record, prefixCls, formatMessage }) {
         </li>
         <li className="detail-item">
           <span className="detail-item-text">
-            {formatMessage({ id: `${intlPrefix}.net.dns` })}:
+            {formatMessage({ id: `${intlPrefix}.net.dns` })}
           </span>
           <span className="detail-item-more-text">{(record
             && record.get('dns')) || '-'}</span>
         </li>
         <li className="detail-item">
           <span className="detail-item-text">
-            {formatMessage({ id: 'createDate' })}:
+            {formatMessage({ id: 'createDate' })}
           </span>
           <span>{
             (record
@@ -91,7 +91,7 @@ export default function ({ intlPrefix, record, prefixCls, formatMessage }) {
         </li>
         <li className="detail-item">
           <span className="detail-item-text">
-            {formatMessage({ id: 'creator' })}:
+            {formatMessage({ id: 'creator' })}
           </span>
           <span>{
             (record
@@ -100,14 +100,14 @@ export default function ({ intlPrefix, record, prefixCls, formatMessage }) {
         </li>
         <li className="detail-item">
           <span className="detail-item-text">
-            {formatMessage({ id: 'updateDate' })}:
+            {formatMessage({ id: 'updateDate' })}
           </span>
           <span>{(record
             && record.get('lastUpdateDate')) || '-'}</span>
         </li>
         <li className="detail-item">
           <span className="detail-item-text">
-            {formatMessage({ id: 'updater' })}:
+            {formatMessage({ id: 'updater' })}
           </span>
           <span>{updater}</span>
         </li>
