@@ -124,7 +124,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                     syncEnvAndAppServiceStatus();
                     syncBranch();
                     LOGGER.info("修复数据完成");
-                }else if("0.18.13".equals(version)) {
+                } else if ("0.18.13".equals(version)) {
                     syncHarbor();
                 } else {
                     LOGGER.info("version not matched");
@@ -243,9 +243,9 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                                         if (result.raw().code() != 201) {
                                             throw new CommonException(result.errorBody().string());
                                         }
-                                    }else {
+                                    } else {
                                         Boolean exist = users.body().stream().anyMatch(user1 -> user1.getUsername().equals(username));
-                                        if(!exist) {
+                                        if (!exist) {
                                             result = harborClient.insertUser(user).execute();
                                             if (result.raw().code() != 201) {
                                                 throw new CommonException(result.errorBody().string());
@@ -338,6 +338,12 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         }
 
         private void syncAppShare(List<CheckLog> logs) {
+            DevopsCheckLogDTO devopsCheckLogDTO = new DevopsCheckLogDTO();
+            devopsCheckLogDTO.setLog("sync appService share success!");
+            if (devopsCheckLogMapper.select(devopsCheckLogDTO).size() > 0) {
+                LOGGER.info("It's been synchronized appService share.");
+                return;
+            }
             LOGGER.info("delete application market data.");
             applicationShareMapper.deleteAll();
             LOGGER.info("insert application share rule.");
@@ -358,6 +364,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                         }
                         logs.add(checkLog);
                     });
+            devopsCheckLogMapper.insert(devopsCheckLogDTO);
             LOGGER.info("update publish Time.");
             appServiceVersionMapper.updatePublishTime();
         }
