@@ -218,9 +218,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
         String appFilePath = gitUtil.getWorkingDirectory(APPLICATION + System.currentTimeMillis());
         try {
             MarketImageUrlVO marketImageUrlVO = appUploadResolver(appMarketFixVersionPayload.getFixVersionUploadPayload(), zipFileList, appFilePath);
-            LOGGER.info("==========应用上传修复版本，解析文件成功！！==========");
             fileUploadFixVersion(zipFileList, appMarketFixVersionPayload, marketImageUrlVO);
-            LOGGER.info("==========应用上传修复版本，上传文件！！==========");
             zipFileList.forEach(FileUtil::deleteFile);
             FileUtil.deleteDirectory(new File(appFilePath));
         } catch (Exception e) {
@@ -780,9 +778,6 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
     }
 
     private void fileDownload(String fileUrl, String downloadFilePath) {
-        LOGGER.info("============文件下载====fileUrl{}", fileUrl);
-        LOGGER.info("============文件下载====downloadFilePath{}", downloadFilePath);
-
         ConfigurationProperties configurationProperties = new ConfigurationProperties();
         configurationProperties.setType(CHART);
         configurationProperties.setInsecureSkipTlsVerify(false);
