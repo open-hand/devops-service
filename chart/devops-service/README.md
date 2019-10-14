@@ -69,14 +69,6 @@ env.open.AGENT_SERVICEURL|agent连接devops ws地址|ws://devops-service.choerod
 env.open.AGENT_REPOURL|agent仓库地址|https://openchart.choerodon.com.cn/choerodon/c7n/
 env.open.AGENT_CERTMANAGERURL|certmanager仓库地址|https://openchart.choerodon.com.cn/choerodon/infra/
 env.open.SKYWALKING_OPTS | skywalking 代理端配置|
-env.open.API_HOST| 前端变量gateway地址|gateway.choerodon.com.cn
-env.open.DEVOPS_HOST| 前端变量devops域名地址|localhost:8060
-env.open.CLIENT_ID|前端client|devops
-env.open.LOCAL|前端变量|true
-env.open.TITLE_NAME|前端变量|Choerodon
-env.open.HEADER_TITLE_NAME|前端变量|Choerodon
-env.open.COOKIE_SERVER|前端变量|choerodon.com.cn
-env.open.FILE_SERVER|文件服务地址|http://minio.choerodon.com.cn
 metrics.path|监控地址|/actuator/prometheus
 metrics.group|监控组|spring-boot
 log.parser|日志|spring-boot
