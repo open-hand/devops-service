@@ -608,6 +608,7 @@ const deploy = {
   'c7ncd.deploy.config.empty': '暂无部署配置',
   'c7ncd.deploy.app.empty': '暂无可部署应用服务',
   'c7ncd.deploy.env.empty': '暂无环境',
+  'c7ncd.deploy.pipeline.empty': '暂无流水线',
   'c7ncd.deploy.id.tips': '平台中每条部署记录仅会对应一个编号',
   'c7ncd.deploy.type.tips': '此处是指记录的部署类型，分为手动部署与流水线部署',
   'c7ncd.deploy.pipeline.tips': '此处是指部署记录对应的流水线名称；手动部署的部署记录此项为空',

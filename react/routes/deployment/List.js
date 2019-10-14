@@ -350,6 +350,7 @@ const Deployment = withRouter(observer((props) => {
             searchable
             className={`${prefixCls}-content-select-item`}
             placeholder={formatMessage({ id: `${intlPrefix}.search.env` })}
+            notFoundContent={formatMessage({ id: `${intlPrefix}.env.empty` })}
           />
           <Select
             name="deployType"
@@ -373,6 +374,7 @@ const Deployment = withRouter(observer((props) => {
             searchable
             className={`${prefixCls}-content-select-item`}
             placeholder={formatMessage({ id: `${intlPrefix}.search.pipeline` })}
+            notFoundContent={formatMessage({ id: `${intlPrefix}.pipeline.empty` })}
           />
         </Form>
         <Table
