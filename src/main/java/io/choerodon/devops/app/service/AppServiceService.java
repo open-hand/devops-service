@@ -453,4 +453,11 @@ public interface AppServiceService {
      * @return
      */
     List<AppServiceVO> listServiceByVersionIds(Set<Long> ids);
+
+    void replaceParams(String newServiceCode,
+                       String newGroupName,
+                       String applicationDir,
+                       String oldServiceCode,
+                       String oldGroupName,
+                       Boolean isGetWorkingDirectory);
 }

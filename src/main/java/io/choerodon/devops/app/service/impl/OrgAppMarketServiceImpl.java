@@ -565,6 +565,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
 
             //3.clone源码,checkout到版本所在commit，并删除.git文件
             gitUtil.cloneAndCheckout(appServiceVersionPath, appServiceDTO.getRepoUrl(), token, appServiceVersionDTO.getCommit());
+            appServiceService.replaceParams(String.format("%s_%s", appServiceMarketVO.getAppServiceId(), appServiceMarketVO.getAppServiceCode()), null, appServiceVersionPath, appServiceMarketVO.getAppServiceCode(), null, false);
             toZip(String.format("%s%s", appServiceVersionPath, ZIP), appServiceVersionPath);
             FileUtil.deleteDirectory(new File(appServiceVersionPath));
         });
@@ -686,7 +687,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             appServiceMarketVO.getAppServiceVersionUploadPayloads().forEach(t -> {
                 //推送镜像
                 String targetImageUrl = String.format("%s:%s", appServiceMarketVO.getHarborUrl(), t.getVersion());
-                pushImageScript(appServiceVersionService.baseQuery(t.getId()).getImage(), targetImageUrl, configStr);
+//                pushImageScript(appServiceVersionService.baseQuery(t.getId()).getImage(), targetImageUrl, configStr);
 
                 MarketAppServiceVersionImageVO appServiceVersionImageVO = new MarketAppServiceVersionImageVO();
                 appServiceVersionImageVO.setVersion(t.getVersion());
