@@ -2,7 +2,6 @@ import React, { Fragment } from 'react';
 import { observer } from 'mobx-react-lite';
 import { PageWrap, PageTab, Page } from '@choerodon/master';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { Popover, Icon } from 'choerodon-ui';
 import map from 'lodash/map';
 import { useCodeManagerStore } from '../stores';
 import EmptyShown, { EmptyLoading } from './empty';
@@ -11,6 +10,7 @@ import CodeManagerBranch from './branch';
 import CodeManagerMergeRequest from './merge-request';
 import CodeManagerAppTag from './app-tag';
 import CodeManagerCiPipelineManage from './ci-pipeline-manage';
+import Tips from '../../../components/new-tips';
 
 import './index.less';
 
@@ -26,37 +26,25 @@ const MainView = injectIntl(observer((props) => {
     if (getLoading) return <EmptyLoading formatMessage={formatMessage} />;
 
     const titleData = ['master', 'feature', 'bugfix', 'release', 'hotfix', 'custom'];
-    const help = (
-      <Popover
-        overlayClassName="branch-popover"
-        placement="rightTop"
-        arrowPointAtCenter
-        content={<section>
-          {
-            map(titleData, item => (<div className="c7n-branch-block" key={item}>
-              <span className={`branch-popover-span span-${item}`} />
-              <div className="branch-popover-content">
-                <p className="branch-popover-p">
-                  <FormattedMessage id={`branch.${item}`} />
-                </p>
-                <p>
-                  <FormattedMessage id={`branch.${item}Des`} />
-                </p>
-              </div>
-            </div>))
-          }
-        </section>}
-      >
-        <Icon className="branch-icon-help" type="help" />
-      </Popover>
-    );
+    const popoverContent = map(titleData, item => (<div className="c7n-branch-block" key={item}>
+      <span className={`branch-popover-span span-${item}`} />
+      <div className="branch-popover-content">
+        <p className="branch-popover-p">
+          <FormattedMessage id={`branch.${item}`} />
+        </p>
+        <p>
+          <FormattedMessage id={`branch.${item}Des`} />
+        </p>
+      </div>
+    </div>));
 
     return getHasApp ? <PageWrap noHeader={[]} cache>
       <PageTab
-        title={<Fragment>
-          <FormattedMessage id="code-management.branch" />
-          {help}
-        </Fragment>}
+        title={<Tips
+          helpText={popoverContent}
+          title={formatMessage({ id: 'code-management.branch' })}
+          popoverClassName="branch-popover"
+        />}
         tabKey="key1"
         component={CodeManagerBranch}
         alwaysShow

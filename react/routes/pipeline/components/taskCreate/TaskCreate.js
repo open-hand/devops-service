@@ -613,7 +613,7 @@ export default class TaskCreate extends Component {
         </FormItem>
         <div className="c7ncd-sidebar-select pipeline-type-tips">
           <FormItem
-            className="c7n-select_512"
+            className="c7ncd-select_has-tips"
             {...formItemLayout}
           >
             {getFieldDecorator('triggerVersion', {
@@ -807,7 +807,7 @@ export default class TaskCreate extends Component {
         {getFieldValue('users') && getFieldValue('users').length > 1 && (
           <div className="c7ncd-sidebar-select pipeline-type-tips">
             <FormItem
-              className="c7n-select_512"
+              className="c7ncd-select_has-tips"
               {...formItemLayout}
             >
               {getFieldDecorator('isCountersigned', {

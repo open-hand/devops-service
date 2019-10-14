@@ -80,7 +80,6 @@ export default function EnvCreateForm({ intlPrefix, modal, refresh }) {
         name="devopsEnvGroupId"
         optionRenderer={getGroupOption}
         renderer={getGroupOption}
-        clearButton={false}
         addonAfter={<Tips helpText={formatMessage({ id: `${intlPrefix}.group.tips` })} />}
       />
     </Form>

@@ -7,6 +7,7 @@ import { Popover } from 'choerodon-ui';
 import { useEnvironmentStore } from '../../../../stores';
 import { useDetailStore } from '../stores';
 import { isNotRunning } from '../../../../util';
+import Tips from '../../../../../../components/new-tips';
 
 const SyncSituation = observer(() => {
   const {
@@ -160,18 +161,11 @@ const SyncSituation = observer(() => {
   return (
     <div className={`${prefixCls}-environment-sync-detail`}>
       <div className="log-sync-title">
-        <span className="log-sync-title-text">
-          {formatMessage({ id: `${intlPrefix}.environment.sync` })}
-        </span>
-        <Popover
-          overlayClassName={`${prefixCls}-environment-sync-help`}
-          placement="topLeft"
-          content={content}
-          arrowPointAtCenter
-          theme="light"
-        >
-          <Icon type="help" className="log-sync-title-icon" />
-        </Popover>
+        <Tips
+          helpText={content}
+          title={formatMessage({ id: `${intlPrefix}.environment.sync` })}
+          popoverClassName={`${prefixCls}-environment-sync-help`}
+        />
       </div>
       {getDetail}
     </div>

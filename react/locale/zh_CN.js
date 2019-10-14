@@ -1149,6 +1149,11 @@ const cluster = {
   'c7ncd.cluster.action.delete.msg': '确定要删除该集群吗？',
   'c7ncd.cluster.empty.title': '暂无集群',
   'c7ncd.cluster.empty.describe': '当前项目下无集群，请创建',
+  'c7ncd.cluster.permission.tips':
+    '此操作用于为此集群在该组织下配置公开范围。一般默认选择为组织下所有项目，即所有项目下的环境均能连接到此集群；若选择组织下特定项目，则只有被授权项目下的环境才有权限连接到此集群',
+  'c7ncd.cluster.permission.tab.tips':
+    '当选择将权限分配至组织下所有项目时，此时便不能在列表中删除任何项目的权限；仅在选择将权限分配给组织下特定项目时，才能在下方列表中管理项目的权限',
+  'c7ncd.cluster.permission.some.tips': '若本项目想使用该集群，同样需要为本项目授权',
 };
 
 const zhCN = {
@@ -1926,7 +1931,7 @@ const zhCN = {
   'apptag.tag': '标记',
   'apptag.name': '标记名称',
   'apptag.name.tip':
-    '标记名称建议使用x.x.x格式，其中x只能为非负整数；同时也支持标记名称的语义化，只需在原有格式后面加上-，便可在后面添加自定义内容。例如：x.x.x-alpha.1。',
+    '标记名称建议使用x.x.x格式，其中x只能为非负整数；同时也支持标记名称的语义化，只需在原有格式后面加上-，便可在后面添加自定义内容。例如：x.x.x-alpha.1',
   'apptag.ref': '标记来源',
   'apptag.checkName': '标记名称已存在',
   'apptag.branch': '分支',

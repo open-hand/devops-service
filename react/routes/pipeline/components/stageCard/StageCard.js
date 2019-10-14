@@ -192,6 +192,7 @@ export default class StageCard extends Component {
             value={_.toString(isParallel || TASK_SERIAL)}
             label={<FormattedMessage id="pipeline.task.settings" />}
             onChange={this.handleSelect}
+            className="c7ncd-stage-card-select"
           >
             <Option value={_.toString(TASK_SERIAL)}>
               {formatMessage({ id: 'pipeline.task.serial' })}

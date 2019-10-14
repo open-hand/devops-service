@@ -5,6 +5,8 @@ import { useClusterContentStore } from './stores';
 import Modals from './modals';
 import PageTitle from '../../../../../components/page-title';
 import StatusDot from '../../../../../components/status-dot';
+import Tips from '../../../../../components/new-tips';
+
 import './index.less';
 
 const { TabPane } = Tabs;
@@ -76,7 +78,10 @@ export default observer((props) => {
         </TabPane>
         <TabPane
           key={ASSIGN_TAB}
-          tab={formatMessage({ id: `${intlPrefix}.permission.assign` })}
+          tab={<Tips
+            helpText={formatMessage({ id: `${intlPrefix}.permission.tab.tips` })}
+            title={formatMessage({ id: `${intlPrefix}.permission.assign` })}
+          />}
         >
           <Suspense fallback={<Spin />}>
             <PermissionList />

@@ -6,6 +6,7 @@ import omit from 'lodash/omit';
 import map from 'lodash/map';
 import DynamicSelect from '../../../../../../../components/dynamic-select';
 import { handlePromptError } from '../../../../../../../utils';
+import Tips from '../../../../../../../components/new-tips';
 
 import './index.less';
 

@@ -157,10 +157,11 @@ class AppTagCreate extends Component {
     >
       <Content className="c7n-tag-create sidebar-content">
         <Form layout="vertical" className="c7n-sidebar-form">
-          <div className="apptag-formitem">
+          <div className="apptag-formitem c7ncd-sidebar-select">
             <Icon type="local_offer" className="c7n-apptag-icon" />
             <FormItem
               {...formItemLayout}
+              className="c7ncd-appTag-ref-select"
             >
               {getFieldDecorator('tag', {
                 rules: [{
@@ -175,11 +176,11 @@ class AppTagCreate extends Component {
                   autoFocus
                   label={<FormattedMessage id="apptag.name" />}
                   size="default"
-                  suffix={<Tips type="form" data="apptag.name.tip" />}
                   maxLength="20"
                 />,
               )}
             </FormItem>
+            <Tips type="form" data="apptag.name.tip" />
           </div>
           <div className="apptag-formitem c7ncd-sidebar-select">
             <Icon type="wrap_text" className="c7n-apptag-icon" />
@@ -200,6 +201,7 @@ class AppTagCreate extends Component {
                 notFoundContent={<FormattedMessage id="apptag.noRefBranch" />}
                 size="default"
                 filterOption={false}
+                className="c7ncd-appTag-ref-select"
               >
                 <OptGroup label={<FormattedMessage id="apptag.branch" />}>
                   {

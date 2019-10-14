@@ -5,14 +5,14 @@ import { Popover, Icon } from 'choerodon-ui';
 
 import './index.less';
 
-function Tips({ helpText, showHelp, title }) {
+function Tips({ helpText, showHelp, title, popoverClassName }) {
   return (title ? (
     <div className="c7ncd-tips-wrap">
       {title && <span>{title}</span>}
       {showHelp && (
         <Popover
           content={helpText}
-          overlayClassName="c7ncd-tips-popover"
+          overlayClassName={`c7ncd-tips-popover ${popoverClassName || ''}`}
           placement="topRight"
           arrowPointAtCenter
         >
@@ -23,7 +23,7 @@ function Tips({ helpText, showHelp, title }) {
   ) : (
     <Popover
       content={helpText}
-      overlayClassName="c7ncd-tips-popover"
+      overlayClassName={`c7ncd-tips-popover ${popoverClassName || ''}`}
       placement="topRight"
       arrowPointAtCenter
     >
@@ -36,6 +36,7 @@ Tips.propTypes = {
   helpText: PropTypes.string.isRequired,
   title: PropTypes.string,
   showHelp: PropTypes.bool,
+  popoverClassName: PropTypes.string,
 };
 
 Tips.defaultProps = {

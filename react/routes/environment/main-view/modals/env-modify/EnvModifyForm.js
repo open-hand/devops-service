@@ -35,7 +35,6 @@ function EnvModifyForm() {
     <TextArea name="description" resize="vertical" />
     <Select
       searchable
-      clearButton={false}
       name="devopsEnvGroupId"
       renderer={getGroupOption}
       optionRenderer={getGroupOption}

@@ -8,6 +8,7 @@ import { useClusterMainStore } from '../../../stores';
 import { useModalStore } from './stores';
 import CreateCluster from './create-cluster';
 import PermissionManage from './permission-manage';
+import Tips from '../../../../../../components/new-tips';
 
 import '../../../../../../components/dynamic-select/style/index.less';
 
@@ -92,7 +93,10 @@ const ClusterModals = observer(() => {
     const arr = NonPermissionDs.toData();
     Modal.open({
       key: modalKey2,
-      title: formatMessage({ id: `${intlPrefix}.modal.permission` }),
+      title: <Tips
+        helpText={formatMessage({ id: `${intlPrefix}.permission.tips` })}
+        title={formatMessage({ id: `${intlPrefix}.modal.permission` })}
+      />,
       drawer: true,
       style: modalStyle,
       className: 'c7ncd-modal-wrapper',

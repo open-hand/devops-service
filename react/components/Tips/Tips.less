@@ -16,31 +16,32 @@
 .c7ncd-sidebar-select {
   position: relative;
 
-  .c7n-select-selection__rendered {
-    padding-right: 52px;
+  .c7n-select-has-border.c7n-select::before,
+  .c7n-input-has-border.c7n-input-wrapper::before {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
   }
 
-  .c7n-select-arrow {
-    position: absolute !important;
-    right: 20px;
-    bottom: 0;
-    margin: 0;
-    transition: opacity .15s ease;
-    cursor: pointer;
-  }
-  .c7n-select-clear {
-    right: 34px;
-  }
   .c7n-select-tip {
     position: absolute !important;
-    right: 5px;
-    top: 17px;
-    color: rgba(0, 0, 0, .65);
+    right: 0;
+    top: .07rem;
+    color: rgba(0, 0, 0, 0.36);
+    border-radius: .04rem;
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+    background-color: #eee;
+    border: .01rem solid rgba(0, 0, 0, .2);
+    width: .27rem;
+    height: .36rem;
+    line-height: .36rem;
+    text-align: center;
+    border-left: none;
   }
 }
 .c7n-input-rendered-wrapper {
   .c7n-select-tip {
-    color: rgba(0, 0, 0, .65);
+    color: rgba(0, 0, 0, .36);
   }
 }
 

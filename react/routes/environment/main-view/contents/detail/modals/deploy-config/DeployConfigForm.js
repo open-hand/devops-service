@@ -78,7 +78,7 @@ function DeployConfigForm() {
   return <Fragment>
     <div className={`${prefixCls}-config-form`}>
       <Form dataSet={dataSet}>
-        <TextField name="name" />
+        <TextField name="name" autoFocus />
         <TextArea name="description" resize="vertical" />
         {isModify
           ? <TextField name="appServiceName" disabled />
