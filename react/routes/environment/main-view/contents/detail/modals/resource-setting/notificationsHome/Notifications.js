@@ -12,7 +12,8 @@ import {
   Header,
   Page,
   Action,
-} from '@choerodon/master';
+  Choerodon,
+} from '@choerodon/boot';
 import { Table, Button, Modal, Tooltip, Select } from 'choerodon-ui';
 import _ from 'lodash';
 import ClickText from '../../../../../../../../components/click-text';

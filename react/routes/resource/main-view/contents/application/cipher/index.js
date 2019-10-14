@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Action } from '@choerodon/master';
+import { Action } from '@choerodon/boot';
 import { Modal, Table } from 'choerodon-ui/pro';
 import keys from 'lodash/keys';
 import MouserOverWrapper from '../../../../../../components/MouseOverWrapper/MouserOverWrapper';

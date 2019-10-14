@@ -2,6 +2,7 @@ import React, { Fragment, useCallback, useState, useEffect } from 'react';
 import { Form, TextField, Select, SelectBox } from 'choerodon-ui/pro';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
+import { Choerodon } from '@choerodon/boot';
 import keys from 'lodash/keys';
 import countBy from 'lodash/countBy';
 import pickBy from 'lodash/pickBy';

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { TabPage, Content, Permission, Breadcrumb, Action } from '@choerodon/master';
+import { TabPage, Content, Permission, Breadcrumb, Action } from '@choerodon/boot';
 import { Table, Modal } from 'choerodon-ui/pro';
 import { Button, Tooltip } from 'choerodon-ui';
 import { FormattedMessage } from 'react-intl';

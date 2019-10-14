@@ -1,5 +1,5 @@
 import React from 'react';
-import { Page } from '@choerodon/master';
+import { Page } from '@choerodon/boot';
 import { observer } from 'mobx-react-lite';
 import { useClusterStore } from './stores';
 import MainView from './main-view';

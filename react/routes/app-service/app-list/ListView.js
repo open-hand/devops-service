@@ -3,7 +3,7 @@ import { Table, Modal } from 'choerodon-ui/pro';
 import { observer } from 'mobx-react-lite';
 import { FormattedMessage } from 'react-intl';
 import { withRouter, Link } from 'react-router-dom';
-import { Page, Content, Header, Permission, Action, Breadcrumb } from '@choerodon/master';
+import { Page, Content, Header, Permission, Action, Breadcrumb, Choerodon } from '@choerodon/boot';
 import { Button } from 'choerodon-ui';
 import pick from 'lodash/pick';
 import TimePopover from '../../../components/timePopover';

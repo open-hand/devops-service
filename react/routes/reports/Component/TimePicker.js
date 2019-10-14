@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { withRouter } from 'react-router-dom';
+import { Choerodon } from '@choerodon/boot';
 import { Button, DatePicker } from 'choerodon-ui';
 import moment from 'moment';
 import './TimePicker.less';

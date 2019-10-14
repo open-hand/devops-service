@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { observer } from 'mobx-react';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { Page, Header, Content, stores, Breadcrumb } from '@choerodon/master';
+import { Page, Header, Content, stores, Breadcrumb } from '@choerodon/boot';
 import { Select, Button, Tooltip, Spin } from 'choerodon-ui';
 import ReactEcharts from 'echarts-for-react';
 import _ from 'lodash';

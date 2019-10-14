@@ -1,6 +1,6 @@
 /* eslint-disable */
 import { observable, action, computed } from 'mobx';
-import { axios, store, stores } from '@choerodon/master';
+import { axios, store, stores } from '@choerodon/boot';
 import { handlePromptError } from '../../../../../utils';
 import DevPipelineStore from '../../../stores/DevPipelineStore';
 

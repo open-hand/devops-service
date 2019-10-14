@@ -4,7 +4,7 @@ import { withRouter, Prompt } from 'react-router-dom';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { Modal, Icon, Form, Input, Select, Radio, Tooltip } from 'choerodon-ui';
 import { Button } from 'choerodon-ui/pro';
-import { Content, Header, Page } from '@choerodon/master';
+import { Content, Header, Page, Choerodon } from '@choerodon/boot';
 import _ from 'lodash';
 import StageCard from '../components/stageCard';
 import StageCreateModal from '../components/stageCreateModal';

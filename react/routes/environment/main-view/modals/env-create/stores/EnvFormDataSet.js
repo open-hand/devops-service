@@ -1,4 +1,4 @@
-import { axios } from '@choerodon/master';
+import { axios } from '@choerodon/boot';
 import React from 'react';
 
 export default ({ formatMessage, intlPrefix, projectId, groupOptionDs, clusterOptionDs }) => {

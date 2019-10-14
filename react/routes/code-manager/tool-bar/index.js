@@ -3,7 +3,7 @@ import { observer, inject } from 'mobx-react';
 import { observer as observerLite } from 'mobx-react-lite';
 import { withRouter } from 'react-router-dom';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { Header } from '@choerodon/master';
+import { Header, Choerodon } from '@choerodon/boot';
 import { Button, Select, Tooltip } from 'choerodon-ui';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import _ from 'lodash';

@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { observer, inject } from 'mobx-react';
 import { Link, withRouter } from 'react-router-dom';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { Page, Header, Content, Breadcrumb } from '@choerodon/master';
+import { Page, Header, Content, Breadcrumb } from '@choerodon/boot';
 import { Select, Button, Tooltip, Spin, Breadcrumb as Bread } from 'choerodon-ui';
 import ReactEcharts from 'echarts-for-react';
 import _ from 'lodash';

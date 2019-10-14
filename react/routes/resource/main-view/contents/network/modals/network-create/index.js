@@ -5,6 +5,7 @@ import { withRouter } from 'react-router-dom';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { Modal } from 'choerodon-ui';
 import _ from 'lodash';
+import { Choerodon } from '@choerodon/boot';
 import InterceptMask from '../../../../../../../components/intercept-mask';
 import NetworkForm from './networkForm';
 

@@ -1,6 +1,6 @@
 import React, { Fragment, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Action } from '@choerodon/master';
+import { Action, Choerodon } from '@choerodon/boot';
 import { Modal, Table } from 'choerodon-ui/pro';
 import StatusTag from '../../../../../components/status-tag';
 import { getEnvStatus, statusMappings } from '../../../../../components/status-dot';

@@ -1,6 +1,7 @@
 import React, { useEffect, useState, Fragment } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
+import { Choerodon } from '@choerodon/boot';
 import { Select, Form, TextField } from 'choerodon-ui/pro';
 import map from 'lodash/map';
 import { handlePromptError } from '../../../../../utils';

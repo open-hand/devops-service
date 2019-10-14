@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { observer } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
 import { Modal } from 'choerodon-ui/pro';
-import { Action } from '@choerodon/master';
+import { Action } from '@choerodon/boot';
 import TreeItemName from '../../../../../components/treeitem-name';
 import GroupForm from '../../modals/GroupForm';
 import { handlePromptError } from '../../../../../utils';

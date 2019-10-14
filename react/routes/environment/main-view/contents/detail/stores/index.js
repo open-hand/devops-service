@@ -3,7 +3,7 @@ import { inject } from 'mobx-react';
 import { observer } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
 import { DataSet } from 'choerodon-ui/pro';
-import { axios } from '@choerodon/master';
+import { axios } from '@choerodon/boot';
 import getTablePostData from '../../../../../../utils/getTablePostData';
 import openWarnModal from '../../../../../../utils/openWarnModal';
 import { useEnvironmentStore } from '../../../../stores';

@@ -1,5 +1,5 @@
 import React, { Fragment, useEffect, useState } from 'react';
-import { Page, Content, Header, Permission, Action, Breadcrumb } from '@choerodon/master';
+import { Page, Content, Header, Permission, Action, Breadcrumb, Choerodon } from '@choerodon/boot';
 import { Table, Modal, Select, Form } from 'choerodon-ui/pro';
 import { Button, Tooltip } from 'choerodon-ui';
 import { FormattedMessage } from 'react-intl';

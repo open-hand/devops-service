@@ -1,7 +1,7 @@
 import React, { Fragment, useMemo, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
-import { Action } from '@choerodon/master';
+import { Action } from '@choerodon/boot';
 import { Popover } from 'choerodon-ui';
 import { Table } from 'choerodon-ui/pro';
 import StatusIcon from '../../../../../components/StatusIcon';

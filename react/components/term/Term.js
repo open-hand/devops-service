@@ -7,6 +7,7 @@ import PropTypes from 'prop-types';
 import { Terminal } from 'xterm';
 import _ from 'lodash';
 import { injectIntl } from 'react-intl';
+import { Choerodon } from '@choerodon/boot';
 import * as fit from 'xterm/lib/addons/fit/fit';
 import * as attach from 'xterm/lib/addons/attach/attach';
 

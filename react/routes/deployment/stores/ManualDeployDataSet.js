@@ -1,6 +1,6 @@
 import omit from 'lodash/omit';
 import uuidV1 from 'uuid/v1';
-import { axios } from '@choerodon/master';
+import { axios } from '@choerodon/boot';
 
 function getRandomName(prefix) {
   const randomString = uuidV1();

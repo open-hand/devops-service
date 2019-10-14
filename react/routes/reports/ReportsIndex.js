@@ -3,7 +3,7 @@ import {
   Route,
   Switch,
 } from 'react-router-dom';
-import { asyncRouter, nomatch } from '@choerodon/master';
+import { asyncRouter, nomatch } from '@choerodon/boot';
 
 const REPORTSHOME = asyncRouter(() => import('./Home'), () => import('./stores'));
 const SUBMISSION = asyncRouter(() => import('./Submission'), () => import('./stores'));

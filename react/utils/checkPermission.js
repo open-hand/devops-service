@@ -1,4 +1,4 @@
-import { axios } from '@choerodon/master';
+import { axios } from '@choerodon/boot';
 
 export default async function checkPermission({ projectId, organizationId, resourceType, code }) {
   try {

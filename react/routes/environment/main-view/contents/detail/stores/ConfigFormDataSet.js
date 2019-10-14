@@ -1,4 +1,4 @@
-import { axios } from '@choerodon/master';
+import { axios } from '@choerodon/boot';
 
 export default ({ formatMessage, intlPrefix, projectId, store }) => {
   const handleUpdate = ({ name, value }) => {

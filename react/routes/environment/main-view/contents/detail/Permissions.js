@@ -1,5 +1,5 @@
 import React from 'react';
-import { Action } from '@choerodon/master';
+import { Action } from '@choerodon/boot';
 import { Table } from 'choerodon-ui/pro';
 import TimePopover from '../../../../../components/time-popover';
 import { useEnvironmentStore } from '../../../stores';

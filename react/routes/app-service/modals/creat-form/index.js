@@ -3,7 +3,7 @@ import { Form, TextField, Select } from 'choerodon-ui/pro';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import { Icon, Input } from 'choerodon-ui';
-import { axios } from '@choerodon/master';
+import { axios, Choerodon } from '@choerodon/boot';
 import pick from 'lodash/pick';
 import isEmpty from 'lodash/isEmpty';
 import includes from 'lodash/includes';

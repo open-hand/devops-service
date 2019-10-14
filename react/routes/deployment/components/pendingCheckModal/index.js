@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import { observer, inject } from 'mobx-react';
 import { FormattedMessage, injectIntl } from 'react-intl';
+import { Choerodon } from '@choerodon/boot';
 import { Button, Modal } from 'choerodon-ui';
 import _ from 'lodash';
 

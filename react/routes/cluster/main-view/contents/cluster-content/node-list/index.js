@@ -1,5 +1,5 @@
 import React, { Fragment } from 'react';
-import { Permission, Action } from '@choerodon/master';
+import { Permission, Action } from '@choerodon/boot';
 import { Table } from 'choerodon-ui/pro';
 import { Tooltip } from 'choerodon-ui';
 import { useClusterContentStore } from '../stores';

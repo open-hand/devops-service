@@ -1,5 +1,5 @@
 import React from 'react';
-import { PageWrap, PageTab, Page } from '@choerodon/master';
+import { PageWrap, PageTab, Page } from '@choerodon/boot';
 import { observer } from 'mobx-react-lite';
 import { useAppTopStore } from '../stores';
 import { useServiceDetailStore } from './stores';

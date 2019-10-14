@@ -4,6 +4,7 @@ import { withRouter } from 'react-router-dom';
 import { Form, Modal } from 'choerodon-ui';
 import { injectIntl } from 'react-intl';
 import _ from 'lodash';
+import { Choerodon } from '@choerodon/boot';
 import DomainForm from '../../../../../../../components/domain-form';
 import InterceptMask from '../../../../../../../components/intercept-mask';
 

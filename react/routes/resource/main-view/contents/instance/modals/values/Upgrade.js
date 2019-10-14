@@ -2,6 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { observer, inject } from 'mobx-react';
 import { Select, Button, Spin } from 'choerodon-ui';
 import { injectIntl, FormattedMessage } from 'react-intl';
+import { Choerodon } from '@choerodon/boot';
 import _ from 'lodash';
 import YamlEditor from '../../../../../../../components/yamlEditor';
 import InterceptMask from '../../../../../../../components/intercept-mask';

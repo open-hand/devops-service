@@ -1,6 +1,6 @@
 import React, { memo, useMemo } from 'react';
 import { FormattedMessage } from 'react-intl';
-import { Header, Permission } from '@choerodon/master';
+import { Header, Permission, Choerodon } from '@choerodon/boot';
 import { Button, Tooltip } from 'choerodon-ui';
 import { Modal } from 'choerodon-ui/pro';
 import { observer } from 'mobx-react-lite';

@@ -2,6 +2,7 @@ import React, { Fragment, useCallback, useState, useEffect, useMemo } from 'reac
 import { Table, Select, Form, TextField, Icon } from 'choerodon-ui/pro';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
+import { Choerodon } from '@choerodon/boot';
 import filter from 'lodash/filter';
 import includes from 'lodash/includes';
 import forEach from 'lodash/forEach';

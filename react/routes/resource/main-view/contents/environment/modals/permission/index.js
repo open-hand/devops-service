@@ -1,6 +1,7 @@
 import React, { Fragment, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
+import { Choerodon } from '@choerodon/boot';
 import { Select, Radio, Form, Tooltip } from 'choerodon-ui';
 import omit from 'lodash/omit';
 import map from 'lodash/map';

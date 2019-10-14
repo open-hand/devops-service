@@ -1,5 +1,5 @@
 import React, { Fragment, useEffect, useState } from 'react';
-import { Header, Content, Breadcrumb } from '@choerodon/master';
+import { Header, Content, Breadcrumb } from '@choerodon/boot';
 import { Button } from 'choerodon-ui';
 import EmptyPage from '../../../../components/empty-page';
 import checkPermission from '../../../../utils/checkPermission';

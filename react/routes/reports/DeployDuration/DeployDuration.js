@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { observer } from 'mobx-react';
 import { observable, action, configure } from 'mobx';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { Page, Header, Content, stores, Breadcrumb } from '@choerodon/master';
+import { Page, Header, Content, stores, Breadcrumb, Choerodon } from '@choerodon/boot';
 import { Select, Button, Table, Spin } from 'choerodon-ui';
 import ReactEcharts from 'echarts-for-react';
 import _ from 'lodash';

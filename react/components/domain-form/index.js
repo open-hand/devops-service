@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { observer, inject } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import { injectIntl, FormattedMessage } from 'react-intl';
+import { Choerodon } from '@choerodon/boot';
 import _ from 'lodash';
 import { Button, Tooltip, Radio, Input, Form, Select } from 'choerodon-ui';
 import Tips from '../new-tips';

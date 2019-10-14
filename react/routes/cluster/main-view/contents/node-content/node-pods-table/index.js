@@ -1,5 +1,5 @@
 import React, { Fragment, useState } from 'react';
-import { Action } from '@choerodon/master';
+import { Action } from '@choerodon/boot';
 import { Table } from 'choerodon-ui/pro';
 import StatusTags from '../../../../../../components/status-tag';
 import TimePopover from '../../../../../../components/timePopover';

@@ -4,6 +4,7 @@ import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react';
 import _ from 'lodash';
 import TimeAgo from 'timeago-react';
+import { Choerodon } from '@choerodon/boot';
 import { Tooltip, Button, Icon, Popover, Spin } from 'choerodon-ui';
 import { formatDate } from '../../../../../../utils';
 import Store from '../stores';

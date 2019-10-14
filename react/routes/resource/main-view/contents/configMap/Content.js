@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useCallback } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
-import { Action } from '@choerodon/master';
+import { Action } from '@choerodon/boot';
 import { Table, Modal } from 'choerodon-ui/pro';
 import { keys } from 'lodash';
 import MouserOverWrapper from '../../../../../components/MouseOverWrapper/MouserOverWrapper';

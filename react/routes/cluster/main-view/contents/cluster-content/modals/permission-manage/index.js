@@ -2,6 +2,7 @@ import React, { Fragment, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
 import { Select, Radio, Form, Tooltip } from 'choerodon-ui';
+import { Choerodon } from '@choerodon/boot';
 import omit from 'lodash/omit';
 import map from 'lodash/map';
 import DynamicSelect from '../../../../../../../components/dynamic-select';

@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { withRouter } from 'react-router-dom';
 import { observer } from 'mobx-react';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { Page, Header, Content, stores, Breadcrumb } from '@choerodon/master';
+import { Page, Header, Content, stores, Breadcrumb } from '@choerodon/boot';
 import { Select, Button, Popover } from 'choerodon-ui';
 import _ from 'lodash';
 import moment from 'moment';

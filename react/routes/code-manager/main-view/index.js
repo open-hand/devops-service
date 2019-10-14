@@ -1,6 +1,6 @@
 import React, { Fragment } from 'react';
 import { observer } from 'mobx-react-lite';
-import { PageWrap, PageTab, Page } from '@choerodon/master';
+import { PageWrap, PageTab, Page } from '@choerodon/boot';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import map from 'lodash/map';
 import { useCodeManagerStore } from '../stores';

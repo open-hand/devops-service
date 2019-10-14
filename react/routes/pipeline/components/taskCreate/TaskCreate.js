@@ -3,7 +3,7 @@ import { observer, inject } from 'mobx-react';
 import { Link } from 'react-router-dom';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { Button, Modal, Spin, Tooltip, Form, Input, Select, Radio, Icon } from 'choerodon-ui';
-import { Content } from '@choerodon/master';
+import { Content, Choerodon } from '@choerodon/boot';
 import classnames from 'classnames';
 import _ from 'lodash';
 import uuidv1 from 'uuid/v1';

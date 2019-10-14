@@ -1,5 +1,5 @@
 import React, { Fragment, useCallback, useState, useEffect } from 'react';
-import { Action } from '@choerodon/master';
+import { Action } from '@choerodon/boot';
 import { Table, Modal, Select } from 'choerodon-ui/pro';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';

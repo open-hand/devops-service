@@ -3,6 +3,7 @@ import { observer, inject } from 'mobx-react';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { Button, Modal, Form, Input, Spin } from 'choerodon-ui';
 import PropTypes from 'prop-types';
+import { Choerodon } from '@choerodon/boot';
 import { handlePromptError } from '../../../../../utils';
 
 import './index.less';

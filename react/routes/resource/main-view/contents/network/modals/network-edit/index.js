@@ -16,7 +16,7 @@ import {
   Radio,
   Tooltip,
 } from 'choerodon-ui';
-import { stores, Content } from '@choerodon/master';
+import { stores, Content, Choerodon } from '@choerodon/boot';
 import AppName from '../../../../../../../components/appName';
 import Tips from '../../../../../../../components/Tips/Tips';
 import { handlePromptError } from '../../../../../../../utils';

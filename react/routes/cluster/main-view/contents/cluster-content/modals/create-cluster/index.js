@@ -2,6 +2,7 @@ import React, { Fragment, useState, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Input, Form } from 'choerodon-ui';
 import { Modal } from 'choerodon-ui/pro';
+import { Choerodon } from '@choerodon/boot';
 import _ from 'lodash';
 import { handlePromptError } from '../../../../../../../utils';
 import ActivateCluster from '../activate-cluster';

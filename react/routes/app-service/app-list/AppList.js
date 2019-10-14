@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { withRouter } from 'react-router-dom';
-import { Page } from '@choerodon/master';
+import { Page } from '@choerodon/boot';
 import checkPermission from '../../../utils/checkPermission';
 import ListView from './ListView';
 import EmptyShown, { EmptyLoading } from './EmptyShown';

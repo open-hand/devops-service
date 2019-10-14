@@ -1,4 +1,4 @@
-import { axios } from '@choerodon/master';
+import { axios } from '@choerodon/boot';
 import pick from 'lodash/pick';
 import isEmpty from 'lodash/isEmpty';
 import forEach from 'lodash/forEach';

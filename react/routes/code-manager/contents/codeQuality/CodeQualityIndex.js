@@ -3,7 +3,7 @@ import {
   Route,
   Switch,
 } from 'react-router-dom';
-import { asyncRouter, nomatch } from '@choerodon/master';
+import { asyncRouter, nomatch } from '@choerodon/boot';
 
 const CodeQuality = asyncRouter(
   () => import('./codeQualityHome'),

@@ -5,6 +5,7 @@ import React, { memo } from 'react';
 import PropTypes from 'prop-types';
 import { Tooltip } from 'choerodon-ui';
 import TimeAgo from 'timeago-react';
+import { Choerodon } from '@choerodon/boot';
 import { formatDate } from '../../utils';
 
 function TimePopover({ content, style }) {

@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { observer } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import { Button, Tabs, Icon, Select, Table, Tooltip } from 'choerodon-ui';
-import { Content, Header, Page, Permission, stores } from '@choerodon/master';
+import { Content, Header, Page, Permission, stores } from '@choerodon/boot';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import TimeAgo from 'timeago-react';
 import _ from 'lodash';

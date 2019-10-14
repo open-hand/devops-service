@@ -3,6 +3,7 @@ import { inject } from 'mobx-react';
 import { observer } from 'mobx-react-lite';
 import { Form } from 'choerodon-ui';
 import { injectIntl } from 'react-intl';
+import { Choerodon } from '@choerodon/boot';
 import filter from 'lodash/filter';
 import forEach from 'lodash/forEach';
 import DomainForm from '../../../../../../../components/domain-form';

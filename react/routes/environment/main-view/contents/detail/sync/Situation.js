@@ -1,6 +1,6 @@
 import React, { Fragment, useMemo } from 'react';
 import { FormattedMessage } from 'react-intl';
-import { Permission } from '@choerodon/master';
+import { Permission } from '@choerodon/boot';
 import { observer } from 'mobx-react-lite';
 import { Tooltip, Button, Icon, Modal } from 'choerodon-ui/pro';
 import { Popover } from 'choerodon-ui';

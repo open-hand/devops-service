@@ -2,7 +2,7 @@ import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { observer } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
-import { Action } from '@choerodon/master';
+import { Action } from '@choerodon/boot';
 import { Icon } from 'choerodon-ui';
 import { useResourceStore } from '../../../stores';
 import eventStopProp from '../../../../../utils/eventStopProp';

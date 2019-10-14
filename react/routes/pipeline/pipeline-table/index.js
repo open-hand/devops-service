@@ -3,7 +3,7 @@ import { observer, inject } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { Table, Button, Modal, Spin, Select } from 'choerodon-ui';
-import { Permission, Content, Header, Page, Action, Breadcrumb } from '@choerodon/master';
+import { Permission, Content, Header, Page, Action, Breadcrumb, Choerodon } from '@choerodon/boot';
 import _ from 'lodash';
 import StatusTags from '../../../components/status-tag';
 import TimePopover from '../../../components/timePopover';

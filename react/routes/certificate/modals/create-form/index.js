@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { injectIntl, FormattedMessage } from 'react-intl';
+import { Choerodon } from '@choerodon/boot';
 import {
   Form,
   Input,

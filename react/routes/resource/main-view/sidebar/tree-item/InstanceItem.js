@@ -2,7 +2,7 @@ import React, { Fragment, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { observer } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
-import { Action } from '@choerodon/master';
+import { Action, Choerodon } from '@choerodon/boot';
 import { Modal } from 'choerodon-ui/pro';
 import eventStopProp from '../../../../../utils/eventStopProp';
 import PodCircle from '../../components/pod-circle';

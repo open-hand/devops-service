@@ -1,5 +1,5 @@
 import { useLocalStore } from 'mobx-react-lite';
-import { axios } from '@choerodon/master';
+import { axios } from '@choerodon/boot';
 import { viewTypeMappings } from './mappings';
 
 const { IST_VIEW_TYPE } = viewTypeMappings;

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { FormattedMessage } from 'react-intl';
-import { Page, Header, Content, stores } from '@choerodon/master';
+import { Page, Header, Content, stores } from '@choerodon/boot';
 import _ from 'lodash';
 import reportList from './reportList';
 import './Home.less';

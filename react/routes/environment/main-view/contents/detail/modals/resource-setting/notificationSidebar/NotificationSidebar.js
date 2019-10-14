@@ -5,7 +5,7 @@
 import React, { Component } from 'react';
 import { observer, inject } from 'mobx-react';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { Content } from '@choerodon/master';
+import { Content, Choerodon } from '@choerodon/boot';
 import _ from 'lodash';
 import {
   Form,

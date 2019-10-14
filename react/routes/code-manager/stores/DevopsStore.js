@@ -1,6 +1,6 @@
 /* eslint-disable no-restricted-syntax, no-underscore-dangle */
 import { observable, action, computed } from 'mobx';
-import { store, axios } from '@choerodon/master';
+import { store, axios } from '@choerodon/boot';
 
 const REFRESH_INTERVAL = 1000 * 10;
 const REFRESH_AGE = 7 * 24 * 60 * 60 * 1000;

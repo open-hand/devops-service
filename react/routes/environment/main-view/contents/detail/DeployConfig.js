@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Action } from '@choerodon/master';
+import { Action, Choerodon } from '@choerodon/boot';
 import { Table, Modal } from 'choerodon-ui/pro';
 import TimePopover from '../../../../../components/time-popover';
 import UserInfo from '../../../../../components/userInfo';

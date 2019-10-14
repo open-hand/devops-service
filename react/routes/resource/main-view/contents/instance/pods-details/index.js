@@ -1,6 +1,6 @@
 import React, { Fragment, memo, useState, useCallback } from 'react';
 import { FormattedMessage } from 'react-intl';
-import { Action } from '@choerodon/master';
+import { Action } from '@choerodon/boot';
 import { Table } from 'choerodon-ui/pro';
 import { Icon, Popover, Tooltip } from 'choerodon-ui';
 import map from 'lodash/map';

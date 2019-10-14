@@ -3,7 +3,7 @@ import { FormattedMessage } from 'react-intl';
 import { withRouter } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import _ from 'lodash';
-import { stores } from '@choerodon/master';
+import { stores } from '@choerodon/boot';
 import { Dropdown, Button, Menu, Icon } from 'choerodon-ui';
 import reportList from '../Home/reportList';
 

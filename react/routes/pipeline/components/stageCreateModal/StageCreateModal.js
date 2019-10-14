@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import _ from 'lodash';
 import Sidebar from 'choerodon-ui/lib/modal/Sidebar';
 import { Button, Modal, Form, Input, Select, Radio, Tooltip } from 'choerodon-ui';
-import { Content } from '@choerodon/master';
+import { Content } from '@choerodon/boot';
 import { STAGE_FLOW_MANUAL, STAGE_FLOW_AUTO } from '../Constants';
 import '../../../main.less';
 import './StageCreateModal.less';

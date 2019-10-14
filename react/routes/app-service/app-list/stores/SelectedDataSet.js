@@ -1,4 +1,4 @@
-import { axios } from '@choerodon/master';
+import { axios } from '@choerodon/boot';
 
 export default ((intlPrefix, formatMessage, projectId) => {
   function handleUpdate({ dataSet, record, name, value, oldValue }) {
