@@ -1,6 +1,8 @@
 package io.choerodon.devops.app.eventhandler.payload;
 
 import io.choerodon.devops.api.vo.AppServiceDeployVO;
+import io.choerodon.devops.api.vo.DevopsIngressVO;
+import io.choerodon.devops.api.vo.DevopsServiceReqVO;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.AppServiceVersionDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
@@ -18,6 +20,8 @@ public class InstanceSagaPayload {
     private AppServiceVersionDTO appServiceVersionDTO;
     private DevopsEnvironmentDTO devopsEnvironmentDTO;
     private AppServiceDeployVO appServiceDeployVO;
+    private DevopsServiceReqVO devopsServiceReqVO;
+    private DevopsIngressVO devopsIngressVO;
 
 
     public InstanceSagaPayload() {
@@ -86,6 +90,22 @@ public class InstanceSagaPayload {
 
     public void setAppServiceDeployVO(AppServiceDeployVO appServiceDeployVO) {
         this.appServiceDeployVO = appServiceDeployVO;
+    }
+
+    public DevopsServiceReqVO getDevopsServiceReqVO() {
+        return devopsServiceReqVO;
+    }
+
+    public void setDevopsServiceReqVO(DevopsServiceReqVO devopsServiceReqVO) {
+        this.devopsServiceReqVO = devopsServiceReqVO;
+    }
+
+    public DevopsIngressVO getDevopsIngressVO() {
+        return devopsIngressVO;
+    }
+
+    public void setDevopsIngressVO(DevopsIngressVO devopsIngressVO) {
+        this.devopsIngressVO = devopsIngressVO;
     }
 
     public Integer getCommandId() {

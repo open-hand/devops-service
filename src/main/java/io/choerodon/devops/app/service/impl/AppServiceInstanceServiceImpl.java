@@ -569,11 +569,14 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
             appServiceDeployVO.setInstanceId(appServiceInstanceDTO.getId());
             appServiceDeployVO.setInstanceName(code);
+            appServiceDeployVO.getDevopsServiceReqVO().setDevopsIngressVO(appServiceDeployVO.getDevopsIngressVO());
             InstanceSagaPayload instanceSagaPayload = new InstanceSagaPayload(applicationDTO.getProjectId(), userAttrDTO.getGitlabUserId(), secretCode, appServiceInstanceDTO.getCommandId().intValue());
             instanceSagaPayload.setApplicationDTO(applicationDTO);
             instanceSagaPayload.setAppServiceVersionDTO(appServiceVersionDTO);
             instanceSagaPayload.setAppServiceDeployVO(appServiceDeployVO);
             instanceSagaPayload.setDevopsEnvironmentDTO(devopsEnvironmentDTO);
+            instanceSagaPayload.setDevopsIngressVO(appServiceDeployVO.getDevopsIngressVO());
+            instanceSagaPayload.setDevopsServiceReqVO(appServiceDeployVO.getDevopsServiceReqVO());
 
             producer.apply(
                     StartSagaBuilder
@@ -585,24 +588,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                             .withPayloadAndSerialize(instanceSagaPayload)
                             .withRefId(devopsEnvironmentDTO.getId().toString()));
 
-            // 0.19版本暂时不支持，后续优化
-            //如果部署时，也指定了创建网络和域名，目前的实现方式会导致创文件同步问题，后续更改逻辑
-//            if (appServiceDeployVO.getDevopsServiceReqVO() != null) {
-//                appServiceDeployVO.getDevopsServiceReqVO().setAppServiceId(applicationDTO.getId());
-//                devopsServiceService.create(devopsEnvironmentDTO.getProjectId(), appServiceDeployVO.getDevopsServiceReqVO());
-//            }
-//            if (appServiceDeployVO.getDevopsIngressVO() != null) {
-//                appServiceDeployVO.getDevopsIngressVO().setAppServiceId(applicationDTO.getId());
-//                List<DevopsIngressPathVO> devopsIngressPathVOS = appServiceDeployVO.getDevopsIngressVO().getPathList();
-//                devopsIngressPathVOS.forEach(devopsIngressPathVO -> {
-//                    DevopsServiceDTO devopsServiceDTO = devopsServiceService.baseQueryByNameAndEnvId(devopsIngressPathVO.getServiceName(), appServiceDeployVO.getEnvironmentId());
-//                    if (devopsServiceDTO != null) {
-//                        devopsIngressPathVO.setServiceId(devopsServiceDTO.getId());
-//                    }
-//                });
-//                appServiceDeployVO.getDevopsIngressVO().setPathList(devopsIngressPathVOS);
-//                devopsIngressService.createIngress(devopsEnvironmentDTO.getProjectId(), appServiceDeployVO.getDevopsIngressVO());
-//            }
 
         }
 
@@ -643,6 +628,13 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                     instanceSagaPayload.getAppServiceDeployVO().getType(),
                     instanceSagaPayload.getGitlabUserId(),
                     instanceSagaPayload.getAppServiceDeployVO().getInstanceId(), C7NHELM_RELEASE, null, false, instanceSagaPayload.getDevopsEnvironmentDTO().getId(), filePath);
+
+            //创建实例时，如果选择了创建网络
+            if (instanceSagaPayload.getDevopsServiceReqVO() != null) {
+                instanceSagaPayload.getDevopsServiceReqVO().setAppServiceId(instanceSagaPayload.getApplicationDTO().getId());
+                devopsServiceService.create(instanceSagaPayload.getDevopsEnvironmentDTO().getProjectId(), instanceSagaPayload.getDevopsServiceReqVO());
+            }
+
         } catch (Exception e) {
             //有异常更新实例以及command的状态
             AppServiceInstanceDTO appServiceInstanceDTO = baseQuery(instanceSagaPayload.getAppServiceDeployVO().getInstanceId());

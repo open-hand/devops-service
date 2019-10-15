@@ -257,8 +257,8 @@ public class AppServiceServiceImpl implements AppServiceService {
             return;
         }
 
-        // 禁止删除未失败的应用
-        if (!Boolean.TRUE.equals(appServiceDTO.getFailed())) {
+        // 禁止删除未失败或者停用状态的应用服务
+        if (!Boolean.TRUE.equals(appServiceDTO.getFailed())||!Boolean.TRUE.equals(appServiceDTO.getActive())) {
             throw new CommonException("error.delete.nonfailed.app.service", appServiceDTO.getName());
         }
 
