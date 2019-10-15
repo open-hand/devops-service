@@ -6,6 +6,7 @@ import { Choerodon } from '@choerodon/boot';
 import _ from 'lodash';
 import { handlePromptError } from '../../../../../../../utils';
 import ActivateCluster from '../activate-cluster';
+import Tips from '../../../../../../../components/Tips';
 
 import './index.less';
 
@@ -152,46 +153,54 @@ const CreateCluster = observer((props) => {
   return (
     <Fragment>
       <Form className="c7ncd-cluster-create-form">
-        <FormItem>
-          {getFieldDecorator('name', {
-            rules: [
-              {
-                required: true,
-                message: formatMessage({ id: 'required' }),
-              },
-              {
-                validator: checkName,
-              },
-            ],
-            initialValue: isEdit ? formData.name : '',
-          })(
-            <Input
-              maxLength={30}
-              label={formatMessage({ id: `${intlPrefix}.name` })}
-              onChange={handleNameChange}
-              autoFocus
-            />,
-          )} </FormItem>
-        <FormItem>
-          {getFieldDecorator('code', {
-            rules: [
-              {
-                required: true,
-                message: formatMessage({ id: 'required' }),
-              },
-              {
-                validator: checkCode,
-              },
-            ],
-            initialValue: isEdit ? formData.code : '',
-          })(
-            <Input
-              disabled={isEdit}
-              maxLength={30}
-              label={formatMessage({ id: `${intlPrefix}.code` })}
-              onChange={handleCodeChange}
-            />,
-          )} </FormItem>
+        <div className="c7ncd-sidebar-select">
+          <FormItem className="c7ncd-cluster-create-has_tips">
+            {getFieldDecorator('name', {
+              rules: [
+                {
+                  required: true,
+                  message: formatMessage({ id: 'required' }),
+                },
+                {
+                  validator: checkName,
+                },
+              ],
+              initialValue: isEdit ? formData.name : '',
+            })(
+              <Input
+                maxLength={30}
+                label={formatMessage({ id: `${intlPrefix}.name` })}
+                onChange={handleNameChange}
+                autoFocus
+              />,
+            )}
+          </FormItem>
+          <Tips type="form" data={`${intlPrefix}.code.tips`} />
+        </div>
+        <div className="c7ncd-sidebar-select">
+          <FormItem className="c7ncd-cluster-create-has_tips">
+            {getFieldDecorator('code', {
+              rules: [
+                {
+                  required: true,
+                  message: formatMessage({ id: 'required' }),
+                },
+                {
+                  validator: checkCode,
+                },
+              ],
+              initialValue: isEdit ? formData.code : '',
+            })(
+              <Input
+                disabled={isEdit}
+                maxLength={30}
+                label={formatMessage({ id: `${intlPrefix}.code` })}
+                onChange={handleCodeChange}
+              />,
+            )}
+          </FormItem>
+          <Tips type="form" data={`${intlPrefix}.code.tips`} />
+        </div>
         <FormItem>
           {getFieldDecorator('description', {
             initialValue: isEdit ? formData.description : '',

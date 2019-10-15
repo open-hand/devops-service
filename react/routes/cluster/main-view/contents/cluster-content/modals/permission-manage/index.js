@@ -94,10 +94,17 @@ const Permission = observer(({ refreshPermission, modal, form, tree, onOk, proje
             {getFieldDecorator('skipCheckProjectPermission', { initialValue: isSkip })(
               <RadioGroup onChange={handleChange}>
                 <Radio value>
-                  {formatMessage({ id: `${intlPrefix}.project.all` })}
+                  <span className={`${prefixCls}-modal-selectbox-text`}>
+                    {formatMessage({ id: `${intlPrefix}.project.all` })}
+                  </span>
                 </Radio>
                 <Radio value={false}>
-                  {formatMessage({ id: `${intlPrefix}.project.part` })}
+                  <span className={`${prefixCls}-modal-selectbox-text`}>
+                    <Tips
+                      helpText={formatMessage({ id: `${intlPrefix}.permission.some.tips` })}
+                      title={formatMessage({ id: `${intlPrefix}.project.part` })}
+                    />
+                  </span>
                 </Radio>
               </RadioGroup>
             )}
