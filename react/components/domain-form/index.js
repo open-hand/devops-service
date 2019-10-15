@@ -598,7 +598,7 @@ export default class DomainForm extends Component {
             />,
           )}
         </FormItem>
-        <div className="c7n-creation-title">
+        <div className="c7ncd-domain-creation-title">
           <Tips
             helpText={formatMessage({ id: 'domain.protocol.tip' })}
             title={formatMessage({ id: 'domain.protocol' })}
