@@ -1749,8 +1749,7 @@ const zhCN = {
   'ciPipeline.createdAt': '创建时间',
   'ciPipeline.sign.tip': '持续集成流水线的标识，以及持续集成流水线创建者',
   'ciPipeline.commit.tip': '最新一次提交的提交编码及提交信息，以及触发的分支',
-  'ciPipeline.jobs.tip':
-    '持续集成的阶段是在gitlab-ci文件里定义的。例如，可以分为单元测试和生成镜像两个阶段。单元测试阶段完成单元测试的运行并且对代码质量进行审查，生成镜像阶段通过 docker 把应用生成镜像。',
+  'ciPipeline.jobs.tip': '持续集成的阶段是在gitlab-ci文件里定义的',
 
   // resource
   'resource.title': '资源',
