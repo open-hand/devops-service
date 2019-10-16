@@ -2,11 +2,12 @@ import omit from 'lodash/omit';
 import uuidV1 from 'uuid/v1';
 import { axios } from '@choerodon/boot';
 
-function getRandomName(prefix) {
+function getRandomName(prefix = '') {
   const randomString = uuidV1();
+  const realPrefix = prefix.split('_')[1] || prefix.split('_')[0];
 
-  return prefix
-    ? `${prefix.substring(0, 24)}-${randomString.substring(0, 5)}`
+  return realPrefix
+    ? `${realPrefix.substring(0, 24)}-${randomString.substring(0, 5)}`
     : randomString.substring(0, 30);
 }
 
