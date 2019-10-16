@@ -10,6 +10,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
+import io.choerodon.devops.infra.enums.ProjectConfigType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -93,9 +94,9 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
      * 方法中抛出{@link DevopsCiInvalidException}而不是{@link CommonException}是为了返回非200的状态码。
      */
     @Override
-    public void create(String image, String token, String version, String commit, MultipartFile files) {
+    public void create(String image, String harborConfigId, String token, String version, String commit, MultipartFile files) {
         try {
-            doCreate(image, token, version, commit, files);
+            doCreate(image, TypeUtil.objToLong(harborConfigId), token, version, commit, files);
         } catch (Exception e) {
             if (e instanceof CommonException) {
                 throw new DevopsCiInvalidException(((CommonException) e).getCode(), e.getCause());
@@ -104,7 +105,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         }
     }
 
-    private void doCreate(String image, String token, String version, String commit, MultipartFile files) {
+    private void doCreate(String image, Long harborConfigId, String token, String version, String commit, MultipartFile files) {
         AppServiceDTO appServiceDTO = appServiceMapper.queryByToken(token);
 
         AppServiceVersionValueDTO appServiceVersionValueDTO = new AppServiceVersionValueDTO();
@@ -116,9 +117,11 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         appServiceVersionDTO.setImage(image);
         appServiceVersionDTO.setCommit(commit);
         appServiceVersionDTO.setVersion(version);
+        appServiceVersionDTO.setHarborConfigId(harborConfigId);
 
         DevopsConfigDTO devopsConfigDTO = devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, CHART);
         String helmUrl = gson.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class).getUrl();
+        appServiceVersionDTO.setHelmConfigId(devopsConfigDTO.getId());
 
         appServiceVersionDTO.setRepository(helmUrl.endsWith("/") ? helmUrl + organization.getCode() + "/" + projectDTO.getCode() + "/" : helmUrl + "/" + organization.getCode() + "/" + projectDTO.getCode() + "/");
         String storeFilePath = STORE_PATH + version;
@@ -265,17 +268,16 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
                                 deployOnly,
                                 TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
                                 TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)),
-                                PageRequestUtil.checkSortIsEmpty(pageRequest),version));
+                                PageRequestUtil.checkSortIsEmpty(pageRequest), version));
             } else {
                 applicationVersionDTOPageInfo = new PageInfo<>();
                 List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceVersionMapper.listByAppServiceIdAndVersion(appServiceId, projectId, share, deployOnly,
                         TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
                         TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)),
                         PageRequestUtil.checkSortIsEmpty(pageRequest), version);
-                if(doPage == null){
+                if (doPage == null) {
                     applicationVersionDTOPageInfo.setList(appServiceVersionDTOS.stream().limit(20).collect(Collectors.toList()));
-                }
-                else {
+                } else {
                     applicationVersionDTOPageInfo.setList(appServiceVersionDTOS);
                 }
             }
@@ -289,17 +291,16 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
                                     appServiceVersionIds,
                                     TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
                                     TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)),
-                                    PageRequestUtil.checkSortIsEmpty(pageRequest),version));
+                                    PageRequestUtil.checkSortIsEmpty(pageRequest), version));
                 } else {
                     applicationVersionDTOPageInfo = new PageInfo<>();
                     List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceVersionMapper.listByAppServiceVersionIdForMarket(appServiceId, appServiceVersionIds,
                             TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
                             TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)),
-                            PageRequestUtil.checkSortIsEmpty(pageRequest),version);
-                    if(doPage == null){
+                            PageRequestUtil.checkSortIsEmpty(pageRequest), version);
+                    if (doPage == null) {
                         applicationVersionDTOPageInfo.setList(appServiceVersionDTOS.stream().limit(20).collect(Collectors.toList()));
-                    }
-                    else {
+                    } else {
                         applicationVersionDTOPageInfo.setList(appServiceVersionDTOS);
                     }
                 }
@@ -443,8 +444,8 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     }
 
     @Override
-    public List<AppServiceVersionDTO> listServiceVersionByAppServiceIds(Set<Long> appServiceIds, String share, Long projectId,String params) {
-        return appServiceVersionMapper.listServiceVersionByAppServiceIds(appServiceIds, share, projectId,params);
+    public List<AppServiceVersionDTO> listServiceVersionByAppServiceIds(Set<Long> appServiceIds, String share, Long projectId, String params) {
+        return appServiceVersionMapper.listServiceVersionByAppServiceIds(appServiceIds, share, projectId, params);
     }
 
     @Override
@@ -459,15 +460,15 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
 
     @Override
     public List<AppServiceVersionVO> listServiceVersionVoByIds(Set<Long> ids) {
-        return ConvertUtils.convertList(listServiceVersionByAppServiceIds(ids, null, null,null), AppServiceVersionVO.class);
+        return ConvertUtils.convertList(listServiceVersionByAppServiceIds(ids, null, null, null), AppServiceVersionVO.class);
     }
 
     @Override
-    public List<AppServiceVersionVO> listVersionById(Long projectId,Long id, String params) {
+    public List<AppServiceVersionVO> listVersionById(Long projectId, Long id, String params) {
         Set<Long> ids = new HashSet<>();
         ids.add(id);
-        List<AppServiceVersionDTO> appServiceVersionDTOS = listAppServiceVersionByIdsAndProjectId(ids,projectId,params);
-        return ConvertUtils.convertList(appServiceVersionDTOS,AppServiceVersionVO.class);
+        List<AppServiceVersionDTO> appServiceVersionDTOS = listAppServiceVersionByIdsAndProjectId(ids, projectId, params);
+        return ConvertUtils.convertList(appServiceVersionDTOS, AppServiceVersionVO.class);
     }
 
     private AppServiceVersionVO dtoToVo(AppServiceVersionDTO appServiceVersionDTO) {
@@ -497,7 +498,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
 
     @Override
     public List<AppServiceVersionDTO> baseListByAppServiceId(Long appServiceId) {
-        List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceVersionMapper.listByAppServiceId(appServiceId,null);
+        List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceVersionMapper.listByAppServiceId(appServiceId, null);
         if (appServiceVersionDTOS.isEmpty()) {
             return Collections.emptyList();
         }
@@ -621,8 +622,9 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     public List<AppServiceVersionDTO> baseListVersions(List<Long> appServiceVersionIds) {
         return appServiceVersionMapper.listVersions(appServiceVersionIds);
     }
+
     @Override
-    public List<AppServiceVersionDTO> listAppServiceVersionByIdsAndProjectId(Set<Long> ids,Long projectId,String params){
+    public List<AppServiceVersionDTO> listAppServiceVersionByIdsAndProjectId(Set<Long> ids, Long projectId, String params) {
         List<AppServiceVersionDTO> appServiceVersionDTOS = new ArrayList<>();
         List<Long> appServiceIds = applicationService.listAppByProjectId(projectId, false, null, null)
                 .getList().stream().map(AppServiceVO::getId).collect(Collectors.toList());
@@ -631,27 +633,37 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         // 分别获取本项目的应用服务和共享服务
         ids.stream().forEach(v -> {
             boolean contains = appServiceIds.contains(v);
-            if(appServiceIds.contains(v)){
+            if (appServiceIds.contains(v)) {
                 localProjectIds.add(v);
-            }
-            else{
+            } else {
                 shareServiceIds.add(v);
             }
         });
-        if(!localProjectIds.isEmpty()){
-            appServiceVersionDTOS.addAll(listServiceVersionByAppServiceIds(localProjectIds, null, projectId,params));
+        if (!localProjectIds.isEmpty()) {
+            appServiceVersionDTOS.addAll(listServiceVersionByAppServiceIds(localProjectIds, null, projectId, params));
         }
-        if(!shareServiceIds.isEmpty()){
+        if (!shareServiceIds.isEmpty()) {
             // 查询共享服务的共享出来的版本
-            List<AppServiceVersionDTO> shareServiceS = listServiceVersionByAppServiceIds(shareServiceIds, "share", projectId,params);
-            List<AppServiceVersionDTO> projectSerivceS = listServiceVersionByAppServiceIds(shareServiceIds, "project", projectId,params);
+            List<AppServiceVersionDTO> shareServiceS = listServiceVersionByAppServiceIds(shareServiceIds, "share", projectId, params);
+            List<AppServiceVersionDTO> projectSerivceS = listServiceVersionByAppServiceIds(shareServiceIds, "project", projectId, params);
             shareServiceS.addAll(projectSerivceS);
             // 去重
             ArrayList<AppServiceVersionDTO> collect1 = shareServiceS.stream().collect(collectingAndThen(
                     toCollection(() -> new TreeSet<>(comparing(AppServiceVersionDTO::getId))), ArrayList::new));
             appServiceVersionDTOS.addAll(collect1);
         }
-        return  appServiceVersionDTOS;
+        return appServiceVersionDTOS;
     }
 
+    @Override
+    public Boolean isVersionUseConfig(Long configId, String configType) {
+        AppServiceVersionDTO appServiceVersionDTO = new AppServiceVersionDTO();
+        if (configType.equals(ProjectConfigType.HARBOR.getType())) {
+            appServiceVersionDTO.setHarborConfigId(configId);
+        } else {
+            appServiceVersionDTO.setHelmConfigId(configId);
+        }
+        List<AppServiceVersionDTO> list = appServiceVersionMapper.select(appServiceVersionDTO);
+        return list != null && list.size() > 0;
+    }
 }

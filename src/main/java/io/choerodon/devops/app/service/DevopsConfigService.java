@@ -55,6 +55,8 @@ public interface DevopsConfigService {
 
     DevopsConfigDTO baseUpdate(DevopsConfigDTO devopsConfigDTO);
 
+    void updateResourceId(Long configId);
+
     DevopsConfigDTO baseQuery(Long id);
 
     DevopsConfigDTO baseQueryByName(Long projectId, String name);

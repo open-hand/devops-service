@@ -122,5 +122,11 @@
         and `type` = #{type}
     </select>
 
+    <update id="updateResourceId">
+        UPDATE devops_config
+        SET app_service_id=null,project_id=null,organization_id=null
+        WHERE id=#{config_id}
+    </update>
+
 
 </mapper>

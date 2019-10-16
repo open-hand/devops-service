@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.github.pagehelper.PageInfo;
+import io.choerodon.devops.infra.dto.DevopsConfigDTO;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.base.domain.PageRequest;
@@ -22,13 +23,14 @@ public interface AppServiceVersionService {
     /**
      * 创建应用版本信息
      *
-     * @param token   token
-     * @param image   类型
-     * @param version 版本
-     * @param commit  commit
-     * @param file    tgz包
+     * @param token          token
+     * @param harborConfigId harborConfigId
+     * @param image          类型
+     * @param version        版本
+     * @param commit         commit
+     * @param file           tgz包
      */
-    void create(String image, String token, String version, String commit, MultipartFile file);
+    void create(String image, String harborConfigId, String token, String version, String commit, MultipartFile file);
 
 
     /**
@@ -59,7 +61,7 @@ public interface AppServiceVersionService {
      * @param version      模糊搜索参数
      * @return ApplicationVersionRespVO
      */
-    PageInfo<AppServiceVersionVO> pageByOptions(Long projectId, Long appServiceId, Boolean deployOnly, Boolean doPage, String params, PageRequest pageRequest,String version);
+    PageInfo<AppServiceVersionVO> pageByOptions(Long projectId, Long appServiceId, Boolean deployOnly, Boolean doPage, String params, PageRequest pageRequest, String version);
 
     /**
      * 根据应用id查询需要升级的应用版本
@@ -170,7 +172,7 @@ public interface AppServiceVersionService {
      * @param share         是否是组织共享
      * @return 应用服务版本
      */
-    List<AppServiceVersionDTO> listServiceVersionByAppServiceIds(Set<Long> appServiceIds, String share, Long projectId,String params);
+    List<AppServiceVersionDTO> listServiceVersionByAppServiceIds(Set<Long> appServiceIds, String share, Long projectId, String params);
 
     /**
      * 根据应用服务IDs和共享规则去查询应用服务的版本列表
@@ -183,11 +185,15 @@ public interface AppServiceVersionService {
 
     List<AppServiceVersionVO> listServiceVersionVoByIds(Set<Long> ids);
 
-    List<AppServiceVersionVO> listVersionById(Long projectId,Long id, String params);
+    List<AppServiceVersionVO> listVersionById(Long projectId, Long id, String params);
+
     /**
      * 根据应用服务id和项目Id获取服务版本
+     *
      * @param ids
      * @param projectId
      */
-    public List<AppServiceVersionDTO> listAppServiceVersionByIdsAndProjectId(Set<Long> ids,Long projectId,String params);
+    List<AppServiceVersionDTO> listAppServiceVersionByIdsAndProjectId(Set<Long> ids, Long projectId, String params);
+
+    Boolean isVersionUseConfig(Long configId, String configType);
 }

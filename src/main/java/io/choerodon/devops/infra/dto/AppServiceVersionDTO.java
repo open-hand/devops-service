@@ -25,6 +25,8 @@ public class AppServiceVersionDTO extends BaseDTO {
     private String repository;
     private Long isPublish;
     private Date publishTime;
+    private Long harborConfigId;
+    private Long helmConfigId;
 
     @Transient
     private String appServiceName;
@@ -155,5 +157,21 @@ public class AppServiceVersionDTO extends BaseDTO {
 
     public void setAppServiceType(String appServiceType) {
         this.appServiceType = appServiceType;
+    }
+
+    public Long getHarborConfigId() {
+        return harborConfigId;
+    }
+
+    public void setHarborConfigId(Long harborConfigId) {
+        this.harborConfigId = harborConfigId;
+    }
+
+    public Long getHelmConfigId() {
+        return helmConfigId;
+    }
+
+    public void setHelmConfigId(Long helmConfigId) {
+        this.helmConfigId = helmConfigId;
     }
 }

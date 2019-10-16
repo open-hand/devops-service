@@ -671,19 +671,26 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             appServiceImageVO.setServiceCode(String.format("%s_%s", appServiceMarketVO.getAppServiceId(), appServiceMarketVO.getAppServiceCode()));
             List<MarketAppServiceVersionImageVO> appServiceVersionImageVOS = new ArrayList<>();
 
-            //获取原仓库配置
-            ConfigVO configVO = devopsConfigService.queryRealConfigVO(appServiceMarketVO.getAppServiceId(), APP_SERVICE, "harbor").getConfig();
-            User sourceUser = new User();
-            BeanUtils.copyProperties(configVO, sourceUser);
-            sourceUser.setUsername(configVO.getUserName());
 
-            User targetUser = new User();
-            targetUser.setUsername(appMarketUploadVO.getUser().getRobotName());
-            targetUser.setPassword(appMarketUploadVO.getUser().getRobotToken());
-
-            //准备认证json
-            String configStr = createConfigJson(sourceUser, getDomain(configVO.getUrl()), targetUser, getDomain(appServiceMarketVO.getHarborUrl()));
             appServiceMarketVO.getAppServiceVersionUploadPayloads().forEach(t -> {
+                AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQuery(t.getId());
+                ConfigVO configVO;
+                if (appServiceVersionDTO.getHarborConfigId() != null) {
+                    configVO = gson.fromJson(devopsConfigService.baseQuery(appServiceVersionDTO.getHarborConfigId()).getConfig(), ConfigVO.class);
+                } else {
+                    configVO = devopsConfigService.queryRealConfigVO(appServiceMarketVO.getAppServiceId(), APP_SERVICE, "harbor").getConfig();
+                }
+                //获取原仓库配置
+                User sourceUser = new User();
+                BeanUtils.copyProperties(configVO, sourceUser);
+                sourceUser.setUsername(configVO.getUserName());
+
+                User targetUser = new User();
+                targetUser.setUsername(appMarketUploadVO.getUser().getRobotName());
+                targetUser.setPassword(appMarketUploadVO.getUser().getRobotToken());
+
+                //准备认证json
+                String configStr = createConfigJson(sourceUser, getDomain(configVO.getUrl()), targetUser, getDomain(appServiceMarketVO.getHarborUrl()));
                 //推送镜像
                 String targetImageUrl = String.format("%s:%s", appServiceMarketVO.getHarborUrl(), t.getVersion());
                 pushImageScript(appServiceVersionService.baseQuery(t.getId()).getImage(), targetImageUrl, configStr);
