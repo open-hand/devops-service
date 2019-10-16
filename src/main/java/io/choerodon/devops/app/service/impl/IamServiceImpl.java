@@ -108,7 +108,7 @@ public class IamServiceImpl implements IamService {
         if (ids != null && !ids.isEmpty()) {
             Long[] newIds = new Long[ids.size()];
             try {
-                userES = baseServiceClient.listUsersByIds(ids.toArray(newIds)).getBody();
+                userES = baseServiceClient.listUsersByIds(ids.toArray(newIds),false).getBody();
             } catch (Exception e) {
                 throw new CommonException("error.users.get", e);
             }

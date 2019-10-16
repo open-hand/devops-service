@@ -74,7 +74,7 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
-    public ResponseEntity<List<IamUserDTO>> listUsersByIds(Long[] ids) {
+    public ResponseEntity<List<IamUserDTO>> listUsersByIds(Long[] ids, Boolean onlyEnabled) {
         throw new CommonException("error.user.get.byIds");
     }
 

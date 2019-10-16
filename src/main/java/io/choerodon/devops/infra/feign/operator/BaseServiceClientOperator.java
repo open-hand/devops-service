@@ -115,7 +115,7 @@ public class BaseServiceClientOperator {
             Long[] newIds = new Long[ids.size()];
             try {
                 userDTOS = baseServiceClient
-                        .listUsersByIds(ids.toArray(newIds)).getBody();
+                        .listUsersByIds(ids.toArray(newIds), false).getBody();
 
             } catch (Exception e) {
                 throw new CommonException("error.users.get", e);
