@@ -9,6 +9,7 @@ import MouserOverWrapper from '../../../../components/MouseOverWrapper';
 import ReportsStore from '../../stores';
 import '../../../code-manager/contents/ciPipelineManage/index.less';
 import './BuildTable.less';
+import TimePopover from '../../../../components/timePopover/TimePopover';
 
 const { AppState } = stores;
 
@@ -119,20 +120,7 @@ class BuildTable extends Component {
       {
         title: <FormattedMessage id="ciPipeline.createdAt" />,
         dataIndex: 'creationDate',
-        render: (creationDate, record) => (
-          <div>
-            <Popover
-              rowKey="creationDate"
-              title={<FormattedMessage id="ciPipeline.createdAt" />}
-              content={creationDate}
-              placement="left"
-            >
-              <TimeAgo
-                datetime={creationDate}
-                locale={this.props.intl.formatMessage({ id: 'language' })}
-              />
-            </Popover>
-          </div>),
+        render: (creationDate, record) => <TimePopover content={creationDate} />,
       },
       {
         width: 56,
@@ -291,7 +279,10 @@ class BuildTable extends Component {
           projectId={projectId}
           type={type}
         >
-          <Popover placement="bottom" content={<div><span>{(record.status === 'running' || record.status === 'pending') ? 'cancel' : 'retry'}</span></div>}>
+          <Tooltip
+            placement="top"
+            title={record.status === 'running' || record.status === 'pending' ? 'cancel' : 'retry'}
+          >
             <Button
               size="small"
               shape="circle"
@@ -299,7 +290,7 @@ class BuildTable extends Component {
             >
               <span className={`icon ${ICONS_ACTION[record.status] ? ICONS_ACTION[record.status].icon : ''} c7n-icon-action c7n-icon-sm`} />
             </Button>
-          </Popover>
+          </Tooltip>
         </Permission>
       );
     } else {

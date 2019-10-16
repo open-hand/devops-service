@@ -1,6 +1,6 @@
 import React from 'react';
 import { FormattedMessage } from 'react-intl';
-import { Popover } from 'choerodon-ui';
+import { Tooltip } from 'choerodon-ui';
 import PropTypes from 'prop-types';
 import _ from 'lodash';
 import '../index.less';
@@ -19,19 +19,16 @@ export default function MaxTagPopover(props) {
       );
   });
   return (
-    <Popover
+    <Tooltip
       arrowPointAtCenter
       placement={placement}
-      content={
-        <div className="c7n-report-maxPlace" style={{ width }}>
-          {moreOption}
-        </div>
-      }
+      overlayClassName="c7n-report-maxPlace"
+      title={moreOption}
     >
       <div className="c7n-report-maxPlace-inner" title="">
         <FormattedMessage id="dashboard.devops.more" />
       </div>
-    </Popover>
+    </Tooltip>
   );
 }
 
@@ -43,5 +40,5 @@ MaxTagPopover.propTypes = {
 
 MaxTagPopover.defaultProps = {
   placement: 'bottomLeft',
-  width: 260,
+  width: 350,
 };

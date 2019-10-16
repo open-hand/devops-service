@@ -244,13 +244,13 @@ const NetworkContent = observer(() => {
     return (
       <div className="net-config-content">
         <span className="net-config-type">{type}</span>
-        <Popover
+        <Tooltip
           arrowPointAtCenter
           placement="bottomRight"
-          content={content}
+          title={content}
         >
           <Icon type="expand_more" className="net-expend-icon" />
-        </Popover>
+        </Tooltip>
       </div>
     );
   }

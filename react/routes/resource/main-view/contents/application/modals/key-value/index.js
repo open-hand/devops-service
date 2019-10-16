@@ -4,11 +4,10 @@ import { observer, inject } from 'mobx-react';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import _ from 'lodash';
 import { Choerodon } from '@choerodon/boot';
-import { Button, Form, Input, Modal, Icon, Table, Popover } from 'choerodon-ui';
+import { Button, Form, Input, Modal, Icon, Table, Tooltip } from 'choerodon-ui';
 import { EditableCell, EditableFormRow } from './editableTable';
 import { objToYaml, yamlToObj, takeObject, ConfigNode, makePostData } from '../utils';
 import YamlEditor from '../../../../../../../components/yamlEditor';
-import InterceptMask from '../../../../../../../components/intercept-mask';
 import { handlePromptError } from '../../../../../../../utils';
 
 import '../../../../../../main.less';
@@ -643,12 +642,12 @@ export default class FormView extends Component {
           {this.getFormContent()}
           <div className="c7n-sidebar-from-title">
             <FormattedMessage id={`${intlPrefix}.${title}.head`} />
-            {!isYamlEdit && <Popover
+            {!isYamlEdit && <Tooltip
               overlayStyle={{ maxWidth: 350 }}
-              content={formatMessage({ id: `${intlPrefix}.${title}.help.tooltip` })}
+              title={formatMessage({ id: `${intlPrefix}.${title}.help.tooltip` })}
             >
               <Icon type="help" />
-            </Popover>}
+            </Tooltip>}
             {modeSwitch ? <Button
               className="c7n-config-mode-btn"
               type="primary"

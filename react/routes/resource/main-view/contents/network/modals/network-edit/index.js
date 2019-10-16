@@ -11,7 +11,6 @@ import {
   Select,
   Input,
   Modal,
-  Popover,
   Icon,
   Radio,
   Tooltip,
@@ -577,9 +576,9 @@ class EditNetwork extends Component {
     const { id: currentProject } = AppState.currentMenuType;
     return (
       <Option value={id} key={code}>
-        <Popover
+        <Tooltip
           placement="right"
-          content={
+          title={
             <Fragment>
               <p>
                 <FormattedMessage id="app.name" />:<span>{name}</span>
@@ -598,7 +597,7 @@ class EditNetwork extends Component {
               width="460px"
             />
           </div>
-        </Popover>
+        </Tooltip>
       </Option>
     );
   };
