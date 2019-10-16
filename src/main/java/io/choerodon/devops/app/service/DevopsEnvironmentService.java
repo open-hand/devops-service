@@ -99,7 +99,7 @@ public interface DevopsEnvironmentService {
      * @param environmentId 环境id
      * @return 环境及其相关信息
      */
-    DevopsEnvironmentInfoVO queryInfoById(Long environmentId);
+    DevopsEnvironmentInfoVO queryInfoById(Long projectId, Long environmentId);
 
     /**
      * 查询环境下相关资源的数量
