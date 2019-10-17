@@ -19,6 +19,9 @@ import io.choerodon.devops.infra.enums.ResourceType;
  * Created by Zenger on 2018/4/12.
  */
 public interface AppServiceInstanceService {
+    String INSTANCE_LABEL_RELEASE = "choerodon.io/release";
+    String INSTANCE_LABEL_APPLICATION = "choerodon.io/application";
+
     /**
      * 根据实例id查询实例信息
      *

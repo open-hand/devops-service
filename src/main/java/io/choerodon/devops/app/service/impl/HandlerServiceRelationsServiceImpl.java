@@ -39,6 +39,8 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
     @Autowired
     private AppServiceInstanceService appServiceInstanceService;
     @Autowired
+    private AppServiceService appServiceService;
+    @Autowired
     private DevopsEnvCommandService devopsEnvCommandService;
     @Autowired
     private DevopsServiceInstanceService devopsServiceInstanceService;
@@ -217,20 +219,17 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                 }).collect(Collectors.toList());
         devopsServiceReqVO.setPorts(portMapList);
 
-        if (v1Service.getMetadata().getAnnotations() != null) {
-            String instancesCode = v1Service.getMetadata().getAnnotations()
-                    .get("choerodon.io/network-service-instances");
-            if (instancesCode != null) {
-                List<String> instanceIdList = Arrays.stream(instancesCode.split("\\+")).parallel().peek(t -> {
-                    AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQueryByCodeAndEnv(t, envId);
-                    if (appServiceInstanceDTO != null) {
-                        devopsServiceReqVO.setAppServiceId(appServiceInstanceDTO.getAppServiceId());
-                    }
-                }).collect(Collectors.toList());
-                devopsServiceReqVO.setInstances(instanceIdList);
+        Map<String, String> selector = v1Service.getSpec().getSelector();
+        if (selector != null) {
+            // 判断是实例的选择器还是其它
+            String value;
+            if ((value = selector.get(AppServiceInstanceService.INSTANCE_LABEL_RELEASE)) != null) {
+                devopsServiceReqVO.setTargetInstanceCode(value);
             }
-        }
-        if (v1Service.getSpec().getSelector() != null) {
+            if ((value = selector.get(AppServiceInstanceService.INSTANCE_LABEL_APPLICATION)) != null) {
+                if (appServiceService.baseQueryByCode(, ))
+                    // TODO
+            }
             devopsServiceReqVO.setLabel(v1Service.getSpec().getSelector());
         }
         return devopsServiceReqVO;
@@ -252,6 +251,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
         List<DevopsServiceInstanceDTO> devopsServiceInstanceDTOS =
                 devopsServiceInstanceService.baseListByServiceId(devopsServiceDTO.getId());
         Boolean isUpdate = false;
+        // 如果都是实例类型的网络，比较实例对象是否有区别
         if (devopsServiceReqVO.getAppServiceId() != null && devopsServiceDTO.getAppServiceId() != null && devopsServiceReqVO.getInstances() != null) {
             List<String> newInstanceCode = devopsServiceReqVO.getInstances();
             List<String> oldInstanceCode = devopsServiceInstanceDTOS.stream().map(DevopsServiceInstanceDTO::getCode).collect(Collectors.toList());

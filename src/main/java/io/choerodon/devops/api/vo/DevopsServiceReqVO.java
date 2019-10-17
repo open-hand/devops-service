@@ -7,11 +7,14 @@ import javax.validation.constraints.Size;
 
 import io.swagger.annotations.ApiModelProperty;
 
+import io.choerodon.devops.api.validator.annotation.AtMostSeveralFieldsNotEmpty;
 import io.choerodon.devops.infra.dto.PortMapVO;
 
 /**
  * Created by Zenger on 2018/4/13.
  */
+@AtMostSeveralFieldsNotEmpty(message = "error.target.instance.and.target.app.service",
+        fields = {"targetAppServiceId", "targetInstanceCode"})
 public class DevopsServiceReqVO {
     @ApiModelProperty("环境ID / 必填")
     @NotNull(message = "error.env.id.null")
@@ -38,11 +41,14 @@ public class DevopsServiceReqVO {
     @ApiModelProperty("目标对象为Endpoints，相应的信息")
     private Map<String, List<EndPointPortVO>> endPoints;
 
-    @ApiModelProperty("目标对象为实例，实例的Code")
-    private List<String> instances;
-
     @ApiModelProperty("目标对象为标签，标签键值对")
     private Map<String, String> label;
+
+    @ApiModelProperty("目标对象是应用服务下所有实例时，应用服务的id")
+    private Long targetAppServiceId;
+
+    @ApiModelProperty("目标对象是单个实例时，实例的code")
+    private String targetInstanceCode;
 
     private DevopsIngressVO devopsIngressVO;
 
@@ -77,14 +83,6 @@ public class DevopsServiceReqVO {
 
     public void setExternalIp(String externalIp) {
         this.externalIp = externalIp;
-    }
-
-    public List<String> getInstances() {
-        return instances;
-    }
-
-    public void setInstances(List<String> instances) {
-        this.instances = instances;
     }
 
     public List<PortMapVO> getPorts() {
@@ -125,5 +123,21 @@ public class DevopsServiceReqVO {
 
     public void setDevopsIngressVO(DevopsIngressVO devopsIngressVO) {
         this.devopsIngressVO = devopsIngressVO;
+    }
+
+    public Long getTargetAppServiceId() {
+        return targetAppServiceId;
+    }
+
+    public void setTargetAppServiceId(Long targetAppServiceId) {
+        this.targetAppServiceId = targetAppServiceId;
+    }
+
+    public String getTargetInstanceCode() {
+        return targetInstanceCode;
+    }
+
+    public void setTargetInstanceCode(String targetInstanceCode) {
+        this.targetInstanceCode = targetInstanceCode;
     }
 }
