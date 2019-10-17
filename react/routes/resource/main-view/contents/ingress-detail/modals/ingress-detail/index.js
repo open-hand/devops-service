@@ -1,21 +1,22 @@
 import React from 'react';
 import { FormattedMessage } from 'react-intl';
-import _ from 'lodash';
+import map from 'lodash/map';
 
 import './index.less';
 
 
 export default function ({ intlPrefix, record, prefixCls, formatMessage }) {
   return (
-    <ul className={`${prefixCls}-secret-detail-modal`}>
-      <li className="detail-item">
+    <ul className={`${prefixCls}-ingress-detail-modal`}>
+      <li className="detail-item detail-item-flex">
         <span className="detail-item-text">
           {formatMessage({ id: 'instance' })}
         </span>
-        <span>{
-            (record 
-            && record.get('instances') && record.get('instances').join(',')) || '-' 
-          }</span>
+        <span>
+          {record && record.get('instances') && record.get('instances').length ? map(record.get('instances'), item => (
+            <span className={`${prefixCls}-ingress-instance-item`}>{item}</span>
+          )) : '-'}
+        </span>
       </li>
       <li className="detail-item">
         <span className="detail-item-text">

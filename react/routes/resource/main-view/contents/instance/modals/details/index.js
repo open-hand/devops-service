@@ -30,23 +30,23 @@ export default function DetailsModal({ intlPrefix, record, prefixCls, formatMess
 
   function getStatus() {
     const statusCode = getStatusCode();
-
-    return statusCode && <span className={`${prefixCls}-modals-value ${prefixCls}-modals-cell`}>
-        {formatMessage({ id: `${intlPrefix}.instance.status.${statusCode}` })}
-      </span>;
-  }
-
-  function getVersion() {
-    const statusCode = getStatusCode();
-    if (!statusCode) return '';
     const commandVersion = record.get('commandVersion');
     if (statusCode === UPDATE_FAILED) {
       return formatMessage({ id: `${intlPrefix}.instance.status.failed.upgrade.describe` }, { version: commandVersion });
     } else if (statusCode === DEPLOY_FAILED) {
       return formatMessage({ id: `${intlPrefix}.instance.status.failed.deploy.describe` }, { version: commandVersion });
     } else {
-      return commandVersion;
+      return statusCode && <span className={`${prefixCls}-modals-value ${prefixCls}-modals-cell`}>
+        {formatMessage({ id: `${intlPrefix}.instance.status.${statusCode}` })}
+      </span>;
     }
+  }
+
+  function getVersion() {
+    const statusCode = getStatusCode();
+    if (!statusCode) return '';
+    const versionName = record.get('versionName');
+    return versionName || '-';
   }
 
   return <Fragment>

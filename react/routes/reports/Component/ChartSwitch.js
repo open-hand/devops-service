@@ -11,12 +11,11 @@ const { AppState } = stores;
 const { Item: MenuItem } = Menu;
 
 function ChartSwitch(props) {
-  const { current, history } = props;
+  const { current, history, location: { search } } = props;
   const handleClick = (e) => {
-    const { id, name, type, organizationId } = AppState.currentMenuType;
     const nextReport = _.find(reportList, ['key', e.key]);
     if (nextReport) {
-      history.push(`${nextReport.link}?type=${type}&id=${id}&name=${name}&organizationId=${organizationId}`);
+      history.push(`${nextReport.link}${search}`);
     }
   };
   const menu = (
