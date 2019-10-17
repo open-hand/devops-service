@@ -46,7 +46,6 @@ export default injectIntl(observer((props) => {
         <Select name="appServiceSource">
           <Option value="normal_service">{formatMessage({ id: `${intlPrefix}.source.project` })}</Option>
           <Option value="share_service">{formatMessage({ id: `${intlPrefix}.source.organization` })}</Option>
-          <Option value="market_service">{formatMessage({ id: `${intlPrefix}.source.market` })}</Option>
         </Select>
         <Select
           name="templateAppServiceId"

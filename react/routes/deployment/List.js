@@ -215,7 +215,7 @@ const Deployment = withRouter(observer((props) => {
   function renderNumber({ value, record }) {
     return (
       <Fragment>
-        <div className={`${prefixCls}-table-mark ${prefixCls}-table-mark-${record.get('deployType')}`}>
+        <div className={`${prefixCls}-content-table-mark ${prefixCls}-content-table-mark-${record.get('deployType')}`}>
           <span>{record.get('deployType') === 'auto' ? 'A' : 'M'}</span>
         </div>
         <ClickText
@@ -344,43 +344,11 @@ const Deployment = withRouter(observer((props) => {
       </Header>
       <Breadcrumb />
       <Content className={`${prefixCls}-content`}>
-        <Form className={`${prefixCls}-content-select`} dataSet={tableSelectDs} columns={4}>
-          <Select
-            name="env"
-            searchable
-            className={`${prefixCls}-content-select-item`}
-            placeholder={formatMessage({ id: `${intlPrefix}.search.env` })}
-            notFoundContent={formatMessage({ id: `${intlPrefix}.env.empty` })}
-          />
-          <Select
-            name="deployType"
-            className={`${prefixCls}-content-select-item`}
-            placeholder={formatMessage({ id: `${intlPrefix}.search.type` })}
-          >
-            <Option value="auto">{formatMessage({ id: `${intlPrefix}.auto` })}</Option>
-            <Option value="manual">{formatMessage({ id: `${intlPrefix}.manual` })}</Option>
-          </Select>
-          <Select
-            name="deployStatus"
-            className={`${prefixCls}-content-select-item`}
-            placeholder={formatMessage({ id: `${intlPrefix}.search.result` })}
-          >
-            {map(STATUS, (item) => (
-              <Option value={item}>{formatMessage({ id: `${intlPrefix}.status.${item}` })}</Option>
-            ))}
-          </Select>
-          <Select
-            name="pipelineId"
-            searchable
-            className={`${prefixCls}-content-select-item`}
-            placeholder={formatMessage({ id: `${intlPrefix}.search.pipeline` })}
-            notFoundContent={formatMessage({ id: `${intlPrefix}.pipeline.empty` })}
-          />
-        </Form>
         <Table
           dataSet={listDs}
-          queryBar="none"
-          className={`${prefixCls}-table`}
+          queryBar="advancedBar"
+          className={`${prefixCls}-content-table`}
+          queryFieldsLimit={4}
         >
           <Column
             name="deployId"

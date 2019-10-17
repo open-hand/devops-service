@@ -79,11 +79,6 @@ const DeployModal = injectIntl(observer(({ record, dataSet, store, projectId, re
               {formatMessage({ id: `${intlPrefix}.source.organization` })}
             </span>
           </Option>
-          <Option value="market_service">
-            <span className={`${prefixCls}-manual-deploy-radio`}>
-              {formatMessage({ id: `${intlPrefix}.source.market` })}
-            </span>
-          </Option>
         </SelectBox>
         <Select
           name="appServiceId"

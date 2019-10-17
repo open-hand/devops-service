@@ -28,6 +28,7 @@ const commonField = {
   upgrade: '升级',
   modify: '变更',
   iknow: '我知道了',
+  reset: '重置',
 
   // 通用描述
   app: '应用',
@@ -613,7 +614,7 @@ const deploy = {
   'c7ncd.deploy.type.tips': '此处是指记录的部署类型，分为手动部署与流水线部署',
   'c7ncd.deploy.pipeline.tips': '此处是指部署记录对应的流水线名称；手动部署的部署记录此项为空',
   'c7ncd.deploy.trigger.tips': '此处是指流水线的部署记录所对应的触发方式，分为人工触发与自动触发；手动部署的部署记录此项为空',
-  'c7ncd.deploy.source.tips': '您可在此选择项目下已有的应用服务、组织中其他项目共享出的应用服务以及市场下载的应用服务来进行部署',
+  'c7ncd.deploy.source.tips': '您可在此选择项目下已有的应用服务以及组织中其他项目共享出的应用服务',
   'c7ncd.deploy.instance.tips': '选择应用服务后，会默认生成实例名称，此名称可修改；此次部署默认为新建一个实例',
   'c7ncd.deploy.config.tips': '您可在此选择一个部署配置并使用其中的配置信息；或者直接在已有基础上进行修改后部署',
   'c7ncd.deploy.resource.tips': '您可在部署实例的同时，为此实例创建一个网络和一个域名，从而完成资源的配置；此步骤为可选执行',

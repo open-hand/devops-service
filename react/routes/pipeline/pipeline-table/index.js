@@ -60,8 +60,8 @@ export default class Pipeline extends Component {
     executeLoading: false,
     executeEnv: null,
     searchData: null,
-    envId: null,
-    triggerType: null,
+    envId: undefined,
+    triggerType: undefined,
   };
 
   componentDidMount() {
@@ -448,6 +448,14 @@ export default class Pipeline extends Component {
     return (<Action data={_.map(actionItem, (item) => ({ ...action[item] }))} />);
   };
 
+  handleResetSearch = () => {
+    this.setState({
+      searchData: null,
+      envId: undefined,
+      triggerType: undefined,
+    }, () => this.loadData());
+  };
+
   get getColumns() {
     const { filters, sorter } = this.state;
     const { columnKey, order } = sorter || {};
@@ -527,6 +535,9 @@ export default class Pipeline extends Component {
       executeCheck,
       executeLoading,
       executeEnv,
+      searchData,
+      envId,
+      triggerType,
     } = this.state;
 
     return (<Page
@@ -573,6 +584,7 @@ export default class Pipeline extends Component {
             className="c7ncd-pipeline-search"
             onChange={(value) => this.handleSearch(value, 'searchData')}
             choiceRemove={false}
+            value={searchData}
           >
             {
               _.map(FAST_SEARCH, (item) => (
@@ -591,6 +603,7 @@ export default class Pipeline extends Component {
             onChange={(value) => this.setState({ envId: value }, () => this.loadData())}
             allowClear
             choiceRemove={false}
+            value={envId}
             filterOption={(input, option) => option.props.children
               .toLowerCase()
               .indexOf(input.toLowerCase()) >= 0}
@@ -610,6 +623,7 @@ export default class Pipeline extends Component {
             onChange={(value) => this.setState({ triggerType: value }, () => this.loadData())}
             allowClear
             choiceRemove={false}
+            value={triggerType}
           >
             {_.map(TriggerType, (value) => (
               <Option
@@ -620,6 +634,13 @@ export default class Pipeline extends Component {
               </Option>
             ))}
           </Select>
+          <Button
+            funcType="raised"
+            onClick={this.handleResetSearch}
+            className="c7ncd-pipeline-search-button"
+          >
+            <FormattedMessage id="reset" />
+          </Button>
         </div>
         <Table
           filterBar={false}

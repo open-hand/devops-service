@@ -17,7 +17,7 @@ import './index.less';
 
 const { Option } = Select;
 
-const IMPORT_METHOD = ['share', 'github', 'gitlab', 'market'];
+const IMPORT_METHOD = ['share', 'github', 'gitlab'];
 
 const ImportForm = injectIntl(observer((props) => {
   const { dataSet, selectedDs, record, appServiceStore, projectId, intl: { formatMessage }, intlPrefix, prefixCls, refresh, modal } = props;

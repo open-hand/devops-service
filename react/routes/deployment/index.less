@@ -1,24 +1,21 @@
 @import '~choerodon-ui/lib/style/themes/default';
 
-.c7ncd-deploy {
+.c7ncd-deploy-content {
+  padding-top: 0;
 
-  &-content {
-    padding-top: 0;
+  &-select {
 
-    &-select {
+    tr {
+      display: flex;
+      flex-wrap: wrap;
 
-      tr {
-        display: flex;
-        flex-wrap: wrap;
-
-        .@{c7n-pro-prefix}-field-wrapper {
-          margin-bottom: .12rem;
-        }
+      .@{c7n-pro-prefix}-field-wrapper {
+        margin-bottom: .12rem;
       }
+    }
 
-      &-item {
-        width: 2.5rem;
-      }
+    &-item {
+      width: 2.5rem;
     }
   }
 
@@ -44,5 +41,17 @@
         border: 1px solid #4d90fe;
       }
     }
+
+    .@{c7n-pro-prefix}-table-advanced-query-bar {
+
+      .@{c7n-pro-prefix}-select-wrapper {
+        max-width: 2.6rem;
+        width: 22%;
+      }
+    }
+  }
+
+  .@{c7n-pro-prefix}-table-filter-select-wrapper {
+    display: none;
   }
 }
