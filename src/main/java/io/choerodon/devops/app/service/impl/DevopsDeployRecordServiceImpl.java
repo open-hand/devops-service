@@ -142,6 +142,14 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
     }
 
     @Override
+    public void deleteByEnv(Long envId) {
+        DevopsDeployRecordDTO deleteCondition = new DevopsDeployRecordDTO();
+        deleteCondition.setEnv(String.valueOf(envId));
+
+        devopsDeployRecordMapper.delete(deleteCondition);
+    }
+
+    @Override
     public void deleteRelatedRecordOfInstance(Long instanceId) {
         devopsDeployRecordMapper.deleteRelatedRecordOfInstance(instanceId);
     }

@@ -141,7 +141,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Autowired
     private DevopsEnvGroupMapper devopsEnvGroupMapper;
     @Autowired
-    private DevopsClusterMapper devopsClusterMapper;
+    private DevopsDeployRecordService devopsDeployRecordService;
 
     @Override
     @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_ENV, description = "创建环境", inputSchema = "{}")
@@ -1219,6 +1219,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         devopsServiceService.baseListByEnvId(envId).forEach(serviceE ->
                 devopsEnvCommandService.baseListByObject(HelmObjectKind.SERVICE.toValue(), serviceE.getId()).forEach(t -> devopsEnvCommandService.baseDeleteByEnvCommandId(t)));
         devopsServiceService.baseDeleteServiceAndInstanceByEnvId(envId);
+        // 删除实例对应的部署纪录
+        devopsDeployRecordService.deleteByEnv(envId);
 
         // 删除环境
         baseDeleteById(envId);
