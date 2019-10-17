@@ -85,8 +85,9 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
                             Long envId = TypeUtil.objToLong(id);
                             if (envMap.containsKey(envId)) {
                                 return envMap.get(envId).getName();
+                            } else {
+                                return "此环境已删除";
                             }
-                            return null;
                         }).collect(Collectors.toList());
                 if (!envNames.isEmpty()) {
                     devopsDeployRecordVO.setEnv(Joiner.on(COMMA).join(envNames));
