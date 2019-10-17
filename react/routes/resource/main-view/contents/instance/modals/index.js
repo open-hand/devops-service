@@ -67,7 +67,6 @@ const IstModals = injectIntl(observer(() => {
       title: formatMessage({ id: `${intlPrefix}.modal.values` }),
       drawer: true,
       okText: formatMessage({ id: 'deployment' }),
-      cancelText: formatMessage({ id: 'close' }),
       style: modalStyle,
       children: <ValueModalContent
         store={istStore}
@@ -101,7 +100,6 @@ const IstModals = injectIntl(observer(() => {
       title: formatMessage({ id: `${intlPrefix}.modal.modify` }),
       drawer: true,
       okText: formatMessage({ id: 'modify' }),
-      cancelText: formatMessage({ id: 'close' }),
       style: modalStyle,
       children: <UpgradeModalContent
         store={istStore}
