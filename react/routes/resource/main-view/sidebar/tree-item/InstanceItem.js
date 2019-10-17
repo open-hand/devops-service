@@ -86,7 +86,7 @@ function InstanceItem({
           movable: false,
           closable: false,
           key: stopKey,
-          title: formatMessage({ id: `${intlPrefix}.instance.action.${active}` }),
+          title: formatMessage({ id: `${intlPrefix}.instance.action.${active}.title` }, { name: record.get('name') }),
           children: formatMessage({ id: `${intlPrefix}.instance.action.${active}.tips` }),
           onOk: () => handleChangeActive(active),
         });

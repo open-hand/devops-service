@@ -86,7 +86,15 @@ const Allocation = observer(() => {
   }
 
   function handleDelete() {
-    permissionDs.delete(permissionDs.current);
+    const record = permissionDs.current;
+    const modalProps = {
+      title: formatMessage({ id: `${intlPrefix}.permission.delete.title` }),
+      children: formatMessage({ id: `${intlPrefix}.permission.delete.des` }),
+      okText: formatMessage({ id: 'delete' }),
+      okProps: { color: 'red' },
+      cancelProps: { color: 'dark' },
+    };
+    permissionDs.delete(record, modalProps);
   }
 
   function renderButtons() {

@@ -2,6 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { observer } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import { Button, Tooltip, Modal, Table } from 'choerodon-ui';
+import { Modal as ProModal } from 'choerodon-ui/pro';
 import { Content, Page, Permission, stores, Action, Choerodon } from '@choerodon/boot';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import _ from 'lodash';
@@ -15,7 +16,6 @@ import StatusIcon from '../../../../components/StatusIcon/StatusIcon';
 import BranchStore from './stores';
 import handleMapStore from '../../main-view/store/handleMapStore';
 import Loading from '../../../../components/loading';
-import CustomConfirm from '../../../../components/custom-confirm';
 import UserInfo from '../../../../components/userInfo';
 
 import '../../../main.less';
@@ -23,6 +23,7 @@ import './Branch.less';
 import './index.less';
 
 const { AppState } = stores;
+const deleteKey = ProModal.key();
 
 @observer
 class Branch extends Component {
@@ -30,7 +31,6 @@ class Branch extends Component {
     super(props);
     const menu = AppState.currentMenuType;
     const { formatMessage } = this.props.intl;
-    this.customConfirm = new CustomConfirm({ formatMessage });
     this.state = {
       projectId: menu.id,
       paras: [],
@@ -162,17 +162,7 @@ class Branch extends Component {
           'devops-service.devops-git.deleteBranch',
         ],
         text: formatMessage({ id: 'delete' }),
-        action: () => {
-          this.setState({ name: record.branchName });
-          this.customConfirm.delete({
-            titleId: 'branch.action.delete.title',
-            titleVal: {
-              name: record.branchName,
-            },
-            contentId: 'branch.delete.tooltip',
-            handleOk: this.handleDelete,
-          });
-        },
+        action: () => this.openRemove(record.branchName),
       },
     ];
     // 分支如果是master  禁止创建合并请求 否认：会造成跳转到 gitlab，gailab页面报错的问题
@@ -360,14 +350,27 @@ class Branch extends Component {
    * @param name
    */
   openRemove = (name) => {
-
+    const {
+      intl: { formatMessage },
+    } = this.props;
+    this.setState({ name });
+    ProModal.open({
+      key: deleteKey,
+      title: formatMessage({ id: 'branch.action.delete.title' }, { name }),
+      children: formatMessage({ id: 'branch.delete.tooltip' }),
+      onOk: this.handleDelete,
+      onCancel: this.closeRemove,
+      okText: formatMessage({ id: 'delete' }),
+      okProps: { color: 'red' },
+      cancelProps: { color: 'dark' },
+    });
   };
 
   /**
    * 关闭删除框
    */
   closeRemove = () => {
-    this.setState({ visible: false });
+    this.setState({ name: null, visible: false });
   };
 
   /**
@@ -479,22 +482,6 @@ class Branch extends Component {
                 visible={BranchStore.createBranchShow === 'detail'}
                 onClose={this.hideSidebar}
               />}
-              <Modal
-                confirmLoading={submitting}
-                visible={visible}
-                title={`${formatMessage({ id: 'branch.action.delete' })}“${branchName}”`}
-                closable={false}
-                footer={[
-                  <Button key="back" onClick={this.closeRemove} disabled={submitting}>{<FormattedMessage
-                    id="cancel"
-                  />}</Button>,
-                  <Button key="submit" type="danger" onClick={this.handleDelete} loading={submitting}>
-                    {formatMessage({ id: 'delete' })}
-                  </Button>,
-                ]}
-              >
-                <div className="c7n-padding-top_8">{formatMessage({ id: 'branch.delete.tooltip' })}</div>
-              </Modal>
             </Fragment> : null}
           </Fragment>}
       </Page>

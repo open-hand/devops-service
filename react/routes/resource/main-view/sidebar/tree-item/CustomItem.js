@@ -58,7 +58,20 @@ function CustomItem({
   }
 
   function deleteItem() {
-    treeDs.delete(record);
+    treeDs.transport.destroy = ({ data: [data] }) => (
+      {
+        url: `/devops/v1/projects/${projectId}/customize_resource?resource_id=${data.id}`,
+        method: 'delete',
+      }
+    );
+    const modalProps = {
+      title: formatMessage({ id: `${intlPrefix}.custom.delete.title` }, { name: record.get('name') }),
+      children: formatMessage({ id: `${intlPrefix}.custom.delete.des` }),
+      okText: formatMessage({ id: 'delete' }),
+      okProps: { color: 'red' },
+      cancelProps: { color: 'dark' },
+    };
+    treeDs.delete(record, modalProps);
   }
 
   function checkDataExist() {

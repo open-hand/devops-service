@@ -5,6 +5,7 @@ import { injectIntl, FormattedMessage } from 'react-intl';
 import { Table, Button, Modal, Spin, Select } from 'choerodon-ui';
 import { Permission, Content, Header, Page, Action, Breadcrumb, Choerodon } from '@choerodon/boot';
 import _ from 'lodash';
+import { Modal as ProModal } from 'choerodon-ui/pro';
 import StatusTags from '../../../components/status-tag';
 import TimePopover from '../../../components/timePopover';
 import UserInfo from '../../../components/userInfo';
@@ -27,6 +28,8 @@ const EXECUTE_PASS = 'pass';
 const EXECUTE_FAILED = 'failed';
 
 const TriggerType = ['auto', 'manual'];
+
+const deleteKey = ProModal.key();
 
 @injectIntl
 @withRouter
@@ -164,6 +167,26 @@ export default class Pipeline extends Component {
 
   closeRemove = () => {
     this.setState({ deleteId: null, deleteName: '', showDelete: false });
+  };
+
+  openDelete = (id, name) => {
+    const {
+      intl: { formatMessage },
+    } = this.props;
+    this.setState({
+      deleteName: name,
+      deleteId: id,
+    });
+    ProModal.open({
+      key: deleteKey,
+      title: formatMessage({ id: 'pipeline.delete' }, { name }),
+      children: formatMessage({ id: 'pipeline.delete.message' }),
+      onOk: this.handleDelete,
+      onCancel: this.closeRemove,
+      okText: formatMessage({ id: 'delete' }),
+      okProps: { color: 'red' },
+      cancelProps: { color: 'dark' },
+    });
   };
 
   handleDelete = async () => {
@@ -351,10 +374,11 @@ export default class Pipeline extends Component {
           type,
         },
       },
+      location: { search },
     } = this.props;
     history.push({
       pathname: '/devops/deployment-operation',
-      search: `?type=${type}&id=${projectId}&name=${projectName}&organizationId=${organizationId}`,
+      search,
     });
   }
 
@@ -413,20 +437,7 @@ export default class Pipeline extends Component {
       remove: {
         service: ['devops-service.pipeline.delete'],
         text: formatMessage({ id: 'delete' }),
-        action: () => {
-          this.setState({
-            deleteName: name,
-            deleteId: id,
-          });
-          this.customConfirm.delete({
-            titleId: 'pipeline.delete',
-            titleVal: {
-              name,
-            },
-            contentId: 'pipeline.delete.message',
-            handleOk: this.handleDelete,
-          });
-        },
+        action: this.openDelete.bind(this, id, name),
       },
     };
     let actionItem = _.keys(action);

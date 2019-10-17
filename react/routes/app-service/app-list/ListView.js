@@ -205,7 +205,15 @@ const ListView = withRouter(observer((props) => {
   }
 
   function handleDelete() {
-    listDs.delete(listDs.current);
+    const record = listDs.current;
+    const modalProps = {
+      title: formatMessage({ id: `${intlPrefix}.delete.title` }, { name: record.get('name') }),
+      children: formatMessage({ id: `${intlPrefix}.delete.des` }),
+      okText: formatMessage({ id: 'delete' }),
+      okProps: { color: 'red' },
+      cancelProps: { color: 'dark' },
+    };
+    listDs.delete(record, modalProps);
   }
 
   async function changeActive(active) {

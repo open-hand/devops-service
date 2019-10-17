@@ -15,6 +15,7 @@ import { useMainStore } from '../../stores';
 
 const formKey = Modal.key();
 const effectKey = Modal.key();
+const deleteKey = Modal.key();
 
 function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
   const modalStyle = useMemo(() => ({
@@ -41,6 +42,19 @@ function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
     } finally {
       refresh();
     }
+  }
+
+  function openDelete() {
+    const name = record.get('name');
+    Modal.open({
+      key: deleteKey,
+      title: formatMessage({ id: `${intlPrefix}.delete.title` }, { name }),
+      children: formatMessage({ id: `${intlPrefix}.delete.des` }),
+      okText: formatMessage({ id: 'delete' }),
+      okProps: { color: 'red' },
+      cancelProps: { color: 'dark' },
+      onOk: handleDelete,
+    });
   }
 
   function openModifyModal() {
@@ -151,14 +165,14 @@ function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
         }, {
           service: [],
           text: formatMessage({ id: `${intlPrefix}.modal.detail.delete` }),
-          action: handleDelete,
+          action: openDelete,
         }];
         break;
       case FAILED:
         actionData = [{
           service: [],
           text: formatMessage({ id: `${intlPrefix}.modal.detail.delete` }),
-          action: handleDelete,
+          action: openDelete,
         }];
         break;
       default:

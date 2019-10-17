@@ -64,6 +64,7 @@ export default observer(({ dataSet, refresh, record, store, projectId, formatMes
   });
 
   modal.handleCancel(() => {
+    record.reset();
     dataSet.reset();
   });
 

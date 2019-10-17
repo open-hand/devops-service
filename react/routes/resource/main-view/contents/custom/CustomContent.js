@@ -99,7 +99,15 @@ const CustomContent = observer(() => {
   }
 
   function handleDelete() {
-    customDs.delete(customDs.current);
+    const record = customDs.current;
+    const modalProps = {
+      title: formatMessage({ id: `${intlPrefix}.custom.delete.title` }, { name: record.get('name') }),
+      children: formatMessage({ id: `${intlPrefix}.custom.delete.des` }),
+      okText: formatMessage({ id: 'delete' }),
+      okProps: { color: 'red' },
+      cancelProps: { color: 'dark' },
+    };
+    customDs.delete(record, modalProps);
   }
 
   return (

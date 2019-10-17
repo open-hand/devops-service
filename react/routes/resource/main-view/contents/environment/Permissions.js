@@ -12,16 +12,27 @@ export default function Permissions() {
     intl: { formatMessage },
     permissionsDs: tableDs,
     baseInfoDs,
+    intlPrefix,
   } = useEnvironmentStore();
+
+  function handleDelete() {
+    const record = tableDs.current;
+    const modalProps = {
+      title: formatMessage({ id: `${intlPrefix}.permission.delete.title` }),
+      children: formatMessage({ id: `${intlPrefix}.permission.delete.des` }),
+      okText: formatMessage({ id: 'delete' }),
+      okProps: { color: 'red' },
+      cancelProps: { color: 'dark' },
+    };
+    tableDs.delete(record, modalProps);
+  }
 
   function renderActions({ record }) {
     const actionData = [
       {
         service: [],
         text: formatMessage({ id: 'delete' }),
-        action: () => {
-          tableDs.delete(record);
-        },
+        action: handleDelete,
       },
     ];
     const isOwner = record.get('role') === 'member';

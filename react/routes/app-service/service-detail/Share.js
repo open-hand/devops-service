@@ -106,7 +106,15 @@ const Share = () => {
   }
 
   function handleDelete() {
-    shareDs.delete(shareDs.current);
+    const record = shareDs.current;
+    const modalProps = {
+      title: formatMessage({ id: `${intlPrefix}.rule.delete.title` }),
+      children: formatMessage({ id: `${intlPrefix}.rule.delete.des` }),
+      okText: formatMessage({ id: 'delete' }),
+      okProps: { color: 'red' },
+      cancelProps: { color: 'dark' },
+    };
+    shareDs.delete(record, modalProps);
   }
 
   function renderButtons() {
@@ -167,8 +175,8 @@ const Share = () => {
       <Content className={`${prefixCls}-detail-content`}>
         <Table dataSet={shareDs} filter={handleTableFilter}>
           <Column name="id" renderer={renderNumber} align="left" />
+          <Column renderer={renderAction} width="0.7rem" />
           <Column name="versionType" />
-          <Column renderer={renderAction} />
           <Column name="version" sortable />
           <Column name="projectName" renderer={renderProjectName} />
         </Table>

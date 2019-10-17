@@ -238,8 +238,10 @@ const deployment = {
   'c7ncd.deployment.instance.status.operating': '处理中',
   'c7ncd.deployment.instance.status.running': '运行中',
   'c7ncd.deployment.instance.action.stop': '停用实例',
+  'c7ncd.deployment.instance.action.stop.title': '停用实例“{name}”',
   'c7ncd.deployment.instance.action.stop.tips': '确定要停用该实例吗？',
   'c7ncd.deployment.instance.action.start': '启用实例',
+  'c7ncd.deployment.instance.action.start.title': '启用实例“{name}”',
   'c7ncd.deployment.instance.action.start.tips': '确定要重启该实例吗？',
   'c7ncd.deployment.instance.action.delete': '删除实例',
   'c7ncd.deployment.instance.action.delete.tips': '删除实例后将不可恢复，同时与其相关的网络也将失效，确定要删除该实例吗？',
@@ -371,6 +373,10 @@ const deployment = {
   'c7ncd.deployment.time': '时间',
   'c7ncd.deployment.usage': '使用量',
   'c7ncd.deployment.environment.sync': '提交同步情况',
+  'c7ncd.deployment.permission.delete.title': '删除权限',
+  'c7ncd.deployment.permission.delete.des': '确定要删除该成员的权限吗？',
+  'c7ncd.deployment.custom.delete.title': '删除自定义资源“{name}”',
+  'c7ncd.deployment.custom.delete.des': '确定要删除该自定义资源吗？',
   'c7ncd.deployment.permission.tab.tips':
     '当选择将权限分配至项目下所有成员时，此时便不能在列表中删除任何成员的权限；仅在选择将权限分配给项目下特定成员时，才能在下方列表中管理成员的权限。项目所有者的权限不能被删除',
   'c7ncd.deployment.permission.tips':
@@ -455,6 +461,12 @@ const appService = {
   'c7ncd.appService.belong.share': '所属项目',
   'c7ncd.appService.belong.market': '所属应用',
   'c7ncd.appService.empty': '暂无应用服务',
+  'c7ncd.appService.delete.title': '删除应用服务“{name}”',
+  'c7ncd.appService.delete.des': '确定要删除该应用服务吗？',
+  'c7ncd.appService.permission.delete.title': '删除权限',
+  'c7ncd.appService.permission.delete.des': '确定要删除该成员的权限吗？',
+  'c7ncd.appService.rule.delete.title': '删除共享规则',
+  'c7ncd.appService.rule.delete.des': '确定要删除该条共享规则吗？',
   'c7ncd.appService.type.tips':
     '测试服务是用于实现自动化测试的载体，此类服务不支持共享，同时，也不能将此类服务部署到任何环境；仅支持在代码管理中对测试服务进行开发操作。而普通服务则支持正常的开发、部署与共享',
   'c7ncd.appService.code.tips':
@@ -517,7 +529,10 @@ const envrionment = {
   'c7ncd.env.description': '环境描述',
   'c7ncd.env.config.app': '应用服务',
   'c7ncd.env.config.modify': '修改部属配置',
+  'c7ncd.env.delete.title': '删除环境“{name}”',
+  'c7ncd.env.delete.des': '确定要删除该环境吗？',
   'c7ncd.env.config.delete.disable': '删除部署配置“{name}”',
+  'c7ncd.env.config.delete.des': '确定要删除该部署配置吗？',
   'c7ncd.env.config.delete.describe': '仅能删除没有关联任务和关联实例的部署配置。',
   'c7ncd.env.sync.empty': '目前部署同步正常，暂无错误信息',
   'c7ncd.env.resource.setting': '资源安全设置',
@@ -553,6 +568,8 @@ const certificate = {
   'c7ncd.certificate.add': '添加证书文件',
   'c7ncd.certificate.add.tips': '您需在此添加对应的文件内容，目前只支持base64格式的证书内容',
   'c7ncd.certificate.some.tips': '若本项目想使用该证书，同样需要为本项目授权',
+  'c7ncd.certificate.delete.title': '删除证书“{name}”',
+  'c7ncd.certificate.delete.des': '确定要删除该证书吗？',
   'c7ncd.certificate.permission.tips':
     '当选择将权限分配至组织下所有项目时，此时便不能在列表中删除任何项目的权限；仅在选择将权限分配给组织下特定项目时，才能在下方列表中管理项目的权限',
   'c7ncd.certificate.share.tips':
@@ -2463,7 +2480,7 @@ const zhCN = {
   'notification.sidebar.create': '创建安全设置规则',
   'notification.sidebar.edit': '修改安全设置规则',
   'notification.delete': '删除安全设置规则',
-  'notification.delete.message': '确认删除该安全设置规则吗？',
+  'notification.delete.message': '确定要删除该条安全设置规则吗？',
   'notification.event': '事件',
   'notification.method': '通知方式',
   'notification.target': '通知对象',
