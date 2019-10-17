@@ -8,7 +8,6 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
-import io.choerodon.devops.infra.feign.BaseServiceClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -1220,7 +1219,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 devopsEnvCommandService.baseListByObject(HelmObjectKind.SERVICE.toValue(), serviceE.getId()).forEach(t -> devopsEnvCommandService.baseDeleteByEnvCommandId(t)));
         devopsServiceService.baseDeleteServiceAndInstanceByEnvId(envId);
         // 删除实例对应的部署纪录
-        devopsDeployRecordService.deleteByEnv(envId);
+        devopsDeployRecordService.deleteManualRecordByEnv(envId);
 
         // 删除环境
         baseDeleteById(envId);

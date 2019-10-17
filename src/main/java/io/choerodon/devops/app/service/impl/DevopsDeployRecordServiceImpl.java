@@ -142,9 +142,10 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
     }
 
     @Override
-    public void deleteByEnv(Long envId) {
+    public void deleteManualRecordByEnv(Long envId) {
         DevopsDeployRecordDTO deleteCondition = new DevopsDeployRecordDTO();
         deleteCondition.setEnv(String.valueOf(envId));
+        deleteCondition.setDeployType("manual");
 
         devopsDeployRecordMapper.delete(deleteCondition);
     }
