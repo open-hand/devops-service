@@ -1155,11 +1155,13 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         });
         applications.addAll(appServiceMapper.listShareApplicationService(appServiceIds, projectId, null, null));
 
+        /* 应用市场逻辑
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         List<Long> mktAppServiceIds = baseServiceClientOperator.listServicesForMarket(projectDTO.getOrganizationId(), true);
         if (mktAppServiceIds != null && !mktAppServiceIds.isEmpty()) {
             applications.addAll(appServiceMapper.queryMarketDownloadApps(null, null, mktAppServiceIds,null));
         }
+        */
         return applications;
     }
 
