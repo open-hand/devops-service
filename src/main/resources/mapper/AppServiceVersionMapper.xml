@@ -192,9 +192,14 @@
         <if test="version != null and version != ''">
           AND  dav.version = #{version}
         </if>
-        <if test="index != null and index !=''">
-            ORDER BY dav.version desc
-        </if>
+        <choose>
+            <when test="index != null and index !='' and appServiceVersionId!=null and appServiceVersionId!=''">
+                ORDER BY dav.id != ${appServiceVersionId}, dav.id DESC
+            </when>
+            <when test="index != null and index !=''">
+                ORDER BY dav.id DESC
+            </when>
+        </choose>
     </select>
 
     <select id="listByAppServiceVersionIdForMarket" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">

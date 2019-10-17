@@ -59,7 +59,7 @@ public interface AppServiceVersionService {
      * @param version      模糊搜索参数
      * @return ApplicationVersionRespVO
      */
-    PageInfo<AppServiceVersionVO> pageByOptions(Long projectId, Long appServiceId, Boolean deployOnly, Boolean doPage, String params, PageRequest pageRequest,String version);
+    PageInfo<AppServiceVersionVO> pageByOptions(Long projectId, Long appServiceVersionId, Long appServiceId, Boolean deployOnly, Boolean doPage, String params, PageRequest pageRequest, String version);
 
     /**
      * 根据应用id查询需要升级的应用版本
@@ -170,7 +170,7 @@ public interface AppServiceVersionService {
      * @param share         是否是组织共享
      * @return 应用服务版本
      */
-    List<AppServiceVersionDTO> listServiceVersionByAppServiceIds(Set<Long> appServiceIds, String share, Long projectId,String params);
+    List<AppServiceVersionDTO> listServiceVersionByAppServiceIds(Set<Long> appServiceIds, String share, Long projectId, String params);
 
     /**
      * 根据应用服务IDs和共享规则去查询应用服务的版本列表
@@ -183,11 +183,13 @@ public interface AppServiceVersionService {
 
     List<AppServiceVersionVO> listServiceVersionVoByIds(Set<Long> ids);
 
-    List<AppServiceVersionVO> listVersionById(Long projectId,Long id, String params);
+    List<AppServiceVersionVO> listVersionById(Long projectId, Long id, String params);
+
     /**
      * 根据应用服务id和项目Id获取服务版本
+     *
      * @param ids
      * @param projectId
      */
-    public List<AppServiceVersionDTO> listAppServiceVersionByIdsAndProjectId(Set<Long> ids,Long projectId,String params);
+    public List<AppServiceVersionDTO> listAppServiceVersionByIdsAndProjectId(Set<Long> ids, Long projectId, String params);
 }
