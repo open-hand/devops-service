@@ -9,7 +9,14 @@
         dptr.is_countersigned,
         dptr.task_type,
         da.`name` AS appServiceName,
-        de.`name` AS envName,
+        (
+        CASE
+        WHEN de.`name` IS NOT NULL
+        THEN de.`name`
+        ELSE
+        '此环境已删除'
+        END
+        ) envName,
         dav.version,
         dptr.app_service_id,
         dptr.app_service_deploy_id,
