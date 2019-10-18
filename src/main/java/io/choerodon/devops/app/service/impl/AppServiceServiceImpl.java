@@ -1609,6 +1609,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         UserAttrVO userAttrVO = userAttrService.queryByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        List<AppServiceImportPayload> importPayloadList = new ArrayList<>();
         importInternalVOS.forEach(importInternalVO -> {
             AppServiceDTO appServiceDTO = new AppServiceDTO();
             appServiceDTO.setProjectId(projectId);
@@ -1656,13 +1657,17 @@ public class AppServiceServiceImpl implements AppServiceService {
             appServiceImportPayload.setProjectId(projectId);
             appServiceImportPayload.setProCode(projectDTO.getCode());
             appServiceImportPayload.setOldAppServiceId(importInternalVO.getAppServiceId());
+            importPayloadList.add(appServiceImportPayload);
+        });
+
+        importPayloadList.forEach(payload -> {
             producer.apply(
                     StartSagaBuilder
                             .newBuilder()
                             .withLevel(ResourceLevel.PROJECT)
                             .withRefType("")
                             .withSagaCode(SagaTopicCodeConstants.DEVOPS_IMPORT_INTERNAL_APPLICATION_SERVICE)
-                            .withPayloadAndSerialize(appServiceImportPayload)
+                            .withPayloadAndSerialize(payload)
                             .withRefId("")
                             .withSourceId(projectId),
                     builder -> {
