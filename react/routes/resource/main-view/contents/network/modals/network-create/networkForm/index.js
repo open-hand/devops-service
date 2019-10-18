@@ -867,7 +867,7 @@ export default class Index extends Component {
                         {_.map(localApp, (node) => this.makeAppGroup(node))}
                       </OptGroup>
                       <OptGroup
-                        label={<FormattedMessage id="market" />}
+                        label={<FormattedMessage id="share" />}
                         key="markert"
                       >
                         {_.map(storeApp, (node) => this.makeAppGroup(node))}

@@ -226,10 +226,10 @@ export default class Upgrade extends Component {
     try {
       const result = await store.upgrade(projectId, data);
       if (handlePromptError(result)) {
-        Choerodon.prompt('变更成功.');
+        Choerodon.prompt('变更成功');
         refresh();
       } else {
-        Choerodon.prompt('变更失败.');
+        Choerodon.prompt('变更失败');
       }
     } catch (e) {
       Choerodon.handleResponseError(e);

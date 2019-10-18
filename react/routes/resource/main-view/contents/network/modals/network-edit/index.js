@@ -1275,7 +1275,7 @@ class EditNetwork extends Component {
                         {localAppOptions}
                       </OptGroup>
                       <OptGroup
-                        label={<FormattedMessage id="market" />}
+                        label={<FormattedMessage id="share" />}
                         key="markert"
                       >
                         {storeAppOptions}

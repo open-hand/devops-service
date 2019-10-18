@@ -177,7 +177,7 @@ const PodList = observer(() => {
         <ul className="service-detail-pod-list" key={podId}>
           <li className="service-detail-pod-item">
             <span className="service-detail-pod-item-name">{podName}</span>
-            <span className="service-detail-pod-item-key">
+            <span className="service-detail-pod-item-time">
               <TimePopover content={creationDate} />
             </span>
           </li>

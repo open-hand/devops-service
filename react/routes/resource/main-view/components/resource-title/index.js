@@ -13,6 +13,7 @@ function ResourceTitle(props) {
   const {
     resourceStore,
     treeDs,
+    resourceStore: { getSelectedMenu: { key } },
   } = useResourceStore();
 
   function getCurrent() {
@@ -64,7 +65,7 @@ function ResourceTitle(props) {
     const current = getCurrent();
     if (current) {
       const { id, name, status } = current;
-      const menuItem = treeDs.find((item) => item.get('id') === id);
+      const menuItem = treeDs.find((item) => item.get('key') === key);
       if (menuItem && (menuItem.get('name') !== name || menuItem.get('status') !== status)) {
         runInAction(() => {
           menuItem.set({ name, status });
