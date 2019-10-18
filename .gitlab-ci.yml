@@ -30,7 +30,6 @@ build-combine-feature:
     - mv target/app.jar $PWD/docker
     - mv src/main/resources/lib/dist docker
     - cp /usr/bin/kaniko $PWD/docker
-    - docker login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} ${DOCKER_REGISTRY}
     - kaniko -c $PWD/docker -f $PWD/docker/Dockerfile-combine -d ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}
   only:
     refs:
@@ -61,7 +60,6 @@ build-combine:
     - curl -sX POST -F token=${FRONT_REPOSITORY_TOKEN} -F ref=${REF_NAME} https://code.choerodon.com.cn/api/v4/projects/32/trigger/pipeline
     - mv src/main/resources/lib/dist docker
     - cp /usr/bin/kaniko $PWD/docker
-    - docker login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} ${DOCKER_REGISTRY}
     - kaniko -c $PWD/docker -f $PWD/docker/Dockerfile-combine -d ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}
   only:
     refs:

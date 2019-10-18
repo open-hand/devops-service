@@ -2,13 +2,19 @@ import React, { Fragment, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { observer } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
-import { Action } from '@choerodon/master';
+import { Action } from '@choerodon/boot';
 import { Icon } from 'choerodon-ui';
+import { Modal } from 'choerodon-ui/pro';
 import { useResourceStore } from '../../../stores';
 import EditNetwork from '../../contents/network/modals/network-edit';
 import { useMainStore } from '../../stores';
 import eventStopProp from '../../../../../utils/eventStopProp';
 import openWarnModal from '../../../../../utils/openWarnModal';
+
+const modalKey = Modal.key();
+const modalStyle = {
+  width: 740,
+};
 
 function NetworkItem({
   record,
@@ -26,8 +32,6 @@ function NetworkItem({
     networkStore,
     mainStore: { openDeleteModal },
   } = useMainStore();
-
-  const [showModal, setShowModal] = useState(false);
 
   function freshTree() {
     treeDs.query();
@@ -73,14 +77,22 @@ function NetworkItem({
   function openModal() {
     checkDataExist().then((query) => {
       if (query) {
-        setShowModal(true);
+        Modal.open({
+          key: modalKey,
+          style: modalStyle,
+          drawer: true,
+          title: formatMessage({ id: 'network.header.update' }),
+          children: <EditNetwork
+            netId={record.get('id')}
+            envId={record.get('parentId').split('-')[0]}
+            store={networkStore}
+            refresh={freshMenu}
+          />,
+          okText: formatMessage({ id: 'save' }),
+          afterClose: () => networkStore.setSingleData([]),
+        });
       }
     });
-  }
-
-  function closeModal(isLoad) {
-    setShowModal(false);
-    isLoad && freshMenu();
   }
 
   function getSuffix() {
@@ -108,15 +120,6 @@ function NetworkItem({
     <Icon type="router" />
     {name}
     {getSuffix()}
-    {showModal && (
-      <EditNetwork
-        netId={record.get('id')}
-        envId={record.get('parentId').split('-')[0]}
-        visible={showModal}
-        store={networkStore}
-        onClose={closeModal}
-      />
-    )}
   </Fragment>;
 }
 

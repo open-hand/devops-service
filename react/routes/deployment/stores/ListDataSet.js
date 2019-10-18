@@ -1,13 +1,22 @@
 import getTablePostData from '../../../utils/getTablePostData';
 
-export default ((intlPrefix, formatMessage, projectId) => ({
+export default ((intlPrefix, formatMessage, projectId, envOptions, deployTypeDs, deployResultDs, pipelineOptions) => ({
   autoQuery: true,
   selection: false,
   transport: {
-    read: {
-      url: `/devops/v1/projects/${projectId}/deploy_record/page_by_options`,
-      method: 'post',
-      data: getTablePostData(),
+    read: ({ data }) => {
+      const postData = {
+        param: [],
+        searchParam: {
+          ...data,
+          env: data.env ? String(data.env) : null,
+        },
+      };
+      return ({
+        url: `/devops/v1/projects/${projectId}/deploy_record/page_by_options`,
+        method: 'post',
+        data: postData,
+      });
     },
   },
   fields: [
@@ -25,9 +34,9 @@ export default ((intlPrefix, formatMessage, projectId) => ({
     { name: 'realName', type: 'string' },
   ],
   queryFields: [
-    { name: 'deployId', type: 'number', label: formatMessage({ id: `${intlPrefix}.number` }) },
-    { name: 'pipelineName', type: 'string', label: formatMessage({ id: `${intlPrefix}.pipeline.name` }) },
-    { name: 'deployType', type: 'string', label: formatMessage({ id: `${intlPrefix}.type` }) },
-    { name: 'deployStatus', type: 'string', label: formatMessage({ id: `${intlPrefix}.result` }) },
+    { name: 'env', type: 'number', textField: 'name', valueField: 'id', label: formatMessage({ id: `${intlPrefix}.env` }), options: envOptions },
+    { name: 'deployType', type: 'string', textField: 'text', valueField: 'value', label: formatMessage({ id: `${intlPrefix}.type` }), options: deployTypeDs },
+    { name: 'deployStatus', type: 'string', textField: 'text', valueField: 'value', label: formatMessage({ id: `${intlPrefix}.result` }), options: deployResultDs },
+    { name: 'pipelineId', type: 'number', textField: 'name', valueField: 'id', label: formatMessage({ id: `${intlPrefix}.pipeline.name` }), options: pipelineOptions },
   ],
 }));

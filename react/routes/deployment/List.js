@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { Page, Content, Header, Permission, Action, Breadcrumb } from '@choerodon/master';
-import { Table, Modal, Select } from 'choerodon-ui/pro';
+import React, { Fragment, useEffect, useState } from 'react';
+import { Page, Content, Header, Permission, Action, Breadcrumb, Choerodon } from '@choerodon/boot';
+import { Table, Modal, Select, Form } from 'choerodon-ui/pro';
 import { Button, Tooltip } from 'choerodon-ui';
 import { FormattedMessage } from 'react-intl';
 import { withRouter } from 'react-router-dom';
@@ -17,6 +17,7 @@ import AutoDetail from './modals/autoDetail';
 import Deploy from './modals/deploy';
 import ClickText from '../../components/click-text';
 import PendingCheckModal from './components/pendingCheckModal';
+import Tips from '../../components/new-tips';
 
 import './index.less';
 
@@ -30,7 +31,7 @@ const modalStyle1 = {
   width: 380,
 };
 const modalStyle2 = {
-  width: '70%',
+  width: 'calc(100vw - 3.52rem)',
 };
 const statusTagsStyle = {
   minWidth: 40,
@@ -78,7 +79,10 @@ const Deployment = withRouter(observer((props) => {
       key: modalKey1,
       style: modalStyle1,
       drawer: true,
-      title: formatMessage({ id: `${intlPrefix}.start` }),
+      title: <Tips
+        helpText={formatMessage({ id: `${intlPrefix}.process.tips` })}
+        title={formatMessage({ id: `${intlPrefix}.start` })}
+      />,
       children: <Process
         store={deployStore}
         refresh={refresh}
@@ -88,6 +92,7 @@ const Deployment = withRouter(observer((props) => {
         prefixCls={prefixCls}
       />,
       okText: formatMessage({ id: 'startUp' }),
+      afterClose: () => pipelineDs.clearCachedSelected(),
     });
   }
 
@@ -188,15 +193,29 @@ const Deployment = withRouter(observer((props) => {
     });
   }
 
-  function linkToInstance() {
+  function linkToInstance(record) {
     const { history, location: { search } } = props;
+    if (record) {
+      const instanceId = record.get('instanceId');
+      const appServiceId = record.get('appServiceId');
+      const envId = record.get('envId');
+      history.push({
+        pathname: '/devops/resource',
+        search,
+        state: {
+          instanceId,
+          appServiceId,
+          envId,
+        },
+      });
+    }
     history.push(`/devops/resource${search}`);
   }
 
   function renderNumber({ value, record }) {
     return (
-      <div>
-        <div className={`${prefixCls}-table-mark ${prefixCls}-table-mark-${record.get('deployType')}`}>
+      <Fragment>
+        <div className={`${prefixCls}-content-table-mark ${prefixCls}-content-table-mark-${record.get('deployType')}`}>
           <span>{record.get('deployType') === 'auto' ? 'A' : 'M'}</span>
         </div>
         <ClickText
@@ -204,7 +223,7 @@ const Deployment = withRouter(observer((props) => {
           clickAble
           onClick={openDetail}
         />
-      </div>
+      </Fragment>
     );
   }
 
@@ -232,6 +251,7 @@ const Deployment = withRouter(observer((props) => {
     return (
       <UserInfo
         name={value || ''}
+        id={record.get('userLoginName')}
         avatar={record.get('userImage')}
       />
     );
@@ -279,7 +299,7 @@ const Deployment = withRouter(observer((props) => {
       actionData = [{
         text: formatMessage({ id: `${intlPrefix}.view.instance` }),
         service: ['devops-service.devops-environment.listByActive'],
-        action: linkToInstance,
+        action: () => linkToInstance(record),
       }];
     }
     return (actionData ? <Action data={actionData} /> : null);
@@ -324,52 +344,47 @@ const Deployment = withRouter(observer((props) => {
       </Header>
       <Breadcrumb />
       <Content className={`${prefixCls}-content`}>
-        <div className={`${prefixCls}-content-select`}>
-          <Select
-            dataSet={tableSelectDs}
-            name="env"
-            searchable
-            className={`${prefixCls}-content-select-item`}
-            placeholder={formatMessage({ id: `${intlPrefix}.search.env` })}
-          />
-          <Select
-            dataSet={tableSelectDs}
-            name="deployType"
-            className={`${prefixCls}-content-select-item`}
-            placeholder={formatMessage({ id: `${intlPrefix}.search.type` })}
-          >
-            <Option value="auto">{formatMessage({ id: `${intlPrefix}.auto` })}</Option>
-            <Option value="manual">{formatMessage({ id: `${intlPrefix}.manual` })}</Option>
-          </Select>
-          <Select
-            dataSet={tableSelectDs}
-            name="deployStatus"
-            className={`${prefixCls}-content-select-item`}
-            placeholder={formatMessage({ id: `${intlPrefix}.search.result` })}
-          >
-            {map(STATUS, (item) => (
-              <Option value={item}>{formatMessage({ id: `${intlPrefix}.status.${item}` })}</Option>
-            ))}
-          </Select>
-          <Select
-            dataSet={tableSelectDs}
-            name="pipelineId"
-            searchable
-            className={`${prefixCls}-content-select-item`}
-            placeholder={formatMessage({ id: `${intlPrefix}.search.pipeline` })}
-          />
-        </div>
         <Table
           dataSet={listDs}
-          queryBar="none"
-          className={`${prefixCls}-table`}
+          queryBar="advancedBar"
+          className={`${prefixCls}-content-table`}
+          queryFieldsLimit={4}
         >
-          <Column name="deployId" renderer={renderNumber} align="left" />
+          <Column
+            name="deployId"
+            renderer={renderNumber}
+            align="left"
+            header={<Tips
+              helpText={formatMessage({ id: `${intlPrefix}.id.tips` })}
+              title={formatMessage({ id: `${intlPrefix}.number` })}
+            />}
+          />
           <Column renderer={renderActions} width="0.7rem" />
-          <Column name="deployType" renderer={renderDeployType} />
+          <Column
+            name="deployType"
+            renderer={renderDeployType}
+            header={<Tips
+              helpText={formatMessage({ id: `${intlPrefix}.type.tips` })}
+              title={formatMessage({ id: `${intlPrefix}.type` })}
+            />}
+          />
           <Column name="deployStatus" renderer={renderDeployStatus} />
-          <Column name="pipelineName" renderer={renderPipelineName} />
-          <Column name="pipelineTriggerType" renderer={renderTriggerType} />
+          <Column
+            name="pipelineName"
+            renderer={renderPipelineName}
+            header={<Tips
+              helpText={formatMessage({ id: `${intlPrefix}.pipeline.tips` })}
+              title={formatMessage({ id: `${intlPrefix}.pipeline.name` })}
+            />}
+          />
+          <Column
+            name="pipelineTriggerType"
+            renderer={renderTriggerType}
+            header={<Tips
+              helpText={formatMessage({ id: `${intlPrefix}.trigger.tips` })}
+              title={formatMessage({ id: `${intlPrefix}.pipeline.type` })}
+            />}
+          />
           <Column name="userName" renderer={renderExecutor} />
           <Column name="deployTime" renderer={renderTime} />
         </Table>

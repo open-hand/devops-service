@@ -2,7 +2,7 @@ import React, { Fragment, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { observer } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
-import { Action } from '@choerodon/master';
+import { Action, Choerodon } from '@choerodon/boot';
 import { Modal } from 'choerodon-ui/pro';
 import eventStopProp from '../../../../../utils/eventStopProp';
 import PodCircle from '../../components/pod-circle';
@@ -13,7 +13,6 @@ import { useMainStore } from '../../stores';
 import openWarnModal from '../../../../../utils/openWarnModal';
 
 const stopKey = Modal.key();
-const deleteKey = Modal.key();
 
 function InstanceItem({
   record,
@@ -87,7 +86,7 @@ function InstanceItem({
           movable: false,
           closable: false,
           key: stopKey,
-          title: formatMessage({ id: `${intlPrefix}.instance.action.${active}` }),
+          title: formatMessage({ id: `${intlPrefix}.instance.action.${active}.title` }, { name: record.get('name') }),
           children: formatMessage({ id: `${intlPrefix}.instance.action.${active}.tips` }),
           onOk: () => handleChangeActive(active),
         });

@@ -603,7 +603,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                 AppServiceInstanceDTO appServiceInstanceDTO =
                         appServiceInstanceService.baseQueryByCodeAndEnv(appServiceInstance, devopsServiceReqVO.getEnvId());
                 //资源视图创建网络类型为选择实例时，需要将网络和实例对应的应用服务相关联
-                if (devopsServiceReqVO.getAppServiceId() == null) {
+                if (devopsServiceReqVO.getAppServiceId() == null && appServiceInstanceDTO != null) {
                     devopsServiceReqVO.setAppServiceId(appServiceInstanceDTO.getAppServiceId());
                 }
                 stringBuffer.append(appServiceInstance).append("+");
@@ -828,6 +828,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         devopsServiceDTO.setAppServiceId(devopsServiceReqVO.getAppServiceId());
         AppServiceDTO applicationDTO = applicationService.baseQuery(devopsServiceReqVO.getAppServiceId());
         if (devopsServiceReqVO.getLabel() != null) {
+            // 容错逻辑，可能是以前版本将label写入当做选择器写入了labels字段中
             if (devopsServiceReqVO.getLabel().size() == 1 && devopsServiceReqVO.getLabel().containsKey(SERVICE_LABLE)) {
                 baseUpdateLabels(devopsServiceDTO.getId());
                 devopsServiceDTO.setLabels(null);

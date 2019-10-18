@@ -54,14 +54,6 @@ env:
     AGENT_SERVICEURL: ws://devops-service.choerodon.com.cn/agent/
     AGENT_REPOURL: https://openchart.choerodon.com.cn/choerodon/c7n/
     AGENT_CERTMANAGERURL: https://openchart.choerodon.com.cn/choerodon/infra/
-    API_HOST: gateway.choerodon.com.cn
-    DEVOPS_HOST: localhost:8060
-    CLIENT_ID: devops
-    LOCAL: true
-    TITLE_NAME: Choerodon
-    HEADER_TITLE_NAME: Choerodon
-    COOKIE_SERVER: choerodon.com.cn
-    FILE_SERVER: http://minio.choerodon.com.cn
 #    SKYWALKING_OPTS: >-
 #          -javaagent:/agent/skywalking-agent.jar
 #          -Dskywalking.agent.application_code=devops-service
@@ -86,7 +78,7 @@ ingress:
   host: devops-service.choerodon.com.cn
 
 
-resources: 
+resources:
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources,such as Minikube. If you do want to specify resources,uncomment the following

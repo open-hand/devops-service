@@ -1,8 +1,8 @@
 import React, { Fragment, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
-import { Action } from '@choerodon/master';
-import { Table } from 'choerodon-ui/pro';
+import { Action } from '@choerodon/boot';
+import { Modal, Table } from 'choerodon-ui/pro';
 import map from 'lodash/map';
 import StatusIcon from '../../../../../components/StatusIcon';
 import StatusTags from '../../../../../components/status-tag';
@@ -10,12 +10,16 @@ import { useResourceStore } from '../../../stores';
 import { useIngressStore } from './stores';
 import Modals from './modals';
 import MouserOverWrapper from '../../../../../components/MouseOverWrapper';
-import DomainModal from '../application/modals/domain';
+import DomainModal from './modals/domain-create';
 import { useMainStore } from '../../stores';
 import ResourceListTitle from '../../components/resource-list-title';
 
 import './index.less';
 
+const modalKey = Modal.key();
+const modalStyle = {
+  width: 740,
+};
 
 const serviceStyle = {
   minWidth: 40,
@@ -42,8 +46,6 @@ const IngressContent = observer(() => {
     ingressStore,
     mainStore: { openDeleteModal },
   } = useMainStore();
-
-  const [showModal, setShowModal] = useState(false);
 
   function refresh() {
     treeDs.query();
@@ -76,14 +78,16 @@ const IngressContent = observer(() => {
   }
 
   function renderDomain({ value }) {
-    return <MouserOverWrapper text={value} width={0.25}>{value}</MouserOverWrapper>;
+    return <MouserOverWrapper text={value} width={0.18}>{value}</MouserOverWrapper>;
   }
 
   function renderPath({ value }) {
     return (
       map(value, ({ path }) => (
         <div key={path}>
-          <span>{path}</span>
+          <MouserOverWrapper text={path} width={0.1}>
+            <span>{path}</span>
+          </MouserOverWrapper>
         </div>
       ))
     );
@@ -129,12 +133,20 @@ const IngressContent = observer(() => {
   }
 
   function openModal() {
-    setShowModal(true);
-  }
-
-  function closeModal(isLoad) {
-    setShowModal(false);
-    isLoad && refresh();
+    Modal.open({
+      key: modalKey,
+      style: modalStyle,
+      drawer: true,
+      title: formatMessage({ id: 'domain.update.head' }),
+      children: <DomainModal
+        envId={parentId}
+        id={ingressDs.current.get('id')}
+        type="edit"
+        store={ingressStore}
+        refresh={refresh}
+      />,
+      okText: formatMessage({ id: 'save' }),
+    });
   }
 
   return (
@@ -153,16 +165,6 @@ const IngressContent = observer(() => {
         <Column name="pathList" renderer={renderPath} />
         <Column renderer={renderService} header={formatMessage({ id: 'network' })} />
       </Table>
-      {showModal && (
-        <DomainModal
-          envId={parentId}
-          id={ingressDs.current.get('id')}
-          visible={showModal}
-          type="edit"
-          store={ingressStore}
-          onClose={closeModal}
-        />
-      )}
     </div>
   );
 });

@@ -4,6 +4,7 @@ import { observer, inject } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { Modal } from 'choerodon-ui';
+import { Choerodon } from '@choerodon/boot';
 import _ from 'lodash';
 import InterceptMask from '../../../../../../../components/intercept-mask';
 import NetworkForm from './networkForm';

@@ -24,7 +24,7 @@ export default function UserList({ type, dataSource }) {
     case 'owner':
       content = <FormattedMessage id="notification.target.owner" />;
       break;
-    case 'specifier':
+    case 'specifier': {
       const hasUser = dataSource ? !isEmpty(dataSource) : false;
       if (hasUser) {
         content = dataSource.map(({ imageUrl, realName, userId }) => (<Tooltip
@@ -49,6 +49,7 @@ export default function UserList({ type, dataSource }) {
         </Tooltip>));
       }
       break;
+    }
     default:
   }
 

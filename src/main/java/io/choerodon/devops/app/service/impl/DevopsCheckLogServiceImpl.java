@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -8,10 +9,24 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
+import com.github.pagehelper.PageInfo;
 import com.zaxxer.hikari.util.UtilityElf;
+import io.choerodon.core.convertor.ConvertHelper;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.app.service.DevopsProjectService;
+import io.choerodon.devops.infra.config.ConfigurationProperties;
+import io.choerodon.devops.infra.config.HarborConfigurationProperties;
+import io.choerodon.devops.infra.dto.harbor.*;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
+import io.choerodon.devops.infra.feign.BaseServiceClient;
+import io.choerodon.devops.infra.feign.HarborClient;
+import io.choerodon.devops.infra.handler.RetrofitHandler;
+import org.checkerframework.checker.units.qual.A;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -23,6 +38,8 @@ import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.ConvertUtils;
+import retrofit2.Response;
+import retrofit2.Retrofit;
 
 
 @Service
@@ -65,7 +82,12 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private DevopsEnvironmentMapper devopsEnvironmentMapper;
     @Autowired
     private DevopsDeployRecordMapper devopsDeployRecordMapper;
-
+    @Autowired
+    private HarborConfigurationProperties harborConfigurationProperties;
+    @Autowired
+    private BaseServiceClient baseServiceClient;
+    @Autowired
+    private DevopsProjectService devopsProjectService;
 
     @Override
     public void checkLog(String version) {
@@ -102,6 +124,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                     syncEnvAndAppServiceStatus();
                     syncBranch();
                     LOGGER.info("修复数据完成");
+                } else if ("0.18.13".equals(version)) {
+                    syncHarbor();
                 } else {
                     LOGGER.info("version not matched");
                 }
@@ -182,6 +206,99 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
         }
 
+        private void syncHarbor() {
+            LOGGER.info("开始同步创建harbor用户账号");
+            ConfigurationProperties configurationProperties = new ConfigurationProperties(harborConfigurationProperties);
+            configurationProperties.setType("harbor");
+            Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
+            HarborClient harborClient = retrofit.create(HarborClient.class);
+            ResponseEntity<PageInfo<OrganizationDTO>> organizationDOS = baseServiceClient.listOrganizations(0, 0);
+            if (organizationDOS.getStatusCode().is2xxSuccessful()) {
+                try {
+                    for (OrganizationDTO organizationDO : organizationDOS.getBody().getList()) {
+                        OrganizationDTO organization = baseServiceClientOperator.queryOrganizationById(organizationDO.getId());
+                        List<ProjectDTO> projectDTOS = baseServiceClientOperator.listIamProjectByOrgId(organizationDO.getId(), null, null, null);
+                        for (ProjectDTO projectDTO : projectDTOS) {
+                            LOGGER.info("开始创建{}{}{}的用户", projectDTO.getId(), projectDTO.getName(), projectDTO.getCode());
+                            DevopsProjectDTO devopsProjectDTO = null;
+                            try {
+                                devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectDTO.getId());
+                            } catch (CommonException e) {
+                                //未同步成功的项目不处理
+                            }
+                            if (devopsProjectDTO != null) {
+                                String username = devopsProjectDTO.getHarborProjectUserName() == null ? String.format("user%s%s", organization.getId(), projectDTO.getId()) : devopsProjectDTO.getHarborProjectUserName();
+                                String email = devopsProjectDTO.getHarborProjectUserEmail() == null ? String.format("%s@harbor.com", username) : devopsProjectDTO.getHarborProjectUserEmail();
+                                String password = devopsProjectDTO.getHarborProjectUserPassword() == null ? String.format("%spassword", username) : devopsProjectDTO.getHarborProjectUserPassword();
+                                User user = new User(username, email, password, username);
+                                //创建用户
+                                Response<Void> result = null;
+                                try {
+                                    Response<List<User>> users = harborClient.listUser(username).execute();
+                                    if (users.raw().code() != 200) {
+                                        throw new CommonException(users.errorBody().string());
+                                    }
+                                    if (users.body().isEmpty()) {
+                                        result = harborClient.insertUser(user).execute();
+                                        if (result.raw().code() != 201) {
+                                            throw new CommonException(result.errorBody().string());
+                                        }
+                                    } else {
+                                        Boolean exist = users.body().stream().anyMatch(user1 -> user1.getUsername().equals(username));
+                                        if (!exist) {
+                                            result = harborClient.insertUser(user).execute();
+                                            if (result.raw().code() != 201) {
+                                                throw new CommonException(result.errorBody().string());
+                                            }
+                                        }
+                                    }
+                                    //给项目绑定角色
+                                    Response<List<ProjectDetail>> projects = harborClient.listProject(organization.getCode() + "-" + projectDTO.getCode()).execute();
+                                    if (projects.body() != null && !projects.body().isEmpty()) {
+                                        Response<SystemInfo> systemInfoResponse = harborClient.getSystemInfo().execute();
+                                        if (systemInfoResponse.raw().code() != 200) {
+                                            throw new CommonException(systemInfoResponse.errorBody().string());
+                                        }
+
+                                        if (systemInfoResponse.body().getHarborVersion().equals("v1.4.0")) {
+                                            Role role = new Role();
+                                            role.setUsername(user.getUsername());
+                                            role.setRoles(Arrays.asList(1));
+                                            result = harborClient.setProjectMember(projects.body().get(0).getProjectId(), role).execute();
+                                        } else {
+                                            ProjectMember projectMember = new ProjectMember();
+                                            MemberUser memberUser = new MemberUser();
+                                            memberUser.setUsername(username);
+                                            projectMember.setMemberUser(memberUser);
+                                            result = harborClient.setProjectMember(projects.body().get(0).getProjectId(), projectMember).execute();
+                                        }
+                                        if (result.raw().code() != 201 && result.raw().code() != 200 && result.raw().code() != 409) {
+                                            throw new CommonException(result.errorBody().string());
+                                        }
+                                        LOGGER.info("分配{}的角色成功", projectDTO.getName());
+                                    }
+                                    if (devopsProjectDTO.getHarborProjectUserPassword() == null) {
+                                        devopsProjectDTO.setHarborProjectUserName(user.getUsername());
+                                        devopsProjectDTO.setHarborProjectIsPrivate(false);
+                                        devopsProjectDTO.setHarborProjectUserPassword(user.getPassword());
+                                        devopsProjectDTO.setHarborProjectUserEmail(user.getEmail());
+                                    }
+                                    devopsProjectService.baseUpdate(devopsProjectDTO);
+                                    LOGGER.info("创建{}的用户成功", projectDTO.getName());
+                                } catch (IOException e) {
+                                    throw new CommonException(e);
+                                }
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    LOGGER.info("failed", e);
+                    throw new CommonException(e);
+                }
+            }
+            LOGGER.info("同步创建harbor用户账号成功");
+        }
+
         private void syncEnvAppRelevance(List<CheckLog> logs) {
             LOGGER.info("Start syncing relevance.");
             List<DevopsEnvAppServiceDTO> applicationInstanceDTOS = ConvertUtils.convertList(appServiceInstanceMapper.selectAll(), DevopsEnvAppServiceDTO.class);
@@ -221,6 +338,12 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         }
 
         private void syncAppShare(List<CheckLog> logs) {
+            DevopsCheckLogDTO devopsCheckLogDTO = new DevopsCheckLogDTO();
+            devopsCheckLogDTO.setLog("sync appService share success!");
+            if (devopsCheckLogMapper.select(devopsCheckLogDTO).size() > 0) {
+                LOGGER.info("It's been synchronized appService share.");
+                return;
+            }
             LOGGER.info("delete application market data.");
             applicationShareMapper.deleteAll();
             LOGGER.info("insert application share rule.");
@@ -241,6 +364,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                         }
                         logs.add(checkLog);
                     });
+            devopsCheckLogMapper.insert(devopsCheckLogDTO);
             LOGGER.info("update publish Time.");
             appServiceVersionMapper.updatePublishTime();
         }

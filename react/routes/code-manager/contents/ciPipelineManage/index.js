@@ -1,9 +1,8 @@
 import React, { Component, Fragment } from 'react';
 import { observer, inject } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
-import { Content, Page } from '@choerodon/master';
+import { Content, Page } from '@choerodon/boot';
 import { injectIntl } from 'react-intl';
-import _ from 'lodash';
 import CiPipelineStore from './stores';
 import DevPipelineStore from '../../stores/DevPipelineStore';
 import DevopsStore from '../../stores/DevopsStore';

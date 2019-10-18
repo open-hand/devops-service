@@ -176,6 +176,7 @@ class DevopsEnvPodControllerSpec extends Specification {
         entity.getBody() != null
         !entity.getBody().getList().isEmpty()
     }
+
     def "queryEnvPodInfo"(){
       when:
       def entity=restTemplate.getForEntity(MAPPING+"/pod_ranking?env_id=1",List.class)
@@ -183,10 +184,12 @@ class DevopsEnvPodControllerSpec extends Specification {
       entity.getStatusCode().is2xxSuccessful()
       entity.getBody()!=null
      }
+
      def "cleanupData"() {
         given:
         isToClean = true
      }
+
     def cleanup() {
         if (isToClean) {
             // 删除envPod

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { observer } from 'mobx-react';
 import { observable, action, configure } from 'mobx';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { Page, Header, Content, stores, Breadcrumb } from '@choerodon/master';
+import { Page, Header, Content, stores, Breadcrumb, Choerodon } from '@choerodon/boot';
 import { Select, Button, Table, Spin } from 'choerodon-ui';
 import ReactEcharts from 'echarts-for-react';
 import _ from 'lodash';
@@ -21,7 +21,6 @@ configure({ enforceActions: 'never' });
 
 const { AppState } = stores;
 const { Option } = Select;
-const HEIGHT = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
 
 const COLOR = ['50,198,222', '116,59,231', '87,170,248', '255,177,0', '237,74,103'];
 const LENGEND = [
@@ -65,6 +64,7 @@ class DeployDuration extends Component {
   @action
   handleEnvSelect = (id) => {
     this.envId = id;
+    this.appIds = [];
     this.loadAppByEnv(id);
     this.loadCharts();
   };
@@ -153,7 +153,7 @@ class DeployDuration extends Component {
           const appArr = [];
           _.map(res.deployAppVOS, (v, index) => {
             const series = {
-              name: v.appName,
+              name: v.appServiceName,
               symbolSize: 24,
               itemStyle: {
                 color: `rgba(${COLOR[index]}, 0.6)`,
@@ -163,7 +163,7 @@ class DeployDuration extends Component {
               type: 'scatter',
             };
             const obj = {};
-            obj.name = v.appName;
+            obj.name = v.appServiceName;
             obj.icon = `image://${LENGEND[index]}`;
             seriesArr.push(series);
             appArr.push(obj);
@@ -406,7 +406,7 @@ class DeployDuration extends Component {
         <Select
           showCheckAll={false}
           notFoundContent={formatMessage({ id: 'report.no.app.tips' })}
-          value={this.appIds.length && this.appIds.slice()}
+          value={this.appIds.length ? this.appIds.slice() : []}
           label={formatMessage({ id: 'deploy.appName' })}
           className={`c7n-select_400 margin-more ${this.appIds.length ? 'c7n-select-multi-top' : ''}`}
           mode="multiple"

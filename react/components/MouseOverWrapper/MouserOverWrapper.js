@@ -35,7 +35,7 @@ export default class MouserOverWrapper extends Component {
   static defaultProps = {
     text: '',
   };
-  
+
 
   strLength = (str) => {
     const len = { cL: 0, nL: 0, uL: 0, lL: 0, ol: 0, dL: 0, xL: 0, gL: 0 };
@@ -96,6 +96,7 @@ export default class MouserOverWrapper extends Component {
       textOverflow: 'ellipsis',
       whiteSpace: 'nowrap',
       overflow: 'hidden',
+      display: 'inline-block',
     };
     Object.assign(textStyle, style);
     let domWidth = 0;
@@ -114,17 +115,17 @@ export default class MouserOverWrapper extends Component {
     const { text, className } = this.props;
     // 新增domRealWidth属性 来表示真实的dom元素宽度
     // 大体上按照原来的估算逻辑判断，加入逻辑：在挂载时计算真实的元素宽度
-    // 如果 domWidth <= maxWidth 成立 但是 domWidth > domRealWidth 
+    // 如果 domWidth <= maxWidth 成立 但是 domWidth > domRealWidth
     // 表明 估算出现误差 此时 改变domRealWidth  来让组件重绘制
     // const minDomRealWidth = domRealWidth === 0 ? 0:domRealWidth - domWidthMistake;
-    // const maxDomRealWidth = 
+    // const maxDomRealWidth =
     if ((domWidth < domRealWidth || domRealWidth === 0) && (text && domWidth <= maxWidth)) {
-      return <div ref={(test) => { this.domTest = test; }} style={textStyle} className={className}> {this.props.children}</div>;
+      return <span ref={(test) => { this.domTest = test; }} style={textStyle} className={className}>{this.props.children}</span>;
     } else {
       return (<Tooltip title={text} placement="topLeft">
-        <div ref={(test) => { this.domTest = test; }} style={textStyle} className={className}>
+        <span ref={(test) => { this.domTest = test; }} style={textStyle} className={className}>
           {this.props.children}
-        </div>
+        </span>
       </Tooltip>);
     }
   }

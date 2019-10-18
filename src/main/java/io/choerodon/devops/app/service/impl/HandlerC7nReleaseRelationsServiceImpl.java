@@ -215,8 +215,6 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
         appServiceDeployVO.setEnvironmentId(envId);
         appServiceDeployVO.setType(type);
         appServiceDeployVO.setValues(appServiceInstanceService.getReplaceResult(versionValue, c7nHelmRelease.getSpec().getValues()).getYaml());
-        LOGGER.info("======================应该部署values==========================");
-        LOGGER.info(appServiceDeployVO.getValues());
         appServiceDeployVO.setAppServiceId(applicationDTO.getId());
         appServiceDeployVO.setAppServiceVersionId(appServiceVersionDTO.getId());
         appServiceDeployVO.setInstanceName(c7nHelmRelease.getMetadata().getName());
@@ -230,17 +228,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
                 devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(appServiceInstanceDTO.getCommandId());
             }
             String deployValue = appServiceInstanceService.baseQueryValueByInstanceId(appServiceInstanceDTO.getId());
-            LOGGER.info("======================已部署values==========================");
-            LOGGER.info(deployValue);
             InstanceValueVO instanceValueVO = appServiceInstanceService.getReplaceResult(deployValue, appServiceDeployVO.getValues());
-            LOGGER.info("======================应该部署values==========================");
-            LOGGER.info(instanceValueVO.getDeltaYaml());
-            LOGGER.info("======================已部署versionId=========================={}", devopsEnvCommandDTO.getObjectVersionId());
-            LOGGER.info("======================应该部署versionId=========================={}", appServiceVersionDTO.getId());
-            LOGGER.info("============{}",instanceValueVO.getDeltaYaml().trim());
-            if(instanceValueVO.getDeltaYaml().trim().equals(COMPARE_VALUES)){
-                LOGGER.info("+++++++++++对比成功！！！");
-            }
             if (deployValue != null && (instanceValueVO.getDeltaYaml() == null || instanceValueVO.getDeltaYaml().equals("") || instanceValueVO.getDeltaYaml().trim().equals(COMPARE_VALUES)) && appServiceVersionDTO.getId().equals(devopsEnvCommandDTO.getObjectVersionId())) {
                 appServiceDeployVO.setIsNotChange(true);
             }

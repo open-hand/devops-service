@@ -1,8 +1,8 @@
 import React, { Fragment, useMemo, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
-import { Action } from '@choerodon/master';
-import { Popover } from 'choerodon-ui';
+import { Action } from '@choerodon/boot';
+import { Tooltip } from 'choerodon-ui';
 import { Table } from 'choerodon-ui/pro';
 import StatusIcon from '../../../../../components/StatusIcon';
 import { useResourceStore } from '../../../stores';
@@ -88,13 +88,13 @@ const CertContent = observer(() => {
       msg = getTimeLeft(now, end);
     }
     return (
-      <Popover
-        content={content}
+      <Tooltip
+        title={content}
         trigger="hover"
         placement="top"
       >
         <span>{msg}</span>
-      </Popover>
+      </Tooltip>
     );
   }
 

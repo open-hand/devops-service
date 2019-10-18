@@ -2,6 +2,7 @@ import React, { Fragment, useCallback, useState, useEffect, useMemo } from 'reac
 import { Table, Select, Form, TextField, Icon } from 'choerodon-ui/pro';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
+import { Choerodon } from '@choerodon/boot';
 import filter from 'lodash/filter';
 import includes from 'lodash/includes';
 import forEach from 'lodash/forEach';
@@ -26,7 +27,16 @@ const SourceTable = injectIntl(observer(({ tableDs, selectedDs, store, projectId
   }, []);
 
   modal.handleOk(() => {
-    const records = filter(tableDs.selected, (record) => !includes(selectedId, record.get('id')));
+    const records = [];
+    const newSelectedId = [];
+    forEach(tableDs.selected, (record) => {
+      if (!includes(selectedId, record.get('id'))) {
+        records.push(record);
+      }
+      newSelectedId.push(record.get('id'));
+    });
+    const deleteRecords = selectedDs.filter(record => !includes(newSelectedId, record.get('id')));
+    selectedDs.remove(deleteRecords);
     selectedDs.push(...records);
   });
 
@@ -68,7 +78,7 @@ const SourceTable = injectIntl(observer(({ tableDs, selectedDs, store, projectId
     <div>
       <Form columns={3}>
         <Select
-          label={formatMessage({ id: `${intlPrefix}.project` })}
+          label={formatMessage({ id: `${intlPrefix}.belong.${importRecord.get('platformType')}` })}
           onChange={handleSelectProject}
         >
           {options}
@@ -76,7 +86,7 @@ const SourceTable = injectIntl(observer(({ tableDs, selectedDs, store, projectId
         <TextField
           onChange={handleChangeParam}
           colSpan={2}
-          prefix={<Icon type="search" />}
+          prefix={<Icon type="search" className={`${prefixCls}-prefix-icon`} />}
           placeholder={formatMessage({ id: `${intlPrefix}.param` })}
         />
       </Form>
@@ -86,7 +96,7 @@ const SourceTable = injectIntl(observer(({ tableDs, selectedDs, store, projectId
       >
         <Column name="name" />
         <Column name="code" />
-        <Column name="projectName" />
+        <Column name="projectName" header={formatMessage({ id: `${intlPrefix}.belong.${importRecord.get('platformType')}` })} />
       </Table>
     </div>
   );

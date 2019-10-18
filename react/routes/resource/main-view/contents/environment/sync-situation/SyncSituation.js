@@ -1,10 +1,12 @@
-import React, { useMemo } from 'react';
+import React, { Fragment, useMemo } from 'react';
 import { FormattedMessage } from 'react-intl';
-import { Permission } from '@choerodon/master';
+import { Permission } from '@choerodon/boot';
 import { observer } from 'mobx-react-lite';
-import { Tooltip, Button, Modal } from 'choerodon-ui/pro';
+import { Popover } from 'choerodon-ui';
+import { Tooltip, Button, Modal, Icon } from 'choerodon-ui/pro';
 import { useEnvironmentStore } from '../stores';
 import { useResourceStore } from '../../../../stores';
+import Tips from '../../../../../../components/new-tips';
 
 const SyncSituation = observer(() => {
   const {
@@ -51,6 +53,32 @@ const SyncSituation = observer(() => {
       return false;
     }
   }
+
+  const content = useMemo(() => (
+    <Fragment>
+      <p className="log-help-desc">
+        <FormattedMessage id={`${intlPrefix}.environment.help`} />
+      </p>
+      <h4 className="log-help-title">
+        <FormattedMessage id={`${intlPrefix}.environment.config`} />
+      </h4>
+      <p className="log-help-desc">
+        <FormattedMessage id={`${intlPrefix}.environment.config.des`} />
+      </p>
+      <h4 className="log-help-title">
+        <FormattedMessage id={`${intlPrefix}.environment.parsed`} />
+      </h4>
+      <p className="log-help-desc">
+        <FormattedMessage id={`${intlPrefix}.environment.parsed.des`} />
+      </p>
+      <h4 className="log-help-title">
+        <FormattedMessage id={`${intlPrefix}.environment.executed`} />
+      </h4>
+      <p className="log-help-desc">
+        <FormattedMessage id={`${intlPrefix}.environment.executed.des`} />
+      </p>
+    </Fragment>
+  ), []);
 
   const getDetail = useMemo(() => {
     const record = gitopsSyncDs.current;
@@ -130,6 +158,13 @@ const SyncSituation = observer(() => {
 
   return (
     <div className={`${prefixCls}-environment-sync-detail`}>
+      <div className="log-sync-title">
+        <Tips
+          helpText={content}
+          title={formatMessage({ id: `${intlPrefix}.environment.sync` })}
+          popoverClassName={`${prefixCls}-environment-sync-help`}
+        />
+      </div>
       {getDetail}
     </div>
   );

@@ -59,6 +59,8 @@ public class AppServiceVersionController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "服务Id")
             @RequestParam(value = "app_service_id") Long appServiceId,
+            @ApiParam(value = "服务版本Id")
+            @RequestParam(value = "app_service_version_id", required = false) Long appServiceVersionId,
             @ApiParam(value = "是否仅部署")
             @RequestParam(value = "deploy_only") Boolean deployOnly,
             @ApiParam(value = "是否分页")
@@ -70,7 +72,7 @@ public class AppServiceVersionController {
             @ApiParam(value = "指定版本")
             @RequestParam(required = false) String version) {
         return Optional.ofNullable(appServiceVersionService.pageByOptions(
-                projectId, appServiceId, deployOnly, doPage, params, pageRequest,version))
+                projectId, appServiceId, appServiceVersionId, deployOnly, doPage, params, pageRequest, version))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(VERSION_QUERY_ERROR));
     }
@@ -360,6 +362,22 @@ public class AppServiceVersionController {
             @RequestParam(value = "app_service_ids", required = true) Set<Long> ids) {
         return Optional.ofNullable(
                 appServiceVersionService.listServiceVersionVoByIds(ids))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.application.versions.get"));
+    }
+
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "根据应用服务Id查询所有应用版本")
+    @GetMapping(value = "/list_by_service_id")
+    public ResponseEntity<List<AppServiceVersionVO>> listVersionById(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用服务id", required = true)
+            @RequestParam(value = "app_service_id", required = true) Long id,
+            @ApiParam(value = "查询参数", required = false)
+            @RequestParam(value = "params", required = false) String params) {
+        return Optional.ofNullable(
+                appServiceVersionService.listVersionById(projectId, id, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.application.versions.get"));
     }

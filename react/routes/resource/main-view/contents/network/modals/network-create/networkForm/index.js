@@ -8,7 +8,7 @@ import {
   Select,
   Input,
   Modal,
-  Popover,
+  Tooltip,
   Icon,
   Radio,
 } from 'choerodon-ui';
@@ -436,9 +436,9 @@ export default class Index extends Component {
     const { id, name, code, projectId } = node;
     return (
       <Option value={id} key={code}>
-        <Popover
+        <Tooltip
           placement="right"
-          content={
+          title={
             <Fragment>
               <p>
                 <FormattedMessage id="app.name" />:<span>{name}</span>
@@ -457,7 +457,7 @@ export default class Index extends Component {
               width="460px"
             />
           </div>
-        </Popover>
+        </Tooltip>
       </Option>
     );
   }
@@ -867,7 +867,7 @@ export default class Index extends Component {
                         {_.map(localApp, (node) => this.makeAppGroup(node))}
                       </OptGroup>
                       <OptGroup
-                        label={<FormattedMessage id="market" />}
+                        label={<FormattedMessage id="share" />}
                         key="markert"
                       >
                         {_.map(storeApp, (node) => this.makeAppGroup(node))}

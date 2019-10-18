@@ -1,8 +1,8 @@
 import React, { Fragment, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
-import { Action } from '@choerodon/master';
-import { Table } from 'choerodon-ui/pro';
+import { Action } from '@choerodon/boot';
+import { Modal, Table } from 'choerodon-ui/pro';
 import StatusIcon from '../../../../../components/StatusIcon';
 import TimePopover from '../../../../../components/timePopover';
 import { useResourceStore } from '../../../stores';
@@ -15,6 +15,10 @@ import ResourceListTitle from '../../components/resource-list-title';
 import './index.less';
 
 const { Column } = Table;
+const modalKey = Modal.key();
+const modalStyle = {
+  width: 'calc(100vw - 3.52rem)',
+};
 
 const CustomContent = observer(() => {
   const {
@@ -28,8 +32,6 @@ const CustomContent = observer(() => {
     intl: { formatMessage },
   } = useCustomStore();
   const { customStore } = useMainStore();
-
-  const [showModal, setShowModal] = useState(false);
 
   function refresh() {
     treeDs.query();
@@ -80,16 +82,32 @@ const CustomContent = observer(() => {
   }
 
   function openShow() {
-    setShowModal(true);
-  }
-
-  function closeModal(isLoad) {
-    setShowModal(false);
-    isLoad && refresh();
+    Modal.open({
+      key: modalKey,
+      style: modalStyle,
+      drawer: true,
+      title: formatMessage({ id: 'resource.edit.header' }),
+      children: <CustomForm
+        id={customDs.current.get('id')}
+        envId={parentId}
+        type="edit"
+        store={customStore}
+        refresh={refresh}
+      />,
+      okText: formatMessage({ id: 'save' }),
+    });
   }
 
   function handleDelete() {
-    customDs.delete(customDs.current);
+    const record = customDs.current;
+    const modalProps = {
+      title: formatMessage({ id: `${intlPrefix}.custom.delete.title` }, { name: record.get('name') }),
+      children: formatMessage({ id: `${intlPrefix}.custom.delete.des` }),
+      okText: formatMessage({ id: 'delete' }),
+      okProps: { color: 'red' },
+      cancelProps: { color: 'dark' },
+    };
+    customDs.delete(record, modalProps);
   }
 
   return (
@@ -106,14 +124,6 @@ const CustomContent = observer(() => {
         <Column name="k8sKind" />
         <Column name="lastUpdateDate" renderer={renderTime} width="1rem" />
       </Table>
-      {showModal && <CustomForm
-        id={customDs.current.get('id')}
-        envId={parentId}
-        type="edit"
-        store={customStore}
-        visible={showModal}
-        onClose={closeModal}
-      />}
     </div>
   );
 });

@@ -1,5 +1,5 @@
 import React, { Fragment, useCallback, useState, useEffect } from 'react';
-import { Action } from '@choerodon/master';
+import { Action } from '@choerodon/boot';
 import { Table, Modal, Select } from 'choerodon-ui/pro';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
@@ -7,6 +7,7 @@ import { Button, Icon, Tooltip } from 'choerodon-ui';
 import map from 'lodash/map';
 import classnames from 'classnames';
 import SourceTable from './SourceTable';
+import Tips from '../../../../../components/new-tips';
 
 const { Column } = Table;
 const { Option } = Select;
@@ -17,19 +18,22 @@ const modalStyle1 = {
 };
 
 const Platform = injectIntl(observer((props) => {
-  const { tableDs, selectedDs, intl: { formatMessage }, intlPrefix, prefixCls, AppStore, projectId, record: importRecord, checkData } = props;
+  const { tableDs, selectedDs, intl: { formatMessage }, intlPrefix, prefixCls, appServiceStore, projectId, record: importRecord, checkData } = props;
 
   function openModal() {
     Modal.open({
       key: modalKey1,
       drawer: true,
-      title: formatMessage({ id: `${intlPrefix}.import` }),
+      title: <Tips
+        helpText={formatMessage({ id: `${intlPrefix}.add.tips` })}
+        title={formatMessage({ id: `${intlPrefix}.add` })}
+      />,
       children: <SourceTable
         tableDs={tableDs}
         selectedDs={selectedDs}
         intlPrefix={intlPrefix}
         prefixCls={prefixCls}
-        store={AppStore}
+        store={appServiceStore}
         projectId={projectId}
         importRecord={importRecord}
         checkData={checkData}
@@ -78,13 +82,14 @@ const Platform = injectIntl(observer((props) => {
       </Tooltip>
     );
   }
-  
+
   function handleChangeVersion(value) {
     selectedDs.current.set('versionId', value);
   }
 
   function handleDelete() {
     selectedDs.remove(selectedDs.current);
+    selectedDs.length && checkData();
   }
 
   return (
@@ -98,7 +103,10 @@ const Platform = injectIntl(observer((props) => {
         <FormattedMessage id={`${intlPrefix}.add`} />
       </Button>
       <div className={`${prefixCls}-import-platform-selected`}>
-        <FormattedMessage id={`${intlPrefix}.selected`} values={{ number: selectedDs.length }} />
+        <Tips
+          helpText={formatMessage({ id: `${intlPrefix}.import.tips` })}
+          title={formatMessage({ id: `${intlPrefix}.selected` }, { number: selectedDs.length })}
+        />
       </div>
       <Table
         dataSet={selectedDs}
@@ -107,7 +115,7 @@ const Platform = injectIntl(observer((props) => {
         <Column name="name" editor renderer={renderNameOrCode} />
         <Column name="code" editor renderer={renderNameOrCode} />
         <Column name="versions" renderer={renderVersion} />
-        <Column name="projectName" width="1.5rem" />
+        <Column name="projectName" width="1.5rem" header={formatMessage({ id: `${intlPrefix}.belong.${importRecord.get('platformType')}` })} />
         <Column renderer={renderAction} width="0.7rem" />
       </Table>
     </div>

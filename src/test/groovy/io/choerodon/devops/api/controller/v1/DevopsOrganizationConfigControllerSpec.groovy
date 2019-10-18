@@ -3,6 +3,7 @@ package io.choerodon.devops.api.controller.v1
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.ConfigVO
 import io.choerodon.devops.api.vo.DefaultConfigVO
+import io.choerodon.devops.api.vo.DevopsConfigRepVO
 import io.choerodon.devops.api.vo.DevopsConfigVO
 import io.choerodon.devops.api.vo.DevopsNotificationVO
 import io.choerodon.devops.infra.dto.DevopsProjectDTO
@@ -35,46 +36,41 @@ class DevopsOrganizationConfigControllerSpec extends Specification {
 
     def "Create"() {
         given:
-        List<DevopsConfigVO> devopsConfigVOS = new ArrayList<>()
-        DevopsConfigVO devopsConfigVO = new DevopsConfigVO()
-//        devopsConfigVO.setId(1L)
-        devopsConfigVO.setName("test")
-        devopsConfigVO.setProjectId(1L)
-        devopsConfigVO.setAppServiceId(1L)
-        devopsConfigVO.setCustom(true)
-        devopsConfigVO.setType("harbor")
-
         ConfigVO configVO = new ConfigVO()
         configVO.setEmail("zhuang.chang@hand-china.com")
         configVO.setPassword("Handhand1357")
         configVO.setUserName("admin")
         configVO.setUrl("https://registry.saas.hand-china.com")
         configVO.setPrivate(true)
+
+
+        DevopsConfigVO devopsConfigVO = new DevopsConfigVO()
+        devopsConfigVO.setHarborPrivate(false)
+        devopsConfigVO.setType("harbor")
+        devopsConfigVO.setName("app")
+        devopsConfigVO.setId(1L)
+        devopsConfigVO.setOrganizationId(1L)
+        devopsConfigVO.setProjectId(1L)
+        devopsConfigVO.setAppServiceId(1L)
+        devopsConfigVO.setCustom(false)
         devopsConfigVO.setConfig(configVO)
 
-
-        devopsConfigVOS.add(devopsConfigVO)
-        DevopsProjectDTO projectDTO = new DevopsProjectDTO()
-        projectDTO.setAppId(1L)
-        projectDTO.setDevopsAppGroupId(1L)
-        projectDTO.setDevopsEnvGroupId(1L)
-        projectDTO.setHarborProjectIsPrivate(true)
-        projectDTO.setIamProjectId(1L)
-        devopsProjectMapper.insert(projectDTO)
-
+        DevopsConfigRepVO devopsConfigRepVO = new DevopsConfigRepVO()
+        devopsConfigRepVO.setHarborPrivate(false)
+        devopsConfigRepVO.setHarbor(devopsConfigVO)
         when:
-        def entity = restTemplate.postForEntity(BASE_URL, devopsConfigVOS, null, organization_id)
+        def entity = restTemplate.postForEntity(BASE_URL, devopsConfigRepVO, null, organization_id)
         then:
         entity.statusCode.is2xxSuccessful()
     }
 
     def "Query"() {
         given:
-        def url = BASE_URL + "?type={type}"
+        def url = BASE_URL
         when:
-        def entity = restTemplate.getForEntity(url, List.class, 1L, "harbor")
+        def entity = restTemplate.getForEntity(url, DevopsConfigRepVO.class, 1L)
         then:
-        entity.body.size() == 1
+        entity.statusCode.is2xxSuccessful()
     }
 
     def "QueryOrganizationDefaultConfig"() {
@@ -83,6 +79,25 @@ class DevopsOrganizationConfigControllerSpec extends Specification {
         when:
         def entity = restTemplate.getForEntity(url, DefaultConfigVO.class, 1L)
         then:
-        entity.body.getHarborConfigUrl() != null
+        entity.body!= null
+    }
+    def "checkHarbor"(){
+        given:
+        def url = BASE_URL+"/check_harbor?url=https://registry.saas.hand-china.com&" +
+                "userName=admin&password=Handhand1357&email=zhuang.chang@hand-china.com"
+        Map<String, Object> map = new HashMap<>()
+        when:
+        def entity = restTemplate.getForEntity(url, Boolean.class, 1L)
+        then:
+        entity.statusCode.is2xxSuccessful()
+    }
+
+    def "checkChart"() {
+        given:
+        def url = BASE_URL + "/check_chart?url=https://registry.saas.hand-china.com"
+        when:
+        def entity = restTemplate.getForEntity(url, Boolean.class, 1L)
+        then:
+        entity.getStatusCode().is2xxSuccessful()
     }
 }

@@ -1,5 +1,5 @@
 import { useLocalStore } from 'mobx-react-lite';
-import { axios } from '@choerodon/master';
+import { axios } from '@choerodon/boot';
 import findIndex from 'lodash/findIndex';
 import find from 'lodash/find';
 import filter from 'lodash/filter';

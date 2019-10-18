@@ -20,16 +20,21 @@ export const StoreProvider = injectIntl(inject('AppState')(
       children,
       intlPrefix,
     } = props;
-    const formDs = useMemo(() => new DataSet(EnvFormDataSet({ formatMessage, intlPrefix, projectId })), [projectId]);
     const clusterOptionDs = useMemo(() => new DataSet(ClusterOptionDataSet(projectId)), [projectId]);
     const groupOptionDs = useMemo(() => new DataSet(GroupOptionDataSet(projectId)), [projectId]);
+    const formDs = useMemo(() => new DataSet(EnvFormDataSet({
+      formatMessage,
+      intlPrefix,
+      projectId,
+      clusterOptionDs,
+      groupOptionDs,
+    })), [projectId]);
 
     const value = {
       ...props,
       formDs,
       intlPrefix,
       clusterOptionDs,
-      groupOptionDs,
     };
     return (
       <Store.Provider value={value}>

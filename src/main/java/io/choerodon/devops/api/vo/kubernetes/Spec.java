@@ -1,15 +1,22 @@
 package io.choerodon.devops.api.vo.kubernetes;
 
+import io.swagger.annotations.ApiModelProperty;
+
 import java.util.List;
 
 public class Spec {
 
-
+    @ApiModelProperty("char仓库地址")
     private String repoUrl;
+    @ApiModelProperty("chart包名")
     private String chartName;
+    @ApiModelProperty("命令id")
     private Integer commandId;
+    @ApiModelProperty("镜像拉取校验secret")
     private List<ImagePullSecret> imagePullSecrets;
+    @ApiModelProperty("chart版本")
     private String chartVersion;
+    @ApiModelProperty("部署配置内容")
     private String values;
 
     public String getRepoUrl() {

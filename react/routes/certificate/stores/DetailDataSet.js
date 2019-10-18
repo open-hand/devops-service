@@ -32,7 +32,7 @@ export default ((intlPrefix, formatMessage, projectId) => ({
     { name: 'domain', type: 'string', label: formatMessage({ id: `${intlPrefix}.domain` }) },
     { name: 'keyValue', type: 'string' },
     { name: 'certValue', type: 'string' },
-    { name: 'skipCheckProjectPermission', type: 'boolean', defaultValue: true, label: formatMessage({ id: `${intlPrefix}.share` }) },
+    { name: 'skipCheckProjectPermission', type: 'boolean', defaultValue: true },
     { name: 'projects', type: 'object' },
   ],
 }));

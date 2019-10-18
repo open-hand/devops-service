@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Modal } from 'choerodon-ui/pro';
 import { injectIntl, FormattedMessage } from 'react-intl';
+import { Choerodon } from '@choerodon/boot';
 import { handlePromptError } from '../../../../../../utils';
 import HeaderButtons from '../../../../../../components/header-buttons';
 import DetailsModal from './details';
@@ -66,7 +67,6 @@ const IstModals = injectIntl(observer(() => {
       title: formatMessage({ id: `${intlPrefix}.modal.values` }),
       drawer: true,
       okText: formatMessage({ id: 'deployment' }),
-      cancelText: formatMessage({ id: 'close' }),
       style: modalStyle,
       children: <ValueModalContent
         store={istStore}
@@ -100,7 +100,6 @@ const IstModals = injectIntl(observer(() => {
       title: formatMessage({ id: `${intlPrefix}.modal.modify` }),
       drawer: true,
       okText: formatMessage({ id: 'modify' }),
-      cancelText: formatMessage({ id: 'close' }),
       style: modalStyle,
       children: <UpgradeModalContent
         store={istStore}

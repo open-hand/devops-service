@@ -1,9 +1,10 @@
 package io.choerodon.devops.api.vo.kubernetes;
 
-import java.util.Objects;
-
 import io.choerodon.devops.api.vo.kubernetes.certification.CertificationMetadata;
 import io.choerodon.devops.api.vo.kubernetes.certification.CertificationSpec;
+import io.swagger.annotations.ApiModelProperty;
+
+import java.util.Objects;
 
 
 /**
@@ -13,9 +14,13 @@ import io.choerodon.devops.api.vo.kubernetes.certification.CertificationSpec;
  * Description:
  */
 public class C7nCertification {
+    @ApiModelProperty("api版本")
     private String apiVersion;
+    @ApiModelProperty("类型")
     private String kind;
+    @ApiModelProperty("对象元数据")
     private CertificationMetadata metadata;
+    @ApiModelProperty("对象配置内容")
     private CertificationSpec spec;
 
     public C7nCertification() {

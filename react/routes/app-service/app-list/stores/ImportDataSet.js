@@ -1,4 +1,4 @@
-import { axios } from '@choerodon/master';
+import { axios } from '@choerodon/boot';
 import map from 'lodash/map';
 import omit from 'lodash/omit';
 

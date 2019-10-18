@@ -266,14 +266,6 @@ class DevopsIngressControllerSpec extends Specification {
 
     def "Create"() {
         given: '初始化参数'
-//        devopsEnvironmentMapper.insert(devopsEnvironmentDO)
-//        devopsServiceMapper.insert(devopsServiceDO)
-//        devopsIngressMapper.insert(devopsIngressDO)
-//        devopsIngressPathMapper.insert(devopsIngressPathDO)
-//        devopsEnvCommandMapper.insert(devopsEnvCommandDO)
-//        devopsEnvFileResourceMapper.insert(devopsEnvFileResourceDO)
-
-        and: '创建证书'
         CertificationDTO certificationDO = new CertificationDTO()
         certificationDO.setId(1L)
         certificationDO.setName("cert")

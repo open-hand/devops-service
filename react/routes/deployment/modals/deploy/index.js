@@ -6,6 +6,7 @@ import map from 'lodash/map';
 import classnames from 'classnames';
 import YamlEditor from '../../../../components/yamlEditor';
 import StatusDot from '../../../../components/status-dot';
+import Tips from '../../../../components/new-tips';
 
 import './index.less';
 
@@ -40,13 +41,8 @@ const DeployModal = injectIntl(observer(({ record, dataSet, store, projectId, re
   }
 
   function renderEnvOption({ record: envRecord, text, value }) {
-    const isAvailable = envRecord.get('connect') && envRecord.get('synchro') && envRecord.get('permission');
-    const envClass = classnames({
-      [`${prefixCls}-manual-deploy-available`]: isAvailable,
-      [`${prefixCls}-manual-deploy-disabled`]: !isAvailable,
-    });
     return (
-      <div className={envClass}>
+      <Fragment>
         {value && (<StatusDot
           connect={envRecord.get('connect')}
           synchronize={envRecord.get('synchro')}
@@ -54,12 +50,23 @@ const DeployModal = injectIntl(observer(({ record, dataSet, store, projectId, re
           size="small"
         />)}
         <span className={`${prefixCls}-select-option-text`}>{text}</span>
-      </div>
+      </Fragment>
     );
+  }
+
+  function renderOptionProperty({ record: envRecord }) {
+    const isAvailable = envRecord.get('connect') && envRecord.get('synchro') && envRecord.get('permission');
+    return ({
+      disabled: !isAvailable,
+    });
   }
 
   return (
     <div className={`${prefixCls}-manual-deploy`}>
+      <Tips
+        helpText={formatMessage({ id: `${intlPrefix}.source.tips` })}
+        title={formatMessage({ id: `${intlPrefix}.source` })}
+      />
       <Form record={record} columns={3}>
         <SelectBox name="appServiceSource" colSpan={3}>
           <Option value="normal_service">
@@ -72,13 +79,13 @@ const DeployModal = injectIntl(observer(({ record, dataSet, store, projectId, re
               {formatMessage({ id: `${intlPrefix}.source.organization` })}
             </span>
           </Option>
-          <Option value="market_service">
-            <span className={`${prefixCls}-manual-deploy-radio`}>
-              {formatMessage({ id: `${intlPrefix}.source.market` })}
-            </span>
-          </Option>
         </SelectBox>
-        <Select name="appServiceId" searchable newLine>
+        <Select
+          name="appServiceId"
+          searchable
+          newLine
+          notFoundContent={<FormattedMessage id={`${intlPrefix}.app.empty`} />}
+        >
           {record.get('appServiceSource') === 'normal_service' ? (
             map(store.getAppService[0] && store.getAppService[0].appServiceList, ({ id, name, code }) => (
               <Option value={`${id}__${code}`}>{name}</Option>
@@ -101,9 +108,21 @@ const DeployModal = injectIntl(observer(({ record, dataSet, store, projectId, re
           optionRenderer={renderEnvOption}
           popupCls={`${prefixCls}-manual-deploy`}
           dropdownMenuStyle={{ cursor: 'not-allowed' }}
+          notFoundContent={<FormattedMessage id={`${intlPrefix}.env.empty`} />}
+          onOption={renderOptionProperty}
         />
-        <TextField name="instanceName" />
-        <Select name="valueId" searchable colSpan={2} newLine />
+        <TextField
+          name="instanceName"
+          addonAfter={<Tips helpText={formatMessage({ id: `${intlPrefix}.instance.tips` })} />}
+        />
+        <Select
+          name="valueId"
+          searchable
+          colSpan={2}
+          newLine
+          addonAfter={<Tips helpText={formatMessage({ id: `${intlPrefix}.config.tips` })} />}
+          notFoundContent={<FormattedMessage id={`${intlPrefix}.config.empty`} />}
+        />
         <YamlEditor
           colSpan={3}
           newLine

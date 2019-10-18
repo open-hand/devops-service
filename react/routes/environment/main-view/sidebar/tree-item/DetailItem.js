@@ -2,7 +2,7 @@ import React, { Fragment, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { observer } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
-import { Action } from '@choerodon/master';
+import { Action, Choerodon } from '@choerodon/boot';
 import { Modal } from 'choerodon-ui/pro';
 import { handlePromptError } from '../../../../../utils';
 import eventStopProp from '../../../../../utils/eventStopProp';
@@ -15,6 +15,7 @@ import { useMainStore } from '../../stores';
 
 const formKey = Modal.key();
 const effectKey = Modal.key();
+const deleteKey = Modal.key();
 
 function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
   const modalStyle = useMemo(() => ({
@@ -23,6 +24,7 @@ function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
   const {
     treeDs,
     AppState: { currentMenuType: { id: projectId } },
+    envStore,
   } = useEnvironmentStore();
   const { mainStore } = useMainStore();
 
@@ -42,6 +44,19 @@ function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
     }
   }
 
+  function openDelete() {
+    const name = record.get('name');
+    Modal.open({
+      key: deleteKey,
+      title: formatMessage({ id: `${intlPrefix}.delete.title` }, { name }),
+      children: formatMessage({ id: `${intlPrefix}.delete.des` }),
+      okText: formatMessage({ id: 'delete' }),
+      okProps: { color: 'red' },
+      cancelProps: { color: 'dark' },
+      onOk: handleDelete,
+    });
+  }
+
   function openModifyModal() {
     Modal.open({
       key: formKey,
@@ -50,9 +65,11 @@ function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
         intlPrefix={intlPrefix}
         refresh={refresh}
         record={record}
+        store={envStore}
       />,
       drawer: true,
       style: modalStyle,
+      okText: formatMessage({ id: 'save' }),
     });
   }
 
@@ -60,7 +77,9 @@ function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
     try {
       const envId = record.get('id');
       const res = await mainStore.effectEnv(projectId, envId, target);
-      handlePromptError(res);
+      if (handlePromptError(res)) {
+        envStore.setUpTarget(envId);
+      }
     } catch (e) {
       Choerodon.handleResponseError(e);
     } finally {
@@ -146,14 +165,14 @@ function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
         }, {
           service: [],
           text: formatMessage({ id: `${intlPrefix}.modal.detail.delete` }),
-          action: handleDelete,
+          action: openDelete,
         }];
         break;
       case FAILED:
         actionData = [{
           service: [],
           text: formatMessage({ id: `${intlPrefix}.modal.detail.delete` }),
-          action: handleDelete,
+          action: openDelete,
         }];
         break;
       default:

@@ -1,6 +1,6 @@
 import React, { Fragment, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Action } from '@choerodon/master';
+import { Action, Choerodon } from '@choerodon/boot';
 import { Modal, Table } from 'choerodon-ui/pro';
 import StatusTag from '../../../../../components/status-tag';
 import { getEnvStatus, statusMappings } from '../../../../../components/status-dot';
@@ -15,6 +15,7 @@ import { useEnvGroupStore } from './stores';
 const { Column } = Table;
 const envKey = Modal.key;
 const modalKey = Modal.key;
+const deleteKey = Modal.key;
 
 const Group = observer(() => {
   const modalStyle = useMemo(() => ({
@@ -38,7 +39,21 @@ const Group = observer(() => {
     treeDs.query();
   }
 
-  async function handleDelete(envId) {
+  function openDelete() {
+    const envName = groupDs.current ? groupDs.current.get('name') : '';
+    Modal.open({
+      key: deleteKey,
+      title: formatMessage({ id: `${intlPrefix}.delete.title` }, { name: envName }),
+      children: formatMessage({ id: `${intlPrefix}.delete.des` }),
+      okText: formatMessage({ id: 'delete' }),
+      okProps: { color: 'red' },
+      cancelProps: { color: 'dark' },
+      onOk: handleDelete,
+    });
+  }
+
+  async function handleDelete() {
+    const envId = groupDs.current ? groupDs.current.get('id') : null;
     try {
       const res = await mainStore.deleteEnv(projectId, envId);
       handlePromptError(res);
@@ -101,9 +116,11 @@ const Group = observer(() => {
         record={record}
         intlPrefix={intlPrefix}
         refresh={refresh}
+        store={envStore}
       />,
       drawer: true,
       style: modalStyle,
+      okText: formatMessage({ id: 'save' }),
     });
   }
 
@@ -164,14 +181,14 @@ const Group = observer(() => {
         }, {
           service: [],
           text: formatMessage({ id: 'delete' }),
-          action: () => handleDelete(envId),
+          action: openDelete,
         }];
         break;
       case FAILED:
         actionData = [{
           service: [],
           text: formatMessage({ id: 'delete' }),
-          action: () => handleDelete(envId),
+          action: openDelete,
         }];
         break;
       default:

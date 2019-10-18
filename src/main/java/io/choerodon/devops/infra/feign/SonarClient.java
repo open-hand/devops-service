@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.feign;
 
+import java.util.List;
 import java.util.Map;
 
 import io.choerodon.devops.api.vo.sonar.*;
@@ -56,4 +57,7 @@ public interface SonarClient {
 
     @POST("api/user_tokens/generate")
     Call<ResponseBody> createToken(@QueryMap Map<String, String> maps);
+
+    @GET("api/user_tokens/search")
+    Call<ResponseBody> listToken();
 }

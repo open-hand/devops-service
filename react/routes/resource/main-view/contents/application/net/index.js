@@ -1,7 +1,7 @@
 import React, { Fragment, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
-import { Action } from '@choerodon/master';
+import { Action } from '@choerodon/boot';
 import { Tooltip, Icon, Popover } from 'choerodon-ui';
 import { Table, Modal } from 'choerodon-ui/pro';
 import _ from 'lodash';
@@ -13,9 +13,9 @@ import { useResourceStore } from '../../../../stores';
 import { useApplicationStore } from '../stores';
 import DomainModal from '../modals/domain';
 import EditNetwork from '../modals/network/network-edit';
+import { useMainStore } from '../../../stores';
 
 import './index.less';
-import { useMainStore } from '../../../stores';
 
 const { Column } = Table;
 
@@ -237,13 +237,13 @@ const Networking = observer(() => {
     return (
       <div className="net-config-content">
         <span className="net-config-type">{type}</span>
-        <Popover
+        <Tooltip
           arrowPointAtCenter
           placement="bottomRight"
-          content={content}
+          title={content}
         >
           <Icon type="expand_more" className="net-expend-icon" />
-        </Popover>
+        </Tooltip>
       </div>
     );
   }
@@ -329,11 +329,11 @@ const Networking = observer(() => {
                 {pathList[0] ? pathList[0].path : ''}
               </MouserOverWrapper>
               {pathList.length > 1 && (
-                <Popover
-                  content={_.map(pathList, ({ path }) => <div>{path}</div>)}
+                <Tooltip
+                  title={_.map(pathList, ({ path }) => <div>{path}</div>)}
                 >
                   <Icon type="expand_more" className="net-expend-icon" />
-                </Popover>
+                </Tooltip>
               )}
             </div>
           </div>
@@ -349,18 +349,20 @@ const Networking = observer(() => {
 
   return (
     <div className={`${prefixCls}-application-net`}>
-      <Table
-        dataSet={netDs}
-        border={false}
-        queryBar="none"
-        expandedRowRenderer={renderExpandedRow}
-      >
-        <Column name="name" renderer={renderName} />
-        <Column renderer={renderAction} width={70} />
-        <Column renderer={renderTargetType} header={formatMessage({ id: `${intlPrefix}.application.net.targetType` })} />
-        <Column renderer={renderTarget} header={formatMessage({ id: `${intlPrefix}.application.net.target` })} />
-        <Column name="type" renderer={renderConfigType} />
-      </Table>
+      <div className="c7ncd-tab-table">
+        <Table
+          dataSet={netDs}
+          border={false}
+          queryBar="none"
+          expandedRowRenderer={renderExpandedRow}
+        >
+          <Column name="name" renderer={renderName} />
+          <Column renderer={renderAction} width={70} />
+          <Column renderer={renderTargetType} header={formatMessage({ id: `${intlPrefix}.application.net.targetType` })} />
+          <Column renderer={renderTarget} header={formatMessage({ id: `${intlPrefix}.application.net.target` })} />
+          <Column name="type" renderer={renderConfigType} />
+        </Table>
+      </div>
       {showDomain && (
         <DomainModal
           envId={parentId}

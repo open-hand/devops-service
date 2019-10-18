@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { injectIntl, FormattedMessage } from 'react-intl';
+import { Choerodon } from '@choerodon/boot';
 import {
   Form,
   Input,
@@ -10,7 +11,7 @@ import debounce from 'lodash/debounce';
 import forEach from 'lodash/forEach';
 import includes from 'lodash/includes';
 import CertConfig from '../../../../components/certConfig';
-import Tips from '../../../../components/Tips/Tips';
+import Tips from '../../../../components/new-tips';
 import { handlePromptError } from '../../../../utils';
 
 import './index.less';
@@ -146,6 +147,7 @@ const CreateForm = ({ certId, intl: { formatMessage }, form, store, projectId, m
               maxLength={40}
               type="text"
               label={<FormattedMessage id={`${intlPrefix}.name`} />}
+              autoFocus
             />,
           )}
         </FormItem>
@@ -176,11 +178,13 @@ const CreateForm = ({ certId, intl: { formatMessage }, form, store, projectId, m
             )}
           </FormItem>
           <div className={`${prefixCls}-create-wrap-add-title`}>
-            <Tips
-              type="title"
-              data={`${intlPrefix}.add`}
-              help={!uploadMode}
-            />
+            <div>
+              <Tips
+                helpText={formatMessage({ id: `${intlPrefix}.add.tips` })}
+                title={formatMessage({ id: `${intlPrefix}.add` })}
+                showHelp={!uploadMode}
+              />
+            </div>
             <Button
               type="primary"
               funcType="flat"

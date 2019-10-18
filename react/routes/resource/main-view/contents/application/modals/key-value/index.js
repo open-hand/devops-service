@@ -3,11 +3,11 @@ import React, { Component, Fragment } from 'react';
 import { observer, inject } from 'mobx-react';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import _ from 'lodash';
-import { Button, Form, Input, Modal, Icon, Table, Popover } from 'choerodon-ui';
+import { Choerodon } from '@choerodon/boot';
+import { Button, Form, Input, Modal, Icon, Table, Tooltip } from 'choerodon-ui';
 import { EditableCell, EditableFormRow } from './editableTable';
 import { objToYaml, yamlToObj, takeObject, ConfigNode, makePostData } from '../utils';
 import YamlEditor from '../../../../../../../components/yamlEditor';
-import InterceptMask from '../../../../../../../components/intercept-mask';
 import { handlePromptError } from '../../../../../../../utils';
 
 import '../../../../../../main.less';
@@ -104,6 +104,7 @@ export default class FormView extends Component {
           projectId,
         },
       },
+      modal,
     } = this.props;
     if (typeof id === 'number') {
       try {
@@ -126,6 +127,7 @@ export default class FormView extends Component {
         Choerodon.handleResponseError(e);
       }
     }
+    modal.handleOk(this.handleSubmit);
   }
 
   /**
@@ -174,7 +176,7 @@ export default class FormView extends Component {
    */
   handleSave = (row) => {
     const newData = [...this.state.dataSource];
-    const index = _.findIndex(newData, ['index', row.empty]);
+    const index = _.findIndex(newData, ['index', row.index]);
 
     newData.splice(index, 1, {
       ...newData[index],
@@ -203,7 +205,7 @@ export default class FormView extends Component {
       }
     }
 
-    this.setState({ hasValueError: error });
+    this.setState({ hasValueError: error }, () => this.checkButtonDisabled);
     return error;
   };
 
@@ -220,6 +222,7 @@ export default class FormView extends Component {
       intl: {
         formatMessage,
       },
+      modal,
     } = this.props;
 
     const _data = data || this.state.dataSource;
@@ -232,7 +235,8 @@ export default class FormView extends Component {
 
     let hasErrorKey;
     for (const { key } of hasKey) {
-      if (/[^0-9A-Za-z\.\-\_]/.test(key)) {
+      const pattern = /[^0-9A-Za-z\.\-\_]/;
+      if (pattern.test(key)) {
         hasErrorKey = true;
         break;
       }
@@ -242,7 +246,7 @@ export default class FormView extends Component {
       this.setState({
         warningMes: '',
         hasItemError: false,
-      });
+      }, () => this.checkButtonDisabled());
       return false;
     }
 
@@ -267,31 +271,20 @@ export default class FormView extends Component {
    * @param msg
    */
   setConfigError(msg) {
+    const { modal } = this.props;
     this.setState({
       warningMes: msg,
       hasItemError: true,
     });
+    modal.update({ okProps: { disabled: true }});
   }
 
-  /**
-   * form提交函数
-   * 添加粘贴后key-value校验
-   * @param e
-   */
-  handleSubmit = (e) => {
-    e.preventDefault();
+  formValidate = () => {
     const {
-      form,
       id,
-      store,
-      AppState: {
-        currentMenuType: {
-          id: projectId,
-        },
-      },
       envId,
       appId,
-      afterSuccess,
+      form: { validateFields },
     } = this.props;
     const {
       dataSource,
@@ -304,61 +297,75 @@ export default class FormView extends Component {
     let hasKVError = false;
     let hasConfigRuleError = false;
 
-
-
-    form.validateFieldsAndScroll(async (err, { name, description }) => {
-      if (!isYamlEdit) {
-        hasKVError = this.checkErrorData();
-        const allData = [...dataSource.filter(item => !_.isEmpty(item.key))];
-        configData = _.uniqBy(allData, 'index');
-      } else {
-        hasConfigRuleError = this.checkConfigRuleError();
-        configData = yamlToObj(dataYaml);
-      }
-
-      if (hasYamlError || hasKVError || hasConfigRuleError) return;
-
-      this.setState({
-        submitting: true,
-        hasItemError: false,
-      });
-
-      if (!err) {
-        const _value = takeObject(configData);
-
-        const dto = {
-          name,
-          description,
-          envId,
-          appServiceId: appId,
-          type: id ? 'update' : 'create',
-          id: id || undefined,
-          value: _value,
-        };
-
-        try {
-          const res = await store.postKV(projectId, dto);
-          if (handlePromptError(res)) {
-            this.handleClose();
-            afterSuccess();
-          }
-          this.setState({ submitting: false });
-        } catch (error) {
-          this.setState({ submitting: false });
-          Choerodon.handleResponseError(error);
+    return new Promise((resolve) => {
+      validateFields((err, { name, description }) => {
+        if (!isYamlEdit) {
+          hasKVError = this.checkErrorData();
+          const allData = [...dataSource.filter(item => !_.isEmpty(item.key))];
+          configData = _.uniqBy(allData, 'index');
+        } else {
+          hasConfigRuleError = this.checkConfigRuleError();
+          configData = yamlToObj(dataYaml);
         }
-      } else {
-        this.setState({ submitting: false });
-      }
+
+        if (hasYamlError || hasKVError || hasConfigRuleError) {
+          resolve(false);
+        } else {
+          this.setState({
+            submitting: true,
+            hasItemError: false,
+          });
+
+          if (!err) {
+            const _value = takeObject(configData);
+            const dto = {
+              name,
+              description,
+              envId,
+              appServiceId: appId,
+              type: id ? 'update' : 'create',
+              id: id || undefined,
+              value: _value,
+            };
+            resolve(dto);
+          }
+          resolve(false);
+        }
+      });
     });
   };
 
   /**
-   * 关闭弹框
+   * form提交函数
+   * 添加粘贴后key-value校验
+   * @param e
    */
-  handleClose = (isload = true) => {
-    const { onClose } = this.props;
-    onClose(isload);
+  handleSubmit = async () => {
+    const {
+      store,
+      AppState: {
+        currentMenuType: {
+          id: projectId,
+        },
+      },
+      refresh,
+    } = this.props;
+    const postData = await this.formValidate();
+
+    if (!postData) {
+      return false;
+    }
+    try {
+      const res = await store.postKV(projectId, postData);
+      if (handlePromptError(res)) {
+        refresh();
+      } else {
+        return false;
+      }
+    } catch (error) {
+      Choerodon.handleResponseError(error);
+      return false;
+    }
   };
 
   /**
@@ -490,7 +497,7 @@ export default class FormView extends Component {
           className="c7n-editable-table"
           dataSource={dataSource}
           columns={columns}
-          rowKey={record => record.empty}
+          rowKey={record => record.index}
         />
         <Button icon="add" onClick={this.handleAdd} type="primary">
           <FormattedMessage id={`${intlPrefix}.${title}.add`} />
@@ -529,7 +536,7 @@ export default class FormView extends Component {
    * @param flag
    */
   checkYamlError = (flag) => {
-    this.setState({ hasYamlError: flag });
+    this.setState({ hasYamlError: flag }, () => this.checkButtonDisabled());
   };
 
   /**
@@ -544,6 +551,7 @@ export default class FormView extends Component {
       hasValueError,
       hasItemError,
     } = this.state;
+    const { modal } = this.props;
 
     if (hasYamlError || hasValueError || hasItemError) return;
 
@@ -563,7 +571,7 @@ export default class FormView extends Component {
         warningMes: '',
         dataSource: [],
         dataYaml: yamlValue,
-      });
+      }, () => this.checkButtonDisabled());
     } else {
       const result = this.checkConfigRuleError(dataYaml);
 
@@ -580,14 +588,25 @@ export default class FormView extends Component {
           isYamlEdit: false,
           dataYaml: '',
           counter,
-        });
+        }, () => this.checkButtonDisabled());
       } catch (e) {
         this.setState({
           hasValueError: true,
           valueErrorMsg: e.message,
         });
+        modal.update({ okProps: { disabled: true }})
       }
     }
+  };
+
+  checkButtonDisabled = () => {
+    const { modal } = this.props;
+    const {
+      hasYamlError,
+      hasValueError,
+      hasItemError,
+    } = this.state;
+    modal.update({ okProps: { disabled: hasYamlError || hasValueError || hasItemError }})
   };
 
   render() {
@@ -619,58 +638,30 @@ export default class FormView extends Component {
 
     return (
       <div className="c7n-region">
-        <Sidebar
-          destroyOnClose
-          visible={visible}
-          title={<FormattedMessage id={titleCode} />}
-          confirmLoading={submitting}
-          footer={[
-            <Button
-              disabled={disableBtn}
-              key="submit"
-              funcType="raised"
+        <div>
+          {this.getFormContent()}
+          <div className="c7n-sidebar-from-title">
+            <FormattedMessage id={`${intlPrefix}.${title}.head`} />
+            {!isYamlEdit && <Tooltip
+              overlayStyle={{ maxWidth: 350 }}
+              title={formatMessage({ id: `${intlPrefix}.${title}.help.tooltip` })}
+            >
+              <Icon type="help" />
+            </Tooltip>}
+            {modeSwitch ? <Button
+              className="c7n-config-mode-btn"
               type="primary"
-              onClick={this.handleSubmit}
-              loading={submitting}
+              funcType="flat"
+              disabled={disableBtn}
+              onClick={this.changeEditMode}
             >
-              {formatMessage({ id: id ? 'save' : 'create' })}
-            </Button>,
-            <Button
-              key="back"
-              funcType="raised"
-              onClick={this.handleClose.bind(this, false)}
-              disabled={submitting}
-            >
-              {<FormattedMessage id="cancel" />}
-            </Button>,
-          ]}
-        >
-          <div>
-            {this.getFormContent()}
-            <div className="c7n-sidebar-from-title">
-              <FormattedMessage id={`${intlPrefix}.${title}.head`} />
-              {!isYamlEdit && <Popover
-                overlayStyle={{ maxWidth: 350 }}
-                content={formatMessage({ id: `${intlPrefix}.${title}.help.tooltip` })}
-              >
-                <Icon type="help" />
-              </Popover>}
-              {modeSwitch ? <Button
-                className="c7n-config-mode-btn"
-                type="primary"
-                funcType="flat"
-                disabled={disableBtn}
-                onClick={this.changeEditMode}
-              >
-                <FormattedMessage id={isYamlEdit ? 'configMap.mode.yaml' : 'configMap.mode.kv'} />
-              </Button> : null}
-            </div>
-            <div className="c7n-config-editor">
-              {this.getConfigMap()}
-            </div>
-            <InterceptMask visible={submitting} />
+              <FormattedMessage id={isYamlEdit ? 'configMap.mode.yaml' : 'configMap.mode.kv'} />
+            </Button> : null}
           </div>
-        </Sidebar>
+          <div className="c7n-config-editor">
+            {this.getConfigMap()}
+          </div>
+        </div>
       </div>
     );
   }

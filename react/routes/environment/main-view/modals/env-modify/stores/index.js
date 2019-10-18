@@ -20,13 +20,19 @@ export const StoreProvider = injectIntl(inject('AppState')(
       children,
       intlPrefix,
       record,
+      store,
     } = props;
-    const formDs = useMemo(() => new DataSet(FormDataSet({ formatMessage, intlPrefix, projectId })), [projectId]);
+    const envId = record.get('id');
     const groupOptionDs = useMemo(() => new DataSet(GroupOptionDataSet(projectId)), [projectId]);
+    const formDs = useMemo(() => new DataSet(FormDataSet({
+      formatMessage,
+      intlPrefix,
+      projectId,
+      groupOptionDs,
+    })), [projectId]);
 
     useEffect(() => {
       if (record) {
-        const envId = record.get('id');
         formDs.transport.read.url = `/devops/v1/projects/${projectId}/envs/${envId}`;
         formDs.query();
       }
@@ -36,7 +42,8 @@ export const StoreProvider = injectIntl(inject('AppState')(
       ...props,
       formDs,
       intlPrefix,
-      groupOptionDs,
+      envStore: store,
+      envId,
     };
     return (
       <Store.Provider value={value}>

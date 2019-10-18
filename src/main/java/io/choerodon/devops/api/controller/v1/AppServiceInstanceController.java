@@ -58,7 +58,7 @@ public class AppServiceInstanceController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "实例ID", required = true)
             @PathVariable(value = "instance_id") Long instanceId) {
-        return new ResponseEntity<>(appServiceInstanceService.queryInfoById(instanceId),HttpStatus.OK);
+        return new ResponseEntity<>(appServiceInstanceService.queryInfoById(instanceId), HttpStatus.OK);
     }
 
 
@@ -798,9 +798,9 @@ public class AppServiceInstanceController {
     /**
      * 根据实例commandId查询实例信息
      *
-     * @param projectId
-     * @param commandId
-     * @return
+     * @param projectId 项目id
+     * @param commandId 实例command Id
+     * @return 实例信息
      */
     @ApiOperation(value = "根据实例commandId查询实例信息")
     @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT,

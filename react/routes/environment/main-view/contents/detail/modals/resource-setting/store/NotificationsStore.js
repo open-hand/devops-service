@@ -3,7 +3,7 @@
  * @date 2019-05-13 14:46
  */
 import { observable, action, computed } from 'mobx';
-import { axios, store } from '@choerodon/master';
+import { axios, store, Choerodon } from '@choerodon/boot';
 import { handlePromptError } from '../../../../../../../../utils/index';
 import { HEIGHT, SORTER_MAP } from '../Constants';
 
@@ -159,8 +159,10 @@ class NotificationsStore {
     .then((data) => {
       if (handlePromptError(data)) {
         this.setSingleData(data);
+        return data;
+      } else {
+        return false;
       }
-      return false;
     });
 
   /**

@@ -11,6 +11,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.choerodon.asgard.saga.SagaDefinition;
 import io.choerodon.asgard.saga.annotation.SagaTask;
 import io.choerodon.devops.api.vo.GitlabGroupMemberVO;
 import io.choerodon.devops.api.vo.GitlabUserRequestVO;
@@ -47,7 +48,9 @@ public class SagaHandler {
 
 
     private void loggerInfo(Object o) {
-        LOGGER.info("data: {}", JSONObject.toJSONString(o));
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("data: {}", JSONObject.toJSONString(o));
+        }
     }
 
     /**
@@ -254,6 +257,7 @@ public class SagaHandler {
     @SagaTask(code = SagaTaskCodeConstants.APIM_DOWNLOAD_APP,
             description = "应用下载",
             sagaCode = SagaTopicCodeConstants.APIM_DOWNLOAD_APP,
+            concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
             maxRetryCount = 0, seq = 10)
     public String downloadApp(String payload) {
         AppMarketDownloadPayload appMarketDownloadPayload = gson.fromJson(payload, AppMarketDownloadPayload.class);

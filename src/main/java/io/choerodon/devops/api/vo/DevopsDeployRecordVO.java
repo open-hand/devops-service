@@ -3,6 +3,8 @@ package io.choerodon.devops.api.vo;
 import java.util.Date;
 import java.util.List;
 
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * Created by Sheep on 2019/7/29.
  */
@@ -18,11 +20,20 @@ public class DevopsDeployRecordVO {
     private String pipelineTriggerType;
     private Long deployCreatedBy;
     private String userName;
+    private String userLoginName;
     private String userImage;
     private Date deployTime;
     private List<PipelineStageRecordVO> stageDTOList;
     private PipelineDetailVO pipelineDetailVO;
 
+    @ApiModelProperty("手动部署生成的实例id, 对于自动部署的纪录此值为空")
+    private Long instanceId;
+
+    @ApiModelProperty("手动部署生成的实例的环境id, 对于自动部署的纪录此值为空")
+    private Long envId;
+
+    @ApiModelProperty("手动部署的实例的应用服务id, 对于自动部署的纪录此值为空")
+    private Long appServiceId;
 
     public Long getId() {
         return id;
@@ -135,5 +146,37 @@ public class DevopsDeployRecordVO {
 
     public void setStageDTOList(List<PipelineStageRecordVO> stageDTOList) {
         this.stageDTOList = stageDTOList;
+    }
+
+    public Long getInstanceId() {
+        return instanceId;
+    }
+
+    public void setInstanceId(Long instanceId) {
+        this.instanceId = instanceId;
+    }
+
+    public Long getEnvId() {
+        return envId;
+    }
+
+    public void setEnvId(Long envId) {
+        this.envId = envId;
+    }
+
+    public Long getAppServiceId() {
+        return appServiceId;
+    }
+
+    public void setAppServiceId(Long appServiceId) {
+        this.appServiceId = appServiceId;
+    }
+
+    public String getUserLoginName() {
+        return userLoginName;
+    }
+
+    public void setUserLoginName(String userLoginName) {
+        this.userLoginName = userLoginName;
     }
 }

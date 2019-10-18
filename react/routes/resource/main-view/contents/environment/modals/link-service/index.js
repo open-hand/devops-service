@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
+import { Choerodon } from '@choerodon/boot';
 import { Form, Select, Tooltip } from 'choerodon-ui';
 import omit from 'lodash/omit';
 import map from 'lodash/map';

@@ -19,12 +19,14 @@ const REModals = observer(() => {
   const {
     baseInfoDs,
     resourceCountDs,
+    tableDs,
   } = useREStore();
 
   function refresh() {
     baseInfoDs.query();
     resourceCountDs.query();
     treeDs.query();
+    tableDs.query();
   }
 
   function openEnvDetail() {

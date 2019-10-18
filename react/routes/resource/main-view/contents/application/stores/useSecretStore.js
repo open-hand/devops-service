@@ -1,5 +1,5 @@
 import { useLocalStore } from 'mobx-react-lite';
-import { axios } from '@choerodon/master';
+import { axios } from '@choerodon/boot';
 import { handlePromptError } from '../../../../../../utils';
 
 export default function useStore() {
@@ -13,7 +13,7 @@ export default function useStore() {
     },
 
     async loadSingleData(projectId, id) {
-      const res = await axios.get(`/devops/v1/projects/${projectId}/secret/${id}`);
+      const res = await axios.get(`/devops/v1/projects/${projectId}/secret/${id}?to_decode=true`);
       if (handlePromptError(res)) {
         this.setSingleData(res);
       }

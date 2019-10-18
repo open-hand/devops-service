@@ -43,6 +43,11 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
+    public ResponseEntity<PageInfo<OrganizationDTO>> listOrganizations(Integer page, Integer size) {
+        throw new CommonException("error.organization.get");
+    }
+
+    @Override
     public ResponseEntity<MemberRoleVO> addMemberRole(Long projectId, MemberRoleVO memberRoleVo) {
         throw new CommonException("error.memberRole.add");
     }
@@ -69,7 +74,7 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
-    public ResponseEntity<List<IamUserDTO>> listUsersByIds(Long[] ids) {
+    public ResponseEntity<List<IamUserDTO>> listUsersByIds(Long[] ids, Boolean onlyEnabled) {
         throw new CommonException("error.user.get.byIds");
     }
 

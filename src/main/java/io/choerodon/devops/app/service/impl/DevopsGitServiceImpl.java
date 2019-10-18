@@ -654,6 +654,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         compareResultDTO.getDiffs().forEach(t -> {
             if (t.getNewPath().contains("yaml") || t.getNewPath().contains("yml")) {
                 if (t.getDeletedFile()) {
+                    // t.getNewPath() 而不是t.getOldPath()，这里能用是因为删除的文件的两个的值一致
                     deletedFiles.add(t.getNewPath());
                 } else if (t.getRenamedFile()) {
                     deletedFiles.add(t.getOldPath());
@@ -698,7 +699,14 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             File file = new File(String.format("%s/%s", path, filePath));
             try {
                 for (Object data : yaml.loadAll(new FileInputStream(file))) {
+                    if (data == null) {
+                        // 跳过只有"---"而没有内容的对象，例如"---\n---\n"
+                        continue;
+                    }
                     JSONObject jsonObject = new JSONObject((Map<String, Object>) data);
+                    if (jsonObject.get("kind") == null) {
+                        throw new GitOpsExplainException(GitOpsObjectError.CUSTOM_RESOURCE_KIND_NOT_FOUND.getError(), filePath);
+                    }
                     String type = jsonObject.get("kind").toString();
                     switch (type) {
                         case C7NHELM_RELEASE:

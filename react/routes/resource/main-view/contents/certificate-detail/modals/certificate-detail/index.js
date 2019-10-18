@@ -10,7 +10,7 @@ export default function ({ intlPrefix, record, prefixCls, formatMessage }) {
     <ul className={`${prefixCls}-detail-modal`}>
       <li className="detail-item">
         <span className="detail-item-text">
-          {formatMessage({ id: 'ctf.validDate' })}:
+          {formatMessage({ id: 'ctf.validDate' })}
         </span>
         <span>{(record 
             && record.get('validFrom')
@@ -19,7 +19,7 @@ export default function ({ intlPrefix, record, prefixCls, formatMessage }) {
       </li>
       <li className="detail-item">
         <span className="detail-item-text">
-          {formatMessage({ id: 'createDate' })}:
+          {formatMessage({ id: 'createDate' })}
         </span>
         <span>{
             (record && record.get('creationDate')) || '-' 
@@ -27,7 +27,7 @@ export default function ({ intlPrefix, record, prefixCls, formatMessage }) {
       </li>
       <li className="detail-item">
         <span className="detail-item-text">
-          {formatMessage({ id: 'creator' })}:
+          {formatMessage({ id: 'creator' })}
         </span>
         <span>{
             (record 

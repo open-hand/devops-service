@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.controller.v1
 
+import io.choerodon.devops.api.vo.DevopsConfigRepVO
+
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
 import org.mockito.Mockito
@@ -94,10 +96,29 @@ class DevopsProjectConfigControllerSpec extends Specification {
     //创建配置
     def "Create"() {
         given: '初始化数据'
+        ConfigVO configVO = new ConfigVO()
+        configVO.setEmail("zhuang.chang@hand-china.com")
+        configVO.setPassword("Handhand1357")
+        configVO.setUserName("admin")
+        configVO.setUrl("https://registry.saas.hand-china.com")
+        configVO.setPrivate(true)
 
+        DevopsConfigVO devopsConfigVO = new DevopsConfigVO()
+        devopsConfigVO.setHarborPrivate(false)
+        devopsConfigVO.setType("harbor")
+        devopsConfigVO.setName("app")
+        devopsConfigVO.setId(1L)
+        devopsConfigVO.setOrganizationId(1L)
+        devopsConfigVO.setProjectId(1L)
+        devopsConfigVO.setAppServiceId(1L)
+        devopsConfigVO.setCustom(false)
+        devopsConfigVO.setConfig(configVO)
 
+        DevopsConfigRepVO devopsConfigRepVO = new DevopsConfigRepVO()
+        devopsConfigRepVO.setHarborPrivate(false)
+        devopsConfigRepVO.setHarbor(devopsConfigVO)
         when: '创建配置'
-        def entity = restTemplate.postForEntity(MAPPING, list, null, project_id)
+        def entity = restTemplate.postForEntity(MAPPING, devopsConfigRepVO, null, project_id)
 
         then:
         entity.getStatusCode().is2xxSuccessful()
@@ -106,7 +127,6 @@ class DevopsProjectConfigControllerSpec extends Specification {
     def "query"() {
         given:
         DevopsProjectDTO projectDTO = new DevopsProjectDTO()
-        projectDTO.setAppId(1L)
         projectDTO.setDevopsAppGroupId(1L)
         projectDTO.setDevopsEnvGroupId(1L)
         projectDTO.setHarborProjectIsPrivate(true)
@@ -114,9 +134,10 @@ class DevopsProjectConfigControllerSpec extends Specification {
         devopsProjectMapper.insert(projectDTO)
 
         when: '查询配置'
-        def entity = restTemplate.getForEntity(MAPPING, List.class, project_id)
+        def entity = restTemplate.getForEntity(MAPPING, DevopsConfigRepVO.class, project_id)
         then:
         entity.getStatusCode().is2xxSuccessful()
+        entity.getBody() != null
     }
 
     def "queryProjectDefaultConfig"() {
@@ -124,7 +145,26 @@ class DevopsProjectConfigControllerSpec extends Specification {
         def entity = restTemplate.getForEntity(MAPPING + "/default_config", DefaultConfigVO.class, project_id)
         then:
         entity.getStatusCode().is2xxSuccessful()
-        entity.getBody() != null
+        entity.body != null
+    }
+
+    def "checkHarbor"() {
+        given:
+        def url = MAPPING + "/check_harbor?url=https://registry.saas.hand-china.com&" +
+                "userName=admin&password=Handhand1357&email=zhuang.chang@hand-china.com"
+        when:
+        def entity = restTemplate.getForEntity(url, Boolean.class, 1L)
+        then:
+        entity.getStatusCode().is2xxSuccessful()
+    }
+
+    def "checkChart"() {
+        given:
+        def url = MAPPING + "/check_chart?url=https://registry.saas.hand-china.com"
+        when:
+        def entity = restTemplate.getForEntity(url, Boolean.class, 1L)
+        then:
+        entity.getStatusCode().is2xxSuccessful()
     }
 
 }

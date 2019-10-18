@@ -1,5 +1,17 @@
 package io.choerodon.devops.api.controller.v1
 
+import io.choerodon.devops.DependencyInjectUtil
+import io.choerodon.devops.app.service.impl.PipelineServiceImpl
+import io.choerodon.devops.infra.dto.PipelineTaskRecordDTO
+import io.choerodon.devops.infra.dto.iam.IamUserDTO
+import io.choerodon.devops.infra.feign.NotifyClient
+import io.choerodon.devops.infra.feign.WorkFlowServiceClient
+import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator
+import io.choerodon.devops.infra.mapper.PipelineTaskRecordMapper
+
+import static org.mockito.ArgumentMatchers.any
+import static org.mockito.ArgumentMatchers.anyLong
+import static org.mockito.ArgumentMatchers.anyString
 import static org.mockito.ArgumentMatchers.eq
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
@@ -40,20 +52,33 @@ class PipelineControllerSpec extends Specification {
     PipelineService pipelineService
     @Autowired
     PipelineRecordMapper pipelineRecordMapper
-
+    WorkFlowServiceClient workFlowServiceClient = Mockito.mock(WorkFlowServiceClient.class)
     @Qualifier("mockBaseServiceClientOperator")
     @Autowired
     private BaseServiceClientOperator mockBaseServiceClientOperator
 
+    @Qualifier("workFlowServiceOperator")
+    @Autowired
+    private WorkFlowServiceOperator workFlowServiceOperator
+    @Autowired
+    private PipelineService pipelineService
+    @Autowired
+    private PipelineTaskRecordMapper taskRecordMapper
     @Shared
     private PipelineReqVO pipelineReqVO = new PipelineReqVO()
     @Shared
+    private PipelineReqVO pipelineReqVO1 = new PipelineReqVO()
+    @Shared
     def project_id = 1L
+    NotifyClient notifyClient = Mockito.mock(NotifyClient.class)
 
     def setup() {
+        DependencyInjectUtil.setAttribute(pipelineService, "notifyClient", notifyClient)
+        DependencyInjectUtil.setAttribute(workFlowServiceOperator, "workFlowServiceClient", workFlowServiceClient)
         List<PipelineStageVO> stageVOList = new ArrayList<>()
         PipelineStageVO pipelineStageVO = new PipelineStageVO()
         pipelineStageVO.setStageName("aa")
+        pipelineStageVO.setTriggerType("manual")
         stageVOList.add(pipelineStageVO)
 
         List<Long> pipelineUserRels = new ArrayList<>()
@@ -63,16 +88,35 @@ class PipelineControllerSpec extends Specification {
         pipelineReqVO.setProjectId(project_id)
         pipelineReqVO.setPipelineStageVOs(stageVOList)
         pipelineReqVO.setPipelineUserRels(pipelineUserRels)
-
+        pipelineReqVO.setTriggerType("manual")
+        pipelineReqVO.setPipelineStageVOs(stageVOList)
+        pipelineReqVO1.setName("流水线1")
+        pipelineReqVO1.setProjectId(project_id)
+        pipelineReqVO1.setPipelineStageVOs(stageVOList)
+        pipelineReqVO1.setPipelineUserRels(pipelineUserRels)
+        pipelineReqVO1.setTriggerType("manual")
+        pipelineReqVO1.setPipelineStageVOs(stageVOList)
         ProjectDTO projectDTO = new ProjectDTO()
         projectDTO.setId(1L)
         projectDTO.setName("aa")
         projectDTO.setOrganizationId(1L)
-        ResponseEntity<ProjectDTO> projectDO = new ResponseEntity<>(projectDTO, HttpStatus.OK)
-        Mockito.doReturn(projectDO).when(mockBaseServiceClientOperator).queryIamProjectById(1L)
+        Mockito.doReturn(projectDTO).when(mockBaseServiceClientOperator).queryIamProjectById(1L)
 
         List<ProjectWithRoleVO> list = new ArrayList<>()
         Mockito.when(mockBaseServiceClientOperator.listProjectWithRoleDTO(eq(1))).thenReturn(list)
+        IamUserDTO iamUserDTO = new IamUserDTO()
+        iamUserDTO.setId(1L)
+        iamUserDTO.setLoginName("niu")
+        iamUserDTO.setLdap(true)
+        iamUserDTO.setEmail("1234@qq.com")
+        Mockito.doReturn(iamUserDTO).when(mockBaseServiceClientOperator).queryUserByUserId(anyLong())
+
+        ResponseEntity<String> responseEntity = new ResponseEntity<String>(HttpStatus.OK)
+        Mockito.doReturn(responseEntity).when(workFlowServiceClient).create(anyLong(), any())
+
+        Mockito.doReturn(responseEntity).when(workFlowServiceClient).approveUserTask(anyLong(), anyString())
+
+
     }
 
     def "create"() {
@@ -80,6 +124,11 @@ class PipelineControllerSpec extends Specification {
         def entity = restTemplate.postForEntity(MAPPING, pipelineReqVO, null, project_id)
         then:
         entity.getStatusCode().is2xxSuccessful()
+        when:
+        def entity1 = restTemplate.postForEntity(MAPPING, pipelineReqVO1, null, project_id)
+        then:
+        entity1.getStatusCode().is2xxSuccessful()
+
     }
 
     def "update"() {
@@ -141,45 +190,66 @@ class PipelineControllerSpec extends Specification {
         entity.getBody() != null
     }
 
-    def "pageRecords"() {
+    def "execute"() {
+        when:
+        def entity = restTemplate.getForEntity(MAPPING + "/{pipeline_id}/execute", null, project_id, 1L)
+
+        then:
+        entity.getStatusCode().is2xxSuccessful()
+
+    }
+
+    def "batchExecute"() {
         given:
-        String infra = "{\"params\":[],\"searchParam\":{}}"
-        HttpHeaders headers = new HttpHeaders()
-        headers.setContentType(MediaType.valueOf("application/jsonUTF-8"))
-        HttpEntity<String> strEntity = new HttpEntity<String>(infra, headers)
-
-        when: '项目下获取流水线记录'
-        def entity = restTemplate.postForEntity(MAPPING + "/page_record?page=1&size=10&pipeline_id=1", strEntity, PageInfo.class, project_id)
-
+        Long[] ids = [1L, 2L]
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON_UTF8)
+        HttpEntity httpEntity = new HttpEntity(ids, headers)
+        when:
+        def entity = restTemplate.getForEntity(MAPPING + "/batch_execute?pipelineIds=1&pipelineIds=2", null, 1L);
         then:
         entity.getStatusCode().is2xxSuccessful()
     }
 
-//    def "audit"(){
-//        given: '初始化参数'
-//        PipelineUserRecordRelationshipVO pipelineUserRecordRelationshipVO = new PipelineUserRecordRelationshipVO()
-//        pipelineUserRecordRelationshipVO.setUserId(1L)
-//        pipelineUserRecordRelationshipVO.setPipelineRecordId(1L)
-//        pipelineUserRecordRelationshipVO.setStageRecordId(1L)
-//        pipelineUserRecordRelationshipVO.setTaskRecordId(1L)
-//        when: '人工审核'
-//        def entity = restTemplate.postForEntity(MAPPING + "/audit",pipelineUserRecordRelationshipVO,List.class,1L)
-//        then:
-//        entity.getStatusCode().is2xxSuccessful()
-//    }
 
-//    def "check_audit"(){
-//        given: '初始化参数'
-//        PipelineUserRecordRelationshipVO pipelineUserRecordRelationshipVO = new PipelineUserRecordRelationshipVO()
-//        pipelineUserRecordRelationshipVO.setUserId(1L)
-//        pipelineUserRecordRelationshipVO.setPipelineRecordId(1L)
-//        pipelineUserRecordRelationshipVO.setStageRecordId(1L)
-//        pipelineUserRecordRelationshipVO.setTaskRecordId(1L)
-//        when: '校验人工审核'
-//        def entity = restTemplate.postForEntity(MAPPING + "/check_audit",pipelineUserRecordRelationshipVO, CheckAuditVO.class,1L)
-//        then:
-//        entity.getStatusCode().is2xxSuccessful()
-//    }
+    def "audit"() {
+        given: '初始化参数'
+        PipelineTaskRecordDTO pipelineTaskRecordDTO = new PipelineTaskRecordDTO()
+        pipelineTaskRecordDTO.setProjectId(1L)
+        pipelineTaskRecordDTO.setTaskId(1L)
+        pipelineTaskRecordDTO.setTaskType("manual")
+        pipelineTaskRecordDTO.setAuditUser("1")
+        pipelineTaskRecordDTO.setIsCountersigned(1)
+        pipelineTaskRecordDTO.setStatus("pendingcheck")
+        taskRecordMapper.insertSelective(pipelineTaskRecordDTO)
+
+        PipelineUserRecordRelationshipVO pipelineUserRecordRelationshipVO = new PipelineUserRecordRelationshipVO()
+        pipelineUserRecordRelationshipVO.setUserId(1L)
+        pipelineUserRecordRelationshipVO.setPipelineRecordId(1L)
+        pipelineUserRecordRelationshipVO.setStageRecordId(1L)
+        pipelineUserRecordRelationshipVO.setTaskRecordId(1L)
+        pipelineUserRecordRelationshipVO.setIsApprove(true)
+        pipelineUserRecordRelationshipVO.setType("task")
+        when: '人工审核'
+        def entity = restTemplate.postForEntity(MAPPING + "/audit", pipelineUserRecordRelationshipVO, List.class, 1L)
+        then:
+        entity.getStatusCode().is2xxSuccessful()
+    }
+
+    def "check_audit"() {
+        given: '初始化参数'
+        PipelineUserRecordRelationshipVO pipelineUserRecordRelationshipVO = new PipelineUserRecordRelationshipVO()
+        pipelineUserRecordRelationshipVO.setUserId(1L)
+        pipelineUserRecordRelationshipVO.setPipelineRecordId(1L)
+        pipelineUserRecordRelationshipVO.setStageRecordId(1L)
+        pipelineUserRecordRelationshipVO.setTaskRecordId(1L)
+        pipelineUserRecordRelationshipVO.setIsApprove(true)
+        pipelineUserRecordRelationshipVO.setType("task")
+        when: '校验人工审核'
+        def entity = restTemplate.postForEntity(MAPPING + "/check_audit", pipelineUserRecordRelationshipVO, CheckAuditVO.class, 1L)
+        then:
+        entity.getStatusCode().is2xxSuccessful()
+    }
 
     def "check_deploy"() {
         when: '条件校验'
@@ -202,6 +272,13 @@ class PipelineControllerSpec extends Specification {
         def entity = restTemplate.getForEntity(MAPPING + "/{pipeline_record_id}/record_detail", PipelineRecordReqVO.class, 1L, 1L)
 
         then:
+        entity.getStatusCode().is2xxSuccessful()
+    }
+
+    def "retry"() {
+        when: "执行"
+        def entity = restTemplate.getForEntity(MAPPING + "/{pipeline_record_id}/retry", null, project_id, 1L)
+        then: "执行结果"
         entity.getStatusCode().is2xxSuccessful()
     }
 

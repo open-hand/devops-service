@@ -1,3 +1,5 @@
+import { Choerodon } from '@choerodon/boot';
+
 /**
  * 数据请求后的错误拦截
  * 不建议使用此错误处理方法

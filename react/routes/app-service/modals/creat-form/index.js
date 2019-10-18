@@ -1,16 +1,16 @@
-import React, { Fragment, useCallback, useState, useEffect } from 'react';
-import { Form, TextField, Select, Upload } from 'choerodon-ui/pro';
+import React, { useEffect } from 'react';
+import { Form, TextField, Select } from 'choerodon-ui/pro';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
-import { Icon, Input, Button, Avatar } from 'choerodon-ui';
-import { axios } from '@choerodon/master';
+import { Icon, Input } from 'choerodon-ui';
+import { axios, Choerodon } from '@choerodon/boot';
 import pick from 'lodash/pick';
 import isEmpty from 'lodash/isEmpty';
 import includes from 'lodash/includes';
-import forEach from 'lodash/forEach';
+import { handlePromptError } from '../../../../utils';
 import Settings from './Settings';
 import Source from './Source';
-import { handlePromptError } from '../../../../utils';
+import Tips from '../../../../components/new-tips';
 
 import './index.less';
 
@@ -18,13 +18,23 @@ const { Option } = Select;
 const FILE_TYPE = 'image/png, image/jpeg, image/gif, image/jpg';
 
 const CreateForm = injectIntl(observer((props) => {
-  const { modal, dataSet, record, AppStore, projectId, intl: { formatMessage }, intlPrefix, prefixCls, isDetailPage } = props;
+  const {
+    modal,
+    dataSet,
+    record,
+    appServiceStore,
+    projectId,
+    intl: { formatMessage },
+    intlPrefix,
+    prefixCls,
+    isDetailPage,
+  } = props;
   const isModify = record.status !== 'add';
 
   useEffect(() => {
     async function loadData() {
       try {
-        const res = await AppStore.loadAppById(projectId, record.get('id'));
+        const res = await appServiceStore.loadAppById(projectId, record.get('id'));
         if (handlePromptError(res)) {
           handleRes(res);
         }
@@ -32,6 +42,7 @@ const CreateForm = injectIntl(observer((props) => {
         Choerodon.handleResponseError(e);
       }
     }
+
     if (isModify && !isDetailPage) {
       loadData();
     } else {
@@ -114,7 +125,7 @@ const CreateForm = injectIntl(observer((props) => {
     if (record.get('url') && record.get('userName') && record.get('password') && record.get('email')) {
       try {
         const postData = pick(record.toData(), ['url', 'userName', 'password', 'email', 'project']);
-        const res = await AppStore.checkHarbor(projectId, postData);
+        const res = await appServiceStore.checkHarbor(projectId, postData);
         if (handlePromptError(res, false)) {
           record.set('harborStatus', 'success');
           return true;
@@ -138,7 +149,7 @@ const CreateForm = injectIntl(observer((props) => {
       return false;
     }
     try {
-      const res = await AppStore.checkChart(projectId, record.get('chartUrl'));
+      const res = await appServiceStore.checkChart(projectId, record.get('chartUrl'));
       if (handlePromptError(res, false)) {
         record.set('chartStatus', 'success');
         return true;
@@ -161,9 +172,12 @@ const CreateForm = injectIntl(observer((props) => {
       onClick={triggerFileBtn}
       role="none"
     >
-      <div className="create-img-mask">
-        <Icon type="photo_camera" className="create-img-icon" />
+      <div className={isModify ? 'edit-img-mask' : 'create-img-mask'}>
+        <Icon type="photo_camera" className={isModify ? 'edit-img-icon' : 'create-img-icon'} />
       </div>
+      {isModify && !record.get('imgUrl') && <div className="edit-avatar">
+        <span>{record.get('name') && record.get('name').slice(0, 1)}</span>
+      </div>}
       <Input
         id="file"
         type="file"
@@ -180,6 +194,7 @@ const CreateForm = injectIntl(observer((props) => {
         <Select
           name="type"
           clearButton={false}
+          addonAfter={<Tips helpText={formatMessage({ id: `${intlPrefix}.type.tips` })} />}
         >
           <Option value="normal">
             {formatMessage({ id: `${intlPrefix}.type.normal` })}
@@ -189,8 +204,14 @@ const CreateForm = injectIntl(observer((props) => {
           </Option>
         </Select>
       )}
-      {!isModify && <TextField name="code" />}
-      <TextField name="name" />
+      {!isModify && (
+        <TextField
+          name="code"
+          autoFocus
+          addonAfter={<Tips helpText={formatMessage({ id: `${intlPrefix}.code.tips` })} />}
+        />
+      )}
+      <TextField name="name" autoFocus={isModify} />
     </Form>
     {!isModify && <Source {...props} />}
     {isModify && <Settings {...props} handleTestHarbor={handleTestHarbor} handleTestChart={handleTestChart} />}

@@ -23,7 +23,7 @@ export default ({ formatMessage, intlPrefix, projectId, envId }) => ({
     { name: 'id', type: 'number' },
     { name: 'code', type: 'string', label: formatMessage({ id: `${intlPrefix}.instance.name` }) },
     { name: 'versionName', type: 'string', label: formatMessage({ id: 'version' }) },
-    { name: 'appServiceName', type: 'string', label: formatMessage({ id: 'app' }) },
+    { name: 'appServiceName', type: 'string', label: formatMessage({ id: 'appService' }) },
     { name: 'status', type: 'string' },
     { name: 'podRunningCount', type: 'number' },
     { name: 'podCount', type: 'number' },

@@ -1,8 +1,7 @@
-import React, { createContext, useContext, useMemo } from 'react';
+import React, { createContext, useContext, useEffect, useMemo } from 'react';
 import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
-import { DataSet } from 'choerodon-ui/pro';
-import ListDataSet from './ListDataSet';
+import useStore from './useStore';
 
 const Store = createContext();
 
@@ -14,9 +13,9 @@ export const StoreProvider = injectIntl(inject('AppState')(
   (props) => {
     const {
       AppState: { currentMenuType: { id: projectId } },
-      intl: { formatMessage },
       children,
     } = props;
+    const appServiceStore = useStore();
     const intlPrefix = 'c7ncd.appService';
     const listPermissions = useMemo(() => ([
       'devops-service.app-service.pageByOptions',
@@ -41,13 +40,16 @@ export const StoreProvider = injectIntl(inject('AppState')(
       'devops-service.app-service.deletePermission',
       'devops-service.app-service.listNonPermissionUsers',
     ]), []);
-    const listDs = useMemo(() => new DataSet(ListDataSet(intlPrefix, formatMessage, projectId, 'list')), [projectId]);
+
+    useEffect(() => {
+      appServiceStore.checkHasApp(projectId);
+    }, []);
 
     const value = {
       ...props,
       prefixCls: 'c7ncd-appService',
       intlPrefix,
-      listDs,
+      appServiceStore,
       listPermissions,
       detailPermissions,
     };

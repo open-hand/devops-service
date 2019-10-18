@@ -2,9 +2,10 @@ import React, { Component, Fragment } from 'react';
 import { observer } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { Content, Header, Page, Permission, stores, Action } from '@choerodon/master';
+import { Content, Header, Page, Permission, stores, Action, Choerodon } from '@choerodon/boot';
 import { Button, Select, Modal, Form, Icon, Collapse, Avatar, Pagination, Tooltip } from 'choerodon-ui';
 import ReactMarkdown from 'react-markdown';
+import { Modal as ProModal } from 'choerodon-ui/pro';
 import _ from 'lodash';
 import Loading from '../../../../components/loading';
 import TimePopover from '../../../../components/timePopover';
@@ -19,9 +20,11 @@ import './style/AppTag.less';
 import AppTagCreate from './AppTagCreate';
 import AppTagEdit from './AppTagEdit';
 import ClickText from '../../../../components/click-text';
+import EmptyPage from '../../../../components/empty-page';
 
 const { AppState } = stores;
 const { Panel } = Collapse;
+const deleteKey = ProModal.key();
 
 @observer
 class AppTag extends Component {
@@ -127,7 +130,17 @@ class AppTag extends Component {
    * @param tag
    */
   openRemove = (tag) => {
-    this.setState({ visible: true, tag });
+    const { intl: { formatMessage } } = this.props;
+    this.setState({ tag });
+    ProModal.open({
+      key: deleteKey,
+      title: formatMessage({ id: 'apptag.action.delete.title' }, { name: tag }),
+      children: formatMessage({ id: 'apptag.delete.tooltip' }),
+      onOk: this.deleteTag,
+      okText: formatMessage({ id: 'delete' }),
+      okProps: { color: 'red' },
+      cancelProps: { color: 'dark' },
+    });
   };
 
   /**
@@ -219,18 +232,7 @@ class AppTag extends Component {
                     'devops-service.devops-git.deleteTag',
                   ],
                   text: formatMessage({ id: 'delete' }),
-                  action: () => { 
-                    this.setState({ tag: release.tagName });
-                    this.customConfirm.delete({
-                      titleId: 'apptag.action.delete.title',
-                      titleVal: {
-                        name: release.tagName,
-                      },
-                      contentId: 'apptag.delete.tooltip',
-                      handleOk: this.deleteTag,
-                    });
-                    // this.openRemove(release.tagName);
-                  },
+                  action: () => this.openRemove(release.tagName),
                 },
               ]}
               />
@@ -272,7 +274,7 @@ class AppTag extends Component {
         className="c7n-tag-wrapper page-container"
         service={['devops-service.devops-git.pageTagsByOptions']}
       >
-        {appData && appData.length && appId ? <Fragment>
+        {appData && appData.length && appId ? <div className="c7ncd-tag-content">
           {loading || _.isNull(loading) ? <Loading display /> : <Fragment>
             {tagList.length ? <Fragment>
               <Collapse bordered={false}>{tagList}</Collapse>
@@ -285,34 +287,16 @@ class AppTag extends Component {
                   onShowSizeChange={this.handlePaginChange}
                 />
               </div>
-            </Fragment> : (<div className="c7n-tag-empty">
-              <div>
-                <Icon type="info" className="c7n-tag-empty-icon" />
-                <span className="c7n-tag-empty-text">{formatMessage({ id: `apptag.${empty}.empty` })}</span>
-              </div>
-              {empty === 'tag' ? (
-                <Button
-                  type="primary"
-                  funcType="raised"
-                  onClick={() => this.displayCreateModal(true, empty)}
-                >
-                  <FormattedMessage id="apptag.create" />
-                </Button>
-              ) : null}
-            </div>)}
+            </Fragment> : (
+              <EmptyPage
+                title={formatMessage({ id: 'code-management.tag.empty' })}
+                describe={formatMessage({ id: 'code-management.tag.empty.des' })}
+                btnText={formatMessage({ id: 'apptag.create' })}
+                onClick={() => this.displayCreateModal(true, empty)}
+                access
+              />
+            )}
           </Fragment>}
-          <Modal
-            confirmLoading={deleteLoading}
-            visible={visible}
-            title={`${formatMessage({ id: 'apptag.action.delete' })}“${tag}”`}
-            closable={false}
-            footer={[
-              <Button key="back" onClick={this.closeRemove} disabled={deleteLoading}>{<FormattedMessage id="cancel" />}</Button>,
-              <Button key="submit" type="danger" onClick={this.deleteTag} loading={deleteLoading}>
-                {formatMessage({ id: 'delete' })}
-              </Button>,
-            ]}
-          ><div className="c7n-padding-top_8">{formatMessage({ id: 'apptag.delete.tooltip' })}</div></Modal>
           {creationDisplay ? <AppTagCreate
             app={titleName}
             store={AppTagStore}
@@ -326,7 +310,7 @@ class AppTag extends Component {
             release={editRelease}
             show={editDisplay}
             close={this.displayEditModal}
-          /> : null}</Fragment> : <Loading display={DevPipelineStore.getLoading} />}
+          /> : null}</div> : <Loading display={DevPipelineStore.getLoading} />}
       </Page>
     );
   }

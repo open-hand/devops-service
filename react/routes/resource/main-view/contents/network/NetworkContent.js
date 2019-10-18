@@ -1,13 +1,13 @@
 import React, { Fragment, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
-import { Action } from '@choerodon/master';
+import { Action } from '@choerodon/boot';
 import {
   Tooltip,
   Icon,
   Popover,
 } from 'choerodon-ui';
-import { Table } from 'choerodon-ui/pro';
+import { Modal, Table } from 'choerodon-ui/pro';
 import _ from 'lodash';
 import classnames from 'classnames';
 import StatusIcon from '../../../../../components/StatusIcon';
@@ -20,8 +20,11 @@ import { useMainStore } from '../../stores';
 
 import './index.less';
 
-
 const { Column } = Table;
+const modalKey = Modal.key();
+const modalStyle = {
+  width: 740,
+};
 
 const NetworkContent = observer(() => {
   const {
@@ -241,13 +244,13 @@ const NetworkContent = observer(() => {
     return (
       <div className="net-config-content">
         <span className="net-config-type">{type}</span>
-        <Popover
+        <Tooltip
           arrowPointAtCenter
           placement="bottomRight"
-          content={content}
+          title={content}
         >
           <Icon type="expand_more" className="net-expend-icon" />
-        </Popover>
+        </Tooltip>
       </div>
     );
   }
@@ -272,12 +275,20 @@ const NetworkContent = observer(() => {
   }
 
   function openModal() {
-    setShowModal(true);
-  }
-
-  function closeModal(isLoad) {
-    setShowModal(false);
-    isLoad && refresh();
+    Modal.open({
+      key: modalKey,
+      style: modalStyle,
+      drawer: true,
+      title: formatMessage({ id: 'network.header.update' }),
+      children: <EditNetwork
+        netId={networkDs.current.get('id')}
+        envId={parentId}
+        store={networkStore}
+        refresh={refresh}
+      />,
+      okText: formatMessage({ id: 'save' }),
+      afterClose: () => networkStore.setSingleData([]),
+    });
   }
 
   return (
@@ -291,19 +302,10 @@ const NetworkContent = observer(() => {
       >
         <Column name="name" renderer={renderName} />
         <Column renderer={renderAction} width="0.7rem" />
-        <Column renderer={renderTargetType} header={formatMessage({ id: `${intlPrefix}.application.net.targetType` })} />
+        <Column renderer={renderTargetType} header={formatMessage({ id: `${intlPrefix}.application.net.targetType` })} width="1.2rem" />
         <Column renderer={renderTarget} header={formatMessage({ id: `${intlPrefix}.application.net.target` })} />
-        <Column name="type" renderer={renderConfigType} />
+        <Column name="type" renderer={renderConfigType} width="1.5rem" />
       </Table>
-      {showModal && (
-        <EditNetwork
-          netId={networkDs.current.get('id')}
-          envId={parentId}
-          visible={showModal}
-          store={networkStore}
-          onClose={closeModal}
-        />
-      )}
     </div>
   );
 });

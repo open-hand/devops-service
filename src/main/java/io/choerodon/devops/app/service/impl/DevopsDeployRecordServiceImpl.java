@@ -85,8 +85,9 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
                             Long envId = TypeUtil.objToLong(id);
                             if (envMap.containsKey(envId)) {
                                 return envMap.get(envId).getName();
+                            } else {
+                                return "此环境已删除";
                             }
-                            return null;
                         }).collect(Collectors.toList());
                 if (!envNames.isEmpty()) {
                     devopsDeployRecordVO.setEnv(Joiner.on(COMMA).join(envNames));
@@ -96,6 +97,11 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
             if (userMap.containsKey(devopsDeployRecordVO.getDeployCreatedBy())) {
                 IamUserDTO targetUser = userMap.get(devopsDeployRecordVO.getDeployCreatedBy());
                 devopsDeployRecordVO.setUserName(targetUser.getRealName());
+                if(targetUser.getLdap()) {
+                    devopsDeployRecordVO.setUserLoginName(targetUser.getLoginName());
+                }else {
+                    devopsDeployRecordVO.setUserLoginName(targetUser.getEmail());
+                }
                 devopsDeployRecordVO.setUserImage(targetUser.getImageUrl());
             }
         });
@@ -134,6 +140,15 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
     @Override
     public void baseDelete(DevopsDeployRecordDTO devopsDeployRecordDTO) {
         devopsDeployRecordMapper.delete(devopsDeployRecordDTO);
+    }
+
+    @Override
+    public void deleteManualRecordByEnv(Long envId) {
+        DevopsDeployRecordDTO deleteCondition = new DevopsDeployRecordDTO();
+        deleteCondition.setEnv(String.valueOf(envId));
+        deleteCondition.setDeployType("manual");
+
+        devopsDeployRecordMapper.delete(deleteCondition);
     }
 
     @Override

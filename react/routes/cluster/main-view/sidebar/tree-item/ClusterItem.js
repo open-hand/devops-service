@@ -1,7 +1,7 @@
 import React, { Fragment, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { Action } from '@choerodon/master';
+import { Action, Choerodon } from '@choerodon/boot';
 import { Modal, Icon } from 'choerodon-ui/pro';
 import { Input } from 'choerodon-ui';
 import { useClusterStore } from '../../../stores';

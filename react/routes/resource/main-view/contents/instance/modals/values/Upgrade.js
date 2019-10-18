@@ -2,6 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { observer, inject } from 'mobx-react';
 import { Select, Button, Spin } from 'choerodon-ui';
 import { injectIntl, FormattedMessage } from 'react-intl';
+import { Choerodon } from '@choerodon/boot';
 import _ from 'lodash';
 import YamlEditor from '../../../../../../../components/yamlEditor';
 import InterceptMask from '../../../../../../../components/intercept-mask';
@@ -225,10 +226,10 @@ export default class Upgrade extends Component {
     try {
       const result = await store.upgrade(projectId, data);
       if (handlePromptError(result)) {
-        Choerodon.prompt('变更成功.');
+        Choerodon.prompt('变更成功');
         refresh();
       } else {
-        Choerodon.prompt('变更失败.');
+        Choerodon.prompt('变更失败');
       }
     } catch (e) {
       Choerodon.handleResponseError(e);

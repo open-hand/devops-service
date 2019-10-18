@@ -1,6 +1,6 @@
 import { observable, action, computed } from 'mobx';
 import _ from 'lodash';
-import { axios, store, stores } from '@choerodon/master';
+import { axios, store, stores, Choerodon } from '@choerodon/boot';
 import { handlePromptError } from '../../../../../utils';
 
 const { AppState } = stores;

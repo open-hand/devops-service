@@ -156,6 +156,7 @@ public class AgentCommandServiceImpl implements AgentCommandService {
             msg.setPayload(mapper.writeValueAsString(payload));
             String msgPayload = mapper.writeValueAsString(msg);
 
+            // 一开始没有自动升级
             //0.18.0到0.19.0 为了agent的平滑升级，所以不能以通用的新Msg方式发送，继续用以前的Msg格式发送
             brokerKeySessionMapper.getSessionsByKey(CLUSTER + devopsClusterDTO.getId()).stream().filter(Objects::nonNull).forEach(session -> {
                 if (session.isOpen()) {

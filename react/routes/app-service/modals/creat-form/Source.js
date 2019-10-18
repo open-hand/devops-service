@@ -1,21 +1,22 @@
-import React, { Fragment, useCallback, useState, useEffect } from 'react';
-import { Form, Select } from 'choerodon-ui/pro';
+import React, { useEffect } from 'react';
+import { Form, Select, TextField } from 'choerodon-ui/pro';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import map from 'lodash/map';
 
 import './index.less';
+import Tips from '../../../../components/new-tips';
 
 const { Option, OptGroup } = Select;
 
 export default injectIntl(observer((props) => {
-  const { record, AppStore, projectId, intl: { formatMessage }, intlPrefix, prefixCls } = props;
+  const { record, appServiceStore, projectId, intl: { formatMessage }, intlPrefix, prefixCls } = props;
 
   useEffect(() => {
     if (record.get('appServiceSource')) {
-      AppStore.loadAppService(projectId, record.get('appServiceSource'));
+      appServiceStore.loadAppService(projectId, record.get('appServiceSource'));
     } else {
-      AppStore.setAppService([]);
+      appServiceStore.setAppService([]);
     }
     record.set('templateAppServiceId', null);
   }, [record.get('appServiceSource')]);
@@ -23,10 +24,10 @@ export default injectIntl(observer((props) => {
   useEffect(() => {
     async function loadVersion() {
       if (record.get('templateAppServiceId')) {
-        const res = await AppStore.loadVersion(projectId, record.get('templateAppServiceId'));
+        const res = await appServiceStore.loadVersion(projectId, record.get('templateAppServiceId'));
         res && res[0] && record.set('templateAppServiceVersionId', res[0].id);
       } else {
-        AppStore.setVersion([]);
+        appServiceStore.setVersion([]);
       }
     }
     loadVersion();
@@ -36,21 +37,29 @@ export default injectIntl(observer((props) => {
   return (
     <div className={`${prefixCls}-create-wrap-template`}>
       <div className={`${prefixCls}-create-wrap-template-title`}>
-        <span>{formatMessage({ id: `${intlPrefix}.template` })}</span>
+        <Tips
+          helpText={formatMessage({ id: `${intlPrefix}.template.tips` })}
+          title={formatMessage({ id: `${intlPrefix}.template` })}
+        />
       </div>
       <Form record={record} columns={3}>
         <Select name="appServiceSource">
           <Option value="normal_service">{formatMessage({ id: `${intlPrefix}.source.project` })}</Option>
           <Option value="share_service">{formatMessage({ id: `${intlPrefix}.source.organization` })}</Option>
-          <Option value="market_service">{formatMessage({ id: `${intlPrefix}.source.market` })}</Option>
         </Select>
-        <Select name="templateAppServiceId" colSpan={2} searchable disabled={!record.get('appServiceSource')}>
+        <Select
+          name="templateAppServiceId"
+          colSpan={2}
+          searchable
+          disabled={!record.get('appServiceSource')}
+          notFoundContent={<FormattedMessage id={`${intlPrefix}.empty`} />}
+        >
           {record.get('appServiceSource') === 'normal_service' ? (
-            map(AppStore.getAppService[0] && AppStore.getAppService[0].appServiceList, ({ id, name }) => (
+            map(appServiceStore.getAppService[0] && appServiceStore.getAppService[0].appServiceList, ({ id, name }) => (
               <Option value={id}>{name}</Option>
             ))
           ) : (
-            map(AppStore.getAppService, ({ id: groupId, name: groupName, appServiceList }) => (
+            map(appServiceStore.getAppService, ({ id: groupId, name: groupName, appServiceList }) => (
               <OptGroup label={groupName} key={groupId}>
                 {map(appServiceList, ({ id, name }) => (
                   <Option value={id}>{name}</Option>
@@ -60,7 +69,7 @@ export default injectIntl(observer((props) => {
           )}
         </Select>
         <Select name="templateAppServiceVersionId" colSpan={3} searchable clearButton={false} disabled={!record.get('templateAppServiceId')}>
-          {map(AppStore.getVersion, ({ id, version }) => (
+          {map(appServiceStore.getVersion, ({ id, version }) => (
             <Option value={id}>{version}</Option>
           ))}
         </Select>

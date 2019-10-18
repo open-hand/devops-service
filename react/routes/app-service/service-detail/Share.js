@@ -1,8 +1,9 @@
 import React, { useEffect } from 'react';
-import { TabPage, Content, Permission, Breadcrumb, Action } from '@choerodon/master';
+import { TabPage, Content, Permission, Breadcrumb, Action } from '@choerodon/boot';
 import { Table, Modal } from 'choerodon-ui/pro';
 import { Button, Tooltip } from 'choerodon-ui';
 import { FormattedMessage } from 'react-intl';
+import { useAppTopStore } from '../stores';
 import { useServiceDetailStore } from './stores';
 import HeaderButtons from './HeaderButtons';
 import ShareRule from './modals/share-rule';
@@ -15,17 +16,19 @@ const modalStyle = {
   width: 380,
 };
 
-const Share = (props) => {
+const Share = () => {
   const {
-    intl: { formatMessage },
+    appServiceStore,
     intlPrefix,
     prefixCls,
+  } = useAppTopStore();
+  const {
+    intl: { formatMessage },
     shareDs,
     shareVersionsDs,
     shareLevelDs,
     params: { id },
     AppState: { currentMenuType: { projectId } },
-    AppStore,
     detailDs,
   } = useServiceDetailStore();
 
@@ -83,7 +86,7 @@ const Share = (props) => {
         formatMessage={formatMessage}
         projectId={projectId}
         appServiceId={id}
-        store={AppStore}
+        store={appServiceStore}
         dataSet={shareDs}
       />,
       drawer: true,
@@ -103,7 +106,15 @@ const Share = (props) => {
   }
 
   function handleDelete() {
-    shareDs.delete(shareDs.current);
+    const record = shareDs.current;
+    const modalProps = {
+      title: formatMessage({ id: `${intlPrefix}.rule.delete.title` }),
+      children: formatMessage({ id: `${intlPrefix}.rule.delete.des` }),
+      okText: formatMessage({ id: 'delete' }),
+      okProps: { color: 'red' },
+      cancelProps: { color: 'dark' },
+    };
+    shareDs.delete(record, modalProps);
   }
 
   function renderButtons() {
@@ -164,8 +175,8 @@ const Share = (props) => {
       <Content className={`${prefixCls}-detail-content`}>
         <Table dataSet={shareDs} filter={handleTableFilter}>
           <Column name="id" renderer={renderNumber} align="left" />
+          <Column renderer={renderAction} width="0.7rem" />
           <Column name="versionType" />
-          <Column renderer={renderAction} />
           <Column name="version" sortable />
           <Column name="projectName" renderer={renderProjectName} />
         </Table>

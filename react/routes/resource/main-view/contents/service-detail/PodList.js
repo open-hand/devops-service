@@ -105,6 +105,13 @@ const PodList = observer(() => {
         textStyle: {
           color: '#000',
         },
+        formatter(obj) {
+          return `${formatMessage({ id: `${intlPrefix}.time` })}: ${
+            obj.name
+          }<br/>${formatMessage({ id: `${intlPrefix}.usage` })}: ${
+            obj.value
+          }`;
+        },
       },
     } : {
       grid: {
@@ -170,7 +177,7 @@ const PodList = observer(() => {
         <ul className="service-detail-pod-list" key={podId}>
           <li className="service-detail-pod-item">
             <span className="service-detail-pod-item-name">{podName}</span>
-            <span className="service-detail-pod-item-key">
+            <span className="service-detail-pod-item-time">
               <TimePopover content={creationDate} />
             </span>
           </li>

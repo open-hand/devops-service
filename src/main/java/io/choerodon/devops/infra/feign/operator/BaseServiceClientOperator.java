@@ -98,7 +98,8 @@ public class BaseServiceClientOperator {
     public List<ProjectWithRoleVO> listProjectWithRoleDTO(Long userId) {
         List<ProjectWithRoleVO> returnList = new ArrayList<>();
         int page = 0;
-        int size = 0;
+        // TODO 此处的分页参数，在以后需要改为0，然后通知iam框架组修改接口，处理size=0的情况
+        int size = 10000;
         ResponseEntity<PageInfo<ProjectWithRoleVO>> pageResponseEntity =
                 baseServiceClient.listProjectWithRole(userId, page, size);
         PageInfo<ProjectWithRoleVO> projectWithRoleDTOPage = pageResponseEntity.getBody();
@@ -114,7 +115,7 @@ public class BaseServiceClientOperator {
             Long[] newIds = new Long[ids.size()];
             try {
                 userDTOS = baseServiceClient
-                        .listUsersByIds(ids.toArray(newIds)).getBody();
+                        .listUsersByIds(ids.toArray(newIds), false).getBody();
 
             } catch (Exception e) {
                 throw new CommonException("error.users.get", e);

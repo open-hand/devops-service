@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { observer } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
 import { Modal } from 'choerodon-ui/pro';
-import { Action } from '@choerodon/master';
+import { Action } from '@choerodon/boot';
 import TreeItemName from '../../../../../components/treeitem-name';
 import GroupForm from '../../modals/GroupForm';
 import { handlePromptError } from '../../../../../utils';
@@ -37,6 +37,7 @@ function GroupItem({ record, search, intl: { formatMessage }, intlPrefix }) {
       children: <GroupForm dataSet={groupFormDs} treeDs={treeDs} />,
       drawer: true,
       style: modalStyle,
+      okText: formatMessage({ id: 'save' }),
     });
   }
 
@@ -60,6 +61,9 @@ function GroupItem({ record, search, intl: { formatMessage }, intlPrefix }) {
       title: formatMessage({ id: `${intlPrefix}.group.delete` }, { name }),
       children: <div>{formatMessage({ id: `${intlPrefix}.group.delete.warn` })}</div>,
       onOk: handleDelete,
+      okText: formatMessage({ id: 'delete' }),
+      okProps: { color: 'red' },
+      cancelProps: { color: 'dark' },
     });
   }
 

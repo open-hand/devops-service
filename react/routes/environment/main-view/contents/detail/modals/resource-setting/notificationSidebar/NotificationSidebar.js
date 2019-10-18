@@ -5,7 +5,7 @@
 import React, { Component } from 'react';
 import { observer, inject } from 'mobx-react';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { Content } from '@choerodon/master';
+import { Content, Choerodon } from '@choerodon/boot';
 import _ from 'lodash';
 import {
   Form,
@@ -180,14 +180,14 @@ export default class NotificationSidebar extends Component {
       <Sidebar
         destroyOnClose
         cancelText={<FormattedMessage id="cancel" />}
-        okText={<FormattedMessage id={type} />}
+        okText={<FormattedMessage id={type === 'create' ? 'create' : 'save'} />}
         title={<FormattedMessage id={`notification.sidebar.${type}`} />}
         visible={visible}
         onOk={this.handleSubmit}
         onCancel={this.handleClose}
         confirmLoading={submitting}
         className="c7n-notifications-sidebar"
-        width={400}
+        width={380}
       >
         <Content
           className="sidebar-content"

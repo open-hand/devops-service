@@ -1,15 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Fragment } from 'react';
 import { Table, Modal } from 'choerodon-ui/pro';
 import { observer } from 'mobx-react-lite';
 import { FormattedMessage } from 'react-intl';
 import { withRouter, Link } from 'react-router-dom';
-import { Page, Content, Header, Permission, Action, Breadcrumb } from '@choerodon/master';
-import { Button, Spin } from 'choerodon-ui';
+import { Page, Content, Header, Permission, Action, Breadcrumb, Choerodon } from '@choerodon/boot';
+import { Button } from 'choerodon-ui';
 import pick from 'lodash/pick';
-import checkPermission from '../../../utils/checkPermission';
-import Loading from '../../../components/loading';
 import TimePopover from '../../../components/timePopover';
-import EmptyPage from '../../../components/empty-page';
 import { useAppTopStore } from '../stores';
 import { useAppServiceStore } from './stores';
 import CreateForm from '../modals/creat-form';
@@ -26,52 +23,41 @@ const modalStyle1 = {
   width: 380,
 };
 const modalStyle2 = {
-  width: '70%',
+  width: 'calc(100vw - 3.52rem)',
 };
 
-const AppService = withRouter(observer((props) => {
+const ListView = withRouter(observer((props) => {
   const {
     intlPrefix,
     prefixCls,
-    listDs,
     listPermissions,
+    appServiceStore,
   } = useAppTopStore();
   const {
     intl: { formatMessage },
     AppState: {
       currentMenuType: {
         id: projectId,
-        organizationId,
       },
     },
     importDs,
     importTableDs,
-    AppStore,
     selectedDs,
+    listDs,
   } = useAppServiceStore();
-
-  const [access, setAccess] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [isInit, setIsInit] = useState(true);
 
   useEffect(() => {
-    async function judgeRole() {
-      const data = {
-        code: 'devops-service.app-service.create',
-        projectId,
-        organizationId,
-        resourceType: 'project',
-      };
-      try {
-        const res = await checkPermission(data);
-        setAccess(res);
-        setLoading(false);
-      } catch (e) {
-        setAccess(false);
+    // 确定dataset加载完毕后才打开创建框
+    // 否则会造成dataset实例丢失
+    if (isInit && listDs.status === 'ready') {
+      const { location: { state } } = props;
+      if (state && state.openCreate) {
+        openModal(listDs.create());
       }
+      setIsInit(false);
     }
-    judgeRole();
-  }, []);
-
+  }, [listDs.status]);
 
   function refresh() {
     listDs.query();
@@ -179,7 +165,7 @@ const AppService = withRouter(observer((props) => {
       children: <CreateForm
         dataSet={listDs}
         record={record}
-        AppStore={AppStore}
+        appServiceStore={appServiceStore}
         projectId={projectId}
         intlPrefix={intlPrefix}
         prefixCls={prefixCls}
@@ -200,7 +186,7 @@ const AppService = withRouter(observer((props) => {
         dataSet={importDs}
         tableDs={importTableDs}
         record={importDs.current}
-        AppStore={AppStore}
+        appServiceStore={appServiceStore}
         projectId={projectId}
         intlPrefix={intlPrefix}
         prefixCls={prefixCls}
@@ -214,12 +200,20 @@ const AppService = withRouter(observer((props) => {
   }
 
   function openEdit() {
-    AppStore.setAppServiceId(listDs.current.get('id'));
+    appServiceStore.setAppServiceId(listDs.current.get('id'));
     openModal(listDs.current);
   }
 
   function handleDelete() {
-    listDs.delete(listDs.current);
+    const record = listDs.current;
+    const modalProps = {
+      title: formatMessage({ id: `${intlPrefix}.delete.title` }, { name: record.get('name') }),
+      children: formatMessage({ id: `${intlPrefix}.delete.des` }),
+      okText: formatMessage({ id: 'delete' }),
+      okProps: { color: 'red' },
+      cancelProps: { color: 'dark' },
+    };
+    listDs.delete(record, modalProps);
   }
 
   async function changeActive(active) {
@@ -238,7 +232,7 @@ const AppService = withRouter(observer((props) => {
 
   async function handleChangeActive(active) {
     try {
-      if (await AppStore.changeActive(projectId, listDs.current.get('id'), active)) {
+      if (await appServiceStore.changeActive(projectId, listDs.current.get('id'), active)) {
         refresh();
       } else {
         return false;
@@ -284,41 +278,30 @@ const AppService = withRouter(observer((props) => {
     </Header>;
   }
 
-  function getContent() {
-    if (loading) return <Loading />;
-
-    return access ? <Table
-      dataSet={listDs}
-      border={false}
-      queryBar="bar"
-      filter={handleTableFilter}
-      className={`${prefixCls}.table`}
-      rowClassName="c7ncd-table-row-font-color"
-    >
-      <Column name="name" renderer={renderName} sortable />
-      <Column renderer={renderActions} width="0.7rem" />
-      <Column name="code" sortable />
-      <Column name="type" renderer={renderType} />
-      <Column name="repoUrl" renderer={renderUrl} />
-      <Column name="creationDate" renderer={renderDate} />
-      <Column name="active" renderer={renderStatus} width="0.7rem" align="left" />
-    </Table> : <Spin spinning={listDs.status === 'loading'}>
-      <EmptyPage
-        title={formatMessage({ id: 'empty.title.prohibited' })}
-        describe={formatMessage({ id: 'empty.tips.app.member' })}
-      />
-    </Spin>;
-  }
-
   return (
     <Page service={listPermissions}>
       {getHeader()}
       <Breadcrumb />
       <Content className={`${prefixCls}-content`}>
-        {getContent()}
+        <Table
+          dataSet={listDs}
+          border={false}
+          queryBar="bar"
+          filter={handleTableFilter}
+          className={`${prefixCls}.table`}
+          rowClassName="c7ncd-table-row-font-color"
+        >
+          <Column name="name" renderer={renderName} sortable />
+          <Column renderer={renderActions} width="0.7rem" />
+          <Column name="code" sortable />
+          <Column name="type" renderer={renderType} />
+          <Column name="repoUrl" renderer={renderUrl} />
+          <Column name="creationDate" renderer={renderDate} />
+          <Column name="active" renderer={renderStatus} width="0.7rem" align="left" />
+        </Table>
       </Content>
     </Page>
   );
 }));
 
-export default AppService;
+export default ListView;

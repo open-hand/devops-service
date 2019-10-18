@@ -1,12 +1,13 @@
 import omit from 'lodash/omit';
 import uuidV1 from 'uuid/v1';
-import { axios } from '@choerodon/master';
+import { axios } from '@choerodon/boot';
 
-function getRandomName(prefix) {
+function getRandomName(prefix = '') {
   const randomString = uuidV1();
+  const realPrefix = prefix.split('_')[1] || prefix.split('_')[0];
 
-  return prefix
-    ? `${prefix.substring(0, 24)}-${randomString.substring(0, 5)}`
+  return realPrefix
+    ? `${realPrefix.substring(0, 24)}-${randomString.substring(0, 5)}`
     : randomString.substring(0, 30);
 }
 
@@ -111,7 +112,7 @@ export default ((intlPrefix, formatMessage, projectId, envOptionsDs, valueIdOpti
       { name: 'values', type: 'string' },
       { name: 'type', type: 'string', defaultValue: 'create' },
       { name: 'isNotChange', type: 'boolean', defaultValue: false },
-      { name: 'appServiceSource', type: 'string', defaultValue: 'normal_service', label: formatMessage({ id: `${intlPrefix}.source` }) },
+      { name: 'appServiceSource', type: 'string', defaultValue: 'normal_service' },
     ],
     events: {
       create: handleCreate,

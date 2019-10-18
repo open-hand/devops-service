@@ -3,7 +3,7 @@ import { observer, inject } from 'mobx-react';
 import { Link } from 'react-router-dom';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { Button, Modal, Spin, Tooltip, Form, Input, Select, Radio, Icon } from 'choerodon-ui';
-import { Content } from '@choerodon/master';
+import { Content, Choerodon } from '@choerodon/boot';
 import classnames from 'classnames';
 import _ from 'lodash';
 import uuidv1 from 'uuid/v1';
@@ -613,7 +613,7 @@ export default class TaskCreate extends Component {
         </FormItem>
         <div className="c7ncd-sidebar-select pipeline-type-tips">
           <FormItem
-            className="c7n-select_512"
+            className="c7ncd-select_has-tips"
             {...formItemLayout}
           >
             {getFieldDecorator('triggerVersion', {
@@ -807,7 +807,7 @@ export default class TaskCreate extends Component {
         {getFieldValue('users') && getFieldValue('users').length > 1 && (
           <div className="c7ncd-sidebar-select pipeline-type-tips">
             <FormItem
-              className="c7n-select_512"
+              className="c7ncd-select_has-tips"
               {...formItemLayout}
             >
               {getFieldDecorator('isCountersigned', {
@@ -842,24 +842,9 @@ export default class TaskCreate extends Component {
         title={<FormattedMessage id={`pipeline.task.${isEdit ? 'edit' : 'create'}.head`} />}
         visible={visible}
         width={740}
-        footer={
-          [<Button
-            key="submit"
-            type="primary"
-            funcType="raised"
-            onClick={this.handleSubmit}
-            loading={submitting}
-          >
-            <FormattedMessage id={isEdit ? 'save' : 'add'} />
-          </Button>, <Button
-            key="cancel"
-            funcType="raised"
-            onClick={onClose}
-            disabled={submitting}
-          >
-            <FormattedMessage id="cancel" />
-          </Button>]
-        }
+        onOk={this.handleSubmit}
+        onCancel={onClose}
+        okText={formatMessage({ id: isEdit ? 'save' : 'add' })}
       >
         <Content
           className="sidebar-content c7n-pipeline-task-create"

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Route, Switch } from 'react-router-dom';
 import { inject } from 'mobx-react';
-import { asyncRouter, asyncLocaleProvider, nomatch } from '@choerodon/master';
+import { asyncRouter, asyncLocaleProvider, nomatch } from '@choerodon/boot';
 import { ModalContainer } from 'choerodon-ui/pro';
 
 import './index.less';
@@ -32,9 +32,9 @@ function DEVOPSIndex({ match, AppState: { currentLanguage: language } }) {
           <Route path={`${match.url}/environment`} component={Environment} />
           <Route path={`${match.url}/cert-management`} component={Certificate} />
           <Route path={`${match.url}/cluster-management`} component={Cluster} />
-          <Route path={`${match.url}/reports`} component={Reports} />
           <Route path={`${match.url}/repository`} component={Repository} />
           <Route path={`${match.url}/project-repository`} component={ProRepository} />
+          <Route path={`${match.url}/reports`} component={Reports} />
           <Route path="*" component={nomatch} />
         </Switch>
         <ModalContainer />

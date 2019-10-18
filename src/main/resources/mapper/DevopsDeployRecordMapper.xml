@@ -16,10 +16,14 @@
 			dc.created_by deployCreatedBy,
 			NULL pipelineName,
 			NULL pipelineTriggerType,
-			NULL pipelineId
+			NULL pipelineId,
+			dasi.id instanceId,
+			dasi.env_id envId,
+			dasi.app_service_id appServiceId
 		FROM
 			devops_deploy_record ddr
 			LEFT JOIN devops_env_command dc ON ddr.deploy_id = dc.id
+		    LEFT JOIN devops_app_service_instance dasi ON dc.object_id = dasi.id
 		WHERE
 			ddr.deploy_type = 'manual' UNION
 		SELECT
@@ -33,7 +37,10 @@
 			dpc.created_by deployCreatedBy,
 			dpc.pipeline_name pipelineName,
 			dpc.trigger_type pipelineTriggerType,
-			dpc.pipeline_id pipelineId
+			dpc.pipeline_id pipelineId,
+			NULL instanceId,
+			NULL envId,
+			NULL appServiceId
 		FROM
 			devops_deploy_record ddr
 			LEFT JOIN devops_pipeline_record dpc ON ddr.deploy_id = dpc.id

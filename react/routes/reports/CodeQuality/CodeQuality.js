@@ -1,8 +1,9 @@
 import React, { Component, Fragment } from 'react';
 import { observer, inject } from 'mobx-react';
+import { Link, withRouter } from 'react-router-dom';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { Page, Header, Content, Breadcrumb } from '@choerodon/master';
-import { Select, Button, Tooltip, Spin } from 'choerodon-ui';
+import { Page, Header, Content, Breadcrumb } from '@choerodon/boot';
+import { Select, Button, Tooltip, Spin, Breadcrumb as Bread } from 'choerodon-ui';
 import ReactEcharts from 'echarts-for-react';
 import _ from 'lodash';
 import moment from 'moment';
@@ -14,6 +15,7 @@ import LoadingBar from '../../../components/loading';
 import './CodeQuality.less';
 
 const { Option } = Select;
+const { Item } = Bread;
 const OBJECT_TYPE = {
   issue: [
     { name: 'bugs', color: '#5266d4' },
@@ -30,6 +32,7 @@ const OBJECT_TYPE = {
   ],
 };
 
+@withRouter
 @injectIntl
 @inject('AppState')
 @observer
@@ -43,10 +46,6 @@ class CodeQuality extends Component {
   }
 
   componentDidMount() {
-    const {
-      ReportsStore,
-    } = this.props;
-
     this.loadDatas();
   }
 
@@ -391,7 +390,15 @@ class CodeQuality extends Component {
           <FormattedMessage id="refresh" />
         </Button>
       </Header>
-      <Breadcrumb title={formatMessage({ id: 'report.code-quality.head' })} />
+      <Breadcrumb custom>
+        <Item>{name}</Item>
+        <Item>
+          <Link to={`/charts${search}`}>
+            {formatMessage({ id: 'report.bread.title' })}
+          </Link>
+        </Item>
+        <Item>{formatMessage({ id: 'report.code-quality.head' })}</Item>
+      </Breadcrumb>
       <Content>
         {isRefresh ? <LoadingBar display={isRefresh} /> : content}
       </Content>

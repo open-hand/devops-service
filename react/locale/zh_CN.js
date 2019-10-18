@@ -28,6 +28,7 @@ const commonField = {
   upgrade: '升级',
   modify: '变更',
   iknow: '我知道了',
+  reset: '重置',
 
   // 通用描述
   app: '应用',
@@ -106,6 +107,7 @@ const commonField = {
   required: '该字段是必输的',
   project: '本项目',
   market: '应用市场',
+  share: '共享应用',
   organization: '本组织',
   public: '全平台',
   filter: '过滤表',
@@ -151,6 +153,7 @@ const commonField = {
   formatError: '格式有误',
   checkEmailError: '请输入有效的邮箱地址',
   nameCanNotBeEmpty: '名称不能为空',
+  contentCanNotBeEmpty: '内容不能为空',
   ci_passed: '已完成',
   ci_running: '进行中',
   ci_failed: '已失败',
@@ -236,8 +239,10 @@ const deployment = {
   'c7ncd.deployment.instance.status.operating': '处理中',
   'c7ncd.deployment.instance.status.running': '运行中',
   'c7ncd.deployment.instance.action.stop': '停用实例',
+  'c7ncd.deployment.instance.action.stop.title': '停用实例“{name}”',
   'c7ncd.deployment.instance.action.stop.tips': '确定要停用该实例吗？',
   'c7ncd.deployment.instance.action.start': '启用实例',
+  'c7ncd.deployment.instance.action.start.title': '启用实例“{name}”',
   'c7ncd.deployment.instance.action.start.tips': '确定要重启该实例吗？',
   'c7ncd.deployment.instance.action.delete': '删除实例',
   'c7ncd.deployment.instance.action.delete.tips': '删除实例后将不可恢复，同时与其相关的网络也将失效，确定要删除该实例吗？',
@@ -251,10 +256,10 @@ const deployment = {
   'c7ncd.deployment.instance.cases.result': '部署结果',
   'c7ncd.deployment.instance.cases.time': '部署时间',
   'c7ncd.deployment.instance.cases.operator': '操作人员',
-  'c7ncd.deployment.instance.cases.empty': '暂无实例事件。',
-  'c7ncd.deployment.instance.cases.none': '暂无该条操作记录的详情。',
-  'c7ncd.deployment.instance.cases.ignore': '当前仅保留最近4条操作记录的详情。',
-  'c7ncd.deployment.instance.detail.empty': '暂无部署详细信息。',
+  'c7ncd.deployment.instance.cases.empty': '暂无实例事件',
+  'c7ncd.deployment.instance.cases.none': '暂无该条操作记录的详情',
+  'c7ncd.deployment.instance.cases.ignore': '当前仅保留最近4条操作记录的详情',
+  'c7ncd.deployment.instance.detail.empty': '暂无部署详细信息',
   'c7ncd.deployment.instance.cases.log': '查看日志详情',
   'c7ncd.deployment.instance.cases.create': '部署实例',
   'c7ncd.deployment.instance.cases.update': '更新实例',
@@ -265,17 +270,17 @@ const deployment = {
   'c7ncd.deployment.mapping.edit': '修改配置映射',
   'c7ncd.deployment.mapping.head': '配置映射',
   'c7ncd.deployment.mapping.add': '添加配置映射',
-  'mapping.keyValueSpan': '键值对需配对输入，请检查输入。',
-  'cipher.keyValueSpan': '键值对不能为空，请检查输入。',
+  'mapping.keyValueSpan': '键值对需配对输入，请检查输入',
+  'cipher.keyValueSpan': '键值对不能为空，请检查输入',
   'c7ncd.deployment.mapping.help.tooltip':
-    '您可粘贴多行“键=值”格式的字段至任何键框中，以便于批量输入键值对。',
+    '您可粘贴多行“键=值”格式的字段至任何键框中，以便于批量输入键值对',
   'c7ncd.deployment.mapping.yaml': '配置类型',
   'c7ncd.deployment.mapping.name.failed': '名称只能由小写字母、数字、"-"组成，且以小写字母开头，不能以"-"结尾',
   'c7ncd.deployment.cipher.create': '创建密文',
   'c7ncd.deployment.cipher.edit': '修改密文',
   'c7ncd.deployment.cipher.head': '密文',
   'c7ncd.deployment.cipher.add': '添加密文',
-  'c7ncd.deployment.cipher.help.tooltip': '您可粘贴多行“键=值”格式的字段至任何键框中，以便于批量输入键值对。',
+  'c7ncd.deployment.cipher.help.tooltip': '您可粘贴多行“键=值”格式的字段至任何键框中，以便于批量输入键值对',
   'c7ncd.deployment.modal.service.link': '关联应用服务',
   'c7ncd.deployment.modal.service.delete': '删除关联',
   'c7ncd.deployment.modal.service.delete.desc': '确定删除该应用服务与环境的关联？',
@@ -356,8 +361,8 @@ const deployment = {
   'c7ncd.deployment.configMap.head': '配置映射',
   'c7ncd.deployment.configMap.create': '创建配置映射',
   'c7ncd.deployment.configMap.add': '添加配置映射',
-  'c7ncd.deployment.configMap.edit': '编辑配置映射',
-  'c7ncd.deployment.configMap.help.tooltip': '您可粘贴多行“键=值”格式的字段至任何键框中，以便于批量输入键值对。',
+  'c7ncd.deployment.configMap.edit': '修改配置映射',
+  'c7ncd.deployment.configMap.help.tooltip': '您可粘贴多行“键=值”格式的字段至任何键框中，以便于批量输入键值对',
   'c7ncd.deployment.report.cpu': '查看CPU使用量',
   'c7ncd.deployment.report.memory': '查看内存使用量',
   'c7ncd.deployment.report.cpu.click': '点击查看CPU使用量',
@@ -365,6 +370,21 @@ const deployment = {
   'c7ncd.deployment.target.ip': '目标IP',
   'c7ncd.deployment.no.label': '暂无标签',
   'c7ncd.deployment.env': '环境"{name}"的',
+  'c7ncd.deployment.pod.status': 'Pod状态',
+  'c7ncd.deployment.time': '时间',
+  'c7ncd.deployment.usage': '使用量',
+  'c7ncd.deployment.environment.sync': '提交同步情况',
+  'c7ncd.deployment.appService.share': '共享应用',
+  'c7ncd.deployment.permission.delete.title': '删除权限',
+  'c7ncd.deployment.permission.delete.des': '确定要删除该成员的权限吗？',
+  'c7ncd.deployment.custom.delete.title': '删除自定义资源“{name}”',
+  'c7ncd.deployment.custom.delete.des': '确定要删除该自定义资源吗？',
+  'c7ncd.deployment.permission.tab.tips':
+    '当选择将权限分配至项目下所有成员时，此时便不能在列表中删除任何成员的权限；仅在选择将权限分配给项目下特定成员时，才能在下方列表中管理成员的权限。项目所有者的权限不能被删除',
+  'c7ncd.deployment.permission.tips':
+    '此操作用于为环境配置特定的操作人员。一般默认选择为项目下所有成员，即该项目下的所有成员均能对此环境中的资源进行操作；若选择项目下特定成员，则只有被添加后的成员才有权限。项目所有者默认拥有权限',
+  'c7ncd.deployment.service.tips':
+    '您可在此选择项目下已存在但无实例的应用服务，并将其关联到该环境下，以便为其创建相应的资源',
 
 };
 
@@ -440,6 +460,49 @@ const appService = {
   'c7ncd.appService.project.failed': '由小写字母，数字，\'-\'、\'_\'或\'.\'组成，以字母、数字开始和结束',
   'c7ncd.appService.param': '请输入查询条件',
   'c7ncd.appService.name.failed': '输入内容不合规则，请重新输入',
+  'c7ncd.appService.belong.share': '所属项目',
+  'c7ncd.appService.belong.market': '所属应用',
+  'c7ncd.appService.empty': '暂无应用服务',
+  'c7ncd.appService.delete.title': '删除应用服务“{name}”',
+  'c7ncd.appService.delete.des': '确定要删除该应用服务吗？',
+  'c7ncd.appService.permission.delete.title': '删除权限',
+  'c7ncd.appService.permission.delete.des': '确定要删除该成员的权限吗？',
+  'c7ncd.appService.rule.delete.title': '删除共享规则',
+  'c7ncd.appService.rule.delete.des': '确定要删除该条共享规则吗？',
+  'c7ncd.appService.type.tips':
+    '测试服务是用于实现自动化测试的载体，此类服务不支持共享，同时，也不能将此类服务部署到任何环境；仅支持在代码管理中对测试服务进行开发操作。而普通服务则支持正常的开发、部署与共享',
+  'c7ncd.appService.code.tips':
+    '应用服务的自定义编码，Gitlab仓库的地址将会使用服务编码作为仓库地址的一段路径，同时此编码在项目下唯一且不可修改',
+  'c7ncd.appService.template.tips':
+    '您可在此从多个服务来源中选择一个应用服务作为模板，选择应用服务后会默认为您选中对应服务的最新版本，即此次创建的应用服务会使用所选择版本对应的代码库作为模板',
+  'c7ncd.appService.setting.tips':
+    '您可在高级设置中按需更改预置的Docker仓库或Helm仓库为自定义仓库。若无实质需求，请使用默认仓库！',
+  'c7ncd.appService.share.tips':
+    '共享应用中包含了组织内其他项目共享至本项目的所有应用服务',
+  'c7ncd.appService.github.tips':
+    '目前仅支持从GitHub公库导入应用服务。仓库为空时不可导入',
+  'c7ncd.appService.gitlab.tips':
+    '支持从GitLab公库或私库导入应用服务，填写私库地址后，还需填写私有Token',
+  'c7ncd.appService.market.tips':
+    '市场应用指的是在应用市场中已经下载好的应用',
+  'c7ncd.appService.add.tips':
+    '您可在此批量选择应用服务添加至导入列表。此处展示的均是有代码库的应用服务',
+  'c7ncd.appService.import.tips':
+    '导入至本项目下的应用服务的名称与编码具有唯一性。即在导入之前，请先确认服务的名称和编码与本项目下已有的应用服务不同',
+  'c7ncd.appService.address.tips':
+    '此处仅支持HTTPS地址',
+  'c7ncd.appService.detail.share.tips':
+    '共享设置用于为该应用服务添加共享规则，并按照共享规则分别将其共享给范围内的项目',
+  'c7ncd.appService.detail.permission.tips':
+    '当选择将权限分配至项目下所有成员时，此时便不能在列表中删除任何成员的权限；仅在选择将权限分配给项目下特定成员时，才能在下方列表中管理成员的权限。项目所有者的权限不能被删除',
+  'c7ncd.appService.detail.allocation.tips':
+    '此操作用于为此应用服务配置特定的开发操作人员。一般默认选择为项目下所有成员，即该项目下的所有成员均能对此应用服务进行开发操作；若选择项目下特定成员，则只有被添加后的成员才有权限。项目所有者默认拥有权限',
+  'c7ncd.appService.detail.type.tips':
+    '您可在此设置共享的版本类型。若想将该类型的所有服务版本均共享出去，仅选择版本类型即可，不用再选择特定版本',
+  'c7ncd.appService.detail.version.tips':
+    '您可在此选择一个特定版本进行共享。选择后，则只有此版本会被共享出去',
+  'c7ncd.appService.detail.scope.tips':
+    '此处仅能选择共享至某个项目，或者选择共享至所有项目',
 };
 
 const envrionment = {
@@ -468,11 +531,22 @@ const envrionment = {
   'c7ncd.env.description': '环境描述',
   'c7ncd.env.config.app': '应用服务',
   'c7ncd.env.config.modify': '修改部属配置',
-  'c7ncd.env.config.delete.disable': '无法删除部署配置“{name}”',
+  'c7ncd.env.delete.title': '删除环境“{name}”',
+  'c7ncd.env.delete.des': '确定要删除该环境吗？',
+  'c7ncd.env.config.delete.disable': '删除部署配置“{name}”',
+  'c7ncd.env.config.delete.des': '确定要删除该部署配置吗？',
   'c7ncd.env.config.delete.describe': '仅能删除没有关联任务和关联实例的部署配置。',
   'c7ncd.env.sync.empty': '目前部署同步正常，暂无错误信息',
   'c7ncd.env.resource.setting': '资源安全设置',
   'c7ncd.env.resource.setting.create': '添加安全设置规则',
+  'c7ncd.env.cluster.tips': '创建环境必须先选择集群，此处集群均是已经对本项目进行授权的集群',
+  'c7ncd.env.code.tips': '环境的自定义编码，是集群中产生的namespace的名称，限制为30个字符，且在所选集群与当前项目下唯一',
+  'c7ncd.env.name.tips': '平台环境的显示名称。限制为10个字符',
+  'c7ncd.env.group.tips': '若要使用环境分组，请先创建分组；此处只能从已创建的分组中进行选择，从而将此环境放入该分组中',
+  'c7ncd.env.permission.tab.tips':
+    '当选择将权限分配至项目下所有成员时，此时便不能在列表中删除任何成员的权限；仅在选择将权限分配给项目下特定成员时，才能在下方列表中管理成员的权限。项目所有者的权限不能被删除',
+  'c7ncd.env.permission.tips':
+    '此操作用于为环境配置特定的操作人员。一般默认选择为项目下所有成员，即该项目下的所有成员均能对此环境中的资源进行操作；若选择项目下特定成员，则只有被添加后的成员才有权限。项目所有者默认拥有权限',
 
 };
 
@@ -494,7 +568,14 @@ const certificate = {
   'c7ncd.certificate.domain.failed': '由小写字母，数字，\'-\'或\'.\'组成，以字母、数字开始和结束',
   'c7ncd.certificate.upload.mode': '切换上传模式',
   'c7ncd.certificate.add': '添加证书文件',
-  'c7ncd.certificate.add.tip': '您需在此添加对应的文件内容，目前只支持base64格式的证书内容',
+  'c7ncd.certificate.add.tips': '您需在此添加对应的文件内容，目前只支持base64格式的证书内容',
+  'c7ncd.certificate.some.tips': '若本项目想使用该证书，同样需要为本项目授权',
+  'c7ncd.certificate.delete.title': '删除证书“{name}”',
+  'c7ncd.certificate.delete.des': '确定要删除该证书吗？',
+  'c7ncd.certificate.permission.tips':
+    '当选择将权限分配至组织下所有项目时，此时便不能在列表中删除任何项目的权限；仅在选择将权限分配给组织下特定项目时，才能在下方列表中管理项目的权限',
+  'c7ncd.certificate.share.tips':
+    '此操作用于为此证书在该组织下配置公开范围。一般默认选择为组织下所有项目，即该证书可在所有项目下创建证书时使用；若选择组织下特定项目，则只有在被授权项目下创建证书时才有权限选择此证书',
 };
 
 const deploy = {
@@ -544,6 +625,19 @@ const deploy = {
   'c7ncd.deploy.search.type': '查询部署类型',
   'c7ncd.deploy.search.result': '查询运行结果',
   'c7ncd.deploy.search.pipeline': '查询流水线名称',
+  'c7ncd.deploy.config.empty': '暂无部署配置',
+  'c7ncd.deploy.app.empty': '暂无可部署应用服务',
+  'c7ncd.deploy.env.empty': '暂无环境',
+  'c7ncd.deploy.pipeline.empty': '暂无流水线',
+  'c7ncd.deploy.id.tips': '平台中每条部署记录仅会对应一个编号',
+  'c7ncd.deploy.type.tips': '此处是指记录的部署类型，分为手动部署与流水线部署',
+  'c7ncd.deploy.pipeline.tips': '此处是指部署记录对应的流水线名称；手动部署的部署记录此项为空',
+  'c7ncd.deploy.trigger.tips': '此处是指流水线的部署记录所对应的触发方式，分为人工触发与自动触发；手动部署的部署记录此项为空',
+  'c7ncd.deploy.source.tips': '您可在此选择项目下已有的应用服务以及组织中其他项目共享出的应用服务',
+  'c7ncd.deploy.instance.tips': '选择应用服务后，会默认生成实例名称，此名称可修改；此次部署默认为新建一个实例',
+  'c7ncd.deploy.config.tips': '您可在此选择一个部署配置并使用其中的配置信息；或者直接在已有基础上进行修改后部署',
+  'c7ncd.deploy.resource.tips': '您可在部署实例的同时，为此实例创建一个网络和一个域名，从而完成资源的配置；此步骤为可选执行',
+  'c7ncd.deploy.process.tips': '下方展示的均是人工触发流水线，您可在此批量选择并启动这些人工触发流水线',
 };
 
 const repository = {
@@ -579,6 +673,8 @@ const codeManagement = {
   'code-management.ci-pipeline': '持续集成',
   'code-management.app-tag': '标记',
   'code-management.code-quality': '代码质量',
+  'code-management.tag.empty': '暂无标记',
+  'code-management.tag.empty.des': '暂无任何标记，您可在此页面基于某一分支创建标记',
 };
 
 const emptyPage = {
@@ -1074,6 +1170,12 @@ const cluster = {
   'c7ncd.cluster.action.delete.msg': '确定要删除该集群吗？',
   'c7ncd.cluster.empty.title': '暂无集群',
   'c7ncd.cluster.empty.describe': '当前项目下无集群，请创建',
+  'c7ncd.cluster.permission.tips':
+    '此操作用于为此集群在该组织下配置公开范围。一般默认选择为组织下所有项目，即所有项目下的环境均能连接到此集群；若选择组织下特定项目，则只有被授权项目下的环境才有权限连接到此集群',
+  'c7ncd.cluster.permission.tab.tips':
+    '当选择将权限分配至组织下所有项目时，此时便不能在列表中删除任何项目的权限；仅在选择将权限分配给组织下特定项目时，才能在下方列表中管理项目的权限',
+  'c7ncd.cluster.permission.some.tips': '若本项目想使用该集群，同样需要为本项目授权',
+  'c7ncd.cluster.code.tips': '限制为30个字符，且在项目下唯一',
 };
 
 const zhCN = {
@@ -1128,7 +1230,7 @@ const zhCN = {
   'ist.noAddEnv': '未添加环境',
   'ist.run': '启用实例',
   'ist.reDeploy': '重新部署',
-  'ist.nolog': '没有日志信息。',
+  'ist.nolog': '没有日志信息',
   'ist.noApp': '暂无应用服务',
   'ist.runDetial': '运行详情',
   'ist.operation.log': '操作日志',
@@ -1144,7 +1246,7 @@ const zhCN = {
   'ist.expand.stop.title': '停止Deployment {name}',
   'ist.expand.stop.describe': '确认停止该 Deployment 吗？',
   'ist.expand.name': '名称',
-  'ist.expand.empty': '暂无部署详细信息。',
+  'ist.expand.empty': '暂无部署详细信息',
   'ist.expand.link': '点击查看详情',
   'ist.expand.date': '更新时间',
   'ist.expand.net.type': '类型',
@@ -1325,7 +1427,7 @@ const zhCN = {
   'deploy.stage': '阶段及日志',
   'deploy.status': '容器状态',
   'deploy.istStatus': '实例状态',
-  'deploy.appName': '应用名称',
+  'deploy.appName': '应用服务名称',
   'deploy.instance': '实例名称',
   'deploy.envName': '环境名称',
   'deploy.app': '应用服务',
@@ -1370,7 +1472,7 @@ const zhCN = {
   'deploy.ver.tip': '实例中对应的应用版本',
   'deploy.ist.event': '实例事件',
   'deploy.ist.event.empty': '暂无实例事件',
-  'deploy.appOrVersion.empty': '请返回第一步，选择应用和版本。',
+  'deploy.appOrVersion.empty': '请返回第一步，选择应用和版本',
   'deploy.config.create.title': '创建部署配置',
   'deploy.config.create.describe': '是否需要为修改后的配置信息创建一个部署配置？创建后，您便可以在之后部署中，直接选中并应用该部署配置中的配置信息。',
   'deploy.config.create.cancel': '取消',
@@ -1381,7 +1483,7 @@ const zhCN = {
   'deploy.config.update.submit': '覆盖',
   'deploy.config.update.success': '覆盖成功！',
   'deploy.config.update.failed': '覆盖失败！',
-  'deploy.app.noresult': '无符合搜索条件的应用。',
+  'deploy.app.noresult': '无符合搜索条件的应用',
 
   // envPipeline
   'envPl.head': '环境管理',
@@ -1419,7 +1521,7 @@ const zhCN = {
   'envPl.status.restart': '重启环境',
   'envPl.status.stopped': '已停用',
   'envPl.description': '描述: ',
-  'envPl.add.description': '请添加一个环境，并填写相应的环境描述信息。',
+  'envPl.add.description': '请添加一个环境，并填写相应的环境描述信息',
   'envPl.token': '指令',
   'envPl.status.update': '版本过低，请更新',
   'envPl.active': '激活环境',
@@ -1667,8 +1769,7 @@ const zhCN = {
   'ciPipeline.createdAt': '创建时间',
   'ciPipeline.sign.tip': '持续集成流水线的标识，以及持续集成流水线创建者',
   'ciPipeline.commit.tip': '最新一次提交的提交编码及提交信息，以及触发的分支',
-  'ciPipeline.jobs.tip':
-    '持续集成的阶段是在gitlab-ci文件里定义的。例如，可以分为单元测试和生成镜像两个阶段。单元测试阶段完成单元测试的运行并且对代码质量进行审查，生成镜像阶段通过 docker 把应用生成镜像。',
+  'ciPipeline.jobs.tip': '持续集成的阶段是在gitlab-ci文件里定义的',
 
   // resource
   'resource.title': '资源',
@@ -1725,7 +1826,7 @@ const zhCN = {
   'domain.domain.check.failed':
     '由小写字母，数字、和 . 组成，以字母、数字开始和结束',
   'domain.path.check.exist': '域名地址与路径的组合已经存在',
-  'domain.path.check.failed': '路径以 / 开始，且不能有空白字符',
+  'domain.path.check.failed': '以 / 开始，且不能有空白字符',
   'domain.path.check.notSet': '如不设置，请填写 /',
   'domain.path.add': '添加路径',
   'domain.path.isnull': '请先填写正确路径',
@@ -1818,7 +1919,7 @@ const zhCN = {
   'editor.mode.changer': '切换编辑器模式',
   'yaml.modify': '当前修改',
   'yaml.error.tooltip':
-    'Values文件yaml格式错误，请根据错误提示信息修改。',
+    'Values文件yaml格式错误，请根据错误提示信息修改',
 
   // merge request
   'merge.head': '合并请求',
@@ -1851,7 +1952,7 @@ const zhCN = {
   'apptag.tag': '标记',
   'apptag.name': '标记名称',
   'apptag.name.tip':
-    '标记名称建议使用x.x.x格式，其中x只能为非负整数；同时也支持标记名称的语义化，只需在原有格式后面加上-，便可在后面添加自定义内容。例如：x.x.x-alpha.1。',
+    '标记名称建议使用x.x.x格式，其中x只能为非负整数；同时也支持标记名称的语义化，只需在原有格式后面加上-，便可在后面添加自定义内容。例如：x.x.x-alpha.1',
   'apptag.ref': '标记来源',
   'apptag.checkName': '标记名称已存在',
   'apptag.branch': '分支',
@@ -1861,9 +1962,9 @@ const zhCN = {
   'apptag.checkNameReg':
     '支持x.x.x格式，其中x只能为非负整数；若使用语义化标记，建议格式：x.x.x-alpha.1',
   'apptag.noRefBranch': '该应用服务暂无分支，请先创建分支',
-  'apptag.tag.empty': '暂无任何标记，您可在此页面基于某一分支创建标记。',
+  'apptag.tag.empty': '暂无任何标记，您可在此页面基于某一分支创建标记',
   'apptag.app.empty':
-    '当前项目下无应用，请使用项目所有者角色登录去创建一个应用。',
+    '当前项目下无应用，请使用项目所有者角色登录去创建一个应用',
   'apptag.release.title': '发布日志',
   'apptag.release.empty': '暂无发布日志',
   'apptag.tip': '此处标记来源可以是该应用下所有的分支',
@@ -1932,12 +2033,12 @@ const zhCN = {
   'ctf.apply': '申请证书',
   'ctf.upload': '上传证书',
   'ctf.choose': '选择证书',
-  'ctf.choose.tips': '此处选择的证书为该组织下已对本项目授权的证书。',
+  'ctf.choose.tips': '此处选择的证书为该组织下已对本项目授权的证书',
   'ctf.config.add': '添加域名',
   'ctf.config.domain': '域名',
   'ctf.env.placeholder': '请选择环境',
   'ctf.add.cert': '添加证书文件',
-  'ctf.add.describe': '您可以在此选择相应的文件，并进行上传。',
+  'ctf.add.describe': '您可以在此选择相应的文件，并进行上传',
   'ctf.target.type': '选择类型',
   'ctf.keyFile': 'KEY 文件',
   'ctf.certFile': 'CERT 文件',
@@ -1948,6 +2049,7 @@ const zhCN = {
   'ctf.validDate': '证书有效期',
 
   // 报表
+  'report.bread.title': '图表',
   'report.head': 'Devops报表',
   'report.devops.total': '总次数',
   'dashboard.devops.more': '...',
@@ -1989,15 +2091,15 @@ const zhCN = {
   'report.build-duration.noversion': '暂未生成版本',
   'report.build-duration.yAxis': '时长（分）',
   'report.deploy-duration.apps': '每次最多可同时选择5个应用！',
-  'report.no-app': '当前项目下无应用',
+  'report.no-app': '当前项目下无应用服务',
   'report.no-env': '当前项目下无可用环境',
-  'report.no-app-des': '您需要创建一个应用',
+  'report.no-app-des': '您需要创建一个应用服务',
   'report.no-env-des': '您需要创建一个环境',
-  'report.member.no-env-des': '请联系项目所有者添加环境权限',
-  'report.member.no-app-des': '请联系项目所有者添加应用权限',
-  'report.member.no-app': '暂无应用权限',
+  'report.member.no-env-des': '暂无环境权限，请联系项目所有者添加环境权限',
+  'report.member.no-app-des': '暂无应用服务权限，请联系项目所有者添加应用服务权限',
+  'report.member.no-app': '暂无应用服务权限',
   'report.member.no-env': '暂无环境权限',
-  'report.app.create': '创建应用',
+  'report.app.create': '创建应用服务',
   'report.env.create': '创建环境',
   'report.no.app.tips': '暂无部署应用',
   'report.commit.history': '提交历史',
@@ -2006,12 +2108,12 @@ const zhCN = {
   'report.commit.count': '提交次数：',
   'report.commit.num': '次数      ',
   'report.commit.none': '无提交记录',
-  'report.app.noselect': '请选择应用',
-  'report.date.more': '报表暂支持最多查看30天，已自动截取开始日期后30天。',
+  'report.app.noselect': '请选择应用服务',
+  'report.date.more': '报表暂支持最多查看30天，已自动截取开始日期后30天',
   'report.commits.unknown': '非平台用户提交汇总',
   'report.unknown.user': '非平台用户',
   'empty.member.no-env':
-    '您当前暂无任何环境的权限，若需查看某个环境的相关内容，请联系项目所有者添加权限。',
+    '您当前暂无任何环境的权限，若需查看某个环境的相关内容，请联系项目所有者添加权限',
   'report.code-quality.type': '对象类型',
   'report.code-quality.type.issue': '问题',
   'report.code-quality.type.coverage': '覆盖率',
@@ -2045,15 +2147,15 @@ const zhCN = {
   'devCs.build': '查看构建报表',
 
   // Deploy Pipeline
-  'depPl.noEnv': '当前项目下暂无环境，请创建环境。',
+  'depPl.noEnv': '当前项目下暂无环境，请创建环境',
   'depPl.noPermission': '暂无权限',
   'depPl.noPerDes':
-    '您目前还没有任何环境的管理权限，无法查看部署流水线相关内容。',
+    '您目前还没有任何环境的管理权限，无法查看部署流水线相关内容',
   'depPl.addPermission':
-    '若需查看某个环境相关内容，请联系项目所有者进行权限添加。',
-  'empty.owner.noApp': '当前项目下无应用，请创建应用。',
+    '若需查看某个环境相关内容，请联系项目所有者进行权限添加',
+  'empty.owner.noApp': '当前项目下无应用，请创建应用',
   'empty.member.no-app':
-    '您当前暂无此项目下任何应用的权限，若需查看某个应用下相关内容，请联系项目所有者添加权限。',
+    '您当前暂无此项目下任何应用的权限，若需查看某个应用下相关内容，请联系项目所有者添加权限',
   'depPl.more': '了解更多',
 
   // 集群
@@ -2116,12 +2218,12 @@ const zhCN = {
   'configMap.des': '描述',
   'configMap.keyRule': '不能含空格及-、_、.以外的特殊字符',
   'configMap.keyRuleSpan':
-    '键值不能含空格及-、_、.以外的特殊字符，请检查输入。',
-  'configMap.keyValueSpan': '键值对需配对输入，请检查输入。',
-  'configMap.keyRepeat': '存在重复键，请检查输入。',
+    '键值不能含空格及-、_、.以外的特殊字符，请检查输入',
+  'configMap.keyValueSpan': '键值对需配对输入，请检查输入',
+  'configMap.keyRepeat': '存在重复键，请检查输入',
   'configMap.mode.kv': '编辑 YAML',
   'configMap.mode.yaml': '编辑键值对',
-  'configMap.yaml.error': '内容不符合规则（检查是否使用了 Tab 键缩进）。',
+  'configMap.yaml.error': '内容不符合规则（检查是否使用了 Tab 键缩进）',
 
   // 密文
   'secret.head': '密文',
@@ -2130,7 +2232,7 @@ const zhCN = {
   'secret.add': '添加密文',
   'secret.key': '键',
   'secret.des': '描述',
-  'secret.keyValueSpan': '键值对不能为空，请检查输入。',
+  'secret.keyValueSpan': '键值对不能为空，请检查输入',
 
   // 组织层证书管理
   'certificate.head': '证书管理',
@@ -2377,10 +2479,10 @@ const zhCN = {
   // Notifications
   'notification.header.title': '通知设置',
   'notification.header.create': '创建通知',
-  'notification.sidebar.create': '创建通知',
-  'notification.sidebar.edit': '修改通知',
-  'notification.delete': '删除通知',
-  'notification.delete.message': '确认删除通知？',
+  'notification.sidebar.create': '创建安全设置规则',
+  'notification.sidebar.edit': '修改安全设置规则',
+  'notification.delete': '删除安全设置规则',
+  'notification.delete.message': '确定要删除该条安全设置规则吗？',
   'notification.event': '事件',
   'notification.method': '通知方式',
   'notification.target': '通知对象',

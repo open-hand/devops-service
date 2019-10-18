@@ -15,10 +15,18 @@ export DOCKER_PASSWORD={{ DOCKER_PASSWORD }}
 # 获取的组织编码-项目编码(harbor Project地址)
 export GROUP_NAME={{ GROUP_NAME }}
 # SONARQUBE的地址
-export SONAR_URL= {{ SONAR_URL }}
+export SONAR_URL={{ SONAR_URL }}
 # SONARQUBE的token
-export SONAR_LOGIN= {{ SONAR_LOGIN }}
+export SONAR_LOGIN={{ SONAR_LOGIN }}
+# 设置docekr认证配置文件目录
+export DOCKER_CONFIG=$PWD/.choerodon/.docker
 
+# 创建docekr认证配置文件目录
+mkdir -p $DOCKER_CONFIG
+# 设成docekr认证配置文件
+echo "{\"auths\":{\"$DOCKER_REGISTRY\":{\"auth\":\"$(echo -n $DOCKER_USERNAME:$DOCKER_PASSWORD | base64)\"}}}" > $DOCKER_CONFIG/config.json
+
+# 获取commit时间
 C7N_COMMIT_TIMESTAMP=$(git log -1 --pretty=format:"%ci"| awk '{print $1$2}' | sed 's/[-:]//g')
 C7N_COMMIT_YEAR=${C7N_COMMIT_TIMESTAMP:0:4}
 C7N_COMMIT_MONTH=$(echo ${C7N_COMMIT_TIMESTAMP:4:2} | sed s'/^0//')
@@ -49,7 +57,36 @@ fi
 
 export CI_COMMIT_TAG=$C7N_VERSION
 
+# 参数为要合并的远程分支名,默认develop
+# e.g. git_merge develop
+function git_merge(){
+    git config user.name ${GITLAB_USER_NAME}
+    git config user.email ${GITLAB_USER_EMAIL}
+    git checkout origin/${1:-"develop"}
+    git merge ${CI_COMMIT_SHA} --no-commit --no-ff
+}
 
+#################################### 前端相关函数 ####################################
+function node_module(){
+    mkdir -p /cache/${CI_PROJECT_NAMESPACE}-${CI_PROJECT_NAME}-${CI_COMMIT_SHA}
+    python ./boot/structure/configAuto.py ${1}
+    cp -r config.yml /cache/${CI_PROJECT_NAMESPACE}-${CI_PROJECT_NAME}-${CI_COMMIT_SHA}
+    cd boot && npm install && cd ../${1} && npm install && cd ..
+}
+
+# 开发使用devbuild，构建镜像使用build
+function node_build(){
+    cd boot
+    ./node_modules/.bin/gulp start
+    cnpm run ${1:-"build"}
+    find dist -name '*.js' | xargs sed -i "s/localhost:version/$CI_COMMIT_TAG/g"
+}
+
+function cache_dist(){
+    cp -r dist /cache/${CI_PROJECT_NAMESPACE}-${CI_PROJECT_NAME}-${CI_COMMIT_SHA}/dist
+}
+
+#################################### 微服务相关函数 ####################################
 # 更新maven项目本版本号
 function update_pom_version(){
     mvn versions:set -DnewVersion=${CI_COMMIT_TAG} || \
@@ -58,13 +95,38 @@ function update_pom_version(){
         -u '/x:project/x:version' -v "${CI_COMMIT_TAG}"
     mvn versions:commit
 }
-# 测试分支合并到指定分支，比如合并到master：git_merge master，默认合并到develop
-function git_merge(){
-    git config user.name ${GITLAB_USER_NAME}
-    git config user.email ${GITLAB_USER_EMAIL}
-    git checkout origin/${1:-"develop"}
-    git merge ${CI_COMMIT_SHA} --no-commit --no-ff
+
+function database_test(){
+    while ! mysqlcheck --host=127.0.0.1 --user=root --password=${MYSQL_ROOT_PASSWORD} mysql; do sleep 1; done
+    echo "CREATE DATABASE hap_cloud_test DEFAULT CHARACTER SET utf8;" | \
+        mysql --user=root --password=${MYSQL_ROOT_PASSWORD} --host=127.0.0.1
+    java -Dspring.datasource.url="jdbc:mysql://127.0.0.1/hap_cloud_test?useUnicode=true&characterEncoding=utf-8&useSSL=false" \
+        -Dspring.datasource.username=root \
+        -Dspring.datasource.password=${MYSQL_ROOT_PASSWORD} \
+        -Ddata.dir=src/main/resources \
+        -jar /var/hapcloud/hap-liquibase-tool.jar
 }
+
+function cache_jar(){
+    mkdir -p ${HOME}/.m2/${CI_PROJECT_NAMESPACE}-${CI_PROJECT_NAME}-${CI_COMMIT_SHA}
+    cp target/app.jar ${HOME}/.m2/${CI_PROJECT_NAMESPACE}-${CI_PROJECT_NAME}-${CI_COMMIT_SHA}/app.jar
+}
+
+#################################### 构建镜像 ####################################
+function docker_build(){
+    cp ${HOME}/.m2/${CI_PROJECT_NAMESPACE}-${CI_PROJECT_NAME}-${CI_COMMIT_SHA}/app.jar ${1:-"src/main/docker"}/app.jar || true
+    cp -r /cache/${CI_PROJECT_NAMESPACE}-${CI_PROJECT_NAME}-${CI_COMMIT_SHA}/* ${1:-"."} || true
+    docker build -t ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG} ${1:-"."} || true
+    docker build -t ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG} ${1:-"src/main/docker"} || true
+    docker push ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}
+}
+
+#################################### 清理缓存 ####################################
+function clean_cache(){
+    rm -rf ${HOME}/.m2/${CI_PROJECT_NAMESPACE}-${CI_PROJECT_NAME}-${CI_COMMIT_SHA}
+    rm -rf /cache/${CI_PROJECT_NAMESPACE}-${CI_PROJECT_NAME}-${CI_COMMIT_SHA}
+}
+
 # 此项为上传构建并上传chart包到Choerodon中，只有通过此函数Choerodon才会有相应版本记录。
 function chart_build(){
     #判断chart主目录名是否与应用编码保持一致

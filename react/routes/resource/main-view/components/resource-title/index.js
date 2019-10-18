@@ -13,6 +13,7 @@ function ResourceTitle(props) {
   const {
     resourceStore,
     treeDs,
+    resourceStore: { getSelectedMenu: { key } },
   } = useResourceStore();
 
   function getCurrent() {
@@ -38,7 +39,7 @@ function ResourceTitle(props) {
       const { name, status, errorText } = current;
       return <div className="c7ncd-resource-title">
         <Icon type={iconType} className="c7ncd-resource-title-icon" />
-        <span>{name}</span>
+        <span className="c7ncd-resource-title-name">{name}</span>
         {status === 'failed' && (
           <Tooltip title={errorText || ''}>
             <Icon type="error" className="c7ncd-resource-title-error-icon" />
@@ -64,7 +65,7 @@ function ResourceTitle(props) {
     const current = getCurrent();
     if (current) {
       const { id, name, status } = current;
-      const menuItem = treeDs.find((item) => item.get('id') === id);
+      const menuItem = treeDs.find((item) => item.get('key') === key);
       if (menuItem && (menuItem.get('name') !== name || menuItem.get('status') !== status)) {
         runInAction(() => {
           menuItem.set({ name, status });

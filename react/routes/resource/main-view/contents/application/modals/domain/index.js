@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
 import { observer, inject } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
-import { Modal } from 'choerodon-ui';
+import { Form, Modal } from 'choerodon-ui';
 import { injectIntl } from 'react-intl';
-import { Content } from '@choerodon/master';
 import _ from 'lodash';
+import { Choerodon } from '@choerodon/boot';
 import DomainForm from '../../../../../../../components/domain-form';
 import InterceptMask from '../../../../../../../components/intercept-mask';
 
@@ -13,6 +13,7 @@ import './index.less';
 
 const { Sidebar } = Modal;
 
+@Form.create({})
 @injectIntl
 @withRouter
 @inject('AppState')
@@ -43,25 +44,13 @@ class CreateDomain extends Component {
       type,
       envId,
       appServiceId,
+      form,
     } = this.props;
     this.setState({ submitting: true });
-    this.formRef.props.form.validateFieldsAndScroll((err, data) => {
+    form.validateFieldsAndScroll((err, data) => {
       if (!err) {
-        const {
-          domain,
-          name,
-          certId,
-          paths,
-          path,
-          network,
-          port,
-        } = data;
-        const postData = {
-          domain,
-          name,
-          envId,
-          appServiceId,
-        };
+        const { domain, name, certId, paths, path, network, port } = data;
+        const postData = { domain, name, envId, appServiceId };
         if (certId) {
           postData.certId = certId;
         }
@@ -104,7 +93,7 @@ class CreateDomain extends Component {
         .then((data) => {
           this.setState({ submitting: false });
           if (data) {
-            this.handleClose();
+            this.handleClose(true);
           }
         })
         .catch((err) => {
@@ -117,55 +106,43 @@ class CreateDomain extends Component {
   /**
    * 关闭弹框
    */
-  handleClose = (isload = true) => {
-    const { store, onClose } = this.props;
+  handleClose = (isload = false) => {
+    const { store, onClose, form } = this.props;
     store.setNetwork([]);
     store.setSingleData(null);
     store.setCertificates([]);
-    this.formRef.props.form.resetFields();
+    form.resetFields();
     onClose(isload);
   };
 
   render() {
     const {
-      AppState: { currentMenuType: { name: menuName } },
       store,
       intl: { formatMessage },
       type,
       visible,
       envId,
       id,
+      form,
     } = this.props;
-    const {
-      submitting,
-    } = this.state;
-
-    const { name } = store.getSingleData || {};
+    const { submitting } = this.state;
 
     return (
       <div className="c7n-region">
         <Sidebar
           destroyOnClose
-          okText={
-            type === 'create'
-              ? formatMessage({ id: 'create' })
-              : formatMessage({ id: 'save' })
-          }
-          cancelText={formatMessage({ id: 'cancel' })}
           visible={visible}
-          title={formatMessage({
-            id: `domain.${type === 'create' ? 'create' : 'update'}.head`,
-          })}
-          onCancel={this.handleClose.bind(this, false)}
+          okText={formatMessage({ id: type === 'create' ? 'create' : 'save' })}
+          cancelText={formatMessage({ id: 'cancel' })}
+          title={formatMessage({ id: `domain.${type === 'create' ? 'create' : 'update'}.head` })}
+          onCancel={() => this.handleClose()}
           onOk={this.handleSubmit}
           confirmLoading={submitting}
           maskClosable={false}
           width={740}
         >
           <DomainForm
-            wrappedComponentRef={(form) => {
-              this.formRef = form;
-            }}
+            form={form}
             type={type}
             envId={envId}
             ingressId={id}

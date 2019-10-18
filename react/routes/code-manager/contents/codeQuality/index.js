@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { observer, inject } from 'mobx-react';
 import { withRouter, Link } from 'react-router-dom';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { Page, Header, Content } from '@choerodon/master';
+import { Page, Header, Content } from '@choerodon/boot';
 import { Select, Button, Tooltip, Icon, Card } from 'choerodon-ui';
 import _ from 'lodash';
 import Loading from '../../../../components/loading';
@@ -12,6 +12,7 @@ import Rating from '../../../../components/rating/Rating';
 import { QUALITY_LIST, OBJECT_TYPE } from './components/Constants';
 import CodeQualityStore from './stores';
 import handleMapStore from '../../main-view/store/handleMapStore';
+import EmptyPage from '../../../../components/empty-page';
 
 import './index.less';
 import '../../../main.less';
@@ -129,20 +130,11 @@ class CodeQuality extends Component {
           ))}
         </div>
       ) : (
-        <div className="c7n-codeQuality-empty">
-          <Card title={formatMessage({ id: 'codeQuality.empty.title' })}>
-            <span className="codeQuality-empty-content">{formatMessage({ id: 'codeQuality.empty.content' })}</span>
-            <a
-              href={formatMessage({ id: 'codeQuality.link' })}
-              target="_blank"
-              rel="nofollow me noopener noreferrer"
-              className="codeQuality-empty-link"
-            >
-              <span className="codeQuality-empty-more">{formatMessage({ id: 'learnmore' })}</span>
-              <Icon type="open_in_new" />
-            </a>
-          </Card>
-        </div>
+        <EmptyPage
+          title={formatMessage({ id: 'codeQuality.empty.title' })}
+          describe={formatMessage({ id: 'codeQuality.empty.content' })}
+          access
+        />
       )
     );
   };

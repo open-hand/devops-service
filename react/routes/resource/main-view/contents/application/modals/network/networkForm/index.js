@@ -746,6 +746,7 @@ export default class CreateNetwork extends Component {
               maxLength={30}
               type="text"
               label={<FormattedMessage id="network.form.name" />}
+              autoFocus
             />,
           )}
         </FormItem>

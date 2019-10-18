@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { Button } from 'choerodon-ui';
 import { Modal } from 'choerodon-ui/pro';
-import { Permission } from '@choerodon/master';
+import { Permission, Choerodon } from '@choerodon/boot';
 import { withRouter } from 'react-router-dom';
 import pick from 'lodash/pick';
 import map from 'lodash/map';

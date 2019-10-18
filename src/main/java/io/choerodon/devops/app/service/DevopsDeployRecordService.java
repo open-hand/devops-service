@@ -22,6 +22,14 @@ public interface DevopsDeployRecordService {
     void baseDelete(DevopsDeployRecordDTO devopsDeployRecordDTO);
 
     /**
+     * 通过环境id删除只属于该环境的手动部署纪录
+     *
+     * @param envId 环境id
+     */
+    void deleteManualRecordByEnv(Long envId);
+
+
+    /**
      * 删除手动部署生成的实例相关的部署纪录
      *
      * @param instanceId 实例id

@@ -1,5 +1,5 @@
 import { useLocalStore } from 'mobx-react-lite';
-import { axios } from '@choerodon/master';
+import { axios, Choerodon } from '@choerodon/boot';
 import { handlePromptError } from '../../../../../../utils';
 
 export default function useStore() {
@@ -56,8 +56,12 @@ export default function useStore() {
     },
 
     loadUpVersion({ projectId, appId, page, param = '', init = '' }) {
+      let url = '';
+      if (param) {
+        url = `&version=${param}`;
+      }
       return axios.post(
-        `/devops/v1/projects/${projectId}/app_service_versions/page_by_options?app_service_id=${appId}&deploy_only=true&do_page=true&page=${page}&size=15&version=${param}&app_service_version_id=${init}`,
+        `/devops/v1/projects/${projectId}/app_service_versions/page_by_options?app_service_id=${appId}&deploy_only=true&do_page=true&page=${page}&size=15&app_service_version_id=${init}${url}`,
       );
     },
   }));

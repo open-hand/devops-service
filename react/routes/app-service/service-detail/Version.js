@@ -1,8 +1,9 @@
 import React from 'react';
-import { TabPage, Content, Header, Breadcrumb } from '@choerodon/master';
+import { TabPage, Content, Breadcrumb } from '@choerodon/boot';
 import { Table } from 'choerodon-ui/pro';
 import { Button } from 'choerodon-ui';
 import { FormattedMessage } from 'react-intl';
+import { useAppTopStore } from '../stores';
 import { useServiceDetailStore } from './stores';
 import HeaderButtons from './HeaderButtons';
 import TimePopover from '../../../components/timePopover/TimePopover';
@@ -11,13 +12,11 @@ import './index.less';
 
 const { Column } = Table;
 
-const Version = (props) => {
+const Version = () => {
+  const { prefixCls } = useAppTopStore();
   const {
-    intl: { formatMessage },
-    intlPrefix,
-    prefixCls,
-    versionDs,
     detailDs,
+    versionDs,
   } = useServiceDetailStore();
 
   function refresh() {

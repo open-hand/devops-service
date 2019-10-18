@@ -8,6 +8,23 @@
       border-radius: 50%;
       margin: 0 auto;
       background-size: cover;
+      position: relative;
+
+      .edit-avatar {
+        background-color: rgb(197, 203, 232);
+        width: .8rem;
+        height: .8rem;
+        line-height: .8rem;
+        border-radius: 50%;
+        font-size: .4rem;
+        font-weight: 700;
+        color: rgb(63, 81, 181);
+        text-align: center;
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 1;
+      }
 
       .create-img-mask {
         background: rgba(0, 0, 0, 0.26);
@@ -18,11 +35,30 @@
         font-size: .3rem;
         margin: .25rem;
         color: white;
-        //display: none;
+      }
+
+      .edit-img-icon {
+        font-size: .3rem;
+        margin: .25rem;
+        color: white;
+        display: none;
       }
 
       &:hover {
         cursor: pointer;
+
+        .edit-img-mask {
+          background: rgba(0, 0, 0, 0.26);
+          border-radius: 50%;
+          z-index: 100;
+          position: absolute;
+          top: 0;
+          left: 0;
+        }
+
+        .edit-img-icon {
+          display: inline-block;
+        }
       }
     }
 

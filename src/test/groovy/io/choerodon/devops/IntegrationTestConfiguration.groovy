@@ -127,7 +127,7 @@ class IntegrationTestConfiguration extends WebSecurityConfigurerAdapter {
         if (isToExecuteLiquibase) {
             liquibaseExecutor.execute()
         }
-        initSqlFunction()
+//        initSqlFunction()
         setTestRestTemplateJWT()
     }
 

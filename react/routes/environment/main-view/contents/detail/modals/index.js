@@ -16,6 +16,7 @@ import DeployConfigForm from './deploy-config';
 import { isNotRunning } from '../../../../util';
 
 import '../../../../../../components/dynamic-select/style/index.less';
+import Tips from '../../../../../../components/new-tips';
 
 const detailKey = Modal.key();
 const envKey = Modal.key();
@@ -33,9 +34,6 @@ const EnvModals = observer(() => {
   }), []);
   const actionStyle = useMemo(() => ({
     marginLeft: '.2rem',
-  }), []);
-  const buttonStyle = useMemo(() => ({
-    padding: '0 0 0 .02rem',
   }), []);
   const configModalStyle = useMemo(() => ({
     width: 'calc(100vw - 3.52rem)',
@@ -65,6 +63,7 @@ const EnvModals = observer(() => {
     configDs,
     configFormDs,
     checkEnvExist,
+    baseDs,
   } = useDetailStore();
 
   function refresh() {
@@ -86,6 +85,7 @@ const EnvModals = observer(() => {
           default:
         }
         treeDs.query();
+        baseDs.query();
       }
     });
   }
@@ -98,6 +98,7 @@ const EnvModals = observer(() => {
       children: <EnvCreateForm intlPrefix={currentIntlPrefix} refresh={refresh} />,
       drawer: true,
       style: modalStyle,
+      okText: formatMessage({ id: 'create' }),
     });
   }
 
@@ -111,6 +112,7 @@ const EnvModals = observer(() => {
       afterClose: () => {
         groupFormDs.current.reset();
       },
+      okText: formatMessage({ id: 'create' }),
     });
   }
 
@@ -149,7 +151,10 @@ const EnvModals = observer(() => {
     modalStore.loadUsers(projectId, id);
     Modal.open({
       key: permissionKey,
-      title: formatMessage({ id: `${intlPrefix}.modal.permission` }),
+      title: <Tips
+        helpText={formatMessage({ id: `${intlPrefix}.permission.tips` })}
+        title={formatMessage({ id: `${intlPrefix}.modal.permission` })}
+      />,
       drawer: true,
       className: 'c7ncd-modal-wrapper',
       style: modalStyle,
@@ -174,9 +179,7 @@ const EnvModals = observer(() => {
       title: formatMessage({ id: `${currentIntlPrefix}.resource.setting` }),
       children: <ResourceSetting envId={id} />,
       drawer: true,
-      style: {
-        width: 1030,
-      },
+      style: configModalStyle,
     });
   }
 
@@ -200,6 +203,7 @@ const EnvModals = observer(() => {
         configFormDs.reset();
         detailStore.setValue('');
       },
+      okText: formatMessage({ id: 'create' }),
     });
   }
 
@@ -264,7 +268,6 @@ const EnvModals = observer(() => {
   return <HeaderButtons items={getButtons()}>
     <HeaderAction
       style={actionStyle}
-      buttonStyle={buttonStyle}
       items={actionItem}
       menuClick={handleMenuClick}
     />

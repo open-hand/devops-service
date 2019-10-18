@@ -35,6 +35,9 @@
         devops_app_service_version dav
         WHERE
         dav.app_service_id = #{appServiceId}
+        <if test="param != null and param != ''">
+           and dav.version LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+        </if>
         AND dav.repository IS NOT NULL
         ORDER BY
         dav.id DESC
@@ -186,12 +189,17 @@
             </otherwise>
         </choose>
         <include refid="sqlparam"/>
-        <if test="version != null">
+        <if test="version != null and version != ''">
           AND  dav.version = #{version}
         </if>
-        <if test="index != null and index !=''">
-            ORDER BY dav.version desc
-        </if>
+        <choose>
+            <when test="index != null and index !='' and appServiceVersionId!=null and appServiceVersionId!=''">
+                ORDER BY dav.id != ${appServiceVersionId}, dav.id DESC
+            </when>
+            <when test="index != null and index !=''">
+                ORDER BY dav.id DESC
+            </when>
+        </choose>
     </select>
 
     <select id="listByAppServiceVersionIdForMarket" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
@@ -486,7 +494,10 @@
                 and dassr.project_id = #{projectId}
                </if>
                AND dassr.version IS NOT NULL
-               AND dassr.version = version.version)
+               AND dassr.version = version.version
+               <if test="params != null and params != ''">
+                   AND dassr.version LIKE CONCAT('%', CONCAT(#{params},'%'))
+               </if>)
                UNION
                (
                SELECT version.*
@@ -505,15 +516,21 @@
                </if>
                AND dassr.version IS NULL
                AND version.version LIKE CONCAT('%', CONCAT(dassr.version_type,'%'))
+               <if test="params != null and params != ''">
+                   AND dassr.version LIKE CONCAT('%', CONCAT(#{params},'%'))
+               </if>
                )
            </when>
-           <otherwise>
+           <when test="share == null">
                select * from  devops_app_service_version
                WHERE app_service_id in
                <foreach collection="ids" item="id" open="(" separator="," close=")">
                    #{id}
                </foreach>
-           </otherwise>
+               <if test="params != null and params != ''">
+                   AND version LIKE CONCAT('%', CONCAT(#{params},'%'))
+               </if>
+           </when>
        </choose>
         order by id desc
     </select>

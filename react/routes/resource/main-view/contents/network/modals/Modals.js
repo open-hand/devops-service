@@ -1,6 +1,7 @@
 import React, { Fragment, useMemo, useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Button } from 'choerodon-ui';
+import { Modal } from 'choerodon-ui/pro';
 import { FormattedMessage } from 'react-intl';
 import HeaderButtons from '../../../../../../components/header-buttons';
 import { useResourceStore } from '../../../../stores';
@@ -8,6 +9,11 @@ import { useModalStore } from './stores';
 import { useNetworkStore } from '../stores';
 import CreateNetwork from './network-create';
 import { useMainStore } from '../../../stores';
+
+const modalKey = Modal.key();
+const modalStyle = {
+  width: 740,
+};
 
 const EnvModals = observer(() => {
   const {
@@ -29,20 +35,24 @@ const EnvModals = observer(() => {
   } = useModalStore();
   const { parentId } = resourceStore.getSelectedMenu;
 
-  const [showModal, setShowModal] = useState(false);
-
   function refresh() {
     treeDs.query();
     networkDs.query();
   }
 
   function openModal() {
-    setShowModal(true);
-  }
-
-  function closeModal(isLoad) {
-    setShowModal(false);
-    isLoad && refresh();
+    Modal.open({
+      key: modalKey,
+      style: modalStyle,
+      drawer: true,
+      title: formatMessage({ id: 'network.header.create' }),
+      children: <CreateNetwork
+        envId={parentId}
+        store={networkStore}
+        refresh={refresh}
+      />,
+      okText: formatMessage({ id: 'create' }),
+    });
   }
 
   function getButtons() {
@@ -70,14 +80,6 @@ const EnvModals = observer(() => {
   return (
     <Fragment>
       <HeaderButtons items={getButtons()} />
-      {showModal && (
-        <CreateNetwork
-          envId={parentId}
-          visible={showModal}
-          store={networkStore}
-          onClose={closeModal}
-        />
-      )}
     </Fragment>
   );
 });

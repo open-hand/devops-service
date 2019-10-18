@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.vo.kubernetes.certification;
 
+import io.swagger.annotations.ApiModelProperty;
+
 import java.util.*;
 
 /**
@@ -9,7 +11,9 @@ import java.util.*;
  * Description:
  */
 public class CertificationConfig {
+    @ApiModelProperty("http验证")
     private Map<String, String> http01;
+    @ApiModelProperty("域名")
     private List<String> domains;
 
     public CertificationConfig() {

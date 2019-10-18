@@ -1,5 +1,5 @@
 import React, { useCallback, Fragment } from 'react';
-import { Page, Content, Header, Permission, Action, Breadcrumb } from '@choerodon/master';
+import { Page, Content, Header, Permission, Action, Breadcrumb } from '@choerodon/boot';
 import { Table, Modal } from 'choerodon-ui/pro';
 import { Button } from 'choerodon-ui';
 import { FormattedMessage } from 'react-intl';
@@ -9,6 +9,7 @@ import { useCertificateStore } from './stores';
 import PermissionManage from './modals/permission';
 import CreateForm from './modals/create-form';
 import ClickText from '../../components/click-text';
+import Tips from '../../components/new-tips';
 
 import './index.less';
 
@@ -19,7 +20,7 @@ const modalStyle1 = {
   width: 380,
 };
 const modalStyle2 = {
-  width: '70%',
+  width: 'calc(100vw - 3.52rem)',
 };
 
 const AppService = withRouter(observer((props) => {
@@ -96,7 +97,10 @@ const AppService = withRouter(observer((props) => {
       style: modalStyle2,
       drawer: true,
       className: 'c7ncd-modal-wrapper',
-      title: <FormattedMessage id={`${intlPrefix}.permission`} />,
+      title: <Tips
+        helpText={formatMessage({ id: `${intlPrefix}.permission.tips` })}
+        title={formatMessage({ id: `${intlPrefix}.permission` })}
+      />,
       children: <PermissionManage
         dataSet={detailDs}
         record={detailDs.current}
@@ -122,7 +126,15 @@ const AppService = withRouter(observer((props) => {
   }
 
   function handleDelete() {
-    listDs.delete(listDs.current);
+    const record = listDs.current;
+    const modalProps = {
+      title: formatMessage({ id: `${intlPrefix}.delete.title` }, { name: record.get('name') }),
+      children: formatMessage({ id: `${intlPrefix}.delete.des` }),
+      okText: formatMessage({ id: 'delete' }),
+      okProps: { color: 'red' },
+      cancelProps: { color: 'dark' },
+    };
+    listDs.delete(record, modalProps);
   }
 
   return (

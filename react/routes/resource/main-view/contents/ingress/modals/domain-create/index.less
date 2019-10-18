@@ -1,0 +1,81 @@
+.c7n-domainCreate-wrapper {
+  .c7n-creation-panel {
+    min-height: unset;
+    margin-bottom: 17px;
+  }
+  .c7n-domain-formItem-path {
+    width: 150px;
+    display: inline-block;
+  }
+
+  .c7n-domain-formItem-network {
+    width: 290px;
+    display: inline-block;
+    margin-top: 8px;
+    margin-left: 8px;
+  }
+
+  .c7n-domain-icon-add {
+    font-size: 13px;
+    text-align: left;
+    line-height: 20px;
+  }
+
+  .c7n-domain-add-invalid {
+    color: rgba(0, 0, 0, 0.26);
+  }
+
+  .c7n-domain-add-valid {
+    color: #3f51b5;
+  }
+
+  .c7n-domain-formItem {
+    width: 512px;
+  }
+
+  .c7n-domain-btn {
+    background: white !important;
+    padding-left: 0;
+  }
+
+  .c7n-domain-btn-wrapper {
+    margin-bottom: 38px;
+  }
+
+  .c7n-app-icon-disabled {
+    font-size: 16px;
+    color: rgba(0, 0, 0, 0.36);
+    width: 32px;
+    display: inline-block;
+    padding: 22px 0 0 3px;
+  }
+  .domain-network-wrap {
+    display: flex;
+    width: 542px;
+    .domain-network-item {
+      flex: 0 0 160px;
+      margin-right: 16px;
+      &:nth-last-child(2) {
+        margin-right: 0;
+      }
+      &.c7ncd-domain-path {
+        flex: 0 0 220px;
+        width: 220px;
+        .c7n-input-content {
+          padding-top: 19px;
+          .c7n-input-label {
+            margin-bottom: 3px;
+          }
+        }
+      }
+      &.c7ncd-domain-port {
+        flex: 0 0 100px;
+        width: 100px;
+      }
+    }
+    .c7n-domain-icon-delete {
+      margin-top: 10px;
+      flex: 0 0 32px;
+    }
+  }
+}

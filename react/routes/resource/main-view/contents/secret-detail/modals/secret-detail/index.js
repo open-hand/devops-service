@@ -10,7 +10,7 @@ export default function ({ intlPrefix, record, prefixCls, formatMessage }) {
     <ul className={`${prefixCls}-secret-detail-modal`}>
       <li className="detail-item">
         <span className="detail-item-text">
-          {formatMessage({ id: 'createDate' })}:
+          {formatMessage({ id: 'createDate' })}
         </span>
         <span>{
             (record 
@@ -19,7 +19,7 @@ export default function ({ intlPrefix, record, prefixCls, formatMessage }) {
       </li>
       <li className="detail-item">
         <span className="detail-item-text">
-          {formatMessage({ id: 'creator' })}:
+          {formatMessage({ id: 'creator' })}
         </span>
         <span>{
             (record 
@@ -28,14 +28,14 @@ export default function ({ intlPrefix, record, prefixCls, formatMessage }) {
       </li>
       <li className="detail-item">
         <span className="detail-item-text">
-          {formatMessage({ id: 'updateDate' })}:
+          {formatMessage({ id: 'updateDate' })}
         </span>
         <span>{(record 
             && record.get('lastUpdateDate')) || '-' }</span>
       </li>
       <li className="detail-item">
         <span className="detail-item-text">
-          {formatMessage({ id: 'updater' })}:
+          {formatMessage({ id: 'updater' })}
         </span>
         <span>{(record 
             && record.get('lastUpdaterName')) || '-' }</span>

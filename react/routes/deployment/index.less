@@ -1,21 +1,7 @@
-.c7ncd-deploy {
+@import '~choerodon-ui/lib/style/themes/default';
 
-  &-content {
-    padding-top: 0;
-
-    &-select {
-      padding-bottom: .12rem;
-
-      &-item {
-        width: 2.5rem;
-        margin-right: .12rem;
-
-        &:last-child {
-          margin-right: 0;
-        }
-      }
-    }
-  }
+.c7ncd-deploy-content {
+  padding-top: 0;
 
   &-table {
 
@@ -37,6 +23,14 @@
       &-manual {
         color: #4d90fe;
         border: 1px solid #4d90fe;
+      }
+    }
+
+    .@{c7n-pro-prefix}-table-advanced-query-bar {
+
+      .@{c7n-pro-prefix}-select-wrapper {
+        max-width: 2.6rem;
+        width: 22%;
       }
     }
   }

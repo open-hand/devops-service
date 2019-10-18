@@ -5,13 +5,12 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.pagehelper.PageInfo
-import org.mockito.Mockito
+import org.powermock.api.mockito.PowerMockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.context.annotation.Import
-import org.springframework.http.*
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Stepwise
@@ -19,7 +18,6 @@ import spock.lang.Subject
 
 import io.choerodon.core.exception.CommonException
 import io.choerodon.core.exception.ExceptionResponse
-import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.*
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO
@@ -35,12 +33,11 @@ import io.choerodon.devops.infra.dto.iam.OrganizationDTO
 import io.choerodon.devops.infra.dto.iam.ProjectDTO
 import io.choerodon.devops.infra.enums.AccessLevel
 import io.choerodon.devops.infra.enums.InstanceStatus
-import io.choerodon.devops.infra.feign.BaseServiceClient
-import io.choerodon.devops.infra.feign.GitlabServiceClient
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler
 import io.choerodon.devops.infra.mapper.*
+import io.choerodon.devops.infra.util.ConvertUtils
 import io.choerodon.devops.infra.util.FileUtil
 import io.choerodon.devops.infra.util.GitUtil
 import io.choerodon.devops.infra.util.JsonYamlConversionUtil
@@ -58,6 +55,8 @@ import io.choerodon.devops.infra.util.JsonYamlConversionUtil
 class AppServiceInstanceControllerSpec extends Specification {
 
     private static final String MAPPING = "/v1/projects/{project_id}/app_service_instances"
+    private static final Long PROJECT_ID = 1L
+    private static final String EMPTY_SEARCH_PARAM = "{\"params\":[],\"searchParam\":{}}"
 
     @Autowired
     @Qualifier("mockClusterConnectionHandler")
@@ -81,13 +80,13 @@ class AppServiceInstanceControllerSpec extends Specification {
     @Autowired
     private DevopsEnvCommandMapper devopsEnvCommandMapper
     @Autowired
-    private AppServiceShareRuleMapper applicationMarketMapper
+    private AppServiceShareRuleMapper appServiceShareRuleMapper
     @Autowired
     private DevopsEnvironmentMapper devopsEnvironmentMapper
     @Autowired
     private DevopsEnvResourceMapper devopsEnvResourceMapper
     @Autowired
-    private AppServiceVersionMapper applicationVersionMapper
+    private AppServiceVersionMapper appServiceVersionMapper
     @Autowired
     private AppServiceInstanceMapper applicationInstanceMapper
     @Autowired
@@ -107,193 +106,199 @@ class AppServiceInstanceControllerSpec extends Specification {
     @Autowired
     private DevopsEnvFileMapper devopsEnvFileMapper
     @Autowired
+    private DevopsDeployValueMapper deployValueMapper
+    @Autowired
+    private DevopsProjectMapper devopsProjectMapper
+
+    @Shared
+    private DevopsDeployValueDTO devopsDeployValueDTO
+
+    @Shared
+    private DevopsProjectDTO devopsProjectDTO
+
+    @Autowired()
+    @Qualifier("mockBaseServiceClientOperator")
     private BaseServiceClientOperator baseServiceClientOperator
 
     @Shared
     Map<String, Object> searchParam = new HashMap<>()
     @Shared
-    AppServiceDTO applicationDO = new AppServiceDTO()
+    AppServiceDTO appServiceDTO = new AppServiceDTO()
     @Shared
-    DevopsEnvPodDTO devopsEnvPodDO = new DevopsEnvPodDTO()
+    DevopsEnvPodDTO devopsEnvPodDTO = new DevopsEnvPodDTO()
     @Shared
-    AppServiceShareRuleDTO devopsAppMarketDO = new AppServiceShareRuleDTO()
+    AppServiceShareRuleDTO appServiceShareRuleDTO = new AppServiceShareRuleDTO()
     @Shared
-    DevopsEnvCommandDTO devopsEnvCommandDO = new DevopsEnvCommandDTO()
+    DevopsEnvCommandDTO devopsEnvCommandDTO = new DevopsEnvCommandDTO()
     @Shared
-    DevopsEnvResourceDTO devopsEnvResourceDO = new DevopsEnvResourceDTO()
+    private List<DevopsEnvResourceDTO> devopsEnvResources = new ArrayList<>(8)
+
     @Shared
-    DevopsEnvResourceDTO devopsEnvResourceDO2 = new DevopsEnvResourceDTO()
+    DevopsEnvironmentDTO devopsEnvironmentDTO = new DevopsEnvironmentDTO()
     @Shared
-    DevopsEnvResourceDTO devopsEnvResourceDO3 = new DevopsEnvResourceDTO()
+    AppServiceVersionDTO appServiceVersionDTO = new AppServiceVersionDTO()
     @Shared
-    DevopsEnvResourceDTO devopsEnvResourceDO4 = new DevopsEnvResourceDTO()
+    AppServiceInstanceDTO appServiceInstanceDTO = new AppServiceInstanceDTO()
     @Shared
-    DevopsEnvResourceDTO devopsEnvResourceDO5 = new DevopsEnvResourceDTO()
+    DevopsEnvCommandValueDTO devopsEnvCommandValueDTO = new DevopsEnvCommandValueDTO()
     @Shared
-    DevopsEnvResourceDTO devopsEnvResourceDO6 = new DevopsEnvResourceDTO()
+    AppServiceVersionValueDTO appServiceVersionValueDTO = new AppServiceVersionValueDTO()
+
     @Shared
-    DevopsEnvResourceDTO devopsEnvResourceDO7 = new DevopsEnvResourceDTO()
+    private List<DevopsEnvResourceDetailDTO> resourceDetailDTOList = new ArrayList<>(8)
+
     @Shared
-    DevopsEnvResourceDTO devopsEnvResourceDO8 = new DevopsEnvResourceDTO()
+    DevopsEnvUserPermissionDTO devopsEnvUserPermissionDTO = new DevopsEnvUserPermissionDTO()
     @Shared
-    DevopsEnvironmentDTO devopsEnvironmentDO = new DevopsEnvironmentDTO()
+    DevopsCommandEventDTO devopsCommandEventDTO = new DevopsCommandEventDTO()
     @Shared
-    AppServiceVersionDTO applicationVersionDO = new AppServiceVersionDTO()
+    DevopsEnvCommandLogDTO devopsEnvCommandLogDTO = new DevopsEnvCommandLogDTO()
     @Shared
-    AppServiceInstanceDTO applicationInstanceDTO = new AppServiceInstanceDTO()
+    DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = new DevopsEnvFileResourceDTO()
     @Shared
-    DevopsEnvCommandValueDTO devopsEnvCommandValueDO = new DevopsEnvCommandValueDTO()
-    @Shared
-    AppServiceVersionValueDTO applicationVersionValueDO = new AppServiceVersionValueDTO()
-    @Shared
-    DevopsEnvResourceDetailDTO devopsEnvResourceDetailDO = new DevopsEnvResourceDetailDTO()
-    @Shared
-    DevopsEnvResourceDetailDTO devopsEnvResourceDetailDO2 = new DevopsEnvResourceDetailDTO()
-    @Shared
-    DevopsEnvResourceDetailDTO devopsEnvResourceDetailDO3 = new DevopsEnvResourceDetailDTO()
-    @Shared
-    DevopsEnvResourceDetailDTO devopsEnvResourceDetailDO4 = new DevopsEnvResourceDetailDTO()
-    @Shared
-    DevopsEnvResourceDetailDTO devopsEnvResourceDetailDO5 = new DevopsEnvResourceDetailDTO()
-    @Shared
-    DevopsEnvResourceDetailDTO devopsEnvResourceDetailDO6 = new DevopsEnvResourceDetailDTO()
-    @Shared
-    DevopsEnvResourceDetailDTO devopsEnvResourceDetailDO7 = new DevopsEnvResourceDetailDTO()
-    @Shared
-    DevopsEnvResourceDetailDTO devopsEnvResourceDetailDO8 = new DevopsEnvResourceDetailDTO()
-    @Shared
-    DevopsEnvUserPermissionDTO devopsEnvUserPermissionDO = new DevopsEnvUserPermissionDTO()
-    @Shared
-    DevopsCommandEventDTO devopsCommandEventDO = new DevopsCommandEventDTO()
-    @Shared
-    DevopsEnvCommandLogDTO devopsEnvCommandLogDO = new DevopsEnvCommandLogDTO()
-    @Shared
-    DevopsEnvFileResourceDTO devopsEnvFileResourceDO = new DevopsEnvFileResourceDTO()
-    @Shared
-    DevopsEnvFileDTO devopsEnvFileDO = new DevopsEnvFileDTO()
+    DevopsEnvFileDTO devopsEnvFileDTO = new DevopsEnvFileDTO()
 
     @Autowired
-    private GitlabServiceClientOperator gitlabRepository
+    @Qualifier("mockGitlabServiceClientOperator")
+    private GitlabServiceClientOperator gitlabServiceClientOperator
     @Autowired
-    private GitlabGroupMemberService gitlabGroupMemberRepository
+    private GitlabGroupMemberService gitlabGroupMemberService
 
-    BaseServiceClient baseServiceClient = Mockito.mock(BaseServiceClient.class)
-    GitlabServiceClient gitlabServiceClient = Mockito.mock(GitlabServiceClient.class)
+    @Shared
+    def isToInit = true
+    @Shared
+    def isToClean = false
 
-    def setupSpec() {
+    def setup() {
+        if (!isToInit) {
+            return
+        }
+
+        mockData()
+        insertMockData()
+        mockBehavior()
+    }
+
+    def cleanup() {
+        if (!isToClean) {
+            return
+        }
+
+        devopsProjectMapper.delete(null)
+        // 删除appInstance
+        applicationInstanceMapper.delete(null)
+        // 删除appMarket
+        appServiceShareRuleMapper.delete(null)
+        // 删除envPod
+        devopsEnvPodMapper.delete(null)
+        // 删除appVersion
+        appServiceVersionMapper.delete(null)
+        // 删除appVersionValue
+        applicationVersionValueMapper.delete(null)
+        // 删除app
+        appServiceMapper.delete(null)
+        // 删除env
+        devopsEnvironmentMapper.delete(null)
+        // 删除envCommand
+        devopsEnvCommandMapper.delete(null)
+        // 删除envCommandValue
+        devopsEnvCommandValueMapper.delete(null)
+        // 删除envFile
+        devopsEnvFileMapper.delete(null)
+        // 删除envFileResource
+        devopsEnvFileResourceMapper.delete(null)
+        // 删除envResource
+        devopsEnvResourceMapper.delete(null)
+        // 删除envResourceDetail
+        devopsEnvResourceDetailMapper.delete(null)
+        // 删除envUserPermission
+        devopsEnvUserPermissionMapper.delete(null)
+        // 删除commandEvent
+        devopsCommandEventMapper.delete(null)
+        // 删除envCommandLog
+        devopsEnvCommandLogMapper.delete(null)
+        deployValueMapper.delete(null)
+        FileUtil.deleteDirectory(new File("gitops"))
+    }
+
+    def mockData() {
+        DevopsEnvResourceDTO devopsEnvResourceDO = new DevopsEnvResourceDTO()
+        DevopsEnvResourceDTO devopsEnvResourceDO2 = new DevopsEnvResourceDTO()
+        DevopsEnvResourceDTO devopsEnvResourceDO3 = new DevopsEnvResourceDTO()
+        DevopsEnvResourceDTO devopsEnvResourceDO4 = new DevopsEnvResourceDTO()
+        DevopsEnvResourceDTO devopsEnvResourceDO5 = new DevopsEnvResourceDTO()
+        DevopsEnvResourceDTO devopsEnvResourceDO6 = new DevopsEnvResourceDTO()
+        DevopsEnvResourceDTO devopsEnvResourceDO7 = new DevopsEnvResourceDTO()
+        DevopsEnvResourceDTO devopsEnvResourceDO8 = new DevopsEnvResourceDTO()
+
+        DevopsEnvResourceDetailDTO devopsEnvResourceDetailDO = new DevopsEnvResourceDetailDTO()
+        DevopsEnvResourceDetailDTO devopsEnvResourceDetailDO2 = new DevopsEnvResourceDetailDTO()
+        DevopsEnvResourceDetailDTO devopsEnvResourceDetailDO3 = new DevopsEnvResourceDetailDTO()
+        DevopsEnvResourceDetailDTO devopsEnvResourceDetailDO4 = new DevopsEnvResourceDetailDTO()
+        DevopsEnvResourceDetailDTO devopsEnvResourceDetailDO5 = new DevopsEnvResourceDetailDTO()
+        DevopsEnvResourceDetailDTO devopsEnvResourceDetailDO6 = new DevopsEnvResourceDetailDTO()
+        DevopsEnvResourceDetailDTO devopsEnvResourceDetailDO7 = new DevopsEnvResourceDetailDTO()
+        DevopsEnvResourceDetailDTO devopsEnvResourceDetailDO8 = new DevopsEnvResourceDetailDTO()
+
         Map<String, Object> params = new HashMap<>()
         params.put("code", "app")
-        searchParam.put("searchParam", params)
+        searchParam.put("searchParam", "")
         searchParam.put("param", [])
 
+        devopsProjectDTO = new DevopsProjectDTO()
+        devopsProjectDTO.setIamProjectId(PROJECT_ID)
+        devopsProjectDTO.setDevopsAppGroupId(1L)
+        devopsProjectDTO.setDevopsEnvGroupId(1L)
+
+        // da
+        appServiceDTO.setId(1L)
+        appServiceDTO.setProjectId(1L)
+        appServiceDTO.setName("appName")
+        appServiceDTO.setCode("appCode")
+        appServiceDTO.setGitlabProjectId(1)
+
         // de
-        devopsEnvironmentDO.setId(1L)
-        devopsEnvironmentDO.setClusterId(1L)
-        devopsEnvironmentDO.setProjectId(1L)
-        devopsEnvironmentDO.setName("envName")
-        devopsEnvironmentDO.setEnvIdRsa("test")
-        devopsEnvironmentDO.setCode("envCode")
-        devopsEnvironmentDO.setGitlabEnvProjectId(1L)
+        devopsEnvironmentDTO.setId(1L)
+        devopsEnvironmentDTO.setClusterId(1L)
+        devopsEnvironmentDTO.setProjectId(1L)
+        devopsEnvironmentDTO.setName("envName")
+        devopsEnvironmentDTO.setEnvIdRsa("test")
+        devopsEnvironmentDTO.setCode("envCode")
+        devopsEnvironmentDTO.setGitlabEnvProjectId(1L)
 
         // dam
-        devopsAppMarketDO.setShareLevel("pub")
+        appServiceShareRuleDTO.setShareLevel("pub")
+        appServiceShareRuleDTO.setAppServiceId(appServiceDTO.getId())
+        appServiceShareRuleDTO.setVersionType("master")
 
         // dav
-        applicationVersionDO.setId(1L)
-        applicationVersionDO.setAppServiceId(1L)
-        applicationVersionDO.setValueId(1L)
-        applicationVersionDO.setVersion("version")
-
-        // dp
-        devopsEnvPodDO.setId(1L)
-        devopsEnvPodDO.setReady(true)
-        devopsEnvPodDO.setInstanceId(1L)
-        devopsEnvPodDO.setStatus("Running")
-        devopsEnvPodDO.setNamespace("envCode")
-        devopsEnvPodDO.setNamespace("envCode")
-        devopsEnvPodDO.setName("test-pod-123456-abcdef")
-
-        // cmd
-        devopsEnvCommandDO.setId(1L)
-        devopsEnvCommandDO.setValueId(1L)
-        devopsEnvCommandDO.setObjectId(1L)
-        devopsEnvCommandDO.setError("error")
-        devopsEnvCommandDO.setObject("instance")
-        devopsEnvCommandDO.setStatus("operating")
-        devopsEnvCommandDO.setObjectVersionId(1L)
-        devopsEnvCommandDO.setCommandType("create")
-
-        // decv
-        devopsEnvCommandValueDO.setId(1L)
-        devopsEnvCommandValueDO.setValue("---\n" +
-                "image:\n" +
-                "  tag: \"0.1.0-dev.20180519090059\"\n" +
-                "  repository: \"registry.saas.test.com/hand-rdc-choerodon/event-store-service\"\n" +
-                "  pullPolicy: \"Always\"\n" +
-                "replicaCount: 1\n" +
-                "service:\n" +
-                "  port: 9010\n" +
-                "  enable: false\n" +
-                "  type: \"ClusterIP\"\n" +
-                "resources:\n" +
-                "  requests:\n" +
-                "    memory: \"2Gi\"\n" +
-                "  limits:\n" +
-                "    memory: \"3Gi\"\n" +
-                "metrics:\n" +
-                "  path: \"/prometheus\"\n" +
-                "  label: \"java-spring\"\n" +
-                "env:\n" +
-                "  open:\n" +
-                "    SPRING_CLOUD_CONFIG_URI: \"http://config-server.choerodon-devops-prod:8010/\"\n" +
-                "    SPRING_CLOUD_STREAM_DEFAULT_BINDER: \"kafka\"\n" +
-                "    SPRING_CLOUD_CONFIG_ENABLED: true\n" +
-                "    SPRING_DATASOURCE_PASSWORD: \"handhand\"\n" +
-                "    SPRING_DATASOURCE_URL: \"jdbc:mysql://hapcloud-mysql.db:3306/event_store_service?useUnicode=true&characterEncoding=utf-8&useSSL=false\"\n" +
-                "    SPRING_DATASOURCE_USERNAME: \"root\"\n" +
-                "    SPRING_KAFKA_BOOTSTRAP_SERVERS: \"kafka-0.kafka-headless.kafka.svc.cluster.local:9092,kafka-1.kafka-headless.kafka.svc.cluster.local:9092,kafka-2.kafka-headless.kafka.svc.cluster.local:9092\"\n" +
-                "    SPRING_CLOUD_STREAM_KAFKA_BINDER_BROKERS: \"kafka-0.kafka-headless.kafka.svc.cluster.local:9092,kafka-1.kafka-headless.kafka.svc.cluster.local:9092,kafka-2.kafka-headless.kafka.svc.cluster.local:9092\"\n" +
-                "    SPRING_CLOUD_STREAM_KAFKA_BINDER_ZK_NODES: \"zookeeper-0.zookeeper-headless.zookeeper.svc.cluster.local:2181,zookeeper-1.zookeeper-headless.zookeeper.svc.cluster.local:2181,zookeeper-2.zookeeper-headless.zookeeper.svc.cluster.local:2181\"\n" +
-                "    EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: \"http://register-server.choerodon-devops-prod:8000/eureka/\"\n" +
-                "logs:\n" +
-                "  parser: \"java-spring\"\n" +
-                "preJob:\n" +
-                "  preConfig:\n" +
-                "    mysql:\n" +
-                "      database: \"manager_service\"\n" +
-                "      password: \"handhand\"\n" +
-                "      port: 3306\n" +
-                "      host: \"hapcloud-mysql.db\"\n" +
-                "      username: \"root\"\n" +
-                "  preInitDB:\n" +
-                "    mysql:\n" +
-                "      database: \"event_store_service\"\n" +
-                "      password: \"handhand\"\n" +
-                "      port: 3306\n" +
-                "      host: \"hapcloud-mysql.db\"\n" +
-                "      username: \"root\"\n" +
-                "deployment:\n" +
-                "  managementPort: 9011")
-        // da
-        applicationDO.setId(1L)
-        applicationDO.setProjectId(1L)
-        applicationDO.setName("appName")
-        applicationDO.setCode("appCode")
-        applicationDO.setGitlabProjectId(1)
+        appServiceVersionDTO.setId(1L)
+        appServiceVersionDTO.setAppServiceId(1L)
+        appServiceVersionDTO.setValueId(1L)
+        appServiceVersionDTO.setVersion("version")
 
         // dai
-        applicationInstanceDTO.setId(1L)
-        applicationInstanceDTO.setEnvId(1L)
-        applicationInstanceDTO.setAppServiceId(1L)
-        applicationInstanceDTO.setCommandId(1L)
-        applicationInstanceDTO.setAppServiceVersionId(1L)
-        applicationInstanceDTO.setStatus("running")
-        applicationInstanceDTO.setCode("appInsCode")
-        applicationInstanceDTO.setObjectVersionNumber(1L)
+        appServiceInstanceDTO.setId(1L)
+        appServiceInstanceDTO.setValueId(1L)
+        appServiceInstanceDTO.setEnvId(1L)
+        appServiceInstanceDTO.setAppServiceId(1L)
+        appServiceInstanceDTO.setCommandId(1L)
+        appServiceInstanceDTO.setAppServiceVersionId(1L)
+        appServiceInstanceDTO.setStatus("running")
+        appServiceInstanceDTO.setCode("appInsCode")
+        appServiceInstanceDTO.setObjectVersionNumber(1L)
+
+        // dp
+        devopsEnvPodDTO.setId(1L)
+        devopsEnvPodDTO.setReady(true)
+        devopsEnvPodDTO.setInstanceId(appServiceInstanceDTO.getId())
+        devopsEnvPodDTO.setStatus("Running")
+        devopsEnvPodDTO.setNamespace(devopsEnvironmentDTO.getCode())
+        devopsEnvPodDTO.setName("test-pod-123456-abcdef")
 
         // davv
-        applicationVersionValueDO.setId(1L)
-        applicationVersionValueDO.setValue("---\n" +
+        appServiceVersionValueDTO.setId(1L)
+        appServiceVersionValueDTO.setValue("---\n" +
                 "image:\n" +
                 "  tag: \"0.1.0-dev.20180519090059\"\n" +
                 "  repository: \"registry.saas.test.com/hand-rdc-choerodon/event-store-service\"\n" +
@@ -343,10 +348,34 @@ class AppServiceInstanceControllerSpec extends Specification {
                 "deployment:\n" +
                 "  managementPort: 9011")
 
+        devopsDeployValueDTO = new DevopsDeployValueDTO()
+        devopsDeployValueDTO.setId(1L)
+        devopsDeployValueDTO.setAppServiceId(appServiceDTO.getId())
+        devopsDeployValueDTO.setEnvId(devopsEnvironmentDTO.getId())
+        devopsDeployValueDTO.setEnvName(devopsEnvironmentDTO.getName())
+        devopsDeployValueDTO.setProjectId(PROJECT_ID)
+        devopsDeployValueDTO.setName("Staging部署配置")
+        devopsDeployValueDTO.setValue(appServiceVersionValueDTO.getValue())
+
+        // decv
+        devopsEnvCommandValueDTO.setId(1L)
+        devopsEnvCommandValueDTO.setValue(devopsDeployValueDTO.getValue())
+
+        // cmd
+        devopsEnvCommandDTO.setId(1L)
+        devopsEnvCommandDTO.setValueId(devopsEnvCommandValueDTO.getId())
+        devopsEnvCommandDTO.setObjectId(1L)
+        devopsEnvCommandDTO.setError("error")
+        devopsEnvCommandDTO.setObject("instance")
+        devopsEnvCommandDTO.setStatus("operating")
+        devopsEnvCommandDTO.setObjectVersionId(1L)
+        devopsEnvCommandDTO.setCommandType("create")
+
+
         // deup
-        devopsEnvUserPermissionDO.setIamUserId(1L)
-        devopsEnvUserPermissionDO.setPermitted(true)
-        devopsEnvUserPermissionDO.setEnvId(1L)
+        devopsEnvUserPermissionDTO.setIamUserId(1L)
+        devopsEnvUserPermissionDTO.setPermitted(true)
+        devopsEnvUserPermissionDTO.setEnvId(1L)
 
         // der
         devopsEnvResourceDO.setId(1L)
@@ -396,6 +425,15 @@ class AppServiceInstanceControllerSpec extends Specification {
         devopsEnvResourceDO8.setInstanceId(1L)
         devopsEnvResourceDO8.setResourceDetailId(8L)
 
+        devopsEnvResources.add(devopsEnvResourceDO)
+        devopsEnvResources.add(devopsEnvResourceDO2)
+        devopsEnvResources.add(devopsEnvResourceDO3)
+        devopsEnvResources.add(devopsEnvResourceDO4)
+        devopsEnvResources.add(devopsEnvResourceDO5)
+        devopsEnvResources.add(devopsEnvResourceDO6)
+        devopsEnvResources.add(devopsEnvResourceDO7)
+        devopsEnvResources.add(devopsEnvResourceDO8)
+
         // derd
         devopsEnvResourceDetailDO.setId(1L)
         devopsEnvResourceDetailDO.setMessage("{\"kind\":\"Pod\",\"apiVersion\":\"v1\",\"metadata\":{\"name\":\"iam-service-56946b7b9f-42xnx\",\"generateName\":\"iam-service-56946b7b9f-\",\"namespace\":\"choerodon-devops-prod\",\"selfLink\":\"/api/v1/namespaces/choerodon-devops-prod/pods/iam-service-56946b7b9f-42xnx\",\"uid\":\"1667ab32-6b40-11e8-94ae-00163e0e2443\",\"resourceVersion\":\"4333254\",\"creationTimestamp\":\"2018-06-08T17:19:23Z\",\"labels\":{\"choerodon.io/metrics-port\":\"8031\",\"choerodon.io/release\":\"iam-service\",\"choerodon.io/service\":\"iam-service\",\"choerodon.io/version\":\"0.6.0\",\"pod-template-hash\":\"1250263659\"},\"annotation\":{\"choerodon.io/metrics-group\":\"spring-boot\",\"choerodon.io/metrics-path\":\"/prometheus\",\"kubernetes.io/created-by\":\"{\\\"kind\\\":\\\"SerializedReference\\\",\\\"apiVersion\\\":\\\"v1\\\",\\\"reference\\\":{\\\"kind\\\":\\\"ReplicaSet\\\",\\\"namespace\\\":\\\"choerodon-devops-prod\\\",\\\"name\\\":\\\"iam-service-56946b7b9f\\\",\\\"uid\\\":\\\"0f7ec2d5-6b40-11e8-94ae-00163e0e2443\\\",\\\"apiVersion\\\":\\\"extensions\\\",\\\"resourceVersion\\\":\\\"4332963\\\"}}\\n\"},\"ownerReferences\":[{\"apiVersion\":\"extensions/v1beta1\",\"kind\":\"ReplicaSet\",\"name\":\"iam-service-56946b7b9f\",\"uid\":\"0f7ec2d5-6b40-11e8-94ae-00163e0e2443\",\"controller\":true,\"blockOwnerDeletion\":true}]},\"spec\":{\"volumes\":[{\"name\":\"default-token-mjcs5\",\"secret\":{\"secretName\":\"default-token-mjcs5\",\"defaultMode\":420}}],\"containers\":[{\"name\":\"iam-service\",\"image\":\"registry-vpc.cn-shanghai.aliyuncs.com/choerodon/iam-service:0.6.0\",\"ports\":[{\"name\":\"http\",\"containerPort\":8030,\"protocol\":\"TCP\"}],\"env\":[{\"name\":\"CHOERODON_EVENT_CONSUMER_KAFKA_BOOTSTRAP_SERVERS\",\"value\":\"172.19.136.81:9092,172.19.136.82:9092,172.19.136.83:9092\"},{\"name\":\"EUREKA_CLIENT_SERVICEURL_DEFAULTZONE\",\"value\":\"http://register-server.choerodon-devops-prod:8000/eureka/\"},{\"name\":\"SPRING_CLOUD_CONFIG_ENABLED\",\"value\":\"true\"},{\"name\":\"SPRING_CLOUD_CONFIG_URI\",\"value\":\"http://config-server.choerodon-devops-prod:8010/\"},{\"name\":\"SPRING_CLOUD_STREAM_KAFKA_BINDER_BROKERS\",\"value\":\"172.19.136.81:9092,172.19.136.82:9092,172.19.136.83:9092\"},{\"name\":\"SPRING_CLOUD_STREAM_KAFKA_BINDER_ZK_NODES\",\"value\":\"172.19.136.81:2181,172.19.136.82:2181,172.19.136.83:2181\"},{\"name\":\"SPRING_DATASOURCE_PASSWORD\",\"value\":\"JAu9p8zL\"},{\"name\":\"SPRING_DATASOURCE_URL\",\"value\":\"jdbc:mysql://rm-uf65upic89q7007h5.mysql.rds.aliyuncs.com:3306/iam_service?useUnicode=true\\u0026characterEncoding=utf-8\\u0026useSSL=false\"},{\"name\":\"SPRING_DATASOURCE_USERNAME\",\"value\":\"c7n_iam\"},{\"name\":\"SPRING_KAFKA_BOOTSTRAP_SERVERS\",\"value\":\"172.19.136.81:9092,172.19.136.82:9092,172.19.136.83:9092\"}],\"resources\":{\"limits\":{\"memory\":\"3Gi\"},\"requests\":{\"memory\":\"2Gi\"}},\"volumeMounts\":[{\"name\":\"default-token-mjcs5\",\"readOnly\":true,\"mountPath\":\"/var/run/secrets/kubernetes.io/serviceaccount\"}],\"readinessProbe\":{\"exec\":{\"command\":[\"curl\",\"localhost:8031/health\"]},\"initialDelaySeconds\":60,\"timeoutSeconds\":10,\"periodSeconds\":10,\"successThreshold\":1,\"failureThreshold\":3},\"terminationMessagePath\":\"/dev/termination-log\",\"terminationMessagePolicy\":\"File\",\"imagePullPolicy\":\"Always\"}],\"restartPolicy\":\"Always\",\"terminationGracePeriodSeconds\":30,\"dnsPolicy\":\"ClusterFirst\",\"serviceAccountName\":\"default\",\"serviceAccount\":\"default\",\"nodeName\":\"choerodon2\",\"securityContext\":{},\"schedulerName\":\"default-scheduler\"},\"status\":{\"phase\":\"Running\",\"conditions\":[{\"type\":\"Initialized\",\"status\":\"True\",\"lastProbeTime\":null,\"lastTransitionTime\":\"2018-06-08T17:19:23Z\"},{\"type\":\"Ready\",\"status\":\"True\",\"lastProbeTime\":null,\"lastTransitionTime\":\"2018-06-08T17:20:30Z\"},{\"type\":\"PodScheduled\",\"status\":\"True\",\"lastProbeTime\":null,\"lastTransitionTime\":\"2018-06-08T17:19:23Z\"}],\"hostIP\":\"172.19.136.82\",\"podIP\":\"192.168.2.209\",\"startTime\":\"2018-06-08T17:19:23Z\",\"containerStatuses\":[{\"name\":\"iam-service\",\"state\":{\"running\":{\"startedAt\":\"2018-06-08T17:19:24Z\"}},\"lastState\":{},\"ready\":true,\"restartCount\":0,\"image\":\"registry-vpc.cn-shanghai.aliyuncs.com/choerodon/iam-service:0.6.0\",\"imageID\":\"docker-pullable://registry-vpc.cn-shanghai.aliyuncs.com/choerodon/iam-service@sha256:ecf370e2623a62631499a7780c6851418b806018ed2d3ae2530f54cf638cb432\",\"containerID\":\"docker://2892c582b8109dff691df6190f8555cef1f9680e11d27864472bebb57962250b\"}],\"qosClass\":\"Burstable\"}}")
@@ -422,102 +460,117 @@ class AppServiceInstanceControllerSpec extends Specification {
         devopsEnvResourceDetailDO8.setId(8L)
         devopsEnvResourceDetailDO8.setMessage("{\"apiVersion\":\"v1\",\"kind\":\"Pod\",\"metadata\":{\"creationTimestamp\":\"2018-12-18T08:06:20Z\",\"generateName\":\"web-\",\"labels\":{\"app\":\"nginx\",\"controller-revision-hash\":\"web-5fbd4bb9cc\",\"statefulset.kubernetes.io/pod-name\":\"web-0\"},\"name\":\"web-0\",\"namespace\":\"default\",\"ownerReferences\":[{\"apiVersion\":\"apps/v1beta1\",\"blockOwnerDeletion\":true,\"controller\":true,\"kind\":\"StatefulSet\",\"name\":\"web\",\"uid\":\"cd21c557-029b-11e9-a58a-0800272ecd84\"}],\"resourceVersion\":\"47922\",\"selfLink\":\"/api/v1/namespaces/default/pods/web-0\",\"uid\":\"cd6833e3-029b-11e9-a58a-0800272ecd84\"},\"spec\":{\"containers\":[{\"image\":\"nginx\",\"imagePullPolicy\":\"Always\",\"name\":\"nginx\",\"ports\":[{\"containerPort\":80,\"name\":\"web\",\"protocol\":\"TCP\"}],\"resources\":{},\"terminationMessagePath\":\"/dev/termination-log\",\"terminationMessagePolicy\":\"File\",\"volumeMounts\":[{\"mountPath\":\"/var/run/secrets/kubernetes.io/serviceaccount\",\"name\":\"default-token-rmhmg\",\"readOnly\":true}]}],\"dnsPolicy\":\"ClusterFirst\",\"hostname\":\"web-0\",\"nodeName\":\"minikube\",\"restartPolicy\":\"Always\",\"schedulerName\":\"default-scheduler\",\"securityContext\":{},\"serviceAccount\":\"default\",\"serviceAccountName\":\"default\",\"subdomain\":\"nginx\",\"terminationGracePeriodSeconds\":10,\"volumes\":[{\"name\":\"default-token-rmhmg\",\"secret\":{\"defaultMode\":420,\"secretName\":\"default-token-rmhmg\"}}]},\"status\":{\"conditions\":[{\"lastProbeTime\":null,\"lastTransitionTime\":\"2018-12-18T08:06:20Z\",\"status\":\"True\",\"type\":\"Initialized\"},{\"lastProbeTime\":null,\"lastTransitionTime\":\"2018-12-18T08:06:28Z\",\"status\":\"True\",\"type\":\"Ready\"},{\"lastProbeTime\":null,\"lastTransitionTime\":\"2018-12-18T08:06:20Z\",\"status\":\"True\",\"type\":\"PodScheduled\"}],\"containerStatuses\":[{\"containerID\":\"docker://dc43b31f553024a98401891a79084bc5be99a0338b0e0666f678854c1770850d\",\"image\":\"nginx:latest\",\"imageID\":\"docker-pullable://nginx@sha256:5d32f60db294b5deb55d078cd4feb410ad88e6fe77500c87d3970eca97f54dba\",\"lastState\":{},\"name\":\"nginx\",\"ready\":true,\"restartCount\":0,\"state\":{\"running\":{\"startedAt\":\"2018-12-18T08:06:26Z\"}}}],\"hostIP\":\"192.168.99.100\",\"phase\":\"Running\",\"podIP\":\"172.17.0.4\",\"qosClass\":\"BestEffort\",\"startTime\":\"2018-12-18T08:06:20Z\"}}")
 
+        resourceDetailDTOList.add(devopsEnvResourceDetailDO)
+        resourceDetailDTOList.add(devopsEnvResourceDetailDO2)
+        resourceDetailDTOList.add(devopsEnvResourceDetailDO3)
+        resourceDetailDTOList.add(devopsEnvResourceDetailDO4)
+        resourceDetailDTOList.add(devopsEnvResourceDetailDO5)
+        resourceDetailDTOList.add(devopsEnvResourceDetailDO6)
+        resourceDetailDTOList.add(devopsEnvResourceDetailDO7)
+        resourceDetailDTOList.add(devopsEnvResourceDetailDO8)
+
         // dce
-        devopsCommandEventDO.setId(1L)
-        devopsCommandEventDO.setType("Job")
-        devopsCommandEventDO.setCommandId(1L)
-        devopsCommandEventDO.setName("commandEvent")
+        devopsCommandEventDTO.setId(1L)
+        devopsCommandEventDTO.setType("Job")
+        devopsCommandEventDTO.setCommandId(1L)
+        devopsCommandEventDTO.setName("commandEvent")
 
         // dcl
-        devopsEnvCommandLogDO.setId(1L)
-        devopsEnvCommandLogDO.setLog()
-        devopsEnvCommandLogDO.setCommandId(1L)
+        devopsEnvCommandLogDTO.setId(1L)
+        devopsEnvCommandLogDTO.setLog()
+        devopsEnvCommandLogDTO.setCommandId(1L)
 
         // defr
-        devopsEnvFileResourceDO.setId(1L)
-        devopsEnvFileResourceDO.setEnvId(1L)
-        devopsEnvFileResourceDO.setResourceId(1L)
-        devopsEnvFileResourceDO.setResourceType("C7NHelmRelease")
-        devopsEnvFileResourceDO.setFilePath("filePath")
+        devopsEnvFileResourceDTO.setId(1L)
+        devopsEnvFileResourceDTO.setEnvId(1L)
+        devopsEnvFileResourceDTO.setResourceId(1L)
+        devopsEnvFileResourceDTO.setResourceType("C7NHelmRelease")
+        devopsEnvFileResourceDTO.setFilePath("filePath")
 
         // def
-        devopsEnvFileDO.setId(1L)
-        devopsEnvFileDO.setEnvId(1L)
-        devopsEnvFileDO.setDevopsCommit("devopsCommit")
+        devopsEnvFileDTO.setId(1L)
+        devopsEnvFileDTO.setEnvId(1L)
+        devopsEnvFileDTO.setDevopsCommit("devopsCommit")
     }
 
-    def setup() {
-        DependencyInjectUtil.setAttribute(baseServiceClientOperator, "baseServiceClient", baseServiceClient)
-        DependencyInjectUtil.setAttribute(gitlabRepository, "gitlabServiceClient", gitlabServiceClient)
+    def insertMockData() {
+        devopsProjectMapper.insert(devopsProjectDTO)
+        deployValueMapper.insert(devopsDeployValueDTO)
+        appServiceMapper.insert(appServiceDTO)
+        devopsEnvPodMapper.insert(devopsEnvPodDTO)
+        appServiceShareRuleMapper.insert(appServiceShareRuleDTO)
+        devopsEnvCommandMapper.selectAll().forEach { devopsEnvCommandMapper.delete(it) }
+        devopsEnvCommandMapper.insert(devopsEnvCommandDTO)
+        devopsEnvironmentMapper.insert(devopsEnvironmentDTO)
+        devopsEnvCommandValueMapper.insert(devopsEnvCommandValueDTO)
+        devopsEnvUserPermissionMapper.insert(devopsEnvUserPermissionDTO)
+        applicationVersionValueMapper.insert(appServiceVersionValueDTO)
 
-        ProjectDTO projectDO = new ProjectDTO()
-        projectDO.setName("testProject")
-        projectDO.setCode("pro")
-        projectDO.setOrganizationId(1L)
-        ResponseEntity<ProjectDTO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
-        Mockito.doReturn(responseEntity).when(baseServiceClient).queryIamProject(1L)
-        OrganizationDTO organizationDO = new OrganizationDTO()
-        organizationDO.setId(1L)
-        organizationDO.setCode("org")
-        ResponseEntity<OrganizationDTO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
-        Mockito.doReturn(responseEntity1).when(baseServiceClient).queryOrganizationById(1L)
+        devopsEnvResources.forEach({ it -> devopsEnvResourceMapper.insert(it) })
 
-        List<RoleVO> roleDTOList = new ArrayList<>()
+        appServiceVersionMapper.insert(appServiceVersionDTO)
+        applicationInstanceMapper.insert(appServiceInstanceDTO)
+
+        resourceDetailDTOList.forEach({ it -> devopsEnvResourceDetailMapper.insert(it) })
+
+        devopsEnvCommandLogMapper.insert(devopsEnvCommandLogDTO)
+        devopsCommandEventMapper.insert(devopsCommandEventDTO)
+        devopsEnvFileResourceMapper.insert(devopsEnvFileResourceDTO)
+        devopsEnvFileMapper.insert(devopsEnvFileDTO)
+    }
+
+    def mockBehavior() {
+        ProjectDTO projectDTO = new ProjectDTO()
+        projectDTO.setName("testProject")
+        projectDTO.setCode("pro")
+        projectDTO.setOrganizationId(1L)
+        PowerMockito.when(baseServiceClientOperator.queryIamProjectById(1L)).thenReturn(projectDTO)
+
+        OrganizationDTO organizationDTO = new OrganizationDTO()
+        organizationDTO.setId(1L)
+        organizationDTO.setCode("org")
+        PowerMockito.when(baseServiceClientOperator.queryOrganizationById(1L)).thenReturn(organizationDTO)
+
+        List<RoleVO> roleVOS = new ArrayList<>()
         RoleVO roleDTO = new RoleVO()
         roleDTO.setCode("role/project/default/project-owner")
-        roleDTOList.add(roleDTO)
-        List<ProjectWithRoleVO> projectWithRoleDTOList = new ArrayList<>()
+        roleVOS.add(roleDTO)
+        List<ProjectWithRoleVO> projectWithRoleVOS = new ArrayList<>()
         ProjectWithRoleVO projectWithRoleDTO = new ProjectWithRoleVO()
         projectWithRoleDTO.setName("pro")
-        projectWithRoleDTO.setRoles(roleDTOList)
-        projectWithRoleDTOList.add(projectWithRoleDTO)
-        PageInfo<ProjectWithRoleVO> projectWithRoleDTOPage = new PageInfo(projectWithRoleDTOList)
-        ResponseEntity<PageInfo<ProjectWithRoleVO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
-        Mockito.doReturn(pageResponseEntity).when(baseServiceClient).listProjectWithRole(anyLong(), anyInt(), anyInt())
+        projectWithRoleDTO.setRoles(roleVOS)
+        projectWithRoleVOS.add(projectWithRoleDTO)
+        PowerMockito.when(baseServiceClientOperator.listProjectWithRoleDTO(anyLong())).thenReturn(projectWithRoleVOS)
 
-        List<ProjectDTO> projectDOList = new ArrayList<>()
-        projectDOList.add(projectDO)
-        PageInfo<ProjectDTO> projectDOPage = new PageInfo(projectDOList)
-        ResponseEntity<PageInfo<ProjectDTO>> projectDOPageResponseEntity = new ResponseEntity<>(projectDOPage, HttpStatus.OK)
-        Mockito.doReturn(projectDOPageResponseEntity).when(baseServiceClient).queryProjectByOrgId(anyLong(), anyInt(), anyInt(), anyString(), any(String[]))
+        List<ProjectDTO> projectDTOS = new ArrayList<>()
+        projectDTOS.add(projectDTO)
+        PowerMockito.when(baseServiceClientOperator.listIamProjectByOrgId(anyLong())).thenReturn(projectDTOS)
 
-        MemberDTO memberDO = new MemberDTO()
-        memberDO.setId(1)
-        memberDO.setAccessLevel(AccessLevel.OWNER.toValue())
-        ResponseEntity<MemberDTO> responseEntity2 = new ResponseEntity<>(memberDO, HttpStatus.OK)
-        Mockito.when(gitlabServiceClient.queryGroupMember(anyInt(), anyInt())).thenReturn(responseEntity2)
+        MemberDTO memberDTO = new MemberDTO()
+        memberDTO.setId(1)
+        memberDTO.setAccessLevel(AccessLevel.OWNER.toValue())
+        PowerMockito.when(gitlabServiceClientOperator.queryGroupMember(anyInt(), anyInt())).thenReturn(memberDTO)
 
-        IamUserDTO iamUserDTO = new IamUserDTO()
-        iamUserDTO.setId(1L)
-        iamUserDTO.setLoginName("test")
-        iamUserDTO.setImageUrl("imageURL")
-        ResponseEntity<IamUserDTO> responseEntity3 = new ResponseEntity<>(iamUserDTO, HttpStatus.OK)
-        Mockito.when(baseServiceClient.queryByLoginName(anyString())).thenReturn(responseEntity3)
+//        IamUserDTO iamUserDTO = new IamUserDTO()
+//        iamUserDTO.setId(1L)
+//        iamUserDTO.setLoginName("test")
+//        iamUserDTO.setImageUrl("imageURL")
+//        ResponseEntity<IamUserDTO> responseEntity3 = new ResponseEntity<>(iamUserDTO, HttpStatus.OK)
+//        Mockito.when(baseServiceClient.queryByLoginName(anyString())).thenReturn(responseEntity3)
+//        PowerMockito.when(baseServiceClientOperator.queryBy)
 
-        List<GitlabPipelineDTO> pipelineDOList = new ArrayList<>()
-        GitlabPipelineDTO pipelineDO = new GitlabPipelineDTO()
-        pipelineDO.setId(1)
-        GitLabUserDTO gitlabUser = new GitLabUserDTO()
-        pipelineDO.setRef("")
-        pipelineDO.setUser(gitlabUser)
-        gitlabUser.setId(1)
-        gitlabUser.setName("gitlabTestName")
-        pipelineDOList.add(pipelineDO)
-        ResponseEntity<List<GitlabPipelineDTO>> responseEntity4 = new ResponseEntity<>(pipelineDOList, HttpStatus.OK)
-        Mockito.when(gitlabServiceClient.listPipeline(anyInt(), anyInt())).thenReturn(responseEntity4)
+        List<GitlabPipelineDTO> gitlabPipelineDTOS = new ArrayList<>()
+        GitlabPipelineDTO gitlabPipelineDTO = new GitlabPipelineDTO()
+        gitlabPipelineDTO.setId(1)
+        GitLabUserDTO gitLabUserDTO = new GitLabUserDTO()
+        gitlabPipelineDTO.setRef("")
+        gitlabPipelineDTO.setUser(gitLabUserDTO)
+        gitLabUserDTO.setId(1)
+        gitLabUserDTO.setName("gitlabTestName")
+        gitlabPipelineDTOS.add(gitlabPipelineDTO)
+        PowerMockito.when(gitlabServiceClientOperator.listPipeline(anyInt(), anyInt())).thenReturn(gitlabPipelineDTOS)
 
-        ResponseEntity<GitlabPipelineDTO> responseEntity5 = new ResponseEntity<>(pipelineDO, HttpStatus.OK)
-        Mockito.when(gitlabServiceClient.queryPipeline(anyInt(), anyInt(), anyInt())).thenReturn(responseEntity5)
-
-        ResponseEntity responseEntity6 = new ResponseEntity<>(HttpStatus.OK)
-        Mockito.when(gitlabServiceClient.deleteFile(anyInt(), anyString(), anyString(), anyInt())).thenReturn(responseEntity6)
-
-        RepositoryFileDTO repositoryFile = new RepositoryFileDTO()
-        repositoryFile.setFilePath("test")
-        ResponseEntity<RepositoryFileDTO> responseEntity8 = new ResponseEntity<>(repositoryFile, HttpStatus.OK)
-
-        Mockito.when(gitlabServiceClient.createFile(anyInt(), anyString(), anyString(), anyString(), anyInt())).thenReturn(responseEntity8)
-
+        PowerMockito.when(gitlabServiceClientOperator.queryPipeline(anyInt(), anyInt(), anyInt())).thenReturn(gitlabPipelineDTO)
 
         List<IamUserDTO> userDOList = new ArrayList<>()
         IamUserDTO userDO1 = new IamUserDTO()
@@ -526,112 +579,75 @@ class AppServiceInstanceControllerSpec extends Specification {
         userDO1.setRealName("realName")
         userDO1.setImageUrl("imageUrl")
         userDOList.add(userDO1)
-        ResponseEntity<List<IamUserDTO>> responseEntity7 = new ResponseEntity<>(userDOList, HttpStatus.OK)
-        Mockito.when(baseServiceClient.listUsersByIds(any(Long[].class))).thenReturn(responseEntity7)
-        Mockito.doReturn(responseEntity7).when(baseServiceClient).listUsersByIds(1L)
+        PowerMockito.when(baseServiceClientOperator.listUsersByIds(any(List))).thenReturn(userDOList)
+    }
+
+    def "QueryInstanceInformationById"() {
+        given: "准备数据"
+        isToInit = false
+        def url = MAPPING + "/{instance_id}"
+        Map<String, Object> params = new HashMap<>()
+        params.put("project_id", PROJECT_ID)
+        params.put("instance_id", appServiceInstanceDTO.getId())
+
+        when: "调用方法"
+        def result = restTemplate.getForObject(url, AppServiceInstanceInfoVO, params)
+
+        then: "校验结果"
+        result != null
+        result.getCode() == appServiceInstanceDTO.getCode()
     }
 
     def "PageByOptions"() {
         given: '初始化数据'
-        appServiceMapper.insert(applicationDO)
-        devopsEnvPodMapper.insert(devopsEnvPodDO)
-        applicationMarketMapper.insert(devopsAppMarketDO)
-        devopsEnvCommandMapper.selectAll().forEach { devopsEnvCommandMapper.delete(it) }
-        devopsEnvCommandMapper.insert(devopsEnvCommandDO)
-        devopsEnvironmentMapper.insert(devopsEnvironmentDO)
-        devopsEnvCommandValueMapper.insert(devopsEnvCommandValueDO)
-        devopsEnvUserPermissionMapper.insert(devopsEnvUserPermissionDO)
-        applicationVersionValueMapper.insert(applicationVersionValueDO)
-
-        devopsEnvResourceMapper.insert(devopsEnvResourceDO)
-        devopsEnvResourceMapper.insert(devopsEnvResourceDO2)
-        devopsEnvResourceMapper.insert(devopsEnvResourceDO3)
-        devopsEnvResourceMapper.insert(devopsEnvResourceDO4)
-        devopsEnvResourceMapper.insert(devopsEnvResourceDO5)
-        devopsEnvResourceMapper.insert(devopsEnvResourceDO6)
-        devopsEnvResourceMapper.insert(devopsEnvResourceDO7)
-        devopsEnvResourceMapper.insert(devopsEnvResourceDO8)
-
-        applicationVersionMapper.insert(applicationVersionDO)
-        applicationInstanceMapper.insert(applicationInstanceDTO)
-
-        devopsEnvResourceDetailMapper.insert(devopsEnvResourceDetailDO)
-        devopsEnvResourceDetailMapper.insert(devopsEnvResourceDetailDO2)
-        devopsEnvResourceDetailMapper.insert(devopsEnvResourceDetailDO3)
-        devopsEnvResourceDetailMapper.insert(devopsEnvResourceDetailDO4)
-        devopsEnvResourceDetailMapper.insert(devopsEnvResourceDetailDO5)
-        devopsEnvResourceDetailMapper.insert(devopsEnvResourceDetailDO6)
-        devopsEnvResourceDetailMapper.insert(devopsEnvResourceDetailDO7)
-        devopsEnvResourceDetailMapper.insert(devopsEnvResourceDetailDO8)
-
-        devopsEnvCommandLogMapper.insert(devopsEnvCommandLogDO)
-        devopsCommandEventMapper.insert(devopsCommandEventDO)
-        devopsEnvFileResourceMapper.insert(devopsEnvFileResourceDO)
-        devopsEnvFileMapper.insert(devopsEnvFileDO)
-
-        and: '初始化请求头'
         String infra = "{\"searchParam\":{},\"param\":\"\"}"
-        HttpHeaders headers = new HttpHeaders()
-        headers.setContentType(MediaType.valueOf("application/jsonUTF-8"))
-        HttpEntity<String> strEntity = new HttpEntity<String>(infra, headers)
-
-        and: 'mock envUtil'
-        List<Long> connectedEnvList = new ArrayList<>()
-        connectedEnvList.add(1L)
-        envUtil.getConnectedClusterList() >> connectedEnvList
-        envUtil.getUpdatedClusterList() >> connectedEnvList
 
         when: '分页查询应用部署'
-        def page = restTemplate.postForObject(MAPPING+"/page_by_options?page=1&size=1", strEntity, PageInfo.class,1L)
+        def page = restTemplate.postForObject(MAPPING + "/page_by_options?page=1&size=10", infra, PageInfo.class, 1L)
 
         then: '校验返回值'
         page.getList().get(0)["code"] == "appInsCode"
     }
+//
+//    def "ListByAppId"() {
+//        when: '查询应用部署'
+//        def list = restTemplate.getForObject("/v1/projects/1/app_instances/all?appId=1", List.class)
+//
+//        then: '校验返回值'
+//        list.get(0)["applicationName"] == "appName"
+//    }
 
-    def "ListByAppId"() {
-        when: '查询应用部署'
-        def list = restTemplate.getForObject("/v1/projects/1/app_instances/all?appId=1", List.class)
+    def "分页查询服务部署"() {
+        given: "准备数据"
+        def url = MAPPING + "/page_by_options?env_id={env_id}"
+        def map = new HashMap<String, Object>()
+        map.put("project_id", PROJECT_ID)
+        map.put("env_id", devopsEnvironmentDTO.getId())
 
-        then: '校验返回值'
-        list.get(0)["applicationName"] == "appName"
+        when: "调用方法"
+        def page = restTemplate.postForObject(url, EMPTY_SEARCH_PARAM, PageInfo, map)
+
+        then: "校验结果"
+        page != null
+        page.getTotal() == 1
+        page.getList().size() == 1
+        page.getList().get(0)["code"] == appServiceInstanceDTO.getCode()
     }
 
-    def "QueryValue"() {
-        when: '获取部署 Value'
-        def result = restTemplate.getForObject("/v1/projects/1/app_instances/1/value", InstanceValueVO.class)
+    def "获取实例上次部署配置"() {
+        given: "准备数据"
+        def url = MAPPING + "/{instance_Id}/last_deploy_value"
+        def map = new HashMap<String, Object>()
+        map.put("project_id", PROJECT_ID)
+        map.put("instance_Id", appServiceInstanceDTO.getId())
 
-        then:
-        result.getDeltaYaml() == ""
+        when: "调用方法"
+        def value = restTemplate.getForObject(url, String, map)
+
+        then: "校验结果"
+        value != null
     }
 
-
-    def "QueryUpgradeValue"() {
-        when: '获取升级 Value'
-        def result = restTemplate.getForObject("/v1/projects/1/app_instances/1/appVersion/1/value", InstanceValueVO.class)
-
-        then:
-        result.getDeltaYaml() == ""
-    }
-
-    def "QueryValues"() {
-        when: '查询value列表'
-        def result = restTemplate.getForObject("/v1/projects/1/app_instances/value?appId=1&envId=1&appVersionId=1", InstanceValueVO.class)
-
-        then: '校验返回值'
-        result.getDeltaYaml() == ""
-    }
-
-    def "PreviewValues"() {
-        given:
-        InstanceValueVO replaceResult = new InstanceValueVO()
-        replaceResult.setYaml(applicationVersionValueDO.getValue())
-
-        when: '查询value列表'
-        def result = restTemplate.postForObject("/v1/projects/1/app_instances/previewValue?appVersionId=1", replaceResult, InstanceValueVO.class)
-
-        then: '校验返回值'
-        result.getDeltaYaml() == ""
-    }
 
     def "getDeploymentDetailsJsonByInstanceId"() {
         given: "初始化数据库"
@@ -684,9 +700,9 @@ class AppServiceInstanceControllerSpec extends Specification {
 
     def "getDaemonSetDetailsJsonByInstanceId"() {
         given: "准备数据"
-        String daemonSetName = getDevopsEnvResourceDO7().getName()
+        String daemonSetName = devopsEnvResources.get(6).getName()
         Long projectId = 1L
-        Long instanceId = 1L
+        Long instanceId = appServiceInstanceDTO.getId()
 
         when: '查询真实存在的数据'
         def entity = restTemplate.getForEntity(MAPPING + "/{appInstanceId}/daemon_set_detail_json?daemon_set_name=" + daemonSetName, InstanceControllerDetailVO, projectId, instanceId)
@@ -704,7 +720,7 @@ class AppServiceInstanceControllerSpec extends Specification {
 
     def "getDaemonSetDetailsYamlByInstanceId"() {
         given: "初始化数据库"
-        String daemonSetName = getDevopsEnvResourceDO7().getName()
+        String daemonSetName = devopsEnvResources.get(6).getName()
         Long projectId = 1L
         Long instanceId = 1L
 
@@ -725,7 +741,7 @@ class AppServiceInstanceControllerSpec extends Specification {
 
     def "getStatefulSetDetailsJsonByInstanceId"() {
         given: "准备数据"
-        String statefulSetName = getDevopsEnvResourceDO8().getName()
+        String statefulSetName = devopsEnvResources.get(7).getName()
         Long projectId = 1L
         Long instanceId = 1L
 
@@ -745,7 +761,7 @@ class AppServiceInstanceControllerSpec extends Specification {
 
     def "getStatefulSetDetailsYamlByInstanceId"() {
         given: "初始化数据库"
-        String statefulSetName = getDevopsEnvResourceDO8().getName()
+        String statefulSetName = devopsEnvResources.get(7).getName()
         Long projectId = 1L
         Long instanceId = 1L
 
@@ -794,91 +810,219 @@ class AppServiceInstanceControllerSpec extends Specification {
         applicationInstanceMapper.deleteByPrimaryKey(map.get("instanceId"))
     }
 
-    def "FormatValue"() {
-        given: '初始化replaceResult'
-        InstanceValueVO result = new InstanceValueVO()
-        result.setYaml("env:\n" +
-                "  open:\n" +
-                "    PRO_API_HOST: api.example.com.cn1\n" +
-                "preJob:\n" +
-                "  preConfig:\n" +
-                "    mysql:\n" +
-                "      username: root\n" +
-                "      host: 192.168.12.156\n" +
-                "      password: handhand\n" +
-                "      dbname: demo_service")
+    def "QueryUpgradeValue"() {
+        given: "准备数据"
+        def url = MAPPING + "/{instance_id}/appServiceVersion/{version_id}/upgrade_value"
+        def map = new HashMap()
+        map.put("project_id", PROJECT_ID)
+        map.put("instance_id", appServiceInstanceDTO.getId())
+        map.put("version_id", appServiceVersionDTO.getId())
 
-        when: '校验values'
-        def list = restTemplate.postForObject("/v1/projects/1/app_instances/value_format", result, List.class)
+        when: '获取升级 Value'
+        def result = restTemplate.getForObject(url, InstanceValueVO.class, map)
 
-        then: '校验返回值'
-        list.isEmpty()
+        then:
+        result != null
+        result.getId() == devopsDeployValueDTO.getId()
+        result.getYaml() != null
+        result.getName() == devopsDeployValueDTO.getName()
     }
 
-    //部署实例
-    def "Deploy"() {
+    def "QueryValue"() {
+        given: "准备数据"
+        def url = MAPPING + "/deploy_value?instance_id={instance_id}&type={type}&version_id={version_id}"
+        def map = new HashMap()
+        map.put("project_id", PROJECT_ID)
+        map.put("instance_id", appServiceInstanceDTO.getId())
+        map.put("version_id", appServiceVersionDTO.getId())
+        map.put("type", "create")
+
+        when: '创建时获取部署Value'
+        def result = restTemplate.getForObject(url, InstanceValueVO.class, map)
+
+        then: "校验结果"
+        result.getYaml() != null
+
+        when: "更新时获取部署Value"
+        map.put("type", "update")
+        def value = restTemplate.getForObject(url, InstanceValueVO.class, map)
+
+        then: "校验结果"
+        value != null
+        value.getId() == devopsDeployValueDTO.getId()
+        value.getYaml() != null
+        value.getName() == devopsDeployValueDTO.getName()
+    }
+
+    def "PreviewValues"() {
+        given: "准备数据"
+        def url = MAPPING + "/preview_value?version_id={version_id}"
+        def map = new HashMap()
+        map.put("project_id", PROJECT_ID)
+        map.put("version_id", appServiceVersionDTO.getId())
+
+        InstanceValueVO replaceResult = new InstanceValueVO()
+        replaceResult.setYaml(appServiceVersionValueDTO.getValue())
+
+        when: '查询value列表'
+        def result = restTemplate.postForObject(url, replaceResult, InstanceValueVO.class, map)
+
+        then: '校验返回值'
+        result != null
+    }
+
+    def "校验values"() {
+        given: "准备数据"
+        def url = MAPPING + "/value_format"
+        def map = new HashMap()
+        map.put("project_id", PROJECT_ID)
+        InstanceValueVO valueVO = new InstanceValueVO()
+        valueVO.setYaml("---\nname:\nzzz")
+
+        when: "调用方法校验格式错误的yaml"
+        def output = restTemplate.postForObject(url, valueVO, List, map)
+
+        then: "校验结果"
+        output.size() > 0
+
+        when: "调用方法校验格式正确的yaml"
+        valueVO.setYaml("---\nname:\n  correct")
+        output = restTemplate.postForObject(url, valueVO, List, map)
+
+        then: "校验结果"
+        output.size() == 0
+    }
+
+
+//    def "QueryValues"() {
+//        when: '查询value列表'
+//        def result = restTemplate.getForObject("/v1/projects/1/app_instances/value?appId=1&envId=1&appVersionId=1", InstanceValueVO.class)
+//
+//        then: '校验返回值'
+//        result.getDeltaYaml() == ""
+//    }
+
+
+
+//    def "FormatValue"() {
+//        given: '初始化replaceResult'
+//        InstanceValueVO result = new InstanceValueVO()
+//        result.setYaml("env:\n" +
+//                "  open:\n" +
+//                "    PRO_API_HOST: api.example.com.cn1\n" +
+//                "preJob:\n" +
+//                "  preConfig:\n" +
+//                "    mysql:\n" +
+//                "      username: root\n" +
+//                "      host: 192.168.12.156\n" +
+//                "      password: handhand\n" +
+//                "      dbname: demo_service")
+//
+//        when: '校验values'
+//        def list = restTemplate.postForObject("/v1/projects/1/app_instances/value_format", result, List.class)
+//
+//        then: '校验返回值'
+//        list.isEmpty()
+//    }
+
+    // 部署实例
+    def "部署实例"() {
         given: '初始化applicationDeployDTO'
-        AppServiceDeployVO applicationDeployDTO = new AppServiceDeployVO()
-        applicationDeployDTO.setEnvironmentId(1L)
-        applicationDeployDTO.setValues(applicationVersionValueDO.getValue())
-        applicationDeployDTO.setAppId(1L)
-        applicationDeployDTO.setAppVersionId(1L)
-        applicationDeployDTO.setType("create")
-        applicationDeployDTO.setInstanceId(1L)
-        applicationDeployDTO.setIsNotChange(false)
+        def url = MAPPING
+        def map = new HashMap()
+        map.put("project_id", PROJECT_ID)
 
-        and: 'mock envUtil'
-        envUtil.checkEnvConnection(_ as Long) >> null
+        AppServiceDeployVO appServiceDeployVO = new AppServiceDeployVO()
+        appServiceDeployVO.setEnvironmentId(devopsEnvironmentDTO.getId())
+        appServiceDeployVO.setValues(appServiceVersionValueDTO.getValue())
+        appServiceDeployVO.setAppServiceId(appServiceDTO.getId())
+        appServiceDeployVO.setAppServiceVersionId(appServiceVersionDTO.getId())
+        appServiceDeployVO.setType("create")
+        appServiceDeployVO.setIsNotChange(false)
+        appServiceDeployVO.setInstanceName("create-instance-0ac4a")
 
-        and: 'mock gitUtil'
-        gitUtil.cloneBySsh(_ as String, _ as String) >> null
-
-        when: '部署应用'
-        def dto = restTemplate.postForObject("/v1/projects/1/app_instances", applicationDeployDTO, AppServiceDeployVO.class)
+        when: '部署应用服务'
+        def dto = restTemplate.postForObject(url, appServiceDeployVO, AppServiceInstanceVO.class, map)
 
         then: '校验返回值'
         dto != null
+        dto.getCode() == appServiceDeployVO.getInstanceName()
+        dto.getId() != null
     }
 
-    // 部署自动化测试应用
-    def "deployTestApp"() {
+    def "更新实例"() {
+        given: '初始化applicationDeployDTO'
+        def url = MAPPING
+        def map = new HashMap()
+        map.put("project_id", PROJECT_ID)
+
+        def search = new AppServiceInstanceDTO()
+        search.setCode("create-instance-0ac4a")
+        search.setEnvId(devopsEnvironmentDTO.getId())
+        AppServiceInstanceDTO instance = applicationInstanceMapper.selectOne(search)
+
+        AppServiceDeployVO appServiceDeployVO = new AppServiceDeployVO()
+        appServiceDeployVO.setEnvironmentId(devopsEnvironmentDTO.getId())
+        appServiceDeployVO.setValues(appServiceVersionValueDTO.getValue() + "\nchanged:\n  xyz")
+        appServiceDeployVO.setAppServiceId(appServiceDTO.getId())
+        appServiceDeployVO.setAppServiceVersionId(appServiceVersionDTO.getId())
+        appServiceDeployVO.setType("update")
+        appServiceDeployVO.setIsNotChange(false)
+        appServiceDeployVO.setInstanceId(instance.getId())
+        appServiceDeployVO.setInstanceName(instance.getCode())
+
+        when: '更新实例'
+        restTemplate.put(url, appServiceDeployVO, AppServiceInstanceVO.class, map)
+        def result = applicationInstanceMapper.selectOne(search)
+
+        then: '校验返回值'
+        result != null
+        result.getObjectVersionNumber() == 2
+    }
+
+    def "查询运行中的实例"() {
         given: "准备数据"
-        def url = MAPPING + "/deploy_test_app"
-        AppServiceDeployVO applicationDeployDTO = new AppServiceDeployVO()
-        applicationDeployDTO.setEnvironmentId(1L)
-        applicationDeployDTO.setValues(applicationVersionValueDO.getValue())
-        applicationDeployDTO.setAppServiceId(1L)
-        applicationDeployDTO.setAppServiceVersionId(1L)
-        applicationDeployDTO.setType("create")
-        applicationDeployDTO.setInstanceId(1L)
+        def url = MAPPING + "/list_running_instance?env_id={env_id}"
+        def map = new HashMap()
+        map.put("project_id", PROJECT_ID)
+        map.put("env_id", devopsEnvironmentDTO.getId())
 
-        when: '部署应用'
-        restTemplate.postForObject(url, applicationDeployDTO, Object.class, 1L)
-
-        then: '校验'
-        noExceptionThrown()
-    }
-
-    def "ListByAppVersionId"() {
         when: '查询运行中的实例'
-        def list = restTemplate.getForObject("/v1/projects/1/app_instances/options?envId=1&appId=1&appVersionId=1", List.class)
+        def list = restTemplate.getForObject(url, List.class, map)
 
         then: '校验返回值'
+        list != null
+        list.size() == 1
         list.get(0)["code"] == "appInsCode"
     }
 
-    def "ListByAppIdAndEnvId"() {
-        when: '环境下某应用运行中或失败的实例'
-        def list = restTemplate.getForObject("/v1/projects/1/app_instances/listByAppIdAndEnvId?envId=1&appId=1", List.class)
+    def "环境下某服务运行中或失败的实例"() {
+        given: "准备数据"
+        def url = MAPPING + "/list_running_and_failed?env_id={env_id}&app_service_id={app_service_id}"
+        def map = new HashMap()
+        map.put("project_id", PROJECT_ID)
+        map.put("env_id", devopsEnvironmentDTO.getId())
+        map.put("app_service_id", appServiceDTO.getId())
+
+        when: '查询运行中的实例'
+        def list = restTemplate.getForObject(url, List.class, map)
 
         then: '校验返回值'
+        list != null
+        list.size() == 1
         list.get(0)["code"] == "appInsCode"
     }
 
+    def "获取部署实例release相关对象"() {
+        given: "准备数据"
+        def url = MAPPING + "/{instance_id}/resources?env_id={env_id}"
+        def map = new HashMap()
+        map.put("project_id", PROJECT_ID)
+        map.put("instance_id", appServiceInstanceDTO.getId())
+        map.put("env_id", devopsEnvironmentDTO.getId())
 
-    def "ListResources"() {
         when: '获取部署实例资源对象'
-        def dto = restTemplate.getForObject("/v1/projects/1/app_instances/1/resources", DevopsEnvResourceVO.class)
+        def dto = restTemplate.getForObject(url, DevopsEnvResourceVO.class, map)
 
         then: '校验返回值'
         dto.getPodVOS().get(0)["name"] == "iam-service-56946b7b9f-42xnx"
@@ -888,112 +1032,130 @@ class AppServiceInstanceControllerSpec extends Specification {
         dto.getReplicaSetVOS().get(0)["name"] == "springboot-14f93-55f7896455"
     }
 
-    def "ListEvents"() {
+
+    def "获取部署实例Event事件"() {
+        given:
+        def url = MAPPING + "/{instance_id}/events"
+        def map = new HashMap()
+        map.put("project_id", PROJECT_ID)
+        map.put("instance_id", appServiceInstanceDTO.getId())
+
         when: '获取部署实例Event事件'
-        def list = restTemplate.getForObject(MAPPING + "/1/events", List.class, 1L)
+        def list = restTemplate.getForObject(url, List.class, map)
 
         then: '校验返回值'
-        list.get(0)["podEventDTO"].get(0)["name"] == "commandEvent"
+        list.get(0)["podEventVO"].get(0)["name"] == "commandEvent"
     }
 
     def "Stop"() {
-        given: 'mock envUtil'
-        envUtil.checkEnvConnection(_ as Long) >> null
+        given:
+        def url = MAPPING + "/{instance_id}/stop"
+        def map = new HashMap()
+        map.put("project_id", PROJECT_ID)
+        map.put("instance_id", appServiceInstanceDTO.getId())
 
         when: '校验返回值'
-        restTemplate.put("/v1/projects/1/app_instances/1/stop", null)
+        restTemplate.put(url, null, map)
 
         then:
-        devopsEnvCommandMapper.selectAll().get(2)["commandType"] == "stop"
+        devopsEnvCommandMapper.selectAll().last()["commandType"] == "stop"
     }
 
     def "Start"() {
-        AppServiceInstanceDTO applicationInstanceDTO1 = applicationInstanceMapper.selectByPrimaryKey(1L)
-        applicationInstanceDTO1.setStatus(InstanceStatus.STOPPED.getStatus())
-        applicationInstanceMapper.updateByPrimaryKeySelective(applicationInstanceDTO1)
+        given:
+        def url = MAPPING + "/{instance_id}/start"
+        def map = new HashMap()
+        map.put("project_id", PROJECT_ID)
+        map.put("instance_id", appServiceInstanceDTO.getId())
+
+        AppServiceInstanceDTO appServiceInstanceDTO1 = applicationInstanceMapper.selectByPrimaryKey(appServiceInstanceDTO.getId())
+        appServiceInstanceDTO1.setStatus(InstanceStatus.STOPPED.getStatus())
+        applicationInstanceMapper.updateByPrimaryKeySelective(appServiceInstanceDTO1)
 
         when: '实例重启'
-        restTemplate.put("/v1/projects/1/app_instances/1/start", null)
+        restTemplate.put(url, null, map)
 
         then: '校验返回值'
-        devopsEnvCommandMapper.selectAll().get(3)["commandType"] == "restart"
+        devopsEnvCommandMapper.selectAll().last()["commandType"] == "restart"
     }
 
     def "Restart"() {
-        given: 'mock commandSender'
-//        commandSender.sendMsg(_ as Msg) >> null
+        given:
+        def url = MAPPING + "/{instance_id}/restart"
+        def map = new HashMap()
+        map.put("project_id", PROJECT_ID)
+        map.put("instance_id", appServiceInstanceDTO.getId())
 
         when: '实例重新部署'
-        restTemplate.put("/v1/projects/1/app_instances/1/restart", null)
+        restTemplate.put(url, null, map)
 
         then: '校验返回值'
-        devopsEnvCommandMapper.selectAll().get(4)["commandType"] == "update"
+        devopsEnvCommandMapper.selectAll().last()["commandType"] == "update"
     }
-
-    def "operatePodCount"() {
-        given:
-        envUtil.checkEnvConnection(_ as Long) >> null
-
-        when: '测试pod增加或减少'
-        restTemplate.put("/v1/projects/1/app_instances/operate_pod_count?envId=1&deploymentName=test&count=2", null)
-
-        then: '测试有没异常抛出'
-        notThrown(CommonException)
-    }
-
 
     def "Delete"() {
-        given: 'mock envUtil'
-        envUtil.checkEnvConnection(_ as Long) >> null
+        given:
+        def url = MAPPING + "/{instance_id}/delete"
+        def map = new HashMap()
+        map.put("project_id", PROJECT_ID)
+        map.put("instance_id", appServiceInstanceDTO.getId())
 
-        and: 'mock gitUtil'
-        gitUtil.cloneBySsh(_ as String, _ as String) >> null
-
-        and: '手动创建文件目录'
-        File file = new File("gitops/org/pro/envCode")
-        file.mkdirs()
+        def condition = new DevopsEnvCommandDTO()
+        condition.setObjectId(appServiceInstanceDTO.getId())
+        condition.setObject("instance")
 
         when: '实例删除'
-        restTemplate.delete("/v1/projects/1/app_instances/1/delete")
+        restTemplate.delete(url,map)
 
         then: '校验是否删除'
-        devopsEnvCommandMapper.selectAll().get(5)["commandType"] == "delete"
+        applicationInstanceMapper.selectByPrimaryKey(appServiceInstanceDTO.getId()) == null
+        devopsEnvCommandMapper.select(condition).isEmpty()
     }
 
     def "CheckName"() {
-        when: '校验实例名唯一性'
-        def exception = restTemplate.getForEntity(MAPPING + "/check_name?instance_name=uniqueName", ExceptionResponse.class, 1L)
+        given:
+        def url = MAPPING + "/check_name?instance_name={instance_name}&env_id={env_id}"
+        def map = new HashMap()
+        map.put("project_id", PROJECT_ID)
+        map.put("env_id", devopsEnvironmentDTO.getId())
+        map.put("instance_name", applicationInstanceMapper.selectAll().get(0).getCode())
+
+        when: '集群下校验重复的实例名唯一性'
+        ExceptionResponse exception = restTemplate.getForObject(url, ExceptionResponse.class, map)
+
+        then: '名字存在抛出异常'
+        exception != null
+        exception.failed
+
+        when: '集群下校验不重复的实例名唯一性'
+        map.put("instance_name", "unique-ac4d")
+        exception = restTemplate.getForObject(url, ExceptionResponse.class, map)
 
         then: '名字不存在不抛出异常'
-        exception.statusCode.is2xxSuccessful()
-        notThrown(CommonException)
+        exception == null
     }
 
-//    def "ListByEnv"() {
-//        given: 'mock envUtil'
-//        List<Long> connectedEnvList = new ArrayList<>()
-//        connectedEnvList.add(1L)
-//        envUtil.getConnectedClusterList() >> connectedEnvList
-//        envUtil.getUpdatedClusterList() >> connectedEnvList
-//
-//        when: '环境总览实例查询'
-//        def dto = restTemplate.postForObject("/v1/projects/1/app_instances/1/listByEnv", "{\"searchParam\":{},\"param\":\"\"}", DevopsEnvPreviewVO.class)
-//
-//        then: '校验返回值'
-//        dto.getDevopsEnvPreviewAppVOS().get(0)["appName"] == "appName"
-//    }
-
-    def "ListDeployTime"() {
-        given: 'appIds'
+    def "获取部署时长报表"() {
+        given: '准备数据'
         List<Long> appIds = new ArrayList<>()
-        appIds.add(1L)
+        appIds.add(appServiceDTO.getId())
+        def newInstanceId = 1000L
+        def commandId = 1000L
+
+        AppServiceInstanceDTO instance = ConvertUtils.convertObject(appServiceInstanceDTO, AppServiceInstanceDTO)
+        instance.setId(newInstanceId)
+        instance.setCommandId(commandId)
+        applicationInstanceMapper.insert(instance)
 
         DevopsEnvCommandDTO e = new DevopsEnvCommandDTO()
-        e.setId(999L)
-        e.setObjectId(1L)
+        e.setId(commandId)
+        e.setObjectId(newInstanceId)
+        e.setObject("instance")
         e.setStatus("success")
         e.setCommandType("create")
+        e.setObjectVersionId(appServiceVersionDTO.getId())
         devopsEnvCommandMapper.insert(e)
+
 
         Calendar cal = Calendar.getInstance()
         String year = cal.get(Calendar.YEAR)
@@ -1002,13 +1164,13 @@ class AppServiceInstanceControllerSpec extends Specification {
         String startTime = year + "/" + month + "/" + day
 
         when: '获取部署时长报表'
-        def dto = restTemplate.postForObject("/v1/projects/1/app_instances/env_commands/time?envId=1&startTime=" + startTime + "&endTime=" + startTime, appIds, DeployTimeVO.class)
+        def dto = restTemplate.postForObject("/v1/projects/1/app_service_instances/env_commands/time?env_id=1&startTime=" + startTime + "&endTime=" + startTime, appIds, DeployTimeVO.class)
 
         then: '校验返回值'
-        dto.getDeployAppVOS().get(0)["appName"] == "appName"
+        dto.getDeployAppVOS().get(0)["appServiceName"] == "appName"
     }
 
-    def "ListDeployFrequency"() {
+    def "获取部署次数报表"() {
         given: '初始化时间'
         Calendar cal = Calendar.getInstance()
         String year = cal.get(Calendar.YEAR)
@@ -1021,7 +1183,7 @@ class AppServiceInstanceControllerSpec extends Specification {
         envIds.add(1L)
 
         when: '获取部署次数报表'
-        def dto = restTemplate.postForObject("/v1/projects/1/app_instances/env_commands/frequency?appId=1&startTime=" + startTime + "&endTime=" + startTime, envIds, DeployFrequencyVO.class)
+        def dto = restTemplate.postForObject("/v1/projects/1/app_service_instances/env_commands/frequency?app_service_id=1&startTime=" + startTime + "&endTime=" + startTime, envIds, DeployFrequencyVO.class)
 
         then: '校验返回值'
         dto.getCreationDates().size() == 1
@@ -1030,7 +1192,7 @@ class AppServiceInstanceControllerSpec extends Specification {
         dto.getDeployFailFrequency().size() == 1
     }
 
-    def "PageDeployFrequencyDetail"() {
+    def "分页获取部署次数列表"() {
         given: '初始化时间'
         Calendar cal = Calendar.getInstance()
         String year = cal.get(Calendar.YEAR)
@@ -1043,13 +1205,13 @@ class AppServiceInstanceControllerSpec extends Specification {
         envIds.add(1L)
 
         when: '获取部署次数报表table'
-        def page = restTemplate.postForObject("/v1/projects/1/app_instances/env_commands/frequencyDetail?page=0&size=10&appId=1&startTime=" + startTime + "&endTime=" + startTime, envIds, PageInfo.class)
+        def page = restTemplate.postForObject("/v1/projects/1/app_service_instances/env_commands/frequencyTable?page=1&size=10&app_service_id=1&startTime=" + startTime + "&endTime=" + startTime, envIds, PageInfo.class)
 
         then: '校验返回值'
-        page.getList().get(0)["appName"] == "appName"
+        page.getList().get(0)["appServiceName"] == "appName"
     }
 
-    def "PageDeployTimeDetail"() {
+    def "分页获取部署时长列表"() {
         given: 'appIds'
         List<Long> appIds = new ArrayList<>()
         appIds.add(1L)
@@ -1061,140 +1223,60 @@ class AppServiceInstanceControllerSpec extends Specification {
         String startTime = year + "/" + month + "/" + day
 
         when: '获取部署时长报表table'
-        def page = restTemplate.postForObject("/v1/projects/1/app_instances/env_commands/timeDetail?page=0&size=10&envId=1&startTime=" + startTime + "&endTime=" + startTime, appIds, PageInfo.class)
+        def page = restTemplate.postForObject("/v1/projects/1/app_service_instances/env_commands/timeTable?page=0&size=10&envId=1&startTime=" + startTime + "&endTime=" + startTime, appIds, PageInfo.class)
 
         then: '校验返回值'
-        page.getList().get(0)["appName"] == "appName"
+        page.getList().get(0)["appServiceName"] == "appName"
     }
 
+    // 部署自动化测试应用
+    def "deployTestApp"() {
+        given: "准备数据"
+        def url = MAPPING + "/deploy_test_app"
+        AppServiceDeployVO applicationDeployDTO = new AppServiceDeployVO()
+        applicationDeployDTO.setEnvironmentId(1L)
+        applicationDeployDTO.setValues(appServiceVersionValueDTO.getValue())
+        applicationDeployDTO.setAppServiceId(1L)
+        applicationDeployDTO.setAppServiceVersionId(1L)
+        applicationDeployDTO.setType("create")
+        applicationDeployDTO.setInstanceId(1L)
 
-    def "listCommandLogs"() {
+        when: '部署应用'
+        restTemplate.postForObject(url, applicationDeployDTO, Object.class, 1L)
 
-        when: '获取commandLogs操作信息'
-        def page = restTemplate.postForObject("/v1/projects/1/app_instances/command_log/1", null, PageInfo.class)
-
-        then: '校验返回值'
-        page.getTotal() == 5
+        then: '校验'
+        noExceptionThrown()
     }
 
-    // 清除测试数据
-    def "cleanupData"() {
-        DependencyInjectUtil.restoreDefaultDependency(baseServiceClientOperator, "baseServiceClient")
-        DependencyInjectUtil.restoreDefaultDependency(gitlabRepository, "gitlabServiceClient")
+    def "operatePodCount"() {
+        given: "准备数据"
+        def url = MAPPING + "/operate_pod_count?name={name}&envId={envId}&count={count}"
+        def map = new HashMap<String, Object>()
+        map.put("project_id", PROJECT_ID)
+        map.put("envId", devopsEnvironmentDTO.getId())
+        map.put("name", "test")
+        map.put("count", 2)
 
-        given:
-        // 删除appInstance
-        List<AppServiceInstanceDTO> list = applicationInstanceMapper.selectAll()
-        if (list != null && !list.isEmpty()) {
-            for (AppServiceInstanceDTO e : list) {
-                applicationInstanceMapper.delete(e)
-            }
-        }
-        // 删除appMarket
-        List<AppServiceShareRuleDTO> list1 = applicationMarketMapper.selectAll()
-        if (list1 != null && !list1.isEmpty()) {
-            for (AppServiceShareRuleDTO e : list1) {
-                applicationMarketMapper.delete(e)
-            }
-        }
-        // 删除envPod
-        List<DevopsEnvPodDTO> list2 = devopsEnvPodMapper.selectAll()
-        if (list2 != null && !list2.isEmpty()) {
-            for (DevopsEnvPodDTO e : list2) {
-                devopsEnvPodMapper.delete(e)
-            }
-        }
-        // 删除appVersion
-        List<AppServiceVersionDTO> list4 = applicationVersionMapper.selectAll()
-        if (list4 != null && !list4.isEmpty()) {
-            for (AppServiceVersionDTO e : list4) {
-                applicationVersionMapper.delete(e)
-            }
-        }
-        // 删除appVersionValue
-        List<AppServiceVersionValueDTO> list5 = applicationVersionValueMapper.selectAll()
-        if (list5 != null && !list5.isEmpty()) {
-            for (AppServiceVersionValueDTO e : list5) {
-                applicationVersionValueMapper.delete(e)
-            }
-        }
-        // 删除app
-        List<AppServiceDTO> list6 = appServiceMapper.selectAll()
-        if (list6 != null && !list6.isEmpty()) {
-            for (AppServiceDTO e : list6) {
-                appServiceMapper.delete(e)
-            }
-        }
-        // 删除env
-        List<DevopsEnvironmentDTO> list7 = devopsEnvironmentMapper.selectAll()
-        if (list7 != null && !list7.isEmpty()) {
-            for (DevopsEnvironmentDTO e : list7) {
-                devopsEnvironmentMapper.delete(e)
-            }
-        }
-        // 删除envCommand
-        List<DevopsEnvCommandDTO> list8 = devopsEnvCommandMapper.selectAll()
-        if (list8 != null && !list8.isEmpty()) {
-            for (DevopsEnvCommandDTO e : list8) {
-                devopsEnvCommandMapper.delete(e)
-            }
-        }
-        // 删除envCommandValue
-        List<DevopsEnvCommandValueDTO> list9 = devopsEnvCommandValueMapper.selectAll()
-        if (list9 != null && !list9.isEmpty()) {
-            for (DevopsEnvCommandValueDTO e : list9) {
-                devopsEnvCommandValueMapper.delete(e)
-            }
-        }
-        // 删除envFile
-        List<DevopsEnvFileDTO> list10 = devopsEnvFileMapper.selectAll()
-        if (list10 != null && !list10.isEmpty()) {
-            for (DevopsEnvFileDTO e : list10) {
-                devopsEnvFileMapper.delete(e)
-            }
-        }
-        // 删除envFileResource
-        List<DevopsEnvFileResourceDTO> list11 = devopsEnvFileResourceMapper.selectAll()
-        if (list11 != null && !list11.isEmpty()) {
-            for (DevopsEnvFileResourceDTO e : list11) {
-                devopsEnvFileResourceMapper.delete(e)
-            }
-        }
-        // 删除envResource
-        List<DevopsEnvResourceDTO> list12 = devopsEnvResourceMapper.selectAll()
-        if (list12 != null && !list12.isEmpty()) {
-            for (DevopsEnvResourceDTO e : list12) {
-                devopsEnvResourceMapper.delete(e)
-            }
-        }
-        // 删除envResourceDetail
-        List<DevopsEnvResourceDetailDTO> list13 = devopsEnvResourceDetailMapper.selectAll()
-        if (list13 != null && !list13.isEmpty()) {
-            for (DevopsEnvResourceDetailDTO e : list13) {
-                devopsEnvResourceDetailMapper.delete(e)
-            }
-        }
-        // 删除envUserPermission
-        List<DevopsEnvUserPermissionDTO> list14 = devopsEnvUserPermissionMapper.selectAll()
-        if (list14 != null && !list14.isEmpty()) {
-            for (DevopsEnvUserPermissionDTO e : list14) {
-                devopsEnvUserPermissionMapper.delete(e)
-            }
-        }
-        // 删除commandEvent
-        List<DevopsCommandEventDTO> list15 = devopsCommandEventMapper.selectAll()
-        if (list15 != null && !list15.isEmpty()) {
-            for (DevopsCommandEventDTO e : list15) {
-                devopsCommandEventMapper.delete(e)
-            }
-        }
-        // 删除envCommandLog
-        List<DevopsEnvCommandLogDTO> list16 = devopsEnvCommandLogMapper.selectAll()
-        if (list16 != null && !list16.isEmpty()) {
-            for (DevopsEnvCommandLogDTO e : list16) {
-                devopsEnvCommandLogMapper.delete(e)
-            }
-        }
-        FileUtil.deleteDirectory(new File("gitops"))
+        when: '测试pod增加或减少'
+        restTemplate.put(url, null, map)
+
+        then: '测试有没异常抛出'
+        notThrown(CommonException)
+    }
+
+    def "queryByCommandId"() {
+        given: "准备数据"
+        isToClean = true
+        def url = MAPPING + "/query_by_command/{command_id}"
+        def map = new HashMap<String, Object>()
+        map.put("project_id", PROJECT_ID)
+        map.put("command_id", 1000L)
+
+        when: "调用方法"
+        def value = restTemplate.getForObject(url, AppServiceInstanceRepVO, map)
+
+        then: "校验结果"
+        value != null
+        value.getInstanceId() == 1000L
     }
 }

@@ -17,6 +17,6 @@ export default function ({ modal, dataSet, treeDs }) {
   modal.handleOk(handleCreate);
 
   return <Form dataSet={dataSet}>
-    <TextField name="name" />
+    <TextField name="name" autoFocus />
   </Form>;
 }

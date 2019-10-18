@@ -8,6 +8,7 @@ import ReactCodeMirror from 'react-codemirror';
 import Operation from './op-record';
 import { useResourceStore } from '../../../../stores';
 import { useInstanceStore } from '../stores';
+import EmptyPage from '../../../../../../components/empty-page';
 
 
 import 'codemirror/lib/codemirror.css';

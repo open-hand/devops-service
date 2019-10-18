@@ -24,31 +24,31 @@ function EnvDetail({ record, intl: { formatMessage }, isRecord }) {
     <ul className="c7ncd-env-detail">
       <li className="c7ncd-env-detail-item">
         <span className="c7ncd-env-detail-item-text">
-          {formatMessage({ id: 'c7ncd.env.name' })}:
+          {formatMessage({ id: 'c7ncd.env.name' })}
         </span>
         <span className="c7ncd-env-detail-item-value">{name}</span>
       </li>
       <li className="c7ncd-env-detail-item">
         <span className="c7ncd-env-detail-item-text">
-          {formatMessage({ id: 'c7ncd.env.status' })}:
+          {formatMessage({ id: 'c7ncd.env.status' })}
         </span>
         {status && <StatusTag name={formatMessage({ id: status })} colorCode={status} />}
       </li>
       <li className="c7ncd-env-detail-item">
         <span className="c7ncd-env-detail-item-text">
-          {formatMessage({ id: 'c7ncd.env.code' })}:
+          {formatMessage({ id: 'c7ncd.env.code' })}
         </span>
         <span className="c7ncd-env-detail-item-value">{code}</span>
       </li>
       <li className="c7ncd-env-detail-item">
         <span className="c7ncd-env-detail-item-text">
-          {formatMessage({ id: 'c7ncd.env.description' })}:
+          {formatMessage({ id: 'c7ncd.env.description' })}
         </span>
         <span className="c7ncd-env-detail-item-value">{description}</span>
       </li>
       <li className="c7ncd-env-detail-item">
         <span className="c7ncd-env-detail-item-text">
-          {formatMessage({ id: 'c7ncd.env.cluster' })}:
+          {formatMessage({ id: 'c7ncd.env.cluster' })}
         </span>
         <span className="c7ncd-env-detail-item-value">{clusterName}</span>
       </li>

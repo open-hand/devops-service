@@ -1,10 +1,16 @@
 package io.choerodon.devops.api.vo.kubernetes;
 
+import io.swagger.annotations.ApiModelProperty;
+
 public class C7nHelmRelease {
 
+    @ApiModelProperty("api版本")
     private String apiVersion;
+    @ApiModelProperty("类型")
     private String kind;
+    @ApiModelProperty("对象元数据")
     private Metadata metadata;
+    @ApiModelProperty("对象配置内容")
     private Spec spec;
 
     /**

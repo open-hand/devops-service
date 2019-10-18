@@ -10,8 +10,9 @@ import { useCustomStore } from '../stores';
 import CustomForm from './form-view';
 import { useMainStore } from '../../../stores';
 
+const modalKey = Modal.key();
 const modalStyle = {
-  width: '26%',
+  width: 'calc(100vw - 3.52rem)',
 };
 
 const CustomModals = observer(() => {
@@ -32,20 +33,25 @@ const CustomModals = observer(() => {
   } = useModalStore();
   const { parentId } = resourceStore.getSelectedMenu;
 
-  const [showModal, setShowModal] = useState(false);
-
   function refresh() {
     treeDs.query();
     customDs.query();
   }
 
   function openModal() {
-    setShowModal(true);
-  }
-
-  function closeModal(isLoad) {
-    setShowModal(false);
-    isLoad && refresh();
+    Modal.open({
+      key: modalKey,
+      style: modalStyle,
+      drawer: true,
+      title: formatMessage({ id: 'resource.create.header' }),
+      children: <CustomForm
+        envId={parentId}
+        type="create"
+        store={customStore}
+        refresh={refresh}
+      />,
+      okText: formatMessage({ id: 'create' }),
+    });
   }
 
   function getButtons() {
@@ -73,13 +79,6 @@ const CustomModals = observer(() => {
   return (
     <Fragment>
       <HeaderButtons items={getButtons()} />
-      {showModal && <CustomForm
-        envId={parentId}
-        type="create"
-        store={customStore}
-        visible={showModal}
-        onClose={closeModal}
-      />}
     </Fragment>
   );
 });

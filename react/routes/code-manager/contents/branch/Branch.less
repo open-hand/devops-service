@@ -4,11 +4,12 @@
   &-table {
     .@{c7n-prefix}-table-filter-bar {
       height: 40px;
+      border-top: none;
     }
     .@{c7n-prefix}-table-filter-select {
       .@{c7n-prefix}-select-selection__rendered {
-        padding-top: 0;
-        padding-left: 0;
+        padding-top: 0 !important;
+        padding-left: 0 !important;
         .@{c7n-prefix}-select-selection__placeholder {
           height: 40px;
           line-height: 40px;
@@ -97,10 +98,10 @@
 }
 
 .branch-icon-help {
-  font-size: 16px;
+  font-size: .14rem;
   color: rgba(0, 0, 0, 0.36);
-  padding-left: 5px;
-  height: 20px;
+  padding-left: .02rem;
+  margin: 0 !important;
 }
 
 .branch-popover {
@@ -146,7 +147,6 @@
     width: 88%;
     display: inline-block;
     font-size: 12px;
-    color: rgba(0, 0, 0, 0.65);
     line-height: 18px;
     margin-bottom: 10px;
 
@@ -180,4 +180,5 @@
   font-size: 13px;
   color: rgba(0, 0, 0, 0.65);
   line-height: 20px;
+  display: inline-block;
 }

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { observer } from 'mobx-react';
 import { observable, action, configure } from 'mobx';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { Page, Header, Content, stores, Breadcrumb } from '@choerodon/master';
+import { Page, Header, Content, stores, Breadcrumb } from '@choerodon/boot';
 import { Select, Button, Table, Spin } from 'choerodon-ui';
 import ReactEcharts from 'echarts-for-react';
 import _ from 'lodash';
@@ -23,7 +23,6 @@ configure({ enforceActions: 'never' });
 
 const { AppState } = stores;
 const { Option } = Select;
-const HEIGHT = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
 
 @observer
 class DeployTimes extends Component {
@@ -413,7 +412,6 @@ class DeployTimes extends Component {
 
   render() {
     const { intl: { formatMessage }, history, location: { search }, ReportsStore } = this.props;
-    const { id, name, type, organizationId } = AppState.currentMenuType;
     const echartsLoading = ReportsStore.getEchartsLoading;
     const envData = ReportsStore.getEnvCard;
     const envs = _.filter(envData, ['permission', true]);

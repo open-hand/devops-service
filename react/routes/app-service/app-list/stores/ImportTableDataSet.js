@@ -1,4 +1,4 @@
-import { axios } from '@choerodon/master';
+import { axios } from '@choerodon/boot';
 import forEach from 'lodash/forEach';
 
 export default ((intlPrefix, formatMessage, projectId) => ({

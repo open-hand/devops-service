@@ -3,7 +3,7 @@ import _ from 'lodash';
 import { observer, inject } from 'mobx-react';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { Modal, Button, Select } from 'choerodon-ui';
-import { Content } from '@choerodon/master';
+import { Content } from '@choerodon/boot';
 import ReactCodeMirror from 'react-codemirror';
 
 import 'codemirror/lib/codemirror.css';

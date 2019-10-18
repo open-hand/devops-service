@@ -21,7 +21,8 @@ const ResourceEnvContent = lazy(() => import('./contents/resource-env'));
 const NetworkContent = lazy(() => import('./contents/network'));
 const IngressContent = lazy(() => import('./contents/ingress'));
 const CertContent = lazy(() => import('./contents/certificate'));
-const KeyValueContent = lazy(() => import('./contents/key-value'));
+const ConfigMapContent = lazy(() => import('./contents/configMap'));
+const SecretContent = lazy(() => import('./contents/secret'));
 const CustomContent = lazy(() => import('./contents/custom'));
 const IstListContent = lazy(() => import('./contents/instance-list'));
 const CustomDetail = lazy(() => import('./contents/custom-detail'));
@@ -95,8 +96,8 @@ const MainView = observer(() => {
       [SERVICES_GROUP]: <NetworkContent />,
       [INGRESS_GROUP]: <IngressContent />,
       [CERT_GROUP]: <CertContent />,
-      [MAP_GROUP]: <KeyValueContent contentType={MAP_GROUP} />,
-      [CIPHER_GROUP]: <KeyValueContent contentType={CIPHER_GROUP} />,
+      [MAP_GROUP]: <ConfigMapContent />,
+      [CIPHER_GROUP]: <SecretContent />,
       [CUSTOM_GROUP]: <CustomContent />,
       [IST_GROUP]: <IstListContent />,
       [CUSTOM_ITEM]: <CustomDetail />,

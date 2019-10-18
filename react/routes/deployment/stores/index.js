@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useMemo } from 'react';
 import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
 import { DataSet } from 'choerodon-ui/pro';
+import map from 'lodash/map';
 import ListDataSet from './ListDataSet';
 import PipelineDataSet from './PipelineDataSet';
 import DetailDataSet from './DetailDataSet';
@@ -12,6 +13,7 @@ import OptionsDataSet from './OptionsDataSet';
 import TableSelectDataSet from './TableSelectDataSet';
 
 const Store = createContext();
+const STATUS = ['success', 'failed', 'deleted', 'pendingcheck', 'stop', 'running'];
 
 export function useDeployStore() {
   return useContext(Store);
@@ -25,6 +27,26 @@ export const StoreProvider = injectIntl(inject('AppState')(
       children,
     } = props;
     const intlPrefix = 'c7ncd.deploy';
+    const deployTypeDs = useMemo(() => new DataSet({
+      data: [
+        {
+          text: formatMessage({ id: `${intlPrefix}.auto` }),
+          value: 'auto',
+        },
+        {
+          text: formatMessage({ id: `${intlPrefix}.manual` }),
+          value: 'manual',
+        },
+      ],
+      selection: 'single',
+    }), []);
+    const deployResultDs = useMemo(() => new DataSet({
+      data: map(STATUS, item => ({
+        text: formatMessage({ id: `${intlPrefix}.status.${item}` }),
+        value: item,
+      })),
+      selection: 'single',
+    }), []);
 
     const deployStore = useStore();
     const pipelineStore = usePipelineStore();
@@ -34,7 +56,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const versionOptionsDs = useMemo(() => new DataSet(OptionsDataSet()), []);
     const pipelineOptionsDs = useMemo(() => new DataSet(OptionsDataSet()), []);
 
-    const listDs = useMemo(() => new DataSet(ListDataSet(intlPrefix, formatMessage, projectId)), [projectId]);
+    const listDs = useMemo(() => new DataSet(ListDataSet(intlPrefix, formatMessage, projectId, envOptionsDs, deployTypeDs, deployResultDs, pipelineOptionsDs)), [projectId]);
     const pipelineDs = useMemo(() => new DataSet(PipelineDataSet(intlPrefix, formatMessage, projectId)), [projectId]);
     const detailDs = useMemo(() => new DataSet(DetailDataSet()), []);
     const manualDeployDs = useMemo(() => new DataSet(ManualDeployDataSet(intlPrefix, formatMessage, projectId, envOptionsDs, valueIdOptionsDs, versionOptionsDs, deployStore)), [projectId]);

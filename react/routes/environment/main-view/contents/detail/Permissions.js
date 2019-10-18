@@ -1,5 +1,5 @@
 import React from 'react';
-import { Action } from '@choerodon/master';
+import { Action } from '@choerodon/boot';
 import { Table } from 'choerodon-ui/pro';
 import TimePopover from '../../../../../components/time-popover';
 import { useEnvironmentStore } from '../../../stores';
@@ -15,7 +15,20 @@ export default function Permissions() {
   const {
     intl: { formatMessage },
     permissionsDs: tableDs,
+    intlPrefix,
   } = useDetailStore();
+
+  function handleDelete() {
+    const record = tableDs.current;
+    const modalProps = {
+      title: formatMessage({ id: `${intlPrefix}.permission.delete.title` }),
+      children: formatMessage({ id: `${intlPrefix}.permission.delete.des` }),
+      okText: formatMessage({ id: 'delete' }),
+      okProps: { color: 'red' },
+      cancelProps: { color: 'dark' },
+    };
+    tableDs.delete(record, modalProps);
+  }
 
   function renderActions({ record }) {
     const { skipCheckPermission } = getSelectedMenu;
@@ -24,9 +37,7 @@ export default function Permissions() {
       {
         service: [],
         text: formatMessage({ id: 'delete' }),
-        action: () => {
-          tableDs.delete(record);
-        },
+        action: handleDelete,
       },
     ];
     const displayAction = role === 'member' && !skipCheckPermission;

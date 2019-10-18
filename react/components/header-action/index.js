@@ -4,7 +4,7 @@
  */
 import React, { memo } from 'react';
 import PropTypes from 'prop-types';
-import { Permission } from '@choerodon/master';
+import { Permission } from '@choerodon/boot';
 import { Dropdown, Menu, Button } from 'choerodon-ui';
 import map from 'lodash/map';
 

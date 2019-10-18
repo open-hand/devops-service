@@ -1,6 +1,6 @@
 import React, { Fragment, memo, useState, useCallback } from 'react';
 import { FormattedMessage } from 'react-intl';
-import { Action } from '@choerodon/master';
+import { Action } from '@choerodon/boot';
 import { Table } from 'choerodon-ui/pro';
 import { Icon, Popover, Tooltip } from 'choerodon-ui';
 import map from 'lodash/map';
@@ -30,7 +30,23 @@ const PodDetail = memo(() => {
   const [shellVisible, setShellVisible] = useState(false);
 
   function renderName({ value, record }) {
-    const status = record.get('status');
+    const ready = record.get('ready');
+    return (
+      <Fragment>
+        <Tooltip title={<FormattedMessage id={`ist.${ready ? 'y' : 'n'}`} />}>
+          <Icon
+            type={ready ? 'check_circle' : 'cancel'}
+            className={`${prefixCls}-pod-ready-${ready ? 'check' : 'cancel'}`}
+          />
+        </Tooltip>
+        <MouserOverWrapper text={value} width={0.2} style={{ display: 'inline' }}>
+          {value}
+        </MouserOverWrapper>
+      </Fragment>
+    );
+  }
+
+  function renderStatus({ value }) {
     const wrapStyle = {
       width: 54,
     };
@@ -42,18 +58,15 @@ const PodDetail = memo(() => {
       Pending: [false, '#ff9915'],
     };
 
-    const [wrap, color] = statusMap[status] || [true, 'rgba(0, 0, 0, 0.36)'];
+    const [wrap, color] = statusMap[value] || [true, 'rgba(0, 0, 0, 0.36)'];
 
     return (
-      <div>
-        <StatusTags
-          ellipsis={wrap}
-          color={color}
-          name={status}
-          style={wrapStyle}
-        />
-        <span>{value}</span>
-      </div>
+      <StatusTags
+        ellipsis={wrap}
+        color={color}
+        name={value}
+        style={wrapStyle}
+      />
     );
   }
 
@@ -77,7 +90,7 @@ const PodDetail = memo(() => {
       });
     }
     return (
-      <div className="column-containers-detail">
+      <Fragment>
         {item && (
           <Fragment>
             <Tooltip title={<FormattedMessage id={`ist.${item.ready ? 'y' : 'n'}`} />}>
@@ -86,7 +99,7 @@ const PodDetail = memo(() => {
                 className={`${prefixCls}-pod-ready-${item.ready ? 'check' : 'cancel'}`}
               />
             </Tooltip>
-            <MouserOverWrapper text={item.name} width={0.08}>
+            <MouserOverWrapper text={item.name} width={0.1} style={{ display: 'inline' }}>
               {item.name}
             </MouserOverWrapper>
           </Fragment>)}
@@ -100,7 +113,7 @@ const PodDetail = memo(() => {
             <Icon type="expand_more" className="container-expend-icon" />
           </Popover>
         )}
-      </div>
+      </Fragment>
     );
   }
 
@@ -154,8 +167,9 @@ const PodDetail = memo(() => {
           <Column name="name" renderer={renderName} />
           <Column renderer={renderAction} width="0.7rem" />
           <Column name="containers" renderer={renderContainers} />
-          <Column name="ip" />
+          <Column name="ip" width="1.2rem" />
           <Column name="creationDate" renderer={renderDate} width="1rem" />
+          <Column name="status" renderer={renderStatus} width="1rem" />
         </Table>
       </div>
       {visible && <LogSiderbar visible={visible} onClose={closeLog} record={podsDs.current.toData()} />}

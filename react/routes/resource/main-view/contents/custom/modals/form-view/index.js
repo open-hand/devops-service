@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import { observer, inject } from 'mobx-react';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { Content } from '@choerodon/master';
+import { Content, Choerodon } from '@choerodon/boot';
 import {
   Form,
   Modal,
@@ -41,7 +41,7 @@ const formItemLayout = {
 @observer
 export default class ResourceSidebar extends Component {
   state = {
-    submitting: false,
+    showError: false,
     mode: 'paste',
     changedValue: null,
     hasEditorError: false,
@@ -56,10 +56,12 @@ export default class ResourceSidebar extends Component {
       },
       type,
       id,
+      modal,
     } = this.props;
     if (id && type === 'edit') {
       store.loadSingleData(projectId, id);
     }
+    modal.handleOk(this.handleSubmit);
   }
 
   componentWillUnmount() {
@@ -67,23 +69,30 @@ export default class ResourceSidebar extends Component {
     store.setSingleData({});
   }
 
-  handleSubmit = (e) => {
-    e.preventDefault();
-
+  handleSubmit = async () => {
     const {
       form: { validateFields },
       store,
       type,
       AppState: { currentMenuType: { projectId } },
       envId: propsEnv,
+      refresh,
     } = this.props;
     const {
       hasEditorError,
       changedValue,
       mode,
     } = this.state;
-    if (hasEditorError) return;
-    this.setState({ submitting: true });
+    if (hasEditorError) {
+      return false;
+    }
+    if (mode === 'paste' && !changedValue) {
+      this.setState({ showError: true });
+      return false;
+    }
+
+    let result = true;
+    const formData = new FormData();
     if (type === 'edit') {
       const { getSingleData: { id, envId } } = store;
       const data = {
@@ -92,14 +101,11 @@ export default class ResourceSidebar extends Component {
         content: changedValue,
         resourceId: id,
       };
-      const formData = new FormData();
       _.forEach(data, (value, key) => formData.append(key, value));
-      const promise = store.createData(projectId, formData);
-      this.handleResponse(promise);
     } else {
       validateFields((err, data) => {
+        result = !err;
         if (!err) {
-          const formData = new FormData();
           const { file } = data;
           formData.append('envId', propsEnv);
           formData.append('type', 'create');
@@ -108,41 +114,23 @@ export default class ResourceSidebar extends Component {
           } else {
             formData.append('contentFile', file.file);
           }
-          const promise = store.createData(projectId, formData);
-          this.handleResponse(promise);
-        } else {
-          this.setState({ submitting: false });
         }
       });
     }
-  };
-
-  /**
-   * 处理创建修改请求返回的数据
-   * @param promise
-   */
-  handleResponse = (promise) => {
-    if (promise) {
-      promise
-        .then((data) => {
-          this.setState({ submitting: false });
-          if (handlePromptError(data, false)) {
-            this.handleClose(true);
-          }
-        })
-        .catch((e) => {
-          this.setState({ submitting: false });
-          Choerodon.handleResponseError(e);
-        });
+    if (!result) {
+      return false;
     }
-  };
-
-  /**
-   * 关闭弹框
-   */
-  handleClose = (reload) => {
-    const { onClose } = this.props;
-    onClose(reload);
+    try {
+      const res = await store.createData(projectId, formData);
+      if (handlePromptError(res, false)) {
+        refresh();
+      } else {
+        return false;
+      }
+    } catch (e) {
+      Choerodon.handleResponseError(e);
+      return false;
+    }
   };
 
   checkFile = (rule, value, callback) => {
@@ -177,44 +165,46 @@ export default class ResourceSidebar extends Component {
    * @param e
    */
   changeMode = (e) => {
+    const { modal } = this.props;
+    const mode = e.target.value;
     this.setState({
       changedValue: null,
       hasEditorError: false,
-      mode: e.target.value,
+      showError: false,
+      mode,
     });
+    modal.update({ okProps: { disabled: false } });
   };
 
   handleChangeValue = (value) => {
-    this.setState({ changedValue: value });
+    this.setState({ changedValue: value, showError: false });
   };
 
   handleEnableNext = (flag) => {
+    const { modal } = this.props;
     this.setState({ hasEditorError: flag });
+    modal.update({ okProps: { disabled: flag } });
   };
 
   render() {
     const {
-      visible,
       type,
       form: { getFieldDecorator },
       intl: { formatMessage },
       AppState: { currentMenuType: { name } },
       store,
-      envId,
     } = this.props;
     const {
-      submitting,
       changedValue,
-      hasEditorError,
       fileDisabled,
       mode,
+      showError,
     } = this.state;
     const {
       getSingleData: {
         name: resourceName,
         resourceContent,
       },
-      getEnvData,
     } = store;
 
     const uploadClass = classnames({
@@ -222,114 +212,67 @@ export default class ResourceSidebar extends Component {
       'c7ncd-upload-disabled': fileDisabled,
     });
 
-    const envOptions = _.map(getEnvData, ({ connect, id, permission, name: envName }) => {
-      const envOptionClass = classnames({
-        'c7ncd-status': true,
-        'c7ncd-status-success': connect,
-        'c7ncd-status-disconnect': !connect,
-      });
-
-      return (<Option
-        key={id}
-        value={id}
-        disabled={!permission}
-        title={envName}
-      >
-        <Tooltip title={envName}>
-          <span className={envOptionClass} />
-          {envName}
-        </Tooltip>
-      </Option>);
-    });
-
     return (
-      <div className="c7n-region">
-        <Sidebar
-          destroyOnClose
-          title={<FormattedMessage id={`resource.${type}.header`} />}
-          visible={visible}
-          className="c7ncd-deployment-resource-sidebar"
-          width={mode === 'upload' ? 380 : null}
-          footer={
-            [<Button
-              key="submit"
-              type="primary"
-              funcType="raised"
-              onClick={this.handleSubmit}
-              loading={submitting}
-              disabled={hasEditorError}
-            >
-              {formatMessage({ id: type })}
-            </Button>,
-              <Button
-                key="back"
-                funcType="raised"
-                onClick={this.handleClose.bind(this, false)}
-                disabled={submitting}
-                className="c7n-resource-footer"
+      <div className="c7n-region c7ncd-deployment-resource-sidebar">
+        <Form layout="vertical">
+          {type === 'create' && (<Fragment>
+            <div className="c7ncd-resource-mode">
+              <div className="c7ncd-resource-mode-label">{formatMessage({ id: 'resource.mode' })}：</div>
+              <RadioGroup
+                value={mode}
+                onChange={this.changeMode}
               >
-                {formatMessage({ id: 'cancel' })}
-              </Button>]
-          }
-        >
-          <Form layout="vertical">
-            {type === 'create' && (<Fragment>
-              <div className="c7ncd-resource-mode">
-                <div className="c7ncd-resource-mode-label">{formatMessage({ id: 'resource.mode' })}：</div>
-                <RadioGroup
-                  value={mode}
-                  onChange={this.changeMode}
+                {
+                  _.map(['paste', 'upload'], (item) => (
+                    <Radio
+                      key={item}
+                      value={item}
+                      className="c7ncd-resource-radio"
+                    >
+                      {formatMessage({ id: `resource.mode.${item}` })}
+                    </Radio>
+                  ))
+                }
+              </RadioGroup>
+            </div>
+          </Fragment>)}
+          {mode === 'paste' && (
+            <YamlEditor
+              readOnly={false}
+              value={changedValue || resourceContent || ''}
+              originValue={resourceContent || ''}
+              onValueChange={this.handleChangeValue}
+              handleEnableNext={this.handleEnableNext}
+            />
+          )}
+          {mode === 'upload' && (
+            <FormItem {...formItemLayout} className="c7ncd-resource-upload-item">
+              {getFieldDecorator('file', {
+                rules: [{
+                  validator: this.checkFile,
+                }],
+              })(
+                <Upload
+                  // action="//jsonplaceholder.typicode.com/posts/"
+                  disabled={fileDisabled}
+                  beforeUpload={this.beforeUpload}
+                  onRemove={this.removeFile}
                 >
-                  {
-                    _.map(['paste', 'upload'], (item) => (
-                      <Radio
-                        key={item}
-                        value={item}
-                        className="c7ncd-resource-radio"
-                      >
-                        {formatMessage({ id: `resource.mode.${item}` })}
-                      </Radio>
-                    ))
-                  }
-                </RadioGroup>
-              </div>
-            </Fragment>)}
-            {mode === 'paste' && (
-              <YamlEditor
-                readOnly={false}
-                value={changedValue || resourceContent || ''}
-                originValue={resourceContent || ''}
-                onValueChange={this.handleChangeValue}
-                handleEnableNext={this.handleEnableNext}
-              />
-            )}
-            {mode === 'upload' && (
-              <FormItem {...formItemLayout} className="c7ncd-resource-upload-item">
-                {getFieldDecorator('file', {
-                  rules: [{
-                    validator: this.checkFile,
-                  }],
-                })(
-                  <Upload
-                    // action="//jsonplaceholder.typicode.com/posts/"
-                    disabled={fileDisabled}
-                    beforeUpload={this.beforeUpload}
-                    onRemove={this.removeFile}
-                  >
-                    <div className={uploadClass}>
-                      <Icon
-                        className="c7ncd-resource-upload-icon"
-                        type="add"
-                      />
-                      <div className="c7n-resource-upload-text">Upload</div>
-                    </div>
-                  </Upload>,
-                )}
-              </FormItem>
-            )}
-          </Form>
-          <InterceptMask visible={submitting} />
-        </Sidebar>
+                  <div className={uploadClass}>
+                    <Icon
+                      className="c7ncd-resource-upload-icon"
+                      type="add"
+                    />
+                    <div className="c7n-resource-upload-text">Upload</div>
+                  </div>
+                </Upload>,
+              )}
+            </FormItem>
+          )}
+        </Form>
+        {showError && <div className="c7ncd-resource-error">
+          <FormattedMessage id="contentCanNotBeEmpty" />
+        </div>}
       </div>
     );
   }

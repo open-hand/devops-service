@@ -422,7 +422,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         Boolean projectOwner = baseServiceClientOperator.isProjectOwner(userId, projectDTO);
         List<AppServiceDTO> applicationDTOServiceList;
         if (projectOwner) {
-            applicationDTOServiceList = baseListByActive(projectId);
+            applicationDTOServiceList = appServiceMapper.listByActive(projectId);
         } else {
             applicationDTOServiceList = appServiceMapper.listProjectMembersAppServiceByActive(projectId, userId);
         }
@@ -432,6 +432,21 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         initApplicationParams(projectDTO, organizationDTO, applicationDTOServiceList, urlSlash);
         return ConvertUtils.convertList(applicationDTOServiceList, this::dtoToRepVo);
+    }
+
+    @Override
+    public Integer countByActive(Long projectId) {
+        Long userId = TypeUtil.objToLong(GitUserNameUtil.getUserId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        Boolean projectOwner = baseServiceClientOperator.isProjectOwner(userId, projectDTO);
+        int count;
+        if (projectOwner) {
+            count = appServiceMapper.countByActive(projectId);
+        } else {
+            count = appServiceMapper.countProjectMembersAppServiceByActive(projectId, userId);
+        }
+
+        return count;
     }
 
     @Override
@@ -663,15 +678,9 @@ public class AppServiceServiceImpl implements AppServiceService {
         try {
             ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
             OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-            InputStream inputStream;
             ConfigVO harborProjectConfig = gson.fromJson(devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, HARBOR).getConfig(), ConfigVO.class);
             ConfigVO chartProjectConfig = gson.fromJson(devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, CHART).getConfig(), ConfigVO.class);
-
-            if (type == null) {
-                inputStream = this.getClass().getResourceAsStream("/shell/ci.sh");
-            } else {
-                inputStream = this.getClass().getResourceAsStream("/shell/" + type + ".sh");
-            }
+            InputStream inputStream = this.getClass().getResourceAsStream("/shell/ci.sh");
             Map<String, String> params = new HashMap<>();
             String groupName = organizationDTO.getCode() + "-" + projectDTO.getCode();
             if (harborProjectConfig.getProject() != null) {
@@ -682,6 +691,10 @@ public class AppServiceServiceImpl implements AppServiceService {
             DevopsConfigDTO sonarConfig = devopsConfigService.baseQueryByName(null, SONAR_NAME);
             if (sonarConfig != null) {
                 params.put("{{ SONAR_LOGIN }}", sonarConfig.getConfig());
+                params.put("{{ SONAR_URL }}", sonarqubeUrl);
+            } else {
+                params.put("{{ SONAR_LOGIN }}", "");
+                params.put("{{ SONAR_URL }}", "");
             }
             params.put("{{ GROUP_NAME }}", groupName);
             params.put("{{ PROJECT_NAME }}", appServiceDTO.getCode());
@@ -1373,15 +1386,21 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public PageInfo<AppServiceRepVO> pageShareAppService(Long projectId, PageRequest pageRequest, String searchParam) {
+    public PageInfo<AppServiceRepVO> pageShareAppService(Long projectId, boolean doPage, PageRequest pageRequest, String searchParam) {
         Map<String, Object> searchParamMap = TypeUtil.castMapParams(searchParam);
-
         Long organizationId = baseServiceClientOperator.queryIamProjectById(projectId).getOrganizationId();
         List<Long> appServiceIds = new ArrayList<>();
-        baseServiceClientOperator.listIamProjectByOrgId(organizationId).forEach(proId ->
-                baseListAll(projectId).forEach(appServiceDTO -> appServiceIds.add(appServiceDTO.getId()))
-        );
-        PageInfo<AppServiceDTO> applicationServiceDTOPageInfo = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> appServiceMapper.listShareApplicationService(appServiceIds, projectId, null, TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS))));
+        baseServiceClientOperator.listIamProjectByOrgId(organizationId).stream()
+                .filter(projectDTO -> !projectId.equals(projectDTO.getId()))
+                .forEach(proId ->
+                        baseListAll(proId.getId()).forEach(appServiceDTO -> appServiceIds.add(appServiceDTO.getId()))
+                );
+        PageInfo<AppServiceDTO> applicationServiceDTOPageInfo = new PageInfo<>();
+        if (doPage) {
+            applicationServiceDTOPageInfo = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> appServiceMapper.listShareApplicationService(appServiceIds, projectId, null, TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS))));
+        } else {
+            applicationServiceDTOPageInfo.setList(appServiceMapper.listShareApplicationService(appServiceIds, projectId, null, TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS))));
+        }
         return ConvertUtils.convertPage(applicationServiceDTOPageInfo, AppServiceRepVO.class);
     }
 
@@ -1590,6 +1609,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         UserAttrVO userAttrVO = userAttrService.queryByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        List<AppServiceImportPayload> importPayloadList = new ArrayList<>();
         importInternalVOS.forEach(importInternalVO -> {
             AppServiceDTO appServiceDTO = new AppServiceDTO();
             appServiceDTO.setProjectId(projectId);
@@ -1637,13 +1657,17 @@ public class AppServiceServiceImpl implements AppServiceService {
             appServiceImportPayload.setProjectId(projectId);
             appServiceImportPayload.setProCode(projectDTO.getCode());
             appServiceImportPayload.setOldAppServiceId(importInternalVO.getAppServiceId());
+            importPayloadList.add(appServiceImportPayload);
+        });
+
+        importPayloadList.forEach(payload -> {
             producer.apply(
                     StartSagaBuilder
                             .newBuilder()
                             .withLevel(ResourceLevel.PROJECT)
                             .withRefType("")
                             .withSagaCode(SagaTopicCodeConstants.DEVOPS_IMPORT_INTERNAL_APPLICATION_SERVICE)
-                            .withPayloadAndSerialize(appServiceImportPayload)
+                            .withPayloadAndSerialize(payload)
                             .withRefId("")
                             .withSourceId(projectId),
                     builder -> {
@@ -1705,7 +1729,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         String pullToken = gitlabServiceClientOperator.getAdminToken();
         String oldRepository = repoUrl + oldGroup + "/" + oldAppServiceDTO.getCode() + GIT;
         String workingDirectory = gitUtil.cloneAppMarket(applicationDir, oldAppServiceVersionDTO.getCommit(), oldRepository, pullToken);
-        replaceParams(appServiceDTO.getCode(), newGroupName, applicationDir, oldAppServiceDTO.getCode(), oldGroup);
+        replaceParams(appServiceDTO.getCode(), newGroupName, applicationDir, oldAppServiceDTO.getCode(), oldGroup, true);
         Git git = gitUtil.initGit(new File(workingDirectory));
         //push 到远程仓库
         GitLabUserDTO gitLabUserDTO = gitlabServiceClientOperator.queryUserById(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
@@ -1822,11 +1846,6 @@ public class AppServiceServiceImpl implements AppServiceService {
     public PageInfo<AppServiceDTO> basePageByEnvId(Long projectId, Long envId, Long appServiceId, PageRequest pageRequest) {
         return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> appServiceMapper.listByEnvId(projectId, envId, appServiceId, NODELETED));
 
-    }
-
-    @Override
-    public List<AppServiceDTO> baseListByActive(Long projectId) {
-        return appServiceMapper.listByActive(projectId);
     }
 
     @Override
@@ -2005,7 +2024,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
             List<Long> appServiceIds = baseServiceClientOperator.listServicesForMarket(projectDTO.getOrganizationId(), false);
             if (appServiceIds != null && !appServiceIds.isEmpty()) {
-                List<AppServiceDTO> marketServices = appServiceMapper.queryMarketDownloadApps(null, param, appServiceIds);
+                List<AppServiceDTO> marketServices = appServiceMapper.queryMarketDownloadApps(null, param, appServiceIds, searchProjectId);
                 List<AppServiceDTO> appServiceDTOList = marketServices.stream().filter(v -> !ObjectUtils.isEmpty(v.getMktAppId())).collect(Collectors.toList());
                 initAppServiceGroupInfoVOList(appServiceGroupInfoVOS, appServiceDTOList, share, projectId);
             }
@@ -2026,8 +2045,8 @@ public class AppServiceServiceImpl implements AppServiceService {
             Set<Long> projectIds = appServiceDTOList.stream().map(AppServiceDTO::getProjectId).collect(Collectors.toSet());
             projects = baseServiceClientOperator.queryProjectsByIds(projectIds);
             // 分别查询组织共享和共享到项目版本信息
-            List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceVersionService.listServiceVersionByAppServiceIds(appServiceIds, "share", projectId);
-            List<AppServiceVersionDTO> appServiceVersionDTOS1 = appServiceVersionService.listServiceVersionByAppServiceIds(appServiceIds, "project", projectId);
+            List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceVersionService.listServiceVersionByAppServiceIds(appServiceIds, "share", projectId, null);
+            List<AppServiceVersionDTO> appServiceVersionDTOS1 = appServiceVersionService.listServiceVersionByAppServiceIds(appServiceIds, "project", projectId, null);
             appServiceVersionDTOS.addAll(appServiceVersionDTOS1);
             // 去掉重复版本信息
             versionList = appServiceVersionDTOS.stream().collect(collectingAndThen(
@@ -2066,7 +2085,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             if (!CollectionUtils.isEmpty(appServiceVersionDTOS)) {
                 AppServiceGroupInfoVO appServiceGroupInfoVO = dtoToGroupInfoVO(appServiceDTO);
                 ProjectDTO projectDTO = new ProjectDTO();
-                if (share != null) {
+                if (share) {
                     projectDTO = finalProjectDTOMap.get(appServiceDTO.getProjectId());
                     appServiceGroupInfoVO.setShare(true);
                 } else {
@@ -2129,7 +2148,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
                 List<Long> appServiceIds = baseServiceClientOperator.listServicesForMarket(projectDTO.getOrganizationId(), deployOnly);
                 if (appServiceIds != null && !appServiceIds.isEmpty()) {
-                    list.addAll(appServiceMapper.queryMarketDownloadApps(serviceType, null, appServiceIds));
+                    list.addAll(appServiceMapper.queryMarketDownloadApps(serviceType, null, appServiceIds, null));
                     Map<Long, List<AppServiceGroupInfoVO>> map = list.stream()
                             .map(this::dtoToGroupInfoVO)
                             .filter(appServiceGroupInfoVO -> appServiceGroupInfoVO.getMktAppId() != null)
@@ -2213,13 +2232,15 @@ public class AppServiceServiceImpl implements AppServiceService {
         devopsBranchService.baseCreate(devopsBranchDTO);
     }
 
-    private void replaceParams(String newServiceCode,
-                               String newGroupName,
-                               String applicationDir,
-                               String oldServiceCode,
-                               String oldGroupName) {
+    @Override
+    public void replaceParams(String newServiceCode,
+                              String newGroupName,
+                              String applicationDir,
+                              String oldServiceCode,
+                              String oldGroupName,
+                              Boolean isGetWorkingDirectory) {
         try {
-            File file = new File(gitUtil.getWorkingDirectory(applicationDir));
+            File file = isGetWorkingDirectory ? new File(gitUtil.getWorkingDirectory(applicationDir)) : new File(applicationDir);
             Map<String, String> params = new HashMap<>();
             params.put("{{group.name}}", newGroupName);
             params.put("{{service.code}}", newServiceCode);
@@ -2252,7 +2273,9 @@ public class AppServiceServiceImpl implements AppServiceService {
         Map<String, Object> mapParams = TypeUtil.castMapParams(params);
         List<AppServiceDTO> appServiceDTOList = appServiceMapper.pageServiceByProjectId(projectId,
                 TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
-                TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)));
+                TypeUtil.cast(mapParams.get(TypeUtil.PARAMS))).stream()
+                .filter(appServiceDTO -> (appServiceDTO.getActive() != null && appServiceDTO.getActive()) && (appServiceDTO.getSynchro() != null && appServiceDTO.getSynchro()) && (appServiceDTO.getFailed() == null || !appServiceDTO.getFailed()))
+                .collect(toList());
         List<AppServiceVO> list = ConvertUtils.convertList(appServiceDTOList, AppServiceVO.class);
         if (doPage) {
             return PageInfoUtil.createPageFromList(list, pageRequest);
@@ -2263,13 +2286,17 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public PageInfo<AppServiceVO> listAppServiceByIds(Set<Long> ids, Boolean doPage, PageRequest pageRequest, String params) {
+    public PageInfo<AppServiceVO> listAppServiceByIds(Long projectId, Set<Long> ids, Boolean doPage, PageRequest pageRequest, String params) {
         Map<String, Object> mapParams = TypeUtil.castMapParams(params);
-
         List<AppServiceDTO> appServiceDTOList = appServiceMapper.listAppServiceByIds(ids,
                 TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
                 TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)));
-        List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceVersionService.listServiceVersionByAppServiceIds(ids, null, null);
+        List<AppServiceVersionDTO> appServiceVersionDTOS = new ArrayList<>();
+        if (!ObjectUtils.isEmpty(projectId)) {
+            appServiceVersionDTOS = appServiceVersionService.listAppServiceVersionByIdsAndProjectId(ids, projectId, null);
+        } else {
+            appServiceVersionDTOS.addAll(appServiceVersionService.listServiceVersionByAppServiceIds(ids, null, null, null));
+        }
         Map<Long, List<AppServiceVersionDTO>> appVerisonMap = appServiceVersionDTOS.stream().collect(Collectors.groupingBy(AppServiceVersionDTO::getAppServiceId));
         List<AppServiceVO> collect = appServiceDTOList.stream()
                 .filter(v -> !CollectionUtils.isEmpty(appVerisonMap.get(v.getId())))
@@ -2281,9 +2308,6 @@ public class AppServiceServiceImpl implements AppServiceService {
                 .collect(Collectors.toList());
         collect.addAll(appServiceVOS);
         if (doPage == null || doPage) {
-            if (ObjectUtils.isEmpty(pageRequest.getSize())) {
-                pageRequest.setSize(20);
-            }
             return PageInfoUtil.createPageFromList(collect, pageRequest);
         } else {
             return new PageInfo<>(collect);
@@ -2304,24 +2328,26 @@ public class AppServiceServiceImpl implements AppServiceService {
             List<AppServiceDTO> organizationAppServices = appServiceMapper.queryOrganizationShareApps(projectIds, null, null);
             List<AppServiceDTO> projectAppServices = appServiceMapper.listShareProjectApps(projectId, null, null);
             organizationAppServices.addAll(projectAppServices);
-            // 去重
-            ArrayList<AppServiceDTO> collect = organizationAppServices.stream().collect(collectingAndThen(
-                    toCollection(() -> new TreeSet<>(comparing(AppServiceDTO::getId))), ArrayList::new));
-            Set<Long> ids = collect.stream().map(AppServiceDTO::getId).collect(Collectors.toSet());
-            Map<Long, List<AppServiceVersionDTO>> versionMap = appServiceVersionService.listServiceVersionByAppServiceIds(ids, "share", null)
-                    .stream().collect(groupingBy(AppServiceVersionDTO::getAppServiceId));
-            Map<Long, List<AppServiceVersionDTO>> versionMap1 = appServiceVersionService.listServiceVersionByAppServiceIds(ids, "project", null)
-                    .stream().collect(groupingBy(AppServiceVersionDTO::getAppServiceId));
-            versionMap.putAll(versionMap1);
-            Set<Long> projectsSet = collect.stream()
-                    .filter(v -> !CollectionUtils.isEmpty(versionMap.get(v.getId())))
-                    .map(AppServiceDTO::getProjectId).collect(Collectors.toSet());
-            projectDTOS = baseServiceClientOperator.queryProjectsByIds(projectsSet);
+            if (!CollectionUtils.isEmpty(organizationAppServices)) {
+                // 去重
+                ArrayList<AppServiceDTO> collect = organizationAppServices.stream().collect(collectingAndThen(
+                        toCollection(() -> new TreeSet<>(comparing(AppServiceDTO::getId))), ArrayList::new));
+                Set<Long> ids = collect.stream().map(AppServiceDTO::getId).collect(Collectors.toSet());
+                Map<Long, List<AppServiceVersionDTO>> versionMap = appServiceVersionService.listServiceVersionByAppServiceIds(ids, "share", null, null)
+                        .stream().collect(groupingBy(AppServiceVersionDTO::getAppServiceId));
+                Map<Long, List<AppServiceVersionDTO>> versionMap1 = appServiceVersionService.listServiceVersionByAppServiceIds(ids, "project", projectId, null)
+                        .stream().collect(groupingBy(AppServiceVersionDTO::getAppServiceId));
+                versionMap.putAll(versionMap1);
+                Set<Long> projectsSet = collect.stream()
+                        .filter(v -> !CollectionUtils.isEmpty(versionMap.get(v.getId())))
+                        .map(AppServiceDTO::getProjectId).collect(Collectors.toSet());
+                projectDTOS = baseServiceClientOperator.queryProjectsByIds(projectsSet);
+            }
         } else {
             ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
             List<Long> mktAppServiceIds = baseServiceClientOperator.listServicesForMarket(projectDTO.getOrganizationId(), false);
             if (mktAppServiceIds != null && !mktAppServiceIds.isEmpty()) {
-                appServiceDTOList = appServiceMapper.queryMarketDownloadApps(null, null, mktAppServiceIds);
+                appServiceDTOList = appServiceMapper.queryMarketDownloadApps(null, null, mktAppServiceIds, null);
                 Set<Long> appServiceIds = appServiceDTOList.stream().filter(v -> !ObjectUtils.isEmpty(v.getMktAppId())).map(AppServiceDTO::getMktAppId).collect(Collectors.toSet());
                 List<ApplicationDTO> applicationDTOS = new ArrayList<>();
                 appServiceIds.forEach(v -> {
@@ -2348,8 +2374,13 @@ public class AppServiceServiceImpl implements AppServiceService {
         AppServiceVO appServiceVO = new AppServiceVO();
         BeanUtils.copyProperties(appServiceDTO, appServiceVO);
         if (!appVerisonMap.isEmpty()) {
-            appServiceVO.setAllAppServiceVersions(ConvertUtils.convertList(appVerisonMap.get(appServiceVO.getId()),
-                    AppServiceVersionVO.class));
+            List<AppServiceVersionVO> appServiceVersionVOS = ConvertUtils.convertList(appVerisonMap.get(appServiceVO.getId()),
+                    AppServiceVersionVO.class);
+            if (!CollectionUtils.isEmpty(appServiceVersionVOS) && appServiceVersionVOS.size() > 10) {
+                appServiceVO.setAllAppServiceVersions(appServiceVersionVOS.subList(0, 10));
+            } else {
+                appServiceVO.setAllAppServiceVersions(appServiceVersionVOS);
+            }
         }
         if (appServiceDTO.getFailed() != null && appServiceDTO.getFailed()) {
             appServiceVO.setStatus(AppServiceStatus.FAILED.getStatus());
@@ -2424,11 +2455,12 @@ public class AppServiceServiceImpl implements AppServiceService {
 
                         });
                     }
-                }
-                MemberDTO gitlabMemberDTO = gitlabServiceClientOperator.getProjectMember(devOpsAppServicePayload.getGitlabProjectId(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
-                if (gitlabMemberDTO == null || gitlabMemberDTO.getId() == null) {
-                    gitlabServiceClientOperator.createProjectMember(devOpsAppServicePayload.getGitlabProjectId(),
-                            new MemberDTO(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), 30, ""));
+                } else {
+                    MemberDTO gitlabMemberDTO = gitlabServiceClientOperator.getProjectMember(devOpsAppServicePayload.getGitlabProjectId(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+                    if (gitlabMemberDTO == null || gitlabMemberDTO.getId() == null) {
+                        gitlabServiceClientOperator.createProjectMember(devOpsAppServicePayload.getGitlabProjectId(),
+                                new MemberDTO(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), 30, ""));
+                    }
                 }
             });
         }

@@ -306,6 +306,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                         FileUtil.yamlStringtoJson(job.getManifest()));
                 saveOrUpdateResource(devopsEnvResourceDTO, newDevopsEnvResourceDTO, devopsEnvResourceDetailDTO, appServiceInstanceDTO);
             }
+            // T这里要设置Command的状态 因为811行 GitOps sync方法里改了command的状态
             DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService
                     .baseQuery(appServiceInstanceDTO.getCommandId());
             devopsEnvCommandDTO.setStatus(CommandStatus.OPERATING.getStatus());
@@ -1154,11 +1155,13 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         });
         applications.addAll(appServiceMapper.listShareApplicationService(appServiceIds, projectId, null, null));
 
+        /* 应用市场逻辑
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         List<Long> mktAppServiceIds = baseServiceClientOperator.listServicesForMarket(projectDTO.getOrganizationId(), true);
         if (mktAppServiceIds != null && !mktAppServiceIds.isEmpty()) {
-            applications.addAll(appServiceMapper.queryMarketDownloadApps(null, null, mktAppServiceIds));
+            applications.addAll(appServiceMapper.queryMarketDownloadApps(null, null, mktAppServiceIds,null));
         }
+        */
         return applications;
     }
 

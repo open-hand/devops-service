@@ -1,8 +1,7 @@
-import { axios } from '@choerodon/master';
-import { Select as ProSelect } from 'choerodon-ui/pro';
+import { axios } from '@choerodon/boot';
 import React from 'react';
 
-export default ({ formatMessage, intlPrefix, projectId }) => {
+export default ({ formatMessage, intlPrefix, projectId, groupOptionDs, clusterOptionDs }) => {
   const codeValidator = async (value, name, record) => {
     const clusterId = record.get('clusterId');
     try {
@@ -17,13 +16,24 @@ export default ({ formatMessage, intlPrefix, projectId }) => {
     }
   };
 
+  const update = ({ record, name, value, oldValue }) => {
+    if (name === 'clusterId' && value !== oldValue) {
+      const code = record.get('code');
+      value && code && codeValidator(code, 'code', record);
+    }
+  };
+
   return {
     autoCreate: true,
     fields: [
       {
         name: 'clusterId',
         type: 'number',
+        textField: 'name',
+        label: formatMessage({ id: 'c7ncd.env.cluster.select' }),
+        valueField: 'id',
         required: true,
+        options: clusterOptionDs,
       },
       {
         name: 'code',
@@ -46,15 +56,20 @@ export default ({ formatMessage, intlPrefix, projectId }) => {
         name: 'description',
         type: 'string',
         label: '环境描述',
-        maxLength: 60,
+        maxLength: 200,
       },
       {
         name: 'devopsEnvGroupId',
         type: 'number',
-        textField: 'text',
+        textField: 'name',
+        valueField: 'id',
         label: '选择分组',
+        options: groupOptionDs,
       },
     ],
+    events: {
+      update,
+    },
     transport: {
       submit: ({ data: [data] }) => ({
         url: `/devops/v1/projects/${projectId}/envs`,

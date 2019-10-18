@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { observer, inject } from 'mobx-react';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { Content, stores } from '@choerodon/master';
+import { Content, stores, Choerodon } from '@choerodon/boot';
 import { Modal } from 'choerodon-ui';
 
 import MdEditor from '../../../../components/MdEditor';
@@ -73,7 +73,7 @@ class AppTagEdit extends Component {
       confirmLoading={submitting}
       onCancel={this.handleCancel}
     >
-      <Content code="apptag.update" values={{ name: tag }} className="c7n-tag-create sidebar-content">
+      <Content className="c7n-tag-create sidebar-content">
         <div className="c7n-apptag-release-title">{formatMessage({ id: 'apptag.release.title' })}</div>
         <MdEditor
           value={notes}

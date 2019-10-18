@@ -1,5 +1,5 @@
 import React, { Fragment } from 'react';
-import { Permission, Action } from '@choerodon/master';
+import { Permission, Action } from '@choerodon/boot';
 import { Table } from 'choerodon-ui/pro';
 import { Tooltip } from 'choerodon-ui';
 import { useClusterContentStore } from '../stores';
@@ -66,11 +66,11 @@ const NodeList = () => {
         border={false}
         queryBar="none"
       >
-        <Column width={120} header={formatMessage({ id: `${intlPrefix}.node.ip` })} renderer={renderStatusName} />
+        <Column width={150} header={formatMessage({ id: `${intlPrefix}.node.ip` })} renderer={renderStatusName} />
         <Column name="type" minWidth={80} renderer={renderType} />
         <Column header={formatMessage({ id: `${intlPrefix}.node.cpu` })} renderer={renderCpu} />
         <Column header={formatMessage({ id: `${intlPrefix}.node.memory` })} renderer={renderMemory} />
-        <Column name="createTime" minWidthth={140} renderer={renderTime} />
+        <Column name="createTime" width={150} renderer={renderTime} />
       </Table>
     </div>
   );

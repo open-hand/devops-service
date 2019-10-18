@@ -12,7 +12,8 @@ import {
   Header,
   Page,
   Action,
-} from '@choerodon/master';
+  Choerodon,
+} from '@choerodon/boot';
 import { Table, Button, Modal, Tooltip, Select } from 'choerodon-ui';
 import _ from 'lodash';
 import ClickText from '../../../../../../../../components/click-text';
@@ -213,7 +214,7 @@ export default class Notifications extends Component {
 
   renderMethod = ({ notifyType }) => this.renderTags(notifyType, 'method');
 
-  renderNumber = ({ id }) => <ClickText value={`#${id}`} clickAble onClick={this.openEdit} record={id} />
+  renderNumber = ({ id }) => <ClickText value={`#${id}`} clickAble onClick={this.openEdit} record={id} />;
 
   renderAction = ({ id }) => {
     const {
@@ -228,11 +229,6 @@ export default class Notifications extends Component {
     } = this.props;
 
     const actionData = [
-      {
-        service: ['devops-service.devops-notification.update'],
-        text: formatMessage({ id: 'edit' }),
-        action: this.openEdit.bind(this, id),
-      },
       {
         service: ['devops-service.devops-notification.delete'],
         text: formatMessage({ id: 'delete' }),

@@ -51,7 +51,7 @@ public interface AppServiceInstanceMapper extends Mapper<AppServiceInstanceDTO> 
 
     List<AppServiceInstanceOverViewDTO> listApplicationInstanceOverView(@Param("projectId") Long projectId, @Param("appServiceId") Long appServiceId, @Param("envIds") List<Long> envIds);
 
-    String queryByInstanceId(@Param("instanceId") Long instanceId);
+    String queryValueByInstanceId(@Param("instanceId") Long instanceId);
 
     List<DeployDTO> listDeployTime(@Param("projectId") Long projectId, @Param("envId") Long envId, @Param("appServiceIds") Long[] appServiceIds, @Param("startTime") Date startTime, @Param("endTime") Date endTime);
 

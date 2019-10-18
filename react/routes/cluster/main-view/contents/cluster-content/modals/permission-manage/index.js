@@ -2,10 +2,12 @@ import React, { Fragment, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
 import { Select, Radio, Form, Tooltip } from 'choerodon-ui';
+import { Choerodon } from '@choerodon/boot';
 import omit from 'lodash/omit';
 import map from 'lodash/map';
 import DynamicSelect from '../../../../../../../components/dynamic-select';
 import { handlePromptError } from '../../../../../../../utils';
+import Tips from '../../../../../../../components/new-tips';
 
 import './index.less';
 
@@ -92,10 +94,17 @@ const Permission = observer(({ refreshPermission, modal, form, tree, onOk, proje
             {getFieldDecorator('skipCheckProjectPermission', { initialValue: isSkip })(
               <RadioGroup onChange={handleChange}>
                 <Radio value>
-                  {formatMessage({ id: `${intlPrefix}.project.all` })}
+                  <span className={`${prefixCls}-modal-selectbox-text`}>
+                    {formatMessage({ id: `${intlPrefix}.project.all` })}
+                  </span>
                 </Radio>
                 <Radio value={false}>
-                  {formatMessage({ id: `${intlPrefix}.project.part` })}
+                  <span className={`${prefixCls}-modal-selectbox-text`}>
+                    <Tips
+                      helpText={formatMessage({ id: `${intlPrefix}.permission.some.tips` })}
+                      title={formatMessage({ id: `${intlPrefix}.project.part` })}
+                    />
+                  </span>
                 </Radio>
               </RadioGroup>
             )}

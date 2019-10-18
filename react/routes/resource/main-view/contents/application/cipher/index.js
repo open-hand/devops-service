@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Action } from '@choerodon/master';
-import { Table } from 'choerodon-ui/pro';
+import { Action } from '@choerodon/boot';
+import { Modal, Table } from 'choerodon-ui/pro';
 import keys from 'lodash/keys';
 import MouserOverWrapper from '../../../../../../components/MouseOverWrapper/MouserOverWrapper';
 import StatusTags from '../../../../../../components/status-tag';
@@ -15,6 +15,10 @@ import { useMainStore } from '../../../stores';
 import '../configs/index.less';
 
 const { Column } = Table;
+const modalKey = Modal.key();
+const modalStyle = {
+  width: 'calc(100vw - 3.52rem)',
+};
 
 const Cipher = observer(() => {
   const {
@@ -27,8 +31,6 @@ const Cipher = observer(() => {
   const { cipherStore, cipherDs } = useApplicationStore();
   const { mainStore: { openDeleteModal } } = useMainStore();
   const statusStyle = useMemo(() => ({ marginRight: '0.08rem' }), []);
-  const [showModal, setShowModal] = useState(false);
-  const [recordId, setRecordId] = useState(null);
 
   function refresh() {
     treeDs.query();
@@ -41,15 +43,23 @@ const Cipher = observer(() => {
     return !connect;
   }
 
-  function closeSideBar(fresh) {
-    setRecordId(null);
-    setShowModal(false);
-    fresh && refresh();
-  }
-
   function handleEdit(record) {
-    setRecordId(record.get('id'));
-    setShowModal(true);
+    Modal.open({
+      key: modalKey,
+      style: modalStyle,
+      drawer: true,
+      title: formatMessage({ id: `${intlPrefix}.cipher.edit` }),
+      children: <KeyValueModal
+        intlPrefix={intlPrefix}
+        title="cipher"
+        id={record.get('id')}
+        envId={parentId}
+        appId={id}
+        store={cipherStore}
+        refresh={refresh}
+      />,
+      okText: formatMessage({ id: 'save' }),
+    });
   }
 
   function renderName({ value, record }) {
@@ -117,17 +127,6 @@ const Cipher = observer(() => {
           <Column name="lastUpdateDate" renderer={renderDate} width="1rem" />
         </Table>
       </div>
-      {showModal && <KeyValueModal
-        modeSwitch={false}
-        intlPrefix={intlPrefix}
-        title="cipher"
-        visible={showModal}
-        id={recordId}
-        envId={parentId}
-        appId={id}
-        onClose={closeSideBar}
-        store={cipherStore}
-      />}
     </div>
   );
 });

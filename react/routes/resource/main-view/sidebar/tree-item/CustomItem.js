@@ -2,13 +2,19 @@ import React, { Fragment, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import { observer } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
-import { Action } from '@choerodon/master';
+import { Action } from '@choerodon/boot';
 import { Icon } from 'choerodon-ui';
+import { Modal } from 'choerodon-ui/pro';
 import { useResourceStore } from '../../../stores';
 import { useMainStore } from '../../stores';
 import CustomForm from '../../contents/custom/modals/form-view';
 import eventStopProp from '../../../../../utils/eventStopProp';
 import openWarnModal from '../../../../../utils/openWarnModal';
+
+const modalKey = Modal.key();
+const modalStyle = {
+  width: 'calc(100vw - 3.52rem)',
+};
 
 function CustomItem({
   record,
@@ -23,8 +29,6 @@ function CustomItem({
     AppState: { currentMenuType: { projectId } },
   } = useResourceStore();
   const { customStore } = useMainStore();
-
-  const [showModal, setShowModal] = useState(false);
 
   function freshTree() {
     treeDs.query();
@@ -54,7 +58,20 @@ function CustomItem({
   }
 
   function deleteItem() {
-    treeDs.delete(record);
+    treeDs.transport.destroy = ({ data: [data] }) => (
+      {
+        url: `/devops/v1/projects/${projectId}/customize_resource?resource_id=${data.id}`,
+        method: 'delete',
+      }
+    );
+    const modalProps = {
+      title: formatMessage({ id: `${intlPrefix}.custom.delete.title` }, { name: record.get('name') }),
+      children: formatMessage({ id: `${intlPrefix}.custom.delete.des` }),
+      okText: formatMessage({ id: 'delete' }),
+      okProps: { color: 'red' },
+      cancelProps: { color: 'dark' },
+    };
+    treeDs.delete(record, modalProps);
   }
 
   function checkDataExist() {
@@ -74,18 +91,26 @@ function CustomItem({
   function openModal() {
     checkDataExist().then((query) => {
       if (query) {
-        setShowModal(true);
+        Modal.open({
+          key: modalKey,
+          style: modalStyle,
+          drawer: true,
+          title: formatMessage({ id: 'resource.edit.header' }),
+          children: <CustomForm
+            id={record.get('id')}
+            envId={record.get('parentId').split('-')[0]}
+            type="edit"
+            store={customStore}
+            refresh={freshMenu}
+          />,
+          okText: formatMessage({ id: 'save' }),
+        });
       }
     });
   }
 
-  function closeModal(isLoad) {
-    setShowModal(false);
-    isLoad && freshMenu();
-  }
-
   function getSuffix() {
-    const status = record.get('commandStatus');
+    const status = record.get('status');
     const disabled = getEnvIsNotRunning() || status === 'operating';
     if (disabled) {
       return null;
@@ -110,14 +135,6 @@ function CustomItem({
     <Icon type="filter_b_and_w" />
     {name}
     {getSuffix()}
-    {showModal && <CustomForm
-      id={record.get('id')}
-      envId={record.get('parentId').split('-')[0]}
-      type="edit"
-      store={customStore}
-      visible={showModal}
-      onClose={closeModal}
-    />}
   </Fragment>;
 }
 

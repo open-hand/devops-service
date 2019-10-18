@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import io.choerodon.devops.infra.enums.CertificationType;
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  * Created by n!Ck
@@ -18,10 +19,15 @@ public class CertificationSpec {
     public static final String LETSENCRYPT_PROD = "letsencrypt-prod";
     public static final String LOCALHOST = "localhost";
     public static final String CLUSTER_ISSUER = "ClusterIssuer";
+    @ApiModelProperty("泛域名")
     private String commonName;
+    @ApiModelProperty("子域名")
     private List<String> dnsNames;
+    @ApiModelProperty("自动证书管理环境")
     private CertificationAcme acme;
+    @ApiModelProperty("证书")
     private CertificationExistCert existCert;
+    @ApiModelProperty("证书颁发者")
     private Map<String, String> issuerRef;
 
     /**

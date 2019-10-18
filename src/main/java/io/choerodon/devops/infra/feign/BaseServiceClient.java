@@ -35,6 +35,11 @@ public interface BaseServiceClient {
     @GetMapping("/v1/organizations/{organizationId}")
     ResponseEntity<OrganizationDTO> queryOrganizationById(@PathVariable("organizationId") Long organizationId);
 
+    @GetMapping("v1/organizations")
+    ResponseEntity<PageInfo<OrganizationDTO>>  listOrganizations(@RequestParam("page") Integer page,
+                                                                @RequestParam("size") Integer size);
+
+
     @PostMapping(value = "/v1/project/{projectId}/memberRoles/single")
     ResponseEntity<MemberRoleVO> addMemberRole(@PathVariable("projectId") Long projectId, @RequestBody @Valid MemberRoleVO memberRoleVo);
 
@@ -58,7 +63,7 @@ public interface BaseServiceClient {
                                                           @RequestParam(value = "params", required = false) String[] params);
 
     @PostMapping(value = "/v1/users/ids")
-    ResponseEntity<List<IamUserDTO>> listUsersByIds(@RequestBody Long[] ids);
+    ResponseEntity<List<IamUserDTO>> listUsersByIds(@RequestBody Long[] ids, @RequestParam(value = "only_enabled") Boolean onlyEnabled);
 
     @GetMapping(value = "/v1/projects/{project_id}/users")
     ResponseEntity<PageInfo<IamUserDTO>> listUsersByEmail(@PathVariable("project_id") Long projectId, @RequestParam("page") int page, @RequestParam("size") int size, @RequestParam("email") String email);

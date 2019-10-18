@@ -22,15 +22,17 @@ class NoChart extends Component {
     } = this.props;
     switch (type) {
       case 'env':
-        // EnvPipelineStore.setSideType('create');
-        // EnvPipelineStore.setShow(true);
-        // history.push(`/devops/env-pipeline${search}`);
+        history.push({
+          pathname: '/devops/environment',
+          search,
+          state: { openCreate: true },
+        });
         break;
       case 'app':
         history.push({
-          pathname: '/devops/app',
+          pathname: '/devops/app-service',
           search,
-          state: { show: true, modeType: 'create' },
+          state: { openCreate: true },
         });
         break;
       default:

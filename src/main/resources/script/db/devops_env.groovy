@@ -134,4 +134,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env.groovy') {
     changeSet(author: 'zmf', id: '2019-09-18-add-default-value-for-env-active') {
         addDefaultValue(tableName: "devops_env", columnName: "is_active", defaultValue: "1")
     }
+
+    changeSet(author: 'sheep', id: '2019-09-29-updateDataType') {
+        modifyDataType(tableName: 'devops_env', columnName: 'description', newDataType: 'VARCHAR(500)')
+    }
 }

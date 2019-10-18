@@ -1,5 +1,10 @@
 package io.choerodon.devops.api.controller.v1
 
+import org.springframework.http.HttpEntity
+import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpMethod
+import org.springframework.http.MediaType
+
 import static org.mockito.ArgumentMatchers.*
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
@@ -103,6 +108,7 @@ class DevopsSecretControllerSpec extends Specification {
         IamUserDTO iamUserDTO = new IamUserDTO()
         iamUserDTO.setId(1L)
         iamUserDTO.setRealName("aa")
+        iamUserDTO.setLdap(true)
 
         Mockito.doReturn(iamUserDTO).when(mockBaseServiceClientOperator).queryUserByUserId(1L)
     }
@@ -140,25 +146,35 @@ class DevopsSecretControllerSpec extends Specification {
         envUtil.checkEnvConnection(_ as Long) >> null
 
         when: '创建密钥'
-        restTemplate.put(MAPPING, secretReqDTO, 1L)
+        def entity = restTemplate.postForEntity(MAPPING, secretReqDTO, SecretRespVO.class,1L)
 
         then: '校验结果'
-        devopsSecretMapper.selectAll().get(0).getValue() == "{\"test\":\"dGVzdA\\u003d\\u003d\"}"
+        entity.getStatusCode().is2xxSuccessful()
+        entity.getBody() != null
+
 
         when: '更新密钥但是key-value不改变'
         secretReqDTO.setId(1L)
         secretReqDTO.setType("update")
-        restTemplate.put(MAPPING, secretReqDTO, 1L)
+        HttpHeaders headers = new HttpHeaders()
+        headers.setContentType(MediaType.APPLICATION_JSON)
+        HttpEntity<SecretReqVO> httpEntity = new HttpEntity(secretReqDTO,headers)
+
+        def entity1 = restTemplate.exchange(MAPPING, HttpMethod.PUT,httpEntity, SecretRespVO.class, 1L)
 
         then: '校验结果'
-        devopsSecretMapper.selectAll().get(0).getValue() == "{\"test\":\"dGVzdA\\u003d\\u003d\"}"
+        entity1.getStatusCode().is2xxSuccessful()
+        entity1.getBody() != null
 
         when: '更新密钥同时更新key-value'
         valueMap.put("testnew", "testnew")
-        restTemplate.put(MAPPING, secretReqDTO, 1L)
+
+
+        def entity2 = restTemplate.exchange(MAPPING, HttpMethod.PUT,httpEntity, SecretRespVO.class, 1L)
 
         then: '校验结果'
-        devopsSecretMapper.selectAll().size() == 1
+        entity2.getStatusCode().is2xxSuccessful()
+        entity2.getBody() != null
     }
 
     def "ListByOption"() {

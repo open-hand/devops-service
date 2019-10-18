@@ -1,5 +1,5 @@
 import { useLocalStore } from 'mobx-react-lite';
-import { axios } from '@choerodon/master';
+import { axios } from '@choerodon/boot';
 import map from 'lodash/map';
 
 export default function useStore() {

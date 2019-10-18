@@ -3,7 +3,7 @@ import { observer, inject } from 'mobx-react';
 import { observer as observerLite } from 'mobx-react-lite';
 import { withRouter } from 'react-router-dom';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { Header } from '@choerodon/master';
+import { Header, Choerodon } from '@choerodon/boot';
 import { Button, Select, Tooltip } from 'choerodon-ui';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import _ from 'lodash';
@@ -104,11 +104,9 @@ export const SelectApp = injectIntl(inject('AppState')(observerLite((props) => {
         }
       });
   };
-  const {
-    intl: { formatMessage },
-  } = props;
+  const { intl: { formatMessage } } = props;
   const { getAppData, getRecentApp, getSelectApp } = DevPipelineStore;
-  return <div>
+  return <div style={{ paddingLeft: 24 }}>
     <Select
       filter
       filterOption={(input, option) => option.props.children

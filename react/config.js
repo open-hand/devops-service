@@ -3,12 +3,15 @@ const config = {
   fileServer: 'http://minio.staging.saas.test.com',
   projectType: 'choerodon',
   buildType: 'single',
-  master: './node_modules/@choerodon/master/lib/master.js',
+  master: './node_modules/@choerodon/master-pro/lib/master.js',
   theme: {
     'primary-color': '#3f51b5',
     'icon-font-size-base': '16px',
   },
   dashboard: {},
+  modules: [
+    '.',
+  ],
   resourcesLevel: ['site', 'organization', 'project', 'user'],
 };
 

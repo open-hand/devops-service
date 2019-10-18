@@ -3,8 +3,9 @@ import { observer, inject } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { Table, Button, Modal, Spin, Select } from 'choerodon-ui';
-import { Permission, Content, Header, Page, Action, Breadcrumb } from '@choerodon/master';
+import { Permission, Content, Header, Page, Action, Breadcrumb, Choerodon } from '@choerodon/boot';
 import _ from 'lodash';
+import { Modal as ProModal } from 'choerodon-ui/pro';
 import StatusTags from '../../../components/status-tag';
 import TimePopover from '../../../components/timePopover';
 import UserInfo from '../../../components/userInfo';
@@ -27,6 +28,8 @@ const EXECUTE_PASS = 'pass';
 const EXECUTE_FAILED = 'failed';
 
 const TriggerType = ['auto', 'manual'];
+
+const deleteKey = ProModal.key();
 
 @injectIntl
 @withRouter
@@ -60,8 +63,8 @@ export default class Pipeline extends Component {
     executeLoading: false,
     executeEnv: null,
     searchData: null,
-    envId: null,
-    triggerType: null,
+    envId: undefined,
+    triggerType: undefined,
   };
 
   componentDidMount() {
@@ -160,10 +163,30 @@ export default class Pipeline extends Component {
       triggerType
     );
   };
- 
+
 
   closeRemove = () => {
     this.setState({ deleteId: null, deleteName: '', showDelete: false });
+  };
+
+  openDelete = (id, name) => {
+    const {
+      intl: { formatMessage },
+    } = this.props;
+    this.setState({
+      deleteName: name,
+      deleteId: id,
+    });
+    ProModal.open({
+      key: deleteKey,
+      title: formatMessage({ id: 'pipeline.delete' }, { name }),
+      children: formatMessage({ id: 'pipeline.delete.message' }),
+      onOk: this.handleDelete,
+      onCancel: this.closeRemove,
+      okText: formatMessage({ id: 'delete' }),
+      okProps: { color: 'red' },
+      cancelProps: { color: 'dark' },
+    });
   };
 
   handleDelete = async () => {
@@ -351,10 +374,11 @@ export default class Pipeline extends Component {
           type,
         },
       },
+      location: { search },
     } = this.props;
     history.push({
       pathname: '/devops/deployment-operation',
-      search: `?type=${type}&id=${projectId}&name=${projectName}&organizationId=${organizationId}`,
+      search,
     });
   }
 
@@ -413,20 +437,7 @@ export default class Pipeline extends Component {
       remove: {
         service: ['devops-service.pipeline.delete'],
         text: formatMessage({ id: 'delete' }),
-        action: () => {
-          this.setState({
-            deleteName: name,
-            deleteId: id,
-          });
-          this.customConfirm.delete({
-            titleId: 'pipeline.delete',
-            titleVal: {
-              name,
-            },
-            contentId: 'pipeline.delete.message',
-            handleOk: this.handleDelete,
-          });
-        },
+        action: this.openDelete.bind(this, id, name),
       },
     };
     let actionItem = _.keys(action);
@@ -446,6 +457,14 @@ export default class Pipeline extends Component {
     // }
 
     return (<Action data={_.map(actionItem, (item) => ({ ...action[item] }))} />);
+  };
+
+  handleResetSearch = () => {
+    this.setState({
+      searchData: null,
+      envId: undefined,
+      triggerType: undefined,
+    }, () => this.loadData());
   };
 
   get getColumns() {
@@ -527,6 +546,9 @@ export default class Pipeline extends Component {
       executeCheck,
       executeLoading,
       executeEnv,
+      searchData,
+      envId,
+      triggerType,
     } = this.state;
 
     return (<Page
@@ -565,60 +587,72 @@ export default class Pipeline extends Component {
       </Header>
       <Breadcrumb />
       <Content className="c7ncd-pipeline-content">
-        <Select
-          mode="multiple"
-          label={formatMessage({ id: 'pipeline.search' })}
-          allowClear
-          className="c7ncd-pipeline-search"
-          onChange={(value) => this.handleSearch(value, 'searchData')}
-          choiceRemove={false}
-        >
-          {
-            _.map(FAST_SEARCH, (item) => (
+        <div className="c7ncd-pipeline-selector">
+          <Select
+            mode="multiple"
+            label={formatMessage({ id: 'pipeline.search' })}
+            allowClear
+            className="c7ncd-pipeline-search"
+            onChange={(value) => this.handleSearch(value, 'searchData')}
+            choiceRemove={false}
+            value={searchData}
+          >
+            {
+              _.map(FAST_SEARCH, (item) => (
+                <Option
+                  key={item}
+                  value={item}
+                >
+                  {formatMessage({ id: `pipeline.search.${item}` })}
+                </Option>
+              ))
+            }
+          </Select>
+          <Select
+            className="c7ncd-pipeline-search"
+            label={formatMessage({ id: 'pipeline.deploy.env' })}
+            onChange={(value) => this.setState({ envId: value }, () => this.loadData())}
+            allowClear
+            choiceRemove={false}
+            value={envId}
+            filterOption={(input, option) => option.props.children
+              .toLowerCase()
+              .indexOf(input.toLowerCase()) >= 0}
+          >
+            {_.map(getEnvData, ({ name: envName, id }) => (
               <Option
-                key={item}
-                value={item}
+                key={id}
+                value={id}
               >
-                {formatMessage({ id: `pipeline.search.${item}` })}
+                {envName}
               </Option>
-            ))
-          }
-        </Select>
-        <Select
-          className="c7ncd-pipeline-search-one"
-          label={formatMessage({ id: 'pipeline.deploy.env' })}
-          onChange={(value) => this.setState({ envId: value }, () => this.loadData())}
-          allowClear
-          choiceRemove={false}
-          filterOption={(input, option) => option.props.children
-            .toLowerCase()
-            .indexOf(input.toLowerCase()) >= 0}
-        >
-          {_.map(getEnvData, ({ name: envName, id }) => (
-            <Option
-              key={id}
-              value={id}
-            >
-              {envName}
-            </Option>
-          ))}
-        </Select>
-        <Select
-          className="c7ncd-pipeline-search-one"
-          label={formatMessage({ id: 'pipeline.trigger' })}
-          onChange={(value) => this.setState({ triggerType: value }, () => this.loadData())}
-          allowClear
-          choiceRemove={false}
-        >
-          {_.map(TriggerType, (value) => (
-            <Option
-              key={value}
-              value={value}
-            >
-              {formatMessage({ id: `c7ncd.deploy.trigger.${value}` })}
-            </Option>
-          ))}
-        </Select>
+            ))}
+          </Select>
+          <Select
+            className="c7ncd-pipeline-search"
+            label={formatMessage({ id: 'pipeline.trigger' })}
+            onChange={(value) => this.setState({ triggerType: value }, () => this.loadData())}
+            allowClear
+            choiceRemove={false}
+            value={triggerType}
+          >
+            {_.map(TriggerType, (value) => (
+              <Option
+                key={value}
+                value={value}
+              >
+                {formatMessage({ id: `c7ncd.deploy.trigger.${value}` })}
+              </Option>
+            ))}
+          </Select>
+          <Button
+            funcType="raised"
+            onClick={this.handleResetSearch}
+            className="c7ncd-pipeline-search-button"
+          >
+            <FormattedMessage id="reset" />
+          </Button>
+        </div>
         <Table
           filterBar={false}
           loading={getLoading || executeLoading}

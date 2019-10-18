@@ -1,13 +1,15 @@
 import React, { useEffect } from 'react';
-import { TabPage, Content, Permission, Breadcrumb, Action } from '@choerodon/master';
+import { TabPage, Content, Permission, Breadcrumb, Action } from '@choerodon/boot';
 import { Table, Modal } from 'choerodon-ui/pro';
 import { Button, Tooltip } from 'choerodon-ui';
 import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
+import { useAppTopStore } from '../stores';
 import { useServiceDetailStore } from './stores';
 import HeaderButtons from './HeaderButtons';
 import TimePopover from '../../../components/timePopover/TimePopover';
 import ServicePermission from './modals/permission';
+import Tips from '../../../components/new-tips';
 
 
 const { Column } = Table;
@@ -18,15 +20,17 @@ const modalStyle = {
   width: 380,
 };
 
-const Allocation = observer((props) => {
+const Allocation = observer(() => {
   const {
-    intl: { formatMessage },
     intlPrefix,
     prefixCls,
+    appServiceStore,
+  } = useAppTopStore();
+  const {
+    intl: { formatMessage },
     permissionDs,
     detailDs,
     nonePermissionDs,
-    AppStore,
     AppState: { currentMenuType: { id } },
   } = useServiceDetailStore();
 
@@ -60,11 +64,14 @@ const Allocation = observer((props) => {
   function openDetail() {
     Modal.open({
       key: modalKey1,
-      title: formatMessage({ id: `${intlPrefix}.permission.manage` }),
+      title: <Tips
+        helpText={formatMessage({ id: `${intlPrefix}.detail.allocation.tips` })}
+        title={formatMessage({ id: `${intlPrefix}.permission.manage` })}
+      />,
       children: <ServicePermission
         dataSet={permissionDs}
         record={detailDs.current}
-        store={AppStore}
+        store={appServiceStore}
         nonePermissionDS={nonePermissionDs}
         intlPrefix={intlPrefix}
         prefixCls={prefixCls}
@@ -79,7 +86,15 @@ const Allocation = observer((props) => {
   }
 
   function handleDelete() {
-    permissionDs.delete(permissionDs.current);
+    const record = permissionDs.current;
+    const modalProps = {
+      title: formatMessage({ id: `${intlPrefix}.permission.delete.title` }),
+      children: formatMessage({ id: `${intlPrefix}.permission.delete.des` }),
+      okText: formatMessage({ id: 'delete' }),
+      okProps: { color: 'red' },
+      cancelProps: { color: 'dark' },
+    };
+    permissionDs.delete(record, modalProps);
   }
 
   function renderButtons() {

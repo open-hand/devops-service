@@ -1,5 +1,5 @@
 import React, { useCallback, Fragment, useEffect } from 'react';
-import { TabPage, Content, Header, Breadcrumb, Permission } from '@choerodon/master';
+import { TabPage, Content, Header, Breadcrumb, Permission } from '@choerodon/boot';
 import { Modal, Button } from 'choerodon-ui/pro';
 import { FormattedMessage } from 'react-intl';
 import { withRouter } from 'react-router-dom';
@@ -70,10 +70,10 @@ const ProRepository = withRouter(observer((props) => {
         </Permission>
       </Header>
       <Breadcrumb />
-      <Content>
+      <Content className={`${prefixCls}-home`}>
         <div className={`${prefixCls}-home-item`}>
           <span className={`${prefixCls}-home-item-text`}>
-            {formatMessage({ id: `${intlPrefix}.harbor` })}:
+            {formatMessage({ id: `${intlPrefix}.harbor` })}
           </span>
           <span>
             {homeDs.current && homeDs.current.get('harborConfigUrl')
@@ -83,7 +83,7 @@ const ProRepository = withRouter(observer((props) => {
         </div>
         <div>
           <span className={`${prefixCls}-home-item-text`}>
-            {formatMessage({ id: `${intlPrefix}.chart` })}:
+            {formatMessage({ id: `${intlPrefix}.chart` })}
           </span>
           <span>
             {homeDs.current && homeDs.current.get('chartConfigUrl')

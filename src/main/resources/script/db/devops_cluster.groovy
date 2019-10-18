@@ -55,4 +55,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cluster.groovy') {
             column(name: 'project_id',type: 'BIGINT UNSIGNED',remarks:'项目Id', afterColumn: 'token')
         }
     }
+
+    changeSet(author: 'sheep', id: '2019-09-29-updateDataType') {
+        modifyDataType(tableName: 'devops_cluster', columnName: 'description', newDataType: 'VARCHAR(500)')
+    }
 }

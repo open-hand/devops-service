@@ -2,13 +2,19 @@ import React, { Fragment, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import { observer } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
-import { Action } from '@choerodon/master';
+import { Action } from '@choerodon/boot';
 import { Icon } from 'choerodon-ui';
+import { Modal } from 'choerodon-ui/pro';
 import { useResourceStore } from '../../../stores';
 import { useMainStore } from '../../stores';
 import KeyValueModal from '../../contents/application/modals/key-value';
 import eventStopProp from '../../../../../utils/eventStopProp';
 import openWarnModal from '../../../../../utils/openWarnModal';
+
+const modalKey = Modal.key();
+const modalStyle = {
+  width: 'calc(100vw - 3.52rem)',
+};
 
 function ConfigItem({
   record,
@@ -26,8 +32,6 @@ function ConfigItem({
     configMapStore,
     mainStore: { openDeleteModal },
   } = useMainStore();
-
-  const [showModal, setShowModal] = useState(false);
 
   function freshTree() {
     treeDs.query();
@@ -73,21 +77,31 @@ function ConfigItem({
   function openModal() {
     checkDataExist().then((query) => {
       if (query) {
-        setShowModal(true);
+        Modal.open({
+          key: modalKey,
+          style: modalStyle,
+          drawer: true,
+          title: formatMessage({ id: `${intlPrefix}.configMap.edit` }),
+          children: <KeyValueModal
+            id={record.get('id')}
+            envId={record.get('parentId').split('-')[0]}
+            intlPrefix={intlPrefix}
+            modeSwitch
+            title="configMap"
+            store={configMapStore}
+            refresh={freshMenu}
+          />,
+          okText: formatMessage({ id: 'save' }),
+        });
       }
     });
-  }
-
-  function closeModal(isLoad) {
-    setShowModal(false);
-    isLoad && freshMenu();
   }
 
   function getSuffix() {
     const id = record.get('id');
     const recordName = record.get('name');
     const [envId] = record.get('parentId').split('-');
-    const status = record.get('commandStatus');
+    const status = record.get('status');
     const disabled = getEnvIsNotRunning() || status === 'operating';
     if (disabled) {
       return null;
@@ -105,19 +119,9 @@ function ConfigItem({
   }
 
   return <Fragment>
-    <Icon type={record.get('itemType') === MAP_ITEM ? 'compare_arrows' : 'vpn_key'} />
+    <Icon type="compare_arrows" />
     {name}
     {getSuffix()}
-    {showModal && <KeyValueModal
-      visible={showModal}
-      id={record.get('id')}
-      envId={record.get('parentId').split('-')[0]}
-      onClose={closeModal}
-      intlPrefix={intlPrefix}
-      modeSwitch
-      title="configMap"
-      store={configMapStore}
-    />}
   </Fragment>;
 }
 

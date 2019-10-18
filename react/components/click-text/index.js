@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Permission } from '@choerodon/master';
+import { Permission } from '@choerodon/boot';
 import isEmpty from 'lodash/isEmpty';
 
 import './index.less';

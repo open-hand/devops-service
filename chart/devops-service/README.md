@@ -1,143 +1,111 @@
-# Quick start
+# Choerodon DevOps Service
+DevOps Service通过自主整合的DevOps工具链，集成相关的开源工具，以此形成了计划、编码、测试、部署、运维以及监控的DevOps闭环。
+并且只需通过简单的配置，您便能获得最佳的开发体验。
 
-部署文件的渲染模板，我们下文将定义一些变量，helm执行时会将变量渲染进模板文件中。
 
-## _helpers.tpl
+## Add Helm chart repository
 
-这个文件我们用来进行标签模板的定义，以便在上文提到的位置进行标签渲染。
-
-标签总共分为三个部分: 平台、微服务、监控。
-
-### 平台标签
-
-#### deployment 级:
-
+``` bash    
+helm repo add choerodon https://openchart.choerodon.com.cn/choerodon/c7n
+helm repo update
 ```
-{{- define "service.labels.standard" -}}
-choerodon.io/release: {{ .Release.Name | quote }}
-{{- end -}}
+
+## Install the Chart
+
+```bash
+$ helm install c7n/devops-service --name devops-service
 ```
-平台管理实例需要的实例ID。
 
-### 微服务标签
+Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`.
 
-#### pod 级:
+## Uninstall the Chart
 
+```bash
+$ helm delete devops-service
 ```
-{{- define "service.microservice.labels" -}}
-choerodon.io/version: {{ .Chart.Version | quote }}
-choerodon.io/service: {{ .Chart.Name | quote }}
-choerodon.io/metrics-port: {{ .Values.deployment.managementPort | quote }}
-{{- end -}}
-```
-微服务注册中心进行识别时所需要的版本号、项目名称、管理端口。
 
-### 监控和日志标签
+## Configuration
+Parameter | Description	| Default
+--- |  ---  |  ---  
+replicaCount| ReplicaSet数量 | 1
+image.repository| 镜像仓库地址 | registry.cn-hangzhou.aliyuncs.com/choerodon-devops/devops-service
+image.pullPolicy|镜像拉取策略 | IfNotPresent
+preJob.timeout|初始化job超时时间 | 1200
+preJob.image|初始化job镜像 | registry.cn-hangzhou.aliyuncs.com/choerodon-tools/dbtool:0.6.4
+preJob.preConfig.enable|是否执行初始化配置job|true
+preJob.preConfig.configFile|初始化配置解析的文件|application.yml
+preJob.preConfig.configType|初始化配置的方式|k8s
+preJob.preConfig.registerHost|初始化配置所需注册中心地址|http://register-server:8000
+preJob.preConfig.datasource.url|初始化配置数据库地址|jdbc:mysql://localhost:3306/manager_service?useUnicode=true&
+preJob.preConfig.datasource.username|初始化配置数据库用户名|username
+preJob.preConfig.datasource.password|初始化配置数据库密码|password
+preJob.preInitDB.enable|是否执行初始化数据库job|true
+preJob.preInitDB.datasource.url|初始化数据库地址|jdbc:mysql://localhost:3306/devops_service?useUnicode=true&characterEncoding=utf-8&useSSL=false
+preJob.preInitDB.datasource.username|初始化数据库用户名|username
+preJob.preInitDB.datasource.password|初始化数据库密码|password
+deployment.managementPort|管理端口|8061
+env.open.SPRING_REDIS_HOST| redis地址|devops-redis.devops.svc
+env.open.EUREKA_CLIENT_SERVICEURL_DEFAULTZONE|注册服务地址|http://register-server.io-choerodon:8000/eureka/
+env.open.SPRING_DATASOURCE_URL|数据库链接地址|jdbc:mysql://mysql.db.svc:3306/devops_service?useUnicode=true&characterEncoding=utf-8&useSSL=false
+env.open.SPRING_DATASOURCE_USERNAME|数据库用户名|root
+env.open.SPRING_DATASOURCE_PASSWORD|数据库密码|choerodon
+env.open.SPRING_CLOUD_CONFIG_ENABLED|启用配置中心|true
+env.open.SPRING_CLOUD_CONFIG_URI|配置中心地址|http://config-server.framework:8010/
+env.open.SERVICES_GITLAB_URL|gitlab地址|http://git.choerodon.com.cn
+env.open.SERVICES_GITLAB_SSHURL|gitlab ssh地址|git@choerodon.com.cn
+env.open.SERVICES_GITLAB_PASSWORD|gitlab默认创建用户密码(大于等于8位)|abc123456
+env.open.SERVICES_GITLAB_PROJECTLIMIT|gitlab用户可以创建项目限制|100
+env.open.SERVICES_HELM_URL|helm地址|helm.example.com
+env.open.SERVICES_HARBOR_BASEURL|harbor地址|https://registry.choerodon.com.cn
+env.open.SERVICES_HARBOR_USERNAME|harbor用户名|admin
+env.open.SERVICES_HARBOR_PASSWORD|harbor密码|
+env.open.SERVICES_HARBOR_INSECURESKIPTLSVERIFY|harbor跳过证书安全校验|true
+env.open.SERVICES_SONARQUBE_URL|sonarqube地址|
+env.open.SERVICES_SONARQUBE_USERNAME|sonarqube用户名|
+env.open.SERVICES_SONARQUBE_PASSWORD|sonarqube密码|
+env.open.SERVICES_GATEWAY_URL|gateway地址|http://api.example.com
+env.open.AGENT_VERSION|agent版本|0.5.0.RELEASE
+env.open.AGENT_SERVICEURL|agent连接devops ws地址|ws://devops-service.choerodon.com.cn/agent/
+env.open.AGENT_REPOURL|agent仓库地址|https://openchart.choerodon.com.cn/choerodon/c7n/
+env.open.AGENT_CERTMANAGERURL|certmanager仓库地址|https://openchart.choerodon.com.cn/choerodon/infra/
+env.open.SKYWALKING_OPTS | skywalking 代理端配置|
+metrics.path|监控地址|/actuator/prometheus
+metrics.group|监控组|spring-boot
+log.parser|日志|spring-boot
+service.enabled|是否创建service|false
+service.name|service名字|devops-service
+service.type|service类型|ClusterIP
+service.port|service端口|8060
+ingress.enabled|是否创建域名|false
+ingress.host|域名地址|devops-service.choerodon.com.cn
+resources.limits.memory|资源请求限制|4Gi
+resources.requests.memory|资源请求需求|2Gi
 
-#### deployment 级:
-
-```
-{{- define "service.logging.deployment.label" -}}
-choerodon.io/logs-parser: {{ .Values.logs.parser | quote }}
-{{- end -}}
-```
-日志管理所需要的应用标签。该标签指定应用程序的日志格式，内置格式有`nginx`,`spring-boot`,`docker`对于spring-boot微服务请使用`spring-boot`，如果不需要收集日志请移除此段代码，并删除模板文件关于`service.logging.deployment.label`的引用。
-
-#### pod 级:
-
-```
-{{- define "service.monitoring.pod.annotations" -}}
-choerodon.io/metrics-group: {{ .Values.metrics.group | quote }}
-choerodon.io/metrics-path: {{ .Values.metrics.path | quote }}
-{{- end -}}
-```
-性能指标管理所需要的应用类别以及监控指标路径。其中`metrics-group`将应用按照某个关键字分组，并在grafana配置实现分组展示。`metrics-path`指定收集应用的指标数据路径。
-如果不需要监控请移除此段代码
-
-## values.yaml
-
-这个文件中的键值对，即为我们上文中所引用的变量。
-
-将所以有变量集中在一个文件中，方便部署的时候进行归档以及灵活替换。
-
-同时，helm命令支持使用 `--set FOO_BAR=FOOBAR` 参数对values 文件中的变量进行赋值，可以进一步简化部署流程。
-
-
-## deployment.yaml
-
-    deployment一种更加简单的更新RC和Pod的机制,deployment集成了上线部署、滚动升级、创建副本、暂停上线任务，恢复上线任务，回滚到以前某一版本（成功/稳定）的Deployment等功能,一个deployment可以生成1个或多个Pod
-
-## pre-config-config.yaml
-
-    job对象，是想要运行一些容器执行某种特定的任务。执行完删除，该任务是初始化微服务的application.yaml到线上的配置中心服务
-
-## pre-config-db.yaml
-
-    job对象，是想要运行一些容器执行某种特定的任务。执行完删除，该任务是初始化微服务线上的数据库
-
-
-## 参数对照表
-
-参数名 | 含义 
+##  SkyWalking Configuration
+Parameter | Description
 --- |  --- 
-replicaCount| ReplicaSet数量
-image.repository| 镜像仓库地址
-image.pullPolicy|镜像拉取策略
-preJob.timeout|初始化job超时时间
-preJob.image|初始化job镜像
-preJob.preConfig.enable|是否执行初始化配置job
-preJob.preConfig.configFile|初始化配置解析的文件
-preJob.preConfig.configType|初始化配置的方式
-preJob.preConfig.registerHost|初始化配置所需注册中心地址
-preJob.preConfig.datasource.url|初始化配置数据库地址
-preJob.preConfig.datasource.username|初始化配置数据库用户名
-preJob.preConfig.datasource.password|初始化配置数据库密码
-preJob.preInitDB.enable|是否执行初始化数据库job
-preJob.preInitDB.datasource.url|初始化数据库地址
-preJob.preInitDB.datasource.username|初始化数据库用户名
-preJob.preInitDB.datasource.password|初始化数据库密码
-deployment.managementPort|管理端口
-env.open.SPRING_REDIS_HOST| redis地址
-env.open.SPRING_DATASOURCE_URL|数据库链接地址
-env.open.SPRING_DATASOURCE_USERNAME|数据库用户名
-env.open.SPRING_DATASOURCE_PASSWORD|数据库密码
-env.open.SPRING_CLOUD_CONFIG_ENABLED|启用配置中心
-env.open.SPRING_CLOUD_CONFIG_URI|配置中心地址
-env.open.EUREKA_CLIENT_SERVICEURL_DEFAULTZONE|注册服务地址
-env.open.SERVICES_GITLAB_URL|gitlab地址
-env.open.SERVICES_GITLAB_SSHURL|gitlab ssh地址
-env.open.SERVICES_GITLAB_PASSWORD|gitlab默认创建用户密码
-env.open.SERVICES_GITLAB_PROJECTLIMIT|gitlab用户可以创建项目限制
-env.open.SERVICES_HELM_URL|helm地址
-env.open.SERVICES_HARBOR_BASEURL|harbor地址
-env.open.SERVICES_HARBOR_USERNAME|harbor用户名
-env.open.SERVICES_HARBOR_PASSWORD|harbor密码
-env.open.SERVICES_HARBOR_INSECURESKIPTLSVERIFY|harbor跳过证书安全校验
-env.open.SERVICES_SONARQUBE_URL|sonarqube地址
-env.open.SERVICES_GATEWAY_URL|gateway地址
-env.open.AGENT_VERSION|agengt版本
-env.open.SECURITY_BASIC_ENABLE|安全性验证
-env.open.SECURITY_IGNORED|安全性忽略
-env.open.AGENT_SERVICEURL|agent连接devops ws地址
-env.open.AGENT_REPOURL|agent仓库地址
-env.open.AGENT_CERTMANAGERURL|certmanager仓库地址
-env.open.SKYWALKING_OPTS | skywalking 代理端配置
-env.open.API_HOST| 前端变量gateway地址
-env.open.DEVOPS_HOST| 前端变量devops域名地址
-env.open.CLIENT_ID|前端client
-env.open.LOCAL|
-env.open.TITLE_NAME|
-env.open.HEADER_TITLE_NAME|
-env.open.COOKIE_SERVER|
-env.open.FILE_SERVER|文件服务地址
-metrics.path|监控地址
-metrics.group|监控组
-log.parser|日志
-service.enabled|是否创建service
-service.name|service名字
-service.type|service类型
-service.port|service端口
-ingress.enabled|是否创建域名
-ingress.host|域名地址
-resources.limits.memory|资源请求限制
-resources.requests.memory|资源请求需求
+`javaagent` | SkyWalking 代理jar包(添加则开启 SkyWalking，删除则关闭)
+`skywalking.agent.application_code` | SkyWalking 应用名称
+`skywalking.agent.sample_n_per_3_secs` | SkyWalking 采样率配置
+`skywalking.agent.namespace` | SkyWalking 跨进程链路中的header配置
+`skywalking.agent.authentication` | SkyWalking 认证token配置
+`skywalking.agent.span_limit_per_segment` | SkyWalking 每segment中的最大span数配置
+`skywalking.agent.ignore_suffix` | SkyWalking 需要忽略的调用配置
+`skywalking.agent.is_open_debugging_class` | SkyWalking 是否保存增强后的字节码文件
+`skywalking.collector.backend_service` | SkyWalking OAP 服务地址和端口配置
+
+```bash
+$ helm install c7n/devops-service \
+    --set env.open.SKYWALKING_OPTS="-javaagent:/agent/skywalking-agent.jar -Dskywalking.agent.application_code=devops-service  -Dskywalking.agent.sample_n_per_3_secs=-1 -Dskywalking.collector.backend_service=oap.skywalking:11800" \
+    --name devops-service
+```
+
+## 验证部署
+```bash
+curl -s $(kubectl get po -n c7n-system -l choerodon.io/release=devops-service -o jsonpath="{.items[0].status.podIP}"):8061/actuator/health | jq -r .status
+```
+出现以下类似信息即为成功部署
+
+```bash
+UP
+```

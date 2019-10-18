@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Action } from '@choerodon/master';
+import { Action, Choerodon } from '@choerodon/boot';
 import { Table, Modal } from 'choerodon-ui/pro';
 import TimePopover from '../../../../../components/time-popover';
 import UserInfo from '../../../../../components/userInfo';
@@ -56,7 +56,14 @@ export default function DeployConfig() {
     try {
       const res = await detailStore.checkDelete(projectId, valueId);
       if (handlePromptError(res)) {
-        configDs.delete(record);
+        const modalProps = {
+          title: formatMessage({ id: `${intlPrefix}.config.delete.disable` }, { name }),
+          children: formatMessage({ id: `${intlPrefix}.config.delete.des` }),
+          okText: formatMessage({ id: 'delete' }),
+          okProps: { color: 'red' },
+          cancelProps: { color: 'dark' },
+        };
+        configDs.delete(record, modalProps);
       } else {
         openDeleteModal(name);
       }
@@ -93,6 +100,7 @@ export default function DeployConfig() {
         configFormDs.reset();
         detailStore.setValue('');
       },
+      okText: formatMessage({ id: 'save' }),
     });
   }
 
@@ -127,15 +135,14 @@ export default function DeployConfig() {
     <Table
       dataSet={configDs}
       border={false}
-      queryBar="bar"
     >
       <Column name="name" sortable renderer={renderName} />
-      {!disabled && <Column renderer={renderActions} />}
+      {!disabled && <Column renderer={renderActions} width={70} />}
       <Column name="description" sortable />
       <Column name="appServiceName" />
       <Column name="envName" />
       <Column name="createUserRealName" renderer={renderUser} />
-      <Column name="lastUpdateDate" renderer={renderDate} />
+      <Column name="lastUpdateDate" renderer={renderDate} width={100} />
     </Table>
   </div>);
 }

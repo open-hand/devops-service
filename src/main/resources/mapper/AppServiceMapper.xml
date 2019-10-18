@@ -160,16 +160,16 @@
         </if>
     </select>
 
-    <select id="listByActive" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
-        SELECT da.*, (SELECT COUNT(1) = 0 FROM devops_branch db WHERE db.app_service_id = da.id) AS empty_repository
-        FROM devops_app_service da
-        WHERE da.is_active IS TRUE
-        AND da.is_synchro IS TRUE
-        AND da.gitlab_project_id IS NOT NULL
-        AND da.project_id = #{projectId}
-    </select>
+    <sql id="listByActive">
+        SELECT das.*, (SELECT COUNT(1) = 0 FROM devops_branch db WHERE db.app_service_id = das.id) AS empty_repository
+        FROM devops_app_service das
+        WHERE das.is_active IS TRUE
+        AND das.is_synchro IS TRUE
+        AND das.gitlab_project_id IS NOT NULL
+        AND das.project_id = #{projectId}
+    </sql>
 
-    <select id="listProjectMembersAppServiceByActive" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
+    <sql id="listProjectMembersAppServiceByActive">
         SELECT da.*, (SELECT COUNT(1) = 0 FROM devops_branch db WHERE db.app_service_id = da.id) AS empty_repository
 
         FROM (SELECT das.*
@@ -187,6 +187,26 @@
         WHERE da.is_active IS TRUE
         AND da.is_synchro IS TRUE
         AND da.gitlab_project_id IS NOT NULL
+    </sql>
+
+    <select id="listByActive" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
+        <include refid="listByActive"/>
+    </select>
+
+    <select id="countByActive" resultType="integer">
+        SELECT count(1) FROM(
+        <include refid="listByActive"/>
+        ) as result
+    </select>
+
+    <select id="listProjectMembersAppServiceByActive" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
+        <include refid="listProjectMembersAppServiceByActive"/>
+    </select>
+
+    <select id="countProjectMembersAppServiceByActive" resultType="integer">
+        SELECT count(1) FROM (
+        <include refid="listProjectMembersAppServiceByActive"/>
+        ) as result
     </select>
 
     <select id="listDeployedApp" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
@@ -273,10 +293,10 @@
     <sql id="sqlparams">
         <if test="searchParam != null">
             <if test="searchParam.name != null and searchParam.name != ''">
-                AND   name LIKE CONCAT(CONCAT('%', #{searchParam.name, jdbcType=VARCHAR}),'%')
+                AND name LIKE CONCAT(CONCAT('%', #{searchParam.name, jdbcType=VARCHAR}),'%')
             </if>
             <if test="searchParam.code != null and searchParam.code != ''">
-                AND  code LIKE CONCAT(CONCAT('%', #{searchParam.code, jdbcType=VARCHAR}),'%')
+                AND code LIKE CONCAT(CONCAT('%', #{searchParam.code, jdbcType=VARCHAR}),'%')
             </if>
             <if test='searchParam.status != null'>
                 AND
@@ -301,7 +321,7 @@
             AND
             <foreach collection="params" item="param" open="(" separator=" OR " close=")">
                 type LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-                OR  name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                OR name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
                 OR code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
             </foreach>
         </if>
@@ -457,22 +477,41 @@
     </select>
 
     <select id="listShareApplicationService" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
-        SELECT
-        DISTINCT
-        da.id,
-        da.`code`,
-        da.`name`,
-        da.project_id,
-        da.chart_config_id,
-        da.harbor_config_id
-        FROM
+    (SELECT DISTINCT
+    da.id,
+    da.`code`,
+    da.`name`,
+    da.project_id,
+    da.chart_config_id,
+    da.harbor_config_id
+    FROM
         devops_app_service_share_rule dasr
-        JOIN devops_app_service da ON da.id = dasr.app_service_id
+        JOIN devops_app_service da ON dasr.app_service_id = da.id
         WHERE
-        (
         dasr.share_level = 'organization'
-        OR dasr.project_id = #{projectId}
+        <include refid="appServiceSqlParam"/>
+        ) UNION
+        (
+    SELECT DISTINCT
+      da.id,
+      da.`code`,
+      da.`name`,
+      da.project_id,
+      da.chart_config_id,
+      da.harbor_config_id
+    FROM
+        devops_app_service da
+        LEFT JOIN ( SELECT app_service_id,project_id FROM devops_app_service_share_rule WHERE share_level = 'project'
+        ) dasr ON da.id = dasr.app_service_id
+    WHERE
+        dasr.app_service_id IS NOT NULL
+        <if test="projectId != null and projectId !=''">
+            AND dasr.project_id = #{projectId}
+        </if>
+        <include refid="appServiceSqlParam"/>
         )
+    </select>
+    <sql id="appServiceSqlParam">
         <if test="appServiceIds!=null and appServiceIds.size>0">
             AND
             dasr.app_service_id in
@@ -490,8 +529,7 @@
                 OR da.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%') )
             </foreach>
         </if>
-    </select>
-
+    </sql>
     <select id="queryOrganizationShareApps" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
         SELECT DISTINCT
         das.id,
@@ -517,41 +555,41 @@
         </if>
         <if test="param != null and param != ''">
             AND ( das.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR  das.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%'))
+            OR das.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%'))
         </if>
     </select>
 
     <!--<select id="queryMarketDownloadApps" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">-->
-        <!--SELECT DISTINCT-->
-        <!--das.id,-->
-        <!--das.project_id,-->
-        <!--das.`name`,-->
-        <!--das.CODE,-->
-        <!--das.type,-->
-        <!--das.mkt_app_id-->
-        <!--FROM-->
-        <!--devops_app_service das-->
-        <!--JOIN devops_app_service_version dasv ON dasv.app_service_id = das.id-->
-        <!--<choose>-->
-            <!--<when test="deployOnly!=null and deployOnly==true">-->
-                <!--AND dasv.`repository` IS NOT NULL-->
-            <!--</when>-->
-            <!--<otherwise>-->
-                <!--AND dasv.`commit` IS NOT NULL-->
-            <!--</otherwise>-->
-        <!--</choose>-->
-        <!--WHERE-->
-        <!--das.project_id IS NULL-->
-        <!--<if test="searchProjectId != null and searchProjectId !=''">-->
-            <!--AND das.mkt_app_id = #{searchProjectId}-->
-        <!--</if>-->
-        <!--<if test="type != null and type != ''">-->
-            <!--AND das.type = #{type}-->
-        <!--</if>-->
-        <!--<if test="param != null and param != ''">-->
-            <!--AND  (das.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')-->
-            <!--OR  das.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%'))-->
-        <!--</if>-->
+    <!--SELECT DISTINCT-->
+    <!--das.id,-->
+    <!--das.project_id,-->
+    <!--das.`name`,-->
+    <!--das.CODE,-->
+    <!--das.type,-->
+    <!--das.mkt_app_id-->
+    <!--FROM-->
+    <!--devops_app_service das-->
+    <!--JOIN devops_app_service_version dasv ON dasv.app_service_id = das.id-->
+    <!--<choose>-->
+    <!--<when test="deployOnly!=null and deployOnly==true">-->
+    <!--AND dasv.`repository` IS NOT NULL-->
+    <!--</when>-->
+    <!--<otherwise>-->
+    <!--AND dasv.`commit` IS NOT NULL-->
+    <!--</otherwise>-->
+    <!--</choose>-->
+    <!--WHERE-->
+    <!--das.project_id IS NULL-->
+    <!--<if test="searchProjectId != null and searchProjectId !=''">-->
+    <!--AND das.mkt_app_id = #{searchProjectId}-->
+    <!--</if>-->
+    <!--<if test="type != null and type != ''">-->
+    <!--AND das.type = #{type}-->
+    <!--</if>-->
+    <!--<if test="param != null and param != ''">-->
+    <!--AND  (das.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')-->
+    <!--OR  das.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%'))-->
+    <!--</if>-->
     <!--</select>-->
 
     <select id="queryMarketDownloadApps" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
@@ -576,76 +614,79 @@
         <if test="type != null and type != ''">
             AND das.type = #{type}
         </if>
+        <if test="searchProjectId != null and searchProjectId != ''">
+            AND das.mkt_app_id=#{searchProjectId}
+        </if>
         <if test="param != null and param != ''">
-            AND  (das.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR  das.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%'))
+            AND (das.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR das.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%'))
         </if>
     </select>
 
     <select id="listShareProjectApps" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
-      SELECT DISTINCT
+        SELECT DISTINCT
         das.id,
         das.project_id,
         das.`name`,
         das.CODE,
         das.type
-    FROM
+        FROM
         devops_app_service das
         LEFT JOIN (
-    SELECT
+        SELECT
         dassr.app_service_id,
         dassr.project_id
-    FROM
+        FROM
         devops_app_service_share_rule dassr
-    WHERE
+        WHERE
         dassr.share_level = 'project'
         AND dassr.project_id = #{projectId}
         ) bb ON das.id = bb.app_service_id
-    WHERE
+        WHERE
         bb.app_service_id IS NOT NULL
         <if test="searchProjectId != null and searchProjectId !=''">
             AND das.project_id = #{searchProjectId}
         </if>
         <if test="param != null and param != ''">
-            AND  ( das.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            AND  das.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%'))
+            AND ( das.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            AND das.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%'))
         </if>
     </select>
 
 
     <select id="listAppServiceByIds" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
-         select * from devops_app_service
-         <where>
-             <if test="ids != null and ids.size > 0">
-                 AND
-                 <foreach collection="ids" item="id" open="(" separator=" OR " close=")">
-                     id = #{id}
-                 </foreach>
-             </if>
-             <include refid="sqlparams"/>
-         </where>
+        select * from devops_app_service
+        <where>
+            <if test="ids != null and ids.size > 0">
+                AND
+                <foreach collection="ids" item="id" open="(" separator=" OR " close=")">
+                    id = #{id}
+                </foreach>
+            </if>
+            <include refid="sqlparams"/>
+        </where>
         ORDER BY id desc
     </select>
 
 
     <select id="pageServiceByProjectId" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
-         select * from devops_app_service
+        select * from devops_app_service
         <where>
             project_id = #{projectId}
-            <include refid="sqlparams" />
+            <include refid="sqlparams"/>
         </where>
     </select>
 
     <select id="listServiceByVersionIds" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
-         select DISTINCT das.* from devops_app_service das
-         JOIN devops_app_service_version dasv ON dasv.app_service_id = das.id
-         where dasv.id is not null
-         <if test="ids != null and ids.size > 0">
+        select DISTINCT das.* from devops_app_service das
+        JOIN devops_app_service_version dasv ON dasv.app_service_id = das.id
+        where dasv.id is not null
+        <if test="ids != null and ids.size > 0">
             AND
             <foreach collection="ids" item="id" open="(" separator=" OR " close=")">
                 dasv.id = #{id}
             </foreach>
-         </if>
+        </if>
     </select>
 
     <update id="updateIsFailedNullToFalse">

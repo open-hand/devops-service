@@ -1,6 +1,6 @@
 import React from 'react';
 import { Table } from 'choerodon-ui/pro';
-import MouserOverWrapper from '../../../../../../components/MouseOverWrapper';
+import { Tooltip } from 'choerodon-ui';
 import TimePopover from '../../../../../../components/time-popover';
 import SyncSituation from './Situation';
 import { useDetailStore } from '../stores';
@@ -18,9 +18,9 @@ export default function Situation() {
   } = useDetailStore();
 
   function renderMsg({ value }) {
-    return <MouserOverWrapper text={value || ''} width={0.5}>
+    return (<Tooltip title={value}>
       {value}
-    </MouserOverWrapper>;
+    </Tooltip>);
   }
 
   function renderFileLink({ record }) {
@@ -68,7 +68,7 @@ export default function Situation() {
         <Column name="error" renderer={renderMsg} />
         <Column name="filePath" renderer={renderFileLink} />
         <Column name="commit" renderer={renderCommit} />
-        <Column name="errorTime" sortable renderer={renderTime} />
+        <Column name="errorTime" sortable renderer={renderTime} width={100} />
       </Table>
     </div>
   );

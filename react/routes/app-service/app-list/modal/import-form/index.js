@@ -2,6 +2,7 @@ import React, { Fragment, useCallback, useState, useEffect } from 'react';
 import { Form, TextField, Select, SelectBox } from 'choerodon-ui/pro';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
+import { Choerodon } from '@choerodon/boot';
 import keys from 'lodash/keys';
 import countBy from 'lodash/countBy';
 import pickBy from 'lodash/pickBy';
@@ -10,16 +11,21 @@ import includes from 'lodash/includes';
 import map from 'lodash/map';
 import PlatForm from './Platform';
 import { handlePromptError } from '../../../../../utils';
+import Tips from '../../../../../components/new-tips';
 
 import './index.less';
 
 const { Option } = Select;
 
-const IMPORT_METHOD = ['share', 'github', 'gitlab', 'market'];
+const IMPORT_METHOD = ['share', 'github', 'gitlab'];
 
 const ImportForm = injectIntl(observer((props) => {
-  const { dataSet, selectedDs, record, AppStore, projectId, intl: { formatMessage }, intlPrefix, prefixCls, refresh, modal } = props;
+  const { dataSet, selectedDs, record, appServiceStore, projectId, intl: { formatMessage }, intlPrefix, prefixCls, refresh, modal } = props;
   const [hasFailed, setHasFailed] = useState(false);
+
+  useEffect(() => {
+    setHasFailed(false);
+  }, [record.get('platformType')]);
 
   modal.handleOk(async () => {
     if (record.get('platformType') === 'share' || record.get('platformType') === 'market') {
@@ -42,13 +48,13 @@ const ImportForm = injectIntl(observer((props) => {
       return false;
     }
   });
-  
+
   async function checkData() {
     const lists = selectedDs.toData();
     const { listName, listCode, repeatCode, repeatName } = getRepeatData(lists);
 
     try {
-      const res = await AppStore.batchCheck(projectId, listCode, listName);
+      const res = await appServiceStore.batchCheck(projectId, listCode, listName);
       if (handlePromptError(res)) {
         if (isEmpty(repeatName) && isEmpty(repeatCode) && isEmpty(res.listCode) && isEmpty(res.listName)) {
           setHasFailed(false);
@@ -98,7 +104,10 @@ const ImportForm = injectIntl(observer((props) => {
           {map(IMPORT_METHOD, (item) => (
             <Option value={item}>
               <span className={`${prefixCls}-import-wrap-radio`}>
-                {formatMessage({ id: `${intlPrefix}.import.type.${item}` })}
+                <Tips
+                  helpText={formatMessage({ id: `${intlPrefix}.${item}.tips` })}
+                  title={formatMessage({ id: `${intlPrefix}.import.type.${item}` })}
+                />
               </span>
             </Option>
           ))}
@@ -115,7 +124,10 @@ const ImportForm = injectIntl(observer((props) => {
         </Fragment>
       ) : (
         <Form record={record} style={{ width: '3.6rem' }}>
-          <TextField name="repositoryUrl" />
+          <TextField
+            name="repositoryUrl"
+            addonAfter={<Tips helpText={formatMessage({ id: `${intlPrefix}.address.tips` })} />}
+          />
           {record.get('platformType') === 'gitlab' && <TextField name="accessToken" />}
           <Select name="type" clearButton={false}>
             <Option value="normal">

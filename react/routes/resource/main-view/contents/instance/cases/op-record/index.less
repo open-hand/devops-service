@@ -5,7 +5,17 @@
   display: flex;
   align-items: center;
   margin-bottom: .14rem;
-  min-height: 1rem;
+  height: 1rem;
+
+  &::after {
+    position: absolute;
+    left: .65rem;
+    top: .35rem;
+    height: .02rem;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.12);
+    content: "";
+  }
 
   &-arrow {
     margin-top: -0.04rem;
@@ -16,16 +26,18 @@
   }
 
   .cases-record-title {
-    margin-top: -0.25rem;
+    margin-top: -0.3rem;
     white-space: nowrap;
     margin-right: .1rem;
   }
 
   .cases-record-detail {
+    position: relative;
     display: flex;
     margin: 0 .1rem;
     flex: 1;
     overflow: auto;
+    height: .96rem;
 
     .operation-record-card {
       display: flex;
@@ -35,11 +47,14 @@
       position: relative;
       padding: .07rem 0;
       width: 1.6rem;
+      height: .92rem;
       text-align: center;
       cursor: pointer;
+      background: transparent;
 
       .operation-record-title {
         font-size: .12rem;
+
         span {
           margin-left: .02rem;
         }
@@ -56,16 +71,16 @@
         position: relative;
         width: 100%;
 
-        &:before {
-          position: absolute;
-          left: 0;
-          top: 50%;
-          height: .02rem;
-          width: 100%;
-          transform: translateY(-0.025rem);
-          background: rgba(0, 0, 0, 0.12);
-          content: "";
-        }
+        //&:before {
+        //  position: absolute;
+        //  left: 0;
+        //  top: 50%;
+        //  height: .02rem;
+        //  width: 100%;
+        //  transform: translateY(-0.025rem);
+        //  background: rgba(0, 0, 0, 0.12);
+        //  content: "";
+        //}
 
         .operation-record-icon {
           display: inline-block;
@@ -88,6 +103,10 @@
         .operation-record-user {
           .c7ncd-userinfo-name {
             color: @primary-color;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+            max-width: 1.3rem;
           }
         }
 
