@@ -22,7 +22,7 @@
         devops_certification dc
         LEFT JOIN devops_env AS de ON env_id = de.id
         LEFT JOIN devops_env_command cmd on dc.command_id = cmd.id
-        WHERE 1=1
+        WHERE (dc.status IS NULL OR dc.status != 'deleting')
         <if test="projectId != null">
             AND dc.project_id = #{projectId}
         </if>
