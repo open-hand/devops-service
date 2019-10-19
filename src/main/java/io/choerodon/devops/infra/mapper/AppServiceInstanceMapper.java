@@ -7,10 +7,7 @@ import javax.annotation.Nullable;
 
 import org.apache.ibatis.annotations.Param;
 
-import io.choerodon.devops.infra.dto.AppServiceInstanceDTO;
-import io.choerodon.devops.infra.dto.AppServiceInstanceInfoDTO;
-import io.choerodon.devops.infra.dto.AppServiceInstanceOverViewDTO;
-import io.choerodon.devops.infra.dto.DeployDTO;
+import io.choerodon.devops.infra.dto.*;
 import io.choerodon.mybatis.common.Mapper;
 
 
@@ -69,4 +66,6 @@ public interface AppServiceInstanceMapper extends Mapper<AppServiceInstanceDTO> 
     int countNonDeletedInstancesWithEnv(@Param("envId") Long envId, @Param("instanceId") Long instanceId);
 
     void updateStatus(@Param("instanceId") Long instanceId, @Param("status") String status);
+
+    List<DevopsEnvAppServiceDTO> listAllDistinctWithoutDeleted();
 }

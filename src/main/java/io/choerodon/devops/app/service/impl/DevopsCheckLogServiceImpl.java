@@ -42,7 +42,6 @@ import io.choerodon.devops.infra.feign.HarborClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
 import io.choerodon.devops.infra.mapper.*;
-import io.choerodon.devops.infra.util.ConvertUtils;
 
 
 @Service
@@ -304,9 +303,9 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
         private void syncEnvAppRelevance(List<CheckLog> logs) {
             LOGGER.info("Start syncing relevance.");
-            List<DevopsEnvAppServiceDTO> applicationInstanceDTOS = ConvertUtils.convertList(appServiceInstanceMapper.selectAll(), DevopsEnvAppServiceDTO.class);
+            List<DevopsEnvAppServiceDTO> applicationInstanceDTOS =appServiceInstanceMapper.listAllDistinctWithoutDeleted();
 
-            applicationInstanceDTOS.stream().distinct().forEach(v -> {
+            applicationInstanceDTOS.forEach(v -> {
                 CheckLog checkLog = new CheckLog();
                 checkLog.setContent(String.format(
                         "Sync environment application relationship,envId: %s, appServiceId: %s", v.getEnvId(), v.getAppServiceId()));
