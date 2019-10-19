@@ -4,6 +4,7 @@ import static io.choerodon.core.iam.InitRoleCode.PROJECT_MEMBER;
 import static io.choerodon.core.iam.InitRoleCode.PROJECT_OWNER;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -432,5 +433,34 @@ public class BaseServiceClientOperator {
         } catch (Exception ex) {
             return null;
         }
+    }
+
+    public List<IamUserDTO> listAllOrganizationOwners(Long organizationId) {
+        try {
+            ResponseEntity<PageInfo<IamUserDTO>> users = baseServiceClient.pagingQueryUsersWithRolesOnOrganizationLevel(organizationId, 0, 0, null, null, "组织管理员", true, false, null);
+            return (users == null || users.getBody() == null) ? Collections.emptyList() : users.getBody().getList();
+        } catch (Exception ex) {
+            LOGGER.info("Exception occurred when listing organization owners of organization with id {}", organizationId);
+            return Collections.emptyList();
+        }
+    }
+
+    /**
+     * 项目层批量分配权限
+     */
+    public void assignProjectOwnerForUsersInProject(
+            Long projectId,
+            Set<Long> userIds,
+            Long projectOwnerId) {
+        List<MemberRoleDTO> memberRoleDTOS = userIds.stream().map(userId -> {
+            MemberRoleDTO memberRoleDTO = new MemberRoleDTO();
+            memberRoleDTO.setMemberId(userId);
+            memberRoleDTO.setMemberType("user");
+            memberRoleDTO.setSourceId(projectId);
+            memberRoleDTO.setSourceType("project");
+            memberRoleDTO.setRoleId(projectOwnerId);
+            return memberRoleDTO;
+        }).collect(Collectors.toList());
+        baseServiceClient.assignUsersRolesOnProjectLevel(projectId, memberRoleDTOS);
     }
 }
