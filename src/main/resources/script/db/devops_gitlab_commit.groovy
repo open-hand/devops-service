@@ -34,6 +34,8 @@ databaseChangeLog(logicalFilePath: 'db/devops_gitlab_commit.groovy') {
     }
 
     changeSet(id: '2018-10-25-modify-constraint', author: 'younger') {
+        dropUniqueConstraint(tableName: 'devops_gitlab_commit',
+                constraintName: 'commit_sha')
         addUniqueConstraint(tableName: 'devops_gitlab_commit',
                 constraintName: 'uk_commit_sha_ref', columnNames: 'commit_sha,ref')
     }
@@ -44,7 +46,7 @@ databaseChangeLog(logicalFilePath: 'db/devops_gitlab_commit.groovy') {
 
 
     changeSet(author: 'younger', id: '2019-05-27-add-index') {
-        createIndex(indexName: "gitlab_commit_idx_appid_commitdate ", tableName: "devops_gitlab_commit") {
+        createIndex(indexName: "idx_appid_commitdate ", tableName: "devops_gitlab_commit") {
             column(name: "app_id")
             column(name: "commit_date")
         }
