@@ -22,7 +22,12 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_version_readme.groovy') {
 
 
     changeSet(author: 'Runge', id: '2018-10-08-move-data') {
-        preConditions{
+        preConditions(onFail: "CONTINUE") {
+            tableExists(tableName: "devops_app_version")
+            columnExists(tableName: "devops_app_version",columnName:"id")
+            columnExists(tableName: "devops_app_version",columnName:"readme_value_id")
+            tableExists(tableName: "devops_app_version_readme")
+            columnExists(tableName: "devops_app_version_readme",columnName:"id")
             columnExists(tableName: "devops_app_version_readme",columnName:"version_id")
         }
         sql("update devops_app_version A,devops_app_version_readme B set A.readme_value_id=B.id where A.id=B.version_id")
