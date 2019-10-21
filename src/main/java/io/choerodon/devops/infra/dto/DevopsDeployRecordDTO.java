@@ -44,6 +44,9 @@ public class DevopsDeployRecordDTO extends BaseDTO {
     @ApiModelProperty("手动部署的实例的应用服务id")
     private Long appServiceId;
 
+    @Transient
+    private String envName;
+
     public DevopsDeployRecordDTO() {
     }
 
@@ -159,5 +162,14 @@ public class DevopsDeployRecordDTO extends BaseDTO {
 
     public void setAppServiceId(Long appServiceId) {
         this.appServiceId = appServiceId;
+    }
+
+    public void setEnvName(String envName) {
+        this.envName = envName;
+    }
+
+    public String getEnvName() {
+
+        return envName;
     }
 }

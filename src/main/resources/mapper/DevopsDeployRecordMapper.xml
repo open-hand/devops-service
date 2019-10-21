@@ -8,7 +8,6 @@
 		SELECT
 			ddr.id,
 			ddr.project_id,
-			ddr.env,
 			ddr.deploy_type,
 			ddr.deploy_id,
 			ddr.deploy_time,
@@ -19,17 +18,20 @@
 			NULL pipelineId,
 			dasi.id instanceId,
 			dasi.env_id envId,
+		    de.name as env,
 			dasi.app_service_id appServiceId
 		FROM
 			devops_deploy_record ddr
 			LEFT JOIN devops_env_command dc ON ddr.deploy_id = dc.id
 		    LEFT JOIN devops_app_service_instance dasi ON dc.object_id = dasi.id
+		    LEFT JOIN devops_env de on de.id = dasi.env_id
 		WHERE
+		    ddr.project_id=#{projectId}
+		and
 			ddr.deploy_type = 'manual' UNION
 		SELECT
 			ddr.id,
 			ddr.project_id,
-			ddr.env,
 			ddr.deploy_type,
 			ddr.deploy_id,
 			ddr.deploy_time,
@@ -38,6 +40,7 @@
 			dpc.pipeline_name pipelineName,
 			dpc.trigger_type pipelineTriggerType,
 			dpc.pipeline_id pipelineId,
+		    NULL env,
 			NULL instanceId,
 			NULL envId,
 			NULL appServiceId
@@ -45,6 +48,8 @@
 			devops_deploy_record ddr
 			LEFT JOIN devops_pipeline_record dpc ON ddr.deploy_id = dpc.id
 		WHERE
+			ddr.project_id = #{projectId}
+		and
 			ddr.deploy_type = 'auto'
 			) t
 			where t.project_id=#{projectId}
@@ -76,7 +81,7 @@
 			</if>
 			<if test='searchParam.env != null'>
 				AND
-					t.env =#{searchParam.env}
+					t.envId =#{searchParam.env}
 			</if>
 			<if test='searchParam.deployId != null'>
 				AND
