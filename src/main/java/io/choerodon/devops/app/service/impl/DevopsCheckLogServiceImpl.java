@@ -367,7 +367,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                         logs.add(checkLog);
                     });
             devopsCheckLogMapper.insert(devopsCheckLogDTO);
-            LOGGER.info("update publish Time.");
+            LOGGER.info("sync appService share success!");
             appServiceVersionMapper.updatePublishTime();
         }
 
