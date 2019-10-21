@@ -200,7 +200,7 @@ const InstanceContent = observer(() => {
   );
 });
 
-function computeUnlinkPod(run, all) {
+function computeUnlinkPod(all, run) {
   return all - run;
 }
 
