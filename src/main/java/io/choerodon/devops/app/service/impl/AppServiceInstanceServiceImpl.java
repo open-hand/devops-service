@@ -8,6 +8,7 @@ import java.text.DecimalFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -582,7 +583,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                             .withRefType("env")
                             .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_INSTANCE),
                     builder -> builder
-                            .withPayloadAndSerialize(instanceSagaPayload)
+                            .withJson(JSONObject.toJSONString(instanceSagaPayload))
                             .withRefId(devopsEnvironmentDTO.getId().toString()));
 
             // 0.19版本暂时不支持，后续优化

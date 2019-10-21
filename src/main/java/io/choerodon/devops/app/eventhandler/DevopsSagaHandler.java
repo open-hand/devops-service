@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 
+import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import org.slf4j.Logger;
@@ -319,7 +320,7 @@ public class DevopsSagaHandler {
             maxRetryCount = 3,
             seq = 1)
     public String devopsCreateInstance(String data) {
-        InstanceSagaPayload instanceSagaPayload = gson.fromJson(data, InstanceSagaPayload.class);
+        InstanceSagaPayload instanceSagaPayload = JSONObject.parseObject(data, InstanceSagaPayload.class);
         appServiceInstanceService.createInstanceBySaga(instanceSagaPayload);
         return data;
     }
