@@ -23,8 +23,6 @@ public class AppServiceVersionDTO extends BaseDTO {
     private String image;
     private String commit;
     private String repository;
-    private Long isPublish;
-    private Date publishTime;
     private Long harborConfigId;
     private Long helmConfigId;
 
@@ -45,14 +43,6 @@ public class AppServiceVersionDTO extends BaseDTO {
 
     public void setReadme(String readme) {
         this.readme = readme;
-    }
-
-    public Date getPublishTime() {
-        return publishTime;
-    }
-
-    public void setPublishTime(Date publishTime) {
-        this.publishTime = publishTime;
     }
 
     public Long getId() {
@@ -133,14 +123,6 @@ public class AppServiceVersionDTO extends BaseDTO {
 
     public void setValueId(Long valueId) {
         this.valueId = valueId;
-    }
-
-    public Long getIsPublish() {
-        return isPublish;
-    }
-
-    public void setIsPublish(Long isPublish) {
-        this.isPublish = isPublish;
     }
 
     public Long getReadmeValueId() {
