@@ -48,6 +48,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
       intlPrefix,
     })), []);
 
+
     function freshTree() {
       treeDs.query();
     }
@@ -100,6 +101,10 @@ export const StoreProvider = injectIntl(inject('AppState')(
               data: postData,
             };
           };
+          podsDs.transport.destroy = ({ data }) => ({
+            url: 'test',
+            method: 'delete',
+          });
           queryData();
         }
       });
