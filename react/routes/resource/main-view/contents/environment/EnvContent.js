@@ -9,6 +9,7 @@ import EnvItem from '../../../../../components/env-item';
 import openWarnModal from '../../../../../utils/openWarnModal';
 import Modals from './modals';
 import Tips from '../../../../../components/new-tips';
+import Config from './DeployConfig';
 
 const { TabPane } = Tabs;
 
@@ -27,6 +28,7 @@ const EnvContent = observer(() => {
     baseInfoDs,
     tabs: {
       SYNC_TAB,
+      CONFIG_TAB,
       ASSIGN_TAB,
     },
     envStore,
@@ -106,6 +108,14 @@ const EnvContent = observer(() => {
         >
           <Suspense fallback={<Spin />}>
             <SyncSituation />
+          </Suspense>
+        </TabPane>
+        <TabPane
+          key={CONFIG_TAB}
+          tab={formatMessage({ id: `${intlPrefix}.environment.tabs.config` })}
+        >
+          <Suspense fallback={<Spin />}>
+            <Config />
           </Suspense>
         </TabPane>
         {envStore.getPermission && <TabPane
