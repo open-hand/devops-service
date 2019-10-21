@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service;
 
 import java.util.List;
+import java.util.Set;
 
 import io.choerodon.devops.infra.dto.DevopsCommandEventDTO;
 
@@ -15,4 +16,12 @@ public interface DevopsCommandEventService {
     void baseDeletePreInstanceCommandEvent(Long instanceId);
 
     void baseDeleteByCommandId(Long commandId);
+
+    /**
+     * 根据commandIds 批量查询
+     * @param commandIds
+     * @param type
+     * @return
+     */
+    List<DevopsCommandEventDTO> ListByCommandIdsAndType(Set<Long> commandIds,String type);
 }

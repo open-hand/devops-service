@@ -13,4 +13,12 @@
         ORDER BY de.id DESC limit 10) x)
     </delete>
 
+    <select id="listByCommandIdsAndType" resultType="io.choerodon.devops.infra.dto.DevopsCommandEventDTO">
+       select * from devops_command_event
+       where type = #{type}
+       AND command_id in
+       <foreach collection="commandIds" item="commandId"  open="(" separator=" , " close=")">
+           #{commandId}
+       </foreach>
+    </select>
 </mapper>
