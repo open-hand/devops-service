@@ -224,7 +224,7 @@
                (SELECT COUNT(1) FROM devops_app_service_instance ins WHERE ins.env_id = env.id AND ins.status != 'deleted') AS instance_count,
                (SELECT COUNT(1) FROM devops_service service WHERE service.env_id = env.id AND service.status!='deleted') AS service_count,
                (SELECT COUNT(1) FROM devops_ingress ingress WHERE ingress.env_id = env.id AND ingress.status!='deleted') AS ingress_count,
-               (SELECT COUNT(1) FROM devops_certification certification WHERE certification.env_id = env.id AND certification.status!='deleted') AS certification_count,
+               (SELECT COUNT(1) FROM devops_certification certification WHERE certification.env_id = env.id AND certification.status!='deleting') AS certification_count,
                (SELECT COUNT(1) FROM devops_config_map cm WHERE cm.env_id = env.id ) AS config_map_count,
                (SELECT COUNT(1) FROM devops_secret secret WHERE secret.env_id = env.id) AS secret_count,
                (SELECT COUNT(1) FROM devops_app_service_instance ins WHERE ins.env_id = env.id AND status = 'running') AS running_instance_count,
@@ -366,7 +366,8 @@
     <select id="listServices" resultType="io.choerodon.devops.api.vo.DevopsResourceBasicInfoVO">
         SELECT t.id, t.`name`, t.status
         FROM devops_service t
-        WHERE t.env_id = #{envId};
+        WHERE t.env_id = #{envId}
+        AND t.status != 'deleted'
     </select>
 
     <!-- 此方法不需要在mapper接口中有 -->
@@ -404,7 +405,8 @@
     <select id="listCertifications" resultType="io.choerodon.devops.api.vo.DevopsResourceBasicInfoVO">
         SELECT t.id, t.`name`, t.status
         FROM devops_certification t
-        WHERE t.env_id = #{envId};
+        WHERE t.env_id = #{envId}
+        AND status != 'deleting'
     </select>
 
     <select id="listGitlabProjectIdByEnvPermission" resultType="java.lang.Long">

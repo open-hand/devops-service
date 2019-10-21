@@ -163,14 +163,14 @@ public interface BaseServiceClient {
 
     @PostMapping(value = "/v1/applications/{app_download_recode_id}/complete_downloading")
     ResponseEntity<String> completeDownloadApplication(@PathVariable("app_download_recode_id") Long appDownloadRecordId,
-                                               @RequestParam("app_version_id") Long appVersionId,
-                                               @RequestParam("organization_id") Long organizationId,
-                                               @RequestBody List<AppDownloadDevopsReqVO> appDownloadDevopsReqVOS);
+                                                       @RequestParam("app_version_id") Long appVersionId,
+                                                       @RequestParam("organization_id") Long organizationId,
+                                                       @RequestBody List<AppDownloadDevopsReqVO> appDownloadDevopsReqVOS);
 
     @PutMapping(value = "/v1/applications/{app_download_record_id}/fail_downloading")
     ResponseEntity<String> failToDownloadApplication(@PathVariable("app_download_record_id") Long appDownloadRecordId,
-                                             @RequestParam("app_version_id") Long appVersionId,
-                                             @RequestParam("organization_id") Long organizationId);
+                                                     @RequestParam("app_version_id") Long appVersionId,
+                                                     @RequestParam("organization_id") Long organizationId);
 
     @GetMapping(value = "/v1/remote_token/authorization/check/latest")
     ResponseEntity<RemoteTokenAuthorizationVO> checkLatestToken();
@@ -193,14 +193,37 @@ public interface BaseServiceClient {
      * @param projectCode    项目code
      * @return 根据组织Id及项目code查询项目
      */
-    @GetMapping(value = "/v1/organization/{organization_id}/projects/by_code")
+    @GetMapping(value = "/v1/organizations/{organization_id}/projects/by_code")
     ResponseEntity<ProjectDTO> queryProjectByCodeAndOrgId(@PathVariable(name = "organization_id") Long organizationId,
                                                           @RequestParam(name = "code") String projectCode);
 
     @GetMapping("/v1/organizations/{organization_id}/services/{app_type}")
-    public ResponseEntity<Set<Long>> listService(@PathVariable("organization_id") Long organizationId, @PathVariable("app_type") String appType);
+    ResponseEntity<Set<Long>> listService(@PathVariable("organization_id") Long organizationId, @PathVariable("app_type") String appType);
 
     @GetMapping("/v1/organizations/{organization_id}/services/{app_type}/versions")
-    public ResponseEntity<Set<Long>> listSvcVersion(@PathVariable("organization_id") Long organizationId, @PathVariable("app_type") String appType);
+    ResponseEntity<Set<Long>> listSvcVersion(@PathVariable("organization_id") Long organizationId, @PathVariable("app_type") String appType);
 
+    @GetMapping("/v1/organizations/{organization_id}/users/search")
+    ResponseEntity<PageInfo<IamUserDTO>> pagingQueryUsersWithRolesOnOrganizationLevel(
+            @PathVariable(name = "organization_id") Long organizationId,
+            @RequestParam("page") int page,
+            @RequestParam("size") int size,
+            @RequestParam(required = false, value = "loginName") String loginName,
+            @RequestParam(required = false, value = "realName") String realName,
+            @RequestParam(required = false, value = "roleName") String roleName,
+            @RequestParam(required = false, value = "enabled") Boolean enabled,
+            @RequestParam(required = false, value = "locked") Boolean locked,
+            @RequestParam(required = false, value = "params") String params);
+
+    /**
+     * 项目层批量分配权限
+     *
+     * @param projectId      项目id
+     * @param memberRoleDTOS 权限分配信息
+     * @return 分配结果
+     */
+    @PostMapping(value = "/v1/projects/{project_id}/users/assign_roles")
+    ResponseEntity<List<MemberRoleDTO>> assignUsersRolesOnProjectLevel(
+            @PathVariable(name = "project_id") Long projectId,
+            @RequestBody List<MemberRoleDTO> memberRoleDTOS);
 }

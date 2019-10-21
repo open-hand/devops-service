@@ -222,4 +222,14 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     public ResponseEntity<Set<Long>> listSvcVersion(Long organizationId, String appType) {
         throw new CommonException("error.app.service.version.market.list");
     }
+
+    @Override
+    public ResponseEntity<PageInfo<IamUserDTO>> pagingQueryUsersWithRolesOnOrganizationLevel(Long organizationId, int page, int size, String loginName, String realName, String roleName, Boolean enabled, Boolean locked, String params) {
+        throw new CommonException("error.query.organization.owner");
+    }
+
+    @Override
+    public ResponseEntity<List<MemberRoleDTO>> assignUsersRolesOnProjectLevel(Long projectId, List<MemberRoleDTO> memberRoleDTOS) {
+        throw new CommonException("error.assign.user.roles.on.project.level");
+    }
 }

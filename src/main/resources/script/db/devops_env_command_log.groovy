@@ -18,7 +18,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env_command_log.groovy') {
     }
 
     changeSet(author: 'crockitwood', id: '2018-09-26-create-command-log-index') {
-        createIndex(indexName: "command_log_idx_command_id", tableName: "devops_env_command_log") {
+        createIndex(indexName: "idx_command_id", tableName: "devops_env_command_log") {
             column(name: "command_id")
         }
     }
