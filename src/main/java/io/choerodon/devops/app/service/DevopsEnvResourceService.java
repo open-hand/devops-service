@@ -57,4 +57,12 @@ public interface DevopsEnvResourceService {
      */
     String getResourceDetailByNameAndTypeAndInstanceId(Long instanceId, String name, ResourceType resourceType);
 
+    /**
+     * 批量查询DevopsEnvResourceDTO 根据names
+     * @param envId
+     * @param type
+     * @param names
+     * @return
+     */
+    List<DevopsEnvResourceDTO> listEnvResourceByOptions(Long envId, String type, List<String> names);
 }

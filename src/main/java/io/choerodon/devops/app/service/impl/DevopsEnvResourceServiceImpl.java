@@ -583,4 +583,9 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
     public String getResourceDetailByNameAndTypeAndInstanceId(Long instanceId, String name, ResourceType resourceType) {
         return devopsEnvResourceMapper.getResourceDetailByNameAndTypeAndInstanceId(instanceId, name, resourceType.getType());
     }
+
+    @Override
+    public List<DevopsEnvResourceDTO> listEnvResourceByOptions(Long envId, String type, List<String> names) {
+        return devopsEnvResourceMapper.listEnvResourceByOptions(envId,type,names);
+    }
 }
