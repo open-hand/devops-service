@@ -5,7 +5,8 @@
     <select id="listByOptions" resultType="io.choerodon.devops.infra.dto.DevopsDeployValueDTO">
         SELECT
         dpv.id,
-        dpv. NAME,
+        dpv.name,
+        dpv.value,
         dpv.description,
         dpv.created_by,
         dpv.last_update_date,
