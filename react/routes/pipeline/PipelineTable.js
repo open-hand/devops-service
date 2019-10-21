@@ -17,10 +17,8 @@ import UserInfo from '../../components/userInfo';
 
 import './index.less';
 
-const { Option } = Select;
 const { Column } = Table;
 const modalKey = Modal.key();
-const TriggerType = ['auto', 'manual'];
 
 const STATUS_INVALID = 0;
 const STATUS_ACTIVE = 1;
@@ -37,19 +35,10 @@ const PiplelineTable = withRouter(observer((props) => {
     history,
     location: { search },
   } = usePiplineStore();
-  const {
-    getEnvData,
-  } = PiplineStore;
-
-
-  useEffect(() => {
-    PiplineStore.loadEnvData(projectId);
-  }, []);
 
   function handleRefresh() {
     piplineDS.query();
   }
-
   /**
    * 跳转到部署页面
    * @param {*} id 
@@ -224,12 +213,7 @@ const PiplelineTable = withRouter(observer((props) => {
     if (!edit) {
       actionItem = filterItem(actionItem, ['remove']);
     }
-
-    // 停用的流水线不能修改
-    // if (!isEnabled) {
-    //   actionItem = filterItem(actionItem, 'edit');
-    // }
-
+    
     return (<Action data={_.map(actionItem, (item) => ({ ...action[item] }))} />);
   }
 
@@ -249,7 +233,6 @@ const PiplelineTable = withRouter(observer((props) => {
   }
 
   const ExecuteModalContent = ({ modal, id }) => {
-    // const { id } = modal.props;
     const [executeCheck, changeExCheck] = useState(false);
     const [executeEnv, changeExEnv] = useState(null);
     let check;
@@ -262,7 +245,7 @@ const PiplelineTable = withRouter(observer((props) => {
         .checkExcecute(projectId, id)
         .catch((e) => Choerodon.handleResponseError(e));
       if (response && response.failed) {
-        changeExCheck(false); // 要改
+        changeExCheck(false);
         return;
       }
 
@@ -276,9 +259,9 @@ const PiplelineTable = withRouter(observer((props) => {
     }
 
     function closeExecuteCheck() {
-      changeExCheck(false); // 要改
-      changeExEnv(null); // 要改
-      modal.close(); // 要改
+      changeExCheck(false);
+      changeExEnv(null);
+      modal.close();
     }
 
     async function executeFun() {
@@ -296,13 +279,13 @@ const PiplelineTable = withRouter(observer((props) => {
       <Fragment>
         <div className="c7n-padding-top_8">
           { /* eslint-disable-next-line no-nested-ternary */}
-          {executeCheck // 要改
-            ? (executeEnv // 要改
+          {executeCheck 
+            ? (executeEnv 
               ? <FormattedMessage
                 id="pipeline.execute.no.permission"
-                values={{ envName: executeEnv }} // 要改
+                values={{ envName: executeEnv }} 
               />
-              : <FormattedMessage id={`pipeline.execute.${executeCheck}`} /> // 要改
+              : <FormattedMessage id={`pipeline.execute.${executeCheck}`} /> 
             )
             : <Fragment>
               <Spin size="small" />
