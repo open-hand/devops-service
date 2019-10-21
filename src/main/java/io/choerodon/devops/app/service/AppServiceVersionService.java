@@ -61,7 +61,7 @@ public interface AppServiceVersionService {
      * @param version      模糊搜索参数
      * @return ApplicationVersionRespVO
      */
-    PageInfo<AppServiceVersionVO> pageByOptions(Long projectId, Long appServiceId, Boolean deployOnly, Boolean doPage, String params, PageRequest pageRequest, String version);
+    PageInfo<AppServiceVersionVO> pageByOptions(Long projectId, Long appServiceId, Long appServiceVersionId, Boolean deployOnly, Boolean doPage, String params, PageRequest pageRequest, String version);
 
     /**
      * 根据应用id查询需要升级的应用版本
