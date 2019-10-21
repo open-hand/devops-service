@@ -201,7 +201,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
         List<DevopsCommandEventDTO> CommandEventTypePod = devopsCommandEventService.ListByCommandIdsAndType(commandIds, ResourceType.POD.getType());
         Map<Long, List<DevopsCommandEventDTO>> CommandEventTypeJobMap = CommandEventTypeJob.stream().collect(Collectors.groupingBy(DevopsCommandEventDTO::getCommandId));
         Map<Long, List<DevopsCommandEventDTO>> CommandEventTypePodJobMap = CommandEventTypePod.stream().collect(Collectors.groupingBy(DevopsCommandEventDTO::getCommandId));
-        devopsEnvCommandDTOS.forEach(devopsEnvCommandDTO -> {
+        devopsEnvCommandDTOS.stream().forEach(devopsEnvCommandDTO -> {
             InstanceEventVO instanceEventVO = new InstanceEventVO();
             Optional<IamUserDTO> iamUserDTO = users.stream().filter(user -> user.getId().equals(devopsEnvCommandDTO.getCreatedBy())).findFirst();
             IamUserDTO iamUser = null;

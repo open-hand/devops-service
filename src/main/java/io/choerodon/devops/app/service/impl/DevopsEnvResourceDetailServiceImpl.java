@@ -9,6 +9,7 @@ import io.choerodon.devops.infra.dto.DevopsEnvResourceDetailDTO;
 import io.choerodon.devops.infra.mapper.DevopsEnvResourceDetailMapper;
 import org.springframework.util.CollectionUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -47,10 +48,11 @@ public class DevopsEnvResourceDetailServiceImpl implements DevopsEnvResourceDeta
 
     @Override
     public List<DevopsEnvResourceDetailDTO> listByMessageIds(Set<Long> resourceDetailIds) {
+        List<DevopsEnvResourceDetailDTO> devopsEnvResourceDetailDTOS = new ArrayList<>();
        if(!CollectionUtils.isEmpty(resourceDetailIds)){
-           List<DevopsEnvResourceDetailDTO> devopsEnvResourceDetailDTOS = devopsEnvResourceDetailMapper.listByMessageIds(resourceDetailIds);
-           return devopsEnvResourceDetailDTOS;
+           devopsEnvResourceDetailDTOS = devopsEnvResourceDetailMapper.listByMessageIds(resourceDetailIds);
+
        }
-       return  null;
+       return  devopsEnvResourceDetailDTOS;
     }
 }
