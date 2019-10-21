@@ -14,9 +14,9 @@ import EnvCreateForm from '../../../modals/env-create';
 import GroupForm from '../../../modals/GroupForm';
 import DeployConfigForm from './deploy-config';
 import { isNotRunning } from '../../../../util';
+import Tips from '../../../../../../components/new-tips';
 
 import '../../../../../../components/dynamic-select/style/index.less';
-import Tips from '../../../../../../components/new-tips';
 
 const detailKey = Modal.key();
 const envKey = Modal.key();

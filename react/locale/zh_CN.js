@@ -375,10 +375,18 @@ const deployment = {
   'c7ncd.deployment.usage': '使用量',
   'c7ncd.deployment.environment.sync': '提交同步情况',
   'c7ncd.deployment.appService.share': '共享应用',
+  'c7ncd.deployment.create.config': '创建部署配置',
+  'c7ncd.deployment.modify.config': '修改部署配置',
+  'c7ncd.deployment.config': '部署配置',
+  'c7ncd.deployment.manual.deploy': '手动部署',
   'c7ncd.deployment.permission.delete.title': '删除权限',
   'c7ncd.deployment.permission.delete.des': '确定要删除该成员的权限吗？',
   'c7ncd.deployment.custom.delete.title': '删除自定义资源“{name}”',
   'c7ncd.deployment.custom.delete.des': '确定要删除该自定义资源吗？',
+  'c7ncd.deployment.config.delete.disable': '删除部署配置“{name}”',
+  'c7ncd.deployment.config.delete.des': '确定要删除该部署配置吗？',
+  'c7ncd.deployment.config.delete.describe': '仅能删除没有关联任务和关联实例的部署配置。',
+  'c7ncd.deployment.sync.empty': '目前部署同步正常，暂无错误信息',
   'c7ncd.deployment.permission.tab.tips':
     '当选择将权限分配至项目下所有成员时，此时便不能在列表中删除任何成员的权限；仅在选择将权限分配给项目下特定成员时，才能在下方列表中管理成员的权限。项目所有者的权限不能被删除',
   'c7ncd.deployment.permission.tips':
