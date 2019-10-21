@@ -1,9 +1,8 @@
-import { Choerodon } from '@choerodon/boot';
 import { handlePromptError } from '../../../../../../../../utils';
 
 let clusterName;
 export default ({ projectId, formatMessage, intlPrefix, modal, isEdit, afterOk, mainStore, clusterId }) => {
-  async function checkClusterName(value, name, record) {
+  async function checkClusterName(value) {
     let messageName = true;
     if (value === clusterName && isEdit) {
       return messageName;
@@ -91,27 +90,11 @@ export default ({ projectId, formatMessage, intlPrefix, modal, isEdit, afterOk, 
         url: `/devops/v1/projects/${projectId}/clusters/${data.id}?`,
         method: 'put',
         data: JSON.stringify(data),
-        transformResponse: ((res) => {
-          try {
-            if (handlePromptError(res, false)) {
-              afterOk();
-              modal.close();
-            }
-          } catch (e) {
-            Choerodon.handleResponseError(e);
-          }
-          return true;
-        }),
       }),
     },
     events: {
       load: ({ dataSet }) => {
         clusterName = dataSet.current.data.name;
-        const clusterInfo = {
-          name: clusterName,
-          description: dataSet.current.data.description,
-        };
-        mainStore.setClusterInfo(clusterInfo);
       },
     },
   };

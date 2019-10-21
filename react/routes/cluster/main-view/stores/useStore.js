@@ -17,13 +17,6 @@ export default function useStore() {
     get getResponseData() {
       return this.responseData;
     },
-    clusterInfo: {},
-    setClusterInfo(data) {
-      this.clusterInfo = data;
-    },
-    get getClusterInfo() {
-      return this.clusterInfo;
-    },
     checkClusterName({ projectId, clusterName }) {
       return axios.get(`/devops/v1/projects/${projectId}/clusters/check_name?name=${clusterName}`);
     },

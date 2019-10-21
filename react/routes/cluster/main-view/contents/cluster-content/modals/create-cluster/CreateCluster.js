@@ -12,8 +12,8 @@ function CreateClusterForm() {
   const {
     modal,
     formDs,
-    refresh,
     mainStore,
+    afterOk,
     formatMessage,
     intlPrefix,
     isEdit,
@@ -34,16 +34,13 @@ function CreateClusterForm() {
   }
 
   async function handleSubmit() {
-    if (formDs.current.data.name === mainStore.clusterInfo.name && formDs.current.data.description === mainStore.clusterInfo.description) {
-      modal.close();
-    }
     try {
       if ((await formDs.submit()) !== false) {
         if (!isEdit) {
           const dataObj = JSON.parse(JSON.stringify(mainStore));
           openActivate(dataObj.responseData);
         }
-        refresh();
+        afterOk();
         return true;
       } else {
         return false;
