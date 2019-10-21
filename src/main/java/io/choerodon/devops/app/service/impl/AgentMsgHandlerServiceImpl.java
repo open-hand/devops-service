@@ -744,6 +744,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 }
                 break;
             default:
+                // TODO 可能需要增加其他资源的同步
                 break;
         }
     }
@@ -1397,6 +1398,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             podUpdateVO.setReleaseNames(KeyParseUtil.getReleaseName(key));
             podUpdateVO.setStatus(0L);
 
+            // 将Pod Running的状态发送给敏捷组
             producer.applyAndReturn(
                     StartSagaBuilder
                             .newBuilder()

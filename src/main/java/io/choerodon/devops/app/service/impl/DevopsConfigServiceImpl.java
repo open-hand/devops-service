@@ -9,7 +9,9 @@ import java.util.Map;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.util.GenerateUUID;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,10 +27,6 @@ import io.choerodon.devops.api.vo.ConfigVO;
 import io.choerodon.devops.api.vo.DefaultConfigVO;
 import io.choerodon.devops.api.vo.DevopsConfigRepVO;
 import io.choerodon.devops.api.vo.DevopsConfigVO;
-import io.choerodon.devops.app.service.AppServiceService;
-import io.choerodon.devops.app.service.DevopsConfigService;
-import io.choerodon.devops.app.service.DevopsProjectService;
-import io.choerodon.devops.app.service.HarborService;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
 import io.choerodon.devops.infra.config.HarborConfigurationProperties;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
@@ -74,6 +72,9 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
     private AppServiceService appServiceService;
 
     @Autowired
+    private AppServiceVersionService appServiceVersionService;
+
+    @Autowired
     private HarborService harborService;
 
     @Override
@@ -89,9 +90,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                 }
                 if (devopsConfigVO.getType().equals(HARBOR)) {
                     appServiceService.checkHarbor(devopsConfigVO.getConfig().getUrl(), devopsConfigVO.getConfig().getUserName(), devopsConfigVO.getConfig().getPassword(), devopsConfigVO.getConfig().getProject(), devopsConfigVO.getConfig().getEmail());
-                    if (devopsConfigVO.getConfig().getProject() != null) {
-                        checkRegistryProjectIsPrivate(devopsConfigVO);
-                    } else if (devopsConfigVO.getConfig().getProject() == null && !resourceType.equals(ResourceLevel.ORGANIZATION.value())) {
+                    if (devopsConfigVO.getConfig().getProject() == null && !resourceType.equals(ResourceLevel.ORGANIZATION.value())) {
                         harborConfigurationProperties.setUsername(devopsConfigVO.getConfig().getUserName());
                         harborConfigurationProperties.setPassword(devopsConfigVO.getConfig().getPassword());
                         harborConfigurationProperties.setBaseUrl(devopsConfigVO.getConfig().getUrl());
@@ -110,16 +109,24 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                             projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
                             organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
                         }
-                        harborService.createHarbor(harborClient, projectDTO.getId(),organizationDTO.getCode() + "-" + projectDTO.getCode(),false);
+                        harborService.createHarbor(harborClient, projectDTO.getId(), organizationDTO.getCode() + "-" + projectDTO.getCode(), false);
                     }
                 }
-                //根据配置所在的资源层级，查询出数据库中是否存在，存在则更新，不存在则新建
+                //根据配置所在的资源层级，查询出数据库中是否存在
                 DevopsConfigDTO devopsConfigDTO = baseQueryByResourceAndType(resourceId, resourceType, devopsConfigVO.getType());
                 DevopsConfigDTO newDevopsConfigDTO = voToDto(devopsConfigVO);
                 if (devopsConfigDTO != null) {
-                    newDevopsConfigDTO.setId(devopsConfigDTO.getId());
-                    setResourceId(resourceId, resourceType, newDevopsConfigDTO);
-                    baseUpdate(newDevopsConfigDTO);
+                    // 存在判断是否已经生成服务版本，无服务版本，直接覆盖更新；有服务版本，将原config对应的resourceId设置为null,新建config
+                    if (appServiceVersionService.isVersionUseConfig(devopsConfigDTO.getId(), devopsConfigVO.getType())) {
+                        updateResourceId(devopsConfigDTO.getId());
+                        setResourceId(resourceId, resourceType, newDevopsConfigDTO);
+                        newDevopsConfigDTO.setId(null);
+                        baseCreate(newDevopsConfigDTO);
+                    } else {
+                        newDevopsConfigDTO.setId(devopsConfigDTO.getId());
+                        setResourceId(resourceId, resourceType, newDevopsConfigDTO);
+                        baseUpdate(newDevopsConfigDTO);
+                    }
                 } else {
                     setResourceId(resourceId, resourceType, newDevopsConfigDTO);
                     newDevopsConfigDTO.setId(null);
@@ -137,7 +144,11 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                 //根据配置所在的资源层级，查询出数据库中是否存在，存在则删除
                 DevopsConfigDTO devopsConfigDTO = baseQueryByResourceAndType(resourceId, resourceType, devopsConfigVO.getType());
                 if (devopsConfigDTO != null) {
-                    baseDelete(devopsConfigDTO.getId());
+                    if (appServiceVersionService.isVersionUseConfig(devopsConfigDTO.getId(), devopsConfigVO.getType())) {
+                        updateResourceId(devopsConfigDTO.getId());
+                    } else {
+                        baseDelete(devopsConfigDTO.getId());
+                    }
                 }
             }
         });
@@ -175,7 +186,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
             DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
             String username = devopsProjectDTO.getHarborProjectUserName() == null ? String.format(USER_PREFIX, organizationDTO.getId(), projectId) : devopsProjectDTO.getHarborProjectUserName();
             String email = devopsProjectDTO.getHarborProjectUserEmail() == null ? String.format("%s@choerodon.com", username) : devopsProjectDTO.getHarborProjectUserEmail();
-            String password = devopsProjectDTO.getHarborProjectUserPassword() == null ? String.format("%s%s", username, GenerateUUID.generateUUID().substring(0,5)) : devopsProjectDTO.getHarborProjectUserPassword();
+            String password = devopsProjectDTO.getHarborProjectUserPassword() == null ? String.format("%s%s", username, GenerateUUID.generateUUID().substring(0, 5)) : devopsProjectDTO.getHarborProjectUserPassword();
             User user = new User(username, email, password, username);
             //创建用户
             Response<Void> result = null;
@@ -189,9 +200,9 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                     if (result.raw().code() != 201) {
                         throw new CommonException(result.errorBody().string());
                     }
-                }else {
+                } else {
                     Boolean exist = users.body().stream().anyMatch(user1 -> user1.getUsername().equals(username));
-                    if(!exist) {
+                    if (!exist) {
                         result = harborClient.insertUser(user).execute();
                         if (result.raw().code() != 201) {
                             throw new CommonException(result.errorBody().string());
@@ -391,6 +402,11 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
             throw new CommonException("error.devops.project.config.update");
         }
         return devopsConfigMapper.selectByPrimaryKey(devopsConfigDTO);
+    }
+
+    @Override
+    public void updateResourceId(Long configId) {
+        devopsConfigMapper.updateResourceId(configId);
     }
 
     @Override

@@ -9,7 +9,6 @@ import io.choerodon.devops.infra.dto.DevopsConfigDTO;
 import io.choerodon.mybatis.common.Mapper;
 
 
-
 /**
  * @author zongw.lee@gmail.com
  * @since 2019/03/11
@@ -31,4 +30,6 @@ public interface DevopsConfigMapper extends Mapper<DevopsConfigDTO> {
     List<DevopsConfigDTO> existAppServiceConfig();
 
     DevopsConfigDTO queryDefaultConfig(@Param("type") String type);
+
+    void updateResourceId(@Param("configId") Long configId);
 }

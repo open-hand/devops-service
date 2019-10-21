@@ -540,7 +540,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     @Override
-    public DevopsEnvironmentInfoVO queryInfoById(Long environmentId) {
+    public DevopsEnvironmentInfoVO queryInfoById(Long projectId, Long environmentId) {
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         DevopsEnvironmentInfoDTO envInfo = devopsEnvironmentMapper.queryInfoById(environmentId);
         if (envInfo == null) {
             return null;
@@ -572,6 +574,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 vo.setGitopsStatus(EnvironmentGitopsStatus.PROCESSING.getValue());
             }
         }
+
+        gitlabUrl = gitlabUrl.endsWith("/") ? gitlabUrl.substring(0, gitlabUrl.length() - 1):gitlabUrl;
+        vo.setGitlabUrl(String.format("%s/%s-%s-gitops/%s/",gitlabUrl,organizationDTO.getCode(),projectDTO.getCode(),envInfo.getCode()));
         return vo;
     }
 

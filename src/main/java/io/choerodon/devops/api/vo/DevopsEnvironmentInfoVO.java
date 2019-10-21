@@ -21,6 +21,7 @@ public class DevopsEnvironmentInfoVO {
     private Boolean active;
     private Boolean failed;
     private Long groupId;
+    private String gitlabUrl;
     /**
      * value from {@link EnvironmentGitopsStatus}
      */
@@ -136,5 +137,13 @@ public class DevopsEnvironmentInfoVO {
 
     public void setActive(Boolean active) {
         this.active = active;
+    }
+
+    public String getGitlabUrl() {
+        return gitlabUrl;
+    }
+
+    public void setGitlabUrl(String gitlabUrl) {
+        this.gitlabUrl = gitlabUrl;
     }
 }

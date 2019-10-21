@@ -190,7 +190,7 @@ public class DevopsEnvironmentController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)
             @PathVariable(value = "environment_id") Long environmentId) {
-        return Optional.ofNullable(devopsEnvironmentService.queryInfoById(environmentId))
+        return Optional.ofNullable(devopsEnvironmentService.queryInfoById(projectId, environmentId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_ENVIRONMENT_QUERY));
     }

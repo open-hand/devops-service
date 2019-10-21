@@ -257,8 +257,8 @@ public class AppServiceServiceImpl implements AppServiceService {
             return;
         }
 
-        // 禁止删除未失败的应用
-        if (!Boolean.TRUE.equals(appServiceDTO.getFailed())) {
+        // 禁止删除未失败或者停用状态的应用服务
+        if (!Boolean.TRUE.equals(appServiceDTO.getFailed()) || !Boolean.TRUE.equals(appServiceDTO.getActive())) {
             throw new CommonException("error.delete.nonfailed.app.service", appServiceDTO.getName());
         }
 
@@ -678,8 +678,8 @@ public class AppServiceServiceImpl implements AppServiceService {
         try {
             ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
             OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-            ConfigVO harborProjectConfig = gson.fromJson(devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, HARBOR).getConfig(), ConfigVO.class);
-            ConfigVO chartProjectConfig = gson.fromJson(devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, CHART).getConfig(), ConfigVO.class);
+            DevopsConfigDTO harborConfigDTO = devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, HARBOR);
+            ConfigVO harborProjectConfig = gson.fromJson(harborConfigDTO.getConfig(), ConfigVO.class);
             InputStream inputStream = this.getClass().getResourceAsStream("/shell/ci.sh");
             Map<String, String> params = new HashMap<>();
             String groupName = organizationDTO.getCode() + "-" + projectDTO.getCode();
@@ -703,7 +703,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             params.put("{{ DOCKER_REGISTRY }}", dockerUrl);
             params.put("{{ DOCKER_USERNAME }}", harborProjectConfig.getUserName());
             params.put("{{ DOCKER_PASSWORD }}", harborProjectConfig.getPassword());
-            params.put("{{ CHART_REGISTRY }}", chartProjectConfig.getUrl().endsWith("/") ? chartProjectConfig.getUrl().substring(0, chartProjectConfig.getUrl().length() - 1) : chartProjectConfig.getUrl());
+            params.put("{{ HARBOR_CONFIG_ID }}", harborConfigDTO.getId().toString());
             return FileUtil.replaceReturnString(inputStream, params);
         } catch (CommonException e) {
             return null;
@@ -2335,7 +2335,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 Set<Long> ids = collect.stream().map(AppServiceDTO::getId).collect(Collectors.toSet());
                 Map<Long, List<AppServiceVersionDTO>> versionMap = appServiceVersionService.listServiceVersionByAppServiceIds(ids, "share", null, null)
                         .stream().collect(groupingBy(AppServiceVersionDTO::getAppServiceId));
-                Map<Long, List<AppServiceVersionDTO>> versionMap1 = appServiceVersionService.listServiceVersionByAppServiceIds(ids, "project", projectId, null)
+                Map<Long, List<AppServiceVersionDTO>> versionMap1 = appServiceVersionService.listServiceVersionByAppServiceIds(ids, "project", null, null)
                         .stream().collect(groupingBy(AppServiceVersionDTO::getAppServiceId));
                 versionMap.putAll(versionMap1);
                 Set<Long> projectsSet = collect.stream()

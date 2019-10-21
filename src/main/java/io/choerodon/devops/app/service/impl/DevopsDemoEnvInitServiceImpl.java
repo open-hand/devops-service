@@ -269,7 +269,8 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
         try {
             byte[] bytes = StreamUtils.copyToByteArray(this.getClass().getClassLoader().getResourceAsStream(tgzFilePath));
             MockMultipartFile multipartFile = new MockMultipartFile("code-i.tgz", "code-i.tgz", "application/tgz", bytes);
-            appServiceVersionService.create(demoDataVO.getAppServiceVersionDTO().getImage(), applicationService.baseQuery(appServiceId).getToken(), demoDataVO.getAppServiceVersionDTO().getVersion(), demoDataVO.getAppServiceVersionDTO().getCommit(), multipartFile);
+            //harborConfigId需要传入
+            appServiceVersionService.create(demoDataVO.getAppServiceVersionDTO().getImage(),null, applicationService.baseQuery(appServiceId).getToken(), demoDataVO.getAppServiceVersionDTO().getVersion(), demoDataVO.getAppServiceVersionDTO().getCommit(), multipartFile);
         } catch (IOException e) {
             logger.error("can not find file {}", tgzFilePath);
             throw new CommonException(e);

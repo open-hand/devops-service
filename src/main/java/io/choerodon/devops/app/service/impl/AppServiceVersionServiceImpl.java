@@ -10,6 +10,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
+import io.choerodon.devops.infra.enums.ProjectConfigType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -93,9 +94,9 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
      * 方法中抛出{@link DevopsCiInvalidException}而不是{@link CommonException}是为了返回非200的状态码。
      */
     @Override
-    public void create(String image, String token, String version, String commit, MultipartFile files) {
+    public void create(String image, String harborConfigId, String token, String version, String commit, MultipartFile files) {
         try {
-            doCreate(image, token, version, commit, files);
+            doCreate(image, TypeUtil.objToLong(harborConfigId), token, version, commit, files);
         } catch (Exception e) {
             if (e instanceof CommonException) {
                 throw new DevopsCiInvalidException(((CommonException) e).getCode(), e.getCause());
@@ -104,7 +105,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         }
     }
 
-    private void doCreate(String image, String token, String version, String commit, MultipartFile files) {
+    private void doCreate(String image, Long harborConfigId, String token, String version, String commit, MultipartFile files) {
         AppServiceDTO appServiceDTO = appServiceMapper.queryByToken(token);
 
         AppServiceVersionValueDTO appServiceVersionValueDTO = new AppServiceVersionValueDTO();
@@ -116,9 +117,11 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         appServiceVersionDTO.setImage(image);
         appServiceVersionDTO.setCommit(commit);
         appServiceVersionDTO.setVersion(version);
+        appServiceVersionDTO.setHarborConfigId(harborConfigId);
 
         DevopsConfigDTO devopsConfigDTO = devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, CHART);
         String helmUrl = gson.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class).getUrl();
+        appServiceVersionDTO.setHelmConfigId(devopsConfigDTO.getId());
 
         appServiceVersionDTO.setRepository(helmUrl.endsWith("/") ? helmUrl + organization.getCode() + "/" + projectDTO.getCode() + "/" : helmUrl + "/" + organization.getCode() + "/" + projectDTO.getCode() + "/");
         String storeFilePath = STORE_PATH + version;
@@ -653,4 +656,15 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         return appServiceVersionDTOS;
     }
 
+    @Override
+    public Boolean isVersionUseConfig(Long configId, String configType) {
+        AppServiceVersionDTO appServiceVersionDTO = new AppServiceVersionDTO();
+        if (configType.equals(ProjectConfigType.HARBOR.getType())) {
+            appServiceVersionDTO.setHarborConfigId(configId);
+        } else {
+            appServiceVersionDTO.setHelmConfigId(configId);
+        }
+        List<AppServiceVersionDTO> list = appServiceVersionMapper.select(appServiceVersionDTO);
+        return list != null && list.size() > 0;
+    }
 }
