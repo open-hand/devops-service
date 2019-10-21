@@ -2,6 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { Avatar, Pagination, Spin, Tooltip } from 'choerodon-ui';
 import TimePopover from '../../../components/timePopover';
+import UserInfo from '../../../components/userInfo';
 import './Submission.less';
 
 export default function CommitHistory(props) {
@@ -9,12 +10,10 @@ export default function CommitHistory(props) {
   let list = [];
   if (content && content.length) {
     list = content.map((item) => {
-      const { userName, url, commitContent, commitDate, imgUrl, appServiceName, commitSHA } = item;
+      const { userName, url, id, commitContent, commitDate, imgUrl, appServiceName, commitSHA } = item;
       return (
         <div className="c7n-report-history-item" key={`${commitSHA}-${commitDate}`}>
-          {imgUrl
-            ? <Avatar size="small" src={imgUrl} />
-            : <Avatar size="small">{userName ? userName.toString().slice(0, 1).toUpperCase() : '?'}</Avatar>}
+          <UserInfo name={userName || '?'} avatar={imgUrl} showName={false} size="large" />
           <div className="c7n-report-history-info">
             <div className="c7n-report-history-content">
               <a
@@ -30,6 +29,7 @@ export default function CommitHistory(props) {
             </div>
           </div>
         </div>
+          
       );
     });
   } else {
