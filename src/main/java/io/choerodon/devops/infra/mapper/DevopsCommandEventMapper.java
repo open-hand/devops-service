@@ -5,6 +5,9 @@ import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.infra.dto.DevopsCommandEventDTO;
 
+import java.util.List;
+import java.util.Set;
+
 /**
  * @author crcokitwood
  */
@@ -16,4 +19,6 @@ public interface DevopsCommandEventMapper extends Mapper<DevopsCommandEventDTO> 
      * @return 删除行数
      */
     int deletePreInstanceCommandEvent(@Param("instanceId") Long instanceId);
+
+    List<DevopsCommandEventDTO> listByCommandIdsAndType(@Param("commandIds") Set<Long> commandIds, @Param("type") String type);
 }

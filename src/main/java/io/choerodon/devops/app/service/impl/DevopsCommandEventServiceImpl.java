@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.util.List;
+import java.util.Set;
 
 import io.choerodon.devops.app.service.DevopsCommandEventService;
 import io.choerodon.devops.infra.dto.DevopsCommandEventDTO;
@@ -39,6 +40,15 @@ public class DevopsCommandEventServiceImpl implements DevopsCommandEventService 
         DevopsCommandEventDTO devopsCommandEventDTO = new DevopsCommandEventDTO();
         devopsCommandEventDTO.setCommandId(commandId);
         devopsCommandEventMapper.delete(devopsCommandEventDTO);
+    }
+
+    @Override
+    public List<DevopsCommandEventDTO> ListByCommandIdsAndType(Set<Long> commandIds, String type) {
+        if(commandIds.size() > 0) {
+            List<DevopsCommandEventDTO> ListByCommandIdsAndType = devopsCommandEventMapper.listByCommandIdsAndType(commandIds, type);
+            return ListByCommandIdsAndType;
+        }
+        return null;
     }
 
 }
