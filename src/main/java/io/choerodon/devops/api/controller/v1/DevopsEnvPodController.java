@@ -94,7 +94,7 @@ public class DevopsEnvPodController {
     @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "删除环境下的pod")
-    @DeleteMapping("/{pod_id}/delete")
+    @DeleteMapping("/{pod_id}")
     public ResponseEntity deleteEnvPod(
             @ApiParam(value = "环境id", required = true)
             @RequestParam(value = "env_id") Long envId,
