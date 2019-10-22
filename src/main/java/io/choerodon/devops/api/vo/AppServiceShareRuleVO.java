@@ -12,7 +12,7 @@ import io.choerodon.devops.api.validator.annotation.AtLeastOneNotEmpty;
  * Date:  14:27 2019/7/26
  * Description:
  */
-@AtLeastOneNotEmpty(fields = {"versionType", "version"})
+@AtLeastOneNotEmpty(fields = {"versionType", "version","appServiceId"}, message = "error.atleast.one.not.empty")
 public class AppServiceShareRuleVO {
     private Long id;
 
