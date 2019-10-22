@@ -247,16 +247,41 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
         return appServiceRepVO;
     }
-
+    @Saga(code = SagaTopicCodeConstants.DEVOPS_APP_DELETE,
+            description = "Devops删除应用服务", inputSchema = "{}")
     @Transactional
     @Override
     public void delete(Long projectId, Long appServiceId) {
+        Boolean isDeploy = checkAppserviceIsShareDeploy(projectId,appServiceId);
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
+        appServiceDTO.setSynchro(Boolean.FALSE);
+        appServiceMapper.updateByPrimaryKey(appServiceDTO);
 
+        AppServiceImportPayload appServiceImportPayload = new AppServiceImportPayload();
+        appServiceImportPayload.setAppServiceId(appServiceId);
+        appServiceImportPayload.setProjectId(projectId);
+        producer.applyAndReturn(
+                StartSagaBuilder
+                        .newBuilder()
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withRefType("")
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_APP_DELETE),
+                builder -> builder
+                        .withPayloadAndSerialize(appServiceImportPayload)
+                        .withRefId("")
+                        .withSourceId(projectId));
+    }
+
+    private Boolean checkAppserviceIsShareDeploy(Long projectId, Long appServiceId) {
+
+        return  false;
+    }
+
+    public void deleteAppServiceSage(Long projectId, Long appServiceId) {
+        AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
         if (appServiceDTO == null) {
             return;
         }
-
         // 禁止删除未失败或者停用状态的应用服务
         if (!Boolean.TRUE.equals(appServiceDTO.getFailed()) || !Boolean.TRUE.equals(appServiceDTO.getActive())) {
             throw new CommonException("error.delete.nonfailed.app.service", appServiceDTO.getName());
