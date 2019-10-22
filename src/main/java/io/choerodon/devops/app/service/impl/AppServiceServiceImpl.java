@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.enums.AppServiceType.*;
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.*;
 
@@ -103,13 +104,12 @@ public class AppServiceServiceImpl implements AppServiceService {
     private static final String ERROR_USER_NOT_OWNER = "error.user.not.owner";
     private static final String METRICS = "metrics";
     private static final String SONAR_NAME = "sonar_default";
-    private static final String NORMAL_SERVICE = "normal_service";
-    private static final String SHARE_SERVICE = "share_service";
-    private static final String MARKET_SERVICE = "market_service";
-
     private static final String APPLICATION = "application";
     private static final String TEST = "test-application";
     private static final String DUPLICATE = "duplicate";
+    private static final String NORMAL_SERVICE = "normal_service";
+    private static final String SHARE_SERVICE = "share_service";
+    private static final String  MARKET_SERVICE = "market_service";
     @Autowired
     DevopsSagaHandler devopsSagaHandler;
     private Gson gson = new Gson();
@@ -2113,7 +2113,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             params.add(param);
         }
         switch (type) {
-            case NORMAL_SERVICE: {
+            case NORMAL_SERVICE:{
                 list.addAll(appServiceMapper.list(projectId, null, true, serviceType, null, params, ""));
                 AppServiceGroupVO appServiceGroupVO = new AppServiceGroupVO();
                 appServiceGroupVO.setAppServiceList(ConvertUtils.convertList(list, this::dtoToGroupInfoVO));
@@ -2253,6 +2253,21 @@ public class AppServiceServiceImpl implements AppServiceService {
             gitUtil.deleteWorkingDirectory(applicationDir);
             throw new CommonException(e.getMessage(), e);
         }
+    }
+
+    @Override
+    public String checkAppServiceType(Long projectId,AppServiceDTO appServiceDTO) {
+        String type = null;
+        if(appServiceDTO.getProjectId() == null  &&  appServiceDTO.getMktAppId() != null){
+            type = AppServiceType.MARKET_SERVICE.getType();
+        }
+        else if(appServiceDTO.getProjectId() != projectId){
+            type = AppServiceType.SHARE_SERVICE.getType();
+        }
+        else if (appServiceDTO.getProjectId() == projectId){
+            type = AppServiceType.NORMAL_SERVICE.getType();
+        }
+        return type;
     }
 
 
