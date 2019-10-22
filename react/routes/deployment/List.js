@@ -185,6 +185,7 @@ const Deployment = withRouter(observer((props) => {
         record={manualDeployDs.create()}
       />,
       afterClose: () => {
+        manualDeployDs.reset();
         deployStore.setCertificates([]);
         deployStore.setAppService([]);
         deployStore.setConfigValue('');
