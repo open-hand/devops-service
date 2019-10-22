@@ -13,7 +13,7 @@ export default function CommitHistory(props) {
       const { userName, url, id, commitContent, commitDate, imgUrl, appServiceName, commitSHA } = item;
       return (
         <div className="c7n-report-history-item" key={`${commitSHA}-${commitDate}`}>
-          <UserInfo name={userName || '?'} avatar={imgUrl} showName={false} size="large" />
+          <UserInfo name={userName || '?'} avatar={imgUrl} showName={false} size="large" showTooltip={false} />
           <div className="c7n-report-history-info">
             <div className="c7n-report-history-content">
               <a

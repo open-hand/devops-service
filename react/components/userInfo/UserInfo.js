@@ -1,6 +1,5 @@
 import React, { PureComponent, Fragment } from 'react';
 import PropTypes from 'prop-types';
-import classnames from 'classnames';
 import './UserInfo.less';
 import { Tooltip } from 'choerodon-ui';
 
@@ -14,27 +13,29 @@ class UserInfo extends PureComponent {
       PropTypes.number,
     ]),
     showName: PropTypes.bool,
+    showTooltip: PropTypes.bool,
   };
 
   static defaultProps = {
     showName: true,
+    showTooltip: true,
     size: 'small',
   };
 
   render() {
-    const { avatar, name, id, showName, size } = this.props;
+    const { avatar, name, id, showName, showTooltip, size } = this.props;
     
     const ava = avatar
 
-      ? <img src={avatar} alt="avatar" className={classnames('c7ncd-userinfo-avatar', `c7ncd-userinfo-avatar-${size}`)} />
-      : <span className={classnames('c7ncd-userinfo-avatar-txt', `c7ncd-userinfo-avatar-${size}`)}>{(name || '').toUpperCase().substring(0, 1)}</span>;
+      ? <img src={avatar} alt="avatar" className={`c7ncd-userinfo-avatar c7ncd-userinfo-avatar-${size}`} />
+      : <span className={`c7ncd-userinfo-avatar-txt c7ncd-userinfo-avatar-${size}`}>{(name || '').toUpperCase().substring(0, 1)}</span>;
 
     return (
       <div className="c7ncd-userinfo-wrap">
         {name && (<Fragment>
-          <Tooltip title={`${name}${id ? ` (${id})` : ''}`}>
+          {showTooltip ? <Tooltip title={`${name}${id ? ` (${id})` : ''}`}>
             {ava}
-          </Tooltip>
+          </Tooltip> : ava}
           {showName ? <div className="c7ncd-userinfo-name">
             {name}
           </div> : null}
