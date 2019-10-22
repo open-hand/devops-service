@@ -185,7 +185,7 @@ class LineChart extends PureComponent {
       <Spin spinning={loading}>
         {tooltip ? (
           <div className="c7n-report-commits-title">
-            <UserInfo name={name || '?'} avatar={avatar} size="large" />
+            <UserInfo name={name || '?'} avatar={avatar} size="large" showTooltip={false} />
             {count ? (
               <span className="c7n-report-commits-text">{count} commits</span>
             ) : null}
