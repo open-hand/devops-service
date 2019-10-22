@@ -583,7 +583,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                             .withRefType("env")
                             .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_INSTANCE),
                     builder -> builder
-                            .withJson(JSONObject.toJSONString(instanceSagaPayload))
+                            .withPayloadAndSerialize(instanceSagaPayload)
                             .withRefId(devopsEnvironmentDTO.getId().toString()));
 
             // 0.19版本暂时不支持，后续优化
