@@ -1,8 +1,5 @@
 package io.choerodon.devops;
 
-import java.util.Set;
-import javax.annotation.PostConstruct;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -14,7 +11,6 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.scheduling.annotation.EnableAsync;
-import org.springframework.web.socket.server.standard.ServletServerContainerFactoryBean;
 
 import io.choerodon.resource.annoation.EnableChoerodonResourceServer;
 
@@ -26,10 +22,7 @@ import io.choerodon.resource.annoation.EnableChoerodonResourceServer;
 @EnableChoerodonResourceServer
 @EnableAsync
 public class DevopsServiceApplication {
-
-
     private static final String CLUSTER_SESSION = "cluster-sessions-catch";
-
 
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
@@ -48,14 +41,4 @@ public class DevopsServiceApplication {
         template.setConnectionFactory(redisConnectionFactory);
         return template;
     }
-
-    //初始化servletServerContainer 消息缓冲池大小
-    @Bean
-    public ServletServerContainerFactoryBean createServletServerContainerFactoryBean() {
-        ServletServerContainerFactoryBean container = new ServletServerContainerFactoryBean();
-        container.setMaxTextMessageBufferSize(32768);
-        container.setMaxBinaryMessageBufferSize(32768);
-        return container;
-    }
-
 }
