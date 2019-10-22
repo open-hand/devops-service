@@ -1,10 +1,10 @@
 package io.choerodon.devops.api.vo;
 
-import java.util.Map;
+import io.swagger.annotations.ApiModelProperty;
+
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-
-import io.swagger.annotations.ApiModelProperty;
+import java.util.Map;
 
 
 /**
@@ -27,8 +27,8 @@ public class DevopsConfigMapUpdateVO {
     @ApiModelProperty("配置描述/非必填")
     private String description;
     private String type;
-    @ApiModelProperty("配置值")
-    @NotNull(message = "error.configMap.value")
+    @ApiModelProperty("配置值/不能为null")
+    @NotNull(message = "error.configMap.value.null")
     private Map<String, String> value;
 
     public Long getId() {
