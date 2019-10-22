@@ -13,10 +13,7 @@ import io.choerodon.devops.api.vo.kubernetes.Payload;
 import io.choerodon.devops.app.eventhandler.payload.OperationPodPayload;
 import io.choerodon.devops.app.eventhandler.payload.SecretPayLoad;
 import io.choerodon.devops.app.service.AgentCommandService;
-import io.choerodon.devops.infra.dto.AppServiceDTO;
-import io.choerodon.devops.infra.dto.AppServiceVersionDTO;
-import io.choerodon.devops.infra.dto.DevopsClusterDTO;
-import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
+import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.HelmType;
@@ -395,4 +392,8 @@ public class AgentCommandServiceImpl implements AgentCommandService {
         webSocketHelper.sendMessageByKey(CLUSTER + clusterId, webSocketSendPayload);
     }
 
+    @Override
+    public void deletePod(DevopsEnvPodDTO devopsEnvPodDTO) {
+        //Todo
+    }
 }
