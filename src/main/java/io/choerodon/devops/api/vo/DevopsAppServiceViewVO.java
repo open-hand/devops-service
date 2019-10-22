@@ -8,6 +8,7 @@ import java.util.List;
 public class DevopsAppServiceViewVO {
     private Long id;
     private String name;
+    private String type;
     private List<DevopsAppServiceInstanceViewVO> instances;
 
     public Long getId() {
@@ -28,6 +29,14 @@ public class DevopsAppServiceViewVO {
 
     public List<DevopsAppServiceInstanceViewVO> getInstances() {
         return instances;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     public void setInstances(List<DevopsAppServiceInstanceViewVO> instances) {

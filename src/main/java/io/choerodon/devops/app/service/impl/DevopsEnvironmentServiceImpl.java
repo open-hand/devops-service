@@ -141,6 +141,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private DevopsEnvGroupMapper devopsEnvGroupMapper;
     @Autowired
     private DevopsDeployRecordService devopsDeployRecordService;
+    @Autowired
+    private AppServiceService appServiceService;
 
     @Override
     @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_ENV, description = "创建环境", inputSchema = "{}")
@@ -451,6 +453,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
                 DevopsAppServiceViewVO appVO = new DevopsAppServiceViewVO();
                 BeanUtils.copyProperties(app, appVO, "instances");
+                AppServiceDTO appServiceDTO = appServiceService.baseQuery(app.getId());
+                appVO.setType(appServiceService.checkAppServiceType(projectId,appServiceDTO));
                 appVO.setInstances(app.getInstances().stream().map(ins -> {
                     DevopsAppServiceInstanceViewVO insVO = new DevopsAppServiceInstanceViewVO();
                     BeanUtils.copyProperties(ins, insVO);

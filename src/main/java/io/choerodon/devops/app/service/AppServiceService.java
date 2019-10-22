@@ -460,4 +460,6 @@ public interface AppServiceService {
                        String oldServiceCode,
                        String oldGroupName,
                        Boolean isGetWorkingDirectory);
+
+    public String checkAppServiceType(Long projectId,AppServiceDTO appServiceDTO);
 }

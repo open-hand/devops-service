@@ -18,6 +18,7 @@ public class AppServiceInstanceInfoVO {
     private Long podRunningCount;
     private Long appServiceId;
     private String appServiceName;
+    private String appServiceType;
     private Long appServiceVersionId;
     private String versionName;
     private Date lastUpdateDate;
@@ -184,5 +185,13 @@ public class AppServiceInstanceInfoVO {
 
     public void setProjectId(Long projectId) {
         this.projectId = projectId;
+    }
+
+    public String getAppServiceType() {
+        return appServiceType;
+    }
+
+    public void setAppServiceType(String appServiceType) {
+        this.appServiceType = appServiceType;
     }
 }

@@ -158,8 +158,11 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                                 envId, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)), TypeUtil.cast(maps.get(TypeUtil.PARAMS)))),
                 AppServiceInstanceInfoVO.class);
         List<Long> updatedEnv = clusterConnectionHandler.getUpdatedClusterList();
-        pageInfo.getList().forEach(appServiceInstanceInfoVO ->
-                appServiceInstanceInfoVO.setConnect(updatedEnv.contains(appServiceInstanceInfoVO.getClusterId()))
+        pageInfo.getList().forEach(appServiceInstanceInfoVO -> {
+            AppServiceDTO appServiceDTO = applicationService.baseQuery(appServiceInstanceInfoVO.getAppServiceId());
+            appServiceInstanceInfoVO.setAppServiceType(applicationService.checkAppServiceType(projectId,appServiceDTO));
+            appServiceInstanceInfoVO.setConnect(updatedEnv.contains(appServiceInstanceInfoVO.getClusterId()));
+               }
         );
         return pageInfo;
     }
