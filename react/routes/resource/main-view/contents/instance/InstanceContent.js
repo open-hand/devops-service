@@ -1,7 +1,7 @@
 import React, { Fragment, lazy, Suspense, useEffect, useMemo } from 'react';
 import { runInAction } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import { Tabs, Tooltip, Icon, Spin } from 'choerodon-ui';
+import { Tabs, Tooltip, Icon, Spin, Progress } from 'choerodon-ui';
 import isEqual from 'lodash/isEqual';
 import pick from 'lodash/pick';
 import omit from 'lodash/omit';
@@ -56,6 +56,15 @@ const InstanceTitle = ({
     {status === 'failed' && (
       <Tooltip title={errorText}>
         <Icon type="error" className={`${prefixCls}-instance-page-title-icon`} />
+      </Tooltip>
+    )}
+    {status === 'operating' && (
+      <Tooltip title="处理中">
+        <Progress
+          className={`${prefixCls}-instance-page-title-icon-loading`}
+          type="loading"
+          size="small"
+        />
       </Tooltip>
     )}
   </Fragment>;

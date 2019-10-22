@@ -68,7 +68,7 @@ export default class Upgrade extends Component {
       const data = await store.loadUpVersion({ projectId, appId, page: 1, param, init });
       if (handlePromptError(data)) {
         const { hasNextPage, list } = data;
-        const versionOptions = renderVersionOptions(list);
+        const versionOptions = this.renderVersionOptions(list, true);
 
         if (hasNextPage) {
           // 在选项最后置入一个加载更多按钮
@@ -99,6 +99,18 @@ export default class Upgrade extends Component {
     } catch (e) {
       this.setState({ versionLoading: false });
     }
+  };
+
+  /**
+   * 生成版本选项
+   * @param versions
+   */
+  renderVersionOptions = (versions, isHead = false) => {
+    const {
+      intl: { formatMessage },
+      intlPrefix,
+    } = this.props;
+    return _.map(versions, ({ id, version }, index) => <Option key={id} value={id}>{version}{index === 0 && isHead && ` (${formatMessage({ id: `${intlPrefix}.instance.current.version` })})`}</Option>);
   };
 
   /**
@@ -155,7 +167,7 @@ export default class Upgrade extends Component {
       const { hasNextPage, list } = data;
 
       const moreVersion = _.filter(list, ({ id }) => id !== versionId);
-      const options = renderVersionOptions(moreVersion);
+      const options = this.renderVersionOptions(moreVersion);
 
       /**
        * 触发此事件说明初次渲染的选项versionOptions中的最后一个肯定是 “展开更多” 按钮
@@ -306,14 +318,6 @@ export default class Upgrade extends Component {
       </Fragment>
     );
   }
-}
-
-/**
- * 生成版本选项
- * @param versions
- */
-function renderVersionOptions(versions) {
-  return _.map(versions, ({ id, version }) => <Option key={id} value={id}>{version}</Option>);
 }
 
 function renderLoadMoreBtn(handler) {

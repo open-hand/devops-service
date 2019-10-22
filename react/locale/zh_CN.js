@@ -375,6 +375,7 @@ const deployment = {
   'c7ncd.deployment.usage': '使用量',
   'c7ncd.deployment.environment.sync': '提交同步情况',
   'c7ncd.deployment.appService.share': '共享应用',
+  'c7ncd.deployment.instance.current.version': '当前版本',
   'c7ncd.deployment.permission.delete.title': '删除权限',
   'c7ncd.deployment.permission.delete.des': '确定要删除该成员的权限吗？',
   'c7ncd.deployment.custom.delete.title': '删除自定义资源“{name}”',
