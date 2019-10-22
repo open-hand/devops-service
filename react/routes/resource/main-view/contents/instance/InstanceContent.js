@@ -79,6 +79,9 @@ const InstanceContent = observer(() => {
     baseDs,
   } = useInstanceStore();
 
+  const { getSelectedMenu: { key: selectedKey } } = resourceStore;
+
+
   function handleChange(key) {
     istStore.setTabKey(key);
   }
@@ -108,18 +111,20 @@ const InstanceContent = observer(() => {
   useEffect(() => {
     const current = getCurrent();
     if (current) {
-      const menuItem = treeDs.find((item) => item.get('id') === current.id);
-      const previous = pick(menuItem.toData(), ['status', 'name', 'podRunningCount', 'podCount']);
-      const next = omit(current, ['id', 'error']);
+      const menuItem = treeDs.find((item) => item.get('key') === selectedKey && item.get('id') === current.id);
+      if (menuItem) {
+        const previous = pick(menuItem.toData(), ['status', 'name', 'podRunningCount', 'podCount']);
+        const next = omit(current, ['id', 'error']);
 
-      if (!isEqual(previous, next)) {
-        runInAction(() => {
-          menuItem.set(next);
-          resourceStore.setSelectedMenu({
-            ...resourceStore.getSelectedMenu,
-            ...next,
+        if (!isEqual(previous, next)) {
+          runInAction(() => {
+            menuItem.set(next);
+            resourceStore.setSelectedMenu({
+              ...resourceStore.getSelectedMenu,
+              ...next,
+            });
           });
-        });
+        }
       }
     }
   });
