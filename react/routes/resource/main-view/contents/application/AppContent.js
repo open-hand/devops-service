@@ -55,7 +55,7 @@ const AppContent = observer(() => {
   useEffect(() => {
     const current = getCurrent();
     if (current) {
-      const menuItem = treeDs.find((item) => item.get('key') === selectedKey);
+      const menuItem = treeDs.find((item) => item.get('key') === selectedKey && item.get('id') === current.id);
 
       if (menuItem && menuItem.get('name') !== current.name) {
         menuItem.set('name', current.name);

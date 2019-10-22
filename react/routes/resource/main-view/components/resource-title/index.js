@@ -65,7 +65,7 @@ function ResourceTitle(props) {
     const current = getCurrent();
     if (current) {
       const { id, name, status } = current;
-      const menuItem = treeDs.find((item) => item.get('key') === key);
+      const menuItem = treeDs.find((item) => item.get('key') === key && item.get('id') === id);
       if (menuItem && (menuItem.get('name') !== name || menuItem.get('status') !== status)) {
         runInAction(() => {
           menuItem.set({ name, status });
