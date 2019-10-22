@@ -94,7 +94,7 @@ export default ({ projectId, formatMessage, intlPrefix, modal, isEdit, afterOk, 
     },
     events: {
       load: ({ dataSet }) => {
-        clusterName = dataSet.current.data.name;
+        clusterName = dataSet.current.get('name');
       },
     },
   };
