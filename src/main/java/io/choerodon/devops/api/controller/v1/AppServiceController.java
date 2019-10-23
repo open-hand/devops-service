@@ -159,7 +159,8 @@ public class AppServiceController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "服务id", required = true)
             @PathVariable(value = "app_service_id") Long appServiceId) {
-        return new ResponseEntity(applicationServiceService.delete(projectId, appServiceId),HttpStatus.NO_CONTENT);
+        applicationServiceService.delete(projectId, appServiceId);
+        return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
     /**

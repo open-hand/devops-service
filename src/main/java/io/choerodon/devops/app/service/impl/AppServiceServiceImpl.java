@@ -257,22 +257,20 @@ public class AppServiceServiceImpl implements AppServiceService {
             description = "Devops删除应用服务", inputSchema = "{}")
     @Transactional
     @Override
-    public Boolean delete(Long projectId, Long appServiceId) {
+    public void delete(Long projectId, Long appServiceId) {
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
         if (appServiceDTO == null) {
-            return true;
+            return;
         }
-        // 禁止删除未失败或者停用状态的应用服务
+        // 禁止删除未失败或者启用状态的应用服务
         if (!Boolean.TRUE.equals(appServiceDTO.getFailed()) || !Boolean.TRUE.equals(appServiceDTO.getActive())) {
             throw new CommonException("error.delete.nonfailed.app.service", appServiceDTO.getName());
         }
         // 验证改应用服务在其他项目是否被生成实例
-        Boolean isDeploy = checkAppserviceIsShareDeploy(projectId, appServiceId);
-        if (isDeploy) {
-            return false;
-        }
+        checkAppserviceIsShareDeploy(projectId, appServiceId);
         appServiceDTO.setSynchro(Boolean.FALSE);
         appServiceMapper.updateByPrimaryKey(appServiceDTO);
+
         DevOpsAppServicePayload devOpsAppServicePayload = new DevOpsAppServicePayload();
         devOpsAppServicePayload.setAppServiceId(appServiceId);
         devOpsAppServicePayload.setIamProjectId(projectId);
@@ -286,18 +284,15 @@ public class AppServiceServiceImpl implements AppServiceService {
                         .withPayloadAndSerialize(devOpsAppServicePayload)
                         .withRefId("")
                         .withSourceId(projectId));
-        return isDeploy;
     }
 
-    private Boolean checkAppserviceIsShareDeploy(Long projectId, Long appServiceId) {
+    private void checkAppserviceIsShareDeploy(Long projectId, Long appServiceId) {
         Long organizationId = baseServiceClientOperator.queryIamProjectById(projectId).getOrganizationId();
         List<ProjectDTO> projectDTOS = baseServiceClientOperator.listIamProjectByOrgId(organizationId);
         Set<Long> projectIds = projectDTOS.stream().filter(projectDTO -> !projectDTO.getId().equals(projectId)).map(ProjectDTO::getId).collect(toSet());
         List<AppServiceInstanceDTO> appServiceInstanceDTOS = appServiceInstanceMapper.listByProjectIdsAndAppServiceId(projectIds, appServiceId);
         if (!CollectionUtils.isEmpty(appServiceInstanceDTOS)) {
-            return true;
-        } else {
-            return false;
+            throw new CommonException("error.not.delete.service.by.other.project.deployment");
         }
     }
     @Override
