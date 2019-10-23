@@ -66,7 +66,9 @@ export default class CertificateCreate extends Component {
     } = this.props;
 
     const pattern = /^([a-z0-9]([-a-z0-9]?[a-z0-9])*)$/;
-
+    if (!value) {
+      callback();
+    }
     if (!pattern.test(value)) {
       callback(formatMessage({ id: 'ctf.names.check.failed' }));
     } else {
