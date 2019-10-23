@@ -10,9 +10,15 @@ import './AppName.less';
  * @param { 应用名称，显示应用前icon，本组织or应用市场 } props
  */
 export default function AppName(props) {
-  const { name, showIcon, self, width } = props;
+  const { name, showIcon, self, width, isInstance } = props;
+  let icon;
+  if (isInstance) {
+    icon = self;
+  } else {
+    icon = self ? 'project' : 'apps';
+  }
   const type = self ? 'project' : 'market';
-  const icon = self ? 'project' : 'apps';
+
   return (
     <Fragment>
       {showIcon ? (
