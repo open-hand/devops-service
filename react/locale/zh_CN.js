@@ -697,6 +697,8 @@ const emptyPage = {
     '您当前暂无此项目下任何环境的权限，若需查看某个环境的相关内容，请联系项目所有者添加权限',
   'empty.create.app': '创建应用服务',
   'empty.create.env': '创建环境',
+  'empty.link.app': '跳转至应用服务',
+  'empty.link.env': '跳转至环境配置',
 };
 
 // 文档地址前缀
