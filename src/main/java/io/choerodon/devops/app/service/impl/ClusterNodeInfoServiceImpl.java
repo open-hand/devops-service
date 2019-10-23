@@ -102,6 +102,8 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
             node.setCreateTime(simpleDateFormat.format(simpleDateFormat.parse(raw.getCreateTime())));
         } catch (ParseException e) {
             LOGGER.info("date: {} failed to be formatted", raw.getCreateTime());
+        } catch (Exception ex) {
+            LOGGER.warn("Exception occurred when parsing creation time: {}", raw.getCreateTime());
         }
         return JSONObject.toJSONString(node);
     }

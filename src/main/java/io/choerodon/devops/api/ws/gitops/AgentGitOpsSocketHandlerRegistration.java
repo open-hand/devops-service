@@ -1,24 +1,10 @@
 package io.choerodon.devops.api.ws.gitops;
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.servlet.http.HttpServletRequest;
 
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.ClusterSessionVO;
-import io.choerodon.devops.api.ws.WebSocketTool;
-import io.choerodon.devops.app.service.AgentCommandService;
-import io.choerodon.devops.app.service.DevopsClusterService;
-import io.choerodon.devops.infra.dto.DevopsClusterDTO;
-import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
-import io.choerodon.devops.infra.util.KeyParseUtil;
-import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.websocket.connect.SocketHandlerRegistration;
-import io.choerodon.websocket.helper.WebSocketHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +20,18 @@ import org.springframework.web.socket.PingMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.server.HandshakeFailureException;
 
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.ClusterSessionVO;
+import io.choerodon.devops.api.ws.WebSocketTool;
+import io.choerodon.devops.app.service.AgentCommandService;
+import io.choerodon.devops.app.service.DevopsClusterService;
+import io.choerodon.devops.infra.dto.DevopsClusterDTO;
+import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
+import io.choerodon.devops.infra.util.KeyParseUtil;
+import io.choerodon.devops.infra.util.TypeUtil;
+import io.choerodon.websocket.connect.SocketHandlerRegistration;
+import io.choerodon.websocket.helper.WebSocketHelper;
+
 /**
  * Created by Sheep on 2019/7/25.
  */
@@ -41,7 +39,7 @@ import org.springframework.web.socket.server.HandshakeFailureException;
 @Component
 public class AgentGitOpsSocketHandlerRegistration implements SocketHandlerRegistration {
 
-    private static final String CLUSTER_SESSION = "cluster-sessions-catch";
+    private static final String CLUSTER_SESSION = "cluster-sessions-cache";
     private static final String CLUSTER_ID = "clusterId";
     private static final Logger logger = LoggerFactory.getLogger(AgentGitOpsSocketHandlerRegistration.class);
     private ConcurrentHashMap<String, Map<String, Object>> attributes = new ConcurrentHashMap<>();
@@ -101,17 +99,11 @@ public class AgentGitOpsSocketHandlerRegistration implements SocketHandlerRegist
             throw new HandshakeFailureException("agent token not match");
         }
 
-        //校验是否已经有关联该key的agent连接到了devops,则删除已有key,连接之后建立新的关系
-        Map<String, ClusterSessionVO> clusterSessions = (Map<String, ClusterSessionVO>) (Map) redisTemplate.opsForHash().entries(CLUSTER_SESSION);
-        if (clusterSessions.getOrDefault(key, null) != null) {
-            redisTemplate.opsForHash().delete(CLUSTER_SESSION, key);
-        }
         return true;
     }
 
     @Override
     public void afterConnectionEstablished(WebSocketSession webSocketSession) {
-
         webSocketSessions.add(webSocketSession);
 
         //解析参数列表，并存储
@@ -124,7 +116,9 @@ public class AgentGitOpsSocketHandlerRegistration implements SocketHandlerRegist
         webSocketHelper.subscribe(registerKey, webSocketSession);
 
 
+        //将已连接的agent集群信息放到redis中,用于判断集群是否连接
         ClusterSessionVO clusterSession = new ClusterSessionVO();
+        clusterSession.setWebSocketSessionId(webSocketSession.getId());
         clusterSession.setClusterId(TypeUtil.objToLong(attribute.get(CLUSTER_ID)));
         clusterSession.setVersion(TypeUtil.objToString(attribute.get("version")));
         clusterSession.setRegisterKey(registerKey);
@@ -137,7 +131,6 @@ public class AgentGitOpsSocketHandlerRegistration implements SocketHandlerRegist
             DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
             agentCommandService.upgradeCluster(devopsClusterDTO);
         } else {
-            //将已连接的agent集群信息放到redis中,用于判断集群是否连接
             agentCommandService.initCluster(clusterId);
         }
     }
@@ -147,14 +140,32 @@ public class AgentGitOpsSocketHandlerRegistration implements SocketHandlerRegist
         Map<String, Object> attribute = attributes.get(webSocketSession.getId());
         String registerKey = TypeUtil.objToString(attribute.get("key"));
 
-        //移除关联关系
-        redisTemplate.opsForHash().delete(CLUSTER_SESSION, registerKey);
+        Object registerKeyValue = redisTemplate.opsForHash().get(CLUSTER_SESSION, registerKey);
+        if (registerKeyValue != null) {
+            if (registerKeyValue instanceof ClusterSessionVO) {
+                ClusterSessionVO clusterSessionVO = (ClusterSessionVO) registerKeyValue;
+                // 只有这个registerKey的值中webSocketSessionId和当前sessionId一致时才删除key，避免旧的超时的连接
+                // 误将新连接的key删掉（两者是同一个key）
+                if (Objects.equals(webSocketSession.getId(), clusterSessionVO.getWebSocketSessionId())) {
+                    //移除关联关系
+                    redisTemplate.opsForHash().delete(CLUSTER_SESSION, registerKey);
+                } else {
+                    logger.info("This is an elder session whose registerKey value was updated by a new session. the session cluster id is {}", TypeUtil.objToLong(attribute.get(CLUSTER_ID)));
+                }
+            } else {
+                // 这个逻辑不应该进的
+                logger.warn("Value of register key is not of Class 'io.choerodon.devops.api.vo.ClusterSessionVO', and its real class is {}", registerKeyValue.getClass());
+                redisTemplate.opsForHash().delete(CLUSTER_SESSION, registerKey);
+            }
+        }
+
+        logger.info("After connection closed, the cluster session with key {} is to be closed.", registerKey);
         try {
             webSocketSession.close();
+            webSocketSessions.remove(webSocketSession);
         } catch (IOException e) {
             logger.warn("close clean timeout session failed {}", e.getMessage());
         }
-
     }
 
     /**

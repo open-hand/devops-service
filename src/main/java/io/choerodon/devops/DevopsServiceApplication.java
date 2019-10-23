@@ -1,6 +1,5 @@
 package io.choerodon.devops;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
@@ -22,11 +21,6 @@ import io.choerodon.resource.annoation.EnableChoerodonResourceServer;
 @EnableChoerodonResourceServer
 @EnableAsync
 public class DevopsServiceApplication {
-    private static final String CLUSTER_SESSION = "cluster-sessions-catch";
-
-    @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
-
     public static void main(String[] args) {
         SpringApplication.run(DevopsServiceApplication.class, args);
     }
