@@ -170,6 +170,7 @@ const Deployment = withRouter(observer((props) => {
   }
 
   function openDeploy() {
+    manualDeployDs.create();
     Modal.open({
       key: modalKey4,
       style: modalStyle2,
@@ -182,9 +183,10 @@ const Deployment = withRouter(observer((props) => {
         projectId={id}
         intlPrefix={intlPrefix}
         prefixCls={prefixCls}
-        record={manualDeployDs.create()}
+        record={manualDeployDs.current}
       />,
       afterClose: () => {
+        manualDeployDs.reset();
         deployStore.setCertificates([]);
         deployStore.setAppService([]);
         deployStore.setConfigValue('');
