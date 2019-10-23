@@ -392,4 +392,15 @@ public class DevopsSagaHandler {
         LOGGER.info("================应用服务创建失败执行回写失败状态成功，serviceId：{}", devOpsAppServicePayload.getAppServiceId());
         return data;
     }
+
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_APP_DELETE,
+            sagaCode = SagaTopicCodeConstants.DEVOPS_APP_DELETE,
+            description = "Devops删除应用服务",maxRetryCount = 3,
+            seq = 1)
+    public void  deleteAppService(String data) {
+        DevOpsAppServicePayload devOpsAppServicePayload = gson.fromJson(data, DevOpsAppServicePayload.class);
+        appServiceService.deleteAppServiceSage(devOpsAppServicePayload.getIamProjectId(),devOpsAppServicePayload.getAppServiceId());
+        LOGGER.info("================删除应用服务执行成功，serviceId：{}", devOpsAppServicePayload.getAppServiceId());
+    }
+
 }

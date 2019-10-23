@@ -1,10 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -537,6 +534,15 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
         }
         operate(organizationId, resourceType, configVOS);
     }
+
+    @Override
+    public void deleteByConfigIds(Set<Long> configIds) {
+       List<DevopsConfigDTO> devopsConfigDTOS = devopsConfigMapper.listByConfigs(configIds);
+       devopsConfigDTOS.stream().filter(devopsConfigDTO -> devopsConfigDTO.getAppServiceId() != null)
+               .forEach(devopsConfigDTO -> {
+                   devopsConfigMapper.deleteByPrimaryKey(devopsConfigDTO.getId());
+               });
+     }
 
     private void checkRegistryProjectIsPrivate(DevopsConfigVO devopsConfigVO) {
         ConfigurationProperties configurationProperties = new ConfigurationProperties();

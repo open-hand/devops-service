@@ -2,6 +2,9 @@ package io.choerodon.devops.infra.mapper;
 
 import io.choerodon.devops.infra.dto.AppServiceVersionReadmeDTO;
 import io.choerodon.mybatis.common.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.Set;
 
 /**
  * Creator: Runge
@@ -10,4 +13,5 @@ import io.choerodon.mybatis.common.Mapper;
  * Description:
  */
 public interface AppServiceVersionReadmeMapper extends Mapper<AppServiceVersionReadmeDTO> {
+    void deleteByIds(@Param("readmeIds") Set<Long> readmeIds);
 }

@@ -59,6 +59,12 @@ FROM
 	)
     </delete>
 
-
+   <delete id="deleteByAppServiceId">
+        DELETE
+            FROM
+                devops_branch
+            WHERE
+            app_service_id = #{appServiceId}
+   </delete>
 
 </mapper>

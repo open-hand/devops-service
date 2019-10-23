@@ -568,6 +568,14 @@
         </foreach>
         END
     </select>
+    <delete id="deleteByIds">
+        DELETE  FROM devops_app_service_version
+        where id in
+        <foreach collection="versionIds" item="versionId"
+                 open="(" separator="," close=")">
+            #{versionId}
+        </foreach>
+    </delete>
 
 
 </mapper>

@@ -196,4 +196,6 @@ public interface AppServiceVersionService {
     List<AppServiceVersionDTO> listAppServiceVersionByIdsAndProjectId(Set<Long> ids, Long projectId, String params);
 
     Boolean isVersionUseConfig(Long configId, String configType);
+
+    void deleteByAppServiceId(Long appServiceId);
 }

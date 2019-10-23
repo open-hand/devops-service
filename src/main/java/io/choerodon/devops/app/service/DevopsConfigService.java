@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service;
 
 import java.util.List;
+import java.util.Set;
 
 import com.github.pagehelper.PageInfo;
 
@@ -82,5 +83,7 @@ public interface DevopsConfigService {
      * 操作 仓库配置
      */
     void operateConfig(Long organizationId, String resourceType, DevopsConfigRepVO devopsConfigRepVO);
+
+    void deleteByConfigIds(Set<Long> configIds);
 }
 

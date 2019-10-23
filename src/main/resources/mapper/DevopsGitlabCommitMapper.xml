@@ -56,5 +56,12 @@
         </if>
 
     </select>
+    <delete id="deleteByAppServiceId">
+        DELETE
+            FROM
+                devops_gitlab_commit
+            WHERE
+            app_service_id = #{appServiceId}
+    </delete>
 
 </mapper>

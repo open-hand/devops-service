@@ -164,7 +164,12 @@ public class AppServiceServiceImpl implements AppServiceService {
     private String helmUrl;
     @Autowired
     private AppServiceShareRuleMapper appServiceShareRuleMapper;
-
+    @Autowired
+    private DevopsGitlabCommitMapper gitlabCommitMapper;
+    @Autowired
+    private DevopsGitlabPipelineMapper gitlabPipelineMapper;
+    @Autowired
+    private DevopsMergeRequestMapper mergeRequestMapper;
     @Override
     @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_APPLICATION_SERVICE,
             description = "Devops创建应用服务", inputSchema = "{}")
@@ -248,20 +253,59 @@ public class AppServiceServiceImpl implements AppServiceService {
         return appServiceRepVO;
     }
 
+    @Saga(code = SagaTopicCodeConstants.DEVOPS_APP_DELETE,
+            description = "Devops删除应用服务", inputSchema = "{}")
     @Transactional
     @Override
     public void delete(Long projectId, Long appServiceId) {
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
-
         if (appServiceDTO == null) {
             return;
         }
-
-        // 禁止删除未失败或者停用状态的应用服务
+        // 禁止删除未失败或者启用状态的应用服务
         if (!Boolean.TRUE.equals(appServiceDTO.getFailed()) || !Boolean.TRUE.equals(appServiceDTO.getActive())) {
             throw new CommonException("error.delete.nonfailed.app.service", appServiceDTO.getName());
         }
+        // 验证改应用服务在其他项目是否被生成实例
+        checkAppserviceIsShareDeploy(projectId, appServiceId);
+        appServiceDTO.setSynchro(Boolean.FALSE);
+        appServiceMapper.updateByPrimaryKey(appServiceDTO);
 
+        DevOpsAppServicePayload devOpsAppServicePayload = new DevOpsAppServicePayload();
+        devOpsAppServicePayload.setAppServiceId(appServiceId);
+        devOpsAppServicePayload.setIamProjectId(projectId);
+        producer.applyAndReturn(
+                StartSagaBuilder
+                        .newBuilder()
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withRefType("")
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_APP_DELETE),
+                builder -> builder
+                        .withPayloadAndSerialize(devOpsAppServicePayload)
+                        .withRefId("")
+                        .withSourceId(projectId));
+    }
+
+    private void checkAppserviceIsShareDeploy(Long projectId, Long appServiceId) {
+        Long organizationId = baseServiceClientOperator.queryIamProjectById(projectId).getOrganizationId();
+        List<ProjectDTO> projectDTOS = baseServiceClientOperator.listIamProjectByOrgId(organizationId);
+        Set<Long> projectIds = projectDTOS.stream().filter(projectDTO -> !projectDTO.getId().equals(projectId)).map(ProjectDTO::getId).collect(toSet());
+        List<AppServiceInstanceDTO> appServiceInstanceDTOS = appServiceInstanceMapper.listByProjectIdsAndAppServiceId(projectIds, appServiceId);
+        if (!CollectionUtils.isEmpty(appServiceInstanceDTOS)) {
+            throw new CommonException("error.not.delete.service.by.other.project.deployment");
+        }
+    }
+    @Override
+    @Transactional
+    public void deleteAppServiceSage(Long projectId, Long appServiceId) {
+        AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
+        // 删除应用服务的分支,合并请求，pipeline,commit
+        devopsBranchService.deleteAllBaranch(appServiceId);
+        gitlabCommitMapper.deleteByAppServiceId(appServiceId);
+        mergeRequestMapper.deleteByAppServiceId(appServiceId);
+        gitlabPipelineMapper.deleteByAppServiceId(appServiceId);
+        // 删除应用服务的版本
+        appServiceVersionService.deleteByAppServiceId(appServiceId);
         //删除应用服务权限
         appServiceUserPermissionService.baseDeleteByAppServiceId(appServiceId);
         //删除gitlab project

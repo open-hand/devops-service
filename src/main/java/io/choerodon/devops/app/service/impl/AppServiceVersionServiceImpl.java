@@ -17,6 +17,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -667,4 +668,44 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         List<AppServiceVersionDTO> list = appServiceVersionMapper.select(appServiceVersionDTO);
         return list != null && list.size() > 0;
     }
+
+    @Override
+    public void deleteByAppServiceId(Long appServiceId) {
+        List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceVersionMapper.listByAppServiceId(appServiceId, null);
+        if(!CollectionUtils.isEmpty(appServiceVersionDTOS)){
+            Set<Long> valueIds = new HashSet<>();
+            Set<Long> readmeIds = new HashSet<>();
+            Set<Long> configIds = new HashSet<>();
+            Set<Long> versionIds = new HashSet<>();
+            appServiceVersionDTOS.stream().forEach(appServiceVersionDTO -> {
+                versionIds.add(appServiceVersionDTO.getId());
+                if(appServiceVersionDTO.getValueId() != null){
+                    valueIds.add(appServiceVersionDTO.getValueId());
+                }
+                if(appServiceVersionDTO.getReadmeValueId() != null){
+                    readmeIds.add(appServiceVersionDTO.getReadmeValueId());
+                }
+
+                if(appServiceVersionDTO.getHarborConfigId() != null){
+                    configIds.add(appServiceVersionDTO.getHarborConfigId());
+                }
+                if(appServiceVersionDTO.getHelmConfigId() != null){
+                    configIds.add(appServiceVersionDTO.getHelmConfigId());
+                }
+
+            });
+            if(!CollectionUtils.isEmpty(valueIds)){
+                appServiceVersionValueService.deleteByIds(valueIds);
+            }
+            if(!CollectionUtils.isEmpty(readmeIds)){
+                appServiceVersionReadmeMapper.deleteByIds(readmeIds);
+            }
+            if(!CollectionUtils.isEmpty(configIds)){
+                devopsConfigService.deleteByConfigIds(configIds);
+            }
+            appServiceVersionMapper.deleteByIds(versionIds);
+        }
+    }
+
+
 }

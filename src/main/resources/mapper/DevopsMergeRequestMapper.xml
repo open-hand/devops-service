@@ -37,7 +37,13 @@
 	where dmr.gitlab_project_id = #{projectId}
     </select>
 
-
+    <delete id="deleteByAppServiceId">
+        DELETE
+            FROM
+                devops_merge_request
+            WHERE
+            app_service_id = #{appServiceId}
+    </delete>
 </mapper>
 
 

@@ -20,4 +20,6 @@ public interface DevopsBranchMapper extends Mapper<DevopsBranchDTO> {
     void deleteByIsDelete();
 
     void deleteDuplicateBranch();
+
+    void deleteByAppServiceId(@Param("appServiceId") Long appServiceId);
 }
