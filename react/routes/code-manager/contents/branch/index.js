@@ -6,7 +6,8 @@ import { Modal as ProModal } from 'choerodon-ui/pro';
 import { Content, Page, Permission, stores, Action, Choerodon } from '@choerodon/boot';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import _ from 'lodash';
-import BranchCreate from './branch-create';
+import BranchCreate from './branch-create/index';
+// import BranchCreate from './branch-create/index2';
 import TimePopover from '../../../../components/timePopover';
 import BranchEdit from './branch-edit';
 import IssueDetail from './issue-detail';
@@ -24,7 +25,11 @@ import './index.less';
 
 const { AppState } = stores;
 const deleteKey = ProModal.key();
+const branchCreateModalKey = ProModal.key();
 
+const branchCreateModalStyle = {
+  width: 740,
+};
 @observer
 class Branch extends Component {
   constructor(props) {
@@ -323,6 +328,7 @@ class Branch extends Component {
       projectId,
       size: 3,
     });
+    this.openCreateBranchModal();
     BranchStore.setCreateBranchShow('create');
   };
 
@@ -439,6 +445,19 @@ class Branch extends Component {
   hasFilters = () => {
     const { filters, paras } = this.state;
     return !(_.isEmpty(filters) && _.isEmpty(paras));
+  };
+
+  // 打开创建分支模态框
+  openCreateBranchModal() {
+    ProModal.open({
+      key: branchCreateModalKey,
+      title: <FormattedMessage id="branch.create" />,
+      drawer: true,
+      children: <BranchCreate {...this.props} />,
+      style: branchCreateModalStyle,
+      okText: <FormattedMessage id="create" />,
+      cancelText: <FormattedMessage id="cancel" />,
+    });
   }
 
   render() {
@@ -462,13 +481,13 @@ class Branch extends Component {
           : <Fragment>
             {this.tableBranch}
             {apps && apps.length && appId ? <Fragment>
-              {BranchStore.createBranchShow === 'create' && <BranchCreate
-                name={_.filter(apps, (app) => app.id === DevPipelineStore.selectedApp)[0].name}
-                appId={DevPipelineStore.selectedApp}
-                store={BranchStore}
-                visible={BranchStore.createBranchShow === 'create'}
-                onClose={this.hideSidebar}
-              />}
+              {/*{BranchStore.createBranchShow === 'create' && <BranchCreate*/}
+                {/*name={_.filter(apps, (app) => app.id === DevPipelineStore.selectedApp)[0].name}*/}
+                {/*appId={DevPipelineStore.selectedApp}*/}
+                {/*store={BranchStore}*/}
+                {/*visible={BranchStore.createBranchShow === 'create'}*/}
+                {/*onClose={this.hideSidebar}*/}
+              {/*/>}*/}
               {BranchStore.createBranchShow === 'edit' && <BranchEdit
                 name={branchName}
                 appId={DevPipelineStore.selectedApp}
