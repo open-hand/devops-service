@@ -4,10 +4,12 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -1196,10 +1198,11 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             devopsEnvironmentDTO.setPermission(false);
         }
     }
-
+    @Saga(code = SagaTopicCodeConstants.DEVOPS_DELETE_ENV,
+            description = "devops删除停用和失败的环境")
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void deleteDeactivatedOrFailedEnvironment(Long envId) {
+    public void deleteDeactivatedOrFailedEnvironment(Long projectId,Long envId) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = baseQueryById(envId);
 
         if (devopsEnvironmentDTO == null) {
@@ -1209,7 +1212,24 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         if (!Boolean.FALSE.equals(devopsEnvironmentDTO.getActive()) && !Boolean.TRUE.equals(devopsEnvironmentDTO.getFailed())) {
             throw new CommonException("error.env.delete");
         }
+        devopsEnvironmentDTO.setSynchro(Boolean.FALSE);
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("envId",envId);
+        devopsEnvironmentMapper.updateByPrimaryKeySelective(devopsEnvironmentDTO);
+        producer.apply(
+                StartSagaBuilder
+                        .newBuilder()
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withRefType("")
+                        .withJson(jsonObject.toString())
+                        .withSourceId(projectId)
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_DELETE_ENV),
+                builder -> {});
 
+    }
+    @Override
+    public void deleteEnvSaga(Long envId){
+        DevopsEnvironmentDTO devopsEnvironmentDTO = baseQueryById(envId);
         // 删除对应的环境-应用服务关联关系
         DevopsEnvAppServiceDTO deleteCondition = new DevopsEnvAppServiceDTO();
         deleteCondition.setEnvId(envId);
@@ -1258,7 +1278,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             agentCommandService.deleteEnv(envId, devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getClusterId());
         }
     }
-
     @Override
     public List<DevopsClusterRepVO> listDevopsCluster(Long projectId) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);

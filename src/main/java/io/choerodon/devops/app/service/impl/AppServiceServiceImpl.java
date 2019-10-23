@@ -254,7 +254,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Saga(code = SagaTopicCodeConstants.DEVOPS_APP_DELETE,
-            description = "Devops删除应用服务", inputSchema = "{}")
+            description = "Devops删除应用服务", inputSchemaClass = DevOpsAppServicePayload.class)
     @Transactional
     @Override
     public void delete(Long projectId, Long appServiceId) {
@@ -274,16 +274,16 @@ public class AppServiceServiceImpl implements AppServiceService {
         DevOpsAppServicePayload devOpsAppServicePayload = new DevOpsAppServicePayload();
         devOpsAppServicePayload.setAppServiceId(appServiceId);
         devOpsAppServicePayload.setIamProjectId(projectId);
-        producer.applyAndReturn(
+        producer.apply(
                 StartSagaBuilder
                         .newBuilder()
                         .withLevel(ResourceLevel.PROJECT)
-                        .withRefType("")
-                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_APP_DELETE),
-                builder -> builder
-                        .withPayloadAndSerialize(devOpsAppServicePayload)
+                        .withRefType("app")
                         .withRefId("")
-                        .withSourceId(projectId));
+                        .withSourceId(projectId)
+                        .withPayloadAndSerialize(devOpsAppServicePayload)
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_APP_DELETE),
+                builder -> {});
     }
 
     private void checkAppserviceIsShareDeploy(Long projectId, Long appServiceId) {
@@ -302,7 +302,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         // 删除应用服务的分支,合并请求，pipeline,commit
         devopsBranchService.deleteAllBaranch(appServiceId);
         gitlabCommitMapper.deleteByAppServiceId(appServiceId);
-        mergeRequestMapper.deleteByAppServiceId(appServiceId);
+        mergeRequestMapper.deleteByProjectId(appServiceDTO.getGitlabProjectId());
         gitlabPipelineMapper.deleteByAppServiceId(appServiceId);
         // 删除应用服务的版本
         appServiceVersionService.deleteByAppServiceId(appServiceId);
