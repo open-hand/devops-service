@@ -12,12 +12,20 @@ import './AppName.less';
 export default function AppName(props) {
   const { name, showIcon, self, width, isInstance } = props;
   let icon;
+  let type;
   if (isInstance) {
     icon = self;
+    if (self === 'share') {
+      type = 'share';
+    } else if (self === 'application_market') {
+      type = 'market';
+    } else {
+      type = 'project';
+    }
   } else {
     icon = self ? 'project' : 'apps';
+    type = self ? 'project' : 'market';
   }
-  const type = self ? 'project' : 'market';
 
   return (
     <Fragment>
