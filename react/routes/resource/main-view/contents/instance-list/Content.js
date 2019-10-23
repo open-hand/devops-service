@@ -46,12 +46,22 @@ const Content = observer(() => {
   }
 
   function renderAppName({ value, record }) {
+    const appServiceType = record.get('appServiceType');
+    let iconType;
+    if (appServiceType === 'share_service') {
+      iconType = 'share';
+    } else if (appServiceType === 'market_service') {
+      iconType = 'application_market';
+    } else {
+      iconType = 'project';
+    }
     return (
       <AppName
         width={0.18}
         name={value}
         showIcon={!!record.get('projectId')}
-        self={record.get('projectId') === Number(id)}
+        self={iconType}
+        isInstance
       />
     );
   }
