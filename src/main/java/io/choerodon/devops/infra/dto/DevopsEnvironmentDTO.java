@@ -31,6 +31,7 @@ public class DevopsEnvironmentDTO extends BaseDTO {
     private String name;
     private String code;
     private String token;
+    private String type;
 
     private String description;
     private Boolean isActive;
@@ -224,5 +225,13 @@ public class DevopsEnvironmentDTO extends BaseDTO {
 
     public void setSkipCheckPermission(Boolean skipCheckPermission) {
         isSkipCheckPermission = skipCheckPermission;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 }
