@@ -393,6 +393,10 @@ public class DevopsSagaHandler {
         return data;
     }
 
+    /**
+     * Devops删除应用服务
+     * @param data
+     */
     @SagaTask(code = SagaTaskCodeConstants.DEVOPS_APP_DELETE,
             sagaCode = SagaTopicCodeConstants.DEVOPS_APP_DELETE,
             description = "Devops删除应用服务",maxRetryCount = 3,

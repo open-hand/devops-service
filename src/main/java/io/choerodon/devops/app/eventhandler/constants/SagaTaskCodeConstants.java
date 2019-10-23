@@ -194,6 +194,9 @@ public class SagaTaskCodeConstants {
      * devops导入内部应用服务
      */
     public static final String DEVOPS_IMPORT_INTERNAL_APPLICATION_SERVICE = "devopsImportInternalAppService";
+    /**
+     * devops删除应用服务
+     */
     public static final String DEVOPS_APP_DELETE = "devops-delete-app-service";
 
 
