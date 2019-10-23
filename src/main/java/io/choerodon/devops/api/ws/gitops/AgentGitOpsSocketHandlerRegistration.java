@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.ws.gitops;
 
+import static io.choerodon.devops.infra.handler.ClusterConnectionHandler.CLUSTER_SESSION;
+
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -39,7 +41,6 @@ import io.choerodon.websocket.helper.WebSocketHelper;
 @Component
 public class AgentGitOpsSocketHandlerRegistration implements SocketHandlerRegistration {
 
-    private static final String CLUSTER_SESSION = "cluster-sessions-cache";
     private static final String CLUSTER_ID = "clusterId";
     private static final Logger logger = LoggerFactory.getLogger(AgentGitOpsSocketHandlerRegistration.class);
     private ConcurrentHashMap<String, Map<String, Object>> attributes = new ConcurrentHashMap<>();

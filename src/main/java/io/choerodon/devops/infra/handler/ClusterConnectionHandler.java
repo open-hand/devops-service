@@ -31,9 +31,9 @@ import io.choerodon.devops.infra.util.TypeUtil;
 @Service
 public class ClusterConnectionHandler {
 
-    private static final String CLUSTER_SESSION = "cluster-sessions-catch";
+    public static final String CLUSTER_SESSION = "cluster-sessions-cache";
 
-    Pattern pattern = Pattern.compile("^[-\\+]?[\\d]*$");
+    private Pattern pattern = Pattern.compile("^[-\\+]?[\\d]*$");
     @Value("${agent.version}")
     private String agentExpectVersion;
     @Value("${services.gitlab.sshUrl}")
