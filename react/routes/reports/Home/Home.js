@@ -9,9 +9,8 @@ const { AppState } = stores;
 
 class Home extends Component {
   handleClickReport = (report) => {
-    const { history } = this.props;
-    const { id, name, type, organizationId } = AppState.currentMenuType;
-    history.push(`${report.link}?type=${type}&id=${id}&name=${name}&organizationId=${organizationId}`);
+    const { history, location: { search } } = this.props;
+    history.push(`${report.link}${search}`);
   };
 
   render() {
