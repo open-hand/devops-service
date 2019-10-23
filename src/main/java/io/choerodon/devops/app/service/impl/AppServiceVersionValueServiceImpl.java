@@ -7,6 +7,8 @@ import io.choerodon.devops.infra.mapper.AppServiceVersionValueMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Set;
+
 /**
  * Created by Sheep on 2019/7/12.
  */
@@ -32,6 +34,12 @@ public class AppServiceVersionValueServiceImpl implements AppServiceVersionValue
         return appServiceVersionValueMapper.selectByPrimaryKey(appServiceServiceValueId);
     }
 
+    @Override
+    public void deleteByIds(Set<Long> valueIds) {
+
+            appServiceVersionValueMapper.deleteByIds(valueIds);
+
+    }
 
 
 }

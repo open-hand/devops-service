@@ -2,6 +2,7 @@ package io.choerodon.devops.infra.mapper;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
 
@@ -32,4 +33,6 @@ public interface DevopsConfigMapper extends Mapper<DevopsConfigDTO> {
     DevopsConfigDTO queryDefaultConfig(@Param("type") String type);
 
     void updateResourceId(@Param("configId") Long configId);
+
+    List<DevopsConfigDTO> listByConfigs(@Param("configIds") Set<Long> configIds);
 }

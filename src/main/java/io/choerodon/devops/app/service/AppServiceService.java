@@ -462,4 +462,5 @@ public interface AppServiceService {
                        Boolean isGetWorkingDirectory);
 
     public String checkAppServiceType(Long projectId,AppServiceDTO appServiceDTO);
+    void deleteAppServiceSage(Long projectId,Long appServiceId);
 }

@@ -3,6 +3,7 @@ package io.choerodon.devops.infra.mapper;
 import java.sql.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.annotation.Nullable;
 
 import org.apache.ibatis.annotations.Param;
@@ -68,4 +69,6 @@ public interface AppServiceInstanceMapper extends Mapper<AppServiceInstanceDTO> 
     void updateStatus(@Param("instanceId") Long instanceId, @Param("status") String status);
 
     List<DevopsEnvAppServiceDTO> listAllDistinctWithoutDeleted();
+
+    List<AppServiceInstanceDTO> listByProjectIdsAndAppServiceId(@Param("projectIds") Set<Long> projectIds,@Param("appServiceId") Long appServiceId);
 }
