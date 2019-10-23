@@ -34,7 +34,7 @@ public class TypeUtil {
      */
 
     public static Integer objToInteger(Object obj) {
-        if (obj == null) {
+        if (obj == null || "".equals(obj)) {
             return null;
         }
         return Integer.valueOf(String.valueOf(obj));
@@ -45,7 +45,7 @@ public class TypeUtil {
      */
 
     public static Long objToLong(Object obj) {
-        if (obj == null) {
+        if (obj == null || "".equals(obj)) {
             return null;
         }
         return Long.valueOf(String.valueOf(obj));
@@ -56,7 +56,7 @@ public class TypeUtil {
      */
 
     public static double objTodouble(Object obj) {
-        if (obj == null) {
+        if (obj == null || "".equals(obj)) {
             return 0;
         }
         return Double.parseDouble(String.valueOf(obj));
@@ -67,7 +67,7 @@ public class TypeUtil {
      */
 
     public static int objToInt(Object obj) {
-        if (obj == null) {
+        if (obj == null || "".equals(obj)) {
             return 0;
         }
         return Integer.parseInt(String.valueOf(obj));
@@ -78,7 +78,7 @@ public class TypeUtil {
      */
 
     public static Boolean objToBoolean(Object obj) {
-        if (obj == null) {
+        if (obj == null || "".equals(obj)) {
             return false;
         }
         return Boolean.valueOf(String.valueOf(obj));
