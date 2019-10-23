@@ -1216,16 +1216,15 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("envId",envId);
         devopsEnvironmentMapper.updateByPrimaryKeySelective(devopsEnvironmentDTO);
-        producer.applyAndReturn(
+        producer.apply(
                 StartSagaBuilder
                         .newBuilder()
                         .withLevel(ResourceLevel.PROJECT)
                         .withRefType("")
-                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_DELETE_ENV),
-                builder -> builder
                         .withJson(jsonObject.toString())
-                        .withRefId("")
-                        .withSourceId(projectId));
+                        .withSourceId(projectId)
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_DELETE_ENV),
+                builder -> {});
 
     }
     @Override
