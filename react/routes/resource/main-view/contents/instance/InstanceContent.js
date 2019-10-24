@@ -26,6 +26,7 @@ const InstanceTitle = ({
   status,
   name,
   errorText,
+  versionName,
 }) => {
   const podSize = useMemo(() => ({
     width: 22,
@@ -52,6 +53,7 @@ const InstanceTitle = ({
       }]}
     />
     <span className="c7ncd-page-title-text">{name}</span>
+    {/* 要改 */}
     {status === 'failed' && (
       <Tooltip
         title={errorText}
@@ -61,15 +63,7 @@ const InstanceTitle = ({
         <Icon type="error" className={`${prefixCls}-instance-page-title-icon`} />
       </Tooltip>
     )}
-    {status === 'operating' && (
-      <Tooltip title="处理中">
-        <Progress
-          className={`${prefixCls}-instance-page-title-icon-loading`}
-          type="loading"
-          size="small"
-        />
-      </Tooltip>
-    )}
+    <span style={{ color: 'rgba(0, 0, 0, 0.54)', fontSize: '.2rem', fontWeight: '400' }}>{versionName ? `(${versionName})` : ''}</span>
   </Fragment>;
 };
 
@@ -107,6 +101,7 @@ const InstanceContent = observer(() => {
       const podRunningCount = record.get('podRunningCount');
       const podCount = record.get('podCount');
       const error = record.get('error');
+      const versionName = record.get('versionName');
       return {
         id,
         status,
@@ -114,6 +109,7 @@ const InstanceContent = observer(() => {
         podRunningCount,
         podCount,
         error,
+        versionName,
       };
     }
 
@@ -123,6 +119,7 @@ const InstanceContent = observer(() => {
   useEffect(() => {
     const current = getCurrent();
     if (current) {
+<<<<<<< HEAD
       const menuItem = treeDs.find((item) => item.get('key') === selectedKey && item.get('id') === current.id);
       if (menuItem) {
         const previous = pick(menuItem.toData(), ['status', 'name', 'podRunningCount', 'podCount']);
@@ -135,6 +132,18 @@ const InstanceContent = observer(() => {
               ...resourceStore.getSelectedMenu,
               ...next,
             });
+=======
+      const menuItem = treeDs.find((item) => item.get('id') === current.id);
+      const previous = pick(menuItem.toData(), ['status', 'name', 'podRunningCount', 'podCount']);
+      const next = omit(current, ['id', 'error', 'versionName']);
+
+      if (!isEqual(previous, next)) {
+        runInAction(() => {
+          menuItem.set(next);
+          resourceStore.setSelectedMenu({
+            ...resourceStore.getSelectedMenu,
+            ...next,
+>>>>>>> [IMP] 去除查看实例按钮, 江版本号直接显示在后面
           });
         }
       }
@@ -150,6 +159,7 @@ const InstanceContent = observer(() => {
         podRunningCount,
         podCount,
         error,
+        versionName,
       } = current;
       const podUnlinkCount = computeUnlinkPod(podCount, podRunningCount);
       return <InstanceTitle
@@ -158,6 +168,7 @@ const InstanceContent = observer(() => {
         podRunningCount={podRunningCount}
         podUnlinkCount={podUnlinkCount}
         errorText={error}
+        versionName={versionName}
       />;
     }
     return null;
