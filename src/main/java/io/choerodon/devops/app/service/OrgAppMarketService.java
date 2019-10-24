@@ -57,9 +57,15 @@ public interface OrgAppMarketService {
     void downLoadApp(AppMarketDownloadPayload appServicePayload);
 
     /**
-     * 根据versionId查询应用服务版本
-     * 保留原排序
-     * @param versionVOList
+     * 应用市场下载失败删除gitlab相关项目
+     * @param marketDelGitlabProPayload
      */
+    void deleteGitlabProject(MarketDelGitlabProPayload marketDelGitlabProPayload) ;
+
+        /**
+         * 根据versionId查询应用服务版本
+         * 保留原排序
+         * @param versionVOList
+         */
     List<AppServiceAndVersionVO> listVersions(List<AppServiceAndVersionVO> versionVOList);
 }
