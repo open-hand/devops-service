@@ -87,6 +87,7 @@ public class DevopsEnvPodController {
 
     /**
      * 删除实例下面的pod
+     *
      * @param envId 环境id
      * @param podId pod id
      * @return
@@ -99,7 +100,9 @@ public class DevopsEnvPodController {
             @ApiParam(value = "环境id", required = true)
             @RequestParam(value = "env_id") Long envId,
             @ApiParam(value = "podId")
-            @PathVariable(value = "pod_id") Long podId) {
+            @PathVariable(value = "pod_id") Long podId,
+            @ApiParam(value = "项目id")
+            @PathVariable(value = "project_id") Long projetId) {
         devopsEnvPodService.deleteEnvPodById(envId, podId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
