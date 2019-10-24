@@ -1,7 +1,7 @@
 package io.choerodon.devops.infra.dto;
 
 
-import javax.persistence.Column;
+import javax.persistence.Table;
 
 import io.choerodon.mybatis.entity.BaseDTO;
 
@@ -10,24 +10,25 @@ import io.choerodon.mybatis.entity.BaseDTO;
  * @date: 2019/10/23 11:45
  * @description:
  */
+@Table(name = "devops_harbor_user")
 public class HarborUserDTO extends BaseDTO {
     private Long id;
 
-    private String username;
+    private String harborProjectUserName;
 
-    private String email;
+    private String harborProjectUserEmail;
 
-    private String password;
+    private String harborProjectUserPassword;
 
     private boolean isPush;
 
     public HarborUserDTO() {
     }
 
-    public HarborUserDTO(String username, String email, String password, boolean isPush) {
-        this.username = username;
-        this.email = email;
-        this.password = password;
+    public HarborUserDTO(String harborProjectUserName, String harborProjectUserEmail, String harborProjectUserPassword, boolean isPush) {
+        this.harborProjectUserName = harborProjectUserName;
+        this.harborProjectUserEmail = harborProjectUserEmail;
+        this.harborProjectUserPassword = harborProjectUserPassword;
         this.isPush = isPush;
     }
 
@@ -39,28 +40,28 @@ public class HarborUserDTO extends BaseDTO {
         this.id = id;
     }
 
-    public String getUsername() {
-        return username;
+    public String getHarborProjectUserName() {
+        return harborProjectUserName;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setHarborProjectUserName(String harborProjectUserName) {
+        this.harborProjectUserName = harborProjectUserName;
     }
 
-    public String getEmail() {
-        return email;
+    public String getHarborProjectUserEmail() {
+        return harborProjectUserEmail;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public void setHarborProjectUserEmail(String harborProjectUserEmail) {
+        this.harborProjectUserEmail = harborProjectUserEmail;
     }
 
-    public String getPassword() {
-        return password;
+    public String getHarborProjectUserPassword() {
+        return harborProjectUserPassword;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setHarborProjectUserPassword(String harborProjectUserPassword) {
+        this.harborProjectUserPassword = harborProjectUserPassword;
     }
 
     public boolean isPush() {
