@@ -112,27 +112,30 @@ public class HarborServiceImpl implements HarborService {
                 OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
                 DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
                 String username = String.format("user%s%s", organizationDTO.getId(), projectId);
-                String pullUsername = String.format("user-pull%s%s", organizationDTO.getId(), projectId);
-                String userEmail = String.format("%s@harbor.com", username);
-                String pullUserEmail = String.format("%s-pull@harbor.com", pullUsername);
+                String useremail = String.format("%s@harbor.com", username);
                 String password = String.format("%s%s", username, GenerateUUID.generateUUID().substring(0, 5));
-                User user1 = new User(username, userEmail, password, username);
-                User user2 = new User(pullUsername, pullUserEmail, password, username);
+
+                String pullUsername = String.format("user-pull%s%s", organizationDTO.getId(), projectId);
+                String pullUseremail = String.format("%s-pull@harbor.com", pullUsername);
+                String pullUserpassword = String.format("%spull%s", username, GenerateUUID.generateUUID().substring(0, 5));
+
+                User user = new User(username, useremail, password, username);
+                User pullUser = new User(pullUsername, pullUseremail, pullUserpassword, pullUsername);
                 //创建用户
-                createUser(harborClient, user1, Arrays.asList(1), organizationDTO, projectDTO);
-                createUser(harborClient, user2, Arrays.asList(3), organizationDTO, projectDTO);
-                HarborUserDTO harborUserDTO1 = new HarborUserDTO(user1.getUsername(), user1.getPassword(), user1.getEmail(), true);
-                HarborUserDTO harborUserDTO2 = new HarborUserDTO(user2.getUsername(), user2.getPassword(), user2.getEmail(), false);
-                if (devopsHarborUserService.create(harborUserDTO1) != 1) {
+                createUser(harborClient, user, Arrays.asList(1), organizationDTO, projectDTO);
+                createUser(harborClient, pullUser, Arrays.asList(3), organizationDTO, projectDTO);
+                HarborUserDTO harborUserDTO = new HarborUserDTO(user.getUsername(), user.getPassword(), user.getEmail(), true);
+                HarborUserDTO pullHarborUserDTO = new HarborUserDTO(pullUser.getUsername(), pullUser.getPassword(), pullUser.getEmail(), false);
+                if (devopsHarborUserService.create(harborUserDTO) != 1) {
                     throw new CommonException("error.harbor.user.insert");
                 } else {
-                    devopsProjectDTO.setHarborUserId(harborUserDTO1.getId());
+                    devopsProjectDTO.setHarborUserId(harborUserDTO.getId());
                     devopsProjectService.baseUpdate(devopsProjectDTO);
                 }
-                if (devopsHarborUserService.create(harborUserDTO2) != 1) {
+                if (devopsHarborUserService.create(pullHarborUserDTO) != 1) {
                     throw new CommonException("error.harbor.pull.user.insert");
                 } else {
-                    devopsProjectDTO.setHarborPullUserId(harborUserDTO2.getId());
+                    devopsProjectDTO.setHarborPullUserId(pullHarborUserDTO.getId());
                     devopsProjectService.baseUpdate(devopsProjectDTO);
                 }
 
