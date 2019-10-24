@@ -12,9 +12,9 @@
 		)
 	VALUES
 		(
-			#{username},
-			#{password},
-			#{email},
+			#{harborProjectUserName},
+			#{harborProjectUserPassword},
+			#{harborProjectUserEmail},
 			#{isPush}
 		);
     </insert>
