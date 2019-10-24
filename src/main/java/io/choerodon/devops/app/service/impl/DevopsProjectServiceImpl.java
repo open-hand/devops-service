@@ -146,6 +146,11 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
         return allMember.stream().map(this::userDTOTOVO).collect(Collectors.toList());
     }
 
+    @Override
+    public List<DevopsProjectDTO> listAll() {
+        return devopsProjectMapper.selectAll();
+    }
+
     private UserVO userDTOTOVO(IamUserDTO iamUserDTOList) {
         UserVO userVO = new UserVO();
         BeanUtils.copyProperties(iamUserDTOList, userVO);
