@@ -1,5 +1,8 @@
 package io.choerodon.devops.api.controller.v1
 
+import org.mockito.BDDMockito
+import org.springframework.http.ResponseEntity
+
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
 import com.github.pagehelper.PageInfo
@@ -89,7 +92,6 @@ class DevopsEnvPodControllerSpec extends Specification {
         applicationVersionDO.setId(1L)
         applicationVersionDO.setAppServiceId(1L)
         applicationVersionDO.setValueId(1L)
-        applicationVersionDO.setIsPublish(1L)
         applicationVersionDO.setCommit("commit")
         applicationVersionDO.setVersion("versions")
         applicationVersionDO.setCreationDate(new Date(2018, 9, 14, 13, 40, 0))
@@ -97,7 +99,6 @@ class DevopsEnvPodControllerSpec extends Specification {
         applicationVersionDO1.setId(2L)
         applicationVersionDO1.setAppServiceId(2L)
         applicationVersionDO1.setValueId(1L)
-        applicationVersionDO1.setIsPublish(1L)
         applicationVersionDO1.setCommit("commit1")
         applicationVersionDO1.setVersion("version1")
         applicationVersionDO1.setCreationDate(new Date(2018, 9, 14, 13, 40, 0))
@@ -184,6 +185,13 @@ class DevopsEnvPodControllerSpec extends Specification {
       entity.getStatusCode().is2xxSuccessful()
       entity.getBody()!=null
      }
+
+    def "deleteEnvPod"(){
+        when:
+        def entity = restTemplate.delete(MAPPING+"/1?env_id=1")
+        then:
+        assert entity == null
+    }
 
      def "cleanupData"() {
         given:
