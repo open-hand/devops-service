@@ -119,6 +119,7 @@ const InstanceContent = observer(() => {
   useEffect(() => {
     const current = getCurrent();
     if (current) {
+<<<<<<< HEAD
       const menuItem = treeDs.find((item) => item.get('key') === selectedKey && item.get('id') === current.id);
       if (menuItem) {
         const previous = pick(menuItem.toData(), ['status', 'name', 'podRunningCount', 'podCount']);
@@ -131,6 +132,18 @@ const InstanceContent = observer(() => {
               ...resourceStore.getSelectedMenu,
               ...next,
             });
+=======
+      const menuItem = treeDs.find((item) => item.get('id') === current.id);
+      const previous = pick(menuItem.toData(), ['status', 'name', 'podRunningCount', 'podCount']);
+      const next = omit(current, ['id', 'error', 'versionName']);
+
+      if (!isEqual(previous, next)) {
+        runInAction(() => {
+          menuItem.set(next);
+          resourceStore.setSelectedMenu({
+            ...resourceStore.getSelectedMenu,
+            ...next,
+>>>>>>> [IMP] 去除查看实例按钮, 江版本号直接显示在后面
           });
         }
       }
