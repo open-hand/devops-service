@@ -55,7 +55,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
     private static final String CUSTOM = "custom";
     private static final Gson gson = new Gson();
     private static final String USER_PREFIX = "user%s%s";
-    private static final String USER_PREFIX_PULL = "user-pull%s%s";
+    private static final String USER_PREFIX_PULL = "user%s%s-pull";
 
     @Autowired
     private DevopsConfigMapper devopsConfigMapper;
@@ -194,9 +194,9 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
             String password =harborUserDTO==null? String.format("%s%s", username, GenerateUUID.generateUUID().substring(0, 5)):harborUserDTO.getHarborProjectUserPassword();
             String useremail = harborUserDTO==null? String.format("%s@choerodon.com", username) :harborUserDTO.getHarborProjectUserEmail();
 
-            String pullUseremail = harborPullUserDTO==null?String.format("%s_pull@choerodon.com", username):harborPullUserDTO.getHarborProjectUserEmail() ;
+            String pullUseremail = harborPullUserDTO==null?String.format("%s-pull@choerodon.com", username):harborPullUserDTO.getHarborProjectUserEmail() ;
             String pullUsername = harborPullUserDTO==null?String.format(USER_PREFIX_PULL, organizationDTO.getId(), projectId) :harborPullUserDTO.getHarborProjectUserName();
-            String pullUserpassword = harborPullUserDTO==null?String.format("%spull%s", username, GenerateUUID.generateUUID().substring(0, 5)):harborPullUserDTO.getHarborProjectUserPassword();
+            String pullUserpassword = harborPullUserDTO==null?String.format("%s%s-pull", username, GenerateUUID.generateUUID().substring(0, 5)):harborPullUserDTO.getHarborProjectUserPassword();
 
             User user = new User(username, useremail, password, username);
             User pullUser = new User(pullUsername, pullUseremail, pullUserpassword, pullUsername);

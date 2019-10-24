@@ -116,9 +116,9 @@ public class HarborServiceImpl implements HarborService {
                 String useremail = String.format("%s@harbor.com", username);
                 String password = String.format("%s%s", username, GenerateUUID.generateUUID().substring(0, 5));
 
-                String pullUsername = String.format("user-pull%s%s", organizationDTO.getId(), projectId);
+                String pullUsername = String.format("user%s%s-pull", organizationDTO.getId(), projectId);
                 String pullUseremail = String.format("%s-pull@harbor.com", pullUsername);
-                String pullUserpassword = String.format("%spull%s", username, GenerateUUID.generateUUID().substring(0, 5));
+                String pullUserpassword = String.format("%s%s-pull", username, GenerateUUID.generateUUID().substring(0, 5));
 
                 User user = new User(username, useremail, password, username);
                 User pullUser = new User(pullUsername, pullUseremail, pullUserpassword, pullUsername);
