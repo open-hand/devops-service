@@ -54,7 +54,11 @@ const InstanceTitle = ({
     />
     <span className="c7ncd-page-title-text">{name}</span>
     {status === 'failed' && (
-      <Tooltip title={errorText}>
+      <Tooltip
+        title={errorText}
+        placement="bottom"
+        overlayClassName={`${prefixCls}-instance-page-title-error-tooltip`}
+      >
         <Icon type="error" className={`${prefixCls}-instance-page-title-icon`} />
       </Tooltip>
     )}
