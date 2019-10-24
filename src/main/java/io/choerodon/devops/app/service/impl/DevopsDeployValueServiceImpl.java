@@ -169,7 +169,8 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
         if (deployValueId != null) {
             updateCheck = devopsDeployValueDTOS.size() == 1 && devopsDeployValueDTOS.get(0).getId().equals(deployValueId);
         }
-        if (!(devopsDeployValueDTOS.isEmpty() || updateCheck)) {
+        // 当查询结果不为空且不是更新部署配置时抛出异常
+        if (devopsDeployValueDTOS.size() > 0 && !updateCheck) {
             throw new CommonException("error.devops.pipeline.value.name.exit");
         }
     }
