@@ -25,8 +25,6 @@ import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.nodes.Tag;
 
 public class ResourceConvertToYamlHandler<T> {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ResourceConvertToYamlHandler.class);
-
     public static final String UPDATE = "update";
     private static final String C7NTAG = "!!io.choerodon.devops.domain.application.valueobject.C7nHelmRelease";
     private static final String INGTAG = "!!io.kubernetes.client.models.V1beta1Ingress";
@@ -56,7 +54,6 @@ public class ResourceConvertToYamlHandler<T> {
      */
     public void operationEnvGitlabFile(String fileCode, Integer gitlabEnvProjectId, String operationType,
                                        Long userId, Long objectId, String objectType, V1Endpoints v1Endpoints, Boolean deleteCert, Long envId, String filePath) {
-        LOGGER.info("operate env gitlab file with file code: {}", fileCode);
         GitlabServiceClientOperator gitlabServiceClientOperator = ApplicationContextHelper.getSpringFactory().getBean(GitlabServiceClientOperator.class);
         Tag tag = new Tag(type.getClass().toString());
         Yaml yaml = getYamlObject(tag, true);
@@ -80,11 +77,9 @@ public class ResourceConvertToYamlHandler<T> {
             if (devopsEnvFileResourceDTO == null) {
                 throw new CommonException("error.fileResource.not.exist");
             }
-            LOGGER.info("Start to update file {} successfully.", devopsEnvFileResourceDTO.getFilePath());
             gitlabServiceClientOperator.updateFile(gitlabEnvProjectId, devopsEnvFileResourceDTO.getFilePath(), getUpdateContent(type, deleteCert,
                     endpointContent, devopsEnvFileResourceDTO.getFilePath(), objectType, filePath, operationType),
                     "UPDATE FILE", TypeUtil.objToInteger(userId));
-            LOGGER.info("Update file {} successfully.", devopsEnvFileResourceDTO.getFilePath());
         }
     }
 

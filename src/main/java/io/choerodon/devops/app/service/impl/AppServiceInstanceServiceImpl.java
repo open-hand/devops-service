@@ -651,7 +651,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             resourceConvertToYamlHandler.setType(getC7NHelmRelease(
                     instanceSagaPayload.getAppServiceDeployVO().getInstanceName(), instanceSagaPayload.getAppServiceVersionDTO().getRepository(), instanceSagaPayload.getCommandId(), instanceSagaPayload.getApplicationDTO().getCode(), instanceSagaPayload.getAppServiceVersionDTO().getVersion(), instanceSagaPayload.getAppServiceDeployVO().getValues(), instanceSagaPayload.getAppServiceDeployVO().getAppServiceVersionId(), instanceSagaPayload.getSecretCode()));
 
-            LOGGER.info("Starting to operate gitlab file of instance: {}", instanceSagaPayload.getAppServiceDeployVO().getInstanceName());
             resourceConvertToYamlHandler.operationEnvGitlabFile(
                     RELEASE_PREFIX + instanceSagaPayload.getAppServiceDeployVO().getInstanceName(),
                     instanceSagaPayload.getDevopsEnvironmentDTO().getGitlabEnvProjectId().intValue(),
