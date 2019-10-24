@@ -9,6 +9,7 @@ import java.util.Map;
 import com.google.gson.Gson;
 
 import io.choerodon.devops.app.service.DevopsHarborUserService;
+import io.choerodon.devops.infra.dto.HarborUserDTO;
 import io.choerodon.devops.infra.util.GenerateUUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
