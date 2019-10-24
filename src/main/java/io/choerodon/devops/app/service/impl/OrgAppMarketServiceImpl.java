@@ -8,6 +8,10 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.producer.StartSagaBuilder;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
@@ -21,6 +25,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import retrofit2.Call;
@@ -238,10 +243,10 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
     public void downLoadApp(AppMarketDownloadPayload appMarketDownloadVO) {
         List<AppDownloadDevopsReqVO> appDownloadDevopsReqVOS = new ArrayList<>();
         String groupPath = String.format(SITE_APP_GROUP_NAME_FORMAT, appMarketDownloadVO.getAppCode());
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(appMarketDownloadVO.getIamUserId());
         try {
             // 创建应用
             GroupDTO groupDTO = gitlabGroupService.createSiteAppGroup(appMarketDownloadVO.getIamUserId(), groupPath);
-            UserAttrDTO userAttrDTO = userAttrService.baseQueryById(appMarketDownloadVO.getIamUserId());
             // 分配所在gitlab group 用户权限
             MemberDTO memberDTO = gitlabServiceClientOperator.queryGroupMember(TypeUtil.objToInteger(groupDTO.getId()), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
             if (memberDTO == null || memberDTO.getId() == null || !memberDTO.getAccessLevel().equals(AccessLevel.OWNER.value)) {
@@ -273,8 +278,41 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             baseServiceClientOperator.completeDownloadApplication(appMarketDownloadVO.getAppDownloadRecordId(), appMarketDownloadVO.getAppVersionId(), appMarketDownloadVO.getOrganizationId(), appDownloadDevopsReqVOS);
         } catch (Exception e) {
             baseServiceClientOperator.failToDownloadApplication(appMarketDownloadVO.getAppDownloadRecordId(), appMarketDownloadVO.getAppVersionId(), appMarketDownloadVO.getOrganizationId());
+            MarketDelGitlabProPayload marketDelGitlabProPayload = new MarketDelGitlabProPayload();
+            marketDelGitlabProPayload.setAppCode(appMarketDownloadVO.getAppCode());
+            marketDelGitlabProPayload.setListAppServiceCode(appMarketDownloadVO.getAppServiceDownloadPayloads().stream().map(AppServiceDownloadPayload::getAppServiceCode).collect(Collectors.toList()));
+            marketDelGitlabProPayload.setGitlabUserId(userAttrDTO.getGitlabUserId());
+            marketDelGitlabProPayload.setMktAppId(appMarketDownloadVO.getAppId());
+            producer.applyAndReturn(
+                    StartSagaBuilder
+                            .newBuilder()
+                            .withLevel(ResourceLevel.SITE)
+                            .withRefType("appDownload")
+                            .withSagaCode(SagaTopicCodeConstants.DEVOPS_MARKET_DELETE_GITLAB_PRO),
+                    builder -> builder
+                            .withPayloadAndSerialize(marketDelGitlabProPayload)
+                            .withRefId(appMarketDownloadVO.getAppId().toString()));
+
             throw new CommonException("error.download.app", e);
         }
+    }
+
+    @Saga(code = SagaTopicCodeConstants.DEVOPS_MARKET_DELETE_GITLAB_PRO,
+            description = "应用市场下载失败,删除gitlab中的项目", inputSchemaClass = MarketDelGitlabProPayload.class)
+    @Override
+    public void deleteGitlabProject(MarketDelGitlabProPayload marketDelGitlabProPayload) {
+        marketDelGitlabProPayload.getListAppServiceCode().forEach(appServiceCode -> {
+            AppServiceDTO appServiceDTO = appServiceService.baseQueryByMktAppId(appServiceCode, marketDelGitlabProPayload.getMktAppId());
+            if (appServiceDTO == null) {
+                GitlabProjectDTO gitlabProjectDTO = gitlabServiceClientOperator.queryProjectByName(
+                        String.format(SITE_APP_GROUP_NAME_FORMAT, marketDelGitlabProPayload.getAppCode()),
+                        appServiceCode,
+                        TypeUtil.objToInteger(marketDelGitlabProPayload.getGitlabUserId()));
+                if (gitlabProjectDTO != null && gitlabProjectDTO.getId() != null) {
+                    gitlabServiceClientOperator.deleteProjectById(gitlabProjectDTO.getId(), TypeUtil.objToInteger(marketDelGitlabProPayload.getGitlabUserId()));
+                }
+            }
+        });
     }
 
     @Override
@@ -308,7 +346,6 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                     TypeUtil.objToInteger(gitlabUserId),
                     true);
         } else {
-            gitlabServiceClientOperator.deleteProjectById(gitlabProjectDTO.getId(), TypeUtil.objToInteger(gitlabUserId));
             throw new CommonException("error.gitlab.project.already.exit");
         }
         appServiceDTO.setGitlabProjectId(gitlabProjectDTO.getId());
