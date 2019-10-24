@@ -30,7 +30,7 @@ public class HarborUserDTO extends BaseDTO {
     public HarborUserDTO() {
     }
 
-    public HarborUserDTO(String harborProjectUserName, String harborProjectUserEmail, String harborProjectUserPassword, boolean isPush) {
+    public HarborUserDTO(String harborProjectUserName,  String harborProjectUserPassword,String harborProjectUserEmail, boolean isPush) {
         this.harborProjectUserName = harborProjectUserName;
         this.harborProjectUserEmail = harborProjectUserEmail;
         this.harborProjectUserPassword = harborProjectUserPassword;

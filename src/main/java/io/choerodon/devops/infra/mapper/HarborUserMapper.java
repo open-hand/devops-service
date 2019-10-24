@@ -1,7 +1,6 @@
 package io.choerodon.devops.infra.mapper;
 
 import io.choerodon.devops.infra.dto.HarborUserDTO;
-import io.choerodon.devops.infra.dto.harbor.User;
 import io.choerodon.mybatis.common.Mapper;
 
 /**

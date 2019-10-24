@@ -98,11 +98,11 @@ public class HarborServiceImpl implements HarborService {
             Response<Void> result = null;
             LOGGER.info(harborConfigurationProperties.getParams());
             if (harborConfigurationProperties.getParams() == null || harborConfigurationProperties.getParams().equals("")) {
-                result = harborClient.insertProject(new Project(projectCode, 1)).execute();
+                result = harborClient.insertProject(new Project(projectCode, 0)).execute();
             } else {
                 Map<String, String> params = new HashMap<>();
                 params = gson.fromJson(harborConfigurationProperties.getParams(), params.getClass());
-                result = harborClient.insertProject(params, new Project(projectCode, 1)).execute();
+                result = harborClient.insertProject(params, new Project(projectCode, 0)).execute();
             }
             if (result.raw().code() != 201 && result.raw().code() != 409) {
                 throw new CommonException(result.message());
