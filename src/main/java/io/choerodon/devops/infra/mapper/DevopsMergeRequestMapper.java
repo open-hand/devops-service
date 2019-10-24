@@ -22,5 +22,5 @@ public interface DevopsMergeRequestMapper extends Mapper<DevopsMergeRequestDTO> 
 
     DevopsMergeRequestDTO countMergeRequest(@Param("projectId") Integer gitlabProjectId);
 
-    void deleteByAppServiceId(@Param("appServiceId")Long appServiceId);
+    void deleteByProjectId(@Param("projectId")int projectId);
 }

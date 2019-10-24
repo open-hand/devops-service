@@ -434,7 +434,7 @@ public class DevopsEnvironmentController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)
             @PathVariable(value = "env_id") Long envId) {
-        devopsEnvironmentService.deleteDeactivatedOrFailedEnvironment(envId);
+        devopsEnvironmentService.deleteDeactivatedOrFailedEnvironment(projectId,envId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
