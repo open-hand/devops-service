@@ -50,6 +50,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
 
     public static final String APP_SERVICE = "appService";
     private static final String HARBOR = "harbor";
+    private static final String AUTHTYPE_PULL = "pull";
     private static final String CHART = "chart";
     private static final String CUSTOM = "custom";
     private static final Gson gson = new Gson();
@@ -285,7 +286,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
     }
 
     @Override
-    public DevopsConfigDTO queryRealConfig(Long resourceId, String resourceType, String configType) {
+    public DevopsConfigDTO queryRealConfig(Long resourceId, String resourceType, String configType,String authType) {
         //应用服务层次，先找应用配置，在找项目配置,最后找组织配置,项目和组织层次同理
         DevopsConfigDTO defaultConfig = baseQueryDefaultConfig(configType);
         if (resourceType.equals(APP_SERVICE)) {
@@ -324,8 +325,13 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
             //若应用服务最后查出来的配置是最高级的默认harbor配置，需要校验项目层是否将默认harbor设置成了私有，如设为私有，需要读取私有的授权信息，用于ci推镜像和部署secret
             if (configType.equals(HARBOR)) {
                 DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectDTO.getId());
-                HarborUserDTO harborUserDTO = harborUserMapper.selectByPrimaryKey(devopsProjectDTO.getHarborUserId());
                 ConfigVO configVO = gson.fromJson(defaultConfig.getConfig(), ConfigVO.class);
+                HarborUserDTO harborUserDTO = new HarborUserDTO();
+                if(authType.equals("push")){
+                    harborUserDTO= harborUserMapper.selectByPrimaryKey(devopsProjectDTO.getHarborUserId());
+                }else if(authType.equals("pull")){
+                    harborUserDTO = harborUserMapper.selectByPrimaryKey(devopsProjectDTO.getHarborPullUserId());
+                }
                 configVO.setUserName(harborUserDTO.getHarborProjectUserName());
                 configVO.setPassword(harborUserDTO.getHarborProjectUserPassword());
                 configVO.setEmail(harborUserDTO.getHarborProjectUserEmail());
@@ -358,7 +364,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
 
     @Override
     public DevopsConfigVO queryRealConfigVO(Long resourceId, String resourceType, String configType) {
-        return dtoToVo(queryRealConfig(resourceId, resourceType, configType));
+        return dtoToVo(queryRealConfig(resourceId, resourceType, configType,AUTHTYPE_PULL));
     }
 
     @Override
@@ -519,6 +525,11 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                    devopsConfigMapper.deleteByPrimaryKey(devopsConfigDTO.getId());
                });
      }
+
+    @Override
+    public void test(Long projectId, Boolean harborPrivate) {
+        operateHarborProject(projectId, harborPrivate);
+    }
 
     private void checkRegistryProjectIsPrivate(DevopsConfigVO devopsConfigVO) {
         ConfigurationProperties configurationProperties = new ConfigurationProperties();

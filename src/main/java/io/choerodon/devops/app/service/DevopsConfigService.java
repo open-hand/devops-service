@@ -48,7 +48,7 @@ public interface DevopsConfigService {
     DefaultConfigVO queryDefaultConfig(Long resourceId, String resourceType);
 
 
-    DevopsConfigDTO queryRealConfig(Long resourceId, String resourceType, String configType);
+    DevopsConfigDTO queryRealConfig(Long resourceId, String resourceType, String configType,String authType);
 
     DevopsConfigVO queryRealConfigVO(Long resourceId, String resourceType, String configType);
 
@@ -85,5 +85,7 @@ public interface DevopsConfigService {
     void operateConfig(Long organizationId, String resourceType, DevopsConfigRepVO devopsConfigRepVO);
 
     void deleteByConfigIds(Set<Long> configIds);
+
+    void test(Long projectId, Boolean harborPrivate);
 }
 

@@ -47,6 +47,7 @@ import io.choerodon.devops.infra.handler.RetrofitHandler;
 public class HarborServiceImpl implements HarborService {
     private static final Logger LOGGER = LoggerFactory.getLogger(HarborServiceImpl.class);
     private static final String HARBOR = "harbor";
+    private static final String AUTHTYPE = "pull";
     private static final Gson gson = new Gson();
 
     @Autowired
@@ -71,7 +72,7 @@ public class HarborServiceImpl implements HarborService {
     public void createHarborForProject(HarborPayload harborPayload) {
         //获取当前项目的harbor设置,如果有自定义的取自定义，没自定义取组织层的harbor配置
         if (harborPayload.getProjectId() != null) {
-            DevopsConfigVO devopsConfigVO = devopsConfigService.dtoToVo(devopsConfigService.queryRealConfig(harborPayload.getProjectId(), ResourceLevel.PROJECT.value(), HARBOR));
+            DevopsConfigVO devopsConfigVO = devopsConfigService.dtoToVo(devopsConfigService.queryRealConfig(harborPayload.getProjectId(), ResourceLevel.PROJECT.value(), HARBOR,AUTHTYPE));
             harborConfigurationProperties.setUsername(devopsConfigVO.getConfig().getUserName());
             harborConfigurationProperties.setPassword(devopsConfigVO.getConfig().getPassword());
             harborConfigurationProperties.setBaseUrl(devopsConfigVO.getConfig().getUrl());
