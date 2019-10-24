@@ -30,8 +30,8 @@ export default injectIntl(observer((props) => {
         appServiceStore.setVersion([]);
       }
     }
-    loadVersion();
     record.set('templateAppServiceVersionId', null);
+    loadVersion();
   }, [record.get('templateAppServiceId')]);
 
   return (

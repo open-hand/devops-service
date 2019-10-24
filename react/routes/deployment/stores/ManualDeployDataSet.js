@@ -29,15 +29,15 @@ export default ((intlPrefix, formatMessage, projectId, envOptionsDs, valueIdOpti
         loadValueList(record);
         break;
       case 'appServiceId':
-        if (value) {
-          versionOptionsDs.transport.read.method = 'post';
-          versionOptionsDs.transport.read.url = `/devops/v1/projects/${projectId}/app_service_versions/page_by_options?app_service_id=${value.split('__')[0]}&deploy_only=true`;
-          versionOptionsDs.query();
-          record.set('instanceName', getRandomName(value.split('__')[1]));
-        } else {
-          versionOptionsDs.removeAll();
-        }
         record.get('appServiceVersionId') && record.set('appServiceVersionId', null);
+        record.getField('appServiceVersionId').reset();
+        if (value) {
+          record.getField('appServiceVersionId').set('lookupAxiosConfig', {
+            url: `/devops/v1/projects/${projectId}/app_service_versions/page_by_options?app_service_id=${value.split('__')[0]}&deploy_only=true`,
+            method: 'post',
+          });
+          record.set('instanceName', getRandomName(value.split('__')[1]));
+        }
         loadValueList(record);
         break;
       case 'appServiceVersionId':
@@ -105,7 +105,7 @@ export default ((intlPrefix, formatMessage, projectId, envOptionsDs, valueIdOpti
     },
     fields: [
       { name: 'appServiceId', type: 'string', label: formatMessage({ id: `${intlPrefix}.app` }), required: true },
-      { name: 'appServiceVersionId', type: 'number', textField: 'version', valueField: 'id', label: formatMessage({ id: `${intlPrefix}.app.version` }), required: true, options: versionOptionsDs },
+      { name: 'appServiceVersionId', type: 'number', textField: 'version', valueField: 'id', label: formatMessage({ id: `${intlPrefix}.app.version` }), required: true },
       { name: 'environmentId', type: 'number', textField: 'name', valueField: 'id', label: formatMessage({ id: 'environment' }), required: true, options: envOptionsDs },
       { name: 'instanceName', type: 'string', label: formatMessage({ id: `${intlPrefix}.instance.name` }), required: true, validator: checkName },
       { name: 'valueId', type: 'number', textField: 'name', valueField: 'id', label: formatMessage({ id: `${intlPrefix}.config` }), options: valueIdOptionsDs },
