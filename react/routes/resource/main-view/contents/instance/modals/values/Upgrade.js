@@ -109,8 +109,11 @@ export default class Upgrade extends Component {
     const {
       intl: { formatMessage },
       intlPrefix,
+      vo: {
+        versionId,
+      },
     } = this.props;
-    return _.map(versions, ({ id, version }, index) => <Option key={id} value={id}>{version}{index === 0 && isHead && ` (${formatMessage({ id: `${intlPrefix}.instance.current.version` })})`}</Option>);
+    return _.map(versions, ({ id, version }, index) => <Option key={id} value={id}>{version}{index === 0 && isHead && versionId && ` (${formatMessage({ id: `${intlPrefix}.instance.current.version` })})`}</Option>);
   };
 
   /**
