@@ -570,7 +570,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
             appServiceDeployVO.setInstanceId(appServiceInstanceDTO.getId());
             appServiceDeployVO.setInstanceName(code);
-            InstanceSagaPayload instanceSagaPayload = new InstanceSagaPayload(applicationDTO.getProjectId(), userAttrDTO.getGitlabUserId(), secretCode, appServiceInstanceDTO.getCommandId().intValue());
+            InstanceSagaPayload instanceSagaPayload = new InstanceSagaPayload(devopsEnvironmentDTO.getProjectId(), userAttrDTO.getGitlabUserId(), secretCode, appServiceInstanceDTO.getCommandId().intValue());
             instanceSagaPayload.setApplicationDTO(applicationDTO);
             instanceSagaPayload.setAppServiceVersionDTO(appServiceVersionDTO);
             instanceSagaPayload.setAppServiceDeployVO(appServiceDeployVO);
@@ -801,7 +801,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         appServiceDeployVO.setType(UPDATE);
         appServiceDeployVO.setAppServiceVersionId(appServiceVersionDTO.getId());
         appServiceDeployVO.setInstanceName(appServiceInstanceDTO.getCode());
-        InstanceSagaPayload instanceSagaPayload = new InstanceSagaPayload(applicationDTO.getProjectId(), userAttrDTO.getGitlabUserId(), secretCode, devopsEnvCommandDTO.getId().intValue());
+        InstanceSagaPayload instanceSagaPayload = new InstanceSagaPayload(devopsEnvironmentDTO.getProjectId(), userAttrDTO.getGitlabUserId(), secretCode, devopsEnvCommandDTO.getId().intValue());
         instanceSagaPayload.setApplicationDTO(applicationDTO);
         instanceSagaPayload.setAppServiceVersionDTO(appServiceVersionDTO);
         instanceSagaPayload.setAppServiceDeployVO(appServiceDeployVO);
