@@ -570,7 +570,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
             appServiceDeployVO.setInstanceId(appServiceInstanceDTO.getId());
             appServiceDeployVO.setInstanceName(code);
-            InstanceSagaPayload instanceSagaPayload = new InstanceSagaPayload(applicationDTO.getProjectId(), userAttrDTO.getGitlabUserId(), secretCode, appServiceInstanceDTO.getCommandId().intValue());
+            InstanceSagaPayload instanceSagaPayload = new InstanceSagaPayload(devopsEnvironmentDTO.getProjectId(), userAttrDTO.getGitlabUserId(), secretCode, appServiceInstanceDTO.getCommandId().intValue());
             instanceSagaPayload.setApplicationDTO(applicationDTO);
             instanceSagaPayload.setAppServiceVersionDTO(appServiceVersionDTO);
             instanceSagaPayload.setAppServiceDeployVO(appServiceDeployVO);
@@ -626,13 +626,26 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
     @Override
     public void createInstanceBySaga(InstanceSagaPayload instanceSagaPayload) {
-
+        //更新实例的时候判断当前容器目录下是否存在环境对应的GitOps文件目录，不存在则克隆
+        String filePath = null;
         try {
-            //更新实例的时候判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-            String filePath = null;
             if (instanceSagaPayload.getAppServiceDeployVO().getType().equals(UPDATE)) {
                 filePath = clusterConnectionHandler.handDevopsEnvGitRepository(instanceSagaPayload.getProjectId(), instanceSagaPayload.getDevopsEnvironmentDTO().getCode(), instanceSagaPayload.getDevopsEnvironmentDTO().getEnvIdRsa());
             }
+        } catch (Exception ex) {
+            String exceptionContent = LogUtil.readContentOfThrowable(ex);
+            LOGGER.info("Failed to clone repository, the ex is {}", exceptionContent);
+            AppServiceInstanceDTO appServiceInstanceDTO = baseQuery(instanceSagaPayload.getAppServiceDeployVO().getInstanceId());
+            appServiceInstanceDTO.setStatus(CommandStatus.FAILED.getStatus());
+            baseUpdate(appServiceInstanceDTO);
+            DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(appServiceInstanceDTO.getCommandId());
+            devopsEnvCommandDTO.setStatus(CommandStatus.FAILED.getStatus());
+            devopsEnvCommandDTO.setError(LogUtil.cutOutString("Clone repository failed. The exception is: " + exceptionContent, 5000));
+            devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
+            return;
+        }
+
+        try {
             //在gitops库处理instance文件
             ResourceConvertToYamlHandler<C7nHelmRelease> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
             resourceConvertToYamlHandler.setType(getC7NHelmRelease(
@@ -649,15 +662,22 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             AppServiceInstanceDTO appServiceInstanceDTO = baseQuery(instanceSagaPayload.getAppServiceDeployVO().getInstanceId());
             DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
                     .baseQueryByEnvIdAndResourceId(instanceSagaPayload.getDevopsEnvironmentDTO().getId(), appServiceInstanceDTO.getId(), HELM_RELEASE);
-            String filePath = devopsEnvFileResourceDTO == null ? RELEASE_PREFIX + appServiceInstanceDTO.getCode() + YAML_SUFFIX : devopsEnvFileResourceDTO.getFilePath();
-            if (!gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(instanceSagaPayload.getDevopsEnvironmentDTO().getGitlabEnvProjectId()), MASTER,
+            filePath = devopsEnvFileResourceDTO == null ? RELEASE_PREFIX + appServiceInstanceDTO.getCode() + YAML_SUFFIX : devopsEnvFileResourceDTO.getFilePath();
+            // 这里只考虑了创建失败的情况，这说明是真的创建失败，而不是gitlab超时
+            if (CREATE.equals(instanceSagaPayload.getAppServiceDeployVO().getType()) && !gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(instanceSagaPayload.getDevopsEnvironmentDTO().getGitlabEnvProjectId()), MASTER,
                     filePath)) {
+                String exceptionContent = LogUtil.readContentOfThrowable(e);
+                LOGGER.info("Exception occurred when creating instance by saga.  Now the ex is {}", exceptionContent);
                 appServiceInstanceDTO.setStatus(CommandStatus.FAILED.getStatus());
                 baseUpdate(appServiceInstanceDTO);
                 DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(appServiceInstanceDTO.getCommandId());
                 devopsEnvCommandDTO.setStatus(CommandStatus.FAILED.getStatus());
-                devopsEnvCommandDTO.setError("create or update gitOps file failed!");
+                devopsEnvCommandDTO.setError(LogUtil.cutOutString("create or update gitOps file failed! The exception is: " + exceptionContent, 5000));
                 devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
+                LOGGER.info("Successfully update the status of instance with name {} to failed after exception occurred.", appServiceInstanceDTO.getCode());
+            } else {
+                // 更新的超时情况暂未处理
+                throw e;
             }
         }
     }
@@ -780,7 +800,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         appServiceDeployVO.setType(UPDATE);
         appServiceDeployVO.setAppServiceVersionId(appServiceVersionDTO.getId());
         appServiceDeployVO.setInstanceName(appServiceInstanceDTO.getCode());
-        InstanceSagaPayload instanceSagaPayload = new InstanceSagaPayload(applicationDTO.getProjectId(), userAttrDTO.getGitlabUserId(), secretCode, devopsEnvCommandDTO.getId().intValue());
+        InstanceSagaPayload instanceSagaPayload = new InstanceSagaPayload(devopsEnvironmentDTO.getProjectId(), userAttrDTO.getGitlabUserId(), secretCode, devopsEnvCommandDTO.getId().intValue());
         instanceSagaPayload.setApplicationDTO(applicationDTO);
         instanceSagaPayload.setAppServiceVersionDTO(appServiceVersionDTO);
         instanceSagaPayload.setAppServiceDeployVO(appServiceDeployVO);

@@ -303,7 +303,7 @@ class DevopsIngressControllerSpec extends Specification {
         newDevopsIngressDTO.setDomain("test.test-test.test")
 
         envUtil.checkEnvConnection(_ as Long) >> null
-        gitUtil.cloneBySsh(_ as String, _ as String) >> null
+        gitUtil.cloneBySsh(_ as String, _ as String, _ as String) >> null
         devopsEnvironmentService.checkEnv(any(DevopsEnvironmentDTO.class), any(UserAttrDTO.class))
 
         and: "mock handDevopsEnvGitRepository"
