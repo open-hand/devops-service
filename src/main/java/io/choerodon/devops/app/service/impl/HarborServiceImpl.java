@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.gson.Gson;
+
+import io.choerodon.devops.app.service.DevopsHarborUserService;
 import io.choerodon.devops.infra.util.GenerateUUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,6 +56,8 @@ public class HarborServiceImpl implements HarborService {
     private DevopsProjectService devopsProjectService;
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
+    @Autowired
+    private DevopsHarborUserService devopsHarborUserService;
 
     @Value("${services.harbor.baseUrl}")
     private String baseUrl;
@@ -107,49 +111,67 @@ public class HarborServiceImpl implements HarborService {
                 OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
                 DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
                 String username = String.format("user%s%s", organizationDTO.getId(), projectId);
-                String email = String.format("%s@harbor.com", username);
-                String password = String.format("%s%s", username, GenerateUUID.generateUUID().substring(0,5));
-                User user = new User(username, email, password, username);
+                String pullUsername = String.format("user-pull%s%s", organizationDTO.getId(), projectId);
+                String userEmail = String.format("%s@harbor.com", username);
+                String pullUserEmail = String.format("%s-pull@harbor.com", pullUsername);
+                String password = String.format("%s%s", username, GenerateUUID.generateUUID().substring(0, 5));
+                User user1 = new User(username, userEmail, password, username);
+                User user2 = new User(pullUsername, pullUserEmail, password, username);
                 //创建用户
-                try {
-                    result = harborClient.insertUser(user).execute();
-                    if (result.raw().code() != 201) {
-                        throw new CommonException(result.errorBody().string());
-                    }
-                    //给项目绑定角色
-                    Response<List<ProjectDetail>> projects = harborClient.listProject(organizationDTO.getCode() + "-" + projectDTO.getCode()).execute();
-                    if (!projects.body().isEmpty()) {
-                        Response<SystemInfo> systemInfoResponse = harborClient.getSystemInfo().execute();
-                        if (systemInfoResponse.raw().code() != 200) {
-                            throw new CommonException(systemInfoResponse.errorBody().string());
-                        }
-                        if (systemInfoResponse.body().getHarborVersion().equals("v1.4.0")) {
-                            Role role = new Role();
-                            role.setUsername(user.getUsername());
-                            role.setRoles(Arrays.asList(1));
-                            result = harborClient.setProjectMember(projects.body().get(0).getProjectId(), role).execute();
-                        } else {
-                            ProjectMember projectMember = new ProjectMember();
-                            MemberUser memberUser = new MemberUser();
-                            memberUser.setUsername(username);
-                            projectMember.setMemberUser(memberUser);
-                            result = harborClient.setProjectMember(projects.body().get(0).getProjectId(), projectMember).execute();
-                        }
-                        if (result.raw().code() != 201 && result.raw().code() != 200 && result.raw().code() != 409) {
-                            throw new CommonException(result.errorBody().string());
-                        }
-                    }
-                } catch (IOException e) {
-                    throw new CommonException(e);
+                createUser(harborClient, user1, Arrays.asList(1), organizationDTO, projectDTO);
+                createUser(harborClient, user2, Arrays.asList(3), organizationDTO, projectDTO);
+                HarborUserDTO harborUserDTO1 = new HarborUserDTO(user1.getUsername(), user1.getPassword(), user1.getEmail(), true);
+                HarborUserDTO harborUserDTO2 = new HarborUserDTO(user2.getUsername(), user2.getPassword(), user2.getEmail(), false);
+                if (devopsHarborUserService.create(harborUserDTO1) != 1) {
+                    throw new CommonException("error.harbor.user.insert");
+                } else {
+                    devopsProjectDTO.setHarborUserId(harborUserDTO1.getId());
+                    devopsProjectService.baseUpdate(devopsProjectDTO);
+                }
+                if (devopsHarborUserService.create(harborUserDTO2) != 1) {
+                    throw new CommonException("error.harbor.pull.user.insert");
+                } else {
+                    devopsProjectDTO.setHarborPullUserId(harborUserDTO2.getId());
+                    devopsProjectService.baseUpdate(devopsProjectDTO);
                 }
 
-                //更新项目表
-                if (devopsProjectDTO.getHarborProjectUserPassword() == null) {
-                    devopsProjectDTO.setHarborProjectUserName(user.getUsername());
-                    devopsProjectDTO.setHarborProjectUserPassword(user.getPassword());
-                    devopsProjectDTO.setHarborProjectUserEmail(user.getEmail());
+            }
+        } catch (IOException e) {
+            throw new CommonException(e);
+        }
+
+    }
+
+    private void createUser(HarborClient harborClient, User user, List<Integer> roles, OrganizationDTO organizationDTO, ProjectDTO projectDTO) {
+        Response<Void> result = null;
+        try {
+            result = harborClient.insertUser(user).execute();
+            if (result.raw().code() != 201) {
+                throw new CommonException(result.errorBody().string());
+            }
+            //给项目绑定角色
+            Response<List<ProjectDetail>> projects = harborClient.listProject(organizationDTO.getCode() + "-" + projectDTO.getCode()).execute();
+            if (!projects.body().isEmpty()) {
+                Response<SystemInfo> systemInfoResponse = harborClient.getSystemInfo().execute();
+                if (systemInfoResponse.raw().code() != 200) {
+                    throw new CommonException(systemInfoResponse.errorBody().string());
                 }
-                devopsProjectService.baseUpdate(devopsProjectDTO);
+                if (systemInfoResponse.body().getHarborVersion().equals("v1.4.0")) {
+                    Role role = new Role();
+                    role.setUsername(user.getUsername());
+                    role.setRoles(roles);
+                    result = harborClient.setProjectMember(projects.body().get(0).getProjectId(), role).execute();
+                } else {
+                    ProjectMember projectMember = new ProjectMember();
+                    MemberUser memberUser = new MemberUser();
+                    projectMember.setRoleId(roles.get(0));
+                    memberUser.setUsername(user.getUsername());
+                    projectMember.setMemberUser(memberUser);
+                    result = harborClient.setProjectMember(projects.body().get(0).getProjectId(), projectMember).execute();
+                }
+                if (result.raw().code() != 201 && result.raw().code() != 200 && result.raw().code() != 409) {
+                    throw new CommonException(result.errorBody().string());
+                }
             }
         } catch (IOException e) {
             throw new CommonException(e);

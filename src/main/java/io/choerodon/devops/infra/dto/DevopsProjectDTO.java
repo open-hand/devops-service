@@ -15,9 +15,8 @@ public class DevopsProjectDTO extends BaseDTO {
     private Long devopsAppGroupId;
     private Long devopsEnvGroupId;
     private Boolean harborProjectIsPrivate;
-    private String harborProjectUserName;
-    private String harborProjectUserPassword;
-    private String harborProjectUserEmail;
+    private Long harborPullUserId;
+    private Long harborUserId;
 
     public DevopsProjectDTO() {
     }
@@ -50,35 +49,27 @@ public class DevopsProjectDTO extends BaseDTO {
         this.devopsEnvGroupId = devopsEnvGroupId;
     }
 
-    public String getHarborProjectUserName() {
-        return harborProjectUserName;
-    }
-
-    public void setHarborProjectUserName(String harborProjectUserName) {
-        this.harborProjectUserName = harborProjectUserName;
-    }
-
-    public String getHarborProjectUserPassword() {
-        return harborProjectUserPassword;
-    }
-
-    public void setHarborProjectUserPassword(String harborProjectUserPassword) {
-        this.harborProjectUserPassword = harborProjectUserPassword;
-    }
-
-    public String getHarborProjectUserEmail() {
-        return harborProjectUserEmail;
-    }
-
-    public void setHarborProjectUserEmail(String harborProjectUserEmail) {
-        this.harborProjectUserEmail = harborProjectUserEmail;
-    }
-
     public Boolean getHarborProjectIsPrivate() {
         return harborProjectIsPrivate;
     }
 
     public void setHarborProjectIsPrivate(Boolean harborProjectIsPrivate) {
         this.harborProjectIsPrivate = harborProjectIsPrivate;
+    }
+
+    public Long getHarborPullUserId() {
+        return harborPullUserId;
+    }
+
+    public void setHarborPullUserId(Long harborPullUserId) {
+        this.harborPullUserId = harborPullUserId;
+    }
+
+    public Long getHarborUserId() {
+        return harborUserId;
+    }
+
+    public void setHarborUserId(Long harborUserId) {
+        this.harborUserId = harborUserId;
     }
 }

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.devops.infra.mapper.HarborUserMapper">
+
+    <insert id="insertUser" useGeneratedKeys="true" keyProperty="id" parameterType="io.choerodon.devops.infra.dto.HarborUserDTO">
+		   INSERT INTO devops_harbor_user (
+		harbor_project_user_name,
+		harbor_project_user_password,
+		harbor_project_user_email,
+		is_push
+		)
+	VALUES
+		(
+			#{username},
+			#{password},
+			#{email},
+			#{isPush}
+		);
+    </insert>
+
+</mapper>
