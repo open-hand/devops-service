@@ -144,12 +144,11 @@ public class ClusterConnectionHandler {
                 projectDTO.getCode(), envCode);
 
         File file = new File(path);
-        gitUtil.setSshKey(envRsa);
         if (!file.exists()) {
-            gitUtil.cloneBySsh(path, url);
+            gitUtil.cloneBySsh(path, url, envRsa);
         } else {
             FileUtil.deleteDirectory(file);
-            gitUtil.cloneBySsh(path, url);
+            gitUtil.cloneBySsh(path, url, envRsa);
         }
         return path;
     }

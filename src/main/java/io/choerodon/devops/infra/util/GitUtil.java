@@ -57,7 +57,6 @@ public class GitUtil {
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
     private String classPath;
-    private String sshKey;
     @Value("${services.gitlab.sshUrl}")
     private String gitlabSshUrl;
 
@@ -162,11 +161,11 @@ public class GitUtil {
      * @param path target path
      * @param url  git repo url
      */
-    public Git cloneBySsh(String path, String url) {
+    public Git cloneBySsh(String path, String url, String sshKeyRsa) {
         CloneCommand cloneCommand = Git.cloneRepository();
         cloneCommand.setURI(url);
         cloneCommand.setBranch(MASTER);
-        cloneCommand.setTransportConfigCallback(getTransportConfigCallback());
+        cloneCommand.setTransportConfigCallback(getTransportConfigCallback(sshKeyRsa));
         try {
             cloneCommand.setDirectory(new File(path));
             return cloneCommand.call();
@@ -199,39 +198,39 @@ public class GitUtil {
         }
     }
 
-    /**
-     * pull git repo using ssh
-     *
-     * @param path git repo
-     */
-    public void pullBySsh(String path) {
-        File repoGitDir = new File(path);
-        try (Repository repository = new FileRepository(repoGitDir.getAbsolutePath())) {
-            pullBySsh(repository);
-        } catch (IOException e) {
-            LOGGER.info("Get repository error", e);
-        }
-    }
+//    /**
+//     * pull git repo using ssh
+//     *
+//     * @param path git repo
+//     */
+//    public void pullBySsh(String path) {
+//        File repoGitDir = new File(path);
+//        try (Repository repository = new FileRepository(repoGitDir.getAbsolutePath())) {
+//            pullBySsh(repository);
+//        } catch (IOException e) {
+//            LOGGER.info("Get repository error", e);
+//        }
+//    }
+//
+//    private void pullBySsh(Repository repository) {
+//        try (Git git = new Git(repository)) {
+//            git.pull()
+//                    .setTransportConfigCallback(getTransportConfigCallback())
+//                    .setRemoteBranchName(MASTER)
+//                    .call();
+//        } catch (GitAPIException e) {
+//            LOGGER.info("Pull error", e);
+//        }
+//    }
 
-    private void pullBySsh(Repository repository) {
-        try (Git git = new Git(repository)) {
-            git.pull()
-                    .setTransportConfigCallback(getTransportConfigCallback())
-                    .setRemoteBranchName(MASTER)
-                    .call();
-        } catch (GitAPIException e) {
-            LOGGER.info("Pull error", e);
-        }
-    }
-
-    private TransportConfigCallback getTransportConfigCallback() {
+    private TransportConfigCallback getTransportConfigCallback(String sshKeyRsa) {
         return transport -> {
             SshTransport sshTransport = (SshTransport) transport;
-            sshTransport.setSshSessionFactory(sshSessionFactor());
+            sshTransport.setSshSessionFactory(sshSessionFactor(sshKeyRsa));
         };
     }
 
-    private SshSessionFactory sshSessionFactor() {
+    private SshSessionFactory sshSessionFactor(String sshKeyRsa) {
         return new JschConfigSessionFactory() {
             @Override
             protected void configure(OpenSshConfig.Host host, Session session) {
@@ -242,7 +241,7 @@ public class GitUtil {
             protected JSch createDefaultJSch(FS fs) throws JSchException {
                 JSch defaultJSch = super.createDefaultJSch(fs);
                 defaultJSch.getIdentityRepository().removeAll();
-                defaultJSch.getIdentityRepository().add(sshKey.getBytes());
+                defaultJSch.getIdentityRepository().add(sshKeyRsa.getBytes());
                 return defaultJSch;
             }
         };
@@ -556,31 +555,31 @@ public class GitUtil {
         return git;
     }
 
-    /**
-     * push current git repo
-     *
-     * @param git git repo
-     * @throws GitAPIException push error
-     */
-    public void gitPush(Git git) throws GitAPIException {
-        git.push().setTransportConfigCallback(getTransportConfigCallback()).call();
-    }
+//    /**
+//     * push current git repo
+//     *
+//     * @param git git repo
+//     * @throws GitAPIException push error
+//     */
+//    public void gitPush(Git git) throws GitAPIException {
+//        git.push().setTransportConfigCallback(getTransportConfigCallback()).call();
+//    }
 
-    /**
-     * push current git repo
-     *
-     * @param git git repo
-     * @throws GitAPIException push error
-     */
-    public void gitPushTag(Git git) throws GitAPIException {
-        List<Ref> refs = git.branchList().call();
-        PushCommand pushCommand = git.push();
-        for (Ref ref : refs) {
-            pushCommand.add(ref);
-        }
-        pushCommand.setPushTags();
-        pushCommand.setTransportConfigCallback(getTransportConfigCallback()).call();
-    }
+//    /**
+//     * push current git repo
+//     *
+//     * @param git git repo
+//     * @throws GitAPIException push error
+//     */
+//    public void gitPushTag(Git git) throws GitAPIException {
+//        List<Ref> refs = git.branchList().call();
+//        PushCommand pushCommand = git.push();
+//        for (Ref ref : refs) {
+//            pushCommand.add(ref);
+//        }
+//        pushCommand.setPushTags();
+//        pushCommand.setTransportConfigCallback(getTransportConfigCallback()).call();
+//    }
 
     /**
      * create a file in git repo, and then commit it
@@ -617,9 +616,8 @@ public class GitUtil {
                 projectDTO.getCode(), envCode);
 
         File file = new File(path);
-        this.setSshKey(envRsa);
         if (!file.exists()) {
-            this.cloneBySsh(path, url);
+            this.cloneBySsh(path, url, envRsa);
         }
         return path;
     }
@@ -653,13 +651,5 @@ public class GitUtil {
 
     private void commitChanges(Git git, String commitMsg) throws GitAPIException {
         git.commit().setMessage(commitMsg).call();
-    }
-
-    public String getSshKey() {
-        return sshKey;
-    }
-
-    public void setSshKey(String sshKey) {
-        this.sshKey = sshKey;
     }
 }

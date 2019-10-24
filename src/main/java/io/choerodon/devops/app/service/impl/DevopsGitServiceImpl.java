@@ -1034,12 +1034,11 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
     private void handDevopsEnvGitRepository(String path, String url, String envIdRsa, String commit) {
         File file = new File(path);
-        gitUtil.setSshKey(envIdRsa);
         if (!file.exists()) {
-            gitUtil.cloneBySsh(path, url);
+            gitUtil.cloneBySsh(path, url, envIdRsa);
         } else {
             FileUtil.deleteDirectory(file);
-            gitUtil.cloneBySsh(path, url);
+            gitUtil.cloneBySsh(path, url, envIdRsa);
 
         }
     }
