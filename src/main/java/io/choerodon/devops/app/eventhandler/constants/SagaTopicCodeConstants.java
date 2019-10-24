@@ -211,6 +211,11 @@ public class SagaTopicCodeConstants {
      */
     public static final String DEVOPS_DELETE_ENV = "devops-delete-env";
 
+    /**
+     * 应用市场删除gitlab中的项目
+     */
+    public static final String DEVOPS_MARKET_DELETE_GITLAB_PRO = "devops-market-failed-delete-gitlab-pro";
+
 
     private SagaTopicCodeConstants() {
     }

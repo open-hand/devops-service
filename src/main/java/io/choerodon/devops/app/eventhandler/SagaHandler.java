@@ -265,4 +265,19 @@ public class SagaHandler {
         orgAppMarketService.downLoadApp(appMarketDownloadPayload);
         return payload;
     }
+
+    /**
+     * 应用下载失败 删除gitlab相关项目
+     */
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_MARKET_DELETE_GITLAB_PRO,
+            description = "应用市场下载失败删除gitlab相关项目",
+            sagaCode = SagaTopicCodeConstants.DEVOPS_MARKET_DELETE_GITLAB_PRO,
+            concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
+            maxRetryCount = 0, seq = 20)
+    public String downloadAppFailed(String payload) {
+        MarketDelGitlabProPayload marketDelGitlabProPayload = gson.fromJson(payload, MarketDelGitlabProPayload.class);
+        loggerInfo(marketDelGitlabProPayload);
+        orgAppMarketService.deleteGitlabProject(marketDelGitlabProPayload);
+        return payload;
+    }
 }
