@@ -106,6 +106,7 @@ public class CertificationRepositoryImpl implements CertificationRepository {
                     dto.setStatus(CertificationStatus.OVERDUE.getStatus());
                     CertificationDO certificationDO = new CertificationDO();
                     certificationDO.setId(dto.getId());
+                    certificationDO.setObjectVersionNumber(dto.getObjectVersionNumber());
                     certificationDO.setStatus(CertificationStatus.OVERDUE.getStatus());
                     devopsCertificationMapper.updateByPrimaryKeySelective(certificationDO);
                 }

@@ -26,6 +26,7 @@ public class CertificationDTO {
     private String commandStatus;
     private String error;
     private Boolean skipCheckProjectPermission;
+    private Long objectVersionNumber;
 
 
     public Long getId() {
@@ -154,5 +155,13 @@ public class CertificationDTO {
 
     public void setOrganizationId(Long organizationId) {
         this.organizationId = organizationId;
+    }
+
+    public Long getObjectVersionNumber() {
+        return objectVersionNumber;
+    }
+
+    public void setObjectVersionNumber(Long objectVersionNumber) {
+        this.objectVersionNumber = objectVersionNumber;
     }
 }
