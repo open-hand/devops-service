@@ -128,7 +128,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 List<CheckLog> logs = new ArrayList<>();
                 devopsCheckLogDTO.setBeginCheckDate(new Date());
                 if("0.20.0".equals(version)) {
-                     syncHarborUser();
+                      syncHarborUser();
                 }
                 else if ("0.19.0".equals(version)) {
                     syncEnvAppRelevance(logs);
@@ -551,9 +551,12 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     }
 
     private  void  syncHarborUser(){
+        LOGGER.info("sync harbor user start");
         List<DevopsProjectDTO> projectDTOLists = devopsProjectService.listAll();
         projectDTOLists.stream().forEach(devopsProjectDTO -> {
-            if(!ObjectUtils.isEmpty(devopsProjectDTO.getHarborProjectUserName())){
+            Boolean harbor = (!ObjectUtils.isEmpty(devopsProjectDTO.getHarborProjectUserName()) && !ObjectUtils.isEmpty(devopsProjectDTO.getHarborProjectUserPassword()) && !ObjectUtils.isEmpty(devopsProjectDTO.getHarborProjectUserEmail()));
+            Boolean idIsExist = (!ObjectUtils.isEmpty(devopsProjectDTO.getHarborUserId()) && !ObjectUtils.isEmpty(devopsProjectDTO.getHarborPullUserId()));
+            if(harbor && !idIsExist){
                 // 迁移本地存在的用户
                 HarborUserDTO harborUserDTO = new HarborUserDTO();
                 harborUserDTO.setHarborProjectUserName(devopsProjectDTO.getHarborProjectUserName());
@@ -568,7 +571,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 HarborUserDTO pullUser = toDto(projectDTO, false);
                 createHarborUser(projectDTO,pullUser,devopsProjectDTO);
             }
-            else if (ObjectUtils.isEmpty(devopsProjectDTO.getHarborUserId())) {
+            else if (!idIsExist && !harbor) {
                 ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsProjectDTO.getIamProjectId());
 
                 // 创建push用户
@@ -580,6 +583,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 createHarborUser(projectDTO,pullUser,devopsProjectDTO);
             }
         });
+        LOGGER.info("sync harbor user success");
     }
 
 
@@ -590,7 +594,15 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         user.setPassword(harborUserDTO.getHarborProjectUserPassword());
         user.setEmail(harborUserDTO.getHarborProjectUserEmail());
         user.setRealname(harborUserDTO.getHarborProjectUserName());
+        // 检查是否自定义harbor仓库
         HarborPayload harborPayload = new HarborPayload();
+        DevopsConfigDTO devopsConfigDTO = new DevopsConfigDTO();
+        devopsConfigDTO.setProjectId(projectDTO.getId());
+        if(devopsConfigMapper.selectOne(devopsConfigDTO) != null) {
+            harborPayload = new HarborPayload(projectDTO.getId(),projectDTO.getCode());
+        }
+
+        devopsHarborUserService.create(harborUserDTO);
         if(harborUserDTO.isPush()){
             devopsProjectDTO.setHarborUserId(harborUserDTO.getId());
             harborService.createHarborUser(harborPayload,user,projectDTO,Arrays.asList(1));
@@ -599,16 +611,17 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             devopsProjectDTO.setHarborPullUserId(harborUserDTO.getId());
             harborService.createHarborUser(harborPayload,user,projectDTO,Arrays.asList(3));
         }
-        devopsHarborUserService.create(harborUserDTO);
+
         devopsProjectService.baseUpdate(devopsProjectDTO);
     }
+
     private HarborUserDTO toDto(ProjectDTO projectDTO,Boolean isPush){
         String pull = null;
         if(!isPush) {
             pull = "pull";
         }
         String username = String.format("user%s%s%s","-"+pull,projectDTO.getOrganizationId(), projectDTO.getId());
-        String useremail = String.format("%s%s@harbor.com","-"+pull,username);
+        String useremail = String.format("%s@harbor.com",username);
         String password = String.format("%s%s%s", username, pull,GenerateUUID.generateUUID().substring(0, 5));
         HarborUserDTO harborUserDTO = new HarborUserDTO();
         harborUserDTO.setHarborProjectUserName(username);
