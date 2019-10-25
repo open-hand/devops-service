@@ -795,15 +795,6 @@ public class AppServiceController {
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.list.service.templates"));
     }
-
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "查询应用服务模板")
-    @GetMapping(value = "/test")
-    public void listServiceTemplates(
-            @ApiParam(value = "项目Id")
-            @PathVariable(value = "project_id") Long projectId,
-            @RequestBody DevOpsAppImportServicePayload devOpsAppImportServicePayload) {
-                applicationServiceService.operationAppServiceImport(devOpsAppImportServicePayload);
-    }
+    
 }
 
