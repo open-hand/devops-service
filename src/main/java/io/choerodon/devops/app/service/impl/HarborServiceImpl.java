@@ -115,13 +115,13 @@ public class HarborServiceImpl implements HarborService {
             OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
             DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
             if (createUser) {
-                String username = String.format("user%s%s", organizationDTO.getId(), projectId);
+                String username = String.format("User%s%s", organizationDTO.getId(), projectId);
                 String useremail = String.format("%s@harbor.com", username);
-                String password = String.format("%s%s", username, GenerateUUID.generateUUID().substring(0, 5));
+                String password = String.format("%s%s", username, GenerateUUID.generateUUID().substring(0, 3));
 
-                String pullUsername = String.format("user%s%s-pull", organizationDTO.getId(), projectId);
+                String pullUsername = String.format("pullUser%s%s", organizationDTO.getId(), projectId);
                 String pullUseremail = String.format("%s@harbor.com", pullUsername);
-                String pullUserpassword = String.format("%s%s", "pullUser", GenerateUUID.generateUUID().substring(0, 5));
+                String pullUserpassword = String.format("%s%s", pullUsername, GenerateUUID.generateUUID().substring(0, 3));
 
                 User user = new User(username, useremail, password, username);
                 User pullUser = new User(pullUsername, pullUseremail, pullUserpassword, pullUsername);
