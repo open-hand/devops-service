@@ -9,5 +9,4 @@ import io.choerodon.mybatis.common.Mapper;
  * @description:
  */
 public interface HarborUserMapper extends Mapper<HarborUserDTO > {
-    public long insertUser(HarborUserDTO  harborUser);
 }

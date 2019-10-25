@@ -51,6 +51,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
     public static final String APP_SERVICE = "appService";
     private static final String HARBOR = "harbor";
     private static final String AUTHTYPE_PULL = "pull";
+    private static final String AUTHTYPE_PUSH = "push";
     private static final String CHART = "chart";
     private static final String CUSTOM = "custom";
     private static final Gson gson = new Gson();
@@ -286,7 +287,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
     }
 
     @Override
-    public DevopsConfigDTO queryRealConfig(Long resourceId, String resourceType, String configType,String authType) {
+    public DevopsConfigDTO queryRealConfig(Long resourceId, String resourceType, String configType,String operateType) {
         //应用服务层次，先找应用配置，在找项目配置,最后找组织配置,项目和组织层次同理
         DevopsConfigDTO defaultConfig = baseQueryDefaultConfig(configType);
         if (resourceType.equals(APP_SERVICE)) {
@@ -327,9 +328,9 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                 DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectDTO.getId());
                 ConfigVO configVO = gson.fromJson(defaultConfig.getConfig(), ConfigVO.class);
                 HarborUserDTO harborUserDTO = new HarborUserDTO();
-                if(authType.equals("push")){
+                if(operateType.equals(AUTHTYPE_PUSH)){
                     harborUserDTO= devopsHarborUserService.queryHarborUserById(devopsProjectDTO.getHarborUserId());
-                }else if(authType.equals("pull")){
+                }else if(operateType.equals(AUTHTYPE_PULL)){
                     harborUserDTO = devopsHarborUserService.queryHarborUserById(devopsProjectDTO.getHarborPullUserId());
                 }
                 configVO.setUserName(harborUserDTO.getHarborProjectUserName());
