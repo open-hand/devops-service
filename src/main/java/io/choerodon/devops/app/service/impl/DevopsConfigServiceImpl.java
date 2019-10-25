@@ -243,7 +243,14 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                         if (users.raw().code() != 200) {
                             throw new CommonException(users.errorBody().string());
                         }
-                        harborClient.deleteLowVersionMember(projects.body().get(0).getProjectId(), users.body().get(0).getUserId().intValue()).execute();
+                        users.body().stream().forEach(user -> {
+                            try {
+                                harborClient.deleteLowVersionMember(projects.body().get(0).getProjectId(), user.getUserId().intValue()).execute();
+                            } catch (IOException e) {
+                                throw new CommonException("error.delete.harbor.member");
+                            }
+                        });
+
                     } else {
                         Response<List<ProjectMember>> projectMembers = harborClient.getProjectMembers(projects.body().get(0).getProjectId(), String.format(USER_PREFIX, organizationDTO.getId(), projectId)).execute();
                         if (projectMembers.raw().code() != 200) {
@@ -263,7 +270,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                     devopsProjectService.baseUpdate(devopsProjectDTO);
 
                 }
-            } catch (IOException e) {
+            } catch (Exception e) {
                 throw new CommonException(e);
             }
         }
