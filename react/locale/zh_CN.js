@@ -266,6 +266,8 @@ const deployment = {
   'c7ncd.deployment.instance.cases.stop': '停止实例',
   'c7ncd.deployment.instance.cases.restart': '启用实例',
   'c7ncd.deployment.instance.cases.delete': '删除实例',
+  'c7ncd.deployment.instance.pod.delete.title': '删除pod',
+  'c7ncd.deployment.instance.pod.delete.des': '确定要删除该pod吗？',
   'c7ncd.deployment.mapping.create': '创建配置映射',
   'c7ncd.deployment.mapping.edit': '修改配置映射',
   'c7ncd.deployment.mapping.head': '配置映射',
