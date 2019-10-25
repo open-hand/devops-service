@@ -48,7 +48,7 @@ public interface DevopsConfigService {
     DefaultConfigVO queryDefaultConfig(Long resourceId, String resourceType);
 
 
-    DevopsConfigDTO queryRealConfig(Long resourceId, String resourceType, String configType,String authType);
+    DevopsConfigDTO queryRealConfig(Long resourceId, String resourceType, String configType,String operateType);
 
     DevopsConfigVO queryRealConfigVO(Long resourceId, String resourceType, String configType);
 
