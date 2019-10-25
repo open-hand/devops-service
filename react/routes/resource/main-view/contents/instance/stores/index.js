@@ -101,10 +101,13 @@ export const StoreProvider = injectIntl(inject('AppState')(
               data: postData,
             };
           };
-          podsDs.transport.destroy = ({ data }) => ({
-            url: 'test',
-            method: 'delete',
-          });
+          podsDs.transport.destroy = ({ data }) => {
+            const [envId, appId] = parentId.split('-');
+            const podId = data[0].id;
+            return {
+              url: `devops/v1/projects/${projectId}/pods/${podId}?env_id=${envId}`,
+              method: 'delete' };
+          };
           queryData();
         }
       });
