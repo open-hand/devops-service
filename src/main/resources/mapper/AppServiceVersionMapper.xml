@@ -160,6 +160,16 @@
     </select>
 
     <select id="listByAppServiceIdAndVersion" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
+        SELECT
+        *
+        FROM (
+        <if test="appServiceVersionId != null">
+            (SELECT ver.id, ver.version, ver.publish_time, ver.creation_date
+            FROM devops_app_service_version ver
+            WHERE ver.id = #{appServiceVersionId,jdbcType=BIGINT})
+            UNION ALL
+        </if>
+        (
         SELECT distinct
         dav.id,
         dav.version,
@@ -180,6 +190,9 @@
         </if>
         WHERE
         dav.app_service_id = #{appServiceId}
+        <if test="appServiceVersionId != null">
+            AND dav.id != #{appServiceVersionId,jdbcType=BIGINT}
+        </if>
         <choose>
             <when test="deployOnly!=null and deployOnly==true">
                 AND dav.repository IS NOT NULL
@@ -192,12 +205,13 @@
         <if test="version != null and version != ''">
           AND  dav.version = #{version}
         </if>
+        )) tmp
         <choose>
             <when test="index != null and index !='' and appServiceVersionId!=null and appServiceVersionId!=''">
-                ORDER BY dav.id != ${appServiceVersionId}, dav.id DESC
+                ORDER BY tmp.id != ${appServiceVersionId}, tmp.id DESC
             </when>
             <when test="index != null and index !=''">
-                ORDER BY dav.id DESC
+                ORDER BY tmp.id DESC
             </when>
         </choose>
     </select>
