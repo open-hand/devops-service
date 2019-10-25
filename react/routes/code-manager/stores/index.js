@@ -67,15 +67,16 @@ export const StoreProvider = injectIntl(inject('AppState')(
       DevPipelineStore.setRecentApp([]);
       DevPipelineStore.setSelectApp(null);
     }, []);
-    useEffect(async () => {
+    useEffect(() => {
       appServiceDs.transport.read = () => ({
         url: `/devops/v1/projects/${projectId}/app_service/list_by_active`,
         method: 'get',
       });
-      const res = await appServiceDs.query();
-      if (res && res.length && res.length > 0) {
-        selectAppDs.current.set('appServiceId', res[0].id);
-      }
+      appServiceDs.query().then((res) => {
+        if (res && res.length && res.length > 0) {
+          selectAppDs.current.set('appServiceId', res[0].id);
+        }  
+      });
     }, [projectId]);
     const value = {
       ...props,
