@@ -167,7 +167,6 @@ public class HarborServiceImpl implements HarborService {
         }
 
     }
-
     private void operateMember(HarborClient harborClient, User user, List<Integer> roles, OrganizationDTO organizationDTO, ProjectDTO projectDTO, String operateRole) {
         Response<Void> result = null;
         //删除成员角色
