@@ -200,7 +200,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         baseCreate(devopsServiceDTO);
 
         //在gitops库处理service文件
-        operateEnvGitLabFile(v1Service, v1Endpoints, true, devopsServiceDTO, devopsServiceInstanceDTOS, beforeDevopsServiceAppInstanceDTOS, devopsEnvCommandDTO, userAttrDTO);
+        operateEnvGitLabFile(v1Service, v1Endpoints, true, devopsServiceDTO, devopsServiceInstanceDTOS, beforeDevopsServiceAppInstanceDTOS, devopsEnvCommandDTO, userAttrDTO, devopsServiceReqVO.getDevopsIngressVO());
         return true;
     }
 
@@ -277,7 +277,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                 v1Endpoints = initV1EndPoints(devopsServiceReqVO);
             }
             //在gitops库处理service文件
-            operateEnvGitLabFile(v1Service, v1Endpoints, false, devopsServiceDTO, devopsServiceInstanceDTOS, beforeDevopsServiceAppInstanceDTOS, devopsEnvCommandDTO, userAttrDTO);
+            operateEnvGitLabFile(v1Service, v1Endpoints, false, devopsServiceDTO, devopsServiceInstanceDTOS, beforeDevopsServiceAppInstanceDTOS, devopsEnvCommandDTO, userAttrDTO, devopsServiceReqVO.getDevopsIngressVO());
         }
         return true;
     }
@@ -1028,7 +1028,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                                       List<DevopsServiceInstanceDTO> devopsServiceInstanceDTOS,
                                       List<String> beforeDevopsServiceAppInstanceDTOS,
                                       DevopsEnvCommandDTO devopsEnvCommandDTO,
-                                      UserAttrDTO userAttrDTO) {
+                                      UserAttrDTO userAttrDTO,
+                                      DevopsIngressVO devopsIngressVO) {
 
         DevopsEnvironmentDTO devopsEnvironmentDTO =
                 devopsEnvironmentService.baseQueryById(devopsServiceDTO.getEnvId());
@@ -1073,6 +1074,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         serviceSagaPayLoad.setCreated(isCreate);
         serviceSagaPayLoad.setV1Endpoints(v1Endpoints);
         serviceSagaPayLoad.setDevopsEnvironmentDTO(devopsEnvironmentDTO);
+        serviceSagaPayLoad.setDevopsIngressVO(devopsIngressVO);
 
         producer.apply(
                 StartSagaBuilder
@@ -1115,6 +1117,21 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                     serviceSagaPayLoad.getCreated() ? CommandType.CREATE.getType() : CommandType.UPDATE.getType(),
                     serviceSagaPayLoad.getGitlabUserId(),
                     serviceSagaPayLoad.getDevopsServiceDTO().getId(), SERVICE, serviceSagaPayLoad.getV1Endpoints(), false, serviceSagaPayLoad.getDevopsEnvironmentDTO().getId(), filePath);
+
+            //创建实例时，如果选了创建域名
+            if (serviceSagaPayLoad.getDevopsIngressVO() != null) {
+                serviceSagaPayLoad.getDevopsIngressVO().setAppServiceId(serviceSagaPayLoad.getDevopsServiceDTO().getAppServiceId());
+                List<DevopsIngressPathVO> devopsIngressPathVOS = serviceSagaPayLoad.getDevopsIngressVO().getPathList();
+                devopsIngressPathVOS.forEach(devopsIngressPathVO -> {
+                    DevopsServiceDTO devopsServiceDTO = baseQueryByNameAndEnvId(devopsIngressPathVO.getServiceName(), serviceSagaPayLoad.getDevopsEnvironmentDTO().getId());
+                    if (devopsServiceDTO != null) {
+                        devopsIngressPathVO.setServiceId(devopsServiceDTO.getId());
+                    }
+                });
+                serviceSagaPayLoad.getDevopsIngressVO().setPathList(devopsIngressPathVOS);
+                devopsIngressService.createIngress(serviceSagaPayLoad.getDevopsEnvironmentDTO().getProjectId(), serviceSagaPayLoad.getDevopsIngressVO());
+            }
+
         } catch (Exception e) {
             LOGGER.info("create or update service failed", e);
             //有异常更新网络以及command的状态

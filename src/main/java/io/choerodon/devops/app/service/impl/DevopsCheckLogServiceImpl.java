@@ -119,7 +119,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 devopsCheckLogDTO.setBeginCheckDate(new Date());
                 if ("0.19.0".equals(version)) {
                     syncEnvAppRelevance(logs);
-                    syncAppShare(logs);
+                    // 0.20.0删除此方法
+//                    syncAppShare(logs);
                     syncDeployRecord(logs);
                     syncClusterAndCertifications(logs);
                     syncConfig();
@@ -350,7 +351,6 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             applicationShareMapper.deleteAll();
             LOGGER.info("insert application share rule.");
             appServiceVersionMapper.selectAll().stream()
-                    .filter(versionDTO -> versionDTO.getIsPublish() != null && versionDTO.getIsPublish().equals(1L))
                     .forEach(versionDTO -> {
                         CheckLog checkLog = new CheckLog();
                         checkLog.setContent(String.format(

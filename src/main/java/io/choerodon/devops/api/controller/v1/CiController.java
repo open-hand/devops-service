@@ -66,6 +66,8 @@ public class CiController {
     public ResponseEntity create(
             @ApiParam(value = "image", required = true)
             @RequestParam String image,
+            @ApiParam(value = "harbor_config_id", required = true)
+            @RequestParam String harborConfigId,
             @ApiParam(value = "token", required = true)
             @RequestParam String token,
             @ApiParam(value = "版本", required = true)
@@ -74,7 +76,7 @@ public class CiController {
             @RequestParam String commit,
             @ApiParam(value = "taz包", required = true)
             @RequestParam MultipartFile file) {
-        appServiceVersionService.create(image, token, version, commit, file);
+        appServiceVersionService.create(image, harborConfigId, token, version, commit, file);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 }

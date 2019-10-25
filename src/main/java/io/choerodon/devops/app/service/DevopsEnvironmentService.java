@@ -99,7 +99,7 @@ public interface DevopsEnvironmentService {
      * @param environmentId 环境id
      * @return 环境及其相关信息
      */
-    DevopsEnvironmentInfoVO queryInfoById(Long environmentId);
+    DevopsEnvironmentInfoVO queryInfoById(Long projectId, Long environmentId);
 
     /**
      * 查询环境下相关资源的数量
@@ -194,8 +194,9 @@ public interface DevopsEnvironmentService {
      * 删除已停用或失败的环境
      *
      * @param envId 环境id
+     * @param projectId 项目id
      */
-    void deleteDeactivatedOrFailedEnvironment(Long envId);
+    void deleteDeactivatedOrFailedEnvironment(Long projectId,Long envId);
 
     /**
      * 项目下查询集群信息
@@ -286,4 +287,6 @@ public interface DevopsEnvironmentService {
     List<DevopsEnvironmentDTO> baseListByClusterId(Long clusterId);
 
     List<DevopsEnvironmentDTO> baseListByIds(List<Long> envIds);
+
+    void deleteEnvSaga(Long envId);
 }

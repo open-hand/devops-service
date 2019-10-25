@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service;
 
 import java.util.List;
+import java.util.Set;
 
 import com.github.pagehelper.PageInfo;
 
@@ -47,13 +48,15 @@ public interface DevopsConfigService {
     DefaultConfigVO queryDefaultConfig(Long resourceId, String resourceType);
 
 
-    DevopsConfigDTO queryRealConfig(Long resourceId, String resourceType, String configType);
+    DevopsConfigDTO queryRealConfig(Long resourceId, String resourceType, String configType,String operateType);
 
     DevopsConfigVO queryRealConfigVO(Long resourceId, String resourceType, String configType);
 
     DevopsConfigDTO baseCreate(DevopsConfigDTO devopsConfigDTO);
 
     DevopsConfigDTO baseUpdate(DevopsConfigDTO devopsConfigDTO);
+
+    void updateResourceId(Long configId);
 
     DevopsConfigDTO baseQuery(Long id);
 
@@ -80,5 +83,7 @@ public interface DevopsConfigService {
      * 操作 仓库配置
      */
     void operateConfig(Long organizationId, String resourceType, DevopsConfigRepVO devopsConfigRepVO);
+
+    void deleteByConfigIds(Set<Long> configIds);
 }
 

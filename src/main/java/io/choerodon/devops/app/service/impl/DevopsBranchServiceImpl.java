@@ -129,4 +129,9 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
             devopsBranchMapper.delete(devopsBranchDTO);
         }
     }
+
+    @Override
+    public void deleteAllBaranch(Long appServiceId) {
+        devopsBranchMapper.deleteByAppServiceId(appServiceId);
+    }
 }

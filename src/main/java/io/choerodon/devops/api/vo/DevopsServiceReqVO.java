@@ -44,6 +44,9 @@ public class DevopsServiceReqVO {
     @ApiModelProperty("目标对象为标签，标签键值对")
     private Map<String, String> label;
 
+    private DevopsIngressVO devopsIngressVO;
+
+
     public Long getEnvId() {
         return envId;
     }
@@ -114,5 +117,13 @@ public class DevopsServiceReqVO {
 
     public void setEndPoints(Map<String, List<EndPointPortVO>> endPoints) {
         this.endPoints = endPoints;
+    }
+
+    public DevopsIngressVO getDevopsIngressVO() {
+        return devopsIngressVO;
+    }
+
+    public void setDevopsIngressVO(DevopsIngressVO devopsIngressVO) {
+        this.devopsIngressVO = devopsIngressVO;
     }
 }

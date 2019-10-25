@@ -460,4 +460,7 @@ public interface AppServiceService {
                        String oldServiceCode,
                        String oldGroupName,
                        Boolean isGetWorkingDirectory);
+
+    String checkAppServiceType(Long projectId,AppServiceDTO appServiceDTO);
+    void deleteAppServiceSage(Long projectId,Long appServiceId);
 }

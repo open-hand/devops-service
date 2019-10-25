@@ -583,4 +583,15 @@ WHERE
         FROM devops_app_service_instance ins
         WHERE ins.status != 'deleted'
     </select>
+
+    <select id="listByProjectIdsAndAppServiceId" resultType="io.choerodon.devops.infra.dto.DevopsEnvAppServiceDTO">
+        select ins.* from devops_app_service_instance ins
+        left join devops_env env on env.id =ins.env_id
+        where
+        env.project_id in
+        <foreach collection="projectIds" item="projectId" open="(" separator=" , " close=")">
+           #{projectId}
+        </foreach>
+        AND ins.app_service_id = #{appServiceId}
+    </select>
 </mapper>

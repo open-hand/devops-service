@@ -8,17 +8,23 @@ import PermissionPage from './permission';
 import { useResourceStore } from '../../../../stores';
 import { useEnvironmentStore } from '../stores';
 import { useModalStore } from './stores';
+import Tips from '../../../../../../components/new-tips';
+import DeployConfigForm from './deploy-config';
 
 import '../../../../../../components/dynamic-select/style/index.less';
-import Tips from '../../../../../../components/new-tips';
 
 const modalKey1 = Modal.key();
 const modalKey2 = Modal.key();
 const modalKey3 = Modal.key();
+const configKey = Modal.key();
 
 const EnvModals = observer(() => {
   const modalStyle = useMemo(() => ({
     width: 380,
+  }), []);
+  const configModalStyle = useMemo(() => ({
+    width: 'calc(100vw - 3.52rem)',
+    minWidth: '2rem',
   }), []);
   const {
     intlPrefix,
@@ -38,6 +44,7 @@ const EnvModals = observer(() => {
     gitopsLogDs,
     gitopsSyncDs,
     baseInfoDs,
+    configFormDs,
   } = useEnvironmentStore();
   const {
     modalStore,
@@ -147,15 +154,54 @@ const EnvModals = observer(() => {
     envStore.setTabKey(ASSIGN_TAB);
     getTabKey === ASSIGN_TAB && permissionsDs.query();
   }
+  
+  function linkToConfig() {
+    const record = baseInfoDs.current;
+    const url = record && record.get('gitlabUrl');
+    url && window.open(url);
+  }
+
+  function openConfigModal() {
+    configFormDs.create();
+    Modal.open({
+      key: configKey,
+      title: formatMessage({ id: `${intlPrefix}.create.config` }),
+      children: <DeployConfigForm
+        store={envStore}
+        dataSet={configFormDs}
+        refresh={refresh}
+        envId={id}
+        intlPrefix={intlPrefix}
+        prefixCls={prefixCls}
+      />,
+      drawer: true,
+      style: configModalStyle,
+      afterClose: () => {
+        configFormDs.reset();
+        envStore.setValue('');
+      },
+      okText: formatMessage({ id: 'create' }),
+    });
+  }
 
   function getButtons() {
-    const notReady = !baseInfoDs.current;
+    const record = baseInfoDs.current;
+    const notReady = !record;
+    const connect = record && record.get('connect');
+    const configDisabled = !connect || notReady;
     return [{
       name: formatMessage({ id: `${intlPrefix}.modal.service.link` }),
       icon: 'relate',
       handler: openLinkService,
       display: true,
       disabled: notReady,
+      group: 1,
+    }, {
+      disabled: configDisabled,
+      name: formatMessage({ id: `${intlPrefix}.create.config` }),
+      icon: 'playlist_add',
+      handler: openConfigModal,
+      display: true,
       group: 1,
     }, {
       permissions: ['devops-service.devops-environment.pageEnvUserPermissions'],
@@ -170,6 +216,13 @@ const EnvModals = observer(() => {
       name: formatMessage({ id: `${intlPrefix}.modal.env-detail` }),
       icon: 'find_in_page',
       handler: openEnvDetail,
+      display: true,
+      group: 2,
+    }, {
+      disabled: notReady,
+      name: formatMessage({ id: `${intlPrefix}.environment.config-lab` }),
+      icon: 'account_balance',
+      handler: linkToConfig,
       display: true,
       group: 2,
     }, {

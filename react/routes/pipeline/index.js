@@ -1,5 +1,5 @@
 import React from 'react';
-import PipelineTable from './pipeline-table';
+import PipelineTable from './PipelineTable';
 import StoreProvider from './stores';
 
 export default function Pipeline(props) {
