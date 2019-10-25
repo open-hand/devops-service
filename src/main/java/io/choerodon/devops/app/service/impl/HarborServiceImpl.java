@@ -90,22 +90,22 @@ public class HarborServiceImpl implements HarborService {
         Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
         HarborClient harborClient = retrofit.create(HarborClient.class);
         Boolean createUser = harborPayload.getProjectId() != null;
-        createHarbor(harborClient, harborPayload.getProjectId(), harborPayload.getProjectCode(), createUser);
+        createHarbor(harborClient, harborPayload.getProjectId(), harborPayload.getProjectCode(), createUser,true);
     }
 
 
     @Override
-    public void createHarbor(HarborClient harborClient, Long projectId, String projectCode, Boolean createUser) {
+    public void createHarbor(HarborClient harborClient, Long projectId, String projectCode, Boolean createUser,Boolean harborPrivate) {
         //创建harbor仓库
         try {
             Response<Void> result = null;
             LOGGER.info(harborConfigurationProperties.getParams());
             if (harborConfigurationProperties.getParams() == null || harborConfigurationProperties.getParams().equals("")) {
-                result = harborClient.insertProject(new Project(projectCode, 0)).execute();
+                result = harborClient.insertProject(new Project(projectCode, harborPrivate ? 0 : 1)).execute();
             } else {
                 Map<String, String> params = new HashMap<>();
                 params = gson.fromJson(harborConfigurationProperties.getParams(), params.getClass());
-                result = harborClient.insertProject(params, new Project(projectCode, 0)).execute();
+                result = harborClient.insertProject(params, new Project(projectCode, harborPrivate ? 0 : 1)).execute();
             }
             if (result.raw().code() != 201 && result.raw().code() != 409) {
                 throw new CommonException(result.message());
