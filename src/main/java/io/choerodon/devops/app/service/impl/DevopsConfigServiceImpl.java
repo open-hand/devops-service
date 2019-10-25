@@ -526,11 +526,6 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                });
      }
 
-    @Override
-    public void test(Long projectId, Boolean harborPrivate) {
-        operateHarborProject(projectId, harborPrivate);
-    }
-
     private void checkRegistryProjectIsPrivate(DevopsConfigVO devopsConfigVO) {
         ConfigurationProperties configurationProperties = new ConfigurationProperties();
         configurationProperties.setBaseUrl(devopsConfigVO.getConfig().getUrl());

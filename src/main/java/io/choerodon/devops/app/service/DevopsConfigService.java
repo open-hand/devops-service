@@ -85,7 +85,5 @@ public interface DevopsConfigService {
     void operateConfig(Long organizationId, String resourceType, DevopsConfigRepVO devopsConfigRepVO);
 
     void deleteByConfigIds(Set<Long> configIds);
-
-    void test(Long projectId, Boolean harborPrivate);
 }
 
