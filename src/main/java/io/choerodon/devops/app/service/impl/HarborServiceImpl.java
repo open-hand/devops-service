@@ -121,7 +121,7 @@ public class HarborServiceImpl implements HarborService {
 
                 String pullUsername = String.format("user%s%s-pull", organizationDTO.getId(), projectId);
                 String pullUseremail = String.format("%s@harbor.com", pullUsername);
-                String pullUserpassword = String.format("%s%s", pullUsername, GenerateUUID.generateUUID().substring(0, 5));
+                String pullUserpassword = String.format("%s%s", "pullUser", GenerateUUID.generateUUID().substring(0, 5));
 
                 User user = new User(username, useremail, password, username);
                 User pullUser = new User(pullUsername, pullUseremail, pullUserpassword, pullUsername);
@@ -130,6 +130,7 @@ public class HarborServiceImpl implements HarborService {
                 createUser(harborClient, pullUser, Arrays.asList(3), organizationDTO, projectDTO);
                 HarborUserDTO harborUserDTO = new HarborUserDTO(user.getUsername(), user.getPassword(), user.getEmail(), true);
                 HarborUserDTO pullHarborUserDTO = new HarborUserDTO(pullUser.getUsername(), pullUser.getPassword(), pullUser.getEmail(), false);
+
                 if (devopsHarborUserService.create(harborUserDTO) != 1) {
                     throw new CommonException("error.harbor.user.insert");
                 } else {
