@@ -79,7 +79,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
     private HarborService harborService;
 
     @Autowired
-    private HarborUserMapper harborUserMapper;
+    private DevopsHarborUserService devopsHarborUserService;
 
     @Override
     public void operate(Long resourceId, String resourceType, List<DevopsConfigVO> devopsConfigVOS) {
@@ -188,8 +188,8 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
         if (harborPrivate) {
             //设置为私有后将harbor项目设置为私有
             DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
-            HarborUserDTO harborUserDTO = harborUserMapper.selectByPrimaryKey(devopsProjectDTO.getHarborUserId());
-            HarborUserDTO harborPullUserDTO = harborUserMapper.selectByPrimaryKey(devopsProjectDTO.getHarborPullUserId());
+            HarborUserDTO harborUserDTO = devopsHarborUserService.findHarborUserById(devopsProjectDTO.getHarborUserId());
+            HarborUserDTO harborPullUserDTO = devopsHarborUserService.findHarborUserById(devopsProjectDTO.getHarborPullUserId());
             String username =harborUserDTO==null?String.format(USER_PREFIX, organizationDTO.getId(), projectId):harborUserDTO.getHarborProjectUserName();
             String password =harborUserDTO==null? String.format("%s%s", username, GenerateUUID.generateUUID().substring(0, 5)):harborUserDTO.getHarborProjectUserPassword();
             String useremail = harborUserDTO==null? String.format("%s@choerodon.com", username) :harborUserDTO.getHarborProjectUserEmail();
@@ -207,12 +207,12 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
             //更新项目表
             HarborUserDTO harborUser = new HarborUserDTO(user.getUsername(), user.getPassword(), user.getEmail(), true);
             HarborUserDTO pullHarborUser = new HarborUserDTO(pullUser.getUsername(), pullUser.getPassword(), pullUser.getEmail(), false);
-            if (harborUserMapper.insertUser(harborUser) != 1) {
+            if (devopsHarborUserService.create(harborUser) != 1) {
                 throw new CommonException("error.harbor.user.insert");
             } else {
                 devopsProjectDTO.setHarborUserId(harborUser.getId());
             }
-            if (harborUserMapper.insertUser(pullHarborUser) != 1) {
+            if (devopsHarborUserService.create(pullHarborUser) != 1) {
                 throw new CommonException("error.harbor.pull.user.insert");
             } else {
                 devopsProjectDTO.setHarborPullUserId(pullHarborUser.getId());
@@ -328,9 +328,9 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                 ConfigVO configVO = gson.fromJson(defaultConfig.getConfig(), ConfigVO.class);
                 HarborUserDTO harborUserDTO = new HarborUserDTO();
                 if(authType.equals("push")){
-                    harborUserDTO= harborUserMapper.selectByPrimaryKey(devopsProjectDTO.getHarborUserId());
+                    harborUserDTO= devopsHarborUserService.findHarborUserById(devopsProjectDTO.getHarborUserId());
                 }else if(authType.equals("pull")){
-                    harborUserDTO = harborUserMapper.selectByPrimaryKey(devopsProjectDTO.getHarborPullUserId());
+                    harborUserDTO = devopsHarborUserService.findHarborUserById(devopsProjectDTO.getHarborPullUserId());
                 }
                 configVO.setUserName(harborUserDTO.getHarborProjectUserName());
                 configVO.setPassword(harborUserDTO.getHarborProjectUserPassword());

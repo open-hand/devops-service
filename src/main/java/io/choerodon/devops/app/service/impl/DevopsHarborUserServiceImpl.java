@@ -24,4 +24,9 @@ public class DevopsHarborUserServiceImpl implements DevopsHarborUserService {
     public long create(HarborUserDTO  harborUser) {
         return harborUserMapper.insertUser(harborUser);
     }
+
+    @Override
+    public HarborUserDTO findHarborUserById(Long id) {
+        return harborUserMapper.selectByPrimaryKey(id);
+    }
 }
