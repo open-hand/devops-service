@@ -21,7 +21,7 @@
         <if test='params != null and params.size > 0'>
             AND
             <foreach collection="params" item="param" open="(" separator=" OR " close=")">
-                 dav.version LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                dav.version LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
             </foreach>
         </if>
     </select>
@@ -36,7 +36,7 @@
         WHERE
         dav.app_service_id = #{appServiceId}
         <if test="param != null and param != ''">
-           and dav.version LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            and dav.version LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
         </if>
         AND dav.repository IS NOT NULL
         ORDER BY
@@ -203,7 +203,7 @@
         </choose>
         <include refid="sqlparam"/>
         <if test="version != null and version != ''">
-          AND  dav.version = #{version}
+            AND dav.version = #{version}
         </if>
         )) tmp
         <choose>
@@ -245,11 +245,11 @@
     </select>
 
 
-    <select id="listByAppServiceVersionIdForMarketBatch" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
+    <select id="listByAppServiceVersionIdForMarketBatch"
+            resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
         SELECT
         dav.id,
         dav.version,
-        dav.publish_time,
         dav.creation_date,
         dav.app_service_id
         FROM
@@ -491,66 +491,67 @@
 
 
     <select id="listServiceVersionByAppServiceIds" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
-       <choose>
-           <when test="share != null and share != ''">
-               (SELECT version.*
-               FROM devops_app_service_share_rule dassr
-               LEFT JOIN devops_app_service_version version ON dassr.app_service_id = version.app_service_id
-               WHERE dassr.app_service_id in
-               <foreach collection="ids" item="id" open="(" separator="," close=")">
-                   #{id}
+        <choose>
+            <when test="share != null and share != ''">
+                (SELECT version.*
+                FROM devops_app_service_share_rule dassr
+                LEFT JOIN devops_app_service_version version ON dassr.app_service_id = version.app_service_id
+                WHERE dassr.app_service_id in
+                <foreach collection="ids" item="id" open="(" separator="," close=")">
+                    #{id}
                 </foreach>
-               <if test="share == 'share'">
-                and dassr.share_level = 'organization'
-               </if>
-               <if test="share == 'project'">
-                and dassr.share_level = 'project'
-                and dassr.project_id = #{projectId}
-               </if>
-               AND dassr.version IS NOT NULL
-               AND dassr.version = version.version
-               <if test="params != null and params != ''">
-                   AND dassr.version LIKE CONCAT('%', CONCAT(#{params},'%'))
-               </if>)
-               UNION
-               (
-               SELECT version.*
-               FROM devops_app_service_share_rule dassr
-               LEFT JOIN devops_app_service_version version ON dassr.app_service_id = version.app_service_id
-               WHERE dassr.app_service_id in
-               <foreach collection="ids" item="id" open="(" separator="," close=")">
-                   #{id}
-               </foreach>
-               <if test="share == 'share'">
-                   and dassr.share_level = 'organization'
-               </if>
-               <if test="share == 'project'">
-                   and dassr.share_level = 'project'
-                   and dassr.project_id = #{projectId}
-               </if>
-               AND dassr.version IS NULL
-               AND version.version LIKE CONCAT('%', CONCAT(dassr.version_type,'%'))
-               <if test="params != null and params != ''">
-                   AND dassr.version LIKE CONCAT('%', CONCAT(#{params},'%'))
-               </if>
-               )
-           </when>
-           <when test="share == null">
-               select * from  devops_app_service_version
-               WHERE app_service_id in
-               <foreach collection="ids" item="id" open="(" separator="," close=")">
-                   #{id}
-               </foreach>
-               <if test="params != null and params != ''">
-                   AND version LIKE CONCAT('%', CONCAT(#{params},'%'))
-               </if>
-           </when>
-       </choose>
+                <if test="share == 'share'">
+                    and dassr.share_level = 'organization'
+                </if>
+                <if test="share == 'project'">
+                    and dassr.share_level = 'project'
+                    and dassr.project_id = #{projectId}
+                </if>
+                AND dassr.version IS NOT NULL
+                AND dassr.version = version.version
+                <if test="params != null and params != ''">
+                    AND dassr.version LIKE CONCAT('%', CONCAT(#{params},'%'))
+                </if>)
+                UNION
+                (
+                SELECT version.*
+                FROM devops_app_service_share_rule dassr
+                LEFT JOIN devops_app_service_version version ON dassr.app_service_id = version.app_service_id
+                WHERE dassr.app_service_id in
+                <foreach collection="ids" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+                <if test="share == 'share'">
+                    and dassr.share_level = 'organization'
+                </if>
+                <if test="share == 'project'">
+                    and dassr.share_level = 'project'
+                    and dassr.project_id = #{projectId}
+                </if>
+                AND dassr.version IS NULL
+                AND version.version LIKE CONCAT('%', CONCAT(dassr.version_type,'%'))
+                <if test="params != null and params != ''">
+                    AND dassr.version LIKE CONCAT('%', CONCAT(#{params},'%'))
+                </if>
+                )
+            </when>
+            <when test="share == null">
+                select * from devops_app_service_version
+                WHERE app_service_id in
+                <foreach collection="ids" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+                <if test="params != null and params != ''">
+                    AND version LIKE CONCAT('%', CONCAT(#{params},'%'))
+                </if>
+            </when>
+        </choose>
         order by id desc
     </select>
 
-    <select id="queryServiceVersionByAppServiceIdAndShare" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
-        select * from  devops_app_service_version
+    <select id="queryServiceVersionByAppServiceIdAndShare"
+            resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
+        select * from devops_app_service_version
         where app_service_id=#{appServiceId}
         <if test="share != null and share != ''">
             and version in(select version from devops_app_service_share_rule where app_service_id=#{appServiceId})
@@ -560,14 +561,14 @@
 
     <select id="listVersions" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
         SELECT
-            dasv.id,
-            dasv.version,
-            dasv.app_service_id,
-            das. CODE AS appServiceCode,
-            das.`name` AS appServiceName,
-            das.type AS appServiceType
+        dasv.id,
+        dasv.version,
+        dasv.app_service_id,
+        das. CODE AS appServiceCode,
+        das.`name` AS appServiceName,
+        das.type AS appServiceType
         FROM
-            devops_app_service_version dasv
+        devops_app_service_version dasv
         JOIN devops_app_service das ON das.id = dasv.app_service_id
         <if test="appServiceVersionIds!=null and appServiceVersionIds.size>0">
             WHERE dasv.id in
@@ -584,5 +585,38 @@
         END
     </select>
 
-
+    <select id="queryByShareVersion" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
+         select * from ((SELECT version.*
+               FROM devops_app_service_share_rule dassr
+               LEFT JOIN devops_app_service_version version ON dassr.app_service_id = version.app_service_id
+               WHERE
+							 dassr.app_service_id = #{appServiceId}
+							 AND
+               (
+							  dassr.share_level = 'organization'
+								or (
+								dassr.share_level = 'project'
+								and dassr.project_id = #{projectId}) )
+               AND dassr.version IS NOT NULL
+               AND dassr.version = version.version
+               )
+               UNION
+               (
+               SELECT version.*
+               FROM devops_app_service_share_rule dassr
+               LEFT JOIN devops_app_service_version version ON dassr.app_service_id = version.app_service_id
+               WHERE
+							  dassr.app_service_id = #{appServiceId}
+							 AND
+               (
+							  dassr.share_level = 'organization'
+								or (
+								dassr.share_level = 'project'
+								and dassr.project_id = #{projectId}) )
+               AND dassr.version IS NULL
+               AND version.version LIKE CONCAT('%', CONCAT(dassr.version_type,'%'))
+               ))   vss
+	order BY vss.version
+	LIMIT 1
+    </select>
 </mapper>
