@@ -25,7 +25,7 @@ public class HarborUserDTO extends BaseDTO {
 
     private String harborProjectUserPassword;
 
-    private boolean isPush;
+    private Boolean isPush;
 
     public HarborUserDTO() {
     }
