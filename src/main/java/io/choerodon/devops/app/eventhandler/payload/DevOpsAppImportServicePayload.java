@@ -10,6 +10,7 @@ public class DevOpsAppImportServicePayload extends DevOpsAppServicePayload {
     private String accessToken;
     private GitPlatformType platformType;
     private Long gitlabUserId;
+    private Boolean template;
 
     public String getRepositoryUrl() {
         return repositoryUrl;
@@ -41,5 +42,13 @@ public class DevOpsAppImportServicePayload extends DevOpsAppServicePayload {
 
     public void setGitlabUserId(Long gitlabUserId) {
         this.gitlabUserId = gitlabUserId;
+    }
+
+    public Boolean getTemplate() {
+        return template;
+    }
+
+    public void setTemplate(Boolean template) {
+        this.template = template;
     }
 }

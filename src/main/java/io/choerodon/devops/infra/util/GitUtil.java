@@ -174,6 +174,10 @@ public class GitUtil {
         }
     }
 
+    public void checkout(String name, String commit, Boolean isGetWorkingDirectory) {
+        String path = isGetWorkingDirectory ? getWorkingDirectory(name) : name;
+        checkout(path, commit);
+    }
     /**
      * check git repo to commit
      *
