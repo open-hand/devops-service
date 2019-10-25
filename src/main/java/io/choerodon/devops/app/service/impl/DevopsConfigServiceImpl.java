@@ -114,7 +114,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                             projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
                             organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
                         }
-                        harborService.createHarbor(harborClient, projectDTO.getId(), organizationDTO.getCode() + "-" + projectDTO.getCode(), false);
+                        harborService.createHarbor(harborClient, projectDTO.getId(), organizationDTO.getCode() + "-" + projectDTO.getCode(), false,devopsConfigVO.getHarborPrivate());
                     }
                 }
                 //根据配置所在的资源层级，查询出数据库中是否存在
@@ -319,7 +319,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                     HarborClient harborClient = retrofit.create(HarborClient.class);
                     projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
                     organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-                    harborService.createHarbor(harborClient, projectDTO.getId(), organizationDTO.getCode() + "-" + projectDTO.getCode(), false);
+                    harborService.createHarbor(harborClient, projectDTO.getId(), organizationDTO.getCode() + "-" + projectDTO.getCode(), false,true);
                 }
                 return organizationConfig;
             }
@@ -552,6 +552,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
             throw new CommonException(e);
         }
     }
+
     private void createUser(HarborClient harborClient,User user,List<Integer> roles,OrganizationDTO organizationDTO,ProjectDTO projectDTO){
         Response<Void> result = null;
         try {
