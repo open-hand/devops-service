@@ -6,7 +6,7 @@ databaseChangeLog(logicalFilePath: 'devops_harbor_user.groovy') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
-            column(name: 'is_push', type: 'VARCHAR(50)', autoIncrement: false, remarks: '是否有push权限')
+            column(name: 'is_push', type: 'TINYINT UNSIGNED', autoIncrement: false, remarks: '是否有push权限')
             column(name: 'harbor_project_user_name', type: 'VARCHAR(50)', autoIncrement: false, remarks: '项目下harbor用户的名称')
             column(name: 'harbor_project_user_password', type: 'VARCHAR(50)', autoIncrement: false, remarks: '项目下harbor用户的密码')
             column(name: 'harbor_project_user_email', type: 'VARCHAR(50)', autoIncrement: false, remarks: '项目下harbor用户的邮箱')
