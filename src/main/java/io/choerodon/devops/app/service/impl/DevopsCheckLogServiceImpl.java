@@ -571,17 +571,6 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 HarborUserDTO pullUser = toDto(projectDTO, false);
                 createHarborUser(projectDTO,pullUser,devopsProjectDTO);
             }
-            else if (!idIsExist && !harbor) {
-                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsProjectDTO.getIamProjectId());
-
-                // 创建push用户
-                HarborUserDTO harborUserDTO = toDto(projectDTO, true);
-                createHarborUser(projectDTO,harborUserDTO,devopsProjectDTO);
-
-                // 创建pull用户
-                HarborUserDTO pullUser = toDto(projectDTO, false);
-                createHarborUser(projectDTO,pullUser,devopsProjectDTO);
-            }
         });
         LOGGER.info("sync harbor user success");
     }
