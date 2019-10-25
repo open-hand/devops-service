@@ -133,7 +133,7 @@ const Content = observer(() => {
     const currentBase = getCurrent();
     if (currentBase) {
       const { id, name, active, connect } = currentBase;
-      const menuItem = treeDs.find((item) => item.get('id') === id);
+      const menuItem = treeDs.find((item) => item.get('key') === String(id));
       if (menuItem) {
         // 清除已经停用的环境
         if (!active) {

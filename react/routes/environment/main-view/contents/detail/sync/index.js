@@ -18,7 +18,7 @@ export default function Situation() {
   } = useDetailStore();
 
   function renderMsg({ value }) {
-    return (<Tooltip title={value}>
+    return (<Tooltip title={value} placement="topLeft">
       {value}
     </Tooltip>);
   }

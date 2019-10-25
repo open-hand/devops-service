@@ -60,4 +60,23 @@
         AND re.kind = #{kind}
         AND re.instance_id = #{instanceId}
     </select>
+
+    <select id="listEnvResourceByOptions" resultType="io.choerodon.devops.infra.dto.DevopsEnvResourceDTO">
+        SELECT
+        *
+        FROM devops_env_resource dir where 1=1
+        <if test="envId != null">
+            AND dir.env_id = #{envId}
+        </if>
+        <if test="kind != null">
+            AND dir.kind = #{kind}
+        </if>
+        <if test="names != null and names.size > 0">
+            AND dir.name in
+             <foreach collection="names" item="name" open="(" separator="," close=")">
+                #{name}
+             </foreach>
+
+        </if>
+    </select>
 </mapper>

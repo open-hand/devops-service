@@ -209,7 +209,12 @@ const DeployModal = injectIntl(observer(({ record, dataSet, store, projectId, re
             ))
           )}
         </Select>
-        <Select name="appServiceVersionId" searchable disabled={!record.get('appServiceId')} />
+        <Select
+          name="appServiceVersionId"
+          searchable
+          searchMatcher="version"
+          disabled={!record.get('appServiceId')}
+        />
         <Select
           name="environmentId"
           searchable

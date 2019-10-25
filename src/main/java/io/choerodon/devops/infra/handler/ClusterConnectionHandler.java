@@ -31,9 +31,9 @@ import io.choerodon.devops.infra.util.TypeUtil;
 @Service
 public class ClusterConnectionHandler {
 
-    private static final String CLUSTER_SESSION = "cluster-sessions-catch";
+    public static final String CLUSTER_SESSION = "cluster-sessions-cache";
 
-    Pattern pattern = Pattern.compile("^[-\\+]?[\\d]*$");
+    private Pattern pattern = Pattern.compile("^[-\\+]?[\\d]*$");
     @Value("${agent.version}")
     private String agentExpectVersion;
     @Value("${services.gitlab.sshUrl}")
@@ -144,12 +144,11 @@ public class ClusterConnectionHandler {
                 projectDTO.getCode(), envCode);
 
         File file = new File(path);
-        gitUtil.setSshKey(envRsa);
         if (!file.exists()) {
-            gitUtil.cloneBySsh(path, url);
+            gitUtil.cloneBySsh(path, url, envRsa);
         } else {
             FileUtil.deleteDirectory(file);
-            gitUtil.cloneBySsh(path, url);
+            gitUtil.cloneBySsh(path, url, envRsa);
         }
         return path;
     }

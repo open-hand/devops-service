@@ -113,8 +113,8 @@ export default ((intlPrefix, formatMessage, projectId, selectedDs) => {
       },
     },
     fields: [
-      { name: 'name', type: 'string', label: formatMessage({ id: `${intlPrefix}.name` }) },
-      { name: 'code', type: 'string', label: formatMessage({ id: `${intlPrefix}.code` }) },
+      { name: 'name', type: 'string', label: formatMessage({ id: `${intlPrefix}.name` }), maxLength: 20 },
+      { name: 'code', type: 'string', label: formatMessage({ id: `${intlPrefix}.code` }), maxLength: 30 },
       { name: 'type', type: 'string', defaultValue: 'normal', label: formatMessage({ id: `${intlPrefix}.type` }) },
       { name: 'platformType', type: 'string', label: formatMessage({ id: `${intlPrefix}.import.type` }), defaultValue: 'share' },
       { name: 'repositoryUrl', type: 'url' },

@@ -22,17 +22,25 @@ export default injectIntl(observer((props) => {
   }, [record.get('appServiceSource')]);
 
   useEffect(() => {
-    async function loadVersion() {
-      if (record.get('templateAppServiceId')) {
-        const res = await appServiceStore.loadVersion(projectId, record.get('templateAppServiceId'));
-        res && res[0] && record.set('templateAppServiceVersionId', res[0].id);
-      } else {
-        appServiceStore.setVersion([]);
-      }
-    }
-    loadVersion();
+    const appServiceId = record.get('templateAppServiceId');
     record.set('templateAppServiceVersionId', null);
+    record.getField('templateAppServiceVersionId').reset();
+    if (appServiceId) {
+      const field = record.getField('templateAppServiceVersionId');
+      field.set('lookupAxiosConfig', {
+        url: `/devops/v1/projects/${projectId}/app_service_versions/page_by_options?app_service_id=${appServiceId}&deploy_only=false&do_page=true&page=1&size=40`,
+        method: 'post',
+      });
+      fetchLookup(field);
+    }
   }, [record.get('templateAppServiceId')]);
+
+  async function fetchLookup(field) {
+    const data = await field.fetchLookup();
+    if (data && data.length) {
+      record.set('templateAppServiceVersionId', data[0].id);
+    }
+  }
 
   return (
     <div className={`${prefixCls}-create-wrap-template`}>
@@ -68,11 +76,14 @@ export default injectIntl(observer((props) => {
             ))
           )}
         </Select>
-        <Select name="templateAppServiceVersionId" colSpan={3} searchable clearButton={false} disabled={!record.get('templateAppServiceId')}>
-          {map(appServiceStore.getVersion, ({ id, version }) => (
-            <Option value={id}>{version}</Option>
-          ))}
-        </Select>
+        <Select
+          name="templateAppServiceVersionId"
+          colSpan={3}
+          searchable
+          searchMatcher="version"
+          clearButton={false}
+          disabled={!record.get('templateAppServiceId')}
+        />
       </Form>
     </div>
   );

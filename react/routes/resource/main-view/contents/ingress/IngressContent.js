@@ -84,7 +84,7 @@ const IngressContent = observer(() => {
   function renderPath({ value }) {
     return (
       map(value, ({ path }) => (
-        <div key={path}>
+        <div key={path} className={`${prefixCls}-ingress-path`}>
           <MouserOverWrapper text={path} width={0.1}>
             <span>{path}</span>
           </MouserOverWrapper>

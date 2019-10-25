@@ -377,6 +377,7 @@ const deployment = {
   'c7ncd.deployment.usage': '使用量',
   'c7ncd.deployment.environment.sync': '提交同步情况',
   'c7ncd.deployment.appService.share': '共享应用',
+  'c7ncd.deployment.instance.current.version': '当前版本',
   'c7ncd.deployment.create.config': '创建部署配置',
   'c7ncd.deployment.modify.config': '修改部署配置',
   'c7ncd.deployment.config': '部署配置',

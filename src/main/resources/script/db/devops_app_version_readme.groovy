@@ -22,7 +22,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_version_readme.groovy') {
 
 
     changeSet(author: 'Runge', id: '2018-10-08-move-data') {
-        preConditions(onFail: "CONTINUE") {
+        preConditions(onFail: "MARK_RAN") {
             tableExists(tableName: "devops_app_version")
             columnExists(tableName: "devops_app_version",columnName:"id")
             columnExists(tableName: "devops_app_version",columnName:"readme_value_id")

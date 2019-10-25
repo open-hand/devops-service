@@ -37,7 +37,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env_command.groovy') {
             }
 
     changeSet(author: 'younger', id: '2018-10-25-update-data') {
-        preConditions(onFail: "CONTINUE") {
+        preConditions(onFail: "MARK_RAN") {
             tableExists(tableName: "devops_app_instance")
             columnExists(tableName: "devops_app_instance",columnName:"app_version_id")
             columnExists(tableName: "devops_app_instance",columnName:"command_id")
