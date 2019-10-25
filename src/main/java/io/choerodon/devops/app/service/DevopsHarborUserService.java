@@ -13,6 +13,6 @@ import io.choerodon.devops.infra.dto.harbor.User;
 public interface DevopsHarborUserService {
     public long create(HarborUserDTO harborUser);
 
-    public HarborUserDTO findHarborUserById(Long id);
+    public HarborUserDTO queryHarborUserById(Long id);
 
 }

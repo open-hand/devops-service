@@ -188,8 +188,8 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
         if (harborPrivate) {
             //设置为私有后将harbor项目设置为私有
             DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
-            HarborUserDTO harborUserDTO = devopsHarborUserService.findHarborUserById(devopsProjectDTO.getHarborUserId());
-            HarborUserDTO harborPullUserDTO = devopsHarborUserService.findHarborUserById(devopsProjectDTO.getHarborPullUserId());
+            HarborUserDTO harborUserDTO = devopsHarborUserService.queryHarborUserById(devopsProjectDTO.getHarborUserId());
+            HarborUserDTO harborPullUserDTO = devopsHarborUserService.queryHarborUserById(devopsProjectDTO.getHarborPullUserId());
             String username =harborUserDTO==null?String.format(USER_PREFIX, organizationDTO.getId(), projectId):harborUserDTO.getHarborProjectUserName();
             String password =harborUserDTO==null? String.format("%s%s", username, GenerateUUID.generateUUID().substring(0, 5)):harborUserDTO.getHarborProjectUserPassword();
             String useremail = harborUserDTO==null? String.format("%s@choerodon.com", username) :harborUserDTO.getHarborProjectUserEmail();
@@ -328,9 +328,9 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                 ConfigVO configVO = gson.fromJson(defaultConfig.getConfig(), ConfigVO.class);
                 HarborUserDTO harborUserDTO = new HarborUserDTO();
                 if(authType.equals("push")){
-                    harborUserDTO= devopsHarborUserService.findHarborUserById(devopsProjectDTO.getHarborUserId());
+                    harborUserDTO= devopsHarborUserService.queryHarborUserById(devopsProjectDTO.getHarborUserId());
                 }else if(authType.equals("pull")){
-                    harborUserDTO = devopsHarborUserService.findHarborUserById(devopsProjectDTO.getHarborPullUserId());
+                    harborUserDTO = devopsHarborUserService.queryHarborUserById(devopsProjectDTO.getHarborPullUserId());
                 }
                 configVO.setUserName(harborUserDTO.getHarborProjectUserName());
                 configVO.setPassword(harborUserDTO.getHarborProjectUserPassword());

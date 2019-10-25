@@ -27,7 +27,7 @@ public class DevopsHarborUserServiceImpl implements DevopsHarborUserService {
 
 
     @Override
-    public HarborUserDTO findHarborUserById(Long id) {
+    public HarborUserDTO queryHarborUserById(Long id) {
         return harborUserMapper.selectByPrimaryKey(id);
     }
 }
