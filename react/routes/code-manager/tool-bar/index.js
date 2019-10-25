@@ -117,14 +117,19 @@ const CodeManagerToolBar = injectIntl(inject('AppState')(observerLite((props) =>
   const handleCopy = () => Choerodon.prompt('复制成功');
 
   const handleRefresh = () => {
-    handleMapStore[name].refresh();
+    handleMapStore[name] && handleMapStore[name].refresh();
   };
 
   const refreshApp = () => {
+    DevPipelineStore.setLoading(true);
     appServiceDs.query().then((data) => {
+      DevPipelineStore.setLoading(false);
       if (data && data.length && data.length > 0) {
         selectAppDs.current.set('appServiceId', selectAppDs.current.get('appServiceId') || data[0].id);
+        handleRefresh();
       }
+    }).catch(() => {
+      DevPipelineStore.setLoading(false);
     });
   };
   return <React.Fragment>
@@ -164,6 +169,7 @@ export const SelectApp = injectIntl(inject('AppState')(observerLite((props) => {
         notFoundContent={appServiceDs.length === 0 ? formatMessage({ id: 'ist.noApp' }) : '未找到应用服务'}
         searchable
         name="appServiceId"
+        disabled={appServiceDs.status !== 'ready' || appServiceDs.length === 0}
       >
         <OptGroup2 label={formatMessage({ id: 'deploy.app' })} key="app">
           {
