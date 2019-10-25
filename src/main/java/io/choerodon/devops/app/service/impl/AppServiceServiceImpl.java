@@ -128,6 +128,10 @@ public class AppServiceServiceImpl implements AppServiceService {
     private String userName;
     @Value("${services.sonarqube.password:}")
     private String password;
+    @Value("${template.url}")
+    private String templateUrl;
+    @Value("${template.version}")
+    private String templateVersion;
     @Autowired
     private GitUtil gitUtil;
     @Autowired
@@ -617,6 +621,10 @@ public class AppServiceServiceImpl implements AppServiceService {
         String applicationDir = APPLICATION + GenerateUUID.generateUUID();
         Git repositoryGit = gitUtil.cloneRepository(applicationDir, devOpsAppServiceImportPayload.getRepositoryUrl(), devOpsAppServiceImportPayload.getAccessToken());
 
+        if (devOpsAppServiceImportPayload.getTemplate() != null && devOpsAppServiceImportPayload.getTemplate()) {
+            gitUtil.checkout(applicationDir, templateVersion, true);
+            replaceParams(appServiceDTO.getCode(), organizationDTO.getCode() + "-" + projectDTO.getCode(), applicationDir, null, null, true);
+        }
         // 设置Application对应的gitlab项目的仓库地址
         String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
         appServiceDTO.setRepoUrl(repoUrl + organizationDTO.getCode()
@@ -813,7 +821,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Saga(code = SagaTopicCodeConstants.DEVOPS_IMPORT_GITLAB_PROJECT,
             description = "Devops从外部代码平台导入到gitlab项目", inputSchema = "{}")
     @Transactional(rollbackFor = Exception.class)
-    public AppServiceRepVO importApp(Long projectId, AppServiceImportVO appServiceImportVO) {
+    public AppServiceRepVO importApp(Long projectId, AppServiceImportVO appServiceImportVO, Boolean isTemplate) {
         // 获取当前操作的用户的信息
         UserAttrVO userAttrVO = userAttrService.queryByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
@@ -872,6 +880,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         devOpsAppImportServicePayload.setIamProjectId(projectId);
         devOpsAppImportServicePayload.setRepositoryUrl(appServiceImportVO.getRepositoryUrl());
         devOpsAppImportServicePayload.setAccessToken(appServiceImportVO.getAccessToken());
+        devOpsAppImportServicePayload.setTemplate(isTemplate);
 
         producer.applyAndReturn(
                 StartSagaBuilder
@@ -2429,6 +2438,17 @@ public class AppServiceServiceImpl implements AppServiceService {
     public List<AppServiceVO> listServiceByVersionIds(Set<Long> ids) {
         List<AppServiceDTO> appServiceDTOList = appServiceMapper.listServiceByVersionIds(ids);
         return ConvertUtils.convertList(appServiceDTOList, AppServiceVO.class);
+    }
+
+    @Override
+    public List<AppServiceTemplateVO> listServiceTemplates() {
+        List<AppServiceTemplateVO> serviceTemplateVOS = new ArrayList<>();
+        templateUrl = templateUrl.endsWith("/") ? templateUrl : String.format("%s%s", templateUrl, "/");
+        AppServiceTemplate.templatePath.forEach((k, v) -> {
+            AppServiceTemplateVO appServiceTemplateVO = new AppServiceTemplateVO(k, String.format("%s%s%s", templateUrl, v, GIT));
+            serviceTemplateVOS.add(appServiceTemplateVO);
+        });
+        return serviceTemplateVOS;
     }
 
     private AppServiceVO dtoTOVo(AppServiceDTO appServiceDTO, Map<Long, List<AppServiceVersionDTO>> appVerisonMap) {
