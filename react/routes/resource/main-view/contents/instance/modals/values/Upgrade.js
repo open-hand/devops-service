@@ -68,7 +68,7 @@ export default class Upgrade extends Component {
       const data = await store.loadUpVersion({ projectId, appId, page: 1, param, init });
       if (handlePromptError(data)) {
         const { hasNextPage, list } = data;
-        const versionOptions = this.renderVersionOptions(list, true);
+        const versionOptions = this.renderVersionOptions(list);
 
         if (hasNextPage) {
           // 在选项最后置入一个加载更多按钮
@@ -105,7 +105,7 @@ export default class Upgrade extends Component {
    * 生成版本选项
    * @param versions
    */
-  renderVersionOptions = (versions, isHead = false) => {
+  renderVersionOptions = (versions) => {
     const {
       intl: { formatMessage },
       intlPrefix,
@@ -113,7 +113,7 @@ export default class Upgrade extends Component {
         versionId,
       },
     } = this.props;
-    return _.map(versions, ({ id, version }, index) => <Option key={id} value={id}>{version}{index === 0 && isHead && versionId && ` (${formatMessage({ id: `${intlPrefix}.instance.current.version` })})`}</Option>);
+    return _.map(versions, ({ id, version }, index) => <Option key={id} value={id}>{version}{id === versionId && ` (${formatMessage({ id: `${intlPrefix}.instance.current.version` })})`}</Option>);
   };
 
   /**
@@ -123,8 +123,13 @@ export default class Upgrade extends Component {
     const {
       idArr,
     } = this.state;
+    const {
+      vo: {
+        versionId,
+      },
+    } = this.props;
     this.setState({ versionSearchParam: value, versionPageNum: 2 });
-    this.handleLoadVersion(idArr.appId, value, '');
+    this.handleLoadVersion(idArr.appId, value, versionId);
   }, 500);
 
   /**

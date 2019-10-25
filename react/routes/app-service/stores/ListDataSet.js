@@ -183,7 +183,7 @@ export default ((intlPrefix, formatMessage, projectId, dataKey) => {
       { name: 'oldName', type: 'string' },
       { name: 'appServiceSource', type: 'string', label: formatMessage({ id: `${intlPrefix}.service.source` }) },
       { name: 'templateAppServiceId', type: 'number', label: formatMessage({ id: intlPrefix }) },
-      { name: 'templateAppServiceVersionId', type: 'number', label: formatMessage({ id: `${intlPrefix}.version` }) },
+      { name: 'templateAppServiceVersionId', type: 'number', textField: 'version', valueField: 'id', label: formatMessage({ id: `${intlPrefix}.version` }) },
     ],
     events: {
       update: handleUpdate,

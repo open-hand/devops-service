@@ -25,7 +25,7 @@ export default ((intlPrefix, formatMessage, projectId, envOptionsDs, valueIdOpti
         record.get('appServiceId') && record.set('appServiceId', null);
         break;
       case 'environmentId':
-        record.validate(false, true);
+        record.getField('instanceName').checkValidity();
         loadValueList(record);
         break;
       case 'appServiceId':
@@ -33,7 +33,7 @@ export default ((intlPrefix, formatMessage, projectId, envOptionsDs, valueIdOpti
         record.getField('appServiceVersionId').reset();
         if (value) {
           record.getField('appServiceVersionId').set('lookupAxiosConfig', {
-            url: `/devops/v1/projects/${projectId}/app_service_versions/page_by_options?app_service_id=${value.split('__')[0]}&deploy_only=true`,
+            url: `/devops/v1/projects/${projectId}/app_service_versions/page_by_options?app_service_id=${value.split('__')[0]}&deploy_only=true&do_page=true&page=1&size=40`,
             method: 'post',
           });
           record.set('instanceName', getRandomName(value.split('__')[1]));
