@@ -612,7 +612,6 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
         }
 
     }
-
 }
 
 
