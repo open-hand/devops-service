@@ -86,6 +86,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     public static final Logger LOGGER = LoggerFactory.getLogger(AppServiceServiceImpl.class);
     public static final String NODELETED = "nodeleted";
     private static final String HARBOR = "harbor";
+    private static final String AUTHTYPE_PUSH = "push";
+    private static final String AUTHTYPE_PULL = "pull";
     private static final String CHART = "chart";
     private static final String GIT = ".git";
     private static final String SONAR_KEY = "%s-%s:%s";
@@ -352,11 +354,11 @@ public class AppServiceServiceImpl implements AppServiceService {
         devopsConfigService.operate(appServiceId, APP_SERVICE, devopsConfigVOS);
 
         if (appServiceUpdateDTO.getHarbor() != null) {
-            DevopsConfigDTO harborConfig = devopsConfigService.queryRealConfig(appServiceId, APP_SERVICE, HARBOR);
+            DevopsConfigDTO harborConfig = devopsConfigService.queryRealConfig(appServiceId, APP_SERVICE, HARBOR,AUTHTYPE_PULL);
             appServiceDTO.setHarborConfigId(harborConfig.getId());
         }
         if (appServiceUpdateDTO.getChart() != null) {
-            DevopsConfigDTO chartConfig = devopsConfigService.queryRealConfig(appServiceId, APP_SERVICE, CHART);
+            DevopsConfigDTO chartConfig = devopsConfigService.queryRealConfig(appServiceId, APP_SERVICE, CHART,AUTHTYPE_PULL);
             appServiceDTO.setChartConfigId(chartConfig.getId());
         }
 
@@ -722,7 +724,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         try {
             ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
             OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-            DevopsConfigDTO harborConfigDTO = devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, HARBOR);
+            DevopsConfigDTO harborConfigDTO = devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, HARBOR,AUTHTYPE_PUSH);
             ConfigVO harborProjectConfig = gson.fromJson(harborConfigDTO.getConfig(), ConfigVO.class);
             InputStream inputStream = this.getClass().getResourceAsStream("/shell/ci.sh");
             Map<String, String> params = new HashMap<>();

@@ -49,6 +49,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     private static final String STORE_PATH = "stores";
     private static final String APP_SERVICE = "appService";
     private static final String CHART = "chart";
+    private static final String AUTHTYPE_PULL = "pull";
 
     private static final String ERROR_VERSION_INSERT = "error.version.insert";
 
@@ -120,7 +121,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         appServiceVersionDTO.setVersion(version);
         appServiceVersionDTO.setHarborConfigId(harborConfigId);
 
-        DevopsConfigDTO devopsConfigDTO = devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, CHART);
+        DevopsConfigDTO devopsConfigDTO = devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, CHART,AUTHTYPE_PULL);
         String helmUrl = gson.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class).getUrl();
         appServiceVersionDTO.setHelmConfigId(devopsConfigDTO.getId());
 

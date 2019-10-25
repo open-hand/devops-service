@@ -61,6 +61,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     private static final String UPDATE = "update";
     private static final String CHOERODON = "choerodon-test";
     private static final String HARBOR = "harbor";
+    private static final String AUTHTYPE = "pull";
     private static final String MANUAL = "manual";
     private static final String APP_SERVICE = "appService";
     private static final String HELM_RELEASE = "C7NHelmRelease";
@@ -1312,7 +1313,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         if (appServiceVersionDTO.getHarborConfigId() != null) {
             devopsConfigDTO = devopsConfigService.baseQuery(appServiceVersionDTO.getHarborConfigId());
         } else {
-            devopsConfigDTO = devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, HARBOR);
+            devopsConfigDTO = devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, HARBOR,AUTHTYPE);
         }
         if (devopsConfigDTO != null) {
             ConfigVO configVO = gson.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class);

@@ -50,4 +50,11 @@ databaseChangeLog(logicalFilePath: 'dba/devops_project.groovy') {
         }
     }
 
+    changeSet(author: 'lizhaozhong', id: '2019-12-25-add-column') {
+        addColumn(tableName: 'devops_project') {
+            column(name: 'harbor_user_id', type: 'BIGINT UNSIGNED', afterColumn: 'harbor_project_is_private',remarks: 'harbor用户id')
+            column(name: 'harbor_pull_user_id', type: 'BIGINT UNSIGNED',afterColumn: 'harbor_user_id', remarks: '仅有pull权限的harbor用户id')
+        }
+    }
+
 }
