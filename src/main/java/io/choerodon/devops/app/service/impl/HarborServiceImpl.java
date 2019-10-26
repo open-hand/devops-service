@@ -131,6 +131,7 @@ public class HarborServiceImpl implements HarborService {
                 HarborUserDTO harborUserDTO = new HarborUserDTO(user.getUsername(), user.getPassword(), user.getEmail(), true);
                 HarborUserDTO pullHarborUserDTO = new HarborUserDTO(pullUser.getUsername(), pullUser.getPassword(), pullUser.getEmail(), false);
 
+                devopsProjectDTO.setHarborProjectIsPrivate(true);
                 if (devopsHarborUserService.create(harborUserDTO) != 1) {
                     throw new CommonException("error.harbor.user.insert");
                 } else {
