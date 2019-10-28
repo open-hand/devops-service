@@ -30,7 +30,7 @@ const ImportForm = injectIntl(observer((props) => {
   modal.handleOk(async () => {
     if (record.get('platformType') === 'share' || record.get('platformType') === 'market') {
       if (!selectedDs.length) return true;
-      if (selectedDs.some((item) => item.get('nameFailed') || item.get('codeFailed'))) return false;
+      if (selectedDs.some((item) => item.get('nameFailed') || item.get('codeFailed') || !item.get('versionId'))) return false;
 
       const result = await checkData();
       if (!result) {

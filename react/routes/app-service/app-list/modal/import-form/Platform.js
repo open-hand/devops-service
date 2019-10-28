@@ -1,4 +1,4 @@
-import React, { Fragment, useCallback, useState, useEffect } from 'react';
+import React, { Fragment, useCallback, useState, useEffect, useMemo } from 'react';
 import { Action } from '@choerodon/boot';
 import { Table, Modal, Select } from 'choerodon-ui/pro';
 import { injectIntl, FormattedMessage } from 'react-intl';
@@ -58,20 +58,15 @@ const Platform = injectIntl(observer((props) => {
   }
 
   function renderVersion({ value, record }) {
-    const { id: versionId } = value ? record.get('versions')[0] : {};
-    const selectOptions = map(value, ({ id, version }) => (
-      <Option value={id}>{version}</Option>
-    ));
-
     return (
       <Select
-        value={record.get('versionId') || versionId}
-        onChange={handleChangeVersion}
+        record={record}
+        name="versionId"
+        searchable
+        searchMatcher="version"
         clearButton={false}
         className={`${prefixCls}-import-platform-table-select`}
-      >
-        {selectOptions}
-      </Select>
+      />
     );
   }
 
@@ -81,10 +76,6 @@ const Platform = injectIntl(observer((props) => {
         <Button shape="circle" icon="delete" onClick={handleDelete} />
       </Tooltip>
     );
-  }
-
-  function handleChangeVersion(value) {
-    selectedDs.current.set('versionId', value);
   }
 
   function handleDelete() {
@@ -114,7 +105,7 @@ const Platform = injectIntl(observer((props) => {
       >
         <Column name="name" editor renderer={renderNameOrCode} />
         <Column name="code" editor renderer={renderNameOrCode} />
-        <Column name="versions" renderer={renderVersion} />
+        <Column name="versionId" renderer={renderVersion} align="left" />
         <Column name="projectName" width="1.5rem" header={formatMessage({ id: `${intlPrefix}.belong.${importRecord.get('platformType')}` })} />
         <Column renderer={renderAction} width="0.7rem" />
       </Table>
