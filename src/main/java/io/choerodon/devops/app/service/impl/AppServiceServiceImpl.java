@@ -2378,7 +2378,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             } else {
                 projectVO.setId(v.getMktAppId());
             }
-            projectVO.setAppName(v.getProjectName());
+            projectVO.setName(v.getProjectName());
             projectVOS.add(projectVO);
         });
 

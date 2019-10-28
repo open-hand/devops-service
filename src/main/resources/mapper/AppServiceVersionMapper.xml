@@ -273,7 +273,7 @@
             AND dav.version = #{version}
         </if>
         <if test="index != null and index !=''">
-            ORDER BY dav.version desc
+            ORDER BY dav.id DESC
         </if>
     </select>
 
@@ -625,7 +625,7 @@
                AND dassr.version IS NULL
                AND version.version LIKE CONCAT('%', CONCAT(dassr.version_type,'%'))
                ))   vss
-	order BY vss.version
+	order BY vss.id desc
 	LIMIT 1
     </select>
 </mapper>
