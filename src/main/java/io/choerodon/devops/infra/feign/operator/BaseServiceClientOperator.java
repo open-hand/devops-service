@@ -463,4 +463,14 @@ public class BaseServiceClientOperator {
         }).collect(Collectors.toList());
         baseServiceClient.assignUsersRolesOnProjectLevel(projectId, memberRoleDTOS);
     }
+
+    public List<ProjectWithRoleVO>  listProjectWithRole(Long userId,int page,int size) {
+        try {
+            ResponseEntity<PageInfo<ProjectWithRoleVO>> pageInfoResponseEntity = baseServiceClient.listProjectWithRole(userId, page, size);
+            return (pageInfoResponseEntity.getBody() == null) ? Collections.emptyList() : pageInfoResponseEntity.getBody().getList();
+        } catch (Exception ex) {
+            return Collections.emptyList();
+        }
+
+    }
 }
