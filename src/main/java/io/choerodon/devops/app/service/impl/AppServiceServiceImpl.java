@@ -622,7 +622,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         Git repositoryGit = gitUtil.cloneRepository(applicationDir, devOpsAppServiceImportPayload.getRepositoryUrl(), devOpsAppServiceImportPayload.getAccessToken());
 
         if (devOpsAppServiceImportPayload.getTemplate() != null && devOpsAppServiceImportPayload.getTemplate()) {
-            gitUtil.checkout(applicationDir, templateVersion, true);
+            gitUtil.checkout(repositoryGit, templateVersion);
             replaceParams(appServiceDTO.getCode(), organizationDTO.getCode() + "-" + projectDTO.getCode(), applicationDir, null, null, true);
         }
         // 设置Application对应的gitlab项目的仓库地址

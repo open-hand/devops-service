@@ -174,9 +174,13 @@ public class GitUtil {
         }
     }
 
-    public void checkout(String name, String commit, Boolean isGetWorkingDirectory) {
-        String path = isGetWorkingDirectory ? getWorkingDirectory(name) : name;
-        checkout(path, commit);
+    public void checkout(Git git, String commit) {
+        try {
+            git.checkout().setName(commit).call();
+        } catch (GitAPIException e) {
+            LOGGER.info("Checkout error ", e);
+        }
+
     }
     /**
      * check git repo to commit
