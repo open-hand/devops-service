@@ -176,6 +176,7 @@ const ListView = withRouter(observer((props) => {
   }
 
   function openImport() {
+    importDs.reset();
     importDs.create();
     Modal.open({
       key: modalKey2,
@@ -243,10 +244,6 @@ const ListView = withRouter(observer((props) => {
     }
   }
 
-  function handleTableFilter(record) {
-    return record.status !== 'add';
-  }
-
   function getHeader() {
     return <Header title={<FormattedMessage id="app.head" />}>
       <Permission
@@ -287,7 +284,7 @@ const ListView = withRouter(observer((props) => {
           dataSet={listDs}
           border={false}
           queryBar="bar"
-          filter={handleTableFilter}
+          pristine
           className={`${prefixCls}.table`}
           rowClassName="c7ncd-table-row-font-color"
         >
