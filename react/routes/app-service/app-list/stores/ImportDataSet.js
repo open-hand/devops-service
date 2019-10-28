@@ -1,6 +1,7 @@
 import { axios } from '@choerodon/boot';
 import map from 'lodash/map';
 import omit from 'lodash/omit';
+import pick from 'lodash/pick';
 
 function getRequestData(appServiceList) {
   const res = map(appServiceList, ({ id, name, code, type, versionId, versions = [] }) => {
@@ -75,11 +76,16 @@ export default ((intlPrefix, formatMessage, projectId, selectedDs) => {
         case 'github':
           handleRequired(record, true);
           record.getField('accessToken').set('required', false);
+          record.get('repositoryUrl') && record.set('repositoryUrl', null);
+          if (record.get('isTemplate') && record.get('githubTemplate')) {
+            record.set('repositoryUrl', record.get('githubTemplate'));
+          }
           record.getField('repositoryUrl').set('label', formatMessage({ id: `${intlPrefix}.url.github` }));
           record.getField('name').set('validator', checkName);
           record.getField('code').set('validator', checkCode);
           break;
         case 'gitlab':
+          record.get('repositoryUrl') && record.set('repositoryUrl', null);
           handleRequired(record, true);
           record.getField('accessToken').set('required', true);
           record.getField('repositoryUrl').set('label', formatMessage({ id: `${intlPrefix}.url.gitlab` }));
@@ -90,6 +96,24 @@ export default ((intlPrefix, formatMessage, projectId, selectedDs) => {
           break;
       }
     }
+    if (name === 'githubTemplate') {
+      record.set('repositoryUrl', value);
+    }
+    if (name === 'isTemplate') {
+      record.get('repositoryUrl') && record.set('repositoryUrl', null);
+      if (value && record.get('githubTemplate')) {
+        record.set('repositoryUrl', record.get('githubTemplate'));
+      }
+    }
+  }
+
+  function templateDynamicProps({ record }) {
+    if (record.get('platformType') === 'github') {
+      return {
+        lookupUrl: `/devops/v1/projects/${projectId}/app_service/list_service_templates`,
+      };
+    }
+    return {};
   }
 
   return ({
@@ -100,7 +124,14 @@ export default ((intlPrefix, formatMessage, projectId, selectedDs) => {
       create: ({ data: [data] }) => {
         const { platformType, appServiceList } = data;
         let url = 'external';
-        let res = omit(data, ['__id', '__status', 'appServiceList']);
+        let res;
+        if (platformType === 'gitlab') {
+          res = pick(data, ['code', 'name', 'type', 'accessToken', 'repositoryUrl']);
+        }
+        if (platformType === 'github') {
+          url = `${url}${data.isTemplate ? '?isTemplate=true' : ''}`;
+          res = pick(data, ['code', 'name', 'type', 'repositoryUrl']);
+        }
         if (platformType === 'share' || platformType === 'market') {
           url = 'internal';
           res = getRequestData(appServiceList);
@@ -120,6 +151,8 @@ export default ((intlPrefix, formatMessage, projectId, selectedDs) => {
       { name: 'repositoryUrl', type: 'url' },
       { name: 'accessToken', type: 'string', label: formatMessage({ id: `${intlPrefix}.token` }) },
       { name: 'appServiceList', type: 'object' },
+      { name: 'isTemplate', type: 'bool', label: formatMessage({ id: `${intlPrefix}.github.source` }), defaultValue: true },
+      { name: 'githubTemplate', type: 'string', textField: 'name', valueField: 'path', label: formatMessage({ id: `${intlPrefix}.github.template` }), dynamicProps: templateDynamicProps },
     ],
     events: {
       update: handleUpdate,
