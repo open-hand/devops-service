@@ -126,7 +126,7 @@ export default ((intlPrefix, formatMessage, projectId, selectedDs) => {
           res = pick(data, ['code', 'name', 'type', 'accessToken', 'repositoryUrl']);
         }
         if (platformType === 'github') {
-          url = `${url}${data.isTemplate ? '?isTemplate=true' : ''}`;
+          url = `${url}${data.isTemplate ? '?is_template=true' : ''}`;
           res = pick(data, ['code', 'name', 'type', 'repositoryUrl']);
         }
         if (platformType === 'share' || platformType === 'market') {
