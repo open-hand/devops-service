@@ -111,11 +111,10 @@ public class HarborServiceImpl implements HarborService {
             if (result.raw().code() != 201 && result.raw().code() != 409) {
                 throw new CommonException(result.message());
             }
-
-            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-            OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-            DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
             if (createUser) {
+                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+                OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+                DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
                 String username = String.format("User%s%s", organizationDTO.getId(), projectId);
                 String useremail = String.format("%s@harbor.com", username);
                 String password = String.format("%s%s", username, GenerateUUID.generateUUID().substring(0, 3));

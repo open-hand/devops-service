@@ -87,6 +87,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
         devopsConfigVOS.forEach(devopsConfigVO -> {
             //根据每个配置的默认还是自定义执行不同逻辑
             if (devopsConfigVO.getCustom()) {
+
                 //自定义的harbor类型,不管是新建还是更新，当传进来有harbor project时都要检验project是否是私有
                 if (devopsConfigVO.getType().equals(HARBOR) && devopsConfigVO.getConfig().getProject() != null) {
                     checkRegistryProjectIsPrivate(devopsConfigVO);
