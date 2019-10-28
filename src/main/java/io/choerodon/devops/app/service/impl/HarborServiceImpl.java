@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
@@ -125,14 +126,12 @@ public class HarborServiceImpl implements HarborService {
 
                 User user = new User(username, useremail, password, username);
                 User pullUser = new User(pullUsername, pullUseremail, pullUserpassword, pullUsername);
-                //创建用户
+                //创建用户,绑定角色
                 createUser(harborClient, user, Arrays.asList(1), organizationDTO, projectDTO);
                 createUser(harborClient, pullUser, Arrays.asList(3), organizationDTO, projectDTO);
+
                 HarborUserDTO harborUserDTO = new HarborUserDTO(user.getUsername(), user.getPassword(), user.getEmail(), true);
                 HarborUserDTO pullHarborUserDTO = new HarborUserDTO(pullUser.getUsername(), pullUser.getPassword(), pullUser.getEmail(), false);
-                //设置barbor用户角色
-                operateMember(harborClient,null,null,organizationDTO,projectDTO,OPERATE_DELETE);
-
                 devopsProjectDTO.setHarborProjectIsPrivate(true);
                 if (devopsHarborUserService.create(harborUserDTO) != 1) {
                     throw new CommonException("error.harbor.user.insert");
@@ -169,69 +168,35 @@ public class HarborServiceImpl implements HarborService {
                 throw new CommonException(result.errorBody().string());
             }
             //给项目绑定角色
-            operateMember(harborClient, user, roles, organizationDTO, projectDTO, OPERATE_CREATE);
-        } catch (IOException e) {
-            throw new CommonException(e);
-        }
-
-    }
-    private void operateMember(HarborClient harborClient, User user, List<Integer> roles, OrganizationDTO organizationDTO, ProjectDTO projectDTO, String operateRole) {
-        Response<Void> result = null;
-        //删除成员角色
-        try {
             Response<List<ProjectDetail>> projects = harborClient.listProject(organizationDTO.getCode() + "-" + projectDTO.getCode()).execute();
-            if (!projects.body().isEmpty()) {
+            if (!CollectionUtils.isEmpty(projects.body())) {
                 Response<SystemInfo> systemInfoResponse = harborClient.getSystemInfo().execute();
                 if (systemInfoResponse.raw().code() != 200) {
                     throw new CommonException(systemInfoResponse.errorBody().string());
                 }
                 if (systemInfoResponse.body().getHarborVersion().equals("v1.4.0")) {
-                    if (OPERATE_CREATE.equals(operateRole)) {
-                        Role role = new Role();
-                        role.setUsername(user.getUsername());
-                        role.setRoles(roles);
-                        result = harborClient.setProjectMember(projects.body().get(0).getProjectId(), role).execute();
-                    } else if (OPERATE_DELETE.equals(operateRole)) {
-                        Response<List<User>> users = harborClient.listUser(String.format(USER_PREFIX, organizationDTO.getId(), projectDTO.getId())).execute();
-                        if (users.raw().code() != 200) {
-                            throw new CommonException(users.errorBody().string());
-                        }
-                        harborClient.deleteLowVersionMember(projects.body().get(0).getProjectId(), users.body().get(0).getUserId().intValue());
-                    }
-
+                    Role role = new Role();
+                    role.setUsername(user.getUsername());
+                    role.setRoles(roles);
+                    result = harborClient.setProjectMember(projects.body().get(0).getProjectId(), role).execute();
                 } else {
-                    if (OPERATE_CREATE.equals(operateRole)) {
-                        //绑定角色
-                        ProjectMember projectMember = new ProjectMember();
-                        MemberUser memberUser = new MemberUser();
-                        projectMember.setRoleId(roles.get(0));
-                        memberUser.setUsername(user.getUsername());
-                        projectMember.setMemberUser(memberUser);
-                        result = harborClient.setProjectMember(projects.body().get(0).getProjectId(), projectMember).execute();
-                        if (result.raw().code() != 201 && result.raw().code() != 200 && result.raw().code() != 409) {
-                            throw new CommonException(result.errorBody().string());
-                        }
-                    } else if (OPERATE_DELETE.equals(operateRole)) {
-                        Response<List<ProjectMember>> projectMembers = harborClient.getProjectMembers(projects.body().get(0).getProjectId(), String.format(USER_PREFIX, organizationDTO.getId(), projectDTO.getId())).execute();
-                        if (projectMembers.raw().code() != 200) {
-                            throw new CommonException(projectMembers.errorBody().string());
-                        }
-                        projectMembers.body().stream().forEach(projectMember -> {
-                            try {
-                                harborClient.deleteMember(projects.body().get(0).getProjectId(), projectMember.getId()).execute();
-                            } catch (IOException e) {
-                                throw new CommonException("error.delete.harbor.member");
-                            }
-                        });
-                    }
-
+                    ProjectMember projectMember = new ProjectMember();
+                    MemberUser memberUser = new MemberUser();
+                    projectMember.setRoleId(roles.get(0));
+                    memberUser.setUsername(user.getUsername());
+                    projectMember.setMemberUser(memberUser);
+                    result = harborClient.setProjectMember(projects.body().get(0).getProjectId(), projectMember).execute();
                 }
-
+                if (result.raw().code() != 201 && result.raw().code() != 200 && result.raw().code() != 409) {
+                    throw new CommonException(result.errorBody().string());
+                }
             }
-        } catch (IOException e) {
+
+        } catch (Exception e) {
             throw new CommonException(e);
         }
     }
+
 
    private HarborClient initHarborClient(HarborPayload harborPayload){
        //获取当前项目的harbor设置,如果有自定义的取自定义，没自定义取组织层的harbor配置
