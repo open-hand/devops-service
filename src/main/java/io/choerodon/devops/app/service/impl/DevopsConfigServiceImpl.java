@@ -267,6 +267,8 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
 
                     DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
                     devopsProjectDTO.setHarborProjectIsPrivate(false);
+                    devopsProjectDTO.setHarborPullUserId(null);
+                    devopsProjectDTO.setHarborUserId(null);
                     devopsProjectService.baseUpdate(devopsProjectDTO);
 
                 }
