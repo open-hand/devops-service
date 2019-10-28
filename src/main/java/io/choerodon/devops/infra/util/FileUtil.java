@@ -944,27 +944,28 @@ public class FileUtil {
         return res.toString();
     }
 
-
-    public static List<String> getSshKey(String path) {
-        // TODO 取消文件中转的方式
-        List<String> sshkeys = new ArrayList<>();
+    /**
+     * 生成一对RSA的ssh公私钥
+     *
+     * @param publicKeyComment 公钥的注释
+     * @return 列表第一个元素为私钥，第二个为公钥
+     */
+    public static List<String> getSshKey(String publicKeyComment) {
+        List<String> sshKeyPair = new ArrayList<>();
         int type = KeyPair.RSA;
-        String strPath = "id_rsa";
         JSch jsch = new JSch();
-        try {
-            KeyPair kpair = KeyPair.genKeyPair(jsch, type);
-            kpair.writePrivateKey(strPath);
-            kpair.writePublicKey(strPath + ".pub", path);
-            kpair.dispose();
-            FileUtil.moveFiles("id_rsa", "ssh/" + path);
-            FileUtil.moveFiles("id_rsa.pub", "ssh/" + path);
-            sshkeys.add(FileUtil.getFileContent(new File("ssh/" + path + "/id_rsa")));
-            sshkeys.add(FileUtil.getFileContent(new File("ssh/" + path + "/id_rsa.pub")));
-            FileUtil.deleteDirectory(new File("ssh"));
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            KeyPair keyPair = KeyPair.genKeyPair(jsch, type);
+            keyPair.writePrivateKey(outputStream);
+            sshKeyPair.add(new String(outputStream.toByteArray()));
+            outputStream.reset();
+            keyPair.writePublicKey(outputStream, publicKeyComment);
+            sshKeyPair.add(new String(outputStream.toByteArray()));
+            keyPair.dispose();
         } catch (Exception e) {
             logger.info(e.getMessage());
         }
-        return sshkeys;
+        return sshKeyPair;
     }
 
 
