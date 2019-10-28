@@ -449,11 +449,12 @@ class Branch extends Component {
 
   // 打开创建分支模态框
   openCreateBranchModal() {
+    const { intl } = this.props;
     ProModal.open({
       key: branchCreateModalKey,
       title: <FormattedMessage id="branch.create" />,
       drawer: true,
-      children: <BranchCreate {...this.props} />,
+      children: <BranchCreate intl={intl} handleRefresh={this.handleRefresh} />,
       style: branchCreateModalStyle,
       okText: <FormattedMessage id="create" />,
       cancelText: <FormattedMessage id="cancel" />,
