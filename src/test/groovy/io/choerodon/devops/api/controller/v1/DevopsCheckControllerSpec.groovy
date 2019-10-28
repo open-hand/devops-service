@@ -15,7 +15,7 @@ import spock.lang.Subject
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(IntegrationTestConfiguration)
-@Subject(DevopsCheckClusterController)
+@Subject(DevopsCheckController)
 @Stepwise
 class DevopsCheckControllerSpec extends Specification {
 //    def BASE_URL = "/v1/upgrade?version={version}"

@@ -27,7 +27,7 @@ public class DevopsCheckClusterController {
      * @param userId
      * @return
      */
-    @Permission(type = ResourceType.SITE, permissionWithin = true)
+    @Permission(type = ResourceType.SITE, permissionPublic = true)
     @ApiOperation(value = "验证用户是否拥有操作集群的权限")
     @GetMapping(value = "/clusterCheck")
     public ResponseEntity<Boolean> checkUserClusterPermission(
