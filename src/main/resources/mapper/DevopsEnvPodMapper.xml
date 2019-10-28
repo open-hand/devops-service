@@ -62,6 +62,7 @@
         LEFT JOIN devops_app_service da ON dav.app_service_id = da.id
         LEFT JOIN devops_env de ON de.id = dai.env_id
         WHERE de.project_id = #{projectId}
+        AND de.type = 'user'
         <if test='appServiceId != null'>
             AND da.id= #{appServiceId}
         </if>
@@ -97,5 +98,6 @@
           AND der.env_id = #{envId}
           AND der.kind = 'Pod'
           AND dep.name = der.name
+          AND de.type = 'user'
     </select>
 </mapper>
