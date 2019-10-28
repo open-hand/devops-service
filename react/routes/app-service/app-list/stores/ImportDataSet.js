@@ -4,16 +4,13 @@ import omit from 'lodash/omit';
 import pick from 'lodash/pick';
 
 function getRequestData(appServiceList) {
-  const res = map(appServiceList, ({ id, name, code, type, versionId, versions = [] }) => {
-    const { id: verId } = versions[0] || {};
-    return ({
-      appServiceId: id,
-      appName: name,
-      appCode: code,
-      type,
-      versionId: versionId || verId,
-    });
-  });
+  const res = map(appServiceList, ({ id, name, code, type, versionId }) => ({
+    appServiceId: id,
+    appName: name,
+    appCode: code,
+    type,
+    versionId,
+  }));
   return res;
 }
 

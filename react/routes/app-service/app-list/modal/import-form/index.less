@@ -27,10 +27,21 @@
     }
 
     &-table-select {
+      width: 100%;
+      height: 100%;
 
       .@{c7n-pro-prefix}-select {
-        border: none;
+        border-color: transparent;
+
+        &:focus,
+        &:active {
+          border-color: #6374c2;
+        }
       }
+    }
+
+    .@{c7n-pro-prefix}-select-required {
+      background: none;
     }
 
     .@{c7n-pro-prefix}-output-invalid {
