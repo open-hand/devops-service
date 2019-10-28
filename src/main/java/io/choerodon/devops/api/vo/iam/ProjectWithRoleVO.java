@@ -3,6 +3,7 @@ package io.choerodon.devops.api.vo.iam;
 import java.util.List;
 
 public class ProjectWithRoleVO {
+    private Long id;
 
     private String name;
 
@@ -22,5 +23,13 @@ public class ProjectWithRoleVO {
 
     public void setRoles(List<RoleVO> roles) {
         this.roles = roles;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 }

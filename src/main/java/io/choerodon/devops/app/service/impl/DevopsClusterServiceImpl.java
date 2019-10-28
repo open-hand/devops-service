@@ -1,19 +1,20 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO;
+import io.choerodon.devops.api.vo.iam.RoleVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.base.domain.PageRequest;
@@ -499,6 +500,34 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     @Override
     public void baseUpdateProjectId(Long orgId, Long proId) {
         devopsClusterMapper.updateProjectId(orgId, proId);
+    }
+
+    @Override
+    public Boolean checkUserClusterPermission(Long clusterId, Long userId) {
+        String projectOwner = "项目所有者";
+        DevopsClusterDTO devopsClusterDTO = new DevopsClusterDTO();
+        devopsClusterDTO.setId(clusterId);
+        DevopsClusterDTO devopsClusterDTO1 = devopsClusterMapper.selectByPrimaryKey(devopsClusterDTO);
+        if(ObjectUtils.isEmpty(devopsClusterDTO1)){
+            throw new CommonException("error.devops.cluster.is.not.exist");
+        }
+        List<ProjectWithRoleVO> projectWithRoleVOS = baseServiceClientOperator.listProjectWithRole(userId, 0, 0);
+        if(CollectionUtils.isEmpty(projectWithRoleVOS)){return false;}
+        Set<Long> ownerRoleProjectIds = new HashSet<>();
+        projectWithRoleVOS.stream().forEach(v -> {
+            if(CollectionUtils.isEmpty(v.getRoles())) {}
+            Set<Long> collect = v.getRoles().stream().filter(role -> projectOwner.equals(role.getName())).map(RoleVO::getId).collect(Collectors.toSet());
+            if(!CollectionUtils.isEmpty(collect)){
+                ownerRoleProjectIds.add(v.getId());
+            }
+        });
+        if(CollectionUtils.isEmpty(ownerRoleProjectIds)) { return  false;}
+        List<DevopsClusterProPermissionDTO> devopsClusterProPermissionDTOS = devopsClusterProPermissionService.baseListByClusterId(clusterId);
+        Set<Long> clusterBelongToProjectIds = devopsClusterProPermissionDTOS.stream().map(devopsClusterProPermissionDTO -> devopsClusterProPermissionDTO.getProjectId()).collect(Collectors.toSet());
+        clusterBelongToProjectIds.add(devopsClusterDTO1.getProjectId());
+        clusterBelongToProjectIds.retainAll(ownerRoleProjectIds);
+        if(CollectionUtils.isEmpty(clusterBelongToProjectIds)) {return false;}
+        return true;
     }
 
     /**
