@@ -4,6 +4,7 @@ import { observer } from 'mobx-react-lite';
 import { Choerodon } from '@choerodon/boot';
 import { Select, Form, TextField } from 'choerodon-ui/pro';
 import map from 'lodash/map';
+import find from 'lodash/find';
 import { handlePromptError } from '../../../../../utils';
 
 import './index.less';
@@ -54,21 +55,18 @@ export default observer(({ record, dataSet, versionOptions, levelOptions, projec
       }
     }
     createOption();
-    record.getField('version').set('options', versionOptions);
     record.getField('shareLevel').set('options', levelOptions);
-    versionOptions.transport.read.url = `/devops/v1/projects/${projectId}/app_service_versions/page_by_options?app_service_id=${appServiceId}&deploy_only=false&do_page=false`;
-    versionOptions.transport.read.method = 'post';
   }, []);
 
   useEffect(() => {
-    versionOptions.transport.read.data = { params: [], searchParam: { version: record.get('versionType') } };
-    async function loadVersions() {
-      await versionOptions.query();
-      if (record.get('versionType') && record.get('version') && !versionOptions.find(optionRecord => optionRecord.get('version') === record.get('version'))) {
-        record.set('version', null);
-      }
-    }
-    loadVersions();
+    const field = record.getField('version');
+    field.reset();
+    field.set('lookupAxiosConfig', {
+      url: `/devops/v1/projects/${projectId}/app_service_versions/page_by_options?app_service_id=${appServiceId}&deploy_only=false&do_page=true&page=1&size=40`,
+      method: 'post',
+      data: { params: [], searchParam: { version: record.get('versionType') } },
+    });
+    fetchLookup(field);
   }, [record.get('versionType')]);
 
   useEffect(() => {
@@ -92,6 +90,13 @@ export default observer(({ record, dataSet, versionOptions, levelOptions, projec
     }
   });
 
+  async function fetchLookup(field) {
+    const res = await field.fetchLookup();
+    if (record.get('versionType') && record.get('version') && !find(res, ({ version }) => version === record.get('version'))) {
+      record.set('version', null);
+    }
+  }
+
   return (<Fragment>
     <Form record={record}>
       <Select
@@ -106,6 +111,7 @@ export default observer(({ record, dataSet, versionOptions, levelOptions, projec
       <Select
         name="version"
         searchable
+        searchMatcher="version"
         addonAfter={<Tips helpText={formatMessage({ id: `${intlPrefix}.detail.version.tips` })} />}
       />
       <Select

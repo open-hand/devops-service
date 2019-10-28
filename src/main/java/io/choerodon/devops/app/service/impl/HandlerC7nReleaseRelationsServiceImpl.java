@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import io.kubernetes.client.models.V1Endpoints;
@@ -203,6 +204,16 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
             if (appServiceVersionDTO != null) {
                 applicationDTO = appServiceDTO;
                 break;
+            }
+        }
+
+        // 如果本身是使用共享规则共享的版本部署的实例，后续共享规则删除后，也允许实例修改values更新实例时,继续使用这个版本
+        if (appServiceVersionDTO == null && "update".equals(type)) {
+            AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService
+                    .baseQueryByCodeAndEnv(c7nHelmRelease.getMetadata().getName(), envId);
+            AppServiceVersionDTO versionUnShared = appServiceVersionService.baseQuery(appServiceInstanceDTO.getAppServiceId());
+            if (Objects.equals(versionUnShared.getVersion(), c7nHelmRelease.getSpec().getChartVersion())) {
+                appServiceVersionDTO = versionUnShared;
             }
         }
 
