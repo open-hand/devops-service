@@ -22,6 +22,26 @@ public interface GitlabGroupService {
     void updateGroups(GitlabGroupPayload gitlabGroupPayload);
 
     /**
+     * 通过组织name和项目name获取gitlab项目组的name
+     *
+     * @param orgName     组织name
+     * @param projectName 项目name
+     * @param groupSuffix 组后缀,参考 {@link io.choerodon.devops.infra.constant.GitLabConstants}
+     * @return group name
+     */
+    String renderGroupName(String orgName, String projectName, String groupSuffix);
+
+    /**
+     * 通过组织code和项目code获取gitlab项目组的path
+     *
+     * @param orgCode     组织code
+     * @param projectCode 项目code
+     * @param groupSuffix 组后缀,参考 {@link io.choerodon.devops.infra.constant.GitLabConstants}
+     * @return path
+     */
+    String renderGroupPath(String orgCode, String projectCode, String groupSuffix);
+
+    /**
      * 创建平台的应用组
      *
      * @return 创建后的组
