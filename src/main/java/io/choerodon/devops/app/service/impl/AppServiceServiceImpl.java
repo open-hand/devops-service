@@ -573,25 +573,25 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         // clone外部代码仓库
         String applicationDir = APPLICATION + GenerateUUID.generateUUID();
-        Git repositoryGit = gitUtil.cloneRepository(applicationDir, devOpsAppServiceImportPayload.getRepositoryUrl(), devOpsAppServiceImportPayload.getAccessToken());
 
         if (devOpsAppServiceImportPayload.getTemplate() != null && devOpsAppServiceImportPayload.getTemplate()) {
-            gitUtil.checkout(repositoryGit, templateVersion);
+            gitUtil.cloneAppMarket(applicationDir, templateVersion, devOpsAppServiceImportPayload.getRepositoryUrl(), devOpsAppServiceImportPayload.getAccessToken());
+            File applicationWorkDir = new File(gitUtil.getWorkingDirectory(applicationDir));
             replaceParams(appServiceDTO.getCode(), organizationDTO.getCode() + "-" + projectDTO.getCode(), applicationDir, null, null, true);
-
+            Git newGit = gitUtil.initGit(applicationWorkDir);
             String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
             appServiceDTO.setRepoUrl(repoUrl + organizationDTO.getCode()
                     + "-" + projectDTO.getCode() + "/" + appServiceDTO.getCode() + ".git");
             String accessToken = getToken(devOpsAppServiceImportPayload.getGitlabProjectId(), applicationDir, userAttrDTO);
-            File applicationWorkDir = new File(gitUtil.getWorkingDirectory(applicationDir));
             try {
-                gitUtil.commitAndPushForMaster(repositoryGit, appServiceDTO.getRepoUrl(), templateVersion, accessToken);
+                gitUtil.commitAndPushForMaster(newGit, appServiceDTO.getRepoUrl(), templateVersion, accessToken);
             } catch (CommonException e) {
-                releaseResources(applicationWorkDir, repositoryGit);
+                releaseResources(applicationWorkDir, newGit);
                 throw e;
             }
-            releaseResources(applicationWorkDir, repositoryGit);
+            releaseResources(applicationWorkDir, newGit);
         } else {
+            Git repositoryGit = gitUtil.cloneRepository(applicationDir, devOpsAppServiceImportPayload.getRepositoryUrl(), devOpsAppServiceImportPayload.getAccessToken());
             // 设置Application对应的gitlab项目的仓库地址
             String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
             appServiceDTO.setRepoUrl(repoUrl + organizationDTO.getCode()
