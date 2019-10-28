@@ -174,14 +174,6 @@ public class GitUtil {
         }
     }
 
-    public void checkout(Git git, String commit) {
-        try {
-            git.checkout().setName(commit).call();
-        } catch (GitAPIException e) {
-            LOGGER.info("Checkout error ", e);
-        }
-
-    }
     /**
      * check git repo to commit
      *
