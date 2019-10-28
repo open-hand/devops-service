@@ -151,6 +151,7 @@
         JOIN devops_env de ON de.id = dai.env_id
         WHERE
         de.project_id = #{projectId}
+        AND de.type= 'user'
         <if test="status != null">
             AND dai.status=#{status}
         </if>
@@ -222,6 +223,7 @@
         WHERE
                 da.is_active
           AND de.project_id = #{projectId}
+          AND de.type = 'user'
         ORDER BY
         dam.share_level ASC,
         da.id DESC

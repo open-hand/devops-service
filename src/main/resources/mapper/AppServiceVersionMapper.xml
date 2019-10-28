@@ -144,6 +144,7 @@
         AND de.project_id = #{projectId}
         AND de.id = #{envId}
         AND da.id = #{appServiceId}
+        AND de.type ='user'
         GROUP BY
         dav.id,dav.version
     </select>
@@ -303,6 +304,7 @@
         de.project_id = #{projectId}
         AND dav.repository IS NOT NULL
         AND dav.app_service_id = #{appServiceId}
+        AND de.type ='user'
         ORDER BY
         dav.id DESC
     </select>
