@@ -320,6 +320,7 @@ export default class Index extends Component {
       store,
       form: { setFieldsValue },
       AppState: { currentMenuType: { projectId } },
+      intl: { formatMessage },
     } = this.props;
     const { selectEnv } = this.state;
     const initName = createNetworkName(options);
@@ -342,6 +343,13 @@ export default class Index extends Component {
                 </Option>
               );
             });
+            if (data.length > 1) {
+              initIstOption.unshift(
+                <Option key="all_instance" value="all_instance">
+                  {formatMessage({ id: 'all_instance' })}
+                </Option>
+              );
+            }
           }
           this.setState({
             initIst,
@@ -891,7 +899,6 @@ export default class Index extends Component {
                   })(
                     <Select
                       filter
-                      mode="multiple"
                       className="network-select-instance"
                       optionFilterProp="children"
                       optionLabelProp="children"
