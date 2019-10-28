@@ -76,6 +76,8 @@ public class DevopsEnvPodController {
     @ApiOperation(value = "按资源用量列出环境下Pod信息")
     @GetMapping("/pod_ranking")
     public ResponseEntity<List<DevopsEnvPodInfoVO>> queryEnvPodInfo(
+            @ApiParam(value = "项目id")
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)
             @RequestParam(value = "env_id") Long envId,
             @ApiParam(value = "排序方式")
@@ -97,12 +99,12 @@ public class DevopsEnvPodController {
     @ApiOperation(value = "删除环境下的pod")
     @DeleteMapping("/{pod_id}")
     public ResponseEntity deleteEnvPod(
-            @ApiParam(value = "环境id", required = true)
-            @RequestParam(value = "env_id") Long envId,
+            @ApiParam(value = "项目id")
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "podId")
             @PathVariable(value = "pod_id") Long podId,
-            @ApiParam(value = "项目id")
-            @PathVariable(value = "project_id") Long projetId) {
+            @ApiParam(value = "环境id", required = true)
+            @RequestParam(value = "env_id") Long envId) {
         devopsEnvPodService.deleteEnvPodById(envId, podId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
