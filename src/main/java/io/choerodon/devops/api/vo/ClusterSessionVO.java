@@ -6,7 +6,11 @@ import java.io.Serializable;
  * Created by Sheep on 2019/7/25.
  */
 public class ClusterSessionVO implements Serializable {
-
+    /**
+     * web socket session的id
+     * {@link org.springframework.web.socket.WebSocketSession#getId()}
+     */
+    private String webSocketSessionId;
     private String registerKey;
     private Long clusterId;
     private String version;
@@ -34,5 +38,13 @@ public class ClusterSessionVO implements Serializable {
 
     public void setVersion(String version) {
         this.version = version;
+    }
+
+    public String getWebSocketSessionId() {
+        return webSocketSessionId;
+    }
+
+    public void setWebSocketSessionId(String webSocketSessionId) {
+        this.webSocketSessionId = webSocketSessionId;
     }
 }

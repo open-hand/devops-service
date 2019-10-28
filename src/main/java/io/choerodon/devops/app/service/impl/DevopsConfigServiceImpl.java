@@ -55,8 +55,8 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
     private static final String CHART = "chart";
     private static final String CUSTOM = "custom";
     private static final Gson gson = new Gson();
-    private static final String USER_PREFIX = "user%s%s";
-    private static final String USER_PREFIX_PULL = "user%s%s-pull";
+    private static final String USER_PREFIX = "User%s%s";
+    private static final String USER_PREFIX_PULL = "pullUser%s%s";
 
     @Autowired
     private DevopsConfigMapper devopsConfigMapper;
@@ -114,7 +114,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                             projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
                             organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
                         }
-                        harborService.createHarbor(harborClient, projectDTO.getId(), organizationDTO.getCode() + "-" + projectDTO.getCode(), false);
+                        harborService.createHarbor(harborClient, projectDTO.getId(), organizationDTO.getCode() + "-" + projectDTO.getCode(), false,devopsConfigVO.getHarborPrivate());
                     }
                 }
                 //根据配置所在的资源层级，查询出数据库中是否存在
@@ -192,12 +192,12 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
             HarborUserDTO harborUserDTO = devopsHarborUserService.queryHarborUserById(devopsProjectDTO.getHarborUserId());
             HarborUserDTO harborPullUserDTO = devopsHarborUserService.queryHarborUserById(devopsProjectDTO.getHarborPullUserId());
             String username =harborUserDTO==null?String.format(USER_PREFIX, organizationDTO.getId(), projectId):harborUserDTO.getHarborProjectUserName();
-            String password =harborUserDTO==null? String.format("%s%s", username, GenerateUUID.generateUUID().substring(0, 5)):harborUserDTO.getHarborProjectUserPassword();
+            String password =harborUserDTO==null? String.format("%s%s", username, GenerateUUID.generateUUID().substring(0, 3)):harborUserDTO.getHarborProjectUserPassword();
             String useremail = harborUserDTO==null? String.format("%s@choerodon.com", username) :harborUserDTO.getHarborProjectUserEmail();
 
             String pullUsername = harborPullUserDTO==null?String.format(USER_PREFIX_PULL, organizationDTO.getId(), projectId) :harborPullUserDTO.getHarborProjectUserName();
             String pullUseremail = harborPullUserDTO==null?String.format("%s@choerodon.com", pullUsername):harborPullUserDTO.getHarborProjectUserEmail() ;
-            String pullUserpassword = harborPullUserDTO==null?String.format("%s%s", pullUsername, GenerateUUID.generateUUID().substring(0, 5)):harborPullUserDTO.getHarborProjectUserPassword();
+            String pullUserpassword = harborPullUserDTO==null?String.format("%s%s", pullUsername, GenerateUUID.generateUUID().substring(0, 3)):harborPullUserDTO.getHarborProjectUserPassword();
 
             User user = new User(username, useremail, password, username);
             User pullUser = new User(pullUsername, pullUseremail, pullUserpassword, pullUsername);
@@ -243,7 +243,14 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                         if (users.raw().code() != 200) {
                             throw new CommonException(users.errorBody().string());
                         }
-                        harborClient.deleteLowVersionMember(projects.body().get(0).getProjectId(), users.body().get(0).getUserId().intValue()).execute();
+                        users.body().stream().forEach(user -> {
+                            try {
+                                harborClient.deleteLowVersionMember(projects.body().get(0).getProjectId(), user.getUserId().intValue()).execute();
+                            } catch (IOException e) {
+                                throw new CommonException("error.delete.harbor.member");
+                            }
+                        });
+
                     } else {
                         Response<List<ProjectMember>> projectMembers = harborClient.getProjectMembers(projects.body().get(0).getProjectId(), String.format(USER_PREFIX, organizationDTO.getId(), projectId)).execute();
                         if (projectMembers.raw().code() != 200) {
@@ -263,7 +270,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                     devopsProjectService.baseUpdate(devopsProjectDTO);
 
                 }
-            } catch (IOException e) {
+            } catch (Exception e) {
                 throw new CommonException(e);
             }
         }
@@ -319,7 +326,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                     HarborClient harborClient = retrofit.create(HarborClient.class);
                     projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
                     organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-                    harborService.createHarbor(harborClient, projectDTO.getId(), organizationDTO.getCode() + "-" + projectDTO.getCode(), false);
+                    harborService.createHarbor(harborClient, projectDTO.getId(), organizationDTO.getCode() + "-" + projectDTO.getCode(), false,true);
                 }
                 return organizationConfig;
             }
@@ -552,6 +559,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
             throw new CommonException(e);
         }
     }
+
     private void createUser(HarborClient harborClient,User user,List<Integer> roles,OrganizationDTO organizationDTO,ProjectDTO projectDTO){
         Response<Void> result = null;
         try {
@@ -611,7 +619,6 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
         }
 
     }
-
 }
 
 

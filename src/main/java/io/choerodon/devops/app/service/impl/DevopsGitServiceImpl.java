@@ -697,113 +697,134 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         files.forEach(filePath -> {
             Yaml yaml = new Yaml();
             File file = new File(String.format("%s/%s", path, filePath));
+            Iterable<Object> allParts;
             try {
-                for (Object data : yaml.loadAll(new FileInputStream(file))) {
-                    if (data == null) {
-                        // 跳过只有"---"而没有内容的对象，例如"---\n---\n"
-                        continue;
-                    }
-                    JSONObject jsonObject = new JSONObject((Map<String, Object>) data);
-                    if (jsonObject.get("kind") == null) {
-                        throw new GitOpsExplainException(GitOpsObjectError.CUSTOM_RESOURCE_KIND_NOT_FOUND.getError(), filePath);
-                    }
-                    String type = jsonObject.get("kind").toString();
-                    switch (type) {
-                        case C7NHELM_RELEASE:
-                            //反序列文件为c7nHelmRelease对象,
-                            ConvertK8sObjectService<C7nHelmRelease> convertC7nHelmRelease = new ConvertC7nHelmReleaseServiceImpl();
-                            convertC7nHelmRelease.setT(new C7nHelmRelease());
-                            C7nHelmRelease c7nHelmRelease = convertC7nHelmRelease
-                                    .serializableObject(jsonObject.toJSONString(), filePath, objectPath);
-                            //校验参数校验参数是否合法
-                            convertC7nHelmRelease.checkParameters(c7nHelmRelease, objectPath);
-                            //校验对象是否在其它文件中已经定义
-                            convertC7nHelmRelease
-                                    .checkIfExist(c7nHelmReleases, envId, beforeSyncDelete, objectPath, c7nHelmRelease);
-                            break;
-                        case INGRESS:
-                            //反序列文件为V1beta1ingress对象,
-                            ConvertK8sObjectService<V1beta1Ingress> convertV1beta1Ingress = new ConvertV1beta1IngressServiceImpl();
-                            convertV1beta1Ingress.setT(new V1beta1Ingress());
-                            V1beta1Ingress v1beta1Ingress = convertV1beta1Ingress
-                                    .serializableObject(jsonObject.toJSONString(), filePath, objectPath);
-                            //校验参数校验参数是否合法
-                            convertV1beta1Ingress.checkParameters(v1beta1Ingress, objectPath);
-                            //校验对象是否在其它文件中已经定义
-                            convertV1beta1Ingress.checkIfExist(v1beta1Ingresses, envId, beforeSyncDelete, objectPath,
-                                    v1beta1Ingress);
-                            break;
-                        case SERVICE:
-                            //反序列文件为V1service对象,
-                            ConvertK8sObjectService<V1Service> convertV1Service = new ConvertV1ServiceServiceImpl();
-                            convertV1Service.setT(new V1Service());
-                            V1Service v1Service = convertV1Service
-                                    .serializableObject(jsonObject.toJSONString(), filePath, objectPath);
-                            //校验参数校验参数是否合法
-                            convertV1Service.checkParameters(v1Service, objectPath);
-                            //校验对象是否在其它文件中已经定义
-                            convertV1Service.checkIfExist(v1Services, envId, beforeSyncDelete, objectPath, v1Service);
-                            break;
-                        case CERTIFICATE:
-                            //反序列文件为C7nCertification对象,
-                            ConvertK8sObjectService<C7nCertification> convertC7nCertification = new ConvertC7nCertificationServiceImpl();
-                            convertC7nCertification.setT(new C7nCertification());
-                            C7nCertification c7nCertification = convertC7nCertification
-                                    .serializableObject(jsonObject.toJSONString(), filePath, objectPath);
-                            //校验参数校验参数是否合法
-                            convertC7nCertification.checkParameters(c7nCertification, objectPath);
-                            //校验对象是否在其它文件中已经定义
-                            convertC7nCertification.checkIfExist(c7nCertifications, envId, beforeSyncDelete, objectPath,
-                                    c7nCertification);
-                            break;
-                        case CONFIGMAP:
-                            //反序列文件为ConfigMap对象,
-                            ConvertK8sObjectService<V1ConfigMap> convertConfigMap = new ConvertV1ConfigMapServiceImpl();
-                            convertConfigMap.setT(new V1ConfigMap());
-                            V1ConfigMap v1ConfigMap = convertConfigMap
-                                    .serializableObject(jsonObject.toJSONString(), filePath, objectPath);
-                            //校验参数校验参数是否合法
-                            convertConfigMap.checkParameters(v1ConfigMap, objectPath);
-                            //校验对象是否在其它文件中已经定义
-                            convertConfigMap.checkIfExist(configMaps, envId, beforeSyncDelete, objectPath,
-                                    v1ConfigMap);
-                            break;
-                        case SECRET:
-                            // 反序列文件为C7nSecret对象
-                            ConvertK8sObjectService<V1Secret> convertSecret = new ConvertC7nSecretServiceImpl();
-                            convertSecret.setT(new V1Secret());
-                            V1Secret v1Secret = convertSecret
-                                    .serializableObject(jsonObject.toJSONString(), filePath, objectPath);
-                            // 校验参数校验参数是否合法
-                            convertSecret.checkParameters(v1Secret, objectPath);
-                            // 校验对象是否在其它文件中已经定义
-                            convertSecret.checkIfExist(secrets, envId, beforeSyncDelete, objectPath, v1Secret);
-                            break;
-                        case ENDPOINTS:
-                            // 反序列文件为V1EndPoints对象
-                            ConvertK8sObjectService<V1Endpoints> convertEndPoints = new ConvertV1EndPointsServiceImpl();
-                            convertEndPoints.setT(new V1Endpoints());
-                            V1Endpoints v1Endpoints1 = convertEndPoints
-                                    .serializableObject(jsonObject.toJSONString(), filePath, objectPath);
-                            // 校验参数校验参数是否合法
-                            convertEndPoints.checkParameters(v1Endpoints1, objectPath);
-                            v1Endpoints.add(v1Endpoints1);
-                            break;
-                        default:
-                            //初始化自定义资源对象
-                            DevopsCustomizeResourceDTO devopsCustomizeResourceDTO = getDevopsCustomizeResourceDTO(envId, filePath, (Map<String, Object>) data);
-                            objectPath.put(TypeUtil.objToString(devopsCustomizeResourceDTO.hashCode()), filePath);
-                            ConvertK8sObjectService<DevopsCustomizeResourceDTO> convertCustomResourceDTO = new ConvertDevopsCustomResourceImpl();
-                            // 校验对象是否在其它文件中已经定义
-                            convertCustomResourceDTO.checkIfExist(devopsCustomizeResourceDTOS, envId, beforeSyncDelete, objectPath, devopsCustomizeResourceDTO);
-                            // 校验参数校验参数是否合法
-                            convertCustomResourceDTO.checkParameters(devopsCustomizeResourceDTO, objectPath);
-                            break;
-                    }
-                }
+                allParts = yaml.loadAll(new FileInputStream(file));
             } catch (FileNotFoundException e) {
                 throw new CommonException(e.getMessage(), e);
             }
+            while (allParts.iterator().hasNext()) {
+                Object data;
+                try {
+                    // 真正对数据进行解析是在next方法中调用
+                    // next方法会调用 org.yaml.snakeyaml.constructor.BaseConstructor.getData()
+                    data = allParts.iterator().next();
+                } catch (Exception e) {
+                    // 捕获Yaml解析出错，如： "---{}\n---"
+                    // 返回友好的方式
+                    throw new GitOpsExplainException(GitOpsObjectError.FILE_NOT_YAML.getError(), filePath);
+                }
+
+                if (data == null) {
+                    // 跳过只有"---"而没有内容的对象，例如"---\n---\n"
+                    continue;
+                }
+
+                if (!(data instanceof Map)) {
+                    // 不是yaml格式的文件部分，报错 如： "---{}\n---" 或者 "---\naaa\n
+                    throw new GitOpsExplainException(GitOpsObjectError.FILE_NOT_YAML.getError(), filePath);
+                }
+
+                JSONObject jsonObject = new JSONObject((Map<String, Object>) data);
+                if (jsonObject.get("kind") == null) {
+                    throw new GitOpsExplainException(GitOpsObjectError.CUSTOM_RESOURCE_KIND_NOT_FOUND.getError(), filePath);
+                }
+
+                String type = jsonObject.get("kind").toString();
+                switch (type) {
+                    case C7NHELM_RELEASE:
+                        //反序列文件为c7nHelmRelease对象,
+                        ConvertK8sObjectService<C7nHelmRelease> convertC7nHelmRelease = new ConvertC7nHelmReleaseServiceImpl();
+                        convertC7nHelmRelease.setT(new C7nHelmRelease());
+                        C7nHelmRelease c7nHelmRelease = convertC7nHelmRelease
+                                .serializableObject(jsonObject.toJSONString(), filePath, objectPath);
+                        //校验参数校验参数是否合法
+                        convertC7nHelmRelease.checkParameters(c7nHelmRelease, objectPath);
+                        //校验对象是否在其它文件中已经定义
+                        convertC7nHelmRelease
+                                .checkIfExist(c7nHelmReleases, envId, beforeSyncDelete, objectPath, c7nHelmRelease);
+                        break;
+                    case INGRESS:
+                        //反序列文件为V1beta1ingress对象,
+                        ConvertK8sObjectService<V1beta1Ingress> convertV1beta1Ingress = new ConvertV1beta1IngressServiceImpl();
+                        convertV1beta1Ingress.setT(new V1beta1Ingress());
+                        V1beta1Ingress v1beta1Ingress = convertV1beta1Ingress
+                                .serializableObject(jsonObject.toJSONString(), filePath, objectPath);
+                        //校验参数校验参数是否合法
+                        convertV1beta1Ingress.checkParameters(v1beta1Ingress, objectPath);
+                        //校验对象是否在其它文件中已经定义
+                        convertV1beta1Ingress.checkIfExist(v1beta1Ingresses, envId, beforeSyncDelete, objectPath,
+                                v1beta1Ingress);
+                        break;
+                    case SERVICE:
+                        //反序列文件为V1service对象,
+                        ConvertK8sObjectService<V1Service> convertV1Service = new ConvertV1ServiceServiceImpl();
+                        convertV1Service.setT(new V1Service());
+                        V1Service v1Service = convertV1Service
+                                .serializableObject(jsonObject.toJSONString(), filePath, objectPath);
+                        //校验参数校验参数是否合法
+                        convertV1Service.checkParameters(v1Service, objectPath);
+                        //校验对象是否在其它文件中已经定义
+                        convertV1Service.checkIfExist(v1Services, envId, beforeSyncDelete, objectPath, v1Service);
+                        break;
+                    case CERTIFICATE:
+                        //反序列文件为C7nCertification对象,
+                        ConvertK8sObjectService<C7nCertification> convertC7nCertification = new ConvertC7nCertificationServiceImpl();
+                        convertC7nCertification.setT(new C7nCertification());
+                        C7nCertification c7nCertification = convertC7nCertification
+                                .serializableObject(jsonObject.toJSONString(), filePath, objectPath);
+                        //校验参数校验参数是否合法
+                        convertC7nCertification.checkParameters(c7nCertification, objectPath);
+                        //校验对象是否在其它文件中已经定义
+                        convertC7nCertification.checkIfExist(c7nCertifications, envId, beforeSyncDelete, objectPath,
+                                c7nCertification);
+                        break;
+                    case CONFIGMAP:
+                        //反序列文件为ConfigMap对象,
+                        ConvertK8sObjectService<V1ConfigMap> convertConfigMap = new ConvertV1ConfigMapServiceImpl();
+                        convertConfigMap.setT(new V1ConfigMap());
+                        V1ConfigMap v1ConfigMap = convertConfigMap
+                                .serializableObject(jsonObject.toJSONString(), filePath, objectPath);
+                        //校验参数校验参数是否合法
+                        convertConfigMap.checkParameters(v1ConfigMap, objectPath);
+                        //校验对象是否在其它文件中已经定义
+                        convertConfigMap.checkIfExist(configMaps, envId, beforeSyncDelete, objectPath,
+                                v1ConfigMap);
+                        break;
+                    case SECRET:
+                        // 反序列文件为C7nSecret对象
+                        ConvertK8sObjectService<V1Secret> convertSecret = new ConvertC7nSecretServiceImpl();
+                        convertSecret.setT(new V1Secret());
+                        V1Secret v1Secret = convertSecret
+                                .serializableObject(jsonObject.toJSONString(), filePath, objectPath);
+                        // 校验参数校验参数是否合法
+                        convertSecret.checkParameters(v1Secret, objectPath);
+                        // 校验对象是否在其它文件中已经定义
+                        convertSecret.checkIfExist(secrets, envId, beforeSyncDelete, objectPath, v1Secret);
+                        break;
+                    case ENDPOINTS:
+                        // 反序列文件为V1EndPoints对象
+                        ConvertK8sObjectService<V1Endpoints> convertEndPoints = new ConvertV1EndPointsServiceImpl();
+                        convertEndPoints.setT(new V1Endpoints());
+                        V1Endpoints v1Endpoints1 = convertEndPoints
+                                .serializableObject(jsonObject.toJSONString(), filePath, objectPath);
+                        // 校验参数校验参数是否合法
+                        convertEndPoints.checkParameters(v1Endpoints1, objectPath);
+                        v1Endpoints.add(v1Endpoints1);
+                        break;
+                    default:
+                        //初始化自定义资源对象
+                        DevopsCustomizeResourceDTO devopsCustomizeResourceDTO = getDevopsCustomizeResourceDTO(envId, filePath, (Map<String, Object>) data);
+                        objectPath.put(TypeUtil.objToString(devopsCustomizeResourceDTO.hashCode()), filePath);
+                        ConvertK8sObjectService<DevopsCustomizeResourceDTO> convertCustomResourceDTO = new ConvertDevopsCustomResourceImpl();
+                        // 校验对象是否在其它文件中已经定义
+                        convertCustomResourceDTO.checkIfExist(devopsCustomizeResourceDTOS, envId, beforeSyncDelete, objectPath, devopsCustomizeResourceDTO);
+                        // 校验参数校验参数是否合法
+                        convertCustomResourceDTO.checkParameters(devopsCustomizeResourceDTO, objectPath);
+                        break;
+                }
+            }
+
         });
         return objectPath;
     }
@@ -905,9 +926,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         IamUserDTO assigneeUser = baseServiceClientOperator.queryUserByUserId(assigneeId);
         if (assigneeUser != null) {
             AssigneeVO assigneeVO = new AssigneeVO();
-            if(assigneeUser.getLdap()){
+            if (assigneeUser.getLdap()) {
                 assigneeVO.setUsername(assigneeUser.getLdap() ? assigneeUser.getLoginName() : assigneeUser.getEmail());
-            }else {
+            } else {
                 assigneeVO.setUsername(assigneeUser.getEmail());
             }
             assigneeVO.setName(assigneeUser.getRealName());
@@ -926,9 +947,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         String createUserName = null;
         String createUserRealName = null;
         if (userDTO != null) {
-            if(userDTO.getLdap()){
+            if (userDTO.getLdap()) {
                 createUserName = userDTO.getLoginName();
-            }else {
+            } else {
                 createUserName = userDTO.getEmail();
             }
             createUserUrl = userDTO.getImageUrl();
@@ -1013,12 +1034,11 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
     private void handDevopsEnvGitRepository(String path, String url, String envIdRsa, String commit) {
         File file = new File(path);
-        gitUtil.setSshKey(envIdRsa);
         if (!file.exists()) {
-            gitUtil.cloneBySsh(path, url);
+            gitUtil.cloneBySsh(path, url, envIdRsa);
         } else {
             FileUtil.deleteDirectory(file);
-            gitUtil.cloneBySsh(path, url);
+            gitUtil.cloneBySsh(path, url, envIdRsa);
 
         }
     }

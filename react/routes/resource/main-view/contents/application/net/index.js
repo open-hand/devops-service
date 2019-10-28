@@ -319,7 +319,7 @@ const Networking = observer(() => {
             )}
             <FormattedMessage id="address" />：
             <div className="net-ingress-text">
-              <MouserOverWrapper text={domain} width={0.2}>
+              <MouserOverWrapper text={domain} width={0.2} style={{ display: 'block' }}>
                 {domain}
               </MouserOverWrapper>
             </div>

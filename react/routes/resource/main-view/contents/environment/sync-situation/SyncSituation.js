@@ -163,6 +163,7 @@ const SyncSituation = observer(() => {
           helpText={content}
           title={formatMessage({ id: `${intlPrefix}.environment.sync` })}
           popoverClassName={`${prefixCls}-environment-sync-help`}
+          placement="top"
         />
       </div>
       {getDetail}

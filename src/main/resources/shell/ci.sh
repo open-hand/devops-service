@@ -10,8 +10,12 @@ export CHART_REGISTRY={{ CHART_REGISTRY }}
 export DOCKER_REGISTRY={{ DOCKER_REGISTRY }}
 # 应用harbor仓库用户名
 export DOCKER_USERNAME={{ DOCKER_USERNAME }}
-# 应用harbor仓库密码
+# 兼容以往harbor仓库用户名变量
+export DOCKER_USER=$DOCKER_USERNAME
+# 应用harbor用户密码
 export DOCKER_PASSWORD={{ DOCKER_PASSWORD }}
+# 兼容以往harbor仓库用户密码变量
+export DOCKER_PWD=$DOCKER_PASSWORD
 # 获取的组织编码-项目编码(harbor Project地址)
 export GROUP_NAME={{ GROUP_NAME }}
 # SONARQUBE的地址

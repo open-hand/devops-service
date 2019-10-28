@@ -6,6 +6,9 @@ import java.util.stream.Collectors;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.base.Joiner;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.util.GitUserNameUtil;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -47,22 +50,10 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
 
     @Override
     public PageInfo<DevopsDeployRecordVO> pageByProjectId(Long projectId, String params, PageRequest pageRequest) {
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        Boolean projectOwner = baseServiceClientOperator.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectDTO);
+
         PageInfo<DevopsDeployRecordDTO> devopsDeployRecordDTOPageInfo = basePageByProjectId(projectId, params, pageRequest);
-        Set<Long> envIds = new HashSet<>();
-
-        //获取所有涉及到的环境id
-        devopsDeployRecordDTOPageInfo.getList().stream().filter(devopsDeployRecordDTO -> devopsDeployRecordDTO.getEnv() != null).forEach(devopsDeployRecordDTO -> {
-            String[] envs = devopsDeployRecordDTO.getEnv().split(",");
-            for (String env : envs) {
-                envIds.add(TypeUtil.objToLong(env));
-            }
-        });
-
-        //查询环境
-        Map<Long, DevopsEnvironmentDTO> envMap = new HashMap<>(pageRequest.getSize());
-        if (!envIds.isEmpty()) {
-            devopsEnvironmentService.baseListByIds(new ArrayList<>(envIds)).forEach(env -> envMap.put(env.getId(), env));
-        }
 
         PageInfo<DevopsDeployRecordVO> devopsDeployRecordVOPageInfo = ConvertUtils.convertPage(devopsDeployRecordDTOPageInfo, DevopsDeployRecordVO.class);
 
@@ -71,29 +62,11 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
         Map<Long, IamUserDTO> userMap = new HashMap<>(pageRequest.getSize());
         baseServiceClientOperator.listUsersByIds(userIds).forEach(user -> userMap.put(user.getId(), user));
 
-
         //设置环境信息以及用户信息
         devopsDeployRecordVOPageInfo.getList().forEach(devopsDeployRecordVO -> {
-            if (devopsDeployRecordVO.getDeployType().equals("auto")) {
-                pipelineService.setPipelineRecordDetail(projectId, devopsDeployRecordVO);
+            if (devopsDeployRecordVO.getDeployType().equals("auto") && !devopsDeployRecordVO.getDeployStatus().equals("success")) {
+                pipelineService.setPipelineRecordDetail(projectOwner, devopsDeployRecordVO);
             }
-
-            // 把原本的形如"1,199"的id值转为形如"staging,production"的名称值
-            if (devopsDeployRecordVO.getEnv() != null) {
-                List<String> envNames = Arrays.stream(devopsDeployRecordVO.getEnv().split(COMMA))
-                        .map(id -> {
-                            Long envId = TypeUtil.objToLong(id);
-                            if (envMap.containsKey(envId)) {
-                                return envMap.get(envId).getName();
-                            } else {
-                                return "此环境已删除";
-                            }
-                        }).collect(Collectors.toList());
-                if (!envNames.isEmpty()) {
-                    devopsDeployRecordVO.setEnv(Joiner.on(COMMA).join(envNames));
-                }
-            }
-
             if (userMap.containsKey(devopsDeployRecordVO.getDeployCreatedBy())) {
                 IamUserDTO targetUser = userMap.get(devopsDeployRecordVO.getDeployCreatedBy());
                 devopsDeployRecordVO.setUserName(targetUser.getRealName());

@@ -170,6 +170,7 @@ const Deployment = withRouter(observer((props) => {
   }
 
   function openDeploy() {
+    manualDeployDs.reset();
     manualDeployDs.create();
     Modal.open({
       key: modalKey4,

@@ -1,7 +1,7 @@
 import React, { Fragment, lazy, Suspense, useEffect, useMemo } from 'react';
 import { runInAction } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import { Tabs, Tooltip, Icon, Spin } from 'choerodon-ui';
+import { Tabs, Tooltip, Icon, Spin, Progress } from 'choerodon-ui';
 import isEqual from 'lodash/isEqual';
 import pick from 'lodash/pick';
 import omit from 'lodash/omit';
@@ -54,8 +54,21 @@ const InstanceTitle = ({
     />
     <span className="c7ncd-page-title-text">{name}</span>
     {status === 'failed' && (
-      <Tooltip title={errorText}>
+      <Tooltip
+        title={errorText}
+        placement="bottom"
+        overlayClassName={`${prefixCls}-instance-page-title-error-tooltip`}
+      >
         <Icon type="error" className={`${prefixCls}-instance-page-title-icon`} />
+      </Tooltip>
+    )}
+    {status === 'operating' && (
+      <Tooltip title="处理中">
+        <Progress
+          className={`${prefixCls}-instance-page-title-icon-loading`}
+          type="loading"
+          size="small"
+        />
       </Tooltip>
     )}
   </Fragment>;
@@ -78,6 +91,9 @@ const InstanceContent = observer(() => {
     istStore,
     baseDs,
   } = useInstanceStore();
+
+  const { getSelectedMenu: { key: selectedKey } } = resourceStore;
+
 
   function handleChange(key) {
     istStore.setTabKey(key);
@@ -108,18 +124,20 @@ const InstanceContent = observer(() => {
   useEffect(() => {
     const current = getCurrent();
     if (current) {
-      const menuItem = treeDs.find((item) => item.get('id') === current.id);
-      const previous = pick(menuItem.toData(), ['status', 'name', 'podRunningCount', 'podCount']);
-      const next = omit(current, ['id', 'error']);
+      const menuItem = treeDs.find((item) => item.get('key') === selectedKey && item.get('id') === current.id);
+      if (menuItem) {
+        const previous = pick(menuItem.toData(), ['status', 'name', 'podRunningCount', 'podCount']);
+        const next = omit(current, ['id', 'error']);
 
-      if (!isEqual(previous, next)) {
-        runInAction(() => {
-          menuItem.set(next);
-          resourceStore.setSelectedMenu({
-            ...resourceStore.getSelectedMenu,
-            ...next,
+        if (!isEqual(previous, next)) {
+          runInAction(() => {
+            menuItem.set(next);
+            resourceStore.setSelectedMenu({
+              ...resourceStore.getSelectedMenu,
+              ...next,
+            });
           });
-        });
+        }
       }
     }
   });
@@ -200,7 +218,7 @@ const InstanceContent = observer(() => {
   );
 });
 
-function computeUnlinkPod(run, all) {
+function computeUnlinkPod(all, run) {
   return all - run;
 }
 

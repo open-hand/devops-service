@@ -70,8 +70,8 @@ export default ((intlPrefix, formatMessage, projectId) => {
     transport: {},
     fields: [
       { name: 'id', type: 'number' },
-      { name: 'name', type: 'string', label: formatMessage({ id: `${intlPrefix}.name` }), validator: checkName },
-      { name: 'code', type: 'string', label: formatMessage({ id: `${intlPrefix}.code` }), validator: checkCode },
+      { name: 'name', type: 'string', label: formatMessage({ id: `${intlPrefix}.name` }), validator: checkName, maxLength: 20 },
+      { name: 'code', type: 'string', label: formatMessage({ id: `${intlPrefix}.code` }), validator: checkCode, maxLength: 30 },
       { name: 'type', type: 'string', label: formatMessage({ id: `${intlPrefix}.type` }) },
       { name: 'projectName', type: 'string', label: formatMessage({ id: `${intlPrefix}.project` }) },
       { name: 'share', type: 'boolean', label: formatMessage({ id: `${intlPrefix}.source` }) },

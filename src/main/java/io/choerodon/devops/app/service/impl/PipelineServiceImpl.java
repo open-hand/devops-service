@@ -1509,9 +1509,7 @@ public class PipelineServiceImpl implements PipelineService {
     }
 
     @Override
-    public void setPipelineRecordDetail(Long projectId, DevopsDeployRecordVO devopsDeployRecordVO) {
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        Boolean projectOwner = baseServiceClientOperator.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectDTO);
+    public void setPipelineRecordDetail(Boolean projectOwner, DevopsDeployRecordVO devopsDeployRecordVO) {
         PipelineDetailVO pipelineDetailVO = new PipelineDetailVO();
         pipelineDetailVO.setExecute(false);
         devopsDeployRecordVO.setStageDTOList(ConvertUtils.convertList(pipelineStageRecordService.baseListByRecordId(devopsDeployRecordVO.getDeployId()), PipelineStageRecordVO.class));

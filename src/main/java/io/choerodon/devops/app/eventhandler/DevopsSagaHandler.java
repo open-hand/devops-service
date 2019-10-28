@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 
 import io.choerodon.asgard.saga.SagaDefinition;
 import io.choerodon.asgard.saga.annotation.SagaTask;
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.notify.NoticeSendDTO;
 import io.choerodon.devops.api.vo.AppServiceDeployVO;
 import io.choerodon.devops.api.vo.AppServiceInstanceVO;
@@ -320,7 +321,13 @@ public class DevopsSagaHandler {
             maxRetryCount = 3,
             seq = 1)
     public String devopsCreateInstance(String data) {
-        InstanceSagaPayload instanceSagaPayload = gson.fromJson(data, InstanceSagaPayload.class);
+        ObjectMapper objectMapper = new ObjectMapper();
+        InstanceSagaPayload instanceSagaPayload;
+        try {
+            instanceSagaPayload = objectMapper.readValue(data, InstanceSagaPayload.class);
+        } catch (IOException e) {
+            throw new CommonException("Error deserializing the data of instance when consuming create instance event");
+        }
         appServiceInstanceService.createInstanceBySaga(instanceSagaPayload);
         return data;
     }

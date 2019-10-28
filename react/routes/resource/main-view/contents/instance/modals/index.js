@@ -86,7 +86,7 @@ const IstModals = injectIntl(observer(() => {
     const record = baseDs.current;
     if (!record) return false;
 
-    const appServiceVersionId = record.get('commandVersionId');
+    const appServiceVersionId = record.get('appServiceVersionId');
     const appServiceId = record.get('appServiceId');
     const deployVo = {
       id,

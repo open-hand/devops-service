@@ -19,7 +19,7 @@ export default function Situation() {
   const { gitopsLogDs } = useEnvironmentStore();
 
   function renderMsg({ value }) {
-    return (<Tooltip title={value}>
+    return (<Tooltip title={value} placement="topLeft">
       {value}
     </Tooltip>);
   }
