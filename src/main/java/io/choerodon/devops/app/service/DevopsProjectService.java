@@ -43,4 +43,6 @@ public interface DevopsProjectService {
      * @return 项目所有者和项目成员
      */
     List<UserVO> listAllOwnerAndMembers(Long projectId);
+
+    List<DevopsProjectDTO> listAll();
 }
