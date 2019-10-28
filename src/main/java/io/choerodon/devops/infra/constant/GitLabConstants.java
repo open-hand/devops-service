@@ -21,4 +21,9 @@ public class GitLabConstants {
      * 这是集群环境库组的后缀
      */
     public static final String CLUSTER_ENV_GROUP_SUFFIX = "-cluster_gitops";
+
+    /**
+     * gitlab环境库的webhook url相对路径
+     */
+    public static final String GITOPS_WEBHOOK_RELATIVE_URL = "devops/webhook/git_ops";
 }

@@ -946,6 +946,7 @@ public class FileUtil {
 
 
     public static List<String> getSshKey(String path) {
+        // TODO 取消文件中转的方式
         List<String> sshkeys = new ArrayList<>();
         int type = KeyPair.RSA;
         String strPath = "id_rsa";

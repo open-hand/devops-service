@@ -193,10 +193,10 @@ public interface DevopsEnvironmentService {
     /**
      * 删除已停用或失败的环境
      *
-     * @param envId 环境id
+     * @param envId     环境id
      * @param projectId 项目id
      */
-    void deleteDeactivatedOrFailedEnvironment(Long projectId,Long envId);
+    void deleteDeactivatedOrFailedEnvironment(Long projectId, Long envId);
 
     /**
      * 项目下查询集群信息
@@ -289,4 +289,12 @@ public interface DevopsEnvironmentService {
     List<DevopsEnvironmentDTO> baseListByIds(List<Long> envIds);
 
     void deleteEnvSaga(Long envId);
+
+    /**
+     * 创建集群的配置库
+     *
+     * @param clusterId 集群id
+     * @return 集群对应的环境id
+     */
+    DevopsEnvironmentDTO createSystemEnv(Long clusterId);
 }
