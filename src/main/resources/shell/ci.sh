@@ -4,8 +4,6 @@ export ORG_CODE={{ ORG_CODE }}
 export PRO_CODE={{ PRO_CODE }}
 # 获取的应用名称
 export PROJECT_NAME={{ PROJECT_NAME }}
-# 应用Chart仓库地址
-export CHART_REGISTRY={{ CHART_REGISTRY }}
 # 应用harbor仓库地址
 export DOCKER_REGISTRY={{ DOCKER_REGISTRY }}
 # 应用harbor仓库用户名
