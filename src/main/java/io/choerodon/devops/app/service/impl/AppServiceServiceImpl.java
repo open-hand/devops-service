@@ -578,71 +578,84 @@ public class AppServiceServiceImpl implements AppServiceService {
         if (devOpsAppServiceImportPayload.getTemplate() != null && devOpsAppServiceImportPayload.getTemplate()) {
             gitUtil.checkout(repositoryGit, templateVersion);
             replaceParams(appServiceDTO.getCode(), organizationDTO.getCode() + "-" + projectDTO.getCode(), applicationDir, null, null, true);
-        }
-        // 设置Application对应的gitlab项目的仓库地址
-        String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
-        appServiceDTO.setRepoUrl(repoUrl + organizationDTO.getCode()
-                + "-" + projectDTO.getCode() + "/" + appServiceDTO.getCode() + ".git");
 
-        File applicationWorkDir = new File(gitUtil.getWorkingDirectory(applicationDir));
+            String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
+            appServiceDTO.setRepoUrl(repoUrl + organizationDTO.getCode()
+                    + "-" + projectDTO.getCode() + "/" + appServiceDTO.getCode() + ".git");
+            String accessToken = getToken(devOpsAppServiceImportPayload.getGitlabProjectId(), applicationDir, userAttrDTO);
+            File applicationWorkDir = new File(gitUtil.getWorkingDirectory(applicationDir));
+            try {
+                gitUtil.commitAndPushForMaster(repositoryGit, appServiceDTO.getRepoUrl(), templateVersion, accessToken);
+            } catch (CommonException e) {
+                releaseResources(applicationWorkDir, repositoryGit);
+                throw e;
+            }
+            releaseResources(applicationWorkDir, repositoryGit);
+        } else {
+            // 设置Application对应的gitlab项目的仓库地址
+            String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
+            appServiceDTO.setRepoUrl(repoUrl + organizationDTO.getCode()
+                    + "-" + projectDTO.getCode() + "/" + appServiceDTO.getCode() + ".git");
 
-        String protectedBranchName = null;
+            File applicationWorkDir = new File(gitUtil.getWorkingDirectory(applicationDir));
 
-        try {
-            List<Ref> refs = repositoryGit.branchList().setListMode(ListBranchCommand.ListMode.ALL).call();
-            for (Ref ref : refs) {
-                String branchName;
-                if (ref.getName().contains(Constants.R_HEADS)) {
-                    branchName = ref.getName().split("/")[2];
-                    // 当前的本地的 refs/heads/ 内的引用是保护分支的名称，大部分保护分支是master，不排除develop等其他分支的可能
-                    protectedBranchName = branchName;
-                } else {
-                    branchName = ref.getName().split("/")[3];
+            String protectedBranchName = null;
+
+            try {
+                List<Ref> refs = repositoryGit.branchList().setListMode(ListBranchCommand.ListMode.ALL).call();
+                for (Ref ref : refs) {
+                    String branchName;
+                    if (ref.getName().contains(Constants.R_HEADS)) {
+                        branchName = ref.getName().split("/")[2];
+                        // 当前的本地的 refs/heads/ 内的引用是保护分支的名称，大部分保护分支是master，不排除develop等其他分支的可能
+                        protectedBranchName = branchName;
+                    } else {
+                        branchName = ref.getName().split("/")[3];
+                    }
+
+                    // 跳过对活跃本地分支A: /refs/heads/A 和 /refs/remotes/origin/A 之间的第二次重复的推送
+                    if (branchName.equals(protectedBranchName) && ref.getName().contains(Constants.R_REMOTES)) {
+                        continue;
+                    }
+
+                    if (ref.getName().contains(Constants.R_REMOTES)) {
+                        repositoryGit.checkout().setCreateBranch(true).setName(branchName).setStartPoint(ref.getName()).call();
+                    }
+
+                    // 获取push代码所需的access token
+                    String accessToken = getToken(devOpsAppServiceImportPayload.getGitlabProjectId(), applicationDir, userAttrDTO);
+
+                    BranchDTO branchDTO = gitlabServiceClientOperator.queryBranch(gitlabProjectDO.getId(), branchName);
+                    if (branchDTO.getName() == null) {
+                        try {
+                            // 提交并推代码
+                            gitUtil.push(repositoryGit, appServiceDTO.getRepoUrl(), accessToken, branchName);
+                        } catch (CommonException e) {
+                            releaseResources(applicationWorkDir, repositoryGit);
+                            throw e;
+                        }
+                    }
+                    initBranch(devOpsAppServiceImportPayload, appServiceDTO, branchName);
                 }
 
-                // 跳过对活跃本地分支A: /refs/heads/A 和 /refs/remotes/origin/A 之间的第二次重复的推送
-                if (branchName.equals(protectedBranchName) && ref.getName().contains(Constants.R_REMOTES)) {
-                    continue;
-                }
-
-                if (ref.getName().contains(Constants.R_REMOTES)) {
-                    repositoryGit.checkout().setCreateBranch(true).setName(branchName).setStartPoint(ref.getName()).call();
-                }
-
-                // 获取push代码所需的access token
-                String accessToken = getToken(devOpsAppServiceImportPayload.getGitlabProjectId(), applicationDir, userAttrDTO);
-
-                BranchDTO branchDTO = gitlabServiceClientOperator.queryBranch(gitlabProjectDO.getId(), branchName);
-                if (branchDTO.getName() == null) {
+                BranchDTO branchDTO = gitlabServiceClientOperator.queryBranch(gitlabProjectDO.getId(), protectedBranchName);
+                //解决push代码之后gitlab给master分支设置保护分支速度和程序运行速度不一致
+                if (!branchDTO.getProtected()) {
                     try {
-                        // 提交并推代码
-                        gitUtil.push(repositoryGit, appServiceDTO.getRepoUrl(), accessToken, branchName);
-                    } catch (CommonException e) {
-                        releaseResources(applicationWorkDir, repositoryGit);
-                        throw e;
-                    }
-                }
-                initBranch(devOpsAppServiceImportPayload, appServiceDTO, branchName);
-            }
-
-            BranchDTO branchDTO = gitlabServiceClientOperator.queryBranch(gitlabProjectDO.getId(), protectedBranchName);
-            //解决push代码之后gitlab给master分支设置保护分支速度和程序运行速度不一致
-            if (!branchDTO.getProtected()) {
-                try {
-                    gitlabServiceClientOperator.createProtectBranch(devOpsAppServiceImportPayload.getGitlabProjectId(), protectedBranchName, AccessLevel.MASTER.toString(), AccessLevel.MASTER.toString(), devOpsAppServiceImportPayload.getUserId());
-                } catch (CommonException e) {
-                    // 出现异常时重试一次
-                    if (!gitlabServiceClientOperator.queryBranch(gitlabProjectDO.getId(), protectedBranchName).getProtected()) {
                         gitlabServiceClientOperator.createProtectBranch(devOpsAppServiceImportPayload.getGitlabProjectId(), protectedBranchName, AccessLevel.MASTER.toString(), AccessLevel.MASTER.toString(), devOpsAppServiceImportPayload.getUserId());
+                    } catch (CommonException e) {
+                        // 出现异常时重试一次
+                        if (!gitlabServiceClientOperator.queryBranch(gitlabProjectDO.getId(), protectedBranchName).getProtected()) {
+                            gitlabServiceClientOperator.createProtectBranch(devOpsAppServiceImportPayload.getGitlabProjectId(), protectedBranchName, AccessLevel.MASTER.toString(), AccessLevel.MASTER.toString(), devOpsAppServiceImportPayload.getUserId());
+                        }
                     }
                 }
+            } catch (GitAPIException e) {
+                LOGGER.error("GitAPIException: {}", e);
             }
-        } catch (GitAPIException e) {
-            LOGGER.error("GitAPIException: {}", e);
+
+            releaseResources(applicationWorkDir, repositoryGit);
         }
-
-        releaseResources(applicationWorkDir, repositoryGit);
-
         try {
             // 设置application的属性
             String applicationServiceToken = getApplicationToken(gitlabProjectDO.getId(), devOpsAppServiceImportPayload.getUserId());
