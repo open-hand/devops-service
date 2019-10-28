@@ -130,6 +130,8 @@ public class HarborServiceImpl implements HarborService {
                 createUser(harborClient, pullUser, Arrays.asList(3), organizationDTO, projectDTO);
                 HarborUserDTO harborUserDTO = new HarborUserDTO(user.getUsername(), user.getPassword(), user.getEmail(), true);
                 HarborUserDTO pullHarborUserDTO = new HarborUserDTO(pullUser.getUsername(), pullUser.getPassword(), pullUser.getEmail(), false);
+                //设置barbor用户角色
+                operateMember(harborClient,null,null,organizationDTO,projectDTO,OPERATE_DELETE);
 
                 devopsProjectDTO.setHarborProjectIsPrivate(true);
                 if (devopsHarborUserService.create(harborUserDTO) != 1) {
@@ -145,9 +147,6 @@ public class HarborServiceImpl implements HarborService {
                     devopsProjectService.baseUpdate(devopsProjectDTO);
                 }
 
-            }else {
-                //设置barbor用户角色
-                operateMember(harborClient,null,null,organizationDTO,projectDTO,OPERATE_DELETE);
             }
         } catch (IOException e) {
             throw new CommonException(e);
