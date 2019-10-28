@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @RequestMapping(value = "/v1/checks")
-public class DevopsCheckController {
+public class DevopsCheckClusterController {
     @Autowired
     private DevopsClusterService devopsClusterService;
     /**
