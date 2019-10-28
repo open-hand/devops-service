@@ -508,25 +508,32 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         DevopsClusterDTO devopsClusterDTO = new DevopsClusterDTO();
         devopsClusterDTO.setId(clusterId);
         DevopsClusterDTO devopsClusterDTO1 = devopsClusterMapper.selectByPrimaryKey(devopsClusterDTO);
-        if(ObjectUtils.isEmpty(devopsClusterDTO1)){
+        if (ObjectUtils.isEmpty(devopsClusterDTO1)) {
             throw new CommonException("error.devops.cluster.is.not.exist");
         }
         List<ProjectWithRoleVO> projectWithRoleVOS = baseServiceClientOperator.listProjectWithRole(userId, 0, 0);
-        if(CollectionUtils.isEmpty(projectWithRoleVOS)){return false;}
+        if (CollectionUtils.isEmpty(projectWithRoleVOS)) {
+            return false;
+        }
         Set<Long> ownerRoleProjectIds = new HashSet<>();
         projectWithRoleVOS.stream().forEach(v -> {
-            if(CollectionUtils.isEmpty(v.getRoles())) {}
+            if (CollectionUtils.isEmpty(v.getRoles())) {
+            }
             Set<Long> collect = v.getRoles().stream().filter(role -> projectOwner.equals(role.getName())).map(RoleVO::getId).collect(Collectors.toSet());
-            if(!CollectionUtils.isEmpty(collect)){
+            if (!CollectionUtils.isEmpty(collect)) {
                 ownerRoleProjectIds.add(v.getId());
             }
         });
-        if(CollectionUtils.isEmpty(ownerRoleProjectIds)) { return  false;}
+        if (CollectionUtils.isEmpty(ownerRoleProjectIds)) {
+            return false;
+        }
         List<DevopsClusterProPermissionDTO> devopsClusterProPermissionDTOS = devopsClusterProPermissionService.baseListByClusterId(clusterId);
         Set<Long> clusterBelongToProjectIds = devopsClusterProPermissionDTOS.stream().map(devopsClusterProPermissionDTO -> devopsClusterProPermissionDTO.getProjectId()).collect(Collectors.toSet());
         clusterBelongToProjectIds.add(devopsClusterDTO1.getProjectId());
         clusterBelongToProjectIds.retainAll(ownerRoleProjectIds);
-        if(CollectionUtils.isEmpty(clusterBelongToProjectIds)) {return false;}
+        if (CollectionUtils.isEmpty(clusterBelongToProjectIds)) {
+            return false;
+        }
         return true;
     }
 
