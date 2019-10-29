@@ -855,9 +855,10 @@ public class AppServiceServiceImpl implements AppServiceService {
         appServiceDTO.setCode(appServiceImportVO.getCode());
 
         // 校验repository（和token） 地址是否有效
-        GitPlatformType gitPlatformType = GitPlatformType.from(appServiceImportVO.getPlatformType());
-        checkRepositoryUrlAndToken(gitPlatformType, appServiceImportVO.getRepositoryUrl(), appServiceImportVO.getAccessToken());
-
+        if (isTemplate == null || !isTemplate) {
+            GitPlatformType gitPlatformType = GitPlatformType.from(appServiceImportVO.getPlatformType());
+            checkRepositoryUrlAndToken(gitPlatformType, appServiceImportVO.getRepositoryUrl(), appServiceImportVO.getAccessToken());
+        }
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
 
         appServiceDTO = fromImportVoToDto(appServiceImportVO);
