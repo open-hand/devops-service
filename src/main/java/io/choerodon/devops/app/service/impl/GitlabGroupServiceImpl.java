@@ -15,6 +15,8 @@ import io.choerodon.devops.app.service.UserAttrService;
 import io.choerodon.devops.infra.dto.DevopsProjectDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.dto.gitlab.GroupDTO;
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.Visibility;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.util.TypeUtil;
@@ -66,6 +68,25 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
             groupDTO = gitlabServiceClientOperator.createGroup(group, TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         }
         return groupDTO;
+    }
+
+    /**
+     * create cluster env group
+     *
+     * @param projectDTO      choerodon平台项目
+     * @param organizationDTO choerodon平台组织
+     * @param userAttrDTO     当前用户
+     */
+    @Override
+    public void createClusterEnvGroup(ProjectDTO projectDTO, OrganizationDTO organizationDTO, UserAttrDTO userAttrDTO) {
+        GitlabGroupPayload payload = new GitlabGroupPayload();
+        payload.setOrganizationCode(organizationDTO.getCode());
+        payload.setOrganizationName(organizationDTO.getName());
+        payload.setProjectCode(projectDTO.getCode());
+        payload.setProjectName(projectDTO.getName());
+        payload.setProjectId(projectDTO.getId());
+        payload.setUserId(userAttrDTO.getIamUserId());
+        createGroup(payload, CLUSTER_ENV_GROUP_SUFFIX);
     }
 
     private void createGroup(GitlabGroupPayload gitlabGroupPayload, final String suffix) {
