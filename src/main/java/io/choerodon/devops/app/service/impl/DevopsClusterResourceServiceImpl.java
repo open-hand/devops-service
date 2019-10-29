@@ -1,13 +1,14 @@
 package io.choerodon.devops.app.service.impl;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.AgentCommandService;
 import io.choerodon.devops.app.service.DevopsClusterResourceService;
 import io.choerodon.devops.infra.dto.DevopsClusterResourceDTO;
 import io.choerodon.devops.infra.mapper.DevopsClusterResourceMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.ObjectUtils;
 
 /**
  * @author zhaotianxin
@@ -59,5 +60,13 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     public DevopsClusterResourceDTO queryByClusterIdAndType(Long clusterId, String type) {
         DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceMapper.queryByClusterIdAndType(clusterId, type);
         return devopsClusterResourceDTO;
+    }
+
+    @Override
+    public void delete(Long clusterId, Long configId) {
+        DevopsClusterResourceDTO devopsClusterResourceDTO = new DevopsClusterResourceDTO();
+        devopsClusterResourceDTO.setConfigId(configId);
+        devopsClusterResourceDTO.setClusterId(clusterId);
+        devopsClusterResourceMapper.delete(devopsClusterResourceDTO);
     }
 }
