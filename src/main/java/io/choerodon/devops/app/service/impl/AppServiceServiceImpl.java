@@ -110,6 +110,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     private static final String APPLICATION = "application";
     private static final String TEST = "test-application";
     private static final String DUPLICATE = "duplicate";
+    private static final String TEMP_MODAL = "\\?version=";
     @Autowired
     DevopsSagaHandler devopsSagaHandler;
     private Gson gson = new Gson();
@@ -126,10 +127,6 @@ public class AppServiceServiceImpl implements AppServiceService {
     private String userName;
     @Value("${services.sonarqube.password:}")
     private String password;
-    @Value("${template.url}")
-    private String templateUrl;
-    @Value("${template.version}")
-    private String templateVersion;
     @Autowired
     private GitUtil gitUtil;
     @Autowired
@@ -575,7 +572,13 @@ public class AppServiceServiceImpl implements AppServiceService {
         String applicationDir = APPLICATION + GenerateUUID.generateUUID();
 
         if (devOpsAppServiceImportPayload.getTemplate() != null && devOpsAppServiceImportPayload.getTemplate()) {
-            gitUtil.cloneAppMarket(applicationDir, templateVersion, devOpsAppServiceImportPayload.getRepositoryUrl(), devOpsAppServiceImportPayload.getAccessToken());
+            String[] tempUrl = devOpsAppServiceImportPayload.getRepositoryUrl().split(TEMP_MODAL);
+            if (tempUrl.length < 2) {
+                throw new CommonException("error.temp.git.url");
+            }
+            String templateVersion = tempUrl[1];
+            String repositoryUrl = tempUrl[0];
+            gitUtil.cloneAppMarket(applicationDir, templateVersion, repositoryUrl, devOpsAppServiceImportPayload.getAccessToken());
             File applicationWorkDir = new File(gitUtil.getWorkingDirectory(applicationDir));
             replaceParams(appServiceDTO.getCode(), organizationDTO.getCode() + "-" + projectDTO.getCode(), applicationDir, null, null, true);
             Git newGit = gitUtil.initGit(applicationWorkDir);
@@ -2350,9 +2353,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public List<AppServiceTemplateVO> listServiceTemplates() {
         List<AppServiceTemplateVO> serviceTemplateVOS = new ArrayList<>();
-        templateUrl = templateUrl.endsWith("/") ? templateUrl : String.format("%s%s", templateUrl, "/");
         AppServiceTemplate.templatePath.forEach((k, v) -> {
-            AppServiceTemplateVO appServiceTemplateVO = new AppServiceTemplateVO(k, String.format("%s%s%s", templateUrl, v, GIT));
+            AppServiceTemplateVO appServiceTemplateVO = new AppServiceTemplateVO(k, v);
             serviceTemplateVOS.add(appServiceTemplateVO);
         });
         return serviceTemplateVOS;
