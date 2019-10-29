@@ -42,7 +42,12 @@ const Platform = injectIntl(observer((props) => {
       okText: formatMessage({ id: 'add' }),
       afterClose: () => {
         tableDs.removeAll();
-        selectedDs.length && checkData();
+        if (selectedDs.length) {
+          checkData();
+          selectedDs.forEach((record) => {
+            record.getField('versionId').fetchLookup();
+          });
+        }
       },
     });
   }
