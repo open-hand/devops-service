@@ -327,9 +327,6 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             throw new CommonException("error.gitlabProjectId.not.exists");
         }
 
-        //查询某个应用代码仓库各种状态合并请求的数量
-        DevopsMergeRequestDTO devopsMergeRequestDTO = devopsMergeRequestService.baseCountMergeRequest(appServiceDTO.getGitlabProjectId());
-
         PageInfo<DevopsMergeRequestDTO> devopsMergeRequestDTOPageInfo = devopsMergeRequestService
                 .basePageByOptions(appServiceDTO.getGitlabProjectId(), state, pageRequest);
 
@@ -340,27 +337,16 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         if (devopsMergeRequestDTOS != null && !devopsMergeRequestDTOS.isEmpty()) {
             devopsMergeRequestDTOS.forEach(content -> {
                 MergeRequestVO mergeRequestVO = devopsMergeRequestToMergeRequest(content);
-                // 当mergeRequestVO为null时表示gitlab中不存在此条mergees记录，所以总数减一,对应状态的记录也减一
-                if (mergeRequestVO == null) {
-                    switch (devopsMergeRequestDTO.getState()) {
-                        case "merged":
-                            devopsMergeRequestDTO.setMerged(devopsMergeRequestDTO.getMerged() - 1);
-                            break;
-                        case "opened":
-                            devopsMergeRequestDTO.setOpened(devopsMergeRequestDTO.getOpened() - 1);
-                            break;
-                        case "closed":
-                            devopsMergeRequestDTO.setClosed(devopsMergeRequestDTO.getClosed() - 1);
-                            break;
-                    }
-                    devopsMergeRequestDTO.setTotal(devopsMergeRequestDTO.getTotal() - 1);
-                } else {
+                if (mergeRequestVO != null) {
                     pageContent.add(mergeRequestVO);
                 }
             });
         }
         PageInfo<MergeRequestVO> mergeRequestVOPageInfo = ConvertUtils.convertPage(devopsMergeRequestDTOPageInfo, MergeRequestVO.class);
         mergeRequestVOPageInfo.setList(pageContent);
+
+        //查询某个应用代码仓库各种状态合并请求的数量
+        DevopsMergeRequestDTO devopsMergeRequestDTO = devopsMergeRequestService.baseCountMergeRequest(appServiceDTO.getGitlabProjectId());
 
         MergeRequestTotalVO mergeRequestTotalVO = new MergeRequestTotalVO();
         mergeRequestTotalVO.setMergeRequestVOPageInfo(mergeRequestVOPageInfo);
