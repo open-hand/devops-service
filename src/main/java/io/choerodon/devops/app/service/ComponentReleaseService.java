@@ -1,8 +1,7 @@
 package io.choerodon.devops.app.service;
 
-import java.util.Map;
-
 import io.choerodon.devops.infra.dto.AppServiceInstanceDTO;
+import io.choerodon.devops.infra.dto.DevopsPrometheusDTO;
 
 /**
  * 为集群组件创建对应的Release
@@ -14,8 +13,8 @@ public interface ComponentReleaseService {
     /**
      * 为Prometheus组件创建相应的release
      *
-     * @param values 此组件配置的键值对
+     * @param devopsPrometheusDTO 组件信息
      * @return 组件对应的实例纪录
      */
-    AppServiceInstanceDTO createReleaseForPrometheus(Map<String, String> values);
+    AppServiceInstanceDTO createReleaseForPrometheus(DevopsPrometheusDTO devopsPrometheusDTO);
 }

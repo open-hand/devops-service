@@ -1,11 +1,10 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.Map;
-
 import org.springframework.stereotype.Service;
 
 import io.choerodon.devops.app.service.ComponentReleaseService;
 import io.choerodon.devops.infra.dto.AppServiceInstanceDTO;
+import io.choerodon.devops.infra.dto.DevopsPrometheusDTO;
 
 /**
  * @author zmf
@@ -14,7 +13,7 @@ import io.choerodon.devops.infra.dto.AppServiceInstanceDTO;
 @Service
 public class ComponentReleaseServiceImpl implements ComponentReleaseService {
     @Override
-    public AppServiceInstanceDTO createReleaseForPrometheus(Map<String, String> values) {
+    public AppServiceInstanceDTO createReleaseForPrometheus(DevopsPrometheusDTO devopsPrometheusDTO) {
         // TODO implement
         return null;
     }
