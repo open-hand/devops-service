@@ -1308,6 +1308,20 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         }
         Long projectId = cluster.getProjectId();
 
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        if (userAttrDTO == null) {
+            throw new CommonException(ERROR_GITLAB_USER_SYNC_FAILED);
+        }
+
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
+        // 查询所在的gitlab环境组
+        if (devopsProjectDTO.getDevopsClusterEnvGroupId() == null) {
+            // 如果是0.20版本之前创建的项目，是没有这个GitLab组的，此时创建
+            gitlabGroupService.createClusterEnvGroup(projectDTO, organizationDTO, userAttrDTO);
+        }
+
         DevopsEnvironmentDTO devopsEnvironmentDTO = new DevopsEnvironmentDTO();
         // 创建集群环境时默认不跳过权限校验
         devopsEnvironmentDTO.setSkipCheckPermission(Boolean.FALSE);
@@ -1320,16 +1334,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         devopsEnvironmentDTO.setClusterId(clusterId);
         devopsEnvironmentDTO.setToken(GenerateUUID.generateUUID());
         devopsEnvironmentDTO.setProjectId(projectId);
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 
-        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-        if (userAttrDTO == null) {
-            throw new CommonException(ERROR_GITLAB_USER_SYNC_FAILED);
-        }
 
-        // 查询创建应用所在的gitlab环境组
-        DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
         MemberDTO memberDTO = gitlabServiceClientOperator.queryGroupMember(
                 TypeUtil.objToInteger(devopsProjectDTO.getDevopsClusterEnvGroupId()),
                 TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
