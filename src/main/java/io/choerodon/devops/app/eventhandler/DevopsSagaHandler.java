@@ -397,7 +397,6 @@ public class DevopsSagaHandler {
         applicationDTO.setSynchro(true);
         applicationDTO.setFailed(true);
         appServiceService.baseUpdate(applicationDTO);
-        LOGGER.info("================应用服务创建失败执行回写失败状态成功，serviceId：{}", devOpsAppServicePayload.getAppServiceId());
         return data;
     }
 
