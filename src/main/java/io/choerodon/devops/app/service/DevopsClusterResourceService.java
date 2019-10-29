@@ -13,5 +13,7 @@ public interface DevopsClusterResourceService {
 
     DevopsClusterResourceDTO queryByClusterIdAndConfigId(Long clusterId, Long configId);
 
-    DevopsClusterResourceDTO queryByClusterIdAndType(Long clusterId,String type);
+    DevopsClusterResourceDTO queryByClusterIdAndType(Long clusterId, String type);
+
+    void delete(Long clusterId, Long configId);
 }

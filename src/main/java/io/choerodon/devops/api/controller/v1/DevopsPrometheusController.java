@@ -22,7 +22,7 @@ import io.choerodon.devops.app.service.DevopsPrometheusService;
  * @description:
  */
 @RestController
-@RequestMapping(value = "/v1/projects/{project_id}/prometheus")
+@RequestMapping(value = "/v1/clusters/{cluster_id}/prometheus")
 public class DevopsPrometheusController {
 
     @Autowired
@@ -73,12 +73,12 @@ public class DevopsPrometheusController {
     @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "卸载prometheus")
-    @DeleteMapping(value = "/{instance_id}/delete")
     public ResponseEntity delete(
-            @ApiParam(value = "项目 ID", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "实例ID", required = true)
-            @PathVariable(value = "instance_id") Long instanceId) {
+            @ApiParam(value = "集群id", required = true)
+            @PathVariable(value = "cluster_id") Long clusterId,
+            @ApiParam(value = "prometheusID", required = true)
+            @PathVariable(value = "prometheus_id") Long prometheusId) {
+        devopsPrometheusService.delete(clusterId, prometheusId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
