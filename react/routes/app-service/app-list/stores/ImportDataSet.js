@@ -74,8 +74,9 @@ export default ((intlPrefix, formatMessage, projectId, selectedDs) => {
           handleRequired(record, true);
           record.getField('accessToken').set('required', false);
           record.get('repositoryUrl') && record.set('repositoryUrl', null);
-          if (record.get('isTemplate') && record.get('githubTemplate')) {
-            record.set('repositoryUrl', record.get('githubTemplate'));
+          if (record.get('isTemplate')) {
+            record.getField('githubTemplate').fetchLookup();
+            record.get('githubTemplate') && record.set('repositoryUrl', record.get('githubTemplate'));
           }
           record.getField('repositoryUrl').set('label', formatMessage({ id: `${intlPrefix}.url.github` }));
           record.getField('name').set('validator', checkName);
@@ -108,6 +109,7 @@ export default ((intlPrefix, formatMessage, projectId, selectedDs) => {
     if (record.get('platformType') === 'github') {
       return {
         lookupUrl: `/devops/v1/projects/${projectId}/app_service/list_service_templates`,
+        required: record.get('isTemplate'),
       };
     }
     return {};
