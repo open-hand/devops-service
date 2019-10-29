@@ -340,15 +340,20 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         if (devopsMergeRequestDTOS != null && !devopsMergeRequestDTOS.isEmpty()) {
             devopsMergeRequestDTOS.forEach(content -> {
                 MergeRequestVO mergeRequestVO = devopsMergeRequestToMergeRequest(content);
-                // 当mergeRequestVO为null时表示gitlab中不存在此条merge记录，所以总数减一,对应状态的记录也减一
+                // 当mergeRequestVO为null时表示gitlab中不存在此条mergees记录，所以总数减一,对应状态的记录也减一
                 if (mergeRequestVO == null) {
-                    switch (state) {
-                        case "merged":
-                            devopsMergeRequestDTO.setMerged(devopsMergeRequestDTO.getMerged() - 1);
-                        case "opened":
-                            devopsMergeRequestDTO.setOpened(devopsMergeRequestDTO.getOpened() - 1);
-                        case "closed":
-                            devopsMergeRequestDTO.setClosed(devopsMergeRequestDTO.getClosed() - 1);
+                    if (state != null) {
+                        switch (state) {
+                            case "merged":
+                                devopsMergeRequestDTO.setMerged(devopsMergeRequestDTO.getMerged() - 1);
+                                break;
+                            case "opened":
+                                devopsMergeRequestDTO.setOpened(devopsMergeRequestDTO.getOpened() - 1);
+                                break;
+                            case "closed":
+                                devopsMergeRequestDTO.setClosed(devopsMergeRequestDTO.getClosed() - 1);
+                                break;
+                        }
                     }
                     devopsMergeRequestDTO.setTotal(devopsMergeRequestDTO.getTotal() - 1);
                 } else {
