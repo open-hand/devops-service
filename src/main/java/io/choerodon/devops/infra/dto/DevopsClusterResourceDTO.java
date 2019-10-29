@@ -5,7 +5,7 @@ import io.choerodon.mybatis.entity.BaseDTO;
 import javax.persistence.Table;
 
 @Table(name = "devops_cluster_resource")
-public class devopsClusterResourceDTO extends BaseDTO {
+public class DevopsClusterResourceDTO extends BaseDTO {
     private Long id;
     private String name;
     private String code;
@@ -13,6 +13,15 @@ public class devopsClusterResourceDTO extends BaseDTO {
     private Long clusterId;
     private Long instanceId;
     private Long configId;
+    private Long systemEnvId;
+    private String status;
+    public Long getSystemEnvId() {
+        return systemEnvId;
+    }
+
+    public void setSystemEnvId(Long systemEnvId) {
+        this.systemEnvId = systemEnvId;
+    }
 
     public Long getId() {
         return id;
@@ -68,5 +77,13 @@ public class devopsClusterResourceDTO extends BaseDTO {
 
     public void setConfigId(Long configId) {
         this.configId = configId;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

@@ -1,6 +1,6 @@
 package io.choerodon.devops.app.service;
 
-import io.choerodon.devops.infra.dto.DevopsPrometheusDTO;
+import io.choerodon.devops.api.vo.PrometheusVo;
 
 /**
  * @author: 25499
@@ -8,6 +8,8 @@ import io.choerodon.devops.infra.dto.DevopsPrometheusDTO;
  * @description:
  */
 public interface DevopsPrometheusService {
-    void create(DevopsPrometheusDTO devopsPrometheusDTO);
+    PrometheusVo deploy(Long clusterId,PrometheusVo prometheusVo);
+
+    String queryDeployStatus(Long clusterId,Long prometheusId);
 
 }
