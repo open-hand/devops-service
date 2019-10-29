@@ -1,6 +1,5 @@
 package io.choerodon.devops.infra.util;
 
-
 public class FeignResponseStatusCodeParse {
     private FeignResponseStatusCodeParse() {
     }
