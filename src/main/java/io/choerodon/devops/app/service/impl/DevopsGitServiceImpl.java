@@ -340,7 +340,10 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         if (devopsMergeRequestDTOS != null && !devopsMergeRequestDTOS.isEmpty()) {
             devopsMergeRequestDTOS.forEach(content -> {
                 MergeRequestVO mergeRequestVO = devopsMergeRequestToMergeRequest(content);
-                if (mergeRequestVO != null) {
+                // 当mergeRequestVO为null时表示gitlab中不存在此条merge记录，所以总数减一
+                if (mergeRequestVO == null) {
+                    devopsMergeRequestDTO.setTotal(devopsMergeRequestDTO.getTotal() - 1);
+                } else {
                     pageContent.add(mergeRequestVO);
                 }
             });
