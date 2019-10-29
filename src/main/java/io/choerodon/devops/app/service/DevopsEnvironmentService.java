@@ -284,7 +284,7 @@ public interface DevopsEnvironmentService {
 
     void baseDeleteById(Long id);
 
-    List<DevopsEnvironmentDTO> baseListByClusterId(Long clusterId);
+    List<DevopsEnvironmentDTO> baseListUserEnvByClusterId(Long clusterId);
 
     List<DevopsEnvironmentDTO> baseListByIds(List<Long> envIds);
 
@@ -297,4 +297,14 @@ public interface DevopsEnvironmentService {
      * @return 集群对应的环境id
      */
     DevopsEnvironmentDTO createSystemEnv(Long clusterId);
+
+    /**
+     * 删除集群的配置库
+     *
+     * @param projectId   项目id
+     * @param clusterId   集群id
+     * @param clusterCode 集群code
+     * @param envId       集群的配置库id
+     */
+    void deleteSystemEnv(Long projectId, Long clusterId, String clusterCode, Long envId);
 }

@@ -26,4 +26,9 @@ public class GitLabConstants {
      * gitlab环境库的webhook url相对路径
      */
     public static final String GITOPS_WEBHOOK_RELATIVE_URL = "devops/webhook/git_ops";
+
+    /**
+     * choerodon系统配置库的项目名格式为: clusterCode-envCode
+     */
+    public static final String SYSTEM_ENV_GITLAB_PROJECT_CODE_FORMAT = "%s-%s";
 }

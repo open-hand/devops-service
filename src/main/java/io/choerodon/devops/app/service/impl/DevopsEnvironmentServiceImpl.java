@@ -57,6 +57,11 @@ import io.choerodon.devops.infra.util.*;
 @Service
 public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsEnvironmentServiceImpl.class);
+    private static final String SYSTEM_ENV_NAMESPACE = "choerodon";
+    /**
+     * 集群对应的环境name clusterName-env
+     */
+    private static final String SYSTEM_ENV_NAME = "%s-env";
 
     private static final Gson gson = new Gson();
     private static final String MEMBER = "member";
@@ -1306,8 +1311,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         DevopsEnvironmentDTO devopsEnvironmentDTO = new DevopsEnvironmentDTO();
         // 创建集群环境时默认不跳过权限校验
         devopsEnvironmentDTO.setSkipCheckPermission(Boolean.FALSE);
-        devopsEnvironmentDTO.setName(cluster.getName());
-        devopsEnvironmentDTO.setCode(cluster.getCode());
+        devopsEnvironmentDTO.setName(String.format(SYSTEM_ENV_NAME, cluster.getName()));
+        devopsEnvironmentDTO.setCode(SYSTEM_ENV_NAMESPACE);
         devopsEnvironmentDTO.setType(EnvironmentType.SYSTEM.getValue());
         devopsEnvironmentDTO.setActive(true);
         devopsEnvironmentDTO.setSynchro(false);
@@ -1343,13 +1348,14 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         devopsEnvironmentDTO.setId(envId);
 
         // 准备创建GitLab的项目
+        String systemEnvProjectCode = String.format(GitLabConstants.SYSTEM_ENV_GITLAB_PROJECT_CODE_FORMAT, cluster.getCode(), SYSTEM_ENV_NAMESPACE);
         Integer gitlabUserId = TypeUtil.objToInteger(userAttrDTO.getGitlabUserId());
         GitlabProjectDTO gitlabProjectDO = gitlabServiceClientOperator.queryProjectByName(
-                gitlabGroupService.renderGroupPath(organizationDTO.getCode(), projectDTO.getCode(), GitLabConstants.CLUSTER_ENV_GROUP_SUFFIX), devopsEnvironmentDTO.getCode(), gitlabUserId);
+                gitlabGroupService.renderGroupPath(organizationDTO.getCode(), projectDTO.getCode(), GitLabConstants.CLUSTER_ENV_GROUP_SUFFIX), systemEnvProjectCode, gitlabUserId);
         if (gitlabProjectDO == null || gitlabProjectDO.getId() == null) {
             gitlabProjectDO = gitlabServiceClientOperator.createProject(
                     TypeUtil.objToInteger(devopsProjectDTO.getDevopsClusterEnvGroupId()),
-                    devopsEnvironmentDTO.getCode(),
+                    systemEnvProjectCode,
                     gitlabUserId,
                     false);
         }
@@ -1391,6 +1397,27 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
         agentCommandService.initEnv(devopsEnvironmentDTO, devopsEnvironmentDTO.getClusterId());
         return devopsEnvironmentDTO;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
+    public void deleteSystemEnv(Long projectId, Long clusterId, String clusterCode, Long envId) {
+        if (envId != null) {
+            deleteEnvSaga(envId);
+        } else {
+            // 可能是gitlab项目创建成功，但是数据库纪录被回滚了，这时候判断gitlab是否有对应项目
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+            OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+
+            UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+            String systemEnvProjectCode = String.format(GitLabConstants.SYSTEM_ENV_GITLAB_PROJECT_CODE_FORMAT, clusterCode, SYSTEM_ENV_NAMESPACE);
+            Integer gitlabUserId = TypeUtil.objToInteger(userAttrDTO.getGitlabUserId());
+            GitlabProjectDTO gitlabProjectDO = gitlabServiceClientOperator.queryProjectByName(
+                    gitlabGroupService.renderGroupPath(organizationDTO.getCode(), projectDTO.getCode(), GitLabConstants.CLUSTER_ENV_GROUP_SUFFIX), systemEnvProjectCode, gitlabUserId);
+            if (gitlabProjectDO != null && gitlabProjectDO.getId() != null) {
+                gitlabServiceClientOperator.deleteProjectById(gitlabProjectDO.getId(), gitlabUserId);
+            }
+        }
     }
 
     @Override
@@ -1534,9 +1561,10 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     @Override
-    public List<DevopsEnvironmentDTO> baseListByClusterId(Long clusterId) {
+    public List<DevopsEnvironmentDTO> baseListUserEnvByClusterId(Long clusterId) {
         DevopsEnvironmentDTO devopsEnvironmentDO = new DevopsEnvironmentDTO();
         devopsEnvironmentDO.setClusterId(clusterId);
+        devopsEnvironmentDO.setType(EnvironmentType.USER.getValue());
         return devopsEnvironmentMapper.select(devopsEnvironmentDO);
     }
 
