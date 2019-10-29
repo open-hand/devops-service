@@ -53,12 +53,17 @@ public class DevopsPrometheusServiceImpl implements DevopsPrometheusService {
 
     @Autowired
     private GitlabServiceClientOperator gitlabServiceClientOperator;
+
+    @Autowired
+    private DevopsClusterService devopsClusterService;
     private static final String TYPE_PROMETHEUS = "prometheus";
 
     @Override
     public PrometheusVo deploy(Long clusterId, PrometheusVo prometheusVo) {
 
         DevopsPrometheusDTO devopsPrometheusDTO = prometheusVoToDto(prometheusVo);
+        DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
+
         DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceService.queryByClusterIdAndType(clusterId, "prometheus");
         if (devopsClusterResourceDTO.getSystemEnvId() != null) {
             AppServiceInstanceDTO releaseForPrometheus = componentReleaseService.createReleaseForPrometheus(devopsPrometheusDTO);
@@ -69,8 +74,8 @@ public class DevopsPrometheusServiceImpl implements DevopsPrometheusService {
                 devopsClusterResourceDTO.setClusterId(clusterId);
                 devopsClusterResourceDTO.setConfigId(prometheusVo.getId());
                 devopsClusterResourceDTO.setInstanceId(releaseForPrometheus.getId());
-                devopsClusterResourceDTO.setName(prometheusVo.getClusterName());
-                devopsClusterResourceDTO.setCode(clusterId.toString());
+                devopsClusterResourceDTO.setName(devopsClusterDTO.getName());
+                devopsClusterResourceDTO.setCode(devopsClusterDTO.getCode());
                 devopsClusterResourceDTO.setType(TYPE_PROMETHEUS);
                 devopsClusterResourceService.baseCreateOrUpdate(devopsClusterResourceDTO);
             }
