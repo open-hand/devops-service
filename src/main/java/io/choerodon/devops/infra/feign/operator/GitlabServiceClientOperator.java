@@ -10,10 +10,7 @@ import io.choerodon.devops.infra.dto.gitlab.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
-import io.choerodon.devops.infra.util.GitUserNameUtil;
-import io.choerodon.devops.infra.util.GitUtil;
-import io.choerodon.devops.infra.util.PageInfoUtil;
-import io.choerodon.devops.infra.util.TypeUtil;
+import io.choerodon.devops.infra.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -753,6 +750,9 @@ public class GitlabServiceClientOperator {
                 return commitDTOS;
             }
         } catch (FeignException e) {
+            if (FeignResponseStatusCodeParse.parseStatusCode(e.getMessage()) == 404) {
+                return null;
+            }
             throw new CommonException(e.getMessage(), e);
         }
     }
