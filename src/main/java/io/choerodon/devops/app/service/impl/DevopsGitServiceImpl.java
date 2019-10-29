@@ -1,26 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.util.*;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
-import io.kubernetes.client.models.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.interceptor.TransactionAspectSupport;
-import org.yaml.snakeyaml.Yaml;
-
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -49,8 +30,27 @@ import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.infra.feign.operator.AgileServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
+import io.choerodon.devops.infra.mapper.DevopsMergeRequestMapper;
 import io.choerodon.devops.infra.message.ResourceBundleHandler;
 import io.choerodon.devops.infra.util.*;
+import io.kubernetes.client.models.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
+import org.yaml.snakeyaml.Yaml;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.util.*;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Creator: Runge
@@ -60,12 +60,12 @@ import io.choerodon.devops.infra.util.*;
  */
 @Service
 public class DevopsGitServiceImpl implements DevopsGitService {
-    public static final String CHOERODON_IO_RESOURCE = "choerodon.io/resource";
-    public static final String METADATA = "metadata";
-    public static final String CUSTOM = "custom";
-    public static final String LABELS = "labels";
-    public static final String KIND = "kind";
-    public static final String NAME = "name";
+    private static final String CHOERODON_IO_RESOURCE = "choerodon.io/resource";
+    private static final String METADATA = "metadata";
+    private static final String CUSTOM = "custom";
+    private static final String LABELS = "labels";
+    private static final String KIND = "kind";
+    private static final String NAME = "name";
     private static final String SERVICE = "Service";
     private static final String INGRESS = "Ingress";
     private static final String C7NHELM_RELEASE = "C7NHelmRelease";
@@ -115,6 +115,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     private TransactionalProducer producer;
     @Autowired
     private DevopsMergeRequestService devopsMergeRequestService;
+    @Autowired
+    DevopsMergeRequestMapper devopsMergeRequestMapper;
     @Autowired
     @Qualifier("handlerC7nReleaseRelationsServiceImpl")
     private HandlerObjectFileRelationsService handlerC7nReleaseRelationsService;
@@ -338,7 +340,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         if (devopsMergeRequestDTOS != null && !devopsMergeRequestDTOS.isEmpty()) {
             devopsMergeRequestDTOS.forEach(content -> {
                 MergeRequestVO mergeRequestVO = devopsMergeRequestToMergeRequest(content);
-                pageContent.add(mergeRequestVO);
+                if (mergeRequestVO != null) {
+                    pageContent.add(mergeRequestVO);
+                }
             });
         }
         PageInfo<MergeRequestVO> mergeRequestVOPageInfo = ConvertUtils.convertPage(devopsMergeRequestDTOPageInfo, MergeRequestVO.class);
@@ -910,6 +914,11 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             commitDTOS = gitlabServiceClientOperator.listCommits(
                     devopsMergeRequestDTO.getGitlabProjectId().intValue(),
                     devopsMergeRequestDTO.getGitlabMergeRequestId().intValue(), getGitlabUserId());
+            if (commitDTOS == null) {
+                LOGGER.info("MergeRequest not exist");
+                devopsMergeRequestMapper.delete(devopsMergeRequestDTO);
+                return null;
+            }
             mergeRequestVO.setCommits(ConvertUtils.convertList(commitDTOS, CommitVO.class));
         } catch (FeignException e) {
             LOGGER.info(e.getMessage());
