@@ -5,6 +5,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import io.swagger.annotations.ApiModelProperty;
+
 import io.choerodon.mybatis.entity.BaseDTO;
 
 /**
@@ -19,12 +21,16 @@ public class DevopsPrometheusDTO extends BaseDTO {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ApiModelProperty("grafana.adminPassword")
     private String adminPassword;
 
+    @ApiModelProperty("grafana.ingress.hosts")
     private String grafanaDomain;
 
+    @ApiModelProperty("pv名称")
     private String pvName;
 
+    @ApiModelProperty("replacement")
     private String clusterName;
 
     public Long getId() {

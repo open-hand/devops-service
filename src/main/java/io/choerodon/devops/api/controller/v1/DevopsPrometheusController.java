@@ -37,7 +37,7 @@ public class DevopsPrometheusController {
             @PathVariable(value = "cluster_id") Long clusterId,
             @ApiParam(value = "请求体", required = true)
             @RequestBody PrometheusVo prometheusVo) {
-        return Optional.ofNullable(devopsPrometheusService.deploy(clusterId,prometheusVo))
+        return Optional.ofNullable(devopsPrometheusService.deploy(clusterId, prometheusVo))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.prometheus.deploy"));
     }
@@ -52,7 +52,7 @@ public class DevopsPrometheusController {
             @PathVariable(value = "cluster_id") Long clusterId,
             @ApiParam(value = "请求体", required = true)
             @RequestBody PrometheusVo prometheusVo) {
-        return Optional.ofNullable(devopsPrometheusService.deploy(clusterId,prometheusVo))
+        return Optional.ofNullable(devopsPrometheusService.deploy(clusterId, prometheusVo))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.prometheus.deploy"));
     }
@@ -65,12 +65,22 @@ public class DevopsPrometheusController {
             @ApiParam(value = "集群id", required = true)
             @PathVariable(value = "cluster_id") Long clusterId,
             @PathVariable(value = "prometheus_id") Long prometheus_id) {
-        return Optional.ofNullable(devopsPrometheusService.queryDeployStatus(clusterId,prometheus_id))
+        return Optional.ofNullable(devopsPrometheusService.queryDeployStatus(clusterId, prometheus_id))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.prometheus.deploy"));
     }
 
-
+    @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+            InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "卸载prometheus")
+    @DeleteMapping(value = "/{instance_id}/delete")
+    public ResponseEntity delete(
+            @ApiParam(value = "项目 ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "实例ID", required = true)
+            @PathVariable(value = "instance_id") Long instanceId) {
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
 
 
 }
