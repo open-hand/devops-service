@@ -3,8 +3,8 @@ package io.choerodon.devops.app.service.impl;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import javax.annotation.PostConstruct;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
@@ -16,6 +16,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
@@ -34,6 +35,7 @@ import io.choerodon.devops.app.eventhandler.payload.DevopsEnvUserPayload;
 import io.choerodon.devops.app.eventhandler.payload.EnvGitlabProjectPayload;
 import io.choerodon.devops.app.eventhandler.payload.GitlabProjectPayload;
 import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.constant.GitLabConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
 import io.choerodon.devops.infra.dto.gitlab.GitlabProjectDTO;
@@ -55,6 +57,11 @@ import io.choerodon.devops.infra.util.*;
 @Service
 public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsEnvironmentServiceImpl.class);
+    private static final String SYSTEM_ENV_NAMESPACE = "choerodon";
+    /**
+     * 集群对应的环境name clusterName-env
+     */
+    private static final String SYSTEM_ENV_NAME = "%s-env";
 
     private static final Gson gson = new Gson();
     private static final String MEMBER = "member";
@@ -72,6 +79,10 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private static final String REAL_NAME = "realName";
     private static final Pattern CODE = Pattern.compile("[a-z]([-a-z0-9]*[a-z0-9])?");
 
+    /**
+     * gitlab用于环境库的webhook地址
+     */
+    private String gitOpsWebHookUrl;
 
     @Value("${services.gateway.url}")
     private String gatewayUrl;
@@ -145,6 +156,14 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private DevopsDeployRecordService devopsDeployRecordService;
     @Autowired
     private AppServiceService appServiceService;
+    @Autowired
+    private GitlabGroupService gitlabGroupService;
+
+    @PostConstruct
+    private void init() {
+        gitOpsWebHookUrl = !gatewayUrl.endsWith("/") ? gatewayUrl + "/" : gatewayUrl;
+        gitOpsWebHookUrl += GitLabConstants.GITOPS_WEBHOOK_RELATIVE_URL;
+    }
 
     @Override
     @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_ENV, description = "创建环境", inputSchema = "{}")
@@ -158,13 +177,13 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         checkCode(projectId, devopsEnvironmentReqVO.getClusterId(), devopsEnvironmentReqVO.getCode());
         devopsEnvGroupService.checkGroupIdInProject(devopsEnvironmentDTO.getDevopsEnvGroupId(), projectId);
 
+        devopsEnvironmentDTO.setType(EnvironmentType.USER.getValue());
         devopsEnvironmentDTO.setActive(true);
         devopsEnvironmentDTO.setConnected(false);
         devopsEnvironmentDTO.setSynchro(false);
         devopsEnvironmentDTO.setFailed(false);
         devopsEnvironmentDTO.setClusterId(devopsEnvironmentReqVO.getClusterId());
         devopsEnvironmentDTO.setToken(GenerateUUID.generateUUID());
-        devopsEnvironmentDTO.setProjectId(projectId);
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 
@@ -456,7 +475,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 DevopsAppServiceViewVO appVO = new DevopsAppServiceViewVO();
                 BeanUtils.copyProperties(app, appVO, "instances");
                 AppServiceDTO appServiceDTO = appServiceService.baseQuery(app.getId());
-                appVO.setType(appServiceService.checkAppServiceType(projectId,appServiceDTO));
+                appVO.setType(appServiceService.checkAppServiceType(projectId, appServiceDTO));
                 appVO.setInstances(app.getInstances().stream().map(ins -> {
                     DevopsAppServiceInstanceViewVO insVO = new DevopsAppServiceInstanceViewVO();
                     BeanUtils.copyProperties(ins, insVO);
@@ -581,8 +600,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             }
         }
 
-        gitlabUrl = gitlabUrl.endsWith("/") ? gitlabUrl.substring(0, gitlabUrl.length() - 1):gitlabUrl;
-        vo.setGitlabUrl(String.format("%s/%s-%s-gitops/%s/",gitlabUrl,organizationDTO.getCode(),projectDTO.getCode(),envInfo.getCode()));
+        gitlabUrl = gitlabUrl.endsWith("/") ? gitlabUrl.substring(0, gitlabUrl.length() - 1) : gitlabUrl;
+        vo.setGitlabUrl(String.format("%s/%s-%s-gitops/%s/", gitlabUrl, organizationDTO.getCode(), projectDTO.getCode(), envInfo.getCode()));
         return vo;
     }
 
@@ -723,9 +742,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         projectHookDTO.setEnableSslVerification(true);
         projectHookDTO.setProjectId(gitlabProjectDO.getId());
         projectHookDTO.setToken(devopsEnvironmentDTO.getToken());
-        String uri = !gatewayUrl.endsWith("/") ? gatewayUrl + "/" : gatewayUrl;
-        uri += "devops/webhook/git_ops";
-        projectHookDTO.setUrl(uri);
+        projectHookDTO.setUrl(gitOpsWebHookUrl);
         List<ProjectHookDTO> projectHookDTOS = gitlabServiceClientOperator.listProjectHook(gitlabProjectDO.getId(),
                 gitlabProjectPayload.getUserId());
         if (projectHookDTOS == null || projectHookDTOS.isEmpty()) {
@@ -896,9 +913,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                     .filter(p -> !ownerIds.contains(p.getIamUserId()))
                     .map(p -> {
                         DevopsUserPermissionVO permissionVO = new DevopsUserPermissionVO();
-                        BeanUtils.copyProperties(p,permissionVO);
+                        BeanUtils.copyProperties(p, permissionVO);
                         IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(p.getIamUserId());
-                        if(!iamUserDTO.getLdap()){
+                        if (!iamUserDTO.getLdap()) {
                             permissionVO.setLoginName(iamUserDTO.getEmail());
                         }
                         return permissionVO;
@@ -915,7 +932,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                     .getList()
                     .stream()
                     .filter(u -> !ownerIds.contains(u.getId()))
-                    .map(iamUser -> new DevopsUserPermissionVO(iamUser.getId(), iamUser.getLdap()?iamUser.getLoginName():iamUser.getEmail(), iamUser.getRealName(), devopsEnvironmentDTO.getCreationDate()))
+                    .map(iamUser -> new DevopsUserPermissionVO(iamUser.getId(), iamUser.getLdap() ? iamUser.getLoginName() : iamUser.getEmail(), iamUser.getRealName(), devopsEnvironmentDTO.getCreationDate()))
                     .peek(p -> p.setRole(MEMBER))
                     .collect(Collectors.toList());
         }
@@ -989,7 +1006,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 .collect(Collectors.toList());
 
         return ConvertUtils.convertList(members,
-                iamUserDTO -> new DevopsEnvUserVO(iamUserDTO.getId(), iamUserDTO.getLdap()?iamUserDTO.getLoginName():iamUserDTO.getEmail(), iamUserDTO.getRealName()));
+                iamUserDTO -> new DevopsEnvUserVO(iamUserDTO.getId(), iamUserDTO.getLdap() ? iamUserDTO.getLoginName() : iamUserDTO.getEmail(), iamUserDTO.getRealName()));
     }
 
     @Override
@@ -1198,11 +1215,12 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             devopsEnvironmentDTO.setPermission(false);
         }
     }
+
     @Saga(code = SagaTopicCodeConstants.DEVOPS_DELETE_ENV,
             description = "devops删除停用和失败的环境")
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void deleteDeactivatedOrFailedEnvironment(Long projectId,Long envId) {
+    public void deleteDeactivatedOrFailedEnvironment(Long projectId, Long envId) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = baseQueryById(envId);
 
         if (devopsEnvironmentDTO == null) {
@@ -1214,7 +1232,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         }
         devopsEnvironmentDTO.setSynchro(Boolean.FALSE);
         JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("envId",envId);
+        jsonObject.addProperty("envId", envId);
         devopsEnvironmentMapper.updateByPrimaryKeySelective(devopsEnvironmentDTO);
         producer.apply(
                 StartSagaBuilder
@@ -1224,11 +1242,13 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                         .withJson(jsonObject.toString())
                         .withSourceId(projectId)
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_DELETE_ENV),
-                builder -> {});
+                builder -> {
+                });
 
     }
+
     @Override
-    public void deleteEnvSaga(Long envId){
+    public void deleteEnvSaga(Long envId) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = baseQueryById(envId);
         // 删除对应的环境-应用服务关联关系
         DevopsEnvAppServiceDTO deleteCondition = new DevopsEnvAppServiceDTO();
@@ -1278,6 +1298,128 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             agentCommandService.deleteEnv(envId, devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getClusterId());
         }
     }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
+    public DevopsEnvironmentDTO createSystemEnv(Long clusterId) {
+        DevopsClusterDTO cluster = devopsClusterService.baseQuery(clusterId);
+        if (cluster == null) {
+            throw new CommonException("error.cluster.not.exists");
+        }
+        Long projectId = cluster.getProjectId();
+
+        DevopsEnvironmentDTO devopsEnvironmentDTO = new DevopsEnvironmentDTO();
+        // 创建集群环境时默认不跳过权限校验
+        devopsEnvironmentDTO.setSkipCheckPermission(Boolean.FALSE);
+        devopsEnvironmentDTO.setName(String.format(SYSTEM_ENV_NAME, cluster.getName()));
+        devopsEnvironmentDTO.setCode(SYSTEM_ENV_NAMESPACE);
+        devopsEnvironmentDTO.setType(EnvironmentType.SYSTEM.getValue());
+        devopsEnvironmentDTO.setActive(true);
+        devopsEnvironmentDTO.setSynchro(false);
+        devopsEnvironmentDTO.setFailed(false);
+        devopsEnvironmentDTO.setClusterId(clusterId);
+        devopsEnvironmentDTO.setToken(GenerateUUID.generateUUID());
+        devopsEnvironmentDTO.setProjectId(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        if (userAttrDTO == null) {
+            throw new CommonException(ERROR_GITLAB_USER_SYNC_FAILED);
+        }
+
+        // 查询创建应用所在的gitlab环境组
+        DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
+        MemberDTO memberDTO = gitlabServiceClientOperator.queryGroupMember(
+                TypeUtil.objToInteger(devopsProjectDTO.getDevopsClusterEnvGroupId()),
+                TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+        if (memberDTO == null || !memberDTO.getAccessLevel().equals(AccessLevel.OWNER.toValue())) {
+            throw new CommonException("error.user.not.owner");
+        }
+
+        // 生成deployKey
+        List<String> sshKeys = FileUtil.getSshKey(
+                organizationDTO.getCode() + "/" + projectDTO.getCode() + "/" + devopsEnvironmentDTO.getCode());
+        devopsEnvironmentDTO.setEnvIdRsa(sshKeys.get(0));
+        devopsEnvironmentDTO.setEnvIdRsaPub(sshKeys.get(1));
+
+        // 创建环境纪录
+        Long envId = baseCreate(devopsEnvironmentDTO).getId();
+        devopsEnvironmentDTO.setId(envId);
+
+        // 准备创建GitLab的项目
+        String systemEnvProjectCode = String.format(GitLabConstants.SYSTEM_ENV_GITLAB_PROJECT_CODE_FORMAT, cluster.getCode(), SYSTEM_ENV_NAMESPACE);
+        Integer gitlabUserId = TypeUtil.objToInteger(userAttrDTO.getGitlabUserId());
+        GitlabProjectDTO gitlabProjectDO = gitlabServiceClientOperator.queryProjectByName(
+                gitlabGroupService.renderGroupPath(organizationDTO.getCode(), projectDTO.getCode(), GitLabConstants.CLUSTER_ENV_GROUP_SUFFIX), systemEnvProjectCode, gitlabUserId);
+        if (gitlabProjectDO == null || gitlabProjectDO.getId() == null) {
+            gitlabProjectDO = gitlabServiceClientOperator.createProject(
+                    TypeUtil.objToInteger(devopsProjectDTO.getDevopsClusterEnvGroupId()),
+                    systemEnvProjectCode,
+                    gitlabUserId,
+                    false);
+        }
+        devopsEnvironmentDTO.setGitlabEnvProjectId(TypeUtil.objToLong(gitlabProjectDO.getId()));
+        if (gitlabServiceClientOperator.listDeployKey(gitlabProjectDO.getId(), gitlabUserId).isEmpty()) {
+            gitlabServiceClientOperator.createDeployKey(
+                    gitlabProjectDO.getId(),
+                    devopsEnvironmentDTO.getCode(),
+                    devopsEnvironmentDTO.getEnvIdRsaPub(),
+                    true,
+                    gitlabUserId);
+        }
+
+        // 初始化web hook
+        ProjectHookDTO projectHookDTO = ProjectHookDTO.allHook();
+        projectHookDTO.setEnableSslVerification(true);
+        projectHookDTO.setProjectId(gitlabProjectDO.getId());
+        projectHookDTO.setToken(devopsEnvironmentDTO.getToken());
+        projectHookDTO.setUrl(gitOpsWebHookUrl);
+        List<ProjectHookDTO> projectHookDTOS = gitlabServiceClientOperator.listProjectHook(gitlabProjectDO.getId(),
+                gitlabUserId);
+        if (projectHookDTOS == null || projectHookDTOS.isEmpty()) {
+            devopsEnvironmentDTO.setHookId(TypeUtil.objToLong(gitlabServiceClientOperator.createWebHook(
+                    gitlabProjectDO.getId(), gitlabUserId, projectHookDTO).getId()));
+        } else {
+            devopsEnvironmentDTO.setHookId(TypeUtil.objToLong(projectHookDTOS.get(0).getId()));
+        }
+
+        // 初始化环境库，添加一个readme
+        if (!gitlabServiceClientOperator.getFile(gitlabProjectDO.getId(), MASTER, README)) {
+            gitlabServiceClientOperator.createFile(gitlabProjectDO.getId(),
+                    README, README_CONTENT, "ADD README", gitlabUserId);
+        }
+
+        // 创建集群环境时不需要项目所有者初始化用户权限，因为有组的权限了
+
+        devopsEnvironmentDTO.setSynchro(true);
+        baseUpdate(devopsEnvironmentDTO);
+
+        agentCommandService.initEnv(devopsEnvironmentDTO, devopsEnvironmentDTO.getClusterId());
+        return devopsEnvironmentDTO;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
+    public void deleteSystemEnv(Long projectId, Long clusterId, String clusterCode, Long envId) {
+        if (envId != null) {
+            deleteEnvSaga(envId);
+        } else {
+            // 可能是gitlab项目创建成功，但是数据库纪录被回滚了，这时候判断gitlab是否有对应项目
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+            OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+
+            UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+            String systemEnvProjectCode = String.format(GitLabConstants.SYSTEM_ENV_GITLAB_PROJECT_CODE_FORMAT, clusterCode, SYSTEM_ENV_NAMESPACE);
+            Integer gitlabUserId = TypeUtil.objToInteger(userAttrDTO.getGitlabUserId());
+            GitlabProjectDTO gitlabProjectDO = gitlabServiceClientOperator.queryProjectByName(
+                    gitlabGroupService.renderGroupPath(organizationDTO.getCode(), projectDTO.getCode(), GitLabConstants.CLUSTER_ENV_GROUP_SUFFIX), systemEnvProjectCode, gitlabUserId);
+            if (gitlabProjectDO != null && gitlabProjectDO.getId() != null) {
+                gitlabServiceClientOperator.deleteProjectById(gitlabProjectDO.getId(), gitlabUserId);
+            }
+        }
+    }
+
     @Override
     public List<DevopsClusterRepVO> listDevopsCluster(Long projectId) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
@@ -1419,9 +1561,10 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     @Override
-    public List<DevopsEnvironmentDTO> baseListByClusterId(Long clusterId) {
+    public List<DevopsEnvironmentDTO> baseListUserEnvByClusterId(Long clusterId) {
         DevopsEnvironmentDTO devopsEnvironmentDO = new DevopsEnvironmentDTO();
         devopsEnvironmentDO.setClusterId(clusterId);
+        devopsEnvironmentDO.setType(EnvironmentType.USER.getValue());
         return devopsEnvironmentMapper.select(devopsEnvironmentDO);
     }
 

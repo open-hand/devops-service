@@ -12,6 +12,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
@@ -353,6 +354,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
 
     @Override
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     public void deleteCluster(Long clusterId) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(clusterId);
         if (devopsClusterDTO == null) {
@@ -361,12 +363,14 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
         checkConnectEnvs(clusterId);
         baseDelete(clusterId);
+
+        devopsEnvironmentService.deleteSystemEnv(devopsClusterDTO.getProjectId(), devopsClusterDTO.getId(), devopsClusterDTO.getCode(), devopsClusterDTO.getSystemEnvId());
     }
 
     @Override
     public Boolean checkConnectEnvs(Long clusterId) {
         List<Long> connectedEnvList = clusterConnectionHandler.getConnectedClusterList();
-        List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = devopsEnvironmentService.baseListByClusterId(clusterId);
+        List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = devopsEnvironmentService.baseListUserEnvByClusterId(clusterId);
         if (connectedEnvList.contains(clusterId)) {
             throw new CommonException("error.cluster.connected");
         }

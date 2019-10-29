@@ -49,4 +49,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_project.groovy') {
             column(name: 'harbor_project_is_private', type: 'TINYINT UNSIGNED', defaultValue: "0", afterColumn: 'harbor_project_user_email',remarks: 'harbor仓库是否私有。0公有，1私有')
         }
     }
+
+    changeSet(author: 'zmf', id: '2019-10-27-add-cluster-group-column') {
+        addColumn(tableName: 'devops_project') {
+            column(name: 'devops_cluster_env_group_id', type: 'BIGINT UNSIGNED', remarks: 'cluster env gitlab group id', afterColumn: 'devops_env_group_id')
+        }
+    }
 }

@@ -55,4 +55,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cluster.groovy') {
             column(name: 'project_id',type: 'BIGINT UNSIGNED',remarks:'项目Id', afterColumn: 'token')
         }
     }
+
+    changeSet(author: 'zmf', id: '2019-10-27-add-system-env-id-column') {
+        addColumn(tableName: 'devops_cluster') {
+            column(name: 'system_env_id', type: 'BIGINT UNSIGNED', remarks: 'cluster env id', afterColumn: 'description')
+        }
+    }
 }

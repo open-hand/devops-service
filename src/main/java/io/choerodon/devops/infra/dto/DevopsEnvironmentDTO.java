@@ -2,6 +2,8 @@ package io.choerodon.devops.infra.dto;
 
 import javax.persistence.*;
 
+import io.swagger.annotations.ApiModelProperty;
+
 import io.choerodon.mybatis.entity.BaseDTO;
 
 /**
@@ -31,6 +33,8 @@ public class DevopsEnvironmentDTO extends BaseDTO {
     private String name;
     private String code;
     private String token;
+
+    @ApiModelProperty("环境的类型 user/system")
     private String type;
 
     private String description;
