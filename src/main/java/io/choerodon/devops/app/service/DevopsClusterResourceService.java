@@ -9,7 +9,7 @@ import io.choerodon.devops.infra.dto.DevopsClusterResourceDTO;
 public interface DevopsClusterResourceService {
     void baseCreateOrUpdate(DevopsClusterResourceDTO devopsClusterResourceDTO);
 
-    void create(DevopsClusterResourceDTO devopsClusterResourceDTO, Long clusterId);
+    void create(DevopsClusterResourceDTO devopsClusterResourceDTO,Long clusterId);
 
     DevopsClusterResourceDTO queryByClusterIdAndConfigId(Long clusterId, Long configId);
 

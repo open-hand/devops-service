@@ -63,6 +63,7 @@ public enum HelmType {
     TEST_EXECUTE("test_execute"),
     CONFIG_UPDATE("config_update"),
     CERT_MANAGER_INSTALL("cert_manager_install"),
+    GET_CERT_MANAGER_STATUS("get_cert_manager_status"),
     OPERATE_DOCKER_REGISTRY_SECRET_FAILED("operate_docker_registry_secret_failed"),
     OPERATE_DOCKER_REGISTRY_SECRET("operate_docker_registry_secret"),
     POD_METRICS_SYNC("pod_metrics_sync"),

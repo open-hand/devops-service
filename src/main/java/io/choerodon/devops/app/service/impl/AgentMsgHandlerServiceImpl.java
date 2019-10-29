@@ -128,7 +128,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     private AgentCommandService agentCommandService;
     @Autowired
     private AppServiceMapper appServiceMapper;
-
+    @Autowired
+    private DevopsClusterResourceService devopsClusterResourceService;
 
     public void handlerUpdatePodMessage(String key, String msg, Long envId) {
         V1Pod v1Pod = json.deserialize(msg, V1Pod.class);
@@ -1468,8 +1469,11 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
     @Override
     public void getCertManagerInfo(String payloadMsg, Long clusterId) {
-        if (payloadMsg == null) {
-            agentCommandService.createCertManager(clusterId);
+        logger.info(payloadMsg);
+        if(payloadMsg != null){
+            DevopsClusterResourceDTO devopsClusterResourceDTO = gson.fromJson(payloadMsg, DevopsClusterResourceDTO.class);
+            devopsClusterResourceDTO.setClusterId(clusterId);
+            devopsClusterResourceService.baseCreateOrUpdate(devopsClusterResourceDTO);
         }
     }
 
@@ -1639,6 +1643,11 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             });
             agentPodService.handleRealTimePodData(podMetricsRedisInfoVOS);
         }
+    }
+
+    @Override
+    public void getCertManagerStatus(String key, String payload, Long clusterId) {
+
     }
 
 

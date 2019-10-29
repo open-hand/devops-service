@@ -396,4 +396,14 @@ public class AgentCommandServiceImpl implements AgentCommandService {
     public void deletePod(DevopsEnvPodDTO devopsEnvPodDTO) {
         //Todo
     }
+
+    @Override
+    public void getCertManagerStatus(Long clusterId) {
+        AgentMsgVO msg = new AgentMsgVO();
+        msg.setKey(String.format(KEY_FORMAT,
+                clusterId,
+                "choerodon-cert-manager"));
+        msg.setType(HelmType.GET_CERT_MANAGER_STATUS.toValue());
+        sendToWebsocket(clusterId, msg);
+    }
 }
