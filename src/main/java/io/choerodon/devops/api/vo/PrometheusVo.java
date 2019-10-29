@@ -1,37 +1,31 @@
-package io.choerodon.devops.infra.dto;
-
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
-
-import io.swagger.annotations.ApiModelProperty;
-
-import io.choerodon.mybatis.entity.BaseDTO;
+package io.choerodon.devops.api.vo;
 
 /**
  * @author: 25499
- * @date: 2019/10/28 13:56
+ * @date: 2019/10/29 8:44
  * @description:
  */
-@Table(name = "devops_prometheus")
-public class DevopsPrometheusDTO extends BaseDTO {
+public class PrometheusVo {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ApiModelProperty("grafana.adminPassword")
     private String adminPassword;
 
-    @ApiModelProperty("grafana.ingress.hosts")
     private String grafanaDomain;
 
-    @ApiModelProperty("pv名称")
     private String pvName;
 
-    @ApiModelProperty("replacement")
     private String clusterName;
+
+    private String status;
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
 
     public Long getId() {
         return id;
