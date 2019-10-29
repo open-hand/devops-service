@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { observer } from 'mobx-react-lite';
 import { runInAction } from 'mobx';
-import { Icon, Tooltip } from 'choerodon-ui';
+import { Icon, Progress, Tooltip } from 'choerodon-ui';
 import PageTitle from '../../../../../components/page-title';
 import { useResourceStore } from '../../../stores';
 
@@ -14,6 +14,7 @@ function ResourceTitle(props) {
     resourceStore,
     treeDs,
     resourceStore: { getSelectedMenu: { key } },
+    intl: { formatMessage },
   } = useResourceStore();
 
   function getCurrent() {
@@ -43,6 +44,16 @@ function ResourceTitle(props) {
         {status === 'failed' && (
           <Tooltip title={errorText || ''}>
             <Icon type="error" className="c7ncd-resource-title-error-icon" />
+          </Tooltip>
+        )}
+        {status === 'operating' && (
+          <Tooltip title={formatMessage({ id: 'operating' })}>
+            <Progress
+              className="c7ncd-resource-title-operating-icon"
+              type="loading"
+              size="small"
+              width={15}
+            />
           </Tooltip>
         )}
       </div>;
