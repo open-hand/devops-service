@@ -3,10 +3,8 @@ package io.choerodon.devops.app.service.impl;
 import io.choerodon.devops.infra.dto.DevopsCertManagerRecordDTO;
 import io.choerodon.devops.infra.enums.ClusterResourceStatus;
 import io.choerodon.devops.infra.mapper.DevopsCertManagerRecordMapper;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.BeanUtils;
@@ -211,11 +209,16 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     }
 
     @Override
-    public List<DevopsClusterResourceDTO> listClusterResource(Long clusterId) {
+    public List<ClusterConfigVO> listClusterResource(Long clusterId) {
+        List<ClusterConfigVO> list = new ArrayList<>();
         // 查询cert-manager 状态
         DevopsClusterResourceDTO devopsClusterResourceDTO = queryCertManager(clusterId);
         DevopsCertManagerRecordDTO devopsCertManagerRecordDTO = devopsCertManagerRecordMapper.selectByPrimaryKey(devopsClusterResourceDTO.getObjectId());
-        return null;
+        ClusterConfigVO clusterConfigVO = new ClusterConfigVO();
+        clusterConfigVO.setStatus(devopsCertManagerRecordDTO.getStatus());
+        clusterConfigVO.setMessage(devopsCertManagerRecordDTO.getError());
+        list.add(clusterConfigVO);
+        return list;
     }
 
 
