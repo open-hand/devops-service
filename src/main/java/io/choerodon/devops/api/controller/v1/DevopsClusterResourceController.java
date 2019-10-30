@@ -38,7 +38,7 @@ public class DevopsClusterResourceController {
             @ApiParam(value = "集群id", required = true)
             @RequestParam(name = "cluster_id", required = true) Long clusterId,
             @RequestBody DevopsClusterResourceDTO devopsClusterResourceDTO) {
-        devopsClusterResourceService.operateCertManager(devopsClusterResourceDTO, clusterId);
+        devopsClusterResourceService.operateCertManager(clusterId,null,null);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
@@ -67,6 +67,16 @@ public class DevopsClusterResourceController {
         return new ResponseEntity<Boolean>(devopsClusterResourceService.deleteCertManager(clusterId), HttpStatus.OK);
     }
 
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "校验cert_manager能否被卸载")
+    @GetMapping("/cert_manager/check")
+    public ResponseEntity<Boolean> checkCertManager(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "集群id", required = true)
+            @RequestParam(name = "cluster_id", required = true) Long clusterId) {
+        return new ResponseEntity<Boolean>(devopsClusterResourceService.checkCertManager(clusterId), HttpStatus.OK);
+    }
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "部署prometheus")
     @PostMapping("/prometheus/deploy")

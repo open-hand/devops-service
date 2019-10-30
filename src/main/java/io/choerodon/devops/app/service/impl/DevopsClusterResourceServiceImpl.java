@@ -1,5 +1,8 @@
 package io.choerodon.devops.app.service.impl;
 
+import io.choerodon.devops.infra.dto.DevopsCertManagerRecordDTO;
+import io.choerodon.devops.infra.enums.ClusterResourceStatus;
+import io.choerodon.devops.infra.mapper.DevopsCertManagerRecordMapper;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -9,6 +12,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
@@ -34,6 +38,11 @@ import io.choerodon.devops.infra.mapper.DevopsPrometheusMapper;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import static org.eclipse.jgit.lib.Constants.MASTER;
 
 /**
@@ -48,6 +57,8 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     private AgentCommandService agentCommandService;
     @Autowired
     private DevopsCertificationMapper devopsCertificationMapper;
+    @Autowired
+    private DevopsCertManagerRecordMapper devopsCertManagerRecordMapper;
     @Autowired
     private DevopsPrometheusMapper devopsPrometheusMapper;
 
@@ -103,21 +114,32 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     }
 
     @Override
-    public void operateCertManager(DevopsClusterResourceDTO devopsClusterResourceDTO, Long clusterId) {
+    public void operateCertManager(Long clusterId,String status,String error) {
+        DevopsClusterResourceDTO devopsClusterResourceDTO = new DevopsClusterResourceDTO();
+        devopsClusterResourceDTO.setType("cert-manager");
+        devopsClusterResourceDTO.setClusterId(clusterId);
         DevopsClusterResourceDTO clusterResourceDTO = devopsClusterResourceMapper.queryByOptions(devopsClusterResourceDTO);
         if (!ObjectUtils.isEmpty(clusterResourceDTO)) {
-            baseUpdate(clusterResourceDTO);
+            DevopsCertManagerRecordDTO devopsCertManagerRecordDTO = devopsCertManagerRecordMapper.selectByPrimaryKey(clusterResourceDTO.getObjectId());
+            devopsCertManagerRecordDTO.setError(error);
+            devopsCertManagerRecordDTO.setStatus(status);
+            devopsCertManagerRecordMapper.updateByPrimaryKeySelective(devopsCertManagerRecordDTO);
         } else {
-            // 新增集群的資源
+            DevopsCertManagerRecordDTO devopsCertManagerRecordDTO = new DevopsCertManagerRecordDTO();
+            devopsCertManagerRecordDTO.setStatus(status);
+            devopsCertManagerRecordDTO.setError(error);
+            if(ObjectUtils.isEmpty(status)){
+                devopsCertManagerRecordDTO.setStatus(ClusterResourceStatus.INSTALLING.getStatus());
+            }
+            devopsCertManagerRecordMapper.insertSelective(devopsCertManagerRecordDTO);
+            // 插入数据
+            devopsClusterResourceDTO.setObjectId(devopsCertManagerRecordDTO.getId());
             devopsClusterResourceDTO.setClusterId(clusterId);
             baseCreate(devopsClusterResourceDTO);
             // 让agent创建cert-mannager
             agentCommandService.createCertManager(clusterId);
-            // 发送消息告知agent,发送创建cert-manager的信息
-            // agentCommandService.getCertManagerStatus(clusterId);
         }
     }
-
     @Override
     public DevopsClusterResourceDTO queryCertManager(Long clusterId) {
         DevopsClusterResourceDTO devopsClusterResourceDTO = new DevopsClusterResourceDTO();
@@ -132,8 +154,10 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         if (!checkCertManager(clusterId)) {
             return false;
         }
-        DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceMapper.queryByClusterIdAndType(clusterId, "cert-mannager");
-        baseUpdate(devopsClusterResourceDTO);
+        DevopsClusterResourceDTO devopsClusterResourceDTO = queryCertManager(clusterId);
+        DevopsCertManagerRecordDTO devopsCertManagerRecordDTO = devopsCertManagerRecordMapper.selectByPrimaryKey(devopsClusterResourceDTO.getObjectId());
+        devopsCertManagerRecordDTO.setStatus(ClusterResourceStatus.UNLOADING.getStatus());
+        devopsCertManagerRecordMapper.updateByPrimaryKey(devopsCertManagerRecordDTO);
         agentCommandService.unloadCertManager(clusterId);
         return true;
     }
@@ -143,17 +167,11 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
                 && date.after(validFrom) && date.before(validUntil);
     }
 
-    /**
-     * 验证cert-manager 管理的证书是否存在启用或者操作状态的
-     *
-     * @param clusterId
-     * @return
-     */
     @Override
-    public Boolean checkCertManager(Long clusterId) {
+    public  Boolean checkCertManager(Long clusterId) {
         List<CertificationDTO> certificationDTOS = devopsCertificationMapper.listClusterCertification(clusterId);
         if (CollectionUtils.isEmpty(certificationDTOS)) {
-            return false;
+            return true;
         }
         Set<Long> ids = new HashSet<>();
         certificationDTOS.forEach(dto -> {
@@ -194,7 +212,23 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
 
     @Override
     public List<DevopsClusterResourceDTO> listClusterResource(Long clusterId) {
+        // 查询cert-manager 状态
+        DevopsClusterResourceDTO devopsClusterResourceDTO = queryCertManager(clusterId);
+        DevopsCertManagerRecordDTO devopsCertManagerRecordDTO = devopsCertManagerRecordMapper.selectByPrimaryKey(devopsClusterResourceDTO.getObjectId());
         return null;
+    }
+
+
+    public void unloadCertManager(Long clusterId){
+        List<CertificationDTO> certificationDTOS = devopsCertificationMapper.listClusterCertification(clusterId);
+        if(!CollectionUtils.isEmpty(certificationDTOS)){
+            certificationDTOS.forEach(v -> {
+                devopsCertificationMapper.deleteByPrimaryKey(v.getId());
+            });
+        }
+        DevopsClusterResourceDTO devopsClusterResourceDTO = queryCertManager(clusterId);
+        devopsCertManagerRecordMapper.deleteByPrimaryKey(devopsClusterResourceDTO.getObjectId());
+        devopsClusterResourceMapper.deleteByPrimaryKey(devopsClusterResourceDTO.getId());
     }
 
     @Override
