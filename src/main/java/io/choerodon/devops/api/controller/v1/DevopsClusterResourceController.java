@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -22,15 +23,15 @@ import java.util.Optional;
  * @since 2019/10/29
  */
 @RestController
-@RequestMapping(value = "/v1/projects/{project_id}/cert_manager")
-public class DevopsCertManagerController {
+@RequestMapping(value = "/v1/projects/{project_id}")
+public class DevopsClusterResourceController {
     @Autowired
     private DevopsClusterResourceService devopsClusterResourceService;
 
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下创建cert_manager")
-    @PostMapping
-    public ResponseEntity install(
+    @PostMapping("/cert_manager/deploy")
+    public ResponseEntity deploy(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群id", required = true)
@@ -41,14 +42,14 @@ public class DevopsCertManagerController {
     }
 
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "项目下查询cert_manager")
+    @ApiOperation(value = "查询组件")
     @GetMapping
-    public ResponseEntity<DevopsClusterResourceDTO> query(
+    public ResponseEntity<List<DevopsClusterResourceDTO>> query(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群id", required = true)
             @RequestParam(name = "cluster_id", required = true) Long clusterId) {
-        return Optional.ofNullable(devopsClusterResourceService.queryCertManager(clusterId))
+        return Optional.ofNullable(devopsClusterResourceService.listClusterResource(clusterId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.cert.manager.insert"));
     }
@@ -56,8 +57,8 @@ public class DevopsCertManagerController {
 
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下卸载cert_manager")
-    @DeleteMapping
-    public ResponseEntity<Boolean> uninstall(
+    @DeleteMapping("/cert_manager/unload")
+    public ResponseEntity<Boolean> unload(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群id", required = true)

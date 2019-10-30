@@ -85,7 +85,7 @@ public class DevopsPrometheusServiceImpl implements DevopsPrometheusService {
                 devopsClusterResourceDTO.setName(devopsClusterDTO.getName());
                 devopsClusterResourceDTO.setCode(devopsClusterDTO.getCode());
                 devopsClusterResourceDTO.setType(TYPE_PROMETHEUS);
-                devopsClusterResourceService.baseCreateOrUpdate(devopsClusterResourceDTO);
+                devopsClusterResourceService.baseCreate(devopsClusterResourceDTO);
             }
 
         }
@@ -101,13 +101,11 @@ public class DevopsPrometheusServiceImpl implements DevopsPrometheusService {
         status = appServiceInstanceDTO.getStatus();
         DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(appServiceInstanceDTO.getCommandId());
 
-        if (appServiceInstanceDTO.getStatus().equals("running")){
-
-
+        if (appServiceInstanceDTO.getStatus().equals("running")) {
             return status = "running";
-        }else {
-        if(ObjectUtils.isEmpty( devopsEnvCommandDTO.getSha())){
-        }
+        } else {
+            if (ObjectUtils.isEmpty(devopsEnvCommandDTO.getSha())) {
+            }
         }
 
         return status;

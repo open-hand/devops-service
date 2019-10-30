@@ -2,6 +2,8 @@ package io.choerodon.devops.app.service;
 
 import io.choerodon.devops.infra.dto.DevopsClusterResourceDTO;
 
+import java.util.List;
+
 /**
  * @author zhaotianxin
  * @since 2019/10/29
@@ -16,10 +18,14 @@ public interface DevopsClusterResourceService {
     DevopsClusterResourceDTO queryCertManager(Long clusterId);
 
     Boolean deleteCertManager(Long clusterId);
-    
+
     DevopsClusterResourceDTO queryByClusterIdAndConfigId(Long clusterId, Long configId);
 
     DevopsClusterResourceDTO queryByClusterIdAndType(Long clusterId, String type);
 
     void delete(Long clusterId, Long configId);
+
+    List<DevopsClusterResourceDTO> listClusterResource(Long clusterId);
+
+    Boolean checkCertManager(Long clusterId);
 }

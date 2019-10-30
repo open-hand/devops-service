@@ -101,6 +101,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
      * @param clusterId
      * @return
      */
+    @Override
     public  Boolean checkCertManager(Long clusterId) {
         List<CertificationDTO> certificationDTOS = devopsCertificationMapper.listClusterCertification(clusterId);
         if (CollectionUtils.isEmpty(certificationDTOS)) {
@@ -149,5 +150,11 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         devopsClusterResourceDTO.setConfigId(configId);
         devopsClusterResourceDTO.setClusterId(clusterId);
         devopsClusterResourceMapper.delete(devopsClusterResourceDTO);
+    }
+
+    @Override
+    public List<DevopsClusterResourceDTO> listClusterResource(Long clusterId) {
+
+        return null;
     }
 }
