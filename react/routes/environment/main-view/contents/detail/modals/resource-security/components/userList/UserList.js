@@ -31,6 +31,7 @@ export default function UserList({ type, dataSource }) {
           trigger="hover"
           placement="top"
           title={realName || ''}
+          key={userId}
         >
           {
             imageUrl
@@ -58,5 +59,9 @@ export default function UserList({ type, dataSource }) {
 
 UserList.propTypes = {
   type: PropTypes.string.isRequired,
-  dataSource: PropTypes.array,
+  dataSource: PropTypes.oneOfType([
+    PropTypes.object,
+    PropTypes.array,
+  ]),
+  
 };
