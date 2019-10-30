@@ -130,4 +130,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env.groovy') {
             column(name: 'is_skip_check_permission', type: 'TINYINT UNSIGNED', defaultValue: '0', remarks: '是否跳过环境权限校验', afterColumn: 'is_failed')
         }
     }
+
+    changeSet(author: 'yzj', id: '2019-10-29-add--column') {
+        addColumn(tableName: 'devops_env') {
+            column(name: 'type', type: 'vachar(10)', defaultValue: 'user', remarks: '判断环境类型是否是user', afterColumn: 'is_failed')
+        }
+    }
 }
