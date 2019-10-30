@@ -240,7 +240,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         DevopsPrometheusDTO devopsPrometheusDTO = prometheusVoToDto(prometheusVo);
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
 
-        DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceService.queryByClusterIdAndType(clusterId, "prometheus");
+        DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceMapper.queryByClusterIdAndType(clusterId, "prometheus");
         if (devopsClusterResourceDTO.getSystemEnvId() != null) {
             AppServiceInstanceDTO releaseForPrometheus = componentReleaseService.createReleaseForPrometheus(devopsPrometheusDTO);
             if (!ObjectUtils.isEmpty(releaseForPrometheus)) {
@@ -263,7 +263,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
 
     @Override
     public ClusterConfigVO queryDeployProess(Long projectId, Long clusterId, Long prometheusId) {
-        DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceService.queryByClusterIdAndConfigId(clusterId, prometheusId);
+        DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceMapper.queryByClusterIdAndConfigId(clusterId, prometheusId);
         AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQuery(devopsClusterResourceDTO.getId());
         DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(appServiceInstanceDTO.getCommandId());
         DevopsEnvPodVO devopsEnvPodVO = new DevopsEnvPodVO();
@@ -274,7 +274,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
 
         ClusterConfigVO clusterConfigVO = new ClusterConfigVO();
         if (ObjectUtils.isEmpty(devopsEnvCommandDTO.getSha())) {
-            clusterConfigVO.setStatus("");
+            clusterConfigVO.setStatus("operating");
         }
         if (appServiceInstanceDTO.getStatus().equals("running")) {
             clusterConfigVO.setStatus("running");
@@ -294,7 +294,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         if (devopsPrometheusDTO == null) {
             return;
         }
-        DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceService.queryByClusterIdAndConfigId(clusterId, prometheusId);
+        DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceMapper.queryByClusterIdAndConfigId(clusterId, prometheusId);
         AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQuery(devopsClusterResourceDTO.getId());
 
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(appServiceInstanceDTO.getEnvId());
@@ -375,7 +375,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
 
     @Override
     public ClusterConfigVO queryPrometheusStatus(Long projectId, Long clusterId, Long prometheusId) {
-        DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceService.queryByClusterIdAndConfigId(clusterId, prometheusId);
+        DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceMapper.queryByClusterIdAndConfigId(clusterId, prometheusId);
         AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQuery(devopsClusterResourceDTO.getId());
         DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(appServiceInstanceDTO.getCommandId());
         ClusterConfigVO clusterConfigVO = new ClusterConfigVO();
@@ -390,6 +390,14 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         return clusterConfigVO;
     }
 
+    @Override
+    public void deleteBycluserIdAndConfigId(Long clusterId, Long configId) {
+        DevopsClusterResourceDTO devopsClusterResourceDTO = new DevopsClusterResourceDTO();
+        devopsClusterResourceDTO.setClusterId(clusterId);
+        devopsClusterResourceDTO.setConfigId(configId);
+        devopsClusterResourceMapper.delete(devopsClusterResourceDTO);
+    }
+
 
     private DevopsPrometheusDTO prometheusVoToDto(PrometheusVo prometheusVo) {
         DevopsPrometheusDTO devopsPrometheusDTO = new DevopsPrometheusDTO();
@@ -400,9 +408,8 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     private void baseDelete(Long prometheusId, Long clusterId) {
         DevopsPrometheusDTO devopsPrometheusDTO = new DevopsPrometheusDTO();
         devopsPrometheusDTO.setId(prometheusId);
-        devopsPrometheusMapper.delete(devopsPrometheusDTO);
-
-        devopsClusterResourceService.delete(clusterId, prometheusId);
+        devopsPrometheusMapper.deleteByPrimaryKey(prometheusId);
+        deleteBycluserIdAndConfigId(clusterId, prometheusId);
     }
 
 }

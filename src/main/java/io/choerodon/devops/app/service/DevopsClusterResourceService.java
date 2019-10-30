@@ -51,4 +51,6 @@ public interface DevopsClusterResourceService {
     DevopsPrometheusDTO baseQuery(Long prometheusId);
 
     ClusterConfigVO queryPrometheusStatus(Long projectId,Long clusterId, Long prometheusId);
+
+    void deleteBycluserIdAndConfigId(Long clusterId, Long configId);
 }
