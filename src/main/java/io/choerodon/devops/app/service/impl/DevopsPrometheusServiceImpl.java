@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
+import io.choerodon.devops.api.vo.ClusterConfigVO;
+import io.choerodon.devops.api.vo.DevopsEnvPodVO;
 import io.choerodon.devops.api.vo.PrometheusVo;
 import io.choerodon.devops.api.vo.kubernetes.C7nHelmRelease;
 import io.choerodon.devops.api.vo.kubernetes.Metadata;
@@ -63,8 +65,13 @@ public class DevopsPrometheusServiceImpl implements DevopsPrometheusService {
 
     @Autowired
     private DevopsClusterService devopsClusterService;
+
+    @Autowired
+    private DevopsEnvPodService devopsEnvPodService;
     private static final String TYPE_PROMETHEUS = "prometheus";
     private static final String PROMETHEUS_PREFIX = "prometheus-";
+    private static final String STATUS_SUCCESS = "success";
+    private static final String STATUS_FAIL = "fail";
 
     @Override
     public PrometheusVo deploy(Long clusterId, PrometheusVo prometheusVo) {
@@ -81,7 +88,7 @@ public class DevopsPrometheusServiceImpl implements DevopsPrometheusService {
 
                 devopsClusterResourceDTO.setClusterId(clusterId);
                 devopsClusterResourceDTO.setConfigId(prometheusVo.getPrometheusId());
-                devopsClusterResourceDTO.setInstanceId(releaseForPrometheus.getId());
+                devopsClusterResourceDTO.setObjectId(releaseForPrometheus.getId());
                 devopsClusterResourceDTO.setName(devopsClusterDTO.getName());
                 devopsClusterResourceDTO.setCode(devopsClusterDTO.getCode());
                 devopsClusterResourceDTO.setType(TYPE_PROMETHEUS);
@@ -94,21 +101,29 @@ public class DevopsPrometheusServiceImpl implements DevopsPrometheusService {
     }
 
     @Override
-    public String queryDeployStatus(Long clusterId, Long prometheusId) {
-        String status = null;
+    public ClusterConfigVO queryDeployProess(Long projectId, Long clusterId, Long prometheusId) {
         DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceService.queryByClusterIdAndConfigId(clusterId, prometheusId);
         AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQuery(devopsClusterResourceDTO.getId());
-        status = appServiceInstanceDTO.getStatus();
         DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(appServiceInstanceDTO.getCommandId());
+        DevopsEnvPodVO devopsEnvPodVO = new DevopsEnvPodVO();
+        devopsEnvPodVO.setClusterId(clusterId);
+        devopsEnvPodVO.setInstanceCode(appServiceInstanceDTO.getCode());
+        devopsEnvPodVO.setName(appServiceInstanceDTO.getCode());
+        devopsEnvPodService.fillContainers(devopsEnvPodVO);
 
-        if (appServiceInstanceDTO.getStatus().equals("running")) {
-            return status = "running";
-        } else {
-            if (ObjectUtils.isEmpty(devopsEnvCommandDTO.getSha())) {
-            }
+        ClusterConfigVO clusterConfigVO = new ClusterConfigVO();
+        if (ObjectUtils.isEmpty(devopsEnvCommandDTO.getSha())) {
+            clusterConfigVO.setStatus("");
         }
-
-        return status;
+        if (appServiceInstanceDTO.getStatus().equals("running")) {
+            clusterConfigVO.setStatus("running");
+        }
+        devopsEnvPodVO.getContainers().stream().forEach(containerVO -> {
+            if (containerVO.getReady()) {
+                clusterConfigVO.setStatus("ready");
+            }
+        });
+        return clusterConfigVO;
     }
 
     @Override
@@ -195,6 +210,21 @@ public class DevopsPrometheusServiceImpl implements DevopsPrometheusService {
     @Override
     public DevopsPrometheusDTO baseQuery(Long id) {
         return devopsPrometheusMapper.selectByPrimaryKey(id);
+    }
+
+    @Override
+    public ClusterConfigVO queryPrometheusStatus(Long clusterId, Long prometheusId) {
+        DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceService.queryByClusterIdAndConfigId(clusterId, prometheusId);
+        AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQuery(devopsClusterResourceDTO.getId());
+        DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(appServiceInstanceDTO.getCommandId());
+        ClusterConfigVO clusterConfigVO = new ClusterConfigVO();
+        if (STATUS_SUCCESS.equals(devopsEnvCommandDTO.getStatus())) {
+            clusterConfigVO.setStatus(STATUS_SUCCESS);
+        } else {
+            clusterConfigVO.setStatus(STATUS_FAIL);
+            clusterConfigVO.setMessage(devopsEnvCommandDTO.getError());
+        }
+        return clusterConfigVO;
     }
 
 

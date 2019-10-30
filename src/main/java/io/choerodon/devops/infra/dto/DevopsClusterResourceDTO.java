@@ -11,9 +11,8 @@ public class DevopsClusterResourceDTO extends BaseDTO {
     private String code;
     private String type;
     private Long clusterId;
-    private Long instanceId;
+    private Long objectId;
     private Long configId;
-    private String status;
     private Long systemEnvId;
     public Long getSystemEnvId() {
         return systemEnvId;
@@ -63,12 +62,12 @@ public class DevopsClusterResourceDTO extends BaseDTO {
         this.clusterId = clusterId;
     }
 
-    public Long getInstanceId() {
-        return instanceId;
+    public Long getObjectId() {
+        return objectId;
     }
 
-    public void setInstanceId(Long instanceId) {
-        this.instanceId = instanceId;
+    public void setObjectId(Long objectId) {
+        this.objectId = objectId;
     }
 
     public Long getConfigId() {
@@ -79,11 +78,4 @@ public class DevopsClusterResourceDTO extends BaseDTO {
         this.configId = configId;
     }
 
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
 }
