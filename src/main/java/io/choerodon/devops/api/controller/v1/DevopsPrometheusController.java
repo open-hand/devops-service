@@ -77,7 +77,7 @@ public class DevopsPrometheusController {
             @ApiParam(value = "集群id", required = true)
             @PathVariable(value = "cluster_id") Long clusterId,
             @ApiParam(value = "prometheusID", required = true)
-            @PathVariable(value = "prometheus_id") Long prometheusId) {
+            @RequestParam(value = "prometheus_id") Long prometheusId) {
         devopsPrometheusService.delete(clusterId, prometheusId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
