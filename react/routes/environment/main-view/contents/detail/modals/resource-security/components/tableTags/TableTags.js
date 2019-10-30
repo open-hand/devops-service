@@ -10,7 +10,3 @@ import './TableTags.scss';
 export default function TableTags({ value }) {
   return (<span className="c7n-devops-tabletags">{value}</span>);
 }
-
-TableTags.propTypes = {
-  name: PropTypes.string,
-};
