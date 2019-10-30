@@ -17,7 +17,6 @@ import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.ClusterConfigVO;
 import io.choerodon.devops.api.vo.PrometheusVo;
 import io.choerodon.devops.app.service.DevopsClusterResourceService;
-import io.choerodon.devops.app.service.DevopsPrometheusService;
 import io.choerodon.devops.infra.dto.DevopsClusterResourceDTO;
 
 /**
@@ -29,8 +28,6 @@ import io.choerodon.devops.infra.dto.DevopsClusterResourceDTO;
 public class DevopsClusterResourceController {
     @Autowired
     private DevopsClusterResourceService devopsClusterResourceService;
-    @Autowired
-    private DevopsPrometheusService devopsPrometheusService;
 
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下创建cert_manager")
@@ -78,7 +75,7 @@ public class DevopsClusterResourceController {
             @RequestParam(name = "cluster_id", required = true) Long clusterId,
             @ApiParam(value = "请求体", required = true)
             @RequestBody PrometheusVo prometheusVo) {
-        return Optional.ofNullable(devopsPrometheusService.deploy(clusterId, prometheusVo))
+        return Optional.ofNullable(devopsClusterResourceService.deploy(clusterId, prometheusVo))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.prometheus.deploy"));
     }
@@ -92,7 +89,7 @@ public class DevopsClusterResourceController {
             @RequestParam(name = "cluster_id", required = true) Long clusterId,
             @ApiParam(value = "请求体", required = true)
             @RequestBody PrometheusVo prometheusVo) {
-        return Optional.ofNullable(devopsPrometheusService.deploy(clusterId, prometheusVo))
+        return Optional.ofNullable(devopsClusterResourceService.deploy(clusterId, prometheusVo))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.prometheus.deploy"));
     }
@@ -105,7 +102,7 @@ public class DevopsClusterResourceController {
             @ApiParam(value = "集群id", required = true)
             @RequestParam(name = "cluster_id", required = true) Long clusterId,
             @RequestParam(name = "prometheus_id", required = true) Long prometheusId) {
-        return Optional.ofNullable(devopsPrometheusService.queryDeployProess(projectId, clusterId, prometheusId))
+        return Optional.ofNullable(devopsClusterResourceService.queryDeployProess(projectId, clusterId, prometheusId))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.prometheus.deploy"));
     }
@@ -118,7 +115,7 @@ public class DevopsClusterResourceController {
             @RequestParam(name = "cluster_id", required = true) Long clusterId,
             @ApiParam(value = "prometheusID", required = true)
             @RequestParam(name = "prometheus_id", required = true) Long prometheusId) {
-        devopsPrometheusService.delete(clusterId, prometheusId);
+        devopsClusterResourceService.delete(clusterId, prometheusId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 

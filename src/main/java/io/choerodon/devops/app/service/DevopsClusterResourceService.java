@@ -1,6 +1,9 @@
 package io.choerodon.devops.app.service;
 
+import io.choerodon.devops.api.vo.ClusterConfigVO;
+import io.choerodon.devops.api.vo.PrometheusVo;
 import io.choerodon.devops.infra.dto.DevopsClusterResourceDTO;
+import io.choerodon.devops.infra.dto.DevopsPrometheusDTO;
 
 import java.util.List;
 
@@ -28,4 +31,12 @@ public interface DevopsClusterResourceService {
     List<DevopsClusterResourceDTO> listClusterResource(Long clusterId);
 
     Boolean checkCertManager(Long clusterId);
+
+    PrometheusVo deploy(Long clusterId, PrometheusVo prometheusVo);
+
+    ClusterConfigVO queryDeployProess(Long projectId, Long clusterId, Long prometheusId);
+
+    DevopsPrometheusDTO baseQuery(Long prometheusId);
+
+    ClusterConfigVO queryPrometheusStatus(Long clusterId, Long prometheusId);
 }
