@@ -1,8 +1,8 @@
 package io.choerodon.devops.infra.dto;
 
-import io.choerodon.mybatis.entity.BaseDTO;
-
 import javax.persistence.Table;
+
+import io.choerodon.mybatis.entity.BaseDTO;
 
 @Table(name = "devops_cluster_resource")
 public class DevopsClusterResourceDTO extends BaseDTO {
@@ -14,6 +14,7 @@ public class DevopsClusterResourceDTO extends BaseDTO {
     private Long objectId;
     private Long configId;
     private Long systemEnvId;
+
     public Long getSystemEnvId() {
         return systemEnvId;
     }
