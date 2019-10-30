@@ -160,10 +160,10 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 AppServiceInstanceInfoVO.class);
         List<Long> updatedEnv = clusterConnectionHandler.getUpdatedClusterList();
         pageInfo.getList().forEach(appServiceInstanceInfoVO -> {
-            AppServiceDTO appServiceDTO = applicationService.baseQuery(appServiceInstanceInfoVO.getAppServiceId());
-            appServiceInstanceInfoVO.setAppServiceType(applicationService.checkAppServiceType(projectId,appServiceDTO));
-            appServiceInstanceInfoVO.setConnect(updatedEnv.contains(appServiceInstanceInfoVO.getClusterId()));
-               }
+                    AppServiceDTO appServiceDTO = applicationService.baseQuery(appServiceInstanceInfoVO.getAppServiceId());
+                    appServiceInstanceInfoVO.setAppServiceType(applicationService.checkAppServiceType(projectId, appServiceDTO));
+                    appServiceInstanceInfoVO.setConnect(updatedEnv.contains(appServiceInstanceInfoVO.getClusterId()));
+                }
         );
         return pageInfo;
     }
@@ -637,7 +637,15 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             //在gitops库处理instance文件
             ResourceConvertToYamlHandler<C7nHelmRelease> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
             resourceConvertToYamlHandler.setType(getC7NHelmRelease(
-                    instanceSagaPayload.getAppServiceDeployVO().getInstanceName(), instanceSagaPayload.getAppServiceVersionDTO().getRepository(), instanceSagaPayload.getCommandId(), instanceSagaPayload.getApplicationDTO().getCode(), instanceSagaPayload.getAppServiceVersionDTO().getVersion(), instanceSagaPayload.getAppServiceDeployVO().getValues(), instanceSagaPayload.getAppServiceDeployVO().getAppServiceVersionId(), instanceSagaPayload.getSecretCode()));
+                    instanceSagaPayload.getAppServiceDeployVO().getInstanceName(),
+                    instanceSagaPayload.getAppServiceVersionDTO().getRepository(),
+                    instanceSagaPayload.getCommandId(),
+                    instanceSagaPayload.getApplicationDTO().getCode(),
+                    instanceSagaPayload.getAppServiceVersionDTO().getVersion(),
+                    instanceSagaPayload.getAppServiceDeployVO().getValues(),
+                    instanceSagaPayload.getAppServiceDeployVO().getAppServiceVersionId(),
+                    instanceSagaPayload.getSecretCode(),
+                    instanceSagaPayload.getDevopsEnvironmentDTO()));
 
             resourceConvertToYamlHandler.operationEnvGitlabFile(
                     RELEASE_PREFIX + instanceSagaPayload.getAppServiceDeployVO().getInstanceName(),
@@ -1258,7 +1266,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
     private C7nHelmRelease getC7NHelmRelease(String code, String repository, Integer commandId, String appServiceCode,
                                              String version, String deployValue,
-                                             Long deployVersionId, String secretName) {
+                                             Long deployVersionId, String secretName,
+                                             DevopsEnvironmentDTO devopsEnvironmentDTO) {
         C7nHelmRelease c7nHelmRelease = new C7nHelmRelease();
         c7nHelmRelease.getMetadata().setName(code);
         c7nHelmRelease.getSpec().setRepoUrl(repository);
@@ -1268,9 +1277,13 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         if (secretName != null) {
             c7nHelmRelease.getSpec().setImagePullSecrets(Arrays.asList(new ImagePullSecret(secretName)));
         }
+
+        // 如果是组件的实例进行部署
+        String versionValue = EnvironmentType.SYSTEM.getValue().equals(devopsEnvironmentDTO.getType()) ?
+                ComponmentConfigUtil.getComponmentVersion(appServiceCode).getValues() :
+                appServiceVersionService.baseQueryValue(deployVersionId);
         c7nHelmRelease.getSpec().setValues(
-                getReplaceResult(appServiceVersionService.baseQueryValue(deployVersionId),
-                        deployValue).getDeltaYaml().trim());
+                getReplaceResult(versionValue, deployValue).getDeltaYaml().trim());
         return c7nHelmRelease;
     }
 
@@ -1331,7 +1344,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         if (appServiceVersionDTO.getHarborConfigId() != null) {
             devopsConfigDTO = devopsConfigService.baseQuery(appServiceVersionDTO.getHarborConfigId());
         } else {
-            devopsConfigDTO = devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, HARBOR,AUTHTYPE);
+            devopsConfigDTO = devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, HARBOR, AUTHTYPE);
         }
         if (devopsConfigDTO != null) {
             ConfigVO configVO = gson.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class);

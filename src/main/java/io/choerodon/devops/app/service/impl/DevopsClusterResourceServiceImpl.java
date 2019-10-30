@@ -238,7 +238,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
 
         DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceMapper.queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
         if (devopsClusterResourceDTO.getSystemEnvId() != null) {
-            AppServiceInstanceDTO releaseForPrometheus = componentReleaseService.createReleaseForPrometheus(devopsPrometheusDTO);
+            AppServiceInstanceDTO releaseForPrometheus = componentReleaseService.createReleaseForPrometheus(devopsClusterResourceDTO.getSystemEnvId(), devopsPrometheusDTO);
             if (!ObjectUtils.isEmpty(releaseForPrometheus)) {
 
                 if (ObjectUtils.isEmpty(devopsPrometheusDTO.getId())) {
