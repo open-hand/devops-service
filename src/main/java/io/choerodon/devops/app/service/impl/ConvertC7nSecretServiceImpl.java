@@ -26,6 +26,7 @@ public class ConvertC7nSecretServiceImpl extends ConvertK8sObjectService<V1Secre
     private DevopsEnvFileResourceService devopsEnvFileResourceService;
 
     public ConvertC7nSecretServiceImpl() {
+        super(V1Secret.class);
         this.devopsSecretService = ApplicationContextHelper.getSpringFactory().getBean(DevopsSecretService.class);
         this.devopsEnvFileResourceService = ApplicationContextHelper.getSpringFactory()
                 .getBean(DevopsEnvFileResourceService.class);

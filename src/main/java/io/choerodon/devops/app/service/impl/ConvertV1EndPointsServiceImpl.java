@@ -11,6 +11,9 @@ import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.devops.infra.enums.GitOpsObjectError;
 
 public class ConvertV1EndPointsServiceImpl extends ConvertK8sObjectService<V1Endpoints> {
+    public ConvertV1EndPointsServiceImpl() {
+        super(V1Endpoints.class);
+    }
 
     @Override
     public void checkParameters(V1Endpoints v1Endpoints, Map<String, String> objectPath) {

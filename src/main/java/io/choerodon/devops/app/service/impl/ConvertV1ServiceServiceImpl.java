@@ -21,6 +21,7 @@ public class ConvertV1ServiceServiceImpl extends ConvertK8sObjectService<V1Servi
     private DevopsEnvFileResourceService devopsEnvFileResourceService;
 
     public ConvertV1ServiceServiceImpl() {
+        super(V1Service.class);
         this.devopsServiceService = ApplicationContextHelper.getSpringFactory().getBean(DevopsServiceService.class);
         this.devopsEnvFileResourceService = ApplicationContextHelper.getSpringFactory().getBean(DevopsEnvFileResourceService.class);
     }

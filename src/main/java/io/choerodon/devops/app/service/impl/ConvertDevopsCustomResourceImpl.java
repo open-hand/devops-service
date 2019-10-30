@@ -23,6 +23,7 @@ public class ConvertDevopsCustomResourceImpl extends ConvertK8sObjectService<Dev
     private DevopsEnvFileResourceService devopsEnvFileResourceService;
 
     public ConvertDevopsCustomResourceImpl() {
+        super(DevopsCustomizeResourceDTO.class);
         this.devopsCustomizeResourceService = ApplicationContextHelper.getSpringFactory().getBean(DevopsCustomizeResourceService.class);
         this.devopsEnvFileResourceService = ApplicationContextHelper.getSpringFactory().getBean(DevopsEnvFileResourceService.class);
     }

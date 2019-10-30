@@ -20,6 +20,7 @@ public class ConvertC7nHelmReleaseServiceImpl extends ConvertK8sObjectService<C7
     private DevopsEnvFileResourceService devopsEnvFileResourceService;
 
     public ConvertC7nHelmReleaseServiceImpl() {
+        super(C7nHelmRelease.class);
         this.appServiceInstanceService = ApplicationContextHelper.getSpringFactory().getBean(AppServiceInstanceService.class);
         this.devopsEnvFileResourceService = ApplicationContextHelper.getSpringFactory().getBean(DevopsEnvFileResourceService.class);
     }

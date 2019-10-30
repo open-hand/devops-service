@@ -22,6 +22,7 @@ public class ConvertV1beta1IngressServiceImpl extends ConvertK8sObjectService<V1
     private DevopsEnvFileResourceService devopsEnvFileResourceService;
 
     public ConvertV1beta1IngressServiceImpl() {
+        super(V1beta1Ingress.class);
         this.devopsIngressService = ApplicationContextHelper.getSpringFactory().getBean(DevopsIngressService.class);
         this.devopsEnvFileResourceService = ApplicationContextHelper.getSpringFactory().getBean(DevopsEnvFileResourceService.class);
     }
