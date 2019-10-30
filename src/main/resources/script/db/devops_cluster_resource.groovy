@@ -18,4 +18,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cluster_resource.groovy') {
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
+    changeSet(author: 'zhaotianxin', id: '2019-10-30-add-column') {
+        addColumn(tableName: 'devops_cluster_resource') {
+            column(name: 'status', type: 'VARCHAR(32)', remarks: 'command id', afterColumn: 'object_version_number')
+        }
+    }
 }

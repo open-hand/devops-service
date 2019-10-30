@@ -13,8 +13,8 @@ public class DevopsClusterResourceDTO extends BaseDTO {
     private Long clusterId;
     private Long instanceId;
     private Long configId;
-    private Long systemEnvId;
     private String status;
+    private Long systemEnvId;
     public Long getSystemEnvId() {
         return systemEnvId;
     }

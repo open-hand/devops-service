@@ -51,4 +51,5 @@ public interface AgentCommandService {
 
     void deletePod(DevopsEnvPodDTO devopsEnvPodDTO);
 
+    void unloadCertManager(Long clusterId);
 }

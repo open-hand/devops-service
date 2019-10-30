@@ -36,6 +36,7 @@ import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.AppServiceMapper;
 import io.choerodon.devops.infra.util.*;
+import org.springframework.util.ObjectUtils;
 
 /**
  * Created by Zenger on 2018/4/17.
@@ -128,7 +129,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     private AgentCommandService agentCommandService;
     @Autowired
     private AppServiceMapper appServiceMapper;
-
+    @Autowired
+    private DevopsClusterResourceService devopsClusterResourceService;
 
     public void handlerUpdatePodMessage(String key, String msg, Long envId) {
         V1Pod v1Pod = json.deserialize(msg, V1Pod.class);
@@ -1468,8 +1470,11 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
     @Override
     public void getCertManagerInfo(String payloadMsg, Long clusterId) {
-        if (payloadMsg == null) {
-            agentCommandService.createCertManager(clusterId);
+        logger.info(payloadMsg);
+        if(payloadMsg != null){
+            DevopsClusterResourceDTO devopsClusterResourceDTO = gson.fromJson(payloadMsg, DevopsClusterResourceDTO.class);
+            devopsClusterResourceDTO.setClusterId(clusterId);
+            devopsClusterResourceService.operateCertManager(devopsClusterResourceDTO,clusterId);
         }
     }
 
@@ -1639,6 +1644,17 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             });
             agentPodService.handleRealTimePodData(podMetricsRedisInfoVOS);
         }
+    }
+
+    @Override
+    public void getCertManagerStatus(String payload, Long clusterId) {
+        logger.info(payload);
+        if(!ObjectUtils.isEmpty(payload)){
+            DevopsClusterResourceDTO devopsClusterResourceDTO = gson.fromJson(payload, DevopsClusterResourceDTO.class);
+            devopsClusterResourceDTO.setClusterId(clusterId);
+            devopsClusterResourceService.operateCertManager(devopsClusterResourceDTO,clusterId);
+        }
+
     }
 
 
