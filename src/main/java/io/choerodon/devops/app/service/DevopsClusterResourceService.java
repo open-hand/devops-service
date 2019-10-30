@@ -7,10 +7,16 @@ import io.choerodon.devops.infra.dto.DevopsClusterResourceDTO;
  * @since 2019/10/29
  */
 public interface DevopsClusterResourceService {
-    void baseCreateOrUpdate(DevopsClusterResourceDTO devopsClusterResourceDTO);
+    void baseCreate(DevopsClusterResourceDTO devopsClusterResourceDTO);
 
-    void create(DevopsClusterResourceDTO devopsClusterResourceDTO,Long clusterId);
+    void baseUpdate(DevopsClusterResourceDTO devopsClusterResourceDTO);
 
+    void operateCertManager(DevopsClusterResourceDTO devopsClusterResourceDTO, Long clusterId);
+
+    DevopsClusterResourceDTO queryCertManager(Long clusterId);
+
+    Boolean deleteCertManager(Long clusterId);
+    
     DevopsClusterResourceDTO queryByClusterIdAndConfigId(Long clusterId, Long configId);
 
     DevopsClusterResourceDTO queryByClusterIdAndType(Long clusterId, String type);

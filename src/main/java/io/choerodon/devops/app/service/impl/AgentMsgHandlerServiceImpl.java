@@ -36,6 +36,7 @@ import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.AppServiceMapper;
 import io.choerodon.devops.infra.util.*;
+import org.springframework.util.ObjectUtils;
 
 /**
  * Created by Zenger on 2018/4/17.
@@ -1473,7 +1474,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         if(payloadMsg != null){
             DevopsClusterResourceDTO devopsClusterResourceDTO = gson.fromJson(payloadMsg, DevopsClusterResourceDTO.class);
             devopsClusterResourceDTO.setClusterId(clusterId);
-            devopsClusterResourceService.baseCreateOrUpdate(devopsClusterResourceDTO);
+            devopsClusterResourceService.operateCertManager(devopsClusterResourceDTO,clusterId);
         }
     }
 
@@ -1646,7 +1647,13 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     }
 
     @Override
-    public void getCertManagerStatus(String key, String payload, Long clusterId) {
+    public void getCertManagerStatus(String payload, Long clusterId) {
+        logger.info(payload);
+        if(!ObjectUtils.isEmpty(payload)){
+            DevopsClusterResourceDTO devopsClusterResourceDTO = gson.fromJson(payload, DevopsClusterResourceDTO.class);
+            devopsClusterResourceDTO.setClusterId(clusterId);
+            devopsClusterResourceService.operateCertManager(devopsClusterResourceDTO,clusterId);
+        }
 
     }
 

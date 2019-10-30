@@ -10,4 +10,25 @@
        select * from devops_cluster_resource
        where cluster_id = #{clusterId} AND config_id = #{configId}
     </select>
+
+    <select id="queryByOptions" resultType="io.choerodon.devops.infra.dto.DevopsClusterResourceDTO">
+      select * from devops_cluster_resource
+      <where>
+          <if test="clusterResource.id != null and clusterResource.id != ''">
+           and id = #{clusterResource.id}
+          </if>
+          <if test="clusterResource.name != null and clusterResource.name != ''">
+              and name = #{clusterResource.name}
+          </if>
+          <if test="clusterResource.code != null and clusterResource.code != ''">
+              and code = #{clusterResource.code}
+          </if>
+          <if test="clusterResource.type != null and clusterResource.type != ''">
+              and type = #{clusterResource.type}
+          </if>
+          <if test="clusterResource.type != null and clusterResource.type != ''">
+              and cluster_id = #{clusterResource.clusterId}
+          </if>
+      </where>
+    </select>
 </mapper>

@@ -398,12 +398,12 @@ public class AgentCommandServiceImpl implements AgentCommandService {
     }
 
     @Override
-    public void getCertManagerStatus(Long clusterId) {
+    public void unloadCertManager(Long clusterId) {
         AgentMsgVO msg = new AgentMsgVO();
         msg.setKey(String.format(KEY_FORMAT,
                 clusterId,
                 "choerodon-cert-manager"));
-        msg.setType(HelmType.GET_CERT_MANAGER_STATUS.toValue());
+        msg.setType(HelmType.UNLOAD_CERT_MANAGER.toValue());
         sendToWebsocket(clusterId, msg);
     }
 }
