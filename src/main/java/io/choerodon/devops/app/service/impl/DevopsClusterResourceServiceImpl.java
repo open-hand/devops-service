@@ -1,9 +1,15 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
 import io.choerodon.core.exception.CommonException;
@@ -15,7 +21,6 @@ import io.choerodon.devops.api.vo.kubernetes.Metadata;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.CertificationStatus;
-import io.choerodon.devops.infra.enums.ClusterResourceStatus;
 import io.choerodon.devops.infra.enums.CommandStatus;
 import io.choerodon.devops.infra.enums.CommandType;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
@@ -26,17 +31,6 @@ import io.choerodon.devops.infra.mapper.DevopsClusterResourceMapper;
 import io.choerodon.devops.infra.mapper.DevopsPrometheusMapper;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
-
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.eclipse.jgit.lib.Constants.MASTER;
 
@@ -91,6 +85,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     private static final String PROMETHEUS_PREFIX = "prometheus-";
     private static final String STATUS_SUCCESS = "success";
     private static final String STATUS_FAIL = "fail";
+
     @Override
     public void baseCreate(DevopsClusterResourceDTO devopsClusterResourceDTO) {
         if (devopsClusterResourceMapper.insertSelective(devopsClusterResourceDTO) != 1) {
@@ -120,6 +115,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
             // agentCommandService.getCertManagerStatus(clusterId);
         }
     }
+
     @Override
     public DevopsClusterResourceDTO queryCertManager(Long clusterId) {
         DevopsClusterResourceDTO devopsClusterResourceDTO = new DevopsClusterResourceDTO();
@@ -152,7 +148,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
      * @return
      */
     @Override
-    public  Boolean checkCertManager(Long clusterId) {
+    public Boolean checkCertManager(Long clusterId) {
         List<CertificationDTO> certificationDTOS = devopsCertificationMapper.listClusterCertification(clusterId);
         if (CollectionUtils.isEmpty(certificationDTOS)) {
             return false;
