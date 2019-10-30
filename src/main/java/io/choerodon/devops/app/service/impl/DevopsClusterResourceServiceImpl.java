@@ -280,7 +280,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
             clusterConfigVO.setStatus("running");
         }
         List<ContainerVO> collect = devopsEnvPodVO.getContainers().stream().filter(pod -> pod.getReady() == true).collect(Collectors.toList());
-        if (collect.size()!=2){
+        if (collect.size() != 2) {
             clusterConfigVO.setStatus("ready");
         }
 
@@ -374,12 +374,14 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     }
 
     @Override
-    public ClusterConfigVO queryPrometheusStatus(Long clusterId, Long prometheusId) {
+    public ClusterConfigVO queryPrometheusStatus(Long projectId, Long clusterId, Long prometheusId) {
         DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceService.queryByClusterIdAndConfigId(clusterId, prometheusId);
         AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQuery(devopsClusterResourceDTO.getId());
         DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(appServiceInstanceDTO.getCommandId());
         ClusterConfigVO clusterConfigVO = new ClusterConfigVO();
-        if (STATUS_SUCCESS.equals(devopsEnvCommandDTO.getStatus())) {
+        ClusterConfigVO clusterConfig = queryDeployProess(projectId, clusterId, prometheusId);
+
+        if ("ready".equals(clusterConfig.getStatus())) {
             clusterConfigVO.setStatus(STATUS_SUCCESS);
         } else {
             clusterConfigVO.setStatus(STATUS_FAIL);
@@ -402,4 +404,5 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
 
         devopsClusterResourceService.delete(clusterId, prometheusId);
     }
+
 }
