@@ -23,6 +23,7 @@ public class ConvertC7nCertificationServiceImpl extends ConvertK8sObjectService<
     private DevopsEnvFileResourceService devopsEnvFileResourceService;
 
     public ConvertC7nCertificationServiceImpl() {
+        super(C7nCertification.class);
         this.certificationService = ApplicationContextHelper.getSpringFactory().getBean(CertificationService.class);
         this.devopsEnvFileResourceService = ApplicationContextHelper.getSpringFactory().getBean(DevopsEnvFileResourceService.class);
     }

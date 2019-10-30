@@ -20,6 +20,7 @@ public class ConvertV1ConfigMapServiceImpl extends ConvertK8sObjectService<V1Con
     private DevopsEnvFileResourceService devopsEnvFileResourceService;
 
     public ConvertV1ConfigMapServiceImpl() {
+        super(V1ConfigMap.class);
         this.devopsConfigMapService = ApplicationContextHelper.getSpringFactory().getBean(DevopsConfigMapService.class);
         this.devopsEnvFileResourceService = ApplicationContextHelper.getSpringFactory().getBean(DevopsEnvFileResourceService.class);
     }
