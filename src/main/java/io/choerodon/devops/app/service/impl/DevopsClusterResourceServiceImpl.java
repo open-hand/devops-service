@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,7 @@ import org.springframework.util.ObjectUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.ClusterConfigVO;
+import io.choerodon.devops.api.vo.ContainerVO;
 import io.choerodon.devops.api.vo.DevopsEnvPodVO;
 import io.choerodon.devops.api.vo.PrometheusVo;
 import io.choerodon.devops.api.vo.kubernetes.C7nHelmRelease;
@@ -240,11 +242,11 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         if (appServiceInstanceDTO.getStatus().equals("running")) {
             clusterConfigVO.setStatus("running");
         }
-        devopsEnvPodVO.getContainers().stream().forEach(containerVO -> {
-            if (containerVO.getReady()) {
-                clusterConfigVO.setStatus("ready");
-            }
-        });
+        List<ContainerVO> collect = devopsEnvPodVO.getContainers().stream().filter(pod -> pod.getReady() == true).collect(Collectors.toList());
+        if (collect.size()!=2){
+            clusterConfigVO.setStatus("ready");
+        }
+
         return clusterConfigVO;
     }
 
