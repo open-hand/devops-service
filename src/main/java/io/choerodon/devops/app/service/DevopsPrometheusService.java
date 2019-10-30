@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service;
 
+import io.choerodon.devops.api.vo.ClusterConfigVO;
 import io.choerodon.devops.api.vo.PrometheusVo;
 import io.choerodon.devops.infra.dto.DevopsPrometheusDTO;
 
@@ -11,9 +12,11 @@ import io.choerodon.devops.infra.dto.DevopsPrometheusDTO;
 public interface DevopsPrometheusService {
     PrometheusVo deploy(Long clusterId, PrometheusVo prometheusVo);
 
-    String queryDeployStatus(Long clusterId, Long prometheusId);
+    ClusterConfigVO queryDeployProess(Long projectId, Long clusterId, Long prometheusId);
 
     void delete(Long prometheusId,Long clusterId);
 
     DevopsPrometheusDTO baseQuery(Long prometheusId);
+
+    ClusterConfigVO queryPrometheusStatus(Long clusterId, Long prometheusId);
 }

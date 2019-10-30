@@ -28,59 +28,6 @@ public class DevopsPrometheusController {
     @Autowired
     private DevopsPrometheusService devopsPrometheusService;
 
-    @Permission(type = ResourceType.PROJECT,
-            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "部署prometheus")
-    @PostMapping
-    private ResponseEntity<PrometheusVo> deploy(
-            @ApiParam(value = "集群id", required = true)
-            @PathVariable(value = "cluster_id") Long clusterId,
-            @ApiParam(value = "请求体", required = true)
-            @RequestBody PrometheusVo prometheusVo) {
-        return Optional.ofNullable(devopsPrometheusService.deploy(clusterId, prometheusVo))
-                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.prometheus.deploy"));
-    }
-
-
-    @Permission(type = ResourceType.PROJECT,
-            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "更新prometheus")
-    @PutMapping
-    private ResponseEntity<PrometheusVo> update(
-            @ApiParam(value = "集群id", required = true)
-            @PathVariable(value = "cluster_id") Long clusterId,
-            @ApiParam(value = "请求体", required = true)
-            @RequestBody PrometheusVo prometheusVo) {
-        return Optional.ofNullable(devopsPrometheusService.deploy(clusterId, prometheusVo))
-                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.prometheus.deploy"));
-    }
-
-    @Permission(type = ResourceType.PROJECT,
-            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "查询prometheus部署状态")
-    @GetMapping
-    private ResponseEntity<String> queryDeployStatus(
-            @ApiParam(value = "集群id", required = true)
-            @PathVariable(value = "cluster_id") Long clusterId,
-            @PathVariable(value = "prometheus_id") Long prometheus_id) {
-        return Optional.ofNullable(devopsPrometheusService.queryDeployStatus(clusterId, prometheus_id))
-                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.prometheus.deploy"));
-    }
-
-    @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
-            InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "卸载prometheus")
-    public ResponseEntity delete(
-            @ApiParam(value = "集群id", required = true)
-            @PathVariable(value = "cluster_id") Long clusterId,
-            @ApiParam(value = "prometheusID", required = true)
-            @RequestParam(value = "prometheus_id") Long prometheusId) {
-        devopsPrometheusService.delete(clusterId, prometheusId);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
 
 
 }

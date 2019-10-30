@@ -56,12 +56,10 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     public void operateCertManager(DevopsClusterResourceDTO devopsClusterResourceDTO, Long clusterId) {
         DevopsClusterResourceDTO clusterResourceDTO = devopsClusterResourceMapper.queryByOptions(devopsClusterResourceDTO);
         if (!ObjectUtils.isEmpty(clusterResourceDTO)) {
-            clusterResourceDTO.setStatus(devopsClusterResourceDTO.getStatus());
             baseUpdate(clusterResourceDTO);
         } else {
             // 新增集群的資源
             devopsClusterResourceDTO.setClusterId(clusterId);
-            devopsClusterResourceDTO.setStatus(ClusterResourceStatus.INSTALLING.getStatus());
             baseCreate(devopsClusterResourceDTO);
             // 让agent创建cert-mannager
             agentCommandService.createCertManager(clusterId);
@@ -84,7 +82,6 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
             return false;
         }
         DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceMapper.queryByClusterIdAndType(clusterId, "cert-mannager");
-        devopsClusterResourceDTO.setStatus(ClusterResourceStatus.UNLOADING.getStatus());
         baseUpdate(devopsClusterResourceDTO);
         agentCommandService.unloadCertManager(clusterId);
         return true;
