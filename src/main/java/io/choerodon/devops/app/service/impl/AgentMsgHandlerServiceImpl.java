@@ -1472,9 +1472,9 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     public void getCertManagerInfo(String payloadMsg, Long clusterId) {
         logger.info(payloadMsg);
         if(payloadMsg != null){
-            DevopsClusterResourceDTO devopsClusterResourceDTO = gson.fromJson(payloadMsg, DevopsClusterResourceDTO.class);
-            devopsClusterResourceDTO.setClusterId(clusterId);
-            devopsClusterResourceService.operateCertManager(devopsClusterResourceDTO,clusterId);
+            String error = "";
+            String status = "";
+            devopsClusterResourceService.operateCertManager(clusterId,status,error);
         }
     }
 
@@ -1650,9 +1650,9 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     public void getCertManagerStatus(String payload, Long clusterId) {
         logger.info(payload);
         if(!ObjectUtils.isEmpty(payload)){
-            DevopsClusterResourceDTO devopsClusterResourceDTO = gson.fromJson(payload, DevopsClusterResourceDTO.class);
-            devopsClusterResourceDTO.setClusterId(clusterId);
-            devopsClusterResourceService.operateCertManager(devopsClusterResourceDTO,clusterId);
+            String status = "";
+            String error = "";
+            devopsClusterResourceService.operateCertManager(clusterId,status,error);
         }
 
     }

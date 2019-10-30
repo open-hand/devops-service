@@ -16,7 +16,13 @@ public interface DevopsClusterResourceService {
 
     void baseUpdate(DevopsClusterResourceDTO devopsClusterResourceDTO);
 
-    void operateCertManager(DevopsClusterResourceDTO devopsClusterResourceDTO, Long clusterId);
+    /**
+     * 创建或者更新 cert-manager
+     * @param clusterId
+     * @param status
+     * @param error
+     */
+    void operateCertManager(Long clusterId,String status,String error);
 
     DevopsClusterResourceDTO queryCertManager(Long clusterId);
 
@@ -30,6 +36,12 @@ public interface DevopsClusterResourceService {
 
     List<DevopsClusterResourceDTO> listClusterResource(Long clusterId);
 
+    /**
+     * 验证cert-manager 管理的证书是否存在启用或者操作状态的
+     *
+     * @param clusterId
+     * @return
+     */
     Boolean checkCertManager(Long clusterId);
 
     PrometheusVo deploy(Long clusterId, PrometheusVo prometheusVo);
