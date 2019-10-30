@@ -77,10 +77,10 @@ public class DevopsPrometheusServiceImpl implements DevopsPrometheusService {
             AppServiceInstanceDTO releaseForPrometheus = componentReleaseService.createReleaseForPrometheus(devopsPrometheusDTO);
             if (!ObjectUtils.isEmpty(releaseForPrometheus)) {
                 devopsPrometheusMapper.insertSelective(devopsPrometheusDTO);
-                prometheusVo.setId(devopsPrometheusDTO.getId());
+                prometheusVo.setPrometheusId(devopsPrometheusDTO.getId());
 
                 devopsClusterResourceDTO.setClusterId(clusterId);
-                devopsClusterResourceDTO.setConfigId(prometheusVo.getId());
+                devopsClusterResourceDTO.setConfigId(prometheusVo.getPrometheusId());
                 devopsClusterResourceDTO.setInstanceId(releaseForPrometheus.getId());
                 devopsClusterResourceDTO.setName(devopsClusterDTO.getName());
                 devopsClusterResourceDTO.setCode(devopsClusterDTO.getCode());
@@ -100,11 +100,14 @@ public class DevopsPrometheusServiceImpl implements DevopsPrometheusService {
         AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQuery(devopsClusterResourceDTO.getId());
         status = appServiceInstanceDTO.getStatus();
         DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(appServiceInstanceDTO.getCommandId());
-        if (devopsEnvCommandDTO.getSha() == null) {
 
-            //todo
-        } else {
+        if (appServiceInstanceDTO.getStatus().equals("running")){
 
+
+            return status = "running";
+        }else {
+        if(ObjectUtils.isEmpty( devopsEnvCommandDTO.getSha())){
+        }
         }
 
         return status;
