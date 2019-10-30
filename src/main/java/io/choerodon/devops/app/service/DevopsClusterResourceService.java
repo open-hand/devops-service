@@ -46,11 +46,11 @@ public interface DevopsClusterResourceService {
 
     PrometheusVo deploy(Long clusterId, PrometheusVo prometheusVo);
 
-    ClusterConfigVO queryDeployProess(Long projectId, Long clusterId, Long prometheusId);
+    ClusterConfigVO queryDeployProcess(Long projectId, Long clusterId, Long prometheusId);
 
     DevopsPrometheusDTO baseQuery(Long prometheusId);
 
     ClusterConfigVO queryPrometheusStatus(Long projectId,Long clusterId, Long prometheusId);
 
-    void deleteBycluserIdAndConfigId(Long clusterId, Long configId);
+
 }

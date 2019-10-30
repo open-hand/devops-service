@@ -112,7 +112,7 @@ public class DevopsClusterResourceController {
             @ApiParam(value = "集群id", required = true)
             @RequestParam(name = "cluster_id", required = true) Long clusterId,
             @RequestParam(name = "prometheus_id", required = true) Long prometheusId) {
-        return Optional.ofNullable(devopsClusterResourceService.queryDeployProess(projectId, clusterId, prometheusId))
+        return Optional.ofNullable(devopsClusterResourceService.queryDeployProcess(projectId, clusterId, prometheusId))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.prometheus.deploy"));
     }
