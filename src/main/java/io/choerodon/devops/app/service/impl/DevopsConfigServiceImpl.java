@@ -113,7 +113,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                             projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
                             organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
                         }
-                        harborService.createHarbor(harborClient, projectDTO.getId(), organizationDTO.getCode() + "-" + projectDTO.getCode(), false,devopsConfigVO.getHarborPrivate());
+                        harborService.createHarbor(harborClient, projectDTO.getId(), organizationDTO.getCode() + "-" + projectDTO.getCode(), false, devopsConfigVO.getHarborPrivate());
                     }
                 }
                 //根据配置所在的资源层级，查询出数据库中是否存在
@@ -242,26 +242,31 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                         if (users.raw().code() != 200) {
                             throw new CommonException(users.errorBody().string());
                         }
-                        users.body().stream().forEach(user -> {
-                            try {
-                                harborClient.deleteLowVersionMember(projects.body().get(0).getProjectId(), user.getUserId().intValue()).execute();
-                            } catch (IOException e) {
-                                throw new CommonException("error.delete.harbor.member");
-                            }
-                        });
+                        if (!ObjectUtils.isEmpty(users.body())) {
+                            users.body().stream().forEach(user -> {
+                                try {
+                                    harborClient.deleteLowVersionMember(projects.body().get(0).getProjectId(), user.getUserId().intValue()).execute();
+                                } catch (IOException e) {
+                                    throw new CommonException("error.delete.harbor.member");
+                                }
+                            });
+                        }
 
                     } else {
                         Response<List<ProjectMember>> projectMembers = harborClient.getProjectMembers(projects.body().get(0).getProjectId(), String.format(USER_PREFIX, organizationDTO.getId(), projectId)).execute();
                         if (projectMembers.raw().code() != 200) {
                             throw new CommonException(projectMembers.errorBody().string());
                         }
-                        projectMembers.body().stream().forEach(projectMember -> {
-                            try {
-                                harborClient.deleteMember(projects.body().get(0).getProjectId(), projectMember.getId()).execute();
-                            } catch (IOException e) {
-                                throw new CommonException("error.delete.harbor.member");
-                            }
-                        });
+                        if (!ObjectUtils.isEmpty(projectMembers.body())) {
+                            projectMembers.body().stream().forEach(projectMember -> {
+                                try {
+                                    harborClient.deleteMember(projects.body().get(0).getProjectId(), projectMember.getId()).execute();
+                                } catch (IOException e) {
+                                    throw new CommonException("error.delete.harbor.member");
+                                }
+                            });
+                        }
+
                     }
 
                     DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
