@@ -46,7 +46,7 @@ public class DevopsPrometheusController {
     @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "更新prometheus")
-    @PostMapping
+    @PutMapping
     private ResponseEntity<PrometheusVo> update(
             @ApiParam(value = "集群id", required = true)
             @PathVariable(value = "cluster_id") Long clusterId,
