@@ -14,7 +14,7 @@ import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.vo.ClusterConfigVO;
+import io.choerodon.devops.api.vo.ClusterResourceVO;
 import io.choerodon.devops.api.vo.PrometheusVo;
 import io.choerodon.devops.app.service.DevopsClusterResourceService;
 import io.choerodon.devops.infra.dto.DevopsClusterResourceDTO;
@@ -38,14 +38,14 @@ public class DevopsClusterResourceController {
             @ApiParam(value = "集群id", required = true)
             @RequestParam(name = "cluster_id", required = true) Long clusterId,
             @RequestBody DevopsClusterResourceDTO devopsClusterResourceDTO) {
-        devopsClusterResourceService.operateCertManager(clusterId,null,null);
+        devopsClusterResourceService.operateCertManager(clusterId, null, null);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "查询组件")
     @GetMapping
-    public ResponseEntity<List<ClusterConfigVO>> query(
+    public ResponseEntity<List<ClusterResourceVO>> query(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群id", required = true)
@@ -77,10 +77,11 @@ public class DevopsClusterResourceController {
             @RequestParam(name = "cluster_id", required = true) Long clusterId) {
         return new ResponseEntity<Boolean>(devopsClusterResourceService.checkCertManager(clusterId), HttpStatus.OK);
     }
+
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "部署prometheus")
-    @PostMapping("/prometheus/deploy")
-    private ResponseEntity<PrometheusVo> deploy(
+    @ApiOperation(value = "集群下安装prometheus")
+    @PostMapping("/prometheus/create")
+    private ResponseEntity<PrometheusVo> create(
             @ApiParam(value = "集群id", required = true)
             @RequestParam(name = "cluster_id", required = true) Long clusterId,
             @ApiParam(value = "请求体", required = true)
@@ -107,7 +108,7 @@ public class DevopsClusterResourceController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "查询prometheus部署状态")
     @GetMapping("/prometheus/queryStatus")
-    private ResponseEntity<ClusterConfigVO> queryDeployStatus(
+    private ResponseEntity<ClusterResourceVO> queryDeployStatus(
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群id", required = true)
             @RequestParam(name = "cluster_id", required = true) Long clusterId,

@@ -2,7 +2,7 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
-import io.choerodon.devops.api.vo.ClusterConfigVO;
+import io.choerodon.devops.api.vo.ClusterResourceVO;
 import io.choerodon.devops.api.vo.PrometheusVo;
 import io.choerodon.devops.infra.dto.DevopsClusterResourceDTO;
 import io.choerodon.devops.infra.dto.DevopsPrometheusDTO;
@@ -34,7 +34,7 @@ public interface DevopsClusterResourceService {
 
     void delete(Long clusterId, Long configId);
 
-    List<ClusterConfigVO> listClusterResource(Long clusterId);
+    List<ClusterResourceVO> listClusterResource(Long clusterId);
 
     /**
      * 验证cert-manager 管理的证书是否存在启用或者操作状态的
@@ -46,11 +46,11 @@ public interface DevopsClusterResourceService {
 
     PrometheusVo deploy(Long clusterId, PrometheusVo prometheusVo);
 
-    ClusterConfigVO queryDeployProcess(Long projectId, Long clusterId, Long prometheusId);
+    ClusterResourceVO queryDeployProcess(Long projectId, Long clusterId, Long prometheusId);
 
     DevopsPrometheusDTO baseQuery(Long prometheusId);
 
-    ClusterConfigVO queryPrometheusStatus(Long projectId,Long clusterId, Long prometheusId);
+    ClusterResourceVO queryPrometheusStatus(Long projectId,Long clusterId, Long prometheusId);
 
 
 }

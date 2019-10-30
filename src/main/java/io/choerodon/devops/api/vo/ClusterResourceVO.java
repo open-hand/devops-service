@@ -5,15 +5,15 @@ package io.choerodon.devops.api.vo;
  * @date: 2019/10/30 13:59
  * @description:
  */
-public class ClusterConfigVO {
+public class ClusterResourceVO {
     private  String status;
 
     private String message;
 
-    public ClusterConfigVO() {
+    public ClusterResourceVO() {
     }
 
-    public ClusterConfigVO(String status, String message) {
+    public ClusterResourceVO(String status, String message) {
         this.status = status;
         this.message = message;
     }
