@@ -45,7 +45,7 @@ public class DevopsClusterResourceController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "查询组件")
     @GetMapping
-    public ResponseEntity<List<DevopsClusterResourceDTO>> query(
+    public ResponseEntity<List<ClusterConfigVO>> query(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群id", required = true)
