@@ -252,7 +252,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     @Override
     public ClusterResourceVO queryDeployProcess(Long projectId, Long clusterId, Long prometheusId) {
         DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceMapper.queryByClusterIdAndTypeAndConfigId(clusterId, ClusterResourceType.PROMETHEUS.getType(), prometheusId);
-        AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQuery(devopsClusterResourceDTO.getId());
+        AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQuery(devopsClusterResourceDTO.getObjectId());
         DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(appServiceInstanceDTO.getCommandId());
         DevopsEnvPodVO devopsEnvPodVO = new DevopsEnvPodVO();
         devopsEnvPodVO.setClusterId(clusterId);
@@ -365,7 +365,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     @Override
     public ClusterResourceVO queryPrometheusStatus(Long projectId, Long clusterId, Long prometheusId) {
         DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceMapper.queryByClusterIdAndTypeAndConfigId(clusterId, ClusterResourceType.PROMETHEUS.getType(), prometheusId);
-        AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQuery(devopsClusterResourceDTO.getId());
+        AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQuery(devopsClusterResourceDTO.getObjectId());
         DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(appServiceInstanceDTO.getCommandId());
         ClusterResourceVO clusterResourceVO = queryDeployProcess(projectId, clusterId, prometheusId);
 
