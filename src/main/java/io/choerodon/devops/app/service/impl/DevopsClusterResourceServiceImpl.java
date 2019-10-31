@@ -237,27 +237,26 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
 
         DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceMapper.queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
-        if (devopsClusterResourceDTO.getSystemEnvId() != null) {
-            AppServiceInstanceDTO releaseForPrometheus = componentReleaseService.createReleaseForPrometheus(devopsPrometheusDTO);
-            if (!ObjectUtils.isEmpty(releaseForPrometheus)) {
+        if (devopsClusterResourceDTO.getSystemEnvId() == null) {
+            return null;
+        }
 
-                if (ObjectUtils.isEmpty(devopsPrometheusDTO.getId())) {
-                    devopsPrometheusMapper.insertSelective(devopsPrometheusDTO);
-                    prometheusVo.setPrometheusId(devopsPrometheusDTO.getId());
+        if (ObjectUtils.isEmpty(devopsPrometheusDTO.getId())) {
+            AppServiceInstanceDTO appServiceInstanceDTO = componentReleaseService.createReleaseForPrometheus(devopsPrometheusDTO);
+            devopsPrometheusMapper.insertSelective(devopsPrometheusDTO);
+            prometheusVo.setPrometheusId(devopsPrometheusDTO.getId());
 
-                    devopsClusterResourceDTO.setClusterId(clusterId);
-                    devopsClusterResourceDTO.setConfigId(prometheusVo.getPrometheusId());
-                    devopsClusterResourceDTO.setObjectId(releaseForPrometheus.getId());
-                    devopsClusterResourceDTO.setName(devopsClusterDTO.getName());
-                    devopsClusterResourceDTO.setCode(devopsClusterDTO.getCode());
-                    devopsClusterResourceDTO.setType(ClusterResourceType.PROMETHEUS.getType());
-                    devopsClusterResourceService.baseCreate(devopsClusterResourceDTO);
-                } else {
-                    devopsPrometheusMapper.updateByPrimaryKey(devopsPrometheusDTO);
-                }
-
-            }
-
+            devopsClusterResourceDTO.setClusterId(clusterId);
+            devopsClusterResourceDTO.setConfigId(prometheusVo.getPrometheusId());
+            devopsClusterResourceDTO.setObjectId(appServiceInstanceDTO.getId());
+            devopsClusterResourceDTO.setName(devopsClusterDTO.getName());
+            devopsClusterResourceDTO.setCode(devopsClusterDTO.getCode());
+            devopsClusterResourceDTO.setType(ClusterResourceType.PROMETHEUS.getType());
+            devopsClusterResourceService.baseCreate(devopsClusterResourceDTO);
+        } else {
+            AppServiceInstanceDTO appServiceInstanceDTO = componentReleaseService.createReleaseForPrometheus(devopsPrometheusDTO);
+            devopsClusterResourceDTO.setObjectId(appServiceInstanceDTO.getId());
+            devopsPrometheusMapper.updateByPrimaryKey(devopsPrometheusDTO);
         }
 
         return prometheusVo;
@@ -275,6 +274,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         devopsEnvPodService.fillContainers(devopsEnvPodVO);
 
         ClusterResourceVO clusterResourceVO = new ClusterResourceVO();
+        clusterResourceVO.setType(ClusterResourceType.PROMETHEUS.getType());
         if (ObjectUtils.isEmpty(devopsEnvCommandDTO.getSha())) {
             clusterResourceVO.setStatus(STATUS_CREATED);
         }
