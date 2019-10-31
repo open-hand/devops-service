@@ -1,16 +1,28 @@
 package io.choerodon.devops.infra.util;
 
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.infra.dto.DevopsPrometheusDTO;
-import io.choerodon.devops.infra.enums.ComponentType;
+import io.choerodon.devops.infra.enums.ClusterResourceType;
 
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 public class ComponentUtil {
 
-    private ComponentUtil(){
+    private static final String TEMPLATE = "/component/template/%s.yml";
 
+    private ComponentUtil(){}
+
+    public static String convert(ClusterResourceType type , Object object){
+        InputStream in = Optional.ofNullable(ComponentUtil.class.getResourceAsStream(String.format(TEMPLATE,type.getType())))
+                .orElseThrow(()-> new CommonException("error.template.config.file.not.exist"));
+        switch (type){
+            case PROMETHEUS:
+                return convertPrometheus((DevopsPrometheusDTO)object, in);
+        }
+        return null;
     }
 
     /***
