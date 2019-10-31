@@ -9,7 +9,6 @@ import { useEnvironmentStore } from '../../../../stores';
 import { useMainStore } from '../../../stores';
 import { useDetailStore } from '../stores';
 import useStore from './useStore';
-import ResourceSetting from './resource-setting2/notificationsHome';
 import ResourceSecurity from './resource-security';
 import EnvCreateForm from '../../../modals/env-create';
 import GroupForm from '../../../modals/GroupForm';
