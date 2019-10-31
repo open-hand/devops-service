@@ -80,6 +80,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     private static final String PROMETHEUS_PREFIX = "prometheus-";
 
     private static final String STATUS_RUNNING = "running";
+    private static final String STATUS_FAIL = "fail";
     private static final String STATUS_CREATED = "created";
     private static final String STATUS_SUCCESSED = "success";
     private static final String STATUS_CHECK_FAIL = "check_fail";
@@ -277,13 +278,14 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceMapper.queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
         AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQuery(devopsClusterResourceDTO.getObjectId());
         DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(appServiceInstanceDTO.getCommandId());
-        DevopsEnvPodVO devopsEnvPodVO = new DevopsEnvPodVO();
-        devopsEnvPodVO.setClusterId(clusterId);
-        devopsEnvPodVO.setInstanceCode(appServiceInstanceDTO.getCode());
-        devopsEnvPodVO.setName(appServiceInstanceDTO.getCode());
-        //查询pod状态
-        devopsEnvPodService.fillContainers(devopsEnvPodVO);
 
+        List<DevopsEnvPodVO> devopsEnvPodDTOS = ConvertUtils.convertList(devopsEnvPodService.baseListByInstanceId(appServiceInstanceDTO.getId()), DevopsEnvPodVO.class);
+        //查询pod状态
+        devopsEnvPodDTOS.stream().forEach(devopsEnvPodVO -> {
+            devopsEnvPodService.fillContainers(devopsEnvPodVO);
+        });
+
+        List<ContainerVO> readyPod = new ArrayList<>();
         ClusterResourceVO clusterResourceVO = new ClusterResourceVO();
         clusterResourceVO.setType(ClusterResourceType.PROMETHEUS.getType());
         if (!ObjectUtils.isEmpty(devopsEnvCommandDTO.getSha())) {
@@ -291,12 +293,19 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         }
         if (appServiceInstanceDTO.getStatus().equals(STATUS_RUNNING)) {
             clusterResourceVO.setStatus(STATUS_RUNNING);
-            List<ContainerVO> collect = devopsEnvPodVO.getContainers().stream().filter(pod -> pod.getReady() == true).collect(Collectors.toList());
-            if (collect.size() != 2) {
+            //ready=true的pod大于1就是可用的
+            devopsEnvPodDTOS.stream().forEach(devopsEnvPodVO -> {
+                if (devopsEnvPodVO.getReady() == true) {
+                    readyPod.addAll(devopsEnvPodVO.getContainers().stream().filter(pod -> pod.getReady() == true).collect(Collectors.toList()));
+                }
+            });
+            if (readyPod.size() >= 1) {
                 clusterResourceVO.setStatus(STATUS_SUCCESSED);
-            } else {
-                clusterResourceVO.setStatus(STATUS_CHECK_FAIL);
             }
+
+        } else {
+            clusterResourceVO.setMessage(devopsEnvCommandDTO.getError());
+            clusterResourceVO.setStatus(STATUS_FAIL);
         }
         return clusterResourceVO;
     }
@@ -340,6 +349,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
                 break;
             case STATUS_CHECK_FAIL:
                 clusterResourceVO.setStatus(ClusterResourceStatus.DISABLED.getStatus());
+                clusterResourceVO.setMessage(devopsEnvCommandDTO.getError());
                 break;
             default:
                 clusterResourceVO.setStatus(ClusterResourceStatus.DISABLED.getStatus());
