@@ -50,7 +50,7 @@ public interface DevopsClusterResourceService {
 
     DevopsPrometheusDTO baseQuery(Long prometheusId);
 
-    ClusterResourceVO queryResourceStatus(Long projectId,Long clusterId, Long prometheusId);
+    ClusterResourceVO queryPrometheusStatus(Long projectId,Long clusterId, Long prometheusId);
 
     void unloadCertManager(Long clusterId);
 
