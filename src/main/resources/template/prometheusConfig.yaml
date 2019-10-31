@@ -1,0 +1,56 @@
+grafana:
+  adminPassword: {{adminPassoword}}
+  ingress:
+    hosts: {{host}}
+  serviceMonitor:
+    relabelings:
+      replacement: {{clustername}}
+prometheus:
+  serviceMonitor:
+    relabelings:
+      replacement: {{clustername}}
+alertmanager:
+  serviceMonitor:
+    relabelings:
+      replacement: {{clustername}}
+kubeApiServer:
+  serviceMonitor:
+    relabelings:
+      replacement: {{clustername}}
+kubelet:
+  serviceMonitor:
+    relabelings:
+      cAdvisorRelabelings:
+        replacement: {{clustername}}
+kubeControllermanager:
+  serviceMonitor:
+    relabelings:
+      replacement: {{clustername}}
+coreDns:
+  serviceMonitor:
+    relabelings:
+      replacement: {{clustername}}
+kubeDns:
+  serviceMonitor:
+    relabelings:
+      replacement: {{clustername}}
+kubeScheduler:
+  serviceMonitor:
+    relabelings:
+      replacement: {{clustername}}
+kubeProxy:
+  serviceMonitor:
+    relabelings:
+      replacement: {{clustername}}
+kubeStateMetrics:
+  serviceMonitor:
+    relabelings:
+      replacement: {{clustername}}
+nodeExporter:
+  serviceMonitor:
+    relabelings:
+      replacement: {{clustername}}
+prometheusOperator:
+  serviceMonitor:
+    relabelings:
+      replacement: {{clustername}}
