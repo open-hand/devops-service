@@ -113,6 +113,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
       configDs,
       configFormDs,
       envStore,
+      intlPrefix,
     };
     return (
       <Store.Provider value={value}>
