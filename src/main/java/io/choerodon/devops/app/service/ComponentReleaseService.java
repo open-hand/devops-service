@@ -33,7 +33,6 @@ public interface ComponentReleaseService {
      * 删除组件对应的实例
      *
      * @param instanceId 组件对应的实例ID
-     * @return 删除的实例对象
      */
-    AppServiceInstanceDTO deleteReleaseForComponent(Long instanceId);
+    void deleteReleaseForComponent(Long instanceId);
 }

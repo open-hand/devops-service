@@ -135,9 +135,8 @@ public class ComponentReleaseServiceImpl implements ComponentReleaseService {
 
     @Override
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
-    public AppServiceInstanceDTO deleteReleaseForComponent(Long instanceId) {
-        // TODO
-        return null;
+    public void deleteReleaseForComponent(Long instanceId) {
+        appServiceInstanceService.deleteInstance(instanceId);
     }
 
 
