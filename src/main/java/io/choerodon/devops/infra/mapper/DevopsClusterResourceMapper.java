@@ -2,6 +2,7 @@ package io.choerodon.devops.infra.mapper;
 
 import io.choerodon.devops.infra.dto.DevopsClusterResourceDTO;
 import io.choerodon.mybatis.common.Mapper;
+
 import org.apache.ibatis.annotations.Param;
 
 /**
@@ -10,9 +11,9 @@ import org.apache.ibatis.annotations.Param;
  */
 public interface DevopsClusterResourceMapper extends Mapper<DevopsClusterResourceDTO> {
 
-    DevopsClusterResourceDTO queryByClusterIdAndType(Long clusterId, String type);
+    DevopsClusterResourceDTO queryByClusterIdAndType(@Param("clusterId") Long clusterId, @Param("type") String type);
 
     DevopsClusterResourceDTO queryByOptions(@Param("clusterResource") DevopsClusterResourceDTO devopsClusterResourceDTO);
 
-    DevopsClusterResourceDTO queryByClusterIdAndConfigId(Long clusterId,Long configId);
+    DevopsClusterResourceDTO queryByClusterIdAndTypeAndConfigId(@Param("clusterId") Long clusterId, @Param("type") String type, @Param("configId") Long configId);
 }

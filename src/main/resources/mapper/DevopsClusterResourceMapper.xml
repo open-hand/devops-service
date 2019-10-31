@@ -6,9 +6,9 @@
        where cluster_id = #{clusterId} AND type = #{type}
     </select>
 
-    <select id="queryByClusterIdAndConfigId" resultType="io.choerodon.devops.infra.dto.DevopsClusterResourceDTO">
+    <select id="queryByClusterIdAndTypeAndConfigId" resultType="io.choerodon.devops.infra.dto.DevopsClusterResourceDTO">
        select * from devops_cluster_resource
-       where cluster_id = #{clusterId} AND config_id = #{configId}
+        where cluster_id = #{clusterId} AND type = #{type} AND config_id = #{configId}
     </select>
 
     <select id="queryByOptions" resultType="io.choerodon.devops.infra.dto.DevopsClusterResourceDTO">
