@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * lihao
  * 获取组件版本配置工具类
  */
-public class ComponentConfigUtil {
+public class ComponentVersionUtil {
     //是否已经初始化
     private static boolean inited = false;
     private static final String COMPONENT_CONFIG_FILE_NAME = "/component/component.yml";
@@ -26,7 +26,7 @@ public class ComponentConfigUtil {
     private static Map<String, AppServiceVersionDTO> componentVersionConfigsWithChartName = new ConcurrentHashMap<>();
 
 
-    private ComponentConfigUtil() {
+    private ComponentVersionUtil() {
     }
 
     public static AppServiceVersionDTO getComponentVersion(String chartName) {
@@ -56,7 +56,7 @@ public class ComponentConfigUtil {
 
     private static void init() {
         try {
-            InputStream inputStream = Optional.ofNullable(ComponentConfigUtil.class.getResourceAsStream(COMPONENT_CONFIG_FILE_NAME))
+            InputStream inputStream = Optional.ofNullable(ComponentVersionUtil.class.getResourceAsStream(COMPONENT_CONFIG_FILE_NAME))
                     .orElseThrow(() -> new CommonException("error.component.config.file.not.exist"));
 
             Yaml yaml = new Yaml();
@@ -66,7 +66,7 @@ public class ComponentConfigUtil {
 
                 String valuesFileName = Optional.ofNullable(componentConfig.get("valuesFile"))
                         .orElseThrow(() -> new CommonException("error.component.config.property.not.exist", "valuesFile"));
-                InputStream valuesInputStream = Optional.ofNullable(ComponentConfigUtil.class.getResourceAsStream(String.format(COMPONENT_CONFIG_VALUE_FILE_FORMAT, valuesFileName)))
+                InputStream valuesInputStream = Optional.ofNullable(ComponentVersionUtil.class.getResourceAsStream(String.format(COMPONENT_CONFIG_VALUE_FILE_FORMAT, valuesFileName)))
                         .orElseThrow(() -> new CommonException("error.component.config.values.not.exist", valuesFileName));
                 String values = IOUtils.toString(valuesInputStream, StandardCharsets.UTF_8);
 
