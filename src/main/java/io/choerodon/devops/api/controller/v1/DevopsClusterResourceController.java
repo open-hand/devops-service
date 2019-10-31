@@ -140,12 +140,10 @@ public class DevopsClusterResourceController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群id", required = true)
-            @RequestParam(name = "cluster_id", required = true) Long clusterId,
+            @RequestParam(name = "cluster_id") Long clusterId,
             @ApiParam(value = "接口type", required = true)
-            @RequestParam(name = "type", required = true) String type,
-            @ApiParam(value = "token", required = true)
-            @RequestParam(name = "token", required = true) String token) {
-        return Optional.ofNullable(devopsClusterResourceService.getGrafanaUrl(clusterId, type, token))
+            @RequestParam(name = "type") String type) {
+        return Optional.ofNullable(devopsClusterResourceService.getGrafanaUrl(clusterId, type))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.grafana.url.get"));
     }
