@@ -11,7 +11,7 @@ import Loading from '../../../../components/loading';
 
 import handleMapStore from '../../main-view/store/handleMapStore';
 import { usePipelineStore } from './stores';
-import DevPipelineStore from '../../stores/DevPipelineStore';
+import { useCodeManagerStore } from '../../stores';
 
 
 import '../../../main.less';
@@ -72,10 +72,11 @@ export default injectIntl(observer(() => {
   const {
     ciTableDS,
     intl: { formatMessage },
-    appId,
-    appData,
   } = usePipelineStore();
 
+  const { appServiceDs, selectAppDs } = useCodeManagerStore();
+  const appServiceId = selectAppDs.current.get('appServiceId');
+  const appServiceData = appServiceDs.toData();
 
   handleMapStore.setCodeManagerCiPipelineManage({
     refresh: handleRefresh,
@@ -329,46 +330,45 @@ export default injectIntl(observer(() => {
         'devops-service.pipeline.pageByOptions',
       ]}
     >
-
-      {/* {DevPipelineStore.getAppData && DevPipelineStore.getAppData.length && DevPipelineStore.getSelectApp ? */}
-      <Fragment>
-        <Table
-          queryBar="none"
-          dataSet={ciTableDS}
-        >
-          <Column name="status" renderer={renderStatus} width={100} />
-          <Column name="pipelineId" renderer={renderSign} />
-          <Column name="gitlabProjectId" renderer={renderAction} width={40} />
-          <Column name="commit" renderer={renderCommit} />
-          <Column name="stages" renderer={renderStages} />
-          <Column
-            width={120}
-            name="pipelineTime"
-            renderer={({ value }) => (
-              <span>
-                {renderTime(value)}
-              </span>
-            )}
-          />
-          <Column
-            width={120}
-            name="creationDate"
-            renderer={({ value }) => (
-              <div>
-                <Tooltip
-                  title={value}
-                >
-                  <TimeAgo
-                    datetime={value}
-                    locale={formatMessage({ id: 'language' })}
-                  />
-                </Tooltip>
-              </div>
-            )}
-          />
-        </Table>
-      </Fragment>
-      {/* : <Loading display={DevPipelineStore.getLoading} />} */}
+      {appServiceDs.status !== 'ready' || !appServiceId
+        ? <Loading display />
+        : <Fragment>
+          <Table
+            queryBar="none"
+            dataSet={ciTableDS}
+          >
+            <Column name="status" renderer={renderStatus} width={100} />
+            <Column name="pipelineId" renderer={renderSign} />
+            <Column name="gitlabProjectId" renderer={renderAction} width={40} />
+            <Column name="commit" renderer={renderCommit} />
+            <Column name="stages" renderer={renderStages} />
+            <Column
+              width={120}
+              name="pipelineTime"
+              renderer={({ value }) => (
+                <span>
+                  {renderTime(value)}
+                </span>
+              )}
+            />
+            <Column
+              width={120}
+              name="creationDate"
+              renderer={({ value }) => (
+                <div>
+                  <Tooltip
+                    title={value}
+                  >
+                    <TimeAgo
+                      datetime={value}
+                      locale={formatMessage({ id: 'language' })}
+                    />
+                  </Tooltip>
+                </div>
+              )}
+            />
+          </Table>
+        </Fragment>}
     </Page>
   );
 }));

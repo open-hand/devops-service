@@ -2,10 +2,11 @@ import React, { createContext, useContext, useEffect, useMemo } from 'react';
 import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
 import { DataSet } from 'choerodon-ui/pro';
-import { observer } from 'mobx-react-lite';
-import DevPipelineStore from '../../../stores/DevPipelineStore';
-import CiTableDataSet from './ciTableDataSet';
 
+import { observer } from 'mobx-react-lite';
+
+import { useCodeManagerStore } from '../../../stores';
+import CiTableDataSet from './ciTableDataSet';
 
 const Store = createContext();
 
@@ -20,14 +21,15 @@ export const StoreProvider = injectIntl(inject('AppState')(observer((props) => {
     children,
   } = props;
 
-  const appId = DevPipelineStore.getSelectApp;
-  const appData = DevPipelineStore.getAppData;
+  const { appServiceDs, selectAppDs } = useCodeManagerStore();
+  const appServiceId = selectAppDs.current.get('appServiceId');
+  const appServiceData = appServiceDs.toData();
 
   const ciTableDS = useMemo(() => new DataSet(CiTableDataSet(formatMessage)), [projectId]);
 
   useEffect(() => {
-    ciTableDS.transport.read.url = `/devops/v1/projects/${projectId}/pipeline/page_by_options?app_service_id=${appId}`;
-  }, [appId, projectId]);
+    ciTableDS.transport.read.url = `/devops/v1/projects/${projectId}/pipeline/page_by_options?app_service_id=${appServiceId}`;
+  }, [appServiceId, projectId]);
 
   const value = {
     ...props,
