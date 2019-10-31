@@ -46,7 +46,7 @@ public interface DevopsClusterResourceService {
 
     DevopsPrometheusVO queryPrometheus(Long clusterId);
 
-    ClusterResourceVO queryDeployProcess(Long projectId, Long clusterId);
+    ClusterResourceVO queryDeployProcess(Long clusterId);
 
     ClusterResourceVO queryPrometheusStatus(Long projectId,Long clusterId);
 

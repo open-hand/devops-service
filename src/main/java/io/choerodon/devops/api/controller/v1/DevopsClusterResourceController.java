@@ -103,7 +103,7 @@ public class DevopsClusterResourceController {
 
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "查询集群下prometheus")
-    @GetMapping("/prometheus/query")
+    @GetMapping("/prometheus")
     private ResponseEntity update(
             @ApiParam(value = "集群id", required = true)
             @RequestParam(name = "cluster_id", required = true) Long clusterId) {
@@ -113,12 +113,12 @@ public class DevopsClusterResourceController {
 
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "查询prometheus部署状态")
-    @GetMapping("/prometheus/queryStatus")
-    private ResponseEntity<ClusterResourceVO> queryDeployStatus(
+    @GetMapping("/prometheus/deploy_status")
+    private ResponseEntity<ClusterResourceVO> getDeployStatus(
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群id", required = true)
             @RequestParam(name = "cluster_id", required = true) Long clusterId) {
-        return Optional.ofNullable(devopsClusterResourceService.queryDeployProcess(projectId, clusterId))
+        return Optional.ofNullable(devopsClusterResourceService.queryDeployProcess(clusterId))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.prometheus.deploy"));
     }
