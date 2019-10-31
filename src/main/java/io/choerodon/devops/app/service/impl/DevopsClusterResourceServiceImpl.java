@@ -1,9 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import io.choerodon.devops.infra.dto.DevopsCertManagerRecordDTO;
-import io.choerodon.devops.infra.enums.*;
-import io.choerodon.devops.infra.mapper.DevopsCertManagerRecordMapper;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -86,8 +82,10 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     @Autowired
     private DevopsEnvPodService devopsEnvPodService;
     private static final String PROMETHEUS_PREFIX = "prometheus-";
-    private static final String STATUS_SUCCESS = "success";
-    private static final String STATUS_FAIL = "fail";
+
+    private static final String STATUS_RUNNING = "running";
+    private static final String STATUS_CREATED = "created";
+    private static final String STATUS_SUCCESSED = "successed";
 
     @Override
     public void baseCreate(DevopsClusterResourceDTO devopsClusterResourceDTO) {
@@ -104,7 +102,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     }
 
     @Override
-    public void operateCertManager(Long clusterId,String status,String error) {
+    public void operateCertManager(Long clusterId, String status, String error) {
         DevopsClusterResourceDTO devopsClusterResourceDTO = new DevopsClusterResourceDTO();
         devopsClusterResourceDTO.setType(ClusterResourceType.CERTMANAGER.getType());
         devopsClusterResourceDTO.setClusterId(clusterId);
@@ -118,8 +116,8 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
             DevopsCertManagerRecordDTO devopsCertManagerRecordDTO = new DevopsCertManagerRecordDTO();
             devopsCertManagerRecordDTO.setStatus(status);
             devopsCertManagerRecordDTO.setError(error);
-            if(ObjectUtils.isEmpty(status)){
-                devopsCertManagerRecordDTO.setStatus(ClusterResourceStatus.INSTALLING.getStatus());
+            if (ObjectUtils.isEmpty(status)) {
+                devopsCertManagerRecordDTO.setStatus(ClusterResourceStatus.PROCESSING.getStatus());
             }
             devopsCertManagerRecordMapper.insertSelective(devopsCertManagerRecordDTO);
             // 插入数据
@@ -130,23 +128,15 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
             agentCommandService.createCertManager(clusterId);
         }
     }
-    @Override
-    public DevopsClusterResourceDTO queryCertManager(Long clusterId) {
-        DevopsClusterResourceDTO devopsClusterResourceDTO = new DevopsClusterResourceDTO();
-        devopsClusterResourceDTO.setClusterId(clusterId);
-        devopsClusterResourceDTO.setType("cert-mannager");
-        DevopsClusterResourceDTO devopsClusterResourceDTO1 = devopsClusterResourceMapper.selectOne(devopsClusterResourceDTO);
-        return devopsClusterResourceDTO1;
-    }
 
     @Override
     public Boolean deleteCertManager(Long clusterId) {
         if (!checkCertManager(clusterId)) {
             return false;
         }
-        DevopsClusterResourceDTO devopsClusterResourceDTO = queryCertManager(clusterId);
+        DevopsClusterResourceDTO devopsClusterResourceDTO = queryByClusterIdAndType(clusterId, ClusterResourceType.CERTMANAGER.getType());
         DevopsCertManagerRecordDTO devopsCertManagerRecordDTO = devopsCertManagerRecordMapper.selectByPrimaryKey(devopsClusterResourceDTO.getObjectId());
-        devopsCertManagerRecordDTO.setStatus(ClusterResourceStatus.UNLOADING.getStatus());
+        devopsCertManagerRecordDTO.setStatus(ClusterResourceStatus.PROCESSING.getStatus());
         devopsCertManagerRecordMapper.updateByPrimaryKey(devopsCertManagerRecordDTO);
         agentCommandService.unloadCertManager(clusterId);
         return true;
@@ -158,7 +148,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     }
 
     @Override
-    public  Boolean checkCertManager(Long clusterId) {
+    public Boolean checkCertManager(Long clusterId) {
         List<CertificationDTO> certificationDTOS = devopsCertificationMapper.listClusterCertification(clusterId);
         if (CollectionUtils.isEmpty(certificationDTOS)) {
             return true;
@@ -201,27 +191,36 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     }
 
     @Override
-    public List<ClusterResourceVO> listClusterResource(Long clusterId) {
+    public List<ClusterResourceVO> listClusterResource(Long clusterId, Long projectId) {
         List<ClusterResourceVO> list = new ArrayList<>();
         // 查询cert-manager 状态
-        DevopsClusterResourceDTO devopsClusterResourceDTO = queryCertManager(clusterId);
+        DevopsClusterResourceDTO devopsClusterResourceDTO = queryByClusterIdAndType(clusterId, ClusterResourceType.CERTMANAGER.getType());
         DevopsCertManagerRecordDTO devopsCertManagerRecordDTO = devopsCertManagerRecordMapper.selectByPrimaryKey(devopsClusterResourceDTO.getObjectId());
         ClusterResourceVO clusterConfigVO = new ClusterResourceVO();
-        clusterConfigVO.setStatus(devopsCertManagerRecordDTO.getStatus());
-        clusterConfigVO.setMessage(devopsCertManagerRecordDTO.getError());
+        if (!ObjectUtils.isEmpty(devopsCertManagerRecordDTO)) {
+            clusterConfigVO.setStatus(devopsCertManagerRecordDTO.getStatus());
+            clusterConfigVO.setMessage(devopsCertManagerRecordDTO.getError());
+        }
+        clusterConfigVO.setType(ClusterResourceType.CERTMANAGER.getType());
         list.add(clusterConfigVO);
+        // 查询prometheus 的状态和信息
+        DevopsClusterResourceDTO prometheus = devopsClusterResourceMapper.queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
+        Long configId = prometheus.getConfigId();
+        ClusterResourceVO clusterResourceVO = queryPrometheusStatus(projectId, clusterId, configId);
+        list.add(clusterResourceVO);
         return list;
     }
 
-
-    public void unloadCertManager(Long clusterId){
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void unloadCertManager(Long clusterId) {
         List<CertificationDTO> certificationDTOS = devopsCertificationMapper.listClusterCertification(clusterId);
-        if(!CollectionUtils.isEmpty(certificationDTOS)){
+        if (!CollectionUtils.isEmpty(certificationDTOS)) {
             certificationDTOS.forEach(v -> {
                 devopsCertificationMapper.deleteByPrimaryKey(v.getId());
             });
         }
-        DevopsClusterResourceDTO devopsClusterResourceDTO = queryCertManager(clusterId);
+        DevopsClusterResourceDTO devopsClusterResourceDTO = queryByClusterIdAndType(clusterId, ClusterResourceType.CERTMANAGER.getType());
         devopsCertManagerRecordMapper.deleteByPrimaryKey(devopsClusterResourceDTO.getObjectId());
         devopsClusterResourceMapper.deleteByPrimaryKey(devopsClusterResourceDTO.getId());
     }
@@ -237,7 +236,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
             AppServiceInstanceDTO releaseForPrometheus = componentReleaseService.createReleaseForPrometheus(devopsPrometheusDTO);
             if (!ObjectUtils.isEmpty(releaseForPrometheus)) {
 
-                if(ObjectUtils.isEmpty(devopsPrometheusDTO.getId())){
+                if (ObjectUtils.isEmpty(devopsPrometheusDTO.getId())) {
                     devopsPrometheusMapper.insertSelective(devopsPrometheusDTO);
                     prometheusVo.setPrometheusId(devopsPrometheusDTO.getId());
 
@@ -248,7 +247,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
                     devopsClusterResourceDTO.setCode(devopsClusterDTO.getCode());
                     devopsClusterResourceDTO.setType(ClusterResourceType.PROMETHEUS.getType());
                     devopsClusterResourceService.baseCreate(devopsClusterResourceDTO);
-                }else {
+                } else {
                     devopsPrometheusMapper.updateByPrimaryKey(devopsPrometheusDTO);
                 }
 
@@ -272,14 +271,14 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
 
         ClusterResourceVO clusterResourceVO = new ClusterResourceVO();
         if (ObjectUtils.isEmpty(devopsEnvCommandDTO.getSha())) {
-            clusterResourceVO.setStatus("operating");
+            clusterResourceVO.setStatus(STATUS_CREATED);
         }
-        if (appServiceInstanceDTO.getStatus().equals("running")) {
-            clusterResourceVO.setStatus("running");
+        if (appServiceInstanceDTO.getStatus().equals(STATUS_RUNNING)) {
+            clusterResourceVO.setStatus(STATUS_RUNNING);
         }
         List<ContainerVO> collect = devopsEnvPodVO.getContainers().stream().filter(pod -> pod.getReady() == true).collect(Collectors.toList());
         if (collect.size() != 2) {
-            clusterResourceVO.setStatus("ready");
+            clusterResourceVO.setStatus(STATUS_SUCCESSED);
         }
 
         return clusterResourceVO;
@@ -374,17 +373,27 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
 
     @Override
     public ClusterResourceVO queryPrometheusStatus(Long projectId, Long clusterId, Long prometheusId) {
+        ClusterResourceVO clusterResourceVO = new ClusterResourceVO();
+        if (prometheusId == null) {
+            clusterResourceVO.setStatus(ClusterResourceStatus.UNINSTALL.getStatus());
+            return clusterResourceVO;
+        }
         DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceMapper.queryByClusterIdAndTypeAndConfigId(clusterId, ClusterResourceType.PROMETHEUS.getType(), prometheusId);
         AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQuery(devopsClusterResourceDTO.getObjectId());
         DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(appServiceInstanceDTO.getCommandId());
-        ClusterResourceVO clusterResourceVO = queryDeployProcess(projectId, clusterId, prometheusId);
+        clusterResourceVO = queryDeployProcess(projectId, clusterId, prometheusId);
 
-        if ("ready".equals(clusterResourceVO.getStatus())) {
-            clusterResourceVO.setStatus(STATUS_SUCCESS);
+        if (STATUS_SUCCESSED.equals(clusterResourceVO.getStatus())) {
+            clusterResourceVO.setStatus(ClusterResourceStatus.AVAILABLE.getStatus());
+            return clusterResourceVO;
+        } else if (STATUS_CREATED.equals(clusterResourceVO.getStatus()) || STATUS_RUNNING.equals(clusterResourceVO.getStatus())) {
+            clusterResourceVO.setStatus(ClusterResourceStatus.PROCESSING.getStatus());
+            return clusterResourceVO;
         } else {
-            clusterResourceVO.setStatus(STATUS_FAIL);
+            clusterResourceVO.setStatus(ClusterResourceStatus.DISABLED.getStatus());
             clusterResourceVO.setMessage(devopsEnvCommandDTO.getError());
         }
+        clusterResourceVO.setType(ClusterResourceType.PROMETHEUS.getType());
         return clusterResourceVO;
     }
 

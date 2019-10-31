@@ -10,6 +10,8 @@ public class ClusterResourceVO {
 
     private String message;
 
+    private String type;
+
     public ClusterResourceVO() {
     }
 
@@ -32,5 +34,13 @@ public class ClusterResourceVO {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 }
