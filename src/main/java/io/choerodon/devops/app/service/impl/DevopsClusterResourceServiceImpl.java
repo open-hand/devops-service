@@ -332,8 +332,6 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
             clusterResourceVO.setStatus(ClusterResourceStatus.UNINSTALL.getStatus());
             return clusterResourceVO;
         }
-        AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQuery(devopsClusterResourceDTO.getObjectId());
-        DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(appServiceInstanceDTO.getCommandId());
         clusterResourceVO = queryDeployProcess(clusterId);
 
         //create
@@ -347,13 +345,13 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
             case STATUS_RUNNING:
                 clusterResourceVO.setStatus(ClusterResourceStatus.PROCESSING.getStatus());
                 break;
-            case STATUS_CHECK_FAIL:
+            case STATUS_FAIL:
                 clusterResourceVO.setStatus(ClusterResourceStatus.DISABLED.getStatus());
-                clusterResourceVO.setMessage(devopsEnvCommandDTO.getError());
+                clusterResourceVO.setMessage(clusterResourceVO.getMessage());
                 break;
             default:
                 clusterResourceVO.setStatus(ClusterResourceStatus.DISABLED.getStatus());
-                clusterResourceVO.setMessage(devopsEnvCommandDTO.getError());
+                clusterResourceVO.setMessage(clusterResourceVO.getMessage());
         }
 
         clusterResourceVO.setType(ClusterResourceType.PROMETHEUS.getType());
