@@ -195,13 +195,18 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         List<ClusterResourceVO> list = new ArrayList<>();
         // 查询cert-manager 状态
         DevopsClusterResourceDTO devopsClusterResourceDTO = queryByClusterIdAndType(clusterId, ClusterResourceType.CERTMANAGER.getType());
-        DevopsCertManagerRecordDTO devopsCertManagerRecordDTO = devopsCertManagerRecordMapper.selectByPrimaryKey(devopsClusterResourceDTO.getObjectId());
         ClusterResourceVO clusterConfigVO = new ClusterResourceVO();
-        if (!ObjectUtils.isEmpty(devopsCertManagerRecordDTO)) {
-            clusterConfigVO.setStatus(devopsCertManagerRecordDTO.getStatus());
-            clusterConfigVO.setMessage(devopsCertManagerRecordDTO.getError());
+        if(ObjectUtils.isEmpty(devopsClusterResourceDTO)) {
+            clusterConfigVO.setStatus(ClusterResourceStatus.UNINSTALL.getStatus());
         }
-        clusterConfigVO.setType(ClusterResourceType.CERTMANAGER.getType());
+        else {
+            DevopsCertManagerRecordDTO devopsCertManagerRecordDTO = devopsCertManagerRecordMapper.selectByPrimaryKey(devopsClusterResourceDTO.getObjectId());
+            if (!ObjectUtils.isEmpty(devopsCertManagerRecordDTO)) {
+                clusterConfigVO.setStatus(devopsCertManagerRecordDTO.getStatus());
+                clusterConfigVO.setMessage(devopsCertManagerRecordDTO.getError());
+            }
+            clusterConfigVO.setType(ClusterResourceType.CERTMANAGER.getType());
+        }
         list.add(clusterConfigVO);
         // 查询prometheus 的状态和信息
         DevopsClusterResourceDTO prometheus = devopsClusterResourceMapper.queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
