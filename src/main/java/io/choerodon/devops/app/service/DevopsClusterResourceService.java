@@ -3,9 +3,8 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 
 import io.choerodon.devops.api.vo.ClusterResourceVO;
-import io.choerodon.devops.api.vo.PrometheusVo;
+import io.choerodon.devops.api.vo.DevopsPrometheusVO;
 import io.choerodon.devops.infra.dto.DevopsClusterResourceDTO;
-import io.choerodon.devops.infra.dto.DevopsPrometheusDTO;
 
 /**
  * @author zhaotianxin
@@ -31,7 +30,7 @@ public interface DevopsClusterResourceService {
 
     DevopsClusterResourceDTO queryByClusterIdAndType(Long clusterId, String type);
 
-    void deletePrometheus(Long clusterId, Long configId);
+    void deletePrometheus(Long configId);
 
     List<ClusterResourceVO> listClusterResource(Long clusterId,Long projectId);
 
@@ -43,14 +42,14 @@ public interface DevopsClusterResourceService {
      */
     Boolean checkCertManager(Long clusterId);
 
-    void createOrUpdate(Long clusterId, PrometheusVo prometheusVo);
+    void createOrUpdate(Long clusterId, DevopsPrometheusVO prometheusVo);
 
-    DevopsPrometheusDTO queryPrometheus(Long clusterId);
+    DevopsPrometheusVO queryPrometheus(Long clusterId);
 
-    ClusterResourceVO queryDeployProcess(Long projectId, Long clusterId, Long prometheusId);
+    ClusterResourceVO queryDeployProcess(Long projectId, Long clusterId);
 
 
-    ClusterResourceVO queryPrometheusStatus(Long projectId,Long clusterId, Long prometheusId);
+    ClusterResourceVO queryPrometheusStatus(Long projectId,Long clusterId);
 
     void unloadCertManager(Long clusterId);
 
