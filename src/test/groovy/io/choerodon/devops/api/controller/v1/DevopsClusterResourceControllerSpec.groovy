@@ -2,6 +2,8 @@ package io.choerodon.devops.api.controller.v1
 
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
+import io.choerodon.devops.api.vo.ClusterResourceVO
+import io.choerodon.devops.api.vo.DevopsPrometheusVO
 import io.choerodon.devops.app.service.AgentCommandService
 import io.choerodon.devops.app.service.DevopsClusterResourceService
 import org.mockito.Mockito
@@ -41,8 +43,8 @@ class DevopsClusterResourceControllerSpec extends Specification {
         MultiValueMap<String, Object> paramMap = new LinkedMultiValueMap<String, Object>();
         paramMap.add("cluster_id", 1L);
         HttpHeaders headers = new HttpHeaders();
-        HttpEntity<MultiValueMap<String, Object>> httpEntity = new HttpEntity<MultiValueMap<String, Object>>(paramMap,headers);
-        def entity = restTemplate.postForEntity(MAPPING+"/cert_manager/deploy",httpEntity,null,1L);
+        HttpEntity<MultiValueMap<String, Object>> httpEntity = new HttpEntity<MultiValueMap<String, Object>>(paramMap, headers);
+        def entity = restTemplate.postForEntity(MAPPING + "/cert_manager/deploy", httpEntity, null, 1L);
         then:
         entity.statusCode.is2xxSuccessful()
     }
@@ -53,8 +55,73 @@ class DevopsClusterResourceControllerSpec extends Specification {
     def "UnloadCertManager"() {
         when:
         HttpEntity httpEntity = new HttpEntity();
-        def entity = restTemplate.exchange(MAPPING+"/cert_manager/unload?cluster_id=1",HttpMethod.DELETE,null,Boolean.class,1L)
+        def entity = restTemplate.exchange(MAPPING + "/cert_manager/unload?cluster_id=1", HttpMethod.DELETE, null, Boolean.class, 1L)
         then:
         entity.statusCode.is2xxSuccessful()
+    }
+
+    def "create"() {
+        given:
+        DevopsPrometheusVO devopsPrometheusVO = new DevopsPrometheusVO()
+        devopsPrometheusVO.setAdminPassword("test")
+        devopsPrometheusVO.setClusterName("uat")
+        devopsPrometheusVO.setGrafanaDomain("www.hand.com")
+        devopsPrometheusVO.setPvName("test")
+        when:
+        def entity = restTemplate.postForEntity(MAPPING + "/prometheus/create?cluster_id=1", devopsPrometheusVO, null, 1L)
+        then:
+        entity.statusCode.is2xxSuccessful()
+
+    }
+
+    def "update"() {
+        given:
+        DevopsPrometheusVO devopsPrometheusVO = new DevopsPrometheusVO()
+        devopsPrometheusVO.setId(1L)
+        devopsPrometheusVO.setAdminPassword("test")
+        devopsPrometheusVO.setClusterName("uat")
+        devopsPrometheusVO.setGrafanaDomain("www.hand.com")
+        devopsPrometheusVO.setPvName("test")
+        when:
+        def entity = restTemplate.getForEntity(MAPPING + "/prometheus/update?cluster_id=1", devopsPrometheusVO, null, 1L)
+        then:
+        entity.statusCode.is2xxSuccessful()
+    }
+
+    def "query"() {
+        given:
+        DevopsPrometheusVO devopsPrometheusVO = new DevopsPrometheusVO()
+        devopsPrometheusVO.setId(1L)
+        devopsPrometheusVO.setAdminPassword("test")
+        devopsPrometheusVO.setClusterName("uat")
+        devopsPrometheusVO.setGrafanaDomain("www.hand.com")
+        devopsPrometheusVO.setPvName("test")
+        when:
+        def entity = restTemplate.getForEntity(MAPPING + "/prometheus?cluster_id=1", null, DevopsPrometheusVO.class, 1L)
+        then:
+        entity.body != null
+    }
+
+    def "getDeployStatus"() {
+        given:
+        DevopsPrometheusVO devopsPrometheusVO = new DevopsPrometheusVO()
+        devopsPrometheusVO.setId(1L)
+        devopsPrometheusVO.setAdminPassword("test")
+        devopsPrometheusVO.setClusterName("uat")
+        devopsPrometheusVO.setGrafanaDomain("www.hand.com")
+        devopsPrometheusVO.setPvName("test")
+        when:
+        def entity = restTemplate.getForEntity(MAPPING + "/prometheus?cluster_id=1", ClusterResourceVO.class, 1L)
+        then:
+        entity.body.getStatus() != null
+    }
+
+    def "delete"() {
+        given:
+        when:
+        HttpEntity httpEntity = new HttpEntity();
+        def entity = restTemplate.exchange(MAPPING + "/prometheus/unload?cluster_id=1", DevopsPrometheusVO.class, 1L)
+        then:
+        entity.body != null
     }
 }
