@@ -52,5 +52,6 @@ public interface DevopsClusterResourceService {
 
     ClusterResourceVO queryPrometheusStatus(Long projectId,Long clusterId, Long prometheusId);
 
+    void unloadCertManager(Long clusterId);
 
 }

@@ -1,5 +1,9 @@
 package io.choerodon.devops.app.service.impl;
 
+import io.choerodon.devops.infra.dto.DevopsCertManagerRecordDTO;
+import io.choerodon.devops.infra.enums.*;
+import io.choerodon.devops.infra.mapper.DevopsCertManagerRecordMapper;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -102,7 +106,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     @Override
     public void operateCertManager(Long clusterId,String status,String error) {
         DevopsClusterResourceDTO devopsClusterResourceDTO = new DevopsClusterResourceDTO();
-        devopsClusterResourceDTO.setType("cert-manager");
+        devopsClusterResourceDTO.setType(ClusterResourceType.CERTMANAGER.getType());
         devopsClusterResourceDTO.setClusterId(clusterId);
         DevopsClusterResourceDTO clusterResourceDTO = devopsClusterResourceMapper.queryByOptions(devopsClusterResourceDTO);
         if (!ObjectUtils.isEmpty(clusterResourceDTO)) {
@@ -240,7 +244,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
                 devopsClusterResourceDTO.setObjectId(releaseForPrometheus.getId());
                 devopsClusterResourceDTO.setName(devopsClusterDTO.getName());
                 devopsClusterResourceDTO.setCode(devopsClusterDTO.getCode());
-                devopsClusterResourceDTO.setType(ClusterResourceType.PROMETHEUS.getType());
+                devopsClusterResourceDTO.setType(ClusterResourceType.CERTMANAGER.getType());
                 devopsClusterResourceService.baseCreate(devopsClusterResourceDTO);
             }
 
