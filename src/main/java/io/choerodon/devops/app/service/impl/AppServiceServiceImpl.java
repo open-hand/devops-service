@@ -2380,7 +2380,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public List<ProjectVO> listProjectByShare(Long projectId, Boolean share) {
         List<AppServiceDTO> appServiceDTOList = new ArrayList<>();
-        PageRequest pageRequest = new PageRequest();
+        PageRequest pageRequest = new PageRequest(0,0);
         pageRequest.setSize(0);
         PageInfo<AppServiceGroupInfoVO> appServiceGroupInfoVOPageInfo = pageAppServiceByMode(projectId, share, null, null, pageRequest);
         List<AppServiceGroupInfoVO> list = appServiceGroupInfoVOPageInfo.getList();
