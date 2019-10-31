@@ -228,7 +228,7 @@ public interface AppServiceService {
      * @param appServiceImportVO 导入操作的相关信息
      * @return response
      */
-    AppServiceRepVO importApp(Long projectId, AppServiceImportVO appServiceImportVO);
+    AppServiceRepVO importApp(Long projectId, AppServiceImportVO appServiceImportVO, Boolean isTemplate);
 
     /**
      * 根据服务code查询服务
@@ -296,7 +296,7 @@ public interface AppServiceService {
      * @param params
      * @return
      */
-    PageInfo<AppServiceRepVO> pageShareAppService(Long projectId,boolean doPage,PageRequest pageRequest, String params);
+    PageInfo<AppServiceRepVO> pageShareAppService(Long projectId, boolean doPage, PageRequest pageRequest, String params);
 
     /**
      * 根据appServiceId查询服务服务有权限的项目成员和项目所有者
@@ -436,7 +436,7 @@ public interface AppServiceService {
      * @param ids
      * @return
      */
-    PageInfo<AppServiceVO> listAppServiceByIds(Long projectId,Set<Long> ids, Boolean doPage, PageRequest pageRequest, String params);
+    PageInfo<AppServiceVO> listAppServiceByIds(Long projectId, Set<Long> ids, Boolean doPage, PageRequest pageRequest, String params);
 
     /**
      * 根据导入应用类型查询应用所属的项目集合
@@ -462,5 +462,8 @@ public interface AppServiceService {
                        Boolean isGetWorkingDirectory);
 
     String checkAppServiceType(Long projectId,AppServiceDTO appServiceDTO);
+
     void deleteAppServiceSage(Long projectId,Long appServiceId);
+
+    List<AppServiceTemplateVO> listServiceTemplates();
 }

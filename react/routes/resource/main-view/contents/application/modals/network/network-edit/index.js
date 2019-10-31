@@ -1140,6 +1140,7 @@ class EditNetwork extends Component {
         );
       },
     );
+    const defaultIst = initIst.length ? initIst : undefined;
 
     return (
       <div className="c7n-region">
@@ -1212,7 +1213,7 @@ class EditNetwork extends Component {
                     {...formItemLayout}
                   >
                     {getFieldDecorator('appInstance', {
-                      initialValue: initIst.length ? initIst : undefined,
+                      initialValue: defaultIst && defaultIst.length > 1 ? 'all_instance' : defaultIst,
                       trigger: ['onChange', 'onSubmit'],
                       rules: [
                         {

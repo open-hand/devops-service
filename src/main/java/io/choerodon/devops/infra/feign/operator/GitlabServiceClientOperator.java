@@ -1,20 +1,8 @@
 package io.choerodon.devops.infra.feign.operator;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
 import com.github.pagehelper.PageInfo;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.lang.Nullable;
-import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 import feign.FeignException;
 import feign.RetryableException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.infra.dto.RepositoryFileDTO;
@@ -22,10 +10,19 @@ import io.choerodon.devops.infra.dto.gitlab.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
-import io.choerodon.devops.infra.util.GitUserNameUtil;
-import io.choerodon.devops.infra.util.GitUtil;
-import io.choerodon.devops.infra.util.PageInfoUtil;
-import io.choerodon.devops.infra.util.TypeUtil;
+import io.choerodon.devops.infra.util.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.lang.Nullable;
+import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
@@ -172,7 +169,7 @@ public class GitlabServiceClientOperator {
     /**
      * 从gitlab项目创建access token
      *
-     * @param userId          用户id
+     * @param userId 用户id
      * @return access token
      */
     @Nullable
@@ -745,9 +742,17 @@ public class GitlabServiceClientOperator {
     public List<CommitDTO> listCommits(Integer projectId, Integer mergeRequestId, Integer userId) {
         try {
             List<CommitDTO> commitDTOS = new LinkedList<>();
-            commitDTOS.addAll(gitlabServiceClient.listCommits(projectId, mergeRequestId, userId).getBody());
-            return commitDTOS;
+            ResponseEntity<List<CommitDTO>> responseEntity = gitlabServiceClient.listCommits(projectId, mergeRequestId, userId);
+            if (responseEntity.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
+                return null;
+            } else {
+                commitDTOS.addAll(responseEntity.getBody());
+                return commitDTOS;
+            }
         } catch (FeignException e) {
+            if (FeignResponseStatusCodeParse.parseStatusCode(e.getMessage()) == 404) {
+                return null;
+            }
             throw new CommonException(e.getMessage(), e);
         }
     }

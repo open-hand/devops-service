@@ -17,6 +17,5 @@ export default ((intlPrefix, formatMessage, projectId) => ({
     { name: 'type', type: 'string', label: formatMessage({ id: `${intlPrefix}.type` }) },
     { name: 'projectName', type: 'string', label: formatMessage({ id: `${intlPrefix}.project` }) },
     { name: 'share', type: 'boolean', label: formatMessage({ id: `${intlPrefix}.source` }) },
-    { name: 'versions', type: 'object' },
   ],
 }));

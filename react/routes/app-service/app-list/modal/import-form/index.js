@@ -30,7 +30,7 @@ const ImportForm = injectIntl(observer((props) => {
   modal.handleOk(async () => {
     if (record.get('platformType') === 'share' || record.get('platformType') === 'market') {
       if (!selectedDs.length) return true;
-      if (selectedDs.some((item) => item.get('nameFailed') || item.get('codeFailed'))) return false;
+      if (selectedDs.some((item) => item.get('nameFailed') || item.get('codeFailed') || !item.get('versionId'))) return false;
 
       const result = await checkData();
       if (!result) {
@@ -124,8 +124,18 @@ const ImportForm = injectIntl(observer((props) => {
         </Fragment>
       ) : (
         <Form record={record} style={{ width: '3.6rem' }}>
+          {record.get('platformType') === 'github' && (
+            <SelectBox name="isTemplate">
+              <Option value>{formatMessage({ id: `${intlPrefix}.github.system` })}</Option>
+              <Option value={false}>{formatMessage({ id: `${intlPrefix}.github.custom` })}</Option>
+            </SelectBox>
+          )}
+          {record.get('platformType') === 'github' && record.get('isTemplate') && (
+            <Select name="githubTemplate" searchable />
+          )}
           <TextField
             name="repositoryUrl"
+            disabled={record.get('platformType') === 'github' && record.get('isTemplate')}
             addonAfter={<Tips helpText={formatMessage({ id: `${intlPrefix}.address.tips` })} />}
           />
           {record.get('platformType') === 'gitlab' && <TextField name="accessToken" />}
