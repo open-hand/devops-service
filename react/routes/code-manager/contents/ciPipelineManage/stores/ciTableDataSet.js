@@ -1,14 +1,13 @@
 import React from 'react';
 import Tips from '../../../../../components/Tips/Tips';
 
-export default ((projectId, appId, formatMessage) => ({
-  autoQuery: true,
+export default ((formatMessage) => ({
+  autoQuery: false,
   selection: false,
   transport: {
-    read: ({ data }) => ({
-      url: `/devops/v1/projects/${projectId}/pipeline/page_by_options?app_service_id=${appId}`,
+    read: {
       method: 'get',
-    }),
+    },
   },
 
   fields: [
