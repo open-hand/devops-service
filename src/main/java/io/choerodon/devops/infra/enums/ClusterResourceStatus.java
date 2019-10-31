@@ -6,9 +6,9 @@ package io.choerodon.devops.infra.enums;
  */
 public enum ClusterResourceStatus {
     INSTALLING("installing"),
-    SUCCESS("success"),
-    FAILED("failed"),
-    UNLOADING("unloading");
+    PROCESSING("Processing"),
+    AVAILABLE("available"),
+    DISABLED("disabled");
     private String status;
 
     ClusterResourceStatus(String status) {
