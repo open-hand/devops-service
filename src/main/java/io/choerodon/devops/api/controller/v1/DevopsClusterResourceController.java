@@ -79,7 +79,7 @@ public class DevopsClusterResourceController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "集群下安装prometheus")
     @PostMapping("/prometheus/create")
-    private ResponseEntity create(
+    public ResponseEntity create(
             @ApiParam(value = "集群id", required = true)
             @RequestParam(name = "cluster_id", required = true) Long clusterId,
             @ApiParam(value = "请求体", required = true)
@@ -92,7 +92,7 @@ public class DevopsClusterResourceController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "升级prometheus")
     @PutMapping("/prometheus/update")
-    private ResponseEntity update(
+    public ResponseEntity update(
             @ApiParam(value = "集群id", required = true)
             @RequestParam(name = "cluster_id", required = true) Long clusterId,
             @ApiParam(value = "请求体", required = true)
@@ -104,17 +104,19 @@ public class DevopsClusterResourceController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "查询集群下prometheus")
     @GetMapping("/prometheus")
-    private ResponseEntity update(
+    public ResponseEntity<DevopsPrometheusVO> query(
             @ApiParam(value = "集群id", required = true)
             @RequestParam(name = "cluster_id", required = true) Long clusterId) {
-        devopsClusterResourceService.queryPrometheus(clusterId);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+
+        return Optional.ofNullable(devopsClusterResourceService.queryPrometheus(clusterId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.query.prometheus"));
     }
 
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "查询prometheus部署状态")
     @GetMapping("/prometheus/deploy_status")
-    private ResponseEntity<ClusterResourceVO> getDeployStatus(
+    public ResponseEntity<ClusterResourceVO> getDeployStatus(
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群id", required = true)
             @RequestParam(name = "cluster_id", required = true) Long clusterId) {
