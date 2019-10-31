@@ -17,7 +17,6 @@ import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.ClusterResourceVO;
 import io.choerodon.devops.api.vo.PrometheusVo;
 import io.choerodon.devops.app.service.DevopsClusterResourceService;
-import io.choerodon.devops.infra.dto.DevopsClusterResourceDTO;
 
 /**
  * @author zhaotianxin
@@ -49,7 +48,7 @@ public class DevopsClusterResourceController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群id", required = true)
             @RequestParam(name = "cluster_id", required = true) Long clusterId) {
-        return Optional.ofNullable(devopsClusterResourceService.listClusterResource(clusterId,projectId))
+        return Optional.ofNullable(devopsClusterResourceService.listClusterResource(clusterId, projectId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.cert.manager.insert"));
     }
@@ -63,7 +62,7 @@ public class DevopsClusterResourceController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群id", required = true)
             @RequestParam(name = "cluster_id", required = true) Long clusterId) {
-        return new ResponseEntity<Boolean>(devopsClusterResourceService.deleteCertManager(clusterId),HttpStatus.OK);
+        return new ResponseEntity<Boolean>(devopsClusterResourceService.deleteCertManager(clusterId), HttpStatus.OK);
     }
 
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
@@ -129,6 +128,22 @@ public class DevopsClusterResourceController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "查询grafana URL")
+    @GetMapping("/grafana_url")
+    public ResponseEntity<String> getGrafanaUrl(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "集群id", required = true)
+            @RequestParam(name = "cluster_id", required = true) Long clusterId,
+            @ApiParam(value = "接口type", required = true)
+            @RequestParam(name = "type", required = true) String type,
+            @ApiParam(value = "token", required = true)
+            @RequestParam(name = "token", required = true) String token) {
+        return Optional.ofNullable(devopsClusterResourceService.getGrafanaUrl(clusterId, type, token))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.grafana.url.get"));
+    }
 }
 
 
