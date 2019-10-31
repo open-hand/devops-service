@@ -24,7 +24,7 @@ import io.choerodon.devops.infra.dto.DevopsClusterResourceDTO;
  * @since 2019/10/29
  */
 @RestController
-@RequestMapping(value = "/v1/projects/{project_id}")
+@RequestMapping(value = "/v1/projects/{project_id}/cluster_resource")
 public class DevopsClusterResourceController {
     @Autowired
     private DevopsClusterResourceService devopsClusterResourceService;
@@ -32,12 +32,11 @@ public class DevopsClusterResourceController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下创建cert_manager")
     @PostMapping("/cert_manager/deploy")
-    public ResponseEntity deploy(
+    public ResponseEntity deployCertManager(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群id", required = true)
-            @RequestParam(name = "cluster_id", required = true) Long clusterId,
-            @RequestBody DevopsClusterResourceDTO devopsClusterResourceDTO) {
+            @RequestParam(name = "cluster_id", required = true) Long clusterId) {
         devopsClusterResourceService.operateCertManager(clusterId, null, null);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
@@ -45,12 +44,12 @@ public class DevopsClusterResourceController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "查询组件")
     @GetMapping
-    public ResponseEntity<List<ClusterResourceVO>> query(
+    public ResponseEntity<List<ClusterResourceVO>> listClusterResource(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群id", required = true)
             @RequestParam(name = "cluster_id", required = true) Long clusterId) {
-        return Optional.ofNullable(devopsClusterResourceService.listClusterResource(clusterId))
+        return Optional.ofNullable(devopsClusterResourceService.listClusterResource(clusterId,projectId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.cert.manager.insert"));
     }
@@ -59,12 +58,12 @@ public class DevopsClusterResourceController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下卸载cert_manager")
     @DeleteMapping("/cert_manager/unload")
-    public ResponseEntity<Boolean> unload(
+    public ResponseEntity<Boolean> unloadCertManager(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群id", required = true)
             @RequestParam(name = "cluster_id", required = true) Long clusterId) {
-        return new ResponseEntity<Boolean>(devopsClusterResourceService.deleteCertManager(clusterId), HttpStatus.OK);
+        return new ResponseEntity<Boolean>(devopsClusterResourceService.deleteCertManager(clusterId),HttpStatus.OK);
     }
 
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})

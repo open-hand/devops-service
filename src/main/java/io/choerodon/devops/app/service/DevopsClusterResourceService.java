@@ -34,7 +34,7 @@ public interface DevopsClusterResourceService {
 
     void deletePrometheus(Long clusterId, Long configId);
 
-    List<ClusterResourceVO> listClusterResource(Long clusterId);
+    List<ClusterResourceVO> listClusterResource(Long clusterId,Long projectId);
 
     /**
      * 验证cert-manager 管理的证书是否存在启用或者操作状态的

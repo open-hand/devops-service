@@ -201,19 +201,28 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     }
 
     @Override
-    public List<ClusterResourceVO> listClusterResource(Long clusterId) {
+    public List<ClusterResourceVO> listClusterResource(Long clusterId,Long projectId) {
         List<ClusterResourceVO> list = new ArrayList<>();
         // 查询cert-manager 状态
         DevopsClusterResourceDTO devopsClusterResourceDTO = queryCertManager(clusterId);
         DevopsCertManagerRecordDTO devopsCertManagerRecordDTO = devopsCertManagerRecordMapper.selectByPrimaryKey(devopsClusterResourceDTO.getObjectId());
         ClusterResourceVO clusterConfigVO = new ClusterResourceVO();
-        clusterConfigVO.setStatus(devopsCertManagerRecordDTO.getStatus());
-        clusterConfigVO.setMessage(devopsCertManagerRecordDTO.getError());
+        if(!ObjectUtils.isEmpty(devopsCertManagerRecordDTO)){
+            clusterConfigVO.setStatus(devopsCertManagerRecordDTO.getStatus());
+            clusterConfigVO.setMessage(devopsCertManagerRecordDTO.getError());
+        }
+        clusterConfigVO.setType(ClusterResourceType.CERTMANAGER.getType());
         list.add(clusterConfigVO);
+        // 查询prometheus 的状态和信息
+        DevopsClusterResourceDTO prometheus = devopsClusterResourceMapper.queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
+        Long configId = prometheus.getConfigId();
+        ClusterResourceVO clusterResourceVO = queryPrometheusStatus(projectId, clusterId, configId);
+        list.add(clusterResourceVO);
         return list;
     }
 
-
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public void unloadCertManager(Long clusterId){
         List<CertificationDTO> certificationDTOS = devopsCertificationMapper.listClusterCertification(clusterId);
         if(!CollectionUtils.isEmpty(certificationDTOS)){
@@ -385,6 +394,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
             clusterResourceVO.setStatus(STATUS_FAIL);
             clusterResourceVO.setMessage(devopsEnvCommandDTO.getError());
         }
+        clusterResourceVO.setType(ClusterResourceType.PROMETHEUS.getType());
         return clusterResourceVO;
     }
 
