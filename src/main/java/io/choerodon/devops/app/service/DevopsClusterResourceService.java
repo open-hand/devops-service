@@ -24,7 +24,6 @@ public interface DevopsClusterResourceService {
      */
     void operateCertManager(Long clusterId,String status,String error);
 
-    DevopsClusterResourceDTO queryCertManager(Long clusterId);
 
     Boolean deleteCertManager(Long clusterId);
 
