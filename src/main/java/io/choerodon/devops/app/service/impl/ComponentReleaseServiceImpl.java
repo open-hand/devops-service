@@ -147,7 +147,7 @@ public class ComponentReleaseServiceImpl implements ComponentReleaseService {
      * @return 版本信息
      */
     private AppServiceVersionDTO getAppServiceVersionForComponent(String componentType) {
-        return ComponmentConfigUtil.getComponmentVersion(componentType);
+        return ComponentConfigUtil.getComponentVersion(componentType);
     }
 
 

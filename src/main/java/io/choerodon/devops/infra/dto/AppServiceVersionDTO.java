@@ -37,6 +37,16 @@ public class AppServiceVersionDTO extends BaseDTO {
     private String readme;
     @Transient
     private String values;
+    @Transient
+    private String chartName;
+
+    public String getChartName() {
+        return chartName;
+    }
+
+    public void setChartName(String chartName) {
+        this.chartName = chartName;
+    }
 
     public String getValues() {
         return values;
