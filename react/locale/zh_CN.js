@@ -383,6 +383,7 @@ const deployment = {
   'c7ncd.deployment.config': '部署配置',
   'c7ncd.deployment.manual.deploy': '手动部署',
   'c7ncd.deployment.permission.delete.title': '删除权限',
+  'c7ncd.deployment.permission.project.delete.des': '确定要删除该项目的权限吗？',
   'c7ncd.deployment.permission.delete.des': '确定要删除该成员的权限吗？',
   'c7ncd.deployment.custom.delete.title': '删除自定义资源“{name}”',
   'c7ncd.deployment.custom.delete.des': '确定要删除该自定义资源吗？',
