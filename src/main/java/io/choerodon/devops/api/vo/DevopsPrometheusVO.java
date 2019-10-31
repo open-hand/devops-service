@@ -9,9 +9,9 @@ import io.swagger.annotations.ApiModelProperty;
  * @date: 2019/10/29 8:44
  * @description:
  */
-public class PrometheusVo {
+public class DevopsPrometheusVO {
 
-    private Long prometheusId;
+    private Long id;
     @ApiModelProperty("admin密码/必填")
     @NotNull(message = "error.admin.password.null")
     private String adminPassword;
@@ -25,13 +25,20 @@ public class PrometheusVo {
     @NotNull(message = "error.cluster.name.null")
     private String clusterName;
 
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public Long getPrometheusId() {
-        return prometheusId;
+        return id;
     }
 
     public void setPrometheusId(Long prometheusId) {
-        this.prometheusId = prometheusId;
+        this.id = id;
     }
 
     public String getAdminPassword() {
@@ -65,4 +72,6 @@ public class PrometheusVo {
     public void setClusterName(String clusterName) {
         this.clusterName = clusterName;
     }
+
+
 }
