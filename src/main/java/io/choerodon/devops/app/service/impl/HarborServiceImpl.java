@@ -1,21 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.google.gson.Gson;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.DevopsConfigVO;
@@ -35,6 +20,21 @@ import io.choerodon.devops.infra.feign.HarborClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
 import io.choerodon.devops.infra.util.GenerateUUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created with IntelliJ IDEA.
@@ -73,30 +73,14 @@ public class HarborServiceImpl implements HarborService {
 
     @Override
     public void createHarborForProject(HarborPayload harborPayload) {
-        //获取当前项目的harbor设置,如果有自定义的取自定义，没自定义取组织层的harbor配置
-        if (harborPayload.getProjectId() != null) {
-            DevopsConfigVO devopsConfigVO = devopsConfigService.dtoToVo(devopsConfigService.queryRealConfig(harborPayload.getProjectId(), ResourceLevel.PROJECT.value(), HARBOR,AUTHTYPE));
-            harborConfigurationProperties.setUsername(devopsConfigVO.getConfig().getUserName());
-            harborConfigurationProperties.setPassword(devopsConfigVO.getConfig().getPassword());
-            harborConfigurationProperties.setBaseUrl(devopsConfigVO.getConfig().getUrl());
-        } else {
-            harborConfigurationProperties.setUsername(username);
-            harborConfigurationProperties.setPassword(password);
-            baseUrl = baseUrl.endsWith("/") ? baseUrl : baseUrl + "/";
-            harborConfigurationProperties.setBaseUrl(baseUrl);
-            harborConfigurationProperties.setInsecureSkipTlsVerify(true);
-        }
-        ConfigurationProperties configurationProperties = new ConfigurationProperties(harborConfigurationProperties);
-        configurationProperties.setType(HARBOR);
-        Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
-        HarborClient harborClient = retrofit.create(HarborClient.class);
+        HarborClient harborClient = initHarborClient(harborPayload);
         Boolean createUser = harborPayload.getProjectId() != null;
-        createHarbor(harborClient, harborPayload.getProjectId(), harborPayload.getProjectCode(), createUser,true);
+        createHarbor(harborClient, harborPayload.getProjectId(), harborPayload.getProjectCode(), createUser, true);
     }
 
 
     @Override
-    public void createHarbor(HarborClient harborClient, Long projectId, String projectCode, Boolean createUser,Boolean harborPrivate) {
+    public void createHarbor(HarborClient harborClient, Long projectId, String projectCode, Boolean createUser, Boolean harborPrivate) {
         //创建harbor仓库
         try {
             Response<Void> result = null;
@@ -115,16 +99,8 @@ public class HarborServiceImpl implements HarborService {
                 ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
                 OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
                 DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
-                String username = String.format("User%s%s", organizationDTO.getId(), projectId);
-                String useremail = String.format("%s@harbor.com", username);
-                String password = String.format("%s%s", username, GenerateUUID.generateUUID().substring(0, 3));
-
-                String pullUsername = String.format("pullUser%s%s", organizationDTO.getId(), projectId);
-                String pullUseremail = String.format("%s@harbor.com", pullUsername);
-                String pullUserpassword = String.format("%s%s", pullUsername, GenerateUUID.generateUUID().substring(0, 3));
-
-                User user = new User(username, useremail, password, username);
-                User pullUser = new User(pullUsername, pullUseremail, pullUserpassword, pullUsername);
+                User user = convertUser(projectDTO, true,null);
+                User pullUser = convertUser(projectDTO, false,null);
                 //创建用户,绑定角色
                 createUser(harborClient, user, Arrays.asList(1), organizationDTO, projectDTO);
                 createUser(harborClient, pullUser, Arrays.asList(3), organizationDTO, projectDTO);
@@ -153,10 +129,29 @@ public class HarborServiceImpl implements HarborService {
     }
 
     @Override
-    public void createHarborUser(HarborPayload harborPayload, User user,ProjectDTO projectDTO,List<Integer> roles) {
+    public void createHarborUser(HarborPayload harborPayload, User user, ProjectDTO projectDTO, List<Integer> roles) {
         HarborClient harborClient = initHarborClient(harborPayload);
         OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-        createUser(harborClient,user,roles,organizationDTO,projectDTO);
+        createUser(harborClient, user, roles, organizationDTO, projectDTO);
+    }
+
+    @Override
+    public User convertUser(ProjectDTO projectDTO, Boolean isPush,String name) {
+        String pull = null;
+        if (!isPush) {
+            pull = "pull";
+        }
+        String userName = null;
+        if(ObjectUtils.isEmpty(name)){
+            userName = String.format("User%s%s%s", pull, projectDTO.getOrganizationId(), projectDTO.getId());
+        }
+        else {
+            userName = name;
+        }
+        String userEmail = String.format("%s@harbor.com", userName);
+        String password = String.format("%s%s", userName, GenerateUUID.generateUUID().substring(0, 3));
+        User user = new User(userName, userEmail, password, userName);
+        return user;
     }
 
     private void createUser(HarborClient harborClient, User user, List<Integer> roles, OrganizationDTO organizationDTO, ProjectDTO projectDTO) {
@@ -197,24 +192,25 @@ public class HarborServiceImpl implements HarborService {
     }
 
 
-   private HarborClient initHarborClient(HarborPayload harborPayload){
-       //获取当前项目的harbor设置,如果有自定义的取自定义，没自定义取组织层的harbor配置
-       if (harborPayload.getProjectId() != null) {
-           DevopsConfigVO devopsConfigVO = devopsConfigService.dtoToVo(devopsConfigService.queryRealConfig(harborPayload.getProjectId(), ResourceLevel.PROJECT.value(), HARBOR,AUTHTYPE));
-           harborConfigurationProperties.setUsername(devopsConfigVO.getConfig().getUserName());
-           harborConfigurationProperties.setPassword(devopsConfigVO.getConfig().getPassword());
-           harborConfigurationProperties.setBaseUrl(devopsConfigVO.getConfig().getUrl());
-       } else {
-           harborConfigurationProperties.setUsername(username);
-           harborConfigurationProperties.setPassword(password);
-           baseUrl = baseUrl.endsWith("/") ? baseUrl : baseUrl + "/";
-           harborConfigurationProperties.setBaseUrl(baseUrl);
-           harborConfigurationProperties.setInsecureSkipTlsVerify(true);
-       }
-       ConfigurationProperties configurationProperties = new ConfigurationProperties(harborConfigurationProperties);
-       configurationProperties.setType(HARBOR);
-       Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
-       HarborClient harborClient = retrofit.create(HarborClient.class);
-       return  harborClient;
-   }
+    private HarborClient initHarborClient(HarborPayload harborPayload) {
+        //获取当前项目的harbor设置,如果有自定义的取自定义，没自定义取组织层的harbor配置
+        if (harborPayload.getProjectId() != null) {
+            DevopsConfigVO devopsConfigVO = devopsConfigService.dtoToVo(devopsConfigService.queryRealConfig(harborPayload.getProjectId(), ResourceLevel.PROJECT.value(), HARBOR, AUTHTYPE));
+            harborConfigurationProperties.setUsername(devopsConfigVO.getConfig().getUserName());
+            harborConfigurationProperties.setPassword(devopsConfigVO.getConfig().getPassword());
+            harborConfigurationProperties.setBaseUrl(devopsConfigVO.getConfig().getUrl());
+        } else {
+            harborConfigurationProperties.setUsername(username);
+            harborConfigurationProperties.setPassword(password);
+            baseUrl = baseUrl.endsWith("/") ? baseUrl : baseUrl + "/";
+            harborConfigurationProperties.setBaseUrl(baseUrl);
+            harborConfigurationProperties.setInsecureSkipTlsVerify(true);
+        }
+        ConfigurationProperties configurationProperties = new ConfigurationProperties(harborConfigurationProperties);
+        configurationProperties.setType(HARBOR);
+        Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
+        HarborClient harborClient = retrofit.create(HarborClient.class);
+        return harborClient;
+    }
+
 }

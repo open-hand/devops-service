@@ -190,16 +190,8 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
             DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
             HarborUserDTO harborUserDTO = devopsHarborUserService.queryHarborUserById(devopsProjectDTO.getHarborUserId());
             HarborUserDTO harborPullUserDTO = devopsHarborUserService.queryHarborUserById(devopsProjectDTO.getHarborPullUserId());
-            String username = harborUserDTO == null ? String.format(USER_PREFIX, organizationDTO.getId(), projectId) : harborUserDTO.getHarborProjectUserName();
-            String password = harborUserDTO == null ? String.format("%s%s", username, GenerateUUID.generateUUID().substring(0, 3)) : harborUserDTO.getHarborProjectUserPassword();
-            String useremail = harborUserDTO == null ? String.format("%s@choerodon.com", username) : harborUserDTO.getHarborProjectUserEmail();
-
-            String pullUsername = harborPullUserDTO == null ? String.format(USER_PREFIX_PULL, organizationDTO.getId(), projectId) : harborPullUserDTO.getHarborProjectUserName();
-            String pullUseremail = harborPullUserDTO == null ? String.format("%s@choerodon.com", pullUsername) : harborPullUserDTO.getHarborProjectUserEmail();
-            String pullUserpassword = harborPullUserDTO == null ? String.format("%s%s", pullUsername, GenerateUUID.generateUUID().substring(0, 3)) : harborPullUserDTO.getHarborProjectUserPassword();
-
-            User user = new User(username, useremail, password, username);
-            User pullUser = new User(pullUsername, pullUseremail, pullUserpassword, pullUsername);
+            User user = harborService.convertUser(projectDTO,true,harborUserDTO.getHarborProjectUserName());
+            User pullUser = harborService.convertUser(projectDTO,false,harborPullUserDTO.getHarborProjectUserName());
             //创建用户
             createUser(harborClient, user, Arrays.asList(1), organizationDTO, projectDTO);
             createUser(harborClient, pullUser, Arrays.asList(3), organizationDTO, projectDTO);
