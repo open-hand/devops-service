@@ -227,7 +227,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     }
 
     @Override
-    public PrometheusVo deploy(Long clusterId, PrometheusVo prometheusVo) {
+    public PrometheusVo createOrUpdate(Long clusterId, PrometheusVo prometheusVo) {
 
         DevopsPrometheusDTO devopsPrometheusDTO = prometheusVoToDto(prometheusVo);
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
@@ -236,16 +236,22 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         if (devopsClusterResourceDTO.getSystemEnvId() != null) {
             AppServiceInstanceDTO releaseForPrometheus = componentReleaseService.createReleaseForPrometheus(devopsPrometheusDTO);
             if (!ObjectUtils.isEmpty(releaseForPrometheus)) {
-                devopsPrometheusMapper.insertSelective(devopsPrometheusDTO);
-                prometheusVo.setPrometheusId(devopsPrometheusDTO.getId());
 
-                devopsClusterResourceDTO.setClusterId(clusterId);
-                devopsClusterResourceDTO.setConfigId(prometheusVo.getPrometheusId());
-                devopsClusterResourceDTO.setObjectId(releaseForPrometheus.getId());
-                devopsClusterResourceDTO.setName(devopsClusterDTO.getName());
-                devopsClusterResourceDTO.setCode(devopsClusterDTO.getCode());
-                devopsClusterResourceDTO.setType(ClusterResourceType.CERTMANAGER.getType());
-                devopsClusterResourceService.baseCreate(devopsClusterResourceDTO);
+                if(ObjectUtils.isEmpty(devopsPrometheusDTO.getId())){
+                    devopsPrometheusMapper.insertSelective(devopsPrometheusDTO);
+                    prometheusVo.setPrometheusId(devopsPrometheusDTO.getId());
+
+                    devopsClusterResourceDTO.setClusterId(clusterId);
+                    devopsClusterResourceDTO.setConfigId(prometheusVo.getPrometheusId());
+                    devopsClusterResourceDTO.setObjectId(releaseForPrometheus.getId());
+                    devopsClusterResourceDTO.setName(devopsClusterDTO.getName());
+                    devopsClusterResourceDTO.setCode(devopsClusterDTO.getCode());
+                    devopsClusterResourceDTO.setType(ClusterResourceType.PROMETHEUS.getType());
+                    devopsClusterResourceService.baseCreate(devopsClusterResourceDTO);
+                }else {
+                    devopsPrometheusMapper.updateByPrimaryKey(devopsPrometheusDTO);
+                }
+
             }
 
         }

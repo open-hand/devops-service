@@ -44,7 +44,7 @@ public interface DevopsClusterResourceService {
      */
     Boolean checkCertManager(Long clusterId);
 
-    PrometheusVo deploy(Long clusterId, PrometheusVo prometheusVo);
+    PrometheusVo createOrUpdate(Long clusterId, PrometheusVo prometheusVo);
 
     ClusterResourceVO queryDeployProcess(Long projectId, Long clusterId, Long prometheusId);
 
