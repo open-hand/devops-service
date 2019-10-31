@@ -30,7 +30,7 @@ public interface DevopsClusterResourceService {
 
     DevopsClusterResourceDTO queryByClusterIdAndType(Long clusterId, String type);
 
-    void deletePrometheus(Long configId);
+    void deletePrometheus(Long clusterId);
 
     List<ClusterResourceVO> listClusterResource(Long clusterId,Long projectId);
 
@@ -47,7 +47,6 @@ public interface DevopsClusterResourceService {
     DevopsPrometheusVO queryPrometheus(Long clusterId);
 
     ClusterResourceVO queryDeployProcess(Long projectId, Long clusterId);
-
 
     ClusterResourceVO queryPrometheusStatus(Long projectId,Long clusterId);
 

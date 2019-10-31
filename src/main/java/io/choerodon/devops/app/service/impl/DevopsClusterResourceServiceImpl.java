@@ -354,5 +354,12 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         BeanUtils.copyProperties(prometheusVo, devopsPrometheusDTO);
         return devopsPrometheusDTO;
     }
+    @Override
+    public String getGrafanaUrl(Long clusterId, String type, String token) {
+        DevopsClusterResourceDTO clusterResourceDTO = queryByClusterIdAndType(clusterId, type);
+        clusterResourceDTO.getConfigId();
+
+        return null;
+    }
 
 }
