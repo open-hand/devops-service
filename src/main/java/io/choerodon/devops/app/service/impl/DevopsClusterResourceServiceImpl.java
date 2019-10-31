@@ -307,6 +307,8 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
             clusterResourceVO.setMessage(devopsEnvCommandDTO.getError());
             clusterResourceVO.setStatus(STATUS_FAIL);
         }
+
+
         return clusterResourceVO;
     }
 
