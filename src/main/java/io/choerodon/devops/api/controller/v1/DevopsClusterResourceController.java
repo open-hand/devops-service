@@ -79,28 +79,36 @@ public class DevopsClusterResourceController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "集群下安装prometheus")
     @PostMapping("/prometheus/create")
-    private ResponseEntity<PrometheusVo> create(
+    private ResponseEntity create(
             @ApiParam(value = "集群id", required = true)
             @RequestParam(name = "cluster_id", required = true) Long clusterId,
             @ApiParam(value = "请求体", required = true)
             @RequestBody PrometheusVo prometheusVo) {
-        return Optional.ofNullable(devopsClusterResourceService.createOrUpdate(clusterId, prometheusVo))
-                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.prometheus.create"));
+        devopsClusterResourceService.createOrUpdate(clusterId,prometheusVo);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
 
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "升级prometheus")
     @PutMapping("/prometheus/update")
-    private ResponseEntity<PrometheusVo> update(
+    private ResponseEntity update(
             @ApiParam(value = "集群id", required = true)
             @RequestParam(name = "cluster_id", required = true) Long clusterId,
             @ApiParam(value = "请求体", required = true)
             @RequestBody PrometheusVo prometheusVo) {
-        return Optional.ofNullable(devopsClusterResourceService.createOrUpdate(clusterId, prometheusVo))
-                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.prometheus.update"));
+        devopsClusterResourceService.createOrUpdate(clusterId,prometheusVo);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "查询集群下prometheus")
+    @GetMapping("/prometheus/query")
+    private ResponseEntity update(
+            @ApiParam(value = "集群id", required = true)
+            @RequestParam(name = "cluster_id", required = true) Long clusterId) {
+        devopsClusterResourceService.queryPrometheus(clusterId);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})

@@ -231,14 +231,14 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     }
 
     @Override
-    public PrometheusVo createOrUpdate(Long clusterId, PrometheusVo prometheusVo) {
+    public void createOrUpdate(Long clusterId, PrometheusVo prometheusVo) {
 
         DevopsPrometheusDTO devopsPrometheusDTO = prometheusVoToDto(prometheusVo);
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
 
         DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceMapper.queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
         if (devopsClusterResourceDTO.getSystemEnvId() == null) {
-            return null;
+            return ;
         }
 
         if (ObjectUtils.isEmpty(devopsPrometheusDTO.getId())) {
@@ -254,12 +254,19 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
             devopsClusterResourceDTO.setType(ClusterResourceType.PROMETHEUS.getType());
             devopsClusterResourceService.baseCreate(devopsClusterResourceDTO);
         } else {
+            //todo
             AppServiceInstanceDTO appServiceInstanceDTO = componentReleaseService.createReleaseForPrometheus(devopsPrometheusDTO);
             devopsClusterResourceDTO.setObjectId(appServiceInstanceDTO.getId());
             devopsPrometheusMapper.updateByPrimaryKey(devopsPrometheusDTO);
         }
 
-        return prometheusVo;
+    }
+
+    @Override
+    public DevopsPrometheusDTO queryPrometheus(Long clusterId) {
+        DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceMapper.queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
+        DevopsPrometheusDTO devopsPrometheusDTO = devopsPrometheusMapper.selectByPrimaryKey(devopsClusterResourceDTO.getConfigId());
+        return devopsPrometheusDTO;
     }
 
     @Override
@@ -292,7 +299,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void deletePrometheus(Long prometheusId, Long clusterId) {
-        DevopsPrometheusDTO devopsPrometheusDTO = baseQuery(prometheusId);
+        DevopsPrometheusDTO devopsPrometheusDTO = devopsPrometheusMapper.selectByPrimaryKey(prometheusId);
         if (devopsPrometheusDTO == null) {
             return;
         }
@@ -371,10 +378,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
 
     }
 
-    @Override
-    public DevopsPrometheusDTO baseQuery(Long id) {
-        return devopsPrometheusMapper.selectByPrimaryKey(id);
-    }
+
 
     @Override
     public ClusterResourceVO queryPrometheusStatus(Long projectId, Long clusterId, Long prometheusId) {
