@@ -29,6 +29,8 @@ public class AgentGitOpsMessageHandler implements TextMessageHandler<AgentMsgVO>
     @Override
     public void handle(WebSocketSession webSocketSession, String type, String key, AgentMsgVO msg) {
         HelmType helmType = HelmType.forValue(String.valueOf(msg.getType()));
+        logger.info("===========================查看msg.type:{}", msg.getType());
+        logger.info("=======================查看msg的commandId", msg.getCommandId());
         if (helmType == null) {
             logger.info("找不到指令啊 {}", msg.getType());
             return;
