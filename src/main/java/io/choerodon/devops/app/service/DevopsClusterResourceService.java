@@ -53,4 +53,5 @@ public interface DevopsClusterResourceService {
 
     void unloadCertManager(Long clusterId);
 
+    String getGrafanaUrl(Long clusterId, String type, String token);
 }
