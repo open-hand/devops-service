@@ -122,9 +122,22 @@ public class ComponentReleaseServiceImpl implements ComponentReleaseService {
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     public AppServiceInstanceDTO createReleaseForPrometheus(Long systemEnvId, DevopsPrometheusDTO devopsPrometheusDTO) {
-        return createOrUpdateComponentRelease("prometheus", CommandType.CREATE, devopsPrometheusDTO, systemEnvId, null);
+        return createOrUpdateComponentRelease(ClusterResourceType.PROMETHEUS.getType(), CommandType.CREATE, devopsPrometheusDTO, systemEnvId, null);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
+    public AppServiceInstanceDTO updateReleaseForPrometheus(DevopsPrometheusDTO devopsPrometheusDTO, Long instanceId, Long systemEnvId) {
+        return createOrUpdateComponentRelease(ClusterResourceType.PROMETHEUS.getType(), CommandType.UPDATE, devopsPrometheusDTO, systemEnvId, instanceId);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
+    public AppServiceInstanceDTO deleteReleaseForComponent(Long instanceId) {
+        // TODO
+        return null;
     }
 
 

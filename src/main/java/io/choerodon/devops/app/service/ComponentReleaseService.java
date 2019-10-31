@@ -18,4 +18,22 @@ public interface ComponentReleaseService {
      * @return 组件对应的实例纪录
      */
     AppServiceInstanceDTO createReleaseForPrometheus(Long systemEnvId, DevopsPrometheusDTO devopsPrometheusDTO);
+
+    /**
+     * 更新Prometheus实例
+     *
+     * @param devopsPrometheusDTO 用于更新组件的对应信息
+     * @param instanceId          组件对应的实例id
+     * @param systemEnvId         集群对应的环境id
+     * @return 组件更新后的实例纪录
+     */
+    AppServiceInstanceDTO updateReleaseForPrometheus(DevopsPrometheusDTO devopsPrometheusDTO, Long instanceId, Long systemEnvId);
+
+    /**
+     * 删除组件对应的实例
+     *
+     * @param instanceId 组件对应的实例ID
+     * @return 删除的实例对象
+     */
+    AppServiceInstanceDTO deleteReleaseForComponent(Long instanceId);
 }
