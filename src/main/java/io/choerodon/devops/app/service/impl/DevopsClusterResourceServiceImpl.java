@@ -83,6 +83,8 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     private static final String STATUS_CREATED = "created";
     private static final String STATUS_SUCCESSED = "success";
     private static final String STATUS_CHECK_FAIL = "check_fail";
+    private static final String GRAFANA_NODE = "/d/choerodon-default-node/jie-dian";
+    private static final String GRAFANA_CLUSTER = "/d/choerodon-default-cluster/ji-qun";
 
     @Override
     public void baseCreate(DevopsClusterResourceDTO devopsClusterResourceDTO) {
@@ -363,11 +365,11 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     }
 
     @Override
-    public String getGrafanaUrl(Long clusterId, String type, String token) {
-        DevopsClusterResourceDTO clusterResourceDTO = queryByClusterIdAndType(clusterId, type);
-        clusterResourceDTO.getConfigId();
-
-        return null;
+    public String getGrafanaUrl(Long clusterId, String type) {
+        DevopsClusterResourceDTO clusterResourceDTO = queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
+        DevopsPrometheusDTO devopsPrometheusDTO = devopsPrometheusMapper.selectByPrimaryKey(clusterResourceDTO.getConfigId());
+        String grafanaType = type.equals("node") ? GRAFANA_NODE : GRAFANA_CLUSTER;
+        return String.format("%s%s%s", "http://", devopsPrometheusDTO.getGrafanaDomain(), grafanaType);
     }
 
 }
