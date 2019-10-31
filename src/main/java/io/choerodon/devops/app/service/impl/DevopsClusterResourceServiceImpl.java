@@ -281,7 +281,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void delete(Long prometheusId, Long clusterId) {
+    public void deletePrometheus(Long prometheusId, Long clusterId) {
         DevopsPrometheusDTO devopsPrometheusDTO = baseQuery(prometheusId);
         if (devopsPrometheusDTO == null) {
             return;
@@ -367,7 +367,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     }
 
     @Override
-    public ClusterResourceVO queryPrometheusStatus(Long projectId, Long clusterId, Long prometheusId) {
+    public ClusterResourceVO queryResourceStatus(Long projectId, Long clusterId, Long prometheusId) {
         DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceMapper.queryByClusterIdAndTypeAndConfigId(clusterId, ClusterResourceType.PROMETHEUS.getType(), prometheusId);
         AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQuery(devopsClusterResourceDTO.getObjectId());
         DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(appServiceInstanceDTO.getCommandId());

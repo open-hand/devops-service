@@ -32,7 +32,7 @@ public interface DevopsClusterResourceService {
 
     DevopsClusterResourceDTO queryByClusterIdAndType(Long clusterId, String type);
 
-    void delete(Long clusterId, Long configId);
+    void deletePrometheus(Long clusterId, Long configId);
 
     List<ClusterResourceVO> listClusterResource(Long clusterId);
 
@@ -50,7 +50,7 @@ public interface DevopsClusterResourceService {
 
     DevopsPrometheusDTO baseQuery(Long prometheusId);
 
-    ClusterResourceVO queryPrometheusStatus(Long projectId,Long clusterId, Long prometheusId);
+    ClusterResourceVO queryResourceStatus(Long projectId,Long clusterId, Long prometheusId);
 
     void unloadCertManager(Long clusterId);
 
