@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Action, Choerodon } from '@choerodon/boot';
-import { Table, Modal } from 'choerodon-ui/pro';
+import { Table, Modal, Tooltip } from 'choerodon-ui/pro';
 import TimePopover from '../../../../../components/time-popover';
 import UserInfo from '../../../../../components/userInfo';
 import ClickText from '../../../../../components/click-text';
@@ -116,6 +116,7 @@ export default function DeployConfig() {
       value={value}
       onClick={openModifyModal}
       record={record}
+      showToolTip
     />;
   }
 
@@ -137,6 +138,14 @@ export default function DeployConfig() {
     return value ? <TimePopover datetime={value} /> : null;
   }
 
+  function renderDescription({ value }) {
+    return (
+      <Tooltip title={value}>
+        {value}
+      </Tooltip>
+    );
+  }
+
   return (<div className="c7ncd-tab-table">
     <Table
       dataSet={configDs}
@@ -144,7 +153,7 @@ export default function DeployConfig() {
     >
       <Column name="name" sortable renderer={renderName} />
       {!disabled && <Column renderer={renderActions} width={70} />}
-      <Column name="description" sortable />
+      <Column name="description" sortable renderer={renderDescription} />
       <Column name="appServiceName" />
       <Column name="envName" />
       <Column name="createUserRealName" renderer={renderUser} />
