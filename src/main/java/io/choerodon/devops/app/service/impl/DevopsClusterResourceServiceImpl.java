@@ -117,7 +117,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
             devopsCertManagerRecordDTO.setStatus(status);
             devopsCertManagerRecordDTO.setError(error);
             if (ObjectUtils.isEmpty(status)) {
-                devopsCertManagerRecordDTO.setStatus(ClusterResourceStatus.INSTALLING.getStatus());
+                devopsCertManagerRecordDTO.setStatus(ClusterResourceStatus.PROCESSING.getStatus());
             }
             devopsCertManagerRecordMapper.insertSelective(devopsCertManagerRecordDTO);
             // 插入数据
