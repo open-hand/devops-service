@@ -3,8 +3,10 @@ package io.choerodon.devops.app.service.impl;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import io.choerodon.devops.app.eventhandler.constants.CertManagerConstants;
 import io.choerodon.devops.infra.enums.ClusterResourceOperateType;
-
+import io.choerodon.devops.infra.mapper.*;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,10 +26,6 @@ import io.choerodon.devops.infra.enums.ClusterResourceStatus;
 import io.choerodon.devops.infra.enums.ClusterResourceType;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
-import io.choerodon.devops.infra.mapper.DevopsCertManagerRecordMapper;
-import io.choerodon.devops.infra.mapper.DevopsCertificationMapper;
-import io.choerodon.devops.infra.mapper.DevopsClusterResourceMapper;
-import io.choerodon.devops.infra.mapper.DevopsPrometheusMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 
 /**
@@ -36,6 +34,15 @@ import io.choerodon.devops.infra.util.ConvertUtils;
  */
 @Service
 public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceService {
+    private static final String PROMETHEUS_PREFIX = "prometheus-";
+
+    private static final String STATUS_RUNNING = "running";
+    private static final String STATUS_FAIL = "fail";
+    private static final String STATUS_CREATED = "created";
+    private static final String STATUS_SUCCESSED = "success";
+    private static final String STATUS_CHECK_FAIL = "check_fail";
+    private static final String GRAFANA_NODE = "/d/choerodon-default-node/jie-dian";
+    private static final String GRAFANA_CLUSTER = "/d/choerodon-default-cluster/ji-qun";
     @Autowired
     private DevopsClusterResourceMapper devopsClusterResourceMapper;
     @Autowired
@@ -79,15 +86,9 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
 
     @Autowired
     private DevopsEnvPodService devopsEnvPodService;
-    private static final String PROMETHEUS_PREFIX = "prometheus-";
 
-    private static final String STATUS_RUNNING = "running";
-    private static final String STATUS_FAIL = "fail";
-    private static final String STATUS_CREATED = "created";
-    private static final String STATUS_SUCCESSED = "success";
-    private static final String STATUS_CHECK_FAIL = "check_fail";
-    private static final String GRAFANA_NODE = "/d/choerodon-default-node/jie-dian";
-    private static final String GRAFANA_CLUSTER = "/d/choerodon-default-cluster/ji-qun";
+    @Autowired
+    private DevopsCertManagerMapper devopsCertManagerMapper;
 
     @Override
     public void baseCreate(DevopsClusterResourceDTO devopsClusterResourceDTO) {
@@ -122,10 +123,16 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
                 devopsCertManagerRecordDTO.setStatus(ClusterResourceStatus.PROCESSING.getStatus());
             }
             devopsCertManagerRecordMapper.insertSelective(devopsCertManagerRecordDTO);
+            //记录chart信息
+            DevopsCertManagerDTO devopsCertManagerDTO = new DevopsCertManagerDTO();
+            devopsCertManagerDTO.setNamespace(CertManagerConstants.CERT_MANAGER_NAME_SPACE);
+            devopsCertManagerDTO.setChartVersion(CertManagerConstants.CERT_MANAGER_CHART_VERSION);
+            devopsCertManagerMapper.insertSelective(devopsCertManagerDTO);
             // 插入数据
             devopsClusterResourceDTO.setObjectId(devopsCertManagerRecordDTO.getId());
             devopsClusterResourceDTO.setClusterId(clusterId);
             devopsClusterResourceDTO.setOperate(ClusterResourceOperateType.INSTALL.getType());
+            devopsClusterResourceDTO.setConfigId(devopsCertManagerDTO.getId());
             baseCreate(devopsClusterResourceDTO);
             // 让agent创建cert-mannager
             agentCommandService.createCertManager(clusterId);
@@ -232,6 +239,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         }
         DevopsClusterResourceDTO devopsClusterResourceDTO = queryByClusterIdAndType(clusterId, ClusterResourceType.CERTMANAGER.getType());
         devopsCertManagerRecordMapper.deleteByPrimaryKey(devopsClusterResourceDTO.getObjectId());
+        devopsCertManagerMapper.deleteByPrimaryKey(devopsClusterResourceDTO.getConfigId());
         devopsClusterResourceMapper.deleteByPrimaryKey(devopsClusterResourceDTO.getId());
     }
 
