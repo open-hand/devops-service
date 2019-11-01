@@ -181,7 +181,7 @@ public class AgentGitOpsMessageHandler implements TextMessageHandler<AgentMsgVO>
                 break;
             // Agent启动的时候发送给Devops,
             // 如果是空的（也就是说没有certManager），devops会返回一些安装certManager所需的数据
-            case CERT_MANAGER_INFO:
+            case CERT_MANAGER_STATUS:
                 agentMsgHandlerService.getCertManagerInfo(msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
             // 接收Agent定时发送的节点数据
