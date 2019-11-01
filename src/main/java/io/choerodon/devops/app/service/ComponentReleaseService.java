@@ -34,5 +34,5 @@ public interface ComponentReleaseService {
      *
      * @param instanceId 组件对应的实例ID
      */
-    void deleteReleaseForComponent(Long instanceId);
+    void deleteReleaseForComponent(Long instanceId,Boolean deletePrometheus);
 }

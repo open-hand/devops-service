@@ -128,7 +128,7 @@ public interface AppServiceInstanceService {
      *
      * @param instanceId 实例id
      */
-    void deleteInstance(Long instanceId);
+    void deleteInstance(Long instanceId,Boolean deletePrmotheus);
 
 
     /**

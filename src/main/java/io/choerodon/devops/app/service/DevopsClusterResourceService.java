@@ -17,11 +17,12 @@ public interface DevopsClusterResourceService {
 
     /**
      * 创建或者更新 cert-manager
+     *
      * @param clusterId
      * @param status
      * @param error
      */
-    void operateCertManager(Long clusterId,String status,String error);
+    void operateCertManager(Long clusterId, String status, String error);
 
 
     Boolean deleteCertManager(Long clusterId);
@@ -30,9 +31,9 @@ public interface DevopsClusterResourceService {
 
     DevopsClusterResourceDTO queryByClusterIdAndType(Long clusterId, String type);
 
-    void deletePrometheus(Long clusterId);
+    void uploadPrometheus(Long clusterId);
 
-    List<ClusterResourceVO> listClusterResource(Long clusterId,Long projectId);
+    List<ClusterResourceVO> listClusterResource(Long clusterId, Long projectId);
 
     /**
      * 验证cert-manager 管理的证书是否存在启用或者操作状态的
@@ -48,9 +49,11 @@ public interface DevopsClusterResourceService {
 
     ClusterResourceVO queryDeployProcess(Long clusterId);
 
-    ClusterResourceVO queryPrometheusStatus(Long projectId,Long clusterId);
+    ClusterResourceVO queryPrometheusStatus(Long projectId, Long clusterId);
 
     void unloadCertManager(Long clusterId);
+
+    void basedeletePromtheus(Long clusterId);
 
     String getGrafanaUrl(Long clusterId, String type);
 }

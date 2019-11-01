@@ -28,4 +28,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cluster_resource.groovy') {
         renameColumn(columnDataType: 'BIGINT UNSIGNED', newColumnName: 'object_id', oldColumnName: 'instance_id',tableName: "devops_cluster_resource")
         dropColumn(columnName: "status", tableName: "devops_cluster_resource")
     }
+
+    changeSet(author: 'zhaotianxin', id: '2019-11-1-add-column') {
+        addColumn(tableName: 'devops_cluster_resource') {
+            column(name: 'operate', type: 'VARCHAR(32)', remarks: '操作类型', afterColumn: 'object_version_number')
+        }
+    }
 }

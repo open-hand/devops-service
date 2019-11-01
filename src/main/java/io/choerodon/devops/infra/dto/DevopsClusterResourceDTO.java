@@ -14,6 +14,7 @@ public class DevopsClusterResourceDTO extends BaseDTO {
     private Long objectId;
     private Long configId;
     private Long systemEnvId;
+    private String operate;
 
     public Long getSystemEnvId() {
         return systemEnvId;
@@ -79,4 +80,11 @@ public class DevopsClusterResourceDTO extends BaseDTO {
         this.configId = configId;
     }
 
+    public String getOperate() {
+        return operate;
+    }
+
+    public void setOperate(String operate) {
+        this.operate = operate;
+    }
 }
