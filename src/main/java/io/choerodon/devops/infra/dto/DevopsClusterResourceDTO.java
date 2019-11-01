@@ -1,11 +1,16 @@
 package io.choerodon.devops.infra.dto;
 
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 import javax.persistence.Table;
 
 import io.choerodon.mybatis.entity.BaseDTO;
 
 @Table(name = "devops_cluster_resource")
 public class DevopsClusterResourceDTO extends BaseDTO {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
     private String code;
@@ -13,16 +18,7 @@ public class DevopsClusterResourceDTO extends BaseDTO {
     private Long clusterId;
     private Long objectId;
     private Long configId;
-    private Long systemEnvId;
     private String operate;
-
-    public Long getSystemEnvId() {
-        return systemEnvId;
-    }
-
-    public void setSystemEnvId(Long systemEnvId) {
-        this.systemEnvId = systemEnvId;
-    }
 
     public Long getId() {
         return id;

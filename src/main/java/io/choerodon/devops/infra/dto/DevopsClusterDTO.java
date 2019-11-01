@@ -35,6 +35,8 @@ public class DevopsClusterDTO extends BaseDTO {
     @ApiModelProperty("系统环境id, 用于部署集群相关的资源")
     private Long systemEnvId;
 
+    private Long clientId;
+
     public Long getProjectId() {
         return projectId;
     }
@@ -139,5 +141,13 @@ public class DevopsClusterDTO extends BaseDTO {
 
     public void setSystemEnvId(Long systemEnvId) {
         this.systemEnvId = systemEnvId;
+    }
+
+    public Long getClientId() {
+        return clientId;
+    }
+
+    public void setClientId(Long clientId) {
+        this.clientId = clientId;
     }
 }

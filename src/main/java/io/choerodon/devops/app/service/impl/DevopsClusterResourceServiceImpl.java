@@ -3,6 +3,14 @@ package io.choerodon.devops.app.service.impl;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import io.choerodon.devops.app.eventhandler.constants.CertManagerConstants;
+import io.choerodon.devops.infra.dto.iam.ClientDTO;
+import io.choerodon.devops.infra.dto.iam.ClientVO;
+import io.choerodon.devops.infra.enums.ClusterResourceOperateType;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.mapper.*;
+import io.choerodon.devops.infra.util.GenerateUUID;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -89,6 +97,9 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     @Autowired
     private DevopsCertManagerMapper devopsCertManagerMapper;
 
+    @Autowired
+    private BaseServiceClientOperator baseServiceClientOperator;
+
     @Override
     public void baseCreate(DevopsClusterResourceDTO devopsClusterResourceDTO) {
         if (devopsClusterResourceMapper.insertSelective(devopsClusterResourceDTO) != 1) {
@@ -100,7 +111,6 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         if (devopsClusterResourceMapper.updateByPrimaryKeySelective(devopsClusterResourceDTO) != 1) {
             throw new CommonException("error.update.cluster.resource");
         }
-
     }
 
     @Override
@@ -271,7 +281,24 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
                 throw new CommonException("error.inster.prometheus");
             }
             devopsPrometheusDTO.setId(devopsPrometheusDTO.getId());
-
+            if(ObjectUtils.isEmpty(devopsClusterDTO.getClientId())){
+                // 添加客户端
+                ClientVO clientVO = new ClientVO();
+                String clientName = String.format("%s%s", devopsClusterDTO.getCode(), GenerateUUID.generateUUID().substring(0, 5));
+                clientVO.setName(clientName);
+                clientVO.setOrganizationId(devopsClusterDTO.getOrganizationId());
+                clientVO.setAuthorizedGrantTypes("password,implicit,client_credentials,refresh_token,authorization_code");
+                clientVO.setSecret(GenerateUUID.generateUUID().substring(0, 16));
+                clientVO.setRefreshTokenValidity(3600L);
+                clientVO.setAccessTokenValidity(3600L);
+                clientVO.setSourceId(clusterId);
+                clientVO.setSourceType("cluster");
+                ClientDTO client = baseServiceClientOperator.createClient(devopsClusterDTO.getOrganizationId(), clientVO);
+                if(!ObjectUtils.isEmpty(client)){
+                    devopsClusterDTO.setClientId(client.getId());
+                    devopsClusterService.baseUpdate(devopsClusterDTO);
+                }
+            }
             devopsClusterResourceDTO.setClusterId(clusterId);
             devopsClusterResourceDTO.setConfigId(devopsPrometheusDTO.getId());
             devopsClusterResourceDTO.setObjectId(appServiceInstanceDTO.getId());
