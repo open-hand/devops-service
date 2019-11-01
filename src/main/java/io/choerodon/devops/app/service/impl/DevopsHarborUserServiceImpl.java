@@ -1,13 +1,11 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.DevopsHarborUserService;
 import io.choerodon.devops.infra.dto.HarborUserDTO;
-import io.choerodon.devops.infra.dto.harbor.User;
 import io.choerodon.devops.infra.mapper.HarborUserMapper;
 
 /**
@@ -21,13 +19,22 @@ public class DevopsHarborUserServiceImpl implements DevopsHarborUserService {
     private HarborUserMapper harborUserMapper;
 
     @Override
-    public long create(HarborUserDTO harborUser) {
-        return harborUserMapper.insertSelective(harborUser);
+    public void baseCreate(HarborUserDTO harborUser) {
+        if (harborUserMapper.insertSelective(harborUser) != 1) {
+            throw new CommonException("erroe.inster.harbor.user");
+        }
     }
 
 
     @Override
     public HarborUserDTO queryHarborUserById(Long id) {
         return harborUserMapper.selectByPrimaryKey(id);
+    }
+
+    @Override
+    public void baseDelete(Long harborUserId) {
+        if (harborUserMapper.deleteByPrimaryKey(harborUserId) != 1) {
+            throw new CommonException("erroe.delete.harbor.user");
+        }
     }
 }

@@ -188,10 +188,8 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
         if (harborPrivate) {
             //设置为私有后将harbor项目设置为私有
             DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
-            HarborUserDTO harborUserDTO = devopsHarborUserService.queryHarborUserById(devopsProjectDTO.getHarborUserId());
-            HarborUserDTO harborPullUserDTO = devopsHarborUserService.queryHarborUserById(devopsProjectDTO.getHarborPullUserId());
-            User user = harborService.convertUser(projectDTO,true,harborUserDTO.getHarborProjectUserName());
-            User pullUser = harborService.convertUser(projectDTO,false,harborPullUserDTO.getHarborProjectUserName());
+            User user = harborService.convertUser(projectDTO, true, null);
+            User pullUser = harborService.convertUser(projectDTO, false, null);
             //创建用户
             createUser(harborClient, user, Arrays.asList(1), organizationDTO, projectDTO);
             createUser(harborClient, pullUser, Arrays.asList(3), organizationDTO, projectDTO);
@@ -199,16 +197,12 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
             //更新项目表
             HarborUserDTO harborUser = new HarborUserDTO(user.getUsername(), user.getPassword(), user.getEmail(), true);
             HarborUserDTO pullHarborUser = new HarborUserDTO(pullUser.getUsername(), pullUser.getPassword(), pullUser.getEmail(), false);
-            if (devopsHarborUserService.create(harborUser) != 1) {
-                throw new CommonException("error.harbor.user.insert");
-            } else {
-                devopsProjectDTO.setHarborUserId(harborUser.getId());
-            }
-            if (devopsHarborUserService.create(pullHarborUser) != 1) {
-                throw new CommonException("error.harbor.pull.user.insert");
-            } else {
-                devopsProjectDTO.setHarborPullUserId(pullHarborUser.getId());
-            }
+
+            devopsHarborUserService.baseCreate(harborUser);
+            devopsProjectDTO.setHarborUserId(harborUser.getId());
+
+            devopsHarborUserService.baseCreate(pullHarborUser);
+            devopsProjectDTO.setHarborUserId(pullHarborUser.getId());
 
             devopsProjectDTO.setHarborProjectIsPrivate(true);
             devopsProjectService.baseUpdate(devopsProjectDTO);
@@ -262,11 +256,12 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                     }
 
                     DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
+                    List<Long> longs = Arrays.asList(devopsProjectDTO.getHarborUserId(), devopsProjectDTO.getHarborPullUserId());
+                    longs.stream().forEach(e->devopsHarborUserService.baseDelete(e));
                     devopsProjectDTO.setHarborProjectIsPrivate(false);
                     devopsProjectDTO.setHarborPullUserId(null);
                     devopsProjectDTO.setHarborUserId(null);
                     devopsProjectService.baseUpdate(devopsProjectDTO);
-
                 }
             } catch (Exception e) {
                 throw new CommonException(e);

@@ -1,6 +1,22 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import com.google.gson.Gson;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.DevopsConfigVO;
@@ -20,21 +36,6 @@ import io.choerodon.devops.infra.feign.HarborClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
 import io.choerodon.devops.infra.util.GenerateUUID;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Created with IntelliJ IDEA.
@@ -99,27 +100,21 @@ public class HarborServiceImpl implements HarborService {
                 ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
                 OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
                 DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
-                User user = convertUser(projectDTO, true,null);
-                User pullUser = convertUser(projectDTO, false,null);
+                User user = convertUser(projectDTO, true, null);
+                User pullUser = convertUser(projectDTO, false, null);
                 //创建用户,绑定角色
                 createUser(harborClient, user, Arrays.asList(1), organizationDTO, projectDTO);
                 createUser(harborClient, pullUser, Arrays.asList(3), organizationDTO, projectDTO);
 
                 HarborUserDTO harborUserDTO = new HarborUserDTO(user.getUsername(), user.getPassword(), user.getEmail(), true);
                 HarborUserDTO pullHarborUserDTO = new HarborUserDTO(pullUser.getUsername(), pullUser.getPassword(), pullUser.getEmail(), false);
+                devopsHarborUserService.baseCreate(harborUserDTO);
+                devopsHarborUserService.baseCreate(pullHarborUserDTO);
+
                 devopsProjectDTO.setHarborProjectIsPrivate(true);
-                if (devopsHarborUserService.create(harborUserDTO) != 1) {
-                    throw new CommonException("error.harbor.user.insert");
-                } else {
-                    devopsProjectDTO.setHarborUserId(harborUserDTO.getId());
-                    devopsProjectService.baseUpdate(devopsProjectDTO);
-                }
-                if (devopsHarborUserService.create(pullHarborUserDTO) != 1) {
-                    throw new CommonException("error.harbor.pull.user.insert");
-                } else {
-                    devopsProjectDTO.setHarborPullUserId(pullHarborUserDTO.getId());
-                    devopsProjectService.baseUpdate(devopsProjectDTO);
-                }
+                devopsProjectDTO.setHarborUserId(harborUserDTO.getId());
+                devopsProjectDTO.setHarborPullUserId(pullHarborUserDTO.getId());
+                devopsProjectService.baseUpdate(devopsProjectDTO);
 
             }
         } catch (IOException e) {
@@ -136,16 +131,15 @@ public class HarborServiceImpl implements HarborService {
     }
 
     @Override
-    public User convertUser(ProjectDTO projectDTO, Boolean isPush,String name) {
+    public User convertUser(ProjectDTO projectDTO, Boolean isPush, String name) {
         String pull = "";
         if (!isPush) {
             pull = "pull";
         }
         String userName = null;
-        if(ObjectUtils.isEmpty(name)){
+        if (ObjectUtils.isEmpty(name)) {
             userName = String.format("%sUser%s%s", pull, projectDTO.getOrganizationId(), projectDTO.getId());
-        }
-        else {
+        } else {
             userName = name;
         }
         String userEmail = String.format("%s@harbor.com", userName);
