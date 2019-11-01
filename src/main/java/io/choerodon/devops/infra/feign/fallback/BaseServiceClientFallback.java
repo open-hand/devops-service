@@ -232,4 +232,19 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     public ResponseEntity<List<MemberRoleDTO>> assignUsersRolesOnProjectLevel(Long projectId, List<MemberRoleDTO> memberRoleDTOS) {
         throw new CommonException("error.assign.user.roles.on.project.level");
     }
+
+    @Override
+    public ResponseEntity<ClientDTO> createClient(Long organizationId, @Valid ClientVO clientVO) {
+        throw new CommonException("error.create.client");
+    }
+
+    @Override
+    public ResponseEntity deleteClient(Long organizationId, Long clientId) {
+        throw new CommonException("error.delete.client");
+    }
+
+    @Override
+    public ResponseEntity<ClientDTO> queryClient(Long organizationId, Long clientId) {
+        throw new CommonException("error.query.client");
+    }
 }

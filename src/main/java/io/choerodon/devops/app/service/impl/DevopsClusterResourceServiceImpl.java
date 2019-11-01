@@ -264,6 +264,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         if (devopsClusterDTO.getSystemEnvId() == null) {
             throw new CommonException("error.cluster.SystemEnvId");
         }
+
         DevopsPrometheusDTO devopsPrometheusDTO = prometheusVoToDto(devopsPrometheusVO);
         if (ObjectUtils.isEmpty(devopsPrometheusVO.getId())) {
             AppServiceInstanceDTO appServiceInstanceDTO = componentReleaseService.createReleaseForPrometheus(devopsClusterDTO.getSystemEnvId(), devopsPrometheusDTO);
