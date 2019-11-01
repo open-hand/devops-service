@@ -12,6 +12,8 @@ public class ClusterResourceVO {
 
     private String type;
 
+    private String operate;
+
     public ClusterResourceVO() {
     }
 
@@ -42,5 +44,13 @@ public class ClusterResourceVO {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public String getOperate() {
+        return operate;
+    }
+
+    public void setOperate(String operate) {
+        this.operate = operate;
     }
 }

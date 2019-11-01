@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import io.choerodon.devops.infra.enums.ClusterResourceOperateType;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -123,6 +124,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
             // 插入数据
             devopsClusterResourceDTO.setObjectId(devopsCertManagerRecordDTO.getId());
             devopsClusterResourceDTO.setClusterId(clusterId);
+            devopsClusterResourceDTO.setOperate(ClusterResourceOperateType.INSTALL.getType());
             baseCreate(devopsClusterResourceDTO);
             // 让agent创建cert-mannager
             agentCommandService.createCertManager(clusterId);
@@ -139,6 +141,8 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         devopsCertManagerRecordDTO.setStatus(ClusterResourceStatus.PROCESSING.getStatus());
         devopsCertManagerRecordMapper.updateByPrimaryKey(devopsCertManagerRecordDTO);
         agentCommandService.unloadCertManager(clusterId);
+        devopsClusterResourceDTO.setOperate(ClusterResourceOperateType.UNINSTALL.getType());
+        baseUpdate(devopsClusterResourceDTO);
         return true;
     }
 
@@ -206,6 +210,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
             }
             clusterConfigVO.setType(ClusterResourceType.CERTMANAGER.getType());
         }
+        clusterConfigVO.setOperate(devopsClusterResourceDTO.getOperate());
         list.add(clusterConfigVO);
         // 查询prometheus 的状态和信息
         DevopsClusterResourceDTO prometheus = devopsClusterResourceMapper.queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
