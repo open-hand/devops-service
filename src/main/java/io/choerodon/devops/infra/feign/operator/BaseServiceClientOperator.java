@@ -473,4 +473,29 @@ public class BaseServiceClientOperator {
         }
 
     }
+
+    public ClientDTO createClient(Long organizationId, ClientVO clientVO) {
+        try {
+            ResponseEntity<ClientDTO> clientDTOResponseEntity = baseServiceClient.createClient(organizationId, clientVO);
+            return  clientDTOResponseEntity.getBody();
+        } catch (Exception ex) {
+            throw new CommonException("error.create.client");
+        }
+    }
+
+    public void deleteClient(Long organizationId, Long  clientId) {
+        try {
+            ResponseEntity responseEntity = baseServiceClient.deleteClient(organizationId, clientId);
+        } catch (Exception ex) {
+            throw new CommonException("error.delete.client");
+        }
+    }
+
+    public void queryClient(Long organizationId, Long  clientId) {
+        try {
+            ResponseEntity responseEntity = baseServiceClient.queryClient(organizationId, clientId);
+        } catch (Exception ex) {
+            throw new CommonException("error.query.client");
+        }
+    }
 }
