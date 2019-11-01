@@ -65,4 +65,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cluster.groovy') {
             column(name: 'system_env_id', type: 'BIGINT UNSIGNED', remarks: 'cluster env id', afterColumn: 'description')
         }
     }
+
+    changeSet(author: 'ztx', id: '2019-11-01-add-client_id-column') {
+        addColumn(tableName: 'devops_cluster') {
+            column(name: 'client_id', type: 'BIGINT UNSIGNED', remarks: 'client_id', afterColumn: 'system_env_id')
+        }
+    }
 }

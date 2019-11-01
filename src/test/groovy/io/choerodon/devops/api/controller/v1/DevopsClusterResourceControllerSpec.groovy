@@ -60,7 +60,7 @@ class DevopsClusterResourceControllerSpec extends Specification {
         entity.statusCode.is2xxSuccessful()
     }
 
-    def "create"() {
+    def "createPrometheus"() {
         given:
         DevopsPrometheusVO devopsPrometheusVO = new DevopsPrometheusVO()
         devopsPrometheusVO.setAdminPassword("test")
@@ -74,7 +74,7 @@ class DevopsClusterResourceControllerSpec extends Specification {
 
     }
 
-    def "update"() {
+    def "updatePrometheus"() {
         given:
         DevopsPrometheusVO devopsPrometheusVO = new DevopsPrometheusVO()
         devopsPrometheusVO.setId(1L)
@@ -88,7 +88,7 @@ class DevopsClusterResourceControllerSpec extends Specification {
         entity.statusCode.is2xxSuccessful()
     }
 
-    def "query"() {
+    def "queryPrometheus"() {
         given:
         DevopsPrometheusVO devopsPrometheusVO = new DevopsPrometheusVO()
         devopsPrometheusVO.setId(1L)
@@ -116,7 +116,7 @@ class DevopsClusterResourceControllerSpec extends Specification {
         entity.body.getStatus() != null
     }
 
-    def "delete"() {
+    def "deletePrometheus"() {
         given:
         when:
         HttpEntity httpEntity = new HttpEntity();
