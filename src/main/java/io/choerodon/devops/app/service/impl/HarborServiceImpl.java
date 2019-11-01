@@ -137,13 +137,13 @@ public class HarborServiceImpl implements HarborService {
 
     @Override
     public User convertUser(ProjectDTO projectDTO, Boolean isPush,String name) {
-        String pull = null;
+        String pull = "";
         if (!isPush) {
             pull = "pull";
         }
         String userName = null;
         if(ObjectUtils.isEmpty(name)){
-            userName = String.format("User%s%s%s", pull, projectDTO.getOrganizationId(), projectDTO.getId());
+            userName = String.format("%sUser%s%s", pull, projectDTO.getOrganizationId(), projectDTO.getId());
         }
         else {
             userName = name;
