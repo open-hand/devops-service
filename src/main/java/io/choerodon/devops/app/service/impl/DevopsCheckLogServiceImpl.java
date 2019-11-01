@@ -559,7 +559,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 harborUserDTO.setHarborProjectUserPassword(devopsProjectDTO.getHarborProjectUserPassword());
                 harborUserDTO.setHarborProjectUserEmail(devopsProjectDTO.getHarborProjectUserEmail());
                 harborUserDTO.setPush(true);
-                devopsHarborUserService.create(harborUserDTO);
+                devopsHarborUserService.baseCreate(harborUserDTO);
                 devopsProjectDTO.setHarborUserId(harborUserDTO.getId());
 
                 // 创建pull用户
@@ -586,7 +586,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             harborPayload = new HarborPayload(projectDTO.getId(), projectDTO.getCode());
         }
 
-        devopsHarborUserService.create(harborUserDTO);
+        devopsHarborUserService.baseCreate(harborUserDTO);
         if (isPush) {
             devopsProjectDTO.setHarborUserId(harborUserDTO.getId());
             harborService.createHarborUser(harborPayload, user, projectDTO, Arrays.asList(1));
