@@ -29,7 +29,6 @@ function BranchCreate(props) {
 
   let brancgPageSize = 3;
   let tagPageSize = 3;
-
   const [submitting, setSubmitting] = useState(false);
   const [prefixData, setPrefixeData] = useState('');
   const [branchOringData, setBranchOringData] = useState([]);
@@ -99,7 +98,8 @@ function BranchCreate(props) {
     try {
       setSubmitting(true);
       if ((await formDs.submit()) !== false) {
-        handleRefresh();
+        handleRefresh('create');
+        // tableDs.query();
         setSubmitting(false);
         return true;
       } else {
@@ -344,7 +344,7 @@ function BranchCreate(props) {
           dataSet={formDs}
           columns={5}
         >
-          <Select colSpan={5} searchable onChange={changeIssue} optionRenderer={issueNameOptionRender} renderer={issueNameRender} name="issueName" />
+          <Select colSpan={5} onChange={changeIssue} optionRenderer={issueNameOptionRender} renderer={issueNameRender} name="issueName" />
           <Select
             colSpan={5}
             name="branchOrigin"

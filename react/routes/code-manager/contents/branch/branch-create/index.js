@@ -1,7 +1,7 @@
 import React from 'react';
 import { StoreProvider } from './store';
-import BranchCluster from './branchCreate';
+import BranchCreate from './branchCreate';
 
 export default (props) => <StoreProvider {...props}>
-  <BranchCluster />
+  <BranchCreate />
 </StoreProvider>;
