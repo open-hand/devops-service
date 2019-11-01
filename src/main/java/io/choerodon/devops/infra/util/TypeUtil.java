@@ -1,6 +1,7 @@
 package io.choerodon.devops.infra.util;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.google.gson.Gson;
@@ -111,5 +112,9 @@ public class TypeUtil {
         }
 
         return mapParams;
+    }
+
+    public static <T> List<T> getListWithType(Map<Class, List> map, Class<T> key) {
+        return (List<T>) map.get(key);
     }
 }

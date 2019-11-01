@@ -3,26 +3,28 @@ package io.choerodon.devops.app.service.impl;
 import java.util.List;
 import java.util.Map;
 
-import io.choerodon.core.convertor.ApplicationContextHelper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import io.choerodon.devops.api.vo.kubernetes.C7nHelmRelease;
 import io.choerodon.devops.app.service.AppServiceInstanceService;
 import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
 import io.choerodon.devops.infra.dto.AppServiceInstanceDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvFileResourceDTO;
 import io.choerodon.devops.infra.enums.GitOpsObjectError;
+import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.infra.util.TypeUtil;
 
-
+@Component
 public class ConvertC7nHelmReleaseServiceImpl extends ConvertK8sObjectService<C7nHelmRelease> {
-
+    @Autowired
     private AppServiceInstanceService appServiceInstanceService;
+    @Autowired
     private DevopsEnvFileResourceService devopsEnvFileResourceService;
 
     public ConvertC7nHelmReleaseServiceImpl() {
         super(C7nHelmRelease.class);
-        this.appServiceInstanceService = ApplicationContextHelper.getSpringFactory().getBean(AppServiceInstanceService.class);
-        this.devopsEnvFileResourceService = ApplicationContextHelper.getSpringFactory().getBean(DevopsEnvFileResourceService.class);
     }
 
     @Override
@@ -80,5 +82,10 @@ public class ConvertC7nHelmReleaseServiceImpl extends ConvertK8sObjectService<C7
         } else {
             c7nHelmReleases.add(c7nHelmRelease);
         }
+    }
+
+    @Override
+    public ResourceType getType() {
+        return ResourceType.C7NHELMRELEASE;
     }
 }

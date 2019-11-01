@@ -92,6 +92,11 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
         });
     }
 
+    @Override
+    public Class<C7nHelmRelease> getTarget() {
+        return C7nHelmRelease.class;
+    }
+
 
     private void updateC7nHelmRelease(Map<String, String> objectPath, Long envId, Long projectId, List<C7nHelmRelease> updateC7nHelmRelease, String path, Long userId) {
         updateC7nHelmRelease.forEach(c7nHelmRelease -> {

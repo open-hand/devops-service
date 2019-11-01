@@ -5,11 +5,14 @@ import java.util.Map;
 import io.kubernetes.client.models.V1EndpointAddress;
 import io.kubernetes.client.models.V1EndpointPort;
 import io.kubernetes.client.models.V1Endpoints;
+import org.springframework.stereotype.Component;
 
+import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.devops.infra.enums.GitOpsObjectError;
 
+@Component
 public class ConvertV1EndPointsServiceImpl extends ConvertK8sObjectService<V1Endpoints> {
     public ConvertV1EndPointsServiceImpl() {
         super(V1Endpoints.class);
@@ -47,5 +50,10 @@ public class ConvertV1EndPointsServiceImpl extends ConvertK8sObjectService<V1End
                 }
             }
         }
+    }
+
+    @Override
+    public ResourceType getType() {
+        return ResourceType.ENDPOINTS;
     }
 }

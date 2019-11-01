@@ -85,6 +85,11 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
         updateIngress(objectPath, envId, projectId, updateV1beta1Ingress, path, userId);
     }
 
+    @Override
+    public Class<V1beta1Ingress> getTarget() {
+        return V1beta1Ingress.class;
+    }
+
     private void addIngress(Map<String, String> objectPath, Long envId, Long projectId, List<V1beta1Ingress> addV1beta1Ingress, String path, Long userId) {
         addV1beta1Ingress.stream()
                 .forEach(v1beta1Ingress -> {
