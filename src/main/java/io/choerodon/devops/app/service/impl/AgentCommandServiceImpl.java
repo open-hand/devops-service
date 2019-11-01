@@ -403,7 +403,7 @@ public class AgentCommandServiceImpl implements AgentCommandService {
         msg.setKey(String.format(KEY_FORMAT,
                 clusterId,
                 "choerodon-cert-manager"));
-        msg.setType(HelmType.UNLOAD_CERT_MANAGER.toValue());
+        msg.setType(HelmType.CERT_MANAGER_UNLOAD.toValue());
         sendToWebsocket(clusterId, msg);
     }
 }
