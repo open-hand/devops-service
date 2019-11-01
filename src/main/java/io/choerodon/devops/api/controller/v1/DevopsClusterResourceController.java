@@ -145,9 +145,7 @@ public class DevopsClusterResourceController {
             @RequestParam(name = "cluster_id") Long clusterId,
             @ApiParam(value = "接口type", required = true)
             @RequestParam(name = "type") String type) {
-        return Optional.ofNullable(devopsClusterResourceService.getGrafanaUrl(clusterId, type))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.grafana.url.get"));
+        return new ResponseEntity<>(devopsClusterResourceService.getGrafanaUrl(clusterId, type), HttpStatus.OK);
     }
 }
 
