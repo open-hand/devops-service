@@ -284,8 +284,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
             if(ObjectUtils.isEmpty(devopsClusterDTO.getClientId())){
                 // 添加客户端
                 ClientVO clientVO = new ClientVO();
-                String clientName = String.format("%s%s", devopsClusterDTO.getCode(), GenerateUUID.generateUUID().substring(0, 5));
-                clientVO.setName(clientName);
+                clientVO.setName(devopsClusterDTO.getChoerodonId());
                 clientVO.setOrganizationId(devopsClusterDTO.getOrganizationId());
                 clientVO.setAuthorizedGrantTypes("password,implicit,client_credentials,refresh_token,authorization_code");
                 clientVO.setSecret(GenerateUUID.generateUUID().substring(0, 16));
