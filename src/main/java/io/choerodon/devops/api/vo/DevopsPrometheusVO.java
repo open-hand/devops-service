@@ -12,12 +12,13 @@ import io.swagger.annotations.ApiModelProperty;
  */
 public class DevopsPrometheusVO {
 
+    @ApiModelProperty("promtheusid/更新必填")
     private Long id;
     @ApiModelProperty("admin密码/必填")
     @NotNull(message = "error.admin.password.null")
     private String adminPassword;
     @ApiModelProperty("grafana域名/必填")
-    @NotNull(message = "error.grafana域名.null")
+    @NotNull(message = "error.grafana.null")
     private String grafanaDomain;
     @ApiModelProperty("pvId/必填")
     @NotNull(message = "error.pv.name.null")
