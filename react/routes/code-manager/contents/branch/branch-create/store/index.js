@@ -6,8 +6,7 @@ import { DataSet } from 'choerodon-ui/pro';
 import CreateDataSet from './branchCreateDataSet';
 import issueNameDataSet from './issueNameDataSet';
 import useStore from './useStore';
-// 需要替换
-import DevPipelineStore from '../../../../stores/DevPipelineStore';
+
 
 const Store = createContext();
 
@@ -21,13 +20,12 @@ export const StoreProvider = injectIntl(inject('AppState')(
       AppState: { currentMenuType: { id: projectId } },
       intl: { formatMessage },
       children,
+      appServiceId,
       intlPrefix,
     } = props;
 
     const contentStore = useStore();
-    // 需要替换
-    const selectedApp = DevPipelineStore.selectedApp;
-
+    const selectedApp = appServiceId;
     const issueNameOptionDs = useMemo(() => new DataSet(issueNameDataSet({ projectId }), [projectId]));
     const formDs = useMemo(() => new DataSet(CreateDataSet({ formatMessage, issueNameOptionDs, projectId, selectedApp, contentStore }), [projectId]));
 

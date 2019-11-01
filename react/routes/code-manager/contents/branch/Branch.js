@@ -15,10 +15,8 @@ import Loading from '../../../../components/loading';
 import StatusIcon from '../../../../components/StatusIcon/StatusIcon';
 import handleMapStore from '../../main-view/store/handleMapStore';
 
-// 需要替换
-import DevPipelineStore from '../../stores/DevPipelineStore';
-
 import { useTableStore } from './stores';
+
 import '../../../main.less';
 import './Branch.less';
 import './index.less';
@@ -39,6 +37,8 @@ function Branch(props) {
     tableDs,
     projectId,
     intl,
+    appServiceDs,
+    appServiceId,
     formatMessage,
   } = useTableStore();
 
@@ -47,7 +47,7 @@ function Branch(props) {
       refresh: handleRefresh,
       getSelfToolBar,
     });
-  }, [projectId]);
+  }, [projectId, appServiceId]);
 
   /**
    * 生成特殊的自定义tool-bar
@@ -56,7 +56,7 @@ function Branch(props) {
    * 如果是使用了过滤条 导致没有数据，那么仍然可以看到创建分支按钮
    */
   const getSelfToolBar = () => (
-    !(DevPipelineStore.getSelectApp)
+    !(appServiceId)
       ? null
       : <Permission
         service={['devops-service.devops-git.createBranch',
@@ -65,7 +65,7 @@ function Branch(props) {
         <Button
           onClick={openCreateBranchModal}
           icon="playlist_add"
-          disabled={!(DevPipelineStore.getSelectApp && DevPipelineStore.getSelectAppData && !DevPipelineStore.getSelectAppData.emptyRepository)}
+          disabled={!(appServiceId && appServiceDs.toData() && !appServiceDs.toData().emptyRepository)}
         >
           <FormattedMessage id="branch.create" />
         </Button>
@@ -77,7 +77,7 @@ function Branch(props) {
       key: branchCreateModalKey,
       title: <FormattedMessage id="branch.create" />,
       drawer: true,
-      children: <BranchCreate intl={intl} handleRefresh={handleRefresh} />,
+      children: <BranchCreate intl={intl} appServiceId={appServiceId} handleRefresh={handleRefresh} />,
       style: branchCreateModalStyle,
       okText: <FormattedMessage id="create" />,
       cancelText: <FormattedMessage id="cancel" />,
@@ -87,8 +87,8 @@ function Branch(props) {
   /**
    * 刷新
    */
-  const handleRefresh = (data = null) => {
-    tableDs.query();
+  const handleRefresh = () => {
+    appServiceId && tableDs.query();
   };
 
   /**
@@ -115,7 +115,7 @@ function Branch(props) {
       key: branchEditModalKey,
       title: <FormattedMessage id="branch.edit" />,
       drawer: true,
-      children: <BranchEdit intl={intl} objectVersionNumber={objectVersionNumber} branchName={branchName} issueId={issueId} handleRefresh={handleRefresh} />,
+      children: <BranchEdit intl={intl} appServiceId={appServiceId} objectVersionNumber={objectVersionNumber} branchName={branchName} issueId={issueId} handleRefresh={handleRefresh} />,
       style: branchCreateModalStyle,
       okText: <FormattedMessage id="save" />,
       cancelText: <FormattedMessage id="cancel" />,
@@ -167,14 +167,6 @@ function Branch(props) {
     if (record.get('branchName') === 'master' || record.get('status') === 'operating') {
       return null;
     }
-    // // 如果仅有一个分支那么禁止删除
-    // if (BranchStore.getBranchList.length <= 1) {
-    //   // 如果 仅有一个分支 且分支是master 那么禁止做任何操作
-    //   if (record.get('branchName') === 'master') {
-    //     return null;
-    //   }
-    //   action.pop();
-    // }
     return (<Action data={action} />);
   }
   // 打开删除框
@@ -315,7 +307,7 @@ function Branch(props) {
         'devops-service.devops-git.pageTagsByOptions',
       ]}
     >
-      { !(DevPipelineStore.getAppData && DevPipelineStore.getAppData.length > 0) ? <Loading display={DevPipelineStore.getLoading} /> : tableBranch()}
+      { !appServiceId || appServiceDs.status !== 'ready' ? <Loading display /> : tableBranch()}
     </Page>
   );
 }

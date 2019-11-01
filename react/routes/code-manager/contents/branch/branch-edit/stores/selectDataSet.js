@@ -9,7 +9,7 @@ export default ({ projectId, optionsDs, formatMessage, selectedApp, objectVersio
         name: 'issueName',
         type: 'string',
         textField: 'summary',
-        label: '问题名称',
+        label: formatMessage({ id: 'branch.issueName' }),
         valueField: 'issueId',
         options: optionsDs,
       },

@@ -98,8 +98,7 @@ function BranchCreate(props) {
     try {
       setSubmitting(true);
       if ((await formDs.submit()) !== false) {
-        handleRefresh('create');
-        // tableDs.query();
+        handleRefresh();
         setSubmitting(false);
         return true;
       } else {
@@ -333,10 +332,6 @@ function BranchCreate(props) {
       </span>
     );
   };
-  const searchMatcher = ({ record, text }) => {
-    const recordArr = record.dataSet.records.slice();
-    return recordArr[0];
-  };
   return (
     <Content className="sidebar-content c7n-createBranch">
       <div style={{ width: '75%' }}>
@@ -348,8 +343,6 @@ function BranchCreate(props) {
           <Select
             colSpan={5}
             name="branchOrigin"
-            // searchable
-            // searchMatcher={searchMatcher}
             optionRenderer={rednerBranchOptionOrigin}
             renderer={renderBranchOrigin}
           >

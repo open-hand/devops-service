@@ -1,11 +1,10 @@
 // 需要替换
-import DevPipelineStore from '../../../stores/DevPipelineStore';
 import getTablePostData from '../../../../../utils/getTablePostData';
 
-export default ({ projectId, formatMessage }) => {
+export default ({ projectId, formatMessage, appServiceId }) => {
   return {
     autoCreate: false,
-    autoQuery: false,
+    autoQuery: Boolean(appServiceId),
     selection: false,
     paging: true,
     queryFields: [
@@ -39,12 +38,12 @@ export default ({ projectId, formatMessage }) => {
     ],
     transport: {
       read: ({ data }) => ({
-        url: `devops/v1/projects/${projectId}/app_service/${DevPipelineStore.getSelectApp}/git/page_branch_by_options`,
+        url: `devops/v1/projects/${projectId}/app_service/${appServiceId}/git/page_branch_by_options`,
         method: 'post',
         data: JSON.stringify(getTablePostData(data)),
       }),
       destroy: ({ data: [data] }) => ({
-        url: `/devops/v1/projects/${projectId}/app_service/${DevPipelineStore.getSelectApp}/git/branch?branch_name=${data.branchName}`,
+        url: `/devops/v1/projects/${projectId}/app_service/${appServiceId}/git/branch?branch_name=${data.branchName}`,
         method: 'delete',
       }),
     },
