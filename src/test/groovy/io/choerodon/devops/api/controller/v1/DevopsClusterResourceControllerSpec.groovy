@@ -6,6 +6,10 @@ import io.choerodon.devops.api.vo.ClusterResourceVO
 import io.choerodon.devops.api.vo.DevopsPrometheusVO
 import io.choerodon.devops.app.service.AgentCommandService
 import io.choerodon.devops.app.service.DevopsClusterResourceService
+import io.choerodon.devops.infra.dto.iam.ClientDTO
+import io.choerodon.devops.infra.dto.iam.ClientVO
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator
+import io.choerodon.devops.infra.util.GenerateUUID
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -37,7 +41,24 @@ class DevopsClusterResourceControllerSpec extends Specification {
     @Autowired
     private TestRestTemplate restTemplate
 
+    BaseServiceClientOperator baseServiceClientOperator = Mockito.mock(BaseServiceClientOperator.class)
 
+    def setup(){
+        DependencyInjectUtil.setAttribute(devopsClusterResourceService,"baseServiceClientOperator",baseServiceClientOperator)
+        ClientDTO clientDTO = new ClientDTO()
+        clientDTO.setId(1L)
+        ClientVO clientVO = new ClientVO()
+        String clientName = String.format("%s%s", "test", GenerateUUID.generateUUID().substring(0, 5))
+        clientVO.setName(clientName);
+        clientVO.setOrganizationId(1L);
+        clientVO.setAuthorizedGrantTypes("password,implicit,client_credentials,refresh_token,authorization_code")
+        clientVO.setSecret("secret");
+        clientVO.setRefreshTokenValidity(3600L)
+        clientVO.setAccessTokenValidity(3600L)
+        clientVO.setSourceId(1L);
+        clientVO.setSourceType("cluster")
+        Mockito.doReturn(clientDTO).when(baseServiceClientOperator).createClient(1L,clientVO)
+    }
     def "DeployCertManager"() {
         when:
         MultiValueMap<String, Object> paramMap = new LinkedMultiValueMap<String, Object>();

@@ -111,7 +111,6 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         if (devopsClusterResourceMapper.updateByPrimaryKeySelective(devopsClusterResourceDTO) != 1) {
             throw new CommonException("error.update.cluster.resource");
         }
-
     }
 
     @Override
@@ -289,7 +288,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
                 clientVO.setName(clientName);
                 clientVO.setOrganizationId(devopsClusterDTO.getOrganizationId());
                 clientVO.setAuthorizedGrantTypes("password,implicit,client_credentials,refresh_token,authorization_code");
-                clientVO.setSecret("secret");
+                clientVO.setSecret(GenerateUUID.generateUUID().substring(0, 16));
                 clientVO.setRefreshTokenValidity(3600L);
                 clientVO.setAccessTokenValidity(3600L);
                 clientVO.setSourceId(clusterId);
