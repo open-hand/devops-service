@@ -369,6 +369,9 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     @Override
     public String getGrafanaUrl(Long clusterId, String type) {
         DevopsClusterResourceDTO clusterResourceDTO = queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
+        if (clusterResourceDTO == null) {
+            return null;
+        }
         DevopsPrometheusDTO devopsPrometheusDTO = devopsPrometheusMapper.selectByPrimaryKey(clusterResourceDTO.getConfigId());
         String grafanaType = type.equals("node") ? GRAFANA_NODE : GRAFANA_CLUSTER;
         return String.format("%s%s%s", "http://", devopsPrometheusDTO.getGrafanaDomain(), grafanaType);
