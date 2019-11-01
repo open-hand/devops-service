@@ -201,7 +201,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
             devopsHarborUserService.baseCreate(harborUser);
             devopsProjectDTO.setHarborUserId(harborUser.getId());
 
-            devopsHarborUserService.baseCreate(harborUser);
+            devopsHarborUserService.baseCreate(pullHarborUser);
             devopsProjectDTO.setHarborUserId(pullHarborUser.getId());
 
             devopsProjectDTO.setHarborProjectIsPrivate(true);
