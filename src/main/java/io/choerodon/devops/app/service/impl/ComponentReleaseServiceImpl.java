@@ -60,7 +60,7 @@ public class ComponentReleaseServiceImpl implements ComponentReleaseService {
      * @param instanceId    要更新时才传，创建时为空
      * @return 创建或者更新的实例纪录
      */
-    private AppServiceInstanceDTO createOrUpdateComponentRelease(String componentType, CommandType commandType, Object componentDTO, Long systemEnvId, @Nullable Long instanceId) {
+    private AppServiceInstanceDTO createOrUpdateComponentRelease(ClusterResourceType componentType, CommandType commandType, Object componentDTO, Long systemEnvId, @Nullable Long instanceId) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(systemEnvId);
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
@@ -68,12 +68,12 @@ public class ComponentReleaseServiceImpl implements ComponentReleaseService {
         //校验环境相关信息
         devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
 
-        String values = componentConfigToYaml(componentType, componentDTO);
+        String values = ComponentValuesTemplateUtil.convert(componentType, componentDTO);
 
         //校验values
         FileUtil.checkYamlFormat(values);
 
-        AppServiceVersionDTO appServiceVersionDTO = getAppServiceVersionForComponent(componentType);
+        AppServiceVersionDTO appServiceVersionDTO = ComponentVersionUtil.getComponentVersion(componentType);
 
         //初始化实例,command, commandValue
         AppServiceInstanceDTO appServiceInstanceDTO = initApplicationInstanceDTO(systemEnvId, instanceId, commandType);
@@ -83,7 +83,7 @@ public class ComponentReleaseServiceImpl implements ComponentReleaseService {
         // 初始化实例名
         String code;
         if (CommandType.CREATE == commandType) {
-            code = String.format("%s-%s", componentType, GenerateUUID.generateUUID().substring(0, 5));
+            code = String.format("%s-%s", appServiceVersionDTO.getChartName(), GenerateUUID.generateUUID().substring(0, 5));
         } else {
             code = appServiceInstanceDTO.getCode();
             //更新实例的时候校验GitOps库文件是否存在,处理部署实例时，由于没有创GitOps文件导致的部署失败
@@ -107,7 +107,7 @@ public class ComponentReleaseServiceImpl implements ComponentReleaseService {
 
         AppServiceDeployVO appServiceDeployVO = new AppServiceDeployVO(null, systemEnvId, values, null, commandType.getType(), instanceId, code, null, null);
         AppServiceDTO fakeAppService = new AppServiceDTO();
-        fakeAppService.setCode(componentType);
+        fakeAppService.setCode(appServiceVersionDTO.getChartName());
 
         InstanceSagaPayload instanceSagaPayload = new InstanceSagaPayload(devopsEnvironmentDTO.getProjectId(), userAttrDTO.getGitlabUserId(), null, appServiceInstanceDTO.getCommandId().intValue());
         instanceSagaPayload.setApplicationDTO(fakeAppService);
@@ -132,36 +132,19 @@ public class ComponentReleaseServiceImpl implements ComponentReleaseService {
     @Override
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     public AppServiceInstanceDTO createReleaseForPrometheus(Long systemEnvId, DevopsPrometheusDTO devopsPrometheusDTO) {
-        return createOrUpdateComponentRelease(ClusterResourceType.PROMETHEUS.getType(), CommandType.CREATE, devopsPrometheusDTO, systemEnvId, null);
+        return createOrUpdateComponentRelease(ClusterResourceType.PROMETHEUS, CommandType.CREATE, devopsPrometheusDTO, systemEnvId, null);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     public AppServiceInstanceDTO updateReleaseForPrometheus(DevopsPrometheusDTO devopsPrometheusDTO, Long instanceId, Long systemEnvId) {
-        return createOrUpdateComponentRelease(ClusterResourceType.PROMETHEUS.getType(), CommandType.UPDATE, devopsPrometheusDTO, systemEnvId, instanceId);
+        return createOrUpdateComponentRelease(ClusterResourceType.PROMETHEUS, CommandType.UPDATE, devopsPrometheusDTO, systemEnvId, instanceId);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     public void deleteReleaseForComponent(Long instanceId) {
         appServiceInstanceService.deleteInstance(instanceId);
-    }
-
-
-    /**
-     * 获取组件对应的版本信息
-     *
-     * @param componentType 组件类型
-     * @return 版本信息
-     */
-    private AppServiceVersionDTO getAppServiceVersionForComponent(String componentType) {
-        return ComponentConfigUtil.getComponentVersion(componentType);
-    }
-
-
-    private String componentConfigToYaml(String componentType, Object component) {
-        // TODO
-        return null;
     }
 
     private DevopsEnvCommandValueDTO initEnvCommandValueDTO

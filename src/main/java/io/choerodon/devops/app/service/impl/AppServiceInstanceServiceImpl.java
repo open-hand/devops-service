@@ -1280,7 +1280,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         // 如果是组件的实例进行部署
         String versionValue = EnvironmentType.SYSTEM.getValue().equals(devopsEnvironmentDTO.getType()) ?
-                ComponentConfigUtil.getComponentVersion(appServiceCode).getValues() :
+                ComponentVersionUtil.getComponentVersion(appServiceCode).getValues() :
                 appServiceVersionService.baseQueryValue(deployVersionId);
         c7nHelmRelease.getSpec().setValues(
                 getReplaceResult(versionValue, deployValue).getDeltaYaml().trim());
