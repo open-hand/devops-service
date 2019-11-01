@@ -131,7 +131,7 @@ public class DevopsClusterResourceController {
     public ResponseEntity delete(
             @ApiParam(value = "集群id", required = true)
             @RequestParam(name = "cluster_id", required = true) Long clusterId) {
-        devopsClusterResourceService.deletePrometheus(clusterId);
+        devopsClusterResourceService.uploadPrometheus(clusterId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 

@@ -143,8 +143,8 @@ public class ComponentReleaseServiceImpl implements ComponentReleaseService {
 
     @Override
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
-    public void deleteReleaseForComponent(Long instanceId) {
-        appServiceInstanceService.deleteInstance(instanceId);
+    public void deleteReleaseForComponent(Long instanceId,Boolean deletePrometheus) {
+        appServiceInstanceService.deleteInstance(instanceId,deletePrometheus);
     }
 
     private DevopsEnvCommandValueDTO initEnvCommandValueDTO

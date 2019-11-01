@@ -137,6 +137,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     private DevopsDeployRecordService devopsDeployRecordService;
     @Autowired
     private PipelineAppServiceDeployMapper pipelineAppServiceDeployMapper;
+    @Autowired
+    private DevopsClusterResourceService devopsClusterResourceService;
 
     @Override
     public AppServiceInstanceInfoVO queryInfoById(Long instanceId) {
@@ -821,7 +823,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void deleteInstance(Long instanceId) {
+    public void deleteInstance(Long instanceId,Boolean deletePrometheus) {
         AppServiceInstanceDTO appServiceInstanceDTO = baseQuery(instanceId);
 
         if (appServiceInstanceDTO == null) {
@@ -856,6 +858,10 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             appServiceInstanceMapper.deleteByPrimaryKey(instanceId);
             devopsDeployRecordService.deleteRelatedRecordOfInstance(instanceId);
             appServiceInstanceMapper.deleteInstanceRelInfo(instanceId);
+            //删除集群组件prometheus
+            if(deletePrometheus){
+                devopsClusterResourceService.basedeletePromtheus(devopsEnvironmentDTO.getClusterId());
+            }
             if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER,
                     RELEASE_PREFIX + appServiceInstanceDTO.getCode() + YAML_SUFFIX)) {
                 gitlabServiceClientOperator.deleteFile(
@@ -873,6 +879,9 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 devopsDeployRecordService.deleteRelatedRecordOfInstance(instanceId);
                 appServiceInstanceMapper.deleteInstanceRelInfo(instanceId);
                 devopsEnvFileResourceService.baseDeleteById(devopsEnvFileResourceDTO.getId());
+                if(deletePrometheus){
+                    devopsClusterResourceService.basedeletePromtheus(devopsEnvironmentDTO.getClusterId());
+                }
                 return;
             }
         }
