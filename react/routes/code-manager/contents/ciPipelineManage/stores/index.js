@@ -28,7 +28,7 @@ export const StoreProvider = injectIntl(inject('AppState')(observer((props) => {
   const ciTableDS = useMemo(() => new DataSet(CiTableDataSet(formatMessage)), [projectId]);
 
   useEffect(() => {
-    ciTableDS.transport.read.url = `/devops/v1/projects/${projectId}/pipeline/page_by_options?app_service_id=${appServiceId}`;
+    appServiceId ? ciTableDS.transport.read.url = `/devops/v1/projects/${projectId}/pipeline/page_by_options?app_service_id=${appServiceId}` : '';
   }, [appServiceId, projectId]);
 
   const value = {

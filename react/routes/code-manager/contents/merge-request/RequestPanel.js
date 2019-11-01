@@ -15,7 +15,7 @@ import UserInfo from '../../../../components/userInfo';
 
 import DevPipelineStore from '../../stores/DevPipelineStore';
 import handleMapStore from '../../main-view/store/handleMapStore';
-
+import { useCodeManagerStore } from '../../stores';
 
 import './index.less';
 import '../../../main.less';
@@ -38,9 +38,9 @@ const RequestPanel = withRouter(observer((props) => {
   } = mergedRequestStore;
 
 
-  const appData = DevPipelineStore.getAppData;
-  const hasAppData = appData && appData.length;
-  const appId = DevPipelineStore.getSelectApp;
+  const { appServiceDs, selectAppDs } = useCodeManagerStore();
+  const appId = selectAppDs.current.get('appServiceId');
+  const appServiceData = appServiceDs.toData();
 
   handleMapStore.setCodeManagerMergeRequest({
     refresh: reload,
@@ -166,56 +166,54 @@ const RequestPanel = withRouter(observer((props) => {
         'devops-service.devops-git.queryUrl',
       ]}
     >
-      {
-        hasAppData && appId
-          ? <Fragment>
-            <Tabs activecKey={getTabKey} onChange={tabChange} animated={false} className="c7n-merge-tabs" type="card" size="small" tabBarStyle={{ marginRight: '0' }}>
-              <TabPane tab={`${formatMessage({ id: 'merge.tab1' })}(${openCount || 0})`} key="opened">
-                <Table dataSet={openTableDS} queryBar="none">
-                  <Column name="title" renderer={renderTitle} />
-                  <Column name="iid" renderer={renderIid} width={100} align="left" />
-                  <Column name="targetBranch" renderer={renderTargetBranch} />
-                  <Column name="createdAt" renderer={renderCreatedAt} />
-                  <Column name="commits" renderer={renderCommit} />
-                  <Column name="updatedAt" renderer={renderUpdateDate} />
-                  <Column name="assignee" renderer={renderAssignee} />
-                </Table>
-              </TabPane>
-              <TabPane tab={`${formatMessage({ id: 'merge.tab2' })}(${mergeCount || 0})`} key="merged">
-                <Table dataSet={openTableDS} queryBar="none">
-                  <Column name="title" renderer={renderTitle} />
-                  <Column name="iid" renderer={renderIid} width={100} align="left" />
-                  <Column name="targetBranch" renderer={renderTargetBranch} />
-                  <Column name="createdAt" renderer={renderCreatedAt} />
-                  <Column name="commits" renderer={renderCommit} />
-                  <Column name="updatedAt" renderer={renderUpdateDate} />
-                </Table>
-              </TabPane>
-              <TabPane tab={`${formatMessage({ id: 'merge.tab3' })}(${closeCount || 0})`} key="closed">
-                <Table dataSet={openTableDS} queryBar="none">
-                  <Column name="title" renderer={renderTitle} />
-                  <Column name="iid" renderer={renderIid} align="left" width={100} />
-                  <Column name="targetBranch" renderer={renderTargetBranch} />
-                  <Column name="createdAt" renderer={renderCreatedAt} />
-                  <Column name="commits" renderer={renderCommit} />
-                  <Column name="updatedAt" renderer={renderUpdateDate} />
-                </Table>
-              </TabPane>
-              <TabPane tab={`${formatMessage({ id: 'merge.tab4' })}(${totalCount || 0})`} key="all">
-                <Table dataSet={openTableDS} queryBar="none">
-                  <Column name="title" renderer={renderTitle} />
-                  <Column name="iid" renderer={renderIid} align="left" width={100} />
-                  <Column name="targetBranch" renderer={renderTargetBranch} />
-                  <Column name="state" />
-                  <Column name="createdAt" renderer={renderCreatedAt} />
-                  <Column name="commits" renderer={renderCommit} />
-                  <Column name="updatedAt" renderer={renderUpdateDate} />
-                </Table>
-              </TabPane>
-            </Tabs>
-          </Fragment>
-          : <Loading display={DevPipelineStore.getLoading} />
-      }
+      {appServiceDs.status !== 'ready' || !appId
+        ? <Loading display />
+        : <Fragment>
+          <Tabs activecKey={getTabKey} onChange={tabChange} animated={false} className="c7n-merge-tabs" type="card" size="small" tabBarStyle={{ marginRight: '0' }}>
+            <TabPane tab={`${formatMessage({ id: 'merge.tab1' })}(${openCount || 0})`} key="opened">
+              <Table dataSet={openTableDS} queryBar="none">
+                <Column name="title" renderer={renderTitle} />
+                <Column name="iid" renderer={renderIid} width={100} align="left" />
+                <Column name="targetBranch" renderer={renderTargetBranch} />
+                <Column name="createdAt" renderer={renderCreatedAt} />
+                <Column name="commits" renderer={renderCommit} />
+                <Column name="updatedAt" renderer={renderUpdateDate} />
+                <Column name="assignee" renderer={renderAssignee} />
+              </Table>
+            </TabPane>
+            <TabPane tab={`${formatMessage({ id: 'merge.tab2' })}(${mergeCount || 0})`} key="merged">
+              <Table dataSet={openTableDS} queryBar="none">
+                <Column name="title" renderer={renderTitle} />
+                <Column name="iid" renderer={renderIid} width={100} align="left" />
+                <Column name="targetBranch" renderer={renderTargetBranch} />
+                <Column name="createdAt" renderer={renderCreatedAt} />
+                <Column name="commits" renderer={renderCommit} />
+                <Column name="updatedAt" renderer={renderUpdateDate} />
+              </Table>
+            </TabPane>
+            <TabPane tab={`${formatMessage({ id: 'merge.tab3' })}(${closeCount || 0})`} key="closed">
+              <Table dataSet={openTableDS} queryBar="none">
+                <Column name="title" renderer={renderTitle} />
+                <Column name="iid" renderer={renderIid} align="left" width={100} />
+                <Column name="targetBranch" renderer={renderTargetBranch} />
+                <Column name="createdAt" renderer={renderCreatedAt} />
+                <Column name="commits" renderer={renderCommit} />
+                <Column name="updatedAt" renderer={renderUpdateDate} />
+              </Table>
+            </TabPane>
+            <TabPane tab={`${formatMessage({ id: 'merge.tab4' })}(${totalCount || 0})`} key="all">
+              <Table dataSet={openTableDS} queryBar="none">
+                <Column name="title" renderer={renderTitle} />
+                <Column name="iid" renderer={renderIid} align="left" width={100} />
+                <Column name="targetBranch" renderer={renderTargetBranch} />
+                <Column name="state" />
+                <Column name="createdAt" renderer={renderCreatedAt} />
+                <Column name="commits" renderer={renderCommit} />
+                <Column name="updatedAt" renderer={renderUpdateDate} />
+              </Table>
+            </TabPane>
+          </Tabs>
+        </Fragment>}
     </Page>
   );
 }));

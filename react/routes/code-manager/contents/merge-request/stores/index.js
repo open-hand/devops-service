@@ -5,6 +5,7 @@ import { observer } from 'mobx-react-lite';
 import { DataSet } from 'choerodon-ui/pro';
 import DevPipelineStore from '../../../stores/DevPipelineStore';
 import OpenTableDataSet from './OpenTableDataSet';
+import { useCodeManagerStore } from '../../../stores';
 import useStore from './useStore';
 
 const Store = createContext();
@@ -22,7 +23,9 @@ const StoreProvider = injectIntl(inject('AppState')(observer(((props) => {
 
   const mergedRequestStore = useStore();
 
-  const appId = DevPipelineStore.getSelectApp;
+  const { appServiceDs, selectAppDs } = useCodeManagerStore();
+  const appId = selectAppDs.current.get('appServiceId');
+
   const tabKey = mergedRequestStore.getTabKey;
 
   const openTableDS = useMemo(() => new DataSet(OpenTableDataSet(projectId, formatMessage, mergedRequestStore, appId, tabKey)), []);
@@ -40,7 +43,7 @@ const StoreProvider = injectIntl(inject('AppState')(observer(((props) => {
     } else {
       url = `/devops/v1/projects/${projectId}/app_service/${appId}/git/list_merge_request`;
     }
-    openTableDS.transport.read.url = url;
+    if (appId) { openTableDS.transport.read.url = url; }
     openTableDS.paging = tabKey !== 'opened';
     appId && mergedRequestStore.loadUrl(id, appId);
   }, [appId, tabKey, projectId]);
