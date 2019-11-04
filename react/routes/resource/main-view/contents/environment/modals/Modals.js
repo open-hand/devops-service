@@ -48,6 +48,7 @@ const EnvModals = observer(() => {
   } = useEnvironmentStore();
   const {
     modalStore,
+    nonePermissionDs,
   } = useModalStore();
 
   function linkServices(data) {
@@ -64,6 +65,7 @@ const EnvModals = observer(() => {
         objectVersionNumber,
         ...data,
       };
+      
       return modalStore.addUsers(users);
     }
 
@@ -124,7 +126,18 @@ const EnvModals = observer(() => {
   }
 
   function openPermission() {
-    modalStore.loadUsers(projectId, id);
+    const modalPorps = {
+      dataSet: permissionsDs,
+      nonePermissionDs,
+      formatMessage,
+      store: modalStore,
+      record: baseInfoDs.current,
+      intlPrefix,
+      prefixCls,
+      refresh,
+      onOk: addUsers,
+      projectId,
+    };
     Modal.open({
       key: modalKey3,
       title: <Tips
@@ -135,16 +148,8 @@ const EnvModals = observer(() => {
       style: modalStyle,
       className: 'c7ncd-modal-wrapper',
       children: <PermissionPage
-        store={modalStore}
-        onOk={addUsers}
-        intlPrefix={intlPrefix}
-        prefixCls={prefixCls}
-        skipPermission={baseInfoDs.current.get('skipCheckPermission')}
-        refresh={toPermissionTab}
+        {...modalPorps}
       />,
-      afterClose: () => {
-        modalStore.setUsers([]);
-      },
     });
   }
 

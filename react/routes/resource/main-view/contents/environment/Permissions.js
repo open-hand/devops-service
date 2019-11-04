@@ -49,6 +49,7 @@ export default function Permissions() {
 
   function getActionColumn() {
     const envRecord = baseInfoDs.current;
+    if (!envRecord) return null;
     const isSkip = envRecord.get('skipCheckPermission');
     return !isSkip && <Column renderer={renderActions} />;
   }
