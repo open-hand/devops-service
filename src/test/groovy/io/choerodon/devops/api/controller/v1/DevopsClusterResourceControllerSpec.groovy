@@ -111,16 +111,31 @@ class DevopsClusterResourceControllerSpec extends Specification {
         entity.statusCode.is2xxSuccessful()
     }
 
-
-
-    def "updatePromtheus"() {
-        def clusterResourceDTO = devopsClusterResourceMapper.queryByClusterIdAndType(1L,"prometheus")
+    def "createPrometheus"() {
         given:
         Map<String, String> map = new HashMap<>()
         map.put("cert-manager", "123")
         map.put("prometheus", "345")
         DevopsPrometheusVO devopsPrometheusVO = new DevopsPrometheusVO()
-        devopsPrometheusVO.setId(1L)
+        devopsPrometheusVO.setAdminPassword("test")
+        devopsPrometheusVO.setClusterName("uat")
+        devopsPrometheusVO.setGrafanaDomain("www.hand.com")
+        devopsPrometheusVO.setPvNames(map)
+        when:
+        def entity = restTemplate.postForEntity(MAPPING + "/prometheus/create?cluster_id=1", devopsPrometheusVO, null, 1L)
+        then:
+        entity.statusCode.is2xxSuccessful()
+
+    }
+
+    def "updatePromtheus"() {
+        def prometheus = devopsClusterResourceService.queryPrometheus(1L)
+        given:
+        Map<String, String> map = new HashMap<>()
+        map.put("cert-manager", "123")
+        map.put("prometheus", "345")
+        DevopsPrometheusVO devopsPrometheusVO = new DevopsPrometheusVO()
+        devopsPrometheusVO.setId(prometheus.getId())
         devopsPrometheusVO.setAdminPassword("abc123")
         devopsPrometheusVO.setClusterName("staging")
         devopsPrometheusVO.setGrafanaDomain("www.hand.com")
