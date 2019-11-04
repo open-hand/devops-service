@@ -292,6 +292,10 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
                     devopsClusterService.baseUpdate(devopsClusterDTO);
                 }
             }
+            DevopsClusterResourceDTO devopsClusterResource = devopsClusterResourceService.queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
+            if(devopsClusterResource!=null){
+                throw new CommonException("prometheus already exist");
+            }
             AppServiceInstanceDTO appServiceInstanceDTO = componentReleaseService.createReleaseForPrometheus(devopsClusterDTO.getSystemEnvId(), devopsPrometheusDTO);
             devopsClusterResourceDTO.setClusterId(clusterId);
             devopsClusterResourceDTO.setConfigId(devopsPrometheusDTO.getId());
