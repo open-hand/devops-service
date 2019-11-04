@@ -55,5 +55,5 @@ public interface DevopsClusterResourceService {
 
     void basedeletePromtheus(Long clusterId);
 
-    String getGrafanaUrl(Long clusterId, String type);
+    String getGrafanaUrl(Long projectId, Long clusterId, String type);
 }

@@ -146,9 +146,9 @@ public class RetrofitHandler {
         return retrofit.create(SonarClient.class);
     }
 
-    public static MarketServicePublicClient getMarketServiceClient(String getawayUrl, String type) {
+    public static MarketServicePublicClient getMarketServiceClient(String gatewayUrl, String type) {
         ConfigurationProperties configurationProperties = new ConfigurationProperties();
-        configurationProperties.setBaseUrl(getawayUrl);
+        configurationProperties.setBaseUrl(gatewayUrl);
         configurationProperties.setInsecureSkipTlsVerify(false);
         configurationProperties.setType(type);
         Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
