@@ -264,14 +264,13 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     @Transactional(rollbackFor = Exception.class)
     public void createOrUpdate(Long clusterId, DevopsPrometheusVO devopsPrometheusVO) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
-        DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceMapper.queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
         if (devopsClusterDTO.getSystemEnvId() == null) {
-            throw new CommonException("error.cluster.SystemEnvId");
+            throw new CommonException("no.cluster.SystemEnvId");
         }
-
+        DevopsClusterResourceDTO devopsClusterResourceDTO = new DevopsClusterResourceDTO();
         DevopsPrometheusDTO devopsPrometheusDTO = prometheusVoToDto(devopsPrometheusVO);
         if (ObjectUtils.isEmpty(devopsPrometheusVO.getId())) {
-            AppServiceInstanceDTO appServiceInstanceDTO = componentReleaseService.createReleaseForPrometheus(devopsClusterDTO.getSystemEnvId(), devopsPrometheusDTO);
+            devopsPrometheusDTO.setClusterId(clusterId);
             if (devopsPrometheusMapper.insertSelective(devopsPrometheusDTO) != 1) {
                 throw new CommonException("error.inster.prometheus");
             }
@@ -293,6 +292,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
                     devopsClusterService.baseUpdate(devopsClusterDTO);
                 }
             }
+            AppServiceInstanceDTO appServiceInstanceDTO = componentReleaseService.createReleaseForPrometheus(devopsClusterDTO.getSystemEnvId(), devopsPrometheusDTO);
             devopsClusterResourceDTO.setClusterId(clusterId);
             devopsClusterResourceDTO.setConfigId(devopsPrometheusDTO.getId());
             devopsClusterResourceDTO.setObjectId(appServiceInstanceDTO.getId());
@@ -309,7 +309,6 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
             }
             devopsClusterResourceDTO.setObjectId(appServiceInstanceDTO.getId());
             devopsClusterResourceDTO.setOperate(ClusterResourceOperateType.UPGRADE.getType());
-            devopsClusterResourceDTO.setObjectVersionNumber(devopsClusterResourceDTO.getObjectVersionNumber());
             devopsClusterResourceService.baseUpdate(devopsClusterResourceDTO);
 
         }
