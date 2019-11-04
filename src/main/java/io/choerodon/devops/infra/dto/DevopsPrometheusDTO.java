@@ -1,9 +1,6 @@
 package io.choerodon.devops.infra.dto;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModelProperty;
@@ -31,11 +28,12 @@ public class DevopsPrometheusDTO extends BaseDTO {
     @ApiModelProperty("pv名称")
     private String pvName;
 
-    @ApiModelProperty("replacement")
-    private String clusterName;
-
     @ApiModelProperty("集群id")
     private Long clusterId;
+
+    @ApiModelProperty("replacement")
+    @Transient
+    private String clusterCode;
 
     public Long getId() {
         return id;
@@ -69,12 +67,12 @@ public class DevopsPrometheusDTO extends BaseDTO {
         this.pvName = pvName;
     }
 
-    public String getClusterName() {
-        return clusterName;
+    public String getClusterCode() {
+        return clusterCode;
     }
 
-    public void setClusterName(String clusterName) {
-        this.clusterName = clusterName;
+    public void setClusterCode(String clusterCode) {
+        this.clusterCode = clusterCode;
     }
 
     public Long getClusterId() {

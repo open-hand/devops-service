@@ -17,12 +17,15 @@ public class DevopsPrometheusVO {
     @ApiModelProperty("admin密码/必填")
     @NotNull(message = "error.admin.password.null")
     private String adminPassword;
+
     @ApiModelProperty("grafana域名/必填")
     @NotNull(message = "error.grafana.null")
     private String grafanaDomain;
+
     @ApiModelProperty("pvNames/必填")
     @NotNull(message = "error.pv.name.null")
     private Map<String,String> pvNames;
+
     @ApiModelProperty("cluster名称/必填")
     @NotNull(message = "error.cluster.name.null")
     private String clusterName;
