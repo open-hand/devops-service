@@ -34,9 +34,9 @@ public class ComponentValuesTemplateUtil {
      */
     public static String convertPrometheus(DevopsPrometheusDTO devopsPrometheusDTO, InputStream in) {
         Map<String, String> map = new HashMap<>();
-        map.put("{{adminPassoword}}", devopsPrometheusDTO.getAdminPassword());
+        map.put("{{adminPassword}}", devopsPrometheusDTO.getAdminPassword());
         map.put("{{host}}", devopsPrometheusDTO.getGrafanaDomain());
-        map.put("{{clustername}}", devopsPrometheusDTO.getClusterName());
+        map.put("{{clusterName}}", devopsPrometheusDTO.getClusterCode());
         return FileUtil.replaceReturnString(in, map);
     }
 

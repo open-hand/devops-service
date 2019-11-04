@@ -244,7 +244,7 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
-    public ResponseEntity<ClientDTO> queryClient(Long organizationId, Long clientId) {
+    public ResponseEntity<ClientDTO> queryClientBySourceId(Long organizationId, Long sourceId) {
         throw new CommonException("error.query.client");
     }
 }
