@@ -249,12 +249,12 @@ public interface BaseServiceClient {
     ResponseEntity deleteClient(@PathVariable("organization_id") Long organizationId, @PathVariable("client_id") Long clientId);
 
     /**
-     * 获取client详情
-     *
-     * @param organizationId 组织id
-     * @param clientId       clientId
-     * @return 分配结果
+     * 根据集群Id和组织Id查询client
+     * @param organizationId
+     * @param sourceId
+     * @return
      */
-    @GetMapping(value = "/v1/organizations/{organization_id}/clients/{client_id}")
-    ResponseEntity<ClientDTO> queryClient(@PathVariable("organization_id") Long organizationId, @PathVariable("client_id") Long clientId);
+    @GetMapping(value = "/v1/organizations/{organization_id}/clients/source/{source_id}")
+    ResponseEntity<ClientDTO> queryClientBySourceId(@PathVariable("organization_id") Long organizationId, @PathVariable("source_id") Long sourceId);
+
 }

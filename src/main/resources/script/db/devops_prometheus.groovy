@@ -19,5 +19,7 @@ databaseChangeLog(logicalFilePath: 'devops_prometheus.groovy') {
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
-
+    changeSet(author: 'scp', id: '2019-11-04-drop-column') {
+        dropColumn(columnName: "cluster_name", tableName: "devops_prometheus")
+    }
 }

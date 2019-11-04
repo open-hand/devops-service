@@ -491,9 +491,9 @@ public class BaseServiceClientOperator {
         }
     }
 
-    public ClientDTO queryClient(Long organizationId, Long  clientId) {
+    public ClientDTO queryClientBySourceId(Long organizationId, Long  sourceId) {
         try {
-            ResponseEntity<ClientDTO> responseEntity = baseServiceClient.queryClient(organizationId, clientId);
+            ResponseEntity<ClientDTO> responseEntity = baseServiceClient.queryClientBySourceId(organizationId, sourceId);
             return  responseEntity.getBody();
         } catch (Exception ex) {
             throw new CommonException("error.query.client");
