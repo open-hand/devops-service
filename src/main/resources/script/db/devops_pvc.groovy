@@ -12,8 +12,6 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pvc.groovy') {
             column(name: 'project_id', type: 'BIGINT UNSIGNED', remarks: '项目id')
             column(name: 'access_modes', type: 'VARCHAR(32)', remarks: '访问模式')
             column(name: 'request_resource', type: 'VARCHAR(32)', remarks: '申请资源大小')
-            column(name: 'label', type: 'VARCHAR(256)', remarks: 'label')
-            column(name: 'type', type: 'VARCHAR(32)', remarks: 'PVC类型')
             column(name: 'status', type: 'VARCHAR(32)', remarks: 'PVC状态')
             column(name: 'command_id', type: 'BIGINT UNSIGNED', remarks: '操作id')
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
