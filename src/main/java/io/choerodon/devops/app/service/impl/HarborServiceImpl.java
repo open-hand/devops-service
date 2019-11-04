@@ -50,9 +50,6 @@ public class HarborServiceImpl implements HarborService {
     private static final String HARBOR = "harbor";
     private static final String AUTHTYPE = "pull";
     private static final Gson gson = new Gson();
-    private static final String USER_PREFIX = "user%s%s";
-    private static final String OPERATE_CREATE = "create";
-    private static final String OPERATE_DELETE = "delete";
 
     @Autowired
     private HarborConfigurationProperties harborConfigurationProperties;

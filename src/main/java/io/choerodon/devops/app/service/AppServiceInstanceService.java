@@ -331,4 +331,6 @@ public interface AppServiceInstanceService {
     String baseGetInstanceResourceDetailJson(Long instanceId, String resourceName, ResourceType resourceType);
 
     void updateStatus(AppServiceInstanceDTO appServiceInstanceDTO);
+
+    ConfigVO queryDefaultConfig(Long projectId, ConfigVO configVO);
 }

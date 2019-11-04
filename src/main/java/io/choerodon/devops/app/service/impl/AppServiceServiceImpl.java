@@ -111,7 +111,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     private static final String DUPLICATE = "duplicate";
     private static final String NORMAL_SERVICE = "normal_service";
     private static final String SHARE_SERVICE = "share_service";
-    private static final String  MARKET_SERVICE = "market_service";
+    private static final String MARKET_SERVICE = "market_service";
     private static final String TEMP_MODAL = "\\?version=";
     @Autowired
     DevopsSagaHandler devopsSagaHandler;
@@ -173,6 +173,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     private DevopsGitlabPipelineMapper gitlabPipelineMapper;
     @Autowired
     private DevopsMergeRequestMapper mergeRequestMapper;
+
     @Override
     @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_APPLICATION_SERVICE,
             description = "Devops创建应用服务", inputSchema = "{}")
@@ -286,7 +287,8 @@ public class AppServiceServiceImpl implements AppServiceService {
                         .withSourceId(projectId)
                         .withPayloadAndSerialize(devOpsAppServicePayload)
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_APP_DELETE),
-                builder -> {});
+                builder -> {
+                });
     }
 
     private void checkAppserviceIsShareDeploy(Long projectId, Long appServiceId) {
@@ -298,6 +300,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             throw new CommonException("error.not.delete.service.by.other.project.deployment");
         }
     }
+
     @Override
     @Transactional
     public void deleteAppServiceSage(Long projectId, Long appServiceId) {
@@ -355,11 +358,11 @@ public class AppServiceServiceImpl implements AppServiceService {
         devopsConfigService.operate(appServiceId, APP_SERVICE, devopsConfigVOS);
 
         if (appServiceUpdateDTO.getHarbor() != null) {
-            DevopsConfigDTO harborConfig = devopsConfigService.queryRealConfig(appServiceId, APP_SERVICE, HARBOR,AUTHTYPE_PULL);
+            DevopsConfigDTO harborConfig = devopsConfigService.queryRealConfig(appServiceId, APP_SERVICE, HARBOR, AUTHTYPE_PULL);
             appServiceDTO.setHarborConfigId(harborConfig.getId());
         }
         if (appServiceUpdateDTO.getChart() != null) {
-            DevopsConfigDTO chartConfig = devopsConfigService.queryRealConfig(appServiceId, APP_SERVICE, CHART,AUTHTYPE_PULL);
+            DevopsConfigDTO chartConfig = devopsConfigService.queryRealConfig(appServiceId, APP_SERVICE, CHART, AUTHTYPE_PULL);
             appServiceDTO.setChartConfigId(chartConfig.getId());
         }
 
@@ -748,7 +751,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         try {
             ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
             OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-            DevopsConfigDTO harborConfigDTO = devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, HARBOR,AUTHTYPE_PUSH);
+            DevopsConfigDTO harborConfigDTO = devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, HARBOR, AUTHTYPE_PUSH);
             ConfigVO harborProjectConfig = gson.fromJson(harborConfigDTO.getConfig(), ConfigVO.class);
             InputStream inputStream = this.getClass().getResourceAsStream("/shell/ci.sh");
             Map<String, String> params = new HashMap<>();
@@ -2161,7 +2164,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             params.add(param);
         }
         switch (type) {
-            case NORMAL_SERVICE:{
+            case NORMAL_SERVICE: {
                 list.addAll(appServiceMapper.list(projectId, null, true, serviceType, null, params, ""));
                 AppServiceGroupVO appServiceGroupVO = new AppServiceGroupVO();
                 appServiceGroupVO.setAppServiceList(ConvertUtils.convertList(list, this::dtoToGroupInfoVO));
@@ -2304,15 +2307,13 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public String checkAppServiceType(Long projectId,AppServiceDTO appServiceDTO) {
+    public String checkAppServiceType(Long projectId, AppServiceDTO appServiceDTO) {
         String type = null;
-        if(appServiceDTO.getProjectId() == null  &&  appServiceDTO.getMktAppId() != null){
+        if (appServiceDTO.getProjectId() == null && appServiceDTO.getMktAppId() != null) {
             type = AppServiceType.MARKET_SERVICE.getType();
-        }
-        else if(appServiceDTO.getProjectId() != projectId){
+        } else if (appServiceDTO.getProjectId() != projectId) {
             type = AppServiceType.SHARE_SERVICE.getType();
-        }
-        else if (appServiceDTO.getProjectId() == projectId){
+        } else if (appServiceDTO.getProjectId() == projectId) {
             type = AppServiceType.NORMAL_SERVICE.getType();
         }
         return type;
@@ -2380,7 +2381,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public List<ProjectVO> listProjectByShare(Long projectId, Boolean share) {
         List<AppServiceDTO> appServiceDTOList = new ArrayList<>();
-        PageRequest pageRequest = new PageRequest(0,0);
+        PageRequest pageRequest = new PageRequest(0, 0);
         pageRequest.setSize(0);
         PageInfo<AppServiceGroupInfoVO> appServiceGroupInfoVOPageInfo = pageAppServiceByMode(projectId, share, null, null, pageRequest);
         List<AppServiceGroupInfoVO> list = appServiceGroupInfoVOPageInfo.getList();
