@@ -14,7 +14,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pv') {
             column(name: 'cluster_id',type: 'BIGINT UNSIGNED', remarks: '所属集群')
             column(name: 'storage', type: 'varchar(20)',remarks: '存储容量')
             column(name: 'access_modes', type: 'varchar(20)', remarks: '访问类型')
-
+            column(name: 'skip_check_project_permission', type: 'tinyint(1)',defaultValue: 1,remarks: '指定权限,是否只属于特定项目，默认为1')
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
             column(name: "created_by", type: "BIGINT UNSIGNED", defaultValue: "0")
             column(name: "creation_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
