@@ -26,6 +26,7 @@ import io.choerodon.devops.infra.enums.EnvironmentType;
 import io.choerodon.devops.infra.enums.ObjectType;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.util.ClusterComponentUtil;
 import io.choerodon.devops.infra.util.ComponentVersionUtil;
 import io.choerodon.devops.infra.util.GitUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
@@ -195,16 +196,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
     }
 
 
-    /**
-     * 实例是否是集群组件的实例
-     *
-     * @param envType        环境类型
-     * @param c7nHelmRelease release数据
-     * @return true则是，反之，不是
-     */
-    private boolean isClusterComponent(String envType, C7nHelmRelease c7nHelmRelease) {
-        return EnvironmentType.SYSTEM.getValue().equals(envType) && C7NHelmReleaseMetadataType.CLUSTER_COMPONENT.getType().equals(c7nHelmRelease.getMetadata().getType());
-    }
+
 
     /**
      * 校验版本是否为空
@@ -224,7 +216,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         OrganizationDTO organization = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
-        boolean isClusterComponent = isClusterComponent(devopsEnvironmentDTO.getType(), c7nHelmRelease);
+        boolean isClusterComponent = ClusterComponentUtil.isClusterComponent(devopsEnvironmentDTO.getType(), c7nHelmRelease);
 
         AppServiceVersionDTO appServiceVersionDTO = null;
         Long releaseAppServiceId = null;

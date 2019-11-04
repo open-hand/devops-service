@@ -13,11 +13,11 @@ import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.infra.dto.AppServiceInstanceDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvFileResourceDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
-import io.choerodon.devops.infra.enums.EnvironmentType;
 import io.choerodon.devops.infra.enums.GitOpsObjectError;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.infra.mapper.AppServiceInstanceMapper;
+import io.choerodon.devops.infra.util.ClusterComponentUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 
 @Component
@@ -86,7 +86,7 @@ public class ConvertC7nHelmReleaseServiceImpl extends ConvertK8sObjectService<C7
                 }
 
                 // 一个集群环境只允许安装一个组件chart的一个实例
-                if (EnvironmentType.SYSTEM.getValue().equals(devopsEnvironmentDTO.getType())
+                if (ClusterComponentUtil.isClusterComponent(devopsEnvironmentDTO.getType(), c7nHelmRelease)
                         && appServiceInstanceMapper.isComponentDeployed(envId, chartName)) {
                     throw new GitOpsExplainException(GitOpsObjectError.DUPLICATED_CLUSTER_COMPONENT.getError(), filePath, c7nHelmRelease.getSpec().getChartName());
                 }
@@ -96,7 +96,7 @@ public class ConvertC7nHelmReleaseServiceImpl extends ConvertK8sObjectService<C7
                 .anyMatch(c7nHelmRelease1 -> c7nHelmRelease1.getMetadata().getName()
                         .equals(instanceCode))) {
             throw new GitOpsExplainException(GitOpsObjectError.OBJECT_EXIST.getError(), filePath, instanceCode);
-        } else if (EnvironmentType.SYSTEM.getValue().equals(devopsEnvironmentDTO.getType())
+        } else if (ClusterComponentUtil.isClusterComponent(devopsEnvironmentDTO.getType(), c7nHelmRelease)
                 && c7nHelmReleases.stream().anyMatch(release -> release.getSpec().getChartName().equals(chartName))) {
             // 一个集群环境只允许安装一个组件chart的一个实例
             throw new GitOpsExplainException(
