@@ -3,6 +3,7 @@ package io.choerodon.devops.api.vo;
 
 import io.choerodon.devops.api.validator.annotation.QuantityCheck;
 import io.swagger.annotations.ApiModelProperty;
+import springfox.documentation.annotations.ApiIgnore;
 
 import javax.validation.constraints.*;
 
@@ -35,6 +36,9 @@ public class DevopsPvcReqVO {
     @NotEmpty(message = "error.pvc.type.empty")
     @ApiModelProperty("卷类型")
     private String type;
+
+    @ApiModelProperty(value = "本次请求的操作类型，create/update", hidden = true)
+    private String commandType;
 
     public Long getId() {
         return id;
@@ -90,5 +94,13 @@ public class DevopsPvcReqVO {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public String getCommandType() {
+        return commandType;
+    }
+
+    public void setCommandType(String commandType) {
+        this.commandType = commandType;
     }
 }

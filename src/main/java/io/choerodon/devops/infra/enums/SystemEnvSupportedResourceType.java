@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
  */
 public enum SystemEnvSupportedResourceType {
     C7NHELMRELEASE("C7NHelmRelease"),
+    PERSISTENT_VOLUME_CLAIM("PersistentVolumeClaim"),
     PERSISTENT_VOLUME("PersistentVolume");
 
     @SuppressWarnings("unchecked")
