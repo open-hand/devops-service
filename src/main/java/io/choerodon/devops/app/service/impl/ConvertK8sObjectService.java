@@ -8,6 +8,11 @@ import io.choerodon.devops.infra.dto.DevopsEnvFileResourceDTO;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.gitops.YamlConvertToResourceHandler;
 
+/**
+ * 将资源对象从文本形式转为对象形式并对其进行校验
+ *
+ * @param <T> 对象类型
+ */
 public abstract class ConvertK8sObjectService<T> {
     private final Class<T> targetClass;
 

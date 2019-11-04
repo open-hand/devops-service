@@ -11,4 +11,6 @@ public class KubernetesConstants {
     public static final String LABELS = "labels";
     public static final String KIND = "kind";
     public static final String NAME = "name";
+
+    public static final String STORAGE = "storage";
 }
