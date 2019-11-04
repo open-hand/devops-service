@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsPvMapper">
+    <select id="queryAll" resultType="io.choerodon.devops.api.vo.DevopsPvVO">
+        SELECT dpv.id id,
+               dpv.name name,
+               dpv.type type,
+               dpv.description description,
+               dpv.status status,
+               dpv.storage storage,
+               dpv.access_modes access_modes,
+               dpvc.name pvc_name,
+               dc.name cluster_name
+        FROM devops_pv dpv
+        LEFT JOIN devops_pvc dpvc on dpv.pvc_id = dpvc.id
+        LEFT JOIN devops_cluster dc on dep.cluster_id = dc.id
+    </select>
+
+</mapper>
