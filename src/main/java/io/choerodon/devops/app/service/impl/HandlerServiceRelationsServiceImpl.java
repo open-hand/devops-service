@@ -82,6 +82,11 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
         });
     }
 
+    @Override
+    public Class<V1Service> getTarget() {
+        return V1Service.class;
+    }
+
 
     private void updateService(Map<String, String> objectPath, Long envId, Long projectId, List<V1Service> updateV1Service, List<V1Endpoints> v1Endpoints, String path, Long userId) {
         updateV1Service.stream()

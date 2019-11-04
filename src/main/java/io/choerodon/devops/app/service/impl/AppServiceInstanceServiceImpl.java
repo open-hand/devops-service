@@ -828,7 +828,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void deleteInstance(Long instanceId,Boolean deletePrometheus) {
+    public void deleteInstance(Long instanceId, Boolean deletePrometheus) {
         AppServiceInstanceDTO appServiceInstanceDTO = baseQuery(instanceId);
 
         if (appServiceInstanceDTO == null) {
@@ -864,7 +864,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             devopsDeployRecordService.deleteRelatedRecordOfInstance(instanceId);
             appServiceInstanceMapper.deleteInstanceRelInfo(instanceId);
             //删除集群组件prometheus
-            if(deletePrometheus){
+            if (deletePrometheus) {
                 devopsClusterResourceService.basedeletePromtheus(devopsEnvironmentDTO.getClusterId());
             }
             if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER,
@@ -884,7 +884,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 devopsDeployRecordService.deleteRelatedRecordOfInstance(instanceId);
                 appServiceInstanceMapper.deleteInstanceRelInfo(instanceId);
                 devopsEnvFileResourceService.baseDeleteById(devopsEnvFileResourceDTO.getId());
-                if(deletePrometheus){
+                if (deletePrometheus) {
                     devopsClusterResourceService.basedeletePromtheus(devopsEnvironmentDTO.getClusterId());
                 }
                 return;
@@ -1306,9 +1306,16 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         }
 
         // 如果是组件的实例进行部署
-        String versionValue = EnvironmentType.SYSTEM.getValue().equals(devopsEnvironmentDTO.getType()) ?
-                ComponentVersionUtil.getComponentVersion(appServiceCode).getValues() :
-                appServiceVersionService.baseQueryValue(deployVersionId);
+        String versionValue;
+        if (EnvironmentType.SYSTEM.getValue().equals(devopsEnvironmentDTO.getType())) {
+            // 设置集群组件的特殊元数据
+            c7nHelmRelease.getMetadata().setType(C7NHelmReleaseMetadataType.CLUSTER_COMPONENT.getType());
+
+            versionValue = ComponentVersionUtil.getComponentVersion(appServiceCode).getValues();
+        } else {
+            versionValue = appServiceVersionService.baseQueryValue(deployVersionId);
+        }
+
         c7nHelmRelease.getSpec().setValues(
                 getReplaceResult(versionValue, deployValue).getDeltaYaml().trim());
         return c7nHelmRelease;

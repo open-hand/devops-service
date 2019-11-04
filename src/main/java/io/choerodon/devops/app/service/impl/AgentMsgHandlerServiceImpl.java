@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
@@ -36,7 +37,6 @@ import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.AppServiceMapper;
 import io.choerodon.devops.infra.util.*;
-import org.springframework.util.ObjectUtils;
 
 /**
  * Created by Zenger on 2018/4/17.
@@ -262,12 +262,16 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             if (devopsEnvCommandDTO != null) {
                 devopsEnvCommandDTO.setStatus(CommandStatus.SUCCESS.getStatus());
                 devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
-                AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQueryByAppServiceIdAndVersion(appServiceInstanceDTO.getAppServiceId(), releasePayloadVO.getChartVersion());
-                appServiceInstanceDTO.setAppServiceVersionId(appServiceVersionDTO.getId());
+                // 兼容集群组件
+                if (appServiceInstanceDTO.getAppServiceId() != null) {
+                    AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQueryByAppServiceIdAndVersion(appServiceInstanceDTO.getAppServiceId(), releasePayloadVO.getChartVersion());
+                    appServiceInstanceDTO.setAppServiceVersionId(appServiceVersionDTO.getId());
+                } else {
+                    appServiceInstanceDTO.setComponentVersion(releasePayloadVO.getChartVersion());
+                }
                 appServiceInstanceDTO.setStatus(InstanceStatus.RUNNING.getStatus());
                 appServiceInstanceService.baseUpdate(appServiceInstanceDTO);
                 installResource(resources, appServiceInstanceDTO);
-
             }
         }
     }
@@ -275,7 +279,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
     @Override
     public void helmInstallJobInfo(String key, String msg, Long clusterId) {
-        if (msg.equals("null")) {
+        if ("null".equals(msg)) {
             return;
         }
         Long envId = getEnvId(key, clusterId);
@@ -1471,10 +1475,10 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     @Override
     public void getCertManagerInfo(String payloadMsg, Long clusterId) {
         logger.info(payloadMsg);
-        if(payloadMsg != null){
+        if (payloadMsg != null) {
             String error = "";
             String status = "";
-            devopsClusterResourceService.operateCertManager(clusterId,status,error);
+            devopsClusterResourceService.operateCertManager(clusterId, status, error);
         }
     }
 
@@ -1649,10 +1653,10 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     @Override
     public void getCertManagerStatus(String payload, Long clusterId) {
         logger.info(payload);
-        if(!ObjectUtils.isEmpty(payload)){
+        if (!ObjectUtils.isEmpty(payload)) {
             String status = "";
             String error = "";
-            devopsClusterResourceService.operateCertManager(clusterId,status,error);
+            devopsClusterResourceService.operateCertManager(clusterId, status, error);
         }
 
     }

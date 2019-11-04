@@ -9,9 +9,12 @@ import io.choerodon.devops.app.service.DevopsSecretService;
 import io.choerodon.devops.infra.dto.DevopsEnvFileResourceDTO;
 import io.choerodon.devops.infra.dto.DevopsSecretDTO;
 import io.choerodon.devops.infra.enums.GitOpsObjectError;
+import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.kubernetes.client.models.V1Secret;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 
 /**
@@ -20,16 +23,15 @@ import io.kubernetes.client.models.V1Secret;
  * Time: 下午7:31
  * Description:
  */
+@Component
 public class ConvertC7nSecretServiceImpl extends ConvertK8sObjectService<V1Secret> {
-
+    @Autowired
     private DevopsSecretService devopsSecretService;
+    @Autowired
     private DevopsEnvFileResourceService devopsEnvFileResourceService;
 
     public ConvertC7nSecretServiceImpl() {
         super(V1Secret.class);
-        this.devopsSecretService = ApplicationContextHelper.getSpringFactory().getBean(DevopsSecretService.class);
-        this.devopsEnvFileResourceService = ApplicationContextHelper.getSpringFactory()
-                .getBean(DevopsEnvFileResourceService.class);
     }
 
     @Override
@@ -81,5 +83,10 @@ public class ConvertC7nSecretServiceImpl extends ConvertK8sObjectService<V1Secre
         } else {
             c7nSecrets.add(v1Secret);
         }
+    }
+
+    @Override
+    public ResourceType getType() {
+        return ResourceType.SECRET;
     }
 }

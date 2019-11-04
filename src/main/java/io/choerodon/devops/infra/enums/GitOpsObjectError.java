@@ -70,7 +70,9 @@ public enum GitOpsObjectError {
     CUSTOM_RESOURCE_KIND_NOT_FOUND("custom.resource.kind.not.found"),
     CUSTOM_RESOURCE_METADATA_NOT_FOUND("custom.resource.metadata.not.found"),
     OBJECT_EXIST("object.exist"),
-    FILE_NOT_YAML("error.file.not.yaml.format");
+    FILE_NOT_YAML("error.file.not.yaml.format"),
+    DUPLICATED_CLUSTER_COMPONENT("duplicated.cluster.component"),
+    RESOURCE_TYPE_NOT_SUPPORTED("resource.type.not.supported");
 
     private String error;
 

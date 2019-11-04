@@ -3,28 +3,30 @@ package io.choerodon.devops.app.service.impl;
 import java.util.List;
 import java.util.Map;
 
-import io.choerodon.core.convertor.ApplicationContextHelper;
+import io.kubernetes.client.models.V1beta1HTTPIngressPath;
+import io.kubernetes.client.models.V1beta1Ingress;
+import io.kubernetes.client.models.V1beta1IngressRule;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
 import io.choerodon.devops.app.service.DevopsIngressService;
 import io.choerodon.devops.infra.dto.DevopsEnvFileResourceDTO;
 import io.choerodon.devops.infra.dto.DevopsIngressDTO;
 import io.choerodon.devops.infra.enums.GitOpsObjectError;
+import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.kubernetes.client.models.V1beta1HTTPIngressPath;
-import io.kubernetes.client.models.V1beta1Ingress;
-import io.kubernetes.client.models.V1beta1IngressRule;
 
-
+@Component
 public class ConvertV1beta1IngressServiceImpl extends ConvertK8sObjectService<V1beta1Ingress> {
-
+    @Autowired
     private DevopsIngressService devopsIngressService;
+    @Autowired
     private DevopsEnvFileResourceService devopsEnvFileResourceService;
 
     public ConvertV1beta1IngressServiceImpl() {
         super(V1beta1Ingress.class);
-        this.devopsIngressService = ApplicationContextHelper.getSpringFactory().getBean(DevopsIngressService.class);
-        this.devopsEnvFileResourceService = ApplicationContextHelper.getSpringFactory().getBean(DevopsEnvFileResourceService.class);
     }
 
     @Override
@@ -45,6 +47,11 @@ public class ConvertV1beta1IngressServiceImpl extends ConvertK8sObjectService<V1
         } else {
             v1beta1Ingresses.add(v1beta1Ingress);
         }
+    }
+
+    @Override
+    public ResourceType getType() {
+        return ResourceType.INGRESS;
     }
 
     @Override

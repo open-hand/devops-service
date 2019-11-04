@@ -16,4 +16,5 @@ public interface HandlerObjectFileRelationsService<T> {
                           List<V1Endpoints> v1Endpoints,
                           Long envId, Long projectId, String path, Long userId);
 
+    Class<T> getTarget();
 }
