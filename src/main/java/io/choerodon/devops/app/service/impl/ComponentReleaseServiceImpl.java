@@ -3,12 +3,9 @@ package io.choerodon.devops.app.service.impl;
 import javax.annotation.Nullable;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import io.choerodon.devops.infra.util.FileUtil;
-import io.choerodon.devops.infra.enums.ClusterResourceType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-
 
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -21,10 +18,6 @@ import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.gitops.ResourceFileCheckHandler;
 import io.choerodon.devops.infra.util.*;
-
-import io.choerodon.devops.app.service.ComponentReleaseService;
-import io.choerodon.devops.infra.dto.AppServiceInstanceDTO;
-import io.choerodon.devops.infra.dto.DevopsPrometheusDTO;
 
 /**
  * 为集群的组件部署对应的Release
@@ -90,6 +83,10 @@ public class ComponentReleaseServiceImpl implements ComponentReleaseService {
             resourceFileCheckHandler.check(devopsEnvironmentDTO, instanceId, code, ResourceType.C7NHELMRELEASE.getType());
         }
 
+        // 设置componentVersion便于之后升级组件的版本
+        appServiceInstanceDTO.setComponentVersion(appServiceVersionDTO.getVersion());
+        appServiceInstanceDTO.setComponentChartName(appServiceVersionDTO.getChartName());
+
         //存储数据
         if (CommandType.CREATE == commandType) {
             appServiceInstanceDTO.setCode(code);
@@ -143,8 +140,8 @@ public class ComponentReleaseServiceImpl implements ComponentReleaseService {
 
     @Override
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
-    public void deleteReleaseForComponent(Long instanceId,Boolean deletePrometheus) {
-        appServiceInstanceService.deleteInstance(instanceId,deletePrometheus);
+    public void deleteReleaseForComponent(Long instanceId, Boolean deletePrometheus) {
+        appServiceInstanceService.deleteInstance(instanceId, deletePrometheus);
     }
 
     private DevopsEnvCommandValueDTO initEnvCommandValueDTO

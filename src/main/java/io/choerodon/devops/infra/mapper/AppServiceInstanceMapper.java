@@ -71,4 +71,8 @@ public interface AppServiceInstanceMapper extends Mapper<AppServiceInstanceDTO> 
     List<DevopsEnvAppServiceDTO> listAllDistinctWithoutDeleted();
 
     List<AppServiceInstanceDTO> listByProjectIdsAndAppServiceId(@Param("projectIds") Set<Long> projectIds,@Param("appServiceId") Long appServiceId);
+
+    boolean isComponentDeployed(
+            @Param("envId") Long envId,
+            @Param("componentChartName") String componentChartName);
 }
