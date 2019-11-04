@@ -144,9 +144,17 @@ class DevopsClusterResourceControllerSpec extends Specification {
     def "deletePrometheus"() {
         given:
         when:
-        HttpEntity httpEntity = new HttpEntity();
         def entity = restTemplate.exchange(MAPPING + "/prometheus/unload?cluster_id=1", DevopsPrometheusVO.class, 1L)
         then:
         entity.body != null
     }
+
+    def "getGrafanaUrl"() {
+        given:
+        when:
+        def entity = restTemplate.exchange(MAPPING + "/grafana_url?cluster_id=1&type=node", String.class, 1L)
+        then:
+        entity.statusCode.is2xxSuccessful()
+    }
+
 }

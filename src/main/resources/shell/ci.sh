@@ -20,6 +20,8 @@ export GROUP_NAME={{ GROUP_NAME }}
 export SONAR_URL={{ SONAR_URL }}
 # SONARQUBE的token
 export SONAR_LOGIN={{ SONAR_LOGIN }}
+# HARBOR配置Id
+export HARBOR_CONFIG_ID={{ HARBOR_CONFIG_ID }}
 # 设置docekr认证配置文件目录
 export DOCKER_CONFIG=$PWD/.choerodon/.docker
 
