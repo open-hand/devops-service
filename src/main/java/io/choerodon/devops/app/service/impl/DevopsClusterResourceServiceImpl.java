@@ -3,14 +3,6 @@ package io.choerodon.devops.app.service.impl;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import io.choerodon.devops.app.eventhandler.constants.CertManagerConstants;
-import io.choerodon.devops.infra.dto.iam.ClientDTO;
-import io.choerodon.devops.infra.dto.iam.ClientVO;
-import io.choerodon.devops.infra.enums.ClusterResourceOperateType;
-import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.choerodon.devops.infra.mapper.*;
-import io.choerodon.devops.infra.util.GenerateUUID;
-import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,14 +18,18 @@ import io.choerodon.devops.api.vo.DevopsPrometheusVO;
 import io.choerodon.devops.app.eventhandler.constants.CertManagerConstants;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.iam.ClientDTO;
+import io.choerodon.devops.infra.dto.iam.ClientVO;
 import io.choerodon.devops.infra.enums.CertificationStatus;
 import io.choerodon.devops.infra.enums.ClusterResourceOperateType;
 import io.choerodon.devops.infra.enums.ClusterResourceStatus;
 import io.choerodon.devops.infra.enums.ClusterResourceType;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.ConvertUtils;
+import io.choerodon.devops.infra.util.GenerateUUID;
 
 /**
  * @author zhaotianxin
@@ -60,7 +56,6 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     private DevopsCertManagerRecordMapper devopsCertManagerRecordMapper;
     @Autowired
     private DevopsPrometheusMapper devopsPrometheusMapper;
-
     @Autowired
     private DevopsClusterResourceService devopsClusterResourceService;
 
@@ -281,7 +276,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
                 throw new CommonException("error.inster.prometheus");
             }
             devopsPrometheusDTO.setId(devopsPrometheusDTO.getId());
-            if(ObjectUtils.isEmpty(devopsClusterDTO.getClientId())){
+            if (ObjectUtils.isEmpty(devopsClusterDTO.getClientId())) {
                 // 添加客户端
                 ClientVO clientVO = new ClientVO();
                 String clientName = String.format("%s%s", devopsClusterDTO.getCode(), GenerateUUID.generateUUID().substring(0, 5));
@@ -294,7 +289,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
                 clientVO.setSourceId(clusterId);
                 clientVO.setSourceType("cluster");
                 ClientDTO client = baseServiceClientOperator.createClient(devopsClusterDTO.getOrganizationId(), clientVO);
-                if(!ObjectUtils.isEmpty(client)){
+                if (!ObjectUtils.isEmpty(client)) {
                     devopsClusterDTO.setClientId(client.getId());
                     devopsClusterService.baseUpdate(devopsClusterDTO);
                 }
@@ -422,7 +417,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     }
 
     @Override
-    public String getGrafanaUrl(Long clusterId, String type) {
+    public String getGrafanaUrl(Long projectId, Long clusterId, String type) {
         DevopsClusterResourceDTO clusterResourceDTO = queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
         if (clusterResourceDTO == null) {
             return null;

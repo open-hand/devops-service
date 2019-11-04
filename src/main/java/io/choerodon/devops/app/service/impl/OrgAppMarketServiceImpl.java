@@ -776,8 +776,8 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             result = marketServiceClientOperator.uploadFile(appMarketUploadVO.getAppVersion(), files, mapJson);
         } else {
             List<MultipartBody.Part> files = createMultipartBody(zipFileList);
-            String getawayUrl = appMarketUploadVO.getSaasGetawayUrl().endsWith("/") ? appMarketUploadVO.getSaasGetawayUrl() : appMarketUploadVO.getSaasGetawayUrl() + "/";
-            MarketServicePublicClient marketServiceClient = RetrofitHandler.getMarketServiceClient(getawayUrl, MARKET);
+            String gatewayUrl = appMarketUploadVO.getSaasGetawayUrl().endsWith("/") ? appMarketUploadVO.getSaasGetawayUrl() : appMarketUploadVO.getSaasGetawayUrl() + "/";
+            MarketServicePublicClient marketServiceClient = RetrofitHandler.getMarketServiceClient(gatewayUrl, MARKET);
 
             String remoteToken = baseServiceClientOperator.checkLatestToken();
             Call<ResponseBody> responseCall = marketServiceClient.uploadFile(remoteToken, appMarketUploadVO.getAppVersion(), files, mapJson);
@@ -804,8 +804,8 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
             String imageJson = marketImageUrlVO != null ? gson.toJson(marketImageUrlVO) : null;
             List<MultipartBody.Part> files = createMultipartBody(zipFileList);
 
-            String getawayUrl = appMarketFixVersionPayload.getFixVersionUploadPayload().getSaasGetawayUrl().endsWith("/") ? appMarketFixVersionPayload.getFixVersionUploadPayload().getSaasGetawayUrl() : appMarketFixVersionPayload.getFixVersionUploadPayload().getSaasGetawayUrl() + "/";
-            MarketServicePublicClient marketServiceClient = RetrofitHandler.getMarketServiceClient(getawayUrl, MARKET);
+            String gatewayUrl = appMarketFixVersionPayload.getFixVersionUploadPayload().getSaasGetawayUrl().endsWith("/") ? appMarketFixVersionPayload.getFixVersionUploadPayload().getSaasGetawayUrl() : appMarketFixVersionPayload.getFixVersionUploadPayload().getSaasGetawayUrl() + "/";
+            MarketServicePublicClient marketServiceClient = RetrofitHandler.getMarketServiceClient(gatewayUrl, MARKET);
             String remoteToken = baseServiceClientOperator.checkLatestToken();
             Call<ResponseBody> responseCall = marketServiceClient.updateAppPublishInfoFix(
                     remoteToken,
