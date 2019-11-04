@@ -582,10 +582,6 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         HarborPayload harborPayload = new HarborPayload();
         DevopsConfigDTO devopsConfigDTO = new DevopsConfigDTO();
         devopsConfigDTO.setProjectId(projectDTO.getId());
-        if (devopsConfigMapper.selectOne(devopsConfigDTO) != null) {
-            harborPayload = new HarborPayload(projectDTO.getId(), projectDTO.getCode());
-        }
-
         devopsHarborUserService.baseCreate(harborUserDTO);
         if (isPush) {
             devopsProjectDTO.setHarborUserId(harborUserDTO.getId());
