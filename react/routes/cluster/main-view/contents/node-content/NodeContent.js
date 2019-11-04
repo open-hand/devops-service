@@ -4,9 +4,9 @@ import ReactEcharts from 'echarts-for-react';
 import { useClusterStore } from '../../../stores';
 import { useNodeContentStore } from './stores';
 import NodePodsTable from './node-pods-table';
+import { useClusterMainStore } from '../../stores';
 
 import './NodeDetail.less';
-import { useClusterMainStore } from '../../stores';
 
 const NodeContent = observer(() => {
   const {
