@@ -1,18 +1,13 @@
 import React, { Fragment, useMemo } from 'react';
+import { observer } from 'mobx-react-lite';
 import { useClusterMainStore } from '../../../stores';
 import { useClusterContentStore } from '../stores';
-import { useClusterStore } from '../../../../stores';
 import Loading from '../../../../../../components/loading';
 import EmptyPage from '../../../../../../components/empty-page';
 
 import './index.less';
 
-export default (props) => {
-  const {
-    clusterStore: {
-      getSelectedMenu: { code },
-    },
-  } = useClusterStore();
+export default observer((props) => {
   const {
     intlPrefix,
     prefixCls,
@@ -26,6 +21,7 @@ export default (props) => {
     tabs: {
       COMPONENT_TAB,
     },
+    ClusterDetailDs,
   } = useClusterContentStore();
 
   function refresh() {
@@ -38,11 +34,12 @@ export default (props) => {
 
   function getContent() {
     if (getGrafanaUrl) {
+      const code = ClusterDetailDs.current ? ClusterDetailDs.current.get('code') : '';
       return (
         <iframe
           height={700}
           width="100%"
-          src={`${getGrafanaUrl}&kiosk=tv&var-cluster=${code}`}
+          src={`${getGrafanaUrl}?kiosk=tv${code ? `&var-cluster=${code}` : ''}`}
           title="grafana"
           frameBorder={0}
           sandbox
@@ -66,4 +63,4 @@ export default (props) => {
       {getContent()}
     </div>
   );
-};
+});

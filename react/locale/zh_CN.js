@@ -685,6 +685,20 @@ const repository = {
   'c7ncd.repository.tab.application': '应用配置',
 };
 
+const pvManager = {
+  'c7ncd.pv.manager': 'PV管理',
+  'c7ncd.pv.create': '创建PV',
+  'c7ncd.pv.belong.cluster': '所属集群',
+  'c7ncd.pv.cluster': '集群',
+  'c7ncd.pv.type': '类型',
+  'c7ncd.pv.pvc': '关联PVC',
+  'c7ncd.pv.mode': '访问模式',
+  'c7ncd.pv.storage': '存储容量',
+  'c7ncd.pv.permission': '权限管理',
+  'c7ncd.pv.delete.title': '删除PV“{name}”',
+  'c7ncd.pv.delete.des': '确定要删除该PV吗？',
+};
+
 
 const codeManagement = {
   'code-management.branch': '分支',
@@ -2604,6 +2618,7 @@ const zhCN = {
   ...repository,
   ...codeManagement,
   ...emptyPage,
+  ...pvManager,
 };
 
 export default zhCN;
