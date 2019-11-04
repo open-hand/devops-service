@@ -289,8 +289,8 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
                 clientVO.setOrganizationId(devopsClusterDTO.getOrganizationId());
                 clientVO.setAuthorizedGrantTypes("password,implicit,client_credentials,refresh_token,authorization_code");
                 clientVO.setSecret(GenerateUUID.generateUUID().substring(0, 16));
-                clientVO.setRefreshTokenValidity(3600L);
-                clientVO.setAccessTokenValidity(3600L);
+                clientVO.setRefreshTokenValidity(360000L);
+                clientVO.setAccessTokenValidity(360000L);
                 clientVO.setSourceId(clusterId);
                 clientVO.setSourceType("cluster");
                 ClientDTO client = baseServiceClientOperator.createClient(devopsClusterDTO.getOrganizationId(), clientVO);
