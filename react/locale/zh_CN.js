@@ -29,6 +29,8 @@ const commonField = {
   modify: '变更',
   iknow: '我知道了',
   reset: '重置',
+  install: '安装',
+  uninstall: '卸载',
 
   // 通用描述
   app: '应用',
@@ -64,6 +66,7 @@ const commonField = {
   owner: '项目所有者',
   member: '项目成员',
   all: '全部',
+  not_installed: '未安装',
 
   // 状态描述
   null: '无',
@@ -1156,6 +1159,11 @@ const pageDetail = {
 const cluster = {
   'c7ncd.cluster.node.list': '节点列表',
   'c7ncd.cluster.permission.assign': '权限分配',
+  'c7ncd.cluster.monitor': '集群监控',
+  'c7ncd.cluster.component': '组件管理',
+  'c7ncd.cluster.node.resource': '资源分配',
+  'c7ncd.cluster.node.monitor': '节点监控',
+  'c7ncd.cluster.node.assign.overview': '分配概览',
   'c7ncd.cluster.node.status': '状态',
   'c7ncd.cluster.node.ip': '节点',
   'c7ncd.cluster.node.type': '类型',
@@ -1188,6 +1196,27 @@ const cluster = {
   'c7ncd.cluster.action.delete.msg': '确定要删除该集群吗？',
   'c7ncd.cluster.empty.title': '暂无集群',
   'c7ncd.cluster.empty.describe': '当前项目下无集群，请创建',
+  'c7ncd.cluster.monitor.empty.des': '暂未安装监控组件，若想查看集群的监控情况，请转至组件管理页面安装',
+  'c7ncd.cluster.monitor.install': '安装监控组件',
+  'c7ncd.cluster.certManager.install': '安装CertManager',
+  'c7ncd.cluster.monitor.link': '转至组件管理',
+  'c7ncd.cluster.monitor.password': 'admin密码',
+  'c7ncd.cluster.monitor.ingress': '域名地址',
+  'c7ncd.cluster.monitor.pv': '绑定PV',
+  'c7ncd.cluster.component.monitor': '监控组件',
+  'c7ncd.cluster.component.monitor.des':
+    '监控组件用于帮助监控集群中资源的使用情况。该组件包括了Prometheus、Grafana和AlertManager',
+  'c7ncd.cluster.component.cert': 'CertManager',
+  'c7ncd.cluster.component.cert.des':
+    'CertManager用于帮助集群下的环境申请或上传域名证书',
+  'c7ncd.cluster.monitor.uninstall': '卸载监控组件',
+  'c7ncd.cluster.monitor.uninstall.des': '确定要卸载监控组件吗？',
+  'c7ncd.cluster.cert.uninstall': '卸载CertManager',
+  'c7ncd.cluster.cert.uninstall.des': '确定要卸载CertManager吗？',
+  'c7ncd.cluster.cert.uninstall.disabled': '无法卸载CertManager',
+  'c7ncd.cluster.install.step.gitops': '生成配置库',
+  'c7ncd.cluster.install.step.monitor': '安装监控组件',
+  'c7ncd.cluster.install.step.health': '健康检查',
   'c7ncd.cluster.permission.tips':
     '此操作用于为此集群在该组织下配置公开范围。一般默认选择为组织下所有项目，即所有项目下的环境均能连接到此集群；若选择组织下特定项目，则只有被授权项目下的环境才有权限连接到此集群',
   'c7ncd.cluster.permission.tab.tips':
@@ -1525,7 +1554,7 @@ const zhCN = {
   'envPl.noInstance.disable': '确认停用',
   'envPl.forbidden.disable': '不可停用',
   'envPl.disEnv.noInstance': '当你点击确认后，该环境将被停用！',
-  'envPl.disEnv.forbidden': '该环境下已有实例，且此环境正在运行中，无法停用！',
+  'envPl.disEnv.forbidden': '该环境下已有实例，无法停用！',
   'envPl.confirm.group.del':
     '当你点击确认后，该分组下的环境将追加至默认流水线末尾!',
   'envPl.code.copy.tooltip': '复制下文代码至Kubernetes运行，与平台建立链接',

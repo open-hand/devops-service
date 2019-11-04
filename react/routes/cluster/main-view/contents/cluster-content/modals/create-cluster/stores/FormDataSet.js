@@ -80,8 +80,8 @@ export default ({ projectId, formatMessage, intlPrefix, modal, isEdit, afterOk, 
         transformResponse: ((res) => {
           if (handlePromptError(res)) {
             mainStore.setResponseData(res);
-            afterOk();
-            modal.close();
+            // afterOk();
+            // modal.close();
           }
           return true;
         }),

@@ -1,0 +1,57 @@
+.c7ncd-cluster-component-wrap {
+  padding: .16rem .02rem;
+  display: flex;
+
+  &-card {
+    margin-right: .2rem;
+  }
+}
+
+.c7ncd-cluster-install-step {
+  margin-bottom: .08rem;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  &-content {
+    display: flex;
+  }
+
+  &-status {
+    width: .14rem;
+    height: .14rem;
+    border: .03rem solid rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+    display: inline-block;
+
+    &-success {
+      border-color: #00bfa5;
+    }
+
+    &-operating {
+      border-color: #5266d4;
+    }
+
+    &-failed {
+      border-color: #f44336;
+    }
+  }
+
+  &-text {
+    font-size: .12rem;
+    line-height: .14rem;
+    margin-left: .04rem;
+  }
+
+  &-line {
+    width: 1px;
+    height: .1rem;
+    margin-left: .06rem;
+    border-right: 1px solid #fff;
+
+    &-operating {
+      border-right: 1px dotted #fff;
+    }
+  }
+}
