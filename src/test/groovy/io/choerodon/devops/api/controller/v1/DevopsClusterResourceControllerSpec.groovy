@@ -7,11 +7,13 @@ import io.choerodon.devops.api.vo.DevopsPrometheusVO
 import io.choerodon.devops.app.service.ComponentReleaseService
 import io.choerodon.devops.app.service.DevopsClusterResourceService
 import io.choerodon.devops.infra.dto.AppServiceInstanceDTO
+import io.choerodon.devops.infra.dto.DevopsClusterResourceDTO
 import io.choerodon.devops.infra.dto.DevopsPrometheusDTO
 import io.choerodon.devops.infra.dto.iam.ClientDTO
 import io.choerodon.devops.infra.dto.iam.ClientVO
 import io.choerodon.devops.infra.dto.iam.IamUserDTO
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator
+import io.choerodon.devops.infra.mapper.DevopsClusterResourceMapper
 import io.choerodon.devops.infra.util.GenerateUUID
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
@@ -21,6 +23,7 @@ import org.springframework.context.annotation.Import
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
+import org.springframework.http.ResponseEntity
 import org.springframework.util.LinkedMultiValueMap
 import org.springframework.util.MultiValueMap
 import spock.lang.Specification
@@ -28,6 +31,7 @@ import spock.lang.Stepwise
 import spock.lang.Subject
 
 import static org.mockito.ArgumentMatchers.any
+import static org.mockito.ArgumentMatchers.anyBoolean
 import static org.mockito.ArgumentMatchers.anyLong
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
@@ -44,12 +48,15 @@ class DevopsClusterResourceControllerSpec extends Specification {
     private DevopsClusterResourceService devopsClusterResourceService;
     @Autowired
     private TestRestTemplate restTemplate
+    @Autowired
+    private DevopsClusterResourceMapper devopsClusterResourceMapper
 
     BaseServiceClientOperator baseServiceClientOperator = Mockito.mock(BaseServiceClientOperator.class)
     ComponentReleaseService componentReleaseService = Mockito.mock(ComponentReleaseService.class)
 
     def setup() {
         DependencyInjectUtil.setAttribute(devopsClusterResourceService, "baseServiceClientOperator", baseServiceClientOperator)
+        DependencyInjectUtil.setAttribute(devopsClusterResourceService, "componentReleaseService", componentReleaseService)
         ClientDTO clientDTO = new ClientDTO()
         clientDTO.setId(1L)
         ClientVO clientVO = new ClientVO()
@@ -64,11 +71,7 @@ class DevopsClusterResourceControllerSpec extends Specification {
         clientVO.setSourceType("cluster")
         Mockito.doReturn(clientDTO).when(baseServiceClientOperator).createClient(1L, clientVO)
 
-        IamUserDTO user = new IamUserDTO()
-        user.setLoginName("loginName")
-        user.setRealName("real-name")
         AppServiceInstanceDTO appServiceInstanceDTO = new AppServiceInstanceDTO()
-
         DevopsPrometheusDTO prometheusDTO = new DevopsPrometheusDTO()
         prometheusDTO.setAdminPassword("123")
         prometheusDTO.setId(2L)
@@ -77,7 +80,9 @@ class DevopsClusterResourceControllerSpec extends Specification {
         appServiceInstanceDTO.setEnvId(1L)
         appServiceInstanceDTO.setCommandId(1L)
         Mockito.doReturn(appServiceInstanceDTO).when(componentReleaseService).createReleaseForPrometheus(anyLong(), any(DevopsPrometheusDTO.class))
-        Mockito.doReturn(appServiceInstanceDTO).when(componentReleaseService).updateReleaseForPrometheus(prometheusDTO, 1L, 2L)
+        Mockito.doReturn(appServiceInstanceDTO).when(componentReleaseService).updateReleaseForPrometheus(any(DevopsPrometheusDTO.class), anyLong(), anyLong())
+        Mockito.doNothing().when(componentReleaseService).deleteReleaseForComponent(anyLong(), anyBoolean())
+
 
     }
 
@@ -106,39 +111,27 @@ class DevopsClusterResourceControllerSpec extends Specification {
         entity.statusCode.is2xxSuccessful()
     }
 
-    def "createPrometheus"() {
+
+
+    def "updatePromtheus"() {
+        def clusterResourceDTO = devopsClusterResourceMapper.queryByClusterIdAndType(1L,"prometheus")
         given:
+        Map<String, String> map = new HashMap<>()
+        map.put("cert-manager", "123")
+        map.put("prometheus", "345")
         DevopsPrometheusVO devopsPrometheusVO = new DevopsPrometheusVO()
-        devopsPrometheusVO.setAdminPassword("test")
-        devopsPrometheusVO.setClusterName("uat")
+        devopsPrometheusVO.setId(1L)
+        devopsPrometheusVO.setAdminPassword("abc123")
+        devopsPrometheusVO.setClusterName("staging")
         devopsPrometheusVO.setGrafanaDomain("www.hand.com")
-        devopsPrometheusVO.setPvName("test")
+        devopsPrometheusVO.setPvNames(map)
+        HttpHeaders headers = new HttpHeaders()
+        HttpEntity<DevopsPrometheusVO> requestEntity = new HttpEntity<DevopsPrometheusVO>(devopsPrometheusVO,headers)
         when:
-        def entity = restTemplate.postForEntity(MAPPING + "/prometheus/create?cluster_id=1", devopsPrometheusVO, null, 1L)
+        def entity= restTemplate.exchange(MAPPING + "/prometheus/update?cluster_id=1",HttpMethod.PUT,requestEntity, ResponseEntity.class,1L)
         then:
         entity.statusCode.is2xxSuccessful()
-
     }
-
-//    def "updatePromtheus"() {
-//        given:
-//        Map<String, String> map = new HashMap<>()
-//        map.put("cert-manager", "123")
-//        map.put("prometheus", "345")
-//        DevopsPrometheusVO devopsPrometheusVO = new DevopsPrometheusVO()
-//        devopsPrometheusVO.setId(8L)
-//        devopsPrometheusVO.setAdminPassword("abc123")
-//        devopsPrometheusVO.setClusterName("staging")
-//        devopsPrometheusVO.setGrafanaDomain("www.hand.com")
-//        devopsPrometheusVO.setPvNames(map)
-//        HttpHeaders headers = new HttpHeaders()
-//        headers.setContentType(MediaType.APPLICATION_JSON_UTF8)
-//        HttpEntity<DevopsPrometheusVO> requestEntity = new HttpEntity<Integer>(devopsPrometheusVO,headers)
-//        when:
-//        def entity= restTemplate.exchange(MAPPING + "/prometheus/update?cluster_id=1",HttpMethod.PUT,requestEntity,ResponseEntity.class,1L)
-//        then:
-//        entity.statusCode.is2xxSuccessful()
-//    }
 
     def "queryPrometheus"() {
         given:
@@ -158,15 +151,12 @@ class DevopsClusterResourceControllerSpec extends Specification {
         entity.body.getStatus() != null
     }
 
-//    def "deletePrometheus"() {
-//        given:
-//        HttpHeaders headers = new HttpHeaders()
-//        headers.setContentType(MediaType.APPLICATION_JSON_UTF8)
-//        HttpEntity<Integer> requestEntity = new HttpEntity<Integer>(headers)
-//        when:
-//        def entity= restTemplate.exchange(MAPPING + "/prometheus/unload?cluster_id=1",HttpMethod.DELETE,requestEntity,ResponseEntity.class,1L)
-//        then:
-//        entity.statusCode.is2xxSuccessful()
-//
-//    }
+    def "deletePrometheus"() {
+        given:
+        when:
+        def entity= restTemplate.exchange(MAPPING + "/prometheus/unload?cluster_id=1",HttpMethod.DELETE,null,ResponseEntity.class,1L)
+        then:
+        entity.statusCode.is2xxSuccessful()
+
+    }
 }
