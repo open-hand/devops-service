@@ -34,6 +34,9 @@ public class DevopsPrometheusDTO extends BaseDTO {
     @ApiModelProperty("replacement")
     private String clusterName;
 
+    @ApiModelProperty("集群id")
+    private Long clusterId;
+
     public Long getId() {
         return id;
     }
@@ -72,5 +75,13 @@ public class DevopsPrometheusDTO extends BaseDTO {
 
     public void setClusterName(String clusterName) {
         this.clusterName = clusterName;
+    }
+
+    public Long getClusterId() {
+        return clusterId;
+    }
+
+    public void setClusterId(Long clusterId) {
+        this.clusterId = clusterId;
     }
 }
