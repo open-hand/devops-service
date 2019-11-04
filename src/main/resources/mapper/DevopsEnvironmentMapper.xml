@@ -263,6 +263,7 @@
           AND env.is_active = TRUE
           AND env.is_failed = FALSE
           AND env.is_synchro = TRUE
+          AND env.type = 'user'
     </select>
 
     <select id="listMemberResourceEnvTree" resultMap="resourceEnvTree">
@@ -291,7 +292,6 @@
           AND env.is_active = TRUE
           AND env.is_synchro = TRUE
           AND env.is_failed = FALSE)
-
         UNION ALL
         (
         SELECT env.id         as           env_id,
@@ -320,6 +320,7 @@
           AND env.is_active = TRUE
           AND env.is_failed = FALSE
           AND env.is_synchro = TRUE
+          AND env.type = 'user'
           AND deup.iam_user_id = #{memberId}
         )
     </select>
