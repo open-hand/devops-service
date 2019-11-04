@@ -18,6 +18,7 @@ import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import org.apache.commons.compress.utils.IOUtils;
 import org.apache.http.entity.ContentType;
+import org.checkerframework.checker.units.qual.A;
 import org.eclipse.jgit.api.Git;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -133,6 +134,8 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
     private GitlabGroupService gitlabGroupService;
     @Autowired
     private MarketServiceClientOperator marketServiceClientOperator;
+    @Autowired
+    private AppServiceInstanceService appServiceInstanceService;
 
     /**
      * 执行pull/push脚本
@@ -712,7 +715,12 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                 AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQuery(t.getId());
                 ConfigVO configVO;
                 if (appServiceVersionDTO.getHarborConfigId() != null) {
-                    configVO = gson.fromJson(devopsConfigService.baseQuery(appServiceVersionDTO.getHarborConfigId()).getConfig(), ConfigVO.class);
+                    DevopsConfigDTO devopsConfigDTO=devopsConfigService.baseQuery(appServiceVersionDTO.getHarborConfigId());
+                    configVO = gson.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class);
+                    AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceVersionDTO.getAppServiceId());
+                    if (devopsConfigDTO.getName().equals("harbor_default") && appServiceDTO.getProjectId() != null) {
+                        configVO = appServiceInstanceService.queryDefaultConfig(appServiceDTO.getProjectId(), configVO);
+                    }
                 } else {
                     configVO = devopsConfigService.queryRealConfigVO(appServiceMarketVO.getAppServiceId(), APP_SERVICE, "harbor").getConfig();
                 }

@@ -48,6 +48,7 @@ import io.choerodon.devops.infra.gitops.ResourceFileCheckHandler;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.AppServiceInstanceMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvAppServiceMapper;
+import io.choerodon.devops.infra.mapper.DevopsProjectMapper;
 import io.choerodon.devops.infra.mapper.PipelineAppServiceDeployMapper;
 import io.choerodon.devops.infra.util.*;
 
@@ -139,6 +140,10 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     private PipelineAppServiceDeployMapper pipelineAppServiceDeployMapper;
     @Autowired
     private DevopsClusterResourceService devopsClusterResourceService;
+    @Autowired
+    private DevopsProjectMapper devopsProjectMapper;
+    @Autowired
+    private DevopsHarborUserService devopsHarborUserService;
 
     @Override
     public AppServiceInstanceInfoVO queryInfoById(Long instanceId) {
@@ -1117,6 +1122,19 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         return appServiceInstanceMapper.getInstanceResourceDetailJson(instanceId, resourceName, resourceType.getType());
     }
 
+    @Override
+    public ConfigVO queryDefaultConfig(Long projectId, ConfigVO configVO) {
+        DevopsProjectDTO devopsProjectDTO = devopsProjectMapper.selectByPrimaryKey(projectId);
+        if (devopsProjectDTO.getHarborProjectIsPrivate()) {
+            configVO.setPrivate(true);
+            HarborUserDTO harborUserDTO = devopsHarborUserService.queryHarborUserById(devopsProjectDTO.getHarborPullUserId());
+            configVO.setUserName(harborUserDTO.getHarborProjectUserName());
+            configVO.setPassword(harborUserDTO.getHarborProjectUserPassword());
+        }
+        return configVO;
+    }
+
+
     private void handleStartOrStopInstance(Long instanceId, String type) {
 
         AppServiceInstanceDTO appServiceInstanceDTO = baseQuery(instanceId);
@@ -1357,6 +1375,9 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         }
         if (devopsConfigDTO != null) {
             ConfigVO configVO = gson.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class);
+            if (devopsConfigDTO.getName().equals("harbor_default") && appServiceDTO.getProjectId() != null) {
+                configVO = queryDefaultConfig(appServiceDTO.getProjectId(), configVO);
+            }
             if (configVO.getPrivate() != null && configVO.getPrivate()) {
                 DevopsRegistrySecretDTO devopsRegistrySecretDTO = devopsRegistrySecretService.baseQueryByEnvAndId(devopsEnvironmentDTO.getCode(), devopsConfigDTO.getId());
                 if (devopsRegistrySecretDTO == null) {
