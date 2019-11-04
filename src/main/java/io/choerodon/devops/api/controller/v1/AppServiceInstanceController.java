@@ -592,7 +592,7 @@ public class AppServiceInstanceController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "实例ID", required = true)
             @PathVariable(value = "instance_id") Long instanceId) {
-        appServiceInstanceService.deleteInstance(instanceId);
+        appServiceInstanceService.deleteInstance(instanceId,false);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 

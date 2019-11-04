@@ -143,4 +143,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env.groovy') {
     changeSet(author: 'sheep', id: '2019-09-29-updateDataType') {
         modifyDataType(tableName: 'devops_env', columnName: 'description', newDataType: 'VARCHAR(500)')
     }
+
+    changeSet(author: 'scp', id: '2019-10-23-addColumn') {
+        addColumn(tableName: 'devops_env') {
+            column(name: 'type', type: 'varchar(10)', defaultValue: 'user', remarks: '环境类型', afterColumn: 'is_failed')
+        }
+    }
 }

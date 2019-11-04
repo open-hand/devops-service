@@ -53,4 +53,6 @@ public interface DevopsEnvPodService {
      */
     List<DevopsEnvPodInfoVO> queryEnvPodInfo(Long envId, String sort);
 
+    void deleteEnvPodById(Long envId, Long podId);
+
 }

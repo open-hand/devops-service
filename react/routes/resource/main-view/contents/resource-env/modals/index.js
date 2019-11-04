@@ -29,6 +29,12 @@ const REModals = observer(() => {
     tableDs.query();
   }
 
+  function linkToConfig() {
+    const record = baseInfoDs.current;
+    const url = record && record.get('gitlabUrl');
+    url && window.open(url);
+  }
+
   function openEnvDetail() {
     Modal.open({
       key: Modal.key(),
@@ -46,6 +52,12 @@ const REModals = observer(() => {
       name: formatMessage({ id: `${intlPrefix}.modal.env-detail` }),
       icon: 'find_in_page',
       handler: openEnvDetail,
+      display: true,
+      group: 1,
+    }, {
+      name: formatMessage({ id: `${intlPrefix}.environment.config-lab` }),
+      icon: 'account_balance',
+      handler: linkToConfig,
       display: true,
       group: 1,
     }, {

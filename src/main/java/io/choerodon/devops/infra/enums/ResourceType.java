@@ -17,6 +17,7 @@ public enum ResourceType {
     SECRET("Secret"),
     CUSTOM("Custom"),
     MISSTYPE("MissType"),
+    PERSISTENT_VOLUME("PersistentVolume"),
     PERSISTENT_VOLUME_CLAIM("PersistentVolumeClaim");
 
 

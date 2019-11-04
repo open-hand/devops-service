@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
@@ -128,7 +129,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     private AgentCommandService agentCommandService;
     @Autowired
     private AppServiceMapper appServiceMapper;
-
+    @Autowired
+    private DevopsClusterResourceService devopsClusterResourceService;
 
     public void handlerUpdatePodMessage(String key, String msg, Long envId) {
         V1Pod v1Pod = json.deserialize(msg, V1Pod.class);
@@ -260,12 +262,16 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             if (devopsEnvCommandDTO != null) {
                 devopsEnvCommandDTO.setStatus(CommandStatus.SUCCESS.getStatus());
                 devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
-                AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQueryByAppServiceIdAndVersion(appServiceInstanceDTO.getAppServiceId(), releasePayloadVO.getChartVersion());
-                appServiceInstanceDTO.setAppServiceVersionId(appServiceVersionDTO.getId());
+                // 兼容集群组件
+                if (appServiceInstanceDTO.getAppServiceId() != null) {
+                    AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQueryByAppServiceIdAndVersion(appServiceInstanceDTO.getAppServiceId(), releasePayloadVO.getChartVersion());
+                    appServiceInstanceDTO.setAppServiceVersionId(appServiceVersionDTO.getId());
+                } else {
+                    appServiceInstanceDTO.setComponentVersion(releasePayloadVO.getChartVersion());
+                }
                 appServiceInstanceDTO.setStatus(InstanceStatus.RUNNING.getStatus());
                 appServiceInstanceService.baseUpdate(appServiceInstanceDTO);
                 installResource(resources, appServiceInstanceDTO);
-
             }
         }
     }
@@ -273,7 +279,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
     @Override
     public void helmInstallJobInfo(String key, String msg, Long clusterId) {
-        if (msg.equals("null")) {
+        if ("null".equals(msg)) {
             return;
         }
         Long envId = getEnvId(key, clusterId);
@@ -744,6 +750,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 }
                 break;
             default:
+                // TODO 可能需要增加其他资源的同步
                 break;
         }
     }
@@ -1397,6 +1404,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             podUpdateVO.setReleaseNames(KeyParseUtil.getReleaseName(key));
             podUpdateVO.setStatus(0L);
 
+            // 将Pod Running的状态发送给敏捷组
             producer.applyAndReturn(
                     StartSagaBuilder
                             .newBuilder()
@@ -1466,8 +1474,11 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
     @Override
     public void getCertManagerInfo(String payloadMsg, Long clusterId) {
-        if (payloadMsg == null) {
-            agentCommandService.createCertManager(clusterId);
+        logger.info(payloadMsg);
+        if (payloadMsg != null) {
+            String error = "";
+            String status = "";
+            devopsClusterResourceService.operateCertManager(clusterId, status, error);
         }
     }
 
@@ -1637,6 +1648,17 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             });
             agentPodService.handleRealTimePodData(podMetricsRedisInfoVOS);
         }
+    }
+
+    @Override
+    public void getCertManagerStatus(String payload, Long clusterId) {
+        logger.info(payload);
+        if (!ObjectUtils.isEmpty(payload)) {
+            String status = "";
+            String error = "";
+            devopsClusterResourceService.operateCertManager(clusterId, status, error);
+        }
+
     }
 
 

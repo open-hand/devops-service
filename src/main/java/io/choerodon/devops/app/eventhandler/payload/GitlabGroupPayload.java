@@ -15,7 +15,6 @@ public class GitlabGroupPayload {
     private String userName;
     private Long userId;
     private Set<String> roleLabels;
-    private Long applicationId;
 
     public GitlabGroupPayload() {
     }
@@ -91,13 +90,5 @@ public class GitlabGroupPayload {
 
     public void setRoleLabels(Set<String> roleLabels) {
         this.roleLabels = roleLabels;
-    }
-
-    public Long getApplicationId() {
-        return applicationId;
-    }
-
-    public void setApplicationId(Long applicationId) {
-        this.applicationId = applicationId;
     }
 }

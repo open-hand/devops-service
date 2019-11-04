@@ -80,4 +80,6 @@ public interface AgentMsgHandlerService {
     void operateDockerRegistrySecretResp(String key, String msg, Long clusterId);
 
     void handlePodMetricsSync(String key, String result, Long clusterId);
+
+    void getCertManagerStatus(String payload, Long objToLong);
 }

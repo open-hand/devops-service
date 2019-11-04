@@ -57,7 +57,7 @@ public class SagaHandler {
      * 创建组事件，消费创建项目事件
      */
     @SagaTask(code = SagaTaskCodeConstants.DEVOPS_CREATE_GITLAB_GROUP,
-            description = "devops 创建对应项目的两个Group",
+            description = "devops 创建对应项目的三个Group",
             sagaCode = SagaTopicCodeConstants.IAM_CREATE_PROJECT,
             maxRetryCount = 3,
             seq = 1)
@@ -74,7 +74,7 @@ public class SagaHandler {
      * 更新项目事件，为项目更新组
      */
     @SagaTask(code = SagaTaskCodeConstants.DEVOPS_UPDATE_GITLAB_GROUP,
-            description = "devops更新项目对应的两个GitLab组",
+            description = "devops更新项目对应的三个GitLab组",
             sagaCode = SagaTopicCodeConstants.IAM_UPDATE_PROJECT,
             maxRetryCount = 3,
             seq = 1)
@@ -263,6 +263,21 @@ public class SagaHandler {
         AppMarketDownloadPayload appMarketDownloadPayload = gson.fromJson(payload, AppMarketDownloadPayload.class);
         loggerInfo(appMarketDownloadPayload);
         orgAppMarketService.downLoadApp(appMarketDownloadPayload);
+        return payload;
+    }
+
+    /**
+     * 应用下载失败 删除gitlab相关项目
+     */
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_MARKET_DELETE_GITLAB_PRO,
+            description = "应用市场下载失败删除gitlab相关项目",
+            sagaCode = SagaTopicCodeConstants.DEVOPS_MARKET_DELETE_GITLAB_PRO,
+            concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
+            maxRetryCount = 0, seq = 20)
+    public String downloadAppFailed(String payload) {
+        MarketDelGitlabProPayload marketDelGitlabProPayload = gson.fromJson(payload, MarketDelGitlabProPayload.class);
+        loggerInfo(marketDelGitlabProPayload);
+        orgAppMarketService.deleteGitlabProject(marketDelGitlabProPayload);
         return payload;
     }
 }

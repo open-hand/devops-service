@@ -1215,7 +1215,7 @@ public class PipelineServiceImpl implements PipelineService {
         pipelineStageRecordService.baseCreateOrUpdate(stageRecordE);
         PipelineStageRecordDTO nextStageRecordE = getNextStage(stageRecordE.getId());
         if (nextStageRecordE != null) {
-            startNextStageRecord(nextStageRecordE.getId(), pipelineRecordDTO);
+            startNextStageRecord(stageRecordId, pipelineRecordDTO);
         } else {
             updateStatus(pipelineRecordId, null, WorkFlowStatus.SUCCESS.toValue(), null);
             IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(pipelineRecordDTO.getCreatedBy());

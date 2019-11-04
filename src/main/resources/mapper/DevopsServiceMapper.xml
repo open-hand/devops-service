@@ -32,6 +32,7 @@
         INNER JOIN devops_env denv ON ds.env_id = denv.id
         WHERE
         denv.project_id = #{projectId}
+        AND denv.type = 'user'
         AND ds.`status` != 'deleted'
         <if test="envId != null">
             AND ds.env_id = #{envId}
@@ -100,6 +101,7 @@
         INNER JOIN devops_env denv ON devs.env_id = denv.id
         WHERE
         denv.project_id = #{projectId}
+        AND denv.type = 'user'
         AND devs.`status` != 'deleted'
         <if test="envId != null">
             AND devs.env_id = #{envId}

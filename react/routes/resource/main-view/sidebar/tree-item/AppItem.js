@@ -18,6 +18,7 @@ function AppItem({ name, record, intl: { formatMessage }, intlPrefix }) {
   } = useResourceStore();
   const { treeItemStore } = useTreeItemStore();
 
+  const type = record.get('type');
   async function handleClick() {
     if (!record) return;
 
@@ -53,9 +54,17 @@ function AppItem({ name, record, intl: { formatMessage }, intlPrefix }) {
     }];
     return <Action placement="bottomRight" data={actionData} onClick={eventStopProp} />;
   }
-
+  function renderIcon(appType) {
+    if (appType === 'normal_server') {
+      return <Icon type="widgets" />;
+    } else if (appType === 'share_service') {
+      return <Icon type="share" />;
+    } else {
+      return <Icon type="application_market" />;
+    }
+  }
   return <Fragment>
-    <Icon type="widgets" />
+    {renderIcon(type)}
     {name}
     {getSuffix()}
   </Fragment>;

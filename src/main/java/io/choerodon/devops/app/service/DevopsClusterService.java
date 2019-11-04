@@ -181,4 +181,6 @@ public interface DevopsClusterService {
     DevopsClusterDTO baseQueryByCode(Long organizationId, String code);
 
     void baseUpdateProjectId(Long orgId, Long proId);
+
+    Boolean checkUserClusterPermission(Long clusterId, Long userId);
 }

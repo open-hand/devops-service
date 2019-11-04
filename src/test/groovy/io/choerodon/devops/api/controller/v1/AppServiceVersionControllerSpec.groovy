@@ -1,5 +1,8 @@
 package io.choerodon.devops.api.controller.v1
 
+
+import static org.mockito.ArgumentMatchers.any
+import static org.mockito.ArgumentMatchers.anyBoolean
 import static org.mockito.Matchers.anyInt
 import static org.mockito.Matchers.anyLong
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
@@ -10,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.context.annotation.Import
-import org.springframework.http.HttpEntity
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import spock.lang.Shared
@@ -44,7 +46,7 @@ import io.choerodon.devops.infra.mapper.*
 @Stepwise
 class AppServiceVersionControllerSpec extends Specification {
 
-    private static final String mapping = "/v1/projects/{project_id}/app_versions"
+    private static final String mapping = "/v1/projects/{project_id}/app_service_versions"
 
     @Autowired
     private TestRestTemplate restTemplate
@@ -74,6 +76,8 @@ class AppServiceVersionControllerSpec extends Specification {
     Long project_id = 1L
     @Shared
     Long init_id = 1L
+    @Shared
+    Boolean deploy = false
     @Shared
     Map<String, Object> searchParam = new HashMap<>()
     @Shared
@@ -130,18 +134,14 @@ class AppServiceVersionControllerSpec extends Specification {
         userDO1.setRealName("realName")
         userDOList.add(userDO1)
         ResponseEntity<List<IamUserDTO>> responseEntity3 = new ResponseEntity<>(userDOList, HttpStatus.OK)
-        Mockito.doReturn(responseEntity3).when(baseServiceClient).listUsersByIds(1L)
+
+        Mockito.when(baseServiceClient.listUsersByIds(any(Long[].class),anyBoolean())).thenReturn(responseEntity3)
     }
 
     def setupSpec() {
         given: '初始化分页条件参数'
-        Map<String, Object> params = new HashMap<>()
-        params.put("version", [])
-        params.put("appName", [])
-        params.put("appCode", ["app"])
+        String params = "{}"
         searchParam.put("searchParam", params)
-        searchParam.put("param", "")
-
         appUserPermissionDO.setAppServiceId(1L)
         appUserPermissionDO.setIamUserId(1L)
 
@@ -151,6 +151,7 @@ class AppServiceVersionControllerSpec extends Specification {
         devopsEnvironmentDO.setHookId(init_id)
         devopsEnvironmentDO.setDevopsEnvGroupId(init_id)
         devopsEnvironmentDO.setProjectId(init_id)
+        devopsEnvironmentDO.setType('user')
 
         applicationInstanceDO.setId(init_id)
         applicationInstanceDO.setCode("spock-test1")
@@ -169,10 +170,10 @@ class AppServiceVersionControllerSpec extends Specification {
 
         applicationVersionDO.setId(init_id)
         applicationVersionDO.setValueId(1L)
-        applicationVersionDO.setIsPublish(1)
         applicationVersionDO.setCommit("test")
         applicationVersionDO.setAppServiceId(init_id)
         applicationVersionDO.setVersion("0.1.0-dev.20180521111826")
+        applicationVersionDO.setRepository("")
 
         devopsEnvCommandDO.setId(1L)
         devopsEnvCommandDO.setObjectVersionId(1L)
@@ -195,6 +196,7 @@ class AppServiceVersionControllerSpec extends Specification {
     // 分页查询应用版本
     def "PageByOptions"() {
         given: '初始化数据'
+        String params = "{}"
         applicationMapper.insert(applicationDO)
         applicationVersionMapper.insert(applicationVersionDO)
         applicationInstanceMapper.insert(applicationInstanceDO)
@@ -206,33 +208,34 @@ class AppServiceVersionControllerSpec extends Specification {
         devopsGitlabCommitMapper.insert(devopsGitlabCommitDO)
 
         when: '分页查询应用版本'
-        def page = restTemplate.postForObject(mapping + "/list_by_options?page=0&size=0&appId={app_id}", searchParam, PageInfo.class, project_id, init_id)
+        def page = restTemplate.postForObject(mapping + "/page_by_options?page=0&size=10&app_service_id={app_service_id}&deploy_only={deploy_only}", params,
+                PageInfo.class, project_id,init_id,deploy)
 
         then: '返回值'
-        page.getTotal() == 1
+        page.getTotal() == 0
 
         expect: '校验返回结果'
         page.getList().get(0).version == "0.1.0-dev.20180521111826"
     }
-
-    // 应用下查询应用所有版本
-    def "QueryByAppId"() {
-        given:
-        String version = "0.1.0-dev.20180521111826"
-        when: '应用下查询应用所有版本'
-        def page = restTemplate.getForObject(mapping + "/list_by_app/{app_id}?is_publish=true&page=0&size=10&version={version}", PageInfo.class, project_id, init_id, version)
-
-        then: '返回值'
-        page.getTotal() == 1
-
-        expect: '校验返回结果'
-        page.getList().get(0).version == "0.1.0-dev.20180521111826"
-    }
+//    fix:没有这个接口了
+//    // 项目下查询应用所有版本
+//    def "QueryByAppId"() {
+//        given:
+//        String version = "0.1.0-dev.20180521111826"
+//        when: '应用下查询应用所有版本'
+//        def page = restTemplate.getForObject(mapping + "/list_by_app/{app_service_id}?page=0&size=10", PageInfo.class, project_id, init_id)
+//
+//        then: '返回值'
+//        page.getTotal() == 1
+//
+//        expect: '校验返回结果'
+//        page.getList().get(0).version == "0.1.0-dev.20180521111826"
+//    }
 
     // 项目下查询应用所有已部署版本
     def "QueryDeployedByAppId"() {
         when: '项目下查询应用所有已部署版本'
-        def list = restTemplate.getForObject(mapping + "/list_deployed_by_app/{app_id}", List.class, project_id, init_id)
+        def list = restTemplate.getForObject(mapping + "/list_deployed_by_app_service/{init_id}", List.class, project_id, init_id)
 
         then: '返回值'
         list.size() == 1
@@ -244,7 +247,7 @@ class AppServiceVersionControllerSpec extends Specification {
     // 查询部署在某个环境应用的应用版本
     def "QueryByAppIdAndEnvId"() {
         when: '查询部署在某个环境应用的应用版本'
-        def list = restTemplate.getForObject(mapping + "/app/{app_id}/env/{envId}/query", List.class, 1L, 1L, 1L)
+        def list = restTemplate.getForObject(mapping + "/app/{app_service_id}/env/{envId}/query", List.class, 1L, 1L, 1L)
 
         then: '返回值'
         list.size() == 1
@@ -256,10 +259,11 @@ class AppServiceVersionControllerSpec extends Specification {
     // 实例下查询可升级版本
     def "GetUpgradeAppVersion"() {
         given: '初始化应用版本DO类'
+        applicationVersionMapper.deleteByPrimaryKey(2)
         AppServiceVersionDTO applicationVersionDO = new AppServiceVersionDTO()
         applicationVersionDO.setId(2L)
         applicationVersionDO.setVersion("0.2.0-dev.20180521111826")
-        applicationVersionDO.setAppId(init_id)
+        applicationVersionDO.setAppServiceId(1L)
         applicationVersionMapper.insert(applicationVersionDO)
 
         when: '实例下查询可升级版本'
@@ -275,7 +279,7 @@ class AppServiceVersionControllerSpec extends Specification {
     // 项目下查询应用最新的版本和各环境下部署的版本
     def "GetDeployVersions"() {
         when: '项目下查询应用最新的版本和各环境下部署的版本'
-        def dto = restTemplate.getForObject(mapping + "/app/{app_id}/deployVersions", DeployVersionVO.class, 1L, 1L)
+        def dto = restTemplate.getForObject(mapping + "/app_service/{app_service_id}/deployVersions", DeployVersionVO.class, 1L, 1L)
 
         then: '校验返回结果'
         dto["latestVersion"] == "0.2.0-dev.20180521111826"
@@ -284,19 +288,18 @@ class AppServiceVersionControllerSpec extends Specification {
     // 根据版本id获取版本values
     def "GetVersionValue"() {
         when: '根据版本id获取版本values'
-        def str = restTemplate.getForObject(mapping + "/{app_verisonId}/queryValue", String.class, 1L, 1L)
+        def str = restTemplate.getForObject(mapping + "/{verisonId}/queryValue", String.class, 1L, 1L)
 
         then: '校验返回值'
         str == "test-value"
     }
 
-    // 根据版本id查询版本信息
+     //根据版本id查询版本信息
     def "GetAppversion"() {
         given: '配置请求参数'
-        HttpEntity<List<Long>> entity = new HttpEntity<>(Arrays.asList(applicationVersionDO.getId()))
 
         when: '根据版本id查询版本信息'
-        def dto = restTemplate.postForEntity(mapping + "/list_by_appVersionIds", entity, List, project_id)
+        def dto = restTemplate.postForEntity(mapping + "/list_by_versionIds?versionIds=1",null, List.class,project_id)
 
         then: '校验返回值'
         dto.statusCode.is2xxSuccessful()
@@ -307,7 +310,7 @@ class AppServiceVersionControllerSpec extends Specification {
     def "getAppversionByBranch"() {
 
         when: '根据分支名查询版本'
-        def list = restTemplate.getForObject(mapping + "/list_by_branch?appId=1&branch=0.1.0-dev.20180521111826", List.class, 1L)
+        def list = restTemplate.getForObject(mapping + "/list_by_branch?appServiceId=1&branch=0.1.0-dev.20180521111826", List.class, 1L)
 
         then: '校验返回值'
         list.size() == 1
@@ -316,12 +319,11 @@ class AppServiceVersionControllerSpec extends Specification {
     def "queryByPipeline"() {
 
         when: '根据pipeline和分支名查询版本'
-        def result = restTemplate.getForObject(mapping + "/query_by_pipeline?pipelineId=1&branch=0.1.0-dev.20180521111826", Boolean.class, 1L)
+        def result = restTemplate.getForObject(mapping + "/query_by_pipeline?pipeline_id=1&branch=0.1.0-dev.20180521111826&app_service_id=1", Boolean.class, 1L)
 
 
         then: '校验返回值'
         result
-
 
     }
 

@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.enums.AppServiceType.*;
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.*;
 
@@ -85,6 +86,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     public static final Logger LOGGER = LoggerFactory.getLogger(AppServiceServiceImpl.class);
     public static final String NODELETED = "nodeleted";
     private static final String HARBOR = "harbor";
+    private static final String AUTHTYPE_PUSH = "push";
+    private static final String AUTHTYPE_PULL = "pull";
     private static final String CHART = "chart";
     private static final String GIT = ".git";
     private static final String SONAR_KEY = "%s-%s:%s";
@@ -103,13 +106,12 @@ public class AppServiceServiceImpl implements AppServiceService {
     private static final String ERROR_USER_NOT_OWNER = "error.user.not.owner";
     private static final String METRICS = "metrics";
     private static final String SONAR_NAME = "sonar_default";
-    private static final String NORMAL_SERVICE = "normal_service";
-    private static final String SHARE_SERVICE = "share_service";
-    private static final String MARKET_SERVICE = "market_service";
-
     private static final String APPLICATION = "application";
     private static final String TEST = "test-application";
     private static final String DUPLICATE = "duplicate";
+    private static final String NORMAL_SERVICE = "normal_service";
+    private static final String SHARE_SERVICE = "share_service";
+    private static final String MARKET_SERVICE = "market_service";
     private static final String TEMP_MODAL = "\\?version=";
     @Autowired
     DevopsSagaHandler devopsSagaHandler;
@@ -165,6 +167,12 @@ public class AppServiceServiceImpl implements AppServiceService {
     private String helmUrl;
     @Autowired
     private AppServiceShareRuleMapper appServiceShareRuleMapper;
+    @Autowired
+    private DevopsGitlabCommitMapper gitlabCommitMapper;
+    @Autowired
+    private DevopsGitlabPipelineMapper gitlabPipelineMapper;
+    @Autowired
+    private DevopsMergeRequestMapper mergeRequestMapper;
 
     @Override
     @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_APPLICATION_SERVICE,
@@ -249,20 +257,61 @@ public class AppServiceServiceImpl implements AppServiceService {
         return appServiceRepVO;
     }
 
+    @Saga(code = SagaTopicCodeConstants.DEVOPS_APP_DELETE,
+            description = "Devops删除应用服务", inputSchemaClass = DevOpsAppServicePayload.class)
     @Transactional
     @Override
     public void delete(Long projectId, Long appServiceId) {
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
-
         if (appServiceDTO == null) {
             return;
         }
-
-        // 禁止删除未失败的应用
-        if (!Boolean.TRUE.equals(appServiceDTO.getFailed())) {
+        // 禁止删除未失败或者启用状态的应用服务
+        if (Boolean.TRUE.equals(appServiceDTO.getActive())) {
             throw new CommonException("error.delete.nonfailed.app.service", appServiceDTO.getName());
         }
+        // 验证改应用服务在其他项目是否被生成实例
+        checkAppserviceIsShareDeploy(projectId, appServiceId);
+        appServiceDTO.setSynchro(Boolean.FALSE);
+        appServiceMapper.updateByPrimaryKey(appServiceDTO);
 
+        DevOpsAppServicePayload devOpsAppServicePayload = new DevOpsAppServicePayload();
+        devOpsAppServicePayload.setAppServiceId(appServiceId);
+        devOpsAppServicePayload.setIamProjectId(projectId);
+        producer.apply(
+                StartSagaBuilder
+                        .newBuilder()
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withRefType("app")
+                        .withRefId("")
+                        .withSourceId(projectId)
+                        .withPayloadAndSerialize(devOpsAppServicePayload)
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_APP_DELETE),
+                builder -> {
+                });
+    }
+
+    private void checkAppserviceIsShareDeploy(Long projectId, Long appServiceId) {
+        Long organizationId = baseServiceClientOperator.queryIamProjectById(projectId).getOrganizationId();
+        List<ProjectDTO> projectDTOS = baseServiceClientOperator.listIamProjectByOrgId(organizationId);
+        Set<Long> projectIds = projectDTOS.stream().filter(projectDTO -> !projectDTO.getId().equals(projectId)).map(ProjectDTO::getId).collect(toSet());
+        List<AppServiceInstanceDTO> appServiceInstanceDTOS = appServiceInstanceMapper.listByProjectIdsAndAppServiceId(projectIds, appServiceId);
+        if (!CollectionUtils.isEmpty(appServiceInstanceDTOS)) {
+            throw new CommonException("error.not.delete.service.by.other.project.deployment");
+        }
+    }
+
+    @Override
+    @Transactional
+    public void deleteAppServiceSage(Long projectId, Long appServiceId) {
+        AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
+        // 删除应用服务的分支,合并请求，pipeline,commit
+        devopsBranchService.deleteAllBaranch(appServiceId);
+        gitlabCommitMapper.deleteByAppServiceId(appServiceId);
+        mergeRequestMapper.deleteByProjectId(appServiceDTO.getGitlabProjectId());
+        gitlabPipelineMapper.deleteByAppServiceId(appServiceId);
+        // 删除应用服务的版本
+        appServiceVersionService.deleteByAppServiceId(appServiceId);
         //删除应用服务权限
         appServiceUserPermissionService.baseDeleteByAppServiceId(appServiceId);
         //删除gitlab project
@@ -309,11 +358,11 @@ public class AppServiceServiceImpl implements AppServiceService {
         devopsConfigService.operate(appServiceId, APP_SERVICE, devopsConfigVOS);
 
         if (appServiceUpdateDTO.getHarbor() != null) {
-            DevopsConfigDTO harborConfig = devopsConfigService.queryRealConfig(appServiceId, APP_SERVICE, HARBOR);
+            DevopsConfigDTO harborConfig = devopsConfigService.queryRealConfig(appServiceId, APP_SERVICE, HARBOR, AUTHTYPE_PULL);
             appServiceDTO.setHarborConfigId(harborConfig.getId());
         }
         if (appServiceUpdateDTO.getChart() != null) {
-            DevopsConfigDTO chartConfig = devopsConfigService.queryRealConfig(appServiceId, APP_SERVICE, CHART);
+            DevopsConfigDTO chartConfig = devopsConfigService.queryRealConfig(appServiceId, APP_SERVICE, CHART, AUTHTYPE_PULL);
             appServiceDTO.setChartConfigId(chartConfig.getId());
         }
 
@@ -702,8 +751,8 @@ public class AppServiceServiceImpl implements AppServiceService {
         try {
             ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
             OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-            ConfigVO harborProjectConfig = gson.fromJson(devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, HARBOR).getConfig(), ConfigVO.class);
-            ConfigVO chartProjectConfig = gson.fromJson(devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, CHART).getConfig(), ConfigVO.class);
+            DevopsConfigDTO harborConfigDTO = devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, HARBOR, AUTHTYPE_PUSH);
+            ConfigVO harborProjectConfig = gson.fromJson(harborConfigDTO.getConfig(), ConfigVO.class);
             InputStream inputStream = this.getClass().getResourceAsStream("/shell/ci.sh");
             Map<String, String> params = new HashMap<>();
             String groupName = organizationDTO.getCode() + "-" + projectDTO.getCode();
@@ -727,7 +776,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             params.put("{{ DOCKER_REGISTRY }}", dockerUrl);
             params.put("{{ DOCKER_USERNAME }}", harborProjectConfig.getUserName());
             params.put("{{ DOCKER_PASSWORD }}", harborProjectConfig.getPassword());
-            params.put("{{ CHART_REGISTRY }}", chartProjectConfig.getUrl().endsWith("/") ? chartProjectConfig.getUrl().substring(0, chartProjectConfig.getUrl().length() - 1) : chartProjectConfig.getUrl());
+            params.put("{{ HARBOR_CONFIG_ID }}", harborConfigDTO.getId().toString());
             return FileUtil.replaceReturnString(inputStream, params);
         } catch (CommonException e) {
             return null;
@@ -2257,6 +2306,19 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
     }
 
+    @Override
+    public String checkAppServiceType(Long projectId, AppServiceDTO appServiceDTO) {
+        String type = null;
+        if (appServiceDTO.getProjectId() == null && appServiceDTO.getMktAppId() != null) {
+            type = AppServiceType.MARKET_SERVICE.getType();
+        } else if (appServiceDTO.getProjectId() != projectId) {
+            type = AppServiceType.SHARE_SERVICE.getType();
+        } else if (appServiceDTO.getProjectId() == projectId) {
+            type = AppServiceType.NORMAL_SERVICE.getType();
+        }
+        return type;
+    }
+
 
     @Override
     public String getToken(Integer gitlabProjectId, String applicationDir, UserAttrDTO userAttrDTO) {
@@ -2319,7 +2381,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public List<ProjectVO> listProjectByShare(Long projectId, Boolean share) {
         List<AppServiceDTO> appServiceDTOList = new ArrayList<>();
-        PageRequest pageRequest = new PageRequest();
+        PageRequest pageRequest = new PageRequest(0, 0);
         pageRequest.setSize(0);
         PageInfo<AppServiceGroupInfoVO> appServiceGroupInfoVOPageInfo = pageAppServiceByMode(projectId, share, null, null, pageRequest);
         List<AppServiceGroupInfoVO> list = appServiceGroupInfoVOPageInfo.getList();

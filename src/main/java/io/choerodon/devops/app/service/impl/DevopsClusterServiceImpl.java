@@ -1,7 +1,23 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.io.InputStream;
+import java.util.*;
+import java.util.stream.Collectors;
+
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO;
+import io.choerodon.devops.api.vo.iam.RoleVO;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
+
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
@@ -36,6 +52,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
     private static final String UPGRADE_MESSAGE = "Version is too low, please upgrade!";
     private static final String ERROR_CLUSTER_NOT_EXIST = "error.cluster.not.exist";
+    private static final String projectOwner = "role/project/default/project-owner";
     @Value("${agent.version}")
     private String agentExpectVersion;
     @Value("${agent.serviceUrl}")
@@ -345,6 +362,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
 
     @Override
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     public void deleteCluster(Long clusterId) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(clusterId);
         if (devopsClusterDTO == null) {
@@ -352,13 +370,18 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         }
 
         checkConnectEnvs(clusterId);
+        if(!ObjectUtils.isEmpty(devopsClusterDTO.getClientId())){
+            baseServiceClientOperator.deleteClient(devopsClusterDTO.getOrganizationId(),devopsClusterDTO.getClientId());
+        }
         baseDelete(clusterId);
+
+        devopsEnvironmentService.deleteSystemEnv(devopsClusterDTO.getProjectId(), devopsClusterDTO.getId(), devopsClusterDTO.getCode(), devopsClusterDTO.getSystemEnvId());
     }
 
     @Override
     public Boolean checkConnectEnvs(Long clusterId) {
         List<Long> connectedEnvList = clusterConnectionHandler.getConnectedClusterList();
-        List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = devopsEnvironmentService.baseListByClusterId(clusterId);
+        List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = devopsEnvironmentService.baseListUserEnvByClusterId(clusterId);
         if (connectedEnvList.contains(clusterId)) {
             throw new CommonException("error.cluster.connected");
         }
@@ -493,6 +516,43 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     @Override
     public void baseUpdateProjectId(Long orgId, Long proId) {
         devopsClusterMapper.updateProjectId(orgId, proId);
+    }
+
+    @Override
+    public Boolean checkUserClusterPermission(Long clusterId, Long userId) {
+        DevopsClusterDTO devopsClusterDTO = new DevopsClusterDTO();
+        devopsClusterDTO.setId(clusterId);
+        DevopsClusterDTO devopsClusterDTO1 = devopsClusterMapper.selectByPrimaryKey(devopsClusterDTO);
+        if (ObjectUtils.isEmpty(devopsClusterDTO1)) {
+            throw new CommonException("error.devops.cluster.is.not.exist");
+        }
+        // 获取用户的项目权限为项目所有者的所有项目Ids
+        List<ProjectWithRoleVO> projectWithRoleVOS = baseServiceClientOperator.listProjectWithRole(userId, 0, 0);
+        if (CollectionUtils.isEmpty(projectWithRoleVOS)) {
+            return false;
+        }
+        Set<Long> ownerRoleProjectIds = new HashSet<>();
+        projectWithRoleVOS.stream().forEach(v -> {
+            if (CollectionUtils.isEmpty(v.getRoles())) { return;}
+            Set<Long> collect = v.getRoles().stream().filter(role -> projectOwner.equals(role.getCode())).map(RoleVO::getId).collect(Collectors.toSet());
+            if (!CollectionUtils.isEmpty(collect)) {
+                ownerRoleProjectIds.add(v.getId());
+            }
+        });
+        if (CollectionUtils.isEmpty(ownerRoleProjectIds)) {
+            return false;
+        }
+        // 获取集群和集群分配的项目Ids
+        List<DevopsClusterProPermissionDTO> devopsClusterProPermissionDTOS = devopsClusterProPermissionService.baseListByClusterId(clusterId);
+        Set<Long> clusterBelongToProjectIds = devopsClusterProPermissionDTOS.stream().map(devopsClusterProPermissionDTO -> devopsClusterProPermissionDTO.getProjectId()).collect(Collectors.toSet());
+        clusterBelongToProjectIds.add(devopsClusterDTO1.getProjectId());
+
+        // 集合做差集处理
+        clusterBelongToProjectIds.retainAll(ownerRoleProjectIds);
+        if (CollectionUtils.isEmpty(clusterBelongToProjectIds)) {
+            return false;
+        }
+        return true;
     }
 
     /**

@@ -11,7 +11,7 @@ export default function useStore() {
       return this.selectedMenu;
     },
 
-    expandedKeys: [],
+    expandedKeys: ['group-null'],
     setExpandedKeys(keys) {
       this.expandedKeys = keys;
     },

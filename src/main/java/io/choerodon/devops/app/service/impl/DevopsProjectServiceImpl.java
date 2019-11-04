@@ -122,7 +122,7 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
             }
         } else {
             devopsProjectDTO.setObjectVersionNumber(oldDevopsProjectDTO.getObjectVersionNumber());
-            devopsProjectMapper.updateByPrimaryKeySelective(devopsProjectDTO);
+            devopsProjectMapper.updateByPrimaryKey(devopsProjectDTO);
         }
     }
 
@@ -144,6 +144,11 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
     public List<UserVO> listAllOwnerAndMembers(Long projectId) {
         List<IamUserDTO> allMember = baseServiceClientOperator.getAllMember(projectId);
         return allMember.stream().map(this::userDTOTOVO).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<DevopsProjectDTO> listAll() {
+        return devopsProjectMapper.selectAll();
     }
 
     private UserVO userDTOTOVO(IamUserDTO iamUserDTOList) {

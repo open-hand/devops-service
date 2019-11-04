@@ -18,10 +18,7 @@ import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsEnvPodMapper;
-import io.choerodon.devops.infra.util.ArrayUtil;
-import io.choerodon.devops.infra.util.ConvertUtils;
-import io.choerodon.devops.infra.util.K8sUtil;
-import io.choerodon.devops.infra.util.TypeUtil;
+import io.choerodon.devops.infra.util.*;
 import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.V1Pod;
 import org.slf4j.Logger;
@@ -29,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 /**
@@ -54,6 +52,10 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
     private AgentPodService agentPodService;
     @Autowired
     private DevopsClusterService devopsClusterService;
+    @Autowired
+    private AgentCommandService agentCommandService;
+    @Autowired
+    private UserAttrService userAttrService;
 
     @Override
     public PageInfo<DevopsEnvPodVO> pageByOptions(Long projectId, Long envId, Long appServiceId, Long instanceId, PageRequest pageRequest, String searchParam) {
@@ -255,5 +257,22 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
         }
 
         return devopsEnvPodInfoVOList;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteEnvPodById(Long envId, Long podId) {
+        DevopsEnvPodDTO devopsEnvPodDTO = baseQueryById(podId);
+        // 查询不到pod直接返回
+        if (devopsEnvPodDTO == null) {
+            return;
+        }
+        //检验环境相关信息
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
+
+        // Todo:和agent通信
+        agentCommandService.deletePod(devopsEnvPodDTO);
     }
 }

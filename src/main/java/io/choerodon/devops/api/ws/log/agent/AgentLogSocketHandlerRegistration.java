@@ -18,12 +18,8 @@ import io.choerodon.websocket.helper.WebSocketHelper;
 
 @Component
 public class AgentLogSocketHandlerRegistration implements SocketHandlerRegistration {
-
-    @Lazy
     @Autowired
-    WebSocketHelper webSocketHelper;
-    @Autowired
-    AgentExecAndLogSocketHandler agentExecAndLogSocketHandler;
+    private AgentExecAndLogSocketHandler agentExecAndLogSocketHandler;
 
     @Override
     public String path() {

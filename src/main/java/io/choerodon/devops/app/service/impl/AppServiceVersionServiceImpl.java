@@ -10,12 +10,14 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
+import io.choerodon.devops.infra.enums.ProjectConfigType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -47,6 +49,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     private static final String STORE_PATH = "stores";
     private static final String APP_SERVICE = "appService";
     private static final String CHART = "chart";
+    private static final String AUTHTYPE_PULL = "pull";
 
     private static final String ERROR_VERSION_INSERT = "error.version.insert";
 
@@ -93,9 +96,9 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
      * 方法中抛出{@link DevopsCiInvalidException}而不是{@link CommonException}是为了返回非200的状态码。
      */
     @Override
-    public void create(String image, String token, String version, String commit, MultipartFile files) {
+    public void create(String image, String harborConfigId, String token, String version, String commit, MultipartFile files) {
         try {
-            doCreate(image, token, version, commit, files);
+            doCreate(image, TypeUtil.objToLong(harborConfigId), token, version, commit, files);
         } catch (Exception e) {
             if (e instanceof CommonException) {
                 throw new DevopsCiInvalidException(((CommonException) e).getCode(), e.getCause());
@@ -104,7 +107,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         }
     }
 
-    private void doCreate(String image, String token, String version, String commit, MultipartFile files) {
+    private void doCreate(String image, Long harborConfigId, String token, String version, String commit, MultipartFile files) {
         AppServiceDTO appServiceDTO = appServiceMapper.queryByToken(token);
 
         AppServiceVersionValueDTO appServiceVersionValueDTO = new AppServiceVersionValueDTO();
@@ -116,9 +119,11 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         appServiceVersionDTO.setImage(image);
         appServiceVersionDTO.setCommit(commit);
         appServiceVersionDTO.setVersion(version);
+        appServiceVersionDTO.setHarborConfigId(harborConfigId);
 
-        DevopsConfigDTO devopsConfigDTO = devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, CHART);
+        DevopsConfigDTO devopsConfigDTO = devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, CHART,AUTHTYPE_PULL);
         String helmUrl = gson.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class).getUrl();
+        appServiceVersionDTO.setHelmConfigId(devopsConfigDTO.getId());
 
         appServiceVersionDTO.setRepository(helmUrl.endsWith("/") ? helmUrl + organization.getCode() + "/" + projectDTO.getCode() + "/" : helmUrl + "/" + organization.getCode() + "/" + projectDTO.getCode() + "/");
         String storeFilePath = STORE_PATH + version;
@@ -652,5 +657,56 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         }
         return appServiceVersionDTOS;
     }
+
+    @Override
+    public Boolean isVersionUseConfig(Long configId, String configType) {
+        AppServiceVersionDTO appServiceVersionDTO = new AppServiceVersionDTO();
+        if (configType.equals(ProjectConfigType.HARBOR.getType())) {
+            appServiceVersionDTO.setHarborConfigId(configId);
+        } else {
+            appServiceVersionDTO.setHelmConfigId(configId);
+        }
+        List<AppServiceVersionDTO> list = appServiceVersionMapper.select(appServiceVersionDTO);
+        return list != null && list.size() > 0;
+    }
+
+    @Override
+    public void deleteByAppServiceId(Long appServiceId) {
+        List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceVersionMapper.listByAppServiceId(appServiceId, null);
+        if(!CollectionUtils.isEmpty(appServiceVersionDTOS)){
+            Set<Long> valueIds = new HashSet<>();
+            Set<Long> readmeIds = new HashSet<>();
+            Set<Long> configIds = new HashSet<>();
+            Set<Long> versionIds = new HashSet<>();
+            appServiceVersionDTOS.stream().forEach(appServiceVersionDTO -> {
+                versionIds.add(appServiceVersionDTO.getId());
+                if(appServiceVersionDTO.getValueId() != null){
+                    valueIds.add(appServiceVersionDTO.getValueId());
+                }
+                if(appServiceVersionDTO.getReadmeValueId() != null){
+                    readmeIds.add(appServiceVersionDTO.getReadmeValueId());
+                }
+
+                if(appServiceVersionDTO.getHarborConfigId() != null){
+                    configIds.add(appServiceVersionDTO.getHarborConfigId());
+                }
+                if(appServiceVersionDTO.getHelmConfigId() != null){
+                    configIds.add(appServiceVersionDTO.getHelmConfigId());
+                }
+
+            });
+            if(!CollectionUtils.isEmpty(valueIds)){
+                appServiceVersionValueService.deleteByIds(valueIds);
+            }
+            if(!CollectionUtils.isEmpty(readmeIds)){
+                appServiceVersionReadmeMapper.deleteByIds(readmeIds);
+            }
+            if(!CollectionUtils.isEmpty(configIds)){
+                devopsConfigService.deleteByConfigIds(configIds);
+            }
+            appServiceVersionMapper.deleteByIds(versionIds);
+        }
+    }
+
 
 }

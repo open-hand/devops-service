@@ -115,6 +115,7 @@
           AND env.is_active = TRUE
           AND env.is_failed = FALSE
           AND env.is_synchro = TRUE
+          AND env.type = 'user'
     </select>
 
     <select id="listMemberInstanceEnvTree" resultMap="instanceEnvTree">
@@ -147,7 +148,8 @@
            AND env.is_skip_check_permission = TRUE
            AND env.is_synchro = TRUE
            AND env.is_active = TRUE
-           AND env.is_failed = FALSE)
+           AND env.is_failed = FALSE
+           AND env.type = 'user')
 
         UNION ALL
                 (
@@ -178,6 +180,7 @@
                                                                           AND env.id = ins.env_id AND ins.status != 'deleted'
                          LEFT JOIN devops_env_user_permission deup ON env.id = deup.env_id
                 WHERE env.project_id = #{projectId}
+                  AND env.type = 'user'
                   AND env.is_skip_check_permission = FALSE
                   AND env.is_active = TRUE
                   AND env.is_failed = FALSE
@@ -260,6 +263,7 @@
           AND env.is_active = TRUE
           AND env.is_failed = FALSE
           AND env.is_synchro = TRUE
+          AND env.type = 'user'
     </select>
 
     <select id="listMemberResourceEnvTree" resultMap="resourceEnvTree">
@@ -288,7 +292,6 @@
           AND env.is_active = TRUE
           AND env.is_synchro = TRUE
           AND env.is_failed = FALSE)
-
         UNION ALL
         (
         SELECT env.id         as           env_id,
@@ -317,6 +320,7 @@
           AND env.is_active = TRUE
           AND env.is_failed = FALSE
           AND env.is_synchro = TRUE
+          AND env.type = 'user'
           AND deup.iam_user_id = #{memberId}
         )
     </select>
@@ -342,6 +346,7 @@
         LEFT JOIN devops_cluster dc
         on env.cluster_id = dc.id
         WHERE env.project_id = #{projectId}
+        AND env.type = 'user'
         <if test="groupId ==null">
             AND
             env.devops_env_group_id IS NULL
@@ -360,6 +365,7 @@
         LEFT JOIN devops_cluster dc
         ON env.cluster_id = dc.id
         WHERE env.project_id = #{projectId}
+        AND env.type = 'user'
     </select>
 
     <!-- 此方法不需要在mapper接口中有 -->

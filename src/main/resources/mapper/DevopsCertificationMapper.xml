@@ -116,4 +116,13 @@
         WHERE dc.organization_id IS NOT NULL
         AND dc.project_id IS NULL
     </select>
+    <select id="listClusterCertification" resultType="io.choerodon.devops.infra.dto.CertificationDTO">
+        SELECT
+            dc.*
+        FROM
+            devops_certification dc
+            LEFT JOIN devops_env env ON env.id = dc.env_id
+        WHERE
+            env.cluster_id = #{clusterId}
+    </select>
 </mapper>

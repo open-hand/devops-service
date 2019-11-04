@@ -36,7 +36,7 @@ public interface BaseServiceClient {
     ResponseEntity<OrganizationDTO> queryOrganizationById(@PathVariable("organizationId") Long organizationId);
 
     @GetMapping("v1/organizations")
-    ResponseEntity<PageInfo<OrganizationDTO>>  listOrganizations(@RequestParam("page") Integer page,
+    ResponseEntity<PageInfo<OrganizationDTO>> listOrganizations(@RequestParam("page") Integer page,
                                                                 @RequestParam("size") Integer size);
 
 
@@ -226,4 +226,35 @@ public interface BaseServiceClient {
     ResponseEntity<List<MemberRoleDTO>> assignUsersRolesOnProjectLevel(
             @PathVariable(name = "project_id") Long projectId,
             @RequestBody List<MemberRoleDTO> memberRoleDTOS);
+
+    /**
+     * 组织下创client
+     *
+     * @param organizationId 组织id
+     * @param clientVO       clientVO
+     * @return 分配结果
+     */
+    @PostMapping(value = "/v1/organizations/{organization_id}/clients/wih_type")
+    ResponseEntity<ClientDTO> createClient(@PathVariable("organization_id") Long organizationId,
+                                           @RequestBody @Valid ClientVO clientVO);
+
+    /**
+     * 组织下删除client
+     *
+     * @param organizationId 组织id
+     * @param clientId       clientId
+     * @return 分配结果
+     */
+    @DeleteMapping(value = "/v1/organizations/{organization_id}/clients/{client_id}")
+    ResponseEntity deleteClient(@PathVariable("organization_id") Long organizationId, @PathVariable("client_id") Long clientId);
+
+    /**
+     * 获取client详情
+     *
+     * @param organizationId 组织id
+     * @param clientId       clientId
+     * @return 分配结果
+     */
+    @GetMapping(value = "/v1/organizations/{organization_id}/clients/{client_id}")
+    ResponseEntity<ClientDTO> queryClient(@PathVariable("organization_id") Long organizationId, @PathVariable("client_id") Long clientId);
 }

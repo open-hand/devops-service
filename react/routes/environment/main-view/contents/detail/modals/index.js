@@ -9,14 +9,14 @@ import { useEnvironmentStore } from '../../../../stores';
 import { useMainStore } from '../../../stores';
 import { useDetailStore } from '../stores';
 import useStore from './useStore';
-import ResourceSetting from './resource-setting/notificationsHome';
+import ResourceSecurity from './resource-security';
 import EnvCreateForm from '../../../modals/env-create';
 import GroupForm from '../../../modals/GroupForm';
 import DeployConfigForm from './deploy-config';
 import { isNotRunning } from '../../../../util';
+import Tips from '../../../../../../components/new-tips';
 
 import '../../../../../../components/dynamic-select/style/index.less';
-import Tips from '../../../../../../components/new-tips';
 
 const detailKey = Modal.key();
 const envKey = Modal.key();
@@ -177,7 +177,7 @@ const EnvModals = observer(() => {
     Modal.open({
       key: resourceKey,
       title: formatMessage({ id: `${currentIntlPrefix}.resource.setting` }),
-      children: <ResourceSetting envId={id} />,
+      children: <ResourceSecurity envId={id} />,
       drawer: true,
       style: configModalStyle,
     });

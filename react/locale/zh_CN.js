@@ -266,6 +266,8 @@ const deployment = {
   'c7ncd.deployment.instance.cases.stop': '停止实例',
   'c7ncd.deployment.instance.cases.restart': '启用实例',
   'c7ncd.deployment.instance.cases.delete': '删除实例',
+  'c7ncd.deployment.instance.pod.delete.title': '删除pod',
+  'c7ncd.deployment.instance.pod.delete.des': '确定要删除该pod吗？',
   'c7ncd.deployment.mapping.create': '创建配置映射',
   'c7ncd.deployment.mapping.edit': '修改配置映射',
   'c7ncd.deployment.mapping.head': '配置映射',
@@ -376,10 +378,19 @@ const deployment = {
   'c7ncd.deployment.environment.sync': '提交同步情况',
   'c7ncd.deployment.appService.share': '共享应用',
   'c7ncd.deployment.instance.current.version': '当前版本',
+  'c7ncd.deployment.create.config': '创建部署配置',
+  'c7ncd.deployment.modify.config': '修改部署配置',
+  'c7ncd.deployment.config': '部署配置',
+  'c7ncd.deployment.manual.deploy': '手动部署',
   'c7ncd.deployment.permission.delete.title': '删除权限',
+  'c7ncd.deployment.permission.project.delete.des': '确定要删除该项目的权限吗？',
   'c7ncd.deployment.permission.delete.des': '确定要删除该成员的权限吗？',
   'c7ncd.deployment.custom.delete.title': '删除自定义资源“{name}”',
   'c7ncd.deployment.custom.delete.des': '确定要删除该自定义资源吗？',
+  'c7ncd.deployment.config.delete.disable': '删除部署配置“{name}”',
+  'c7ncd.deployment.config.delete.des': '确定要删除该部署配置吗？',
+  'c7ncd.deployment.config.delete.describe': '仅能删除没有关联任务和关联实例的部署配置。',
+  'c7ncd.deployment.sync.empty': '目前部署同步正常，暂无错误信息',
   'c7ncd.deployment.permission.tab.tips':
     '当选择将权限分配至项目下所有成员时，此时便不能在列表中删除任何成员的权限；仅在选择将权限分配给项目下特定成员时，才能在下方列表中管理成员的权限。项目所有者的权限不能被删除',
   'c7ncd.deployment.permission.tips':
@@ -694,6 +705,8 @@ const emptyPage = {
     '您当前暂无此项目下任何环境的权限，若需查看某个环境的相关内容，请联系项目所有者添加权限',
   'empty.create.app': '创建应用服务',
   'empty.create.env': '创建环境',
+  'empty.link.app': '跳转至应用服务',
+  'empty.link.env': '跳转至环境配置',
 };
 
 // 文档地址前缀

@@ -461,5 +461,9 @@ public interface AppServiceService {
                        String oldGroupName,
                        Boolean isGetWorkingDirectory);
 
+    String checkAppServiceType(Long projectId,AppServiceDTO appServiceDTO);
+
+    void deleteAppServiceSage(Long projectId,Long appServiceId);
+
     List<AppServiceTemplateVO> listServiceTemplates();
 }
