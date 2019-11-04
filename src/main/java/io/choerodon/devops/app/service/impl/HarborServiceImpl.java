@@ -113,7 +113,7 @@ public class HarborServiceImpl implements HarborService {
                 //创建用户
                 try {
                     result = harborClient.insertUser(user).execute();
-                    if (result.raw().code() != 201) {
+                    if (result.raw().code() != 201 && result.raw().code() != 409) {
                         throw new CommonException(result.errorBody().string());
                     }
                     //给项目绑定角色
