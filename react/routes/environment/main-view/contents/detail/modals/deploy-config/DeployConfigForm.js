@@ -84,7 +84,7 @@ function DeployConfigForm() {
           ? <TextField name="appServiceName" disabled />
           : <Select
             disabled={isModify}
-            searchable={false}
+            searchable
             name="appServiceId"
           >
             {appOptionDs.map(appOption)}
