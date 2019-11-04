@@ -71,6 +71,10 @@ class DevopsClusterResourceControllerSpec extends Specification {
     }
 
     def "ListClusterResource"() {
+        when:
+        def entity = restTemplate.getForEntity(MAPPING+"?cluster_id=1",List.class,1L)
+        then:
+        entity.getStatusCode().is2xxSuccessful()
     }
 
     def "UnloadCertManager"() {

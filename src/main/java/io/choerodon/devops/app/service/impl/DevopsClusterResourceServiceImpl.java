@@ -226,8 +226,15 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         list.add(clusterConfigVO);
         // 查询prometheus 的状态和信息
         DevopsClusterResourceDTO prometheus = devopsClusterResourceMapper.queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
-        Long configId = prometheus.getConfigId();
-        ClusterResourceVO clusterResourceVO = queryPrometheusStatus(projectId, clusterId);
+        ClusterResourceVO clusterResourceVO = new ClusterResourceVO();
+        if(ObjectUtils.isEmpty(prometheus)){
+            clusterResourceVO.setStatus(ClusterResourceStatus.UNINSTALL.getStatus());
+        }
+        else {
+            Long configId = prometheus.getConfigId();
+            clusterResourceVO = queryPrometheusStatus(projectId, clusterId);
+        }
+        clusterResourceVO.setType(ClusterResourceType.PROMETHEUS.getType());
         list.add(clusterResourceVO);
         return list;
     }
