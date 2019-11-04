@@ -102,6 +102,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         }
     }
 
+    @Override
     public void baseUpdate(DevopsClusterResourceDTO devopsClusterResourceDTO) {
         if (devopsClusterResourceMapper.updateByPrimaryKeySelective(devopsClusterResourceDTO) != 1) {
             throw new CommonException("error.update.cluster.resource");
@@ -158,11 +159,6 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         return true;
     }
 
-    public Boolean checkValidity(Date date, Date validFrom, Date validUntil) {
-        return validFrom != null && validUntil != null
-                && date.after(validFrom) && date.before(validUntil);
-    }
-
     @Override
     public Boolean checkCertManager(Long clusterId) {
         List<CertificationDTO> certificationDTOS = devopsCertificationMapper.listClusterCertification(clusterId);
@@ -198,7 +194,6 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceMapper.queryByClusterIdAndTypeAndConfigId(clusterId, ClusterResourceType.PROMETHEUS.getType(), configId);
         return devopsClusterResourceDTO;
     }
-
 
     @Override
     public DevopsClusterResourceDTO queryByClusterIdAndType(Long clusterId, String type) {
@@ -422,12 +417,6 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         return clusterResourceVO;
     }
 
-    private DevopsPrometheusDTO prometheusVoToDto(DevopsPrometheusVO prometheusVo) {
-        DevopsPrometheusDTO devopsPrometheusDTO = new DevopsPrometheusDTO();
-        BeanUtils.copyProperties(prometheusVo, devopsPrometheusDTO);
-        return devopsPrometheusDTO;
-    }
-
     @Override
     public String getGrafanaUrl(Long projectId, Long clusterId, String type) {
         DevopsClusterResourceDTO clusterResourceDTO = queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
@@ -439,4 +428,14 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         return String.format("%s%s%s", "http://", devopsPrometheusDTO.getGrafanaDomain(), grafanaType);
     }
 
+    private DevopsPrometheusDTO prometheusVoToDto(DevopsPrometheusVO prometheusVo) {
+        DevopsPrometheusDTO devopsPrometheusDTO = new DevopsPrometheusDTO();
+        BeanUtils.copyProperties(prometheusVo, devopsPrometheusDTO);
+        return devopsPrometheusDTO;
+    }
+
+    private Boolean checkValidity(Date date, Date validFrom, Date validUntil) {
+        return validFrom != null && validUntil != null
+                && date.after(validFrom) && date.before(validUntil);
+    }
 }
