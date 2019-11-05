@@ -97,6 +97,13 @@ class DevopsClusterResourceControllerSpec extends Specification {
         entity.statusCode.is2xxSuccessful()
     }
 
+    def "queryCertManagerByEnvId"() {
+        when:
+        def entity = restTemplate.getForEntity(MAPPING + "/cert_manager/check_by_env_id?env_id=1",Boolean.class,1L)
+        then:
+        entity.getStatusCode().is2xxSuccessful()
+    }
+
     def "ListClusterResource"() {
         when:
         def entity = restTemplate.getForEntity(MAPPING+"?cluster_id=1",List.class,1L)

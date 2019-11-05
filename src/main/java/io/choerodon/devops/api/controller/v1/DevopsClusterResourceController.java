@@ -62,7 +62,7 @@ public class DevopsClusterResourceController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群id", required = true)
             @RequestParam(name = "cluster_id", required = true) Long clusterId) {
-        return new ResponseEntity<Boolean>(devopsClusterResourceService.deleteCertManager(clusterId),HttpStatus.OK);
+        return new ResponseEntity<Boolean>(devopsClusterResourceService.deleteCertManager(clusterId), HttpStatus.OK);
     }
 
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
@@ -84,7 +84,7 @@ public class DevopsClusterResourceController {
             @RequestParam(name = "cluster_id", required = true) Long clusterId,
             @ApiParam(value = "请求体", required = true)
             @RequestBody DevopsPrometheusVO prometheusVo) {
-        devopsClusterResourceService.createOrUpdate(clusterId,prometheusVo);
+        devopsClusterResourceService.createOrUpdate(clusterId, prometheusVo);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
@@ -97,7 +97,7 @@ public class DevopsClusterResourceController {
             @RequestParam(name = "cluster_id", required = true) Long clusterId,
             @ApiParam(value = "请求体", required = true)
             @RequestBody DevopsPrometheusVO prometheusVo) {
-        devopsClusterResourceService.createOrUpdate(clusterId,prometheusVo);
+        devopsClusterResourceService.createOrUpdate(clusterId, prometheusVo);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
@@ -147,6 +147,18 @@ public class DevopsClusterResourceController {
             @RequestParam(name = "type") String type) {
         return new ResponseEntity<>(devopsClusterResourceService.getGrafanaUrl(projectId, clusterId, type), HttpStatus.OK);
     }
+
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "查询环境关联的集群是否安装cert-manager")
+    @GetMapping("/cert_manager/check_by_env_id")
+    public ResponseEntity<Boolean> queryCertManagerByEnvId(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "环境id", required = true)
+            @RequestParam(name = "env_id") Long envId) {
+        return new ResponseEntity<>(devopsClusterResourceService.queryCertManagerByEnvId(envId), HttpStatus.OK);
+    }
+
 }
 
 

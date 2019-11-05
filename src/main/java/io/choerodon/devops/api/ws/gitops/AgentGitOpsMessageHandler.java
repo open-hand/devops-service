@@ -180,9 +180,12 @@ public class AgentGitOpsMessageHandler implements TextMessageHandler<AgentMsgVO>
                 agentMsgHandlerService.getTestAppStatus(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
             // Agent启动的时候发送给Devops,
-            // 如果是空的（也就是说没有certManager），devops会返回一些安装certManager所需的数据
             case CERT_MANAGER_STATUS:
                 agentMsgHandlerService.getCertManagerInfo(msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
+                break;
+             // 获取 卸载cert-manager状态
+            case CERT_MANAGER_UNLOAD_STATUS:
+                agentMsgHandlerService.unloadCertManager(msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
             // 接收Agent定时发送的节点数据
             case NODE_SYNC:

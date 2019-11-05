@@ -10,6 +10,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import io.choerodon.devops.app.eventhandler.constants.CertManagerConstants;
 import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.*;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -1474,12 +1475,14 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
     @Override
     public void getCertManagerInfo(String payloadMsg, Long clusterId) {
-        logger.info(payloadMsg);
-        if (payloadMsg != null) {
-            String error = "";
-            String status = "";
-            devopsClusterResourceService.updateCertMangerStatus(clusterId, status, error);
+        AgentMsgVO agentMsgVO = json.deserialize(payloadMsg, AgentMsgVO.class);
+        if(!ObjectUtils.isEmpty(agentMsgVO) && CertManagerConstants.HELMRELEASEINSTALLFAILED.equals(agentMsgVO.getType())){
+           devopsClusterResourceService.updateCertMangerStatus(clusterId,ClusterResourceStatus.UNINSTALL.getStatus(),agentMsgVO.getPayload());
         }
+        else {
+            devopsClusterResourceService.updateCertMangerStatus(clusterId,ClusterResourceStatus.DISABLED.getStatus(),null);
+        }
+
     }
 
 
@@ -1649,16 +1652,15 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             agentPodService.handleRealTimePodData(podMetricsRedisInfoVOS);
         }
     }
-
     @Override
-    public void getCertManagerStatus(String payload, Long clusterId) {
-        logger.info(payload);
-        if (!ObjectUtils.isEmpty(payload)) {
-            String status = "";
-            String error = "";
-            devopsClusterResourceService.updateCertMangerStatus(clusterId, status, error);
+    public void unloadCertManager(String payload, Long clusterId) {
+        AgentMsgVO agentMsgVO = json.deserialize(payload, AgentMsgVO.class);
+        if(!ObjectUtils.isEmpty(agentMsgVO) && CertManagerConstants.HELMRELEASEDELETEFAILED.equals(agentMsgVO.getType())){
+            devopsClusterResourceService.updateCertMangerStatus(clusterId,null,agentMsgVO.getPayload());
         }
-
+        else {
+            devopsClusterResourceService.unloadCertManager(clusterId);
+        }
     }
 
 
