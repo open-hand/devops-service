@@ -17,4 +17,8 @@ public class CertManagerConstants {
     public static final String CERT_MANAGER_NAME_SPACE = "kube-system";
 
     public static final String CERT_MANAGER_REALASE_NAME= "choerodon-cert-manager";
+
+    public static final String HELMRELEASEINSTALLFAILED = "helm_release_install_failed";
+
+    public static final String HELMRELEASEDELETEFAILED = "helm_release_delete_failed";
 }

@@ -142,8 +142,11 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         DevopsClusterResourceDTO clusterResourceDTO = devopsClusterResourceMapper.selectOne(devopsClusterResourceDTO);
 
         DevopsCertManagerRecordDTO devopsCertManagerRecordDTO = devopsCertManagerRecordMapper.selectByPrimaryKey(clusterResourceDTO.getObjectId());
+        if (!ObjectUtils.isEmpty(status)) {
+            devopsCertManagerRecordDTO.setStatus(status);
+        }
         devopsCertManagerRecordDTO.setError(error);
-        devopsCertManagerRecordDTO.setStatus(status);
+
         devopsCertManagerRecordMapper.updateByPrimaryKeySelective(devopsCertManagerRecordDTO);
     }
 
