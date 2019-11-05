@@ -10,9 +10,12 @@ import io.choerodon.devops.app.service.DevopsPvProPermissionService;
 import io.choerodon.devops.app.service.DevopsPvServcie;
 import io.choerodon.devops.infra.dto.DevopsPvDTO;
 import io.choerodon.devops.infra.mapper.DevopsPvMapper;
+import io.choerodon.devops.infra.util.TypeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Map;
 
 @Service
 public class DevopsPvServiceImpl implements DevopsPvServcie {
@@ -23,12 +26,21 @@ public class DevopsPvServiceImpl implements DevopsPvServcie {
     @Autowired
     DevopsPvProPermissionService devopsPvProPermissionService;
     
+
     @Override
-    public PageInfo<DevopsPvVO> queryAll(PageRequest pageRequest) {
+    public PageInfo<DevopsPvVO> basePagePvByOptions(Boolean doPage, PageRequest pageRequest, String params) {
+        Map<String, Object> searchParamMap = TypeUtil.castMapParams(params);
         return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize())
-                .doSelectPageInfo(() -> devopsPvMapper.queryAll());
+                .doSelectPageInfo(() -> devopsPvMapper.listPvByOptions(
+                        TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
+                        TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS))
+                ));
     }
 
+    @Override
+    public void deletePvById(Long pvId) {
+        devopsPvMapper.deleteByPrimaryKey(pvId)
+    }
 
     @Override
     public void createPv(DevopsPvDTO devopsPvDTO) {
@@ -69,7 +81,7 @@ public class DevopsPvServiceImpl implements DevopsPvServcie {
         }
     }
 
-
+    @Override
     public void updateCheckPermission(DevopsPvPermissionUpateVO update){
         DevopsPvDTO devopsPvDTO = new DevopsPvDTO();
         devopsPvDTO.setId(update.getPvId());

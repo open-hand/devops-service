@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsPvMapper">
-    <select id="queryAll" resultType="io.choerodon.devops.api.vo.DevopsPvVO">
+    <select id="listPvByOptions" resultType="io.choerodon.devops.api.vo.DevopsPvVO">
         SELECT dpv.id id,
                dpv.name name,
                dpv.type type,
@@ -15,6 +15,36 @@
         FROM devops_pv dpv
         LEFT JOIN devops_pvc dpvc on dpv.pvc_id = dpvc.id
         LEFT JOIN devops_cluster dc on dep.cluster_id = dc.id
+    <include refid="sqlparams"/>
     </select>
 
+    <sql id="sqlparams">
+        <if test='searchParam != null'>
+            <if test='searchParam.name != null and searchParam.name.length > 0'>
+                AND
+                dpv.name LIKE CONCAT(CONCAT('%', #{searchParam.name, jdbcType=VARCHAR}),'%')
+            </if>
+            <if test='searchParam.type != null and searchParam.type.length > 0'>
+                AND
+                dpv.type LIKE CONCAT(CONCAT('%', #{searchParam.type, jdbcType=VARCHAR}),'%')
+            </if>
+            <if test='searchParam.cluster != null and searchParam.cluster.length > 0'>
+                AND
+                dc.cluster LIKE CONCAT(CONCAT('%', #{searchParam.cluster, jdbcType=VARCHAR}),'%')
+            </if>
+            <if test='searchParam.accessmodes != null and searchParam.accessmodes.length > 0'>
+                AND
+                dpv.accessmodes LIKE CONCAT(CONCAT('%', #{searchParam.accessmodes, jdbcType=VARCHAR}),'%')
+            </if>
+        </if>
+        <if test='params != null and params.size > 0'>
+            AND
+            <foreach collection="params" item="param" open="(" separator=" OR " close=")">
+                dpv.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                OR dpv.type LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                OR dc.name  = #{param, jdbcType=VARCHAR}
+                OR dpv.accessmodes = #{param, jdbcType=VARCHAR}
+            </foreach>
+        </if>
+    </sql>
 </mapper>
