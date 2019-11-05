@@ -16,18 +16,22 @@ public interface DevopsClusterResourceService {
     void baseUpdate(DevopsClusterResourceDTO devopsClusterResourceDTO);
 
     /**
-     * 创建或者更新 cert-manager
+     * 创建cert-manager
+     *
+     * @param clusterId
+     */
+    void createCertManager(Long clusterId);
+
+    /**
+     * 修改cert-manager的状态
      *
      * @param clusterId
      * @param status
      * @param error
      */
-    void operateCertManager(Long clusterId, String status, String error);
-
+    void updateCertMangerStatus(Long clusterId, String status, String error);
 
     Boolean deleteCertManager(Long clusterId);
-
-    DevopsClusterResourceDTO queryByClusterIdAndConfigId(Long clusterId, Long configId);
 
     DevopsClusterResourceDTO queryByClusterIdAndType(Long clusterId, String type);
 

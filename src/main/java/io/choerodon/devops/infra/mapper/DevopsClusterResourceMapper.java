@@ -12,8 +12,4 @@ import org.apache.ibatis.annotations.Param;
 public interface DevopsClusterResourceMapper extends Mapper<DevopsClusterResourceDTO> {
 
     DevopsClusterResourceDTO queryByClusterIdAndType(@Param("clusterId") Long clusterId, @Param("type") String type);
-
-    DevopsClusterResourceDTO queryByOptions(@Param("clusterResource") DevopsClusterResourceDTO devopsClusterResourceDTO);
-
-    DevopsClusterResourceDTO queryByClusterIdAndTypeAndConfigId(@Param("clusterId") Long clusterId, @Param("type") String type, @Param("configId") Long configId);
 }

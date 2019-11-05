@@ -110,38 +110,41 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     }
 
     @Override
-    public void operateCertManager(Long clusterId, String status, String error) {
+    public void createCertManager(Long clusterId) {
         DevopsClusterResourceDTO devopsClusterResourceDTO = new DevopsClusterResourceDTO();
         devopsClusterResourceDTO.setType(ClusterResourceType.CERTMANAGER.getType());
         devopsClusterResourceDTO.setClusterId(clusterId);
-        DevopsClusterResourceDTO clusterResourceDTO = devopsClusterResourceMapper.queryByOptions(devopsClusterResourceDTO);
-        if (!ObjectUtils.isEmpty(clusterResourceDTO)) {
-            DevopsCertManagerRecordDTO devopsCertManagerRecordDTO = devopsCertManagerRecordMapper.selectByPrimaryKey(clusterResourceDTO.getObjectId());
-            devopsCertManagerRecordDTO.setError(error);
-            devopsCertManagerRecordDTO.setStatus(status);
-            devopsCertManagerRecordMapper.updateByPrimaryKeySelective(devopsCertManagerRecordDTO);
-        } else {
-            DevopsCertManagerRecordDTO devopsCertManagerRecordDTO = new DevopsCertManagerRecordDTO();
-            devopsCertManagerRecordDTO.setStatus(status);
-            devopsCertManagerRecordDTO.setError(error);
-            if (ObjectUtils.isEmpty(status)) {
-                devopsCertManagerRecordDTO.setStatus(ClusterResourceStatus.PROCESSING.getStatus());
-            }
-            devopsCertManagerRecordMapper.insertSelective(devopsCertManagerRecordDTO);
-            //记录chart信息
-            DevopsCertManagerDTO devopsCertManagerDTO = new DevopsCertManagerDTO();
-            devopsCertManagerDTO.setNamespace(CertManagerConstants.CERT_MANAGER_NAME_SPACE);
-            devopsCertManagerDTO.setChartVersion(CertManagerConstants.CERT_MANAGER_CHART_VERSION);
-            devopsCertManagerMapper.insertSelective(devopsCertManagerDTO);
-            // 插入数据
-            devopsClusterResourceDTO.setObjectId(devopsCertManagerRecordDTO.getId());
-            devopsClusterResourceDTO.setClusterId(clusterId);
-            devopsClusterResourceDTO.setOperate(ClusterResourceOperateType.INSTALL.getType());
-            devopsClusterResourceDTO.setConfigId(devopsCertManagerDTO.getId());
-            baseCreate(devopsClusterResourceDTO);
-            // 让agent创建cert-mannager
-            agentCommandService.createCertManager(clusterId);
-        }
+        DevopsClusterResourceDTO clusterResourceDTO = devopsClusterResourceMapper.selectOne(devopsClusterResourceDTO);
+
+        DevopsCertManagerRecordDTO devopsCertManagerRecordDTO = new DevopsCertManagerRecordDTO();
+        devopsCertManagerRecordDTO.setStatus(ClusterResourceStatus.PROCESSING.getStatus());
+        devopsCertManagerRecordMapper.insertSelective(devopsCertManagerRecordDTO);
+        //记录chart信息
+        DevopsCertManagerDTO devopsCertManagerDTO = new DevopsCertManagerDTO();
+        devopsCertManagerDTO.setNamespace(CertManagerConstants.CERT_MANAGER_NAME_SPACE);
+        devopsCertManagerDTO.setChartVersion(CertManagerConstants.CERT_MANAGER_CHART_VERSION);
+        devopsCertManagerMapper.insertSelective(devopsCertManagerDTO);
+        // 插入数据
+        devopsClusterResourceDTO.setObjectId(devopsCertManagerRecordDTO.getId());
+        devopsClusterResourceDTO.setClusterId(clusterId);
+        devopsClusterResourceDTO.setOperate(ClusterResourceOperateType.INSTALL.getType());
+        devopsClusterResourceDTO.setConfigId(devopsCertManagerDTO.getId());
+        baseCreate(devopsClusterResourceDTO);
+        // 让agent创建cert-mannager
+        agentCommandService.createCertManager(clusterId);
+    }
+
+    @Override
+    public void updateCertMangerStatus(Long clusterId, String status, String error) {
+        DevopsClusterResourceDTO devopsClusterResourceDTO = new DevopsClusterResourceDTO();
+        devopsClusterResourceDTO.setType(ClusterResourceType.CERTMANAGER.getType());
+        devopsClusterResourceDTO.setClusterId(clusterId);
+        DevopsClusterResourceDTO clusterResourceDTO = devopsClusterResourceMapper.selectOne(devopsClusterResourceDTO);
+
+        DevopsCertManagerRecordDTO devopsCertManagerRecordDTO = devopsCertManagerRecordMapper.selectByPrimaryKey(clusterResourceDTO.getObjectId());
+        devopsCertManagerRecordDTO.setError(error);
+        devopsCertManagerRecordDTO.setStatus(status);
+        devopsCertManagerRecordMapper.updateByPrimaryKeySelective(devopsCertManagerRecordDTO);
     }
 
     @Override
@@ -185,11 +188,6 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         return CollectionUtils.isEmpty(ids);
     }
 
-    @Override
-    public DevopsClusterResourceDTO queryByClusterIdAndConfigId(Long clusterId, Long configId) {
-        DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceMapper.queryByClusterIdAndTypeAndConfigId(clusterId, ClusterResourceType.PROMETHEUS.getType(), configId);
-        return devopsClusterResourceDTO;
-    }
 
     @Override
     public DevopsClusterResourceDTO queryByClusterIdAndType(Long clusterId, String type) {
