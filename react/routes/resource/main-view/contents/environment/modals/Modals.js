@@ -46,30 +46,16 @@ const EnvModals = observer(() => {
     baseInfoDs,
     configFormDs,
   } = useEnvironmentStore();
+
+  const ModalStores = useModalStore();
+
   const {
     modalStore,
     nonePermissionDs,
-  } = useModalStore();
+  } = ModalStores;
 
   function linkServices(data) {
     return modalStore.addService(projectId, id, data);
-  }
-
-  function addUsers(data) {
-    const record = baseInfoDs.current;
-    if (record) {
-      const objectVersionNumber = record.get('objectVersionNumber');
-      const users = {
-        projectId,
-        envId: id,
-        objectVersionNumber,
-        ...data,
-      };
-      
-      return modalStore.addUsers(users);
-    }
-
-    return false;
   }
 
   function refresh() {
@@ -102,7 +88,6 @@ const EnvModals = observer(() => {
   }
 
   function openLinkService() {
-    modalStore.loadServices(projectId, id);
     Modal.open({
       key: modalKey2,
       title: <Tips
@@ -118,10 +103,8 @@ const EnvModals = observer(() => {
         onOk={linkServices}
         intlPrefix={intlPrefix}
         prefixCls={prefixCls}
+        modalStores={ModalStores}
       />,
-      afterClose: () => {
-        modalStore.setServices([]);
-      },
     });
   }
 
@@ -135,7 +118,6 @@ const EnvModals = observer(() => {
       intlPrefix,
       prefixCls,
       refresh,
-      onOk: addUsers,
       projectId,
     };
     Modal.open({

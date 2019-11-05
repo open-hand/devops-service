@@ -34,6 +34,13 @@ export default ({ formatMessage, projectId, id, skipCheckProjectPermission }) =>
       type: 'string',
       label: formatMessage({ id: 'cluster.project.code' }),
     },
+    {
+      name: 'projectId',
+      type: 'number',
+      label: formatMessage({ id: 'c7ncd.cluster.project' }),
+      valueField: 'id',
+      textField: 'name',
+    },
   ],
   queryFields: [],
 });

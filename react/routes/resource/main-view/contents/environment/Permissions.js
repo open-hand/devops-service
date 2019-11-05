@@ -60,6 +60,7 @@ export default function Permissions() {
         dataSet={tableDs}
         border={false}
         queryBar="bar"
+        pristine
       >
         <Column name="realName" />
         {getActionColumn()}

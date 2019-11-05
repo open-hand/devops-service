@@ -2,10 +2,9 @@ import React, { Fragment, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import map from 'lodash/map';
 import some from 'lodash/some';
-import { SelectBox, Select, Form } from 'choerodon-ui/pro';
-import { Button, Tooltip } from 'choerodon-ui';
+import { SelectBox, Select, Form, Tooltip } from 'choerodon-ui/pro';
 import { handlePromptError } from '../../../../../../../utils';
-import './index.less';
+import DynamicSelect from '../../../../../../../components/dynamic-select-new';
 
 const { Option } = Select;
 
@@ -15,14 +14,6 @@ export default observer((props) => {
     dataSet.getField('iamUserId').set('options', nonePermissionDs);
     nonePermissionDs.query();
   }, []);
-
-  useEffect(() => {
-    if (record.get('skipCheckPermission')) {
-      dataSet.reset();
-    } else {
-      handleCreate();
-    }
-  }, [record.get('skipCheckPermission')]);
 
   modal.handleOk(async () => {
     const skipCheckPermission = record.get('skipCheckPermission');
@@ -71,14 +62,6 @@ export default observer((props) => {
     dataSet.reset();
   });
 
-  function handleDelete(current) {
-    dataSet.remove(current);
-  }
-
-  function handleCreate() {
-    dataSet.create();
-  }
-
   function handleUserFilter(optionRecord) {
     const flag = some(dataSet.created, (creatRecord) => creatRecord.get('iamUserId') === optionRecord.get('iamUserId'));
     return !flag;
@@ -89,7 +72,7 @@ export default observer((props) => {
   }
 
   return (
-    <div className={`${prefixCls}-permission-form`}>
+    <Fragment>
       <Form record={record}>
         <SelectBox name="skipCheckPermission">
           <Option value>{formatMessage({ id: `${intlPrefix}.member.all` })}</Option>
@@ -97,31 +80,14 @@ export default observer((props) => {
         </SelectBox>
       </Form>
       {!record.get('skipCheckPermission') && (
-        <Fragment>
-          {map(dataSet.created, (userRecord, index) => (
-            <div className={`${prefixCls}-permission-form-item`} key={`permission-form-${index}`}>
-              <Form record={userRecord}>
-                <Select name="iamUserId" optionsFilter={handleUserFilter} searchable optionRenderer={renderUserOption} />
-              </Form>
-              <Button
-                icon="delete"
-                shape="circle"
-                onClick={() => handleDelete(userRecord)}
-                disabled={dataSet.created.length === 1}
-                className={`${prefixCls}-permission-form-button`}
-              />
-            </div>
-          ))}
-          <Button
-            icon="add"
-            type="primary"
-            onClick={handleCreate}
-          >
-            {formatMessage({ id: `${intlPrefix}.add.member` })}
-          </Button>
-        </Fragment>
+        <DynamicSelect
+          selectDataSet={dataSet} 
+          optionsFilter={handleUserFilter} 
+          optionsRenderer={renderUserOption}
+          selectName="iamUserId"
+          addText={formatMessage({ id: `${intlPrefix}.add.member` })}
+        />
       )}
-    </div>
-
+    </Fragment>
   );
 });
