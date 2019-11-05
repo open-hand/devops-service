@@ -73,6 +73,9 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
         group.setPath(path);
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(gitlabGroupPayload.getUserId());
+        if (userAttrDTO == null) {
+            throw new CommonException("error.gitlab.user.sync.failed");
+        }
         GroupDTO groupDTO = gitlabServiceClientOperator.queryGroupByName(group.getPath(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         if (groupDTO == null) {
             groupDTO = gitlabServiceClientOperator.createGroup(group, TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
