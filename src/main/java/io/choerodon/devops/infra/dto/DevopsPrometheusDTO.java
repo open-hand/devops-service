@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.dto;
 
+import java.util.Map;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
@@ -26,7 +27,7 @@ public class DevopsPrometheusDTO extends BaseDTO {
     private String grafanaDomain;
 
     @ApiModelProperty("pv名称")
-    private String pvName;
+    private Map<String,String> pvNames;
 
     @ApiModelProperty("集群id")
     private Long clusterId;
@@ -59,12 +60,12 @@ public class DevopsPrometheusDTO extends BaseDTO {
         this.grafanaDomain = grafanaDomain;
     }
 
-    public String getPvName() {
-        return pvName;
+    public Map<String, String> getPvNames() {
+        return pvNames;
     }
 
-    public void setPvName(String pvName) {
-        this.pvName = pvName;
+    public void setPvNames(Map<String, String> pvNames) {
+        this.pvNames = pvNames;
     }
 
     public String getClusterCode() {
