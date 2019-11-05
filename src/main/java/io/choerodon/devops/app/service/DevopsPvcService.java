@@ -1,10 +1,14 @@
 package io.choerodon.devops.app.service;
 
 import io.choerodon.devops.api.vo.DevopsPvcReqVO;
+import io.choerodon.devops.api.vo.DevopsPvcRespVO;
+import io.choerodon.devops.infra.dto.DevopsPvcDTO;
 import io.choerodon.devops.infra.dto.DevopsPvcDTO;
 
 public interface DevopsPvcService {
-    void create(Long projectId, DevopsPvcReqVO devopsPvcReqVO);
+    DevopsPvcRespVO create(Long projectId, DevopsPvcReqVO devopsPvcReqVO);
+
+    boolean delete(Long projectId, Long pvcId);
 
     void baseCheckName(String PvcName, Long envId);
 
@@ -26,4 +30,6 @@ public interface DevopsPvcService {
     DevopsPvcDTO createOrUpdateByGitOps(Long userId, DevopsPvcReqVO devopsPvcReqVO);
 
     void deleteByGitOps(Long pvcId);
+
+    void baseUpdate(DevopsPvcDTO devopsPvcDTO);
 }

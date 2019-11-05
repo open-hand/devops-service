@@ -7,7 +7,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import java.util.Date;
 
 @Table(name = "devops_pvc")
 public class DevopsPvcDTO extends BaseDTO {
@@ -25,6 +24,9 @@ public class DevopsPvcDTO extends BaseDTO {
     @ApiModelProperty("PVC绑定PV id")
     private Long pvId;
 
+    @ApiModelProperty("PV名称")
+    private String PvName;
+
     @ApiModelProperty("项目id")
     private Long projectId;
 
@@ -38,20 +40,18 @@ public class DevopsPvcDTO extends BaseDTO {
     private String type;
 
     @ApiModelProperty("PVC状态")
-    private String status;
+    private String commandStatus;
 
     @ApiModelProperty("操作id")
     private Long commandId;
 
-    private Long objectVersionNumber;
+    public String getPvName() {
+        return PvName;
+    }
 
-    private Long createdBy;
-
-    private Date creationDate;
-
-    private Long lastUpdatedBy;
-
-    private Date lastUpdateDate;
+    public void setPvName(String pvName) {
+        PvName = pvName;
+    }
 
     public Long getId() {
         return id;
@@ -117,12 +117,12 @@ public class DevopsPvcDTO extends BaseDTO {
         this.type = type;
     }
 
-    public String getStatus() {
-        return status;
+    public String getCommandStatus() {
+        return commandStatus;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
+    public void setCommandStatus(String commandStatus) {
+        this.commandStatus = commandStatus;
     }
 
     public Long getCommandId() {
@@ -131,45 +131,5 @@ public class DevopsPvcDTO extends BaseDTO {
 
     public void setCommandId(Long commandId) {
         this.commandId = commandId;
-    }
-
-    public Long getObjectVersionNumber() {
-        return objectVersionNumber;
-    }
-
-    public void setObjectVersionNumber(Long objectVersionNumber) {
-        this.objectVersionNumber = objectVersionNumber;
-    }
-
-    public Long getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(Long createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    public Date getCreationDate() {
-        return creationDate;
-    }
-
-    public void setCreationDate(Date creationDate) {
-        this.creationDate = creationDate;
-    }
-
-    public Long getLastUpdatedBy() {
-        return lastUpdatedBy;
-    }
-
-    public void setLastUpdatedBy(Long lastUpdatedBy) {
-        this.lastUpdatedBy = lastUpdatedBy;
-    }
-
-    public Date getLastUpdateDate() {
-        return lastUpdateDate;
-    }
-
-    public void setLastUpdateDate(Date lastUpdateDate) {
-        this.lastUpdateDate = lastUpdateDate;
     }
 }

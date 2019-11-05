@@ -2,6 +2,7 @@ package io.choerodon.devops.api.vo;
 
 
 import io.choerodon.devops.api.validator.annotation.QuantityCheck;
+import io.choerodon.devops.api.validator.annotation.VolumeTypeCheck;
 import io.swagger.annotations.ApiModelProperty;
 import springfox.documentation.annotations.ApiIgnore;
 
@@ -33,7 +34,7 @@ public class DevopsPvcReqVO {
     @ApiModelProperty("资源申请数量")
     private String requestResource;
 
-    @NotEmpty(message = "error.pvc.type.empty")
+    @VolumeTypeCheck(message = "error.pvc.type.exist")
     @ApiModelProperty("卷类型")
     private String type;
 
