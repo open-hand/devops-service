@@ -9,7 +9,7 @@ public class DevopsPvVO {
     private String clusterName;
     private String type;
     private Long pvcName;
-    private String AccessModes;
+    private String accessModes;
     private String storage;
 
     public Long getId() {
@@ -69,11 +69,11 @@ public class DevopsPvVO {
     }
 
     public String getAccessModes() {
-        return AccessModes;
+        return accessModes;
     }
 
     public void setAccessModes(String accessModes) {
-        AccessModes = accessModes;
+        this.accessModes = accessModes;
     }
 
     public String getStorage() {

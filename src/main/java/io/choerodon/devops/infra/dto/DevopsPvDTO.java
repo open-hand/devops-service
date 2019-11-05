@@ -9,7 +9,7 @@ import javax.persistence.Table;
 public class DevopsPvDTO extends BaseDTO {
 
     private Long id;
-    private Long name;
+    private String name;
     private String type;
     private String description;
     private String status;
@@ -25,11 +25,11 @@ public class DevopsPvDTO extends BaseDTO {
         this.id = id;
     }
 
-    public Long getName() {
+    public String getName() {
         return name;
     }
 
-    public void setName(Long name) {
+    public void setName(String name) {
         this.name = name;
     }
 
