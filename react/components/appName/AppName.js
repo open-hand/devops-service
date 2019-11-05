@@ -10,7 +10,7 @@ import './AppName.less';
  * @param { 应用名称，显示应用前icon，本组织or应用市场 } props
  */
 export default function AppName(props) {
-  const { name, showIcon, self, width, isInstance } = props;
+  const { name, showIcon, self, width, isInstance, hoverName } = props;
   let icon;
   let type;
   if (isInstance) {
@@ -34,9 +34,13 @@ export default function AppName(props) {
           <Icon type={icon} className="c7ncd-app-icon" />
         </Tooltip>
       ) : null}
-      <MouseOverWrapper className="c7ncd-app-text" text={name} width={width}>
+      {hoverName ? (
+        <MouseOverWrapper className="c7ncd-app-text" width={width}>
+          {name}
+        </MouseOverWrapper>
+      ) : <MouseOverWrapper className="c7ncd-app-text" text={name} width={width}>
         {name}
-      </MouseOverWrapper>
+      </MouseOverWrapper>}
     </Fragment>
   );
 }
@@ -45,6 +49,7 @@ AppName.propTypes = {
   name: PropTypes.string.isRequired,
   showIcon: PropTypes.bool.isRequired,
   self: PropTypes.bool.isRequired,
+  hoverName: PropTypes.bool,
   width: PropTypes.oneOfType([
     PropTypes.string.isRequired,
     PropTypes.number.isRequired,
