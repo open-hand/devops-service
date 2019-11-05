@@ -150,13 +150,13 @@ public class DevopsClusterResourceController {
 
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "查询环境关联的集群是否安装cert-manager")
-    @GetMapping("/cert_manager/query")
+    @GetMapping("/cert_manager/check_by_env_id")
     public ResponseEntity<Boolean> queryCertManagerByEnvId(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)
             @RequestParam(name = "env_id") Long envId) {
-        return new ResponseEntity<Boolean>(devopsClusterResourceService.queryCertManagerByEnvId(envId), HttpStatus.OK);
+        return new ResponseEntity<>(devopsClusterResourceService.queryCertManagerByEnvId(envId), HttpStatus.OK);
     }
 
 }
