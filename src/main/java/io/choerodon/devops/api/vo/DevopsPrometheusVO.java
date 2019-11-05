@@ -26,23 +26,15 @@ public class DevopsPrometheusVO {
     @NotNull(message = "error.pv.name.null")
     private Map<String,String> pvNames;
 
-    @ApiModelProperty("cluster名称/必填")
-    @NotNull(message = "error.cluster.name.null")
-    private String clusterName;
+    @ApiModelProperty("cluster编码/必填")
+    @NotNull(message = "error.cluster.code.null")
+    private String clusterCode;
 
     public Long getId() {
         return id;
     }
 
     public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Long getPrometheusId() {
-        return id;
-    }
-
-    public void setPrometheusId(Long prometheusId) {
         this.id = id;
     }
 
@@ -70,13 +62,11 @@ public class DevopsPrometheusVO {
         this.pvNames = pvNames;
     }
 
-    public String getClusterName() {
-        return clusterName;
+    public String getClusterCode() {
+        return clusterCode;
     }
 
-    public void setClusterName(String clusterName) {
-        this.clusterName = clusterName;
+    public void setClusterCode(String clusterCode) {
+        this.clusterCode = clusterCode;
     }
-
-
 }
