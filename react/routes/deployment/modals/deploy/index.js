@@ -220,8 +220,6 @@ const DeployModal = injectIntl(observer(({ record, dataSet, store, projectId, re
           searchable
           newLine
           optionRenderer={renderEnvOption}
-          popupCls={`${prefixCls}-manual-deploy`}
-          dropdownMenuStyle={{ cursor: 'not-allowed' }}
           notFoundContent={<FormattedMessage id={`${intlPrefix}.env.empty`} />}
           onOption={renderOptionProperty}
         />
