@@ -13,5 +13,21 @@ public interface DevopsPvServcie {
 
     void createPv(DevopsPvDTO devopsPvDTO);
 
+
+    /***
+     * 创建组织与pv的权限关联关系
+     * @param update
+     */
     void assignPermission(DevopsPvPermissionUpateVO update);
+
+    /***
+     * 更新pv表中的权限校验字段
+     * @param update
+     */
+    void updateCheckPermission(DevopsPvPermissionUpateVO update);
+
+    /**
+     * 更新pv表字段
+     */
+    void updatePv(DevopsPvDTO devopsPvDTO);
 }

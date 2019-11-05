@@ -32,13 +32,14 @@ public class DevopsPvServiceImpl implements DevopsPvServcie {
 
     @Override
     public void createPv(DevopsPvDTO devopsPvDTO) {
-        if (devopsPvMapper.insert(devopsPvDTO) != 1){
+        if (devopsPvMapper.insertSelective(devopsPvDTO) != 1){
             throw new CommonException("error.pv.add.error");
         }
     }
 
-    @Transactional
+
     @Override
+    @Transactional
     public void assignPermission(DevopsPvPermissionUpateVO update) {
         DevopsPvDTO devopsPvDTO = devopsPvMapper.selectByPrimaryKey(update.getPvId());
 
@@ -47,7 +48,7 @@ public class DevopsPvServiceImpl implements DevopsPvServcie {
             // 更新之后对特定项目公开则忽略之前的更新权限表
             if (!update.getSkipCheckProjectPermission()){
                 // 更新相关字段
-                updatePvInfo(update);
+                updateCheckPermission(update);
 
                 //批量插入
                 devopsPvProPermissionService.batchInsertIgnore(update.getPvId(), update.getProjectIds());
@@ -56,7 +57,7 @@ public class DevopsPvServiceImpl implements DevopsPvServcie {
             // 原来不公开,现在设置公开，更新版本号，直接删除原来的权限表中的数据
             if(update.getSkipCheckProjectPermission()){
                 // 先更新相关字段
-                updatePvInfo(update);
+                updateCheckPermission(update);
 
                 //批量删除
                 devopsPvProPermissionService.baseListByPvId(update.getPvId());
@@ -69,11 +70,16 @@ public class DevopsPvServiceImpl implements DevopsPvServcie {
     }
 
 
-    public void updatePvInfo(DevopsPvPermissionUpateVO update){
+    public void updateCheckPermission(DevopsPvPermissionUpateVO update){
         DevopsPvDTO devopsPvDTO = new DevopsPvDTO();
         devopsPvDTO.setId(update.getPvId());
         devopsPvDTO.setSkipCheckProjectPermission(update.getSkipCheckProjectPermission());
         devopsPvDTO.setObjectVersionNumber(update.getObjectVersionNumber());
+        devopsPvMapper.updateByPrimaryKeySelective(devopsPvDTO);
+    }
+
+    @Override
+    public void updatePv(DevopsPvDTO devopsPvDTO) {
         devopsPvMapper.updateByPrimaryKeySelective(devopsPvDTO);
     }
 }
