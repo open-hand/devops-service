@@ -4,6 +4,7 @@ import { observer } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
 import { Action, Choerodon } from '@choerodon/boot';
 import { Icon, Modal } from 'choerodon-ui/pro';
+import AppName from '../../../../../components/appName';
 import { handlePromptError } from '../../../../../utils';
 import eventStopProp from '../../../../../utils/eventStopProp';
 import { useResourceStore } from '../../../stores';
@@ -55,17 +56,25 @@ function AppItem({ name, record, intl: { formatMessage }, intlPrefix }) {
     return <Action placement="bottomRight" data={actionData} onClick={eventStopProp} />;
   }
   function renderIcon(appType) {
+    let iconType;
     if (appType === 'normal_server') {
-      return <Icon type="widgets" />;
+      iconType = 'widgets';
     } else if (appType === 'share_service') {
-      return <Icon type="share" />;
+      iconType = 'share';
     } else {
-      return <Icon type="application_market" />;
+      iconType = 'application_market';
     }
+    return iconType;
   }
   return <Fragment>
-    {renderIcon(type)}
-    {name}
+    <AppName
+      width={0.18}
+      name={name}
+      hoverName
+      showIcon
+      self={renderIcon(type)}
+      isInstance
+    />
     {getSuffix()}
   </Fragment>;
 }
