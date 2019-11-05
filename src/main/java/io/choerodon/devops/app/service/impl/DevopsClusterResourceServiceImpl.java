@@ -166,27 +166,23 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
             return true;
         }
         Set<Long> ids = new HashSet<>();
-        certificationDTOS.forEach(dto -> {
-            boolean is_faile = CertificationStatus.FAILED.getStatus().equals(dto.getStatus()) || CertificationStatus.OVERDUE.getStatus().equals(dto.getStatus());
-            if (!is_faile) {
-                if (CertificationStatus.ACTIVE.getStatus().equals(dto.getStatus())) {
-                    if (!checkValidity(new Date(), dto.getValidFrom(), dto.getValidUntil())) {
-                        dto.setStatus(CertificationStatus.OVERDUE.getStatus());
-                        CertificationDTO certificationDTO = new CertificationDTO();
-                        certificationDTO.setId(dto.getId());
-                        certificationDTO.setStatus(CertificationStatus.OVERDUE.getStatus());
-                        certificationDTO.setObjectVersionNumber(dto.getObjectVersionNumber());
-                        devopsCertificationMapper.updateByPrimaryKeySelective(certificationDTO);
-                    }
+        for (CertificationDTO dto : certificationDTOS) {
+            boolean isFaile = CertificationStatus.FAILED.getStatus().equals(dto.getStatus()) || CertificationStatus.OVERDUE.getStatus().equals(dto.getStatus());
+            if (!isFaile) {
+                if (CertificationStatus.ACTIVE.getStatus().equals(dto.getStatus()) && !checkValidity(new Date(), dto.getValidFrom(), dto.getValidUntil())) {
+                    dto.setStatus(CertificationStatus.OVERDUE.getStatus());
+                    CertificationDTO certificationDTO = new CertificationDTO();
+                    certificationDTO.setId(dto.getId());
+                    certificationDTO.setStatus(CertificationStatus.OVERDUE.getStatus());
+                    certificationDTO.setObjectVersionNumber(dto.getObjectVersionNumber());
+                    devopsCertificationMapper.updateByPrimaryKeySelective(certificationDTO);
                 } else {
                     ids.add(dto.getId());
+                    break;
                 }
             }
-        });
-        if (CollectionUtils.isEmpty(ids)) {
-            return true;
         }
-        return false;
+        return CollectionUtils.isEmpty(ids);
     }
 
     @Override
