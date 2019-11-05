@@ -5,15 +5,23 @@ import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.DevopsPvPermissionUpateVO;
 import io.choerodon.devops.api.vo.DevopsPvVO;
+import io.choerodon.devops.api.vo.ProjectReqVO;
 import io.choerodon.devops.infra.dto.DevopsPvDTO;
 import io.choerodon.devops.infra.dto.DevopsPvProPermissionDTO;
+
+import java.util.List;
 
 public interface DevopsPvServcie {
 
     /***
-     * 查询根据Id查询单个PV
+     * 查询根据Id查询单个PV信息
      */
+    DevopsPvVO queryById(Long pvId);
 
+    /**
+     * 删除PV
+     */
+    void deletePvById(Long pvId);
 
     /***
      * 根据条件分页查询PV
@@ -26,6 +34,16 @@ public interface DevopsPvServcie {
      */
     void createPv(DevopsPvDTO devopsPvDTO);
 
+    /**
+     * 校验唯一性
+     * @param devopsPvDTO
+     */
+    void baseCheckPv(DevopsPvDTO devopsPvDTO);
+
+    /***
+     * 根据Pv名称和集群的Id校验唯一性
+     */
+    void checkName(Long clusterId, String pvName);
 
     /***
      * 创建组织与PV的权限关联关系
@@ -45,8 +63,17 @@ public interface DevopsPvServcie {
     void updatePv(DevopsPvDTO devopsPvDTO);
 
     /**
-     * 删除PV
+     * 根据pvId查询pv
      */
-    void deletePvById(Long pvId);
+    DevopsPvDTO baseQueryById(Long pvId);
 
+    /**
+     * 查询和PV没有绑定权限的项目
+     * @param projectId
+     * @return
+     */
+    List<ProjectReqVO> listNonRelatedProjects(Long projectId, Long pvId);
+
+
+    void deleteRelatedProjectById(Long pvId, Long projectId);
 }

@@ -42,9 +42,25 @@
             <foreach collection="params" item="param" open="(" separator=" OR " close=")">
                 dpv.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
                 OR dpv.type LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-                OR dc.name  = #{param, jdbcType=VARCHAR}
-                OR dpv.accessmodes = #{param, jdbcType=VARCHAR}
+                OR dc.name  LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                OR dpv.accessmodes LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
             </foreach>
         </if>
     </sql>
+
+    <select id="queryById" resultType="io.choerodon.devops.api.vo.DevopsPvVO">
+        SELECT dpv.id id,
+               dpv.name name,
+               dpv.type type,
+               dpv.description description,
+               dpv.status status,
+               dpv.storage storage,
+               dpv.access_modes access_modes,
+               dpvc.name pvc_name,
+               dc.name cluster_name
+        FROM devops_pv dpv
+                 LEFT JOIN devops_pvc dpvc on dpv.pvc_id = dpvc.id
+                 LEFT JOIN devops_cluster dc on dep.cluster_id = dc.id
+        WHERE dpv.id = #{pvId}
+    </select>
 </mapper>
