@@ -24,8 +24,7 @@ databaseChangeLog(logicalFilePath: 'devops_prometheus.groovy') {
     }
 
     changeSet(author: 'lzz', id: '2019-11-05-update-column') {
-        renameColumn(columnDataType: 'VARCHAR(50)', newColumnName: 'pv_names', oldColumnName: 'pv_name',tableName: "devops_prometheus")
-        addColumn(tableName: 'devops_cluster_resource') {
+        addColumn(tableName: 'devops_prometheus') {
             column(name: 'cluster_id', type: 'BIGINT UNSIGNED', remarks: 'cluster id', afterColumn: 'grafana_domain')
         }
     }
