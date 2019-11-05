@@ -36,7 +36,7 @@ public class DevopsClusterResourceController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群id", required = true)
             @RequestParam(name = "cluster_id", required = true) Long clusterId) {
-        devopsClusterResourceService.operateCertManager(clusterId, null, null);
+        devopsClusterResourceService.createCertManager(clusterId);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 

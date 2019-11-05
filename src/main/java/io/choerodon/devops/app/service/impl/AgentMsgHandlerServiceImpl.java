@@ -1478,7 +1478,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         if (payloadMsg != null) {
             String error = "";
             String status = "";
-            devopsClusterResourceService.operateCertManager(clusterId, status, error);
+            devopsClusterResourceService.updateCertMangerStatus(clusterId, status, error);
         }
     }
 
@@ -1656,7 +1656,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         if (!ObjectUtils.isEmpty(payload)) {
             String status = "";
             String error = "";
-            devopsClusterResourceService.operateCertManager(clusterId, status, error);
+            devopsClusterResourceService.updateCertMangerStatus(clusterId, status, error);
         }
 
     }
