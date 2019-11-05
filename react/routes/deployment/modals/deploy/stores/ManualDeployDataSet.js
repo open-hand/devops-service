@@ -13,7 +13,6 @@ function getRandomName(prefix = '') {
 
 export default ((intlPrefix, formatMessage, projectId, envOptionsDs, valueIdOptionsDs, versionOptionsDs, deployStore) => {
   function handleCreate({ dataSet, record }) {
-    envOptionsDs.query();
     deployStore.loadAppService(projectId, record.get('appServiceSource'));
   }
   
@@ -90,6 +89,8 @@ export default ((intlPrefix, formatMessage, projectId, envOptionsDs, valueIdOpti
   }
 
   return ({
+    autoCreate: true,
+    autoQuery: false,
     paging: false,
     transport: {
       create: ({ data: [data] }) => {

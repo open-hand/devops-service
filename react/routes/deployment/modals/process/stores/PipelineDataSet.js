@@ -1,4 +1,5 @@
 export default ((intlPrefix, formatMessage, projectId) => ({
+  autoQuery: true,
   paging: false,
   transport: {
     read: ({ data }) => ({
