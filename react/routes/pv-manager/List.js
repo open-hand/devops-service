@@ -7,6 +7,7 @@ import { withRouter } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
 import { usePVManagerStore } from './stores';
 import CreateForm from './modals/create-form';
+import PermissionManager from './modals/permission-mananger';
 
 import './index.less';
 
@@ -72,7 +73,11 @@ const AppService = withRouter(observer((props) => {
       style: modalStyle2,
       drawer: true,
       title: formatMessage({ id: `${intlPrefix}.permission` }),
-      children: <FormattedMessage id={`${intlPrefix}.permission`} />,
+      children: <PermissionManager
+        intlPrefix={intlPrefix}
+        prefixCls={prefixCls}
+        refresh={refresh}
+      />,
       okText: formatMessage({ id: 'save' }),
     });
   }

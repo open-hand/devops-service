@@ -18,7 +18,46 @@ export const StoreProvider = injectIntl(inject('AppState')(
       children,
       intlPrefix,
     } = props;
-    const formDs = useMemo(() => new DataSet(FormDataSet(intlPrefix, formatMessage, projectId)), [projectId]);
+    const typeDs = useMemo(() => new DataSet({
+      data: [
+        {
+          value: 'NFS',
+        },
+        {
+          value: 'HostPath',
+        },
+      ],
+      selection: 'single',
+    }), []);
+    const modeDs = useMemo(() => new DataSet({
+      data: [
+        {
+          value: 'ReadWriteOnce',
+        },
+        {
+          value: 'ReadOnlyMany',
+        },
+        {
+          value: 'ReadWriteMany',
+        },
+      ],
+      selection: 'single',
+    }), []);
+    const storageDs = useMemo(() => new DataSet({
+      data: [
+        {
+          value: 'Mi',
+        },
+        {
+          value: 'Gi',
+        },
+        {
+          value: 'Ti',
+        },
+      ],
+      selection: 'single',
+    }), []);
+    const formDs = useMemo(() => new DataSet(FormDataSet(intlPrefix, formatMessage, projectId, typeDs, modeDs, storageDs)), [projectId]);
 
     const value = {
       ...props,

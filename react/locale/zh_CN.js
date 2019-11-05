@@ -695,8 +695,18 @@ const pvManager = {
   'c7ncd.pv.mode': '访问模式',
   'c7ncd.pv.storage': '存储容量',
   'c7ncd.pv.permission': '权限管理',
+  'c7ncd.pv.share': 'PV公开范围',
+  'c7ncd.pv.name.failed': '只能由小写字母、数字、"."和"-"组成，且以小写字母开头，不能以"-"、"."结尾',
+  'c7ncd.pv.project.name': '项目名称',
+  'c7ncd.pv.project.code': '项目编码',
+  'c7ncd.pv.project.all': '集群下所有项目',
+  'c7ncd.pv.project.special': '集群下特定项目',
+  'c7ncd.pv.project.add': '添加项目',
   'c7ncd.pv.delete.title': '删除PV“{name}”',
   'c7ncd.pv.delete.des': '确定要删除该PV吗？',
+  'c7ncd.pv.delete.disabled': '存在已绑定的PVC，无法删除',
+  'c7ncd.pv.permission.delete.title': '删除权限',
+  'c7ncd.pv.permission.project.delete.des': '确定要删除该项目的权限吗？',
 };
 
 
