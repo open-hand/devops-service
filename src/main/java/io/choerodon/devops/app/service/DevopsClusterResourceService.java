@@ -5,6 +5,7 @@ import java.util.List;
 import io.choerodon.devops.api.vo.ClusterResourceVO;
 import io.choerodon.devops.api.vo.DevopsPrometheusVO;
 import io.choerodon.devops.infra.dto.DevopsClusterResourceDTO;
+import org.springframework.util.MultiValueMap;
 
 /**
  * @author zhaotianxin
@@ -60,4 +61,12 @@ public interface DevopsClusterResourceService {
     void basedeletePromtheus(Long clusterId);
 
     String getGrafanaUrl(Long projectId, Long clusterId, String type);
+
+    /**
+     * 根据集群Id 查询cert-manager
+     *
+     * @param envId
+     * @return
+     */
+    Boolean queryCertManagerByEnvId(Long envId);
 }
