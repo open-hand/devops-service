@@ -90,7 +90,6 @@ const ClusterModals = observer(() => {
   }
 
   function openPermission() {
-    const arr = NonPermissionDs.toData();
     Modal.open({
       key: modalKey2,
       title: <Tips
@@ -102,12 +101,13 @@ const ClusterModals = observer(() => {
       className: 'c7ncd-modal-wrapper',
       children: <PermissionManage
         refreshPermission={refreshPermission}
-        projectList={arr}
         onOk={permissionUpdate}
         clusterDetail={ClusterDetailDs.current}
         intlPrefix={intlPrefix}
         prefixCls={prefixCls}
         formatMessage={formatMessage}
+        PermissionDs={PermissionDs}
+        NonPermissionDs={NonPermissionDs}
       />,
     });
   }

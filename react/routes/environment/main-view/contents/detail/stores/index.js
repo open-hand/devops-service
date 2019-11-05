@@ -12,6 +12,7 @@ import PermissionsDataSet from './PermissionsDataSet';
 import ConfigDataSet from './ConfigDataSet';
 import ConfigFormDataSet from './ConfigFormDataSet';
 import BaseDataSet from './BaseDataSet';
+import OptionsDataSet from './OptionsDataSet';
 import useStore from './useStore';
 
 const Store = createContext();
@@ -48,6 +49,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const gitopsSyncDs = useMemo(() => new DataSet(GitopsSyncDataSet()), []);
     const retryDs = useMemo(() => new DataSet(RetryDataSet()), []);
     const configFormDs = useMemo(() => new DataSet(ConfigFormDataSet({ formatMessage, intlPrefix, projectId, store: detailStore })), [projectId]);
+    const nonePermissionDs = useMemo(() => new DataSet(OptionsDataSet()), []);
 
     function freshTree() {
       treeDs.query();
@@ -72,6 +74,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
 
     function queryData() {
       baseDs.transport.read.url = `/devops/v1/projects/${projectId}/envs/${id}/info`;
+      nonePermissionDs.transport.read.url = `/devops/v1/projects/${projectId}/envs/${id}/permission/list_non_related`;
       baseDs.query();
       const tabKey = detailStore.getTabKey;
       switch (tabKey) {
@@ -148,6 +151,8 @@ export const StoreProvider = injectIntl(inject('AppState')(
       detailStore,
       configFormDs,
       checkEnvExist,
+      nonePermissionDs,
+      formatMessage,
     };
     return (
       <Store.Provider value={value}>

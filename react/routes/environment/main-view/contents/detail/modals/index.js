@@ -48,7 +48,7 @@ const EnvModals = observer(() => {
   } = useEnvironmentStore();
   const { groupFormDs } = useMainStore();
   const {
-    intl: { formatMessage },
+    formatMessage,
     intlPrefix,
     prefixCls,
     detailStore,
@@ -64,6 +64,7 @@ const EnvModals = observer(() => {
     configFormDs,
     checkEnvExist,
     baseDs,
+    nonePermissionDs,
   } = useDetailStore();
 
   function refresh() {
@@ -135,20 +136,18 @@ const EnvModals = observer(() => {
     });
   }
 
-  async function addUsers(data) {
-    const { id, objectVersionNumber } = getSelectedMenu;
-    const users = {
-      projectId,
-      envId: id,
-      objectVersionNumber,
-      ...data,
-    };
-    return modalStore.addUsers(users);
-  }
-
   function openPermission() {
-    const { id, skipCheckPermission } = getSelectedMenu;
-    modalStore.loadUsers(projectId, id);
+    const modalPorps = {
+      dataSet: permissionsDs,
+      nonePermissionDs,
+      formatMessage,
+      store: modalStore,
+      record: baseDs.current,
+      intlPrefix,
+      prefixCls,
+      refresh,
+      projectId,
+    };
     Modal.open({
       key: permissionKey,
       title: <Tips
@@ -159,16 +158,8 @@ const EnvModals = observer(() => {
       className: 'c7ncd-modal-wrapper',
       style: modalStyle,
       children: <Permission
-        store={modalStore}
-        onOk={addUsers}
-        intlPrefix={intlPrefix}
-        prefixCls={prefixCls}
-        skipPermission={skipCheckPermission}
-        refresh={toPermissionTab}
+        {...modalPorps}
       />,
-      afterClose: () => {
-        modalStore.setUsers([]);
-      },
     });
   }
 
