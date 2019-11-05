@@ -4,13 +4,10 @@ import { injectIntl } from 'react-intl';
 import { DataSet } from 'choerodon-ui/pro';
 import map from 'lodash/map';
 import ListDataSet from './ListDataSet';
-import PipelineDataSet from './PipelineDataSet';
 import DetailDataSet from './DetailDataSet';
 import useStore from './useStore';
 import usePipelineStore from './usePipelineStore';
-import ManualDeployDataSet from './ManualDeployDataSet';
 import OptionsDataSet from './OptionsDataSet';
-import TableSelectDataSet from './TableSelectDataSet';
 
 const Store = createContext();
 const STATUS = ['success', 'failed', 'deleted', 'pendingcheck', 'stop', 'running'];
@@ -52,15 +49,10 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const pipelineStore = usePipelineStore();
 
     const envOptionsDs = useMemo(() => new DataSet(OptionsDataSet()), []);
-    const valueIdOptionsDs = useMemo(() => new DataSet(OptionsDataSet()), []);
-    const versionOptionsDs = useMemo(() => new DataSet(OptionsDataSet()), []);
     const pipelineOptionsDs = useMemo(() => new DataSet(OptionsDataSet()), []);
 
     const listDs = useMemo(() => new DataSet(ListDataSet(intlPrefix, formatMessage, projectId, envOptionsDs, deployTypeDs, deployResultDs, pipelineOptionsDs)), [projectId]);
-    const pipelineDs = useMemo(() => new DataSet(PipelineDataSet(intlPrefix, formatMessage, projectId)), [projectId]);
     const detailDs = useMemo(() => new DataSet(DetailDataSet()), []);
-    const manualDeployDs = useMemo(() => new DataSet(ManualDeployDataSet(intlPrefix, formatMessage, projectId, envOptionsDs, valueIdOptionsDs, versionOptionsDs, deployStore)), [projectId]);
-    const tableSelectDs = useMemo(() => new DataSet(TableSelectDataSet(intlPrefix, formatMessage, envOptionsDs, pipelineOptionsDs, listDs)), []);
 
     useEffect(() => {
       envOptionsDs.transport.read.url = `/devops/v1/projects/${projectId}/envs/list_by_active?active=true`;
@@ -82,12 +74,9 @@ export const StoreProvider = injectIntl(inject('AppState')(
       ],
       intlPrefix,
       listDs,
-      pipelineDs,
       detailDs,
       deployStore,
       pipelineStore,
-      manualDeployDs,
-      tableSelectDs,
       envOptionsDs,
       pipelineOptionsDs,
     };
