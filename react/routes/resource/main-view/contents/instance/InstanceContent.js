@@ -38,7 +38,6 @@ const InstanceTitle = ({
       PADDING_COLOR,
     },
   } = useMainStore();
-
   return <Fragment>
     <PodCircle
       style={podSize}
@@ -91,7 +90,7 @@ const InstanceContent = observer(() => {
     istStore,
     baseDs,
   } = useInstanceStore();
-
+  const viewType = resourceStore.getViewType;
   const { getSelectedMenu: { key: selectedKey } } = resourceStore;
 
 
@@ -178,7 +177,29 @@ const InstanceContent = observer(() => {
       podUnlinkCount={podUnlinkCount}
     />;
   }
-
+  function chooseTab() {
+    const detailsTab = <TabPane
+      key={DETAILS_TAB}
+      tab={formatMessage({ id: `${intlPrefix}.instance.tabs.details` })}
+    >
+      <Suspense fallback={<Spin />}>
+        <Details />
+      </Suspense>
+    </TabPane>;
+    const casesTab = <TabPane
+      key={CASES_TAB}
+      tab={formatMessage({ id: `${intlPrefix}.instance.tabs.cases` })}
+    >
+      <Suspense fallback={<Spin />}>
+        <Cases />
+      </Suspense>
+    </TabPane>;
+    if (viewType === 'instance') {
+      return [casesTab, detailsTab];
+    } else {
+      return [detailsTab, casesTab];
+    }
+  }
   return (
     <div className={`${prefixCls}-instance`}>
       <PageTitle content={getTitle()} fallback={getFallBack()} />
@@ -188,22 +209,7 @@ const InstanceContent = observer(() => {
         activeKey={istStore.getTabKey}
         onChange={handleChange}
       >
-        <TabPane
-          key={CASES_TAB}
-          tab={formatMessage({ id: `${intlPrefix}.instance.tabs.cases` })}
-        >
-          <Suspense fallback={<Spin />}>
-            <Cases />
-          </Suspense>
-        </TabPane>
-        <TabPane
-          key={DETAILS_TAB}
-          tab={formatMessage({ id: `${intlPrefix}.instance.tabs.details` })}
-        >
-          <Suspense fallback={<Spin />}>
-            <Details />
-          </Suspense>
-        </TabPane>
+        {chooseTab()}
         <TabPane
           key={PODS_TAB}
           tab={formatMessage({ id: `${intlPrefix}.instance.tabs.pods` })}

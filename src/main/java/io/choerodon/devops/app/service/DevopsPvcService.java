@@ -55,4 +55,6 @@ public interface DevopsPvcService {
     void deleteByGitOps(Long pvcId);
 
     void baseUpdate(DevopsPvcDTO devopsPvcDTO);
+
+    DevopsPvcDTO queryById(Long pvcId);
 }

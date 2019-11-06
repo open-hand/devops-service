@@ -4,6 +4,7 @@ import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.ClusterResourceVO
 import io.choerodon.devops.api.vo.DevopsPrometheusVO
+import io.choerodon.devops.api.vo.DevopsPvVO
 import io.choerodon.devops.app.service.ComponentReleaseService
 import io.choerodon.devops.app.service.DevopsClusterResourceService
 import io.choerodon.devops.infra.dto.AppServiceInstanceDTO
@@ -120,14 +121,27 @@ class DevopsClusterResourceControllerSpec extends Specification {
 
     def "createPrometheus"() {
         given:
-        Map<String, String> map = new HashMap<>()
-        map.put("cert-manager", "123")
-        map.put("prometheus", "345")
+        def devopsPvVO=new DevopsPvVO()
+        def devopsPvVO1=new DevopsPvVO()
+        def devopsPvVO2=new DevopsPvVO()
+        List<DevopsPvVO> list=new ArrayList<>()
+        devopsPvVO.setId(1L)
+        devopsPvVO.setType("promtheus")
+        devopsPvVO.setName("123")
+        devopsPvVO1.setId(2L)
+        devopsPvVO1.setType("grafana")
+        devopsPvVO1.setName("456")
+        devopsPvVO2.setId(3L)
+        devopsPvVO2.setType("alertManager")
+        devopsPvVO2.setName("789")
+        list.add(devopsPvVO)
+        list.add(devopsPvVO1)
+        list.add(devopsPvVO2)
         DevopsPrometheusVO devopsPrometheusVO = new DevopsPrometheusVO()
         devopsPrometheusVO.setAdminPassword("test")
-        devopsPrometheusVO.setClusterName("uat")
+        devopsPrometheusVO.setClusterCode("code101")
         devopsPrometheusVO.setGrafanaDomain("www.hand.com")
-        devopsPrometheusVO.setPvNames(map)
+        devopsPrometheusVO.setPvs(list)
         when:
         def entity = restTemplate.postForEntity(MAPPING + "/prometheus/create?cluster_id=1", devopsPrometheusVO, null, 1L)
         then:
@@ -136,17 +150,28 @@ class DevopsClusterResourceControllerSpec extends Specification {
     }
 
     def "updatePromtheus"() {
-        def prometheus = devopsClusterResourceService.queryPrometheus(1L)
+
         given:
-        Map<String, String> map = new HashMap<>()
-        map.put("cert-manager", "123")
-        map.put("prometheus", "345")
-        DevopsPrometheusVO devopsPrometheusVO = new DevopsPrometheusVO()
-        devopsPrometheusVO.setId(prometheus.getId())
-        devopsPrometheusVO.setAdminPassword("abc123")
-        devopsPrometheusVO.setClusterName("staging")
-        devopsPrometheusVO.setGrafanaDomain("www.hand.com")
-        devopsPrometheusVO.setPvNames(map)
+        def devopsPrometheusVO = devopsClusterResourceService.queryPrometheus(1L)
+        def devopsPvVO=new DevopsPvVO()
+        def devopsPvVO1=new DevopsPvVO()
+        def devopsPvVO2=new DevopsPvVO()
+        List<DevopsPvVO> list=new ArrayList<>()
+        devopsPvVO.setId(1L)
+        devopsPvVO.setType("promtheus")
+        devopsPvVO.setName("666")
+        devopsPvVO1.setId(2L)
+        devopsPvVO1.setType("grafana")
+        devopsPvVO1.setName("777")
+        devopsPvVO2.setId(3L)
+        devopsPvVO2.setType("alertManager")
+        devopsPvVO2.setName("888")
+        list.add(devopsPvVO)
+        list.add(devopsPvVO1)
+        list.add(devopsPvVO2)
+
+        devopsPrometheusVO.setGrafanaDomain("abc.dfg")
+        devopsPrometheusVO.setPvs(list)
         HttpHeaders headers = new HttpHeaders()
         HttpEntity<DevopsPrometheusVO> requestEntity = new HttpEntity<DevopsPrometheusVO>(devopsPrometheusVO,headers)
         when:

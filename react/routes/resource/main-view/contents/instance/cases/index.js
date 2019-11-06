@@ -51,7 +51,7 @@ const InstanceEvent = ({ index, jobPodStatus, name, log, flag, event, intlPrefix
     <div key={index} className="operation-content-step">
       <div className="content-step-title">
         {jobPodStatus === 'running'
-          ? <Progress strokeWidth={10} width={13} type="loading" />
+          ? <Progress type="loading" />
           : <Icon
             type="wait_circle"
             className={`content-step-icon-${jobPodStatus}`}

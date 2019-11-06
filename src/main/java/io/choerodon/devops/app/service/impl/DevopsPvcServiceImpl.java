@@ -219,6 +219,11 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
         }
     }
 
+    @Override
+    public DevopsPvcDTO queryById(Long pvcId) {
+        return devopsPvcMapper.selectByPrimaryKey(pvcId);
+    }
+
     private DevopsPvcDTO handlePvc(DevopsPvcReqVO devopsPvcReqVO, Long projectId) {
         baseCheckName(devopsPvcReqVO.getName(), devopsPvcReqVO.getEnvId());
 
