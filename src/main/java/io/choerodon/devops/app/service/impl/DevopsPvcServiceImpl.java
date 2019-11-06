@@ -226,15 +226,17 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
         DevopsPrometheusDTO devopsPrometheusDTO = devopsClusterResourceService.queryPrometheusDTO(environmentDTO.getClusterId());
         List<Long> pvcIds = JSON.parseArray(devopsPrometheusDTO.getPvcId(), Long.class);
         List<DevopsPvcDTO> devopsPvcDTOS = new ArrayList<>();
-        for (Long pvcId : pvcIds) {
-            DevopsPvcDTO devopsPvc = queryById(pvcId);
-            if (pvcId.equals(devopsPvcReqVO.getId()) && PvcStatus.PENDING.getStatus().equals(devopsPvc.getStatus())) {
-                devopsPvcDTOS.add(devopsPvc);
+        if (pvcIds.contains(devopsPvcReqVO.getId())) {
+            for (Long pvcId : pvcIds) {
+                DevopsPvcDTO devopsPvc = queryById(pvcId);
+                if (PvcStatus.PENDING.getStatus().equals(devopsPvc.getStatus())) {
+                    devopsPvcDTOS.add(devopsPvc);
+                }
             }
-        }
-        if (devopsPvcDTOS.size() == 3) {
-            devopsPrometheusDTO.setDevopsPvcDTO(devopsPvcDTOS);
-            devopsClusterResourceService.deployPrometheus(environmentDTO.getClusterId(), devopsPrometheusDTO);
+            if (devopsPvcDTOS.size() == 3) {
+                devopsPrometheusDTO.setDevopsPvcDTO(devopsPvcDTOS);
+                devopsClusterResourceService.deployPrometheus(environmentDTO.getClusterId(), devopsPrometheusDTO);
+            }
         }
 
         return devopsPvcDTO;

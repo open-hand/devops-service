@@ -1,6 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import com.alibaba.fastjson.JSON;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -24,8 +23,6 @@ import io.choerodon.devops.infra.enums.ClusterResourceOperateType;
 import io.choerodon.devops.infra.enums.ClusterResourceStatus;
 import io.choerodon.devops.infra.enums.ClusterResourceType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
-import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.GenerateUUID;
@@ -69,18 +66,6 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
 
     @Autowired
     private DevopsEnvCommandService devopsEnvCommandService;
-
-    @Autowired
-    private UserAttrService userAttrService;
-
-    @Autowired
-    private ClusterConnectionHandler clusterConnectionHandler;
-
-    @Autowired
-    private DevopsEnvFileResourceService devopsEnvFileResourceService;
-
-    @Autowired
-    private GitlabServiceClientOperator gitlabServiceClientOperator;
 
     @Autowired
     private DevopsClusterService devopsClusterService;
@@ -291,8 +276,8 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         }
 
         DevopsPrometheusDTO devopsPrometheusDTO = prometheusVoToDto(devopsPrometheusVO);
-        DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceService.queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
-        if (devopsClusterResourceDTO != null) {
+        DevopsClusterResourceDTO devopsClusterResource = devopsClusterResourceService.queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
+        if (devopsClusterResource != null) {
             throw new CommonException("prometheus.already.exist");
         }
 
@@ -310,6 +295,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         if (devopsPrometheusMapper.insertSelective(devopsPrometheusDTO) != 1) {
             throw new CommonException("error.insert.prometheus");
         }
+        DevopsClusterResourceDTO devopsClusterResourceDTO = new DevopsClusterResourceDTO();
         devopsClusterResourceDTO.setClusterId(clusterId);
         devopsClusterResourceDTO.setConfigId(devopsPrometheusDTO.getId());
         devopsClusterResourceDTO.setName(devopsClusterDTO.getName());
@@ -321,15 +307,15 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void updatePromteheus(Long projectId, Long clusterId, DevopsPrometheusVO devopsPrometheusVO) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
         if (devopsClusterDTO.getSystemEnvId() == null) {
             throw new CommonException("no.cluster.system.env");
         }
         DevopsPrometheusDTO devopsPrometheusDTO = prometheusVoToDto(devopsPrometheusVO);
-        DevopsClusterResourceDTO devopsClusterResource = devopsClusterResourceService.queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
         if (devopsPrometheusVO.getId() != null) {
-            Long objectVersionNumber = devopsPrometheusMapper.selectByPrimaryKey(devopsClusterResource.getConfigId()).getObjectVersionNumber();
+            Long objectVersionNumber = devopsPrometheusMapper.selectByPrimaryKey(devopsPrometheusDTO.getId()).getObjectVersionNumber();
             devopsPrometheusDTO.setObjectVersionNumber(objectVersionNumber);
             if (devopsPrometheusMapper.updateByPrimaryKey(devopsPrometheusDTO) != 1) {
                 throw new CommonException("error.update.prometheus");
@@ -344,7 +330,9 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
                 pvcIds.add(pvcRespVO.getId());
             });
             devopsPrometheusDTO.setPvcId(JSON.toJSON(pvcIds).toString());
+            devopsPrometheusDTO.setClusterId(clusterId);
             devopsPrometheusMapper.updateByPrimaryKeySelective(devopsPrometheusDTO);
+            DevopsClusterResourceDTO devopsClusterResource = devopsClusterResourceService.queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
             devopsClusterResource.setOperate(ClusterResourceOperateType.UPGRADE.getType());
             devopsClusterResourceService.baseUpdate(devopsClusterResource);
         }
@@ -482,12 +470,12 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     public void deployPrometheus(Long clusterId,DevopsPrometheusDTO devopsPrometheusDTO) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
         DevopsClusterResourceDTO clusterResourceDTO = queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
-        AppServiceInstanceDTO appServiceInstanceDTO = null;
+        AppServiceInstanceDTO appServiceInstanceDTO=null;
         if (ClusterResourceOperateType.INSTALL.getType().equals(clusterResourceDTO.getOperate())) {
             appServiceInstanceDTO = componentReleaseService.createReleaseForPrometheus(devopsClusterDTO.getSystemEnvId(), devopsPrometheusDTO);
         }
         if (ClusterResourceOperateType.UPGRADE.getType().equals(clusterResourceDTO.getOperate())) {
-            appServiceInstanceDTO = componentReleaseService.createReleaseForPrometheus(devopsClusterDTO.getSystemEnvId(), devopsPrometheusDTO);
+            appServiceInstanceDTO = componentReleaseService.updateReleaseForPrometheus(devopsPrometheusDTO,clusterResourceDTO.getObjectId(),devopsClusterDTO.getSystemEnvId());
         }
         clusterResourceDTO.setObjectId(appServiceInstanceDTO.getId());
         devopsPrometheusMapper.updateByPrimaryKeySelective(devopsPrometheusDTO);
