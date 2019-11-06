@@ -62,7 +62,7 @@ public class DevopsPvServiceImpl implements DevopsPvServcie {
     @Override
     public void createPv(DevopsPvDTO devopsPvDTO) {
         if (devopsPvMapper.insertSelective(devopsPvDTO) != 1){
-            throw new CommonException("error.pv.add.error");
+            throw new CommonException("error.pv.create.error");
         }
     }
 
@@ -140,7 +140,7 @@ public class DevopsPvServiceImpl implements DevopsPvServcie {
     public List<ProjectReqVO> listNonRelatedProjects(Long projectId, Long pvId) {
         DevopsPvDTO devopsPvDTO = baseQueryById(pvId);
         if (devopsPvDTO == null){
-            throw new CommonException("error.pv.notexists");
+            throw new CommonException("error.pv.not.exists");
         }
 
         ProjectDTO iamProjectDTO = baseServiceClientOperator.queryIamProjectById(projectId);

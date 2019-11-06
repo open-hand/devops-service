@@ -43,7 +43,7 @@ public class DevopsPvController {
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "分页条件查询pv列表")
-    @GetMapping("/querypv")
+    @PostMapping("/page_by_options")
     public ResponseEntity<PageInfo<DevopsPvVO>> queryAll(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id")Long projectId,
@@ -67,7 +67,7 @@ public class DevopsPvController {
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "创建pv")
-    @PostMapping("/createpv")
+    @PostMapping
     public ResponseEntity createPv(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id")Long projectId,
@@ -81,7 +81,7 @@ public class DevopsPvController {
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "校验pv的名称是否满足所选集群下唯一")
-    @GetMapping("check_pv_name")
+    @GetMapping("check_name")
     public ResponseEntity checkPvName(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id")Long projectId,
