@@ -356,19 +356,19 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     @Override
     public ClusterResourceVO queryDeployProcess(Long clusterId) {
         DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceMapper.queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
+        ClusterResourceVO clusterResourceVO = new ClusterResourceVO();
+        if(devopsClusterResourceDTO.getObjectId()==null){
+            //创建pvc中
+            clusterResourceVO.setStatus(STATUS_CREATED);
+        }
         AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQuery(devopsClusterResourceDTO.getObjectId());
         DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(appServiceInstanceDTO.getCommandId());
-
-        ClusterResourceVO clusterResourceVO = new ClusterResourceVO();
         clusterResourceVO.setType(ClusterResourceType.PROMETHEUS.getType());
         if (!ObjectUtils.isEmpty(devopsEnvCommandDTO.getSha())) {
             clusterResourceVO.setStatus(STATUS_CREATED);
         }
         if (appServiceInstanceDTO.getStatus().equals(STATUS_RUNNING)) {
             clusterResourceVO.setStatus(STATUS_RUNNING);
-        } else {
-            clusterResourceVO.setMessage(devopsEnvCommandDTO.getError());
-            clusterResourceVO.setStatus(STATUS_FAIL);
         }
         return clusterResourceVO;
     }
@@ -422,9 +422,6 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         List<DevopsEnvPodVO> devopsEnvPodDTOS = ConvertUtils.convertList(devopsEnvPodService.baseListByInstanceId(appServiceInstanceDTO.getId()), DevopsEnvPodVO.class);
         DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(appServiceInstanceDTO.getCommandId());
 
-        if(appServiceInstanceDTO==null){
-            clusterResourceVO.setStatus(ClusterResourceStatus.PROCESSING.getStatus());
-        }
         if (STATUS_CREATED.equals(clusterResourceVO.getStatus())) {
             clusterResourceVO.setStatus(ClusterResourceStatus.PROCESSING.getStatus());
         }
