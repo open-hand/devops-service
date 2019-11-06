@@ -526,7 +526,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
             //从文件中读出对象,序列化为K8S对象
             objectPath = convertFileToK8sObjects(operationFiles, path,
-                    EnvironmentType.valueOf(devopsEnvironmentDTO.getType()),
+                    EnvironmentType.forValue(devopsEnvironmentDTO.getType()),
                     resourceKindMap, devopsEnvironmentDTO.getId(),
                     new ArrayList<>(beforeSyncDelete));
 
