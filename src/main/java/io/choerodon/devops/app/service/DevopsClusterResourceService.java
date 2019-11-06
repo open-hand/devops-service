@@ -74,4 +74,6 @@ public interface DevopsClusterResourceService {
     Boolean queryCertManagerByEnvId(Long envId);
 
      void deployPrometheus(Long clusterId, DevopsPvcReqVO pvc);
+
+    void deletePvc(Long clusterId);
 }

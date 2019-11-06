@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -92,8 +93,10 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
 
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
+
     @Autowired
     private DevopsPvcService devopsPvcService;
+
     @Autowired
     private DevopsPvServcie devopsPvServcie;
 
@@ -396,11 +399,24 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQuery(devopsClusterResourceDTO.getObjectId());
         //删除操作的状态
         if (ClusterResourceOperateType.UNINSTALL.getType().equals(devopsClusterResourceDTO.getOperate())) {
-            //查看promtheus对应的实例是否存在，不存在即为已经删除，再删除promtheus
+            //查看promtheus对应的实例是否存在，不存在即为已经删除
             if (appServiceInstanceDTO == null) {
-                basedeletePromtheus(clusterId);
-                clusterResourceVO.setStatus(ClusterResourceStatus.UNINSTALL.getStatus());
-                return clusterResourceVO;
+                //验证pvc是否存在,三个pvc都不存在才去删除prometheus
+                DevopsPrometheusDTO devopsPrometheusDTO = devopsPrometheusMapper.selectByPrimaryKey(devopsClusterResourceDTO.getConfigId());
+                List<Long> pvcIds = JSON.parseArray(devopsPrometheusDTO.getPvcId(), Long.class);
+                Boolean isExist = false;
+                for (Long pvcId:pvcIds) {
+                    DevopsPvcDTO devopsPvcDTO = devopsPvcService.queryById(pvcId);
+                    if(!ObjectUtils.isEmpty(devopsPvcDTO)){
+                        isExist = true;
+                        break;
+                    }
+                }
+                if(!isExist) {
+                    basedeletePromtheus(clusterId);
+                    clusterResourceVO.setStatus(ClusterResourceStatus.UNINSTALL.getStatus());
+                    return clusterResourceVO;
+                 }
             }
             clusterResourceVO.setStatus(ClusterResourceStatus.PROCESSING.getStatus());
             clusterResourceVO.setOperate(devopsClusterResourceDTO.getOperate());
@@ -479,6 +495,21 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
             return false;
         }
         return true;
+    }
+
+    @Override
+    public void deletePvc(Long clusterId) {
+        DevopsClusterResourceDTO devopsClusterResourceDTO = queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
+        DevopsPrometheusDTO devopsPrometheusDTO = devopsPrometheusMapper.selectByPrimaryKey(devopsClusterResourceDTO.getConfigId());
+        DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
+        // 查询pvcId,并调用删除pvc的方法
+        List<Long> pvcIds = JSON.parseArray(devopsPrometheusDTO.getPvcId(), Long.class);
+        if(!CollectionUtils.isEmpty(pvcIds)){
+          // 删除pvc
+            for (Long pvcId:pvcIds) {
+                devopsPvcService.delete(devopsClusterDTO.getSystemEnvId(),pvcId);
+            }
+        }
     }
 
     private DevopsPrometheusDTO prometheusVoToDto(DevopsPrometheusVO prometheusVo) {

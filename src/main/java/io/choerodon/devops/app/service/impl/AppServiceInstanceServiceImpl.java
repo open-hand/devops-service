@@ -1,28 +1,10 @@
 package io.choerodon.devops.app.service.impl;
 
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.text.DecimalFormat;
-import java.util.*;
-import java.util.stream.Collectors;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.env.YamlPropertySourceLoader;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -51,6 +33,23 @@ import io.choerodon.devops.infra.mapper.DevopsEnvAppServiceMapper;
 import io.choerodon.devops.infra.mapper.DevopsProjectMapper;
 import io.choerodon.devops.infra.mapper.PipelineAppServiceDeployMapper;
 import io.choerodon.devops.infra.util.*;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.env.YamlPropertySourceLoader;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.text.DecimalFormat;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
@@ -144,6 +143,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     private DevopsProjectMapper devopsProjectMapper;
     @Autowired
     private DevopsHarborUserService devopsHarborUserService;
+    @Autowired
+    private DevopsClusterService devopsClusterService;
 
     @Override
     public AppServiceInstanceInfoVO queryInfoById(Long instanceId) {
@@ -857,7 +858,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
                 .baseQueryByEnvIdAndResourceId(devopsEnvironmentDTO.getId(), instanceId, C7NHELM_RELEASE);
-
         //如果文件对象对应关系不存在，证明没有部署成功，删掉gitops文件,删掉资源
         if (devopsEnvFileResourceDTO == null) {
             appServiceInstanceMapper.deleteByPrimaryKey(instanceId);
@@ -865,7 +865,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             appServiceInstanceMapper.deleteInstanceRelInfo(instanceId);
             //删除集群组件prometheus
             if (deletePrometheus) {
-                devopsClusterResourceService.basedeletePromtheus(devopsEnvironmentDTO.getClusterId());
+                devopsClusterResourceService.deletePvc(devopsEnvironmentDTO.getClusterId());
             }
             if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER,
                     RELEASE_PREFIX + appServiceInstanceDTO.getCode() + YAML_SUFFIX)) {
@@ -885,7 +885,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 appServiceInstanceMapper.deleteInstanceRelInfo(instanceId);
                 devopsEnvFileResourceService.baseDeleteById(devopsEnvFileResourceDTO.getId());
                 if (deletePrometheus) {
-                    devopsClusterResourceService.basedeletePromtheus(devopsEnvironmentDTO.getClusterId());
+                    devopsClusterResourceService.deletePvc(devopsEnvironmentDTO.getClusterId());
                 }
                 return;
             }
@@ -947,6 +947,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         devopsDeployRecordService.deleteRelatedRecordOfInstance(instanceId);
         appServiceInstanceMapper.deleteInstanceRelInfo(instanceId);
         appServiceInstanceMapper.deleteByPrimaryKey(instanceId);
+        devopsClusterResourceService.deletePvc(devopsEnvironmentDTO.getClusterId());
     }
 
 
