@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service;
 
 import com.github.pagehelper.PageInfo;
+
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.DevopsPvcReqVO;
 import io.choerodon.devops.api.vo.DevopsPvcRespVO;
@@ -52,6 +53,11 @@ public interface DevopsPvcService {
      */
     DevopsPvcDTO createOrUpdateByGitOps(Long userId, DevopsPvcReqVO devopsPvcReqVO);
 
+    /**
+     * GitOps逻辑中删除pvc
+     *
+     * @param pvcId pvc的ID
+     */
     void deleteByGitOps(Long pvcId);
 
     void baseUpdate(DevopsPvcDTO devopsPvcDTO);

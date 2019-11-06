@@ -31,4 +31,6 @@ public class GitLabConstants {
      * choerodon系统配置库的项目名格式为: clusterCode-envCode
      */
     public static final String SYSTEM_ENV_GITLAB_PROJECT_CODE_FORMAT = "%s-%s";
+
+    public static final String MASTER = "master";
 }

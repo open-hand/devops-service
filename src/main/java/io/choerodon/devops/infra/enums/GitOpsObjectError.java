@@ -72,6 +72,7 @@ public enum GitOpsObjectError {
     PERSISTENT_VOLUME_CLAIM_METADATA_NOT_FOUND("pvc.metadata.not.found"),
     PERSISTENT_VOLUME_CLAIM_NAME_NOT_FOUND("pvc.name.not.found"),
     PERSISTENT_VOLUME_CLAIM_ACCESS_MODE_NOT_FOUND("pvc.access.mode.not.found"),
+    PERSISTENT_VOLUME_CLAIM_ACCESS_MODE_SIZE_NOT_SUPPORTED("pvc.access.mode.size.not.supported"),
     PERSISTENT_VOLUME_CLAIM_RESOURCE_REQUEST_NOT_FOUND("pvc.resource.request.not.found"),
     OBJECT_EXIST("object.exist"),
     FILE_NOT_YAML("error.file.not.yaml.format"),

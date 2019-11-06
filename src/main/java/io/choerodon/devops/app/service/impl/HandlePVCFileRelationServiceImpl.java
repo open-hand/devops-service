@@ -24,6 +24,7 @@ import io.choerodon.devops.infra.dto.DevopsPvcDTO;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.infra.mapper.DevopsPvcMapper;
+import io.choerodon.devops.infra.util.GitOpsUtil;
 import io.choerodon.devops.infra.util.GitUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 
@@ -45,7 +46,7 @@ public class HandlePVCFileRelationServiceImpl implements HandlerObjectFileRelati
     private DevopsEnvFileResourceService devopsEnvFileResourceService;
 
 
-    private void updatePvc(Map<String, String> objectPath, Long envId, List<V1PersistentVolumeClaim> updatePvcs, String path, Long userId) {
+    private void updatePersistentVolumeClaims(Map<String, String> objectPath, Long envId, List<V1PersistentVolumeClaim> updatePvcs, String path, Long userId) {
         updatePvcs.forEach(pvc -> {
             String filePath = "";
             try {
@@ -89,7 +90,7 @@ public class HandlePVCFileRelationServiceImpl implements HandlerObjectFileRelati
                 && Objects.equals(dbRecord.getRequestResource(), update.getRequestResource());
     }
 
-    private void addPvcs(Map<String, String> objectPath, Long envId, List<V1PersistentVolumeClaim> pvcs, String path, Long userId) {
+    private void addPersistentVolumeClaims(Map<String, String> objectPath, Long envId, List<V1PersistentVolumeClaim> pvcs, String path, Long userId) {
         pvcs.forEach(pvc -> {
             String filePath = "";
             try {
@@ -154,21 +155,15 @@ public class HandlePVCFileRelationServiceImpl implements HandlerObjectFileRelati
                 }).collect(Collectors.toList());
 
 
-        List<V1PersistentVolumeClaim> addPvcs = new ArrayList<>();
-        List<V1PersistentVolumeClaim> updatePvcs = new ArrayList<>();
-        claims.stream().forEach(pvc -> {
-            if (beforePvcs.contains(pvc.getMetadata().getName())) {
-                updatePvcs.add(pvc);
-                beforePvcs.remove(pvc.getMetadata().getName());
-            } else {
-                addPvcs.add(pvc);
-            }
-        });
+        List<V1PersistentVolumeClaim> pvcToAdd = new ArrayList<>();
+        List<V1PersistentVolumeClaim> pvcToUpdate = new ArrayList<>();
+
+        GitOpsUtil.pickCUDResource(beforePvcs, claims, pvcToAdd, pvcToUpdate, pvc -> pvc.getMetadata().getName());
 
         //新增pvc
-        addPvcs(objectPath, envId, addPvcs, path, userId);
+        addPersistentVolumeClaims(objectPath, envId, pvcToAdd, path, userId);
         //更新pvc
-        updatePvc(objectPath, envId, updatePvcs, path, userId);
+        updatePersistentVolumeClaims(objectPath, envId, pvcToUpdate, path, userId);
         //删除pvc,和文件对象关联关系
         beforePvcs.forEach(pvcName -> {
             DevopsPvcDTO devopsPvcDTO = devopsPvcService.queryByEnvIdAndName(envId, pvcName);

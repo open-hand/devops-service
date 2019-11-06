@@ -90,6 +90,9 @@ public class ConvertV1PersistentVolumeClaimServiceImpl extends ConvertK8sObjectS
         if (claim.getSpec() == null || CollectionUtils.isEmpty(claim.getSpec().getAccessModes())) {
             throw new GitOpsExplainException(
                     GitOpsObjectError.PERSISTENT_VOLUME_CLAIM_ACCESS_MODE_NOT_FOUND.getError(), filePath);
+        } else if (claim.getSpec().getAccessModes().size() > 1) {
+            throw new GitOpsExplainException(
+                    GitOpsObjectError.PERSISTENT_VOLUME_CLAIM_ACCESS_MODE_SIZE_NOT_SUPPORTED.getError(), filePath);
         }
 
         if (claim.getSpec().getResources() == null || claim.getSpec().getResources().getRequests() == null) {
