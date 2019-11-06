@@ -49,9 +49,9 @@ public interface DevopsClusterResourceService {
      */
     Boolean checkCertManager(Long clusterId);
 
-    void createPromteheus(Long clusterId, DevopsPrometheusVO prometheusVo);
+    void createPromteheus(Long projectId,Long clusterId, DevopsPrometheusVO prometheusVo);
 
-    void updatePromteheus(Long clusterId, DevopsPrometheusVO prometheusVo);
+    void updatePromteheus(Long projectId,Long clusterId, DevopsPrometheusVO prometheusVo);
 
     DevopsPrometheusVO queryPrometheus(Long clusterId);
 

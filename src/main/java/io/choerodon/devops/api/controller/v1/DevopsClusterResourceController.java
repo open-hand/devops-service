@@ -80,11 +80,13 @@ public class DevopsClusterResourceController {
     @ApiOperation(value = "集群下安装prometheus")
     @PostMapping("/prometheus/create")
     public ResponseEntity create(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群id", required = true)
             @RequestParam(name = "cluster_id", required = true) Long clusterId,
             @ApiParam(value = "请求体", required = true)
             @RequestBody DevopsPrometheusVO prometheusVo) {
-        devopsClusterResourceService.createPromteheus(clusterId,prometheusVo);
+        devopsClusterResourceService.createPromteheus(projectId,clusterId,prometheusVo);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
@@ -93,11 +95,13 @@ public class DevopsClusterResourceController {
     @ApiOperation(value = "升级prometheus")
     @PutMapping("/prometheus/update")
     public ResponseEntity update(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群id", required = true)
             @RequestParam(name = "cluster_id", required = true) Long clusterId,
             @ApiParam(value = "请求体", required = true)
             @RequestBody DevopsPrometheusVO prometheusVo) {
-        devopsClusterResourceService.updatePromteheus(clusterId,prometheusVo);
+        devopsClusterResourceService.updatePromteheus(projectId,clusterId,prometheusVo);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
