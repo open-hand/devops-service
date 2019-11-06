@@ -3,7 +3,7 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 
 import com.github.pagehelper.PageInfo;
-import io.choerodon.base.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.devops.api.vo.OrganizationSimplifyVO;
 import io.choerodon.devops.api.vo.ProjectCreateVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
@@ -35,11 +35,11 @@ public interface IamService {
 
     IamUserDTO queryByEmail(Long projectId, String email);
 
-    PageInfo<IamUserDTO> pagingQueryUsersByRoleIdOnProjectLevel(PageRequest pageRequest,
+    PageInfo<IamUserDTO> pagingQueryUsersByRoleIdOnProjectLevel(Pageable pageable,
                                                                 RoleAssignmentSearchVO roleAssignmentSearchVO, Long roleId,
                                                                 Long projectId, Boolean doPage);
 
-    PageInfo<UserWithRoleVO> queryUserPermissionByProjectId(Long projectId, PageRequest pageRequest, Boolean doPage);
+    PageInfo<UserWithRoleVO> queryUserPermissionByProjectId(Long projectId, Pageable pageable, Boolean doPage);
 
     List<ProjectWithRoleVO> listProjectWithRoleDTO(Long userId);
 

@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.github.pagehelper.PageInfo;
 
-import io.choerodon.base.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.eventhandler.payload.EnvGitlabProjectPayload;
 import io.choerodon.devops.app.eventhandler.payload.GitlabProjectPayload;
@@ -148,11 +148,11 @@ public interface DevopsEnvironmentService {
      * 分页查询环境下用户权限
      *
      * @param projectId   项目id
-     * @param pageRequest 分页参数
+     * @param pageable 分页参数
      * @param envId       环境id
      * @return page
      */
-    PageInfo<DevopsUserPermissionVO> pageUserPermissionByEnvId(Long projectId, PageRequest pageRequest,
+    PageInfo<DevopsUserPermissionVO> pageUserPermissionByEnvId(Long projectId, Pageable pageable,
                                                                String params, Long envId);
 
     /**

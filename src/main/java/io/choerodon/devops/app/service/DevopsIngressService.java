@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.github.pagehelper.PageInfo;
 
-import io.choerodon.base.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.devops.api.vo.DevopsIngressVO;
 import io.choerodon.devops.app.eventhandler.payload.IngressSagaPayload;
 import io.choerodon.devops.infra.dto.DevopsIngressDTO;
@@ -105,17 +105,17 @@ public interface DevopsIngressService {
      * 环境总览域名查询
      *
      * @param projectId   项目Id
-     * @param pageRequest 分页参数
+     * @param pageable 分页参数
      * @param params      模糊查询参数
      * @return Page
      */
-    PageInfo<DevopsIngressVO> pageByEnv(Long projectId, Long envId, PageRequest pageRequest, String params);
+    PageInfo<DevopsIngressVO> pageByEnv(Long projectId, Long envId, Pageable pageable, String params);
 
     void operateIngressBySaga(IngressSagaPayload ingressSagaPayload);
 
     DevopsIngressDTO baseQuery(Long ingressId);
 
-    PageInfo<DevopsIngressVO> basePageByOptions(Long projectId, Long envId, Long serviceId, PageRequest pageRequest, String params);
+    PageInfo<DevopsIngressVO> basePageByOptions(Long projectId, Long envId, Long serviceId, Pageable pageable, String params);
 
     List<DevopsIngressDTO> baseListByEnvId(Long envId);
 

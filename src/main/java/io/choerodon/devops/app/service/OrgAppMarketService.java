@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.github.pagehelper.PageInfo;
 
-import io.choerodon.base.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.devops.api.vo.iam.AppServiceAndVersionVO;
 import io.choerodon.devops.app.eventhandler.payload.*;
 
@@ -18,12 +18,12 @@ public interface OrgAppMarketService {
      * 根据appId 查询应用服务
      *
      * @param appId
-     * @param pageRequest
+     * @param pageable
      * @param params
      * @return
      */
     PageInfo<AppServiceUploadPayload> pageByAppId(Long appId,
-                                                  PageRequest pageRequest,
+                                                  Pageable pageable,
                                                   String params);
 
     /**

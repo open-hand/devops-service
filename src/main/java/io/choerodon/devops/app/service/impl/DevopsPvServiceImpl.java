@@ -2,7 +2,7 @@ package io.choerodon.devops.app.service.impl;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import io.choerodon.base.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsPvPermissionUpateVO;
 import io.choerodon.devops.api.vo.DevopsPvVO;
@@ -37,11 +37,11 @@ public class DevopsPvServiceImpl implements DevopsPvServcie {
     DevopsPvProPermissionService devopsPvProPermissionService;
 
     @Override
-    public PageInfo<DevopsPvVO> basePagePvByOptions(Boolean doPage, PageRequest pageRequest, String params) {
+    public PageInfo<DevopsPvVO> basePagePvByOptions(Boolean doPage, Pageable pageable, String params) {
         // search_param 根据确定的键值对查询
         // params 是遍历字段模糊查询
         Map<String, Object> searchParamMap = TypeUtil.castMapParams(params);
-        return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize())
+        return PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize())
                 .doSelectPageInfo(() -> devopsPvMapper.listPvByOptions(
                         TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
                         TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS))

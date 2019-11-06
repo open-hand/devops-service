@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import io.choerodon.base.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsMergeRequestVO;
 import io.choerodon.devops.app.service.DevopsMergeRequestService;
@@ -40,11 +40,11 @@ public class DevopsMergeRequestServiceImpl implements DevopsMergeRequestService 
     }
 
     @Override
-    public PageInfo<DevopsMergeRequestDTO> basePageByOptions(Integer gitlabProjectId, String state, PageRequest pageRequest) {
+    public PageInfo<DevopsMergeRequestDTO> basePageByOptions(Integer gitlabProjectId, String state, Pageable pageable) {
         DevopsMergeRequestDTO devopsMergeRequestDTO = new DevopsMergeRequestDTO();
         devopsMergeRequestDTO.setGitlabProjectId(gitlabProjectId.longValue());
         devopsMergeRequestDTO.setState(state);
-        return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() ->
+        return PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable)).doSelectPageInfo(() ->
                 devopsMergeRequestMapper.select(devopsMergeRequestDTO));
     }
 

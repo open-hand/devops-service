@@ -2,7 +2,7 @@ package io.choerodon.devops.app.service;
 
 import com.github.pagehelper.PageInfo;
 
-import io.choerodon.base.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.devops.api.vo.DevopsDeployValueVO;
 import io.choerodon.devops.infra.dto.DevopsDeployValueDTO;
 
@@ -38,11 +38,11 @@ public interface DevopsDeployValueService {
      * @param projectId    项目id
      * @param appServiceId 应用服务id
      * @param envId        环境id
-     * @param pageRequest  分页参数
+     * @param pageable  分页参数
      * @param params       查询参数
      * @return 分页的部署配置
      */
-    PageInfo<DevopsDeployValueVO> pageByOptions(Long projectId, Long appServiceId, Long envId, PageRequest pageRequest, String params);
+    PageInfo<DevopsDeployValueVO> pageByOptions(Long projectId, Long appServiceId, Long envId, Pageable pageable, String params);
 
     /**
      * 项目下查询配置详情
@@ -81,9 +81,9 @@ public interface DevopsDeployValueService {
      */
     Boolean checkDelete(Long projectId, Long valueId);
 
-    PageInfo<DevopsDeployValueDTO> basePageByOptionsWithOwner(Long projectId, Long appServiceId, Long envId, Long userId, PageRequest pageRequest, String params);
+    PageInfo<DevopsDeployValueDTO> basePageByOptionsWithOwner(Long projectId, Long appServiceId, Long envId, Long userId, Pageable pageable, String params);
 
-    PageInfo<DevopsDeployValueDTO> basePageByOptionsWithMember(Long projectId, Long appServiceId, Long envId, Long userId, PageRequest pageRequest, String params);
+    PageInfo<DevopsDeployValueDTO> basePageByOptionsWithMember(Long projectId, Long appServiceId, Long envId, Long userId, Pageable pageable, String params);
 
     DevopsDeployValueDTO baseCreateOrUpdate(DevopsDeployValueDTO pipelineRecordE);
 

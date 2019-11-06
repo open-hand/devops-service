@@ -5,7 +5,7 @@ import java.util.Optional;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.annotation.Permission;
-import io.choerodon.base.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
@@ -35,7 +35,7 @@ public class DevopsEnvPodController {
      * 分页查询环境下pod
      *
      * @param projectId   项目id
-     * @param pageRequest 分页参数
+     * @param pageable 分页参数
      * @param searchParam 查询参数
      * @return page of DevopsEnvironmentPodVO
      */
@@ -49,7 +49,7 @@ public class DevopsEnvPodController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
-            @ApiIgnore PageRequest pageRequest,
+            @ApiIgnore Pageable pageable,
             @ApiParam(value = "环境id")
             @RequestParam(value = "env_id", required = false) Long envId,
             @ApiParam(value = "应用id")
@@ -59,7 +59,7 @@ public class DevopsEnvPodController {
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String searchParam) {
         return Optional.ofNullable(devopsEnvPodService.pageByOptions(
-                projectId, envId, appServiceId, instanceId, pageRequest, searchParam))
+                projectId, envId, appServiceId, instanceId, pageable, searchParam))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.application.pod.query"));
     }

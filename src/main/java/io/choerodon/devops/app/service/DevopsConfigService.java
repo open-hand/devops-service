@@ -5,7 +5,7 @@ import java.util.Set;
 
 import com.github.pagehelper.PageInfo;
 
-import io.choerodon.base.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.devops.api.vo.DefaultConfigVO;
 import io.choerodon.devops.api.vo.DevopsConfigRepVO;
 import io.choerodon.devops.api.vo.DevopsConfigVO;
@@ -64,7 +64,7 @@ public interface DevopsConfigService {
 
     DevopsConfigDTO baseCheckByName(String name);
 
-    PageInfo<DevopsConfigDTO> basePageByOptions(Long projectId, PageRequest pageRequest, String params);
+    PageInfo<DevopsConfigDTO> basePageByOptions(Long projectId, Pageable pageable, String params);
 
     void baseDelete(Long id);
 

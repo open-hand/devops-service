@@ -2,7 +2,7 @@ package io.choerodon.devops.app.service;
 
 import com.github.pagehelper.PageInfo;
 
-import io.choerodon.base.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.devops.api.vo.AppServiceShareRuleVO;
 
 /**
@@ -12,7 +12,7 @@ public interface AppServiceShareRuleService {
 
     AppServiceShareRuleVO createOrUpdate(Long projectId, AppServiceShareRuleVO appServiceShareRuleVO);
 
-    PageInfo<AppServiceShareRuleVO> pageByOptions(Long projectId, Long appServiceId, PageRequest pageRequest, String params);
+    PageInfo<AppServiceShareRuleVO> pageByOptions(Long projectId, Long appServiceId, Pageable pageable, String params);
 
     AppServiceShareRuleVO query(Long projectId, Long ruleId);
 

@@ -1,31 +1,28 @@
 package io.choerodon.devops.api.controller.v1;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
 import com.github.pagehelper.PageInfo;
-
 import io.choerodon.base.annotation.Permission;
-import io.choerodon.base.domain.PageRequest;
-import io.choerodon.base.domain.Sort;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.app.eventhandler.payload.DevOpsAppImportServicePayload;
 import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.infra.enums.GitPlatformType;
-import io.choerodon.mybatis.annotation.SortDefault;
 import io.choerodon.swagger.annotation.CustomPageRequest;
-
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
+
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * Created by younger on 2018/4/4.
@@ -172,7 +169,7 @@ public class AppServiceController {
      * @param projectId   项目id
      * @param isActive    项目是否启用
      * @param appMarket   服务市场导入
-     * @param pageRequest 分页参数
+     * @param pageable 分页参数
      * @param params      参数
      * @return Page
      */
@@ -195,11 +192,11 @@ public class AppServiceController {
             @ApiParam(value = "是否分页")
             @RequestParam(value = "doPage", required = false) Boolean doPage,
             @ApiParam(value = "分页参数")
-            @ApiIgnore PageRequest pageRequest,
+            @ApiIgnore Pageable pageable,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(
-                applicationServiceService.pageByOptions(projectId, isActive, hasVersion, appMarket, type, doPage, pageRequest, params))
+                applicationServiceService.pageByOptions(projectId, isActive, hasVersion, appMarket, type, doPage, pageable, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.app.service.baseList"));
     }
@@ -223,8 +220,8 @@ public class AppServiceController {
             @ApiParam(value = "服务 Id")
             @RequestParam(value = "app_service_id", required = false) Long appServiceId,
             @ApiParam(value = "分页参数")
-            @ApiIgnore PageRequest pageRequest) {
-        return Optional.ofNullable(applicationServiceService.pageByIds(projectId, envId, appServiceId, pageRequest))
+            @ApiIgnore Pageable pageable) {
+        return Optional.ofNullable(applicationServiceService.pageByIds(projectId, envId, appServiceId, pageable))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.app.service.query.ids"));
     }
@@ -387,7 +384,7 @@ public class AppServiceController {
      * 项目下查询已经启用有版本未发布的服务
      *
      * @param projectId   项目id
-     * @param pageRequest 分页参数
+     * @param pageable 分页参数
      * @param params      查询参数
      * @return Page
      */
@@ -399,10 +396,10 @@ public class AppServiceController {
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
-            @ApiIgnore PageRequest pageRequest,
+            @ApiIgnore Pageable pageable,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(applicationServiceService.pageByActiveAndPubAndVersion(projectId, pageRequest, params))
+        return Optional.ofNullable(applicationServiceService.pageByActiveAndPubAndVersion(projectId, pageable, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_APPLICATION_GET));
     }
@@ -411,7 +408,7 @@ public class AppServiceController {
      * 项目下分页查询代码仓库
      *
      * @param projectId   项目id
-     * @param pageRequest 分页参数
+     * @param pageable 分页参数
      * @param params      参数
      * @return Page
      */
@@ -426,11 +423,11 @@ public class AppServiceController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
             @SortDefault(value = "id", direction = Sort.Direction.DESC)
-            @ApiIgnore PageRequest pageRequest,
+            @ApiIgnore Pageable pageable,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(
-                applicationServiceService.pageCodeRepository(projectId, pageRequest, params))
+                applicationServiceService.pageCodeRepository(projectId, pageable, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_APPLICATION_GET));
     }
@@ -580,11 +577,11 @@ public class AppServiceController {
             @ApiParam(value = "是否分页")
             @RequestParam(value = "doPage", required = false, defaultValue = "true") Boolean doPage,
             @ApiParam(value = "分页参数")
-            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
+            @SortDefault(value = "id", direction = Sort.Direction.DESC) Pageable pageable,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String searchParam) {
         return Optional.ofNullable(
-                applicationServiceService.pageShareAppService(projectId, doPage, pageRequest, searchParam))
+                applicationServiceService.pageShareAppService(projectId, doPage, pageable, searchParam))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.share.app.service.get"));
     }
@@ -599,11 +596,11 @@ public class AppServiceController {
             @ApiParam(value = "服务服务Id")
             @PathVariable(value = "app_service_id", required = false) Long appServiceId,
             @ApiParam(value = "分页参数")
-            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
+            @SortDefault(value = "id", direction = Sort.Direction.DESC) Pageable pageable,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String searchParam) {
         return Optional.ofNullable(
-                applicationServiceService.pagePermissionUsers(projectId, appServiceId, pageRequest, searchParam))
+                applicationServiceService.pagePermissionUsers(projectId, appServiceId, pageable, searchParam))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.share.app.service.user.permission.get"));
     }
@@ -690,13 +687,13 @@ public class AppServiceController {
             @ApiParam(value = "市场来源", required = true)
             @RequestParam(required = true) Boolean share,
             @ApiParam(value = "分页参数")
-            @ApiIgnore PageRequest pageRequest,
+            @ApiIgnore Pageable pageable,
             @ApiParam(value = "查询项目Id", required = false)
             @RequestParam(value = "search_project_id", required = false) Long searchProjectId,
             @ApiParam(value = "查询条件", required = false)
             @RequestParam(required = false) String param) {
         return Optional.ofNullable(
-                applicationServiceService.pageAppServiceByMode(projectId, share, searchProjectId, param, pageRequest))
+                applicationServiceService.pageAppServiceByMode(projectId, share, searchProjectId, param, pageable))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.list.app.group.error"));
     }
@@ -710,11 +707,11 @@ public class AppServiceController {
             @ApiParam(value = "是否分页")
             @RequestParam(value = "doPage", required = false) Boolean doPage,
             @ApiParam(value = "分页参数")
-            @ApiIgnore PageRequest pageRequest,
+            @ApiIgnore Pageable pageable,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(
-                applicationServiceService.listAppByProjectId(projectId, doPage, pageRequest, params))
+                applicationServiceService.listAppByProjectId(projectId, doPage, pageable, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.list.app.projectId.query"));
     }
@@ -750,11 +747,11 @@ public class AppServiceController {
             @ApiParam(value = "是否分页")
             @RequestParam(value = "doPage", required = false) Boolean doPage,
             @ApiParam(value = "分页参数")
-            @ApiIgnore PageRequest pageRequest,
+            @ApiIgnore Pageable pageable,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(
-                applicationServiceService.listAppServiceByIds(projectId, ids, doPage, pageRequest, params))
+                applicationServiceService.listAppServiceByIds(projectId, ids, doPage, pageable, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.list.app.service.ids"));
     }

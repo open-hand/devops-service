@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+import io.choerodon.web.util.PageableHelper;
 import io.reactivex.Emitter;
 import io.reactivex.Observable;
 import io.reactivex.ObservableOnSubscribe;
@@ -25,7 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
-import io.choerodon.base.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.notify.NoticeSendDTO;
@@ -110,10 +111,10 @@ public class PipelineServiceImpl implements PipelineService {
 
 
     @Override
-    public PageInfo<PipelineVO> pageByOptions(Long projectId, PipelineSearchVO pipelineSearchVO, PageRequest pageRequest) {
+    public PageInfo<PipelineVO> pageByOptions(Long projectId, PipelineSearchVO pipelineSearchVO, Pageable pageable) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         Long userId = DetailsHelper.getUserDetails().getUserId();
-        String sortSql = pageRequest.getSort() != null ? pageRequest.getSort().toSql() : null;
+        String sortSql = pageable.getSort() != null ? PageableHelper.getSortSql(pageable.getSort()) : null;
         String sortSqlUnder = HumpToUnderlineUtil.toUnderLine(sortSql);
         List<PipelineVO> pipelineVOS = ConvertUtils.convertList(pipelineMapper.listByOptions(projectId, pipelineSearchVO, userId, sortSqlUnder), PipelineVO.class);
         List<PipelineVO> pipelineVOList;
@@ -127,7 +128,7 @@ public class PipelineServiceImpl implements PipelineService {
             pipelineVOList = pipelineVOS;
         }
 
-        PageInfo<PipelineVO> pageInfo = PageInfoUtil.createPageFromList(pipelineVOList, pageRequest);
+        PageInfo<PipelineVO> pageInfo = PageInfoUtil.createPageFromList(pipelineVOList, pageable);
 
         pageInfo.setList(pageInfo.getList().stream().peek(t -> {
             IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(t.getCreatedBy());

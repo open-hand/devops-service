@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import io.choerodon.base.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.AppServiceShareRuleVO;
 import io.choerodon.devops.app.service.AppServiceShareRuleService;
@@ -67,12 +67,12 @@ public class AppServiceShareRuleServiceImpl implements AppServiceShareRuleServic
     }
 
     @Override
-    public PageInfo<AppServiceShareRuleVO> pageByOptions(Long projectId, Long appServiceId, PageRequest pageRequest, String params) {
+    public PageInfo<AppServiceShareRuleVO> pageByOptions(Long projectId, Long appServiceId, Pageable pageable, String params) {
         Map<String, Object> mapParams = TypeUtil.castMapParams(params);
         PageInfo<AppServiceShareRuleDTO> devopsProjectConfigDTOPageInfo = PageHelper.startPage(
-                pageRequest.getPage(),
-                pageRequest.getSize(),
-                PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                PageRequestUtil.getOrderBy(pageable)).doSelectPageInfo(
                 () -> appServiceShareRuleMapper.listByOptions(appServiceId,
                         TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
                         TypeUtil.cast(mapParams.get(TypeUtil.PARAMS))));

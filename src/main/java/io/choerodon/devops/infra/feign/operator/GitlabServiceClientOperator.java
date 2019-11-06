@@ -3,7 +3,8 @@ package io.choerodon.devops.infra.feign.operator;
 import com.github.pagehelper.PageInfo;
 import feign.FeignException;
 import feign.RetryableException;
-import io.choerodon.base.domain.PageRequest;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.infra.dto.RepositoryFileDTO;
 import io.choerodon.devops.infra.dto.gitlab.*;
@@ -500,7 +501,7 @@ public class GitlabServiceClientOperator {
                 })
                 .collect(Collectors.toCollection(ArrayList::new));
 
-        PageInfo<TagDTO> resp = PageInfoUtil.createPageFromList(tagList, new PageRequest(page, size));
+        PageInfo<TagDTO> resp = PageInfoUtil.createPageFromList(tagList, PageRequest.of(0,1));
 
         resp.getList().stream()
                 .sorted(this::sortTag)
