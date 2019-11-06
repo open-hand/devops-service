@@ -1,26 +1,13 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
-import io.choerodon.base.domain.PageRequest;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.DevopsPvcReqVO;
-import io.choerodon.devops.api.vo.DevopsPvcRespVO;
-import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.infra.constant.KubernetesConstants;
-import io.choerodon.devops.infra.dto.*;
-import io.choerodon.devops.infra.enums.CommandStatus;
-import io.choerodon.devops.infra.enums.ObjectType;
-import io.choerodon.devops.infra.enums.PvcStatus;
-import io.choerodon.devops.infra.enums.ResourceUnitLevelEnum;
-import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
-import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
-import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
-import io.choerodon.devops.infra.mapper.DevopsPvMapper;
-import io.choerodon.devops.infra.mapper.DevopsPvcMapper;
-import io.choerodon.devops.infra.util.*;
 import io.kubernetes.client.custom.Quantity;
 import io.kubernetes.client.models.V1ObjectMeta;
 import io.kubernetes.client.models.V1PersistentVolumeClaim;
@@ -31,19 +18,27 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import io.choerodon.base.domain.PageRequest;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.DevopsPvcReqVO;
+import io.choerodon.devops.api.vo.DevopsPvcRespVO;
+import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.constant.GitLabConstants;
+import io.choerodon.devops.infra.constant.KubernetesConstants;
+import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.enums.*;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
+import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
+import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
+import io.choerodon.devops.infra.mapper.DevopsEnvCommandMapper;
+import io.choerodon.devops.infra.mapper.DevopsPvMapper;
+import io.choerodon.devops.infra.mapper.DevopsPvcMapper;
+import io.choerodon.devops.infra.util.*;
 
 @Service
 public class DevopsPvcServiceImpl implements DevopsPvcService {
 
-    private static final String CREATE = "create";
-    private static final String DELETE = "delete";
-    private static final String MASTER = "master";
-
-    private static final String PERSISTENTVOLUMECLAIM = "PersistentVolumeClaim";
     private Gson gson = new Gson();
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
@@ -63,6 +58,8 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
     private DevopsPvcMapper devopsPvcMapper;
     @Autowired
     private DevopsPvMapper devopsPvMapper;
+    @Autowired
+    private DevopsEnvCommandMapper devopsEnvCommandMapper;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -77,7 +74,7 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
         //初始化V1PersistentVolumeClaim对象
         V1PersistentVolumeClaim v1PVC = initV1PersistentVolumeClaim(devopsPvcDTO);
 
-        DevopsEnvCommandDTO devopsEnvCommand = initDevopsEnvCommandDTO(CREATE);
+        DevopsEnvCommandDTO devopsEnvCommand = initDevopsEnvCommandDTO(CommandType.CREATE.getType());
 
         // 在gitops库处理pvc文件
         operateEnvGitLabFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), v1PVC, devopsPvcDTO,
@@ -108,7 +105,7 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
         //校验环境相关信息
         devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
 
-        DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(DELETE);
+        DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(CommandType.DELETE.getType());
 
         // 更新pvc
         devopsEnvCommandDTO.setObjectId(pvcId);
@@ -120,10 +117,11 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
 
         // 查询对象所在文件中是否含有其它对象
         DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
-                .baseQueryByEnvIdAndResourceId(devopsEnvironmentDTO.getId(), pvcId, PERSISTENTVOLUMECLAIM);
+                .baseQueryByEnvIdAndResourceId(devopsEnvironmentDTO.getId(), 
+                        pvcId, ResourceType.PERSISTENT_VOLUME_CLAIM.getType());
         if (devopsEnvFileResourceDTO == null) {
             devopsPvcMapper.deleteByPrimaryKey(pvcId);
-            if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER,
+            if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), GitLabConstants.MASTER,
                     "pvc-" + devopsPvcDTO.getName() + ".yaml")) {
                 gitlabServiceClientOperator.deleteFile(
                         TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
@@ -133,7 +131,7 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
             }
             return true;
         } else {
-            if (!gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER,
+            if (!gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), GitLabConstants.MASTER,
                     devopsEnvFileResourceDTO.getFilePath())) {
                 devopsPvcMapper.deleteByPrimaryKey(pvcId);
                 devopsEnvFileResourceService.baseDeleteById(devopsEnvFileResourceDTO.getId());
@@ -145,7 +143,7 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
 
         // 如果对象所在文件只有一个对象，则直接删除文件,否则把对象从文件中去掉，更新文件
         if (devopsEnvFileResourceDTOS.size() == 1) {
-            if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER,
+            if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), GitLabConstants.MASTER,
                     devopsEnvFileResourceDTO.getFilePath())) {
                 gitlabServiceClientOperator.deleteFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
                         devopsEnvFileResourceDTO.getFilePath(), "DELETE FILE",
@@ -159,8 +157,10 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
             v1PersistentVolumeClaim.setMetadata(v1ObjectMeta);
             resourceConvertToYamlHandler.setType(v1PersistentVolumeClaim);
             Integer projectId = TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId());
-            resourceConvertToYamlHandler.operationEnvGitlabFile(null, projectId, DELETE, userAttrDTO.getGitlabUserId(), pvcId,
-                    PERSISTENTVOLUMECLAIM, null, false, devopsEnvironmentDTO.getId(), path);
+            resourceConvertToYamlHandler.operationEnvGitlabFile(null, projectId,
+                    CommandType.DELETE.getType(), userAttrDTO.getGitlabUserId(),
+                    pvcId, ResourceType.PERSISTENT_VOLUME_CLAIM.getType(),
+                    null, false, devopsEnvironmentDTO.getId(), path);
         }
         return true;
     }
@@ -191,14 +191,50 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
     }
 
     @Override
-    public DevopsPvcDTO createOrUpdateByGitOps(Long envId, DevopsPvcReqVO devopsPvcReqVO) {
-        // TODO by zmf
-        return null;
+    public DevopsPvcDTO createOrUpdateByGitOps(Long userId, DevopsPvcReqVO devopsPvcReqVO) {
+        // 校验环境是否连接
+        DevopsEnvironmentDTO environmentDTO = devopsEnvironmentService.baseQueryById(devopsPvcReqVO.getEnvId());
+        clusterConnectionHandler.checkEnvConnection(environmentDTO.getClusterId());
+
+        // 处理创建数据
+        DevopsPvcDTO devopsPvcDTO = voToDto(devopsPvcReqVO, environmentDTO.getProjectId());
+        devopsPvcDTO.setStatus(PvcStatus.OPERATING.getStatus());
+        DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(devopsPvcReqVO.getCommandType());
+        devopsEnvCommandDTO.setLastUpdatedBy(userId);
+
+        if (CommandType.CREATE.getType().equals(devopsPvcReqVO.getCommandType())) {
+            devopsEnvCommandDTO.setCreatedBy(userId);
+            Long pvcId = createPvcRecord(devopsPvcDTO).getId();
+            devopsEnvCommandDTO.setObjectId(pvcId);
+            devopsPvcDTO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());
+            baseUpdate(devopsPvcDTO);
+        } else {
+            devopsEnvCommandDTO.setObjectId(devopsPvcDTO.getId());
+            devopsPvcDTO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());
+            baseUpdate(devopsPvcDTO);
+        }
+        return devopsPvcDTO;
     }
 
     @Override
     public void deleteByGitOps(Long pvcId) {
-        // TODO by zmf
+        DevopsPvcDTO devopsPvcDTO = devopsPvcMapper.selectByPrimaryKey(pvcId);
+        if (devopsPvcDTO == null) {
+            return;
+        }
+        // 校验环境是否连接
+        DevopsEnvironmentDTO environmentDTO = devopsEnvironmentService.baseQueryById(devopsPvcDTO.getEnvId());
+        clusterConnectionHandler.checkEnvConnection(environmentDTO.getClusterId());
+
+        devopsPvcMapper.deleteByPrimaryKey(pvcId);
+        devopsEnvCommandMapper.deleteByObjectTypeAndObjectId(ObjectType.PERSISTENTVOLUMECLAIM.getType(), pvcId);
+    }
+
+    private DevopsPvcDTO createPvcRecord(DevopsPvcDTO devopsPvcDTO) {
+        if (devopsPvcMapper.insert(devopsPvcDTO) != 1) {
+            throw new CommonException("error.insert.pvc", devopsPvcDTO.getName());
+        }
+        return devopsPvcDTO;
     }
 
     private static DevopsPvcDTO voToDto(DevopsPvcReqVO devopsPvcReqVO, Long projectId) {
@@ -262,14 +298,15 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
         ResourceConvertToYamlHandler<V1PersistentVolumeClaim> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
         resourceConvertToYamlHandler.setType(v1PersistentVolumeClaim);
         resourceConvertToYamlHandler.operationEnvGitlabFile("pvc-" + devopsPvcDTO.getName(), gitlabEnvGroupProjectId,
-                CREATE, userAttrDTO.getGitlabUserId(), devopsPvcDTO.getId(), PERSISTENTVOLUMECLAIM, null, false,
+                CommandType.CREATE.getType(), userAttrDTO.getGitlabUserId(), devopsPvcDTO.getId(), 
+                ResourceType.PERSISTENT_VOLUME_CLAIM.getType(), null, false,
                 devopsPvcDTO.getEnvId(), path);
     }
 
     private V1PersistentVolumeClaim initV1PersistentVolumeClaim(DevopsPvcDTO devopsPvcDTO) {
         V1PersistentVolumeClaim v1PersistentVolumeClaim = new V1PersistentVolumeClaim();
         v1PersistentVolumeClaim.setApiVersion("v1");
-        v1PersistentVolumeClaim.setKind(PERSISTENTVOLUMECLAIM);
+        v1PersistentVolumeClaim.setKind(ResourceType.PERSISTENT_VOLUME_CLAIM.getType());
 
         //设置PVC名称
         V1ObjectMeta metadata = new V1ObjectMeta();

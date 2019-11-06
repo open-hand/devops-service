@@ -13,7 +13,7 @@ public enum ObjectType {
     CONFIGMAP("configMap"),
     SECRET("secret"),
     CUSTOM("custom"),
-    PERSISTENTVOLUMECLAIM("persistenvolumeclaim");
+    PERSISTENTVOLUMECLAIM("PersistentVolumeClaim");
 
     private String type;
 

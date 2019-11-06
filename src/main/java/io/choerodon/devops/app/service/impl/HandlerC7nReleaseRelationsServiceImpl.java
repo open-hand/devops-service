@@ -21,12 +21,10 @@ import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.enums.C7NHelmReleaseMetadataType;
-import io.choerodon.devops.infra.enums.EnvironmentType;
 import io.choerodon.devops.infra.enums.ObjectType;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.choerodon.devops.infra.util.ClusterComponentUtil;
+import io.choerodon.devops.infra.util.GitOpsUtil;
 import io.choerodon.devops.infra.util.ComponentVersionUtil;
 import io.choerodon.devops.infra.util.GitUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
@@ -216,7 +214,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         OrganizationDTO organization = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
-        boolean isClusterComponent = ClusterComponentUtil.isClusterComponent(devopsEnvironmentDTO.getType(), c7nHelmRelease);
+        boolean isClusterComponent = GitOpsUtil.isClusterComponent(devopsEnvironmentDTO.getType(), c7nHelmRelease);
 
         AppServiceVersionDTO appServiceVersionDTO = null;
         Long releaseAppServiceId = null;
