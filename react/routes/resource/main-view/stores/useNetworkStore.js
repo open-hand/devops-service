@@ -28,6 +28,14 @@ export default function useStore() {
       return this.app;
     },
 
+    ports: [],
+    setPorts(data) {
+      this.ports = data;
+    },
+    get getPorts() {
+      return this.ports.slice();
+    },
+
     loadDataById(projectId, id) {
       return axios.get(`/devops/v1/projects/${projectId}/service/${id}`)
         .then((res) => {
@@ -77,6 +85,17 @@ export default function useStore() {
 
     updateData(projectId, id, data) {
       return axios.put(`/devops/v1/projects/${projectId}/service/${id}`, JSON.stringify(data));
+    },
+
+    async loadPorts(projectId, envId, appServiceId) {
+      try {
+        const res = await axios.get(`/devops/v1/projects/${projectId}/env/app_services/list_port?env_id=${envId}&app_service_id=${appServiceId}`);
+        if (handlePromptError(res)) {
+          this.setPorts(res);
+        }
+      } catch (e) {
+        Choerodon.handleResponseError(e);
+      }
     },
   }));
 }
