@@ -47,13 +47,14 @@ const EnvContent = observer(() => {
       const connect = record.get('connect');
       const synchro = record.get('synchronize');
       const failed = record.get('failed');
-
+      const clusterName = record.get('clusterName');
       return {
         id,
         name,
         active,
         connect,
         synchro,
+        clusterName,
         failed: failed || false,
       };
     }
@@ -66,7 +67,7 @@ const EnvContent = observer(() => {
     if (update) {
       const menuItem = treeDs.find((item) => item.get('id') === update.id);
       if (menuItem) {
-        const previous = pick(menuItem.toData(), ['id', 'active', 'name', 'connect', 'synchro', 'failed']);
+        const previous = pick(menuItem.toData(), ['id', 'active', 'name', 'connect', 'synchro', 'failed', 'clusterName']);
         if (!isEqual(previous, update)) {
           runInAction(() => {
             menuItem.set(update);
@@ -84,7 +85,7 @@ const EnvContent = observer(() => {
   function getTitle() {
     const current = getCurrent();
     if (current) {
-      return <EnvItem isTitle {...current} />;
+      return <EnvItem isTitle formatMessage={formatMessage} {...current} />;
     }
     return null;
   }
