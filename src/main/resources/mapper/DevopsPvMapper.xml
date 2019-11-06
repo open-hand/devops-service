@@ -14,7 +14,7 @@
                dc.name cluster_name
         FROM devops_pv dpv
         LEFT JOIN devops_pvc dpvc on dpv.pvc_id = dpvc.id
-        LEFT JOIN devops_cluster dc on dep.cluster_id = dc.id
+        LEFT JOIN devops_cluster dc on dpv.cluster_id = dc.id
     <include refid="sqlparams"/>
     </select>
 
@@ -60,7 +60,7 @@
                dc.name cluster_name
         FROM devops_pv dpv
                  LEFT JOIN devops_pvc dpvc on dpv.pvc_id = dpvc.id
-                 LEFT JOIN devops_cluster dc on dep.cluster_id = dc.id
+                 LEFT JOIN devops_cluster dc on dpv.cluster_id = dc.id
         WHERE dpv.id = #{pvId}
     </select>
 </mapper>

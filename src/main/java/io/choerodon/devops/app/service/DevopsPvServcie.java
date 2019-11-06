@@ -1,13 +1,12 @@
 package io.choerodon.devops.app.service;
 
-import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import org.springframework.data.domain.Pageable;
 import io.choerodon.devops.api.vo.DevopsPvPermissionUpateVO;
 import io.choerodon.devops.api.vo.DevopsPvVO;
+import io.choerodon.devops.api.vo.DevopsPvReqVo;
 import io.choerodon.devops.api.vo.ProjectReqVO;
 import io.choerodon.devops.infra.dto.DevopsPvDTO;
-import io.choerodon.devops.infra.dto.DevopsPvProPermissionDTO;
 
 import java.util.List;
 
@@ -21,7 +20,7 @@ public interface DevopsPvServcie {
     /**
      * 删除PV
      */
-    void deletePvById(Long pvId);
+    Boolean deletePvById(Long pvId);
 
     /***
      * 根据条件分页查询PV
@@ -30,9 +29,9 @@ public interface DevopsPvServcie {
 
     /***
      * 创建PV
-     * @param devopsPvDTO
+     * @param devopsPvReqVo
      */
-    void createPv(DevopsPvDTO devopsPvDTO);
+    void createPv(DevopsPvReqVo devopsPvReqVo);
 
     /**
      * 校验唯一性
@@ -60,7 +59,7 @@ public interface DevopsPvServcie {
     /**
      * 更新PV表字段
      */
-    void updatePv(DevopsPvDTO devopsPvDTO);
+    void baseupdatePv(DevopsPvDTO devopsPvDTO);
 
     /**
      * 根据pvId查询pv
@@ -74,6 +73,12 @@ public interface DevopsPvServcie {
      */
     List<ProjectReqVO> listNonRelatedProjects(Long projectId, Long pvId);
 
-
+    /***
+     * 根据项目id删除相对应的权限
+     * @param pvId
+     * @param projectId
+     */
     void deleteRelatedProjectById(Long pvId, Long projectId);
+
+
 }
