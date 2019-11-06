@@ -53,7 +53,6 @@ export const StoreProvider = withRouter(injectIntl(inject('AppState')(
       ],
       viewTypeMappings: viewTypeMemo,
       itemTypes,
-      viewType,
       resourceStore,
       treeDs,
     };
