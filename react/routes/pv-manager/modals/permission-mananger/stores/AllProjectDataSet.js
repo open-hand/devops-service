@@ -1,6 +1,6 @@
 import getTablePostData from '../../../../../utils/getTablePostData';
 
-export default ((intlPrefix, formatMessage, projectId) => ({
+export default ((intlPrefix, formatMessage, projectId, DetailDs) => ({
   autoCreate: false,
   autoQuery: false,
   selection: false,
@@ -8,7 +8,7 @@ export default ((intlPrefix, formatMessage, projectId) => ({
     read: ({ data: [data] }) => {
       const postData = getTablePostData(data);
       return ({
-        url: `/devops/v1/project/${projectId}/`,
+        url: `/devops/v1/projects/${projectId}/clusters/${DetailDs.current.get('clusterId')}/permission/page_related`,
         method: 'post',
         data: postData,
       });

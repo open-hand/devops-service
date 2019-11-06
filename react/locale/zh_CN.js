@@ -702,6 +702,7 @@ const pvManager = {
   'c7ncd.pv.project.all': '集群下所有项目',
   'c7ncd.pv.project.special': '集群下特定项目',
   'c7ncd.pv.project.add': '添加项目',
+  'c7ncd.pv.storage.failed': '请输入正整数',
   'c7ncd.pv.delete.title': '删除PV“{name}”',
   'c7ncd.pv.delete.des': '确定要删除该PV吗？',
   'c7ncd.pv.delete.disabled': '存在已绑定的PVC，无法删除',
