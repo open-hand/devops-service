@@ -1,15 +1,34 @@
 package io.choerodon.devops.api.vo;
 
+import io.swagger.annotations.ApiModelProperty;
+
 public class DevopsPvVO {
 
+    @ApiModelProperty("pvId")
     private Long id;
+
+    @ApiModelProperty("PV名称")
     private String name;
+
+    @ApiModelProperty("PV状态")
     private String status;
+
+    @ApiModelProperty("详细描述")
     private String description;
+
+    @ApiModelProperty("关联集群名称")
     private String clusterName;
+
+    @ApiModelProperty("PV存储类型")
     private String type;
+
+    @ApiModelProperty("关联PVC名称")
     private Long pvcName;
+
+    @ApiModelProperty("访问模式")
     private String accessModes;
+
+    @ApiModelProperty("资源请求大小")
     private String requestResource;
 
     public Long getId() {

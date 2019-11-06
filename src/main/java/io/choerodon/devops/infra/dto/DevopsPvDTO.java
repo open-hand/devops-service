@@ -21,6 +21,7 @@ public class DevopsPvDTO extends BaseDTO {
     private Long pvcId;
     private Long clusterId;
     private Boolean skipCheckProjectPermission;
+    private String requestResource;
 
     public Long getId() {
         return id;
@@ -84,5 +85,13 @@ public class DevopsPvDTO extends BaseDTO {
 
     public void setSkipCheckProjectPermission(Boolean skipCheckProjectPermission) {
         this.skipCheckProjectPermission = skipCheckProjectPermission;
+    }
+
+    public String getRequestResource() {
+        return requestResource;
+    }
+
+    public void setRequestResource(String requestResource) {
+        this.requestResource = requestResource;
     }
 }

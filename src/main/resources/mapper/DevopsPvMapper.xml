@@ -8,7 +8,7 @@
                dpv.type type,
                dpv.description description,
                dpv.status status,
-               dpv.storage storage,
+               dpv.request_resource request_resource,
                dpv.access_modes access_modes,
                dpvc.name pvc_name,
                dc.name cluster_name
@@ -30,11 +30,11 @@
             </if>
             <if test='searchParam.cluster != null and searchParam.cluster.length > 0'>
                 AND
-                dc.cluster LIKE CONCAT(CONCAT('%', #{searchParam.cluster, jdbcType=VARCHAR}),'%')
+                dc.name LIKE CONCAT(CONCAT('%', #{searchParam.cluster, jdbcType=VARCHAR}),'%')
             </if>
             <if test='searchParam.accessmodes != null and searchParam.accessmodes.length > 0'>
                 AND
-                dpv.accessmodes LIKE CONCAT(CONCAT('%', #{searchParam.accessmodes, jdbcType=VARCHAR}),'%')
+                dpv.access_modes LIKE CONCAT(CONCAT('%', #{searchParam.accessmodes, jdbcType=VARCHAR}),'%')
             </if>
         </if>
         <if test='params != null and params.size > 0'>
@@ -43,7 +43,7 @@
                 dpv.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
                 OR dpv.type LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
                 OR dc.name  LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-                OR dpv.accessmodes LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                OR dpv.access_modes LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
             </foreach>
         </if>
     </sql>
@@ -54,7 +54,7 @@
                dpv.type type,
                dpv.description description,
                dpv.status status,
-               dpv.storage storage,
+               dpv.request_resource request_resource,
                dpv.access_modes access_modes,
                dpvc.name pvc_name,
                dc.name cluster_name
