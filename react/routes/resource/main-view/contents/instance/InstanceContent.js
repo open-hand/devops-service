@@ -79,7 +79,6 @@ const InstanceContent = observer(() => {
     intlPrefix,
     resourceStore,
     treeDs,
-    viewType,
   } = useResourceStore();
   const {
     intl: { formatMessage },
@@ -91,7 +90,7 @@ const InstanceContent = observer(() => {
     istStore,
     baseDs,
   } = useInstanceStore();
-
+  const viewType = resourceStore.getViewType;
   const { getSelectedMenu: { key: selectedKey } } = resourceStore;
 
 
@@ -178,6 +177,29 @@ const InstanceContent = observer(() => {
       podUnlinkCount={podUnlinkCount}
     />;
   }
+  function chooseTab() {
+    const detailsTab = <TabPane
+      key={DETAILS_TAB}
+      tab={formatMessage({ id: `${intlPrefix}.instance.tabs.details` })}
+    >
+      <Suspense fallback={<Spin />}>
+        <Details />
+      </Suspense>
+    </TabPane>;
+    const casesTab = <TabPane
+      key={CASES_TAB}
+      tab={formatMessage({ id: `${intlPrefix}.instance.tabs.cases` })}
+    >
+      <Suspense fallback={<Spin />}>
+        <Cases />
+      </Suspense>
+    </TabPane>;
+    if (viewType === 'instance') {
+      return [casesTab, detailsTab];
+    } else {
+      return [detailsTab, casesTab];
+    }
+  }
   return (
     <div className={`${prefixCls}-instance`}>
       <PageTitle content={getTitle()} fallback={getFallBack()} />
@@ -187,36 +209,7 @@ const InstanceContent = observer(() => {
         activeKey={istStore.getTabKey}
         onChange={handleChange}
       >
-        { viewType !== 'instance' ? <TabPane
-          key={DETAILS_TAB}
-          tab={formatMessage({ id: `${intlPrefix}.instance.tabs.details` })}
-        >
-          <Suspense fallback={<Spin />}>
-            <Details />
-          </Suspense>
-        </TabPane> : <TabPane
-          key={CASES_TAB}
-          tab={formatMessage({ id: `${intlPrefix}.instance.tabs.cases` })}
-        >
-          <Suspense fallback={<Spin />}>
-            <Cases />
-          </Suspense>
-        </TabPane>}
-        { viewType === 'instance' ? <TabPane
-          key={DETAILS_TAB}
-          tab={formatMessage({ id: `${intlPrefix}.instance.tabs.details` })}
-        >
-          <Suspense fallback={<Spin />}>
-            <Details />
-          </Suspense>
-        </TabPane> : <TabPane
-          key={CASES_TAB}
-          tab={formatMessage({ id: `${intlPrefix}.instance.tabs.cases` })}
-        >
-          <Suspense fallback={<Spin />}>
-            <Cases />
-          </Suspense>
-        </TabPane>}
+        {chooseTab()}
         <TabPane
           key={PODS_TAB}
           tab={formatMessage({ id: `${intlPrefix}.instance.tabs.pods` })}
