@@ -286,7 +286,18 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
     @Override
     public DevopsBranchVO queryBranch(Long projectId, Long applicationId, String branchName) {
-        return ConvertUtils.convertObject(devopsBranchService.baseQueryByAppAndBranchName(applicationId, branchName), DevopsBranchVO.class);
+        DevopsBranchDTO branchDTO = devopsBranchService.baseQueryByAppAndBranchName(applicationId, branchName);
+        DevopsBranchVO devopsBranchVO = ConvertUtils.convertObject(branchDTO, DevopsBranchVO.class);
+        if (devopsBranchVO.getIssueId() != null) {
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+            IssueDTO issueDTO = agileServiceClientOperator.queryIssue(projectId, devopsBranchVO.getIssueId(), projectDTO.getOrganizationId());
+            if (issueDTO == null || issueDTO.getIssueId() == null) {
+                devopsBranchVO.setIssueId(null);
+                branchDTO.setIssueId(null);
+                devopsBranchService.baseUpdateBranch(branchDTO);
+            }
+        }
+        return devopsBranchVO;
     }
 
     @Override
