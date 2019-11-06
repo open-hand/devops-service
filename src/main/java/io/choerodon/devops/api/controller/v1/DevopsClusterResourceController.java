@@ -84,7 +84,7 @@ public class DevopsClusterResourceController {
             @RequestParam(name = "cluster_id", required = true) Long clusterId,
             @ApiParam(value = "请求体", required = true)
             @RequestBody DevopsPrometheusVO prometheusVo) {
-        devopsClusterResourceService.createOrUpdate(clusterId, prometheusVo);
+        devopsClusterResourceService.createPromteheus(clusterId,prometheusVo);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
@@ -97,7 +97,7 @@ public class DevopsClusterResourceController {
             @RequestParam(name = "cluster_id", required = true) Long clusterId,
             @ApiParam(value = "请求体", required = true)
             @RequestBody DevopsPrometheusVO prometheusVo) {
-        devopsClusterResourceService.createOrUpdate(clusterId, prometheusVo);
+        devopsClusterResourceService.updatePromteheus(clusterId,prometheusVo);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
