@@ -1382,7 +1382,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         }
         if (devopsConfigDTO != null) {
             ConfigVO configVO = gson.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class);
-            if (devopsConfigDTO.getName().equals("harbor_default") && appServiceDTO.getProjectId() != null) {
+            if (devopsConfigDTO.getName() != null && devopsConfigDTO.getName().equals("harbor_default") && appServiceDTO.getProjectId() != null) {
                 configVO = queryDefaultConfig(appServiceDTO.getProjectId(), configVO);
             }
             if (configVO.getPrivate() != null && configVO.getPrivate()) {
