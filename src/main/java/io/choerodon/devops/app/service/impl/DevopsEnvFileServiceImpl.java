@@ -66,7 +66,7 @@ public class DevopsEnvFileServiceImpl implements DevopsEnvFileService {
     private DevopsEnvFileErrorVO dtoToVo(DevopsEnvFileErrorDTO devopsEnvFileErrorDTO) {
         DevopsEnvFileErrorVO devopsEnvFileErrorVO = new DevopsEnvFileErrorVO();
         BeanUtils.copyProperties(devopsEnvFileErrorDTO, devopsEnvFileErrorVO);
-        devopsEnvFileErrorVO.setErrorTime(devopsEnvFileErrorDTO.getLastUpdateDate());
+        devopsEnvFileErrorVO.setLastUpdateTime(devopsEnvFileErrorDTO.getLastUpdateDate());
         return devopsEnvFileErrorVO;
     }
 
