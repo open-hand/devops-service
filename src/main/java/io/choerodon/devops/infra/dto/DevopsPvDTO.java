@@ -3,11 +3,16 @@ package io.choerodon.devops.infra.dto;
 
 import io.choerodon.mybatis.entity.BaseDTO;
 
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Table(name = "devops_pv")
 public class DevopsPvDTO extends BaseDTO {
 
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
     private Long id;
     private String name;
     private String type;

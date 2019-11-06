@@ -1,4 +1,50 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsPvcMapper">
+    <select id="listByOption" resultType="io.choerodon.devops.infra.dto.DevopsPvcDTO">
+        SELECT
+        dpvc.id,
+        dpvc.name,
+        dpvc.env_id,
+        dpvc.pv_id,
+        dpvc.pv_name,
+        dpvc.access_modes,
+        dpvc.request_resource,
+        dpvc.status,
+        dpvc.object_version_number
+        FROM devops_pvc dpvc
+        WHERE env_id=#{envId}
+        <include refid="sqlparam"/>
+    </select>
+
+    <sql id="sqlparam">
+        <if test='searchParam != null'>
+            <if test='searchParam.name != null and searchParam.name.length > 0'>
+                AND
+                dpvc.name LIKE CONCAT(CONCAT('%', #{searchParam.name, jdbcType=VARCHAR}),'%')
+            </if>
+            <if test='searchParam.pvName!=null and searchParam.pvName.length>0'>
+                AND
+                dpvc.pv_name LIKE CONCAT(CONCAT('%', #{searchParam.pvName, jdbcType=VARCHAR}),'%')
+            </if>
+            <if test='searchParam.accessModes !=null and searchParam.accessModes.length>0'>
+                AND
+                dpvc.access_modes LIKE CONCAT(CONCAT('%', #{searchParam.accessModes, jdbcType=VARCHAR}),'%')
+            </if>
+            <if test='searchParam.requestResource !=null and searchParam.requestResource.length>0'>
+                AND
+                dpvc.request_resource LIKE CONCAT(CONCAT('%', #{searchParam.requestResource, jdbcType=VARCHAR}),'%')
+            </if>
+        </if>
+        <if test='params != null and params.size > 0'>
+            AND
+            <foreach collection="params" item="param" open="(" separator=" OR " close=")">
+                (dpvc.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                OR dpvc.pv_name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                OR dpvc.access_modes LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                OR dpvc.request_resource LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                )
+            </foreach>
+        </if>
+    </sql>
 </mapper>

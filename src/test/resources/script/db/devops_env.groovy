@@ -133,7 +133,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env.groovy') {
 
     changeSet(author: 'yzj', id: '2019-10-29-add--column') {
         addColumn(tableName: 'devops_env') {
-            column(name: 'type', type: 'vachar(10)', defaultValue: 'user', remarks: '判断环境类型是否是user', afterColumn: 'is_failed')
+            column(name: 'type', type: 'varchar(10)', defaultValue: 'user', remarks: '判断环境类型是否是user', afterColumn: 'is_failed')
         }
     }
 }
