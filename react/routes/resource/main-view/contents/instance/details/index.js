@@ -199,6 +199,7 @@ export default class Details extends Component {
             </div>
             <Button
               className="c7ncd-detail-btn"
+              type="primary"
               onClick={isDisabled ? null : () => this.handleClick(podType, instanceId, name)}
             >
               <FormattedMessage id="detailMore" />
