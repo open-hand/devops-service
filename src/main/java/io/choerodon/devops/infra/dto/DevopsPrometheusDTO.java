@@ -5,7 +5,6 @@ import javax.persistence.*;
 
 import io.swagger.annotations.ApiModelProperty;
 
-import io.choerodon.devops.api.vo.PvVO;
 import io.choerodon.mybatis.entity.BaseDTO;
 
 /**
@@ -41,7 +40,7 @@ public class DevopsPrometheusDTO extends BaseDTO {
 
     @ApiModelProperty("pvc")
     @Transient
-    private PvVO pvc;
+    private List<DevopsPvcDTO> devopsPvcDTO;
 
     public Long getId() {
         return id;
@@ -99,11 +98,11 @@ public class DevopsPrometheusDTO extends BaseDTO {
         this.clusterCode = clusterCode;
     }
 
-    public PvVO getPvc() {
-        return pvc;
+    public List<DevopsPvcDTO> getDevopsPvcDTO() {
+        return devopsPvcDTO;
     }
 
-    public void setPvc(PvVO pvc) {
-        this.pvc = pvc;
+    public void setDevopsPvcDTO(List<DevopsPvcDTO> devopsPvcDTO) {
+        this.devopsPvcDTO = devopsPvcDTO;
     }
 }

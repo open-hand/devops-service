@@ -265,38 +265,34 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void createPromteheus(Long projectId,Long clusterId, DevopsPrometheusVO devopsPrometheusVO) {
+    public void createPromteheus(Long projectId, Long clusterId, DevopsPrometheusVO devopsPrometheusVO) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
         if (devopsClusterDTO.getSystemEnvId() == null) {
             throw new CommonException("no.cluster.system.env");
         }
 
-        if (ObjectUtils.isEmpty(devopsClusterDTO.getClientId())) {
-            ClientDTO clientDTO = baseServiceClientOperator.queryClientBySourceId(devopsClusterDTO.getOrganizationId(), devopsClusterDTO.getId());
-            if (clientDTO == null || clientDTO.getId() == null) {
-                // 添加客户端
-                ClientVO clientVO = new ClientVO();
-                clientVO.setName(devopsClusterDTO.getChoerodonId());
-                clientVO.setOrganizationId(devopsClusterDTO.getOrganizationId());
-                clientVO.setAuthorizedGrantTypes("password,implicit,client_credentials,refresh_token,authorization_code");
-                clientVO.setSecret(GenerateUUID.generateUUID().substring(0, 16).replace("-", "A"));
-                clientVO.setRefreshTokenValidity(360000L);
-                clientVO.setAccessTokenValidity(360000L);
-                clientVO.setSourceId(clusterId);
-                clientVO.setSourceType("cluster");
-                clientDTO = baseServiceClientOperator.createClient(devopsClusterDTO.getOrganizationId(), clientVO);
-            }
-            if (!ObjectUtils.isEmpty(clientDTO)) {
-                devopsClusterDTO.setClientId(clientDTO.getId());
-                devopsClusterService.baseUpdate(devopsClusterDTO);
-            }
+        ClientDTO clientDTO = baseServiceClientOperator.queryClientBySourceId(devopsClusterDTO.getOrganizationId(), devopsClusterDTO.getId());
+        if (clientDTO == null || clientDTO.getId() == null) {
+            // 添加客户端
+            ClientVO clientVO = new ClientVO();
+            clientVO.setName(devopsClusterDTO.getChoerodonId());
+            clientVO.setOrganizationId(devopsClusterDTO.getOrganizationId());
+            clientVO.setAuthorizedGrantTypes("password,implicit,client_credentials,refresh_token,authorization_code");
+            clientVO.setSecret(GenerateUUID.generateUUID().substring(0, 16).replace("-", "A"));
+            clientVO.setRefreshTokenValidity(360000L);
+            clientVO.setAccessTokenValidity(360000L);
+            clientVO.setSourceId(clusterId);
+            clientVO.setSourceType("cluster");
+            clientDTO = baseServiceClientOperator.createClient(devopsClusterDTO.getOrganizationId(), clientVO);
+        }
+        if (!ObjectUtils.isEmpty(clientDTO)) {
+            devopsClusterDTO.setClientId(clientDTO.getId());
+            devopsClusterService.baseUpdate(devopsClusterDTO);
         }
 
-        DevopsClusterResourceDTO devopsClusterResourceDTO = new DevopsClusterResourceDTO();
         DevopsPrometheusDTO devopsPrometheusDTO = prometheusVoToDto(devopsPrometheusVO);
-
-        DevopsClusterResourceDTO devopsClusterResource = devopsClusterResourceService.queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
-        if (devopsClusterResource != null) {
+        DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceService.queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
+        if (devopsClusterResourceDTO != null) {
             throw new CommonException("prometheus.already.exist");
         }
 
@@ -304,8 +300,8 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         // 创建pvc
         List<Long> pvcIds = new ArrayList<>();
         List<Long> pvIds = devopsPrometheusVO.getPvs().stream().map(DevopsPvVO::getId).collect(Collectors.toList());
-        pvIds.stream().forEach(id->{
-            DevopsPvcReqVO devopsPvcReqVO = operatePV(id);
+        pvIds.stream().forEach(id -> {
+            DevopsPvcReqVO devopsPvcReqVO = operatePV(id, devopsClusterDTO);
             DevopsPvcRespVO pvcRespVO = devopsPvcService.create(projectId, devopsPvcReqVO);
             pvcIds.add(pvcRespVO.getId());
         });
@@ -325,7 +321,11 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     }
 
     @Override
-    public void updatePromteheus(Long projectId,Long clusterId, DevopsPrometheusVO devopsPrometheusVO) {
+    public void updatePromteheus(Long projectId, Long clusterId, DevopsPrometheusVO devopsPrometheusVO) {
+        DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
+        if (devopsClusterDTO.getSystemEnvId() == null) {
+            throw new CommonException("no.cluster.system.env");
+        }
         DevopsPrometheusDTO devopsPrometheusDTO = prometheusVoToDto(devopsPrometheusVO);
         DevopsClusterResourceDTO devopsClusterResource = devopsClusterResourceService.queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
         if (devopsPrometheusVO.getId() != null) {
@@ -338,8 +338,8 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
             // 创建pvc
             List<Long> pvcIds = new ArrayList<>();
             List<Long> pvIds = devopsPrometheusVO.getPvs().stream().map(DevopsPvVO::getId).collect(Collectors.toList());
-            pvIds.stream().forEach(id->{
-                DevopsPvcReqVO devopsPvcReqVO = operatePV(id);
+            pvIds.stream().forEach(id -> {
+                DevopsPvcReqVO devopsPvcReqVO = operatePV(id, devopsClusterDTO);
                 DevopsPvcRespVO pvcRespVO = devopsPvcService.create(projectId, devopsPvcReqVO);
                 pvcIds.add(pvcRespVO.getId());
             });
@@ -356,6 +356,13 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         DevopsPrometheusDTO devopsPrometheusDTO = devopsPrometheusMapper.selectByPrimaryKey(devopsClusterResourceDTO.getConfigId());
         DevopsPrometheusVO devopsPrometheusVO = ConvertUtils.convertObject(devopsPrometheusDTO, DevopsPrometheusVO.class);
         return devopsPrometheusVO;
+    }
+
+    @Override
+    public DevopsPrometheusDTO queryPrometheusDTO(Long clusterId) {
+        DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceMapper.queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
+        DevopsPrometheusDTO devopsPrometheusDTO = devopsPrometheusMapper.selectByPrimaryKey(devopsClusterResourceDTO.getConfigId());
+        return devopsPrometheusDTO;
     }
 
     @Override
@@ -426,6 +433,10 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         clusterResourceVO = queryDeployProcess(clusterId);
         List<DevopsEnvPodVO> devopsEnvPodDTOS = ConvertUtils.convertList(devopsEnvPodService.baseListByInstanceId(appServiceInstanceDTO.getId()), DevopsEnvPodVO.class);
         DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(appServiceInstanceDTO.getCommandId());
+
+        if(appServiceInstanceDTO==null){
+            clusterResourceVO.setStatus(ClusterResourceStatus.PROCESSING.getStatus());
+        }
         if (STATUS_CREATED.equals(clusterResourceVO.getStatus())) {
             clusterResourceVO.setStatus(ClusterResourceStatus.PROCESSING.getStatus());
         }
@@ -468,12 +479,9 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     }
 
     @Override
-    public void deployPrometheus(Long clusterId, DevopsPvcReqVO pvc) {
+    public void deployPrometheus(Long clusterId,DevopsPrometheusDTO devopsPrometheusDTO) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
         DevopsClusterResourceDTO clusterResourceDTO = queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
-        DevopsPrometheusDTO devopsPrometheusDTO = devopsPrometheusMapper.selectByPrimaryKey(clusterResourceDTO.getConfigId());
-        //todo
-        devopsPrometheusDTO.setPvc(new PvVO());
         AppServiceInstanceDTO appServiceInstanceDTO = null;
         if (ClusterResourceOperateType.INSTALL.getType().equals(clusterResourceDTO.getOperate())) {
             appServiceInstanceDTO = componentReleaseService.createReleaseForPrometheus(devopsClusterDTO.getSystemEnvId(), devopsPrometheusDTO);
@@ -481,7 +489,6 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         if (ClusterResourceOperateType.UPGRADE.getType().equals(clusterResourceDTO.getOperate())) {
             appServiceInstanceDTO = componentReleaseService.createReleaseForPrometheus(devopsClusterDTO.getSystemEnvId(), devopsPrometheusDTO);
         }
-
         clusterResourceDTO.setObjectId(appServiceInstanceDTO.getId());
         devopsPrometheusMapper.updateByPrimaryKeySelective(devopsPrometheusDTO);
         devopsClusterResourceService.baseUpdate(clusterResourceDTO);
@@ -515,22 +522,11 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     private DevopsPrometheusDTO prometheusVoToDto(DevopsPrometheusVO prometheusVo) {
         DevopsPrometheusDTO devopsPrometheusDTO = new DevopsPrometheusDTO();
         BeanUtils.copyProperties(prometheusVo, devopsPrometheusDTO);
-        PvVO pvVO = new PvVO();
         List<Long> pvIds = new ArrayList<>();
         prometheusVo.getPvs().stream().forEach(e -> {
             pvIds.add(e.getId());
-            if (e.getType().equals("alertManager")) {
-                pvVO.setAlertManagerPVC(e.getName());
-            }
-            if (e.getType().equals("grafana")) {
-                pvVO.setGrafanaPV(e.getName());
-            }
-            if (e.getType().equals("promtheus")) {
-                pvVO.setPrometheusPVC(e.getName());
-            }
         });
         devopsPrometheusDTO.setPvId(JSON.toJSON(pvIds).toString());
-        devopsPrometheusDTO.setPvc(pvVO);
         return devopsPrometheusDTO;
     }
 
@@ -538,12 +534,14 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         return validFrom != null && validUntil != null
                 && date.after(validFrom) && date.before(validUntil);
     }
-    private DevopsPvcReqVO operatePV(Long pvId){
+
+    private DevopsPvcReqVO operatePV(Long pvId, DevopsClusterDTO devopsClusterDTO) {
         DevopsPvcReqVO devopsPvcReqVO = new DevopsPvcReqVO();
         DevopsPvVO devopsPvVO = devopsPvServcie.queryById(pvId);
         devopsPvcReqVO.setPvId(devopsPvVO.getId());
         devopsPvcReqVO.setAccessModes(devopsPvVO.getAccessModes());
         devopsPvcReqVO.setRequestResource(devopsPvVO.getRequestResource());
+        devopsPvcReqVO.setEnvId(devopsClusterDTO.getSystemEnvId());
         return devopsPvcReqVO;
     }
 }

@@ -1,10 +1,12 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.alibaba.fastjson.JSON;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
@@ -40,6 +42,7 @@ import io.choerodon.devops.infra.util.*;
 @Service
 public class DevopsPvcServiceImpl implements DevopsPvcService {
 
+
     private Gson gson = new Gson();
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
@@ -61,6 +64,8 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
     private DevopsPvMapper devopsPvMapper;
     @Autowired
     private DevopsEnvCommandMapper devopsEnvCommandMapper;
+    @Autowired
+    private DevopsClusterResourceService devopsClusterResourceService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -214,6 +219,21 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
             devopsPvcDTO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());
             baseUpdate(devopsPvcDTO);
         }
+
+        DevopsPrometheusDTO devopsPrometheusDTO = devopsClusterResourceService.queryPrometheusDTO(environmentDTO.getClusterId());
+        List<Long> pvcIds = JSON.parseArray(devopsPrometheusDTO.getPvcId(), Long.class);
+        List<DevopsPvcDTO> devopsPvcDTOS = new ArrayList<>();
+        for (Long pvcId : pvcIds) {
+            DevopsPvcDTO devopsPvc = queryById(pvcId);
+            if (pvcId.equals(devopsPvcReqVO.getId()) && PvcStatus.PENDING.getStatus().equals(devopsPvc.getStatus())) {
+                devopsPvcDTOS.add(devopsPvc);
+            }
+        }
+        if (devopsPvcDTOS.size() == 3) {
+            devopsPrometheusDTO.setDevopsPvcDTO(devopsPvcDTOS);
+            devopsClusterResourceService.deployPrometheus(environmentDTO.getClusterId(), devopsPrometheusDTO);
+        }
+
         return devopsPvcDTO;
     }
 
