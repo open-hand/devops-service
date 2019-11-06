@@ -1,10 +1,10 @@
 package io.choerodon.devops.app.service;
 
 import com.github.pagehelper.PageInfo;
-import org.springframework.data.domain.Pageable;
 import io.choerodon.devops.api.vo.DevopsPvcReqVO;
 import io.choerodon.devops.api.vo.DevopsPvcRespVO;
 import io.choerodon.devops.infra.dto.DevopsPvcDTO;
+import org.springframework.data.domain.Pageable;
 
 public interface DevopsPvcService {
     /**
@@ -19,11 +19,11 @@ public interface DevopsPvcService {
     /**
      * 删除PVC
      *
-     * @param projectId
+     * @param envId
      * @param pvcId
      * @return
      */
-    boolean delete(Long projectId, Long pvcId);
+    boolean delete(Long envId, Long pvcId);
 
     PageInfo<DevopsPvcRespVO> pageByOptions(Long projectId, Long envId, Pageable pageable, String params);
 

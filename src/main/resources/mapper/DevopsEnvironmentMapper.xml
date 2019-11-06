@@ -43,6 +43,8 @@
         </collection>
         <collection property="customResources" ofType="io.choerodon.devops.api.vo.DevopsResourceBasicInfoVO" select="listCustomizeResources" fetchType="eager" column="env_id">
         </collection>
+        <collection property="pvcs" ofType="io.choerodon.devops.api.vo.DevopsResourceBasicInfoVO" select="listPvcResources" fetchType="eager" column="env_id">
+        </collection>
     </resultMap>
 
     <resultMap id="queryInfoByIdResultMap" type="io.choerodon.devops.infra.dto.DevopsEnvironmentInfoDTO">
@@ -233,7 +235,8 @@
                (SELECT COUNT(1) FROM devops_app_service_instance ins WHERE ins.env_id = env.id AND status = 'running') AS running_instance_count,
                (SELECT COUNT(1) FROM devops_app_service_instance ins WHERE ins.env_id = env.id AND status = 'stopped') AS stopped_instance_count,
                (SELECT COUNT(1) FROM devops_app_service_instance ins WHERE ins.env_id = env.id AND status = 'operating') AS operating_instance_count,
-               (SELECT COUNT(1) FROM devops_app_service_instance ins WHERE ins.env_id = env.id AND status = 'failed') AS failed_instance_count
+               (SELECT COUNT(1) FROM devops_app_service_instance ins WHERE ins.env_id = env.id AND status = 'failed') AS failed_instance_count,
+               (SELECT COUNT(1) FROM devops_pvc dpvc WHERE dpvc.env_id=env.id) AS pvc_count
         FROM devops_env env
         WHERE env.id = #{envId};
     </select>
@@ -413,6 +416,13 @@
         FROM devops_certification t
         WHERE t.env_id = #{envId}
         AND status != 'deleting'
+    </select>
+
+    <!-- 此方法不需要在mapper接口中有 -->
+    <select id="listPvcResources" resultType="io.choerodon.devops.api.vo.DevopsResourceBasicInfoVO">
+        SELECT t.id, t.`name`, t.status
+        FROM devops_pvc t
+        WHERE t.env_id = #{envId}
     </select>
 
     <select id="listGitlabProjectIdByEnvPermission" resultType="java.lang.Long">

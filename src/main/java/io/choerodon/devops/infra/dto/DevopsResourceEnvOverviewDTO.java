@@ -55,6 +55,19 @@ public class DevopsResourceEnvOverviewDTO {
      */
     private List<DevopsResourceBasicInfoVO> customResources;
 
+    /**
+     * PVC 基本信息
+     */
+    private List<DevopsResourceBasicInfoVO> pvcs;
+
+    public List<DevopsResourceBasicInfoVO> getPvcs() {
+        return pvcs;
+    }
+
+    public void setPvcs(List<DevopsResourceBasicInfoVO> pvcs) {
+        this.pvcs = pvcs;
+    }
+
     public Long getId() {
         return id;
     }
