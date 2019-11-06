@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.github.pagehelper.PageInfo;
 
-import io.choerodon.base.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsEnvFileErrorVO;
 import io.choerodon.devops.app.service.DevopsEnvFileErrorService;
@@ -55,9 +55,9 @@ public class DevopsEnvFileServiceImpl implements DevopsEnvFileService {
     }
 
     @Override
-    public PageInfo<DevopsEnvFileErrorVO> pageByEnvId(Long envId, PageRequest pageRequest) {
+    public PageInfo<DevopsEnvFileErrorVO> pageByEnvId(Long envId, Pageable pageable) {
         String gitlabProjectPath = getGitlabUrl(envId);
-        PageInfo<DevopsEnvFileErrorDTO> devopsEnvFileErrorDTOPageInfo = devopsEnvFileErrorService.basePageByEnvId(envId, pageRequest);
+        PageInfo<DevopsEnvFileErrorDTO> devopsEnvFileErrorDTOPageInfo = devopsEnvFileErrorService.basePageByEnvId(envId, pageable);
         PageInfo<DevopsEnvFileErrorVO> devopsEnvFileErrorVOPageInfo = ConvertUtils.convertPage(devopsEnvFileErrorDTOPageInfo, this::dtoToVo);
         devopsEnvFileErrorVOPageInfo.getList().forEach(devopsEnvFileErrorVO -> setCommitAndFileUrl(devopsEnvFileErrorVO, gitlabProjectPath));
         return devopsEnvFileErrorVOPageInfo;

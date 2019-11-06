@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,7 +24,7 @@ import org.springframework.util.StringUtils;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
-import io.choerodon.base.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -789,7 +790,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         }
 
         // 获取项目下所有项目成员
-        PageInfo<UserVO> allProjectMemberPage = getMembersFromProject(new PageRequest(0, 0), projectId, "");
+        PageInfo<UserVO> allProjectMemberPage = getMembersFromProject(PageRequest.of(0,1), projectId, "");
 
         // 所有项目成员中有权限的
         allProjectMemberPage.getList().stream().filter(e -> userIds.contains(e.getId())).forEach(e -> {
@@ -868,8 +869,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     @Override
-    public PageInfo<DevopsUserPermissionVO> pageUserPermissionByEnvId(Long projectId, PageRequest
-            pageRequest, String params, Long envId) {
+    public PageInfo<DevopsUserPermissionVO> pageUserPermissionByEnvId(Long projectId, Pageable
+            pageable, String params, Long envId) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentMapper.selectByPrimaryKey(envId);
 
         RoleAssignmentSearchVO roleAssignmentSearchVO = new RoleAssignmentSearchVO();
@@ -897,7 +898,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         // 根据搜索参数查询所有的项目所有者
         Long ownerId = baseServiceClientOperator.queryRoleIdByCode(PROJECT_OWNER);
         PageInfo<IamUserDTO> projectOwners = baseServiceClientOperator.pagingQueryUsersByRoleIdOnProjectLevel(
-                new PageRequest(0, 0), roleAssignmentSearchVO, ownerId, projectId, false);
+                PageRequest.of(0,1), roleAssignmentSearchVO, ownerId, projectId, false);
 
         List<Long> ownerIds = projectOwners
                 .getList()
@@ -928,7 +929,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             Long memberRoleId = baseServiceClientOperator.queryRoleIdByCode(PROJECT_MEMBER);
 
             members = baseServiceClientOperator.pagingQueryUsersByRoleIdOnProjectLevel(
-                    new PageRequest(0, 0), roleAssignmentSearchVO, memberRoleId, projectId, false)
+                    PageRequest.of(0,1), roleAssignmentSearchVO, memberRoleId, projectId, false)
                     .getList()
                     .stream()
                     .filter(u -> !ownerIds.contains(u.getId()))
@@ -953,7 +954,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         members.addAll(owners);
 
         // 根据结果手动设置page的相关属性
-        return PageInfoUtil.createPageFromList(members, pageRequest);
+        return PageInfoUtil.createPageFromList(members, pageable);
     }
 
     @Override
@@ -981,7 +982,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         // 根据参数搜索所有的项目成员
         Long memberRoleId = baseServiceClientOperator.queryRoleIdByCode(PROJECT_MEMBER);
         PageInfo<IamUserDTO> allProjectMembers = baseServiceClientOperator.pagingQueryUsersByRoleIdOnProjectLevel(
-                new PageRequest(0, 0), roleAssignmentSearchVO, memberRoleId, projectId, false);
+                PageRequest.of(0,1), roleAssignmentSearchVO, memberRoleId, projectId, false);
         if (allProjectMembers.getList().isEmpty()) {
             return Collections.emptyList();
         }
@@ -989,7 +990,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         // 获取项目下所有的项目所有者（带上搜索参数搜索可以获得更精确的结果）
         Long ownerId = baseServiceClientOperator.queryRoleIdByCode(PROJECT_OWNER);
         List<Long> allProjectOwnerIds = baseServiceClientOperator.pagingQueryUsersByRoleIdOnProjectLevel(
-                new PageRequest(0, 0), roleAssignmentSearchVO, ownerId, projectId, false)
+                PageRequest.of(0,1), roleAssignmentSearchVO, ownerId, projectId, false)
                 .getList()
                 .stream()
                 .map(IamUserDTO::getId)
@@ -1141,7 +1142,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
 
-    private PageInfo<UserVO> getMembersFromProject(PageRequest pageRequest, Long projectId, String searchParams) {
+    private PageInfo<UserVO> getMembersFromProject(Pageable pageable, Long projectId, String searchParams) {
         RoleAssignmentSearchVO roleAssignmentSearchVO = new RoleAssignmentSearchVO();
         if (!StringUtils.isEmpty(searchParams)) {
             Map maps = gson.fromJson(searchParams, Map.class);
@@ -1165,11 +1166,11 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         Long memberId = baseServiceClientOperator.queryRoleIdByCode(PROJECT_MEMBER);
         // 所有项目成员，可能还带有项目所有者的角色
         PageInfo<IamUserDTO> allMemberWithOtherUsersPage = baseServiceClientOperator
-                .pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, 0), roleAssignmentSearchVO,
+                .pagingQueryUsersByRoleIdOnProjectLevel(PageRequest.of(0,1), roleAssignmentSearchVO,
                         memberId, projectId, false);
         // 所有项目所有者
         PageInfo<IamUserDTO> allOwnerUsersPage = baseServiceClientOperator
-                .pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, 0), roleAssignmentSearchVO,
+                .pagingQueryUsersByRoleIdOnProjectLevel(PageRequest.of(0,1), roleAssignmentSearchVO,
                         ownerId, projectId, false);
         //合并项目所有者和项目成员
         Set<IamUserDTO> iamUserDTOS = new HashSet<>(allMemberWithOtherUsersPage.getList());
@@ -1189,16 +1190,16 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                         }
                     }).collect(Collectors.toList());
         }
-        allMemberWithOtherUsersPage.setPageSize(pageRequest.getSize());
+        allMemberWithOtherUsersPage.setPageSize(pageable.getPageSize());
         allMemberWithOtherUsersPage.setTotal(returnUserDTOList.size());
-        allMemberWithOtherUsersPage.setPageNum(pageRequest.getPage());
-        if (returnUserDTOList.size() < pageRequest.getSize() * pageRequest.getPage()) {
-            allMemberWithOtherUsersPage.setSize(TypeUtil.objToInt(returnUserDTOList.size()) - (pageRequest.getSize() * (pageRequest.getPage() - 1)));
+        allMemberWithOtherUsersPage.setPageNum(pageable.getPageNumber());
+        if (returnUserDTOList.size() < pageable.getPageSize() * pageable.getPageNumber()) {
+            allMemberWithOtherUsersPage.setSize(TypeUtil.objToInt(returnUserDTOList.size()) - (pageable.getPageSize() * (pageable.getPageNumber() - 1)));
             allMemberWithOtherUsersPage.setList(returnUserDTOList);
         } else {
-            allMemberWithOtherUsersPage.setSize(pageRequest.getSize());
-            int fromIndex = pageRequest.getSize() * (pageRequest.getPage() - 1);
-            int toIndex = (pageRequest.getSize() * pageRequest.getPage()) > returnUserDTOList.size() ? returnUserDTOList.size() : pageRequest.getSize() * pageRequest.getPage();
+            allMemberWithOtherUsersPage.setSize(pageable.getPageSize());
+            int fromIndex = pageable.getPageSize() * (pageable.getPageNumber() - 1);
+            int toIndex = (pageable.getPageSize() * pageable.getPageNumber()) > returnUserDTOList.size() ? returnUserDTOList.size() : pageable.getPageSize() * pageable.getPageNumber();
             allMemberWithOtherUsersPage.setList(returnUserDTOList.subList(fromIndex, toIndex));
         }
 

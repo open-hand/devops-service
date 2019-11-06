@@ -5,7 +5,7 @@ import java.util.List;
 import com.github.pagehelper.PageInfo;
 import org.springframework.web.multipart.MultipartFile;
 
-import io.choerodon.base.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.devops.api.vo.ProjectCertificationPermissionUpdateVO;
 import io.choerodon.devops.api.vo.ProjectCertificationVO;
 import io.choerodon.devops.api.vo.ProjectReqVO;
@@ -23,11 +23,11 @@ public interface DevopsProjectCertificationService {
      *
      * @param projectId   项目id
      * @param certId      证书id
-     * @param pageRequest 分页参数
+     * @param pageable 分页参数
      * @param params      查询参数
      * @return List
      */
-    PageInfo<ProjectReqVO> pageRelatedProjects(Long projectId, Long certId, PageRequest pageRequest, String params);
+    PageInfo<ProjectReqVO> pageRelatedProjects(Long projectId, Long certId, Pageable pageable, String params);
 
     void createOrUpdate(Long projectId, MultipartFile key, MultipartFile cert, ProjectCertificationVO projectCertificationVO);
 
@@ -48,7 +48,7 @@ public interface DevopsProjectCertificationService {
     void deletePermissionOfProject(Long projectId, Long certId);
 
 
-    PageInfo<ProjectCertificationVO> pageCerts(Long projectId, PageRequest pageRequest,
+    PageInfo<ProjectCertificationVO> pageCerts(Long projectId, Pageable pageable,
                                                String params);
 
     ProjectCertificationVO queryCert(Long certId);

@@ -6,7 +6,7 @@ import java.util.Optional;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.annotation.Permission;
-import io.choerodon.base.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
@@ -107,7 +107,7 @@ public class DevopsGitlabPipelineController {
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
-                    PageRequest pageRequest,
+                    Pageable pageable,
             @ApiParam(value = "branch")
             @RequestParam(required = false) String branch,
             @ApiParam(value = "app_service_id")
@@ -116,7 +116,7 @@ public class DevopsGitlabPipelineController {
             @RequestParam(required = false, value = "start_time") Date startTime,
             @ApiParam(value = "end_time")
             @RequestParam(required = false, value = "end_time") Date endTime) {
-        return Optional.ofNullable(devopsGitlabPipelineService.pageByOptions(appServiceId, branch, pageRequest, startTime, endTime))
+        return Optional.ofNullable(devopsGitlabPipelineService.pageByOptions(appServiceId, branch, pageable, startTime, endTime))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.pipeline.frequency.get"));
     }

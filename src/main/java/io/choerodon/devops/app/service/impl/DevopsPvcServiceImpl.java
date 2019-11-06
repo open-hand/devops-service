@@ -8,6 +8,7 @@ import java.util.Map;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+import org.springframework.data.domain.Pageable;
 import io.kubernetes.client.custom.Quantity;
 import io.kubernetes.client.models.V1ObjectMeta;
 import io.kubernetes.client.models.V1PersistentVolumeClaim;
@@ -117,7 +118,7 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
 
         // 查询对象所在文件中是否含有其它对象
         DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
-                .baseQueryByEnvIdAndResourceId(devopsEnvironmentDTO.getId(), 
+                .baseQueryByEnvIdAndResourceId(devopsEnvironmentDTO.getId(),
                         pvcId, ResourceType.PERSISTENT_VOLUME_CLAIM.getType());
         if (devopsEnvFileResourceDTO == null) {
             devopsPvcMapper.deleteByPrimaryKey(pvcId);
@@ -166,10 +167,10 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
     }
 
     @Override
-    public PageInfo<DevopsPvcRespVO> pageByOptions(Long projectId, Long envId, PageRequest pageRequest, String params) {
+    public PageInfo<DevopsPvcRespVO> pageByOptions(Long projectId, Long envId, Pageable pageable, String params) {
         Map maps = gson.fromJson(params, Map.class);
         return PageHelper
-                .startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> devopsPvcMapper.listByOption(envId,
+                .startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable)).doSelectPageInfo(() -> devopsPvcMapper.listByOption(envId,
                         TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
                         TypeUtil.cast(maps.get(TypeUtil.PARAMS))));
 
@@ -298,7 +299,7 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
         ResourceConvertToYamlHandler<V1PersistentVolumeClaim> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
         resourceConvertToYamlHandler.setType(v1PersistentVolumeClaim);
         resourceConvertToYamlHandler.operationEnvGitlabFile("pvc-" + devopsPvcDTO.getName(), gitlabEnvGroupProjectId,
-                CommandType.CREATE.getType(), userAttrDTO.getGitlabUserId(), devopsPvcDTO.getId(), 
+                CommandType.CREATE.getType(), userAttrDTO.getGitlabUserId(), devopsPvcDTO.getId(),
                 ResourceType.PERSISTENT_VOLUME_CLAIM.getType(), null, false,
                 devopsPvcDTO.getEnvId(), path);
     }

@@ -17,7 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.base.annotation.Permission;
-import io.choerodon.base.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
@@ -105,7 +105,7 @@ public class ProjectCertificationController {
      *
      * @param projectId   项目id
      * @param certId      证书id
-     * @param pageRequest 分页参数
+     * @param pageable 分页参数
      * @param params      查询参数
      * @return page
      */
@@ -118,10 +118,10 @@ public class ProjectCertificationController {
             @ApiParam(value = "证书Id")
             @PathVariable(value = "cert_id") Long certId,
             @ApiParam(value = "分页参数")
-            @ApiIgnore PageRequest pageRequest,
+            @ApiIgnore Pageable pageable,
             @ApiParam(value = "模糊搜索参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(devopsProjectCertificationService.pageRelatedProjects(projectId, certId, pageRequest, params))
+        return Optional.ofNullable(devopsProjectCertificationService.pageRelatedProjects(projectId, certId, pageable, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.project.query"));
     }
@@ -186,10 +186,10 @@ public class ProjectCertificationController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
-            @ApiIgnore PageRequest pageRequest,
+            @ApiIgnore Pageable pageable,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(devopsProjectCertificationService.pageCerts(projectId, pageRequest, params))
+        return Optional.ofNullable(devopsProjectCertificationService.pageCerts(projectId, pageable, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.cert.query"));
     }

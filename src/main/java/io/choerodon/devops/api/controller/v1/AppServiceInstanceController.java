@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.base.annotation.Permission;
-import io.choerodon.base.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.*;
@@ -66,7 +66,7 @@ public class AppServiceInstanceController {
      * 分页查询环境下实例信息（基本信息）
      *
      * @param projectId   项目id
-     * @param pageRequest 分页参数
+     * @param pageable 分页参数
      * @param envId       环境id
      * @param params      搜索参数
      * @return page of AppInstanceInfoVO
@@ -81,13 +81,13 @@ public class AppServiceInstanceController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiIgnore
-            @ApiParam(value = "分页参数") PageRequest pageRequest,
+            @ApiParam(value = "分页参数") Pageable pageable,
             @ApiParam(value = "环境ID")
             @RequestParam(value = "env_id") Long envId,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
         return new ResponseEntity<>(
-                appServiceInstanceService.pageInstanceInfoByOptions(projectId, envId, pageRequest, params), HttpStatus.OK);
+                appServiceInstanceService.pageInstanceInfoByOptions(projectId, envId, pageable, params), HttpStatus.OK);
     }
 
 
@@ -95,7 +95,7 @@ public class AppServiceInstanceController {
      * 分页查询服务部署
      *
      * @param projectId    项目id
-     * @param pageRequest  分页参数
+     * @param pageable  分页参数
      * @param envId        环境id
      * @param versionId    版本id
      * @param appServiceId 服务id
@@ -112,7 +112,7 @@ public class AppServiceInstanceController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiIgnore
-            @ApiParam(value = "分页参数") PageRequest pageRequest,
+            @ApiParam(value = "分页参数") Pageable pageable,
             @ApiParam(value = "环境ID")
             @RequestParam(value = "env_id", required = false) Long envId,
             @ApiParam(value = "版本ID")
@@ -124,7 +124,7 @@ public class AppServiceInstanceController {
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(appServiceInstanceService.pageByOptions(
-                projectId, pageRequest, envId, versionId, appServiceId, instanceId, params))
+                projectId, pageable, envId, versionId, appServiceId, instanceId, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.application.version.query"));
     }
@@ -699,7 +699,7 @@ public class AppServiceInstanceController {
     public ResponseEntity<PageInfo<DeployDetailTableVO>> pageDeployFrequencyDetailTable(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "分页参数") PageRequest pageRequest,
+            @ApiParam(value = "分页参数") Pageable pageable,
             @ApiParam(value = "appServiceId")
             @RequestParam(value = "app_service_id", required = false) Long appServiceId,
             @ApiParam(value = "envIds")
@@ -708,7 +708,7 @@ public class AppServiceInstanceController {
             @RequestParam(required = true) Date startTime,
             @ApiParam(value = "endTime")
             @RequestParam(required = true) Date endTime) {
-        return Optional.ofNullable(appServiceInstanceService.pageDeployFrequencyTable(projectId, pageRequest, envIds, appServiceId, startTime, endTime))
+        return Optional.ofNullable(appServiceInstanceService.pageDeployFrequencyTable(projectId, pageable, envIds, appServiceId, startTime, endTime))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.deploy.frequency.get"));
     }
@@ -734,7 +734,7 @@ public class AppServiceInstanceController {
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
-                    PageRequest pageRequest,
+                    Pageable pageable,
             @ApiParam(value = "envId")
             @RequestParam(value = "env_id", required = false) Long envId,
             @ApiParam(value = "appServiceIds")
@@ -743,7 +743,7 @@ public class AppServiceInstanceController {
             @RequestParam(required = true) Date startTime,
             @ApiParam(value = "endTime")
             @RequestParam(required = true) Date endTime) {
-        return Optional.ofNullable(appServiceInstanceService.pageDeployTimeTable(projectId, pageRequest, appServiceIds, envId, startTime, endTime))
+        return Optional.ofNullable(appServiceInstanceService.pageDeployTimeTable(projectId, pageable, appServiceIds, envId, startTime, endTime))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.deploy.time.get"));
     }

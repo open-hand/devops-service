@@ -24,7 +24,7 @@ import org.yaml.snakeyaml.Yaml;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
-import io.choerodon.base.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.FeignException;
 import io.choerodon.core.iam.ResourceLevel;
@@ -273,7 +273,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     @Override
-    public PageInfo<BranchVO> pageBranchByOptions(Long projectId, PageRequest pageRequest, Long appServiceId, String params) {
+    public PageInfo<BranchVO> pageBranchByOptions(Long projectId, Pageable pageable, Long appServiceId, String params) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         AppServiceDTO applicationDTO = appServiceService.baseQuery(appServiceId);
@@ -290,7 +290,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         String path = String.format("%s%s%s-%s/%s",
                 gitlabUrl, urlSlash, organizationDTO.getCode(), projectDTO.getCode(), applicationDTO.getCode());
         PageInfo<DevopsBranchDTO> devopsBranchDTOPageInfo =
-                devopsBranchService.basePageBranch(appServiceId, pageRequest, params);
+                devopsBranchService.basePageBranch(appServiceId, pageable, params);
         PageInfo<BranchVO> devopsBranchVOPageInfo = ConvertUtils.convertPage(devopsBranchDTOPageInfo, BranchVO.class);
 
         devopsBranchVOPageInfo.setList(devopsBranchDTOPageInfo.getList().stream().map(t -> {
@@ -355,7 +355,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
 
     @Override
-    public MergeRequestTotalVO listMergeRequest(Long projectId, Long appServiceId, String state, PageRequest pageRequest) {
+    public MergeRequestTotalVO listMergeRequest(Long projectId, Long appServiceId, String state, Pageable pageable) {
         appServiceService.baseCheckApp(projectId, appServiceId);
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
         if (appServiceDTO.getGitlabProjectId() == null) {
@@ -363,7 +363,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         }
 
         PageInfo<DevopsMergeRequestDTO> devopsMergeRequestDTOPageInfo = devopsMergeRequestService
-                .basePageByOptions(appServiceDTO.getGitlabProjectId(), state, pageRequest);
+                .basePageByOptions(appServiceDTO.getGitlabProjectId(), state, pageable);
 
         List<MergeRequestVO> pageContent = new ArrayList<>();
         List<DevopsMergeRequestDTO> devopsMergeRequestDTOS = devopsMergeRequestDTOPageInfo.getList();

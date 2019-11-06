@@ -3,7 +3,7 @@ package io.choerodon.devops.api.controller.v1;
 import com.github.pagehelper.PageInfo;
 import com.google.j2objc.annotations.AutoreleasePool;
 import io.choerodon.base.annotation.Permission;
-import io.choerodon.base.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
@@ -51,10 +51,10 @@ public class DevopsPvController {
             @RequestParam(value = "doPage", required = false)
             Boolean doPage,
             @ApiParam(value = "分页参数")
-            @ApiIgnore PageRequest pageRequest,
+            @ApiIgnore Pageable pageable,
             @ApiParam(value = "模糊搜索参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(devopsPvServcie.basePagePvByOptions(doPage, pageRequest, params))
+        return Optional.ofNullable(devopsPvServcie.basePagePvByOptions(doPage, pageable, params))
                 .map(target -> new ResponseEntity(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_PV_QUERY));
     }

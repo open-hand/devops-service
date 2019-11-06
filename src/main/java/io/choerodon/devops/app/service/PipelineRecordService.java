@@ -5,7 +5,7 @@ import java.util.Map;
 
 import com.github.pagehelper.PageInfo;
 
-import io.choerodon.base.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.devops.infra.dto.PipelineRecordDTO;
 
 /**
@@ -15,7 +15,7 @@ import io.choerodon.devops.infra.dto.PipelineRecordDTO;
  */
 public interface PipelineRecordService {
 
-    PageInfo<PipelineRecordDTO> basePageByOptions(Long projectId, Long pipelineId, PageRequest pageRequest, String params, Map<String, Object> classifyParam);
+    PageInfo<PipelineRecordDTO> basePageByOptions(Long projectId, Long pipelineId, Pageable pageable, String params, Map<String, Object> classifyParam);
 
     PipelineRecordDTO baseCreate(PipelineRecordDTO pipelineRecordDTO);
 

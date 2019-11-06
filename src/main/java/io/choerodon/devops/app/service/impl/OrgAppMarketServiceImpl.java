@@ -34,7 +34,7 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
-import io.choerodon.base.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.validator.ApplicationValidator;
 import io.choerodon.devops.api.vo.ConfigVO;
@@ -176,14 +176,14 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
 
     @Override
     public PageInfo<AppServiceUploadPayload> pageByAppId(Long appId,
-                                                         PageRequest pageRequest,
+                                                         Pageable pageable,
                                                          String params) {
         Map<String, Object> mapParams = TypeUtil.castMapParams(params);
         List<String> paramList = TypeUtil.cast(mapParams.get(TypeUtil.PARAMS));
         PageInfo<AppServiceDTO> appServiceDTOPageInfo = PageHelper.startPage(
-                pageRequest.getPage(),
-                pageRequest.getSize(),
-                PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> appServiceMapper.listByProjectId(appId, TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)), paramList));
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                PageRequestUtil.getOrderBy(pageable)).doSelectPageInfo(() -> appServiceMapper.listByProjectId(appId, TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)), paramList));
 
         PageInfo<AppServiceUploadPayload> appServiceMarketVOPageInfo = ConvertUtils.convertPage(appServiceDTOPageInfo, this::dtoToMarketVO);
         List<AppServiceUploadPayload> list = appServiceMarketVOPageInfo.getList();

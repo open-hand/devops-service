@@ -12,7 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.base.annotation.Permission;
-import io.choerodon.base.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
@@ -137,7 +137,7 @@ public class PipelineController {
      * 项目下获取流水线
      *
      * @param projectId        项目Id
-     * @param pageRequest      分页参数
+     * @param pageable      分页参数
      * @param pipelineSearchVO 查询参数
      * @return
      */
@@ -149,10 +149,10 @@ public class PipelineController {
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
-                    PageRequest pageRequest,
+                    Pageable pageable,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) PipelineSearchVO pipelineSearchVO) {
-        return Optional.ofNullable(pipelineService.pageByOptions(projectId, pipelineSearchVO, pageRequest))
+        return Optional.ofNullable(pipelineService.pageByOptions(projectId, pipelineSearchVO, pageable))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.pipeline.list"));
     }

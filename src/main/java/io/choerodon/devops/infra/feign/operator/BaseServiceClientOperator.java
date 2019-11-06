@@ -16,10 +16,12 @@ import com.google.gson.Gson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.querydsl.QPageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import io.choerodon.base.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.ExceptionResponse;
 import io.choerodon.core.exception.FeignException;
@@ -69,17 +71,17 @@ public class BaseServiceClientOperator {
 
 
     public List<ProjectDTO> listIamProjectByOrgId(Long organizationId, String name, String code, String params) {
-        PageRequest pageRequest = new PageRequest(0, 0);
+        Pageable pageable = PageRequest.of(0,1);
         ResponseEntity<PageInfo<ProjectDTO>> pageResponseEntity =
-                baseServiceClient.pageProjectsByOrgId(organizationId, FeignParamUtils.encodePageRequest(pageRequest), name, code, true, params);
+                baseServiceClient.pageProjectsByOrgId(organizationId, FeignParamUtils.encodePageRequest(pageable), name, code, true, params);
         return pageResponseEntity.getBody().getList();
     }
 
     public PageInfo<ProjectDTO> pageProjectByOrgId(Long organizationId, int page, int size, String name, String code, String params) {
-        PageRequest pageRequest = new PageRequest(page, size);
+        Pageable pageable = PageRequest.of(page,size);
         try {
             ResponseEntity<PageInfo<ProjectDTO>> pageInfoResponseEntity = baseServiceClient.pageProjectsByOrgId(organizationId,
-                    FeignParamUtils.encodePageRequest(pageRequest), name, code, true, params);
+                    FeignParamUtils.encodePageRequest(pageable), name, code, true, params);
             return pageInfoResponseEntity.getBody();
         } catch (FeignException e) {
             throw new CommonException(e);
@@ -135,12 +137,12 @@ public class BaseServiceClientOperator {
         return null;
     }
 
-    public PageInfo<IamUserDTO> pagingQueryUsersByRoleIdOnProjectLevel(PageRequest pageRequest,
+    public PageInfo<IamUserDTO> pagingQueryUsersByRoleIdOnProjectLevel(Pageable pageable,
                                                                        RoleAssignmentSearchVO roleAssignmentSearchVO,
                                                                        Long roleId, Long projectId, Boolean doPage) {
         try {
             return baseServiceClient
-                    .pagingQueryUsersByRoleIdOnProjectLevel(pageRequest.getPage(), pageRequest.getSize(), roleId,
+                    .pagingQueryUsersByRoleIdOnProjectLevel(pageable.getPageNumber(), pageable.getPageSize(), roleId,
                             projectId, doPage, roleAssignmentSearchVO).getBody();
         } catch (FeignException e) {
             LOGGER.error("get users by role id {} and project id {} error", roleId, projectId);
@@ -148,13 +150,13 @@ public class BaseServiceClientOperator {
         return null;
     }
 
-    public PageInfo<UserWithRoleVO> queryUserPermissionByProjectId(Long projectId, PageRequest pageRequest,
+    public PageInfo<UserWithRoleVO> queryUserPermissionByProjectId(Long projectId, Pageable pageable,
                                                                    Boolean doPage) {
         try {
             RoleAssignmentSearchVO roleAssignmentSearchVO = new RoleAssignmentSearchVO();
             ResponseEntity<PageInfo<UserWithRoleVO>> userEPageResponseEntity = baseServiceClient
                     .queryUserByProjectId(projectId,
-                            pageRequest.getPage(), pageRequest.getSize(), doPage, roleAssignmentSearchVO);
+                            pageable.getPageNumber(), pageable.getPageSize(), doPage, roleAssignmentSearchVO);
             return userEPageResponseEntity.getBody();
         } catch (FeignException e) {
             LOGGER.error("get user permission by project id {} error", projectId);
@@ -194,11 +196,11 @@ public class BaseServiceClientOperator {
         // 项目下所有项目成员
         List<Long> memberIds =
 
-                this.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, 0), new RoleAssignmentSearchVO(), memberId,
+                this.pagingQueryUsersByRoleIdOnProjectLevel(PageRequest.of(0,1), new RoleAssignmentSearchVO(), memberId,
                         projectId, false).getList().stream().map(IamUserDTO::getId).collect(Collectors.toList());
         // 项目下所有项目所有者
         List<Long> ownerIds =
-                this.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, 0), new RoleAssignmentSearchVO(), ownerId,
+                this.pagingQueryUsersByRoleIdOnProjectLevel(PageRequest.of(0,1), new RoleAssignmentSearchVO(), ownerId,
 
                         projectId, false).getList().stream().map(IamUserDTO::getId).collect(Collectors.toList());
         return memberIds.stream().filter(e -> !ownerIds.contains(e)).collect(Collectors.toList());
@@ -211,11 +213,11 @@ public class BaseServiceClientOperator {
         Long ownerId = this.queryRoleIdByCode(PROJECT_OWNER);
         // 项目下所有项目成员
 
-        List<IamUserDTO> list = this.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, 0), new RoleAssignmentSearchVO(), memberId,
+        List<IamUserDTO> list = this.pagingQueryUsersByRoleIdOnProjectLevel(PageRequest.of(0,1), new RoleAssignmentSearchVO(), memberId,
                 projectId, false).getList();
         List<Long> memberIds = list.stream().filter(IamUserDTO::getEnabled).map(IamUserDTO::getId).collect(Collectors.toList());
         // 项目下所有项目所有者
-        this.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, 0), new RoleAssignmentSearchVO(), ownerId,
+        this.pagingQueryUsersByRoleIdOnProjectLevel(PageRequest.of(0,1), new RoleAssignmentSearchVO(), ownerId,
 
                 projectId, false).getList().stream().filter(IamUserDTO::getEnabled).forEach(t -> {
             if (!memberIds.contains(t.getId())) {

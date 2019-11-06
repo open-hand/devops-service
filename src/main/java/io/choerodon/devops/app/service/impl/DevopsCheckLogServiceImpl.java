@@ -3,7 +3,8 @@ package io.choerodon.devops.app.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.github.pagehelper.PageInfo;
 import com.zaxxer.hikari.util.UtilityElf;
-import io.choerodon.base.domain.PageRequest;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
 import io.choerodon.devops.api.vo.kubernetes.CheckLog;
@@ -528,7 +529,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
      * @return true 有，反之没有
      */
     private boolean hasOwners(Long projectId, Long ownerRoleId) {
-        return !ObjectUtils.isEmpty(baseServiceClientOperator.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(1, 1), new RoleAssignmentSearchVO(), ownerRoleId,
+        return !ObjectUtils.isEmpty(baseServiceClientOperator.pagingQueryUsersByRoleIdOnProjectLevel(PageRequest.of(1,1), new RoleAssignmentSearchVO(), ownerRoleId,
                 projectId, true).getList());
     }
 

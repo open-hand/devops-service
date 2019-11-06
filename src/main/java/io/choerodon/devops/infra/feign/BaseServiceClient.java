@@ -127,7 +127,7 @@ public interface BaseServiceClient {
 
     @GetMapping("/v1/organizations/{organization_id}/projects")
     ResponseEntity<PageInfo<ProjectDTO>> pageProjectsByOrgId(@PathVariable(name = "organization_id") Long organizationId,
-                                                             @RequestParam Map<String, Object> pageRequest,
+                                                             @RequestParam Map<String, Object> pageable,
                                                              @RequestParam(name = "name", required = false) String name,
                                                              @RequestParam(name = "code", required = false) String code,
                                                              @RequestParam(name = "enabled", required = false) Boolean enabled,

@@ -8,7 +8,7 @@ import com.google.gson.Gson;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
-import io.choerodon.base.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.validator.AppInstanceValidator;
@@ -160,9 +160,9 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     }
 
     @Override
-    public PageInfo<AppServiceInstanceInfoVO> pageInstanceInfoByOptions(Long projectId, Long envId, PageRequest pageRequest, String params) {
+    public PageInfo<AppServiceInstanceInfoVO> pageInstanceInfoByOptions(Long projectId, Long envId, Pageable pageable, String params) {
         Map<String, Object> maps = TypeUtil.castMapParams(params);
-        PageInfo<AppServiceInstanceInfoVO> pageInfo = ConvertUtils.convertPage(PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest))
+        PageInfo<AppServiceInstanceInfoVO> pageInfo = ConvertUtils.convertPage(PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable))
                         .doSelectPageInfo(() -> appServiceInstanceMapper.listInstanceInfoByEnvAndOptions(
                                 envId, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)), TypeUtil.cast(maps.get(TypeUtil.PARAMS)))),
                 AppServiceInstanceInfoVO.class);
@@ -177,7 +177,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     }
 
     @Override
-    public PageInfo<DevopsEnvPreviewInstanceVO> pageByOptions(Long projectId, PageRequest pageRequest,
+    public PageInfo<DevopsEnvPreviewInstanceVO> pageByOptions(Long projectId, Pageable pageable,
                                                               Long envId, Long appServiceVersionId, Long appServiceId, Long instanceId, String params) {
 
         PageInfo<DevopsEnvPreviewInstanceVO> devopsEnvPreviewInstanceDTOPageInfo = new PageInfo<>();
@@ -185,7 +185,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         Map maps = gson.fromJson(params, Map.class);
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
         List<String> paramList = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
-        PageInfo<AppServiceInstanceDTO> applicationInstanceDTOPageInfo = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() ->
+        PageInfo<AppServiceInstanceDTO> applicationInstanceDTOPageInfo = PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable)).doSelectPageInfo(() ->
                 appServiceInstanceMapper
                         .listApplicationInstance(projectId, envId, appServiceVersionId, appServiceId, instanceId, searchParamMap, paramList));
 
@@ -328,25 +328,25 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     }
 
     @Override
-    public PageInfo<DeployDetailTableVO> pageDeployFrequencyTable(Long projectId, PageRequest pageRequest, Long[] envIds,
+    public PageInfo<DeployDetailTableVO> pageDeployFrequencyTable(Long projectId, Pageable pageable, Long[] envIds,
                                                                   Long appServiceId, Date startTime, Date endTime) {
         if (envIds.length == 0) {
             return new PageInfo<>();
         }
-        PageInfo<DeployDTO> deployDTOPageInfo = basePageDeployFrequencyTable(projectId, pageRequest,
+        PageInfo<DeployDTO> deployDTOPageInfo = basePageDeployFrequencyTable(projectId, pageable,
                 envIds, appServiceId, startTime, endTime);
         return getDeployDetailDTOS(deployDTOPageInfo);
     }
 
 
     @Override
-    public PageInfo<DeployDetailTableVO> pageDeployTimeTable(Long projectId, PageRequest pageRequest,
+    public PageInfo<DeployDetailTableVO> pageDeployTimeTable(Long projectId, Pageable pageable,
                                                              Long[] appServiceIds, Long envId,
                                                              Date startTime, Date endTime) {
         if (appServiceIds.length == 0) {
             return new PageInfo<>();
         }
-        PageInfo<DeployDTO> deployDTOS = basePageDeployTimeTable(projectId, pageRequest, envId,
+        PageInfo<DeployDTO> deployDTOS = basePageDeployTimeTable(projectId, pageable, envId,
                 appServiceIds, startTime, endTime);
         return getDeployDetailDTOS(deployDTOS);
     }
@@ -1079,18 +1079,18 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     }
 
     @Override
-    public PageInfo<DeployDTO> basePageDeployFrequencyTable(Long projectId, PageRequest pageRequest, Long[] envIds, Long appServiceId,
+    public PageInfo<DeployDTO> basePageDeployFrequencyTable(Long projectId, Pageable pageable, Long[] envIds, Long appServiceId,
                                                             Date startTime, Date endTime) {
-        return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() ->
+        return PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable)).doSelectPageInfo(() ->
                 appServiceInstanceMapper
                         .listDeployFrequency(projectId, envIds, appServiceId, new java.sql.Date(startTime.getTime()),
                                 new java.sql.Date(endTime.getTime())));
     }
 
     @Override
-    public PageInfo<DeployDTO> basePageDeployTimeTable(Long projectId, PageRequest pageRequest, Long envId, Long[] appServiceIds,
+    public PageInfo<DeployDTO> basePageDeployTimeTable(Long projectId, Pageable pageable, Long envId, Long[] appServiceIds,
                                                        Date startTime, Date endTime) {
-        return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() ->
+        return PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable)).doSelectPageInfo(() ->
                 appServiceInstanceMapper
                         .listDeployTime(projectId, envId, appServiceIds, new java.sql.Date(startTime.getTime()),
                                 new java.sql.Date(endTime.getTime())));

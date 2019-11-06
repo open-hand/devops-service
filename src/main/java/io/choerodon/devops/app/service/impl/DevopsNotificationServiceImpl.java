@@ -11,10 +11,11 @@ import com.google.gson.Gson;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import io.choerodon.base.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.notify.NoticeSendDTO;
 import io.choerodon.devops.api.vo.*;
@@ -132,8 +133,8 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
     }
 
     @Override
-    public PageInfo<DevopsNotificationVO> pageByOptions(Long projectId, Long envId, String params, PageRequest pageRequest) {
-        PageInfo<DevopsNotificationVO> devopsNotificationVOPageInfo = ConvertUtils.convertPage(basePageByOptions(projectId, envId, params, pageRequest), this::dtoToVo);
+    public PageInfo<DevopsNotificationVO> pageByOptions(Long projectId, Long envId, String params, Pageable pageable) {
+        PageInfo<DevopsNotificationVO> devopsNotificationVOPageInfo = ConvertUtils.convertPage(basePageByOptions(projectId, envId, params, pageable), this::dtoToVo);
         devopsNotificationVOPageInfo.getList().forEach(t -> {
             if ("specifier".equals(t.getNotifyObject())) {
                 List<DevopsNotificationUserRelVO> userRelVOS = ConvertUtils.convertList(devopsNotificationUserRelService.baseListByNotificationId(t.getId()), DevopsNotificationUserRelVO.class);
@@ -253,7 +254,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
             Long ownerId = baseServiceClientOperator.queryRoleIdByCode(PROJECT_OWNER);
             PageInfo<IamUserDTO> allOwnerUsersPage = baseServiceClientOperator
 
-                    .pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, 0), new RoleAssignmentSearchVO(),
+                    .pagingQueryUsersByRoleIdOnProjectLevel(PageRequest.of(0,1), new RoleAssignmentSearchVO(),
 
                             ownerId, devopsEnvironmentDTO.getProjectId(), false);
             List<NoticeSendDTO.User> users = new ArrayList<>();
@@ -340,11 +341,11 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         return devopsNotificationMapper.selectByPrimaryKey(notificationId);
     }
 
-    public PageInfo<DevopsNotificationDTO> basePageByOptions(Long projectId, Long envId, String params, PageRequest pageRequest) {
+    public PageInfo<DevopsNotificationDTO> basePageByOptions(Long projectId, Long envId, String params, Pageable pageable) {
         Map<String, Object> map = gson.fromJson(params, Map.class);
         Map<String, Object> searchParamMap = TypeUtil.cast(map.get(TypeUtil.SEARCH_PARAM));
         List<String> paramList = TypeUtil.cast(map.get(TypeUtil.PARAMS));
-        return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> devopsNotificationMapper.listByOptions(projectId, envId, searchParamMap, paramList));
+        return PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable)).doSelectPageInfo(() -> devopsNotificationMapper.listByOptions(projectId, envId, searchParamMap, paramList));
     }
 
     public List<DevopsNotificationDTO> baseListByEnvId(Long projectId, Long envId) {

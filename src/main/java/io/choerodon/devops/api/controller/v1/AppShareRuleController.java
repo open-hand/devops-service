@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.base.annotation.Permission;
-import io.choerodon.base.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
@@ -81,7 +81,7 @@ public class AppShareRuleController {
      * 查询服务共享规则
      *
      * @param projectId
-     * @param pageRequest
+     * @param pageable
      * @param param
      * @return
      */
@@ -95,11 +95,11 @@ public class AppShareRuleController {
             @ApiParam
             @RequestParam(value = "app_service_id") Long appServiceId,
             @ApiParam(value = "分页参数")
-            @ApiIgnore PageRequest pageRequest,
+            @ApiIgnore Pageable pageable,
             @ApiParam(value = "过滤参数")
             @RequestBody(required = false) String param) {
         return Optional.ofNullable(
-                applicationShareService.pageByOptions(projectId, appServiceId, pageRequest, param))
+                applicationShareService.pageByOptions(projectId, appServiceId, pageable, param))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.share.rule.page"));
     }

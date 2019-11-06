@@ -3,7 +3,7 @@ package io.choerodon.devops.app.service;
 
 import com.github.pagehelper.PageInfo;
 
-import io.choerodon.base.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.devops.api.vo.DevopsDeployRecordVO;
 import io.choerodon.devops.infra.dto.DevopsDeployRecordDTO;
 
@@ -12,10 +12,10 @@ import io.choerodon.devops.infra.dto.DevopsDeployRecordDTO;
  */
 public interface DevopsDeployRecordService {
 
-    PageInfo<DevopsDeployRecordVO> pageByProjectId(Long projectId, String params, PageRequest pageRequest);
+    PageInfo<DevopsDeployRecordVO> pageByProjectId(Long projectId, String params, Pageable pageable);
 
 
-    PageInfo<DevopsDeployRecordDTO> basePageByProjectId(Long projectId, String params, PageRequest pageRequest);
+    PageInfo<DevopsDeployRecordDTO> basePageByProjectId(Long projectId, String params, Pageable pageable);
 
     void baseCreate(DevopsDeployRecordDTO devopsDeployRecordDTO);
 

@@ -3,7 +3,7 @@ package io.choerodon.devops.app.service;
 import java.util.Set;
 
 import com.github.pagehelper.PageInfo;
-import io.choerodon.base.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.devops.api.vo.DevopsNotificationVO;
 import io.choerodon.devops.api.vo.ResourceCheckVO;
 
@@ -53,10 +53,10 @@ public interface DevopsNotificationService {
      * @param projectId
      * @param envId
      * @param params
-     * @param pageRequest
+     * @param pageable
      * @return
      */
-    PageInfo<DevopsNotificationVO> pageByOptions(Long projectId, Long envId, String params, PageRequest pageRequest);
+    PageInfo<DevopsNotificationVO> pageByOptions(Long projectId, Long envId, String params, Pageable pageable);
 
 
     /**

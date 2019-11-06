@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import io.choerodon.base.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.ProjectReqVO;
 import io.choerodon.devops.api.vo.iam.UserVO;
@@ -127,7 +127,7 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
     }
 
     @Override
-    public PageInfo<ProjectReqVO> pageProjects(Long projectId, PageRequest pageRequest, String searchParams) {
+    public PageInfo<ProjectReqVO> pageProjects(Long projectId, Pageable pageable, String searchParams) {
         Map<String, Object> searchMap = TypeUtil.castMapParams(searchParams);
         List<String> paramList = TypeUtil.cast(searchMap.get(TypeUtil.PARAMS));
 
@@ -135,7 +135,7 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
 
         PageInfo<ProjectDTO> projectDTOPageInfo = baseServiceClientOperator.pageProjectByOrgId(
                 iamProjectDTO.getOrganizationId(),
-                pageRequest.getPage(), pageRequest.getSize(), null, null,
+                pageable.getPageNumber(), pageable.getPageSize(), null, null,
                 paramList.isEmpty() ? null : paramList.get(0));
         return ConvertUtils.convertPage(projectDTOPageInfo, ProjectReqVO.class);
     }
