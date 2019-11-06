@@ -1,11 +1,11 @@
 package io.choerodon.devops.infra.dto;
 
-import java.util.Map;
+import java.util.List;
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModelProperty;
 
+import io.choerodon.devops.api.vo.PvVO;
 import io.choerodon.mybatis.entity.BaseDTO;
 
 /**
@@ -26,8 +26,11 @@ public class DevopsPrometheusDTO extends BaseDTO {
     @ApiModelProperty("grafana.ingress.hosts")
     private String grafanaDomain;
 
-    @ApiModelProperty("pv名称")
-    private Map<String,String> pvNames;
+    @ApiModelProperty("pvId")
+    private String pvId;
+
+    @ApiModelProperty("pvcId")
+    private String pvcId;
 
     @ApiModelProperty("集群id")
     private Long clusterId;
@@ -35,6 +38,10 @@ public class DevopsPrometheusDTO extends BaseDTO {
     @ApiModelProperty("replacement")
     @Transient
     private String clusterCode;
+
+    @ApiModelProperty("pvc")
+    @Transient
+    private PvVO pvc;
 
     public Long getId() {
         return id;
@@ -60,12 +67,28 @@ public class DevopsPrometheusDTO extends BaseDTO {
         this.grafanaDomain = grafanaDomain;
     }
 
-    public Map<String, String> getPvNames() {
-        return pvNames;
+    public String getPvId() {
+        return pvId;
     }
 
-    public void setPvNames(Map<String, String> pvNames) {
-        this.pvNames = pvNames;
+    public void setPvId(String pvId) {
+        this.pvId = pvId;
+    }
+
+    public String getPvcId() {
+        return pvcId;
+    }
+
+    public void setPvcId(String pvcId) {
+        this.pvcId = pvcId;
+    }
+
+    public Long getClusterId() {
+        return clusterId;
+    }
+
+    public void setClusterId(Long clusterId) {
+        this.clusterId = clusterId;
     }
 
     public String getClusterCode() {
@@ -76,11 +99,11 @@ public class DevopsPrometheusDTO extends BaseDTO {
         this.clusterCode = clusterCode;
     }
 
-    public Long getClusterId() {
-        return clusterId;
+    public PvVO getPvc() {
+        return pvc;
     }
 
-    public void setClusterId(Long clusterId) {
-        this.clusterId = clusterId;
+    public void setPvc(PvVO pvc) {
+        this.pvc = pvc;
     }
 }

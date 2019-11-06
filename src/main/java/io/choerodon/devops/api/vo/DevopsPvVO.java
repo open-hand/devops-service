@@ -10,7 +10,7 @@ public class DevopsPvVO {
     private String type;
     private Long pvcName;
     private String accessModes;
-    private String storage;
+    private String requestResource;
 
     public Long getId() {
         return id;
@@ -76,11 +76,11 @@ public class DevopsPvVO {
         this.accessModes = accessModes;
     }
 
-    public String getStorage() {
-        return storage;
+    public String getRequestResource() {
+        return requestResource;
     }
 
-    public void setStorage(String storage) {
-        this.storage = storage;
+    public void setRequestResource(String requestResource) {
+        this.requestResource = requestResource;
     }
 }
