@@ -28,4 +28,11 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pv') {
             column(name: 'name')
         }
     }
+
+    changeSet(id: '2019-11-06-rename-column', author: 'yzj') {
+        renameColumn(columnDataType: 'varchar(20)', newColumnName: 'request_resource', oldColumnName: 'storage', remarks: '存储容量', tableName: 'devops_pv')
+        addColumn(tableName: 'devops_pv') {
+            column(name: 'command_id', type: 'BIGINT UNSIGNED', remarks: '操作id')
+        }
+    }
 }

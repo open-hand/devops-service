@@ -7,9 +7,7 @@ import org.springframework.data.domain.Pageable;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.vo.DevopsPvPermissionUpateVO;
-import io.choerodon.devops.api.vo.DevopsPvVO;
-import io.choerodon.devops.api.vo.ProjectReqVO;
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.DevopsPvServcie;
 import io.choerodon.devops.infra.dto.DevopsPvDTO;
 import io.swagger.annotations.Api;
@@ -71,8 +69,8 @@ public class DevopsPvController {
     public ResponseEntity createPv(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id")Long projectId,
-            @RequestBody DevopsPvDTO devopsPvDTO){
-        devopsPvServcie.createPv(devopsPvDTO);
+            @RequestBody @Valid DevopsPvReqVo devopsPvReqVo){
+        devopsPvServcie.createPv(devopsPvReqVo);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
