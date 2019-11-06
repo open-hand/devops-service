@@ -328,6 +328,8 @@ export default class Index extends Component {
     setFieldsValue({
       appInstance: [],
     });
+    store.loadPorts(projectId, selectEnv, Number(value));
+
     store.loadInstance(projectId, selectEnv, Number(value))
       .then((data) => {
         if (data) {
@@ -422,15 +424,29 @@ export default class Index extends Component {
   /**
    * 每当节点端口、端口、目标端口、关键字等输入改变，强制校验，消除重复的报错信息
    */
-  changeValue = _.debounce((type) => {
+  changeValue = _.debounce((type, keyFiled, valueFiled, value) => {
     const {
       form: {
         validateFields,
       },
     } = this.props;
-
+    if (type === 'keywords') {
+      this.selectLabel(value, keyFiled, valueFiled);
+    }
     validateFields([type], { force: true });
   }, 400);
+
+
+  selectLabel = (value, keyFiled, valueFiled) => {
+    const { form: { setFieldsValue, validateFields } } = this.props;
+    if (_.includes(value, '__')) {
+      setFieldsValue({
+        [keyFiled]: value.split('__')[0],
+        [valueFiled]: value.split('__')[1],
+      });
+      validateFields(['keywords'], { force: true });
+    }
+  };
 
   /**
    * 生成app选项组
@@ -643,13 +659,18 @@ export default class Index extends Component {
               },
             ],
           })(
-            <Input
-              type="text"
+            <Select
+              mode="combobox"
               maxLength={5}
-              disabled={!selectEnv}
               onChange={this.changeValue.bind(this, 'tport')}
+              disabled={!selectEnv}
               label={<FormattedMessage id="network.config.targetPort" />}
-            />
+              dropdownMatchSelectWidth={false}
+            >
+              {_.map(store.getPorts, ({ resourceName, portValue }) => (
+                <Option key={portValue}>{resourceName}: {portValue}</Option>
+              ))}
+            </Select>
           )}
         </FormItem>
         {configType === 'NodePort' && (
