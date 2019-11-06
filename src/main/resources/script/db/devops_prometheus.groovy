@@ -23,9 +23,20 @@ databaseChangeLog(logicalFilePath: 'devops_prometheus.groovy') {
         dropColumn(columnName: "cluster_name", tableName: "devops_prometheus")
     }
 
-    changeSet(author: 'lzz', id: '2019-11-05-update-column') {
+    changeSet(author: 'lzz', id: '2019-11-05-add-column') {
         addColumn(tableName: 'devops_prometheus') {
             column(name: 'cluster_id', type: 'BIGINT UNSIGNED', remarks: 'cluster id', afterColumn: 'grafana_domain')
         }
     }
+
+    changeSet(author: 'lzz', id: '2019-11-06-drop-column') {
+        dropColumn(columnName: "pv_name", tableName: "devops_prometheus")
+    }
+    changeSet(author: 'lzz', id: '2019-11-06-add-column') {
+        addColumn(tableName: 'devops_prometheus') {
+            column(name: 'pv_id', type: 'VARCHAR(50)', remarks: 'pv id', afterColumn: 'cluster_id')
+            column(name: 'pvc_id', type: 'VARCHAR(50)', remarks: 'pvc id', afterColumn: 'pv_id')
+        }
+    }
+
 }
