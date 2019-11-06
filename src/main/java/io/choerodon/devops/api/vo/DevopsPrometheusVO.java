@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.vo;
 
+import java.util.List;
 import java.util.Map;
 import javax.validation.constraints.NotNull;
 
@@ -22,9 +23,9 @@ public class DevopsPrometheusVO {
     @NotNull(message = "error.grafana.null")
     private String grafanaDomain;
 
-    @ApiModelProperty("pvNames/必填")
+    @ApiModelProperty("pvIds/必填")
     @NotNull(message = "error.pv.name.null")
-    private Map<String,String> pvNames;
+    private List<DevopsPvVO> pvs;
 
     @ApiModelProperty("cluster编码/必填")
     @NotNull(message = "error.cluster.code.null")
@@ -54,12 +55,12 @@ public class DevopsPrometheusVO {
         this.grafanaDomain = grafanaDomain;
     }
 
-    public Map<String, String> getPvNames() {
-        return pvNames;
+    public List<DevopsPvVO> getPvs() {
+        return pvs;
     }
 
-    public void setPvNames(Map<String, String> pvNames) {
-        this.pvNames = pvNames;
+    public void setPvs(List<DevopsPvVO> pvs) {
+        this.pvs = pvs;
     }
 
     public String getClusterCode() {
