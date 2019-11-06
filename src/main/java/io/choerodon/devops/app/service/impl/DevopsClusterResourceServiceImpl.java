@@ -269,9 +269,9 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     @Transactional(rollbackFor = Exception.class)
     public void createPromteheus(Long clusterId, DevopsPrometheusVO devopsPrometheusVO) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
-//        if (devopsClusterDTO.getSystemEnvId() == null) {
-//            throw new CommonException("no.cluster.system.env");
-//        }
+        if (devopsClusterDTO.getSystemEnvId() == null) {
+            throw new CommonException("no.cluster.system.env");
+        }
 
         if (ObjectUtils.isEmpty(devopsClusterDTO.getClientId())) {
             ClientDTO clientDTO = baseServiceClientOperator.queryClientBySourceId(devopsClusterDTO.getOrganizationId(), devopsClusterDTO.getId());
