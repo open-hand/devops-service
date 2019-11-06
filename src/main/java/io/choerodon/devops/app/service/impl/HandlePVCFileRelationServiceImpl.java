@@ -86,8 +86,7 @@ public class HandlePVCFileRelationServiceImpl implements HandlerObjectFileRelati
 
     private boolean isIdentical(DevopsPvcDTO dbRecord, DevopsPvcReqVO update) {
         return Objects.equals(dbRecord.getAccessModes(), update.getAccessModes())
-                && Objects.equals(dbRecord.getRequestResource(), update.getRequestResource())
-                && Objects.equals(dbRecord.getType(), update.getType());
+                && Objects.equals(dbRecord.getRequestResource(), update.getRequestResource());
     }
 
     private void addPvcs(Map<String, String> objectPath, Long envId, List<V1PersistentVolumeClaim> pvcs, String path, Long userId) {

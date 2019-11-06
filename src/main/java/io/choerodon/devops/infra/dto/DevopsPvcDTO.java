@@ -3,10 +3,7 @@ package io.choerodon.devops.infra.dto;
 import io.choerodon.mybatis.entity.BaseDTO;
 import io.swagger.annotations.ApiModelProperty;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 @Table(name = "devops_pvc")
 public class DevopsPvcDTO extends BaseDTO {
@@ -36,10 +33,11 @@ public class DevopsPvcDTO extends BaseDTO {
     @ApiModelProperty("资源请求大小")
     private String requestResource;
 
-    @ApiModelProperty("卷类型")
-    private String type;
-
     @ApiModelProperty("PVC状态")
+    private String status;
+
+    @ApiModelProperty("PVC操作命令状态")
+    @Transient
     private String commandStatus;
 
     @ApiModelProperty("操作id")
@@ -109,20 +107,20 @@ public class DevopsPvcDTO extends BaseDTO {
         this.requestResource = requestResource;
     }
 
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
     public String getCommandStatus() {
         return commandStatus;
     }
 
     public void setCommandStatus(String commandStatus) {
         this.commandStatus = commandStatus;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     public Long getCommandId() {

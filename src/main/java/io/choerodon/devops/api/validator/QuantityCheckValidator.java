@@ -23,7 +23,7 @@ public class QuantityCheckValidator implements ConstraintValidator<QuantityCheck
             }
             long size = Long.parseLong(value.substring(0, value.length() - 2));
             String unit = value.substring(value.length() - 2);
-            if (size <= 0 || !ResourceUnitLevelEnum.checkExist(unit)) {
+            if (size <= 0 || !ResourceUnitLevelEnum.checkExist(unit.toUpperCase())) {
                 return false;
             }
         } catch (Exception e) {

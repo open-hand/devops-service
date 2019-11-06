@@ -1,9 +1,14 @@
 package io.choerodon.devops.app.service.impl;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import com.google.gson.Gson;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsPvcReqVO;
 import io.choerodon.devops.api.vo.DevopsPvcRespVO;
 import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.constant.KubernetesConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.CommandStatus;
 import io.choerodon.devops.infra.enums.ObjectType;
@@ -15,10 +20,7 @@ import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsPvMapper;
 import io.choerodon.devops.infra.mapper.DevopsPvcMapper;
-import io.choerodon.devops.infra.util.ConvertUtils;
-import io.choerodon.devops.infra.util.GitUserNameUtil;
-import io.choerodon.devops.infra.util.ResourceCreatorInfoUtil;
-import io.choerodon.devops.infra.util.TypeUtil;
+import io.choerodon.devops.infra.util.*;
 import io.kubernetes.client.custom.Quantity;
 import io.kubernetes.client.models.V1ObjectMeta;
 import io.kubernetes.client.models.V1PersistentVolumeClaim;
@@ -42,7 +44,7 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
     private static final String MASTER = "master";
 
     private static final String PERSISTENTVOLUMECLAIM = "PersistentVolumeClaim";
-
+    private Gson gson = new Gson();
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
@@ -75,12 +77,12 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
         //初始化V1PersistentVolumeClaim对象
         V1PersistentVolumeClaim v1PVC = initV1PersistentVolumeClaim(devopsPvcDTO);
 
-        DevopsEnvCommandDTO devopsEnvCommandE = initDevopsEnvCommandDTO(CREATE);
+        DevopsEnvCommandDTO devopsEnvCommand = initDevopsEnvCommandDTO(CREATE);
 
         // 在gitops库处理pvc文件
         operateEnvGitLabFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), v1PVC, devopsPvcDTO,
-                devopsEnvCommandE, userAttrDTO);
-        DevopsPvcRespVO devopsPvcRespVO = ConvertUtils.convertObject(devopsPvcDTO.getId(), DevopsPvcRespVO.class);
+                devopsEnvCommand, userAttrDTO);
+        DevopsPvcRespVO devopsPvcRespVO = ConvertUtils.convertObject(devopsPvcDTO, DevopsPvcRespVO.class);
         if (devopsPvcDTO.getCreatedBy() != null && devopsPvcDTO.getCreatedBy() != 0) {
             devopsPvcRespVO.setCreatorName(ResourceCreatorInfoUtil.getOperatorName(baseServiceClientOperator, devopsPvcDTO.getCreatedBy()));
         }
@@ -164,6 +166,16 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
     }
 
     @Override
+    public PageInfo<DevopsPvcRespVO> pageByOptions(Long projectId, Long envId, PageRequest pageRequest, String params) {
+        Map maps = gson.fromJson(params, Map.class);
+        return PageHelper
+                .startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> devopsPvcMapper.listByOption(envId,
+                        TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
+                        TypeUtil.cast(maps.get(TypeUtil.PARAMS))));
+
+    }
+
+    @Override
     public void baseCheckName(String pvcName, Long envId) {
         if (queryByEnvIdAndName(envId, pvcName) != null) {
             throw new CommonException("error.pvc.name.already.exists");
@@ -199,11 +211,11 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
     public void baseUpdate(DevopsPvcDTO devopsPvcDTO) {
         DevopsPvcDTO oldDevopsPvcDTO = devopsPvcMapper.selectByPrimaryKey(devopsPvcDTO.getId());
         if (oldDevopsPvcDTO == null) {
-            throw new CommonException("pvc.not.exists");
+            throw new CommonException("error.pvc.not.exists");
         }
         devopsPvcDTO.setObjectVersionNumber(oldDevopsPvcDTO.getObjectVersionNumber());
         if (devopsPvcMapper.updateByPrimaryKeySelective(devopsPvcDTO) != 1) {
-            throw new CommonException("pvc.update.error");
+            throw new CommonException("error.pvc.update.error");
         }
     }
 
@@ -212,11 +224,11 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
 
         DevopsPvcDTO devopsPvcDTO = voToDto(devopsPvcReqVO, projectId);
 
-        devopsPvcDTO.setCommandStatus(PvcStatus.PENDING.getStatus());
+        devopsPvcDTO.setStatus(PvcStatus.PENDING.getStatus());
 
         DevopsPvDTO devopsPvDTO = devopsPvMapper.selectByPrimaryKey(devopsPvcReqVO.getPvId());
         if (devopsPvDTO == null) {
-            throw new CommonException("error.pv.exists");
+            throw new CommonException("error.pv.not.exists");
         }
         devopsPvcDTO.setPvName(devopsPvDTO.getName());
         return devopsPvcDTO;
@@ -225,8 +237,10 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
     private void operateEnvGitLabFile(Integer gitlabEnvGroupProjectId, V1PersistentVolumeClaim v1PersistentVolumeClaim, DevopsPvcDTO devopsPvcDTO,
                                       DevopsEnvCommandDTO devopsEnvCommandDTO, UserAttrDTO userAttrDTO) {
 
+        //获得环境
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsPvcDTO.getEnvId());
 
+        //插入pvcDTO对象
         devopsPvcMapper.insert(devopsPvcDTO);
 
         Long pvcId = devopsPvcDTO.getId();
@@ -242,7 +256,6 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
 
         ResourceConvertToYamlHandler<V1PersistentVolumeClaim> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
         resourceConvertToYamlHandler.setType(v1PersistentVolumeClaim);
-        //TODO gitlabOperation
         resourceConvertToYamlHandler.operationEnvGitlabFile("pvc-" + devopsPvcDTO.getName(), gitlabEnvGroupProjectId,
                 CREATE, userAttrDTO.getGitlabUserId(), devopsPvcDTO.getId(), PERSISTENTVOLUMECLAIM, null, false,
                 devopsPvcDTO.getEnvId(), path);
@@ -270,9 +283,9 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
 
         long size = Long.parseLong(resourceString.substring(0, resourceString.length() - 2));
         String unit = resourceString.substring(resourceString.length() - 2);
-        int level = ResourceUnitLevelEnum.valueOf(unit).ordinal();
+        int level = ResourceUnitLevelEnum.valueOf(unit.toUpperCase()).ordinal();
 
-        for (int i = 0; i < level; i++) {
+        for (int i = 0; i <= level; i++) {
             size *= 1024;
         }
 
@@ -281,7 +294,7 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
 
         V1ResourceRequirements resourceRequirements = new V1ResourceRequirements();
         Map<String, Quantity> requestResource = new HashMap<>();
-        requestResource.put("storage", quantity);
+        requestResource.put(KubernetesConstants.STORAGE, quantity);
         resourceRequirements.setRequests(requestResource);
         return resourceRequirements;
     }

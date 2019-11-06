@@ -21,6 +21,51 @@ public class DevopsPvcRespVO extends DevopsResourceDataInfoVO {
     @ApiModelProperty("资源申请数量")
     private String requestResource;
 
-    @ApiModelProperty("卷类型")
-    private String type;
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Long getEnvId() {
+        return envId;
+    }
+
+    public void setEnvId(Long envId) {
+        this.envId = envId;
+    }
+
+    public Long getPvId() {
+        return pvId;
+    }
+
+    public void setPvId(Long pvId) {
+        this.pvId = pvId;
+    }
+
+    public String getAccessModes() {
+        return accessModes;
+    }
+
+    public void setAccessModes(String accessModes) {
+        this.accessModes = accessModes;
+    }
+
+    public String getRequestResource() {
+        return requestResource;
+    }
+
+    public void setRequestResource(String requestResource) {
+        this.requestResource = requestResource;
+    }
 }

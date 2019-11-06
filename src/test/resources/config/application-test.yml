@@ -37,8 +37,8 @@ services:
   gitlab:
     sshUrl: "git.vk.vu:2289"
     url: "http://git.alpha.saas.test.com"
-  sonarqube:
-    url: "http://sonarqube.com"
+#  sonarqube:
+#    url: "http://sonarqube.com"
 choerodon:
   event:
     consumer:

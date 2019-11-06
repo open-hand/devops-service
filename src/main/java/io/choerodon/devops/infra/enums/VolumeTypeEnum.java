@@ -19,7 +19,7 @@ public enum VolumeTypeEnum {
     }
 
     public static Boolean checkExist(String type) {
-        VolumeTypeEnum volumeTypeEnum = VolumeTypeEnum.valueOf(type);
+        VolumeTypeEnum volumeTypeEnum = VolumeTypeEnum.valueOf(type.toUpperCase());
         return volumeTypeEnum != null;
     }
 }

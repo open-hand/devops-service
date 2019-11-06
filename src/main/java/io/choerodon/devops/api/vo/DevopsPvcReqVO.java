@@ -2,11 +2,12 @@ package io.choerodon.devops.api.vo;
 
 
 import io.choerodon.devops.api.validator.annotation.QuantityCheck;
-import io.choerodon.devops.api.validator.annotation.VolumeTypeCheck;
 import io.swagger.annotations.ApiModelProperty;
-import springfox.documentation.annotations.ApiIgnore;
+import org.hibernate.validator.constraints.Length;
 
-import javax.validation.constraints.*;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 
 public class DevopsPvcReqVO {
     @ApiModelProperty("PVC id")
@@ -14,8 +15,7 @@ public class DevopsPvcReqVO {
 
     @ApiModelProperty("PVC名称")
     @Pattern(regexp = "[a-z]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*", message = "error.pvc.name.pattern")
-    @Max(value = 40, message = "error.pvc.name.length.max")
-    @Min(value = 10, message = "error.pvc.name.length.min")
+    @Length(max = 40, min = 1, message = "error.pvc.name.length")
     private String name;
 
     @NotNull(message = "error.env.id.null")
@@ -33,10 +33,6 @@ public class DevopsPvcReqVO {
     @QuantityCheck(message = "error.pvc.request.source.error")
     @ApiModelProperty("资源申请数量")
     private String requestResource;
-
-    @VolumeTypeCheck(message = "error.pvc.type.exist")
-    @ApiModelProperty("卷类型")
-    private String type;
 
     @ApiModelProperty(value = "本次请求的操作类型，create/update", hidden = true)
     private String commandType;
@@ -87,14 +83,6 @@ public class DevopsPvcReqVO {
 
     public void setRequestResource(String requestResource) {
         this.requestResource = requestResource;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
     }
 
     public String getCommandType() {
