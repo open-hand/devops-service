@@ -345,7 +345,6 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
             devopsClusterResource.setOperate(ClusterResourceOperateType.UPGRADE.getType());
             devopsClusterResourceService.baseUpdate(devopsClusterResource);
         }
-
     }
 
     @Override
