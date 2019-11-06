@@ -4,9 +4,8 @@ import java.util.List;
 
 import io.choerodon.devops.api.vo.ClusterResourceVO;
 import io.choerodon.devops.api.vo.DevopsPrometheusVO;
-import io.choerodon.devops.api.vo.DevopsPvcReqVO;
 import io.choerodon.devops.infra.dto.DevopsClusterResourceDTO;
-import org.springframework.util.MultiValueMap;
+import io.choerodon.devops.infra.dto.DevopsPrometheusDTO;
 
 /**
  * @author zhaotianxin
@@ -49,11 +48,13 @@ public interface DevopsClusterResourceService {
      */
     Boolean checkCertManager(Long clusterId);
 
-    void createPromteheus(Long projectId,Long clusterId, DevopsPrometheusVO prometheusVo);
+    void createPromteheus(Long projectId, Long clusterId, DevopsPrometheusVO prometheusVo);
 
-    void updatePromteheus(Long projectId,Long clusterId, DevopsPrometheusVO prometheusVo);
+    void updatePromteheus(Long projectId, Long clusterId, DevopsPrometheusVO prometheusVo);
 
     DevopsPrometheusVO queryPrometheus(Long clusterId);
+
+    DevopsPrometheusDTO queryPrometheusDTO(Long clusterId);
 
     ClusterResourceVO queryDeployProcess(Long clusterId);
 
@@ -73,7 +74,7 @@ public interface DevopsClusterResourceService {
      */
     Boolean queryCertManagerByEnvId(Long envId);
 
-     void deployPrometheus(Long clusterId, DevopsPvcReqVO pvc);
+    void deployPrometheus(Long clusterId, DevopsPrometheusDTO devopsPrometheusDTO);
 
     void deletePvc(Long clusterId);
 }
