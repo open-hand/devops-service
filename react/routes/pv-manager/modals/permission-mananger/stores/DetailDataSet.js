@@ -1,12 +1,12 @@
 import getTablePostData from '../../../../../utils/getTablePostData';
 
-export default ((intlPrefix, formatMessage, projectId) => ({
+export default ((intlPrefix, formatMessage, projectId, pvId) => ({
   autoCreate: false,
   autoQuery: true,
   selection: false,
   transport: {
     read: {
-      url: `/devops/v1/project/${projectId}/`,
+      url: `/devops/v1/projects/${projectId}/pv/${pvId}`,
       method: 'get',
     },
   },

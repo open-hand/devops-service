@@ -1,12 +1,12 @@
 import { axios } from '@choerodon/boot';
 
 export default ((intlPrefix, formatMessage, projectId, typeDs, modeDs, storageDs) => {
-  async function checkName(value) {
+  async function checkName(value, name, record) {
     const pa = /^[a-z]([-.a-z0-9]*[a-z0-9])?$/;
     if (!value) return;
     if (pa.test(value)) {
       try {
-        const res = await axios.get(`/devops/v1/projects/${projectId}/`);
+        const res = await axios.get(`/devops/v1/projects/${projectId}/pv/check_name?clusterId=${record.get('clusterId')}&pvName=${value}`);
         if (res && res.failed) {
           return formatMessage({ id: 'checkNameExist' });
         } else {
@@ -26,7 +26,7 @@ export default ((intlPrefix, formatMessage, projectId, typeDs, modeDs, storageDs
     selection: false,
     transport: {
       create: ({ data: [data] }) => ({
-        url: '',
+        url: `/devops/v1/projects/${projectId}/pv`,
         method: 'post',
         data,
       }),
@@ -44,9 +44,10 @@ export default ((intlPrefix, formatMessage, projectId, typeDs, modeDs, storageDs
       { name: 'name', type: 'string', label: formatMessage({ id: 'name' }), required: true, maxLength: 30, validator: checkName },
       { name: 'description', type: 'string', label: formatMessage({ id: 'description' }), maxLength: 40 },
       { name: 'type', type: 'string', textField: 'value', defaultValue: 'NFS', label: formatMessage({ id: `${intlPrefix}.type` }), required: true, options: typeDs },
-      { name: 'mode', type: 'string', textField: 'value', label: formatMessage({ id: `${intlPrefix}.mode` }), required: true, options: modeDs, defaultValue: 'ReadWriteMany' },
-      { name: 'storage', type: 'number', label: formatMessage({ id: `${intlPrefix}.storage` }), required: true, pattern: /^[1-9]\d*$/ },
+      { name: 'accessModes', type: 'string', textField: 'value', label: formatMessage({ id: `${intlPrefix}.mode` }), required: true, options: modeDs, defaultValue: 'ReadWriteMany' },
+      { name: 'storage', type: 'number', label: formatMessage({ id: `${intlPrefix}.storage` }), required: true, min: 1 },
       { name: 'unit', type: 'string', textField: 'value', defaultValue: 'Gi', options: storageDs },
+      { name: 'skipCheckProjectPermission', type: 'boolean', defaultValue: true },
     ],
   });
 });

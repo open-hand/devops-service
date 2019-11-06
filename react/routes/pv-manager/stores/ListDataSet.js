@@ -9,13 +9,13 @@ export default ((intlPrefix, formatMessage, projectId) => ({
       const postData = getTablePostData(data);
 
       return ({
-        url: '',
+        url: `/devops/v1/projects/${projectId}/pv/page_by_options`,
         method: 'post',
         data: postData,
       });
     },
     destroy: ({ data: [data] }) => ({
-      url: '',
+      url: `/devops/v1/projects/${projectId}/pv/${data.id}`,
       method: 'delete',
     }),
   },
@@ -25,9 +25,10 @@ export default ((intlPrefix, formatMessage, projectId) => ({
     { name: 'description', type: 'string', label: formatMessage({ id: 'description' }) },
     { name: 'clusterName', type: 'string', label: formatMessage({ id: `${intlPrefix}.belong.cluster` }) },
     { name: 'type', type: 'string', label: formatMessage({ id: `${intlPrefix}.type` }) },
-    { name: 'pvc', type: 'string', label: formatMessage({ id: `${intlPrefix}.pvc` }) },
-    { name: 'mode', type: 'string', label: formatMessage({ id: `${intlPrefix}.mode` }) },
+    { name: 'pvcName', type: 'string', label: formatMessage({ id: `${intlPrefix}.pvc` }) },
+    { name: 'accessModes', type: 'string', label: formatMessage({ id: `${intlPrefix}.mode` }) },
     { name: 'storage', type: 'string', label: formatMessage({ id: `${intlPrefix}.storage` }) },
+    { name: 'status', type: 'string' },
   ],
   queryFields: [
     { name: 'name', type: 'string', label: formatMessage({ id: 'name' }) },

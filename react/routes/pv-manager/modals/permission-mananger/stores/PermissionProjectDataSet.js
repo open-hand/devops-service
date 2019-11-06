@@ -1,6 +1,6 @@
 import getTablePostData from '../../../../../utils/getTablePostData';
 
-export default ((intlPrefix, formatMessage, projectId, optionDs) => ({
+export default ((intlPrefix, formatMessage, projectId, pvId, optionDs) => ({
   autoCreate: false,
   autoQuery: false,
   selection: false,
@@ -8,18 +8,18 @@ export default ((intlPrefix, formatMessage, projectId, optionDs) => ({
     read: ({ data: [data] }) => {
       const postData = getTablePostData(data);
       return ({
-        url: `/devops/v1/project/${projectId}/`,
+        url: '',
         method: 'post',
         data: postData,
       });
     },
     create: ({ data }) => ({
-      url: '',
+      url: `/devops/v1/projects/${projectId}/pv/${pvId}/permission`,
       method: 'post',
       data,
     }),
     destroy: ({ data: [data] }) => ({
-      url: '',
+      url: `/devops/v1/projects/${projectId}/pv/${pvId}/permission?related_project_id=${data.id}`,
       method: 'delete',
     }),
   },

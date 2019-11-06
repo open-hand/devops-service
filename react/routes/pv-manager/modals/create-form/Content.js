@@ -2,7 +2,7 @@ import React, { useMemo, useState, useEffect, Fragment } from 'react';
 import { observer } from 'mobx-react-lite';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { Choerodon } from '@choerodon/boot';
-import { Form, Select, TextField, TextArea, Tooltip } from 'choerodon-ui/pro';
+import { Form, Select, TextField, TextArea, NumberField } from 'choerodon-ui/pro';
 import { usePVCreateStore } from './stores';
 
 import './index.less';
@@ -64,9 +64,9 @@ const CreateForm = () => {
         />
         <TextField name="name" colSpan={3} />
         <TextArea name="description" colSpan={3} resize="vertical" />
-        <Select name="type" searchable colSpan={3} clearButton={false} />
-        <Select name="mode" searchable colSpan={3} clearButton={false} />
-        <TextField name="storage" colSpan={2} />
+        <Select name="type" colSpan={3} clearButton={false} />
+        <Select name="accessModes" colSpan={3} clearButton={false} />
+        <NumberField name="storage" step={1} colSpan={2} />
         <Select name="unit" clearButton={false} />
       </Form>
     </div>
