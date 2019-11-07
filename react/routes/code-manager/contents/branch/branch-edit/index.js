@@ -164,10 +164,7 @@ class BranchEdit extends Component {
         issueId = issues[0].issueId;
       }
     }
-    // 如果 issue列表为空的时候默认显示原始issue
-    if (issue.length === 0 && store.currentBranchIssue) {
-      issueId = this.getOptionContent(store.currentBranchIssue);
-    }
+
     return (
       <Sidebar
         title={<FormattedMessage id="branch.edit" />}
