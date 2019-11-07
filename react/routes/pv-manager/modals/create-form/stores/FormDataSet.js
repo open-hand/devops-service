@@ -1,4 +1,5 @@
 import { axios } from '@choerodon/boot';
+import omit from 'lodash/omit';
 
 export default ((intlPrefix, formatMessage, projectId, typeDs, modeDs, storageDs) => {
   async function checkName(value, name, record) {
@@ -25,11 +26,15 @@ export default ((intlPrefix, formatMessage, projectId, typeDs, modeDs, storageDs
     autoQuery: false,
     selection: false,
     transport: {
-      create: ({ data: [data] }) => ({
-        url: `/devops/v1/projects/${projectId}/pv`,
-        method: 'post',
-        data,
-      }),
+      create: ({ data: [data] }) => {
+        const res = omit(data, ['__id', '__status', 'storage', 'unit']);
+        res.requestResource = `${data.storage}${data.unit}`;
+        return ({
+          url: `/devops/v1/projects/${projectId}/pv`,
+          method: 'post',
+          data: res,
+        });
+      },
     },
     fields: [
       {

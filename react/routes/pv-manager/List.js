@@ -216,7 +216,7 @@ const AppService = withRouter(observer((props) => {
           <Column name="name" renderer={renderName} sortable />
           <Column renderer={renderActions} width={70} />
           <Column name="description" sortable />
-          <Column name="cluster" />
+          <Column name="clusterName" />
           <Column name="type" />
           <Column name="pvcName" />
           <Column name="accessModes" />

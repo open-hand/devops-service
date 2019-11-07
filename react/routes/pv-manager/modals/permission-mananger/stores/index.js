@@ -26,7 +26,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const DetailDs = useMemo(() => new DataSet(DetailDataSet(intlPrefix, formatMessage, projectId, pvId)), [projectId, pvId]);
     const optionDs = useMemo(() => new DataSet(OptionsDataSet(projectId, pvId)), [projectId, pvId]);
     const allProjectDs = useMemo(() => new DataSet(AllProjectDataSet(intlPrefix, formatMessage, projectId, DetailDs)), [projectId]);
-    const permissionProjectDs = useMemo(() => new DataSet(PermissionProjectDataSet(intlPrefix, formatMessage, projectId, optionDs)), [projectId]);
+    const permissionProjectDs = useMemo(() => new DataSet(PermissionProjectDataSet(intlPrefix, formatMessage, projectId, pvId, optionDs, DetailDs)), [projectId, pvId]);
 
     useEffect(() => {
       loadData();
