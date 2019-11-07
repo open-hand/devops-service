@@ -8,11 +8,9 @@ import io.choerodon.devops.app.service.DevopsEnvCommandService
 import io.choerodon.devops.app.service.DevopsEnvFileResourceService
 import io.choerodon.devops.app.service.DevopsEnvironmentService
 import io.choerodon.devops.app.service.DevopsPvProPermissionService
-import io.choerodon.devops.app.service.DevopsPvServcie
 import io.choerodon.devops.app.service.UserAttrService
 import io.choerodon.devops.infra.dto.DevopsClusterDTO
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO
-import io.choerodon.devops.infra.dto.DevopsProjectDTO
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO
 import io.choerodon.devops.infra.dto.iam.ProjectDTO
 import io.choerodon.devops.infra.feign.BaseServiceClient
@@ -22,7 +20,6 @@ import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler
 import io.choerodon.devops.infra.mapper.DevopsPvMapper
 import io.choerodon.devops.infra.mapper.DevopsPvcMapper
-import javafx.beans.binding.When
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -30,7 +27,6 @@ import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.context.annotation.Import
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.web.client.RestTemplate
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Stepwise
