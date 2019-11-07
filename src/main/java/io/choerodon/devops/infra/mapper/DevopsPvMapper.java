@@ -10,12 +10,21 @@ import java.util.Map;
 
 public interface DevopsPvMapper extends Mapper<DevopsPvDTO> {
 
-    List<DevopsPvVO> listPvByOptions(@Param("searchParam") Map<String,Object> searchParamMap,
+    List<DevopsPvVO> listPvByOptions(@Param("searchParam") Map<String, Object> searchParamMap,
                                      @Param("params") List<String> params);
 
     /**
      * 和cluster表和pvc表做连接查询获取name
      * @return
      */
-    DevopsPvVO queryById(@Param("pvId")Long pvId);
+    DevopsPvVO queryById(@Param("pvId") Long pvId);
+
+    /**
+     * 通过名称与集群id查询PV
+     * @param name
+     * @param clusterId
+     * @return
+     */
+    DevopsPvDTO queryByNameAndClusterId(@Param("name") String name,
+                                        @Param("clusterId") Long clusterId);
 }

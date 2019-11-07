@@ -22,7 +22,7 @@ public class DevopsPvcDTO extends BaseDTO {
     private Long pvId;
 
     @ApiModelProperty("PV名称")
-    private String PvName;
+    private String pvName;
 
     @ApiModelProperty("项目id")
     private Long projectId;
@@ -44,11 +44,11 @@ public class DevopsPvcDTO extends BaseDTO {
     private Long commandId;
 
     public String getPvName() {
-        return PvName;
+        return pvName;
     }
 
     public void setPvName(String pvName) {
-        PvName = pvName;
+        this.pvName = pvName;
     }
 
     public Long getId() {
