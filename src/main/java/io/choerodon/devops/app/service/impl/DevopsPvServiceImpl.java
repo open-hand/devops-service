@@ -92,8 +92,18 @@ public class DevopsPvServiceImpl implements DevopsPvServcie {
         devopsPvDTO.setStatus(PvStatus.OPERATING.getStatus());
         // 创建pv的环境是所选集群关联的系统环境
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(devopsPvDTO.getClusterId());
-        DevopsEnvironmentDTO devopsEnvironmentDTO =devopsEnvironmentService.baseQueryById(devopsClusterDTO.getSystemEnvId());
 
+        // Todo: 获取所选集群的系统环境Id，目前staging环境里面集群的系统环境id都是null
+        // 如果系统环境id为空那么先去创建系统环境,更新集群关联的系统环境
+        if (devopsClusterDTO.getSystemEnvId() == null){
+            DevopsEnvironmentDTO devopsEnvironmentDTO = new DevopsEnvironmentDTO();
+            devopsEnvironmentDTO.setClusterId(devopsClusterDTO.getId());
+            devopsEnvironmentService.baseCreate(devopsEnvironmentDTO);
+            devopsClusterDTO.setSystemEnvId(devopsEnvironmentDTO.getId());
+            devopsClusterService.baseUpdate(devopsClusterDTO);
+        }
+
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsClusterDTO.getSystemEnvId());
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         //校验环境信息
