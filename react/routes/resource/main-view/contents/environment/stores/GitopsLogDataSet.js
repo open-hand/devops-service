@@ -23,7 +23,7 @@ export default ({ formatMessage, intlPrefix }) => ({
       label: formatMessage({ id: 'commit' }),
     },
     {
-      name: 'errorTime',
+      name: 'lastUpdateDate',
       type: 'dateTime',
       label: formatMessage({ id: `${intlPrefix}.environment.error.time` }),
     },

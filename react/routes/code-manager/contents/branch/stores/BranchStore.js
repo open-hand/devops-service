@@ -134,7 +134,7 @@ class BranchStore {
     this.issueInitValue = value;
   }
 
-  loadIssue = (proId = AppState.currentMenuType.id, search = '', onlyActiveSprint, issueId = '', issueNum = '') => {
+  loadIssue = (proId = AppState.currentMenuType.id, search = '', onlyActiveSprint = false, issueId = '', issueNum = '') => {
     this.setIssueLoading(true);
     return axios.get(`/agile/v1/projects/${proId}/issues/summary?issueId=${issueId}&onlyActiveSprint=${onlyActiveSprint}&self=true&issueNum=${issueNum}&content=${search}`)
       .then((data) => {
@@ -235,16 +235,18 @@ class BranchStore {
           .then((data) => {
             const type = branch.branchName.split('-')[0];
             let issueName = '';
+            let issueNum = '';
             if (types.includes(type)) {
-              issueName = branch.branchName.split(`${type}-`)[1];
+              issueName = branch.branchName.split(`${type}-`)[1] || '';
             } else {
               issueName = branch.branchName;
             }
-            if (issueName.indexOf(data.projectCode) === 0) {
-              const issueNum = `${parseInt(branch.branchName.split(`${data.projectCode}-`)[1].split('-')[0], 10)}`;
-              this.setIssueInitValue(`${data.projectCode}-${issueNum}`);
-              this.loadIssue(AppState.currentMenuType.id, '', '', issueNum);
+            if (issueName && issueName.indexOf(data.projectCode) === 0) {
+              const number = `${parseInt(branch.branchName.split(`${data.projectCode}-`)[1].split('-')[0], 10)}`;
+              issueNum = `${data.projectCode}-${number}`;
+              this.setIssueInitValue(issueNum);
             }
+            this.loadIssue(AppState.currentMenuType.id, '', false, '', issueNum);
           });
       } else {
         this.loadIssue(AppState.currentMenuType.id, '', true, branch.issueId, '');

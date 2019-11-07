@@ -186,7 +186,7 @@ class BranchEdit extends Component {
               {...formItemLayout}
             >
               {getFieldDecorator('issueId', {
-                initialValue: issueId,
+                initialValue: issueId || undefined,
               })(
                 <Select
                   dropdownClassName="createBranch-dropdown"
