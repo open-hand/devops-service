@@ -1,6 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -11,11 +10,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import org.springframework.data.domain.Pageable;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.ProjectReqVO;
 import io.choerodon.devops.api.vo.iam.UserVO;

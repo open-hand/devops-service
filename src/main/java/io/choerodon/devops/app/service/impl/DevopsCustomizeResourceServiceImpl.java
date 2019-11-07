@@ -13,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.yaml.snakeyaml.Yaml;
 
 import org.springframework.data.domain.Pageable;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsCustomizeResourceReqVO;
 import io.choerodon.devops.api.vo.DevopsCustomizeResourceVO;
@@ -120,12 +121,10 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
                 handleCustomResource(projectId, devopsCustomizeResourceReqVO.getEnvId(), FileUtil.getYaml().dump(datas), kind.toString(), name, devopsCustomizeResourceReqVO.getType(), devopsCustomizeResourceReqVO.getResourceId(), resourceFilePath, null);
 
             }
-        } catch (Exception e) {
-            if (e instanceof CommonException) {
-                throw e;
-            } else {
-                throw new CommonException("error.load.yaml.content");
-            }
+        } catch (CommonException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            throw new CommonException("error.load.yaml.content");
         }
 
         if (devopsCustomizeResourceReqVO.getType().equals(CREATE)) {

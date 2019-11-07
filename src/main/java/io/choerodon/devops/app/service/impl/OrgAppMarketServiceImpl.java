@@ -8,38 +8,36 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
-import io.choerodon.asgard.saga.annotation.Saga;
-import io.choerodon.asgard.saga.producer.StartSagaBuilder;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import org.apache.commons.compress.utils.IOUtils;
 import org.apache.http.entity.ContentType;
-import org.checkerframework.checker.units.qual.A;
 import org.eclipse.jgit.api.Git;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
-import org.springframework.data.domain.Pageable;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.validator.ApplicationValidator;
 import io.choerodon.devops.api.vo.ConfigVO;
 import io.choerodon.devops.api.vo.iam.*;
 import io.choerodon.devops.api.vo.kubernetes.MockMultipartFile;
+import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.*;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
@@ -718,7 +716,7 @@ public class OrgAppMarketServiceImpl implements OrgAppMarketService {
                     DevopsConfigDTO devopsConfigDTO=devopsConfigService.baseQuery(appServiceVersionDTO.getHarborConfigId());
                     configVO = gson.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class);
                     AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceVersionDTO.getAppServiceId());
-                    if (devopsConfigDTO.getName().equals("harbor_default") && appServiceDTO.getProjectId() != null) {
+                    if (devopsConfigDTO.getName().equals(HARBOR_NAME) && appServiceDTO.getProjectId() != null) {
                         configVO = appServiceInstanceService.queryDefaultConfig(appServiceDTO.getProjectId(), configVO);
                     }
                 } else {

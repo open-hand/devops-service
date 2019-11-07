@@ -30,10 +30,10 @@ public interface DevopsPvcService {
     /**
      * 检查PVC名称唯一性
      *
-     * @param PvcName
+     * @param pvcName
      * @param envId
      */
-    void baseCheckName(String PvcName, Long envId);
+    void baseCheckName(String pvcName, Long envId);
 
     /**
      * 通过环境id和名称查找pvc

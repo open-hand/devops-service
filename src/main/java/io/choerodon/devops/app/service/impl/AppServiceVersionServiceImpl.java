@@ -1,5 +1,9 @@
 package io.choerodon.devops.app.service.impl;
 
+import static java.util.Comparator.comparing;
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.toCollection;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -10,19 +14,17 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
-import io.choerodon.devops.infra.enums.ProjectConfigType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
-import org.springframework.web.multipart.MultipartFile;
-
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+import org.springframework.web.multipart.MultipartFile;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.*;
@@ -30,16 +32,13 @@ import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.enums.ProjectConfigType;
 import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.AppServiceMapper;
 import io.choerodon.devops.infra.mapper.AppServiceVersionMapper;
 import io.choerodon.devops.infra.mapper.AppServiceVersionReadmeMapper;
 import io.choerodon.devops.infra.util.*;
-
-import static java.util.Comparator.comparing;
-import static java.util.stream.Collectors.collectingAndThen;
-import static java.util.stream.Collectors.toCollection;
 
 @Service
 public class AppServiceVersionServiceImpl implements AppServiceVersionService {
@@ -634,8 +633,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         Set<Long> localProjectIds = new HashSet<>();
         Set<Long> shareServiceIds = new HashSet<>();
         // 分别获取本项目的应用服务和共享服务
-        ids.stream().forEach(v -> {
-            boolean contains = appServiceIds.contains(v);
+        ids.forEach(v -> {
             if (appServiceIds.contains(v)) {
                 localProjectIds.add(v);
             } else {
@@ -667,7 +665,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
             appServiceVersionDTO.setHelmConfigId(configId);
         }
         List<AppServiceVersionDTO> list = appServiceVersionMapper.select(appServiceVersionDTO);
-        return list != null && list.size() > 0;
+        return !CollectionUtils.isEmpty(list);
     }
 
     @Override
@@ -678,7 +676,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
             Set<Long> readmeIds = new HashSet<>();
             Set<Long> configIds = new HashSet<>();
             Set<Long> versionIds = new HashSet<>();
-            appServiceVersionDTOS.stream().forEach(appServiceVersionDTO -> {
+            appServiceVersionDTOS.forEach(appServiceVersionDTO -> {
                 versionIds.add(appServiceVersionDTO.getId());
                 if(appServiceVersionDTO.getValueId() != null){
                     valueIds.add(appServiceVersionDTO.getValueId());

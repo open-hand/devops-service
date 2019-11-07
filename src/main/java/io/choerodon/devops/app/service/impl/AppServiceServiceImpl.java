@@ -1666,9 +1666,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public List<ProjectVO> listProjects(Long organizationId, Long projectId, String params) {
         List<ProjectDTO> projectDTOS = baseServiceClientOperator.listIamProjectByOrgId(organizationId, null, null, params).stream()
-                .filter(v -> v.getEnabled())
+                .filter(ProjectDTO::getEnabled)
                 .filter(v -> !projectId.equals(v.getId())).collect(Collectors.toList());
-        ;
         List<ProjectVO> projectVOS = ConvertUtils.convertList(projectDTOS, ProjectVO.class);
         if (projectVOS == null) {
             return new ArrayList<>();
@@ -2085,7 +2084,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             List<Long> projectIds = new ArrayList<>();
             if (ObjectUtils.isEmpty(searchProjectId)) {
                 projectDTOS = baseServiceClientOperator.listIamProjectByOrgId(organizationId);
-                projectIds = projectDTOS.stream().filter(v -> v.getEnabled())
+                projectIds = projectDTOS.stream().filter(ProjectDTO::getEnabled)
                         .filter(v -> !projectId.equals(v.getId()))
                         .map(ProjectDTO::getId).collect(Collectors.toList());
             } else {
@@ -2093,10 +2092,10 @@ public class AppServiceServiceImpl implements AppServiceService {
                 projectIds.add(searchProjectId);
                 projectDTOS.add(projectDTO);
             }
-            if (ObjectUtils.isEmpty(projectDTOS)) return new PageInfo<AppServiceGroupInfoVO>();
+            if (ObjectUtils.isEmpty(projectDTOS)) return new PageInfo<>();
             //查询组织共享和共享项目的应用服务
             List<AppServiceDTO> organizationAppServices = appServiceMapper.queryOrganizationShareApps(projectIds, param, projectId);
-            if (organizationAppServices.isEmpty()) return new PageInfo<AppServiceGroupInfoVO>();
+            if (organizationAppServices.isEmpty()) return new PageInfo<>();
 
             // 去重
             appServiceDTOList = organizationAppServices.stream().collect(collectingAndThen(
@@ -2245,13 +2244,6 @@ public class AppServiceServiceImpl implements AppServiceService {
         return appServiceGroupInfoVO;
     }
 
-    private AppServiceGroupVO dtoToGroupVO(ApplicationDTO applicationDTO) {
-        AppServiceGroupVO appServiceGroupVO = new AppServiceGroupVO();
-        BeanUtils.copyProperties(applicationDTO, appServiceGroupVO);
-        BeanUtils.copyProperties(applicationDTO, appServiceGroupVO);
-        return appServiceGroupVO;
-    }
-
     /**
      * ensure the repository url and access token are valid.
      *
@@ -2381,12 +2373,11 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     @Override
     public List<ProjectVO> listProjectByShare(Long projectId, Boolean share) {
-        List<AppServiceDTO> appServiceDTOList = new ArrayList<>();
         PageInfo<AppServiceGroupInfoVO> appServiceGroupInfoVOPageInfo = pageAppServiceByMode(projectId, share, null, null, PageRequest.of(0,1));
         List<AppServiceGroupInfoVO> list = appServiceGroupInfoVOPageInfo.getList();
         List<ProjectVO> projectVOS = new ArrayList<>();
         if (CollectionUtils.isEmpty(list)) {
-            return new ArrayList<ProjectVO>();
+            return new ArrayList<>();
         }
         list.forEach(v -> {
             ProjectVO projectVO = new ProjectVO();
@@ -2619,10 +2610,4 @@ public class AppServiceServiceImpl implements AppServiceService {
         return devopsUserPermissionVO;
     }
 
-    private ProjectVO dtoToProjectVO(ProjectDTO projectDTO) {
-        ProjectVO projectVO = new ProjectVO();
-        BeanUtils.copyProperties(projectDTO, projectVO);
-        projectVO.setAppName(projectDTO.getApplicationVO().getName());
-        return projectVO;
-    }
 }

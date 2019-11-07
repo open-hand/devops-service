@@ -140,9 +140,8 @@ public class HarborServiceImpl implements HarborService {
             userName = name;
         }
         String userEmail = String.format("%s@harbor.com", userName);
-        String password = String.format("%s%s", userName, GenerateUUID.generateUUID().substring(0, 3));
-        User user = new User(userName, userEmail, password, userName);
-        return user;
+        String pwd = String.format("%s%s", userName, GenerateUUID.generateUUID().substring(0, 3));
+        return new User(userName, userEmail, pwd, userName);
     }
 
     private void createUser(HarborClient harborClient, User user, List<Integer> roles, OrganizationDTO organizationDTO, ProjectDTO projectDTO) {

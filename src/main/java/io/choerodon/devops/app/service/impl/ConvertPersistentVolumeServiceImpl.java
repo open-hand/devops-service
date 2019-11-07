@@ -33,11 +33,12 @@ public class ConvertPersistentVolumeServiceImpl extends ConvertK8sObjectService<
             throw new GitOpsExplainException(
                     GitOpsObjectError.PERSISTENT_VOLUME_NAME_NOT_FOUND.getError(), filePath);
         }
+        // TODO by zmf
     }
 
     @Override
     public void checkIfExist(List<V1PersistentVolume> v1PersistentVolumes, Long envId, List<DevopsEnvFileResourceDTO> beforeSyncDelete, Map<String, String> objectPath, V1PersistentVolume v1PersistentVolume) {
-        super.checkIfExist(v1PersistentVolumes, envId, beforeSyncDelete, objectPath, v1PersistentVolume);
+        // TODO by zmf
     }
 
     @Override

@@ -1,10 +1,29 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.core.iam.InitRoleCode.PROJECT_OWNER;
+
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
 import com.alibaba.fastjson.JSON;
 import com.github.pagehelper.PageInfo;
 import com.zaxxer.hikari.util.UtilityElf;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
 import io.choerodon.devops.api.vo.kubernetes.CheckLog;
@@ -26,25 +45,6 @@ import io.choerodon.devops.infra.feign.HarborClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
 import io.choerodon.devops.infra.mapper.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-
-import java.io.IOException;
-import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
-import static io.choerodon.core.iam.InitRoleCode.PROJECT_OWNER;
 
 
 @Service
@@ -305,7 +305,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                         }
                     }
                 } catch (Exception e) {
-                    LOGGER.info("failed", e);
+                    LOGGER.info(FAILED, e);
                     throw new CommonException(e);
                 }
             }
