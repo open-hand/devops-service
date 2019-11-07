@@ -48,9 +48,9 @@ public interface DevopsClusterResourceService {
      */
     Boolean checkCertManager(Long clusterId);
 
-    Boolean createPromteheus(Long projectId, Long clusterId, DevopsPrometheusVO prometheusVo);
+    Boolean createPrometheus(Long projectId, Long clusterId, DevopsPrometheusVO prometheusVo);
 
-    Boolean updatePromteheus(Long projectId, Long clusterId, DevopsPrometheusVO prometheusVo);
+    Boolean updatePrometheus(Long projectId, Long clusterId, DevopsPrometheusVO prometheusVo);
 
     /**
      * 查询集群下的prometheus，返回vo对象
@@ -87,7 +87,7 @@ public interface DevopsClusterResourceService {
      * 删除prometheus和对应的集群资源数据
      * @param clusterId
      */
-    void basedeletePromtheus(Long clusterId);
+    void basedeletePrometheus(Long clusterId);
 
     String getGrafanaUrl(Long projectId, Long clusterId, String type);
 
