@@ -4,7 +4,6 @@ import { observer } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
 import { DataSet } from 'choerodon-ui/pro';
 import getTablePostData from '../../../../../../utils/getTablePostData';
-import BaseInfoDataSet from './BaseInfoDataSet';
 import PermissionsDataSet from './PermissionsDataSet';
 import GitopsLogDataSet from './GitopsLogDataSet';
 import GitopsSyncDataSet from './GitopsSyncDataSet';
@@ -13,6 +12,7 @@ import { useResourceStore } from '../../../../stores';
 import useStore from './useStore';
 import ConfigDataSet from './ConfigDataSet';
 import ConfigFormDataSet from './ConfigFormDataSet';
+import { useMainStore } from '../../../stores';
 
 const Store = createContext();
 
@@ -32,13 +32,16 @@ export const StoreProvider = injectIntl(inject('AppState')(
       resourceStore: { getSelectedMenu: { id } },
     } = useResourceStore();
 
+    const {
+      baseInfoDs,
+    } = useMainStore();
+
     const tabs = useMemo(() => ({
       SYNC_TAB: 'sync',
       CONFIG_TAB: 'config',
       ASSIGN_TAB: 'assign',
     }), []);
     const envStore = useStore({ defaultTab: tabs.SYNC_TAB });
-    const baseInfoDs = useMemo(() => new DataSet(BaseInfoDataSet()), []);
     const permissionsDs = useMemo(() => new DataSet(PermissionsDataSet({ formatMessage, intlPrefix })), []);
     const gitopsLogDs = useMemo(() => new DataSet(GitopsLogDataSet({ formatMessage, intlPrefix })), []);
     const gitopsSyncDs = useMemo(() => new DataSet(GitopsSyncDataSet()), []);
@@ -93,8 +96,6 @@ export const StoreProvider = injectIntl(inject('AppState')(
     }
 
     useEffect(() => {
-      baseInfoDs.transport.read.url = `/devops/v1/projects/${projectId}/envs/${id}/info`;
-      baseInfoDs.query();
       queryData();
     }, [projectId, id, envStore.getTabKey]);
 

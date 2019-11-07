@@ -26,6 +26,7 @@ const DeployModal = injectIntl(observer(({ form }) => {
     prefixCls,
     modal,
     intl: { formatMessage },
+    envId,
   } = useManualDeployStore();
 
   const record = manualDeployDs.current;
@@ -34,10 +35,17 @@ const DeployModal = injectIntl(observer(({ form }) => {
   const [resourceIsExpand, setResourceIsExpand] = useState(false);
   const [netIsExpand, setNetIsExpand] = useState(false);
   const [ingressIsExpand, setIngressIsExpand] = useState(false);
+  
+  useEffect(() => {
+    if (envId) {
+      record.init('environmentId', envId);
+    }
+  }, [envId]);
 
   useEffect(() => {
     ChangeConfigValue(deployStore.getConfigValue);
   }, [deployStore.getConfigValue]);
+  
 
   modal.handleOk(async () => {
     if (hasYamlFailed || await record.validate() === false) return false;
@@ -61,8 +69,9 @@ const DeployModal = injectIntl(observer(({ form }) => {
       return false;
     }
     try {
-      if (await manualDeployDs.submit() !== false) {
-        refresh();
+      const res = await manualDeployDs.submit();
+      if (res !== false) {
+        refresh(res.list[0]);
       } else {
         return false;
       }
@@ -228,17 +237,20 @@ const DeployModal = injectIntl(observer(({ form }) => {
           searchMatcher="version"
           disabled={!record.get('appServiceId')}
         />
-        <Select
-          name="environmentId"
-          searchable
-          newLine
-          optionRenderer={renderEnvOption}
-          notFoundContent={<FormattedMessage id={`${intlPrefix}.env.empty`} />}
-          onOption={renderOptionProperty}
-        />
+        {!envId 
+          ? <Select
+            name="environmentId"
+            searchable
+            newLine
+            optionRenderer={renderEnvOption}
+            notFoundContent={<FormattedMessage id={`${intlPrefix}.env.empty`} />}
+            onOption={renderOptionProperty}
+          /> : null}
         <TextField
           name="instanceName"
           addonAfter={<Tips helpText={formatMessage({ id: `${intlPrefix}.instance.tips` })} />}
+          colSpan={!envId ? 1 : 2}
+          newLine={!!envId}
         />
         <Select
           name="valueId"
