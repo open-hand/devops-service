@@ -53,7 +53,7 @@
     "@choerodon/boot": "0.19.x",
     "@choerodon/master-pro": "0.19.x",
     "babel-preset-env": "^1.7.0",
-    "choerodon-ui": "^0.8.19",
+    "choerodon-ui": "^0.8.33",
     "del": "^4.1.1",
     "eslint-plugin-react-hooks": "^1.7.0",
     "gulp": "^3.9.1",

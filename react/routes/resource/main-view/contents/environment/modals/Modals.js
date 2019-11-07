@@ -10,6 +10,7 @@ import { useEnvironmentStore } from '../stores';
 import { useModalStore } from './stores';
 import Tips from '../../../../../../components/new-tips';
 import DeployConfigForm from './deploy-config';
+import Deploy from '../../../../../deployment/modals/deploy';
 
 import '../../../../../../components/dynamic-select/style/index.less';
 
@@ -17,6 +18,7 @@ const modalKey1 = Modal.key();
 const modalKey2 = Modal.key();
 const modalKey3 = Modal.key();
 const configKey = Modal.key();
+const deployKey = Modal.key();
 
 const EnvModals = observer(() => {
   const modalStyle = useMemo(() => ({
@@ -33,7 +35,10 @@ const EnvModals = observer(() => {
     resourceStore: { getSelectedMenu: { id } },
     AppState: { currentMenuType: { id: projectId } },
     treeDs,
+    resourceStore,
+    itemTypes,
   } = useResourceStore();
+  const intlPrefixDeploy = 'c7ncd.deploy';
   const {
     envStore,
     tabs: {
@@ -52,6 +57,7 @@ const EnvModals = observer(() => {
   const {
     modalStore,
     nonePermissionDs,
+    deployStore,
   } = ModalStores;
 
   function linkServices(data) {
@@ -68,6 +74,18 @@ const EnvModals = observer(() => {
     } else if (tabKey === ASSIGN_TAB) {
       permissionsDs.query();
     }
+  }
+
+  function deployAfter({ envId, appServiceId, id: instanceId }) {
+    treeDs.query();
+    const parentId = `${envId}-${appServiceId}`;
+    resourceStore.setSelectedMenu({
+      id: instanceId,
+      parentId,
+      key: `${parentId}-${instanceId}`,
+      itemType: itemTypes.IST_ITEM,
+    });
+    resourceStore.setExpandedKeys([`${envId}`, `${envId}-${appServiceId}`]);
   }
 
   function openEnvDetail() {
@@ -171,6 +189,28 @@ const EnvModals = observer(() => {
     });
   }
 
+  function openDeploy() {
+    Modal.open({
+      key: deployKey,
+      style: configModalStyle,
+      drawer: true,
+      title: formatMessage({ id: `${intlPrefixDeploy}.manual` }),
+      children: <Deploy
+        deployStore={deployStore}
+        refresh={deployAfter}
+        intlPrefix={intlPrefixDeploy}
+        prefixCls="c7ncd-deploy"
+        envId={id}
+      />,
+      afterClose: () => {
+        deployStore.setCertificates([]);
+        deployStore.setAppService([]);
+        deployStore.setConfigValue('');
+      },
+      okText: formatMessage({ id: 'deployment' }),
+    });
+  }
+
   function getButtons() {
     const record = baseInfoDs.current;
     const notReady = !record;
@@ -188,6 +228,14 @@ const EnvModals = observer(() => {
       name: formatMessage({ id: `${intlPrefix}.create.config` }),
       icon: 'playlist_add',
       handler: openConfigModal,
+      display: true,
+      group: 1,
+    }, {
+      permissions: ['devops-service.app-service-instance.deploy'],
+      disabled: configDisabled,
+      name: formatMessage({ id: `${intlPrefixDeploy}.manual` }),
+      icon: 'jsfiddle',
+      handler: openDeploy,
       display: true,
       group: 1,
     }, {

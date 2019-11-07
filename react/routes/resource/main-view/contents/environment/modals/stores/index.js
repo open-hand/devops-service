@@ -6,6 +6,8 @@ import { injectIntl } from 'react-intl';
 import useStore from './useStore';
 import OptionsDataSet from './OptionsDataSet';
 import { useResourceStore } from '../../../../../stores';
+import useDeployStore from '../../../../../../deployment/stores/useStore';
+
 
 const Store = createContext();
 
@@ -15,6 +17,7 @@ export function useModalStore() {
 
 export const StoreProvider = injectIntl(inject('AppState')(observer((props) => {
   const modalStore = useStore();
+  const deployStore = useDeployStore();
   const {
     AppState: { currentMenuType: { projectId } },
     children,
@@ -24,7 +27,6 @@ export const StoreProvider = injectIntl(inject('AppState')(observer((props) => {
     intlPrefix,
     resourceStore: { getSelectedMenu: { id } },
   } = useResourceStore();
-
   const nonePermissionDs = useMemo(() => new DataSet(OptionsDataSet()), []);
 
   const linkServiceDs = useMemo(() => new DataSet({
@@ -52,6 +54,7 @@ export const StoreProvider = injectIntl(inject('AppState')(observer((props) => {
     nonePermissionDs,
     linkServiceDs,
     linkServiceOptionsDs,
+    deployStore,
   };
   return (
     <Store.Provider value={value}>
