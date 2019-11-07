@@ -36,7 +36,7 @@ public interface DevopsClusterResourceService {
 
     DevopsClusterResourceDTO queryByClusterIdAndType(Long clusterId, String type);
 
-    void uploadPrometheus(Long clusterId);
+    Boolean uploadPrometheus(Long clusterId);
 
     List<ClusterResourceVO> listClusterResource(Long clusterId, Long projectId);
 
@@ -48,9 +48,9 @@ public interface DevopsClusterResourceService {
      */
     Boolean checkCertManager(Long clusterId);
 
-    void createPromteheus(Long projectId, Long clusterId, DevopsPrometheusVO prometheusVo);
+    Boolean createPromteheus(Long projectId, Long clusterId, DevopsPrometheusVO prometheusVo);
 
-    void updatePromteheus(Long projectId, Long clusterId, DevopsPrometheusVO prometheusVo);
+    Boolean updatePromteheus(Long projectId, Long clusterId, DevopsPrometheusVO prometheusVo);
 
     /**
      * 查询集群下的prometheus，返回vo对象

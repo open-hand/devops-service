@@ -245,7 +245,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void createPromteheus(Long projectId, Long clusterId, DevopsPrometheusVO devopsPrometheusVO) {
+    public Boolean createPromteheus(Long projectId, Long clusterId, DevopsPrometheusVO devopsPrometheusVO) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
         if (devopsClusterDTO.getSystemEnvId() == null) {
             throw new CommonException("no.cluster.system.env");
@@ -299,14 +299,15 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         devopsClusterResourceDTO.setOperate(ClusterResourceOperateType.INSTALL.getType());
         devopsClusterResourceService.baseCreate(devopsClusterResourceDTO);
 
+        return true;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void updatePromteheus(Long projectId, Long clusterId, DevopsPrometheusVO devopsPrometheusVO) {
+    public Boolean updatePromteheus(Long projectId, Long clusterId, DevopsPrometheusVO devopsPrometheusVO) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
         if (devopsClusterDTO.getSystemEnvId() == null) {
-            throw new CommonException("no.cluster.system.env");
+            throw new CommonException("error.cluster.system.env.id.null");
         }
         DevopsPrometheusDTO devopsPrometheusDTO = prometheusVoToDto(devopsPrometheusVO);
         if (devopsPrometheusVO.getId() != null) {
@@ -331,6 +332,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
             devopsClusterResource.setOperate(ClusterResourceOperateType.UPGRADE.getType());
             devopsClusterResourceService.baseUpdate(devopsClusterResource);
         }
+        return true;
     }
 
     @Override
@@ -352,7 +354,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     public ClusterResourceVO queryDeployProcess(Long clusterId) {
         DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceMapper.queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
         ClusterResourceVO clusterResourceVO = new ClusterResourceVO();
-        //校验三个pvc状态
+        //校验三个pvc状态，都为pending即为安装成功
         DevopsPrometheusDTO devopsPrometheusDTO = devopsPrometheusMapper.selectByPrimaryKey(devopsClusterResourceDTO.getConfigId());
         List<Long> pvcIds = JSON.parseArray(devopsPrometheusDTO.getPvcId(), Long.class);
         List<DevopsPvcDTO> devopsPvcDTOS = new ArrayList<>();
@@ -382,11 +384,12 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void uploadPrometheus(Long clusterId) {
+    public Boolean uploadPrometheus(Long clusterId) {
         DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceMapper.queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
         componentReleaseService.deleteReleaseForComponent(devopsClusterResourceDTO.getObjectId(), true);
         devopsClusterResourceDTO.setOperate(ClusterResourceOperateType.UNINSTALL.getType());
         devopsClusterResourceService.baseUpdate(devopsClusterResourceDTO);
+        return true;
     }
 
     @Override

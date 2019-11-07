@@ -79,30 +79,32 @@ public class DevopsClusterResourceController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "集群下安装prometheus")
     @PostMapping("/prometheus/create")
-    public ResponseEntity create(
+    public ResponseEntity<Boolean> create(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群id", required = true)
             @RequestParam(name = "cluster_id", required = true) Long clusterId,
             @ApiParam(value = "请求体", required = true)
             @RequestBody DevopsPrometheusVO prometheusVo) {
-        devopsClusterResourceService.createPromteheus(projectId,clusterId,prometheusVo);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return Optional.ofNullable( devopsClusterResourceService.createPromteheus(projectId,clusterId,prometheusVo))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.prometheus.create"));
     }
 
 
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "升级prometheus")
     @PutMapping("/prometheus/update")
-    public ResponseEntity update(
+    public ResponseEntity<Boolean> update(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群id", required = true)
             @RequestParam(name = "cluster_id", required = true) Long clusterId,
             @ApiParam(value = "请求体", required = true)
             @RequestBody DevopsPrometheusVO prometheusVo) {
-        devopsClusterResourceService.updatePromteheus(projectId,clusterId,prometheusVo);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return Optional.ofNullable(devopsClusterResourceService.updatePromteheus(projectId,clusterId,prometheusVo))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.prometheus.update"));
     }
 
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
@@ -114,7 +116,7 @@ public class DevopsClusterResourceController {
 
         return Optional.ofNullable(devopsClusterResourceService.queryPrometheus(clusterId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.query.prometheus"));
+                .orElseThrow(() -> new CommonException("error.cluster.prometheus.query"));
     }
 
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
@@ -126,7 +128,7 @@ public class DevopsClusterResourceController {
             @RequestParam(name = "cluster_id", required = true) Long clusterId) {
         return Optional.ofNullable(devopsClusterResourceService.queryDeployProcess(clusterId))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.prometheus.deploy"));
+                .orElseThrow(() -> new CommonException("error.prometheus.deploy.status"));
     }
 
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
@@ -135,8 +137,9 @@ public class DevopsClusterResourceController {
     public ResponseEntity delete(
             @ApiParam(value = "集群id", required = true)
             @RequestParam(name = "cluster_id", required = true) Long clusterId) {
-        devopsClusterResourceService.uploadPrometheus(clusterId);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return Optional.ofNullable(devopsClusterResourceService.uploadPrometheus(clusterId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.prometheus.unload"));
     }
 
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
