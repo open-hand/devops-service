@@ -245,7 +245,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Boolean createPromteheus(Long projectId, Long clusterId, DevopsPrometheusVO devopsPrometheusVO) {
+    public Boolean createPrometheus(Long projectId, Long clusterId, DevopsPrometheusVO devopsPrometheusVO) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
         if (devopsClusterDTO.getSystemEnvId() == null) {
             throw new CommonException("no.cluster.system.env");
@@ -304,19 +304,13 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Boolean updatePromteheus(Long projectId, Long clusterId, DevopsPrometheusVO devopsPrometheusVO) {
+    public Boolean updatePrometheus(Long projectId, Long clusterId, DevopsPrometheusVO devopsPrometheusVO) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
         if (devopsClusterDTO.getSystemEnvId() == null) {
             throw new CommonException("error.cluster.system.env.id.null");
         }
         DevopsPrometheusDTO devopsPrometheusDTO = prometheusVoToDto(devopsPrometheusVO);
         if (devopsPrometheusVO.getId() != null) {
-            Long objectVersionNumber = devopsPrometheusMapper.selectByPrimaryKey(devopsPrometheusDTO.getId()).getObjectVersionNumber();
-            devopsPrometheusDTO.setObjectVersionNumber(objectVersionNumber);
-            if (devopsPrometheusMapper.updateByPrimaryKey(devopsPrometheusDTO) != 1) {
-                throw new CommonException("error.update.prometheus");
-            }
-
             // 创建pvc
             List<Long> pvcIds = new ArrayList<>();
             List<Long> pvIds = devopsPrometheusVO.getPvs().stream().map(DevopsPvVO::getId).collect(Collectors.toList());
@@ -325,9 +319,14 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
                 DevopsPvcRespVO pvcRespVO = devopsPvcService.create(projectId, devopsPvcReqVO);
                 pvcIds.add(pvcRespVO.getId());
             });
+
+            Long objectVersionNumber = devopsPrometheusMapper.selectByPrimaryKey(devopsPrometheusDTO.getId()).getObjectVersionNumber();
+            devopsPrometheusDTO.setObjectVersionNumber(objectVersionNumber);
             devopsPrometheusDTO.setPvcId(JSON.toJSON(pvcIds).toString());
             devopsPrometheusDTO.setClusterId(clusterId);
-            devopsPrometheusMapper.updateByPrimaryKeySelective(devopsPrometheusDTO);
+            if (devopsPrometheusMapper.updateByPrimaryKey(devopsPrometheusDTO) != 1) {
+                throw new CommonException("error.update.prometheus");
+            }
             DevopsClusterResourceDTO devopsClusterResource = devopsClusterResourceService.queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
             devopsClusterResource.setOperate(ClusterResourceOperateType.UPGRADE.getType());
             devopsClusterResourceService.baseUpdate(devopsClusterResource);
