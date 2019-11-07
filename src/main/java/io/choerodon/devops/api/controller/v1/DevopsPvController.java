@@ -9,14 +9,11 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.DevopsPvServcie;
-import io.choerodon.devops.infra.dto.DevopsPvDTO;
-import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
@@ -52,7 +49,7 @@ public class DevopsPvController {
             @ApiIgnore Pageable pageable,
             @ApiParam(value = "模糊搜索参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(devopsPvServcie.basePagePvByOptions(doPage, pageable, params))
+        return Optional.ofNullable(devopsPvServcie.pageByOptions(doPage, pageable, params))
                 .map(target -> new ResponseEntity(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_PV_QUERY));
     }
@@ -60,7 +57,7 @@ public class DevopsPvController {
     /**
      * 创建pv
      * @param projectId
-     * @param devopsPvDTO
+     * @param devopsPvReqVo
      * @return
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
@@ -93,7 +90,7 @@ public class DevopsPvController {
 
     /***
      * 根据pvId删除Pv
-     * @param pv_id
+     * @param pvId
      * @return
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
@@ -120,7 +117,7 @@ public class DevopsPvController {
             @PathVariable(value = "project_id")Long projectId,
             @ApiParam(value = "pvId", required = true)
             @PathVariable(value = "pv_id")Long pvId){
-        return Optional.of(devopsPvServcie.queryById(pvId))
+        return Optional.ofNullable(devopsPvServcie.queryById(pvId))
                 .map(target -> new ResponseEntity(target, HttpStatus.OK))
                 .orElseThrow(() ->new CommonException(ERROR_PV_QUERY));
     }
@@ -173,7 +170,7 @@ public class DevopsPvController {
      * 给pv设置相对应的项目权限
      * @param projectId
      * @param pvId
-     * @param devopsPvPermissionUpateVO
+     * @param devopsPvPermissionUpdateVO
      * @return
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
@@ -184,8 +181,8 @@ public class DevopsPvController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "PvId", required = true)
             @PathVariable(value = "pv_id") Long pvId,
-            @RequestBody @Valid DevopsPvPermissionUpateVO devopsPvPermissionUpateVO){
-        devopsPvServcie.assignPermission(devopsPvPermissionUpateVO);
+            @RequestBody @Valid DevopsPvPermissionUpdateVO devopsPvPermissionUpdateVO){
+        devopsPvServcie.assignPermission(devopsPvPermissionUpdateVO);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 }

@@ -8,7 +8,7 @@ import java.util.List;
 /***
  * 添加pv权限分配：公开/仅对特定项目公开
  */
-public class DevopsPvPermissionUpateVO {
+public class DevopsPvPermissionUpdateVO {
 
     @ApiModelProperty("pvId，必需")
     @NotNull(message = "error.pv.id.null")

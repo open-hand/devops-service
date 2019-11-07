@@ -4,10 +4,7 @@ package io.choerodon.devops.infra.dto;
 import io.choerodon.mybatis.entity.BaseDTO;
 import io.swagger.annotations.ApiModelProperty;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 @Table(name = "devops_pv")
 public class DevopsPvDTO extends BaseDTO {
@@ -30,6 +27,12 @@ public class DevopsPvDTO extends BaseDTO {
 
     @ApiModelProperty("关联的pvcId")
     private Long pvcId;
+
+    @Transient
+    private String pvcName;
+
+    @Transient
+    private String clusterName;
 
     @ApiModelProperty("关联的pvId")
     private Long clusterId;
@@ -132,5 +135,21 @@ public class DevopsPvDTO extends BaseDTO {
 
     public void setCommandId(Long commandId) {
         this.commandId = commandId;
+    }
+
+    public String getPvcName() {
+        return pvcName;
+    }
+
+    public void setPvcName(String pvcName) {
+        this.pvcName = pvcName;
+    }
+
+    public String getClusterName() {
+        return clusterName;
+    }
+
+    public void setClusterName(String clusterName) {
+        this.clusterName = clusterName;
     }
 }

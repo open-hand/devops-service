@@ -1,13 +1,13 @@
 package io.choerodon.devops.app.service;
 
-import java.util.List;
 
+import java.util.List;
 import com.github.pagehelper.PageInfo;
 import org.springframework.data.domain.Pageable;
 
-import io.choerodon.devops.api.vo.DevopsPvPermissionUpateVO;
-import io.choerodon.devops.api.vo.DevopsPvReqVo;
+import io.choerodon.devops.api.vo.DevopsPvPermissionUpdateVO;
 import io.choerodon.devops.api.vo.DevopsPvVO;
+import io.choerodon.devops.api.vo.DevopsPvReqVo;
 import io.choerodon.devops.api.vo.ProjectReqVO;
 import io.choerodon.devops.infra.dto.DevopsPvDTO;
 
@@ -27,7 +27,16 @@ public interface DevopsPvServcie {
     /***
      * 根据条件分页查询PV
      */
-    PageInfo<DevopsPvVO> basePagePvByOptions(Boolean doPage, Pageable pageable, String params);
+    PageInfo<DevopsPvDTO> basePagePvByOptions(Boolean doPage, Pageable pageable, String params);
+
+    /***
+     * 分页查询pv以及关联的集群和PVC
+     * @param doPage
+     * @param pageable
+     * @param params
+     * @return
+     */
+    PageInfo<DevopsPvVO> pageByOptions(Boolean doPage, Pageable pageable, String params);
 
     /***
      * 创建PV
@@ -50,13 +59,13 @@ public interface DevopsPvServcie {
      * 创建组织与PV的权限关联关系
      * @param update
      */
-    void assignPermission(DevopsPvPermissionUpateVO update);
+    void assignPermission(DevopsPvPermissionUpdateVO update);
 
     /***
      * 更新PV表中的权限校验字段
      * @param update
      */
-    void updateCheckPermission(DevopsPvPermissionUpateVO update);
+    void updateCheckPermission(DevopsPvPermissionUpdateVO update);
 
     /**
      * 更新PV表字段

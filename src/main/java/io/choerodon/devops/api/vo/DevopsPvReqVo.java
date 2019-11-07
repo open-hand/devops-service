@@ -25,10 +25,6 @@ public class DevopsPvReqVo {
     @ApiModelProperty("pv描述")
     private String description;
 
-    @NotNull(message = "error.pv.related.pvc.is.null")
-    @ApiModelProperty("关联的pvcId")
-    private Long pvcId;
-
     @NotNull(message = "error.pv.related.cluster.is.null")
     @ApiModelProperty("关联的集群Id")
     private Long clusterId;
@@ -44,4 +40,68 @@ public class DevopsPvReqVo {
     @NotNull(message = "error.pv.requestResource.is.null")
     @ApiModelProperty("资源大小")
     private String requestResource;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public Long getClusterId() {
+        return clusterId;
+    }
+
+    public void setClusterId(Long clusterId) {
+        this.clusterId = clusterId;
+    }
+
+    public String getAccessModes() {
+        return accessModes;
+    }
+
+    public void setAccessModes(String accessModes) {
+        this.accessModes = accessModes;
+    }
+
+    public Boolean getSkipCheckProjectPermission() {
+        return skipCheckProjectPermission;
+    }
+
+    public void setSkipCheckProjectPermission(Boolean skipCheckProjectPermission) {
+        this.skipCheckProjectPermission = skipCheckProjectPermission;
+    }
+
+    public String getRequestResource() {
+        return requestResource;
+    }
+
+    public void setRequestResource(String requestResource) {
+        this.requestResource = requestResource;
+    }
 }
