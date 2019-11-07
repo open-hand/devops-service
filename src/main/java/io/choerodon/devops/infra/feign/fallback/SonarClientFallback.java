@@ -1,14 +1,13 @@
 package io.choerodon.devops.infra.feign.fallback;
 
-import java.util.List;
 import java.util.Map;
-
-import io.choerodon.devops.api.vo.sonar.*;
-import io.choerodon.devops.infra.feign.SonarClient;
 
 import okhttp3.ResponseBody;
 import org.springframework.stereotype.Component;
 import retrofit2.Call;
+
+import io.choerodon.devops.api.vo.sonar.*;
+import io.choerodon.devops.infra.feign.SonarClient;
 
 /**
  * Created by Sheep on 2019/5/6.

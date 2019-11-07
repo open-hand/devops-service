@@ -17,11 +17,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.querydsl.QPageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import org.springframework.data.domain.Pageable;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.ExceptionResponse;
 import io.choerodon.core.exception.FeignException;
@@ -487,7 +486,7 @@ public class BaseServiceClientOperator {
 
     public void deleteClient(Long organizationId, Long  clientId) {
         try {
-            ResponseEntity responseEntity = baseServiceClient.deleteClient(organizationId, clientId);
+            baseServiceClient.deleteClient(organizationId, clientId);
         } catch (Exception ex) {
             throw new CommonException("error.delete.client");
         }
