@@ -223,14 +223,14 @@ public class GitUtil {
 //        }
 //    }
 
-    private TransportConfigCallback getTransportConfigCallback(String sshKeyRsa) {
+    private static TransportConfigCallback getTransportConfigCallback(String sshKeyRsa) {
         return transport -> {
             SshTransport sshTransport = (SshTransport) transport;
             sshTransport.setSshSessionFactory(sshSessionFactor(sshKeyRsa));
         };
     }
 
-    private SshSessionFactory sshSessionFactor(String sshKeyRsa) {
+    private static SshSessionFactory sshSessionFactor(String sshKeyRsa) {
         return new JschConfigSessionFactory() {
             @Override
             protected void configure(OpenSshConfig.Host host, Session session) {

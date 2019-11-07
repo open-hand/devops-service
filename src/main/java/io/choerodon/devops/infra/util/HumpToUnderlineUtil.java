@@ -13,7 +13,7 @@ public final class HumpToUnderlineUtil {
         if (str == null || str.isEmpty()) {
             return null;
         }
-        StringBuffer newString = new StringBuffer();
+        StringBuilder newString = new StringBuilder();
         String[] split = str.split("\\s+");
         String splitString = split[0];
         for (int i = 0; i < splitString.length(); i++) {

@@ -5,6 +5,9 @@ package io.choerodon.devops.infra.constant;
  * @since 11/1/19
  */
 public class KubernetesConstants {
+    private KubernetesConstants()  {
+    }
+
     public static final String CHOERODON_IO_RESOURCE = "choerodon.io/resource";
     public static final String METADATA = "metadata";
     public static final String CUSTOM = "custom";
