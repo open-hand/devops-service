@@ -52,7 +52,7 @@ public class DevopsPvController {
             @ApiIgnore Pageable pageable,
             @ApiParam(value = "模糊搜索参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(devopsPvServcie.basePagePvByOptions(doPage, pageable, params))
+        return Optional.ofNullable(devopsPvServcie.pageByOptions(doPage, pageable, params))
                 .map(target -> new ResponseEntity(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_PV_QUERY));
     }
@@ -120,7 +120,7 @@ public class DevopsPvController {
             @PathVariable(value = "project_id")Long projectId,
             @ApiParam(value = "pvId", required = true)
             @PathVariable(value = "pv_id")Long pvId){
-        return Optional.of(devopsPvServcie.queryById(pvId))
+        return Optional.ofNullable(devopsPvServcie.queryById(pvId))
                 .map(target -> new ResponseEntity(target, HttpStatus.OK))
                 .orElseThrow(() ->new CommonException(ERROR_PV_QUERY));
     }

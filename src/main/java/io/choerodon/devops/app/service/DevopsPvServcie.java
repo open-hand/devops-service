@@ -1,7 +1,7 @@
 package io.choerodon.devops.app.service;
 
-import java.util.List;
 
+import java.util.List;
 import com.github.pagehelper.PageInfo;
 import org.springframework.data.domain.Pageable;
 
@@ -27,7 +27,16 @@ public interface DevopsPvServcie {
     /***
      * 根据条件分页查询PV
      */
-    PageInfo<DevopsPvVO> basePagePvByOptions(Boolean doPage, Pageable pageable, String params);
+    PageInfo<DevopsPvDTO> basePagePvByOptions(Boolean doPage, Pageable pageable, String params);
+
+    /***
+     * 分页查询pv以及关联的集群和PVC
+     * @param doPage
+     * @param pageable
+     * @param params
+     * @return
+     */
+    PageInfo<DevopsPvVO> pageByOptions(Boolean doPage, Pageable pageable, String params);
 
     /***
      * 创建PV

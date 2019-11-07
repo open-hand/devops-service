@@ -67,7 +67,7 @@ public class DevopsPvServiceImpl implements DevopsPvServcie {
     GitlabServiceClientOperator gitlabServiceClientOperator;
 
     @Override
-    public PageInfo<DevopsPvVO> basePagePvByOptions(Boolean doPage, Pageable pageable, String params) {
+    public PageInfo<DevopsPvDTO> basePagePvByOptions(Boolean doPage, Pageable pageable, String params) {
         // search_param 根据确定的键值对查询
         // params 是遍历字段模糊查询
         Map<String, Object> searchParamMap = TypeUtil.castMapParams(params);
@@ -76,6 +76,13 @@ public class DevopsPvServiceImpl implements DevopsPvServcie {
                         TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
                         TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS))
                 ));
+    }
+
+    @Override
+    public PageInfo<DevopsPvVO> pageByOptions(Boolean doPage, Pageable pageable, String params) {
+        PageInfo<DevopsPvDTO> devopsPvDTOPageInfo = basePagePvByOptions(doPage, pageable, params);
+        PageInfo<DevopsPvVO> devopsPvVOPageInfo = ConvertUtils.convertPage(devopsPvDTOPageInfo, DevopsPvVO.class);
+        return devopsPvVOPageInfo;
     }
 
     @Override
@@ -231,7 +238,7 @@ public class DevopsPvServiceImpl implements DevopsPvServcie {
     }
 
     @Override
-    public void updateCheckPermission(DevopsPvPermissionUpateVO update){
+    public void updateCheckPermission(DevopsPvPermissionUpateVO update) {
         DevopsPvDTO devopsPvDTO = new DevopsPvDTO();
         devopsPvDTO.setId(update.getPvId());
         devopsPvDTO.setSkipCheckProjectPermission(update.getSkipCheckProjectPermission());
@@ -242,18 +249,20 @@ public class DevopsPvServiceImpl implements DevopsPvServcie {
     @Override
     public void baseupdatePv(DevopsPvDTO devopsPvDTO) {
         DevopsPvDTO oldDevopsPvDTO = devopsPvMapper.selectByPrimaryKey(devopsPvDTO.getId());
-        if(oldDevopsPvDTO == null){
+        if (oldDevopsPvDTO == null) {
             throw new CommonException("error.pv.not.exists");
         }
 
-        if(devopsPvMapper.updateByPrimaryKeySelective(devopsPvDTO) !=1){
+        if (devopsPvMapper.updateByPrimaryKeySelective(devopsPvDTO) != 1) {
             throw new CommonException("error.pv.update.error");
         }
     }
 
     @Override
     public DevopsPvVO queryById(Long pvId) {
-        return devopsPvMapper.queryById(pvId);
+        DevopsPvDTO devopsPvDTO = devopsPvMapper.queryById(pvId);
+        DevopsPvVO devopsPvVO = ConvertUtils.convertObject(devopsPvDTO, DevopsPvVO.class);
+        return devopsPvVO;
     }
 
     @Override

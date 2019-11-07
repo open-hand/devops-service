@@ -2,14 +2,17 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsPvMapper">
-    <select id="listPvByOptions" resultType="io.choerodon.devops.api.vo.DevopsPvVO">
+    <select id="listPvByOptions" resultType="io.choerodon.devops.infra.dto.DevopsPvDTO">
         SELECT dpv.id id,
+               dpv.pvc_id pvc_id,
+               dpv.cluster_id cluster_id,
                dpv.name name,
                dpv.type type,
                dpv.description description,
                dpv.status status,
                dpv.request_resource request_resource,
                dpv.access_modes access_modes,
+               dpv.commmand_id command_id,
                dpvc.name pvc_name,
                dc.name cluster_name
         FROM devops_pv dpv
@@ -48,14 +51,17 @@
         </if>
     </sql>
 
-    <select id="queryById" resultType="io.choerodon.devops.api.vo.DevopsPvVO">
+    <select id="queryById" resultType="io.choerodon.devops.infra.dto.DevopsPvDTO">
         SELECT dpv.id id,
+               dpv.pvc_id pvc_id,
+               dpv.cluster_id cluster_id,
                dpv.name name,
                dpv.type type,
                dpv.description description,
                dpv.status status,
                dpv.request_resource request_resource,
                dpv.access_modes access_modes,
+               dpv.commmand_id command_id,
                dpvc.name pvc_name,
                dc.name cluster_name
         FROM devops_pv dpv
