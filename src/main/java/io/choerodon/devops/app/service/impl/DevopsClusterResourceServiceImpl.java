@@ -352,8 +352,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     public ClusterResourceVO queryDeployProcess(Long clusterId) {
         DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceMapper.queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
         ClusterResourceVO clusterResourceVO = new ClusterResourceVO();
-
-        //查询pvc状态
+        //校验三个pvc状态
         DevopsPrometheusDTO devopsPrometheusDTO = devopsPrometheusMapper.selectByPrimaryKey(devopsClusterResourceDTO.getConfigId());
         List<Long> pvcIds = JSON.parseArray(devopsPrometheusDTO.getPvcId(), Long.class);
         List<DevopsPvcDTO> devopsPvcDTOS = new ArrayList<>();
@@ -408,14 +407,14 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
                 DevopsPrometheusDTO devopsPrometheusDTO = devopsPrometheusMapper.selectByPrimaryKey(devopsClusterResourceDTO.getConfigId());
                 List<Long> pvcIds = JSON.parseArray(devopsPrometheusDTO.getPvcId(), Long.class);
                 Boolean isExist = false;
-                for (Long pvcId:pvcIds) {
+                for (Long pvcId : pvcIds) {
                     DevopsPvcDTO devopsPvcDTO = devopsPvcService.queryById(pvcId);
-                    if(!ObjectUtils.isEmpty(devopsPvcDTO)){
+                    if (!ObjectUtils.isEmpty(devopsPvcDTO)) {
                         isExist = true;
                         break;
                     }
                 }
-                if(!isExist) {
+                if (!isExist) {
                     basedeletePromtheus(clusterId);
                     clusterResourceVO.setStatus(ClusterResourceStatus.UNINSTALL.getStatus());
                     return clusterResourceVO;
@@ -453,14 +452,18 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
                 });
                 if (readyPod.size() >= 1) {
                     clusterResourceVO.setStatus(STATUS_SUCCESSED);
+                }
+            }
+            if (STATUS_FAILED.equals(devopsEnvCommandDTO.getStatus())) {
+                //升级失败->可用，安装失败->不可用
+                if (ClusterResourceOperateType.UPGRADE.equals(devopsClusterResourceDTO.getOperate())) {
+                    clusterResourceVO.setStatus(ClusterResourceStatus.AVAILABLE.getStatus());
+                    clusterResourceVO.setMessage(devopsEnvCommandDTO.getError());
                 } else {
                     clusterResourceVO.setStatus(ClusterResourceStatus.DISABLED.getStatus());
                     clusterResourceVO.setMessage(devopsEnvCommandDTO.getError());
                 }
-            }
-            if (STATUS_FAILED.equals(devopsEnvCommandDTO.getStatus())) {
-                clusterResourceVO.setStatus(ClusterResourceStatus.DISABLED.getStatus());
-                clusterResourceVO.setMessage(devopsEnvCommandDTO.getError());
+
             }
 
         }
@@ -480,15 +483,15 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     }
 
     @Override
-    public void deployPrometheus(Long clusterId,DevopsPrometheusDTO devopsPrometheusDTO) {
+    public void deployPrometheus(Long clusterId, DevopsPrometheusDTO devopsPrometheusDTO) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
         DevopsClusterResourceDTO clusterResourceDTO = queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
-        AppServiceInstanceDTO appServiceInstanceDTO=null;
+        AppServiceInstanceDTO appServiceInstanceDTO = null;
         if (ClusterResourceOperateType.INSTALL.getType().equals(clusterResourceDTO.getOperate())) {
             appServiceInstanceDTO = componentReleaseService.createReleaseForPrometheus(devopsClusterDTO.getSystemEnvId(), devopsPrometheusDTO);
         }
         if (ClusterResourceOperateType.UPGRADE.getType().equals(clusterResourceDTO.getOperate())) {
-            appServiceInstanceDTO = componentReleaseService.updateReleaseForPrometheus(devopsPrometheusDTO,clusterResourceDTO.getObjectId(),devopsClusterDTO.getSystemEnvId());
+            appServiceInstanceDTO = componentReleaseService.updateReleaseForPrometheus(devopsPrometheusDTO, clusterResourceDTO.getObjectId(), devopsClusterDTO.getSystemEnvId());
         }
         clusterResourceDTO.setObjectId(appServiceInstanceDTO.getId());
         devopsPrometheusMapper.updateByPrimaryKeySelective(devopsPrometheusDTO);
@@ -512,10 +515,10 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
         // 查询pvcId,并调用删除pvc的方法
         List<Long> pvcIds = JSON.parseArray(devopsPrometheusDTO.getPvcId(), Long.class);
-        if(!CollectionUtils.isEmpty(pvcIds)){
-          // 删除pvc
-            for (Long pvcId:pvcIds) {
-                devopsPvcService.delete(devopsClusterDTO.getSystemEnvId(),pvcId);
+        if (!CollectionUtils.isEmpty(pvcIds)) {
+            // 删除pvc
+            for (Long pvcId : pvcIds) {
+                devopsPvcService.delete(devopsClusterDTO.getSystemEnvId(), pvcId);
             }
         }
     }
