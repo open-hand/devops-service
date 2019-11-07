@@ -86,7 +86,7 @@ public class DevopsClusterResourceController {
             @RequestParam(name = "cluster_id", required = true) Long clusterId,
             @ApiParam(value = "请求体", required = true)
             @RequestBody DevopsPrometheusVO prometheusVo) {
-        return Optional.ofNullable( devopsClusterResourceService.createPromteheus(projectId,clusterId,prometheusVo))
+        return Optional.ofNullable( devopsClusterResourceService.createPrometheus(projectId,clusterId,prometheusVo))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.prometheus.create"));
     }
@@ -102,7 +102,7 @@ public class DevopsClusterResourceController {
             @RequestParam(name = "cluster_id", required = true) Long clusterId,
             @ApiParam(value = "请求体", required = true)
             @RequestBody DevopsPrometheusVO prometheusVo) {
-        return Optional.ofNullable(devopsClusterResourceService.updatePromteheus(projectId,clusterId,prometheusVo))
+        return Optional.ofNullable(devopsClusterResourceService.updatePrometheus(projectId,clusterId,prometheusVo))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.prometheus.update"));
     }

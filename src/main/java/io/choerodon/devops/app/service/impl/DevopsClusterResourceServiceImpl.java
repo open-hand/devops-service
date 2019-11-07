@@ -232,7 +232,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
 
     @Override
     @Transactional
-    public void basedeletePromtheus(Long clusterId) {
+    public void basedeletePrometheus(Long clusterId) {
         DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceMapper.queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
         if (devopsPrometheusMapper.deleteByPrimaryKey(devopsClusterResourceDTO.getConfigId()) != 1) {
             throw new CommonException("error.delete.devopsPrometheus");
@@ -417,7 +417,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
                     }
                 }
                 if (!isExist) {
-                    basedeletePromtheus(clusterId);
+                    basedeletePrometheus(clusterId);
                     clusterResourceVO.setStatus(ClusterResourceStatus.UNINSTALL.getStatus());
                     return clusterResourceVO;
                 }

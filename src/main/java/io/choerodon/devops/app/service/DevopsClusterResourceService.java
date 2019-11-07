@@ -87,7 +87,7 @@ public interface DevopsClusterResourceService {
      * 删除prometheus和对应的集群资源数据
      * @param clusterId
      */
-    void basedeletePromtheus(Long clusterId);
+    void basedeletePrometheus(Long clusterId);
 
     String getGrafanaUrl(Long projectId, Long clusterId, String type);
 
