@@ -316,13 +316,13 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         BeanUtils.copyProperties(pod, devopsEnvPodDTO);
 
         devopsEnvPodService.setContainers(pod);
-
-        devopsEnvPodDTO.setContainersForLogs(
-                pod.getContainers()
-                        .stream()
-                        .map(container -> new DevopsEnvPodContainerLogDTO(pod.getName(), container.getName()))
-                        .collect(Collectors.toList())
-        );
+        if (pod.getContainers() != null) {
+            devopsEnvPodDTO.setContainersForLogs(
+                    pod.getContainers()
+                            .stream()
+                            .map(container -> new DevopsEnvPodContainerLogDTO(pod.getName(), container.getName()))
+                            .collect(Collectors.toList()));
+        }
         return devopsEnvPodDTO;
     }
 }
