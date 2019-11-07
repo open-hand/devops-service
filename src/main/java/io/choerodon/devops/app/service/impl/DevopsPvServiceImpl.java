@@ -4,7 +4,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import org.springframework.data.domain.Pageable;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.DevopsPvPermissionUpateVO;
+import io.choerodon.devops.api.vo.DevopsPvPermissionUpdateVO;
 import io.choerodon.devops.api.vo.DevopsPvReqVo;
 import io.choerodon.devops.api.vo.DevopsPvVO;
 import io.choerodon.devops.api.vo.ProjectReqVO;
@@ -208,7 +208,7 @@ public class DevopsPvServiceImpl implements DevopsPvServcie {
 
     @Override
     @Transactional
-    public void assignPermission(DevopsPvPermissionUpateVO update) {
+    public void assignPermission(DevopsPvPermissionUpdateVO update) {
         DevopsPvDTO devopsPvDTO = devopsPvMapper.selectByPrimaryKey(update.getPvId());
 
         if (devopsPvDTO.getSkipCheckProjectPermission()){
@@ -238,7 +238,7 @@ public class DevopsPvServiceImpl implements DevopsPvServcie {
     }
 
     @Override
-    public void updateCheckPermission(DevopsPvPermissionUpateVO update) {
+    public void updateCheckPermission(DevopsPvPermissionUpdateVO update) {
         DevopsPvDTO devopsPvDTO = new DevopsPvDTO();
         devopsPvDTO.setId(update.getPvId());
         devopsPvDTO.setSkipCheckProjectPermission(update.getSkipCheckProjectPermission());

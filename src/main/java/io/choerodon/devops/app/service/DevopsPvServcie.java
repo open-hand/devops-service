@@ -4,8 +4,13 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 import com.github.pagehelper.PageInfo;
 import org.springframework.data.domain.Pageable;
+<<<<<<< HEAD
 
 import io.choerodon.devops.api.vo.DevopsPvPermissionUpateVO;
+=======
+import io.choerodon.devops.api.vo.DevopsPvPermissionUpdateVO;
+import io.choerodon.devops.api.vo.DevopsPvVO;
+>>>>>>> 修改后端pojo对象数据
 import io.choerodon.devops.api.vo.DevopsPvReqVo;
 import io.choerodon.devops.api.vo.DevopsPvVO;
 import io.choerodon.devops.api.vo.ProjectReqVO;
@@ -59,13 +64,13 @@ public interface DevopsPvServcie {
      * 创建组织与PV的权限关联关系
      * @param update
      */
-    void assignPermission(DevopsPvPermissionUpateVO update);
+    void assignPermission(DevopsPvPermissionUpdateVO update);
 
     /***
      * 更新PV表中的权限校验字段
      * @param update
      */
-    void updateCheckPermission(DevopsPvPermissionUpateVO update);
+    void updateCheckPermission(DevopsPvPermissionUpdateVO update);
 
     /**
      * 更新PV表字段
