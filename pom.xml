@@ -17,7 +17,6 @@
 
 
     <properties>
-        <choerodon.starters.version>0.14.0-SNAPSHOT</choerodon.starters.version>
         <!--use powermock-->
         <powermock.version>2.0.0-beta.5</powermock.version>
         <choerodon.serviceBuild>true</choerodon.serviceBuild>
@@ -43,58 +42,53 @@
         <dependency>
             <groupId>io.choerodon</groupId>
             <artifactId>choerodon-starter-oauth-resource</artifactId>
-            <version>0.11.1.RELEASE</version>
         </dependency>
         <dependency>
             <groupId>io.choerodon</groupId>
             <artifactId>choerodon-starter-core</artifactId>
-            <version>${choerodon.starters.version}</version>
         </dependency>
         <dependency>
             <groupId>io.choerodon</groupId>
             <artifactId>choerodon-starter-swagger</artifactId>
-            <version>${choerodon.starters.version}</version>
         </dependency>
         <dependency>
             <groupId>io.choerodon</groupId>
             <artifactId>choerodon-starter-mybatis</artifactId>
-            <version>${choerodon.starters.version}</version>
         </dependency>
 
         <dependency>
             <groupId>io.choerodon</groupId>
             <artifactId>choerodon-starter-websocket</artifactId>
-            <version>${choerodon.starters.version}</version>
         </dependency>
 
         <dependency>
             <groupId>io.choerodon</groupId>
             <artifactId>choerodon-starter-actuator</artifactId>
-            <version>${choerodon.starters.version}</version>
         </dependency>
 
         <dependency>
             <groupId>io.choerodon</groupId>
             <artifactId>choerodon-starter-metric</artifactId>
-            <version>${choerodon.starters.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.choerodon</groupId>
+            <artifactId>choerodon-starter-webmvc</artifactId>
         </dependency>
 
         <dependency>
             <groupId>io.choerodon</groupId>
             <artifactId>choerodon-starter-feign-replay</artifactId>
-            <version>${choerodon.starters.version}</version>
         </dependency>
 
         <dependency>
             <groupId>io.choerodon</groupId>
             <artifactId>choerodon-liquibase</artifactId>
-            <version>${choerodon.starters.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>io.choerodon</groupId>
             <artifactId>choerodon-starter-asgard</artifactId>
-            <version>${choerodon.starters.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.cloud</groupId>

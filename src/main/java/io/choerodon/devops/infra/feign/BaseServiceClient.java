@@ -10,7 +10,6 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import io.choerodon.base.constant.PageConstant;
 import io.choerodon.devops.api.vo.OrganizationSimplifyVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
 import io.choerodon.devops.api.vo.iam.*;
@@ -135,8 +134,8 @@ public interface BaseServiceClient {
 
     @PostMapping("/v1/organizations/all")
     ResponseEntity<PageInfo<OrganizationSimplifyVO>> getAllOrgs(
-            @RequestParam(defaultValue = PageConstant.PAGE, required = false, value = "page") final int page,
-            @RequestParam(defaultValue = PageConstant.SIZE, required = false, value = "size") final int size);
+            @RequestParam(required = false, value = "page") final int page,
+            @RequestParam(required = false, value = "size") final int size);
 
 
     @GetMapping(value = "/v1/applications/{id}/project")
@@ -250,6 +249,7 @@ public interface BaseServiceClient {
 
     /**
      * 根据集群Id和组织Id查询client
+     *
      * @param organizationId
      * @param sourceId
      * @return
