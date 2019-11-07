@@ -62,7 +62,7 @@ const CreateForm = () => {
           optionRenderer={renderClusterOption}
           onOption={getClusterOptionProp}
         />
-        <TextField name="name" colSpan={3} />
+        <TextField name="name" colSpan={3} disabled={!formDs.current.get('clusterId')} />
         <TextArea name="description" colSpan={3} resize="vertical" />
         <Select name="type" colSpan={3} clearButton={false} />
         <Select name="accessModes" colSpan={3} clearButton={false} />

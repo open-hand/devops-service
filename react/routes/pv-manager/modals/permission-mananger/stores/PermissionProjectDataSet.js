@@ -1,6 +1,7 @@
+import map from 'lodash/map';
 import getTablePostData from '../../../../../utils/getTablePostData';
 
-export default ((intlPrefix, formatMessage, projectId, pvId, optionDs) => ({
+export default ((intlPrefix, formatMessage, projectId, pvId, optionDs, DetailDs) => ({
   autoCreate: false,
   autoQuery: false,
   selection: false,
@@ -13,11 +14,19 @@ export default ((intlPrefix, formatMessage, projectId, pvId, optionDs) => ({
         data: postData,
       });
     },
-    create: ({ data }) => ({
-      url: `/devops/v1/projects/${projectId}/pv/${pvId}/permission`,
-      method: 'post',
-      data,
-    }),
+    create: ({ data }) => {
+      const res = {
+        objectVersionNumber: DetailDs.current.get('objectVersionNumber'),
+        skipCheckProjectPermission: false,
+        projectIds: map(data, 'projectId'),
+        pvId,
+      };
+      return ({
+        url: `/devops/v1/projects/${projectId}/pv/${pvId}/permission`,
+        method: 'post',
+        data: res,
+      });
+    },
     destroy: ({ data: [data] }) => ({
       url: `/devops/v1/projects/${projectId}/pv/${pvId}/permission?related_project_id=${data.id}`,
       method: 'delete',
