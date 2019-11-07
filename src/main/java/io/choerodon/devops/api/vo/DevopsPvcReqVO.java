@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.vo;
 
 
+import io.choerodon.devops.api.validator.annotation.AtLeastOneNotEmpty;
 import io.choerodon.devops.api.validator.annotation.QuantityCheck;
 import io.swagger.annotations.ApiModelProperty;
 import org.hibernate.validator.constraints.Length;
@@ -9,6 +10,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
+@AtLeastOneNotEmpty(fields = {"pvId", "pvName"}, message = "error.pv.id.or.name.null")
 public class DevopsPvcReqVO {
     @ApiModelProperty("PVC id")
     private Long id;
@@ -22,9 +24,14 @@ public class DevopsPvcReqVO {
     @ApiModelProperty("PVC绑定环境ID")
     private Long envId;
 
-    @NotNull(message = "error.pvc.pv.id.null")
     @ApiModelProperty("PVC绑定PV id")
     private Long pvId;
+
+    @ApiModelProperty("PVC绑定PV的name")
+    private String pvName;
+
+    @ApiModelProperty("PVC绑定PV所在的集群id")
+    private Long clusterId;
 
     @NotEmpty(message = "error.pvc.accessModes.empty")
     @ApiModelProperty("访问模式")
@@ -36,6 +43,22 @@ public class DevopsPvcReqVO {
 
     @ApiModelProperty(value = "本次请求的操作类型，create/update", hidden = true)
     private String commandType;
+
+    public Long getClusterId() {
+        return clusterId;
+    }
+
+    public void setClusterId(Long clusterId) {
+        this.clusterId = clusterId;
+    }
+
+    public String getPvName() {
+        return pvName;
+    }
+
+    public void setPvName(String pvName) {
+        this.pvName = pvName;
+    }
 
     public Long getId() {
         return id;

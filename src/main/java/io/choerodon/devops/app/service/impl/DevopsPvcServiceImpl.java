@@ -1,10 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import com.alibaba.fastjson.JSON;
 import com.github.pagehelper.PageHelper;
@@ -288,10 +285,14 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
         DevopsPvcDTO devopsPvcDTO = voToDto(devopsPvcReqVO, projectId);
 
         devopsPvcDTO.setStatus(PvcStatus.OPERATING.getStatus());
-
-        DevopsPvDTO devopsPvDTO = devopsPvMapper.selectByPrimaryKey(devopsPvcReqVO.getPvId());
-        if (devopsPvDTO == null) {
-            throw new CommonException("error.pv.not.exists");
+        DevopsPvDTO devopsPvDTO;
+        // 根据PV的id查询PV，若果PV不存在，就根据PV的name和集群id查询，如果PV对象为空，抛出异常
+        if (devopsPvcReqVO.getPvId() != null) {
+            devopsPvDTO = Optional.ofNullable(devopsPvMapper.selectByPrimaryKey(devopsPvcReqVO.getPvId())).
+                    orElseThrow(() -> new CommonException("error.pv.not.exists"));
+        } else {
+            devopsPvDTO = Optional.ofNullable(devopsPvMapper.queryByNameAndClusterId(devopsPvcReqVO.getPvName(), devopsPvcReqVO.getClusterId()))
+                    .orElseThrow(() -> new CommonException("error.pv.not.exists"));
         }
         devopsPvcDTO.setPvName(devopsPvDTO.getName());
         return devopsPvcDTO;
