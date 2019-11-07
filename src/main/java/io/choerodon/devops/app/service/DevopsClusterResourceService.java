@@ -52,16 +52,41 @@ public interface DevopsClusterResourceService {
 
     void updatePromteheus(Long projectId, Long clusterId, DevopsPrometheusVO prometheusVo);
 
+    /**
+     * 查询集群下的prometheus，返回vo对象
+     * @param clusterId
+     * @return
+     */
     DevopsPrometheusVO queryPrometheus(Long clusterId);
 
+    /**
+     * 查询集群下的prometheus，返回DTO对象
+     * @param clusterId
+     * @return
+     */
     DevopsPrometheusDTO queryPrometheusDTO(Long clusterId);
 
+    /**
+     * 查询安装prometheus的进程
+     * @param clusterId
+     * @return
+     */
     ClusterResourceVO queryDeployProcess(Long clusterId);
 
+    /**
+     * 查询部署prometheus状态
+     * @param projectId
+     * @param clusterId
+     * @return
+     */
     ClusterResourceVO queryPrometheusStatus(Long projectId, Long clusterId);
 
     void unloadCertManager(Long clusterId);
 
+    /**
+     * 删除prometheus和对应的集群资源数据
+     * @param clusterId
+     */
     void basedeletePromtheus(Long clusterId);
 
     String getGrafanaUrl(Long projectId, Long clusterId, String type);
@@ -74,6 +99,11 @@ public interface DevopsClusterResourceService {
      */
     Boolean queryCertManagerByEnvId(Long envId);
 
+    /**
+     * 部署prometheus
+     * @param clusterId
+     * @param devopsPrometheusDTO
+     */
     void deployPrometheus(Long clusterId, DevopsPrometheusDTO devopsPrometheusDTO);
 
     void deletePvc(Long clusterId);

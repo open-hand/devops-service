@@ -18,10 +18,7 @@ import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.ClientDTO;
 import io.choerodon.devops.infra.dto.iam.ClientVO;
-import io.choerodon.devops.infra.enums.CertificationStatus;
-import io.choerodon.devops.infra.enums.ClusterResourceOperateType;
-import io.choerodon.devops.infra.enums.ClusterResourceStatus;
-import io.choerodon.devops.infra.enums.ClusterResourceType;
+import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.ConvertUtils;
@@ -33,13 +30,11 @@ import io.choerodon.devops.infra.util.GenerateUUID;
  */
 @Service
 public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceService {
-    private static final String PROMETHEUS_PREFIX = "prometheus-";
-
     private static final String STATUS_RUNNING = "running";
-    private static final String STATUS_FAIL = "fail";
+    private static final String STATUS_FAILED = "failed";
     private static final String STATUS_CREATED = "created";
     private static final String STATUS_SUCCESSED = "success";
-    private static final String STATUS_CHECK_FAIL = "check_fail";
+    private static final String STATUS_CREATE_PVC = "check_fail";
     private static final String GRAFANA_NODE = "/d/choerodon-default-node/jie-dian";
     private static final String GRAFANA_CLUSTER = "/d/choerodon-default-cluster/ji-qun";
     @Autowired
@@ -357,19 +352,32 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     public ClusterResourceVO queryDeployProcess(Long clusterId) {
         DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceMapper.queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
         ClusterResourceVO clusterResourceVO = new ClusterResourceVO();
-        if(devopsClusterResourceDTO.getObjectId()==null){
-            //创建pvc中
-            clusterResourceVO.setStatus(STATUS_CREATED);
+
+        //查询pvc状态
+        DevopsPrometheusDTO devopsPrometheusDTO = devopsPrometheusMapper.selectByPrimaryKey(devopsClusterResourceDTO.getConfigId());
+        List<Long> pvcIds = JSON.parseArray(devopsPrometheusDTO.getPvcId(), Long.class);
+        List<DevopsPvcDTO> devopsPvcDTOS = new ArrayList<>();
+        for (Long pvcId : pvcIds) {
+            DevopsPvcDTO devopsPvc = devopsPvcService.queryById(pvcId);
+            if (PvcStatus.PENDING.getStatus().equals(devopsPvc.getStatus())) {
+                devopsPvcDTOS.add(devopsPvc);
+            }
         }
-        AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQuery(devopsClusterResourceDTO.getObjectId());
-        DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(appServiceInstanceDTO.getCommandId());
-        clusterResourceVO.setType(ClusterResourceType.PROMETHEUS.getType());
-        if (!ObjectUtils.isEmpty(devopsEnvCommandDTO.getSha())) {
-            clusterResourceVO.setStatus(STATUS_CREATED);
+        if (devopsPvcDTOS.size() == 3) {
+            //查询创建实例
+            AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQuery(devopsClusterResourceDTO.getObjectId());
+            DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(appServiceInstanceDTO.getCommandId());
+            clusterResourceVO.setType(ClusterResourceType.PROMETHEUS.getType());
+            if (!ObjectUtils.isEmpty(devopsEnvCommandDTO.getSha())) {
+                clusterResourceVO.setStatus(STATUS_CREATED);
+            }
+            if (appServiceInstanceDTO.getStatus().equals(STATUS_RUNNING)) {
+                clusterResourceVO.setStatus(STATUS_RUNNING);
+            }
+        } else {
+            clusterResourceVO.setStatus(STATUS_CREATE_PVC);
         }
-        if (appServiceInstanceDTO.getStatus().equals(STATUS_RUNNING)) {
-            clusterResourceVO.setStatus(STATUS_RUNNING);
-        }
+
         return clusterResourceVO;
     }
 
@@ -411,7 +419,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
                     basedeletePromtheus(clusterId);
                     clusterResourceVO.setStatus(ClusterResourceStatus.UNINSTALL.getStatus());
                     return clusterResourceVO;
-                 }
+                }
             }
             clusterResourceVO.setStatus(ClusterResourceStatus.PROCESSING.getStatus());
             clusterResourceVO.setOperate(devopsClusterResourceDTO.getOperate());
@@ -419,35 +427,43 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         }
         //升级和安装操作的状态
         clusterResourceVO = queryDeployProcess(clusterId);
-        List<DevopsEnvPodVO> devopsEnvPodDTOS = ConvertUtils.convertList(devopsEnvPodService.baseListByInstanceId(appServiceInstanceDTO.getId()), DevopsEnvPodVO.class);
-        DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(appServiceInstanceDTO.getCommandId());
-
-        if (STATUS_CREATED.equals(clusterResourceVO.getStatus())) {
+        if (STATUS_CREATE_PVC.equals(clusterResourceVO.getStatus())) {
             clusterResourceVO.setStatus(ClusterResourceStatus.PROCESSING.getStatus());
-        }
+        } else {
+            List<DevopsEnvPodVO> devopsEnvPodDTOS = ConvertUtils.convertList(devopsEnvPodService.baseListByInstanceId(appServiceInstanceDTO.getId()), DevopsEnvPodVO.class);
+            DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(appServiceInstanceDTO.getCommandId());
 
-        if (STATUS_RUNNING.equals(clusterResourceVO.getStatus())) {
-            clusterResourceVO.setStatus(ClusterResourceStatus.PROCESSING.getStatus());
-            //查询pod状态
-            devopsEnvPodDTOS.stream().forEach(devopsEnvPodVO -> {
-                devopsEnvPodService.fillContainers(devopsEnvPodVO);
-            });
+            if (STATUS_CREATED.equals(clusterResourceVO.getStatus())) {
+                clusterResourceVO.setStatus(ClusterResourceStatus.PROCESSING.getStatus());
+            }
 
-            List<ContainerVO> readyPod = new ArrayList<>();
-            //ready=true的pod大于1就是可用的
-            devopsEnvPodDTOS.stream().forEach(devopsEnvPodVO -> {
-                if (devopsEnvPodVO.getReady() == true) {
-                    readyPod.addAll(devopsEnvPodVO.getContainers().stream().filter(pod -> pod.getReady() == true).collect(Collectors.toList()));
+            if (STATUS_RUNNING.equals(clusterResourceVO.getStatus())) {
+                clusterResourceVO.setStatus(ClusterResourceStatus.PROCESSING.getStatus());
+                //查询pod状态
+                devopsEnvPodDTOS.stream().forEach(devopsEnvPodVO -> {
+                    devopsEnvPodService.fillContainers(devopsEnvPodVO);
+                });
+
+                List<ContainerVO> readyPod = new ArrayList<>();
+                //ready=true的pod大于1就是可用的
+                devopsEnvPodDTOS.stream().forEach(devopsEnvPodVO -> {
+                    if (devopsEnvPodVO.getReady() == true) {
+                        readyPod.addAll(devopsEnvPodVO.getContainers().stream().filter(pod -> pod.getReady() == true).collect(Collectors.toList()));
+                    }
+                });
+                if (readyPod.size() >= 1) {
+                    clusterResourceVO.setStatus(STATUS_SUCCESSED);
+                } else {
+                    clusterResourceVO.setStatus(ClusterResourceStatus.DISABLED.getStatus());
+                    clusterResourceVO.setMessage(devopsEnvCommandDTO.getError());
                 }
-            });
-            if (readyPod.size() >= 1) {
-                clusterResourceVO.setStatus(STATUS_SUCCESSED);
-            } else {
+            }
+            if (STATUS_FAILED.equals(devopsEnvCommandDTO.getStatus())) {
                 clusterResourceVO.setStatus(ClusterResourceStatus.DISABLED.getStatus());
                 clusterResourceVO.setMessage(devopsEnvCommandDTO.getError());
             }
-        }
 
+        }
         clusterResourceVO.setOperate(devopsClusterResourceDTO.getOperate());
         return clusterResourceVO;
     }
