@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Set;
 
 import com.github.pagehelper.PageInfo;
-import io.choerodon.devops.infra.dto.DevopsConfigDTO;
 import org.springframework.web.multipart.MultipartFile;
 
 import org.springframework.data.domain.Pageable;

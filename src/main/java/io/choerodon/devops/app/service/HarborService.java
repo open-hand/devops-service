@@ -1,13 +1,11 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+
 import io.choerodon.devops.app.eventhandler.payload.HarborPayload;
-import io.choerodon.devops.infra.dto.DevopsProjectDTO;
-import io.choerodon.devops.infra.dto.HarborUserDTO;
 import io.choerodon.devops.infra.dto.harbor.User;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.HarborClient;
-
-import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.

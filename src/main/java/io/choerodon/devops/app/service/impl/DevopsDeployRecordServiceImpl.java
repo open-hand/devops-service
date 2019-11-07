@@ -1,29 +1,28 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.google.common.base.Joiner;
-import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.util.GitUserNameUtil;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import org.springframework.data.domain.Pageable;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsDeployRecordVO;
 import io.choerodon.devops.app.service.DevopsDeployRecordService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.PipelineService;
 import io.choerodon.devops.infra.dto.DevopsDeployRecordDTO;
-import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsDeployRecordMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
+import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.PageRequestUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 
@@ -119,7 +118,7 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
     public void deleteManualRecordByEnv(Long envId) {
         DevopsDeployRecordDTO deleteCondition = new DevopsDeployRecordDTO();
         deleteCondition.setEnv(String.valueOf(envId));
-        deleteCondition.setDeployType("manual");
+        deleteCondition.setDeployType(MANUAL);
 
         devopsDeployRecordMapper.delete(deleteCondition);
     }

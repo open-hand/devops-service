@@ -72,11 +72,11 @@ class DevopsProjectConfigControllerSpec extends Specification {
         harborDTO.setProjectId(project_id)
         harborDTO.setCustom(true)
         ConfigVO harborConfig = new ConfigVO()
-        harborConfig.setEmail("zhuang.chang@hand-china.com")
-        harborConfig.setPassword("Handhand1357")
+        harborConfig.setEmail("aa.a@123.com")
+        harborConfig.setPassword("123")
         harborConfig.setPrivate(true)
-        harborConfig.setUrl("https://registry.saas.hand-china.com")
-        harborConfig.setUserName("admin")
+        harborConfig.setUrl("http://devops.test.com.cn")
+        harborConfig.setUserName("user")
         harborDTO.setConfig(harborConfig)
 
         list.add(chartDTO)
@@ -97,10 +97,10 @@ class DevopsProjectConfigControllerSpec extends Specification {
     def "Create"() {
         given: '初始化数据'
         ConfigVO configVO = new ConfigVO()
-        configVO.setEmail("zhuang.chang@hand-china.com")
-        configVO.setPassword("Handhand1357")
-        configVO.setUserName("admin")
-        configVO.setUrl("https://registry.saas.hand-china.com")
+        configVO.setEmail("aa.a@123.com")
+        configVO.setPassword("123")
+        configVO.setUserName("user")
+        configVO.setUrl("http://devops.test.com.cn")
         configVO.setPrivate(true)
 
         DevopsConfigVO devopsConfigVO = new DevopsConfigVO()
@@ -150,8 +150,8 @@ class DevopsProjectConfigControllerSpec extends Specification {
 
     def "checkHarbor"() {
         given:
-        def url = MAPPING + "/check_harbor?url=https://registry.saas.hand-china.com&" +
-                "userName=admin&password=Handhand1357&email=zhuang.chang@hand-china.com"
+        def url = MAPPING + "/check_harbor?url=http://devops.test.com.cn&" +
+                "userName=user&password=123&email=aa.a@123.com"
         when:
         def entity = restTemplate.getForEntity(url, Boolean.class, 1L)
         then:
@@ -160,7 +160,7 @@ class DevopsProjectConfigControllerSpec extends Specification {
 
     def "checkChart"() {
         given:
-        def url = MAPPING + "/check_chart?url=https://registry.saas.hand-china.com"
+        def url = MAPPING + "/check_chart?url=http://devops.test.com.cn"
         when:
         def entity = restTemplate.getForEntity(url, Boolean.class, 1L)
         then:

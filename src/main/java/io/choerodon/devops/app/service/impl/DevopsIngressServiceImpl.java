@@ -564,7 +564,6 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
             devopsIngressDTO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());
             baseUpdate(devopsIngressDTO);
         } else {
-            ingressId = devopsIngressDTO.getId();
             devopsEnvCommandDTO.setObjectId(devopsIngressDTO.getId());
             devopsIngressDTO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());
             baseUpdateIngressAndIngressPath(devopsIngressDTO);

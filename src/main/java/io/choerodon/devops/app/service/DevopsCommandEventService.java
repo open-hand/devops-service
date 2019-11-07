@@ -23,5 +23,5 @@ public interface DevopsCommandEventService {
      * @param type
      * @return
      */
-    List<DevopsCommandEventDTO> ListByCommandIdsAndType(Set<Long> commandIds,String type);
+    List<DevopsCommandEventDTO> listByCommandIdsAndType(Set<Long> commandIds, String type);
 }

@@ -197,11 +197,11 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
         List<IamUserDTO> users = baseServiceClientOperator.listUsersByIds(userIds);
         // 查出所有的 DevopsCommandEventDTO 并根据commandId分组
         Set<Long> commandIds = devopsEnvCommandDTOS.stream().map(DevopsEnvCommandDTO::getId).collect(Collectors.toSet());
-        List<DevopsCommandEventDTO> CommandEventTypeJob = devopsCommandEventService.ListByCommandIdsAndType(commandIds, ResourceType.JOB.getType());
-        List<DevopsCommandEventDTO> CommandEventTypePod = devopsCommandEventService.ListByCommandIdsAndType(commandIds, ResourceType.POD.getType());
-        Map<Long, List<DevopsCommandEventDTO>> CommandEventTypeJobMap = CommandEventTypeJob.stream().collect(Collectors.groupingBy(DevopsCommandEventDTO::getCommandId));
-        Map<Long, List<DevopsCommandEventDTO>> CommandEventTypePodJobMap = CommandEventTypePod.stream().collect(Collectors.groupingBy(DevopsCommandEventDTO::getCommandId));
-        devopsEnvCommandDTOS.stream().forEach(devopsEnvCommandDTO -> {
+        List<DevopsCommandEventDTO> commandEventTypeJob = devopsCommandEventService.listByCommandIdsAndType(commandIds, ResourceType.JOB.getType());
+        List<DevopsCommandEventDTO> commandEventTypePod = devopsCommandEventService.listByCommandIdsAndType(commandIds, ResourceType.POD.getType());
+        Map<Long, List<DevopsCommandEventDTO>> commandEventTypeJobMap = commandEventTypeJob.stream().collect(Collectors.groupingBy(DevopsCommandEventDTO::getCommandId));
+        Map<Long, List<DevopsCommandEventDTO>> commandEventTypePodJobMap = commandEventTypePod.stream().collect(Collectors.groupingBy(DevopsCommandEventDTO::getCommandId));
+        devopsEnvCommandDTOS.forEach(devopsEnvCommandDTO -> {
             InstanceEventVO instanceEventVO = new InstanceEventVO();
             Optional<IamUserDTO> iamUserDTO = users.stream().filter(user -> user.getId().equals(devopsEnvCommandDTO.getCreatedBy())).findFirst();
             IamUserDTO iamUser = null;
@@ -216,7 +216,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
             instanceEventVO.setType(devopsEnvCommandDTO.getCommandType());
             List<PodEventVO> podEventVOS = new ArrayList<>();
             //获取实例中job的event
-            List<DevopsCommandEventDTO> devopsCommandEventDTOS = CommandEventTypeJobMap.get(devopsEnvCommandDTO.getId());
+            List<DevopsCommandEventDTO> devopsCommandEventDTOS = commandEventTypeJobMap.get(devopsEnvCommandDTO.getId());
             if (!CollectionUtils.isEmpty(devopsCommandEventDTOS)) {
                 LinkedHashMap<String, String> jobEvents = getDevopsCommandEvent(devopsCommandEventDTOS);
                 jobEvents.forEach((key, value) -> {
@@ -256,7 +256,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
                 }
             }
             //获取实例中pod的event
-            List<DevopsCommandEventDTO> devopsCommandPodEventES = CommandEventTypePodJobMap.get(devopsEnvCommandDTO.getId());
+            List<DevopsCommandEventDTO> devopsCommandPodEventES = commandEventTypePodJobMap.get(devopsEnvCommandDTO.getId());
             if (!CollectionUtils.isEmpty(devopsCommandPodEventES)) {
                 LinkedHashMap<String, String> podEvents = getDevopsCommandEvent(devopsCommandPodEventES);
                 int index = 0;

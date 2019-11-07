@@ -6,12 +6,11 @@ import java.util.stream.Collectors;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO;
-import io.choerodon.devops.api.vo.iam.RoleVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,9 +18,10 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
-import org.springframework.data.domain.Pageable;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO;
+import io.choerodon.devops.api.vo.iam.RoleVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.DevopsClusterDTO;
 import io.choerodon.devops.infra.dto.DevopsClusterProPermissionDTO;
@@ -33,19 +33,6 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
 import io.choerodon.devops.infra.util.*;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
-
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 
 @Service
@@ -550,10 +537,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
         // 集合做差集处理
         clusterBelongToProjectIds.retainAll(ownerRoleProjectIds);
-        if (CollectionUtils.isEmpty(clusterBelongToProjectIds)) {
-            return false;
-        }
-        return true;
+        return !CollectionUtils.isEmpty(clusterBelongToProjectIds);
     }
 
     /**
