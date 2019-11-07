@@ -536,9 +536,9 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             resourceFileCheckHandler.check(devopsEnvironmentDTO, appServiceDeployVO.getInstanceId(), code, C7NHELM_RELEASE);
 
             //从未关联部署配置到关联部署配置，或者从一个部署配置关联另外一个部署配置，如果values是一样的，虽然getIsNotChange为false,但是此时也应该直接设置为isNotChange为true
-            DevopsEnvCommandDTO oldDevopsEnvCommandE = devopsEnvCommandService.baseQuery(baseQuery(appServiceInstanceDTO.getId()).getCommandId());
+            AppServiceInstanceDTO oldAppServiceInstanceDTO = appServiceInstanceMapper.selectByPrimaryKey(appServiceInstanceDTO.getId());
             String deployValue = baseQueryValueByInstanceId(appServiceInstanceDTO.getId());
-            if (appServiceDeployVO.getAppServiceVersionId().equals(oldDevopsEnvCommandE.getObjectVersionId()) && deployValue.equals(appServiceDeployVO.getValues())) {
+            if (appServiceDeployVO.getAppServiceVersionId().equals(oldAppServiceInstanceDTO.getAppServiceVersionId()) && deployValue.equals(appServiceDeployVO.getValues())) {
                 appServiceDeployVO.setIsNotChange(true);
             }
         }
