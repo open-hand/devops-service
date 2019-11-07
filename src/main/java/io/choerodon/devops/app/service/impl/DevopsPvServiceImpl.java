@@ -65,8 +65,6 @@ public class DevopsPvServiceImpl implements DevopsPvServcie {
     private DevopsEnvFileResourceService devopsEnvFileResourceService;
     @Autowired
     GitlabServiceClientOperator gitlabServiceClientOperator;
-    @Autowired
-    DevopsEnvironmentService devopsEnvironmentService;
 
     @Override
     public PageInfo<DevopsPvDTO> basePagePvByOptions(Boolean doPage, Pageable pageable, String params) {
