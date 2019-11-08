@@ -334,8 +334,10 @@ export default injectIntl(observer(() => {
         ? <Loading display />
         : <Fragment>
           <Table
+            className="c7n-pipineline-table"
             queryBar="none"
             dataSet={ciTableDS}
+            size="small"
           >
             <Column name="status" renderer={renderStatus} width={100} />
             <Column name="pipelineId" renderer={renderSign} />
