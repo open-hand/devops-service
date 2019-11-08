@@ -1,8 +1,8 @@
 import React, { Component, Fragment } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Button, Tooltip } from 'choerodon-ui';
+import { Tooltip } from 'choerodon-ui';
 import { Table } from 'choerodon-ui/pro';
-import { Permission, stores, Action, Page } from '@choerodon/boot';
+import { Action, Page } from '@choerodon/boot';
 import { injectIntl } from 'react-intl';
 import TimeAgo from 'timeago-react';
 
@@ -12,7 +12,7 @@ import Loading from '../../../../components/loading';
 import handleMapStore from '../../main-view/store/handleMapStore';
 import { usePipelineStore } from './stores';
 import { useCodeManagerStore } from '../../stores';
-
+import store from '../../../reports/stores/ReportsStore';
 
 import '../../../main.less';
 import './index.less';
@@ -76,7 +76,7 @@ export default injectIntl(observer(() => {
 
   const { appServiceDs, selectAppDs } = useCodeManagerStore();
   const appServiceId = selectAppDs.current.get('appServiceId');
-  const appServiceData = appServiceDs.toData();
+
 
   handleMapStore.setCodeManagerCiPipelineManage({
     refresh: handleRefresh,
@@ -171,9 +171,9 @@ export default injectIntl(observer(() => {
     const gitlabProjectId = record && record.get('gitlabProjectId');
     const pipelineId = record && record.get('pipelineId');
     if (status === 'running' || status === 'pending') {
-      // store.cancelPipeline(gitlabProjectId, pipelineId);
+      store.cancelPipeline(gitlabProjectId, pipelineId);
     } else {
-      // store.retryPipeline(gitlabProjectId, pipelineId);
+      store.retryPipeline(gitlabProjectId, pipelineId);
     }
     ciTableDS.query();
   }
@@ -323,6 +323,28 @@ export default injectIntl(observer(() => {
     }
   }
 
+  function renderTimeSpan({ value }) {
+    return (
+      <span>
+        {renderTime(value)}
+      </span>
+    );
+  }
+
+  function renderDateTooltip({ value }) {
+    return (
+      <div>
+        <Tooltip
+          title={value}
+        >
+          <TimeAgo
+            datetime={value}
+            locale={formatMessage({ id: 'language' })}
+          />
+        </Tooltip>
+      </div>
+    );
+  }
   return (
     <Page
       className="c7n-ciPipeline page-container"
@@ -347,27 +369,12 @@ export default injectIntl(observer(() => {
             <Column
               width={120}
               name="pipelineTime"
-              renderer={({ value }) => (
-                <span>
-                  {renderTime(value)}
-                </span>
-              )}
+              renderer={renderTimeSpan}
             />
             <Column
               width={120}
               name="creationDate"
-              renderer={({ value }) => (
-                <div>
-                  <Tooltip
-                    title={value}
-                  >
-                    <TimeAgo
-                      datetime={value}
-                      locale={formatMessage({ id: 'language' })}
-                    />
-                  </Tooltip>
-                </div>
-              )}
+              renderer={renderDateTooltip}
             />
           </Table>
         </Fragment>}

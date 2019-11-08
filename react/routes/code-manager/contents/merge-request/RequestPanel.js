@@ -158,6 +158,19 @@ const RequestPanel = withRouter(observer((props) => {
     ) : formatMessage({ id: 'merge.noAssignee' });
   }
 
+  function renderTable(params) {
+    return (
+      <Table dataSet={openTableDS} queryBar="none">
+        <Column name="title" renderer={renderTitle} />
+        <Column name="iid" renderer={renderIid} width={100} align="left" />
+        <Column name="targetBranch" renderer={renderTargetBranch} />
+        <Column name="createdAt" renderer={renderCreatedAt} />
+        <Column name="commits" renderer={renderCommit} />
+        <Column name="updatedAt" renderer={renderUpdateDate} />
+      </Table>
+    );
+  }
+
   return (
     <Page
       className="c7n-region page-container c7n-merge-wrapper"
@@ -182,24 +195,10 @@ const RequestPanel = withRouter(observer((props) => {
               </Table>
             </TabPane>
             <TabPane tab={`${formatMessage({ id: 'merge.tab2' })}(${mergeCount || 0})`} key="merged">
-              <Table dataSet={openTableDS} queryBar="none">
-                <Column name="title" renderer={renderTitle} />
-                <Column name="iid" renderer={renderIid} width={100} align="left" />
-                <Column name="targetBranch" renderer={renderTargetBranch} />
-                <Column name="createdAt" renderer={renderCreatedAt} />
-                <Column name="commits" renderer={renderCommit} />
-                <Column name="updatedAt" renderer={renderUpdateDate} />
-              </Table>
+              {renderTable()}
             </TabPane>
             <TabPane tab={`${formatMessage({ id: 'merge.tab3' })}(${closeCount || 0})`} key="closed">
-              <Table dataSet={openTableDS} queryBar="none">
-                <Column name="title" renderer={renderTitle} />
-                <Column name="iid" renderer={renderIid} align="left" width={100} />
-                <Column name="targetBranch" renderer={renderTargetBranch} />
-                <Column name="createdAt" renderer={renderCreatedAt} />
-                <Column name="commits" renderer={renderCommit} />
-                <Column name="updatedAt" renderer={renderUpdateDate} />
-              </Table>
+              {renderTable()}
             </TabPane>
             <TabPane tab={`${formatMessage({ id: 'merge.tab4' })}(${totalCount || 0})`} key="all">
               <Table dataSet={openTableDS} queryBar="none">
