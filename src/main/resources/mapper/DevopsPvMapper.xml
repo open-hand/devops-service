@@ -82,6 +82,7 @@
         FROM devops_pv dpv
         JOIN devops_cluster dc on dpv.cluster_id = dc.id
         WHERE dpv.name=#{name} AND dc.id=#{name}
+    </select>
 
     <select id="queryByEnvIdAndName" resultType="io.choerodon.devops.infra.dto.DevopsPvDTO">
         SELECT dpv.*

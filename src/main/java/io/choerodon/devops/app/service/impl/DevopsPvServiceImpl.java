@@ -422,12 +422,16 @@ public class DevopsPvServiceImpl implements DevopsPvServcie {
         v1ObjectMeta.setName(devopsPvDTO.getName());
 
         //设置pv类型
+
+
         Map<String, String> labelMap = new HashMap<>();
         labelMap.put(KubernetesConstants.TYPE, devopsPvDTO.getType());
         v1ObjectMeta.setLabels(labelMap);
         v1PersistentVolume.setMetadata(v1ObjectMeta);
 
+        //设置Specification下面的字段
         V1PersistentVolumeSpec v1PersistentVolumeSpec = new V1PersistentVolumeSpec();
+
         //设置访问模式,目前不支持多种访问模式，所以直接从dto取值
         List<String> accessMode = new ArrayList<>();
         accessMode.add(devopsPvDTO.getAccessModes());
