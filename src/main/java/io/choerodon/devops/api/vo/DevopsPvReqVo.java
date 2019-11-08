@@ -21,7 +21,6 @@ public class DevopsPvReqVo {
     @ApiModelProperty("pv类型")
     private String type;
 
-    @NotNull(message = "error.pv.description.is.null")
     @ApiModelProperty("pv描述")
     private String description;
 
