@@ -10,7 +10,7 @@ public enum ClusterResourceStatus {
     AVAILABLE("available"),
     DISABLED("disabled");
     private String status;
-    
+
     ClusterResourceStatus(String status) {
         this.status = status;
     }
