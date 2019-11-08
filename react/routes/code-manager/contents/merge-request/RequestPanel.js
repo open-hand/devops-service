@@ -75,8 +75,8 @@ const RequestPanel = withRouter(observer((props) => {
           funcType="flat"
           onClick={linkToNewMerge}
           disabled={!mergedRequestStore.getUrl}
+          icon="playlist_add"
         >
-          <i className="icon-playlist_add icon" />
           {formatMessage({ id: 'merge.createMerge' })}
         </Button>
       </Permission>
