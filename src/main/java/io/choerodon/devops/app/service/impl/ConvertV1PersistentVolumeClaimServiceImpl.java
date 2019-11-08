@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.util.GitOpsUtil.*;
+
 import java.util.List;
 import java.util.Map;
 
@@ -39,40 +41,17 @@ public class ConvertV1PersistentVolumeClaimServiceImpl extends ConvertK8sObjectS
         String filePath = objectPath.get(TypeUtil.objToString(claim.hashCode()));
         DevopsPvcDTO devopsPvcDTO = devopsPvcService.queryByEnvIdAndName(envId, claim.getMetadata().getName());
         if (devopsPvcDTO != null
-                && !isDeletedByCurrentOperation(beforeSyncDelete, claim, devopsPvcDTO.getId())) {
-            DevopsEnvFileResourceDTO devopsEnvFileResourceDTO =
-                    devopsEnvFileResourceService.baseQueryByEnvIdAndResourceId(envId, devopsPvcDTO.getId(), claim.getKind());
-
-            if (devopsEnvFileResourceDTO != null &&
-                    !devopsEnvFileResourceDTO.getFilePath().equals(objectPath.get(TypeUtil.objToString(claim.hashCode())))) {
-                throw new GitOpsExplainException(
-                        GitOpsObjectError.OBJECT_EXIST.getError(), filePath, claim.getMetadata().getName());
-            }
+                && !isDeletedByCurrentOperation(beforeSyncDelete, devopsPvcDTO.getId(), ResourceType.PERSISTENT_VOLUME_CLAIM)) {
+            checkNotExistInDb(devopsEnvFileResourceService.baseQueryByEnvIdAndResourceId(envId, devopsPvcDTO.getId(), claim.getKind()), filePath, claim.getMetadata().getName());
         }
 
-        if (claims.stream().anyMatch(
-                v1Service1 -> v1Service1.getMetadata().getName().equals(claim.getMetadata().getName()))) {
-            throw new GitOpsExplainException(
-                    GitOpsObjectError.OBJECT_EXIST.getError(), filePath, claim.getMetadata().getName());
-        } else {
-            claims.add(claim);
+        if (isContainedByList(claims, claim, obj -> obj.getMetadata().getName())) {
+            throwExistEx(filePath, claim.getMetadata().getName());
         }
+
+        claims.add(claim);
     }
 
-    /**
-     * 是否被当前的操作删除了
-     *
-     * @param beforeSyncDelete 当前操作删除的文件及其对应关系
-     * @param claim            claim
-     * @param pvcId            pvc的纪录id
-     * @return true表示被删除了，反正，没有被删除
-     */
-    private boolean isDeletedByCurrentOperation(List<DevopsEnvFileResourceDTO> beforeSyncDelete,
-                                                V1PersistentVolumeClaim claim, Long pvcId) {
-        return beforeSyncDelete.stream()
-                .filter(envFileResourceDTO -> envFileResourceDTO.getResourceType().equals(claim.getKind()))
-                .noneMatch(envFileResourceDTO -> envFileResourceDTO.getResourceId().equals(pvcId));
-    }
 
     @Override
     public void checkParameters(V1PersistentVolumeClaim claim, Map<String, String> objectPath) {

@@ -91,5 +91,16 @@ public interface DevopsPvServcie {
      */
     void deleteRelatedProjectById(Long pvId, Long projectId);
 
+    /**
+     * 通过环境id和名称查找pvc
+     *
+     * @param envId 环境id
+     * @param name  pv名称
+     * @return pv纪录
+     */
+    DevopsPvDTO queryByEnvIdAndName(Long envId, String name);
 
+    DevopsPvDTO createOrUpdateByGitOps(DevopsPvReqVo devopsPvReqVo, Long userId);
+
+    void deleteByGitOps(Long pvId);
 }

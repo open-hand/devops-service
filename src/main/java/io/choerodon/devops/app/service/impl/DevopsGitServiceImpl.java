@@ -548,6 +548,10 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             //将k8s对象初始化为实例，网络，域名，证书，秘钥对象,处理对象文件关系
             resourceKindMap.forEach((k, v) -> {
                 HandlerObjectFileRelationsService handler = objectFileRelationHandlers.get(k);
+                if (handler == null) {
+                    LOGGER.info("Handler is unexpectedly null. The resource kind is {}", k);
+                    return;
+                }
                 handler.handlerRelations(objectPath, beforeSyncFileResource, v, resourceKindMap.get(V1Endpoints.class), envId, projectId, path, userId);
             });
             LOGGER.info("k8s对象转换平台对象成功！");

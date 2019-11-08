@@ -1,8 +1,23 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import io.kubernetes.client.custom.Quantity;
+import io.kubernetes.client.models.V1ObjectMeta;
+import io.kubernetes.client.models.V1PersistentVolume;
+import io.kubernetes.client.models.V1PersistentVolumeSpec;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsPvPermissionUpdateVO;
 import io.choerodon.devops.api.vo.DevopsPvReqVo;
@@ -13,29 +28,19 @@ import io.choerodon.devops.infra.constant.KubernetesConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.enums.*;
+import io.choerodon.devops.infra.enums.CommandStatus;
+import io.choerodon.devops.infra.enums.ObjectType;
+import io.choerodon.devops.infra.enums.PvStatus;
+import io.choerodon.devops.infra.enums.ResourceUnitLevelEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
+import io.choerodon.devops.infra.mapper.DevopsEnvCommandMapper;
 import io.choerodon.devops.infra.mapper.DevopsPvMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.kubernetes.client.custom.Quantity;
-import io.kubernetes.client.models.V1ObjectMeta;
-import io.kubernetes.client.models.V1PersistentVolume;
-import io.kubernetes.client.models.V1PersistentVolumeSpec;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 public class DevopsPvServiceImpl implements DevopsPvServcie {
@@ -64,6 +69,8 @@ public class DevopsPvServiceImpl implements DevopsPvServcie {
     @Autowired
     private DevopsEnvFileResourceService devopsEnvFileResourceService;
     @Autowired
+    private DevopsEnvCommandMapper devopsEnvCommandMapper;
+    @Autowired
     GitlabServiceClientOperator gitlabServiceClientOperator;
 
     @Override
@@ -88,7 +95,7 @@ public class DevopsPvServiceImpl implements DevopsPvServcie {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void createPv(DevopsPvReqVo devopsPvReqVo) {
-        DevopsPvDTO devopsPvDTO = ConvertUtils.convertObject(devopsPvReqVo,DevopsPvDTO.class);
+        DevopsPvDTO devopsPvDTO = ConvertUtils.convertObject(devopsPvReqVo, DevopsPvDTO.class);
         devopsPvDTO.setStatus(PvStatus.OPERATING.getStatus());
         // 创建pv的环境是所选集群关联的系统环境
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(devopsPvDTO.getClusterId());
@@ -117,7 +124,7 @@ public class DevopsPvServiceImpl implements DevopsPvServcie {
 
         //创建pv
         operatePVGitlabFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
-                v1PersistentVolume,devopsPvDTO,devopsEnvCommandDTO,devopsEnvironmentDTO,userAttrDTO);
+                v1PersistentVolume, devopsPvDTO, devopsEnvCommandDTO, devopsEnvironmentDTO, userAttrDTO);
 
     }
 
@@ -126,11 +133,13 @@ public class DevopsPvServiceImpl implements DevopsPvServcie {
     public Boolean deletePvById(Long pvId) {
         DevopsPvDTO devopsPvDTO = baseQueryById(pvId);
 
-        if(devopsPvDTO == null){return false;}
+        if (devopsPvDTO == null) {
+            return false;
+        }
 
         // 创建pv的环境是所选集群关联的系统环境
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(devopsPvDTO.getClusterId());
-        DevopsEnvironmentDTO devopsEnvironmentDTO =devopsEnvironmentService.baseQueryById(devopsClusterDTO.getSystemEnvId());
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsClusterDTO.getSystemEnvId());
 
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
@@ -211,7 +220,7 @@ public class DevopsPvServiceImpl implements DevopsPvServcie {
 
     @Override
     public void baseCheckPv(DevopsPvDTO devopsPvDTO) {
-        if (devopsPvMapper.selectOne(devopsPvDTO) != null){
+        if (devopsPvMapper.selectOne(devopsPvDTO) != null) {
             throw new CommonException("error.pv.name.exists");
         }
     }
@@ -221,25 +230,25 @@ public class DevopsPvServiceImpl implements DevopsPvServcie {
     public void assignPermission(DevopsPvPermissionUpdateVO update) {
         DevopsPvDTO devopsPvDTO = devopsPvMapper.selectByPrimaryKey(update.getPvId());
 
-        if (devopsPvDTO.getSkipCheckProjectPermission()){
+        if (devopsPvDTO.getSkipCheckProjectPermission()) {
             // 原来对组织下所有项目公开,更新之后依然公开，则不做任何处理
             // 更新之后对特定项目公开则忽略之前的更新权限表
-            if (!update.getSkipCheckProjectPermission()){
+            if (!update.getSkipCheckProjectPermission()) {
                 // 更新相关字段
                 updateCheckPermission(update);
 
                 //批量插入
                 devopsPvProPermissionService.batchInsertIgnore(update.getPvId(), update.getProjectIds());
             }
-        }else{
+        } else {
             // 原来不公开,现在设置公开，更新版本号，直接删除原来的权限表中的数据
-            if(update.getSkipCheckProjectPermission()){
+            if (update.getSkipCheckProjectPermission()) {
                 // 先更新相关字段
                 updateCheckPermission(update);
 
                 //批量删除
                 devopsPvProPermissionService.baseListByPvId(update.getPvId());
-            }else{
+            } else {
                 //原来不公开，现在也不公开,则根据ids批量插入
                 devopsPvProPermissionService.batchInsertIgnore(update.getPvId(), update.getProjectIds());
             }
@@ -283,7 +292,7 @@ public class DevopsPvServiceImpl implements DevopsPvServcie {
     @Override
     public List<ProjectReqVO> listNonRelatedProjects(Long projectId, Long pvId) {
         DevopsPvDTO devopsPvDTO = baseQueryById(pvId);
-        if (devopsPvDTO == null){
+        if (devopsPvDTO == null) {
             throw new CommonException("error.pv.not.exists");
         }
 
@@ -312,6 +321,31 @@ public class DevopsPvServiceImpl implements DevopsPvServcie {
         devopsPvProPermissionService.baseDeletePermission(devopsPvProPermissionDTO);
     }
 
+    @Override
+    public DevopsPvDTO queryByEnvIdAndName(Long envId, String name) {
+        return devopsPvMapper.queryByEnvIdAndName(envId, name);
+    }
+
+    @Override
+    public DevopsPvDTO createOrUpdateByGitOps(DevopsPvReqVo devopsPvReqVo, Long userId) {
+        // TODO by zmf
+        return null;
+    }
+
+    @Override
+    public void deleteByGitOps(Long pvId) {
+        DevopsPvDTO devopsPvcDTO = devopsPvMapper.queryWithEnvByPrimaryKey(pvId);
+        if (devopsPvcDTO == null) {
+            return;
+        }
+        // 校验环境是否连接
+        DevopsEnvironmentDTO environmentDTO = devopsEnvironmentService.baseQueryById(devopsPvcDTO.getEnvId());
+        clusterConnectionHandler.checkEnvConnection(environmentDTO.getClusterId());
+
+        devopsPvMapper.deleteByPrimaryKey(pvId);
+        devopsEnvCommandMapper.deleteByObjectTypeAndObjectId(ObjectType.PERSISTENTVOLUMECLAIM.getType(), pvId);
+    }
+
     private V1PersistentVolume initV1PersistentVolume(DevopsPvDTO devopsPvDTO) {
         V1PersistentVolume v1PersistentVolume = new V1PersistentVolume();
         v1PersistentVolume.setApiVersion("v1");
@@ -322,8 +356,8 @@ public class DevopsPvServiceImpl implements DevopsPvServcie {
         v1ObjectMeta.setName(devopsPvDTO.getName());
 
         //设置pv类型
-        Map<String,String> labelMap = new HashMap<>();
-        labelMap.put(KubernetesConstants.TYPE,devopsPvDTO.getType());
+        Map<String, String> labelMap = new HashMap<>();
+        labelMap.put(KubernetesConstants.TYPE, devopsPvDTO.getType());
         v1ObjectMeta.setLabels(labelMap);
         v1PersistentVolume.setMetadata(v1ObjectMeta);
 
@@ -343,7 +377,7 @@ public class DevopsPvServiceImpl implements DevopsPvServcie {
     }
 
 
-    private Quantity convertResource(String resourceString){
+    private Quantity convertResource(String resourceString) {
         long size = Long.parseLong(resourceString.substring(0, resourceString.length() - 2));
         String unit = resourceString.substring(resourceString.length() - 2);
         int level = ResourceUnitLevelEnum.valueOf(unit.toUpperCase()).ordinal();
@@ -367,10 +401,10 @@ public class DevopsPvServiceImpl implements DevopsPvServcie {
 
 
     private void operatePVGitlabFile(Integer gitlabEnvGroupProjectId, V1PersistentVolume v1PersistentVolume, DevopsPvDTO devopsPvDTO,
-                                     DevopsEnvCommandDTO devopsEnvCommandDTO, DevopsEnvironmentDTO devopsEnvironmentDTO, UserAttrDTO userAttrDTO){
+                                     DevopsEnvCommandDTO devopsEnvCommandDTO, DevopsEnvironmentDTO devopsEnvironmentDTO, UserAttrDTO userAttrDTO) {
 
         //数据库创建pv
-        if (devopsPvMapper.insert(devopsPvDTO) != 1){
+        if (devopsPvMapper.insert(devopsPvDTO) != 1) {
             throw new CommonException("error.pv.create.error");
         }
 

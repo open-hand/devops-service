@@ -47,6 +47,7 @@ public abstract class ConvertK8sObjectService<T> {
 
     /**
      * 校验资源是否已经有定义了的
+     * 一般，先校验数据库中是否已经存在，然后校验之前解析的list中是否已存在
      *
      * @param ts               当前已解析的所有资源
      * @param envId            环境id
