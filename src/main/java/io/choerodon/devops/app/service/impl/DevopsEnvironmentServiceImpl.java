@@ -790,7 +790,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         }
 
         // 获取项目下所有项目成员
-        PageInfo<UserVO> allProjectMemberPage = getMembersFromProject(PageRequest.of(0,1), projectId, "");
+        PageInfo<UserVO> allProjectMemberPage = getMembersFromProject(PageRequest.of(0, 1), projectId, "");
 
         // 所有项目成员中有权限的
         allProjectMemberPage.getList().stream().filter(e -> userIds.contains(e.getId())).forEach(e -> {
@@ -898,7 +898,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         // 根据搜索参数查询所有的项目所有者
         Long ownerId = baseServiceClientOperator.queryRoleIdByCode(PROJECT_OWNER);
         PageInfo<IamUserDTO> projectOwners = baseServiceClientOperator.pagingQueryUsersByRoleIdOnProjectLevel(
-                PageRequest.of(0,1), roleAssignmentSearchVO, ownerId, projectId, false);
+                PageRequest.of(0, 1), roleAssignmentSearchVO, ownerId, projectId, false);
 
         List<Long> ownerIds = projectOwners
                 .getList()
@@ -929,7 +929,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             Long memberRoleId = baseServiceClientOperator.queryRoleIdByCode(PROJECT_MEMBER);
 
             members = baseServiceClientOperator.pagingQueryUsersByRoleIdOnProjectLevel(
-                    PageRequest.of(0,1), roleAssignmentSearchVO, memberRoleId, projectId, false)
+                    PageRequest.of(0, 1), roleAssignmentSearchVO, memberRoleId, projectId, false)
                     .getList()
                     .stream()
                     .filter(u -> !ownerIds.contains(u.getId()))
@@ -982,7 +982,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         // 根据参数搜索所有的项目成员
         Long memberRoleId = baseServiceClientOperator.queryRoleIdByCode(PROJECT_MEMBER);
         PageInfo<IamUserDTO> allProjectMembers = baseServiceClientOperator.pagingQueryUsersByRoleIdOnProjectLevel(
-                PageRequest.of(0,1), roleAssignmentSearchVO, memberRoleId, projectId, false);
+                PageRequest.of(0, 1), roleAssignmentSearchVO, memberRoleId, projectId, false);
         if (allProjectMembers.getList().isEmpty()) {
             return Collections.emptyList();
         }
@@ -990,7 +990,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         // 获取项目下所有的项目所有者（带上搜索参数搜索可以获得更精确的结果）
         Long ownerId = baseServiceClientOperator.queryRoleIdByCode(PROJECT_OWNER);
         List<Long> allProjectOwnerIds = baseServiceClientOperator.pagingQueryUsersByRoleIdOnProjectLevel(
-                PageRequest.of(0,1), roleAssignmentSearchVO, ownerId, projectId, false)
+                PageRequest.of(0, 1), roleAssignmentSearchVO, ownerId, projectId, false)
                 .getList()
                 .stream()
                 .map(IamUserDTO::getId)
@@ -1166,11 +1166,11 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         Long memberId = baseServiceClientOperator.queryRoleIdByCode(PROJECT_MEMBER);
         // 所有项目成员，可能还带有项目所有者的角色
         PageInfo<IamUserDTO> allMemberWithOtherUsersPage = baseServiceClientOperator
-                .pagingQueryUsersByRoleIdOnProjectLevel(PageRequest.of(0,1), roleAssignmentSearchVO,
+                .pagingQueryUsersByRoleIdOnProjectLevel(PageRequest.of(0, 1), roleAssignmentSearchVO,
                         memberId, projectId, false);
         // 所有项目所有者
         PageInfo<IamUserDTO> allOwnerUsersPage = baseServiceClientOperator
-                .pagingQueryUsersByRoleIdOnProjectLevel(PageRequest.of(0,1), roleAssignmentSearchVO,
+                .pagingQueryUsersByRoleIdOnProjectLevel(PageRequest.of(0, 1), roleAssignmentSearchVO,
                         ownerId, projectId, false);
         //合并项目所有者和项目成员
         Set<IamUserDTO> iamUserDTOS = new HashSet<>(allMemberWithOtherUsersPage.getList());
@@ -1487,6 +1487,13 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         devopsEnvironmentDTO.setObjectVersionNumber(devopsEnvironmentMapper.selectByPrimaryKey(
                 devopsEnvironmentDTO.getId()).getObjectVersionNumber());
         if (devopsEnvironmentMapper.updateByPrimaryKeySelective(devopsEnvironmentDTO) != 1) {
+            DevopsEnvironmentDTO devopsEnvironmentDTO1 = devopsEnvironmentMapper.selectByPrimaryKey(devopsEnvironmentDTO.getId());
+            LOGGER.error("\nenvName:{},envType:{},\nisActive:{},isConnected:{},isSynchro:{},isFailed:{}\nsagaCommit:{},devopsCommit:{},agentCommit:{},",
+                    devopsEnvironmentDTO1.getName(), devopsEnvironmentDTO1.getType(),
+                    devopsEnvironmentDTO1.getActive(), devopsEnvironmentDTO1.getConnected(), devopsEnvironmentDTO1.getSynchro(), devopsEnvironmentDTO1.getFailed(),
+                    devopsEnvironmentDTO1.getSagaSyncCommit(),
+                    devopsEnvironmentDTO1.getDevopsSyncCommit(),
+                    devopsEnvironmentDTO1.getAgentSyncCommit());
             throw new CommonException("error.environment.update");
         }
         return devopsEnvironmentDTO;
