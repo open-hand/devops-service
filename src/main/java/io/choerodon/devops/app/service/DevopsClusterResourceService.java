@@ -71,7 +71,7 @@ public interface DevopsClusterResourceService {
      * @param clusterId
      * @return
      */
-    ClusterResourceVO queryDeployProcess(Long clusterId);
+    ClusterResourceVO queryDeployStage(Long clusterId);
 
     /**
      * 查询部署prometheus状态

@@ -6,18 +6,23 @@ package io.choerodon.devops.infra.enums;
  * @description:
  */
 public enum PrometheusDeployStatus {
-    CREATED_PVC("created_pvc"),
-    CREATED_CONFIG("created_config"),
-    INSTALLED_PROMETHEUS("installed_prometheus"),
+    CREATE_PVC_SUCCESS("create_pvc_success"),
+    CREATE_CONFIG_SUCCESS("create_config_success"),
+    INSTALL_PROMETHEUS_SUCCESS("install_prometheus_success"),
+    INSTALL_PROMETHEUS_FAIL("install_prometheus_fail"),
     ;
 
-    private String status;
+    private String stage;
 
-    PrometheusDeployStatus(String status) {
-        this.status = status;
+    PrometheusDeployStatus(String stage) {
+        this.stage = stage;
     }
 
-    public String getStatus() {
-        return status;
+    public String getStage() {
+        return stage;
+    }
+
+    public void setStage(String stage) {
+        this.stage = stage;
     }
 }
