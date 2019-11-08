@@ -80,23 +80,23 @@ public class AgentGitOpsSocketHandlerRegistration implements SocketHandlerRegist
         String token = request.getParameter("token");
         String version = request.getParameter("version");
         if (key == null || key.trim().isEmpty()) {
-            logger.warn("Key is null");
+            logger.warn("Agent Handshake : Key is null");
             return false;
         }
         if (!KeyParseUtil.matchPattern(key)) {
-            logger.warn("Key not match the pattern");
+            logger.warn("Agent Handshake : Key not match the pattern");
             return false;
         }
         if (clusterId == null || clusterId.trim().isEmpty()) {
-            logger.warn("ClusterId is null");
+            logger.warn("Agent Handshake : ClusterId is null");
             return false;
         }
         if (token == null || token.trim().isEmpty()) {
-            logger.warn("Token is null");
+            logger.warn("Agent Handshake : Token is null");
             return false;
         }
         if (version == null || version.trim().isEmpty()) {
-            logger.warn("Version is null");
+            logger.warn("Agent Handshake : Version is null");
             return false;
         }
         //检验连接过来的agent和集群是否匹配
