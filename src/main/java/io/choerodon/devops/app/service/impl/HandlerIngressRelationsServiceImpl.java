@@ -59,7 +59,9 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
                         return null;
                     }
                     return devopsIngressDTO.getName();
-                }).collect(Collectors.toList());
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
         //比较已存在域名和新增要处理的域名,获取新增域名，更新域名，删除域名
         List<V1beta1Ingress> addV1beta1Ingress = new ArrayList<>();
         List<V1beta1Ingress> updateV1beta1Ingress = new ArrayList<>();

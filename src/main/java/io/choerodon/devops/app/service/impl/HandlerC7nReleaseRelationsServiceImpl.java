@@ -63,7 +63,9 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
                         return null;
                     }
                     return appServiceInstanceDTO.getCode();
-                }).collect(Collectors.toList());
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
 
         //比较已存在实例和新增要处理的实例,获取新增实例，更新实例，删除实例
         List<C7nHelmRelease> addC7nHelmRelease = new ArrayList<>();

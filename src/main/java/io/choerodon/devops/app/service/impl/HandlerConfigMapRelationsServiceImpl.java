@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
@@ -53,7 +54,9 @@ public class HandlerConfigMapRelationsServiceImpl implements HandlerObjectFileRe
                         return null;
                     }
                     return devopsConfigMapDTO.getName();
-                }).collect(Collectors.toList());
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
 
         //比较已存在configMap和新增要处理的configMap,获取新增configMap，更新configMap，删除configMap
         List<V1ConfigMap> addConfigMaps = new ArrayList<>();
