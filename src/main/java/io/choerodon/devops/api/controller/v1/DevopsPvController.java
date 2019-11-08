@@ -1,7 +1,6 @@
 package io.choerodon.devops.api.controller.v1;
 
 import com.github.pagehelper.PageInfo;
-import com.google.j2objc.annotations.AutoreleasePool;
 import io.choerodon.core.annotation.Permission;
 import org.springframework.data.domain.Pageable;
 import io.choerodon.core.enums.ResourceType;
@@ -31,7 +30,7 @@ public class DevopsPvController {
     @Autowired
     DevopsPvServcie devopsPvServcie;
 
-    /***
+    /**
      * 分页带参数查询项目下所有pv
      * @param projectId
      * @return
@@ -66,12 +65,12 @@ public class DevopsPvController {
     public ResponseEntity createPv(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id")Long projectId,
-            @RequestBody @Valid DevopsPvReqVo devopsPvReqVo){
+            @RequestBody @Valid DevopsPvReqVO devopsPvReqVo){
         devopsPvServcie.createPv(devopsPvReqVo);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
-    /***
+    /**
      * 校验pv的名称是否满足所选集群下唯一
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
@@ -88,7 +87,7 @@ public class DevopsPvController {
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
-    /***
+    /**
      * 根据pvId删除Pv
      * @param pvId
      * @return
@@ -105,7 +104,7 @@ public class DevopsPvController {
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
-    /***
+    /**
      * 根据pvId查询相应pv
      * @return
      */
@@ -145,7 +144,7 @@ public class DevopsPvController {
                 .orElseThrow(() -> new CommonException("error.get.pv.non.related.project"));
     }
 
-    /***
+    /**
      * 根据项目id删除与当前pv相关的权限记录
      * @param projectId
      * @param pvId
@@ -185,4 +184,31 @@ public class DevopsPvController {
         devopsPvServcie.assignPermission(devopsPvPermissionUpdateVO);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
+
+
+    /**
+     * 分页查询PV下已有权限的项目列表
+     * @param projectId
+     * @param pvId
+     * @param pageable
+     * @param params
+     * @return
+     */
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "分页查询PV下已有权限的项目列表")
+    @PostMapping("/{pv_id}/permission/page_related")
+    public ResponseEntity<PageInfo<ProjectReqVO>> pageRelatedProjects(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "PvId")
+            @PathVariable(value = "pv_id") Long pvId,
+            @ApiParam(value = "分页参数")
+            @ApiIgnore Pageable pageable,
+            @ApiParam(value = "模糊搜索参数")
+            @RequestBody(required = false) String params) {
+        return Optional.ofNullable(devopsPvServcie.pageRelatedProjects(projectId, pvId, pageable, params))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException(ERROR_PV_QUERY));
+    }
+
 }

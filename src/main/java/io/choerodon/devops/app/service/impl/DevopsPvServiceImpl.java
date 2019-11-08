@@ -9,18 +9,20 @@ import java.util.stream.Collectors;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+
+import io.choerodon.devops.infra.enums.*;
 import io.kubernetes.client.custom.Quantity;
-import io.kubernetes.client.models.V1ObjectMeta;
-import io.kubernetes.client.models.V1PersistentVolume;
-import io.kubernetes.client.models.V1PersistentVolumeSpec;
+import io.kubernetes.client.models.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import io.choerodon.devops.infra.util.PageInfoUtil;
+
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsPvPermissionUpdateVO;
-import io.choerodon.devops.api.vo.DevopsPvReqVo;
+import io.choerodon.devops.api.vo.DevopsPvReqVO;
 import io.choerodon.devops.api.vo.DevopsPvVO;
 import io.choerodon.devops.api.vo.ProjectReqVO;
 import io.choerodon.devops.app.service.*;
@@ -28,10 +30,6 @@ import io.choerodon.devops.infra.constant.KubernetesConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.enums.CommandStatus;
-import io.choerodon.devops.infra.enums.ObjectType;
-import io.choerodon.devops.infra.enums.PvStatus;
-import io.choerodon.devops.infra.enums.ResourceUnitLevelEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
@@ -41,6 +39,19 @@ import io.choerodon.devops.infra.mapper.DevopsPvMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
+
+import io.kubernetes.client.custom.Quantity;
+import io.kubernetes.client.models.V1ObjectMeta;
+import io.kubernetes.client.models.V1PersistentVolume;
+import io.kubernetes.client.models.V1PersistentVolumeSpec;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+
+import java.math.BigDecimal;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class DevopsPvServiceImpl implements DevopsPvServcie {
@@ -94,13 +105,12 @@ public class DevopsPvServiceImpl implements DevopsPvServcie {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void createPv(DevopsPvReqVo devopsPvReqVo) {
-        DevopsPvDTO devopsPvDTO = ConvertUtils.convertObject(devopsPvReqVo, DevopsPvDTO.class);
+    public void createPv(DevopsPvReqVO devopsPvReqVo) {
+        DevopsPvDTO devopsPvDTO = ConvertUtils.convertObject(devopsPvReqVo,DevopsPvDTO.class);
         devopsPvDTO.setStatus(PvStatus.OPERATING.getStatus());
         // 创建pv的环境是所选集群关联的系统环境
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(devopsPvDTO.getClusterId());
 
-        // Todo: 获取所选集群的系统环境Id，目前staging环境里面集群的系统环境id都是null
         // 如果系统环境id为空那么先去创建系统环境,更新集群关联的系统环境
         if (devopsClusterDTO.getSystemEnvId() == null){
             DevopsEnvironmentDTO devopsEnvironmentDTO = new DevopsEnvironmentDTO();
@@ -327,7 +337,7 @@ public class DevopsPvServiceImpl implements DevopsPvServcie {
     }
 
     @Override
-    public DevopsPvDTO createOrUpdateByGitOps(DevopsPvReqVo devopsPvReqVo, Long userId) {
+    public DevopsPvDTO createOrUpdateByGitOps(DevopsPvReqVO devopsPvReqVO, Long userId) {
         // TODO by zmf
         return null;
     }
@@ -346,6 +356,56 @@ public class DevopsPvServiceImpl implements DevopsPvServcie {
         devopsEnvCommandMapper.deleteByObjectTypeAndObjectId(ObjectType.PERSISTENTVOLUMECLAIM.getType(), pvId);
     }
 
+    public PageInfo<ProjectReqVO> pageRelatedProjects(Long projectId, Long pvId, Pageable pageable, String params) {
+        DevopsPvDTO devopsPvDTO = baseQueryById(pvId);
+        if (devopsPvDTO == null){
+            throw new CommonException("error.pv.not.exists");
+        }
+
+        Map<String, Object> map = TypeUtil.castMapParams(params);
+        //接收模糊查询参数列表
+        List<String> paramList = TypeUtil.cast(map.get(TypeUtil.PARAMS));
+
+        // 搜索参数为空，则直接查询后分页
+        if (CollectionUtils.isEmpty(paramList)) {
+            PageInfo<DevopsPvProPermissionDTO> relationPage = PageHelper.startPage(
+                    pageable.getPageNumber(), pageable.getPageSize())
+                    .doSelectPageInfo(() -> devopsPvProPermissionService.baseListByPvId(pvId));
+            return ConvertUtils.convertPage(relationPage, permission -> {
+                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(permission.getProjectId());
+                return new ProjectReqVO(permission.getProjectId(), projectDTO.getName(), projectDTO.getCode());
+            });
+        } else {
+            // 搜索参数不为空
+            // 先查询数据库中的有权限的项目
+            List<Long> permissions = devopsPvProPermissionService.baseListByPvId(pvId)
+                    .stream()
+                    .map(DevopsPvProPermissionDTO::getProjectId)
+                    .collect(Collectors.toList());
+
+            //没有权限关联就直接返回空分页查询结果
+            if (CollectionUtils.isEmpty(permissions)){return new PageInfo<>();}
+
+            // 如果要搜索，需要手动在程序内分页
+            ProjectDTO iamProjectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+
+            // feign调用查询所有组织下的项目的接口,加入搜索参数
+            List<ProjectDTO> filteredProjects = baseServiceClientOperator.listIamProjectByOrgId(
+                    iamProjectDTO.getOrganizationId(),
+                    null, null,
+                    paramList.get(0));
+
+            // 过滤出在数据库中有权限的项目信息
+            List<ProjectReqVO> allMatched = filteredProjects
+                    .stream()
+                    .filter(p -> permissions.contains(p.getId()))
+                    .map(p -> ConvertUtils.convertObject(p, ProjectReqVO.class))
+                    .collect(Collectors.toList());
+
+            return PageInfoUtil.createPageFromList(allMatched, pageable);
+        }
+    }
+
     private V1PersistentVolume initV1PersistentVolume(DevopsPvDTO devopsPvDTO) {
         V1PersistentVolume v1PersistentVolume = new V1PersistentVolume();
         v1PersistentVolume.setApiVersion("v1");
@@ -354,14 +414,11 @@ public class DevopsPvServiceImpl implements DevopsPvServcie {
         //设置pv名称
         V1ObjectMeta v1ObjectMeta = new V1ObjectMeta();
         v1ObjectMeta.setName(devopsPvDTO.getName());
-
-        //设置pv类型
-        Map<String, String> labelMap = new HashMap<>();
-        labelMap.put(KubernetesConstants.TYPE, devopsPvDTO.getType());
-        v1ObjectMeta.setLabels(labelMap);
         v1PersistentVolume.setMetadata(v1ObjectMeta);
 
+        //设置Specification下面的字段
         V1PersistentVolumeSpec v1PersistentVolumeSpec = new V1PersistentVolumeSpec();
+
         //设置访问模式,目前不支持多种访问模式，所以直接从dto取值
         List<String> accessMode = new ArrayList<>();
         accessMode.add(devopsPvDTO.getAccessModes());
@@ -371,8 +428,28 @@ public class DevopsPvServiceImpl implements DevopsPvServcie {
         Map<String, Quantity> capacity = new HashMap<>();
         capacity.put(KubernetesConstants.STORAGE, convertResource(devopsPvDTO.getRequestResource()));
         v1PersistentVolumeSpec.setCapacity(capacity);
-        v1PersistentVolume.setSpec(v1PersistentVolumeSpec);
 
+        //设置pv存储类型
+        String volumeType = devopsPvDTO.getType().toLowerCase();
+        VolumeTypeEnum volumeTypeEnum = VolumeTypeEnum.forValue(volumeType);
+
+        //pv类型不存在抛异常
+        if (volumeTypeEnum == null){
+            throw new CommonException("error.py.type.not.exist");
+        }
+
+        switch (volumeTypeEnum){
+            // Todo: 选择pv类型之后需要获取详细设置后反序列化成对象
+            case NFS:
+                V1NFSVolumeSource v1NFSVolumeSource = new V1NFSVolumeSource();
+                v1PersistentVolumeSpec.setNfs(v1NFSVolumeSource);
+                break;
+            case HOSTPATH:
+                V1HostPathVolumeSource v1HostPathVolumeSource = new V1HostPathVolumeSource();
+                v1PersistentVolumeSpec.setHostPath(v1HostPathVolumeSource);
+                break;
+        }
+        v1PersistentVolume.setSpec(v1PersistentVolumeSpec);
         return v1PersistentVolume;
     }
 

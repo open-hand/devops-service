@@ -2,7 +2,7 @@ package io.choerodon.devops.api.controller.v1
 
 import io.choerodon.asgard.saga.producer.TransactionalProducer
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.api.vo.DevopsPvReqVo
+import io.choerodon.devops.api.vo.DevopsPvReqVO
 import io.choerodon.devops.app.service.DevopsClusterService
 import io.choerodon.devops.app.service.DevopsEnvCommandService
 import io.choerodon.devops.app.service.DevopsEnvFileResourceService
@@ -111,7 +111,7 @@ class DevopsPvControllerSpec extends Specification {
 
     def "create"(){
         given: "创建devopsPvReqVO"
-        DevopsPvReqVo devopsPvReqVo = new DevopsPvReqVo();
+        DevopsPvReqVO devopsPvReqVo = new DevopsPvReqVO();
         devopsPvReqVo.setType("NFS");
         devopsPvReqVo.setRequestResource("1Gi")
         devopsPvReqVo.setAccessModes("ReadWriteMany")

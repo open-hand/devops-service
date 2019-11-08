@@ -6,13 +6,14 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+
 import io.kubernetes.client.models.V1Endpoints;
 import io.kubernetes.client.models.V1PersistentVolume;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.DevopsPvReqVo;
+import io.choerodon.devops.api.vo.DevopsPvReqVO;
 import io.choerodon.devops.app.service.DevopsEnvCommandService;
 import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
 import io.choerodon.devops.app.service.DevopsPvServcie;
@@ -91,14 +92,14 @@ public class HandlerPersistentVolumeServiceImpl implements HandlerObjectFileRela
                 DevopsPvDTO devopsPvDTO = devopsPvService
                         .queryByEnvIdAndName(envId, pv.getMetadata().getName());
                 //初始化pv对象参数,更新pv并更新文件对象关联关系
-                DevopsPvReqVo devopsPvReqVo = constructPv(
+                DevopsPvReqVO devopsPvReqVO = constructPv(
                         pv,
                         envId, "update");
-                boolean isNotChange = isIdentical(devopsPvDTO, devopsPvReqVo);
+                boolean isNotChange = isIdentical(devopsPvDTO, devopsPvReqVO);
                 DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsPvDTO.getCommandId());
-                devopsPvReqVo.setId(devopsPvDTO.getId());
+                devopsPvReqVO.setId(devopsPvDTO.getId());
                 if (!isNotChange) {
-                    devopsPvService.createOrUpdateByGitOps(devopsPvReqVo, userId);
+                    devopsPvService.createOrUpdateByGitOps(devopsPvReqVO, userId);
                     DevopsPvDTO newDevOpsPvDTO = devopsPvService
                             .queryByEnvIdAndName(envId, pv.getMetadata().getName());
                     devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(newDevOpsPvDTO.getCommandId());
@@ -122,7 +123,7 @@ public class HandlerPersistentVolumeServiceImpl implements HandlerObjectFileRela
         });
     }
 
-    private boolean isIdentical(DevopsPvDTO dbRecord, DevopsPvReqVo update) {
+    private boolean isIdentical(DevopsPvDTO dbRecord, DevopsPvReqVO update) {
         return Objects.equals(dbRecord.getAccessModes(), update.getAccessModes())
                 && Objects.equals(dbRecord.getRequestResource(), update.getRequestResource())
                 && Objects.equals(dbRecord.getType(), update.getType());
@@ -136,7 +137,7 @@ public class HandlerPersistentVolumeServiceImpl implements HandlerObjectFileRela
                 filePath = objectPath.get(TypeUtil.objToString(pv.hashCode()));
                 DevopsPvDTO devopsPvDTO = devopsPvService
                         .queryByEnvIdAndName(envId, pv.getMetadata().getName());
-                DevopsPvReqVo devopsPvReqVo;
+                DevopsPvReqVO devopsPvReqVo;
 
                 DevopsPvDTO newDevopsPvDTO = new DevopsPvDTO();
                 //初始化pv参数,创建时判断pv是否存在，存在则直接创建文件对象关联关系
@@ -168,19 +169,19 @@ public class HandlerPersistentVolumeServiceImpl implements HandlerObjectFileRela
     }
 
 
-    private DevopsPvReqVo constructPv(V1PersistentVolume pv, Long envId, String type) {
-        DevopsPvReqVo devopsPvReqVo = new DevopsPvReqVo();
-        devopsPvReqVo.setEnvId(envId);
-        devopsPvReqVo.setName(pv.getMetadata().getName());
-        devopsPvReqVo.setCommandType(type);
+    private DevopsPvReqVO constructPv(V1PersistentVolume pv, Long envId, String type) {
+        DevopsPvReqVO devopsPvReqVO = new DevopsPvReqVO();
+        devopsPvReqVO.setEnvId(envId);
+        devopsPvReqVO.setName(pv.getMetadata().getName());
+        devopsPvReqVO.setCommandType(type);
         // 暂时只设计为支持一种模式
-        devopsPvReqVo.setAccessModes(pv.getSpec().getAccessModes().get(0));
-        devopsPvReqVo.setRequestResource(pv.getSpec().getCapacity().get(KubernetesConstants.STORAGE).toSuffixedString());
-        setTypeAndConfig(devopsPvReqVo);
-        return devopsPvReqVo;
+        devopsPvReqVO.setAccessModes(pv.getSpec().getAccessModes().get(0));
+        devopsPvReqVO.setRequestResource(pv.getSpec().getCapacity().get(KubernetesConstants.STORAGE).toSuffixedString());
+        setTypeAndConfig(devopsPvReqVO);
+        return devopsPvReqVO;
     }
 
-    private void setTypeAndConfig(DevopsPvReqVo devopsPvReqVo) {
+    private void setTypeAndConfig(DevopsPvReqVO devopsPvReqVO) {
         // TODO by zmf
     }
 
