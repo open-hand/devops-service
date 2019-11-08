@@ -134,7 +134,7 @@ public class DevopsClusterResourceController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "卸载prometheus")
     @DeleteMapping("/prometheus/unload")
-    public ResponseEntity delete(
+    public ResponseEntity<Boolean> delete(
             @ApiParam(value = "集群id", required = true)
             @RequestParam(name = "cluster_id", required = true) Long clusterId) {
         return Optional.ofNullable(devopsClusterResourceService.uninstallPrometheus(clusterId))
