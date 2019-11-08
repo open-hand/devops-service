@@ -31,6 +31,7 @@ const CertDetail = lazy(() => import('./contents/certificate-detail'));
 const ConfigMapDetail = lazy(() => import('./contents/config-detail'));
 const SecretDetail = lazy(() => import('./contents/secret-detail'));
 const ServiceDetail = lazy(() => import('./contents/service-detail'));
+const PVCcontent = lazy(() => import('./contents/pvc'));
 
 const EmptyShown = lazy(() => import('./contents/empty'));
 
@@ -58,6 +59,8 @@ const MainView = observer(() => {
       CIPHER_GROUP,
       CUSTOM_GROUP,
       IST_GROUP,
+      PVC_ITEM,
+      PVC_GROUP,
     },
     treeDs,
     intl: { formatMessage },
@@ -106,6 +109,8 @@ const MainView = observer(() => {
       [MAP_ITEM]: <ConfigMapDetail />,
       [CIPHER_ITEM]: <SecretDetail />,
       [SERVICES_ITEM]: <ServiceDetail />,
+      [PVC_ITEM]: <PVCcontent />,
+      [PVC_GROUP]: <PVCcontent />,
     };
     return cmMaps[itemType]
       ? <Suspense fallback={<Loading display />}>{cmMaps[itemType]}</Suspense>
@@ -123,16 +128,16 @@ const MainView = observer(() => {
     ref={rootRef}
     className={`${prefixCls}-wrap`}
   >
-    <DragBar
-      parentRef={rootRef}
-      store={mainStore}
-    />
-    <Sidebar />
-    <div className={`${prefixCls}-main ${prefixCls}-animate`}>
-      {content}
-    </div>
-    {deleteModals}
-  </div>;
+      <DragBar
+        parentRef={rootRef}
+        store={mainStore}
+      />
+      <Sidebar />
+      <div className={`${prefixCls}-main ${prefixCls}-animate`}>
+        {content}
+      </div>
+      {deleteModals}
+    </div>;
 });
 
 export default MainView;
