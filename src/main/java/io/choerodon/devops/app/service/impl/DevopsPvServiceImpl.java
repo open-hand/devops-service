@@ -10,10 +10,9 @@ import java.util.stream.Collectors;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 
+import io.choerodon.devops.infra.enums.*;
 import io.kubernetes.client.custom.Quantity;
-import io.kubernetes.client.models.V1ObjectMeta;
-import io.kubernetes.client.models.V1PersistentVolume;
-import io.kubernetes.client.models.V1PersistentVolumeSpec;
+import io.kubernetes.client.models.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import io.choerodon.devops.infra.util.PageInfoUtil;
 
@@ -31,10 +30,6 @@ import io.choerodon.devops.infra.constant.KubernetesConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.enums.CommandStatus;
-import io.choerodon.devops.infra.enums.ObjectType;
-import io.choerodon.devops.infra.enums.PvStatus;
-import io.choerodon.devops.infra.enums.ResourceUnitLevelEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
@@ -116,7 +111,6 @@ public class DevopsPvServiceImpl implements DevopsPvServcie {
         // 创建pv的环境是所选集群关联的系统环境
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(devopsPvDTO.getClusterId());
 
-        // Todo: 获取所选集群的系统环境Id，目前staging环境里面集群的系统环境id都是null
         // 如果系统环境id为空那么先去创建系统环境,更新集群关联的系统环境
         if (devopsClusterDTO.getSystemEnvId() == null){
             DevopsEnvironmentDTO devopsEnvironmentDTO = new DevopsEnvironmentDTO();
@@ -441,8 +435,28 @@ public class DevopsPvServiceImpl implements DevopsPvServcie {
         Map<String, Quantity> capacity = new HashMap<>();
         capacity.put(KubernetesConstants.STORAGE, convertResource(devopsPvDTO.getRequestResource()));
         v1PersistentVolumeSpec.setCapacity(capacity);
-        v1PersistentVolume.setSpec(v1PersistentVolumeSpec);
 
+        //设置pv存储类型
+        String volumeType = devopsPvDTO.getType().toLowerCase();
+        VolumeTypeEnum volumeTypeEnum = VolumeTypeEnum.forValue(volumeType);
+
+        //pv类型不存在抛异常
+        if (volumeTypeEnum == null){
+            throw new CommonException("error.py.type.not.exist");
+        }
+
+        switch (volumeTypeEnum){
+            // Todo: 选择pv类型之后需要获取详细设置后反序列化成对象
+            case NFS:
+                V1NFSVolumeSource v1NFSVolumeSource = new V1NFSVolumeSource();
+                v1PersistentVolumeSpec.setNfs(v1NFSVolumeSource);
+                break;
+            case HOSTPATH:
+                V1HostPathVolumeSource v1HostPathVolumeSource = new V1HostPathVolumeSource();
+                v1PersistentVolumeSpec.setHostPath(v1HostPathVolumeSource);
+                break;
+        }
+        v1PersistentVolume.setSpec(v1PersistentVolumeSpec);
         return v1PersistentVolume;
     }
 
