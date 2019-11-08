@@ -128,16 +128,16 @@ const MainView = observer(() => {
     ref={rootRef}
     className={`${prefixCls}-wrap`}
   >
-      <DragBar
-        parentRef={rootRef}
-        store={mainStore}
-      />
-      <Sidebar />
-      <div className={`${prefixCls}-main ${prefixCls}-animate`}>
-        {content}
-      </div>
-      {deleteModals}
-    </div>;
+    <DragBar
+      parentRef={rootRef}
+      store={mainStore}
+    />
+    <Sidebar />
+    <div className={`${prefixCls}-main ${prefixCls}-animate`}>
+      {content}
+    </div>
+    {deleteModals}
+  </div>;
 });
 
 export default MainView;
