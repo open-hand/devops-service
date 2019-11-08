@@ -3,7 +3,6 @@ import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
 import { DataSet } from 'choerodon-ui/pro';
 import useStore from './useStore';
-import DevPipelineStore from './DevPipelineStore';
 import AppServiceDs from './AppServiceDataSet';
 import SelectAppDataSet from './SelectAppDataSet';
 import handleMapStore from '../main-view/store/handleMapStore';
@@ -31,8 +30,6 @@ export const StoreProvider = injectIntl(inject('AppState')(
           value: record.get('id'),
         },
       };
-      DevPipelineStore.setSelectApp(value);
-      DevPipelineStore.setRecentApp(value);
       Object.keys(handleMapStore)
         .forEach((key) => {
           if (key.indexOf('Code') !== -1) {
@@ -63,9 +60,6 @@ export const StoreProvider = injectIntl(inject('AppState')(
 
     useEffect(() => {
       codeManagerStore.checkHasApp(projectId);
-      DevPipelineStore.setAppData([]);
-      DevPipelineStore.setRecentApp([]);
-      DevPipelineStore.setSelectApp(null);
     }, []);
     useEffect(() => {
       appServiceDs.transport.read = () => ({

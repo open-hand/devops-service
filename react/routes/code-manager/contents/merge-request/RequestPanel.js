@@ -13,7 +13,6 @@ import ClickText from '../../../../components/click-text';
 import TimePopover from '../../../../components/timePopover';
 import UserInfo from '../../../../components/userInfo';
 
-import DevPipelineStore from '../../stores/DevPipelineStore';
 import handleMapStore from '../../main-view/store/handleMapStore';
 import { useCodeManagerStore } from '../../stores';
 

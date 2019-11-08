@@ -2,10 +2,9 @@ import React, { useEffect, Fragment, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import _ from 'lodash';
+import MdEditor from '../../../../../../../components/MdEditor/index';
 
-import MdEditor from '../../../../../components/MdEditor';
-
-import './style/AppTagCreate.less';
+import '../index.less';
 
 
 export default observer((props) => {

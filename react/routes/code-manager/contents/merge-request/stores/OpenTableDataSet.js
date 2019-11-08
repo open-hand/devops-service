@@ -1,6 +1,5 @@
 import React from 'react';
 import Tips from '../../../../../components/Tips';
-import DevPipelineStore from '../../../stores/DevPipelineStore';
 
 export default ((projectId, formatMessage, mergedRequestStore, appId, tabKey) => {
   function changeCount(count) {

@@ -1,15 +1,13 @@
 import React, { useEffect, Fragment, useState } from 'react';
 import { observer } from 'mobx-react-lite';
+import _ from 'lodash';
 
 import { Icon, Form, TextField, Select } from 'choerodon-ui/pro';
 
-import _ from 'lodash';
+import MdEditor from '../../../../../../../components/MdEditor/index';
+import Tips from '../../../../../../../components/Tips/index';
 
-import Tips from '../../../../../components/new-tips';
-import MdEditor from '../../../../../components/MdEditor';
-
-import './style/AppTagCreate.less';
-
+import '../index.less';
 
 const { Option, OptGroup } = Select;
 export default observer((props) => {
@@ -33,7 +31,7 @@ export default observer((props) => {
     setSize(size + 10);
     tagStore.queryBranchData({ projectId, appServiceId, size: size + 10 });
   }
-
+  
   return <Fragment>
     <Form layout="vertical" dataSet={appTagCreateDs} className="c7n-sidebar-form c7n-tag-create" style={{ width: '5.12rem' }}>
       <div className="apptag-formitem">

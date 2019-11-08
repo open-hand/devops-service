@@ -3,7 +3,6 @@ import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import { DataSet } from 'choerodon-ui/pro';
-import DevPipelineStore from '../../../stores/DevPipelineStore';
 import OpenTableDataSet from './OpenTableDataSet';
 import { useCodeManagerStore } from '../../../stores';
 import useStore from './useStore';

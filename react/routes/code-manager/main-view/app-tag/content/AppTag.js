@@ -13,15 +13,13 @@ import EmptyPage from '../../../../../components/empty-page';
 import Loading from '../../../../../components/loading';
 import { handlePromptError } from '../../../../../utils';
 
-
-import AppTagCreate from './AppTagCreate';
-import AppTagEdit from './AppTagEdit';
-
 import { useAppTagStore } from './stores';
 import { useCodeManagerStore } from '../../../stores';
+import AppTagCreate from './modals/app-tag-create/AppTagCreate';
+import AppTagEdit from './modals/app-tag-edit/index';
 
+import './index.less';
 
-import './style/AppTag.less';
 
 const { Panel } = Collapse;
 const appTagCreateKey = Modal.key();
@@ -36,7 +34,6 @@ export default observer((props) => {
   const { appServiceDs, selectAppDs } = useCodeManagerStore();
   const appServiceId = selectAppDs.current.get('appServiceId');
   const appTagData = appTagDs.toData() || [];
-  const [editTag, setEditTag] = useState(null);
 
   /**
    * 生成特殊的自定义tool-bar
@@ -71,6 +68,20 @@ export default observer((props) => {
     appTagDs.query();
   }
 
+  async function handleCreate() {
+    const res = await appTagCreateDs.submit();
+    if (!res) {
+      return false;
+    }
+    refresh();
+    appTagCreateDs.reset();
+  }
+  async function handleRemove(tag) {
+    const res = await tagStore.deleteTag(projectId, tag, appServiceId);
+    if (handlePromptError(res, false)) {
+      refresh();
+    }
+  }
 
   /**
    * 打开删除确认框
@@ -81,21 +92,11 @@ export default observer((props) => {
       key: deleteKey,
       title: formatMessage({ id: 'apptag.action.delete.title' }, { name: tag }),
       children: formatMessage({ id: 'apptag.delete.tooltip' }),
-      onOk: async () => {
-        const res = await tagStore.deleteTag(projectId, tag, appServiceId);
-        if (handlePromptError(res, false)) {
-          refresh();
-        }
-      },
+      onOk: async () => { handleRemove(tag); },
       okText: formatMessage({ id: 'delete' }),
       okProps: { color: 'red' },
       cancelProps: { color: 'dark' },
     });
-  }
-
-  async function editSave(release) {
-    const res = await tagStore.editTag(projectId, editTag, release, appServiceId);
-    return handlePromptError(res, false);
   }
   
 
@@ -117,19 +118,11 @@ export default observer((props) => {
       onCancel: () => {
         appTagCreateDs.reset();
       },
-      onOk: async () => {
-        const res = await appTagCreateDs.submit();
-        if (!res) {
-          return false;
-        }
-        refresh();
-        appTagCreateDs.reset();
-      },
+      onOk: handleCreate,
     });
   };
 
   const openEdit = (tag, release) => {
-    setEditTag(tag);
     const editProps = {
       tag,
       release,
@@ -165,8 +158,7 @@ export default observer((props) => {
       <div className="c7n-tag-panel-info">
         <div className="c7n-tag-panel-name">
           <Icon type="local_offer" />
-          {/* <div className="c7n-tag-name" onClick={this.displayEditModal.bind(this, true, release, release.tagName)}> */}
-          <div className="c7n-tag-name" onClick={() => { openEdit(release.tagName, release.description !== 'empty' ? release.description : formatMessage({ id: 'apptag.release.empty' })); }}>
+          <div className="c7n-tag-name" onClick={(e) => { stopPropagation(e); openEdit(release.tagName, release.description !== 'empty' ? release.description : formatMessage({ id: 'apptag.release.empty' })); }}>
             <span className="c7n-tag-name-text">{release.tagName}</span>
           </div>
           <div className="c7n-tag-action" onClick={stopPropagation}>
@@ -218,7 +210,7 @@ export default observer((props) => {
       className="c7n-tag-wrapper page-container"
       service={['devops-service.devops-git.pageTagsByOptions']}
     >
-      {/* 应用/标签是否加载完成的判断，目的是控制Loadin的显示 */}
+      {/* 应用/标签是否加载完成的判断，目的是控制Loading的显示 */}
       {appServiceDs.status !== 'ready' || appTagDs.status !== 'ready' ? <Loading display />
         : <div className="c7ncd-tag-content">
           {appTagData.length > 0
