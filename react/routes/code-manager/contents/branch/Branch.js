@@ -287,13 +287,15 @@ function Branch(props) {
   // 获取分支正文列表
   function tableBranch() {
     return (
-      <Table border={false} queryBar="bar" dataSet={tableDs}>
-        <Column name="branchName" renderer={branchNameRenderer} />
-        <Column align="right" width={60} renderer={actionRender} />
-        <Column name="commitContent" className="lasetCommit" width={300} renderer={updateCommitRender} />
-        <Column name="createUserRealName" renderer={createUserRender} />
-        <Column name="issueName" renderer={issueNameRender} />
-      </Table>
+      <div className="c7ncd-tab-table">
+        <Table className="c7n-branch-main-table" queryBar="bar" dataSet={tableDs}>
+          <Column name="branchName" renderer={branchNameRenderer} />
+          <Column align="right" width={60} renderer={actionRender} />
+          <Column name="commitContent" className="lasetCommit" width={300} renderer={updateCommitRender} />
+          <Column name="createUserRealName" renderer={createUserRender} />
+          <Column name="issueName" renderer={issueNameRender} />
+        </Table>
+      </div>
     );
   }
   return (
