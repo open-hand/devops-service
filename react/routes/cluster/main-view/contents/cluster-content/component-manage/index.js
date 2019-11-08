@@ -41,7 +41,7 @@ export default observer((props) => {
           className={index !== length - 1 ? `${prefixCls}-component-wrap-card` : ''}
           name={formatMessage({ id: `${intlPrefix}.component.${componentType}` })}
           describe={formatMessage({ id: `${intlPrefix}.component.${componentType}.des` })}
-          buttonData={getButtonData(type, status, operate)}
+          buttonData={getButtonData(type, status, operate, message)}
           status={status}
           errorMessage={message}
         />
@@ -50,7 +50,7 @@ export default observer((props) => {
     return content;
   }
 
-  function getButtonData(type, status, operate) {
+  function getButtonData(type, status, operate, message) {
     let buttonData = [];
     if (type === 'prometheus') {
       switch (status) {
@@ -58,7 +58,7 @@ export default observer((props) => {
           buttonData = [
             {
               text: formatMessage({ id: 'install' }),
-              onClick: () => installMonitor('create'),
+              onClick: () => installMonitor(message ? 'edit' : 'create'),
             },
           ];
           break;

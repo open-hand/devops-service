@@ -68,6 +68,10 @@ const CreateForm = () => {
         <Select name="accessModes" colSpan={3} clearButton={false} />
         <NumberField name="storage" step={1} colSpan={2} />
         <Select name="unit" clearButton={false} />
+        <TextField name="path" colSpan={3} />
+        {formDs.current.get('type') === 'NFS' && (
+          <TextField name="ip" colSpan={3} />
+        )}
       </Form>
     </div>
   );
