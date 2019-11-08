@@ -80,19 +80,24 @@ public class AgentGitOpsSocketHandlerRegistration implements SocketHandlerRegist
         String token = request.getParameter("token");
         String version = request.getParameter("version");
         if (key == null || key.trim().isEmpty()) {
-            throw new CommonException("Key is null");
+            logger.warn("Key is null");
+            return false;
         }
         if (!KeyParseUtil.matchPattern(key)) {
-            throw new CommonException("Key not match the pattern");
+            logger.warn("Key not match the pattern");
+            return false;
         }
         if (clusterId == null || clusterId.trim().isEmpty()) {
-            throw new CommonException("ClusterId is null");
+            logger.warn("ClusterId is null");
+            return false;
         }
         if (token == null || token.trim().isEmpty()) {
-            throw new CommonException("Token is null");
+            logger.warn("Token is null");
+            return false;
         }
         if (version == null || version.trim().isEmpty()) {
-            throw new CommonException("Version is null");
+            logger.warn("Version is null");
+            return false;
         }
         //检验连接过来的agent和集群是否匹配
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(TypeUtil.objToLong(clusterId));
