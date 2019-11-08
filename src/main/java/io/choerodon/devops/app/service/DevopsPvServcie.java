@@ -7,14 +7,14 @@ import org.springframework.data.domain.Pageable;
 
 import io.choerodon.devops.api.vo.DevopsPvPermissionUpdateVO;
 import io.choerodon.devops.api.vo.DevopsPvVO;
-import io.choerodon.devops.api.vo.DevopsPvReqVo;
+import io.choerodon.devops.api.vo.DevopsPvReqVO;
 import io.choerodon.devops.api.vo.ProjectReqVO;
 import io.choerodon.devops.infra.dto.DevopsPvDTO;
 
 
 public interface DevopsPvServcie {
 
-    /***
+    /**
      * 查询根据Id查询单个PV信息
      */
     DevopsPvVO queryById(Long pvId);
@@ -24,12 +24,12 @@ public interface DevopsPvServcie {
      */
     Boolean deletePvById(Long pvId);
 
-    /***
+    /**
      * 根据条件分页查询PV
      */
     PageInfo<DevopsPvDTO> basePagePvByOptions(Boolean doPage, Pageable pageable, String params);
 
-    /***
+    /**
      * 分页查询pv以及关联的集群和PVC
      * @param doPage
      * @param pageable
@@ -38,11 +38,11 @@ public interface DevopsPvServcie {
      */
     PageInfo<DevopsPvVO> pageByOptions(Boolean doPage, Pageable pageable, String params);
 
-    /***
+    /**
      * 创建PV
      * @param devopsPvReqVo
      */
-    void createPv(DevopsPvReqVo devopsPvReqVo);
+    void createPv(DevopsPvReqVO devopsPvReqVo);
 
     /**
      * 校验唯一性
@@ -50,18 +50,18 @@ public interface DevopsPvServcie {
      */
     void baseCheckPv(DevopsPvDTO devopsPvDTO);
 
-    /***
+    /**
      * 根据Pv名称和集群的Id校验唯一性
      */
     void checkName(Long clusterId, String pvName);
 
-    /***
+    /**
      * 创建组织与PV的权限关联关系
      * @param update
      */
     void assignPermission(DevopsPvPermissionUpdateVO update);
 
-    /***
+    /**
      * 更新PV表中的权限校验字段
      * @param update
      */
@@ -84,7 +84,7 @@ public interface DevopsPvServcie {
      */
     List<ProjectReqVO> listNonRelatedProjects(Long projectId, Long pvId);
 
-    /***
+    /**
      * 根据项目id删除相对应的权限
      * @param pvId
      * @param projectId
@@ -100,7 +100,18 @@ public interface DevopsPvServcie {
      */
     DevopsPvDTO queryByEnvIdAndName(Long envId, String name);
 
-    DevopsPvDTO createOrUpdateByGitOps(DevopsPvReqVo devopsPvReqVo, Long userId);
+    DevopsPvDTO createOrUpdateByGitOps(DevopsPvReqVO devopsPvReqVO, Long userId);
 
     void deleteByGitOps(Long pvId);
+
+    /**
+     * 分页查询组织下特定项目关联的pv
+     * @param projectId
+     * @param pvId
+     * @param pageable
+     * @param params
+     * @return
+     */
+    PageInfo<ProjectReqVO> pageRelatedProjects(Long projectId, Long pvId, Pageable pageable, String params);
+
 }

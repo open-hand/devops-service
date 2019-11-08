@@ -7,7 +7,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
 
-public class DevopsPvReqVo {
+public class DevopsPvReqVO {
 
     @ApiModelProperty("pvId")
     private Long id;
