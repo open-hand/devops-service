@@ -432,7 +432,6 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
                 clusterResourceVO.setStatus(ClusterResourceStatus.DISABLED.getStatus());
                 clusterResourceVO.setMessage(clusterResourceVO.getMessage());
             }
-            clusterResourceVO.setStatus(ClusterResourceStatus.UNINSTALL.getStatus());
         }
         if (PrometheusConstants.INSTALL_PROMETHEUS_SUCCESS.equals(clusterResourceVO.getStatus())) {
             List<DevopsEnvPodVO> devopsEnvPodDTOS = ConvertUtils.convertList(devopsEnvPodService.baseListByInstanceId(appServiceInstanceDTO.getId()), DevopsEnvPodVO.class);
@@ -457,7 +456,6 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
                 clusterResourceVO.setStatus(ClusterResourceStatus.DISABLED.getStatus());
             }
         }
-
         clusterResourceVO.setOperate(devopsClusterResourceDTO.getOperate());
         return clusterResourceVO;
     }
