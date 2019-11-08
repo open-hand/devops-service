@@ -25,7 +25,8 @@ public class DevopsPrometheusVO {
 
     @ApiModelProperty("pvIds/必填")
     @NotNull(message = "error.pv.name.null")
-    private List<DevopsPvVO> pvs;
+    private List<PrometheusPVVO> pvs;
+
 
     @ApiModelProperty("cluster编码/必填")
     @NotNull(message = "error.cluster.code.null")
@@ -55,11 +56,11 @@ public class DevopsPrometheusVO {
         this.grafanaDomain = grafanaDomain;
     }
 
-    public List<DevopsPvVO> getPvs() {
+    public List<PrometheusPVVO> getPvs() {
         return pvs;
     }
 
-    public void setPvs(List<DevopsPvVO> pvs) {
+    public void setPvs(List<PrometheusPVVO> pvs) {
         this.pvs = pvs;
     }
 
