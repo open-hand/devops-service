@@ -1,4 +1,4 @@
-export default ({ projectId, optionsDs, formatMessage, selectedApp, objectVersionNumber, branchName }) => {
+export default ({ projectId, optionsDs, formatMessage, appServiceId, objectVersionNumber, branchName }) => {
   return {
     autoCreate: true,
     autoQuery: false,
@@ -16,11 +16,11 @@ export default ({ projectId, optionsDs, formatMessage, selectedApp, objectVersio
     ],
     transport: {
       create: ({ data: [data] }) => ({
-        url: `/devops/v1/projects/${projectId}/app_service/${selectedApp}/git/update_branch_issue`,
+        url: `/devops/v1/projects/${projectId}/app_service/${appServiceId}/git/update_branch_issue`,
         method: 'put',
         transformRequest: () => {
           const postData = {
-            appServiceId: selectedApp,
+            appServiceId,
             issueId: Number(data.issueName),
             objectVersionNumber,
             branchName,

@@ -1,6 +1,6 @@
 import { axios } from '@choerodon/boot';
 
-export default ({ projectId, issueNameOptionDs, selectedApp, formatMessage, searchDS, contentStore }) => {
+export default ({ projectId, issueNameOptionDs, appServiceId, formatMessage, searchDS, contentStore }) => {
   async function checkBranchName(value) {
     const endWith = /(\/|\.|\.lock)$/;
     const contain = /(\s|~|\^|:|\?|\*|\[|\\|\.\.|@\{|\/{2,}){1}/;
@@ -17,13 +17,14 @@ export default ({ projectId, issueNameOptionDs, selectedApp, formatMessage, sear
       mess = formatMessage({ id: 'branch.checkNameEnd' });
     } else if (contain.test(branchName) || single.test(branchName)) {
       mess = formatMessage({ id: 'branch.check' });
+    } else {
+      await axios.get(`/devops/v1/projects/${projectId}/app_service/${appServiceId}/git/check_branch_name?branch_name=${branchName}`)
+        .then((res) => {
+          if (res && res.failed) {
+            mess = res.message;
+          }
+        });
     }
-    await axios.get(`/devops/v1/projects/${projectId}/app_service/${selectedApp}/git/check_branch_name?branch_name=${branchName}`)
-      .then((res) => {
-        if (res && res.failed) {
-          mess = res.message;
-        }
-      });
     return mess;
   }
   return {
@@ -64,7 +65,7 @@ export default ({ projectId, issueNameOptionDs, selectedApp, formatMessage, sear
     ],
     transport: {
       create: ({ data: [data] }) => ({
-        url: `/devops/v1/projects/${projectId}/app_service/${selectedApp}/git/branch`,
+        url: `/devops/v1/projects/${projectId}/app_service/${appServiceId}/git/branch`,
         method: 'post',
         transformRequest: () => {
           const issueId = data.issueName;

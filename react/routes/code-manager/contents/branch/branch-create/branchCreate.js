@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { axios } from '@choerodon/boot';
 import { withRouter } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
 import { Form, TextField, Select } from 'choerodon-ui/pro';
@@ -9,7 +8,6 @@ import '../../../../main.less';
 import './index.less';
 import '../index.less';
 import MouserOverWrapper from '../../../../../components/MouseOverWrapper';
-import InterceptMask from '../../../../../components/intercept-mask';
 import { useFormStore } from './store';
 import { handlePromptError } from '../../../../../utils';
 
@@ -23,13 +21,13 @@ function BranchCreate(props) {
     issueNameOptionDs,
     formDs,
     projectId,
-    selectedApp,
+    appServiceId,
   } = useFormStore();
   const { formatMessage } = props.intl;
 
-  let brancgPageSize = 3;
-  let tagPageSize = 3;
-  const [submitting, setSubmitting] = useState(false);
+
+  const [branchPageSize, setBranchPageSize] = useState(3);
+  const [tagPageSize, setTagPageSize] = useState(3);
   const [prefixData, setPrefixeData] = useState('');
   const [branchOringData, setBranchOringData] = useState([]);
   const [branchTagData, setBranchTagData] = useState([]);
@@ -57,56 +55,48 @@ function BranchCreate(props) {
   });
 
   useEffect(() => {
-    loadBranchData(brancgPageSize);
+    loadBranchData(branchPageSize);
     loadTagData(tagPageSize);
-  }, [selectedApp]);
+  }, [appServiceId]);
 
   /**
    * 加载分支数据
    * @param BranchPageSize
    */
-  function loadBranchData(BranchPageSize) {
-    axios.post(`devops/v1/projects/${projectId}/app_service/${selectedApp}/git/page_branch_by_options?page=1&size=${BranchPageSize}&sort=creation_date,asc`)
-      .then((data) => {
-        if (handlePromptError(data)) {
-          setBranchOringData(data.list);
-          if (data.total > data.size && data.size > 0) {
-            setLoadMoreBranch(true);
-          }
-        }
-      });
+  async function loadBranchData(BranchPageSize) {
+    const data = await contentStore.loadBranchData(projectId, appServiceId, BranchPageSize);
+    if (handlePromptError(data)) {
+      setBranchOringData(data.list);
+      if (data.total > data.size && data.size > 0) {
+        setLoadMoreBranch(true);
+      }
+    }
   }
   /**
    * 加载标记数据
    * @param TagPageSize
    */
-  function loadTagData(TagPageSize) {
-    axios.post(`/devops/v1/projects/${projectId}/app_service/${selectedApp}/git/page_tags_by_options?page=1&size=${TagPageSize}`)
-      .then((data) => {
-        if (handlePromptError(data)) {
-          setBranchTagData(data.list);
-          if (data.total > data.size && data.size > 0) {
-            setLoadMoreTag(true);
-          }
-        }
-      });
+  async function loadTagData(TagPageSize) {
+    const data = await contentStore.loadTagData(projectId, appServiceId, TagPageSize);
+    if (handlePromptError(data)) {
+      setBranchTagData(data.list);
+      if (data.total > data.size && data.size > 0) {
+        setLoadMoreTag(true);
+      }
+    }
   }
   /**
    * 创建
    */
   async function handleOk() {
     try {
-      setSubmitting(true);
       if ((await formDs.submit()) !== false) {
         handleRefresh();
-        setSubmitting(false);
         return true;
       } else {
-        setSubmitting(false);
         return false;
       }
     } catch (e) {
-      setSubmitting(false);
       return false;
     }
   }
@@ -295,12 +285,14 @@ function BranchCreate(props) {
   const loadMore = (type, e) => {
     e.stopPropagation();
     if (type === 'branch') {
-      brancgPageSize += 10;
-      loadBranchData(brancgPageSize);
+      const pageSize = branchPageSize + 10;
+      setBranchPageSize(pageSize);
+      loadBranchData(pageSize);
       setLoadMoreBranch(false);
     } else {
-      tagPageSize += 10;
-      loadTagData(tagPageSize);
+      const pageSize = tagPageSize + 10;
+      setTagPageSize(pageSize);
+      loadTagData(pageSize);
       setLoadMoreTag(false);
     }
   };
@@ -388,7 +380,6 @@ function BranchCreate(props) {
           <TextField colSpan={3} addonBefore={prefixData} name="branchName" />
         </Form>
       </div>
-      <InterceptMask visible={submitting} />
     </Content>
   );
 }

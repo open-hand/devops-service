@@ -21,7 +21,6 @@ import '../../../main.less';
 import './Branch.less';
 import './index.less';
 
-const { AppState } = stores;
 const { Column } = Table;
 const branchCreateModalKey = ProModal.key();
 const branchEditModalKey = ProModal.key();
@@ -37,6 +36,7 @@ function Branch(props) {
     tableDs,
     projectId,
     intl,
+    AppState,
     appServiceDs,
     appServiceId,
     formatMessage,
@@ -65,7 +65,7 @@ function Branch(props) {
         <Button
           onClick={openCreateBranchModal}
           icon="playlist_add"
-          disabled={!(appServiceId && appServiceDs.toData() && !appServiceDs.toData().emptyRepository)}
+          disabled={!(appServiceId && appServiceDs.toData() && tableDs.toData().length)}
         >
           <FormattedMessage id="branch.create" />
         </Button>
@@ -287,7 +287,7 @@ function Branch(props) {
   // 获取分支正文列表
   function tableBranch() {
     return (
-      <Table queryBar="bar" dataSet={tableDs}>
+      <Table border={false} queryBar="bar" dataSet={tableDs}>
         <Column name="branchName" renderer={branchNameRenderer} />
         <Column align="right" width={60} renderer={actionRender} />
         <Column name="commitContent" className="lasetCommit" width={300} renderer={updateCommitRender} />

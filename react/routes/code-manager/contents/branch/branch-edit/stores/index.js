@@ -26,14 +26,12 @@ export const StoreProvider = injectIntl(inject('AppState')(
       intlPrefix,
     } = props;
 
-    const selectedApp = appServiceId;
-
     const optionsDs = useMemo(() => new DataSet(optionsDataSet({ projectId, issueId }), [projectId]));
-    const selectDs = useMemo(() => new DataSet(selectDataSet({ projectId, optionsDs, formatMessage, selectedApp, objectVersionNumber, branchName }), [projectId]));
+    const selectDs = useMemo(() => new DataSet(selectDataSet({ projectId, optionsDs, formatMessage, appServiceId, objectVersionNumber, branchName }), [projectId]));
 
     const value = {
       ...props,
-      selectedApp,
+      appServiceId,
       selectDs,
       optionsDs,
       formatMessage,
