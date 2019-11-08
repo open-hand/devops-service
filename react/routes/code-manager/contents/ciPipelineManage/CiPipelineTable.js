@@ -354,7 +354,7 @@ export default injectIntl(observer(() => {
     >
       {appServiceDs.status !== 'ready' || !appServiceId
         ? <Loading display />
-        : <Fragment>
+        : <div className="c7ncd-tab-table">
           <Table
             className="c7n-pipineline-table"
             queryBar="none"
@@ -377,7 +377,7 @@ export default injectIntl(observer(() => {
               renderer={renderDateTooltip}
             />
           </Table>
-        </Fragment>}
+        </div>}
     </Page>
   );
 }));
