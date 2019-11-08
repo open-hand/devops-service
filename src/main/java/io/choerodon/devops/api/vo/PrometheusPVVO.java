@@ -8,7 +8,7 @@ import io.swagger.annotations.ApiModelProperty;
  * @description:
  */
 public class PrometheusPVVO {
-    @ApiModelProperty("PVC的类型,根据对应类型的分别选填：prometheus-pvc/alertmanager-pvc/grafana-pvc")
+    @ApiModelProperty("PVC的类型,根据对应的类型的分别选填：prometheus-pvc/alertmanager-pvc/grafana-pvc")
     private String type;
     @ApiModelProperty("PVC的ID")
     private Long pvId;
