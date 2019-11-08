@@ -13,7 +13,7 @@ import io.choerodon.devops.infra.enums.PipelineNoticeType;
  * Description:
  */
 @NotifyBusinessType(code = "pipelinesuccess", name = "流水线成功通知", level = Level.SITE,
-        description = "流水线成功通知", isAllowConfig = false, isManualRetry = true)
+        description = "流水线成功通知", isAllowConfig = false, isManualRetry = true,categoryCode = "stream-change-notice")
 @Component
 public class PipelineSuccessPmTemplate implements PmTemplate {
     @Override
