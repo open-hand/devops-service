@@ -41,6 +41,12 @@ public class DevopsPvReqVo {
     @ApiModelProperty("资源大小")
     private String requestResource;
 
+    @ApiModelProperty(value = "创建还是更新", hidden = true)
+    private String commandType;
+
+    @ApiModelProperty(value = "环境id", hidden = true)
+    private Long envId;
+
     public Long getId() {
         return id;
     }
@@ -103,5 +109,21 @@ public class DevopsPvReqVo {
 
     public void setRequestResource(String requestResource) {
         this.requestResource = requestResource;
+    }
+
+    public String getCommandType() {
+        return commandType;
+    }
+
+    public void setCommandType(String commandType) {
+        this.commandType = commandType;
+    }
+
+    public Long getEnvId() {
+        return envId;
+    }
+
+    public void setEnvId(Long envId) {
+        this.envId = envId;
     }
 }

@@ -90,4 +90,11 @@
         WHERE dc.system_env_id = #{envId}
         AND dpv.name = #{pvName}
     </select>
+
+    <select id="queryWithEnvByPrimaryKey" resultType="io.choerodon.devops.infra.dto.DevopsPvDTO">
+        SELECT dpv.*, dc.system_env_id as env_id
+        FROM devops_pv dpv
+        LEFT JOIN devops_cluster dc ON dpv.cluster_id = dc.id
+        WHERE dpv.id = #{pvId,jdbcType=BIGINT}
+    </select>
 </mapper>

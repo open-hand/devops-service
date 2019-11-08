@@ -99,4 +99,8 @@ public interface DevopsPvServcie {
      * @return pv纪录
      */
     DevopsPvDTO queryByEnvIdAndName(Long envId, String name);
+
+    DevopsPvDTO createOrUpdateByGitOps(DevopsPvReqVo devopsPvReqVo, Long userId);
+
+    void deleteByGitOps(Long pvId);
 }

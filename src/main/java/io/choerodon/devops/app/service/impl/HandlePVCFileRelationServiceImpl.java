@@ -53,7 +53,7 @@ public class HandlePVCFileRelationServiceImpl implements HandlerObjectFileRelati
                 filePath = objectPath.get(TypeUtil.objToString(pvc.hashCode()));
                 DevopsPvcDTO devopsPvcDTO = devopsPvcService
                         .queryByEnvIdAndName(envId, pvc.getMetadata().getName());
-                //初始化configMap对象参数,更新configMap并更新文件对象关联关系
+                //初始化pvc对象参数,更新pvc并更新文件对象关联关系
                 DevopsPvcReqVO devopsPvcReqVO = constructPvc(
                         pvc,
                         envId, "update");
@@ -100,7 +100,7 @@ public class HandlePVCFileRelationServiceImpl implements HandlerObjectFileRelati
                 DevopsPvcReqVO devopsPvcReqVO;
 
                 DevopsPvcDTO newDevopsPvcDTO = new DevopsPvcDTO();
-                //初始化configMap参数,创建时判断configMap是否存在，存在则直接创建文件对象关联关系
+                //初始化pvc参数,创建时判断pvc是否存在，存在则直接创建文件对象关联关系
                 if (devopsPvcDTO == null) {
                     devopsPvcReqVO = constructPvc(
                             pvc,
@@ -152,7 +152,9 @@ public class HandlePVCFileRelationServiceImpl implements HandlerObjectFileRelati
                         return null;
                     }
                     return devopsPvcDTO.getName();
-                }).collect(Collectors.toList());
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
 
 
         List<V1PersistentVolumeClaim> pvcToAdd = new ArrayList<>();

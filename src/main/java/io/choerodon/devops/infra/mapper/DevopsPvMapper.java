@@ -39,4 +39,7 @@ public interface DevopsPvMapper extends Mapper<DevopsPvDTO> {
      */
     DevopsPvDTO queryByEnvIdAndName(@Param("envId") Long envId,
                                     @Param("pvName") String name);
+
+
+    DevopsPvDTO queryWithEnvByPrimaryKey(@Param("pvId") Long pvId);
 }

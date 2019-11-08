@@ -49,6 +49,10 @@ public class DevopsPvDTO extends BaseDTO {
     @ApiModelProperty("操作命令id")
     private Long commandId;
 
+    @ApiModelProperty(value = "所属集群的系统环境id", hidden = true)
+    @Transient
+    private Long envId;
+
     public Long getId() {
         return id;
     }
@@ -151,5 +155,13 @@ public class DevopsPvDTO extends BaseDTO {
 
     public void setClusterName(String clusterName) {
         this.clusterName = clusterName;
+    }
+
+    public Long getEnvId() {
+        return envId;
+    }
+
+    public void setEnvId(Long envId) {
+        this.envId = envId;
     }
 }

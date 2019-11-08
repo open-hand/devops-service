@@ -5,6 +5,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 import com.alibaba.fastjson.JSONArray;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.kubernetes.Command;
@@ -25,6 +26,7 @@ import io.choerodon.devops.infra.util.GitUtil;
 import io.choerodon.websocket.helper.WebSocketHelper;
 import io.choerodon.websocket.send.SendMessagePayload;
 import io.choerodon.websocket.send.relationship.BrokerKeySessionMapper;
+
 import io.codearte.props2yaml.Props2YAML;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
@@ -156,6 +158,7 @@ public class AgentCommandServiceImpl implements AgentCommandService {
             msg.setPayload(mapper.writeValueAsString(payload));
             String msgPayload = mapper.writeValueAsString(msg);
 
+            // TODO 修改为新websocket的格式
             // 一开始没有自动升级
             //0.18.0到0.19.0 为了agent的平滑升级，所以不能以通用的新Msg方式发送，继续用以前的Msg格式发送
             brokerKeySessionMapper.getSessionsByKey(CLUSTER + devopsClusterDTO.getId()).stream().filter(Objects::nonNull).forEach(session -> {

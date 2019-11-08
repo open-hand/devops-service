@@ -4,10 +4,12 @@ import static io.choerodon.devops.infra.util.GitOpsUtil.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import io.kubernetes.client.models.V1PersistentVolume;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
@@ -26,6 +28,11 @@ import io.choerodon.devops.infra.util.TypeUtil;
  */
 @Component
 public class ConvertPersistentVolumeServiceImpl extends ConvertK8sObjectService<V1PersistentVolume> {
+    /**
+     * IP的正则表达式
+     */
+    private static final Pattern IP_PATTERN = Pattern.compile("^((2(5[0-5]|[0-4]\\d))|[0-1]?\\d{1,2})(\\.((2(5[0-5]|[0-4]\\d))|[0-1]?\\d{1,2})){3}$");
+
     @Autowired
     private DevopsPvServcie devopsPvServcie;
     @Autowired
@@ -60,6 +67,47 @@ public class ConvertPersistentVolumeServiceImpl extends ConvertK8sObjectService<
         if (pv.getSpec().getAccessModes().size() > 1) {
             throw new CommonException(
                     GitOpsObjectError.PERSISTENT_VOLUME_ACCESS_MODE_SIZE_NOT_SUPPORTED.getError(), filePath);
+        }
+
+        validateType(pv, filePath);
+    }
+
+    private void validateType(V1PersistentVolume pv, String filePath) {
+        // 暂时只支持NFS和HostPath类型的网络
+        if (pv.getSpec().getNfs() == null || pv.getSpec().getHostPath() == null) {
+            throw new CommonException(
+                    GitOpsObjectError.PERSISTENT_VOLUME_TYPE_NOT_FOUND.getError(), filePath);
+        }
+
+        validateNFS(pv, filePath);
+        validateHostPath(pv, filePath);
+    }
+
+    private void validateNFS(V1PersistentVolume pv, String filePath) {
+        if (pv.getSpec().getNfs() == null) {
+            return;
+        }
+        if (pv.getSpec().getNfs().getPath() == null) {
+            throw new CommonException(
+                    GitOpsObjectError.PERSISTENT_VOLUME_NFS_PATH_NOT_FOUND.getError(), filePath);
+        }
+        if (StringUtils.isEmpty(pv.getSpec().getNfs().getServer())) {
+            throw new CommonException(
+                    GitOpsObjectError.PERSISTENT_VOLUME_NFS_SERVER_NOT_FOUND.getError(), filePath);
+        }
+        if (!IP_PATTERN.matcher(pv.getSpec().getNfs().getServer()).matches()) {
+            throw new CommonException(
+                    GitOpsObjectError.PERSISTENT_VOLUME_NFS_SERVER_NOT_IP.getError(), filePath);
+        }
+    }
+
+    private void validateHostPath(V1PersistentVolume pv, String filePath) {
+        if (pv.getSpec().getHostPath() == null) {
+            return;
+        }
+        if (pv.getSpec().getHostPath().getPath() == null) {
+            throw new CommonException(
+                    GitOpsObjectError.PERSISTENT_VOLUME_NFS_PATH_NOT_FOUND.getError(), filePath);
         }
     }
 

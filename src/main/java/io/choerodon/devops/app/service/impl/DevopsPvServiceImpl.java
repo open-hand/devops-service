@@ -36,6 +36,7 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
+import io.choerodon.devops.infra.mapper.DevopsEnvCommandMapper;
 import io.choerodon.devops.infra.mapper.DevopsPvMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
@@ -67,6 +68,8 @@ public class DevopsPvServiceImpl implements DevopsPvServcie {
     DevopsEnvCommandService devopsEnvCommandService;
     @Autowired
     private DevopsEnvFileResourceService devopsEnvFileResourceService;
+    @Autowired
+    private DevopsEnvCommandMapper devopsEnvCommandMapper;
     @Autowired
     GitlabServiceClientOperator gitlabServiceClientOperator;
 
@@ -321,6 +324,26 @@ public class DevopsPvServiceImpl implements DevopsPvServcie {
     @Override
     public DevopsPvDTO queryByEnvIdAndName(Long envId, String name) {
         return devopsPvMapper.queryByEnvIdAndName(envId, name);
+    }
+
+    @Override
+    public DevopsPvDTO createOrUpdateByGitOps(DevopsPvReqVo devopsPvReqVo, Long userId) {
+        // TODO by zmf
+        return null;
+    }
+
+    @Override
+    public void deleteByGitOps(Long pvId) {
+        DevopsPvDTO devopsPvcDTO = devopsPvMapper.queryWithEnvByPrimaryKey(pvId);
+        if (devopsPvcDTO == null) {
+            return;
+        }
+        // 校验环境是否连接
+        DevopsEnvironmentDTO environmentDTO = devopsEnvironmentService.baseQueryById(devopsPvcDTO.getEnvId());
+        clusterConnectionHandler.checkEnvConnection(environmentDTO.getClusterId());
+
+        devopsPvMapper.deleteByPrimaryKey(pvId);
+        devopsEnvCommandMapper.deleteByObjectTypeAndObjectId(ObjectType.PERSISTENTVOLUMECLAIM.getType(), pvId);
     }
 
     private V1PersistentVolume initV1PersistentVolume(DevopsPvDTO devopsPvDTO) {
