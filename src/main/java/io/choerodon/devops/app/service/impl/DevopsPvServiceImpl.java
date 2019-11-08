@@ -414,13 +414,6 @@ public class DevopsPvServiceImpl implements DevopsPvServcie {
         //设置pv名称
         V1ObjectMeta v1ObjectMeta = new V1ObjectMeta();
         v1ObjectMeta.setName(devopsPvDTO.getName());
-
-        //设置pv类型
-
-
-        Map<String, String> labelMap = new HashMap<>();
-        labelMap.put(KubernetesConstants.TYPE, devopsPvDTO.getType());
-        v1ObjectMeta.setLabels(labelMap);
         v1PersistentVolume.setMetadata(v1ObjectMeta);
 
         //设置Specification下面的字段
