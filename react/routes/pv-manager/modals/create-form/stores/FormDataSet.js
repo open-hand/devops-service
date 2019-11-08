@@ -1,6 +1,10 @@
 import { axios } from '@choerodon/boot';
 import omit from 'lodash/omit';
 
+function getIpRequired({ record }) {
+  return record.get('type') === 'NFS';
+}
+
 export default ((intlPrefix, formatMessage, projectId, typeDs, modeDs, storageDs) => {
   async function checkName(value, name, record) {
     const pa = /^[a-z]([-.a-z0-9]*[a-z0-9])?$/;
@@ -18,6 +22,20 @@ export default ((intlPrefix, formatMessage, projectId, typeDs, modeDs, storageDs
       }
     } else {
       return formatMessage({ id: `${intlPrefix}.name.failed` });
+    }
+  }
+
+  function checkIp(value) {
+    const pa = /^((\d|[1-9]\d|1\d{2}|2[0-4]\d|25[0-5])\.){3}(\d|[1-9]\d|1\d{2}|2[0-4]\d|25[0-5])$/;
+    if (value && !pa.test(value)) {
+      return formatMessage({ id: `${intlPrefix}.ip.failed` });
+    }
+  }
+
+  function checkPath(value) {
+    const pa = /^\/([-\w]+[.]*[-\w]*[.]*\/?)+/;
+    if (value && !pa.test(value)) {
+      return formatMessage({ id: `${intlPrefix}.path.failed` });
     }
   }
 
@@ -52,6 +70,8 @@ export default ((intlPrefix, formatMessage, projectId, typeDs, modeDs, storageDs
       { name: 'accessModes', type: 'string', textField: 'value', label: formatMessage({ id: `${intlPrefix}.mode` }), required: true, options: modeDs, defaultValue: 'ReadWriteMany' },
       { name: 'storage', type: 'number', label: formatMessage({ id: `${intlPrefix}.storage` }), required: true, min: 1 },
       { name: 'unit', type: 'string', textField: 'value', defaultValue: 'Gi', options: storageDs },
+      { name: 'path', type: 'string', label: formatMessage({ id: `${intlPrefix}.path` }), required: true, validator: checkPath },
+      { name: 'ip', type: 'string', label: formatMessage({ id: `${intlPrefix}.ip` }), validator: checkIp, dynamicProps: { required: getIpRequired } },
       { name: 'skipCheckProjectPermission', type: 'boolean', defaultValue: true },
     ],
   });
