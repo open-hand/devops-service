@@ -95,74 +95,74 @@ class DevopsClusterResourceControllerSpec extends Specification {
 
     }
 
-//    def "DeployCertManager"() {
-//        when:
-//        MultiValueMap<String, Object> paramMap = new LinkedMultiValueMap<String, Object>();
-//        paramMap.add("cluster_id", 1L);
-//        HttpHeaders headers = new HttpHeaders();
-//        HttpEntity<MultiValueMap<String, Object>> httpEntity = new HttpEntity<MultiValueMap<String, Object>>(paramMap, headers);
-//        def entity = restTemplate.postForEntity(MAPPING + "/cert_manager/deploy", httpEntity, null, 1L);
-//        then:
-//        entity.statusCode.is2xxSuccessful()
-//    }
-//
-//    def "queryCertManagerByEnvId"() {
-//        when:
-//        def entity = restTemplate.getForEntity(MAPPING + "/cert_manager/check_by_env_id?env_id=1", Boolean.class, 1L)
-//        then:
-//        entity.getStatusCode().is2xxSuccessful()
-//    }
-//
-//    def "ListClusterResource"() {
-//        when:
-//        def entity = restTemplate.getForEntity(MAPPING + "?cluster_id=1", List.class, 1L)
-//        then:
-//        entity.getStatusCode().is2xxSuccessful()
-//    }
-//
-//    def "UnloadCertManager"() {
-//        when:
-//        def entity = restTemplate.exchange(MAPPING + "/cert_manager/unload?cluster_id=1", HttpMethod.DELETE, null, Boolean.class, 1L)
-//        then:
-//        entity.statusCode.is2xxSuccessful()
-//    }
+    def "DeployCertManager"() {
+        when:
+        MultiValueMap<String, Object> paramMap = new LinkedMultiValueMap<String, Object>();
+        paramMap.add("cluster_id", 1L);
+        HttpHeaders headers = new HttpHeaders();
+        HttpEntity<MultiValueMap<String, Object>> httpEntity = new HttpEntity<MultiValueMap<String, Object>>(paramMap, headers);
+        def entity = restTemplate.postForEntity(MAPPING + "/cert_manager/deploy", httpEntity, null, 1L);
+        then:
+        entity.statusCode.is2xxSuccessful()
+    }
 
-//    def "createPrometheus"() {
-//        given:
-//        def devopsPvVO = new DevopsPvVO()
-//        def devopsPvVO1 = new DevopsPvVO()
-//        def devopsPvVO2 = new DevopsPvVO()
-//        List<DevopsPvVO> list = new ArrayList<>()
-//        devopsPvVO.setId(1L)
-//        devopsPvVO.setType("promtheus")
-//        devopsPvVO.setName("123")
-//        devopsPvVO.setAccessModes("test")
-//        devopsPvVO.setRequestResource("test2")
-//        devopsPvVO1.setId(2L)
-//        devopsPvVO1.setType("grafana")
-//        devopsPvVO1.setName("456")
-//        devopsPvVO1.setAccessModes("test")
-//        devopsPvVO1.setRequestResource("test2")
-//        devopsPvVO2.setId(3L)
-//        devopsPvVO2.setType("alertManager")
-//        devopsPvVO2.setName("789")
-//        devopsPvVO2.setAccessModes("test")
-//        devopsPvVO2.setRequestResource("test2")
-//        list.add(devopsPvVO)
-//        list.add(devopsPvVO1)
-//        list.add(devopsPvVO2)
-//        DevopsPrometheusVO devopsPrometheusVO = new DevopsPrometheusVO()
-//        devopsPrometheusVO.setAdminPassword("test")
-//        devopsPrometheusVO.setClusterCode("code101")
-//        devopsPrometheusVO.setGrafanaDomain("www.hand.com")
-//        devopsPrometheusVO.setPvs(list)
-//        when:
-//        def entity = restTemplate.postForEntity(MAPPING + "/prometheus/create?cluster_id=1", devopsPrometheusVO, null, 1L)
-//        then:
-//        entity.statusCode.is2xxSuccessful()
-//
-//    }
-//
+    def "queryCertManagerByEnvId"() {
+        when:
+        def entity = restTemplate.getForEntity(MAPPING + "/cert_manager/check_by_env_id?env_id=1", Boolean.class, 1L)
+        then:
+        entity.getStatusCode().is2xxSuccessful()
+    }
+
+    def "ListClusterResource"() {
+        when:
+        def entity = restTemplate.getForEntity(MAPPING + "?cluster_id=1", List.class, 1L)
+        then:
+        entity.getStatusCode().is2xxSuccessful()
+    }
+
+    def "UnloadCertManager"() {
+        when:
+        def entity = restTemplate.exchange(MAPPING + "/cert_manager/unload?cluster_id=1", HttpMethod.DELETE, null, Boolean.class, 1L)
+        then:
+        entity.statusCode.is2xxSuccessful()
+    }
+
+    def "createPrometheus"() {
+        given:
+        def devopsPvVO = new DevopsPvVO()
+        def devopsPvVO1 = new DevopsPvVO()
+        def devopsPvVO2 = new DevopsPvVO()
+        List<DevopsPvVO> list = new ArrayList<>()
+        devopsPvVO.setId(1L)
+        devopsPvVO.setType("promtheus")
+        devopsPvVO.setName("123")
+        devopsPvVO.setAccessModes("test")
+        devopsPvVO.setRequestResource("test2")
+        devopsPvVO1.setId(2L)
+        devopsPvVO1.setType("grafana")
+        devopsPvVO1.setName("456")
+        devopsPvVO1.setAccessModes("test")
+        devopsPvVO1.setRequestResource("test2")
+        devopsPvVO2.setId(3L)
+        devopsPvVO2.setType("alertManager")
+        devopsPvVO2.setName("789")
+        devopsPvVO2.setAccessModes("test")
+        devopsPvVO2.setRequestResource("test2")
+        list.add(devopsPvVO)
+        list.add(devopsPvVO1)
+        list.add(devopsPvVO2)
+        DevopsPrometheusVO devopsPrometheusVO = new DevopsPrometheusVO()
+        devopsPrometheusVO.setAdminPassword("test")
+        devopsPrometheusVO.setClusterCode("code101")
+        devopsPrometheusVO.setGrafanaDomain("www.hand.com")
+        devopsPrometheusVO.setPvs(list)
+        when:
+        def entity = restTemplate.postForEntity(MAPPING + "/prometheus/create?cluster_id=1", devopsPrometheusVO, Boolean.class, 1L)
+        then:
+        entity.body == true
+
+    }
+
     def "updatePromtheus"() {
 
         given:
@@ -201,30 +201,30 @@ class DevopsClusterResourceControllerSpec extends Specification {
         entity.statusCode.is2xxSuccessful()
     }
 
-//    def "queryPrometheus"() {
-//        given:
-//        when:
-//        def entity = restTemplate.getForEntity(MAPPING + "/prometheus?cluster_id=1", DevopsPrometheusVO.class, 1L)
-//        then:
-//        entity.body != null
-//    }
-//
-//    def "getDeployStatus"() {
-//        given:
-//        DevopsPrometheusVO devopsPrometheusVO = new DevopsPrometheusVO()
-//        devopsPrometheusVO.setId(1L)
-//        when:
-//        def entity = restTemplate.getForEntity(MAPPING + "/prometheus/deploy_status?cluster_id=1", ClusterResourceVO.class, 1L)
-//        then:
-//        entity.body.getStatus() != null
-//    }
-//
-//    def "deletePrometheus"() {
-//        given:
-//        when:
-//        def entity = restTemplate.exchange(MAPPING + "/prometheus/unload?cluster_id=1", HttpMethod.DELETE, null, ResponseEntity.class, 1L)
-//        then:
-//        entity.statusCode.is2xxSuccessful()
-//
-//    }
+    def "queryPrometheus"() {
+        given:
+        when:
+        def entity = restTemplate.getForEntity(MAPPING + "/prometheus?cluster_id=1", DevopsPrometheusVO.class, 1L)
+        then:
+        entity.body != null
+    }
+
+    def "getDeployStatus"() {
+        given:
+        DevopsPrometheusVO devopsPrometheusVO = new DevopsPrometheusVO()
+        devopsPrometheusVO.setId(1L)
+        when:
+        def entity = restTemplate.getForEntity(MAPPING + "/prometheus/deploy_status?cluster_id=1", ClusterResourceVO.class, 1L)
+        then:
+        entity.body.getStatus() != null
+    }
+
+    def "deletePrometheus"() {
+        given:
+        when:
+        def entity = restTemplate.exchange(MAPPING + "/prometheus/unload?cluster_id=1", HttpMethod.DELETE, null, ResponseEntity.class, 1L)
+        then:
+        entity.statusCode.is2xxSuccessful()
+
+    }
 }

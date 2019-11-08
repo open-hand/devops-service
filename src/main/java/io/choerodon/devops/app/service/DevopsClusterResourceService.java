@@ -36,7 +36,7 @@ public interface DevopsClusterResourceService {
 
     DevopsClusterResourceDTO queryByClusterIdAndType(Long clusterId, String type);
 
-    Boolean uploadPrometheus(Long clusterId);
+    Boolean uninstallPrometheus(Long clusterId);
 
     List<ClusterResourceVO> listClusterResource(Long clusterId, Long projectId);
 
@@ -64,14 +64,14 @@ public interface DevopsClusterResourceService {
      * @param clusterId
      * @return
      */
-    DevopsPrometheusDTO queryPrometheusDTO(Long clusterId);
+    DevopsPrometheusDTO baseQueryPrometheusDTO(Long clusterId);
 
     /**
      * 查询安装prometheus的进程
      * @param clusterId
      * @return
      */
-    ClusterResourceVO queryDeployProcess(Long clusterId);
+    ClusterResourceVO queryDeployStage(Long clusterId);
 
     /**
      * 查询部署prometheus状态
@@ -104,7 +104,7 @@ public interface DevopsClusterResourceService {
      * @param clusterId
      * @param devopsPrometheusDTO
      */
-    void deployPrometheus(Long clusterId, DevopsPrometheusDTO devopsPrometheusDTO);
+    void installPrometheus(Long clusterId, DevopsPrometheusDTO devopsPrometheusDTO);
 
     void deletePvc(Long clusterId);
 }

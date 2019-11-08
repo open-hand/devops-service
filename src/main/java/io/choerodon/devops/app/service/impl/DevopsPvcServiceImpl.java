@@ -216,19 +216,19 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
             baseUpdate(devopsPvcDTO);
         }
 
-        DevopsPrometheusDTO devopsPrometheusDTO = devopsClusterResourceService.queryPrometheusDTO(environmentDTO.getClusterId());
+        DevopsPrometheusDTO devopsPrometheusDTO = devopsClusterResourceService.baseQueryPrometheusDTO(environmentDTO.getClusterId());
         List<Long> pvcIds = JSON.parseArray(devopsPrometheusDTO.getPvcId(), Long.class);
         List<DevopsPvcDTO> devopsPvcDTOS = new ArrayList<>();
         if (pvcIds.contains(devopsPvcReqVO.getId())) {
             for (Long pvcId : pvcIds) {
                 DevopsPvcDTO devopsPvc = queryById(pvcId);
-                if (PvcStatus.PENDING.getStatus().equals(devopsPvc.getStatus())) {
+                if (PvcStatus.BOUND.getStatus().equals(devopsPvc.getStatus())) {
                     devopsPvcDTOS.add(devopsPvc);
                 }
             }
             if (devopsPvcDTOS.size() == 3) {
                 devopsPrometheusDTO.setDevopsPvcDTO(devopsPvcDTOS);
-                devopsClusterResourceService.deployPrometheus(environmentDTO.getClusterId(), devopsPrometheusDTO);
+                devopsClusterResourceService.installPrometheus(environmentDTO.getClusterId(), devopsPrometheusDTO);
             }
         }
 

@@ -126,7 +126,7 @@ public class DevopsClusterResourceController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群id", required = true)
             @RequestParam(name = "cluster_id", required = true) Long clusterId) {
-        return Optional.ofNullable(devopsClusterResourceService.queryDeployProcess(clusterId))
+        return Optional.ofNullable(devopsClusterResourceService.queryDeployStage(clusterId))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.prometheus.deploy.status"));
     }
@@ -137,7 +137,7 @@ public class DevopsClusterResourceController {
     public ResponseEntity delete(
             @ApiParam(value = "集群id", required = true)
             @RequestParam(name = "cluster_id", required = true) Long clusterId) {
-        return Optional.ofNullable(devopsClusterResourceService.uploadPrometheus(clusterId))
+        return Optional.ofNullable(devopsClusterResourceService.uninstallPrometheus(clusterId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.prometheus.unload"));
     }
