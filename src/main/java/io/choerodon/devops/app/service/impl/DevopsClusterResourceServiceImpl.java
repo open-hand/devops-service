@@ -182,6 +182,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     }
 
     @Override
+    @Transactional
     public List<ClusterResourceVO> listClusterResource(Long clusterId, Long projectId) {
         List<ClusterResourceVO> list = new ArrayList<>();
         // 查询cert-manager 状态
@@ -382,6 +383,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     }
 
     @Override
+    @Transactional
     public ClusterResourceVO queryPrometheusStatus(Long projectId, Long clusterId) {
         DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceMapper.queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
         ClusterResourceVO clusterResourceVO = new ClusterResourceVO();
@@ -425,7 +427,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         if (PrometheusConstants.INSTALL_PROMETHEUS_FAIL.equals(clusterResourceVO.getStatus())) {
             //实例创建失败
             //升级失败->可用，安装失败->不可用
-            if (ClusterResourceOperateType.UPGRADE.equals(devopsClusterResourceDTO.getOperate())) {
+            if (ClusterResourceOperateType.UPGRADE.getType().equals(devopsClusterResourceDTO.getOperate())) {
                 clusterResourceVO.setStatus(ClusterResourceStatus.AVAILABLE.getStatus());
                 clusterResourceVO.setMessage(clusterResourceVO.getMessage());
             } else {
@@ -478,11 +480,12 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         AppServiceInstanceDTO appServiceInstanceDTO = null;
         if (ClusterResourceOperateType.INSTALL.getType().equals(clusterResourceDTO.getOperate())) {
             appServiceInstanceDTO = componentReleaseService.createReleaseForPrometheus(devopsClusterDTO.getSystemEnvId(), devopsPrometheusDTO);
+            clusterResourceDTO.setObjectId(appServiceInstanceDTO.getId());
         }
         if (ClusterResourceOperateType.UPGRADE.getType().equals(clusterResourceDTO.getOperate())) {
             appServiceInstanceDTO = componentReleaseService.updateReleaseForPrometheus(devopsPrometheusDTO, clusterResourceDTO.getObjectId(), devopsClusterDTO.getSystemEnvId());
+            clusterResourceDTO.setObjectId(appServiceInstanceDTO.getId());
         }
-        clusterResourceDTO.setObjectId(appServiceInstanceDTO.getId());
         devopsPrometheusMapper.updateByPrimaryKeySelective(devopsPrometheusDTO);
         devopsClusterResourceService.baseUpdate(clusterResourceDTO);
     }
