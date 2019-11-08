@@ -2,14 +2,12 @@ package io.choerodon.devops.infra.util;
 
 import java.io.InputStream;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.infra.constant.PrometheusConstants;
 import io.choerodon.devops.infra.dto.DevopsPrometheusDTO;
-import io.choerodon.devops.infra.dto.DevopsPvcDTO;
 import io.choerodon.devops.infra.enums.ClusterResourceType;
 
 public class ComponentValuesTemplateUtil {
@@ -40,14 +38,18 @@ public class ComponentValuesTemplateUtil {
         map.put("{{adminPassword}}", devopsPrometheusDTO.getAdminPassword());
         map.put("{{host}}", devopsPrometheusDTO.getGrafanaDomain());
         map.put("{{clusterName}}", devopsPrometheusDTO.getClusterCode());
-        List<String> pvcNames = devopsPrometheusDTO.getDevopsPvcDTO().stream().map(DevopsPvcDTO::getName).collect(Collectors.toList());
-        if (pvcNames.size() == 3) {
-            map.put("{{prometheus-pvc}}", pvcNames.get(0));
-            map.put("{{alertmanager-pvc}}", pvcNames.get(1));
-            map.put("{{grafana-pvc}}", pvcNames.get(2));
-        }else {
-            throw new CommonException("error.pvc.name.size");
-        }
+        devopsPrometheusDTO.getDevopsPvcDTO().stream().forEach(devopsPvcDTO -> {
+            if (PrometheusConstants.PvcName.prometheus_pvcName.equals(devopsPvcDTO.getName())) {
+                map.put("{{prometheus-pvc}}", devopsPvcDTO.getName());
+            }
+            if (PrometheusConstants.PvcName.alertManager_pvcName.equals(devopsPvcDTO.getName())) {
+                map.put("{{alertmanager-pvc}}", devopsPvcDTO.getName());
+            }
+            if (PrometheusConstants.PvcName.grafana_pvcName.equals(devopsPvcDTO.getName())) {
+                map.put("{{grafana-pvc}}", devopsPvcDTO.getName());
+            }
+        });
+
 
         return FileUtil.replaceReturnString(in, map);
     }
