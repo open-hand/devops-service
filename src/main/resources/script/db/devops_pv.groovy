@@ -6,15 +6,15 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pv') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: 'id', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
-            column(name: 'name', type: 'varchar(30)', remarks: 'pv名称')
-            column(name: 'type', type: 'varchar(10)', remarks: 'pv存储类型')
-            column(name: 'description', type: 'varchar(40)', remarks: 'pv描述')
-            column(name: 'status', 'type':'varchar(32)' ,remarks: 'pv状态')
+            column(name: 'name', type: 'VARCHAR(30)', remarks: 'pv名称')
+            column(name: 'type', type: 'VARCHAR(10)', remarks: 'pv存储类型')
+            column(name: 'description', type: 'VARCHAR(40)', remarks: 'pv描述')
+            column(name: 'status', 'type':'VARCHAR(32)' ,remarks: 'pv状态')
             column(name: 'pvc_id', type: 'BIGINT UNSIGNED', remarks: '关联的pvc')
             column(name: 'cluster_id',type: 'BIGINT UNSIGNED', remarks: '所属集群')
-            column(name: 'storage', type: 'varchar(20)',remarks: '存储容量')
-            column(name: 'access_modes', type: 'varchar(20)', remarks: '访问类型')
-            column(name: 'skip_check_project_permission', type: 'tinyint(1)',defaultValue: 1,remarks: '指定权限,是否只属于特定项目，默认为1')
+            column(name: 'storage', type: 'VARCHAR(20)',remarks: '存储容量')
+            column(name: 'access_modes', type: 'VARCHAR(20)', remarks: '访问类型')
+            column(name: 'skip_check_project_permission', type: 'TINYINT(1)',defaultValue: 1,remarks: '指定权限,是否只属于特定项目，默认为1')
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
             column(name: "created_by", type: "BIGINT UNSIGNED", defaultValue: "0")
             column(name: "creation_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
@@ -30,7 +30,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pv') {
     }
 
     changeSet(id: '2019-11-06-rename-column', author: 'yzj') {
-        renameColumn(columnDataType: 'varchar(20)', newColumnName: 'request_resource', oldColumnName: 'storage', remarks: '存储容量', tableName: 'devops_pv')
+        renameColumn(columnDataType: 'VARCHAR(20)', newColumnName: 'request_resource', oldColumnName: 'storage', remarks: '存储容量', tableName: 'devops_pv')
         addColumn(tableName: 'devops_pv') {
             column(name: 'command_id', type: 'BIGINT UNSIGNED', remarks: '操作id')
         }
@@ -38,7 +38,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pv') {
 
     changeSet(id: '2019-11-11-add-column', author: 'yzj') {
         addColumn(tableName: 'devops_pv') {
-            column(name: 'value_config', type: 'varchar(1000)', remarks: 'pv存储类型详细配置')
+            column(name: 'value_config', type: 'VARCHAR(1000)', remarks: 'pv存储类型详细配置')
         }
     }
 }
