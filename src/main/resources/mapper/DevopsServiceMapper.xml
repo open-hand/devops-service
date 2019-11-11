@@ -106,9 +106,6 @@
         <if test="envId != null">
             AND devs.env_id = #{envId}
         </if>
-        <if test="sort != null and !sort.isEmpty()">
-            ORDER BY #{sort}
-        </if>
         ) ds
         JOIN devops_env de ON ds.env_id = de.id
         LEFT JOIN devops_env_command cmd ON ds.command_id = cmd.id
@@ -123,6 +120,9 @@
             AND ds.app_service_id = #{appServiceId}
         </if>
         <include refid="sqlparam"/>
+        <if test="sort != null and !sort.isEmpty()">
+            ORDER BY ${sort}
+        </if>
     </select>
 
     <select id="queryById" resultMap="devopsServiceResult">
