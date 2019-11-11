@@ -121,7 +121,7 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
             }
         } else {
             devopsProjectDTO.setObjectVersionNumber(oldDevopsProjectDTO.getObjectVersionNumber());
-            devopsProjectMapper.updateByPrimaryKey(devopsProjectDTO);
+            devopsProjectMapper.updateByPrimaryKeySelective(devopsProjectDTO);
         }
     }
 
