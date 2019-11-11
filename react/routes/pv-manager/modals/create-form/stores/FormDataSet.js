@@ -1,5 +1,6 @@
 import { axios } from '@choerodon/boot';
 import omit from 'lodash/omit';
+import pick from 'lodash/pick';
 
 function getIpRequired({ record }) {
   return record.get('type') === 'NFS';
@@ -45,8 +46,9 @@ export default ((intlPrefix, formatMessage, projectId, typeDs, modeDs, storageDs
     selection: false,
     transport: {
       create: ({ data: [data] }) => {
-        const res = omit(data, ['__id', '__status', 'storage', 'unit']);
+        const res = omit(data, ['__id', '__status', 'storage', 'unit', 'server', 'path']);
         res.requestResource = `${data.storage}${data.unit}`;
+        res.valueConfig = pick(data, ['server', 'path']);
         return ({
           url: `/devops/v1/projects/${projectId}/pv`,
           method: 'post',
@@ -71,7 +73,7 @@ export default ((intlPrefix, formatMessage, projectId, typeDs, modeDs, storageDs
       { name: 'storage', type: 'number', label: formatMessage({ id: `${intlPrefix}.storage` }), required: true, min: 1 },
       { name: 'unit', type: 'string', textField: 'value', defaultValue: 'Gi', options: storageDs },
       { name: 'path', type: 'string', label: formatMessage({ id: `${intlPrefix}.path` }), required: true, validator: checkPath },
-      { name: 'ip', type: 'string', label: formatMessage({ id: `${intlPrefix}.ip` }), validator: checkIp, dynamicProps: { required: getIpRequired } },
+      { name: 'server', type: 'string', label: formatMessage({ id: `${intlPrefix}.ip` }), validator: checkIp, dynamicProps: { required: getIpRequired } },
       { name: 'skipCheckProjectPermission', type: 'boolean', defaultValue: true },
     ],
   });
