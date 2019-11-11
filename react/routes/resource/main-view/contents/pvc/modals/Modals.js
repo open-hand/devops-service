@@ -39,7 +39,7 @@ const PVCModals = observer(() => {
       style: modalStyle,
       drawer: true,
       title: formatMessage({ id: `${intlPrefix}.create.pvc` }),
-      children: <CreateForm refresh={refresh} envId={parentId} />,
+      children: <CreateForm refresh={refresh} envId={parentId} intlPrefix={intlPrefix} prefixCls={prefixCls} />,
       okText: formatMessage({ id: 'create' }),
     });
   }

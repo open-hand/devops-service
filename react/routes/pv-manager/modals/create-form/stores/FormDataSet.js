@@ -48,7 +48,7 @@ export default ((intlPrefix, formatMessage, projectId, typeDs, modeDs, storageDs
       create: ({ data: [data] }) => {
         const res = omit(data, ['__id', '__status', 'storage', 'unit', 'server', 'path']);
         res.requestResource = `${data.storage}${data.unit}`;
-        res.valueConfig = pick(data, ['server', 'path']);
+        res.valueConfig = JSON.stringify(pick(data, ['server', 'path']));
         return ({
           url: `/devops/v1/projects/${projectId}/pv`,
           method: 'post',
