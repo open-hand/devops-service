@@ -182,6 +182,7 @@ const commonField = {
   configMaps: '配置映射',
   secrets: '密文',
   customResources: '自定义资源',
+  pvcs: 'PVC',
 };
 
 const deployment = {
@@ -311,6 +312,7 @@ const deployment = {
   'c7ncd.deployment.create.ingress': '创建域名',
   'c7ncd.deployment.create.configMap': '创建配置映射',
   'c7ncd.deployment.create.cipher': '创建密文',
+  'c7ncd.deployment.devops-pvc.create': '创建PVC',
   'c7ncd.deployment.create.custom': '创建自定义资源',
   'c7ncd.deployment.service.detail': '服务详情',
   'c7ncd.deployment.service.status': '服务状态',

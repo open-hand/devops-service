@@ -14,6 +14,7 @@ import CertItem from './CertItem';
 import IngressItem from './IngressItem';
 import ConfigItem from './ConfigItem';
 import SecretItem from './SecretItem';
+import PVCItem from './PVCItem';
 
 const TreeItem = observer(({ record, search }) => {
   const {
@@ -28,6 +29,7 @@ const TreeItem = observer(({ record, search }) => {
       MAP_ITEM,
       CIPHER_ITEM,
       CUSTOM_ITEM,
+      PVC_ITEM,
     },
   } = useResourceStore();
   const { podColor } = useMainStore();
@@ -37,6 +39,7 @@ const TreeItem = observer(({ record, search }) => {
       [SERVICES_ITEM]: () => <NetworkItem {...param} />,
       [INGRESS_ITEM]: () => <IngressItem {...param} />,
       [CERT_ITEM]: () => <CertItem {...param} />,
+      [PVC_ITEM]: () => <PVCItem {...param} />,
       [MAP_ITEM]: () => <ConfigItem {...param} />,
       [CIPHER_ITEM]: () => <SecretItem {...param} />,
       [CUSTOM_ITEM]: () => <CustomItem {...param} />,
@@ -76,6 +79,7 @@ const TreeItem = observer(({ record, search }) => {
       case CERT_ITEM:
       case MAP_ITEM:
       case CIPHER_ITEM:
+      case PVC_ITEM:
       case CUSTOM_ITEM:
         treeItem = getNormalItem(type, param);
         break;
