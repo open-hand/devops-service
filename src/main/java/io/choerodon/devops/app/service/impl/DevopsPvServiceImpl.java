@@ -2,25 +2,21 @@ package io.choerodon.devops.app.service.impl;
 
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-
 import com.google.gson.Gson;
-import io.choerodon.devops.api.validator.DevopsPvValidator;
-import io.choerodon.devops.infra.enums.*;
 import io.kubernetes.client.custom.Quantity;
 import io.kubernetes.client.models.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import io.choerodon.devops.infra.util.PageInfoUtil;
-
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.validator.DevopsPvValidator;
 import io.choerodon.devops.api.vo.DevopsPvPermissionUpdateVO;
 import io.choerodon.devops.api.vo.DevopsPvReqVO;
 import io.choerodon.devops.api.vo.DevopsPvVO;
@@ -30,6 +26,7 @@ import io.choerodon.devops.infra.constant.KubernetesConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
@@ -38,12 +35,8 @@ import io.choerodon.devops.infra.mapper.DevopsEnvCommandMapper;
 import io.choerodon.devops.infra.mapper.DevopsPvMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
+import io.choerodon.devops.infra.util.PageInfoUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-
-import io.kubernetes.client.models.V1ObjectMeta;
-import io.kubernetes.client.models.V1PersistentVolume;
-import io.kubernetes.client.models.V1PersistentVolumeSpec;
-import org.springframework.util.CollectionUtils;
 
 @Service
 public class DevopsPvServiceImpl implements DevopsPvService {
@@ -92,21 +85,19 @@ public class DevopsPvServiceImpl implements DevopsPvService {
 
     @Override
     public PageInfo<DevopsPvVO> pageByOptions(Boolean doPage, Pageable pageable, String params) {
-        PageInfo<DevopsPvDTO> devopsPvDTOPageInfo = basePagePvByOptions(doPage, pageable, params);
-        PageInfo<DevopsPvVO> devopsPvVOPageInfo = ConvertUtils.convertPage(devopsPvDTOPageInfo, DevopsPvVO.class);
-        return devopsPvVOPageInfo;
+        return ConvertUtils.convertPage(basePagePvByOptions(doPage, pageable, params), DevopsPvVO.class);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void createPv(DevopsPvReqVO devopsPvReqVo) {
-        DevopsPvDTO devopsPvDTO = ConvertUtils.convertObject(devopsPvReqVo,DevopsPvDTO.class);
+        DevopsPvDTO devopsPvDTO = ConvertUtils.convertObject(devopsPvReqVo, DevopsPvDTO.class);
         devopsPvDTO.setStatus(PvStatus.OPERATING.getStatus());
         // 创建pv的环境是所选集群关联的系统环境
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(devopsPvDTO.getClusterId());
 
         // 如果系统环境id为空那么先去创建系统环境,更新集群关联的系统环境
-        if (devopsClusterDTO.getSystemEnvId() == null){
+        if (devopsClusterDTO.getSystemEnvId() == null) {
             DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.createSystemEnv(devopsClusterDTO.getId());
             devopsClusterDTO.setSystemEnvId(devopsEnvironmentDTO.getId());
             devopsClusterService.baseUpdate(devopsClusterDTO);
@@ -281,9 +272,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
 
     @Override
     public DevopsPvVO queryById(Long pvId) {
-        DevopsPvDTO devopsPvDTO = devopsPvMapper.queryById(pvId);
-        DevopsPvVO devopsPvVO = ConvertUtils.convertObject(devopsPvDTO, DevopsPvVO.class);
-        return devopsPvVO;
+        return ConvertUtils.convertObject(devopsPvMapper.queryById(pvId), DevopsPvVO.class);
     }
 
     @Override
@@ -330,8 +319,39 @@ public class DevopsPvServiceImpl implements DevopsPvService {
 
     @Override
     public DevopsPvDTO createOrUpdateByGitOps(DevopsPvReqVO devopsPvReqVO, Long userId) {
-        // TODO by zmf
-        return null;
+        // 校验环境是否连接
+        DevopsEnvironmentDTO environmentDTO = devopsEnvironmentService.baseQueryById(devopsPvReqVO.getEnvId());
+        clusterConnectionHandler.checkEnvConnection(environmentDTO.getClusterId());
+
+        // 处理创建数据
+        DevopsPvDTO devopsPvDTO = ConvertUtils.convertObject(devopsPvReqVO, DevopsPvDTO.class);
+        devopsPvDTO.setStatus(PvcStatus.OPERATING.getStatus());
+        devopsPvDTO.setClusterId(environmentDTO.getClusterId());
+        DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(devopsPvReqVO.getCommandType());
+        devopsEnvCommandDTO.setLastUpdatedBy(userId);
+
+        if (CommandType.CREATE.getType().equals(devopsPvReqVO.getCommandType())) {
+            devopsEnvCommandDTO.setCreatedBy(userId);
+            Long pvId = createPvRecord(devopsPvDTO).getId();
+            devopsEnvCommandDTO.setObjectId(pvId);
+            devopsPvDTO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());
+            baseUpdate(devopsPvDTO);
+        } else {
+            DevopsPvDTO dbRecord = devopsPvMapper.selectByPrimaryKey(devopsPvReqVO.getId());
+            devopsPvDTO.setObjectVersionNumber(dbRecord.getObjectVersionNumber());
+            devopsEnvCommandDTO.setObjectId(devopsPvDTO.getId());
+            devopsPvDTO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());
+            baseUpdate(devopsPvDTO);
+        }
+
+        return devopsPvDTO;
+    }
+
+    private DevopsPvDTO createPvRecord(DevopsPvDTO devopsPvDTO) {
+        if (1 != devopsPvMapper.insertSelective(Objects.requireNonNull(devopsPvDTO))) {
+            throw new CommonException("error.pv.insert", devopsPvDTO.getName());
+        }
+        return devopsPvMapper.selectByPrimaryKey(devopsPvDTO.getId());
     }
 
     @Override
@@ -352,7 +372,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
 
     public PageInfo<ProjectReqVO> pageRelatedProjects(Long projectId, Long pvId, Pageable pageable, String params) {
         DevopsPvDTO devopsPvDTO = baseQueryById(pvId);
-        if (devopsPvDTO == null){
+        if (devopsPvDTO == null) {
             throw new CommonException("error.pv.not.exists");
         }
 
@@ -378,7 +398,9 @@ public class DevopsPvServiceImpl implements DevopsPvService {
                     .collect(Collectors.toList());
 
             //没有权限关联就直接返回空分页查询结果
-            if (CollectionUtils.isEmpty(permissions)){return new PageInfo<>();}
+            if (CollectionUtils.isEmpty(permissions)) {
+                return new PageInfo<>();
+            }
 
             // 如果要搜索，需要手动在程序内分页
             ProjectDTO iamProjectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
@@ -405,6 +427,13 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         DevopsPvDTO searchCondition = new DevopsPvDTO();
         searchCondition.setEnvId(Objects.requireNonNull(envId));
         return devopsPvMapper.select(searchCondition);
+    }
+
+    @Override
+    public void baseUpdate(DevopsPvDTO devopsPvDTO) {
+        if (devopsPvMapper.updateByPrimaryKeySelective(Objects.requireNonNull(devopsPvDTO)) != 1) {
+            throw new CommonException("error.update.pv", devopsPvDTO.getName());
+        }
     }
 
     private V1PersistentVolume initV1PersistentVolume(DevopsPvDTO devopsPvDTO) {
@@ -435,7 +464,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         VolumeTypeEnum volumeTypeEnum = VolumeTypeEnum.forValue(volumeType);
 
         //pv类型不存在抛异常
-        if (volumeTypeEnum == null){
+        if (volumeTypeEnum == null) {
             throw new CommonException("error.py.type.not.exist");
         }
 
@@ -469,8 +498,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         }
 
         BigDecimal bigDecimal = new BigDecimal(size);
-        Quantity quantity = new Quantity(bigDecimal, Quantity.Format.BINARY_SI);
-        return quantity;
+        return new Quantity(bigDecimal, Quantity.Format.BINARY_SI);
     }
 
     private DevopsEnvCommandDTO initDevopsEnvCommandDTO(String type) {
@@ -510,7 +538,4 @@ public class DevopsPvServiceImpl implements DevopsPvService {
                 CREATE, userAttrDTO.getGitlabUserId(), devopsPvDTO.getId(), PERSISTENVOLUME, null, false,
                 devopsEnvironmentDTO.getId(), path);
     }
-
-
-
 }

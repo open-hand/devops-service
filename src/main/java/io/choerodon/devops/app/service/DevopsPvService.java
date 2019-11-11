@@ -130,4 +130,6 @@ public interface DevopsPvService {
      * @return 列表
      */
     List<DevopsPvDTO> baseListByEnvId(Long envId);
+
+    void baseUpdate(DevopsPvDTO devopsPvDTO);
 }
