@@ -38,7 +38,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pv') {
 
     changeSet(id: '2019-11-11-add-column', author: 'yzj') {
         addColumn(tableName: 'devops_pv') {
-            column(name: 'value_config', type: 'TEXT', remarks: 'pv存储类型详细配置')
+            column(name: 'value_config', type: 'varchar(1000)', remarks: 'pv存储类型详细配置')
         }
     }
 }
