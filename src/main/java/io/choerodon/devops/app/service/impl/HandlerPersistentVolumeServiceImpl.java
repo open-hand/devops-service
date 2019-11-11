@@ -7,6 +7,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 
+import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.V1Endpoints;
 import io.kubernetes.client.models.V1PersistentVolume;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,7 @@ import io.choerodon.devops.infra.constant.KubernetesConstants;
 import io.choerodon.devops.infra.dto.DevopsEnvCommandDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvFileResourceDTO;
 import io.choerodon.devops.infra.dto.DevopsPvDTO;
+import io.choerodon.devops.infra.enums.PersistentVolumeType;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.infra.mapper.DevopsPvMapper;
@@ -177,12 +179,18 @@ public class HandlerPersistentVolumeServiceImpl implements HandlerObjectFileRela
         // 暂时只设计为支持一种模式
         devopsPvReqVO.setAccessModes(pv.getSpec().getAccessModes().get(0));
         devopsPvReqVO.setRequestResource(pv.getSpec().getCapacity().get(KubernetesConstants.STORAGE).toSuffixedString());
-        setTypeAndConfig(devopsPvReqVO);
+        setTypeAndConfig(devopsPvReqVO, pv);
         return devopsPvReqVO;
     }
 
-    private void setTypeAndConfig(DevopsPvReqVO devopsPvReqVO) {
-        // TODO by zmf
+    private void setTypeAndConfig(DevopsPvReqVO devopsPvReqVO, V1PersistentVolume pv) {
+        if (pv.getSpec().getHostPath() != null) {
+            devopsPvReqVO.setType(PersistentVolumeType.HOST_PATH.getType());
+            devopsPvReqVO.setValueConfig(new JSON().serialize(pv.getSpec().getHostPath()));
+        } else if (pv.getSpec().getNfs() != null) {
+            devopsPvReqVO.setType(PersistentVolumeType.NFS.getType());
+            devopsPvReqVO.setValueConfig(new JSON().serialize(pv.getSpec().getNfs()));
+        }
     }
 
     @Override
