@@ -1,9 +1,13 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+
 import com.github.pagehelper.PageInfo;
+
 import io.choerodon.devops.api.vo.DevopsPvcReqVO;
 import io.choerodon.devops.api.vo.DevopsPvcRespVO;
 import io.choerodon.devops.infra.dto.DevopsPvcDTO;
+
 import org.springframework.data.domain.Pageable;
 
 public interface DevopsPvcService {
@@ -62,4 +66,12 @@ public interface DevopsPvcService {
     void baseUpdate(DevopsPvcDTO devopsPvcDTO);
 
     DevopsPvcDTO queryById(Long pvcId);
+
+    /**
+     * 通过环境id查询所有的pvc纪录
+     *
+     * @param envId 环境id
+     * @return pvc列表
+     */
+    List<DevopsPvcDTO> baseListByEnvId(Long envId);
 }

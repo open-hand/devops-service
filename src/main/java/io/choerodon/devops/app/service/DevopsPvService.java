@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service;
 
 
 import java.util.List;
+
 import com.github.pagehelper.PageInfo;
 import org.springframework.data.domain.Pageable;
 
@@ -31,6 +32,7 @@ public interface DevopsPvService {
 
     /**
      * 分页查询pv以及关联的集群和PVC
+     *
      * @param doPage
      * @param pageable
      * @param params
@@ -40,12 +42,14 @@ public interface DevopsPvService {
 
     /**
      * 创建PV
+     *
      * @param devopsPvReqVo
      */
     void createPv(DevopsPvReqVO devopsPvReqVo);
 
     /**
      * 校验唯一性
+     *
      * @param devopsPvDTO
      */
     void baseCheckPv(DevopsPvDTO devopsPvDTO);
@@ -57,12 +61,14 @@ public interface DevopsPvService {
 
     /**
      * 创建组织与PV的权限关联关系
+     *
      * @param update
      */
     void assignPermission(DevopsPvPermissionUpdateVO update);
 
     /**
      * 更新PV表中的权限校验字段
+     *
      * @param update
      */
     void updateCheckPermission(DevopsPvPermissionUpdateVO update);
@@ -79,6 +85,7 @@ public interface DevopsPvService {
 
     /**
      * 查询和PV没有绑定权限的项目
+     *
      * @param projectId
      * @return
      */
@@ -86,6 +93,7 @@ public interface DevopsPvService {
 
     /**
      * 根据项目id删除相对应的权限
+     *
      * @param pvId
      * @param projectId
      */
@@ -106,6 +114,7 @@ public interface DevopsPvService {
 
     /**
      * 分页查询组织下特定项目关联的pv
+     *
      * @param projectId
      * @param pvId
      * @param pageable
@@ -114,4 +123,11 @@ public interface DevopsPvService {
      */
     PageInfo<ProjectReqVO> pageRelatedProjects(Long projectId, Long pvId, Pageable pageable, String params);
 
+    /**
+     * 根据环境id查询所有的PV
+     *
+     * @param envId 环境id
+     * @return 列表
+     */
+    List<DevopsPvDTO> baseListByEnvId(Long envId);
 }
