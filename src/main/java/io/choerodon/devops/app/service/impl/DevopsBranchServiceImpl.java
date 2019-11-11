@@ -49,12 +49,8 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
         if (oldDevopsBranchDTO == null) {
             throw new CommonException("error.query.branch.by.name");
         }
-
-        DevopsBranchDTO toUpdate = new DevopsBranchDTO();
-        toUpdate.setId(oldDevopsBranchDTO.getId());
-        toUpdate.setIssueId(devopsBranchDTO.getIssueId());
-        toUpdate.setObjectVersionNumber(devopsBranchDTO.getObjectVersionNumber());
-        devopsBranchMapper.updateByPrimaryKeySelective(toUpdate);
+        oldDevopsBranchDTO.setIssueId(devopsBranchDTO.getIssueId());
+        devopsBranchMapper.updateByPrimaryKey(oldDevopsBranchDTO);
     }
 
     @Override
