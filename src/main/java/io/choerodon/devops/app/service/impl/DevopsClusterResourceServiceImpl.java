@@ -94,6 +94,10 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
 
     @Override
     public void createCertManager(Long clusterId) {
+        DevopsClusterResourceDTO devopsClusterResourceDTO1 = queryByClusterIdAndType(clusterId, ClusterResourceType.CERTMANAGER.getType());
+        if (!ObjectUtils.isEmpty(devopsClusterResourceDTO1)) {
+           throw  new CommonException("error.create.cert.manager.exist");
+        }
         DevopsClusterResourceDTO devopsClusterResourceDTO = new DevopsClusterResourceDTO();
         devopsClusterResourceDTO.setType(ClusterResourceType.CERTMANAGER.getType());
         devopsClusterResourceDTO.setClusterId(clusterId);

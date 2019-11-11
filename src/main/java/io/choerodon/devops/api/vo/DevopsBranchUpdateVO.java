@@ -13,7 +13,6 @@ public class DevopsBranchUpdateVO {
     private Long appServiceId;
 
     @ApiModelProperty("关联的敏捷Issue的id / 必填")
-    @NotNull(message = "error.branch.issue.id.null")
     private Long issueId;
 
     @ApiModelProperty("分支名 / 必填")
