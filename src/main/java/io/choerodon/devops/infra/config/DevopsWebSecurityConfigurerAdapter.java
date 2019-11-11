@@ -13,7 +13,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 
 
 @Configuration
-@EnableWebSecurity
+//@EnableWebSecurity
 @Order(1)
 public class DevopsWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapter {
 
