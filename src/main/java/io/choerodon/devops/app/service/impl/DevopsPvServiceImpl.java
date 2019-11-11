@@ -1,10 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -351,6 +348,8 @@ public class DevopsPvServiceImpl implements DevopsPvService {
 
         devopsPvMapper.deleteByPrimaryKey(pvId);
         devopsEnvCommandMapper.deleteByObjectTypeAndObjectId(ObjectType.PERSISTENTVOLUMECLAIM.getType(), pvId);
+        //级联删除权限表中的数据
+        devopsPvProPermissionService.baseDeleteByPvId(pvId);
     }
 
     public PageInfo<ProjectReqVO> pageRelatedProjects(Long projectId, Long pvId, Pageable pageable, String params) {
@@ -401,6 +400,13 @@ public class DevopsPvServiceImpl implements DevopsPvService {
 
             return PageInfoUtil.createPageFromList(allMatched, pageable);
         }
+    }
+
+    @Override
+    public List<DevopsPvDTO> baseListByEnvId(Long envId) {
+        DevopsPvDTO searchCondition = new DevopsPvDTO();
+        searchCondition.setEnvId(Objects.requireNonNull(envId));
+        return devopsPvMapper.select(searchCondition);
     }
 
     private V1PersistentVolume initV1PersistentVolume(DevopsPvDTO devopsPvDTO) {

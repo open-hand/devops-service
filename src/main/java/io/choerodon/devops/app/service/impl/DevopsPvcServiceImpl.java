@@ -279,6 +279,13 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
         return devopsPvcMapper.selectByPrimaryKey(pvcId);
     }
 
+    @Override
+    public List<DevopsPvcDTO> baseListByEnvId(Long envId) {
+        DevopsPvcDTO searchCondition = new DevopsPvcDTO();
+        searchCondition.setEnvId(Objects.requireNonNull(envId));
+        return devopsPvcMapper.select(searchCondition);
+    }
+
     private DevopsPvcDTO handlePvc(DevopsPvcReqVO devopsPvcReqVO, Long projectId) {
         baseCheckName(devopsPvcReqVO.getName(), devopsPvcReqVO.getEnvId());
 
