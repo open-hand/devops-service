@@ -56,7 +56,9 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                         return null;
                     }
                     return devopsServiceDTO.getName();
-                }).collect(Collectors.toList());
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
         //比较已存在网络和新增要处理的网络,获取新增网络，更新网络，删除网络
         List<V1Service> addV1Service = new ArrayList<>();
         List<V1Service> updateV1Service = new ArrayList<>();

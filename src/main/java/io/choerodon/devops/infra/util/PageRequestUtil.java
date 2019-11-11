@@ -1,10 +1,10 @@
 package io.choerodon.devops.infra.util;
 
-import java.util.stream.Collectors;
-
 import com.google.common.collect.Lists;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+
+import java.util.stream.Collectors;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -42,5 +42,19 @@ public class PageRequestUtil {
                     .collect(Collectors.joining(","));
         }
         return "";
+    }
+
+    public static String HumpToUnderline(String para) {
+        StringBuilder sb = new StringBuilder(para);
+        int temp = 0;//定位
+        if (!para.contains("_")) {
+            for (int i = 0; i < para.length(); i++) {
+                if (Character.isUpperCase(para.charAt(i))) {
+                    sb.insert(i + temp, "_");
+                    temp += 1;
+                }
+            }
+        }
+        return sb.toString().toLowerCase();
     }
 }

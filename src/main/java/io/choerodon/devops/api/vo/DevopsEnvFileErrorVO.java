@@ -16,7 +16,7 @@ public class DevopsEnvFileErrorVO {
     private String commit;
     private String error;
     private String commitUrl;
-    private Date errorTime;
+    private Date lastUpdateDate;
 
     public Long getId() {
         return id;
@@ -66,12 +66,12 @@ public class DevopsEnvFileErrorVO {
         this.commitUrl = commitUrl;
     }
 
-    public Date getErrorTime() {
-        return errorTime;
+    public Date getLastUpdateDate() {
+        return lastUpdateDate;
     }
 
-    public void setErrorTime(Date errorTime) {
-        this.errorTime = errorTime;
+    public void setLastUpdateDate(Date lastUpdateDate) {
+        this.lastUpdateDate = lastUpdateDate;
     }
 
     public String getFileUrl() {
