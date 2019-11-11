@@ -7,7 +7,7 @@ import io.choerodon.core.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.app.service.DevopsPvServcie;
+import io.choerodon.devops.app.service.DevopsPvService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +28,7 @@ public class DevopsPvController {
     private static final String ERROR_PV_QUERY = "error.pv.query";
 
     @Autowired
-    DevopsPvServcie devopsPvServcie;
+    DevopsPvService devopsPvService;
 
     /**
      * 分页带参数查询项目下所有pv
@@ -48,7 +48,7 @@ public class DevopsPvController {
             @ApiIgnore Pageable pageable,
             @ApiParam(value = "模糊搜索参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(devopsPvServcie.pageByOptions(doPage, pageable, params))
+        return Optional.ofNullable(devopsPvService.pageByOptions(doPage, pageable, params))
                 .map(target -> new ResponseEntity(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_PV_QUERY));
     }
@@ -66,7 +66,7 @@ public class DevopsPvController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id")Long projectId,
             @RequestBody @Valid DevopsPvReqVO devopsPvReqVo){
-        devopsPvServcie.createPv(devopsPvReqVo);
+        devopsPvService.createPv(devopsPvReqVo);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
@@ -83,7 +83,7 @@ public class DevopsPvController {
             @RequestParam Long clusterId,
             @ApiParam(value = "pv名称" ,required = true)
             @RequestParam String pvName){
-        devopsPvServcie.checkName(clusterId, pvName);
+        devopsPvService.checkName(clusterId, pvName);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
@@ -100,7 +100,7 @@ public class DevopsPvController {
             @PathVariable(value = "project_id")Long projectId,
             @ApiParam(value = "pvId", required = true)
             @PathVariable(value = "pv_id") Long pvId){
-        devopsPvServcie.deletePvById(pvId);
+        devopsPvService.deletePvById(pvId);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
@@ -116,7 +116,7 @@ public class DevopsPvController {
             @PathVariable(value = "project_id")Long projectId,
             @ApiParam(value = "pvId", required = true)
             @PathVariable(value = "pv_id")Long pvId){
-        return Optional.ofNullable(devopsPvServcie.queryById(pvId))
+        return Optional.ofNullable(devopsPvService.queryById(pvId))
                 .map(target -> new ResponseEntity(target, HttpStatus.OK))
                 .orElseThrow(() ->new CommonException(ERROR_PV_QUERY));
     }
@@ -139,7 +139,7 @@ public class DevopsPvController {
             @PathVariable(value = "pv_id") Long pvId,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(devopsPvServcie.listNonRelatedProjects(projectId, pvId))
+        return Optional.ofNullable(devopsPvService.listNonRelatedProjects(projectId, pvId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.get.pv.non.related.project"));
     }
@@ -161,7 +161,7 @@ public class DevopsPvController {
             @PathVariable(value = "pv_id") Long pvId,
             @ApiParam(value = "要删除的proejctId")
             @RequestParam(value = "related_project_id") Long relatedProjectId){
-        devopsPvServcie.deleteRelatedProjectById(pvId, projectId);
+        devopsPvService.deleteRelatedProjectById(pvId, projectId);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
@@ -181,7 +181,7 @@ public class DevopsPvController {
             @ApiParam(value = "PvId", required = true)
             @PathVariable(value = "pv_id") Long pvId,
             @RequestBody @Valid DevopsPvPermissionUpdateVO devopsPvPermissionUpdateVO){
-        devopsPvServcie.assignPermission(devopsPvPermissionUpdateVO);
+        devopsPvService.assignPermission(devopsPvPermissionUpdateVO);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
@@ -206,7 +206,7 @@ public class DevopsPvController {
             @ApiIgnore Pageable pageable,
             @ApiParam(value = "模糊搜索参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(devopsPvServcie.pageRelatedProjects(projectId, pvId, pageable, params))
+        return Optional.ofNullable(devopsPvService.pageRelatedProjects(projectId, pvId, pageable, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_PV_QUERY));
     }

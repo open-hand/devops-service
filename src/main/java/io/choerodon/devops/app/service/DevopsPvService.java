@@ -12,7 +12,7 @@ import io.choerodon.devops.api.vo.ProjectReqVO;
 import io.choerodon.devops.infra.dto.DevopsPvDTO;
 
 
-public interface DevopsPvServcie {
+public interface DevopsPvService {
 
     /**
      * 查询根据Id查询单个PV信息

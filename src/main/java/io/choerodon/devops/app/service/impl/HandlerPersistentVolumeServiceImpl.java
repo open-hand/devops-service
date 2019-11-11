@@ -16,7 +16,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsPvReqVO;
 import io.choerodon.devops.app.service.DevopsEnvCommandService;
 import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
-import io.choerodon.devops.app.service.DevopsPvServcie;
+import io.choerodon.devops.app.service.DevopsPvService;
 import io.choerodon.devops.app.service.HandlerObjectFileRelationsService;
 import io.choerodon.devops.infra.constant.KubernetesConstants;
 import io.choerodon.devops.infra.dto.DevopsEnvCommandDTO;
@@ -40,7 +40,7 @@ public class HandlerPersistentVolumeServiceImpl implements HandlerObjectFileRela
     @Autowired
     private DevopsEnvCommandService devopsEnvCommandService;
     @Autowired
-    private DevopsPvServcie devopsPvService;
+    private DevopsPvService devopsPvService;
     @Autowired
     private DevopsPvMapper devopsPvMapper;
     @Autowired

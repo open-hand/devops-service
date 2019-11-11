@@ -76,7 +76,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     private DevopsPvcService devopsPvcService;
 
     @Autowired
-    private DevopsPvServcie devopsPvServcie;
+    private DevopsPvService devopsPvService;
 
     @Override
     public void baseCreate(DevopsClusterResourceDTO devopsClusterResourceDTO) {
@@ -545,7 +545,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
 
     private DevopsPvcReqVO operatePV(Long pvId, DevopsClusterDTO devopsClusterDTO, String name) {
         DevopsPvcReqVO devopsPvcReqVO = new DevopsPvcReqVO();
-        DevopsPvVO devopsPvVO = devopsPvServcie.queryById(pvId);
+        DevopsPvVO devopsPvVO = devopsPvService.queryById(pvId);
         devopsPvcReqVO.setPvId(devopsPvVO.getId());
         devopsPvcReqVO.setName(name);
         devopsPvcReqVO.setAccessModes(devopsPvVO.getAccessModes());
