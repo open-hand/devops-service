@@ -69,4 +69,11 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_instance.groovy') {
                 constraintName: 'uk_code')
 
     }
+
+    changeSet(id: '2019-11-04-add-component-name-version', author: 'zmf') {
+        addColumn(tableName: 'devops_app_service_instance') {
+            column(name: 'component_version', type: 'VARCHAR(64)', remarks: '组件对应实例的版本号', afterColumn: 'status')
+            column(name: 'component_chart_name', type: 'VARCHAR(64)', remarks: '组件对应实例的chart名称', afterColumn: 'status')
+        }
+    }
 }

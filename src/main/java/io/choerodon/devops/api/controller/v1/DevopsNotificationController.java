@@ -4,9 +4,9 @@ import java.util.Optional;
 import java.util.Set;
 
 import com.github.pagehelper.PageInfo;
-import io.choerodon.base.annotation.Permission;
-import io.choerodon.base.domain.PageRequest;
-import io.choerodon.base.enums.ResourceType;
+import io.choerodon.core.annotation.Permission;
+import org.springframework.data.domain.Pageable;
+import io.choerodon.core.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.DevopsNotificationVO;
@@ -117,7 +117,7 @@ public class DevopsNotificationController {
      *
      * @param projectId
      * @param envId
-     * @param pageRequest
+     * @param pageable
      * @param params
      * @return
      */
@@ -131,10 +131,10 @@ public class DevopsNotificationController {
             @ApiParam(value = "环境Id", required = false)
             @RequestParam(value = "env_id", required = false) Long envId,
             @ApiParam(value = "分页参数")
-            @ApiIgnore PageRequest pageRequest,
+            @ApiIgnore Pageable pageable,
             @ApiParam(value = "查询参数")
             @RequestBody String params) {
-        return Optional.ofNullable(notificationService.pageByOptions(projectId, envId, params, pageRequest))
+        return Optional.ofNullable(notificationService.pageByOptions(projectId, envId, params, pageable))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.notification.list"));
     }

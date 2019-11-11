@@ -16,7 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import io.choerodon.base.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.validator.DevopsSecretValidator;
 import io.choerodon.devops.api.vo.SecretReqVO;
@@ -285,7 +285,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
         String path = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getEnvIdRsa());
 
-        // 查询改对象所在文件中是否含有其它对象
+        // 查询该对象所在文件中是否含有其它对象
         DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
                 .baseQueryByEnvIdAndResourceId(devopsEnvironmentDTO.getId(), secretId, SECRET);
         if (devopsEnvFileResourceDTO == null) {
@@ -396,8 +396,8 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     }
 
     @Override
-    public PageInfo<SecretRespVO> pageByOption(Long envId, PageRequest pageRequest, String params, Long appServiceId, boolean toDecode) {
-        return ConvertUtils.convertPage(basePageByOption(envId, pageRequest, params, appServiceId), dto -> dtoToVO(dto, toDecode));
+    public PageInfo<SecretRespVO> pageByOption(Long envId, Pageable pageable, String params, Long appServiceId, boolean toDecode) {
+        return ConvertUtils.convertPage(basePageByOption(envId, pageable, params, appServiceId), dto -> dtoToVO(dto, toDecode));
     }
 
     private SecretRespVO dtoToVO(DevopsSecretDTO devopsSecretDTO, boolean toDecode) {
@@ -483,12 +483,12 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     }
 
     @Override
-    public PageInfo<DevopsSecretDTO> basePageByOption(Long envId, PageRequest pageRequest, String params, Long appServiceId) {
+    public PageInfo<DevopsSecretDTO> basePageByOption(Long envId, Pageable pageable, String params, Long appServiceId) {
         Map<String, Object> paramsMap = TypeUtil.castMapParams(params);
         Map<String, Object> searchParamMap = TypeUtil.cast(paramsMap.get(TypeUtil.SEARCH_PARAM));
         List<String> paramList = TypeUtil.cast(paramsMap.get(TypeUtil.PARAMS));
         return PageHelper
-                .startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> devopsSecretMapper.listByOption(envId, searchParamMap, paramList, appServiceId));
+                .startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable)).doSelectPageInfo(() -> devopsSecretMapper.listByOption(envId, searchParamMap, paramList, appServiceId));
     }
 
     @Override

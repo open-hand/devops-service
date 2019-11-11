@@ -1,13 +1,7 @@
 package io.choerodon.devops.api.controller.v1
 
-import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.api.vo.ConfigVO
-import io.choerodon.devops.api.vo.DefaultConfigVO
-import io.choerodon.devops.api.vo.DevopsConfigRepVO
-import io.choerodon.devops.api.vo.DevopsConfigVO
-import io.choerodon.devops.api.vo.DevopsNotificationVO
-import io.choerodon.devops.infra.dto.DevopsProjectDTO
-import io.choerodon.devops.infra.mapper.DevopsProjectMapper
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
+
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
@@ -16,7 +10,12 @@ import spock.lang.Specification
 import spock.lang.Stepwise
 import spock.lang.Subject
 
-import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
+import io.choerodon.devops.IntegrationTestConfiguration
+import io.choerodon.devops.api.vo.ConfigVO
+import io.choerodon.devops.api.vo.DefaultConfigVO
+import io.choerodon.devops.api.vo.DevopsConfigRepVO
+import io.choerodon.devops.api.vo.DevopsConfigVO
+import io.choerodon.devops.infra.mapper.DevopsProjectMapper
 
 /**
  * @author: 25499* @date: 2019/8/30 9:06
@@ -37,10 +36,10 @@ class DevopsOrganizationConfigControllerSpec extends Specification {
     def "Create"() {
         given:
         ConfigVO configVO = new ConfigVO()
-        configVO.setEmail("zhuang.chang@hand-china.com")
-        configVO.setPassword("Handhand1357")
-        configVO.setUserName("admin")
-        configVO.setUrl("https://registry.saas.hand-china.com")
+        configVO.setEmail("aa.a@123.com")
+        configVO.setPassword("123")
+        configVO.setUserName("user")
+        configVO.setUrl("http://localhost")
         configVO.setPrivate(true)
 
 
@@ -83,8 +82,8 @@ class DevopsOrganizationConfigControllerSpec extends Specification {
     }
     def "checkHarbor"(){
         given:
-        def url = BASE_URL+"/check_harbor?url=https://registry.saas.hand-china.com&" +
-                "userName=admin&password=Handhand1357&email=zhuang.chang@hand-china.com"
+        def url = BASE_URL+"/check_harbor?url=http://localhost" +
+                "username=user&password=123&email=aa.a@123.com"
         Map<String, Object> map = new HashMap<>()
         when:
         def entity = restTemplate.getForEntity(url, Boolean.class, 1L)
@@ -94,7 +93,7 @@ class DevopsOrganizationConfigControllerSpec extends Specification {
 
     def "checkChart"() {
         given:
-        def url = BASE_URL + "/check_chart?url=https://registry.saas.hand-china.com"
+        def url = BASE_URL + "/check_chart?url=http://localhost"
         when:
         def entity = restTemplate.getForEntity(url, Boolean.class, 1L)
         then:

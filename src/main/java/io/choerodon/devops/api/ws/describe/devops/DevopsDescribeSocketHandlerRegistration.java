@@ -34,10 +34,10 @@ public class DevopsDescribeSocketHandlerRegistration implements SocketHandlerReg
 
     @Autowired
     @Lazy
-    WebSocketHelper webSocketHelper;
+    private WebSocketHelper webSocketHelper;
 
     @Autowired
-    AgentCommandService agentCommandService;
+    private AgentCommandService agentCommandService;
 
 
     @Override

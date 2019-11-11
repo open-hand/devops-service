@@ -1,39 +1,34 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
-import io.choerodon.devops.infra.util.GenerateUUID;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
-import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.ConfigVO;
 import io.choerodon.devops.api.vo.DefaultConfigVO;
 import io.choerodon.devops.api.vo.DevopsConfigRepVO;
 import io.choerodon.devops.api.vo.DevopsConfigVO;
-import io.choerodon.devops.app.service.AppServiceService;
-import io.choerodon.devops.app.service.DevopsConfigService;
-import io.choerodon.devops.app.service.DevopsProjectService;
-import io.choerodon.devops.app.service.HarborService;
+import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
 import io.choerodon.devops.infra.config.HarborConfigurationProperties;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.DevopsConfigDTO;
 import io.choerodon.devops.infra.dto.DevopsProjectDTO;
+import io.choerodon.devops.infra.dto.HarborUserDTO;
 import io.choerodon.devops.infra.dto.harbor.*;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
@@ -53,10 +48,13 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
 
     public static final String APP_SERVICE = "appService";
     private static final String HARBOR = "harbor";
+    private static final String AUTHTYPE_PULL = "pull";
+    private static final String AUTHTYPE_PUSH = "push";
     private static final String CHART = "chart";
     private static final String CUSTOM = "custom";
     private static final Gson gson = new Gson();
-    private static final String USER_PREFIX = "user%s%s";
+    private static final String USER_PREFIX = "User%s%s";
+    private static final String USER_PREFIX_PULL = "pullUser%s%s";
 
     @Autowired
     private DevopsConfigMapper devopsConfigMapper;
@@ -74,7 +72,13 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
     private AppServiceService appServiceService;
 
     @Autowired
+    private AppServiceVersionService appServiceVersionService;
+
+    @Autowired
     private HarborService harborService;
+
+    @Autowired
+    private DevopsHarborUserService devopsHarborUserService;
 
     @Override
     public void operate(Long resourceId, String resourceType, List<DevopsConfigVO> devopsConfigVOS) {
@@ -89,9 +93,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                 }
                 if (devopsConfigVO.getType().equals(HARBOR)) {
                     appServiceService.checkHarbor(devopsConfigVO.getConfig().getUrl(), devopsConfigVO.getConfig().getUserName(), devopsConfigVO.getConfig().getPassword(), devopsConfigVO.getConfig().getProject(), devopsConfigVO.getConfig().getEmail());
-                    if (devopsConfigVO.getConfig().getProject() != null) {
-                        checkRegistryProjectIsPrivate(devopsConfigVO);
-                    } else if (devopsConfigVO.getConfig().getProject() == null && !resourceType.equals(ResourceLevel.ORGANIZATION.value())) {
+                    if (devopsConfigVO.getConfig().getProject() == null && !resourceType.equals(ResourceLevel.ORGANIZATION.value())) {
                         harborConfigurationProperties.setUsername(devopsConfigVO.getConfig().getUserName());
                         harborConfigurationProperties.setPassword(devopsConfigVO.getConfig().getPassword());
                         harborConfigurationProperties.setBaseUrl(devopsConfigVO.getConfig().getUrl());
@@ -110,16 +112,24 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                             projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
                             organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
                         }
-                        harborService.createHarbor(harborClient, projectDTO.getId(),organizationDTO.getCode() + "-" + projectDTO.getCode(),false);
+                        harborService.createHarbor(harborClient, projectDTO.getId(), organizationDTO.getCode() + "-" + projectDTO.getCode(), false, devopsConfigVO.getHarborPrivate());
                     }
                 }
-                //根据配置所在的资源层级，查询出数据库中是否存在，存在则更新，不存在则新建
+                //根据配置所在的资源层级，查询出数据库中是否存在
                 DevopsConfigDTO devopsConfigDTO = baseQueryByResourceAndType(resourceId, resourceType, devopsConfigVO.getType());
                 DevopsConfigDTO newDevopsConfigDTO = voToDto(devopsConfigVO);
                 if (devopsConfigDTO != null) {
-                    newDevopsConfigDTO.setId(devopsConfigDTO.getId());
-                    setResourceId(resourceId, resourceType, newDevopsConfigDTO);
-                    baseUpdate(newDevopsConfigDTO);
+                    // 存在判断是否已经生成服务版本，无服务版本，直接覆盖更新；有服务版本，将原config对应的resourceId设置为null,新建config
+                    if (appServiceVersionService.isVersionUseConfig(devopsConfigDTO.getId(), devopsConfigVO.getType())) {
+                        updateResourceId(devopsConfigDTO.getId());
+                        setResourceId(resourceId, resourceType, newDevopsConfigDTO);
+                        newDevopsConfigDTO.setId(null);
+                        baseCreate(newDevopsConfigDTO);
+                    } else {
+                        newDevopsConfigDTO.setId(devopsConfigDTO.getId());
+                        setResourceId(resourceId, resourceType, newDevopsConfigDTO);
+                        baseUpdate(newDevopsConfigDTO);
+                    }
                 } else {
                     setResourceId(resourceId, resourceType, newDevopsConfigDTO);
                     newDevopsConfigDTO.setId(null);
@@ -137,7 +147,11 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                 //根据配置所在的资源层级，查询出数据库中是否存在，存在则删除
                 DevopsConfigDTO devopsConfigDTO = baseQueryByResourceAndType(resourceId, resourceType, devopsConfigVO.getType());
                 if (devopsConfigDTO != null) {
-                    baseDelete(devopsConfigDTO.getId());
+                    if (appServiceVersionService.isVersionUseConfig(devopsConfigDTO.getId(), devopsConfigVO.getType())) {
+                        updateResourceId(devopsConfigDTO.getId());
+                    } else {
+                        baseDelete(devopsConfigDTO.getId());
+                    }
                 }
             }
         });
@@ -173,80 +187,29 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
         if (harborPrivate) {
             //设置为私有后将harbor项目设置为私有
             DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
-            String username = devopsProjectDTO.getHarborProjectUserName() == null ? String.format(USER_PREFIX, organizationDTO.getId(), projectId) : devopsProjectDTO.getHarborProjectUserName();
-            String email = devopsProjectDTO.getHarborProjectUserEmail() == null ? String.format("%s@choerodon.com", username) : devopsProjectDTO.getHarborProjectUserEmail();
-            String password = devopsProjectDTO.getHarborProjectUserPassword() == null ? String.format("%s%s", username, GenerateUUID.generateUUID().substring(0,5)) : devopsProjectDTO.getHarborProjectUserPassword();
-            User user = new User(username, email, password, username);
+            User user = harborService.convertUser(projectDTO, true, null);
+            User pullUser = harborService.convertUser(projectDTO, false, null);
             //创建用户
-            Response<Void> result = null;
-            try {
-                Response<List<User>> users = harborClient.listUser(username).execute();
-                if (users.raw().code() != 200) {
-                    throw new CommonException(users.errorBody().string());
-                }
-                if (users.body().isEmpty()) {
-                    result = harborClient.insertUser(user).execute();
-                    if (result.raw().code() != 201) {
-                        throw new CommonException(result.errorBody().string());
-                    }
-                }else {
-                    Boolean exist = users.body().stream().anyMatch(user1 -> user1.getUsername().equals(username));
-                    if(!exist) {
-                        result = harborClient.insertUser(user).execute();
-                        if (result.raw().code() != 201) {
-                            throw new CommonException(result.errorBody().string());
-                        }
-                    }
-                }
-                //给项目绑定角色
-                Response<List<ProjectDetail>> projects = harborClient.listProject(organizationDTO.getCode() + "-" + projectDTO.getCode()).execute();
-                if (!projects.body().isEmpty()) {
-                    ProjectDetail projectDetail = new ProjectDetail();
-                    Metadata metadata = new Metadata();
-                    metadata.setHarborPublic("false");
-                    projectDetail.setMetadata(metadata);
-                    result = harborClient.updateProject(projects.body().get(0).getProjectId(), projectDetail).execute();
-                    if (result.raw().code() != 200) {
-                        throw new CommonException(result.errorBody().string());
-                    }
-                    Response<SystemInfo> systemInfoResponse = harborClient.getSystemInfo().execute();
-                    if (systemInfoResponse.raw().code() != 200) {
-                        throw new CommonException(systemInfoResponse.errorBody().string());
-                    }
-
-                    if (systemInfoResponse.body().getHarborVersion().equals("v1.4.0")) {
-                        Role role = new Role();
-                        role.setUsername(user.getUsername());
-                        role.setRoles(Arrays.asList(1));
-                        result = harborClient.setProjectMember(projects.body().get(0).getProjectId(), role).execute();
-                    } else {
-                        ProjectMember projectMember = new ProjectMember();
-                        MemberUser memberUser = new MemberUser();
-                        memberUser.setUsername(username);
-                        projectMember.setMemberUser(memberUser);
-                        result = harborClient.setProjectMember(projects.body().get(0).getProjectId(), projectMember).execute();
-                    }
-                    if (result.raw().code() != 201 && result.raw().code() != 200 && result.raw().code() != 409) {
-                        throw new CommonException(result.errorBody().string());
-                    }
-                }
-            } catch (IOException e) {
-                throw new CommonException(e);
-            }
+            createUser(harborClient, user, Arrays.asList(1), organizationDTO, projectDTO);
+            createUser(harborClient, pullUser, Arrays.asList(3), organizationDTO, projectDTO);
 
             //更新项目表
-            if (devopsProjectDTO.getHarborProjectUserPassword() == null) {
-                devopsProjectDTO.setHarborProjectUserName(user.getUsername());
-                devopsProjectDTO.setHarborProjectUserPassword(user.getPassword());
-                devopsProjectDTO.setHarborProjectUserEmail(user.getEmail());
-            }
+            HarborUserDTO harborUser = new HarborUserDTO(user.getUsername(), user.getPassword(), user.getEmail(), true);
+            HarborUserDTO pullHarborUser = new HarborUserDTO(pullUser.getUsername(), pullUser.getPassword(), pullUser.getEmail(), false);
+
+            devopsHarborUserService.baseCreate(harborUser);
+            devopsProjectDTO.setHarborUserId(harborUser.getId());
+
+            devopsHarborUserService.baseCreate(pullHarborUser);
+            devopsProjectDTO.setHarborPullUserId(pullHarborUser.getId());
+
             devopsProjectDTO.setHarborProjectIsPrivate(true);
             devopsProjectService.baseUpdate(devopsProjectDTO);
         } else {
             //设置为公有后将harbor项目设置为公有,删除成员角色
             try {
                 Response<List<ProjectDetail>> projects = harborClient.listProject(organizationDTO.getCode() + "-" + projectDTO.getCode()).execute();
-                if (!projects.body().isEmpty()) {
+                if (!CollectionUtils.isEmpty(projects.body())) {
                     ProjectDetail projectDetail = new ProjectDetail();
                     Metadata metadata = new Metadata();
                     metadata.setHarborPublic("true");
@@ -264,21 +227,42 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                         if (users.raw().code() != 200) {
                             throw new CommonException(users.errorBody().string());
                         }
-                        harborClient.deleteLowVersionMember(projects.body().get(0).getProjectId(), users.body().get(0).getUserId().intValue()).execute();
+                        if (!ObjectUtils.isEmpty(users.body())) {
+                            users.body().stream().forEach(user -> {
+                                try {
+                                    harborClient.deleteLowVersionMember(projects.body().get(0).getProjectId(), user.getUserId().intValue()).execute();
+                                } catch (IOException e) {
+                                    throw new CommonException("error.delete.harbor.member");
+                                }
+                            });
+                        }
+
                     } else {
                         Response<List<ProjectMember>> projectMembers = harborClient.getProjectMembers(projects.body().get(0).getProjectId(), String.format(USER_PREFIX, organizationDTO.getId(), projectId)).execute();
                         if (projectMembers.raw().code() != 200) {
                             throw new CommonException(projectMembers.errorBody().string());
                         }
-                        harborClient.deleteMember(projects.body().get(0).getProjectId(), projectMembers.body().get(0).getId()).execute();
+                        if (!ObjectUtils.isEmpty(projectMembers.body())) {
+                            projectMembers.body().stream().forEach(projectMember -> {
+                                try {
+                                    harborClient.deleteMember(projects.body().get(0).getProjectId(), projectMember.getId()).execute();
+                                } catch (IOException e) {
+                                    throw new CommonException("error.delete.harbor.member");
+                                }
+                            });
+                        }
+
                     }
 
                     DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
+                    List<Long> longs = Arrays.asList(devopsProjectDTO.getHarborUserId(), devopsProjectDTO.getHarborPullUserId());
+                    longs.stream().forEach(e->devopsHarborUserService.baseDelete(e));
                     devopsProjectDTO.setHarborProjectIsPrivate(false);
+                    devopsProjectDTO.setHarborPullUserId(null);
+                    devopsProjectDTO.setHarborUserId(null);
                     devopsProjectService.baseUpdate(devopsProjectDTO);
-
                 }
-            } catch (IOException e) {
+            } catch (Exception e) {
                 throw new CommonException(e);
             }
         }
@@ -302,7 +286,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
     }
 
     @Override
-    public DevopsConfigDTO queryRealConfig(Long resourceId, String resourceType, String configType) {
+    public DevopsConfigDTO queryRealConfig(Long resourceId, String resourceType, String configType, String operateType) {
         //应用服务层次，先找应用配置，在找项目配置,最后找组织配置,项目和组织层次同理
         DevopsConfigDTO defaultConfig = baseQueryDefaultConfig(configType);
         if (resourceType.equals(APP_SERVICE)) {
@@ -334,7 +318,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                     HarborClient harborClient = retrofit.create(HarborClient.class);
                     projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
                     organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-                    harborService.createHarbor(harborClient, projectDTO.getId(), organizationDTO.getCode() + "-" + projectDTO.getCode(), false);
+                    harborService.createHarbor(harborClient, projectDTO.getId(), organizationDTO.getCode() + "-" + projectDTO.getCode(), false, true);
                 }
                 return organizationConfig;
             }
@@ -342,9 +326,15 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
             if (configType.equals(HARBOR)) {
                 DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectDTO.getId());
                 ConfigVO configVO = gson.fromJson(defaultConfig.getConfig(), ConfigVO.class);
-                configVO.setUserName(devopsProjectDTO.getHarborProjectUserName());
-                configVO.setPassword(devopsProjectDTO.getHarborProjectUserPassword());
-                configVO.setEmail(devopsProjectDTO.getHarborProjectUserEmail());
+                HarborUserDTO harborUserDTO = new HarborUserDTO();
+                if (operateType.equals(AUTHTYPE_PUSH)) {
+                    harborUserDTO = devopsHarborUserService.queryHarborUserById(devopsProjectDTO.getHarborUserId());
+                } else if (operateType.equals(AUTHTYPE_PULL)) {
+                    harborUserDTO = devopsHarborUserService.queryHarborUserById(devopsProjectDTO.getHarborPullUserId());
+                }
+                configVO.setUserName(harborUserDTO.getHarborProjectUserName());
+                configVO.setPassword(harborUserDTO.getHarborProjectUserPassword());
+                configVO.setEmail(harborUserDTO.getHarborProjectUserEmail());
                 if (devopsProjectDTO.getHarborProjectIsPrivate() != null && devopsProjectDTO.getHarborProjectIsPrivate()) {
                     configVO.setPrivate(true);
                 }
@@ -374,7 +364,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
 
     @Override
     public DevopsConfigVO queryRealConfigVO(Long resourceId, String resourceType, String configType) {
-        return dtoToVo(queryRealConfig(resourceId, resourceType, configType));
+        return dtoToVo(queryRealConfig(resourceId, resourceType, configType, AUTHTYPE_PULL));
     }
 
     @Override
@@ -391,6 +381,11 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
             throw new CommonException("error.devops.project.config.update");
         }
         return devopsConfigMapper.selectByPrimaryKey(devopsConfigDTO);
+    }
+
+    @Override
+    public void updateResourceId(Long configId) {
+        devopsConfigMapper.updateResourceId(configId);
     }
 
     @Override
@@ -412,13 +407,13 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
     }
 
     @Override
-    public PageInfo<DevopsConfigDTO> basePageByOptions(Long projectId, PageRequest pageRequest, String params) {
+    public PageInfo<DevopsConfigDTO> basePageByOptions(Long projectId, Pageable pageable, String params) {
         Map<String, Object> mapParams = TypeUtil.castMapParams(params);
 
-        return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest))
+        return PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable))
                 .doSelectPageInfo(() -> devopsConfigMapper.listByOptions(projectId,
                         TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
-                        TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)), PageRequestUtil.checkSortIsEmpty(pageRequest)));
+                        TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)), PageRequestUtil.checkSortIsEmpty(pageable)));
     }
 
     @Override
@@ -522,6 +517,15 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
         operate(organizationId, resourceType, configVOS);
     }
 
+    @Override
+    public void deleteByConfigIds(Set<Long> configIds) {
+        List<DevopsConfigDTO> devopsConfigDTOS = devopsConfigMapper.listByConfigs(configIds);
+        devopsConfigDTOS.stream().filter(devopsConfigDTO -> devopsConfigDTO.getAppServiceId() != null)
+                .forEach(devopsConfigDTO -> {
+                    devopsConfigMapper.deleteByPrimaryKey(devopsConfigDTO.getId());
+                });
+    }
+
     private void checkRegistryProjectIsPrivate(DevopsConfigVO devopsConfigVO) {
         ConfigurationProperties configurationProperties = new ConfigurationProperties();
         configurationProperties.setBaseUrl(devopsConfigVO.getConfig().getUrl());
@@ -546,6 +550,66 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
         } catch (IOException e) {
             throw new CommonException(e);
         }
+    }
+
+    private void createUser(HarborClient harborClient, User user, List<Integer> roles, OrganizationDTO organizationDTO, ProjectDTO projectDTO) {
+        Response<Void> result = null;
+        try {
+            Response<List<User>> users = harborClient.listUser(user.getUsername()).execute();
+            if (users.raw().code() != 200) {
+                throw new CommonException(users.errorBody().string());
+            }
+            if (users.body().isEmpty()) {
+                result = harborClient.insertUser(user).execute();
+                if (result.raw().code() != 201 && result.raw().code() != 409) {
+                    throw new CommonException(result.errorBody().string());
+                }
+            } else {
+                Boolean exist = users.body().stream().anyMatch(user1 -> user1.getUsername().equals(user.getUsername()));
+                if (!exist) {
+                    result = harborClient.insertUser(user).execute();
+                    if (result.raw().code() != 201 && result.raw().code() != 409) {
+                        throw new CommonException(result.errorBody().string());
+                    }
+                }
+            }
+            //给项目绑定角色
+            Response<List<ProjectDetail>> projects = harborClient.listProject(organizationDTO.getCode() + "-" + projectDTO.getCode()).execute();
+            if (!projects.body().isEmpty()) {
+                ProjectDetail projectDetail = new ProjectDetail();
+                Metadata metadata = new Metadata();
+                metadata.setHarborPublic("false");
+                projectDetail.setMetadata(metadata);
+                result = harborClient.updateProject(projects.body().get(0).getProjectId(), projectDetail).execute();
+                if (result.raw().code() != 200) {
+                    throw new CommonException(result.errorBody().string());
+                }
+                Response<SystemInfo> systemInfoResponse = harborClient.getSystemInfo().execute();
+                if (systemInfoResponse.raw().code() != 200) {
+                    throw new CommonException(systemInfoResponse.errorBody().string());
+                }
+
+                if (systemInfoResponse.body().getHarborVersion().equals("v1.4.0")) {
+                    Role role = new Role();
+                    role.setUsername(user.getUsername());
+                    role.setRoles(roles);
+                    result = harborClient.setProjectMember(projects.body().get(0).getProjectId(), role).execute();
+                } else {
+                    ProjectMember projectMember = new ProjectMember();
+                    MemberUser memberUser = new MemberUser();
+                    projectMember.setRoleId(roles.get(0));
+                    memberUser.setUsername(user.getUsername());
+                    projectMember.setMemberUser(memberUser);
+                    result = harborClient.setProjectMember(projects.body().get(0).getProjectId(), projectMember).execute();
+                }
+                if (result.raw().code() != 201 && result.raw().code() != 200 && result.raw().code() != 409) {
+                    throw new CommonException(result.errorBody().string());
+                }
+            }
+        } catch (IOException e) {
+            throw new CommonException(e);
+        }
+
     }
 }
 

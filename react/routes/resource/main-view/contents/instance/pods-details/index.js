@@ -133,6 +133,11 @@ const PodDetail = memo(() => {
         text: intl.formatMessage({ id: `${intlPrefix}.instance.term` }),
         action: () => openShell(),
       },
+      {
+        service: [],
+        text: intl.formatMessage({ id: 'delete' }),
+        action: () => deletePod(),
+      },
     ];
     return <Action data={buttons} />;
   }
@@ -153,6 +158,19 @@ const PodDetail = memo(() => {
   }
   function closeShell() {
     setShellVisible(false);
+  }
+  /**
+   * 删除Pod
+   */
+  function deletePod() {
+    const modalProps = {
+      title: intl.formatMessage({ id: `${intlPrefix}.instance.pod.delete.title` }),
+      children: intl.formatMessage({ id: `${intlPrefix}.instance.pod.delete.des` }),
+      okText: intl.formatMessage({ id: 'delete' }),
+      okProps: { color: 'red' },
+      cancelProps: { color: 'dark' },
+    };
+    podsDs.delete(podsDs.current, modalProps);
   }
 
   return (

@@ -27,7 +27,7 @@ public class AgentDescribeMessageHandler implements TextMessageHandler<AgentMsgV
 
     @Autowired
     @Lazy
-    WebSocketHelper webSocketHelper;
+    private WebSocketHelper webSocketHelper;
 
 
     @Override

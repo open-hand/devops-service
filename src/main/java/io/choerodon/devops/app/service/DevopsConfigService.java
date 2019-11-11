@@ -1,10 +1,11 @@
 package io.choerodon.devops.app.service;
 
 import java.util.List;
+import java.util.Set;
 
 import com.github.pagehelper.PageInfo;
 
-import io.choerodon.base.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.devops.api.vo.DefaultConfigVO;
 import io.choerodon.devops.api.vo.DevopsConfigRepVO;
 import io.choerodon.devops.api.vo.DevopsConfigVO;
@@ -47,7 +48,7 @@ public interface DevopsConfigService {
     DefaultConfigVO queryDefaultConfig(Long resourceId, String resourceType);
 
 
-    DevopsConfigDTO queryRealConfig(Long resourceId, String resourceType, String configType);
+    DevopsConfigDTO queryRealConfig(Long resourceId, String resourceType, String configType,String operateType);
 
     DevopsConfigVO queryRealConfigVO(Long resourceId, String resourceType, String configType);
 
@@ -55,13 +56,15 @@ public interface DevopsConfigService {
 
     DevopsConfigDTO baseUpdate(DevopsConfigDTO devopsConfigDTO);
 
+    void updateResourceId(Long configId);
+
     DevopsConfigDTO baseQuery(Long id);
 
     DevopsConfigDTO baseQueryByName(Long projectId, String name);
 
     DevopsConfigDTO baseCheckByName(String name);
 
-    PageInfo<DevopsConfigDTO> basePageByOptions(Long projectId, PageRequest pageRequest, String params);
+    PageInfo<DevopsConfigDTO> basePageByOptions(Long projectId, Pageable pageable, String params);
 
     void baseDelete(Long id);
 
@@ -80,5 +83,8 @@ public interface DevopsConfigService {
      * 操作 仓库配置
      */
     void operateConfig(Long organizationId, String resourceType, DevopsConfigRepVO devopsConfigRepVO);
+
+    void deleteByConfigIds(Set<Long> configIds);
+
 }
 

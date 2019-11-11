@@ -5,18 +5,17 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 import com.alibaba.fastjson.JSONArray;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.kubernetes.Command;
 import io.choerodon.devops.api.vo.kubernetes.ImagePullSecret;
 import io.choerodon.devops.api.vo.kubernetes.Payload;
+import io.choerodon.devops.app.eventhandler.constants.CertManagerConstants;
 import io.choerodon.devops.app.eventhandler.payload.OperationPodPayload;
 import io.choerodon.devops.app.eventhandler.payload.SecretPayLoad;
 import io.choerodon.devops.app.service.AgentCommandService;
-import io.choerodon.devops.infra.dto.AppServiceDTO;
-import io.choerodon.devops.infra.dto.AppServiceVersionDTO;
-import io.choerodon.devops.infra.dto.DevopsClusterDTO;
-import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
+import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.HelmType;
@@ -27,6 +26,7 @@ import io.choerodon.devops.infra.util.GitUtil;
 import io.choerodon.websocket.helper.WebSocketHelper;
 import io.choerodon.websocket.send.SendMessagePayload;
 import io.choerodon.websocket.send.relationship.BrokerKeySessionMapper;
+
 import io.codearte.props2yaml.Props2YAML;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
@@ -59,6 +59,8 @@ public class AgentCommandServiceImpl implements AgentCommandService {
     private static final String HELM_RELEASE_UPGRADE = "helm_release_upgrade";
     private static final String OPERATE_POD_COUNT = "operate_pod_count";
     private static final String OPERATE_DOCKER_REGISTRY_SECRET = "operate_docker_registry_secret";
+
+
     private Pattern pattern = Pattern.compile("^[-\\+]?[\\d]*$");
     private ObjectMapper mapper = new ObjectMapper();
 
@@ -156,6 +158,7 @@ public class AgentCommandServiceImpl implements AgentCommandService {
             msg.setPayload(mapper.writeValueAsString(payload));
             String msgPayload = mapper.writeValueAsString(msg);
 
+            // TODO 修改为新websocket的格式
             // 一开始没有自动升级
             //0.18.0到0.19.0 为了agent的平滑升级，所以不能以通用的新Msg方式发送，继续用以前的Msg格式发送
             brokerKeySessionMapper.getSessionsByKey(CLUSTER + devopsClusterDTO.getId()).stream().filter(Objects::nonNull).forEach(session -> {
@@ -179,14 +182,14 @@ public class AgentCommandServiceImpl implements AgentCommandService {
     public void createCertManager(Long clusterId) {
         AgentMsgVO msg = new AgentMsgVO();
         Payload payload = new Payload(
-                "kube-system",
+                CertManagerConstants.CERT_MANAGER_NAME_SPACE,
                 certManagerUrl,
                 "cert-manager",
-                "0.1.0",
-                null, "choerodon-cert-manager", null);
+                CertManagerConstants.CERT_MANAGER_CHART_VERSION,
+                null, CertManagerConstants.CERT_MANAGER_REALASE_NAME, null);
         msg.setKey(String.format(KEY_FORMAT,
                 clusterId,
-                "choerodon-cert-manager"));
+                CertManagerConstants.CERT_MANAGER_REALASE_NAME));
         msg.setType(HelmType.CERT_MANAGER_INSTALL.toValue());
         try {
             msg.setPayload(mapper.writeValueAsString(payload));
@@ -395,4 +398,18 @@ public class AgentCommandServiceImpl implements AgentCommandService {
         webSocketHelper.sendMessageByKey(CLUSTER + clusterId, webSocketSendPayload);
     }
 
+    @Override
+    public void deletePod(DevopsEnvPodDTO devopsEnvPodDTO) {
+        //Todo
+    }
+
+    @Override
+    public void unloadCertManager(Long clusterId) {
+        AgentMsgVO msg = new AgentMsgVO();
+        msg.setKey(String.format(KEY_FORMAT,
+                clusterId,
+                CertManagerConstants.CERT_MANAGER_REALASE_NAME));
+        msg.setType(HelmType.CERT_MANAGER_UNLOAD.toValue());
+        sendToWebsocket(clusterId, msg);
+    }
 }

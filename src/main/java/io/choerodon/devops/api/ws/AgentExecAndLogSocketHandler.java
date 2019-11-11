@@ -3,11 +3,6 @@ package io.choerodon.devops.api.ws;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.websocket.helper.WebSocketHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -17,18 +12,18 @@ import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketSession;
 
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.infra.util.TypeUtil;
+import io.choerodon.websocket.helper.WebSocketHelper;
+
 /**
  * Created by Sheep on 2019/8/19.
  */
-
 @Component
 public class AgentExecAndLogSocketHandler {
-
-    private static final Logger logger = LoggerFactory.getLogger(AgentExecAndLogSocketHandler.class);
-
     @Lazy
     @Autowired
-    WebSocketHelper webSocketHelper;
+    private WebSocketHelper webSocketHelper;
     @Autowired
     RedisTemplate<String, Object> redisTemplate;
 
@@ -54,6 +49,4 @@ public class AgentExecAndLogSocketHandler {
         //将websocketSession和关联的key做关联
         webSocketHelper.subscribe(registerKey, webSocketSession);
     }
-
-
 }

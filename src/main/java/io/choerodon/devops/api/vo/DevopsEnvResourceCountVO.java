@@ -2,6 +2,7 @@ package io.choerodon.devops.api.vo;
 
 /**
  * 环境的资源的统计数据
+ *
  * @author zmf
  */
 public class DevopsEnvResourceCountVO {
@@ -26,6 +27,16 @@ public class DevopsEnvResourceCountVO {
     private Long stoppedInstanceCount;
 
     private Long failedInstanceCount;
+
+    private Long pvcCount;
+
+    public Long getPvcCount() {
+        return pvcCount;
+    }
+
+    public void setPvcCount(Long pvcCount) {
+        this.pvcCount = pvcCount;
+    }
 
     public Long getEnvId() {
         return envId;

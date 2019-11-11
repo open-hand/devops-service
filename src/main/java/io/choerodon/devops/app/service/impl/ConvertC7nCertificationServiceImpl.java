@@ -5,7 +5,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import io.choerodon.core.convertor.ApplicationContextHelper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import io.choerodon.devops.api.vo.kubernetes.C7nCertification;
 import io.choerodon.devops.api.vo.kubernetes.certification.*;
 import io.choerodon.devops.app.service.CertificationService;
@@ -13,18 +15,19 @@ import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
 import io.choerodon.devops.infra.dto.CertificationDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvFileResourceDTO;
 import io.choerodon.devops.infra.enums.GitOpsObjectError;
+import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.infra.util.TypeUtil;
 
-
+@Component
 public class ConvertC7nCertificationServiceImpl extends ConvertK8sObjectService<C7nCertification> {
-
+    @Autowired
     private CertificationService certificationService;
+    @Autowired
     private DevopsEnvFileResourceService devopsEnvFileResourceService;
 
     public ConvertC7nCertificationServiceImpl() {
-        this.certificationService = ApplicationContextHelper.getSpringFactory().getBean(CertificationService.class);
-        this.devopsEnvFileResourceService = ApplicationContextHelper.getSpringFactory().getBean(DevopsEnvFileResourceService.class);
+        super(C7nCertification.class);
     }
 
     @Override
@@ -67,6 +70,11 @@ public class ConvertC7nCertificationServiceImpl extends ConvertK8sObjectService<
             c7nCertifications.add(c7nCertification);
         }
 
+    }
+
+    @Override
+    public ResourceType getType() {
+        return ResourceType.CERTIFICATE;
     }
 
     private void checkSpec(CertificationSpec spec, String filePath) {

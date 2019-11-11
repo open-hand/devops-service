@@ -1,19 +1,15 @@
 package io.choerodon.devops.infra.feign.operator;
 
+import java.util.*;
+import java.util.stream.Collectors;
+
 import com.github.pagehelper.PageInfo;
 import feign.FeignException;
 import feign.RetryableException;
-import io.choerodon.base.domain.PageRequest;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.infra.dto.RepositoryFileDTO;
-import io.choerodon.devops.infra.dto.gitlab.*;
-import io.choerodon.devops.infra.dto.iam.IamUserDTO;
-import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.feign.GitlabServiceClient;
-import io.choerodon.devops.infra.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
@@ -21,8 +17,13 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.infra.dto.RepositoryFileDTO;
+import io.choerodon.devops.infra.dto.gitlab.*;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.feign.GitlabServiceClient;
+import io.choerodon.devops.infra.util.*;
 
 
 /**
@@ -500,7 +501,7 @@ public class GitlabServiceClientOperator {
                 })
                 .collect(Collectors.toCollection(ArrayList::new));
 
-        PageInfo<TagDTO> resp = PageInfoUtil.createPageFromList(tagList, new PageRequest(page, size));
+        PageInfo<TagDTO> resp = PageInfoUtil.createPageFromList(tagList, PageRequest.of(0,1));
 
         resp.getList().stream()
                 .sorted(this::sortTag)

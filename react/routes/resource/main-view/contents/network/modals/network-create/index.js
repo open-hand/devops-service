@@ -26,7 +26,7 @@ class CreateNetwork extends Component {
   }
 
   formValidate = () => {
-    const { envId } = this.props;
+    const { envId, store } = this.props;
     return new Promise((resolve) => {
       this.formRef.props.form.validateFieldsAndScroll((err, data) => {
         if (!err) {
@@ -48,7 +48,12 @@ class CreateNetwork extends Component {
             config,
             values,
           } = data;
-          const appIst = appInstance ? _.map(appInstance, (item) => item) : null;
+          // const appIst = appInstance ? _.map(appInstance, (item) => item) : null;
+          let appIst;
+          if (!_.isEmpty(appInstance)) {
+            appIst = appInstance === 'all_instance' ? _.map(store.getIst, (item) => item.code) : [appInstance];
+          }
+          
           const ports = [];
           const label = {};
           const endPoints = {};

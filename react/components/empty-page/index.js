@@ -21,7 +21,6 @@ const EmptyPage = withRouter(((props) => {
     history.push({
       pathname,
       search,
-      state: { openCreate: true },
     });
   }
 

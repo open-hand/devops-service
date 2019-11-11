@@ -49,7 +49,7 @@ export default function Permissions() {
   }
 
   function renderRole({ value }) {
-    return formatMessage({ id: value });
+    return value && formatMessage({ id: value });
   }
 
   function getActionColumn() {
@@ -62,6 +62,7 @@ export default function Permissions() {
       dataSet={tableDs}
       border={false}
       queryBar="bar"
+      pristine
     >
       <Column name="realName" />
       {getActionColumn()}

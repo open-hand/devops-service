@@ -6,6 +6,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import io.swagger.annotations.ApiModelProperty;
+
 import io.choerodon.mybatis.entity.BaseDTO;
 
 
@@ -29,6 +31,11 @@ public class DevopsClusterDTO extends BaseDTO {
     private Boolean isInit;
     private Long createdBy;
     private Long projectId;
+
+    @ApiModelProperty("系统环境id, 用于部署集群相关的资源")
+    private Long systemEnvId;
+
+    private Long clientId;
 
     public Long getProjectId() {
         return projectId;
@@ -126,5 +133,21 @@ public class DevopsClusterDTO extends BaseDTO {
     @Override
     public void setCreatedBy(Long createdBy) {
         this.createdBy = createdBy;
+    }
+
+    public Long getSystemEnvId() {
+        return systemEnvId;
+    }
+
+    public void setSystemEnvId(Long systemEnvId) {
+        this.systemEnvId = systemEnvId;
+    }
+
+    public Long getClientId() {
+        return clientId;
+    }
+
+    public void setClientId(Long clientId) {
+        this.clientId = clientId;
     }
 }

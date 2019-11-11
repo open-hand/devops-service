@@ -5,7 +5,7 @@ import java.util.Map;
 
 import com.github.pagehelper.PageInfo;
 
-import io.choerodon.base.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.core.notify.NoticeSendDTO;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.infra.dto.PipelineDTO;
@@ -16,7 +16,7 @@ import io.choerodon.devops.infra.dto.PipelineDTO;
  * Description:
  */
 public interface PipelineService {
-    PageInfo<PipelineVO> pageByOptions(Long projectId, PipelineSearchVO pipelineSearchVO, PageRequest pageRequest);
+    PageInfo<PipelineVO> pageByOptions(Long projectId, PipelineSearchVO pipelineSearchVO, Pageable pageable);
 
     PipelineReqVO create(Long projectId, PipelineReqVO pipelineReqVO);
 

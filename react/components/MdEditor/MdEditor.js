@@ -24,10 +24,11 @@ class MdEditor extends Component {
 
   constructor(props) {
     super(props);
+    const { value } = props;
     this.state = {
       tabKey: 'write',
       isExpand: false,
-      valueLength: 0,
+      valueLength: value ? value.length : 0,
     };
   }
 

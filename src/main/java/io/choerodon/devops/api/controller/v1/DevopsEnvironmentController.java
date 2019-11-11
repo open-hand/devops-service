@@ -13,9 +13,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
-import io.choerodon.base.annotation.Permission;
-import io.choerodon.base.domain.PageRequest;
-import io.choerodon.base.enums.ResourceType;
+import io.choerodon.core.annotation.Permission;
+import org.springframework.data.domain.Pageable;
+import io.choerodon.core.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.*;
@@ -190,7 +190,7 @@ public class DevopsEnvironmentController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)
             @PathVariable(value = "environment_id") Long environmentId) {
-        return Optional.ofNullable(devopsEnvironmentService.queryInfoById(environmentId))
+        return Optional.ofNullable(devopsEnvironmentService.queryInfoById(projectId, environmentId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_ENVIRONMENT_QUERY));
     }
@@ -305,7 +305,7 @@ public class DevopsEnvironmentController {
      * 分页查询环境下用户权限
      *
      * @param projectId   项目id
-     * @param pageRequest 分页参数
+     * @param pageable 分页参数
      * @param envId       环境id
      * @param params      搜索参数
      * @return page
@@ -321,11 +321,11 @@ public class DevopsEnvironmentController {
             @ApiParam(value = "环境id", required = true)
             @PathVariable(value = "env_id") Long envId,
             @ApiParam(value = "分页参数", required = true)
-            @ApiIgnore PageRequest pageRequest,
+            @ApiIgnore Pageable pageable,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(devopsEnvironmentService
-                .pageUserPermissionByEnvId(projectId, pageRequest, params, envId))
+                .pageUserPermissionByEnvId(projectId, pageable, params, envId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.env.user.permission.get"));
     }
@@ -434,7 +434,7 @@ public class DevopsEnvironmentController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)
             @PathVariable(value = "env_id") Long envId) {
-        devopsEnvironmentService.deleteDeactivatedOrFailedEnvironment(envId);
+        devopsEnvironmentService.deleteDeactivatedOrFailedEnvironment(projectId,envId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 

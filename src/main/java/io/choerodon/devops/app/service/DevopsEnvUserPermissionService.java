@@ -3,7 +3,7 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 
 import com.github.pagehelper.PageInfo;
-import io.choerodon.base.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.devops.api.vo.DevopsEnvUserVO;
 import io.choerodon.devops.infra.dto.DevopsEnvUserPermissionDTO;
 
@@ -15,7 +15,7 @@ public interface DevopsEnvUserPermissionService {
 
     void create(DevopsEnvUserVO devopsEnvUserPermissionE);
 
-    PageInfo<DevopsEnvUserVO> pageByOptions(Long envId, PageRequest pageRequest, String params);
+    PageInfo<DevopsEnvUserVO> pageByOptions(Long envId, Pageable pageable, String params);
 
     void deleteByEnvId(Long envId);
 

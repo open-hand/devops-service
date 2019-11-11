@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.vo;
 
+import io.swagger.annotations.ApiModelProperty;
+
 import java.util.Date;
 
 /**
@@ -7,21 +9,21 @@ import java.util.Date;
  */
 public class GitlabUserRequestVO {
 
-    //Gitlab的用户名
+    @ApiModelProperty("Gitlab的用户名")
     private String username;
-    //Gitlab的email
+    @ApiModelProperty("Gitlab的email")
     private String email;
-    //Gitlab的用户昵称
+    @ApiModelProperty("Gitlab的用户昵称")
     private String name;
-    //Gitlab用户创建项目的限额
+    @ApiModelProperty("Gitlab用户创建项目的限额")
     private Integer projectsLimit;
-    //Gitlab用户邮箱确认的时间
+    @ApiModelProperty("Gitlab用户邮箱确认的时间")
     private Date confirmedAt;
-    //外部登录提供者
+    @ApiModelProperty("外部登录提供者")
     private String provider;
-    //用户Id
+    @ApiModelProperty("用户Id")
     private String externUid;
-    //用户是否可以创建组
+    @ApiModelProperty("用户是否可以创建组")
     private Boolean canCreateGroup;
     private Boolean skipConfirmation;
 

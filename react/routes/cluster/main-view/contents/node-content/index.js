@@ -1,9 +1,9 @@
 import React from 'react';
 import { NodeContentStoreProvider } from './stores';
-import NodeContent from './NodeContent';
+import Content from './Content';
 
 export default (props) => (
   <NodeContentStoreProvider {...props}>
-    <NodeContent />
+    <Content />
   </NodeContentStoreProvider>
 );

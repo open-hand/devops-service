@@ -7,7 +7,7 @@ import io.swagger.annotations.ApiModelProperty;
 
 import io.choerodon.devops.api.validator.annotation.AtLeastOneNotEmpty;
 
-@AtLeastOneNotEmpty(fields = {"valueId", "values"})
+@AtLeastOneNotEmpty(fields = {"valueId", "values"}, message = "error.atleast.one.not.empty")
 public class AppServiceDeployVO {
     @ApiModelProperty("服务id/必填")
     @NotNull(message = "error.app.id.null")

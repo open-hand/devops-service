@@ -29,6 +29,8 @@ const commonField = {
   modify: '变更',
   iknow: '我知道了',
   reset: '重置',
+  install: '安装',
+  uninstall: '卸载',
 
   // 通用描述
   app: '应用',
@@ -64,6 +66,7 @@ const commonField = {
   owner: '项目所有者',
   member: '项目成员',
   all: '全部',
+  not_installed: '未安装',
 
   // 状态描述
   null: '无',
@@ -179,6 +182,7 @@ const commonField = {
   configMaps: '配置映射',
   secrets: '密文',
   customResources: '自定义资源',
+  pvcs: 'PVC',
 };
 
 const deployment = {
@@ -266,6 +270,8 @@ const deployment = {
   'c7ncd.deployment.instance.cases.stop': '停止实例',
   'c7ncd.deployment.instance.cases.restart': '启用实例',
   'c7ncd.deployment.instance.cases.delete': '删除实例',
+  'c7ncd.deployment.instance.pod.delete.title': '删除pod',
+  'c7ncd.deployment.instance.pod.delete.des': '确定要删除该pod吗？',
   'c7ncd.deployment.mapping.create': '创建配置映射',
   'c7ncd.deployment.mapping.edit': '修改配置映射',
   'c7ncd.deployment.mapping.head': '配置映射',
@@ -295,6 +301,7 @@ const deployment = {
   'c7ncd.deployment.modal.redeploy': '重新部署',
   'c7ncd.deployment.modal.detail': '实例详情',
   'c7ncd.deployment.app-service': '应用服务',
+  'c7ncd.deployment.app-service.select': '请选择应用服务',
   'c7ncd.deployment.set-operator': '设置该环境的开发操作人员',
   'c7ncd.deployment.project.member': '项目成员',
   'c7ncd.deployment.project.member.empty': '暂无可选项目成员',
@@ -306,6 +313,7 @@ const deployment = {
   'c7ncd.deployment.create.ingress': '创建域名',
   'c7ncd.deployment.create.configMap': '创建配置映射',
   'c7ncd.deployment.create.cipher': '创建密文',
+  'c7ncd.deployment.create.pvc': '创建PVC',
   'c7ncd.deployment.create.custom': '创建自定义资源',
   'c7ncd.deployment.service.detail': '服务详情',
   'c7ncd.deployment.service.status': '服务状态',
@@ -376,16 +384,33 @@ const deployment = {
   'c7ncd.deployment.environment.sync': '提交同步情况',
   'c7ncd.deployment.appService.share': '共享应用',
   'c7ncd.deployment.instance.current.version': '当前版本',
+  'c7ncd.deployment.create.config': '创建部署配置',
+  'c7ncd.deployment.modify.config': '修改部署配置',
+  'c7ncd.deployment.config': '部署配置',
+  'c7ncd.deployment.manual.deploy': '手动部署',
   'c7ncd.deployment.permission.delete.title': '删除权限',
+  'c7ncd.deployment.permission.project.delete.des': '确定要删除该项目的权限吗？',
   'c7ncd.deployment.permission.delete.des': '确定要删除该成员的权限吗？',
   'c7ncd.deployment.custom.delete.title': '删除自定义资源“{name}”',
   'c7ncd.deployment.custom.delete.des': '确定要删除该自定义资源吗？',
+  'c7ncd.deployment.config.delete.disable': '删除部署配置“{name}”',
+  'c7ncd.deployment.config.delete.des': '确定要删除该部署配置吗？',
+  'c7ncd.deployment.config.delete.describe': '仅能删除没有关联任务和关联实例的部署配置。',
+  'c7ncd.deployment.sync.empty': '目前部署同步正常，暂无错误信息',
   'c7ncd.deployment.permission.tab.tips':
     '当选择将权限分配至项目下所有成员时，此时便不能在列表中删除任何成员的权限；仅在选择将权限分配给项目下特定成员时，才能在下方列表中管理成员的权限。项目所有者的权限不能被删除',
   'c7ncd.deployment.permission.tips':
     '此操作用于为环境配置特定的操作人员。一般默认选择为项目下所有成员，即该项目下的所有成员均能对此环境中的资源进行操作；若选择项目下特定成员，则只有被添加后的成员才有权限。项目所有者默认拥有权限',
   'c7ncd.deployment.service.tips':
     '您可在此选择项目下已存在但无实例的应用服务，并将其关联到该环境下，以便为其创建相应的资源',
+  'c7ncd.deployment.pvc.name': 'PVC名称',
+  'c7ncd.deployment.pvc.pv': '绑定PV',
+  'c7ncd.deployment.pvc.accessModes': '访问模式',
+  'c7ncd.deployment.pvc.requestResource': '总量',
+  'c7ncd.deployment.pvc.type': 'PV类型',
+  'c7ncd.deployment.pvc.pvId': '选择已有PV',
+  'c7ncd.deployment.pvc.delete.title': '删除PVC“{name}”',
+  'c7ncd.deployment.pvc.delete.des': '确定要删除该PVC吗？',
 
 };
 
@@ -671,6 +696,35 @@ const repository = {
   'c7ncd.repository.tab.application': '应用配置',
 };
 
+const pvManager = {
+  'c7ncd.pv.manager': 'PV管理',
+  'c7ncd.pv.create': '创建PV',
+  'c7ncd.pv.belong.cluster': '所属集群',
+  'c7ncd.pv.cluster': '集群',
+  'c7ncd.pv.type': '类型',
+  'c7ncd.pv.pvc': '关联PVC',
+  'c7ncd.pv.mode': '访问模式',
+  'c7ncd.pv.storage': '存储容量',
+  'c7ncd.pv.path': '路径',
+  'c7ncd.pv.ip': '服务器IP',
+  'c7ncd.pv.permission': '权限管理',
+  'c7ncd.pv.share': 'PV公开范围',
+  'c7ncd.pv.name.failed': '只能由小写字母、数字、"."和"-"组成，且以小写字母开头，不能以"-"、"."结尾',
+  'c7ncd.pv.project.name': '项目名称',
+  'c7ncd.pv.project.code': '项目编码',
+  'c7ncd.pv.project.all': '集群下所有项目',
+  'c7ncd.pv.project.special': '集群下特定项目',
+  'c7ncd.pv.project.add': '添加项目',
+  'c7ncd.pv.storage.failed': '请输入正整数',
+  'c7ncd.pv.ip.failed': '请输入有效的IP地址',
+  'c7ncd.pv.path.failed': '请输入有效的路径',
+  'c7ncd.pv.delete.title': '删除PV“{name}”',
+  'c7ncd.pv.delete.des': '确定要删除该PV吗？',
+  'c7ncd.pv.delete.disabled': '存在已绑定的PVC，无法删除',
+  'c7ncd.pv.permission.delete.title': '删除权限',
+  'c7ncd.pv.permission.project.delete.des': '确定要删除该项目的权限吗？',
+};
+
 
 const codeManagement = {
   'code-management.branch': '分支',
@@ -694,6 +748,8 @@ const emptyPage = {
     '您当前暂无此项目下任何环境的权限，若需查看某个环境的相关内容，请联系项目所有者添加权限',
   'empty.create.app': '创建应用服务',
   'empty.create.env': '创建环境',
+  'empty.link.app': '跳转至应用服务',
+  'empty.link.env': '跳转至环境配置',
 };
 
 // 文档地址前缀
@@ -1143,6 +1199,11 @@ const pageDetail = {
 const cluster = {
   'c7ncd.cluster.node.list': '节点列表',
   'c7ncd.cluster.permission.assign': '权限分配',
+  'c7ncd.cluster.monitor': '集群监控',
+  'c7ncd.cluster.component': '组件管理',
+  'c7ncd.cluster.node.resource': '资源分配',
+  'c7ncd.cluster.node.monitor': '节点监控',
+  'c7ncd.cluster.node.assign.overview': '分配概览',
   'c7ncd.cluster.node.status': '状态',
   'c7ncd.cluster.node.ip': '节点',
   'c7ncd.cluster.node.type': '类型',
@@ -1175,6 +1236,27 @@ const cluster = {
   'c7ncd.cluster.action.delete.msg': '确定要删除该集群吗？',
   'c7ncd.cluster.empty.title': '暂无集群',
   'c7ncd.cluster.empty.describe': '当前项目下无集群，请创建',
+  'c7ncd.cluster.monitor.empty.des': '暂未安装监控组件，若想查看集群的监控情况，请转至组件管理页面安装',
+  'c7ncd.cluster.monitor.install': '安装监控组件',
+  'c7ncd.cluster.certManager.install': '安装CertManager',
+  'c7ncd.cluster.monitor.link': '转至组件管理',
+  'c7ncd.cluster.monitor.password': 'admin密码',
+  'c7ncd.cluster.monitor.ingress': '域名地址',
+  'c7ncd.cluster.monitor.pv': '选择存储',
+  'c7ncd.cluster.component.monitor': '监控组件',
+  'c7ncd.cluster.component.monitor.des':
+    '监控组件用于帮助监控集群中资源的使用情况。该组件包括了Prometheus、Grafana和AlertManager',
+  'c7ncd.cluster.component.cert': 'CertManager',
+  'c7ncd.cluster.component.cert.des':
+    'CertManager用于帮助集群下的环境申请或上传域名证书',
+  'c7ncd.cluster.monitor.uninstall': '卸载监控组件',
+  'c7ncd.cluster.monitor.uninstall.des': '确定要卸载监控组件吗？',
+  'c7ncd.cluster.cert.uninstall': '卸载CertManager',
+  'c7ncd.cluster.cert.uninstall.des': '确定要卸载CertManager吗？',
+  'c7ncd.cluster.cert.uninstall.disabled': '无法卸载CertManager',
+  'c7ncd.cluster.install.step.gitops': '生成配置库',
+  'c7ncd.cluster.install.step.monitor': '安装监控组件',
+  'c7ncd.cluster.install.step.health': '健康检查',
   'c7ncd.cluster.permission.tips':
     '此操作用于为此集群在该组织下配置公开范围。一般默认选择为组织下所有项目，即所有项目下的环境均能连接到此集群；若选择组织下特定项目，则只有被授权项目下的环境才有权限连接到此集群',
   'c7ncd.cluster.permission.tab.tips':
@@ -1512,7 +1594,7 @@ const zhCN = {
   'envPl.noInstance.disable': '确认停用',
   'envPl.forbidden.disable': '不可停用',
   'envPl.disEnv.noInstance': '当你点击确认后，该环境将被停用！',
-  'envPl.disEnv.forbidden': '该环境下已有实例，且此环境正在运行中，无法停用！',
+  'envPl.disEnv.forbidden': '该环境下已有实例，无法停用！',
   'envPl.confirm.group.del':
     '当你点击确认后，该分组下的环境将追加至默认流水线末尾!',
   'envPl.code.copy.tooltip': '复制下文代码至Kubernetes运行，与平台建立链接',
@@ -2562,6 +2644,7 @@ const zhCN = {
   ...repository,
   ...codeManagement,
   ...emptyPage,
+  ...pvManager,
 };
 
 export default zhCN;

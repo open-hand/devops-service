@@ -2,7 +2,7 @@ package io.choerodon.devops.api.controller.v1;
 
 import java.util.Optional;
 
-import io.choerodon.base.annotation.Permission;
+import io.choerodon.core.annotation.Permission;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.GitlabUserService;
 

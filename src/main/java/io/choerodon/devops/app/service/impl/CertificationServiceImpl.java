@@ -15,8 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import io.choerodon.base.domain.PageRequest;
-import io.choerodon.base.domain.Sort;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.validator.DevopsCertificationValidator;
 import io.choerodon.devops.api.vo.C7nCertificationVO;
@@ -349,8 +349,8 @@ public class CertificationServiceImpl implements CertificationService {
     }
 
     @Override
-    public PageInfo<CertificationVO> pageByOptions(Long projectId, Long envId, PageRequest pageRequest, String params) {
-        PageInfo<CertificationVO> certificationDTOPage = ConvertUtils.convertPage(basePage(null, envId, pageRequest, params), this::dtoToVo);
+    public PageInfo<CertificationVO> pageByOptions(Long projectId, Long envId, Pageable pageable, String params) {
+        PageInfo<CertificationVO> certificationDTOPage = ConvertUtils.convertPage(basePage(null, envId, pageable, params), this::dtoToVo);
         List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedClusterList();
         certificationDTOPage.getList().stream()
                 .filter(certificationDTO -> certificationDTO.getOrganizationId() == null)
@@ -464,13 +464,13 @@ public class CertificationServiceImpl implements CertificationService {
     }
 
     @Override
-    public PageInfo<CertificationDTO> basePage(Long projectId, Long envId, PageRequest pageRequest, String params) {
+    public PageInfo<CertificationDTO> basePage(Long projectId, Long envId, Pageable pageable, String params) {
         Map<String, Object> maps = TypeUtil.castMapParams(params);
 
-        Sort sort = pageRequest.getSort();
+        Sort sort = pageable.getSort();
         String sortResult = "";
         if (sort != null) {
-            sortResult = Lists.newArrayList(pageRequest.getSort().iterator()).stream()
+            sortResult = Lists.newArrayList(pageable.getSort().iterator()).stream()
                     .map(t -> {
                         String property = t.getProperty();
                         if (property.equals("envName")) {
@@ -488,7 +488,7 @@ public class CertificationServiceImpl implements CertificationService {
         }
 
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
-        PageInfo<CertificationDTO> certificationDTOPage = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), sortResult)
+        PageInfo<CertificationDTO> certificationDTOPage = PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), sortResult)
                 .doSelectPageInfo(() -> devopsCertificationMapper.listCertificationByOptions(projectId, envId, searchParamMap, TypeUtil.cast(maps.get(TypeUtil.PARAMS))));
 
         // check if cert is overdue

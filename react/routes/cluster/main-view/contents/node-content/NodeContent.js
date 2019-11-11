@@ -4,6 +4,7 @@ import ReactEcharts from 'echarts-for-react';
 import { useClusterStore } from '../../../stores';
 import { useNodeContentStore } from './stores';
 import NodePodsTable from './node-pods-table';
+import { useClusterMainStore } from '../../stores';
 
 import './NodeDetail.less';
 
@@ -12,25 +13,25 @@ const NodeContent = observer(() => {
     formatMessage,
     nodeInfoDs,
   } = useNodeContentStore();
+  const {
+    intlPrefix,
+  } = useClusterMainStore();
   const { clusterStore: { getSelectedMenu } } = useClusterStore();
   const { name } = getSelectedMenu;
 
   const node = nodeInfoDs.current;
 
   return (
-    <Fragment>
-      <h1>{name}</h1>
-      <div className="c7n-node-content">
-        {node ? <Fragment>
-          <div className="c7n-node-title">{formatMessage({ id: 'node.res' })}</div>
-          <div className="c7n-node-pie">
-            {podPies(formatMessage, node.toData())}
-          </div>
-        </Fragment> : null}
-        <div className="c7n-node-title">{formatMessage({ id: 'node.pods' })}</div>
-        <NodePodsTable />
-      </div>
-    </Fragment>
+    <div className="c7ncd-node-content">
+      {node ? <Fragment>
+        <div className="c7n-node-title">{formatMessage({ id: `${intlPrefix}.node.assign.overview` })}</div>
+        <div className="c7n-node-pie">
+          {podPies(formatMessage, node.toData())}
+        </div>
+      </Fragment> : null}
+      <div className="c7n-node-title">{formatMessage({ id: 'node.pods' })}</div>
+      <NodePodsTable />
+    </div>
   );
 });
 

@@ -240,7 +240,7 @@ class GitlabWebHookServiceimplSpec extends Specification {
                 "    SERVICES_HARBOR_PASSWORD: Handhand123\n" +
                 "    SERVICES_HELM_URL: http://helm-charts.staging.saas.test.com\n" +
                 "    SERVICES_HARBOR_BASEURL: https://registry.saas.test.com\n" +
-                "    SPRING_DATASOURCE_URL: jdbc:mysql://hapcloud-mysql.db:3306/devops_service?useUnicode=true&characterEncoding=utf-8&useSSL=false\n" +
+                "    SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/devops_service?useUnicode=true&characterEncoding=utf-8&useSSL=false\n" +
                 "    EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://register-server.choerodon-framework-staging:8000/eureka/\n" +
                 "    SPRING_DATASOURCE_PASSWORD: handhand\n" +
                 "    SERVICES_GITLAB_SSHURL: git.vk.vu\n" +

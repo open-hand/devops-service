@@ -25,14 +25,12 @@ class NoChart extends Component {
         history.push({
           pathname: '/devops/environment',
           search,
-          state: { openCreate: true },
         });
         break;
       case 'app':
         history.push({
           pathname: '/devops/app-service',
           search,
-          state: { openCreate: true },
         });
         break;
       default:
@@ -45,12 +43,12 @@ class NoChart extends Component {
     const { getProRole } = ReportsStore;
     const noChart = {
       owner: {
-        title: `report.no-${type}`,
-        des: `report.no-${type}-des`,
+        title: `empty.title.${type}`,
+        des: `empty.tips.${type}.owner`,
       },
       member: {
-        title: `report.member.no-${type}`,
-        des: `report.member.no-${type}-des`,
+        title: 'empty.title.prohibited',
+        des: `empty.tips.${type}.member`,
       },
       '': {
         title: 'null',
@@ -60,7 +58,7 @@ class NoChart extends Component {
     return (
       <div className="c7n-no-chart">
         <div className="c7n-no-chart-pic">
-          <div />
+          <div className={`c7n-no-chart-pic-${getProRole}`} />
         </div>
         <div className="c7n-no-chart-desc">
           <div className="c7n-no-chart-title"><FormattedMessage id={noChart[getProRole].title} /></div>
@@ -71,7 +69,7 @@ class NoChart extends Component {
               funcType="raised"
               onClick={this.handleClick}
             >
-              <FormattedMessage id={`report.${type}.create`} />
+              <FormattedMessage id={`empty.link.${type}`} />
             </Button>
           )}
         </div>

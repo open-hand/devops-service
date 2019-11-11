@@ -6,7 +6,7 @@ import java.util.Map;
 
 import com.github.pagehelper.PageInfo;
 
-import io.choerodon.base.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.kubernetes.InstanceValueVO;
 import io.choerodon.devops.app.eventhandler.payload.InstanceSagaPayload;
@@ -36,13 +36,13 @@ public interface AppServiceInstanceService {
      * @param params    查询参数
      * @return 环境下实例基本信息
      */
-    PageInfo<AppServiceInstanceInfoVO> pageInstanceInfoByOptions(Long projectId, Long envId, PageRequest pageRequest, String params);
+    PageInfo<AppServiceInstanceInfoVO> pageInstanceInfoByOptions(Long projectId, Long envId, Pageable pageable, String params);
 
     /**
      * 分页查询应用部署
      *
      * @param projectId    项目id
-     * @param pageRequest  分页参数
+     * @param pageable  分页参数
      * @param envId        环境Id
      * @param versionId    版本Id
      * @param appServiceId 应用Id
@@ -50,7 +50,7 @@ public interface AppServiceInstanceService {
      * @return page of devopsEnvPreviewInstanceDTO
      */
 
-    PageInfo<DevopsEnvPreviewInstanceVO> pageByOptions(Long projectId, PageRequest pageRequest,
+    PageInfo<DevopsEnvPreviewInstanceVO> pageByOptions(Long projectId, Pageable pageable,
                                                        Long envId, Long versionId, Long appServiceId, Long instanceId, String params);
 
     /**
@@ -128,7 +128,7 @@ public interface AppServiceInstanceService {
      *
      * @param instanceId 实例id
      */
-    void deleteInstance(Long instanceId);
+    void deleteInstance(Long instanceId,Boolean deletePrmotheus);
 
 
     /**
@@ -214,7 +214,7 @@ public interface AppServiceInstanceService {
      * @param endTime      结束时间
      * @return Page
      */
-    PageInfo<DeployDetailTableVO> pageDeployFrequencyTable(Long projectId, PageRequest pageRequest, Long[] envIds, Long appServiceId, Date startTime, Date endTime);
+    PageInfo<DeployDetailTableVO> pageDeployFrequencyTable(Long projectId, Pageable pageable, Long[] envIds, Long appServiceId, Date startTime, Date endTime);
 
     /**
      * 获取部署时长报表table
@@ -226,7 +226,7 @@ public interface AppServiceInstanceService {
      * @param endTime       结束时间
      * @return List
      */
-    PageInfo<DeployDetailTableVO> pageDeployTimeTable(Long projectId, PageRequest pageRequest, Long[] appServiceIds, Long envId, Date startTime, Date endTime);
+    PageInfo<DeployDetailTableVO> pageDeployTimeTable(Long projectId, Pageable pageable, Long[] appServiceIds, Long envId, Date startTime, Date endTime);
 
     /**
      * 部署自动化测试应用
@@ -322,13 +322,15 @@ public interface AppServiceInstanceService {
     List<DeployDTO> baseListDeployFrequency(Long projectId, Long[] envIds, Long appServiceId,
                                             Date startTime, Date endTime);
 
-    PageInfo<DeployDTO> basePageDeployFrequencyTable(Long projectId, PageRequest pageRequest, Long[] envIds, Long appServiceId,
+    PageInfo<DeployDTO> basePageDeployFrequencyTable(Long projectId, Pageable pageable, Long[] envIds, Long appServiceId,
                                                      Date startTime, Date endTime);
 
-    PageInfo<DeployDTO> basePageDeployTimeTable(Long projectId, PageRequest pageRequest, Long envId, Long[] appServiceIds,
+    PageInfo<DeployDTO> basePageDeployTimeTable(Long projectId, Pageable pageable, Long envId, Long[] appServiceIds,
                                                 Date startTime, Date endTime);
 
     String baseGetInstanceResourceDetailJson(Long instanceId, String resourceName, ResourceType resourceType);
 
     void updateStatus(AppServiceInstanceDTO appServiceInstanceDTO);
+
+    ConfigVO queryDefaultConfig(Long projectId, ConfigVO configVO);
 }

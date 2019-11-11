@@ -63,8 +63,7 @@ public class SslUtil {
         try (FileInputStream fin = new FileInputStream(cert);) {
             CertificateFactory cf = CertificateFactory.getInstance("X.509");
             Certificate crt = cf.generateCertificate(fin);
-            PublicKey publicKey = crt.getPublicKey();
-            return publicKey;
+            return crt.getPublicKey();
         } catch (CertificateException | IOException e) {
             logger.info(e.getMessage(), e);
         }
@@ -223,14 +222,14 @@ public class SslUtil {
     /**
      * 验证私钥
      *
-     * @param Key
+     * @param key
      * @return
      */
-    public static PrivateKey validatePrivateKey(File Key) {
-        if (Key == null) {
+    public static PrivateKey validatePrivateKey(File key) {
+        if (key == null) {
             throw new CommonException("err.key.file.not.exist");
         }
-        PrivateKey privateKey = getPrivateKey(Key);
+        PrivateKey privateKey = getPrivateKey(key);
         if (privateKey == null) {
             throw new CommonException("err.key.file.format.error");
         }

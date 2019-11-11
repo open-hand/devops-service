@@ -2,8 +2,8 @@ package io.choerodon.devops.infra.util;
 
 import java.util.*;
 
-import io.choerodon.base.domain.PageRequest;
-import io.choerodon.base.domain.Sort;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 /**
  * feign param util
@@ -18,14 +18,14 @@ public class FeignParamUtils {
 
     /**
      * 将PageRequest编码为map
-     * @param pageRequest
+     * @param pageable
      * @return
      */
-    public static Map<String, Object> encodePageRequest(PageRequest pageRequest) {
+    public static Map<String, Object> encodePageRequest(Pageable pageable) {
         Map<String, Object> map = new HashMap<>(3);
-        map.put("page", pageRequest.getPage());
-        map.put("size", pageRequest.getSize());
-        Sort sort = pageRequest.getSort();
+        map.put("page", pageable.getPageNumber());
+        map.put("size", pageable.getPageSize());
+        Sort sort = pageable.getSort();
         if (sort != null) {
             List<String> values = new ArrayList<>();
             Iterator<Sort.Order> iterator = sort.iterator();

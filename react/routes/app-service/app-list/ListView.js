@@ -141,7 +141,7 @@ const ListView = withRouter(observer((props) => {
     } else if (record.get('active')) {
       return;
     } else {
-      actionItems = pick(actionData, ['run']);
+      actionItems = pick(actionData, ['run', 'delete']);
     }
     return <Action data={Object.values(actionItems)} />;
   }

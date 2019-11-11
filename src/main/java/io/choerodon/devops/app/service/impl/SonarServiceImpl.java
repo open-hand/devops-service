@@ -1,10 +1,13 @@
 package io.choerodon.devops.app.service.impl;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.devops.api.vo.SonarInfoVO;
 import io.choerodon.devops.app.service.SonarService;
+import io.choerodon.devops.infra.dto.AppServiceDTO;
+import io.choerodon.devops.infra.mapper.AppServiceMapper;
 
 /**
  * Creator: ChangpingShi0213@gmail.com

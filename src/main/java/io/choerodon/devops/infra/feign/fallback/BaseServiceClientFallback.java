@@ -144,7 +144,7 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
-    public ResponseEntity<PageInfo<ProjectDTO>> pageProjectsByOrgId(Long organizationId, Map<String, Object> pageRequest, String name, String code, Boolean enabled, String params) {
+    public ResponseEntity<PageInfo<ProjectDTO>> pageProjectsByOrgId(Long organizationId, Map<String, Object> pageable, String name, String code, Boolean enabled, String params) {
         return null;
     }
 
@@ -231,5 +231,20 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     @Override
     public ResponseEntity<List<MemberRoleDTO>> assignUsersRolesOnProjectLevel(Long projectId, List<MemberRoleDTO> memberRoleDTOS) {
         throw new CommonException("error.assign.user.roles.on.project.level");
+    }
+
+    @Override
+    public ResponseEntity<ClientDTO> createClient(Long organizationId, @Valid ClientVO clientVO) {
+        throw new CommonException("error.create.client");
+    }
+
+    @Override
+    public ResponseEntity deleteClient(Long organizationId, Long clientId) {
+        throw new CommonException("error.delete.client");
+    }
+
+    @Override
+    public ResponseEntity<ClientDTO> queryClientBySourceId(Long organizationId, Long sourceId) {
+        throw new CommonException("error.query.client");
     }
 }

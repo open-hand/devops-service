@@ -19,7 +19,14 @@ export default () => {
           PermissionDs.transport.destroy.params = {
             delete_project_id: record.get('id'),
           };
-          PermissionDs.delete(record);
+          const modalProps = {
+            title: formatMessage({ id: 'c7ncd.deployment.permission.delete.title' }),
+            children: formatMessage({ id: 'c7ncd.deployment.permission.project.delete.des' }),
+            okText: formatMessage({ id: 'delete' }),
+            okProps: { color: 'red' },
+            cancelProps: { color: 'dark' },
+          };
+          PermissionDs.delete(record, modalProps);
         },
       },
     ];
@@ -30,6 +37,7 @@ export default () => {
     <Table
       dataSet={PermissionDs}
       border={false}
+      pristine
     >
       <Column name="name" width={200} />
       {cluster.get('skipCheckProjectPermission') ? null : <Column renderer={renderActions} />}

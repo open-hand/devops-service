@@ -1,29 +1,28 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect, Fragment } from 'react';
 import { observer } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
 import { Choerodon } from '@choerodon/boot';
-import { Form, Select, Tooltip } from 'choerodon-ui';
-import omit from 'lodash/omit';
-import map from 'lodash/map';
-import DynamicSelect from '../../../../../../../components/dynamic-select';
+import { Form, Tooltip } from 'choerodon-ui/pro';
+import { some, map, findIndex } from 'lodash';
+import DynamicSelect from '../../../../../../../components/dynamic-select-new';
 import { handlePromptError } from '../../../../../../../utils';
 
 import './index.less';
 
-const LinkService = observer(({ modal, form, store, tree, onOk, intlPrefix, intl: { formatMessage } }) => {
-  const { getFieldsValue } = form;
-  const { getServices } = store;
+const LinkService = observer((props) => {
+  const { modal, store, tree, onOk, intlPrefix, intl: { formatMessage }, modalStores } = props;
+  const { linkServiceDs, linkServiceOptionsDs } = modalStores;
+
+
+  useEffect(() => {
+    linkServiceDs.getField('appServiceId').set('options', linkServiceOptionsDs);
+    linkServiceOptionsDs.query();
+  }, []);
 
   modal.handleOk(async () => {
-    let servers = null;
-    form.validateFields((err, values) => {
-      if (!err) {
-        const selectedService = omit(values, ['keys']);
-        servers = Object.values(selectedService);
-      }
-    });
-
-    if (!servers) return false;
+    const servers = map(linkServiceDs.created, ({ data: { appServiceId } }) => appServiceId);
+    if (findIndex(servers, (item) => !item) > -1) return false;
+    if (!servers || servers.length === 0) return false;
 
     try {
       const res = await onOk(servers);
@@ -36,29 +35,28 @@ const LinkService = observer(({ modal, form, store, tree, onOk, intlPrefix, intl
     }
   });
 
-  const data = useMemo(() => getFieldsValue(), [getFieldsValue()]);
-  const options = useMemo(() => map(getServices, ({ id, name }) => {
-    const selectedValues = Object.values(omit(data, 'keys'));
-    return <Select.Option
-      disabled={selectedValues.includes(id)}
-      key={id}
-      value={id}
-    ><Tooltip title={name}>{name}</Tooltip></Select.Option>;
-  }), [data, getServices]);
-  form.getFieldDecorator('keys', { initialValue: ['key0'] });
+
+  function optionsFilter(optionRecord) {
+    const flag = some(linkServiceDs.created, (item) => item.get('appServiceId') === optionRecord.get('id'));
+    return !flag;
+  }
+  
+  function optionsRenderer({ record }) {
+    const name = record.get('name');
+    return <Tooltip title={name}>{name}</Tooltip>;
+  }
+
   return (
-    <Form>
+    <Fragment>
       <DynamicSelect
-        options={options}
-        form={form}
-        fieldKeys={data}
-        notFoundContent={formatMessage({ id: `${intlPrefix}.environment.service.empty` })}
-        requireText={formatMessage({ id: `${intlPrefix}.environment.service.require` })}
-        label={formatMessage({ id: `${intlPrefix}.app-service` })}
+        selectDataSet={linkServiceDs} 
+        optionsFilter={optionsFilter} 
+        optionsRenderer={optionsRenderer}
+        selectName="appServiceId"
         addText={formatMessage({ id: `${intlPrefix}.environment.add.service` })}
       />
-    </Form>
+    </Fragment>
   );
 });
 
-export default Form.create()(injectIntl(LinkService));
+export default injectIntl(LinkService);

@@ -3,8 +3,8 @@ package io.choerodon.devops.infra.util;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
-import io.choerodon.base.domain.PageRequest;
-import io.choerodon.base.domain.Sort;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -15,29 +15,29 @@ public class PageRequestUtil {
     private PageRequestUtil() {
     }
 
-    public static String checkSortIsEmpty(PageRequest pageRequest) {
+    public static String checkSortIsEmpty(Pageable pageable) {
         String index = "";
-        if (pageRequest.getSort() == null) {
+        if (pageable.getSort() == null) {
             index = "true";
         }
         return index;
     }
 
 
-    public static String getOrderBy(PageRequest pageRequest) {
-        Sort sort = pageRequest.getSort();
+    public static String getOrderBy(Pageable pageable) {
+        Sort sort = pageable.getSort();
         if (sort != null) {
-            return Lists.newArrayList(pageRequest.getSort().iterator()).stream()
+            return Lists.newArrayList(pageable.getSort().iterator()).stream()
                     .map(t -> t.getProperty() + " " + t.getDirection())
                     .collect(Collectors.joining(","));
         }
         return "";
     }
 
-    public static String getOrderByStr(PageRequest pageRequest) {
-        Sort sort = pageRequest.getSort();
+    public static String getOrderByStr(Pageable pageable) {
+        Sort sort = pageable.getSort();
         if (sort != null) {
-            return Lists.newArrayList(pageRequest.getSort().iterator()).stream()
+            return Lists.newArrayList(pageable.getSort().iterator()).stream()
                     .map(t -> t.getProperty() + "," + t.getDirection())
                     .collect(Collectors.joining(","));
         }

@@ -12,9 +12,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
-import io.choerodon.base.annotation.Permission;
-import io.choerodon.base.domain.PageRequest;
-import io.choerodon.base.enums.ResourceType;
+import io.choerodon.core.annotation.Permission;
+import org.springframework.data.domain.Pageable;
+import io.choerodon.core.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.iam.AppServiceAndVersionVO;
 import io.choerodon.devops.app.eventhandler.payload.*;
@@ -34,7 +34,7 @@ public class OrgAppMarketController {
 
     /**
      * @param appId
-     * @param pageRequest
+     * @param pageable
      * @param params
      * @return
      */
@@ -46,11 +46,11 @@ public class OrgAppMarketController {
             @ApiParam(value = "应用Id", required = true)
             @RequestParam(value = "app_id") Long appId,
             @ApiParam(value = "分页参数")
-            @ApiIgnore PageRequest pageRequest,
+            @ApiIgnore Pageable pageable,
             @ApiParam(value = "查询参数", required = false)
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(
-                orgAppMarketService.pageByAppId(appId, pageRequest, params))
+                orgAppMarketService.pageByAppId(appId, pageable, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.app.services.page"));
     }

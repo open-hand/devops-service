@@ -1,39 +1,29 @@
-import React, { Fragment, useState } from 'react';
+import React, { Fragment, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { injectIntl } from 'react-intl';
-import { Select, Radio, Form, Tooltip } from 'choerodon-ui';
 import { Choerodon } from '@choerodon/boot';
-import omit from 'lodash/omit';
-import map from 'lodash/map';
-import DynamicSelect from '../../../../../../../components/dynamic-select';
+import { map, some } from 'lodash';
+import { SelectBox, Select, Form, Tooltip } from 'choerodon-ui/pro';
+import DynamicSelect from '../../../../../../../components/dynamic-select-new';
 import { handlePromptError } from '../../../../../../../utils';
-import Tips from '../../../../../../../components/new-tips';
 
 import './index.less';
 
-const FormItem = Form.Item;
 const { Option } = Select;
-const RadioGroup = Radio.Group;
 
-const Permission = observer(({ refreshPermission, modal, form, tree, onOk, projectList, intlPrefix, prefixCls, formatMessage, clusterDetail }) => {
-  const defaultSkip = clusterDetail.get('skipCheckProjectPermission');
-  const { getFieldDecorator } = form;
-  const [isSkip, setIsSkip] = useState(defaultSkip);
+const Permission = observer((props) => {
+  const { refreshPermission, modal, onOk, intlPrefix, prefixCls, formatMessage, clusterDetail, PermissionDs, NonPermissionDs } = props;
+  useEffect(() => {
+    PermissionDs.getField('projectId').set('options', NonPermissionDs);
+    NonPermissionDs.query();
+  }, []);
 
   modal.handleOk(async () => {
-    let projects = null;
-    form.validateFields((err, values) => {
-      if (!err) {
-        const selectedProjects = omit(values, ['keys', 'skipCheckProjectPermission']);
-        const skipCheckProjectPermission = values.skipCheckProjectPermission;
-        const projectIds = Object.values(selectedProjects);
-        projects = {
-          skipCheckProjectPermission,
-          projectIds,
-        };
-      }
-    });
-
+    const projectIds = map(PermissionDs.created, ({ data: { projectId } }) => projectId);
+    const skipCheckProjectPermission = clusterDetail.get('skipCheckProjectPermission');
+    const projects = {
+      projectIds,
+      skipCheckProjectPermission,
+    };
     if (!(projects && projects.projectIds)) return false;
     try {
       const res = await onOk(projects);
@@ -49,71 +39,37 @@ const Permission = observer(({ refreshPermission, modal, form, tree, onOk, proje
     }
   });
 
-
-  function handleChange(e) {
-    setIsSkip(e.target.value);
+  function handleFilter(optionRecord) {
+    const flag = some(PermissionDs.created, (creatRecord) => creatRecord.get('projectId') === optionRecord.get('id'));
+    return !flag;
   }
 
-  function getSelector() {
-    if (isSkip) return null;
-
-    const { getFieldsValue } = form;
-    const data = getFieldsValue();
-
-    const options = map(projectList, ({ id, name, code }) => {
-      const selectedValues = Object.values(omit(data, 'keys'));
-      return (
-        <Option
-          disabled={selectedValues.includes(id)}
-          key={id}
-          value={id}
-        >
-          <Tooltip title={code}>{name}</Tooltip>
-        </Option>
-      );
-    });
-
-    return <DynamicSelect
-      options={options}
-      form={form}
-      fieldKeys={data}
-      label={formatMessage({ id: `${intlPrefix}.project` })}
-      addText={formatMessage({ id: `${intlPrefix}.add.project` })}
-      requireText={formatMessage({ id: `${intlPrefix}.project.require` })}
-      notFoundContent={formatMessage({ id: `${intlPrefix}.project.empty` })}
-    />;
+  function renderOption({ record: optionRecord }) {
+    const code = optionRecord.get('code');
+    const name = optionRecord.get('name');
+    return <Tooltip title={code}>{name}</Tooltip>;
   }
 
-  form.getFieldDecorator('keys', { initialValue: ['key0'] });
   return (
     <Fragment>
       <div className={`${prefixCls}-modal-head`}>{formatMessage({ id: `${intlPrefix}.visibility` })}</div>
-      <Form>
-        <div className={`${prefixCls}-modal-selectbox`}>
-          <FormItem>
-            {getFieldDecorator('skipCheckProjectPermission', { initialValue: isSkip })(
-              <RadioGroup onChange={handleChange}>
-                <Radio value>
-                  <span className={`${prefixCls}-modal-selectbox-text`}>
-                    {formatMessage({ id: `${intlPrefix}.project.all` })}
-                  </span>
-                </Radio>
-                <Radio value={false}>
-                  <span className={`${prefixCls}-modal-selectbox-text`}>
-                    <Tips
-                      helpText={formatMessage({ id: `${intlPrefix}.permission.some.tips` })}
-                      title={formatMessage({ id: `${intlPrefix}.project.part` })}
-                    />
-                  </span>
-                </Radio>
-              </RadioGroup>
-            )}
-          </FormItem>
-        </div>
-        {getSelector()}
+      <Form record={clusterDetail}>
+        <SelectBox name="skipCheckProjectPermission">
+          <Option value>{formatMessage({ id: `${intlPrefix}.project.all` })}</Option>
+          <Option value={false}>{formatMessage({ id: `${intlPrefix}.project.part` })}</Option>
+        </SelectBox>
       </Form>
+      {!clusterDetail.get('skipCheckProjectPermission') && (
+        <DynamicSelect
+          selectDataSet={PermissionDs} 
+          optionsFilter={handleFilter} 
+          optionsRenderer={renderOption}
+          selectName="projectId"
+          addText={formatMessage({ id: `${intlPrefix}.add.project` })}
+        />
+      )}
     </Fragment>
   );
 });
 
-export default Form.create()(injectIntl(Permission));
+export default Permission;

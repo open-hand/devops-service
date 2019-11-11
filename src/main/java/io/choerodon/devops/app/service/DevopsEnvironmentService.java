@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.github.pagehelper.PageInfo;
 
-import io.choerodon.base.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.eventhandler.payload.EnvGitlabProjectPayload;
 import io.choerodon.devops.app.eventhandler.payload.GitlabProjectPayload;
@@ -99,7 +99,7 @@ public interface DevopsEnvironmentService {
      * @param environmentId 环境id
      * @return 环境及其相关信息
      */
-    DevopsEnvironmentInfoVO queryInfoById(Long environmentId);
+    DevopsEnvironmentInfoVO queryInfoById(Long projectId, Long environmentId);
 
     /**
      * 查询环境下相关资源的数量
@@ -148,11 +148,11 @@ public interface DevopsEnvironmentService {
      * 分页查询环境下用户权限
      *
      * @param projectId   项目id
-     * @param pageRequest 分页参数
+     * @param pageable 分页参数
      * @param envId       环境id
      * @return page
      */
-    PageInfo<DevopsUserPermissionVO> pageUserPermissionByEnvId(Long projectId, PageRequest pageRequest,
+    PageInfo<DevopsUserPermissionVO> pageUserPermissionByEnvId(Long projectId, Pageable pageable,
                                                                String params, Long envId);
 
     /**
@@ -193,9 +193,10 @@ public interface DevopsEnvironmentService {
     /**
      * 删除已停用或失败的环境
      *
-     * @param envId 环境id
+     * @param envId     环境id
+     * @param projectId 项目id
      */
-    void deleteDeactivatedOrFailedEnvironment(Long envId);
+    void deleteDeactivatedOrFailedEnvironment(Long projectId, Long envId);
 
     /**
      * 项目下查询集群信息
@@ -283,7 +284,27 @@ public interface DevopsEnvironmentService {
 
     void baseDeleteById(Long id);
 
-    List<DevopsEnvironmentDTO> baseListByClusterId(Long clusterId);
+    List<DevopsEnvironmentDTO> baseListUserEnvByClusterId(Long clusterId);
 
     List<DevopsEnvironmentDTO> baseListByIds(List<Long> envIds);
+
+    void deleteEnvSaga(Long envId);
+
+    /**
+     * 创建集群的配置库
+     *
+     * @param clusterId 集群id
+     * @return 集群对应的环境id
+     */
+    DevopsEnvironmentDTO createSystemEnv(Long clusterId);
+
+    /**
+     * 删除集群的配置库
+     *
+     * @param projectId   项目id
+     * @param clusterId   集群id
+     * @param clusterCode 集群code
+     * @param envId       集群的配置库id
+     */
+    void deleteSystemEnv(Long projectId, Long clusterId, String clusterCode, Long envId);
 }

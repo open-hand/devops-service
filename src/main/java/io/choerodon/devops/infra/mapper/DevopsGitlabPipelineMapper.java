@@ -16,4 +16,5 @@ public interface DevopsGitlabPipelineMapper extends Mapper<DevopsGitlabPipelineD
 
     List<DevopsGitlabPipelineDTO> listByBranch(@Param("appServiceId") Long appServiceId, @Param("branch") String branch);
 
+    void deleteByAppServiceId(@Param("appServiceId")Long appServiceId);
 }

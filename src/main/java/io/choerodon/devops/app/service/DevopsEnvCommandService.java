@@ -5,7 +5,7 @@ import java.util.List;
 
 import com.github.pagehelper.PageInfo;
 
-import io.choerodon.base.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.devops.infra.dto.DevopsEnvCommandDTO;
 
 /**
@@ -28,7 +28,7 @@ public interface DevopsEnvCommandService {
 
     List<DevopsEnvCommandDTO> baseListInstanceCommand(String objectType, Long objectId);
 
-    PageInfo<DevopsEnvCommandDTO> basePageByObject(PageRequest pageRequest, String objectType, Long objectId, Date startTime, Date endTime);
+    PageInfo<DevopsEnvCommandDTO> basePageByObject(Pageable pageable, String objectType, Long objectId, Date startTime, Date endTime);
 
     void baseDelete(Long commandId);
 

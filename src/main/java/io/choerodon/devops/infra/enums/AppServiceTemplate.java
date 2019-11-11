@@ -1,7 +1,9 @@
 package io.choerodon.devops.infra.enums;
 
 
-        import java.util.HashMap;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 public enum AppServiceTemplate {
     MICROSERVICE_TEMPLATE("MicroService"),
@@ -29,14 +31,17 @@ public enum AppServiceTemplate {
         return templateName;
     }
 
-    public static HashMap<String, String> templatePath = new HashMap<>(6);
+    public static final Map<String, String> templatePath;
 
     static {
-        templatePath.put(AppServiceTemplate.MICROSERVICE_TEMPLATE.templateName, String.format(FORMAT_MODAL, TEMPLATE_URL, MICROSERVICE_PATH));
-        templatePath.put(AppServiceTemplate.MICROSERVICE_FRONT_TEMPLATE.templateName, String.format(FORMAT_MODAL, TEMPLATE_URL, MICROSERVICE_FRONT_PATH));
-        templatePath.put(AppServiceTemplate.JAVALIB_TEMPLATE.templateName, String.format(FORMAT_MODAL, TEMPLATE_URL, JAVALIB_PATH));
-        templatePath.put(AppServiceTemplate.SPRINGBOOT_TEMPLATE.templateName, String.format(FORMAT_MODAL, TEMPLATE_URL, SPRINGBOOT_PATH));
-        templatePath.put(AppServiceTemplate.GO_TEMPLATE.templateName, String.format(FORMAT_MODAL, TEMPLATE_URL, GO_PATH));
-        templatePath.put(AppServiceTemplate.CHOERODON_MOCHA_TEMPLATE.templateName, String.format(FORMAT_MODAL, TEMPLATE_URL, CHOERODON_MOCHA_PATH));
+        Map<String, String> map = new HashMap<>(6);
+        map.put(AppServiceTemplate.MICROSERVICE_TEMPLATE.templateName, String.format(FORMAT_MODAL, TEMPLATE_URL, MICROSERVICE_PATH));
+        map.put(AppServiceTemplate.MICROSERVICE_FRONT_TEMPLATE.templateName, String.format(FORMAT_MODAL, TEMPLATE_URL, MICROSERVICE_FRONT_PATH));
+        map.put(AppServiceTemplate.JAVALIB_TEMPLATE.templateName, String.format(FORMAT_MODAL, TEMPLATE_URL, JAVALIB_PATH));
+        map.put(AppServiceTemplate.SPRINGBOOT_TEMPLATE.templateName, String.format(FORMAT_MODAL, TEMPLATE_URL, SPRINGBOOT_PATH));
+        map.put(AppServiceTemplate.GO_TEMPLATE.templateName, String.format(FORMAT_MODAL, TEMPLATE_URL, GO_PATH));
+        map.put(AppServiceTemplate.CHOERODON_MOCHA_TEMPLATE.templateName, String.format(FORMAT_MODAL, TEMPLATE_URL, CHOERODON_MOCHA_PATH));
+
+        templatePath = Collections.unmodifiableMap(map);
     }
 }

@@ -12,7 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.yaml.snakeyaml.Yaml;
 
-import io.choerodon.base.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsCustomizeResourceReqVO;
 import io.choerodon.devops.api.vo.DevopsCustomizeResourceVO;
@@ -48,7 +49,10 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
     private static final String FILE_NAME_PATTERN = "custom-%s.yaml";
 
     private static Gson gson = new Gson();
-    private static final List<String> RESOURCE_TYPE = Arrays.asList(ResourceType.SERVICE.getType(), ResourceType.INGRESS.getType(), ResourceType.CONFIGMAP.getType(), ResourceType.SECRET.getType(), ResourceType.C7NHELMRELEASE.getType(), ResourceType.CERTIFICATE.getType(), ResourceType.ENDPOINTS.getType());
+    private static final List<String> RESOURCE_TYPE = Arrays.asList(ResourceType.SERVICE.getType(), ResourceType.INGRESS.getType(),
+            ResourceType.CONFIGMAP.getType(), ResourceType.SECRET.getType(),
+            ResourceType.C7NHELMRELEASE.getType(), ResourceType.CERTIFICATE.getType(),
+            ResourceType.ENDPOINTS.getType(), ResourceType.PERSISTENT_VOLUME_CLAIM.getType());
 
     @Autowired
     private DevopsCustomizeResourceMapper devopsCustomizeResourceMapper;
@@ -120,12 +124,10 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
                 handleCustomResource(projectId, devopsCustomizeResourceReqVO.getEnvId(), FileUtil.getYaml().dump(datas), kind.toString(), name, devopsCustomizeResourceReqVO.getType(), devopsCustomizeResourceReqVO.getResourceId(), resourceFilePath, null);
 
             }
-        } catch (Exception e) {
-            if (e instanceof CommonException) {
-                throw e;
-            } else {
-                throw new CommonException("error.load.yaml.content");
-            }
+        } catch (CommonException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            throw new CommonException("error.load.yaml.content");
         }
 
         if (devopsCustomizeResourceReqVO.getType().equals(CREATE)) {
@@ -235,8 +237,8 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
 
 
     @Override
-    public PageInfo<DevopsCustomizeResourceVO> pageResources(Long envId, PageRequest pageRequest, String params) {
-        PageInfo<DevopsCustomizeResourceDTO> devopsCustomizeResourceDTOPageInfo = pageDevopsCustomizeResourceE(envId, pageRequest, params);
+    public PageInfo<DevopsCustomizeResourceVO> pageResources(Long envId, Pageable pageable, String params) {
+        PageInfo<DevopsCustomizeResourceDTO> devopsCustomizeResourceDTOPageInfo = pageDevopsCustomizeResourceE(envId, pageable, params);
         List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedClusterList();
         PageInfo<DevopsCustomizeResourceVO> devopsCustomizeResourceVOPageInfo = ConvertUtils.convertPage(devopsCustomizeResourceDTOPageInfo, DevopsCustomizeResourceVO.class);
         devopsCustomizeResourceVOPageInfo.getList().forEach(devopsCustomizeResourceVO -> {
@@ -402,9 +404,9 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
     }
 
     @Override
-    public PageInfo<DevopsCustomizeResourceDTO> pageDevopsCustomizeResourceE(Long envId, PageRequest pageRequest, String params) {
+    public PageInfo<DevopsCustomizeResourceDTO> pageDevopsCustomizeResourceE(Long envId, Pageable pageable, String params) {
         Map maps = TypeUtil.castMapParams(params);
-        return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest))
+        return PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable))
                 .doSelectPageInfo(() -> devopsCustomizeResourceMapper.pageResources(envId,
                         maps == null ? null : TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
                         maps == null ? null : TypeUtil.cast(maps.get(TypeUtil.PARAMS))));

@@ -108,7 +108,7 @@ class EditNetwork extends Component {
   };
 
   formValidate = () => {
-    const { form, envId } = this.props;
+    const { form, envId, store } = this.props;
     const { network } = this.state;
 
     let enableSubmit = true;
@@ -150,8 +150,10 @@ class EditNetwork extends Component {
           const _targetIps = targetIps || [];
           _pushUnRecordIp(_externalIps, _unInputIp);
           _pushUnRecordIp(_targetIps, _unInputEndIp);
-
-          const appIst = instances ? _.map(instances, (item) => item) : null;
+          let appIst;
+          if (!_.isEmpty(instances)) {
+            appIst = instances === 'all_instance' ? _.map(store.getIst, (item) => item.code) : instances;
+          }
           const ports = [];
           const label = {};
           const endPoints = {};
@@ -298,7 +300,7 @@ class EditNetwork extends Component {
             const { id: istId, code, status } = item;
             initIst.push(code);
             initIstOption.push(
-              <Option key={istId} value={code}>
+              <Option key={istId} value={[code]}>
                 <Tooltip
                   title={
                     status ? (
@@ -1288,7 +1290,7 @@ class EditNetwork extends Component {
                   {...formItemLayout}
                 >
                   {getFieldDecorator('instances', {
-                    initialValue: initIst.length ? initIst : undefined,
+                    initialValue: initIst.length ? initIst.length > 1 ? 'all_instance' : initIst : undefined,
                     trigger: ['onChange', 'onSubmit'],
                     rules: [
                       {
@@ -1302,7 +1304,6 @@ class EditNetwork extends Component {
                   })(
                     <Select
                       filter
-                      mode="multiple"
                       className="network-select-instance"
                       optionFilterProp="children"
                       optionLabelProp="children"
@@ -1314,11 +1315,15 @@ class EditNetwork extends Component {
                         id: 'network.form.instance.disable',
                       })}
                       getPopupContainer={(triggerNode) => triggerNode.parentNode}
-                      choiceRender={this.handleRenderInstance}
                       filterOption={(input, option) => option.props.children.props.children
                         .toLowerCase()
                         .indexOf(input.toLowerCase()) >= 0}
                     >
+                      {istOption.concat(initIstOption).length > 1 && (
+                        <Option key="all_instance" value="all_instance">
+                          {intl.formatMessage({ id: 'all_instance' })}
+                        </Option>
+                      )}
                       {initIstOption}
                       {istOption}
                     </Select>

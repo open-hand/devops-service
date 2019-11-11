@@ -95,6 +95,11 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
         updateSecret(objectPath, envId, projectId, updateC7nSecret, path, userId);
     }
 
+    @Override
+    public Class<V1Secret> getTarget() {
+        return V1Secret.class;
+    }
+
     private void addSecret(Map<String, String> objectPath, Long envId,
                            List<V1Secret> addSecret, String path, Long userId) {
         addSecret.forEach(c7nSecret -> {

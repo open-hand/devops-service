@@ -1,17 +1,34 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.util.*;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import javax.annotation.PostConstruct;
+
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
+import io.kubernetes.client.models.V1Endpoints;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
+import org.yaml.snakeyaml.Yaml;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
-import io.choerodon.base.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.FeignException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.api.vo.kubernetes.C7nCertification;
-import io.choerodon.devops.api.vo.kubernetes.C7nHelmRelease;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.BranchSagaPayLoad;
 import io.choerodon.devops.app.service.*;
@@ -24,8 +41,7 @@ import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.enums.CommandStatus;
-import io.choerodon.devops.infra.enums.GitOpsObjectError;
+import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.infra.feign.operator.AgileServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
@@ -33,24 +49,6 @@ import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsMergeRequestMapper;
 import io.choerodon.devops.infra.message.ResourceBundleHandler;
 import io.choerodon.devops.infra.util.*;
-import io.kubernetes.client.models.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.interceptor.TransactionAspectSupport;
-import org.yaml.snakeyaml.Yaml;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.util.*;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * Creator: Runge
@@ -60,24 +58,15 @@ import java.util.stream.Collectors;
  */
 @Service
 public class DevopsGitServiceImpl implements DevopsGitService {
-    private static final String CHOERODON_IO_RESOURCE = "choerodon.io/resource";
-    private static final String METADATA = "metadata";
-    private static final String CUSTOM = "custom";
-    private static final String LABELS = "labels";
-    private static final String KIND = "kind";
-    private static final String NAME = "name";
-    private static final String SERVICE = "Service";
-    private static final String INGRESS = "Ingress";
-    private static final String C7NHELM_RELEASE = "C7NHelmRelease";
-    private static final String CERTIFICATE = "Certificate";
-    private static final String CONFIGMAP = "ConfigMap";
-    private static final String ENDPOINTS = "Endpoints";
-    private static final String SECRET = "Secret";
     private static final String NO_COMMIT_SHA = "0000000000000000000000000000000000000000";
     private static final String REF_HEADS = "refs/heads/";
     private static final String GIT_SUFFIX = "/.git";
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsGitServiceImpl.class);
-    private Pattern pattern = Pattern.compile("^[-\\+]?[\\d]*$");
+    private Pattern pattern = Pattern.compile("^[-+]?[\\d]*$");
+
+    private Map<String, ConvertK8sObjectService> userEnvSupportedResourceConverters = new HashMap<>();
+    private Map<String, ConvertK8sObjectService> systemEnvSupportedResourceConverters = new HashMap<>();
+    private Map<Class, HandlerObjectFileRelationsService> objectFileRelationHandlers = new HashMap<>();
 
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
@@ -118,28 +107,63 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Autowired
     DevopsMergeRequestMapper devopsMergeRequestMapper;
     @Autowired
-    @Qualifier("handlerC7nReleaseRelationsServiceImpl")
-    private HandlerObjectFileRelationsService handlerC7nReleaseRelationsService;
-    @Autowired
-    @Qualifier("handlerServiceRelationsServiceImpl")
-    private HandlerObjectFileRelationsService handlerServiceRelationsService;
-    @Autowired
-    @Qualifier("handlerIngressRelationsServiceImpl")
-    private HandlerObjectFileRelationsService handlerIngressRelationsService;
-    @Autowired
-    @Qualifier("handlerC7nCertificationServiceImpl")
-    private HandlerObjectFileRelationsService handlerC7nCertificationRelationsService;
-    @Autowired
-    @Qualifier("handlerConfigMapRelationsServiceImpl")
-    private HandlerObjectFileRelationsService handlerConfigMapRelationsService;
-    @Autowired
-    @Qualifier("handlerC7nSecretServiceImpl")
-    private HandlerObjectFileRelationsService handlerC7nSecretRelationsService;
-    @Autowired
-    @Qualifier("handlerCustomResourceServiceImpl")
-    private HandlerObjectFileRelationsService handlerCustomResourceService;
-    @Autowired
     private DevopsGitlabCommitService devopsGitlabCommitService;
+
+    @Autowired
+    private List<HandlerObjectFileRelationsService> handlerObjectFileRelationsServices;
+    @Autowired
+    private List<ConvertK8sObjectService> convertK8sObjectServices;
+
+    /**
+     * 初始化转换类和处理关系的类
+     */
+    @PostConstruct
+    private void initialize() {
+        Map<String, ConvertK8sObjectService> allConverters = new HashMap<>();
+        convertK8sObjectServices.forEach(converter -> allConverters.put(converter.getType().getType(), converter));
+
+        initUserEnvSupportedResources(allConverters);
+        initSystemEnvSupportedResources(allConverters);
+        initHandlers();
+    }
+
+    /**
+     * 初始化对于用户环境支持的资源类型的转换类
+     *
+     * @param allConverters 所有支持的转换类
+     */
+    private void initUserEnvSupportedResources(Map<String, ConvertK8sObjectService> allConverters) {
+        for (UserEnvSupportedResourceType type : UserEnvSupportedResourceType.values()) {
+            if (allConverters.get(type.getType()) != null) {
+                userEnvSupportedResourceConverters.put(type.getType(), allConverters.get(type.getType()));
+            }
+        }
+        // 默认的处理
+        userEnvSupportedResourceConverters.put(ResourceType.MISSTYPE.getType(), allConverters.get(ResourceType.CUSTOM.getType()));
+    }
+
+    /**
+     * 初始化对于系统环境支持的资源类型的转换类
+     *
+     * @param allConverters 所有支持的转换类
+     */
+    private void initSystemEnvSupportedResources(Map<String, ConvertK8sObjectService> allConverters) {
+        for (SystemEnvSupportedResourceType type : SystemEnvSupportedResourceType.values()) {
+            if (allConverters.get(type.getType()) != null) {
+                systemEnvSupportedResourceConverters.put(type.getType(), allConverters.get(type.getType()));
+            }
+        }
+        // 默认的处理
+        systemEnvSupportedResourceConverters.put(ResourceType.MISSTYPE.getType(), allConverters.get(ResourceType.MISSTYPE.getType()));
+    }
+
+    /**
+     * 初始化资源类对应的处理类
+     */
+    private void initHandlers() {
+        handlerObjectFileRelationsServices.forEach(handler -> objectFileRelationHandlers.put(handler.getTarget(), handler));
+    }
+
 
     private Integer getGitlabUserId() {
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
@@ -249,7 +273,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     @Override
-    public PageInfo<BranchVO> pageBranchByOptions(Long projectId, PageRequest pageRequest, Long appServiceId, String params) {
+    public PageInfo<BranchVO> pageBranchByOptions(Long projectId, Pageable pageable, Long appServiceId, String params) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         AppServiceDTO applicationDTO = appServiceService.baseQuery(appServiceId);
@@ -266,7 +290,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         String path = String.format("%s%s%s-%s/%s",
                 gitlabUrl, urlSlash, organizationDTO.getCode(), projectDTO.getCode(), applicationDTO.getCode());
         PageInfo<DevopsBranchDTO> devopsBranchDTOPageInfo =
-                devopsBranchService.basePageBranch(appServiceId, pageRequest, params);
+                devopsBranchService.basePageBranch(appServiceId, pageable, params);
         PageInfo<BranchVO> devopsBranchVOPageInfo = ConvertUtils.convertPage(devopsBranchDTOPageInfo, BranchVO.class);
 
         devopsBranchVOPageInfo.setList(devopsBranchDTOPageInfo.getList().stream().map(t -> {
@@ -286,7 +310,18 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
     @Override
     public DevopsBranchVO queryBranch(Long projectId, Long applicationId, String branchName) {
-        return ConvertUtils.convertObject(devopsBranchService.baseQueryByAppAndBranchName(applicationId, branchName), DevopsBranchVO.class);
+        DevopsBranchDTO branchDTO = devopsBranchService.baseQueryByAppAndBranchName(applicationId, branchName);
+        DevopsBranchVO devopsBranchVO = ConvertUtils.convertObject(branchDTO, DevopsBranchVO.class);
+        if (devopsBranchVO.getIssueId() != null) {
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+            IssueDTO issueDTO = agileServiceClientOperator.queryIssue(projectId, devopsBranchVO.getIssueId(), projectDTO.getOrganizationId());
+            if (issueDTO == null || issueDTO.getIssueId() == null) {
+                devopsBranchVO.setIssueId(null);
+                branchDTO.setIssueId(null);
+                devopsBranchService.baseUpdateBranch(branchDTO);
+            }
+        }
+        return devopsBranchVO;
     }
 
     @Override
@@ -320,7 +355,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
 
     @Override
-    public MergeRequestTotalVO listMergeRequest(Long projectId, Long appServiceId, String state, PageRequest pageRequest) {
+    public MergeRequestTotalVO listMergeRequest(Long projectId, Long appServiceId, String state, Pageable pageable) {
         appServiceService.baseCheckApp(projectId, appServiceId);
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
         if (appServiceDTO.getGitlabProjectId() == null) {
@@ -328,7 +363,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         }
 
         PageInfo<DevopsMergeRequestDTO> devopsMergeRequestDTOPageInfo = devopsMergeRequestService
-                .basePageByOptions(appServiceDTO.getGitlabProjectId(), state, pageRequest);
+                .basePageByOptions(appServiceDTO.getGitlabProjectId(), state, pageable);
 
         List<MergeRequestVO> pageContent = new ArrayList<>();
         List<DevopsMergeRequestDTO> devopsMergeRequestDTOS = devopsMergeRequestDTOPageInfo.getList();
@@ -497,49 +532,28 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 handleDiffs(gitLabProjectId, operationFiles, deletedFiles, beforeSync, beforeSyncDelete,
                         devopsEnvironmentDTO, devopsEnvCommitDTO);
             }
-            List<C7nHelmRelease> c7nHelmReleases = new ArrayList<>();
-            List<V1Service> v1Services = new ArrayList<>();
-            List<V1beta1Ingress> v1beta1Ingresses = new ArrayList<>();
-            List<C7nCertification> c7nCertifications = new ArrayList<>();
-            List<V1ConfigMap> v1ConfigMaps = new ArrayList<>();
-            List<V1Secret> v1Secrets = new ArrayList<>();
-            List<V1Endpoints> v1Endpoints = new ArrayList<>();
-            List<DevopsCustomizeResourceDTO> devopsCustomizeResourceDTOS = new ArrayList<>();
 
+            Map<Class, List> resourceKindMap = new HashMap<>();
 
             //从文件中读出对象,序列化为K8S对象
-            objectPath = convertFileToK8sObjects(operationFiles, path, c7nHelmReleases, v1Services, v1beta1Ingresses,
-                    v1ConfigMaps, v1Secrets, v1Endpoints, devopsCustomizeResourceDTOS, devopsEnvironmentDTO.getId(), new ArrayList<>(beforeSyncDelete),
-                    c7nCertifications);
+            objectPath = convertFileToK8sObjects(operationFiles, path,
+                    EnvironmentType.forValue(devopsEnvironmentDTO.getType()),
+                    resourceKindMap, devopsEnvironmentDTO.getId(),
+                    new ArrayList<>(beforeSyncDelete));
 
             LOGGER.info("序列化k8s对象成功！");
 
             List<DevopsEnvFileResourceDTO> beforeSyncFileResource = new ArrayList<>(beforeSync);
 
             //将k8s对象初始化为实例，网络，域名，证书，秘钥对象,处理对象文件关系
-            handlerC7nReleaseRelationsService
-                    .handlerRelations(objectPath, beforeSyncFileResource, c7nHelmReleases, null, envId, projectId, path,
-                            userId);
-
-            handlerServiceRelationsService
-                    .handlerRelations(objectPath, beforeSyncFileResource, v1Services, v1Endpoints, envId, projectId, path, userId);
-
-            handlerIngressRelationsService
-                    .handlerRelations(objectPath, beforeSyncFileResource, v1beta1Ingresses, null, envId, projectId, path,
-                            userId);
-
-            handlerC7nCertificationRelationsService
-                    .handlerRelations(objectPath, beforeSyncFileResource, c7nCertifications, null, envId, projectId, path,
-                            userId);
-
-            handlerConfigMapRelationsService
-                    .handlerRelations(objectPath, beforeSyncFileResource, v1ConfigMaps, null, envId, projectId, path, userId);
-
-            handlerC7nSecretRelationsService
-                    .handlerRelations(objectPath, beforeSyncFileResource, v1Secrets, null, envId, projectId, path, userId);
-
-
-            handlerCustomResourceService.handlerRelations(objectPath, beforeSyncFileResource, devopsCustomizeResourceDTOS, null, envId, projectId, path, userId);
+            resourceKindMap.forEach((k, v) -> {
+                HandlerObjectFileRelationsService handler = objectFileRelationHandlers.get(k);
+                if (handler == null) {
+                    LOGGER.info("Handler is unexpectedly null. The resource kind is {}", k);
+                    return;
+                }
+                handler.handlerRelations(objectPath, beforeSyncFileResource, v, resourceKindMap.get(V1Endpoints.class), envId, projectId, path, userId);
+            });
             LOGGER.info("k8s对象转换平台对象成功！");
             //处理文件
             handleFiles(operationFiles, deletedFiles, devopsEnvironmentDTO, devopsEnvCommitDTO, path);
@@ -684,22 +698,29 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         });
     }
 
+
+    /**
+     * 将涉及的文件内的对象进行反序列化处理，获取后续处理所需要的元数据
+     *
+     * @param files             对应之前diff操作的operationFiles
+     * @param path              环境库的本地目录
+     * @param environmentType   环境的类型 user/system
+     * @param resourceContainer 用于放置解析出的资源的容器
+     * @param envId             环境ID
+     * @param beforeSyncDelete  删除的文件的 资源文件关联关系
+     * @return 对象hashcode和对象所处文件名对映射
+     */
     private Map<String, String> convertFileToK8sObjects(List<String> files,
                                                         String path,
-                                                        List<C7nHelmRelease> c7nHelmReleases,
-                                                        List<V1Service> v1Services,
-                                                        List<V1beta1Ingress> v1beta1Ingresses,
-                                                        List<V1ConfigMap> configMaps,
-                                                        List<V1Secret> secrets,
-                                                        List<V1Endpoints> v1Endpoints,
-                                                        List<DevopsCustomizeResourceDTO> devopsCustomizeResourceDTOS,
+                                                        EnvironmentType environmentType,
+                                                        Map<Class, List> resourceContainer,
                                                         Long envId,
-                                                        List<DevopsEnvFileResourceDTO> beforeSyncDelete,
-                                                        List<C7nCertification> c7nCertifications) {
+                                                        List<DevopsEnvFileResourceDTO> beforeSyncDelete) {
         Map<String, String> objectPath = new HashMap<>();
+        Yaml yaml = new Yaml();
+        final Map<String, ConvertK8sObjectService> converters = EnvironmentType.USER == environmentType ? userEnvSupportedResourceConverters : systemEnvSupportedResourceConverters;
 
         files.forEach(filePath -> {
-            Yaml yaml = new Yaml();
             File file = new File(String.format("%s/%s", path, filePath));
             Iterable<Object> allParts;
             try {
@@ -734,138 +755,29 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                     throw new GitOpsExplainException(GitOpsObjectError.CUSTOM_RESOURCE_KIND_NOT_FOUND.getError(), filePath);
                 }
 
-                String type = jsonObject.get("kind").toString();
-                switch (type) {
-                    case C7NHELM_RELEASE:
-                        //反序列文件为c7nHelmRelease对象,
-                        ConvertK8sObjectService<C7nHelmRelease> convertC7nHelmRelease = new ConvertC7nHelmReleaseServiceImpl();
-                        convertC7nHelmRelease.setT(new C7nHelmRelease());
-                        C7nHelmRelease c7nHelmRelease = convertC7nHelmRelease
-                                .serializableObject(jsonObject.toJSONString(), filePath, objectPath);
-                        //校验参数校验参数是否合法
-                        convertC7nHelmRelease.checkParameters(c7nHelmRelease, objectPath);
-                        //校验对象是否在其它文件中已经定义
-                        convertC7nHelmRelease
-                                .checkIfExist(c7nHelmReleases, envId, beforeSyncDelete, objectPath, c7nHelmRelease);
-                        break;
-                    case INGRESS:
-                        //反序列文件为V1beta1ingress对象,
-                        ConvertK8sObjectService<V1beta1Ingress> convertV1beta1Ingress = new ConvertV1beta1IngressServiceImpl();
-                        convertV1beta1Ingress.setT(new V1beta1Ingress());
-                        V1beta1Ingress v1beta1Ingress = convertV1beta1Ingress
-                                .serializableObject(jsonObject.toJSONString(), filePath, objectPath);
-                        //校验参数校验参数是否合法
-                        convertV1beta1Ingress.checkParameters(v1beta1Ingress, objectPath);
-                        //校验对象是否在其它文件中已经定义
-                        convertV1beta1Ingress.checkIfExist(v1beta1Ingresses, envId, beforeSyncDelete, objectPath,
-                                v1beta1Ingress);
-                        break;
-                    case SERVICE:
-                        //反序列文件为V1service对象,
-                        ConvertK8sObjectService<V1Service> convertV1Service = new ConvertV1ServiceServiceImpl();
-                        convertV1Service.setT(new V1Service());
-                        V1Service v1Service = convertV1Service
-                                .serializableObject(jsonObject.toJSONString(), filePath, objectPath);
-                        //校验参数校验参数是否合法
-                        convertV1Service.checkParameters(v1Service, objectPath);
-                        //校验对象是否在其它文件中已经定义
-                        convertV1Service.checkIfExist(v1Services, envId, beforeSyncDelete, objectPath, v1Service);
-                        break;
-                    case CERTIFICATE:
-                        //反序列文件为C7nCertification对象,
-                        ConvertK8sObjectService<C7nCertification> convertC7nCertification = new ConvertC7nCertificationServiceImpl();
-                        convertC7nCertification.setT(new C7nCertification());
-                        C7nCertification c7nCertification = convertC7nCertification
-                                .serializableObject(jsonObject.toJSONString(), filePath, objectPath);
-                        //校验参数校验参数是否合法
-                        convertC7nCertification.checkParameters(c7nCertification, objectPath);
-                        //校验对象是否在其它文件中已经定义
-                        convertC7nCertification.checkIfExist(c7nCertifications, envId, beforeSyncDelete, objectPath,
-                                c7nCertification);
-                        break;
-                    case CONFIGMAP:
-                        //反序列文件为ConfigMap对象,
-                        ConvertK8sObjectService<V1ConfigMap> convertConfigMap = new ConvertV1ConfigMapServiceImpl();
-                        convertConfigMap.setT(new V1ConfigMap());
-                        V1ConfigMap v1ConfigMap = convertConfigMap
-                                .serializableObject(jsonObject.toJSONString(), filePath, objectPath);
-                        //校验参数校验参数是否合法
-                        convertConfigMap.checkParameters(v1ConfigMap, objectPath);
-                        //校验对象是否在其它文件中已经定义
-                        convertConfigMap.checkIfExist(configMaps, envId, beforeSyncDelete, objectPath,
-                                v1ConfigMap);
-                        break;
-                    case SECRET:
-                        // 反序列文件为C7nSecret对象
-                        ConvertK8sObjectService<V1Secret> convertSecret = new ConvertC7nSecretServiceImpl();
-                        convertSecret.setT(new V1Secret());
-                        V1Secret v1Secret = convertSecret
-                                .serializableObject(jsonObject.toJSONString(), filePath, objectPath);
-                        // 校验参数校验参数是否合法
-                        convertSecret.checkParameters(v1Secret, objectPath);
-                        // 校验对象是否在其它文件中已经定义
-                        convertSecret.checkIfExist(secrets, envId, beforeSyncDelete, objectPath, v1Secret);
-                        break;
-                    case ENDPOINTS:
-                        // 反序列文件为V1EndPoints对象
-                        ConvertK8sObjectService<V1Endpoints> convertEndPoints = new ConvertV1EndPointsServiceImpl();
-                        convertEndPoints.setT(new V1Endpoints());
-                        V1Endpoints v1Endpoints1 = convertEndPoints
-                                .serializableObject(jsonObject.toJSONString(), filePath, objectPath);
-                        // 校验参数校验参数是否合法
-                        convertEndPoints.checkParameters(v1Endpoints1, objectPath);
-                        v1Endpoints.add(v1Endpoints1);
-                        break;
-                    default:
-                        //初始化自定义资源对象
-                        DevopsCustomizeResourceDTO devopsCustomizeResourceDTO = getDevopsCustomizeResourceDTO(envId, filePath, (Map<String, Object>) data);
-                        objectPath.put(TypeUtil.objToString(devopsCustomizeResourceDTO.hashCode()), filePath);
-                        ConvertK8sObjectService<DevopsCustomizeResourceDTO> convertCustomResourceDTO = new ConvertDevopsCustomResourceImpl();
-                        // 校验对象是否在其它文件中已经定义
-                        convertCustomResourceDTO.checkIfExist(devopsCustomizeResourceDTOS, envId, beforeSyncDelete, objectPath, devopsCustomizeResourceDTO);
-                        // 校验参数校验参数是否合法
-                        convertCustomResourceDTO.checkParameters(devopsCustomizeResourceDTO, objectPath);
-                        break;
-                }
-            }
 
+                // 之前都是对数据进行校验的阶段
+                String type = jsonObject.get("kind").toString();
+
+
+                ConvertK8sObjectService currentHandler = converters.get(type);
+                if (currentHandler == null) {
+                    // 准备默认处理方式，用户环境默认处理方式是作为自定义资源处理，
+                    // 系统环境的默认处理方式是抛出异常以表示不支持
+                    currentHandler = converters.get(ResourceType.MISSTYPE.getType());
+                }
+
+                Object resource = currentHandler.serializableObject(jsonObject.toJSONString(), filePath, objectPath, envId);
+                resourceContainer.computeIfAbsent(resource.getClass(), t -> new ArrayList<>());
+
+                // 校验参数
+                currentHandler.checkParameters(resource, objectPath);
+
+                // 校验资源是否已经存在
+                currentHandler.checkIfExist(resourceContainer.get(resource.getClass()), envId, beforeSyncDelete, objectPath, resource);
+            }
         });
         return objectPath;
-    }
-
-    private DevopsCustomizeResourceDTO getDevopsCustomizeResourceDTO(Long envId, String
-            filePath, Map<String, Object> data) {
-        DevopsCustomizeResourceDTO devopsCustomizeResourceDTO = new DevopsCustomizeResourceDTO();
-
-        devopsCustomizeResourceDTO.setEnvId(envId);
-        devopsCustomizeResourceDTO.setFilePath(filePath);
-        Map<String, Object> datas = data;
-        if (datas.get(KIND) == null) {
-            throw new GitOpsExplainException(GitOpsObjectError.CUSTOM_RESOURCE_KIND_NOT_FOUND.getError(), filePath);
-        }
-        devopsCustomizeResourceDTO.setK8sKind(datas.get(KIND).toString());
-        LinkedHashMap metadata = (LinkedHashMap) datas.get(METADATA);
-
-        if (metadata == null) {
-            throw new GitOpsExplainException(GitOpsObjectError.CUSTOM_RESOURCE_METADATA_NOT_FOUND.getError(), filePath);
-        }
-        if (metadata.get(NAME) == null) {
-            throw new GitOpsExplainException(GitOpsObjectError.CUSTOM_RESOURCE_NAME_NOT_FOUND.getError(), filePath);
-        }
-        devopsCustomizeResourceDTO.setName(metadata.get(NAME).toString());
-
-        //添加自定义资源标签
-        LinkedHashMap labels = (LinkedHashMap) metadata.get(LABELS);
-
-        if (labels == null) {
-            labels = new LinkedHashMap();
-        }
-        labels.put(CHOERODON_IO_RESOURCE, CUSTOM);
-        metadata.put(LABELS, labels);
-        datas.put(METADATA, metadata);
-
-        devopsCustomizeResourceDTO.setResourceContent(FileUtil.getYaml().dump(datas));
-        return devopsCustomizeResourceDTO;
     }
 
     private void commitBranchSync(PushWebHookVO pushWebHookVO, Long appServiceId) {
