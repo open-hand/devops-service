@@ -132,11 +132,20 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                     // 0.20.0删除此方法
                     // syncAppShare(logs);
                     syncDeployRecord(logs);
-                    syncClusterAndCertifications(logs);
+                    // devops-service启动时不再迁移集群和证书，让用户升级时在总前端部署之后去界面调接口传入 0.19.5 迁移集群和证书
+//                    syncClusterAndCertifications(logs);
                     syncConfig();
                     syncEnvAndAppServiceStatus();
                     syncBranch();
                     LOGGER.info("修复数据完成");
+                } else if ("0.19.5".equals(version)) {
+                    syncEnvAppRelevance(logs);
+                    syncAppShare(logs);
+                    syncDeployRecord(logs);
+                    syncClusterAndCertifications(logs);
+                    syncConfig();
+                    syncEnvAndAppServiceStatus();
+                    syncBranch();
                 } else if ("0.18.13".equals(version)) {
                     syncHarbor();
                 } else {
