@@ -6,7 +6,7 @@ import { DataSet } from 'choerodon-ui/pro';
 import { observer } from 'mobx-react-lite';
 
 import { useCodeManagerStore } from '../../../stores';
-import CiTableDataSet from './ciTableDataSet';
+import CiTableDataSet from './CiTableDataSet';
 
 const Store = createContext();
 

@@ -1,10 +1,10 @@
-import React, { createContext, useContext, useState, useMemo, useEffect } from 'react';
+import React, { createContext, useContext, useMemo, useEffect } from 'react';
 import { inject } from 'mobx-react';
 import { observer } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
 import { DataSet } from 'choerodon-ui/pro';
-import CreateDataSet from './branchCreateDataSet';
-import issueNameDataSet from './issueNameDataSet';
+import CreateDataSet from './BranchCreateDataSet';
+import issueNameDataSet from './IssueNameDataSet';
 import useStore from './useStore';
 
 
@@ -25,9 +25,34 @@ export const StoreProvider = injectIntl(inject('AppState')(
     } = props;
 
     const contentStore = useStore();
-    const selectedApp = appServiceId;
     const issueNameOptionDs = useMemo(() => new DataSet(issueNameDataSet({ projectId }), [projectId]));
     const formDs = useMemo(() => new DataSet(CreateDataSet({ formatMessage, issueNameOptionDs, projectId, appServiceId, contentStore }), [projectId]));
+
+    useEffect(() => {
+      if (appServiceId) {
+        formDs.transport = {
+          create: ({ data: [data] }) => ({
+            url: `/devops/v1/projects/${projectId}/app_service/${appServiceId}/git/branch`,
+            method: 'post',
+            transformRequest: () => {
+              const issueId = data.issueName;
+              const originBranch = data.branchOrigin;
+              const type = data.branchType;
+              let branchName;
+              type === 'custom' ? branchName = data.branchName : branchName = `${data.branchType}-${data.branchName}`;
+              const postData = {
+                branchName,
+                issueId,
+                originBranch,
+                type,
+              };
+              return JSON.stringify(postData);
+            },
+          }),
+        };
+      }
+    }, [projectId, appServiceId]);
+
     const value = {
       ...props,
       projectId,

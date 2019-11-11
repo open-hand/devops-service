@@ -7,14 +7,15 @@ import { Pagination, Icon, Button, Modal } from 'choerodon-ui/pro';
 import { Collapse } from 'choerodon-ui';
 import { Action, Page, Permission } from '@choerodon/boot';
 
-import UserInfo from '../../../../../components/userInfo';
-import TimePopover from '../../../../../components/timePopover';
-import EmptyPage from '../../../../../components/empty-page';
-import Loading from '../../../../../components/loading';
-import { handlePromptError } from '../../../../../utils';
+import UserInfo from '../../../../components/userInfo';
+import TimePopover from '../../../../components/timePopover';
+import EmptyPage from '../../../../components/empty-page';
+import Loading from '../../../../components/loading';
+
+import { handlePromptError } from '../../../../utils';
 
 import { useAppTagStore } from './stores';
-import { useCodeManagerStore } from '../../../stores';
+import { useCodeManagerStore } from '../../stores';
 import AppTagCreate from './modals/app-tag-create/AppTagCreate';
 import AppTagEdit from './modals/app-tag-edit/index';
 
@@ -158,8 +159,8 @@ export default observer((props) => {
       <div className="c7n-tag-panel-info">
         <div className="c7n-tag-panel-name">
           <Icon type="local_offer" />
-          <div className="c7n-tag-name" onClick={(e) => { stopPropagation(e); openEdit(release.tagName, release.description !== 'empty' ? release.description : formatMessage({ id: 'apptag.release.empty' })); }}>
-            <span className="c7n-tag-name-text">{release.tagName}</span>
+          <div className="c7n-tag-name">
+            <span className="c7n-tag-name-text" onClick={(e) => { stopPropagation(e); openEdit(release.tagName, release.description !== 'empty' ? release.description : formatMessage({ id: 'apptag.release.empty' })); }}>{release.tagName}</span>
           </div>
           <div className="c7n-tag-action" onClick={stopPropagation}>
             <Action data={[

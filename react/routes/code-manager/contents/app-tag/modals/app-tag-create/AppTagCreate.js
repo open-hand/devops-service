@@ -4,10 +4,11 @@ import _ from 'lodash';
 
 import { Icon, Form, TextField, Select } from 'choerodon-ui/pro';
 
-import MdEditor from '../../../../../../../components/MdEditor/index';
-import Tips from '../../../../../../../components/Tips/index';
+import MdEditor from '../../../../../../components/MdEditor';
+import Tips from '../../../../../../components/new-tips';
 
 import '../index.less';
+
 
 const { Option, OptGroup } = Select;
 export default observer((props) => {

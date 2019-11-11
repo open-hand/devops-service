@@ -1,8 +1,10 @@
 import React, { useEffect, Fragment, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-
 import _ from 'lodash';
-import MdEditor from '../../../../../../../components/MdEditor/index';
+import { handlePromptError } from '../../../../../../utils';
+
+import MdEditor from '../../../../../../components/MdEditor/index';
+
 
 import '../index.less';
 
@@ -18,6 +20,9 @@ export default observer((props) => {
 
   modal.handleOk(async () => {
     const res = await tagStore.editTag(projectId, tag, release, appServiceId);
+    if (!handlePromptError(res, false)) {
+      return false;
+    }
     refresh();
   });
 

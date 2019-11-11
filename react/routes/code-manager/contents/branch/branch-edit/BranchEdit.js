@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react';
-import { withRouter } from 'react-router-dom';
 import { Form, Select } from 'choerodon-ui/pro';
 import { injectIntl } from 'react-intl';
 import { observer } from 'mobx-react-lite';
@@ -18,6 +17,7 @@ function BranchEdit() {
   } = useSelectStore();
 
   useEffect(() => {
+    optionsDs.query();
     issueId ? selectDs.current.set('issueName', issueId) : null;
   }, []);
 
@@ -146,4 +146,4 @@ function BranchEdit() {
     </div>
   );
 }
-export default withRouter(injectIntl(observer(BranchEdit)));
+export default injectIntl(observer(BranchEdit));

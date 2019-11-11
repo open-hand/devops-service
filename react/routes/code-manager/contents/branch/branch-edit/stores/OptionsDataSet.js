@@ -7,7 +7,6 @@ export default ({ projectId, issueId }) => {
   }
   return {
     autoCreate: true,
-    autoQuery: true,
     selection: 'single',
     paging: false,
     transport: {

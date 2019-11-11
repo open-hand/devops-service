@@ -266,6 +266,7 @@ function Branch(props) {
       <div style={{ color }} className="branch-issue"><i className={`icon icon-${icon}`} /></div>
     </Tooltip>);
   };
+
   function openIssueDetail(id, name) {
     const orgId = AppState.currentMenuType.organizationId;
     const projId = AppState.currentMenuType.projectId;
@@ -274,7 +275,7 @@ function Branch(props) {
       title: <FormattedMessage
         id="branch.detailHead"
         values={{
-          name: `${name}`,
+          name,
         }}
       />,
       drawer: true,
@@ -284,6 +285,7 @@ function Branch(props) {
       okText: <FormattedMessage id="envPl.close" />,
     });
   }
+
   // 获取分支正文列表
   function tableBranch() {
     return (
@@ -298,6 +300,8 @@ function Branch(props) {
       </div>
     );
   }
+
+
   return (
     <Page
       className="c7n-region c7n-branch"
@@ -313,4 +317,4 @@ function Branch(props) {
     </Page>
   );
 }
-export default withRouter(injectIntl(observer(Branch)));
+export default injectIntl(observer(Branch));

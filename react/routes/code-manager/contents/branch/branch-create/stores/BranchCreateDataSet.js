@@ -29,10 +29,6 @@ export default ({ projectId, issueNameOptionDs, appServiceId, formatMessage, sea
   }
   return {
     autoCreate: true,
-    autoQuery: false,
-    selection: false,
-    paging: false,
-    dataKey: null,
     fields: [
       {
         name: 'issueName',
@@ -82,8 +78,6 @@ export default ({ projectId, issueNameOptionDs, appServiceId, formatMessage, sea
           return JSON.stringify(postData);
         },
       }),
-    },
-    events: {
     },
   };
 };

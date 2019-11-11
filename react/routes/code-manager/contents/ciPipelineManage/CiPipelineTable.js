@@ -264,7 +264,6 @@ export default injectIntl(observer(() => {
   }
 
   function renderStages({ value, record }) {
-    // console.log(record);
     const gitlabUrl = record.get('gitlabUrl');
     const stages = value.slice();
     const pipeStage = [];

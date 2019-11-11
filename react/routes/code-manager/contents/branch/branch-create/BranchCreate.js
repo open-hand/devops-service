@@ -8,7 +8,7 @@ import '../../../../main.less';
 import './index.less';
 import '../index.less';
 import MouserOverWrapper from '../../../../../components/MouseOverWrapper';
-import { useFormStore } from './store';
+import { useFormStore } from './stores';
 import { handlePromptError } from '../../../../../utils';
 
 const { Option, OptGroup } = Select;
@@ -53,6 +53,10 @@ function BranchCreate(props) {
     };
     optionsData.push(data);
   });
+
+  useEffect(() => {
+    issueNameOptionDs.query();
+  }, []);
 
   useEffect(() => {
     loadBranchData(branchPageSize);
@@ -100,7 +104,8 @@ function BranchCreate(props) {
       return false;
     }
   }
-  modal.handleOk(() => handleOk());
+  modal.handleOk(handleOk);
+
   /**
    * 切换issue
    * @param value
@@ -137,6 +142,7 @@ function BranchCreate(props) {
     }
     formDs.current.set('branchType', type);
   };
+
   /**
    * 获取列表的icon
    * @param type 分支类型
@@ -165,11 +171,12 @@ function BranchCreate(props) {
     }
     return icon;
   };
+
   // 用于分支类型的渲染函数
   const renderBranchType = ({ text }) => {
     if (text !== 'custom') {
-      setPrefixeData(text);
-      contentStore.setBranchPrefix(text);
+      setPrefixeData(text ? `${text}-` : '');
+      contentStore.setBranchPrefix(text ? `${text}-` : '');
     } else {
       contentStore.setBranchPrefix(null);
       setPrefixeData(null);
@@ -190,6 +197,7 @@ function BranchCreate(props) {
       <span className="c7n-branch-text">{text}</span>
     </div>
   );
+
   // 用于问题名称的渲染函数
   const renderissueName = (typeCode, issueNum, summary) => {
     let mes = '';
@@ -239,6 +247,7 @@ function BranchCreate(props) {
       </span>
     );
   };
+
   const issueNameRender = ({ text }) => {
     let renderTypeCode;
     let renderIssueNum;
@@ -266,6 +275,7 @@ function BranchCreate(props) {
       </span>
     );
   };
+
   // 用于渲染分支来源
   const renderBranchOrigin = ({ text }) => {
     if (!text) {
@@ -282,6 +292,7 @@ function BranchCreate(props) {
       {text[1]}
     </span>;
   };
+
   const loadMore = (type, e) => {
     e.stopPropagation();
     if (type === 'branch') {
@@ -296,6 +307,7 @@ function BranchCreate(props) {
       setLoadMoreTag(false);
     }
   };
+
   const rednerBranchOptionOrigin = ({ text }) => {
     if (typeof text === 'object' && 'props' in text) {
       if (text.props.type === 'branch') {
@@ -324,6 +336,7 @@ function BranchCreate(props) {
       </span>
     );
   };
+  
   return (
     <Content className="sidebar-content c7n-createBranch">
       <div style={{ width: '75%' }}>

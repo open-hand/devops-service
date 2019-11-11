@@ -38,7 +38,7 @@ const RequestPanel = withRouter(observer((props) => {
 
 
   const { appServiceDs, selectAppDs } = useCodeManagerStore();
-  const appId = selectAppDs.current.get('appServiceId');
+  const appId = selectAppDs.current && selectAppDs.current.get('appServiceId');
   const appServiceData = appServiceDs.toData();
 
   handleMapStore.setCodeManagerMergeRequest({

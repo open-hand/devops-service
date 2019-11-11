@@ -44,8 +44,11 @@ const StoreProvider = injectIntl(inject('AppState')(observer(((props) => {
     }
     if (appId) { openTableDS.transport.read.url = url; }
     openTableDS.paging = tabKey !== 'opened';
-    appId && mergedRequestStore.loadUrl(id, appId);
   }, [appId, tabKey, projectId]);
+
+  useEffect(() => {
+    appId && mergedRequestStore.loadUrl(id, appId);
+  }, [appId, projectId]);
 
   return (
     <Store.Provider value={value}>

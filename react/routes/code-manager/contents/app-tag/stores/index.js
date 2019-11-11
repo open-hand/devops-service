@@ -3,11 +3,11 @@ import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import { DataSet } from 'choerodon-ui/pro';
-import HandleMapStore from '../../../store/handleMapStore';
+import HandleMapStore from '../../../main-view/store/handleMapStore';
 import AppTagDataSet from './AppTagDataSet';
 import AppTagCreateDataSet from './AppTagCreateDataSet';
 
-import { useCodeManagerStore } from '../../../../stores';
+import { useCodeManagerStore } from '../../../stores';
 import useStore from './useStore';
 
 

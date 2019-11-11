@@ -1,5 +1,4 @@
 export default ({ projectId }) => ({
-  autoQuery: true,
   selection: 'single',
   paging: false,
   transport: {
