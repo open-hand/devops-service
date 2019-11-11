@@ -13,7 +13,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 
 
 @Configuration
-//@EnableWebSecurity
+@EnableWebSecurity
 @Order(1)
 public class DevopsWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapter {
 
@@ -23,7 +23,7 @@ public class DevopsWebSecurityConfigurerAdapter extends WebSecurityConfigurerAda
     public void configure(WebSecurity web) throws Exception {
         web
                 .ignoring()
-                .antMatchers("/workflow/**", "/sonar/**", "/v1/**", "/ci", "/sonar/info", "/v2/api-docs", "/agent/**", "/ws/**", "/gitlab/email", WEBHOOK_ALL, "/v2/choerodon/**", "/choerodon/**", "/actuator/**", "/prometheus");
+                .antMatchers("/workflow/**", "/sonar/**", "/ci", "/sonar/info", "/v2/api-docs", "/agent/**", "/ws/**", "/gitlab/email", WEBHOOK_ALL, "/v2/choerodon/**", "/choerodon/**", "/actuator/**", "/prometheus");
     }
 
 
