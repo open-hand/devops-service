@@ -516,6 +516,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         }
 
         views.forEach(e -> {
+            // 应前端要求返回该字段的空数组
+            e.setPvcs(new ArrayList<>());
             // 将DTO层对象转为VO
             DevopsResourceEnvOverviewVO vo = new DevopsResourceEnvOverviewVO();
             BeanUtils.copyProperties(e, vo);
