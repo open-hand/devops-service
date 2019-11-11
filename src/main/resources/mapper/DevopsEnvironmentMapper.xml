@@ -43,8 +43,6 @@
         </collection>
         <collection property="customResources" ofType="io.choerodon.devops.api.vo.DevopsResourceBasicInfoVO" select="listCustomizeResources" fetchType="eager" column="env_id">
         </collection>
-        <collection property="pvcs" ofType="io.choerodon.devops.api.vo.DevopsResourceBasicInfoVO" select="listPvcResources" fetchType="eager" column="env_id">
-        </collection>
     </resultMap>
 
     <resultMap id="queryInfoByIdResultMap" type="io.choerodon.devops.infra.dto.DevopsEnvironmentInfoDTO">
