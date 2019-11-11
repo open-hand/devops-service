@@ -4,8 +4,6 @@ import { injectIntl, FormattedMessage } from 'react-intl';
 import { Choerodon } from '@choerodon/boot';
 import { Form, Select, TextField, TextArea, NumberField } from 'choerodon-ui/pro';
 import { usePVCreateStore } from './stores';
-
-import './index.less';
 import StatusDot from '../../../../components/status-dot';
 
 const CreateForm = () => {
@@ -70,7 +68,7 @@ const CreateForm = () => {
         <Select name="unit" clearButton={false} />
         <TextField name="path" colSpan={3} />
         {formDs.current.get('type') === 'NFS' && (
-          <TextField name="ip" colSpan={3} />
+          <TextField name="server" colSpan={3} />
         )}
       </Form>
     </div>

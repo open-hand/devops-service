@@ -313,7 +313,7 @@ const deployment = {
   'c7ncd.deployment.create.ingress': '创建域名',
   'c7ncd.deployment.create.configMap': '创建配置映射',
   'c7ncd.deployment.create.cipher': '创建密文',
-  'c7ncd.deployment.devops-pvc.create': '创建PVC',
+  'c7ncd.deployment.create.pvc': '创建PVC',
   'c7ncd.deployment.create.custom': '创建自定义资源',
   'c7ncd.deployment.service.detail': '服务详情',
   'c7ncd.deployment.service.status': '服务状态',
@@ -403,6 +403,14 @@ const deployment = {
     '此操作用于为环境配置特定的操作人员。一般默认选择为项目下所有成员，即该项目下的所有成员均能对此环境中的资源进行操作；若选择项目下特定成员，则只有被添加后的成员才有权限。项目所有者默认拥有权限',
   'c7ncd.deployment.service.tips':
     '您可在此选择项目下已存在但无实例的应用服务，并将其关联到该环境下，以便为其创建相应的资源',
+  'c7ncd.deployment.pvc.name': 'PVC名称',
+  'c7ncd.deployment.pvc.pv': '绑定PV',
+  'c7ncd.deployment.pvc.accessModes': '访问模式',
+  'c7ncd.deployment.pvc.requestResource': '总量',
+  'c7ncd.deployment.pvc.type': 'PV类型',
+  'c7ncd.deployment.pvc.pvId': '选择已有PV',
+  'c7ncd.deployment.pvc.delete.title': '删除PVC“{name}”',
+  'c7ncd.deployment.pvc.delete.des': '确定要删除该PVC吗？',
 
 };
 

@@ -1,17 +1,15 @@
-import React, { Fragment, useMemo, useCallback, useEffect, useState } from 'react';
+import React, { Fragment } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Modal } from 'choerodon-ui/pro';
-import { Button } from 'choerodon-ui';
-import { FormattedMessage } from 'react-intl';
 import HeaderButtons from '../../../../../../components/header-buttons';
 import { useResourceStore } from '../../../../stores';
 import { useModalStore } from './stores';
 import { usePVCStore } from '../stores';
-
+import CreateForm from './create-form';
 
 const modalKey = Modal.key();
 const modalStyle = {
-  width: 'calc(100vw - 3.52rem)',
+  width: 380,
 };
 
 const PVCModals = observer(() => {
@@ -19,26 +17,31 @@ const PVCModals = observer(() => {
     intlPrefix,
     prefixCls,
     intl: { formatMessage },
-    resourceStore,
+    resourceStore: { getSelectedMenu: { parentId } },
     treeDs,
   } = useResourceStore();
   const {
-    PVCtableDS,
+    tableDs,
   } = usePVCStore();
-
   const {
     permissions,
     AppState: { currentMenuType: { projectId } },
   } = useModalStore();
 
-  const { parentId } = resourceStore.getSelectedMenu;
-
   function refresh() {
-
+    treeDs.query();
+    tableDs.query();
   }
 
   function openModal() {
-
+    Modal.open({
+      key: modalKey,
+      style: modalStyle,
+      drawer: true,
+      title: formatMessage({ id: `${intlPrefix}.create.pvc` }),
+      children: <CreateForm refresh={refresh} envId={parentId} />,
+      okText: formatMessage({ id: 'create' }),
+    });
   }
 
   function getButtons() {
@@ -47,7 +50,7 @@ const PVCModals = observer(() => {
     const disabled = !connect;
 
     return ([{
-      name: formatMessage({ id: `${intlPrefix}.devops-pvc.create` }),
+      name: formatMessage({ id: `${intlPrefix}.create.pvc` }),
       icon: 'playlist_add',
       handler: openModal,
       display: true,

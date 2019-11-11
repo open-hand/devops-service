@@ -9,7 +9,7 @@ export default ((intlPrefix, formatMessage, projectId, pvId, optionDs, DetailDs)
     read: ({ data: [data] }) => {
       const postData = getTablePostData(data);
       return ({
-        url: '',
+        url: `/devops/v1/projects/${projectId}/pv/${pvId}/permission/page_related`,
         method: 'post',
         data: postData,
       });

@@ -24,7 +24,7 @@ const modalStyle2 = {
   width: 'calc(100vw - 3.52rem)',
 };
 const statusStyle = {
-  minWidth: 54,
+  width: 54,
   marginRight: 8,
   height: '.16rem',
   lineHeight: '.16rem',

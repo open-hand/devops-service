@@ -3,10 +3,8 @@ import { DataSet } from 'choerodon-ui/pro';
 import { inject } from 'mobx-react';
 import { observer } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
-import PVCTableDataSet from './PVCTableDataSet';
+import TableDataSet from './TableDataSet';
 import { useResourceStore } from '../../../../stores';
-import useSecretStore from '../../../stores/useSecretStore';
-import getTablePostData from '../../../../../../utils/getTablePostData';
 
 const Store = createContext();
 
@@ -14,30 +12,21 @@ export function usePVCStore() {
   return useContext(Store);
 }
 
-
 export const StoreProvider = injectIntl(inject('AppState')(
   observer((props) => {
-    const { AppState: { currentMenuType: { id } }, children } = props;
+    const { AppState: { currentMenuType: { projectId } }, children } = props;
     const {
       intl: { formatMessage },
-      resourceStore: { getSelectedMenu: { parentId }, setUpTarget, getUpTarget },
-      // itemTypes: { CIPHER_GROUP },
+      resourceStore: { getSelectedMenu: { parentId } },
+      intlPrefix,
     } = useResourceStore();
 
-    const PVCtableDS = useMemo(() => new DataSet(PVCTableDataSet({ formatMessage })), []);
-    useEffect(() => {
-
-    }, []);
+    const tableDs = useMemo(() => new DataSet(TableDataSet({ formatMessage, intlPrefix, projectId, envId: parentId })), [projectId, parentId]);
 
     const value = {
       ...props,
-      PVCtableDS,
-
+      tableDs,
     };
-
-    useEffect(() => {
-
-    }, []);
 
     return (
       <Store.Provider value={value}>

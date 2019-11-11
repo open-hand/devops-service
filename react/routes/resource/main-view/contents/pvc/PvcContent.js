@@ -1,31 +1,24 @@
-import React, { useMemo, useState, useCallback, Fragment } from 'react';
+import React, { Fragment } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Action } from '@choerodon/boot';
-import { Modal, Table, Tooltip } from 'choerodon-ui/pro';
-import { keys } from 'lodash';
-import MouserOverWrapper from '../../../../../components/MouseOverWrapper/MouserOverWrapper';
+import { Table, Tooltip } from 'choerodon-ui/pro';
 import StatusTags from '../../../../../components/status-tag';
-import TimePopover from '../../../../../components/timePopover/TimePopover';
 import { useResourceStore } from '../../../stores';
-// // import { useKeyValueStore } from './stores';
-// // import Modals from './modals';
-// import KeyValueModal from '../application/modals/key-value';
-import { useMainStore } from '../../stores';
 import { usePVCStore } from './stores';
 import Modals from './modals';
-import ClickText from '../../../../../components/click-text';
 import ResourceListTitle from '../../components/resource-list-title';
 
 import './index.less';
 
 const { Column } = Table;
-const modalKey = Modal.key();
-const modalStyle = {
-  width: 'calc(100vw - 3.52rem)',
+const statusStyle = {
+  width: 54,
+  marginRight: 8,
+  height: '.16rem',
+  lineHeight: '.16rem',
 };
 
-
-const ConfigMap = observer((props) => {
+const pvcContent = observer((props) => {
   const {
     prefixCls,
     intlPrefix,
@@ -33,44 +26,20 @@ const ConfigMap = observer((props) => {
     treeDs,
   } = useResourceStore();
 
-  const { mainStore: { openDeleteModal } } = useMainStore();
-
   const {
-    PVCtableDS,
+    tableDs,
     intl: { formatMessage },
   } = usePVCStore();
 
   function refresh() {
-
+    tableDs.query();
+    tableDs.query();
   }
 
   function getEnvIsNotRunning() {
-
-  }
-
-
-  function openModal() {
-
-  }
-
-  function handleDelete(record) {
-
-  }
-
-  function renderAction({ record }) {
-    const status = record.get('status');
-    if (status && (status === 'bound' || status === 'lost')) {
-      const action = [
-        {
-          service: ['devops-service.devops-pvc.delete'],
-          text: formatMessage({ id: 'delete' }),
-          action: handleDelete.bind(this, record),
-        },
-      ];
-      return (<Action data={action} />);
-    } else {
-      return null;
-    }
+    const envRecord = treeDs.find((record) => record.get('key') === parentId);
+    const connect = envRecord.get('connect');
+    return !connect;
   }
 
   function renderName({ record, value }) {
@@ -78,7 +47,11 @@ const ConfigMap = observer((props) => {
     if (status) {
       return (
         <Fragment>
-          <StatusTags name={status} colorCode={status} />
+          <StatusTags
+            name={status}
+            colorCode={status}
+            style={statusStyle}
+          />
           <Tooltip title={value}>
             <span>
               {value}
@@ -89,26 +62,51 @@ const ConfigMap = observer((props) => {
     }
   }
 
-  function renderValue() {
+  function handleDelete() {
+    const record = tableDs.current;
+    const modalProps = {
+      title: formatMessage({ id: `${intlPrefix}.pvc.delete.title` }, { name: record.get('name') }),
+      children: formatMessage({ id: `${intlPrefix}.pvc.delete.des` }),
+      okText: formatMessage({ id: 'delete' }),
+      okProps: { color: 'red' },
+      cancelProps: { color: 'dark' },
+    };
+    tableDs.delete(record, modalProps);
+  }
 
+  function renderAction({ record }) {
+    const status = record.get('status');
+    const disabled = getEnvIsNotRunning() || status === 'pending' || status === 'Terminating';
+    if (disabled) {
+      return;
+    }
+    const action = [
+      {
+        service: [],
+        text: formatMessage({ id: 'delete' }),
+        action: handleDelete,
+      },
+    ];
+    return (<Action data={action} />);
   }
 
   return (
-    <div className={`${prefixCls}-keyValue-PVC`}>
+    <div className={`${prefixCls}-PVC`}>
       <Modals />
       <ResourceListTitle type="pvcs" />
       <Table
-        dataSet={PVCtableDS}
+        dataSet={tableDs}
         border={false}
         queryBar="bar"
       >
-        <Column name="name" header={formatMessage({ id: `${intlPrefix}.cipher` })} renderer={renderName} />
-        <Column renderer={renderAction} width="0.7rem" />
-        {/* <Column name="status" renderer={renderValue} header={formatMessage({ id: 'status' })} /> */}
-        {/* <Column name="lastUpdateDate" renderer={renderDate} width="1rem" /> */}
+        <Column name="name" renderer={renderName} />
+        <Column renderer={renderAction} width={70} />
+        <Column name="pvName" />
+        <Column name="accessModes" />
+        <Column name="requestResource" />
       </Table>
     </div>
   );
 });
 
-export default ConfigMap;
+export default pvcContent;
