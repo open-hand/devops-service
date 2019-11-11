@@ -13,7 +13,7 @@ import org.springframework.util.StringUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
-import io.choerodon.devops.app.service.DevopsPvServcie;
+import io.choerodon.devops.app.service.DevopsPvService;
 import io.choerodon.devops.infra.constant.KubernetesConstants;
 import io.choerodon.devops.infra.dto.DevopsEnvFileResourceDTO;
 import io.choerodon.devops.infra.dto.DevopsPvDTO;
@@ -34,7 +34,7 @@ public class ConvertPersistentVolumeServiceImpl extends ConvertK8sObjectService<
     private static final Pattern IP_PATTERN = Pattern.compile("^((2(5[0-5]|[0-4]\\d))|[0-1]?\\d{1,2})(\\.((2(5[0-5]|[0-4]\\d))|[0-1]?\\d{1,2})){3}$");
 
     @Autowired
-    private DevopsPvServcie devopsPvServcie;
+    private DevopsPvService devopsPvService;
     @Autowired
     private DevopsEnvFileResourceService devopsEnvFileResourceService;
 
@@ -114,7 +114,7 @@ public class ConvertPersistentVolumeServiceImpl extends ConvertK8sObjectService<
     @Override
     public void checkIfExist(List<V1PersistentVolume> v1PersistentVolumes, Long envId, List<DevopsEnvFileResourceDTO> beforeSyncDelete, Map<String, String> objectPath, V1PersistentVolume pv) {
         String filePath = objectPath.get(TypeUtil.objToString(pv.hashCode()));
-        DevopsPvDTO devopsPvDTO = devopsPvServcie.queryByEnvIdAndName(envId, pv.getMetadata().getName());
+        DevopsPvDTO devopsPvDTO = devopsPvService.queryByEnvIdAndName(envId, pv.getMetadata().getName());
         if (devopsPvDTO != null
                 && !isDeletedByCurrentOperation(beforeSyncDelete, devopsPvDTO.getId(), ResourceType.PERSISTENT_VOLUME)) {
             checkNotExistInDb(devopsEnvFileResourceService.baseQueryByEnvIdAndResourceId(envId, devopsPvDTO.getId(), pv.getKind()), filePath, pv.getMetadata().getName());
