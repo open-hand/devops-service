@@ -107,9 +107,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
 
         // 如果系统环境id为空那么先去创建系统环境,更新集群关联的系统环境
         if (devopsClusterDTO.getSystemEnvId() == null){
-            DevopsEnvironmentDTO devopsEnvironmentDTO = new DevopsEnvironmentDTO();
-            devopsEnvironmentDTO.setClusterId(devopsClusterDTO.getId());
-            devopsEnvironmentService.baseCreate(devopsEnvironmentDTO);
+            DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.createSystemEnv(devopsClusterDTO.getId());
             devopsClusterDTO.setSystemEnvId(devopsEnvironmentDTO.getId());
             devopsClusterService.baseUpdate(devopsClusterDTO);
         }
