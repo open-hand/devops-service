@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import io.kubernetes.client.models.V1Endpoints;
@@ -55,7 +56,9 @@ public class HandlerCustomResourceServiceImpl implements HandlerObjectFileRelati
                         return null;
                     }
                     return devopsCustomizeResourceDTO;
-                }).collect(Collectors.toList());
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
 
         List<DevopsCustomizeResourceDTO> addCustomizeResourceDTOS = new ArrayList<>();
         List<DevopsCustomizeResourceDTO> updateCustomizeResourceDTOS = new ArrayList<>();

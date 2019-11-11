@@ -1,10 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import io.kubernetes.client.models.V1Endpoints;
@@ -68,7 +65,9 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
                         return null;
                     }
                     return devopsSecretDTO.getName();
-                }).collect(Collectors.toList());
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
         // 比较已存在的秘钥和新增要处理的秘钥,获取新增秘钥，更新秘钥，删除秘钥
         List<V1Secret> addC7nSecret = new ArrayList<>();
         List<V1Secret> updateC7nSecret = new ArrayList<>();
