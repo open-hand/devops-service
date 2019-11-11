@@ -16,6 +16,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.ClusterResourceVO;
 import io.choerodon.devops.api.vo.DevopsPrometheusVO;
+import io.choerodon.devops.api.vo.PrometheusStageVO;
 import io.choerodon.devops.app.service.DevopsClusterResourceService;
 
 /**
@@ -122,7 +123,7 @@ public class DevopsClusterResourceController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "查询prometheus部署状态")
     @GetMapping("/prometheus/deploy_status")
-    public ResponseEntity<ClusterResourceVO> getDeployStatus(
+    public ResponseEntity<PrometheusStageVO> getDeployStatus(
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群id", required = true)
             @RequestParam(name = "cluster_id", required = true) Long clusterId) {
