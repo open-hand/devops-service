@@ -53,6 +53,9 @@ public class DevopsPvDTO extends BaseDTO {
     @Transient
     private Long envId;
 
+    @ApiModelProperty("根据存储类型的不同，生成不同的Json数据")
+    private String valueConfig;
+
     public Long getId() {
         return id;
     }
@@ -163,5 +166,13 @@ public class DevopsPvDTO extends BaseDTO {
 
     public void setEnvId(Long envId) {
         this.envId = envId;
+    }
+
+    public String getValueConfig() {
+        return valueConfig;
+    }
+
+    public void setValueConfig(String valueConfig) {
+        this.valueConfig = valueConfig;
     }
 }

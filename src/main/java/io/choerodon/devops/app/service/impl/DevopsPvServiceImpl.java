@@ -5,11 +5,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 
+import com.google.gson.Gson;
 import io.choerodon.devops.infra.enums.*;
 import io.kubernetes.client.custom.Quantity;
 import io.kubernetes.client.models.*;
@@ -61,6 +63,10 @@ public class DevopsPvServiceImpl implements DevopsPvServcie {
     private static final String DELETE = "delete";
     private static final String MASTER = "master";
 
+    private static final String REGEX_SERVER = "((2(5[0-5]|[0-4]\\d))|[0-1]?\\d{1,2}\\.){3}((2(5[0-5]|[0-4]\\d))|[0-1]?\\d{1,2})";
+
+    private static final String REGEX_HOSTPATH = "^/([-\\w]+[.]*[-\\w]*/?)+";
+
     @Autowired
     DevopsPvMapper devopsPvMapper;
     @Autowired
@@ -83,6 +89,8 @@ public class DevopsPvServiceImpl implements DevopsPvServcie {
     private DevopsEnvCommandMapper devopsEnvCommandMapper;
     @Autowired
     GitlabServiceClientOperator gitlabServiceClientOperator;
+
+    private Gson gson = new Gson();
 
     @Override
     public PageInfo<DevopsPvDTO> basePagePvByOptions(Boolean doPage, Pageable pageable, String params) {
@@ -438,15 +446,18 @@ public class DevopsPvServiceImpl implements DevopsPvServcie {
             throw new CommonException("error.py.type.not.exist");
         }
 
-        switch (volumeTypeEnum){
-            // Todo: 选择pv类型之后需要获取详细设置后反序列化成对象
+        switch (volumeTypeEnum) {
+            // 选择pv类型之后需要获取详细设置后反序列化成对象
             case NFS:
-                V1NFSVolumeSource v1NFSVolumeSource = new V1NFSVolumeSource();
-                v1PersistentVolumeSpec.setNfs(v1NFSVolumeSource);
+                V1NFSVolumeSource nfs = gson.fromJson(devopsPvDTO.getValueConfig(), V1NFSVolumeSource.class);
+                //反序列成对象之后进行校验
+                checkConfigValue(nfs, volumeTypeEnum);
+                v1PersistentVolumeSpec.setNfs(nfs);
                 break;
             case HOSTPATH:
-                V1HostPathVolumeSource v1HostPathVolumeSource = new V1HostPathVolumeSource();
-                v1PersistentVolumeSpec.setHostPath(v1HostPathVolumeSource);
+                V1HostPathVolumeSource hostPath = gson.fromJson(devopsPvDTO.getValueConfig(), V1HostPathVolumeSource.class);
+                checkConfigValue(hostPath, volumeTypeEnum);
+                v1PersistentVolumeSpec.setHostPath(hostPath);
                 break;
         }
         v1PersistentVolume.setSpec(v1PersistentVolumeSpec);
@@ -506,5 +517,30 @@ public class DevopsPvServiceImpl implements DevopsPvServcie {
                 devopsEnvironmentDTO.getId(), path);
     }
 
+    //校验存储类型的值是否为空或者格式是否符合要求
+    private void checkConfigValue(Object object, VolumeTypeEnum type) {
+        switch (type) {
+            case HOSTPATH:
+                V1HostPathVolumeSource hostPath = (V1HostPathVolumeSource) object;
+                if (hostPath.getPath() == null) {
+                    throw new CommonException("pv.hostpath.path.not.found");
+                } else if (!Pattern.matches(REGEX_HOSTPATH, hostPath.getPath())) {
+                    throw new CommonException("pv.hostpath.format.error");
+                }
+                break;
+            case NFS:
+                V1NFSVolumeSource nfs = (V1NFSVolumeSource) object;
+                if (nfs.getPath() == null) {
+                    throw new CommonException("pv.nfs.path.not.found");
+                } else if (!Pattern.matches(REGEX_HOSTPATH, nfs.getPath())) {
+                    throw new CommonException("pv.nfs.path.format.error");
+                } else if (nfs.getServer() == null) {
+                    throw new CommonException("pv.nfs.server.not.ip");
+                } else if (!Pattern.matches(REGEX_SERVER, nfs.getServer())) {
+                    throw new CommonException("pv.nfs.server.format.error");
+                }
+                break;
+        }
+    }
 
 }

@@ -46,6 +46,10 @@ public class DevopsPvReqVO {
     @ApiModelProperty(value = "环境id", hidden = true)
     private Long envId;
 
+    @NotNull(message = "error.pv.value.config.is.null")
+    @ApiModelProperty("根据存储类型的不同，生成不同的Json数据")
+    private String valueConfig;
+
     public Long getId() {
         return id;
     }
@@ -124,5 +128,13 @@ public class DevopsPvReqVO {
 
     public void setEnvId(Long envId) {
         this.envId = envId;
+    }
+
+    public String getValueConfig() {
+        return valueConfig;
+    }
+
+    public void setValueConfig(String valueConfig) {
+        this.valueConfig = valueConfig;
     }
 }

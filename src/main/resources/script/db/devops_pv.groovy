@@ -35,4 +35,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pv') {
             column(name: 'command_id', type: 'BIGINT UNSIGNED', remarks: '操作id')
         }
     }
+
+    changeSet(id: '2019-11-11-add-column', author: 'yzj') {
+        addColumn(tableName: 'devops_pv') {
+            column(name: 'value_config', type: 'TEXT', remarks: 'pv存储类型详细配置')
+        }
+    }
 }
