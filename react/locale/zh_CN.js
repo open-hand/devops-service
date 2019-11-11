@@ -301,6 +301,7 @@ const deployment = {
   'c7ncd.deployment.modal.redeploy': '重新部署',
   'c7ncd.deployment.modal.detail': '实例详情',
   'c7ncd.deployment.app-service': '应用服务',
+  'c7ncd.deployment.app-service.select': '请选择应用服务',
   'c7ncd.deployment.set-operator': '设置该环境的开发操作人员',
   'c7ncd.deployment.project.member': '项目成员',
   'c7ncd.deployment.project.member.empty': '暂无可选项目成员',

@@ -89,12 +89,12 @@ export default ({ projectId, formatMessage, intlPrefix, modal, isEdit, afterOk, 
       update: ({ data: [data] }) => ({
         url: `/devops/v1/projects/${projectId}/clusters/${data.id}?`,
         method: 'put',
-        data: JSON.stringify(data),
+        data,
       }),
     },
     events: {
       load: ({ dataSet }) => {
-        clusterName = dataSet.current.data.name;
+        clusterName = dataSet.current.get('name');
       },
     },
   };

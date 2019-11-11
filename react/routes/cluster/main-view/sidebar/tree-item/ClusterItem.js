@@ -99,7 +99,6 @@ function ClusterItem({
     Modal.open({
       key: EditClusterModalKey,
       title: formatMessage({ id: `${intlPrefix}.modal.edit` }),
-      // children: <EditCluster isEdit clusterId={record.data.id} record={res || ClusterDetailDs.current} mainStore={mainStore} afterOk={freshMenu} intlPrefix={intlPrefix} formatMessage={formatMessage} treeItemStore={treeItemStore} projectId={projectId} />,
       children: <EditCluster isEdit clusterId={record.data.id} mainStore={mainStore} afterOk={freshMenu} intlPrefix={intlPrefix} formatMessage={formatMessage} treeItemStore={treeItemStore} projectId={projectId} />,
       drawer: true,
       style: {
@@ -110,8 +109,6 @@ function ClusterItem({
   }
 
   async function editItem() {
-    // const res = await treeItemStore.queryClusterDetail(projectId, record.data.id);
-    // openEdit(res);
     openEdit();
   }
 

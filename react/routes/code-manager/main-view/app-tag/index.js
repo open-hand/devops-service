@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { TabPage } from '@choerodon/boot';
 import CodeManagerHeader from '../../header';
 import CodeManagerToolBar, { SelectApp } from '../../tool-bar';
-import AppTag from '../../contents/appTag';
+import AppTag from '../../contents/app-tag';
 import '../index.less';
 
 const CodeManagerAppTag = observer(() => <TabPage>
