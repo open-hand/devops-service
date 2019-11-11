@@ -5,11 +5,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 
+import com.google.gson.Gson;
+import io.choerodon.devops.api.validator.DevopsPvValidator;
 import io.choerodon.devops.infra.enums.*;
 import io.kubernetes.client.custom.Quantity;
 import io.kubernetes.client.models.*;
@@ -83,6 +86,8 @@ public class DevopsPvServiceImpl implements DevopsPvServcie {
     private DevopsEnvCommandMapper devopsEnvCommandMapper;
     @Autowired
     GitlabServiceClientOperator gitlabServiceClientOperator;
+
+    private Gson gson = new Gson();
 
     @Override
     public PageInfo<DevopsPvDTO> basePagePvByOptions(Boolean doPage, Pageable pageable, String params) {
@@ -438,15 +443,19 @@ public class DevopsPvServiceImpl implements DevopsPvServcie {
             throw new CommonException("error.py.type.not.exist");
         }
 
-        switch (volumeTypeEnum){
-            // Todo: 选择pv类型之后需要获取详细设置后反序列化成对象
+        switch (volumeTypeEnum) {
+            // 选择pv类型之后需要获取详细设置后反序列化成对象
             case NFS:
-                V1NFSVolumeSource v1NFSVolumeSource = new V1NFSVolumeSource();
-                v1PersistentVolumeSpec.setNfs(v1NFSVolumeSource);
+                V1NFSVolumeSource nfs = gson.fromJson(devopsPvDTO.getValueConfig(), V1NFSVolumeSource.class);
+                //反序列成对象之后进行校验
+                DevopsPvValidator.checkConfigValue(nfs, volumeTypeEnum);
+                v1PersistentVolumeSpec.setNfs(nfs);
                 break;
             case HOSTPATH:
-                V1HostPathVolumeSource v1HostPathVolumeSource = new V1HostPathVolumeSource();
-                v1PersistentVolumeSpec.setHostPath(v1HostPathVolumeSource);
+                V1HostPathVolumeSource hostPath = gson.fromJson(devopsPvDTO.getValueConfig(), V1HostPathVolumeSource.class);
+                //反序列成对象之后进行校验
+                DevopsPvValidator.checkConfigValue(hostPath, volumeTypeEnum);
+                v1PersistentVolumeSpec.setHostPath(hostPath);
                 break;
         }
         v1PersistentVolume.setSpec(v1PersistentVolumeSpec);
@@ -505,6 +514,7 @@ public class DevopsPvServiceImpl implements DevopsPvServcie {
                 CREATE, userAttrDTO.getGitlabUserId(), devopsPvDTO.getId(), PERSISTENVOLUME, null, false,
                 devopsEnvironmentDTO.getId(), path);
     }
+
 
 
 }
