@@ -6,11 +6,10 @@ package io.choerodon.devops.infra.constant;
  * @description:
  */
 public class PrometheusConstants {
-    public static final String CREATE_PVC_SUCCESS = "create_pvc_success";
-    public static final String CREATE_CONFIG_SUCCESS = "create_config_success";
-    public static final String INSTALL_PROMETHEUS_SUCCESS = "install_prometheus_success";
-    public static final String INSTALL_PROMETHEUS_FAIL = "install_prometheus_fail";
-
+    public static final String SUCCESSED = "successed";
+    public static final String OPERATING = "operating";
+    public static final String WAITING = "waiting";
+    public static final String FAILED = "failed";
 
     public interface PvcName {
         String prometheus_pvcName = "prometheus-pvc";

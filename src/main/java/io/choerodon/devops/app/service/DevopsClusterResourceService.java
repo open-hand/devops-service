@@ -4,6 +4,7 @@ import java.util.List;
 
 import io.choerodon.devops.api.vo.ClusterResourceVO;
 import io.choerodon.devops.api.vo.DevopsPrometheusVO;
+import io.choerodon.devops.api.vo.PrometheusStageVO;
 import io.choerodon.devops.infra.dto.DevopsClusterResourceDTO;
 import io.choerodon.devops.infra.dto.DevopsPrometheusDTO;
 
@@ -71,7 +72,7 @@ public interface DevopsClusterResourceService {
      * @param clusterId
      * @return
      */
-    ClusterResourceVO queryDeployStage(Long clusterId);
+    PrometheusStageVO queryDeployStage(Long clusterId);
 
     /**
      * 查询部署prometheus状态
