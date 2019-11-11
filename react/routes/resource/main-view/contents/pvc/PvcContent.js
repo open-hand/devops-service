@@ -44,12 +44,28 @@ const pvcContent = observer((props) => {
 
   function renderName({ record, value }) {
     const status = record.get('status');
+    let color = 'rgba(0, 0, 0, 0.26)';
+    switch (status) {
+      case 'pending':
+        color = '#4D90FE';
+        break;
+      case 'Bound':
+        color = '#FFB100';
+        break;
+      case 'Lost':
+        color = 'rgba(0, 0, 0, 0.26)';
+        break;
+      case 'Terminating':
+        color = '#4D90FE';
+        break;
+      default:
+    }
     if (status) {
       return (
         <Fragment>
           <StatusTags
             name={status}
-            colorCode={status}
+            color={color}
             style={statusStyle}
           />
           <Tooltip title={value}>
