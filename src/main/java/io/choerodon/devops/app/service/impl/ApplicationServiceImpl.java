@@ -290,7 +290,8 @@ public class ApplicationServiceImpl implements ApplicationService {
             Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
             IamAppPayLoad iamAppPayLoad = iamRepository.queryIamAppByCode(organization.getId(), applicationE.getCode());
             iamAppPayLoad.setName(applicationUpdateDTO.getName());
-            iamRepository.updateIamApp(organization.getId(), iamAppPayLoad.getId(), iamAppPayLoad);
+            iamAppPayLoad.setProjectId(projectE.getId());
+            iamUpdateAppName(iamAppPayLoad);
         }
 
         // 创建gitlabUserPayload
@@ -1849,5 +1850,12 @@ public class ApplicationServiceImpl implements ApplicationService {
         map.put("facets", "severities,types");
         map.put("additionalFields", "_all");
         return map;
+    }
+
+    @Saga(code = "iam-update-app-name",
+            description = "iam更新应用名称", inputSchema = "{}")
+    private void iamUpdateAppName(IamAppPayLoad iamAppPayLoad){
+        String input = gson.toJson(iamAppPayLoad);
+        sagaClient.startSaga("iam-update-app-name", new StartInstanceDTO(input, "app", iamAppPayLoad.getId().toString(), ResourceLevel.PROJECT.value(), iamAppPayLoad.getProjectId()));
     }
 }
