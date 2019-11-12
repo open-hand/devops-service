@@ -92,7 +92,7 @@ public class DevopsPvcController {
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "删除PVC")
     @DeleteMapping("/{env_id}/{pvc_id}")
-    public ResponseEntity<Boolean> deleteSecret(
+    public ResponseEntity<Boolean> deletePvc(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)
@@ -115,7 +115,7 @@ public class DevopsPvcController {
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "删除PVC")
     @GetMapping("/check_name")
-    public void deleteSecret(
+    public void deletePvc(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)
