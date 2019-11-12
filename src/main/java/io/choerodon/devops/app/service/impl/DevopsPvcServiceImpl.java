@@ -302,6 +302,8 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
                     .orElseThrow(() -> new CommonException("error.pv.not.exists"));
         }
         devopsPvcDTO.setPvName(devopsPvDTO.getName());
+        devopsPvcDTO.setRequestResource(devopsPvDTO.getRequestResource());
+        devopsPvcDTO.setAccessModes(devopsPvDTO.getAccessModes());
         return devopsPvcDTO;
     }
 
