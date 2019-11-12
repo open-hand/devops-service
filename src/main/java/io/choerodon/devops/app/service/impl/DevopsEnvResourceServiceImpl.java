@@ -195,12 +195,14 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
                 .baseListInstanceCommand(ObjectType.INSTANCE.getType(), instanceId);
         List<Long> userIds = devopsEnvCommandDTOS.stream().filter(devopsEnvCommandDTO -> devopsEnvCommandDTO.getCreatedBy() != 0).map(DevopsEnvCommandDTO::getCreatedBy).collect(Collectors.toList());
         List<IamUserDTO> users = baseServiceClientOperator.listUsersByIds(userIds);
+
         // 查出所有的 DevopsCommandEventDTO 并根据commandId分组
         Set<Long> commandIds = devopsEnvCommandDTOS.stream().map(DevopsEnvCommandDTO::getId).collect(Collectors.toSet());
         List<DevopsCommandEventDTO> commandEventTypeJob = devopsCommandEventService.listByCommandIdsAndType(commandIds, ResourceType.JOB.getType());
         List<DevopsCommandEventDTO> commandEventTypePod = devopsCommandEventService.listByCommandIdsAndType(commandIds, ResourceType.POD.getType());
         Map<Long, List<DevopsCommandEventDTO>> commandEventTypeJobMap = commandEventTypeJob.stream().collect(Collectors.groupingBy(DevopsCommandEventDTO::getCommandId));
         Map<Long, List<DevopsCommandEventDTO>> commandEventTypePodJobMap = commandEventTypePod.stream().collect(Collectors.groupingBy(DevopsCommandEventDTO::getCommandId));
+
         devopsEnvCommandDTOS.forEach(devopsEnvCommandDTO -> {
             InstanceEventVO instanceEventVO = new InstanceEventVO();
             Optional<IamUserDTO> iamUserDTO = users.stream().filter(user -> user.getId().equals(devopsEnvCommandDTO.getCreatedBy())).findFirst();
@@ -210,6 +212,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
                 instanceEventVO.setLoginName(iamUser.getLdap() ? iamUser.getLoginName() : iamUser.getEmail());
                 instanceEventVO.setRealName(iamUser.getRealName());
             }
+            instanceEventVO.setCommandId(devopsEnvCommandDTO.getId());
             instanceEventVO.setStatus(devopsEnvCommandDTO.getStatus());
             instanceEventVO.setUserImage(iamUser == null ? null : iamUser.getImageUrl());
             instanceEventVO.setCreateTime(devopsEnvCommandDTO.getCreationDate());

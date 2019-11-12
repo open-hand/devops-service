@@ -1305,6 +1305,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Override
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     public DevopsEnvironmentDTO createSystemEnv(Long clusterId) {
+        // TODO by zmf 要考虑并发的情况
         DevopsClusterDTO cluster = devopsClusterService.baseQuery(clusterId);
         if (cluster == null) {
             throw new CommonException("error.cluster.not.exists");

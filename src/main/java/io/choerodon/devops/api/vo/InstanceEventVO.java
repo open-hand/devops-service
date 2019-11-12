@@ -3,7 +3,11 @@ package io.choerodon.devops.api.vo;
 import java.util.Date;
 import java.util.List;
 
+import io.swagger.annotations.ApiModelProperty;
+
 public class InstanceEventVO {
+    @ApiModelProperty("这个实例事件所对应的commandId")
+    private Long commandId;
     private String type;
     private String status;
     private Date createTime;
@@ -11,6 +15,14 @@ public class InstanceEventVO {
     private String loginName;
     private String realName;
     private List<PodEventVO> podEventVO;
+
+    public Long getCommandId() {
+        return commandId;
+    }
+
+    public void setCommandId(Long commandId) {
+        this.commandId = commandId;
+    }
 
     public String getType() {
         return type;
