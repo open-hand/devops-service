@@ -12,7 +12,7 @@
                dpv.status status,
                dpv.request_resource request_resource,
                dpv.access_modes access_modes,
-               dpv.commmand_id command_id,
+               dpv.command_id command_id,
                dpvc.name pvc_name,
                dc.name cluster_name
         FROM devops_pv dpv
