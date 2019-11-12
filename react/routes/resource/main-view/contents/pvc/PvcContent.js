@@ -46,7 +46,9 @@ const pvcContent = observer((props) => {
     const status = record.get('status');
     let color = 'rgba(0, 0, 0, 0.26)';
     switch (status) {
-      case 'pending':
+      case 'Pending':
+      case 'Terminating':
+      case 'Operating':
         color = '#4D90FE';
         break;
       case 'Bound':
@@ -54,9 +56,6 @@ const pvcContent = observer((props) => {
         break;
       case 'Lost':
         color = 'rgba(0, 0, 0, 0.26)';
-        break;
-      case 'Terminating':
-        color = '#4D90FE';
         break;
       default:
     }
@@ -92,7 +91,7 @@ const pvcContent = observer((props) => {
 
   function renderAction({ record }) {
     const status = record.get('status');
-    const disabled = getEnvIsNotRunning() || status === 'pending' || status === 'Terminating';
+    const disabled = getEnvIsNotRunning() || status === 'Pending' || status === 'Terminating' || status === 'Operating';
     if (disabled) {
       return;
     }

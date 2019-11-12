@@ -2,8 +2,9 @@ import getTablePostData from '../../../../../utils/getTablePostData';
 
 export default ((intlPrefix, formatMessage, projectId, pvId) => ({
   autoCreate: false,
-  autoQuery: true,
+  autoQuery: false,
   selection: false,
+  paging: false,
   transport: {
     read: {
       url: `/devops/v1/projects/${projectId}/pv/${pvId}`,

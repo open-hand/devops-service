@@ -4,7 +4,7 @@ export default ((projectId) => ({
   paging: false,
   transport: {
     read: {
-      url: `/devops/v1/projects/${projectId}/pv/page_by_options?doPage=false`,
+      url: `/devops/v1/projects/${projectId}/pv/pv_available`,
       method: 'post',
       data: {
         params: [],

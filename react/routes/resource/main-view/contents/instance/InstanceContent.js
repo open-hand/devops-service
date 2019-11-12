@@ -53,17 +53,9 @@ const InstanceTitle = ({
       }]}
     />
     <span className="c7ncd-page-title-text">{name}</span>
-    {/* 要改 */}
-    {status === 'failed' && (
-      <Tooltip
-        title={errorText}
-        placement="bottom"
-        overlayClassName={`${prefixCls}-instance-page-title-error-tooltip`}
-      >
-        <Icon type="error" className={`${prefixCls}-instance-page-title-icon`} />
-      </Tooltip>
-    )}
-    <span style={{ color: 'rgba(0, 0, 0, 0.54)', fontSize: '.2rem', fontWeight: '400' }}>{versionName ? `(${versionName})` : ''}</span>
+    <span className="c7ncd-page-title-version">
+      ({versionName})
+    </span>
   </Fragment>;
 };
 
@@ -122,7 +114,7 @@ const InstanceContent = observer(() => {
       const menuItem = treeDs.find((item) => item.get('key') === selectedKey && item.get('id') === current.id);
       if (menuItem) {
         const previous = pick(menuItem.toData(), ['status', 'name', 'podRunningCount', 'podCount']);
-        const next = omit(current, ['id', 'error']);
+        const next = pick(current, ['status', 'name', 'podRunningCount', 'podCount']);
 
         if (!isEqual(previous, next)) {
           runInAction(() => {
@@ -155,7 +147,7 @@ const InstanceContent = observer(() => {
         podRunningCount={podRunningCount}
         podUnlinkCount={podUnlinkCount}
         errorText={error}
-        versionName={versionName}
+        versionName={versionName || formatMessage({ id: 'deploy_failed' })}
       />;
     }
     return null;
