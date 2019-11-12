@@ -1,5 +1,8 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.KubernetesConstants.METADATA;
+import static io.choerodon.devops.infra.constant.KubernetesConstants.NAME;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -24,7 +27,9 @@ import org.yaml.snakeyaml.Yaml;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
+
 import org.springframework.data.domain.Pageable;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.FeignException;
 import io.choerodon.core.iam.ResourceLevel;
@@ -105,9 +110,11 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Autowired
     private DevopsMergeRequestService devopsMergeRequestService;
     @Autowired
-    DevopsMergeRequestMapper devopsMergeRequestMapper;
+    private DevopsMergeRequestMapper devopsMergeRequestMapper;
     @Autowired
     private DevopsGitlabCommitService devopsGitlabCommitService;
+    @Autowired
+    private DevopsCustomizeResourceService devopsCustomizeResourceService;
 
     @Autowired
     private List<HandlerObjectFileRelationsService> handlerObjectFileRelationsServices;
@@ -760,11 +767,19 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 String type = jsonObject.get("kind").toString();
 
 
-                ConvertK8sObjectService currentHandler = converters.get(type);
-                if (currentHandler == null) {
-                    // 准备默认处理方式，用户环境默认处理方式是作为自定义资源处理，
-                    // 系统环境的默认处理方式是抛出异常以表示不支持
+                // 处理当前资源的处理逻辑
+                ConvertK8sObjectService currentHandler;
+                if (ResourceType.PERSISTENT_VOLUME_CLAIM.getType().equals(type)
+                        && isPvcTreatedAsCustomizeResourceBefore(envId, getPersistentVolumeClaimName(jsonObject, filePath))) {
+                    // 0.20版本之前被作为自定义资源解析的PVC仍然作为自定义资源看待
                     currentHandler = converters.get(ResourceType.MISSTYPE.getType());
+                } else {
+                    currentHandler = converters.get(type);
+                    if (currentHandler == null) {
+                        // 准备默认处理方式，用户环境默认处理方式是作为自定义资源处理，
+                        // 系统环境的默认处理方式是抛出异常以表示不支持
+                        currentHandler = converters.get(ResourceType.MISSTYPE.getType());
+                    }
                 }
 
                 Object resource = currentHandler.serializableObject(jsonObject.toJSONString(), filePath, objectPath, envId);
@@ -778,6 +793,28 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             }
         });
         return objectPath;
+    }
+
+    private static String getPersistentVolumeClaimName(JSONObject jsonObject, String filePath) {
+        String name;
+        try {
+            name = jsonObject.getJSONObject(METADATA).getString(NAME);
+        } catch (Exception e) {
+            throw new GitOpsExplainException(
+                    GitOpsObjectError.PERSISTENT_VOLUME_CLAIM_NAME_NOT_FOUND.getError(), filePath);
+        }
+        return name;
+    }
+
+    /**
+     * 判断PVC在之前0.20版本之前是否被解析为自定义资源
+     *
+     * @param envId        环境id
+     * @param resourceName 资源名称
+     * @return true表明是作为自定义资源
+     */
+    private boolean isPvcTreatedAsCustomizeResourceBefore(Long envId, String resourceName) {
+        return devopsCustomizeResourceService.queryByEnvIdAndKindAndName(envId, ResourceType.PERSISTENT_VOLUME_CLAIM.getType(), resourceName) != null;
     }
 
     private void commitBranchSync(PushWebHookVO pushWebHookVO, Long appServiceId) {
@@ -958,9 +995,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         if (!file.exists()) {
             gitUtil.cloneBySsh(path, url, envIdRsa);
         } else {
-            String loaclPath = String.format("%s%s",path,"/.git");
-            gitUtil.checkout(loaclPath,"master");
-            gitUtil.pullBySsh(loaclPath,envIdRsa);
+            String loaclPath = String.format("%s%s", path, "/.git");
+            gitUtil.checkout(loaclPath, "master");
+            gitUtil.pullBySsh(loaclPath, envIdRsa);
 
         }
     }
