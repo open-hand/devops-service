@@ -3,7 +3,13 @@ package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.infra.constant.GitLabConstants.*;
 
+import com.netflix.discovery.converters.Auto;
 import feign.FeignException;
+import io.choerodon.core.enums.ResourceType;
+import io.choerodon.devops.api.vo.GitlabGroupMemberVO;
+import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
+import io.choerodon.devops.infra.enums.AccessLevel;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,8 +27,13 @@ import io.choerodon.devops.infra.enums.Visibility;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.util.TypeUtil;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Service
 public class GitlabGroupServiceImpl implements GitlabGroupService {
+    @Autowired
+    private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
     private DevopsProjectService devopsProjectService;
     @Autowired
@@ -87,6 +98,18 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
         payload.setProjectId(projectDTO.getId());
         payload.setUserId(userAttrDTO.getIamUserId());
         createGroup(payload, CLUSTER_ENV_GROUP_SUFFIX);
+
+        List<Long> ownerIds = baseServiceClientOperator.getAllMemberIdsWithoutMember(projectDTO.getId());
+        DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectDTO.getId());
+        if (devopsProjectDTO.getDevopsClusterEnvGroupId() == null) {
+            throw new CommonException("error.cluster.env.group.create");
+        }
+        ownerIds.forEach(id -> {
+                    UserAttrDTO ownerAttrDTO = userAttrService.baseQueryById(id);
+                    gitlabServiceClientOperator.createProjectMember(devopsProjectDTO.getDevopsClusterEnvGroupId().intValue(),
+                            new MemberDTO(ownerAttrDTO.getGitlabUserId().intValue(), AccessLevel.MASTER.value, ""));
+                }
+        );
     }
 
     private void createGroup(GitlabGroupPayload gitlabGroupPayload, final String suffix) {

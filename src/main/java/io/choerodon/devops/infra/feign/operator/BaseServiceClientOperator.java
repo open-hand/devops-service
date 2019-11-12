@@ -70,14 +70,14 @@ public class BaseServiceClientOperator {
 
 
     public List<ProjectDTO> listIamProjectByOrgId(Long organizationId, String name, String code, String params) {
-        Pageable pageable = PageRequest.of(0,1);
+        Pageable pageable = PageRequest.of(0, 1);
         ResponseEntity<PageInfo<ProjectDTO>> pageResponseEntity =
                 baseServiceClient.pageProjectsByOrgId(organizationId, FeignParamUtils.encodePageRequest(pageable), name, code, true, params);
         return pageResponseEntity.getBody().getList();
     }
 
     public PageInfo<ProjectDTO> pageProjectByOrgId(Long organizationId, int page, int size, String name, String code, String params) {
-        Pageable pageable = PageRequest.of(page,size);
+        Pageable pageable = PageRequest.of(page, size);
         try {
             ResponseEntity<PageInfo<ProjectDTO>> pageInfoResponseEntity = baseServiceClient.pageProjectsByOrgId(organizationId,
                     FeignParamUtils.encodePageRequest(pageable), name, code, true, params);
@@ -195,14 +195,33 @@ public class BaseServiceClientOperator {
         // 项目下所有项目成员
         List<Long> memberIds =
 
-                this.pagingQueryUsersByRoleIdOnProjectLevel(PageRequest.of(0,1), new RoleAssignmentSearchVO(), memberId,
+                this.pagingQueryUsersByRoleIdOnProjectLevel(PageRequest.of(0, 1), new RoleAssignmentSearchVO(), memberId,
                         projectId, false).getList().stream().map(IamUserDTO::getId).collect(Collectors.toList());
         // 项目下所有项目所有者
         List<Long> ownerIds =
-                this.pagingQueryUsersByRoleIdOnProjectLevel(PageRequest.of(0,1), new RoleAssignmentSearchVO(), ownerId,
+                this.pagingQueryUsersByRoleIdOnProjectLevel(PageRequest.of(0, 1), new RoleAssignmentSearchVO(), ownerId,
 
                         projectId, false).getList().stream().map(IamUserDTO::getId).collect(Collectors.toList());
         return memberIds.stream().filter(e -> !ownerIds.contains(e)).collect(Collectors.toList());
+    }
+
+    //获得所有项目所有者id
+    public List<Long> getAllMemberIdsWithoutMember(Long projectId) {
+        // 获取项目成员id
+        Long memberId = this.queryRoleIdByCode(PROJECT_MEMBER);
+        // 获取项目所有者id
+        Long ownerId = this.queryRoleIdByCode(PROJECT_OWNER);
+        // 项目下所有项目成员
+        List<Long> memberIds =
+
+                this.pagingQueryUsersByRoleIdOnProjectLevel(PageRequest.of(0, 1), new RoleAssignmentSearchVO(), memberId,
+                        projectId, false).getList().stream().map(IamUserDTO::getId).collect(Collectors.toList());
+        // 项目下所有项目所有者
+        List<Long> ownerIds =
+                this.pagingQueryUsersByRoleIdOnProjectLevel(PageRequest.of(0, 1), new RoleAssignmentSearchVO(), ownerId,
+
+                        projectId, false).getList().stream().map(IamUserDTO::getId).collect(Collectors.toList());
+        return ownerIds.stream().filter(e -> !memberIds.contains(e)).collect(Collectors.toList());
     }
 
     public List<IamUserDTO> getAllMember(Long projectId) {
@@ -212,11 +231,11 @@ public class BaseServiceClientOperator {
         Long ownerId = this.queryRoleIdByCode(PROJECT_OWNER);
         // 项目下所有项目成员
 
-        List<IamUserDTO> list = this.pagingQueryUsersByRoleIdOnProjectLevel(PageRequest.of(0,1), new RoleAssignmentSearchVO(), memberId,
+        List<IamUserDTO> list = this.pagingQueryUsersByRoleIdOnProjectLevel(PageRequest.of(0, 1), new RoleAssignmentSearchVO(), memberId,
                 projectId, false).getList();
         List<Long> memberIds = list.stream().filter(IamUserDTO::getEnabled).map(IamUserDTO::getId).collect(Collectors.toList());
         // 项目下所有项目所有者
-        this.pagingQueryUsersByRoleIdOnProjectLevel(PageRequest.of(0,1), new RoleAssignmentSearchVO(), ownerId,
+        this.pagingQueryUsersByRoleIdOnProjectLevel(PageRequest.of(0, 1), new RoleAssignmentSearchVO(), ownerId,
 
                 projectId, false).getList().stream().filter(IamUserDTO::getEnabled).forEach(t -> {
             if (!memberIds.contains(t.getId())) {
@@ -465,7 +484,7 @@ public class BaseServiceClientOperator {
         baseServiceClient.assignUsersRolesOnProjectLevel(projectId, memberRoleDTOS);
     }
 
-    public List<ProjectWithRoleVO>  listProjectWithRole(Long userId,int page,int size) {
+    public List<ProjectWithRoleVO> listProjectWithRole(Long userId, int page, int size) {
         try {
             ResponseEntity<PageInfo<ProjectWithRoleVO>> pageInfoResponseEntity = baseServiceClient.listProjectWithRole(userId, page, size);
             return (pageInfoResponseEntity.getBody() == null) ? Collections.emptyList() : pageInfoResponseEntity.getBody().getList();
@@ -478,13 +497,13 @@ public class BaseServiceClientOperator {
     public ClientDTO createClient(Long organizationId, ClientVO clientVO) {
         try {
             ResponseEntity<ClientDTO> clientDTOResponseEntity = baseServiceClient.createClient(organizationId, clientVO);
-            return  clientDTOResponseEntity.getBody();
+            return clientDTOResponseEntity.getBody();
         } catch (Exception ex) {
             throw new CommonException("error.create.client");
         }
     }
 
-    public void deleteClient(Long organizationId, Long  clientId) {
+    public void deleteClient(Long organizationId, Long clientId) {
         try {
             baseServiceClient.deleteClient(organizationId, clientId);
         } catch (Exception ex) {
@@ -492,10 +511,10 @@ public class BaseServiceClientOperator {
         }
     }
 
-    public ClientDTO queryClientBySourceId(Long organizationId, Long  sourceId) {
+    public ClientDTO queryClientBySourceId(Long organizationId, Long sourceId) {
         try {
             ResponseEntity<ClientDTO> responseEntity = baseServiceClient.queryClientBySourceId(organizationId, sourceId);
-            return  responseEntity.getBody();
+            return responseEntity.getBody();
         } catch (Exception ex) {
             throw new CommonException("error.query.client");
         }
