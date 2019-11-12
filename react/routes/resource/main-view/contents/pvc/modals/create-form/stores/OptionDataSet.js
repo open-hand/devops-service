@@ -6,6 +6,14 @@ export default ((projectId) => ({
     read: {
       url: `/devops/v1/projects/${projectId}/pv/page_by_options?doPage=false`,
       method: 'post',
+      data: {
+        params: [],
+        searchParam: {
+          status: 'Available',
+          accessModes: 'ReadWriteMany',
+          type: 'NFS',
+        },
+      },
     },
   },
 }));

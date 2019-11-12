@@ -14,7 +14,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
 
     const value = {
       ...props,
-      permissions: [],
+      permissions: ['devops-service.devops-pvc.create'],
     };
     return (
       <Store.Provider value={value}>

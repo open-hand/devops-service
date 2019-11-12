@@ -27,7 +27,13 @@ export const StoreProvider = injectIntl(inject('AppState')(
       ...props,
       prefixCls: 'c7ncd-pv',
       intlPrefix,
-      permissions: [],
+      permissions: [
+        'devops-service.devops-pv.queryAll',
+        'devops-service.devops-pv.createPv',
+        'devops-service.devops-pv.checkPvName',
+        'devops-service.devops-pv.deletePv',
+        'devops-service.devops-pv.queryById',
+      ],
       listDs,
       pvStore,
     };

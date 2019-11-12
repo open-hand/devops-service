@@ -27,7 +27,7 @@ export default ((intlPrefix, formatMessage, projectId, typeDs, modeDs, storageDs
   }
 
   function checkIp(value) {
-    const pa = /^((\d|[1-9]\d|1\d{2}|2[0-4]\d|25[0-5])\.){3}(\d|[1-9]\d|1\d{2}|2[0-4]\d|25[0-5])$/;
+    const pa = /^((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})(\.((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})){3}$/;
     if (value && !pa.test(value)) {
       return formatMessage({ id: `${intlPrefix}.ip.failed` });
     }
