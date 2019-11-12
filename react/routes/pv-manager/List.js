@@ -5,6 +5,7 @@ import { Button } from 'choerodon-ui';
 import { FormattedMessage } from 'react-intl';
 import { withRouter } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
+import omit from 'lodash/omit';
 import { usePVManagerStore } from './stores';
 import CreateForm from './modals/create-form';
 import PermissionManager from './modals/permission-mananger';
@@ -50,7 +51,7 @@ const AppService = withRouter(observer((props) => {
     let color = 'rgba(0, 0, 0, 0.26)';
     switch (status) {
       case 'Pending':
-      case 'operating':
+      case 'Operating':
       case 'Terminating':
         color = '#4D90FE';
         break;
@@ -82,36 +83,37 @@ const AppService = withRouter(observer((props) => {
   }
 
   function renderActions({ record }) {
-    let actionData;
+    const actionData = {
+      permission: {
+        service: ['devops-service.devops-pv.queryById'],
+        text: formatMessage({ id: `${intlPrefix}.permission` }),
+        action: openPermission,
+      },
+      delete: {
+        service: ['devops-service.devops-pv.deletePv'],
+        text: formatMessage({ id: 'delete' }),
+        action: handleDelete,
+      },
+    };
     const status = record.get('status');
+    let data;
     switch (status) {
       case 'Available':
-        actionData = [
-          {
-            service: ['devops-service.devops-pv.queryById'],
-            text: formatMessage({ id: `${intlPrefix}.permission` }),
-            action: openPermission,
-          },
-          {
-            service: ['devops-service.devops-pv.deletePv'],
-            text: formatMessage({ id: 'delete' }),
-            action: openDelete,
-          },
-        ];
+        if (record.get('pvcName')) {
+          data = [actionData.permission];
+        } else {
+          data = [actionData.permission, actionData.delete];
+        }
         break;
       case 'Released':
       case 'Failed':
-        actionData = [
-          {
-            service: ['devops-service.devops-pv.deletePv'],
-            text: formatMessage({ id: 'delete' }),
-            action: openDelete,
-          },
-        ];
+        if (!record.get('pvcName')) {
+          data = [actionData.delete];
+        }
         break;
       default:
     }
-    return actionData && <Action data={actionData} />;
+    return data && <Action data={data} />;
   }
 
   function openCreate() {
@@ -146,44 +148,16 @@ const AppService = withRouter(observer((props) => {
     });
   }
 
-  async function openDelete() {
-    const record = listDs.current;
-    const deleteModal = Modal.open({
-      key: deleteKey,
-      title: formatMessage({ id: `${intlPrefix}.delete.title` }),
-      children: <Spin />,
-      okCancel: false,
-      okText: formatMessage({ id: 'iknow' }),
-    });
-    const res = await pvStore.checkDelete(projectId, record.get('id'));
-    if (res) {
-      deleteModal.update({
-        children: formatMessage({ id: `${intlPrefix}.delete.des` }),
-        okText: formatMessage({ id: 'delete' }),
-        okCancel: true,
-        okProps: { color: 'red' },
-        onOk: handleDelete,
-      });
-    } else {
-      deleteModal.update({
-        children: formatMessage({ id: `${intlPrefix}.delete.disabled` }),
-      });
-    }
-  }
-
   async function handleDelete() {
     const record = listDs.current;
-    try {
-      const res = await pvStore.deletePv(projectId, record.get('id'));
-      if (handlePromptError(res)) {
-        return true;
-      } else {
-        return false;
-      }
-    } catch (e) {
-      Choerodon.handleResponseError(e);
-      return false;
-    }
+    const modalProps = {
+      title: formatMessage({ id: `${intlPrefix}.delete.title` }, { name: record.get('name') }),
+      children: formatMessage({ id: `${intlPrefix}.delete.des` }),
+      okText: formatMessage({ id: 'delete' }),
+      okProps: { color: 'red' },
+      cancelProps: { color: 'dark' },
+    };
+    listDs.delete(record, modalProps);
   }
 
   return (

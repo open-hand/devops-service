@@ -110,7 +110,7 @@ export default injectIntl(observer(() => {
           >
             <FormattedMessage id={`${intlPrefix}.project.add`} />
           </Button>
-          <Table dataSet={permissionProjectDs}>
+          <Table dataSet={permissionProjectDs} pristine>
             <Column name="name" sortable />
             <Column renderer={renderAction} />
             <Column name="code" sortable />

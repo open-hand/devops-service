@@ -5,7 +5,7 @@ export default ((intlPrefix, formatMessage, projectId, DetailDs) => ({
   autoQuery: false,
   selection: false,
   transport: {
-    read: ({ data: [data] }) => {
+    read: ({ data }) => {
       const postData = getTablePostData(data);
       return ({
         url: `/devops/v1/projects/${projectId}/clusters/${DetailDs.current.get('clusterId')}/permission/page_related`,
