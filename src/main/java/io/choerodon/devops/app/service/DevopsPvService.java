@@ -132,4 +132,11 @@ public interface DevopsPvService {
     List<DevopsPvDTO> baseListByEnvId(Long envId);
 
     void baseUpdate(DevopsPvDTO devopsPvDTO);
+
+    /**
+     * 供创建pvc时查询可用pv时用
+     * @param params
+     * @return
+     */
+    List<DevopsPvVO> queryPvcRelatedPv(String params);
 }

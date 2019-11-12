@@ -211,4 +211,23 @@ public class DevopsPvController {
                 .orElseThrow(() -> new CommonException(ERROR_PV_QUERY));
     }
 
+    /**
+     * 根据pvc的条件筛选查询可用的pv
+     * @param projectId
+     * @param params
+     * @return
+     */
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "根据pvc的条件筛选查询可用的pv")
+    @PostMapping("/pv_available")
+    public ResponseEntity<List<DevopsPvVO>> queryPvcRelatedPv(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "模糊搜索参数")
+            @RequestBody(required = false) String params) {
+        return Optional.ofNullable(devopsPvService.queryPvcRelatedPv(params))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException(ERROR_PV_QUERY));
+    }
+
 }

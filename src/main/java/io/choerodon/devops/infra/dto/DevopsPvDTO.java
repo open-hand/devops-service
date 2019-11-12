@@ -34,7 +34,7 @@ public class DevopsPvDTO extends BaseDTO {
     @Transient
     private String clusterName;
 
-    @ApiModelProperty("关联的pvId")
+    @ApiModelProperty("关联的clusterId")
     private Long clusterId;
 
     @ApiModelProperty("访问模式")
