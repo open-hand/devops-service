@@ -263,6 +263,7 @@
         WHERE
         dgp.pipeline_id = #{pipelineId}
         and dav.version LIKE CONCAT('%', #{branch, jdbcType=VARCHAR})
+        limit 1
     </select>
 
     <select id="queryValueById" resultType="java.lang.String">
