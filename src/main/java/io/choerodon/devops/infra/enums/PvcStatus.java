@@ -4,11 +4,11 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum PvcStatus {
-    OPERATING("operating"),
-    PENDING("pending"),
-    BOUND("bound"),
-    LOST("lost"),
-    TERMINATING("terminating");
+    OPERATING("Operating"),
+    PENDING("Pending"),
+    BOUND("Bound"),
+    LOST("Lost"),
+    TERMINATING("Terminating");
 
     private String status;
 
