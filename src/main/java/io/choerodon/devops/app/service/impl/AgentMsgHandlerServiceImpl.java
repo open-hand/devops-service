@@ -261,7 +261,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     }
 
     @Override
-    public void helmInstallResourceInfo(String key, String msg, Long clusterId) {
+    public void helmInstallResourceInfo(String key, String msg, Long clusterId, Long effectCommandId) {
         Long envId = getEnvId(key, clusterId);
         if (envId == null) {
             logger.info(ENV_NOT_EXIST, KeyParseUtil.getNamespace(key));
@@ -284,6 +284,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 } else {
                     appServiceInstanceDTO.setComponentVersion(releasePayloadVO.getChartVersion());
                 }
+                appServiceInstanceDTO.setEffectCommandId(effectCommandId);
                 appServiceInstanceDTO.setStatus(InstanceStatus.RUNNING.getStatus());
                 appServiceInstanceService.baseUpdate(appServiceInstanceDTO);
                 installResource(resources, appServiceInstanceDTO);
@@ -695,8 +696,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     }
 
     @Override
-    public void helmUpgradeResourceInfo(String key, String msg, Long clusterId) {
-        helmInstallResourceInfo(key, msg, clusterId);
+    public void helmUpgradeResourceInfo(String key, String msg, Long clusterId, Long effectCommandId) {
+        helmInstallResourceInfo(key, msg, clusterId, effectCommandId);
     }
 
 

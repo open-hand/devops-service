@@ -9,7 +9,7 @@ import io.choerodon.devops.infra.dto.AppServiceDTO;
  */
 public interface AgentMsgHandlerService {
 
-    void helmInstallResourceInfo(String key, String msg, Long clusterId);
+    void helmInstallResourceInfo(String key, String msg, Long clusterId, Long effectCommandId);
 
     void helmInstallJobInfo(String key, String msg, Long clusterId);
 
@@ -25,7 +25,7 @@ public interface AgentMsgHandlerService {
 
     void helmUpgradeJobInfo(String key, String msg, Long clusterId);
 
-    void helmUpgradeResourceInfo(String key, String msg, Long clusterId);
+    void helmUpgradeResourceInfo(String key, String msg, Long clusterId, Long effectCommandId);
 
     void helmReleaseDeleteFail(String key, String msg, Long clusterId);
 

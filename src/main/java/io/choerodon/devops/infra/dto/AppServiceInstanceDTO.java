@@ -26,6 +26,8 @@ public class AppServiceInstanceDTO extends BaseDTO {
     private String componentVersion;
     @ApiModelProperty("组件对应实例的chart名称/普通实例这个值为null")
     private String componentChartName;
+    @ApiModelProperty("当前实例生效的commandId")
+    private Long effectCommandId;
 
     @Transient
     private String appServiceName;
@@ -62,6 +64,14 @@ public class AppServiceInstanceDTO extends BaseDTO {
     @Transient
     private String appServiceCode;
 
+
+    public Long getEffectCommandId() {
+        return effectCommandId;
+    }
+
+    public void setEffectCommandId(Long effectCommandId) {
+        this.effectCommandId = effectCommandId;
+    }
 
     public Long getAppServiceVersionId() {
         return appServiceVersionId;

@@ -76,4 +76,16 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_instance.groovy') {
             column(name: 'component_chart_name', type: 'VARCHAR(64)', remarks: '组件对应实例的chart名称', afterColumn: 'status')
         }
     }
+
+    changeSet(id: '2019-11-12-add-effect-command-id', author: 'zmf') {
+        addColumn(tableName: 'devops_app_service_instance') {
+            column(name: 'effect_command_id', type: 'BIGINT UNSIGNED', remarks: '当前实例生效的command id', afterColumn: 'command_id')
+        }
+        sql("""
+            UPDATE 
+            devops_app_service_instance dasi 
+            SET dasi.effect_command_id = dasi.command_id
+            WHERE dasi.effect_command_id IS NULL
+            """)
+    }
 }

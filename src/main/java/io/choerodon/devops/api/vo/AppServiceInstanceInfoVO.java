@@ -30,10 +30,20 @@ public class AppServiceInstanceInfoVO {
     private String commandStatus;
     private String error;
     private Long projectId;
+    @ApiModelProperty("当前实例生效的commandId")
+    private Long effectCommandId;
 
     @JsonIgnore
     @ApiModelProperty("集群id")
     private Long clusterId;
+
+    public Long getEffectCommandId() {
+        return effectCommandId;
+    }
+
+    public void setEffectCommandId(Long effectCommandId) {
+        this.effectCommandId = effectCommandId;
+    }
 
     public Long getClusterId() {
         return clusterId;
