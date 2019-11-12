@@ -2,10 +2,11 @@ package io.choerodon.devops.infra.enums;
 
 public enum PvStatus {
 
-    PENDING("pending"),
-    BOUND("bound"),
-    TERMINATING("terminating"),
-    OPERATING("operating");
+    PENDING("Pending"),
+    BOUND("Bound"),
+    TERMINATING("Terminating"),
+    OPERATING("Operating"),
+    AVAILABLE("Available");
 
     private String status;
 
