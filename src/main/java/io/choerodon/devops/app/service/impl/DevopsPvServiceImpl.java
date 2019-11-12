@@ -491,7 +491,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         devopsEnvCommandDTO.setObjectId(pvId);
 
         //设置操作指令id,创建指令记录
-        devopsPvDTO.setCommandId(devopsEnvironmentService.baseCreate(devopsEnvironmentDTO).getId());
+        devopsPvDTO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());
 
         baseupdatePv(devopsPvDTO);
 
