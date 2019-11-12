@@ -1,5 +1,6 @@
 import { axios } from '@choerodon/boot';
 import omit from 'lodash/omit';
+import indexOf from 'lodash/indexOf';
 
 export default (({ intlPrefix, formatMessage, projectId, envId, typeDs, modeDs, storageDs, pvDs }) => {
   async function checkName(value) {
@@ -18,6 +19,21 @@ export default (({ intlPrefix, formatMessage, projectId, envId, typeDs, modeDs, 
       }
     } else {
       return formatMessage({ id: `${intlPrefix}.pvc.name.failed` });
+    }
+  }
+
+  function handleUpdate({ value, name, record }) {
+    if (indexOf(['accessModes', 'storage', 'unit', 'type'], name) > -1) {
+      pvDs.transport.read.data = {
+        params: [],
+        searchParam: {
+          accessModes: record.get('accessModes'),
+          type: record.get('type'),
+          requestResource: record.get('storage') && `${record.get('storage')}${record.get('unit')}`,
+        },
+      };
+      record.get('pvId') && record.set('pvId', null);
+      pvDs.query();
     }
   }
 
@@ -43,6 +59,10 @@ export default (({ intlPrefix, formatMessage, projectId, envId, typeDs, modeDs, 
       { name: 'storage', type: 'number', label: formatMessage({ id: `${intlPrefix}.pvc.requestResource` }), required: true, min: 1 },
       { name: 'unit', type: 'string', textField: 'value', defaultValue: 'Gi', options: storageDs },
       { name: 'pvId', type: 'number', label: formatMessage({ id: `${intlPrefix}.pvc.pv` }), textField: 'name', valueField: 'id', required: true, options: pvDs },
+      { name: 'envId', type: 'number', defaultValue: envId },
     ],
+    events: {
+      update: handleUpdate,
+    },
   });
 });

@@ -27,7 +27,7 @@ export default ((intlPrefix, formatMessage, projectId) => ({
     { name: 'type', type: 'string', label: formatMessage({ id: `${intlPrefix}.type` }) },
     { name: 'pvcName', type: 'string', label: formatMessage({ id: `${intlPrefix}.pvc` }) },
     { name: 'accessModes', type: 'string', label: formatMessage({ id: `${intlPrefix}.mode` }) },
-    { name: 'storage', type: 'string', label: formatMessage({ id: `${intlPrefix}.storage` }) },
+    { name: 'requestResource', type: 'string', label: formatMessage({ id: `${intlPrefix}.storage` }) },
     { name: 'status', type: 'string' },
   ],
   queryFields: [

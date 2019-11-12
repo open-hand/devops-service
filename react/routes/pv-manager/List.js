@@ -24,7 +24,7 @@ const modalStyle2 = {
   width: 'calc(100vw - 3.52rem)',
 };
 const statusStyle = {
-  width: 54,
+  width: 56,
   marginRight: 8,
   height: '.16rem',
   lineHeight: '.16rem',
@@ -50,6 +50,8 @@ const AppService = withRouter(observer((props) => {
     let color = 'rgba(0, 0, 0, 0.26)';
     switch (status) {
       case 'Pending':
+      case 'operating':
+      case 'Terminating':
         color = '#4D90FE';
         break;
       case 'Available':
@@ -64,17 +66,18 @@ const AppService = withRouter(observer((props) => {
       case 'Failed':
         color = '#F44336';
         break;
-      case 'Terminating':
-        color = '#4D90FE';
-        break;
       default:
     }
     return (
-      <StatusTag
-        name={value}
-        color={color}
-        style={statusStyle}
-      />
+      <Fragment>
+        <StatusTag
+          name={status}
+          color={color}
+          style={statusStyle}
+        />
+        <span>{value}</span>
+      </Fragment>
+
     );
   }
 
@@ -85,12 +88,12 @@ const AppService = withRouter(observer((props) => {
       case 'Available':
         actionData = [
           {
-            service: [],
+            service: ['devops-service.devops-pv.queryById'],
             text: formatMessage({ id: `${intlPrefix}.permission` }),
             action: openPermission,
           },
           {
-            service: [],
+            service: ['devops-service.devops-pv.deletePv'],
             text: formatMessage({ id: 'delete' }),
             action: openDelete,
           },
@@ -100,7 +103,7 @@ const AppService = withRouter(observer((props) => {
       case 'Failed':
         actionData = [
           {
-            service: [],
+            service: ['devops-service.devops-pv.deletePv'],
             text: formatMessage({ id: 'delete' }),
             action: openDelete,
           },
@@ -189,7 +192,7 @@ const AppService = withRouter(observer((props) => {
     >
       <Header>
         <Permission
-          service={[]}
+          service={['devops-service.devops-pv.createPv']}
         >
           <Button
             icon="playlist_add"
@@ -217,10 +220,10 @@ const AppService = withRouter(observer((props) => {
           <Column renderer={renderActions} width={70} />
           <Column name="description" sortable />
           <Column name="clusterName" />
-          <Column name="type" />
+          <Column name="type" width={100} />
           <Column name="pvcName" />
-          <Column name="accessModes" />
-          <Column name="storage" />
+          <Column name="accessModes" width={140} />
+          <Column name="requestResource" width={100} />
         </Table>
       </Content>
     </Page>
