@@ -180,7 +180,6 @@ public class GitUtil {
      * @param commit target commit or branch or tag
      */
     public void checkout(String path, String commit) {
-
         File repoGitDir = new File(path);
         try (Repository repository = new FileRepository(repoGitDir.getAbsolutePath())) {
             checkout(commit, repository);
@@ -204,8 +203,7 @@ public class GitUtil {
      * @param path git repo
      */
     public static void pullBySsh(String path,String envRas) {
-        String localPath = String.format("%s%s",path,"/.git");
-        File repoGitDir = new File(localPath);
+        File repoGitDir = new File(path);
         try (Repository repository = new FileRepository(repoGitDir.getAbsolutePath())) {
             pullBySsh(repository,envRas);
         } catch (IOException e) {
