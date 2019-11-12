@@ -958,6 +958,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         if (!file.exists()) {
             gitUtil.cloneBySsh(path, url, envIdRsa);
         } else {
+            gitUtil.checkout(path,"master");
             gitUtil.pullBySsh(path,envIdRsa);
 
         }

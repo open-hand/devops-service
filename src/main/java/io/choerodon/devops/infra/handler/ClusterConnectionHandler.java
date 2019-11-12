@@ -147,6 +147,7 @@ public class ClusterConnectionHandler {
         if (!file.exists()) {
             gitUtil.cloneBySsh(path, url, envRsa);
         } else {
+            gitUtil.checkout(path,"master");
             gitUtil.pullBySsh(path,envRsa);
         }
         return path;
