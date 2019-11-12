@@ -154,7 +154,6 @@ public class GitUtil {
         }
         return result;
     }
-
     /**
      * clone by ssh
      *
@@ -181,7 +180,6 @@ public class GitUtil {
      * @param commit target commit or branch or tag
      */
     public void checkout(String path, String commit) {
-
         File repoGitDir = new File(path);
         try (Repository repository = new FileRepository(repoGitDir.getAbsolutePath())) {
             checkout(commit, repository);
@@ -198,30 +196,31 @@ public class GitUtil {
         }
     }
 
-//    /**
-//     * pull git repo using ssh
-//     *
-//     * @param path git repo
-//     */
-//    public void pullBySsh(String path) {
-//        File repoGitDir = new File(path);
-//        try (Repository repository = new FileRepository(repoGitDir.getAbsolutePath())) {
-//            pullBySsh(repository);
-//        } catch (IOException e) {
-//            LOGGER.info("Get repository error", e);
-//        }
-//    }
-//
-//    private void pullBySsh(Repository repository) {
-//        try (Git git = new Git(repository)) {
-//            git.pull()
-//                    .setTransportConfigCallback(getTransportConfigCallback())
-//                    .setRemoteBranchName(MASTER)
-//                    .call();
-//        } catch (GitAPIException e) {
-//            LOGGER.info("Pull error", e);
-//        }
-//    }
+
+    /**
+     * pull git repo using ssh
+     *
+     * @param path git repo
+     */
+    public static void pullBySsh(String path,String envRas) {
+        File repoGitDir = new File(path);
+        try (Repository repository = new FileRepository(repoGitDir.getAbsolutePath())) {
+            pullBySsh(repository,envRas);
+        } catch (IOException e) {
+            LOGGER.info("Get repository error", e);
+        }
+    }
+
+    private static void pullBySsh(Repository repository,String sshKeyRsa) {
+        try (Git git = new Git(repository)) {
+            git.pull()
+                    .setTransportConfigCallback(getTransportConfigCallback(sshKeyRsa))
+                    .setRemoteBranchName(MASTER)
+                    .call();
+        } catch (GitAPIException e) {
+            LOGGER.info("Pull error", e);
+        }
+    }
 
     private static TransportConfigCallback getTransportConfigCallback(String sshKeyRsa) {
         return transport -> {
