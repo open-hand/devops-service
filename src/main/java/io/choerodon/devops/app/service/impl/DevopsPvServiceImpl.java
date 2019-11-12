@@ -502,7 +502,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         //创建文件
         ResourceConvertToYamlHandler<V1PersistentVolume> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
         resourceConvertToYamlHandler.setType(v1PersistentVolume);
-        resourceConvertToYamlHandler.operationEnvGitlabFile("pvc" + devopsPvDTO.getName(), gitlabEnvGroupProjectId,
+        resourceConvertToYamlHandler.operationEnvGitlabFile("pv" + devopsPvDTO.getName(), gitlabEnvGroupProjectId,
                 CREATE, userAttrDTO.getGitlabUserId(), devopsPvDTO.getId(), PERSISTENVOLUME, null, false,
                 devopsEnvironmentDTO.getId(), path);
     }
