@@ -569,7 +569,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
             //删除tag
 
-            handleTag(devopsEnvironmentDTO.getEnvIdRsa(),git,pushWebHookVO, devopsEnvCommitDTO, tagNotExist);
+            handleTag(pushWebHookVO, gitLabProjectId, gitLabUserId, devopsEnvCommitDTO, tagNotExist);
 
             devopsEnvironmentDTO.setDevopsSyncCommit(devopsEnvCommitDTO.getId());
             //更新环境 解释commit
@@ -645,15 +645,30 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         }
     }
 
-    private void handleTag(String envRsa, Git git, PushWebHookVO pushWebHookVO,DevopsEnvCommitDTO devopsEnvCommitDTO, Boolean tagNotExist) {
+    private void handleTag(PushWebHookVO pushWebHookVO, Integer gitLabProjectId, Integer gitLabUserId,
+
+                           DevopsEnvCommitDTO devopsEnvCommitDTO, Boolean tagNotExist) {
         if (tagNotExist) {
-            GitUtil.createTag(git, envRsa, GitUtil.DEV_OPS_SYNC_TAG, devopsEnvCommitDTO.getCommitSha());
+            gitlabServiceClientOperator.createTag(
+                    gitLabProjectId, GitUtil.DEV_OPS_SYNC_TAG, devopsEnvCommitDTO.getCommitSha(),
+                    "", "", gitLabUserId);
         } else {
-            GitUtil.deleteTag(git, devopsEnvCommitDTO.getCommitSha(), GitUtil.DEV_OPS_SYNC_TAG);
-            if (getDevopsSyncTag(pushWebHookVO)) {
-                GitUtil.createTag(git, envRsa, GitUtil.DEV_OPS_SYNC_TAG, devopsEnvCommitDTO.getCommitSha());
+            try {
+                gitlabServiceClientOperator.deleteTag(gitLabProjectId, GitUtil.DEV_OPS_SYNC_TAG, gitLabUserId);
+            } catch (CommonException e) {
+                if (getDevopsSyncTag(pushWebHookVO)) {
+                    gitlabServiceClientOperator.createTag(
+                            gitLabProjectId, GitUtil.DEV_OPS_SYNC_TAG, devopsEnvCommitDTO.getCommitSha(),
+                            "", "", gitLabUserId);
+                }
             }
 
+            //创建新tag
+            if (getDevopsSyncTag(pushWebHookVO)) {
+                gitlabServiceClientOperator.createTag(
+                        gitLabProjectId, GitUtil.DEV_OPS_SYNC_TAG, devopsEnvCommitDTO.getCommitSha(),
+                        "", "", gitLabUserId);
+            }
         }
     }
 
