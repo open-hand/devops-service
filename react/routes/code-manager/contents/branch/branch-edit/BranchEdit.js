@@ -17,8 +17,9 @@ function BranchEdit() {
   } = useSelectStore();
 
   useEffect(() => {
-    optionsDs.query();
-    issueId ? selectDs.current.set('issueName', issueId) : null;
+    optionsDs.query().then(() => {
+      issueId ? selectDs.current.set('issueName', issueId) : null;
+    });
   }, []);
 
   const recordData = optionsDs.toData();
