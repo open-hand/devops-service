@@ -22,7 +22,7 @@ export default function useStore() {
      * 加载标记数据
      */
     loadTagData(projectId, appServiceId, tagPageSize, text = '') {
-      const postData = { searchParam: { name: text }, param: [] };
+      const postData = { searchParam: { tagName: text }, param: [] };
       return axios.post(`devops/v1/projects/${projectId}/app_service/${appServiceId}/git/page_tags_by_options?page=1&size=${tagPageSize}&sort=creation_date,asc`, postData);
     },
   }));
