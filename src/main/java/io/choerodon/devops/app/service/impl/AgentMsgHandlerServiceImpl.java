@@ -513,6 +513,24 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         V1PersistentVolumeClaim pv = json.deserialize(msg, V1PersistentVolumeClaim.class);
         devopsPvcDTO.setStatus(pv.getStatus().getPhase());
         devopsPvcMapper.updateByPrimaryKeySelective(devopsPvcDTO);
+
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
+        DevopsPrometheusDTO devopsPrometheusDTO = devopsClusterResourceService.baseQueryPrometheusDTO(devopsEnvironmentDTO.getClusterId());
+        List<Long> pvcIds = com.alibaba.fastjson.JSON.parseArray(devopsPrometheusDTO.getPvcId(), Long.class);
+        List<DevopsPvcDTO> devopsPvcDTOS = new ArrayList<>();
+        if (pvcIds.contains(devopsPvcDTO.getId())) {
+            for (Long pvcId : pvcIds) {
+                DevopsPvcDTO devopsPvc = devopsPvcService.queryById(pvcId);
+                if (PvcStatus.BOUND.getStatus().equals(devopsPvc.getStatus())) {
+                    devopsPvcDTOS.add(devopsPvc);
+                }
+            }
+            if (devopsPvcDTOS.size() == 3) {
+                devopsPrometheusDTO.setDevopsPvcDTO(devopsPvcDTOS);
+                devopsClusterResourceService.installPrometheus(devopsEnvironmentDTO.getClusterId(), devopsPrometheusDTO);
+            }
+        }
+
     }
 
     private void handleUpdateServiceMsg(String key, Long envId, String msg, DevopsEnvResourceDTO devopsEnvResourceDTO) {
