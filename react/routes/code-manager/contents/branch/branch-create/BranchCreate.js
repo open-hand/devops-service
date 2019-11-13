@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { withRouter } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
-import { Form, TextField, Select } from 'choerodon-ui/pro';
-import { Content } from '@choerodon/boot';
+import { Form, TextField, Select, Progress, Spin } from 'choerodon-ui/pro';
+import { Content, axios } from '@choerodon/boot';
 import { injectIntl } from 'react-intl';
+import _ from 'lodash';
+
 import '../../../../main.less';
 import './index.less';
 import '../index.less';
@@ -33,6 +35,10 @@ function BranchCreate(props) {
   const [branchTagData, setBranchTagData] = useState([]);
   const [loadMoreBranch, setLoadMoreBranch] = useState(false);
   const [loadMoreTag, setLoadMoreTag] = useState(false);
+  const [moreTagLoading, setMoreTagLoading] = useState(false);
+  const [moreBranchLoading, setMoreBranchLoading] = useState(false);
+  const [branchOringDs, setBranchOringDs] = useState(null);
+  const [selectCom, setSelectCom] = useState(null);
 
   const recordData = issueNameOptionDs.toData();
   const optionsData = [];
@@ -40,6 +46,7 @@ function BranchCreate(props) {
   let issueSummry;
   let issueIusseNum;
   let issueIssueId;
+
   recordData.forEach(item => {
     issueIssueId = item.issueId;
     issueTypeCode = item.typeCode;
@@ -63,29 +70,54 @@ function BranchCreate(props) {
     loadTagData(tagPageSize);
   }, [appServiceId]);
 
+  const searchData = useMemo(() => _.debounce((text) => {
+    if (selectCom && selectCom.options) {
+      selectCom.options.changeStatus('loading');
+    }
+    axios.all([contentStore.loadBranchData(projectId, appServiceId, branchPageSize, text), contentStore.loadTagData(projectId, appServiceId, branchPageSize, text)])
+      .then(axios.spread((branchs, tags) => {
+        if (selectCom && selectCom.options) {
+          selectCom.options.changeStatus('ready');
+        }
+        if (handlePromptError(branchs) || handlePromptError(tags)) {
+          setBranchOringData(branchs.list);
+          setBranchTagData(tags.list);
+        }
+      }));
+  }, 1000), [selectCom]);
+  
+
   /**
    * 加载分支数据
    * @param BranchPageSize
    */
   async function loadBranchData(BranchPageSize) {
+    setMoreBranchLoading(true);
     const data = await contentStore.loadBranchData(projectId, appServiceId, BranchPageSize);
+    setMoreBranchLoading(false);
     if (handlePromptError(data)) {
       setBranchOringData(data.list);
       if (data.total > data.size && data.size > 0) {
         setLoadMoreBranch(true);
+      } else {
+        setLoadMoreBranch(false);
       }
-    }
+    }    
   }
   /**
    * 加载标记数据
    * @param TagPageSize
    */
   async function loadTagData(TagPageSize) {
+    setMoreTagLoading(true);
     const data = await contentStore.loadTagData(projectId, appServiceId, TagPageSize);
+    setMoreTagLoading(false);
     if (handlePromptError(data)) {
       setBranchTagData(data.list);
       if (data.total > data.size && data.size > 0) {
         setLoadMoreTag(true);
+      } else {
+        setLoadMoreTag(false);
       }
     }
   }
@@ -275,23 +307,7 @@ function BranchCreate(props) {
       </span>
     );
   };
-
-  // 用于渲染分支来源
-  const renderBranchOrigin = ({ text }) => {
-    if (!text) {
-      return null;
-    }
-    if (typeof text !== 'object') {
-      text = text.split(',');
-    }
-    return text.length === 1 ? <span>
-      <i className="icon icon-branch c7n-branch-formItem-icon" />
-      {text[0]}
-    </span> : <span>
-      <i className="icon icon-local_offer c7n-branch-formItem-icon" />
-      {text[1]}
-    </span>;
-  };
+  
 
   const loadMore = (type, e) => {
     e.stopPropagation();
@@ -299,55 +315,88 @@ function BranchCreate(props) {
       const pageSize = branchPageSize + 10;
       setBranchPageSize(pageSize);
       loadBranchData(pageSize);
-      setLoadMoreBranch(false);
     } else {
       const pageSize = tagPageSize + 10;
       setTagPageSize(pageSize);
       loadTagData(pageSize);
-      setLoadMoreTag(false);
     }
   };
 
-  const rednerBranchOptionOrigin = ({ text }) => {
-    if (typeof text === 'object' && 'props' in text) {
-      if (text.props.type === 'branch') {
-        return (
-          <div
-            onClick={loadMore.bind(this, 'branch')}
-            className="c7n-option-popover c7n-dom-more"
-          >
-            {formatMessage({ id: 'loadMore' })}
-          </div>
-        );
+  const rednerBranchOptionOrigin = (args) => {
+    const { record, text } = args;
+    // meaning是默认的textfiled 此处用于判断 是否是加载更多的按钮
+    if (!record.get('meaning')) {
+      // 根据value来判断是哪一个加载更多的按钮
+      let progress = null;
+      if (record.get('value') === 'tag') {
+        progress = moreTagLoading ? <Progress type="loading" size="small" /> : null;
       } else {
-        return (
-          <div
-            onClick={loadMore.bind(this, 'tag')}
-            className="c7n-option-popover c7n-dom-more"
-          >
-            {formatMessage({ id: 'loadMore' })}
-          </div>
-        );
+        progress = moreBranchLoading ? <Progress type="loading" size="small" /> : null;
+      }
+      return (
+        <div
+          onClick={loadMore.bind(this, record.get('value'))}
+          className="c7n-option-popover"
+        >
+          {progress}
+          <span className="c7n-option-span">{formatMessage({ id: 'loadMore' })}</span>
+        </div>);
+    }
+   
+    return renderOption(record.get('value'));
+  };
+
+  // 用于渲染分支来源
+  const renderBranchOrigin = (args) => {
+    const { text, value } = args;
+    if (!text) {
+      return null;
+    }
+    return renderOption(value);
+  };
+
+  function renderOption(text) {
+    return (<span>
+      <i className={`icon c7n-branch-formItem-icon ${text.slice(-7) === '_type_t' ? 'icon-local_offer' : 'icon-branch'}`} />
+      {text && text.slice(0, -7)}
+    </span>);
+  }
+  
+  function searchMatcher() {
+    return true;
+  }
+
+  function handleInput({ target: { value } }) {    
+    searchData(value);
+  }
+  
+  function changeRef(obj) {
+    if (obj) {
+      const fields = obj.fields;
+      if (fields instanceof Array && fields.length > 0) {
+        const select = fields[1];
+        if (select && !selectCom) {
+          setSelectCom(select);
+        }
       }
     }
-    return (
-      <span>
-        {renderBranchOrigin({ text })}
-      </span>
-    );
-  };
-  
+  }
+
   return (
     <Content className="sidebar-content c7n-createBranch">
       <div style={{ width: '75%' }}>
         <Form
           dataSet={formDs}
           columns={5}
+          ref={changeRef}
         >
           <Select colSpan={5} onChange={changeIssue} optionRenderer={issueNameOptionRender} renderer={issueNameRender} name="issueName" />
           <Select
             colSpan={5}
             name="branchOrigin"
+            searchMatcher={searchMatcher}
+            onInput={handleInput}
+            searchable
             optionRenderer={rednerBranchOptionOrigin}
             renderer={renderBranchOrigin}
           >
@@ -356,14 +405,12 @@ function BranchCreate(props) {
               key="proGroup"
             >
               {branchOringData.map((s) => (
-                <Option value={s.branchName} key={s.branchName} title={s.branchName}>
+                <Option value={`${s.branchName}_type_b`} key={s.branchName} title={s.branchName}>
                   {s.branchName}
                 </Option>
               ))}
               {loadMoreBranch ? (
-                <Option value="more">
-                  <span type="branch" />
-                </Option>
+                <Option value="branch" />
               ) : null}
             </OptGroup>
             <OptGroup
@@ -371,14 +418,11 @@ function BranchCreate(props) {
               key="more"
             >
               {branchTagData.map((s) => (s.release
-                ? <Option value={s.release.tagName} key={s.release.tagName}>
-                  <i style={{ display: 'none' }} className="icon icon-local_offer c7n-branch-formItem-icon" />
+                ? <Option value={`${s.release.tagName}_type_t`} key={s.release.tagName}>
                   {s.release.tagName}
                 </Option> : null))}
               {loadMoreTag ? (
-                <Option value="more">
-                  <span type="tag" />
-                </Option>) : null }
+                <Option value="tag" />) : null }
             </OptGroup>
           </Select>
           <Select colSpan={2} name="branchType" renderer={renderBranchType} optionRenderer={renderOptionsBranchType}>
@@ -391,6 +435,7 @@ function BranchCreate(props) {
             )}
           </Select>
           <TextField colSpan={3} addonBefore={prefixData} name="branchName" />
+          {/* <TextField colSpan={3} prefix={prefixData} name="branchName" /> */}
         </Form>
       </div>
     </Content>

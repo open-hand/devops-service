@@ -38,12 +38,12 @@ export const StoreProvider = injectIntl(inject('AppState')(
               const issueId = data.issueName;
               const originBranch = data.branchOrigin;
               const type = data.branchType;
-              let branchName;
-              type === 'custom' ? branchName = data.branchName : branchName = `${data.branchType}-${data.branchName}`;
+              const branchName = type === 'custom' ? data.branchName : `${data.branchType}-${data.branchName}`;
+              
               const postData = {
                 branchName,
                 issueId,
-                originBranch,
+                originBranch: originBranch && originBranch.slice(0, -7),
                 type,
               };
               return JSON.stringify(postData);

@@ -6,7 +6,6 @@ export default ({ projectId, issueId }) => {
     url = `/agile/v1/projects/${projectId}/issues/summary?issueId=&onlyActiveSprint=true&self=true&issueNum=&content=`;
   }
   return {
-    autoCreate: true,
     selection: 'single',
     paging: false,
     transport: {
