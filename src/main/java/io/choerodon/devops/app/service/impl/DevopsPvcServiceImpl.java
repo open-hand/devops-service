@@ -215,23 +215,6 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
             devopsPvcDTO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());
             baseUpdate(devopsPvcDTO);
         }
-
-        DevopsPrometheusDTO devopsPrometheusDTO = devopsClusterResourceService.baseQueryPrometheusDTO(environmentDTO.getClusterId());
-        List<Long> pvcIds = JSON.parseArray(devopsPrometheusDTO.getPvcId(), Long.class);
-        List<DevopsPvcDTO> devopsPvcDTOS = new ArrayList<>();
-        if (pvcIds.contains(devopsPvcReqVO.getId())) {
-            for (Long pvcId : pvcIds) {
-                DevopsPvcDTO devopsPvc = queryById(pvcId);
-                if (PvcStatus.BOUND.getStatus().equals(devopsPvc.getStatus())) {
-                    devopsPvcDTOS.add(devopsPvc);
-                }
-            }
-            if (devopsPvcDTOS.size() == 3) {
-                devopsPrometheusDTO.setDevopsPvcDTO(devopsPvcDTOS);
-                devopsClusterResourceService.installPrometheus(environmentDTO.getClusterId(), devopsPrometheusDTO);
-            }
-        }
-
         return devopsPvcDTO;
     }
 

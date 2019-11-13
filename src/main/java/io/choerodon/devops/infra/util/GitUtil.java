@@ -16,9 +16,11 @@ import org.eclipse.jgit.api.*;
 import org.eclipse.jgit.api.errors.*;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
 import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.transport.*;
 import org.eclipse.jgit.util.FS;
 import org.slf4j.Logger;
@@ -46,6 +48,7 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 @Component
 public class GitUtil {
     public static final String DEV_OPS_SYNC_TAG = "devops-sync";
+    public static final String DEV_OPS_REFS = "refs/tags/";
     public static final String TEMPLATE = "template";
     private static final String MASTER = "master";
     private static final String PATH = "/";
@@ -207,23 +210,26 @@ public class GitUtil {
      *
      * @param path git repo
      */
-    public static void pullBySsh(String path, String envRas) {
+    public static Git pullBySsh(String path,String envRas) {
         File repoGitDir = new File(path);
         try (Repository repository = new FileRepository(repoGitDir.getAbsolutePath())) {
-            pullBySsh(repository, envRas);
+            return pullBySsh(repository, envRas);
         } catch (IOException e) {
             LOGGER.info("Get repository error", e);
         }
+        return null;
     }
 
-    private static void pullBySsh(Repository repository, String sshKeyRsa) {
+    private static Git pullBySsh(Repository repository,String sshKeyRsa) {
         try (Git git = new Git(repository)) {
             git.pull()
                     .setTransportConfigCallback(getTransportConfigCallback(sshKeyRsa))
                     .call();
+            return git;
         } catch (GitAPIException e) {
             LOGGER.info("Pull error", e);
         }
+        return null;
     }
 
     private static TransportConfigCallback getTransportConfigCallback(String sshKeyRsa) {
@@ -558,31 +564,52 @@ public class GitUtil {
         return git;
     }
 
-//    /**
-//     * push current git repo
-//     *
-//     * @param git git repo
-//     * @throws GitAPIException push error
-//     */
-//    public void gitPush(Git git) throws GitAPIException {
-//        git.push().setTransportConfigCallback(getTransportConfigCallback()).call();
-//    }
+    /**
+     * 本地创建tag并推送远程仓库
+     *
+     * @param git git repo
+     * @throws GitAPIException push error
+     */
+    public static void createTag(Git git, String sshKey, String tagName,String sha){
+        try {
+            Repository repository=git.getRepository();
+            ObjectId id = repository.resolve(sha);
+            RevWalk walk = new RevWalk(repository);
+            RevCommit commit = walk.parseCommit(id);
+            Ref tag = git.tag().setObjectId(commit).setName(tagName).call();
+            PushCommand pushCommand = git.push();
+            pushCommand.add(tagName);
+            pushCommand.setRemote("origin");
+            pushCommand.setTransportConfigCallback(getTransportConfigCallback(sshKey)).call();
+        } catch (Exception e) {
+            LOGGER.info("error create tag ", e);
+        }
+    }
 
-//    /**
-//     * push current git repo
-//     *
-//     * @param git git repo
-//     * @throws GitAPIException push error
-//     */
-//    public void gitPushTag(Git git) throws GitAPIException {
-//        List<Ref> refs = git.branchList().call();
-//        PushCommand pushCommand = git.push();
-//        for (Ref ref : refs) {
-//            pushCommand.add(ref);
-//        }
-//        pushCommand.setPushTags();
-//        pushCommand.setTransportConfigCallback(getTransportConfigCallback()).call();
-//    }
+    /**
+     * 本地删除tag并推送远程仓库
+     *
+     * @param git git repo
+     * @throws GitAPIException push error
+     */
+    public static void deleteTag(Git git, String sshKey, String tagName){
+        try {
+            PushCommand pushCommand = git.push();
+                List<Ref> refs = git.tagList().call();
+                for (Ref ref : refs) {
+                    if (ref.getName().equals(DEV_OPS_REFS + tagName)) {
+                        pushCommand.add(":" + ref.getName());
+                    }
+                }
+                pushCommand.setRemote("origin");
+                pushCommand.setForce(true);
+                pushCommand.setTransportConfigCallback(getTransportConfigCallback(sshKey)).call();
+                git.tagDelete().setTags(tagName).call();
+        } catch (GitAPIException e) {
+            LOGGER.info("error delete tag ", e);
+        }
+
+    }
 
     /**
      * create a file in git repo, and then commit it
