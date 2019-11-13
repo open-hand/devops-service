@@ -124,6 +124,8 @@ export default class LogSidebar extends Component {
    * 任意键退出全屏查看
    */
   setNormal = () => {
+    if (!this.editorLog) return;
+
     const cm = this.editorLog.getCodeMirror();
     const wrap = cm.getWrapperElement();
     wrap.className = wrap.className.replace(/\s*CodeMirror-fullScreen\b/, '');
