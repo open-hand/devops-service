@@ -464,14 +464,14 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
                 //升级失败->可用，安装失败->不可用
 
                 DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(appServiceInstanceDTO.getCommandId());
-//                List<DevopsEnvFileErrorDTO> devopsEnvFileErrorDTOS = devopsEnvFileErrorService.baseListByEnvId(devopsEnvCommandDTO.getEnvId());
+                List<DevopsEnvFileErrorDTO> devopsEnvFileErrorDTOS = devopsEnvFileErrorService.baseListByEnvId(devopsEnvCommandDTO.getEnvId());
+                String fileError = devopsEnvFileErrorDTOS.stream().map(DevopsEnvFileErrorDTO::getError).collect(Collectors.joining());
                 if (ClusterResourceOperateType.UPGRADE.getType().equals(devopsClusterResourceDTO.getOperate())) {
                     clusterResourceVO.setStatus(ClusterResourceStatus.AVAILABLE.getStatus());
-                    clusterResourceVO.setMessage(devopsEnvCommandDTO.getError());
                 } else {
                     clusterResourceVO.setStatus(ClusterResourceStatus.DISABLED.getStatus());
-                    clusterResourceVO.setMessage(devopsEnvCommandDTO.getError());
                 }
+                clusterResourceVO.setMessage(devopsEnvCommandDTO.getError()+fileError);
                 break;
         }
         clusterResourceVO.setOperate(devopsClusterResourceDTO.getOperate());
