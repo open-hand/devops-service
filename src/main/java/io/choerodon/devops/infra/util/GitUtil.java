@@ -157,20 +157,6 @@ public class GitUtil {
         return result;
     }
 
-    /**
-     * 切换分支，如果分支不存在就去创建分支
-     *
-     * @param path
-     * @param commit
-     */
-    public void checkoutAndCreateBranch(String path, String commit) {
-        File file = new File(path);
-        try (Repository repository = new FileRepository(file)) {
-            checkoutAndCreateBranch(repository, commit);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
     /**
      * clone by ssh
@@ -206,19 +192,6 @@ public class GitUtil {
         }
     }
 
-    private void checkoutAndCreateBranch(Repository repository, String commit) {
-        try (Git git = new Git(repository)) {
-            String refKey = String.format("%s%s", "refs/heads/", commit);
-            CheckoutCommand checkout = git.checkout();
-            Ref ref = repository.findRef(refKey);
-            if (ObjectUtils.isEmpty(ref)) {
-                checkout.setCreateBranch(true);
-            }
-            checkout.setName(commit).call();
-        } catch (GitAPIException | IOException e) {
-            LOGGER.info("Checkout error ", e);
-        }
-    }
 
     private void checkout(String commit, Repository repository) {
         try (Git git = new Git(repository)) {
@@ -247,7 +220,6 @@ public class GitUtil {
         try (Git git = new Git(repository)) {
             git.pull()
                     .setTransportConfigCallback(getTransportConfigCallback(sshKeyRsa))
-                    .setRemoteBranchName(MASTER)
                     .call();
         } catch (GitAPIException e) {
             LOGGER.info("Pull error", e);

@@ -151,7 +151,6 @@ public class ClusterConnectionHandler {
             // 如果文件夾存在并且文件夹不为空,去拉取新的配置
             // 反之克隆远程的仓库的文件
             if (file.isDirectory() && file.listFiles().length > 0) {
-                gitUtil.checkoutAndCreateBranch(localPath, "master");
                 gitUtil.pullBySsh(localPath, envRsa);
             } else {
                 gitUtil.cloneBySsh(path, url, envRsa);
