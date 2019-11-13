@@ -14,7 +14,8 @@
                dpv.access_modes access_modes,
                dpv.command_id command_id,
                dpvc.name pvc_name,
-               dc.name cluster_name
+               dc.name cluster_name,
+               dpv.skip_check_project_permission skip_check_project_permission
         FROM devops_pv dpv
         LEFT JOIN devops_pvc dpvc on dpv.pvc_id = dpvc.id
         LEFT JOIN devops_cluster dc on dpv.cluster_id = dc.id
@@ -70,7 +71,8 @@
                dpv.access_modes access_modes,
                dpv.command_id command_id,
                dpvc.name pvc_name,
-               dc.name cluster_name
+               dc.name cluster_name,
+               dpv.skip_check_project_permission skip_check_project_permission
         FROM devops_pv dpv
                  LEFT JOIN devops_pvc dpvc on dpv.pvc_id = dpvc.id
                  LEFT JOIN devops_cluster dc on dpv.cluster_id = dc.id
