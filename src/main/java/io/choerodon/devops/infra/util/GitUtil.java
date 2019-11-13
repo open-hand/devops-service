@@ -1,21 +1,15 @@
 package io.choerodon.devops.infra.util;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.regex.Pattern;
+
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
-
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.GitConfigVO;
-import io.choerodon.devops.api.vo.GitEnvConfigVO;
-import io.choerodon.devops.app.service.DevopsEnvironmentService;
-import io.choerodon.devops.infra.dto.DevopsClusterDTO;
-import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
-import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
-import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.enums.EnvironmentType;
-import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
-
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.*;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -37,12 +31,17 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.regex.Pattern;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.GitConfigVO;
+import io.choerodon.devops.api.vo.GitEnvConfigVO;
+import io.choerodon.devops.app.service.DevopsEnvironmentService;
+import io.choerodon.devops.infra.dto.DevopsClusterDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.enums.EnvironmentType;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
 
 /**
  * Created by younger on 2018/3/29.
@@ -623,6 +622,10 @@ public class GitUtil {
      */
     public static void createTag(Git git, String sshKey, String tagName, String sha) {
         try {
+            List<Ref> taglist = git.tagList().call();
+            if (taglist.contains(DEV_OPS_REFS + tagName)) {
+                deleteTag(git, tagName);
+            }
             Repository repository = git.getRepository();
             ObjectId id = repository.resolve(sha);
             RevWalk walk = new RevWalk(repository);
@@ -631,14 +634,15 @@ public class GitUtil {
             PushCommand pushCommand = git.push();
             pushCommand.add(tagName);
             pushCommand.setRemote("origin");
+            pushCommand.setForce(true);
             pushCommand.setTransportConfigCallback(getTransportConfigCallback(sshKey)).call();
         } catch (Exception e) {
-            LOGGER.info("error create tag ", e);
+            throw new CommonException("create tag fail", e);
         }
     }
 
     /**
-     * 本地删除tag并推送远程仓库
+     * 本地删除tag
      *
      * @param git git repo
      * @throws GitAPIException push error
@@ -657,9 +661,37 @@ public class GitUtil {
             pushCommand.setTransportConfigCallback(getTransportConfigCallback(sshKey)).call();
             git.tagDelete().setTags(tagName).call();
         } catch (GitAPIException e) {
-            LOGGER.info("error delete tag ", e);
+            throw new CommonException("delete tag fail", e);
         }
 
+    }
+
+    /**
+     * 本地删除tag
+     *
+     * @param git git repo
+     * @throws GitAPIException push error
+     */
+    public static void deleteTag(Git git, String tagName) {
+        try {
+            git.tagDelete().setTags(tagName).call();
+        } catch (GitAPIException e) {
+            throw new CommonException("delete tag fail", e);
+        }
+
+    }
+
+    /**
+     * 本地删除tag后，创建新tag推送至远程仓库
+     *
+     * @param git
+     * @param sshKey
+     * @param tagName
+     * @param sha
+     */
+    public static void pushTag(Git git, String sshKey, String tagName, String sha) {
+        deleteTag(git, tagName);
+        createTag(git, sshKey, tagName, sha);
     }
 
     /**

@@ -1,8 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import static io.choerodon.devops.infra.constant.KubernetesConstants.METADATA;
-import static io.choerodon.devops.infra.constant.KubernetesConstants.NAME;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -54,6 +51,9 @@ import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsMergeRequestMapper;
 import io.choerodon.devops.infra.message.ResourceBundleHandler;
 import io.choerodon.devops.infra.util.*;
+
+import static io.choerodon.devops.infra.constant.KubernetesConstants.METADATA;
+import static io.choerodon.devops.infra.constant.KubernetesConstants.NAME;
 
 /**
  * Creator: Runge
@@ -532,7 +532,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
         try {
             //更新本地库到最新提交
-            handDevopsEnvGitRepository(path, url, devopsEnvironmentDTO.getEnvIdRsa(), devopsEnvCommitDTO.getCommitSha());
+            Git git = handDevopsEnvGitRepository(path, url, devopsEnvironmentDTO.getEnvIdRsa(), devopsEnvCommitDTO.getCommitSha());
             LOGGER.info("更新gitops库成功");
             //查询devops-sync tag是否存在，存在则比较tag和最新commit的diff，不存在则识别gitops库下所有文件为新增文件
             tagNotExist = getDevopsSyncTag(pushWebHookVO);
@@ -581,7 +581,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
             //删除tag
 
-            handleTag(pushWebHookVO, gitLabProjectId, gitLabUserId, devopsEnvCommitDTO, tagNotExist);
+            handleTag(git,devopsEnvironmentDTO.getEnvIdRsa(),pushWebHookVO, devopsEnvCommitDTO, tagNotExist);
 
             devopsEnvironmentDTO.setDevopsSyncCommit(devopsEnvCommitDTO.getId());
             //更新环境 解释commit
@@ -667,29 +667,14 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         }
     }
 
-    private void handleTag(PushWebHookVO pushWebHookVO, Integer gitLabProjectId, Integer gitLabUserId,
-
+    private void handleTag(Git git, String sshKey, PushWebHookVO pushWebHookVO,
                            DevopsEnvCommitDTO devopsEnvCommitDTO, Boolean tagNotExist) {
         if (tagNotExist) {
-            gitlabServiceClientOperator.createTag(
-                    gitLabProjectId, GitUtil.DEV_OPS_SYNC_TAG, devopsEnvCommitDTO.getCommitSha(),
-                    "", "", gitLabUserId);
+            GitUtil.createTag(git, sshKey, GitUtil.DEV_OPS_SYNC_TAG, devopsEnvCommitDTO.getCommitSha());
         } else {
-            try {
-                gitlabServiceClientOperator.deleteTag(gitLabProjectId, GitUtil.DEV_OPS_SYNC_TAG, gitLabUserId);
-            } catch (CommonException e) {
-                if (getDevopsSyncTag(pushWebHookVO)) {
-                    gitlabServiceClientOperator.createTag(
-                            gitLabProjectId, GitUtil.DEV_OPS_SYNC_TAG, devopsEnvCommitDTO.getCommitSha(),
-                            "", "", gitLabUserId);
-                }
-            }
-
-            //创建新tag
+            GitUtil.pushTag(git, sshKey, GitUtil.DEV_OPS_SYNC_TAG, devopsEnvCommitDTO.getCommitSha());
             if (getDevopsSyncTag(pushWebHookVO)) {
-                gitlabServiceClientOperator.createTag(
-                        gitLabProjectId, GitUtil.DEV_OPS_SYNC_TAG, devopsEnvCommitDTO.getCommitSha(),
-                        "", "", gitLabUserId);
+                GitUtil.createTag(git, sshKey, GitUtil.DEV_OPS_SYNC_TAG, devopsEnvCommitDTO.getCommitSha());
             }
         }
     }
