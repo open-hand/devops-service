@@ -210,23 +210,26 @@ public class GitUtil {
      *
      * @param path git repo
      */
-    public static void pullBySsh(String path, String envRas) {
+    public static Git pullBySsh(String path,String envRas) {
         File repoGitDir = new File(path);
         try (Repository repository = new FileRepository(repoGitDir.getAbsolutePath())) {
-            pullBySsh(repository, envRas);
+            return pullBySsh(repository, envRas);
         } catch (IOException e) {
             LOGGER.info("Get repository error", e);
         }
+        return null;
     }
 
-    private static void pullBySsh(Repository repository, String sshKeyRsa) {
+    private static Git pullBySsh(Repository repository,String sshKeyRsa) {
         try (Git git = new Git(repository)) {
             git.pull()
                     .setTransportConfigCallback(getTransportConfigCallback(sshKeyRsa))
                     .call();
+            return git;
         } catch (GitAPIException e) {
             LOGGER.info("Pull error", e);
         }
+        return null;
     }
 
     private static TransportConfigCallback getTransportConfigCallback(String sshKeyRsa) {
