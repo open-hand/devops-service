@@ -488,7 +488,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
     }
 
 
-    private Quantity convertResource(String resourceString) {
+    private BigDecimal convertResourceToDigits(String resourceString){
         long size = Long.parseLong(resourceString.substring(0, resourceString.length() - 2));
         String unit = resourceString.substring(resourceString.length() - 2);
         int level = ResourceUnitLevelEnum.valueOf(unit.toUpperCase()).ordinal();
@@ -498,7 +498,28 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         }
 
         BigDecimal bigDecimal = new BigDecimal(size);
-        return new Quantity(bigDecimal, Quantity.Format.BINARY_SI);
+        return bigDecimal;
+    }
+
+    private Quantity convertResource(String resourceString) {
+
+        return new Quantity(convertResourceToDigits(resourceString), Quantity.Format.BINARY_SI);
+    }
+
+    private int compareResource(String pvStorage, String pvcStorage) {
+        long pvSize = Long.parseLong(pvStorage.substring(0, pvStorage.length() - 2));
+        long pvcSize = Long.parseLong(pvcStorage.substring(0, pvcStorage.length() - 2));
+
+        String pvUnit = pvStorage.substring(pvStorage.length() - 2);
+        String pvcUnit = pvcStorage.substring(pvcStorage.length() - 2);
+
+        int pvLevel = ResourceUnitLevelEnum.valueOf(pvUnit.toUpperCase()).ordinal();
+        int pvcLevel = ResourceUnitLevelEnum.valueOf(pvcUnit.toUpperCase()).ordinal();
+
+        if (pvLevel == pvcLevel) {
+            return pvSize >= pvcSize ? 1 : -1;
+        }
+        return pvLevel > pvcLevel ? 1 : -1;
     }
 
     private DevopsEnvCommandDTO initDevopsEnvCommandDTO(String type) {
@@ -537,5 +558,21 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         resourceConvertToYamlHandler.operationEnvGitlabFile("pv" + devopsPvDTO.getName(), gitlabEnvGroupProjectId,
                 CREATE, userAttrDTO.getGitlabUserId(), devopsPvDTO.getId(), PERSISTENVOLUME, null, false,
                 devopsEnvironmentDTO.getId(), path);
+    }
+
+
+    @Override
+    public List<DevopsPvVO> queryPvcRelatedPv(String params) {
+        Map<String, Object> searchParamMap = TypeUtil.castMapParams(params);
+        Map<String, String> map = (Map) searchParamMap.get(TypeUtil.SEARCH_PARAM);
+        List<DevopsPvVO> devopsPvVOList = ConvertUtils.convertList(devopsPvMapper.listPvByOptions(
+                TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
+                TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS))), DevopsPvVO.class);
+        String pvcStorage = map.get("requestResource");
+        // 筛选容量大于或等于pvc容量
+        return devopsPvVOList.stream()
+                .filter((e) -> compareResource(e.getRequestResource(), pvcStorage) > 0)
+                .collect(Collectors.toList());
+
     }
 }

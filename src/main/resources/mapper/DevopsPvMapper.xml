@@ -39,6 +39,10 @@
                 AND
                 dpv.access_modes LIKE CONCAT(CONCAT('%', #{searchParam.accessmodes, jdbcType=VARCHAR}),'%')
             </if>
+            <if test='searchParam.status != null and searchParam.status.length > 0'>
+                AND
+                dpv.status = #{searchParam.status, jdbcType=VARCHAR}
+            </if>
         </if>
         <if test='params != null and params.size > 0'>
             AND
@@ -47,6 +51,7 @@
                 OR dpv.type LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
                 OR dc.name  LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
                 OR dpv.access_modes LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                OR dpv.status LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
             </foreach>
         </if>
     </sql>

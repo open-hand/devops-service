@@ -7,6 +7,9 @@ public class DevopsPvVO {
     @ApiModelProperty("pvId")
     private Long id;
 
+    @ApiModelProperty("关联的clusterId")
+    private Long clusterId;
+
     @ApiModelProperty("PV名称")
     private String name;
 
@@ -30,6 +33,9 @@ public class DevopsPvVO {
 
     @ApiModelProperty("资源请求大小")
     private String requestResource;
+
+    @ApiModelProperty("是否跳过权限校验")
+    private Boolean skipCheckProjectPermission;
 
     public Long getId() {
         return id;
@@ -101,5 +107,21 @@ public class DevopsPvVO {
 
     public void setRequestResource(String requestResource) {
         this.requestResource = requestResource;
+    }
+
+    public Boolean getSkipCheckProjectPermission() {
+        return skipCheckProjectPermission;
+    }
+
+    public void setSkipCheckProjectPermission(Boolean skipCheckProjectPermission) {
+        this.skipCheckProjectPermission = skipCheckProjectPermission;
+    }
+
+    public Long getClusterId() {
+        return clusterId;
+    }
+
+    public void setClusterId(Long clusterId) {
+        this.clusterId = clusterId;
     }
 }
