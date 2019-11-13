@@ -159,6 +159,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private AppServiceService appServiceService;
     @Autowired
     private GitlabGroupService gitlabGroupService;
+    @Autowired
+    private DevopsClusterMapper devopsClusterMapper;
 
     @PostConstruct
     private void init() {
@@ -1305,11 +1307,17 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Override
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     public DevopsEnvironmentDTO createSystemEnv(Long clusterId) {
-        // TODO by zmf 要考虑并发的情况
-        DevopsClusterDTO cluster = devopsClusterService.baseQuery(clusterId);
+        // 因为创建系统环境需要一些时间，要考虑并发的情况，所以给特定的cluster纪录加上行锁
+        DevopsClusterDTO cluster = devopsClusterMapper.queryClusterForUpdate(clusterId);
+
         if (cluster == null) {
             throw new CommonException("error.cluster.not.exists");
         }
+
+        if (cluster.getSystemEnvId() != null) {
+            return devopsEnvironmentMapper.selectByPrimaryKey(cluster.getSystemEnvId());
+        }
+
         Long projectId = cluster.getProjectId();
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
