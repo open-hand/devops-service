@@ -147,9 +147,14 @@ public class ClusterConnectionHandler {
         if (!file.exists()) {
             gitUtil.cloneBySsh(path, url, envRsa);
         } else {
-            String loaclPath = String.format("%s%s",path,"/.git");
-            gitUtil.checkout(loaclPath,"master");
-            gitUtil.pullBySsh(loaclPath,envRsa);
+            String localPath = String.format("%s%s", path, "/.git");
+            // 如果文件夾存在并且文件夹不为空,去拉取新的配置
+            // 反之克隆远程的仓库的文件
+            if (file.isDirectory() && file.listFiles().length > 0) {
+                gitUtil.pullBySsh(localPath, envRsa);
+            } else {
+                gitUtil.cloneBySsh(path, url, envRsa);
+            }
         }
         return path;
     }
