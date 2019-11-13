@@ -530,7 +530,7 @@ public class GitlabServiceClientOperator {
                     }
                 }
             }
-            Map<String, Object> searchParam = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
+            Map<String, Object> searchParam = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
             if (searchParam != null) {
                 index = getTagName(index, tagDTO, searchParam);
                 index = getShortId(index, tagDTO, searchParam);
