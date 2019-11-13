@@ -192,6 +192,7 @@ const deployment = {
   'c7ncd.deployment.environment.tabs.config': '部署配置',
   'c7ncd.deployment.environment.tabs.assignPermissions': '权限分配',
   'c7ncd.deployment.environment.error.logs': '错误日志',
+  'c7ncd.deployment.environment.error.tips': '此处将显示解析过程中产生的错误信息以及错误的文件源。若错误日志为空，则表示解析过程正常',
   'c7ncd.deployment.environment.error.info': '错误信息',
   'c7ncd.deployment.environment.error.time': '错误时间',
   'c7ncd.deployment.environment.gitlab': 'GitLab',
@@ -411,6 +412,7 @@ const deployment = {
   'c7ncd.deployment.pvc.pvId': '选择已有PV',
   'c7ncd.deployment.pvc.delete.title': '删除PVC“{name}”',
   'c7ncd.deployment.pvc.delete.des': '确定要删除该PVC吗？',
+  'c7ncd.deployment.active': '生效',
 
 };
 

@@ -7,6 +7,7 @@ import { useResourceStore } from '../../../../stores';
 import { useEnvironmentStore } from '../stores';
 
 import './index.less';
+import Tips from '../../../../../../components/new-tips';
 
 const { Column } = Table;
 
@@ -56,7 +57,10 @@ export default function Situation() {
     <div className={`${prefixCls}-environment-sync`}>
       <SyncSituation />
       <div className={`${prefixCls}-environment-sync-table-title`}>
-        {formatMessage({ id: `${intlPrefix}.environment.error.logs` })}
+        <Tips
+          title={formatMessage({ id: `${intlPrefix}.environment.error.logs` })}
+          helpText={formatMessage({ id: `${intlPrefix}.environment.error.tips` })}
+        />
       </div>
       <Table
         locale={{
