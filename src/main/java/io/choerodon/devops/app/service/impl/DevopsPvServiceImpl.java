@@ -569,10 +569,12 @@ public class DevopsPvServiceImpl implements DevopsPvService {
                 TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
                 TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS))), DevopsPvVO.class);
         String pvcStorage = map.get("requestResource");
+        if (pvcStorage == null) {
+            throw new CommonException("pvc.resource.request.not.found");
+        }
         // 筛选容量大于或等于pvc容量
         return devopsPvVOList.stream()
                 .filter((e) -> compareResource(e.getRequestResource(), pvcStorage) > 0)
                 .collect(Collectors.toList());
-
     }
 }
