@@ -14,6 +14,8 @@ import javax.annotation.PostConstruct;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
 import io.kubernetes.client.models.V1Endpoints;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -521,7 +523,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
         try {
             //更新本地库到最新提交
-            handDevopsEnvGitRepository(path, url, devopsEnvironmentDTO.getEnvIdRsa(), devopsEnvCommitDTO.getCommitSha());
+            Git git = handDevopsEnvGitRepository(path, url, devopsEnvironmentDTO.getEnvIdRsa(), devopsEnvCommitDTO.getCommitSha());
             LOGGER.info("更新gitops库成功");
             //查询devops-sync tag是否存在，存在则比较tag和最新commit的diff，不存在则识别gitops库下所有文件为新增文件
             tagNotExist = getDevopsSyncTag(pushWebHookVO);
@@ -567,7 +569,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
             //删除tag
 
-            handleTag(pushWebHookVO, gitLabProjectId, gitLabUserId, devopsEnvCommitDTO, tagNotExist);
+            handleTag(devopsEnvironmentDTO.getEnvIdRsa(),git,pushWebHookVO, gitLabProjectId, gitLabUserId, devopsEnvCommitDTO, tagNotExist);
 
             devopsEnvironmentDTO.setDevopsSyncCommit(devopsEnvCommitDTO.getId());
             //更新环境 解释commit
@@ -643,32 +645,19 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         }
     }
 
-    private void handleTag(PushWebHookVO pushWebHookVO, Integer gitLabProjectId, Integer gitLabUserId,
-
+    private void handleTag(String envRsa, Git git, PushWebHookVO pushWebHookVO, Integer gitLabProjectId, Integer gitLabUserId,
                            DevopsEnvCommitDTO devopsEnvCommitDTO, Boolean tagNotExist) {
         if (tagNotExist) {
-            gitlabServiceClientOperator.createTag(
-                    gitLabProjectId, GitUtil.DEV_OPS_SYNC_TAG, devopsEnvCommitDTO.getCommitSha(),
-                    "", "", gitLabUserId);
+            GitUtil.createTag(git, envRsa, GitUtil.DEV_OPS_SYNC_TAG, devopsEnvCommitDTO.getCommitSha());
         } else {
-            try {
-                gitlabServiceClientOperator.deleteTag(gitLabProjectId, GitUtil.DEV_OPS_SYNC_TAG, gitLabUserId);
-            } catch (CommonException e) {
-                if (getDevopsSyncTag(pushWebHookVO)) {
-                    gitlabServiceClientOperator.createTag(
-                            gitLabProjectId, GitUtil.DEV_OPS_SYNC_TAG, devopsEnvCommitDTO.getCommitSha(),
-                            "", "", gitLabUserId);
-                }
+            GitUtil.deleteTag(git, devopsEnvCommitDTO.getCommitSha(), GitUtil.DEV_OPS_SYNC_TAG);
+            if (getDevopsSyncTag(pushWebHookVO)) {
+                GitUtil.createTag(git, envRsa, GitUtil.DEV_OPS_SYNC_TAG, devopsEnvCommitDTO.getCommitSha());
             }
 
-            //创建新tag
-            if (getDevopsSyncTag(pushWebHookVO)) {
-                gitlabServiceClientOperator.createTag(
-                        gitLabProjectId, GitUtil.DEV_OPS_SYNC_TAG, devopsEnvCommitDTO.getCommitSha(),
-                        "", "", gitLabUserId);
-            }
         }
     }
+
 
     private void handleDiffs(Integer gitLabProjectId, List<String> operationFiles, List<String> deletedFiles,
                              Set<DevopsEnvFileResourceDTO> beforeSync, Set<DevopsEnvFileResourceDTO> beforeSyncDelete,
@@ -990,7 +979,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
     }
 
-    private void handDevopsEnvGitRepository(String path, String url, String envIdRsa, String commit) {
+    private Git handDevopsEnvGitRepository(String path, String url, String envIdRsa, String commit) {
         File file = new File(path);
         if (!file.exists()) {
             gitUtil.cloneBySsh(path, url, envIdRsa);

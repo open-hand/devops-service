@@ -77,6 +77,8 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
 
     @Autowired
     private DevopsPvService devopsPvService;
+    @Autowired
+    private DevopsEnvFileErrorService devopsEnvFileErrorService;
 
     @Override
     public void baseCreate(DevopsClusterResourceDTO devopsClusterResourceDTO) {
@@ -308,7 +310,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     public Boolean updatePrometheus(Long projectId, Long clusterId, DevopsPrometheusVO devopsPrometheusVO) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
         if (devopsClusterDTO.getSystemEnvId() == null) {
-            throw new CommonException("error.cluster.system.env.id.null");
+            throw new CommonException("error.cluster.system.envId.null");
         }
         DevopsPrometheusDTO devopsPrometheusDTO = devopsPrometheusMapper.selectByPrimaryKey(devopsPrometheusVO.getId());
         devopsPrometheusDTO.setAdminPassword(devopsPrometheusVO.getAdminPassword());
@@ -369,7 +371,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
             if (!ObjectUtils.isEmpty(devopsEnvCommandDTO.getSha())) {
                 prometheusStageVO.setCreateConfig(PrometheusDeploy.SUCCESSED.getStaus());
                 prometheusStageVO.setInstallPrometheus(PrometheusDeploy.WAITING.getStaus());
-            }else {
+            } else {
                 prometheusStageVO.setCreateConfig(PrometheusDeploy.OPERATING.getStaus());
                 prometheusStageVO.setInstallPrometheus(PrometheusDeploy.WAITING.getStaus());
             }
@@ -460,7 +462,9 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
             case PrometheusConstants.FAILED:
                 //实例创建失败
                 //升级失败->可用，安装失败->不可用
+
                 DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(appServiceInstanceDTO.getCommandId());
+//                devopsEnvFileErrorService.baseListByEnvId(devopsEnvCommandDTO.getEnvId());
                 if (ClusterResourceOperateType.UPGRADE.getType().equals(devopsClusterResourceDTO.getOperate())) {
                     clusterResourceVO.setStatus(ClusterResourceStatus.AVAILABLE.getStatus());
                     clusterResourceVO.setMessage(devopsEnvCommandDTO.getError());
