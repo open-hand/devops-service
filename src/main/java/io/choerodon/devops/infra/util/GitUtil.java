@@ -222,9 +222,8 @@ public class GitUtil {
 
     private void checkout(String commit, Repository repository) {
         try (Git git = new Git(repository)) {
-            String fullBranch = repository.getFullBranch();
             git.checkout().setName(commit).call();
-        } catch (GitAPIException | IOException e) {
+        } catch (GitAPIException e) {
             LOGGER.info("Checkout error ", e);
         }
     }
