@@ -679,24 +679,4 @@ public class GitUtil {
     private void commitChanges(Git git, String commitMsg) throws GitAPIException {
         git.commit().setMessage(commitMsg).call();
     }
-    private static void pullBySsh(Repository repository,String sshKeyRsa) {
-        try (Git git = new Git(repository)) {
-            git.checkout().setName("master").call();
-            git.pull()
-                    .setTransportConfigCallback(getTransportConfigCallback(sshKeyRsa))
-                    .setRemoteBranchName(MASTER)
-                    .call();
-        } catch (GitAPIException e) {
-            LOGGER.info("Pull error", e);
-        }
-    }
-    public static void pullBySsh(String path,String envRas) {
-        String localPath = String.format("%s%s",path,"/.git");
-        File repoGitDir = new File(localPath);
-        try (Repository repository = new FileRepository(repoGitDir.getAbsolutePath())) {
-            pullBySsh(repository,envRas);
-        } catch (IOException e) {
-            LOGGER.info("Get repository error", e);
-        }
-    }
 }
