@@ -15,11 +15,11 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
 import io.kubernetes.client.models.V1Endpoints;
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,9 +29,6 @@ import org.yaml.snakeyaml.Yaml;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
-
-import org.springframework.data.domain.Pageable;
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.FeignException;
 import io.choerodon.core.iam.ResourceLevel;
@@ -542,7 +539,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                         devopsEnvironmentDTO, devopsEnvCommitDTO);
             }
 
-            Map<Class, List> resourceKindMap = new HashMap<>();
+            Map<Class, List> resourceKindMap = initResourceKindContainer();
 
             //从文件中读出对象,序列化为K8S对象
             objectPath = convertFileToK8sObjects(operationFiles, path,
@@ -604,6 +601,12 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         devopsEnvFileErrorDTO.setEnvId(devopsEnvironmentDTO.getId());
         devopsEnvFileErrorService.baseDelete(devopsEnvFileErrorDTO);
         // do sth to files
+    }
+
+    private Map<Class, List> initResourceKindContainer() {
+        Map<Class, List> map = new HashMap<>();
+        handlerObjectFileRelationsServices.forEach(handler -> map.computeIfAbsent(handler.getTarget(), k -> new ArrayList()));
+        return map;
     }
 
     @Override
