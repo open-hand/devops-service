@@ -523,6 +523,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 DevopsPvcDTO devopsPvc = devopsPvcService.queryById(pvcId);
                 if (PvcStatus.BOUND.getStatus().equals(devopsPvc.getStatus())) {
                     devopsPvcDTOS.add(devopsPvc);
+                    logger.info("cluster:{} PVC id:{} name:{} create successful", devopsEnvironmentDTO.getClusterId(), devopsPvc.getId(), devopsPvc.getName());
                 }
             }
             if (devopsPvcDTOS.size() == 3) {
