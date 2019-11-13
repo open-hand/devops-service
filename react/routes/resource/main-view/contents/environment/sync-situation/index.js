@@ -5,9 +5,9 @@ import TimePopover from '../../../../../../components/time-popover';
 import SyncSituation from './SyncSituation';
 import { useResourceStore } from '../../../../stores';
 import { useEnvironmentStore } from '../stores';
+import Tips from '../../../../../../components/new-tips';
 
 import './index.less';
-import Tips from '../../../../../../components/new-tips';
 
 const { Column } = Table;
 

@@ -28,6 +28,12 @@ const CreateForm = () => {
     }
   });
 
+  function getPvDisabled() {
+    const record = formDs.current;
+    const canSelect = record && record.get('storage');
+    return !canSelect;
+  }
+
   return (
     <div className={`${prefixCls}-pvc-create-wrap`}>
       <Form dataSet={formDs} columns={3}>
@@ -36,7 +42,14 @@ const CreateForm = () => {
         <NumberField name="storage" step={1} colSpan={2} />
         <Select name="unit" clearButton={false} />
         <Select name="type" colSpan={3} clearButton={false} />
-        <Select name="pvId" colSpan={3} clearButton={false} searchable />
+        <Select
+          name="pvId"
+          colSpan={3}
+          clearButton={false}
+          searchable
+          checkValueOnOptionsChange
+          disabled={getPvDisabled()}
+        />
       </Form>
     </div>
   );

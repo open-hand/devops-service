@@ -24,16 +24,19 @@ export default (({ intlPrefix, formatMessage, projectId, envId, typeDs, modeDs, 
 
   function handleUpdate({ value, name, record }) {
     if (indexOf(['accessModes', 'storage', 'unit', 'type'], name) > -1) {
-      pvDs.transport.read.data = {
-        params: [],
-        searchParam: {
-          accessModes: record.get('accessModes'),
-          type: record.get('type'),
-          requestResource: record.get('storage') && `${record.get('storage')}${record.get('unit')}`,
-        },
-      };
       record.get('pvId') && record.set('pvId', null);
-      pvDs.query();
+      if (record.get('storage')) {
+        pvDs.transport.read.data = {
+          params: [],
+          searchParam: {
+            status: 'Available',
+            accessModes: record.get('accessModes'),
+            type: record.get('type'),
+            requestResource: `${record.get('storage')}${record.get('unit')}`,
+          },
+        };
+        pvDs.query();
+      }
     }
   }
 
