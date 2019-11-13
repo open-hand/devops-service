@@ -558,7 +558,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                     LOGGER.info("Handler is unexpectedly null. The resource kind is {}", k);
                     return;
                 }
-                handler.handlerRelations(objectPath, beforeSyncFileResource, v, resourceKindMap.get(V1Endpoints.class), envId, projectId, path, userId);
+                handler.handlerRelations(objectPath, beforeSyncFileResource, v, resourceKindMap.computeIfAbsent(V1Endpoints.class, key -> new ArrayList()), envId, projectId, path, userId);
             });
             LOGGER.info("k8s对象转换平台对象成功！");
             //处理文件
