@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { observer } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
 import { Action, Choerodon } from '@choerodon/boot';
-import { Icon, Modal } from 'choerodon-ui/pro';
+import { Icon, Modal, Tooltip } from 'choerodon-ui/pro';
 import AppName from '../../../../../components/appName';
 import { handlePromptError } from '../../../../../utils';
 import eventStopProp from '../../../../../utils/eventStopProp';
@@ -19,7 +19,6 @@ function AppItem({ name, record, intl: { formatMessage }, intlPrefix }) {
   } = useResourceStore();
   const { treeItemStore } = useTreeItemStore();
 
-  const type = record.get('type');
   async function handleClick() {
     if (!record) return;
 
@@ -55,26 +54,26 @@ function AppItem({ name, record, intl: { formatMessage }, intlPrefix }) {
     }];
     return <Action placement="bottomRight" data={actionData} onClick={eventStopProp} />;
   }
-  function renderIcon(appType) {
-    let iconType;
-    if (appType === 'normal_server') {
+  function renderIcon() {
+    const type = record.get('type');
+    let iconType = 'application_market';
+    let message = 'market';
+    if (type === 'normal_server') {
       iconType = 'widgets';
-    } else if (appType === 'share_service') {
+      message = 'project';
+    } else if (type === 'share_service') {
       iconType = 'share';
-    } else {
-      iconType = 'application_market';
+      message = 'share';
     }
-    return iconType;
+    return (
+      <Tooltip title={formatMessage({ id: message })}>
+        <Icon type={iconType} />
+      </Tooltip>
+    );
   }
   return <Fragment>
-    <AppName
-      width={0.18}
-      name={name}
-      hoverName
-      showIcon
-      self={renderIcon(type)}
-      isInstance
-    />
+    {renderIcon()}
+    {name}
     {getSuffix()}
   </Fragment>;
 }
