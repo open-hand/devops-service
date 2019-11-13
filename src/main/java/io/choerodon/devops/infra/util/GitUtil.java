@@ -576,7 +576,7 @@ public class GitUtil {
             ObjectId id = repository.resolve(sha);
             RevWalk walk = new RevWalk(repository);
             RevCommit commit = walk.parseCommit(id);
-            Ref tag = git.tag().setObjectId(commit).setName(tagName).call();
+            git.tag().setObjectId(commit).setName(tagName).call();
             PushCommand pushCommand = git.push();
             pushCommand.add(tagName);
             pushCommand.setRemote("origin");
