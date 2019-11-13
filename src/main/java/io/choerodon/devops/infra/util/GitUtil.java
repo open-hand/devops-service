@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import com.jcraft.jsch.JSch;
@@ -12,7 +13,7 @@ import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.*;
-import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.*;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Ref;
@@ -27,6 +28,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.core.exception.CommonException;
@@ -154,6 +156,22 @@ public class GitUtil {
         }
         return result;
     }
+
+    /**
+     * 切换分支，如果分支不存在就去创建分支
+     *
+     * @param path
+     * @param commit
+     */
+    public void checkoutAndCreateBranch(String path, String commit) {
+        File file = new File(path);
+        try (Repository repository = new FileRepository(file)) {
+            checkoutAndCreateBranch(repository, commit);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     /**
      * clone by ssh
      *
@@ -188,10 +206,25 @@ public class GitUtil {
         }
     }
 
+    private void checkoutAndCreateBranch(Repository repository, String commit) {
+        try (Git git = new Git(repository)) {
+            String refKey = String.format("%s%s", "refs/heads/", commit);
+            CheckoutCommand checkout = git.checkout();
+            Ref ref = repository.findRef(refKey);
+            if (ObjectUtils.isEmpty(ref)) {
+                checkout.setCreateBranch(true);
+            }
+            checkout.setName(commit).call();
+        } catch (GitAPIException | IOException e) {
+            LOGGER.info("Checkout error ", e);
+        }
+    }
+
     private void checkout(String commit, Repository repository) {
         try (Git git = new Git(repository)) {
+            String fullBranch = repository.getFullBranch();
             git.checkout().setName(commit).call();
-        } catch (GitAPIException e) {
+        } catch (GitAPIException | IOException e) {
             LOGGER.info("Checkout error ", e);
         }
     }
@@ -202,16 +235,16 @@ public class GitUtil {
      *
      * @param path git repo
      */
-    public static void pullBySsh(String path,String envRas) {
+    public static void pullBySsh(String path, String envRas) {
         File repoGitDir = new File(path);
         try (Repository repository = new FileRepository(repoGitDir.getAbsolutePath())) {
-            pullBySsh(repository,envRas);
+            pullBySsh(repository, envRas);
         } catch (IOException e) {
             LOGGER.info("Get repository error", e);
         }
     }
 
-    private static void pullBySsh(Repository repository,String sshKeyRsa) {
+    private static void pullBySsh(Repository repository, String sshKeyRsa) {
         try (Git git = new Git(repository)) {
             git.pull()
                     .setTransportConfigCallback(getTransportConfigCallback(sshKeyRsa))

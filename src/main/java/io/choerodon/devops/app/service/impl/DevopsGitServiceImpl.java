@@ -995,10 +995,13 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         if (!file.exists()) {
             gitUtil.cloneBySsh(path, url, envIdRsa);
         } else {
-            String loaclPath = String.format("%s%s", path, "/.git");
-            gitUtil.checkout(loaclPath, "master");
-            gitUtil.pullBySsh(loaclPath, envIdRsa);
-
+            if (file.isDirectory() && file.listFiles().length > 0) {
+                String localPath = String.format("%s%s", path, "/.git");
+                gitUtil.checkoutAndCreateBranch(localPath, "master");
+                gitUtil.pullBySsh(localPath, envIdRsa);
+            } else {
+                gitUtil.cloneBySsh(path, url, envIdRsa);
+            }
         }
     }
 
