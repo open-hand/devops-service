@@ -982,13 +982,13 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     private Git handDevopsEnvGitRepository(String path, String url, String envIdRsa, String commit) {
         File file = new File(path);
         if (!file.exists()) {
-            gitUtil.cloneBySsh(path, url, envIdRsa);
+            return gitUtil.cloneBySsh(path, url, envIdRsa);
         } else {
             if (file.isDirectory() && file.listFiles().length > 0) {
                 String localPath = String.format("%s%s", path, "/.git");
-                gitUtil.pullBySsh(localPath, envIdRsa);
+                return gitUtil.pullBySsh(localPath, envIdRsa);
             } else {
-                gitUtil.cloneBySsh(path, url, envIdRsa);
+               return gitUtil.cloneBySsh(path, url, envIdRsa);
             }
         }
     }

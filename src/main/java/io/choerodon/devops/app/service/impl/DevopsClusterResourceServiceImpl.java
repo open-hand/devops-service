@@ -278,7 +278,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         DevopsPrometheusDTO devopsPrometheusDTO = prometheusVoToDto(devopsPrometheusVO);
         DevopsClusterResourceDTO devopsClusterResource = devopsClusterResourceService.queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
         if (devopsClusterResource != null) {
-            throw new CommonException("prometheus.already.exist");
+            throw new CommonException("error.prometheus.already.exist");
         }
 
         devopsPrometheusDTO.setClusterId(clusterId);
@@ -464,6 +464,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
                 //升级失败->可用，安装失败->不可用
 
                 DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(appServiceInstanceDTO.getCommandId());
+//                devopsEnvFileErrorService.baseListByEnvId(devopsEnvCommandDTO.getEnvId());
 //                List<DevopsEnvFileErrorDTO> devopsEnvFileErrorDTOS = devopsEnvFileErrorService.baseListByEnvId(devopsEnvCommandDTO.getEnvId());
                 if (ClusterResourceOperateType.UPGRADE.getType().equals(devopsClusterResourceDTO.getOperate())) {
                     clusterResourceVO.setStatus(ClusterResourceStatus.AVAILABLE.getStatus());
