@@ -453,6 +453,11 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
         pushWebHookVO.setToken(token);
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryByToken(pushWebHookVO.getToken());
+
+        if (devopsEnvironmentDTO == null) {
+            LOGGER.error("Environment is unexpectedly null. The token is {}. The gitlab projectId is {}.", token, pushWebHookVO.getProjectId());
+        }
+
         pushWebHookVO.getCommits().forEach(commitDTO -> {
             DevopsEnvCommitDTO devopsEnvCommitDTO = new DevopsEnvCommitDTO();
             devopsEnvCommitDTO.setEnvId(devopsEnvironmentDTO.getId());
