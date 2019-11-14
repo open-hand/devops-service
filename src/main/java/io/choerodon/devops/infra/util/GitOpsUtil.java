@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.util;
 
+import static io.choerodon.devops.infra.constant.GitOpsConstants.*;
+
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
@@ -7,7 +9,9 @@ import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.kubernetes.C7nHelmRelease;
+import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.dto.DevopsEnvFileResourceDTO;
 import io.choerodon.devops.infra.enums.C7NHelmReleaseMetadataType;
 import io.choerodon.devops.infra.enums.EnvironmentType;
@@ -23,6 +27,63 @@ import io.choerodon.devops.infra.exception.GitOpsExplainException;
  */
 public class GitOpsUtil {
     private GitOpsUtil() {
+    }
+
+    /**
+     * get local path to store environment repository
+     *
+     * @param orgCode     组织code
+     * @param projectCode 项目code
+     * @param clusterCode 集群code
+     * @param envCode     环境code
+     * @return 存储环境库的本地路径
+     */
+    public static String getLocalPathToStoreEnv(
+            String orgCode, String projectCode, String clusterCode, String envCode) {
+        //本地路径
+        return String.format(LOCAL_ENV_PATH, orgCode, projectCode, clusterCode, envCode);
+    }
+
+    /**
+     * 通过环境类型获取组后缀
+     *
+     * @param type 环境类型
+     * @return 组后缀
+     */
+    public static String getGroupSuffixByEnvType(EnvironmentType type) {
+        if (EnvironmentType.SYSTEM == type) {
+            return CLUSTER_ENV_GROUP_SUFFIX;
+        } else if (EnvironmentType.USER == type) {
+            return ENV_GROUP_SUFFIX;
+        } else {
+            throw new CommonException("error.environment.type.not.supported", type);
+        }
+    }
+
+    /**
+     * 通过组织name和项目name获取gitlab项目组的name
+     *
+     * @param orgName     组织name
+     * @param projectName 项目name
+     * @param groupSuffix 组后缀,参考 {@link GitOpsConstants}
+     * @return group name
+     */
+    public static String renderGroupName(String orgName, String projectName, String groupSuffix) {
+        // name: orgName-projectName + suffix
+        return String.format(GITLAB_GROUP_NAME_FORMAT, orgName, projectName, groupSuffix);
+    }
+
+    /**
+     * 通过组织code和项目code获取gitlab项目组的path
+     *
+     * @param orgCode     组织code
+     * @param projectCode 项目code
+     * @param groupSuffix 组后缀,参考 {@link GitOpsConstants}
+     * @return path
+     */
+    public static String renderGroupPath(String orgCode, String projectCode, String groupSuffix) {
+        // path: orgName-projectCode + suffix
+        return String.format(GITLAB_GROUP_NAME_FORMAT, orgCode, projectCode, groupSuffix);
     }
 
     /**

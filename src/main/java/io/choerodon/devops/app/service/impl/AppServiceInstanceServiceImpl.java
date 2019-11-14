@@ -626,7 +626,12 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         String filePath = null;
         try {
             if (instanceSagaPayload.getAppServiceDeployVO().getType().equals(UPDATE)) {
-                filePath = clusterConnectionHandler.handDevopsEnvGitRepository(instanceSagaPayload.getProjectId(), instanceSagaPayload.getDevopsEnvironmentDTO().getCode(), instanceSagaPayload.getDevopsEnvironmentDTO().getEnvIdRsa());
+                filePath = clusterConnectionHandler.handDevopsEnvGitRepository(
+                        instanceSagaPayload.getProjectId(),
+                        instanceSagaPayload.getDevopsEnvironmentDTO().getCode(),
+                        instanceSagaPayload.getDevopsEnvironmentDTO().getEnvIdRsa(),
+                        instanceSagaPayload.getDevopsEnvironmentDTO().getType(),
+                        instanceSagaPayload.getDevopsEnvironmentDTO().getClusterCode());
             }
         } catch (Exception ex) {
             String exceptionContent = LogUtil.readContentOfThrowable(ex);
@@ -854,7 +859,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
 
         //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-        String path = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getEnvIdRsa());
+        String path = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getEnvIdRsa(), devopsEnvironmentDTO.getType(), devopsEnvironmentDTO.getClusterCode());
 
         DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
                 .baseQueryByEnvIdAndResourceId(devopsEnvironmentDTO.getId(), instanceId, C7NHELM_RELEASE);

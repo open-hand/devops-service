@@ -1,13 +1,13 @@
 package io.choerodon.devops.infra.constant;
 
 /**
- * 和GitLab有关的常量
+ * 和GitOps有关的常量
  *
  * @author zmf
  * @since 10/28/19
  */
-public class GitLabConstants {
-    private GitLabConstants() {
+public class GitOpsConstants {
+    private GitOpsConstants() {
     }
 
     /**
@@ -33,4 +33,10 @@ public class GitLabConstants {
     public static final String SYSTEM_ENV_GITLAB_PROJECT_CODE_FORMAT = "%s-%s";
 
     public static final String MASTER = "master";
+
+    /**
+     * local path to store env
+     * gitops/${orgCode}/${proCode}/${clusterCode}/${envCode}
+     */
+    public static final String LOCAL_ENV_PATH = "gitops/%s/%s/%s/%s";
 }

@@ -3,7 +3,6 @@ package io.choerodon.devops.app.service.impl;
 import java.math.BigDecimal;
 import java.util.*;
 
-import com.alibaba.fastjson.JSON;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
@@ -22,7 +21,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsPvcReqVO;
 import io.choerodon.devops.api.vo.DevopsPvcRespVO;
 import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.infra.constant.GitLabConstants;
+import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.constant.KubernetesConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.*;
@@ -115,7 +114,7 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
         baseUpdate(devopsPvcDTO);
 
         //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-        String path = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getEnvIdRsa());
+        String path = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getEnvIdRsa(), devopsEnvironmentDTO.getType(), devopsEnvironmentDTO.getClusterCode());
 
         // 查询对象所在文件中是否含有其它对象
         DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
@@ -123,7 +122,7 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
                         pvcId, ResourceType.PERSISTENT_VOLUME_CLAIM.getType());
         if (devopsEnvFileResourceDTO == null) {
             devopsPvcMapper.deleteByPrimaryKey(pvcId);
-            if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), GitLabConstants.MASTER,
+            if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), GitOpsConstants.MASTER,
                     "pvc-" + devopsPvcDTO.getName() + ".yaml")) {
                 gitlabServiceClientOperator.deleteFile(
                         TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
@@ -133,7 +132,7 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
             }
             return true;
         } else {
-            if (!gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), GitLabConstants.MASTER,
+            if (!gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), GitOpsConstants.MASTER,
                     devopsEnvFileResourceDTO.getFilePath())) {
                 devopsPvcMapper.deleteByPrimaryKey(pvcId);
                 devopsEnvFileResourceService.baseDeleteById(devopsEnvFileResourceDTO.getId());
@@ -145,7 +144,7 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
 
         // 如果对象所在文件只有一个对象，则直接删除文件,否则把对象从文件中去掉，更新文件
         if (devopsEnvFileResourceDTOS.size() == 1) {
-            if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), GitLabConstants.MASTER,
+            if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), GitOpsConstants.MASTER,
                     devopsEnvFileResourceDTO.getFilePath())) {
                 gitlabServiceClientOperator.deleteFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
                         devopsEnvFileResourceDTO.getFilePath(), "DELETE FILE",
@@ -308,7 +307,7 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
         baseUpdate(devopsPvcDTO);
 
         // 判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-        String path = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getEnvIdRsa());
+        String path = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getEnvIdRsa(), devopsEnvironmentDTO.getType(), devopsEnvironmentDTO.getClusterCode());
 
         ResourceConvertToYamlHandler<V1PersistentVolumeClaim> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
         resourceConvertToYamlHandler.setType(v1PersistentVolumeClaim);

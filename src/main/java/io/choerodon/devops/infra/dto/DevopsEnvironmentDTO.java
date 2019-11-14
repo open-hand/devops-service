@@ -52,6 +52,8 @@ public class DevopsEnvironmentDTO extends BaseDTO {
     private Boolean permission;
     @Transient
     private String clusterName;
+    @Transient
+    private String clusterCode;
 
     public String getClusterName() {
         return clusterName;
@@ -237,5 +239,13 @@ public class DevopsEnvironmentDTO extends BaseDTO {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public String getClusterCode() {
+        return clusterCode;
+    }
+
+    public void setClusterCode(String clusterCode) {
+        this.clusterCode = clusterCode;
     }
 }

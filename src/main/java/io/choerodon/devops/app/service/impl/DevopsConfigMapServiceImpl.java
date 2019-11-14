@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import org.springframework.data.domain.Pageable;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsConfigMapRespVO;
 import io.choerodon.devops.api.vo.DevopsConfigMapVO;
@@ -101,7 +102,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
         }
         DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(devopsConfigMapVO.getType());
         //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-        String filePath = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getEnvIdRsa());
+        String filePath = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getEnvIdRsa(), devopsEnvironmentDTO.getType(), devopsEnvironmentDTO.getClusterCode());
         //在gitops库处理ingress文件
         operateEnvGitLabFile(
                 TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), v1ConfigMap, devopsConfigMapVO.getType().equals(CREATE_TYPE), filePath, devopsConfigMapDTO, userAttrDTO, devopsEnvCommandDTO, devopsConfigMapVO.getAppServiceId());
@@ -208,7 +209,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
 
 
         //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-        String path = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getEnvIdRsa());
+        String path = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getEnvIdRsa(), devopsEnvironmentDTO.getType(), devopsEnvironmentDTO.getClusterCode());
 
         //查询改对象所在文件中是否含有其它对象
         DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService

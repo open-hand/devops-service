@@ -1,12 +1,10 @@
 package io.choerodon.devops.app.service.impl;
 
 
-import static io.choerodon.devops.infra.constant.GitLabConstants.*;
+import static io.choerodon.devops.infra.constant.GitOpsConstants.*;
 
-import com.netflix.discovery.converters.Auto;
 import feign.FeignException;
-import io.choerodon.core.enums.ResourceType;
-import io.choerodon.devops.api.vo.GitlabGroupMemberVO;
+
 import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
 import io.choerodon.devops.infra.enums.AccessLevel;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
@@ -25,9 +23,9 @@ import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.Visibility;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
+import io.choerodon.devops.infra.util.GitOpsUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -53,18 +51,6 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
         updateGroup(gitlabGroupPayload, ENV_GROUP_SUFFIX);
         updateGroup(gitlabGroupPayload, CLUSTER_ENV_GROUP_SUFFIX);
         updateGroup(gitlabGroupPayload, APP_SERVICE_SUFFIX);
-    }
-
-    @Override
-    public String renderGroupName(String orgName, String projectName, String groupSuffix) {
-        // name: orgName-projectName + suffix
-        return String.format(GITLAB_GROUP_NAME_FORMAT, orgName, projectName, groupSuffix);
-    }
-
-    @Override
-    public String renderGroupPath(String orgCode, String projectCode, String suffix) {
-        // path: orgName-projectCode + suffix
-        return String.format(GITLAB_GROUP_NAME_FORMAT, orgCode, projectCode, suffix);
     }
 
     @Override
@@ -116,10 +102,10 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
         GroupDTO group = new GroupDTO();
 
         // name: orgName-projectName + suffix
-        String name = renderGroupName(gitlabGroupPayload.getOrganizationName(),
+        String name = GitOpsUtil.renderGroupName(gitlabGroupPayload.getOrganizationName(),
                 gitlabGroupPayload.getProjectName(), suffix);
         // path: orgName-projectCode + suffix
-        String path = renderGroupPath(gitlabGroupPayload.getOrganizationCode(),
+        String path = GitOpsUtil.renderGroupPath(gitlabGroupPayload.getOrganizationCode(),
                 gitlabGroupPayload.getProjectCode(), suffix);
 
         group.setName(name);
@@ -149,10 +135,10 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
         GroupDTO group = new GroupDTO();
 
         // name: orgName-projectName + suffix
-        String name = renderGroupName(gitlabGroupPayload.getOrganizationName(),
+        String name = GitOpsUtil.renderGroupName(gitlabGroupPayload.getOrganizationName(),
                 gitlabGroupPayload.getProjectName(), suffix);
         // path: orgName-projectCode + suffix
-        String path = renderGroupPath(gitlabGroupPayload.getOrganizationCode(),
+        String path = GitOpsUtil.renderGroupPath(gitlabGroupPayload.getOrganizationCode(),
                 gitlabGroupPayload.getProjectCode(), suffix);
         group.setName(name);
         group.setPath(path);

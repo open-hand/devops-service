@@ -502,7 +502,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         Set<DevopsEnvFileResourceDTO> beforeSyncDelete = new HashSet<>();
         //根据token查出环境
 
-        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryByToken(pushWebHookVO.getToken());
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.queryByTokenWithClusterCode(pushWebHookVO.getToken());
         DevopsEnvCommitDTO devopsEnvCommitDTO = devopsEnvCommitService.baseQuery(devopsEnvironmentDTO.getSagaSyncCommit());
         boolean tagNotExist;
         Map<String, String> objectPath;
@@ -511,11 +511,12 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 
         //本地路径
-        final String path = String.format("gitops/%s/%s/%s",
-                organizationDTO.getCode(), projectDTO.getCode(), devopsEnvironmentDTO.getCode());
+        final String path = GitOpsUtil.getLocalPathToStoreEnv(organizationDTO.getCode(),
+                projectDTO.getCode(), devopsEnvironmentDTO.getClusterCode(), devopsEnvironmentDTO.getCode());
         //生成环境git仓库ssh地址
-        final String url = GitUtil.getGitlabSshUrl(pattern, gitlabSshUrl, organizationDTO.getCode(), projectDTO.getCode(),
-                devopsEnvironmentDTO.getCode());
+        final String url = GitUtil.getGitlabSshUrl(
+                pattern, gitlabSshUrl, organizationDTO.getCode(), projectDTO.getCode(),
+                devopsEnvironmentDTO.getCode(), EnvironmentType.forValue(devopsEnvironmentDTO.getType()));
 
         LOGGER.info("The gitOps Repository ssh url: {}", url);
 

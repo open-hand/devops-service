@@ -446,4 +446,18 @@
         )
     </select>
 
+    <select id="queryByTokenWithClusterCode" resultType="io.choerodon.devops.infra.dto.DevopsEnvironmentDTO">
+        SELECT de.*, dc.code AS cluster_code
+        FROM devops_env de
+        INNER JOIN devops_cluster dc ON de.cluster_id = dc.id
+        WHERE de.token = #{token}
+    </select>
+
+    <select id="queryByIdWithClusterCode" resultType="io.choerodon.devops.infra.dto.DevopsEnvironmentDTO">
+        SELECT de.*, dc.code AS cluster_code
+        FROM devops_env de
+        INNER JOIN devops_cluster dc ON de.cluster_id = dc.id
+        WHERE de.id = #{id}
+    </select>
+
 </mapper>

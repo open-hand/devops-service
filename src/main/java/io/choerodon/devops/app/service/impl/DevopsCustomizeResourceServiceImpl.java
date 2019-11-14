@@ -135,7 +135,12 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
                     "ADD FILE", TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         } else {
             //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-            String gitOpsPath = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getEnvIdRsa());
+            String gitOpsPath = clusterConnectionHandler.handDevopsEnvGitRepository(
+                    devopsEnvironmentDTO.getProjectId(),
+                    devopsEnvironmentDTO.getCode(),
+                    devopsEnvironmentDTO.getEnvIdRsa(),
+                    devopsEnvironmentDTO.getType(),
+                    devopsEnvironmentDTO.getClusterCode());
 
             DevopsCustomizeResourceDTO devopsCustomizeResourceDTO = devopsCustomizeResourceMapper.selectByPrimaryKey(devopsCustomizeResourceReqVO.getResourceId());
             if (!gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), "master",
@@ -177,7 +182,12 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
         handleCustomResource(null, null, null, null, null, DELETE, resourceId, null, null);
 
         //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-        String gitOpsPath = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getEnvIdRsa());
+        String gitOpsPath = clusterConnectionHandler.handDevopsEnvGitRepository(
+                devopsEnvironmentDTO.getProjectId(),
+                devopsEnvironmentDTO.getCode(),
+                devopsEnvironmentDTO.getEnvIdRsa(),
+                devopsEnvironmentDTO.getType(),
+                devopsEnvironmentDTO.getClusterCode());
 
         //判断gitops库里面是否有该文件，没有文件直接删除对象
         if (!gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), "master",
