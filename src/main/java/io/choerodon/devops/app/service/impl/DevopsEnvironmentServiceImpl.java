@@ -36,7 +36,7 @@ import io.choerodon.devops.app.eventhandler.payload.DevopsEnvUserPayload;
 import io.choerodon.devops.app.eventhandler.payload.EnvGitlabProjectPayload;
 import io.choerodon.devops.app.eventhandler.payload.GitlabProjectPayload;
 import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.infra.constant.GitLabConstants;
+import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
 import io.choerodon.devops.infra.dto.gitlab.GitlabProjectDTO;
@@ -165,7 +165,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @PostConstruct
     private void init() {
         gitOpsWebHookUrl = !gatewayUrl.endsWith("/") ? gatewayUrl + "/" : gatewayUrl;
-        gitOpsWebHookUrl += GitLabConstants.GITOPS_WEBHOOK_RELATIVE_URL;
+        gitOpsWebHookUrl += GitOpsConstants.GITOPS_WEBHOOK_RELATIVE_URL;
     }
 
     @Override
@@ -1315,7 +1315,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         }
 
         if (cluster.getSystemEnvId() != null) {
-            return devopsEnvironmentMapper.selectByPrimaryKey(cluster.getSystemEnvId());
+            return baseQueryById(cluster.getSystemEnvId());
         }
 
         Long projectId = cluster.getProjectId();
@@ -1366,10 +1366,10 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         devopsEnvironmentDTO.setId(envId);
 
         // 准备创建GitLab的项目
-        String systemEnvProjectCode = String.format(GitLabConstants.SYSTEM_ENV_GITLAB_PROJECT_CODE_FORMAT, cluster.getCode(), SYSTEM_ENV_NAMESPACE);
+        String systemEnvProjectCode = String.format(GitOpsConstants.SYSTEM_ENV_GITLAB_PROJECT_CODE_FORMAT, cluster.getCode(), SYSTEM_ENV_NAMESPACE);
         Integer gitlabUserId = TypeUtil.objToInteger(userAttrDTO.getGitlabUserId());
         GitlabProjectDTO gitlabProjectDO = gitlabServiceClientOperator.queryProjectByName(
-                gitlabGroupService.renderGroupPath(organizationDTO.getCode(), projectDTO.getCode(), GitLabConstants.CLUSTER_ENV_GROUP_SUFFIX), systemEnvProjectCode, gitlabUserId);
+                GitOpsUtil.renderGroupPath(organizationDTO.getCode(), projectDTO.getCode(), GitOpsConstants.CLUSTER_ENV_GROUP_SUFFIX), systemEnvProjectCode, gitlabUserId);
         if (gitlabProjectDO == null || gitlabProjectDO.getId() == null) {
             gitlabProjectDO = gitlabServiceClientOperator.createProject(
                     TypeUtil.objToInteger(devopsProjectDTO.getDevopsClusterEnvGroupId()),
@@ -1428,14 +1428,19 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 
             UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-            String systemEnvProjectCode = String.format(GitLabConstants.SYSTEM_ENV_GITLAB_PROJECT_CODE_FORMAT, clusterCode, SYSTEM_ENV_NAMESPACE);
+            String systemEnvProjectCode = String.format(GitOpsConstants.SYSTEM_ENV_GITLAB_PROJECT_CODE_FORMAT, clusterCode, SYSTEM_ENV_NAMESPACE);
             Integer gitlabUserId = TypeUtil.objToInteger(userAttrDTO.getGitlabUserId());
             GitlabProjectDTO gitlabProjectDO = gitlabServiceClientOperator.queryProjectByName(
-                    gitlabGroupService.renderGroupPath(organizationDTO.getCode(), projectDTO.getCode(), GitLabConstants.CLUSTER_ENV_GROUP_SUFFIX), systemEnvProjectCode, gitlabUserId);
+                    GitOpsUtil.renderGroupPath(organizationDTO.getCode(), projectDTO.getCode(), GitOpsConstants.CLUSTER_ENV_GROUP_SUFFIX), systemEnvProjectCode, gitlabUserId);
             if (gitlabProjectDO != null && gitlabProjectDO.getId() != null) {
                 gitlabServiceClientOperator.deleteProjectById(gitlabProjectDO.getId(), gitlabUserId);
             }
         }
+    }
+
+    @Override
+    public DevopsEnvironmentDTO queryByTokenWithClusterCode(String token) {
+        return devopsEnvironmentMapper.queryByTokenWithClusterCode(token);
     }
 
     @Override
@@ -1487,7 +1492,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     public DevopsEnvironmentDTO baseQueryById(Long id) {
-        return devopsEnvironmentMapper.selectByPrimaryKey(id);
+        return devopsEnvironmentMapper.queryByIdWithClusterCode(id);
     }
 
     @Override

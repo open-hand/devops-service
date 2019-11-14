@@ -18,6 +18,7 @@ import io.choerodon.devops.app.service.AgentCommandService;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.enums.EnvironmentType;
 import io.choerodon.devops.infra.enums.HelmType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
@@ -317,7 +318,7 @@ public class AgentCommandServiceImpl implements AgentCommandService {
         List<GitEnvConfigVO> gitEnvConfigVOS = new ArrayList<>();
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
         OrganizationDTO organization = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-        String repoUrl = GitUtil.getGitlabSshUrl(pattern, gitlabSshUrl, organization.getCode(), projectDTO.getCode(), devopsEnvironmentDTO.getCode());
+        String repoUrl = GitUtil.getGitlabSshUrl(pattern, gitlabSshUrl, organization.getCode(), projectDTO.getCode(), devopsEnvironmentDTO.getCode(), EnvironmentType.forValue(devopsEnvironmentDTO.getType()));
 
         GitEnvConfigVO gitEnvConfigVO = new GitEnvConfigVO();
         gitEnvConfigVO.setEnvId(devopsEnvironmentDTO.getId());

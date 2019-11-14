@@ -261,7 +261,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
 
         // 判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-        String path = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getEnvIdRsa());
+        String path = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getEnvIdRsa(), devopsEnvironmentDTO.getType(), devopsEnvironmentDTO.getClusterCode());
 
         //在gitops库处理ingress文件
         operateEnvGitLabFile(
@@ -410,7 +410,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
 
         // 判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-        String path = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getEnvIdRsa());
+        String path = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getEnvIdRsa(), devopsEnvironmentDTO.getType(), devopsEnvironmentDTO.getClusterCode());
 
         // 查询改对象所在文件中是否含有其它对象
         DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
@@ -594,7 +594,12 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
             //更新域名时判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
             String filePath = null;
             if (!ingressSagaPayload.getCreated()) {
-                filePath = clusterConnectionHandler.handDevopsEnvGitRepository(ingressSagaPayload.getProjectId(), ingressSagaPayload.getDevopsEnvironmentDTO().getCode(), ingressSagaPayload.getDevopsEnvironmentDTO().getEnvIdRsa());
+                filePath = clusterConnectionHandler.handDevopsEnvGitRepository(
+                        ingressSagaPayload.getProjectId(),
+                        ingressSagaPayload.getDevopsEnvironmentDTO().getCode(),
+                        ingressSagaPayload.getDevopsEnvironmentDTO().getEnvIdRsa(),
+                        ingressSagaPayload.getDevopsEnvironmentDTO().getType(),
+                        ingressSagaPayload.getDevopsEnvironmentDTO().getClusterCode());
             }
             //在gitops库处理instance文件
             ResourceConvertToYamlHandler<V1beta1Ingress> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();

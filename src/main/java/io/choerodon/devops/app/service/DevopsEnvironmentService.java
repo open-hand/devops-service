@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.github.pagehelper.PageInfo;
 
+import org.apache.ibatis.annotations.Param;
 import org.springframework.data.domain.Pageable;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.eventhandler.payload.EnvGitlabProjectPayload;
@@ -307,4 +308,6 @@ public interface DevopsEnvironmentService {
      * @param envId       集群的配置库id
      */
     void deleteSystemEnv(Long projectId, Long clusterId, String clusterCode, Long envId);
+
+    DevopsEnvironmentDTO queryByTokenWithClusterCode(@Param("token") String token);
 }

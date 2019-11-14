@@ -29,4 +29,9 @@ public enum EnvironmentType {
     public static EnvironmentType forValue(String value) {
         return EnvironmentType.valueOf(value.toUpperCase());
     }
+
+    @Override
+    public String toString() {
+        return value;
+    }
 }

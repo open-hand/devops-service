@@ -17,6 +17,10 @@ public interface DevopsEnvironmentMapper extends Mapper<DevopsEnvironmentDTO> {
 
     DevopsEnvironmentDTO queryByToken(@Param("token") String token);
 
+    DevopsEnvironmentDTO queryByTokenWithClusterCode(@Param("token") String token);
+
+    DevopsEnvironmentDTO queryByIdWithClusterCode(@Param("id") Long id);
+
     void updateSagaSyncEnvCommit(@Param("envId") Long envId, @Param("sagaSyncCommit") Long sagaSyncCommit);
 
     void updateDevopsSyncEnvCommit(@Param("envId") Long envId, @Param("devopsSyncCommit") Long devopsSyncCommit);
