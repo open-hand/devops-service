@@ -8,7 +8,7 @@ import ShareDataSet from './ShareDataSet';
 import usePermissionStore from '../modals/stores/useStore';
 import OptionsDataSet from './OptionsDataSet';
 import { useAppTopStore } from '../../stores';
-import ListDataSet from '../../stores/ListDataSet';
+import DetailDataSet from './DetailDataSet';
 
 const Store = createContext();
 
@@ -30,7 +30,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const versionDs = useMemo(() => new DataSet(VersionDataSet(formatMessage, projectId, id)), [formatMessage, id, projectId]);
     const permissionDs = useMemo(() => new DataSet(AllocationDataSet(formatMessage, intlPrefix, projectId, id)), [formatMessage, id, projectId]);
     const shareDs = useMemo(() => new DataSet(ShareDataSet(intlPrefix, formatMessage, projectId, id)), [formatMessage, id, projectId]);
-    const detailDs = useMemo(() => new DataSet(ListDataSet(intlPrefix, formatMessage, projectId, null)), [projectId]);
+    const detailDs = useMemo(() => new DataSet(DetailDataSet(intlPrefix, formatMessage)), []);
     const nonePermissionDs = useMemo(() => new DataSet(OptionsDataSet()), []);
     const permissionStore = usePermissionStore();
 
@@ -40,7 +40,6 @@ export const StoreProvider = injectIntl(inject('AppState')(
         url: `/devops/v1/projects/${projectId}/app_service/${id}`,
         method: 'get',
       };
-      detailDs.paging = false;
       detailDs.query();
     }, [projectId, id]);
 
