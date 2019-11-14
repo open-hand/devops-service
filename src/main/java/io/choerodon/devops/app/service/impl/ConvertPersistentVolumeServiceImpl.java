@@ -74,13 +74,30 @@ public class ConvertPersistentVolumeServiceImpl extends ConvertK8sObjectService<
 
     private void validateType(V1PersistentVolume pv, String filePath) {
         // 暂时只支持NFS和HostPath类型的网络
-        if (pv.getSpec().getNfs() == null || pv.getSpec().getHostPath() == null) {
+        int typeCount = countTypeDefined(pv);
+        if (typeCount == 0) {
             throw new CommonException(
                     GitOpsObjectError.PERSISTENT_VOLUME_TYPE_NOT_FOUND.getError(), filePath);
         }
 
+        if (typeCount > 1) {
+            throw new CommonException(
+                    GitOpsObjectError.PERSISTENT_VOLUME_TYPE_MULTI.getError(), filePath);
+        }
+
         validateNFS(pv, filePath);
         validateHostPath(pv, filePath);
+    }
+
+    private int countTypeDefined(V1PersistentVolume pv) {
+        int typeCount = 0;
+        if (pv.getSpec().getNfs() != null) {
+            typeCount++;
+        }
+        if (pv.getSpec().getHostPath() != null) {
+            typeCount++;
+        }
+        return typeCount;
     }
 
     private void validateNFS(V1PersistentVolume pv, String filePath) {

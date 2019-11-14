@@ -81,6 +81,7 @@ public enum GitOpsObjectError {
     PERSISTENT_VOLUME_ACCESS_MODE_NOT_FOUND("pv.access.mode.not.found"),
     PERSISTENT_VOLUME_ACCESS_MODE_SIZE_NOT_SUPPORTED("pv.access.mode.size.not.supported"),
     PERSISTENT_VOLUME_TYPE_NOT_FOUND("pv.type.not.found"),
+    PERSISTENT_VOLUME_TYPE_MULTI("multi.pv.type.not.valid"),
     PERSISTENT_VOLUME_NFS_PATH_NOT_FOUND("pv.nfs.path.not.found"),
     PERSISTENT_VOLUME_NFS_SERVER_NOT_FOUND("pv.nfs.server.not.found"),
     PERSISTENT_VOLUME_NFS_SERVER_NOT_IP("pv.nfs.server.not.ip"),
