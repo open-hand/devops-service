@@ -1366,7 +1366,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         devopsEnvironmentDTO.setId(envId);
 
         // 准备创建GitLab的项目
-        String systemEnvProjectCode = String.format(GitOpsConstants.SYSTEM_ENV_GITLAB_PROJECT_CODE_FORMAT, cluster.getCode(), SYSTEM_ENV_NAMESPACE);
+        String systemEnvProjectCode = GitOpsUtil.getSystemEnvProjectCode(cluster.getCode(), SYSTEM_ENV_NAMESPACE);
         Integer gitlabUserId = TypeUtil.objToInteger(userAttrDTO.getGitlabUserId());
         GitlabProjectDTO gitlabProjectDO = gitlabServiceClientOperator.queryProjectByName(
                 GitOpsUtil.renderGroupPath(organizationDTO.getCode(), projectDTO.getCode(), GitOpsConstants.CLUSTER_ENV_GROUP_SUFFIX), systemEnvProjectCode, gitlabUserId);

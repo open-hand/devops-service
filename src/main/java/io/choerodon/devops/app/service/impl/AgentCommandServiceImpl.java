@@ -22,6 +22,7 @@ import io.choerodon.devops.infra.enums.EnvironmentType;
 import io.choerodon.devops.infra.enums.HelmType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
+import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
 import io.choerodon.devops.infra.util.FileUtil;
 import io.choerodon.devops.infra.util.GitUtil;
 import io.choerodon.websocket.helper.WebSocketHelper;
@@ -66,6 +67,8 @@ public class AgentCommandServiceImpl implements AgentCommandService {
     private ObjectMapper mapper = new ObjectMapper();
 
 
+    @Autowired
+    private DevopsClusterMapper devopsClusterMapper;
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
@@ -318,7 +321,10 @@ public class AgentCommandServiceImpl implements AgentCommandService {
         List<GitEnvConfigVO> gitEnvConfigVOS = new ArrayList<>();
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
         OrganizationDTO organization = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-        String repoUrl = GitUtil.getGitlabSshUrl(pattern, gitlabSshUrl, organization.getCode(), projectDTO.getCode(), devopsEnvironmentDTO.getCode(), EnvironmentType.forValue(devopsEnvironmentDTO.getType()));
+        String repoUrl = GitUtil.getGitlabSshUrl(pattern, gitlabSshUrl, organization.getCode(),
+                projectDTO.getCode(), devopsEnvironmentDTO.getCode(),
+                EnvironmentType.forValue(devopsEnvironmentDTO.getType()),
+                devopsClusterMapper.selectByPrimaryKey(devopsEnvironmentDTO.getClusterId()).getCode());
 
         GitEnvConfigVO gitEnvConfigVO = new GitEnvConfigVO();
         gitEnvConfigVO.setEnvId(devopsEnvironmentDTO.getId());
