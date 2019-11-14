@@ -37,8 +37,8 @@ function BranchCreate(props) {
   const [loadMoreTag, setLoadMoreTag] = useState(false);
   const [moreTagLoading, setMoreTagLoading] = useState(false);
   const [moreBranchLoading, setMoreBranchLoading] = useState(false);
-  const [branchOringDs, setBranchOringDs] = useState(null);
   const [selectCom, setSelectCom] = useState(null);
+  const [isCallHandleInput, setIsCallHandleInput] = useState(false);
 
   const recordData = issueNameOptionDs.toData();
   const optionsData = [];
@@ -74,17 +74,36 @@ function BranchCreate(props) {
     if (selectCom && selectCom.options) {
       selectCom.options.changeStatus('loading');
     }
-    axios.all([contentStore.loadBranchData(projectId, appServiceId, branchPageSize, text), contentStore.loadTagData(projectId, appServiceId, branchPageSize, text)])
+    axios.all([contentStore.loadBranchData(projectId, appServiceId, branchPageSize, text), contentStore.loadTagData(projectId, appServiceId, tagPageSize, text)])
       .then(axios.spread((branchs, tags) => {
         if (selectCom && selectCom.options) {
           selectCom.options.changeStatus('ready');
         }
         if (handlePromptError(branchs) || handlePromptError(tags)) {
+          setLoadMoreBranch(judgeShowMore(branchs));
+          setLoadMoreTag(judgeShowMore(tags));
+          const value = formDs.current.get('branchOrigin');
+          if (!text 
+            && value 
+            && !(_.findIndex(branchs.list, (item) => item.branchName === value.slice(0, -7)) !== -1 
+            || _.findIndex(tags.list, (item) => item.release.tagName === value.slice(0, -7)) !== -1)) {
+            if (value.slice(-7) === '_type_b') {
+              branchs.list.push({
+                branchName: value.slice(0, -7),
+              });
+            } else {
+              tags.list.push({
+                release: {
+                  tagName: value.slice(0, -7),
+                },
+              });
+            }
+          }
           setBranchOringData(branchs.list);
           setBranchTagData(tags.list);
         }
       }));
-  }, 1000), [selectCom]);
+  }, 700), [selectCom, projectId, appServiceId, branchPageSize, tagPageSize]);
   
 
   /**
@@ -97,13 +116,10 @@ function BranchCreate(props) {
     setMoreBranchLoading(false);
     if (handlePromptError(data)) {
       setBranchOringData(data.list);
-      if (data.total > data.size && data.size > 0) {
-        setLoadMoreBranch(true);
-      } else {
-        setLoadMoreBranch(false);
-      }
+      setLoadMoreBranch(judgeShowMore(data));
     }    
   }
+
   /**
    * 加载标记数据
    * @param TagPageSize
@@ -114,11 +130,7 @@ function BranchCreate(props) {
     setMoreTagLoading(false);
     if (handlePromptError(data)) {
       setBranchTagData(data.list);
-      if (data.total > data.size && data.size > 0) {
-        setLoadMoreTag(true);
-      } else {
-        setLoadMoreTag(false);
-      }
+      setLoadMoreTag(judgeShowMore(data));
     }
   }
   /**
@@ -349,13 +361,14 @@ function BranchCreate(props) {
   // 用于渲染分支来源
   const renderBranchOrigin = (args) => {
     const { text, value } = args;
-    if (!text) {
+    if (text || value) {
       return null;
     }
     return renderOption(value);
   };
 
   function renderOption(text) {
+    if (!text) return null;
     return (<span>
       <i className={`icon c7n-branch-formItem-icon ${text.slice(-7) === '_type_t' ? 'icon-local_offer' : 'icon-branch'}`} />
       {text && text.slice(0, -7)}
@@ -366,9 +379,11 @@ function BranchCreate(props) {
     return true;
   }
 
-  function handleInput({ target: { value } }) {    
+  function handleInput({ target: { value } }) {  
+    if (!isCallHandleInput) setIsCallHandleInput(true);
     searchData(value);
   }
+
   
   function changeRef(obj) {
     if (obj) {
@@ -380,6 +395,13 @@ function BranchCreate(props) {
         }
       }
     }
+  }
+
+  function handleBlur(e) {
+    if (branchOringData.length === 0 && branchTagData.length === 0) {
+      formDs.current.set('branchOrigin', null);
+    }
+    searchData('');
   }
 
   return (
@@ -396,6 +418,7 @@ function BranchCreate(props) {
             name="branchOrigin"
             searchMatcher={searchMatcher}
             onInput={handleInput}
+            onBlur={handleBlur}
             searchable
             optionRenderer={rednerBranchOptionOrigin}
             renderer={renderBranchOrigin}
@@ -434,11 +457,15 @@ function BranchCreate(props) {
               )
             )}
           </Select>
-          <TextField colSpan={3} addonBefore={prefixData} name="branchName" />
-          {/* <TextField colSpan={3} prefix={prefixData} name="branchName" /> */}
+          <TextField colSpan={3} prefix={prefixData} name="branchName" />
         </Form>
       </div>
     </Content>
   );
 }
 export default withRouter(injectIntl(observer(BranchCreate)));
+
+
+function judgeShowMore(data) {
+  return data.total > data.size && data.size > 0;
+}
