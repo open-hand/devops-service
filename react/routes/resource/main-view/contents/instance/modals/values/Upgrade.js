@@ -129,7 +129,7 @@ export default class Upgrade extends Component {
       },
     } = this.props;
     this.setState({ versionSearchParam: value, versionPageNum: 2 });
-    this.handleLoadVersion(idArr.appId, value, versionId);
+    this.handleLoadVersion(idArr.appId, value, value ? '' : versionId);
   }, 500);
 
   /**
