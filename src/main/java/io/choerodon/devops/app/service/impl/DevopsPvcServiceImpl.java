@@ -11,6 +11,8 @@ import io.kubernetes.client.models.V1ObjectMeta;
 import io.kubernetes.client.models.V1PersistentVolumeClaim;
 import io.kubernetes.client.models.V1PersistentVolumeClaimSpec;
 import io.kubernetes.client.models.V1ResourceRequirements;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -36,7 +38,7 @@ import io.choerodon.devops.infra.util.*;
 
 @Service
 public class DevopsPvcServiceImpl implements DevopsPvcService {
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsPvServiceImpl.class);
 
     private Gson gson = new Gson();
     @Autowired
@@ -196,6 +198,8 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
         // 校验环境是否连接
         DevopsEnvironmentDTO environmentDTO = devopsEnvironmentService.baseQueryById(devopsPvcReqVO.getEnvId());
         clusterConnectionHandler.checkEnvConnection(environmentDTO.getClusterId());
+
+        LOGGER.debug("Create or update pvc. name: {}", devopsPvcReqVO.getName());
 
         // 处理创建数据
         DevopsPvcDTO devopsPvcDTO = voToDto(devopsPvcReqVO, environmentDTO.getProjectId());

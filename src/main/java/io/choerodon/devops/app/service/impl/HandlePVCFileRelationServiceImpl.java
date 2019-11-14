@@ -87,7 +87,8 @@ public class HandlePVCFileRelationServiceImpl implements HandlerObjectFileRelati
 
     private boolean isIdentical(DevopsPvcDTO dbRecord, DevopsPvcReqVO update) {
         return Objects.equals(dbRecord.getAccessModes(), update.getAccessModes())
-                && Objects.equals(dbRecord.getRequestResource(), update.getRequestResource());
+                && Objects.equals(dbRecord.getRequestResource(), update.getRequestResource())
+                && Objects.equals(dbRecord.getPvName(), update.getPvName());
     }
 
     private void addPersistentVolumeClaims(Map<String, String> objectPath, Long envId, List<V1PersistentVolumeClaim> pvcs, String path, Long userId) {
@@ -136,6 +137,9 @@ public class HandlePVCFileRelationServiceImpl implements HandlerObjectFileRelati
         // 暂时只设计为支持一种模式
         devopsPvcReqVO.setAccessModes(claim.getSpec().getAccessModes().get(0));
         devopsPvcReqVO.setRequestResource(claim.getSpec().getResources().getRequests().get(KubernetesConstants.STORAGE).toSuffixedString());
+        if (claim.getSpec().getVolumeName() != null) {
+            devopsPvcReqVO.setPvName(claim.getSpec().getVolumeName());
+        }
         return devopsPvcReqVO;
     }
 
