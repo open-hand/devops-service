@@ -24,4 +24,6 @@ public interface DevopsServiceInstanceService {
     List<DevopsServiceInstanceDTO> baseListByInstanceId(Long instanceId);
 
     List<DevopsServiceInstanceDTO> baseListByEnvIdAndInstanceCode(Long envId, String instanceCode);
+
+    void baseDeleteByServiceId(Long serviceId);
 }

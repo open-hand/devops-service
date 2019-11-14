@@ -418,6 +418,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
         devopsEnvCommandService.baseListByObject(ObjectType.SERVICE.getType(), devopsServiceDTO.getId()).forEach(devopsEnvCommandDTO -> devopsEnvCommandService.baseDelete(devopsEnvCommandDTO.getId()));
         baseDelete(id);
+        devopsServiceInstanceService.baseDeleteByServiceId(id);
     }
 
 
@@ -664,8 +665,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         }
         DevopsServiceVO devopsServiceVO = new DevopsServiceVO();
         BeanUtils.copyProperties(devopsServiceQueryDTO, devopsServiceVO);
-        devopsServiceVO.setLabels(gson.fromJson(devopsServiceQueryDTO.getLabels(), new TypeToken<Map<String, String>>() {
-        }.getType()));
         DevopsServiceConfigVO devopsServiceConfigVO = new DevopsServiceConfigVO();
         devopsServiceConfigVO.setPorts(gson.fromJson(devopsServiceQueryDTO.getPorts(), new TypeToken<ArrayList<PortMapVO>>() {
         }.getType()));
