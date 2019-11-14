@@ -30,6 +30,17 @@ public class GitOpsUtil {
     }
 
     /**
+     * 获取系统环境所对应的GitLab项目code
+     *
+     * @param clusterCode 集群code
+     * @param envCode     环境code
+     * @return 系统环境所对应的GitLab项目code
+     */
+    public static String getSystemEnvProjectCode(String clusterCode, String envCode) {
+        return String.format(GitOpsConstants.SYSTEM_ENV_GITLAB_PROJECT_CODE_FORMAT, clusterCode, envCode);
+    }
+
+    /**
      * get local path to store environment repository
      *
      * @param orgCode     组织code

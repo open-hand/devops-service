@@ -37,11 +37,14 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.GitConfigVO;
 import io.choerodon.devops.api.vo.GitEnvConfigVO;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
+import io.choerodon.devops.infra.constant.GitOpsConstants;
+import io.choerodon.devops.infra.dto.DevopsClusterDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.EnvironmentType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
 
 /**
  * Created by younger on 2018/3/29.
@@ -58,6 +61,8 @@ public class GitUtil {
     private static final String REPO_NAME = "devops-service-repo";
     private static final Logger LOGGER = LoggerFactory.getLogger(GitUtil.class);
     private Pattern pattern = Pattern.compile("^[-\\+]?[\\d]*$");
+    @Autowired
+    private DevopsClusterMapper devopsClusterMapper;
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
@@ -133,8 +138,11 @@ public class GitUtil {
         return "";
     }
 
-    public static String getGitlabSshUrl(Pattern pattern, String url, String orgCode, String proCode, String envCode, EnvironmentType environmentType) {
+    public static String getGitlabSshUrl(Pattern pattern, String url, String orgCode, String proCode, String envCode, EnvironmentType environmentType, String clusterCode) {
         final String groupSuffix = GitOpsUtil.getGroupSuffixByEnvType(environmentType);
+        if (environmentType == EnvironmentType.SYSTEM) {
+            envCode = GitOpsUtil.getSystemEnvProjectCode(clusterCode, envCode);
+        }
         String result = "";
         if (url.contains("@")) {
             String[] urls = url.split(":");
@@ -637,15 +645,15 @@ public class GitUtil {
     }
 
 
-    public String handDevopsEnvGitRepository(Long projectId, String envCode, String envRsa, String envType) {
+    public String handDevopsEnvGitRepository(Long projectId, String envCode, String envRsa, String envType, String clusterCode) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         //本地路径
-        String path = String.format("gitops/%s/%s/%s",
-                organizationDTO.getCode(), projectDTO.getCode(), envCode);
+        String path = GitOpsUtil.getLocalPathToStoreEnv(
+                organizationDTO.getCode(), projectDTO.getCode(), clusterCode, envCode);
         //生成环境git仓库ssh地址
         String url = GitUtil.getGitlabSshUrl(pattern, gitlabSshUrl, organizationDTO.getCode(),
-                projectDTO.getCode(), envCode, EnvironmentType.forValue(envType));
+                projectDTO.getCode(), envCode, EnvironmentType.forValue(envType), clusterCode);
 
         File file = new File(path);
         if (!file.exists()) {
@@ -656,13 +664,14 @@ public class GitUtil {
 
 
     public GitConfigVO getGitConfig(Long clusterId) {
+        DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(clusterId);
         List<DevopsEnvironmentDTO> devopsEnvironments = devopsEnvironmentService.baseListUserEnvByClusterId(clusterId);
         GitConfigVO gitConfigVO = new GitConfigVO();
         List<GitEnvConfigVO> gitEnvConfigDTOS = new ArrayList<>();
         devopsEnvironments.stream().filter(devopsEnvironmentE -> devopsEnvironmentE.getGitlabEnvProjectId() != null).forEach(devopsEnvironmentE -> {
             ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentE.getProjectId());
             OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-            String repoUrl = GitUtil.getGitlabSshUrl(pattern, gitlabSshUrl, organizationDTO.getCode(), projectDTO.getCode(), devopsEnvironmentE.getCode(), EnvironmentType.forValue(devopsEnvironmentE.getType()));
+            String repoUrl = GitUtil.getGitlabSshUrl(pattern, gitlabSshUrl, organizationDTO.getCode(), projectDTO.getCode(), devopsEnvironmentE.getCode(), EnvironmentType.forValue(devopsEnvironmentE.getType()), devopsClusterDTO.getCode());
 
             GitEnvConfigVO gitEnvConfigVO = new GitEnvConfigVO();
             gitEnvConfigVO.setEnvId(devopsEnvironmentE.getId());
