@@ -158,7 +158,7 @@ public interface DevopsServiceService {
 
     void baseUpdate(DevopsServiceDTO devopsServiceDTO);
 
-    void baseUpdateLabels(Long id);
+    void baseUpdateSelectors(Long id);
 
     void baseUpdateEndPoint(Long id);
 

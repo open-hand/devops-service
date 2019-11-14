@@ -26,6 +26,7 @@ public class DevopsServiceVO extends DevopsResourceDataInfoVO {
      */
     @ApiModelProperty("网络本身的标签")
     private Map<String, String> labels;
+    private Map<String, String> selectors;
     private DevopsServiceTargetVO target;
     private DevopsServiceConfigVO config;
     private String commandType;
@@ -198,5 +199,13 @@ public class DevopsServiceVO extends DevopsResourceDataInfoVO {
 
     public void setLabels(Map<String, String> labels) {
         this.labels = labels;
+    }
+
+    public Map<String, String> getSelectors() {
+        return selectors;
+    }
+
+    public void setSelectors(Map<String, String> selectors) {
+        this.selectors = selectors;
     }
 }

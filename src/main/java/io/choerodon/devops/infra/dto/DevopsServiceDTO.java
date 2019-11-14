@@ -27,14 +27,17 @@ public class DevopsServiceDTO extends BaseDTO {
     private String endPoints;
     private String type;
     private String externalIp;
-    private String labels;
+    private String selectors;
     private String annotations;
     private String loadBalanceIp;
 
     @ApiModelProperty("目标对象是应用服务下所有实例时，应用服务的id")
     private Long targetAppServiceId;
 
-    @ApiModelProperty("目标对象是单个实例时，实例的code")
+    @ApiModelProperty("目标对象是应用服务下所有实例时，应用服务的code")
+    private String targetAppServiceCode;
+
+    @ApiModelProperty("目标对象是单个实例时，实例code")
     private String targetInstanceCode;
 
     public Long getId() {
@@ -69,21 +72,12 @@ public class DevopsServiceDTO extends BaseDTO {
         this.name = name;
     }
 
-
     public String getExternalIp() {
         return externalIp;
     }
 
     public void setExternalIp(String externalIp) {
         this.externalIp = externalIp;
-    }
-
-    public String getLabels() {
-        return labels;
-    }
-
-    public void setLabels(String labels) {
-        this.labels = labels;
     }
 
     public String getAnnotations() {
@@ -156,5 +150,21 @@ public class DevopsServiceDTO extends BaseDTO {
 
     public void setTargetInstanceCode(String targetInstanceCode) {
         this.targetInstanceCode = targetInstanceCode;
+    }
+
+    public String getSelectors() {
+        return selectors;
+    }
+
+    public void setSelectors(String selectors) {
+        this.selectors = selectors;
+    }
+
+    public String getTargetAppServiceCode() {
+        return targetAppServiceCode;
+    }
+
+    public void setTargetAppServiceCode(String targetAppServiceCode) {
+        this.targetAppServiceCode = targetAppServiceCode;
     }
 }

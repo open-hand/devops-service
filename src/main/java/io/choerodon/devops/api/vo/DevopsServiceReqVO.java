@@ -20,7 +20,7 @@ public class DevopsServiceReqVO {
     @NotNull(message = "error.env.id.null")
     private Long envId;
 
-    @ApiModelProperty("应用服务ID / 选填，用于创建与应用服务关联关系")
+    @ApiModelProperty("服务ID/从实例界面创建")
     private Long appServiceId;
 
     @ApiModelProperty("网络名称 / 必填，长度1-30")
@@ -42,16 +42,26 @@ public class DevopsServiceReqVO {
     private Map<String, List<EndPointPortVO>> endPoints;
 
     @ApiModelProperty("目标对象为标签，标签键值对")
-    private Map<String, String> label;
+    private Map<String, String> selectors;
 
     @ApiModelProperty("目标对象是应用服务下所有实例时，应用服务的id")
     private Long targetAppServiceId;
 
-    @ApiModelProperty("目标对象是单个实例时，实例的code")
+    @ApiModelProperty("目标对象是应用服务下所有实例时，应用服务的code")
+    private String targetAppServiceCode;
+
+    @ApiModelProperty("目标对象是单个实例时，实例code")
     private String targetInstanceCode;
 
     private DevopsIngressVO devopsIngressVO;
 
+    public Map<String, String> getSelectors() {
+        return selectors;
+    }
+
+    public void setSelectors(Map<String, String> selectors) {
+        this.selectors = selectors;
+    }
 
     public Long getEnvId() {
         return envId;
@@ -59,14 +69,6 @@ public class DevopsServiceReqVO {
 
     public void setEnvId(Long envId) {
         this.envId = envId;
-    }
-
-    public Long getAppServiceId() {
-        return appServiceId;
-    }
-
-    public void setAppServiceId(Long appServiceId) {
-        this.appServiceId = appServiceId;
     }
 
     public String getName() {
@@ -91,14 +93,6 @@ public class DevopsServiceReqVO {
 
     public void setPorts(List<PortMapVO> ports) {
         this.ports = ports;
-    }
-
-    public Map<String, String> getLabel() {
-        return label;
-    }
-
-    public void setLabel(Map<String, String> labels) {
-        this.label = labels;
     }
 
     public String getType() {
@@ -139,5 +133,21 @@ public class DevopsServiceReqVO {
 
     public void setTargetInstanceCode(String targetInstanceCode) {
         this.targetInstanceCode = targetInstanceCode;
+    }
+
+    public Long getAppServiceId() {
+        return appServiceId;
+    }
+
+    public void setAppServiceId(Long appServiceId) {
+        this.appServiceId = appServiceId;
+    }
+
+    public String getTargetAppServiceCode() {
+        return targetAppServiceCode;
+    }
+
+    public void setTargetAppServiceCode(String targetAppServiceCode) {
+        this.targetAppServiceCode = targetAppServiceCode;
     }
 }

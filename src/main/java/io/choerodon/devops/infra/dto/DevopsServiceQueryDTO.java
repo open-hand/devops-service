@@ -22,7 +22,7 @@ public class DevopsServiceQueryDTO extends BaseDTO {
     private String endPoints;
     private Long appServiceId;
     private String appServiceName;
-    private String labels;
+    private String selectors;
     private List<AppServiceInstanceInfoDTO> instances;
     private String loadBalanceIp;
     private String message;
@@ -136,12 +136,12 @@ public class DevopsServiceQueryDTO extends BaseDTO {
         this.appServiceName = appServiceName;
     }
 
-    public String getLabels() {
-        return labels;
+    public String getSelectors() {
+        return selectors;
     }
 
-    public void setLabels(String labels) {
-        this.labels = labels;
+    public void setSelectors(String selectors) {
+        this.selectors = selectors;
     }
 
     public List<AppServiceInstanceInfoDTO> getInstances() {
