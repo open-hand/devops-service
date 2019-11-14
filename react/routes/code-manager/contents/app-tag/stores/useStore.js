@@ -1,6 +1,6 @@
 import { useLocalStore } from 'mobx-react-lite';
 import { axios } from '@choerodon/boot';
-import { handlePromptError } from '@choerodon/../../react/utils';
+import { handlePromptError } from '../../../../../utils';
 
 
 export default function useStore() {
