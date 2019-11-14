@@ -501,7 +501,7 @@ public class GitlabServiceClientOperator {
                 })
                 .collect(Collectors.toCollection(ArrayList::new));
 
-        PageInfo<TagDTO> resp = PageInfoUtil.createPageFromList(tagList, PageRequest.of(0,1));
+        PageInfo<TagDTO> resp = PageInfoUtil.createPageFromList(tagList, PageRequest.of(page, size));
 
         resp.getList().stream()
                 .sorted(this::sortTag)
