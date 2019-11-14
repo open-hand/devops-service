@@ -70,7 +70,7 @@ public class ResourceConvertToYamlHandler<T> {
             endpointContent = newYaml.dump(v1Endpoints).replace(ENDPOINTS, "---");
         }
         String content = "";
-        if (type instanceof V1.PersistentVolume || type instanceof V1.PersistentVolumeClaim) {
+        if (type instanceof V1PersistentVolume || type instanceof V1PersistentVolumeClaim) {
             JSON json = new JSON();
             String jsonStr = json.serialize(type);
             try {
