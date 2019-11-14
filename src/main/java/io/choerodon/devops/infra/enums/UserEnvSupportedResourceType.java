@@ -16,6 +16,7 @@ public enum UserEnvSupportedResourceType {
     CERTIFICATE("Certificate"),
     CONFIGMAP("ConfigMap"),
     ENDPOINTS("Endpoints"),
+    PERSISTENT_VOLUME_CLAIM("PersistentVolumeClaim"),
     SECRET("Secret");
 
     @SuppressWarnings("unchecked")
