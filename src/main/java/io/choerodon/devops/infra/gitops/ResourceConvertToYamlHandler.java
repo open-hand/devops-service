@@ -1,19 +1,6 @@
 package io.choerodon.devops.infra.gitops;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 import com.alibaba.fastjson.JSONObject;
-import io.kubernetes.client.models.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.yaml.snakeyaml.DumperOptions;
-import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.nodes.Tag;
-
 import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.kubernetes.C7nCertification;
@@ -22,8 +9,24 @@ import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
 import io.choerodon.devops.infra.dto.DevopsEnvFileResourceDTO;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
+import io.choerodon.devops.infra.util.JsonYamlConversionUtil;
 import io.choerodon.devops.infra.util.SkipNullRepresenterUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
+import io.kubernetes.client.JSON;
+import io.kubernetes.client.models.*;
+import io.kubernetes.client.proto.V1;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.nodes.Tag;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class ResourceConvertToYamlHandler<T> {
     private static final Logger LOGGER = LoggerFactory.getLogger(ResourceConvertToYamlHandler.class);
@@ -66,9 +69,20 @@ public class ResourceConvertToYamlHandler<T> {
             Yaml newYaml = getYamlObject(new Tag(v1Endpoints.getClass().toString()), true);
             endpointContent = newYaml.dump(v1Endpoints).replace(ENDPOINTS, "---");
         }
-        String content = yaml.dump(type).replace("!<" + tag.getValue() + ">", "---");
-        if (endpointContent != null) {
-            content = content + "\n" + endpointContent;
+        String content = "";
+        if (type instanceof V1.PersistentVolume || type instanceof V1.PersistentVolumeClaim) {
+            JSON json = new JSON();
+            String jsonStr = json.serialize(type);
+            try {
+                content = JsonYamlConversionUtil.json2yaml(jsonStr);
+            } catch (IOException e) {
+                LOGGER.info(e.getMessage());
+            }
+        } else {
+            content = yaml.dump(type).replace("!<" + tag.getValue() + ">", "---");
+            if (endpointContent != null) {
+                content = content + "\n" + endpointContent;
+            }
         }
         if (operationType.equals("create")) {
             String path = fileCode + ".yaml";
@@ -111,7 +125,8 @@ public class ResourceConvertToYamlHandler<T> {
      * @param operationType 操作类型 create/update
      * @return 指定文件操作之后的内容
      */
-    public String getUpdateContent(T t, Boolean deleteCert, String content, String filePath, String objectType, String path, String operationType) {
+    public String getUpdateContent(T t, Boolean deleteCert, String content, String filePath, String
+            objectType, String path, String operationType) {
         Yaml yaml = new Yaml();
         StringBuilder resultBuilder = new StringBuilder();
         // 获取要更新的资源所在的文件
@@ -154,7 +169,8 @@ public class ResourceConvertToYamlHandler<T> {
         }
     }
 
-    private void handleService(T t, String content, String objectType, String operationType, StringBuilder resultBuilder, JSONObject jsonObject) {
+    private void handleService(T t, String content, String objectType, String operationType, StringBuilder
+            resultBuilder, JSONObject jsonObject) {
         Yaml yaml3 = new Yaml();
         V1Service v1Service = yaml3.loadAs(jsonObject.toJSONString(), V1Service.class);
         V1Service newV1Service;
@@ -183,7 +199,8 @@ public class ResourceConvertToYamlHandler<T> {
         }
     }
 
-    private void handleIngress(T t, Boolean deleteCert, String objectType, String operationType, StringBuilder resultBuilder, JSONObject jsonObject) {
+    private void handleIngress(T t, Boolean deleteCert, String objectType, String operationType, StringBuilder
+            resultBuilder, JSONObject jsonObject) {
         Yaml yaml2 = new Yaml();
         V1beta1Ingress v1beta1Ingress = yaml2.loadAs(jsonObject.toJSONString(), V1beta1Ingress.class);
         V1beta1Ingress newV1beta1Ingress;
@@ -212,7 +229,8 @@ public class ResourceConvertToYamlHandler<T> {
         resultBuilder.append("\n").append(getYamlObject(tag2, true).dump(newV1beta1Ingress).replace(INGTAG, "---"));
     }
 
-    private void handleC7nHelmRelease(T t, String objectType, String operationType, StringBuilder resultBuilder, JSONObject jsonObject) {
+    private void handleC7nHelmRelease(T t, String objectType, String operationType, StringBuilder
+            resultBuilder, JSONObject jsonObject) {
         Yaml yaml1 = new Yaml();
         C7nHelmRelease c7nHelmRelease = yaml1.loadAs(jsonObject.toJSONString(), C7nHelmRelease.class);
         if (objectType.equals(ResourceType.C7NHELMRELEASE.getType()) && c7nHelmRelease.getMetadata().getName().equals(((C7nHelmRelease) t).getMetadata().getName())) {
@@ -227,7 +245,8 @@ public class ResourceConvertToYamlHandler<T> {
     }
 
 
-    private void handleC7nCertification(T t, String objectType, String operationType, StringBuilder resultBuilder, JSONObject jsonObject) {
+    private void handleC7nCertification(T t, String objectType, String operationType, StringBuilder
+            resultBuilder, JSONObject jsonObject) {
         Yaml yaml4 = new Yaml();
         C7nCertification c7nCertification = yaml4.loadAs(jsonObject.toJSONString(), C7nCertification.class);
         if (objectType.equals(ResourceType.CERTIFICATE.getType()) && c7nCertification.getMetadata().getName().equals(((C7nCertification) t).getMetadata().getName())) {
