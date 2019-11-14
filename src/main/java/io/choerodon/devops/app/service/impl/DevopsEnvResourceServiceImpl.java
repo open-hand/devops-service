@@ -214,6 +214,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
             }
             instanceEventVO.setCommandId(devopsEnvCommandDTO.getId());
             instanceEventVO.setStatus(devopsEnvCommandDTO.getStatus());
+            instanceEventVO.setCommandError(devopsEnvCommandDTO.getError());
             instanceEventVO.setUserImage(iamUser == null ? null : iamUser.getImageUrl());
             instanceEventVO.setCreateTime(devopsEnvCommandDTO.getCreationDate());
             instanceEventVO.setType(devopsEnvCommandDTO.getCommandType());

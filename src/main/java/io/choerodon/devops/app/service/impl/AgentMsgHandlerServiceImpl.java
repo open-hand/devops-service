@@ -1652,24 +1652,32 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     }
 
 
-    private void updateResourceStatus(Long envId, DevopsEnvCommandDTO devopsEnvCommandDTO, InstanceStatus running, ServiceStatus running2, IngressStatus running3, CertificationStatus active) {
+    private void updateResourceStatus(Long envId,
+                                      DevopsEnvCommandDTO devopsEnvCommandDTO,
+                                      InstanceStatus instanceStatus,
+                                      ServiceStatus serviceStatus,
+                                      IngressStatus ingressStatus,
+                                      CertificationStatus certificationStatus) {
         if (devopsEnvCommandDTO.getObject().equals(INSTANCE_KIND)) {
             AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQuery(devopsEnvCommandDTO.getObjectId());
-            appServiceInstanceDTO.setStatus(running.getStatus());
-            appServiceInstanceService.updateStatus(appServiceInstanceDTO);
+            if (appServiceInstanceDTO != null
+                    && !InstanceStatus.RUNNING.getStatus().equals(appServiceInstanceDTO.getStatus())) {
+                appServiceInstanceDTO.setStatus(instanceStatus.getStatus());
+                appServiceInstanceService.updateStatus(appServiceInstanceDTO);
+            }
         }
         if (devopsEnvCommandDTO.getObject().equals(SERVICE_KIND)) {
             DevopsServiceDTO devopsServiceDTO = devopsServiceService.baseQuery(devopsEnvCommandDTO.getObjectId());
-            devopsServiceDTO.setStatus(running2.getStatus());
+            devopsServiceDTO.setStatus(serviceStatus.getStatus());
             devopsServiceService.updateStatus(devopsServiceDTO);
         }
         if (devopsEnvCommandDTO.getObject().equals(INGRESS_KIND)) {
             DevopsIngressDTO devopsIngressDTO = devopsIngressService.baseQuery(devopsEnvCommandDTO.getObjectId());
-            devopsIngressService.updateStatus(envId, devopsIngressDTO.getName(), running3.getStatus());
+            devopsIngressService.updateStatus(envId, devopsIngressDTO.getName(), ingressStatus.getStatus());
         }
         if (devopsEnvCommandDTO.getObject().equals(CERTIFICATE_KIND)) {
             CertificationDTO certificationDTO = certificationService.baseQueryById(devopsEnvCommandDTO.getObjectId());
-            certificationDTO.setStatus(active.getStatus());
+            certificationDTO.setStatus(certificationStatus.getStatus());
             certificationService.updateStatus(certificationDTO);
         }
         // TODO by zmf pvc

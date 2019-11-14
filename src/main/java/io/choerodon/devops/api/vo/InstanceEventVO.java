@@ -10,6 +10,8 @@ public class InstanceEventVO {
     private Long commandId;
     private String type;
     private String status;
+    @ApiModelProperty("这次command所对应的错误/可为null")
+    private String commandError;
     private Date createTime;
     private String userImage;
     private String loginName;
@@ -78,5 +80,13 @@ public class InstanceEventVO {
 
     public void setPodEventVO(List<PodEventVO> podEventVO) {
         this.podEventVO = podEventVO;
+    }
+
+    public String getCommandError() {
+        return commandError;
+    }
+
+    public void setCommandError(String commandError) {
+        this.commandError = commandError;
     }
 }
