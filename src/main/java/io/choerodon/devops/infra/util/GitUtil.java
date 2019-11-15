@@ -238,6 +238,7 @@ public class GitUtil {
                     .call();
             return git;
         } catch (GitAPIException e) {
+            LOGGER.info("Repository:{}\nsshKeyRsa:{}\n");
             LOGGER.info("Pull error", e);
         }
         return null;
