@@ -51,7 +51,7 @@ export default class CreateNetwork extends Component {
       initName: '',
       validIp: {},
       targetIp: {},
-      initIst: [],
+      initIst: '',
       initIstOption: [],
       selectEnv: props.envId,
     };
@@ -71,14 +71,14 @@ export default class CreateNetwork extends Component {
     store.loadInstance(projectId, envId, appServiceId)
       .then((data) => {
         if (data) {
-          const initIst = [];
+          const initIst = '';
           // 将默认选项直接生成，避免加载带来的异步问题
           const initIstOption = [];
           if (data && data.length) {
             _.forEach(data, (item) => {
               const { id: istIds, code } = item;
               initIstOption.push(
-                <Option key={istIds} value={[code]}>
+                <Option key={istIds} value={code}>
                   {code}
                 </Option>,
               );
@@ -786,7 +786,7 @@ export default class CreateNetwork extends Component {
               {...formItemLayout}
             >
               {getFieldDecorator('appInstance', {
-                initialValue: initIst.length ? initIst : undefined,
+                initialValue: initIst || undefined,
                 trigger: ['onChange', 'onSubmit'],
                 rules: [
                   {

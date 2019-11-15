@@ -48,10 +48,14 @@ class CreateNetwork extends Component {
             config,
             values,
           } = data;
-          // const appIst = appInstance ? _.map(appInstance, (item) => item) : null;
-          let appIst;
+          let targetAppServiceId;
+          let targetInstanceCode;
           if (!_.isEmpty(appInstance)) {
-            appIst = appInstance === 'all_instance' ? _.map(store.getIst, (item) => item.code) : [appInstance];
+            if (appInstance === 'all_instance') {
+              targetAppServiceId = appId;
+            } else {
+              targetInstanceCode = appInstance;
+            }
           }
           
           const ports = [];
@@ -96,12 +100,12 @@ class CreateNetwork extends Component {
 
           const network = {
             name,
-            appServiceId: appId || null,
-            instances: appIst,
+            targetAppServiceId,
+            targetInstanceCode,
             envId,
             externalIp: externalIps && externalIps.length ? externalIps.join(',') : null,
             ports,
-            label: !_.isEmpty(label) ? label : null,
+            selectors: !_.isEmpty(label) ? label : null,
             type: config,
             endPoints: !_.isEmpty(endPoints) ? endPoints : null,
           };

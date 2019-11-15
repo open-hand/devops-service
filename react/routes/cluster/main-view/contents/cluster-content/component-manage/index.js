@@ -54,7 +54,7 @@ export default observer((props) => {
     let buttonData = [];
     if (type === 'prometheus') {
       switch (status) {
-        case 'uninstall':
+        case 'uninstalled':
           buttonData = [
             {
               text: formatMessage({ id: 'install' }),
@@ -102,7 +102,7 @@ export default observer((props) => {
       }
     } else {
       switch (status) {
-        case 'uninstall':
+        case 'uninstalled':
           buttonData = [
             {
               text: formatMessage({ id: 'install' }),
