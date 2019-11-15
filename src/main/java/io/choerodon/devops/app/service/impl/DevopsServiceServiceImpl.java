@@ -841,6 +841,15 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             baseUpdateEndPoint(devopsServiceDTO.getId());
             devopsServiceDTO.setEndPoints(null);
         }
+        if (devopsServiceReqVO.getAppServiceId() == null) {
+            if (devopsServiceReqVO.getTargetAppServiceId() != null) {
+                devopsServiceDTO.setAppServiceId(devopsServiceReqVO.getTargetAppServiceId());
+            }
+            if (devopsServiceReqVO.getTargetInstanceCode() != null) {
+                AppServiceInstanceDTO instanceDTO = appServiceInstanceService.baseQueryByCodeAndEnv(devopsServiceReqVO.getTargetInstanceCode(), devopsServiceReqVO.getEnvId());
+                devopsServiceDTO.setAppServiceId(instanceDTO.getAppServiceId());
+            }
+        }
         devopsServiceDTO.setPorts(gson.toJson(devopsServiceReqVO.getPorts()));
         devopsServiceDTO.setType(devopsServiceReqVO.getType() == null ? "ClusterIP" : devopsServiceReqVO.getType());
         devopsServiceDTO.setStatus(ServiceStatus.OPERATIING.getStatus());

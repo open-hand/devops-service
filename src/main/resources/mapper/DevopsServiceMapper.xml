@@ -132,7 +132,6 @@
         ds.external_ip,
         ds.selectors,
         ds.target_app_service_id,
-        ds.target_app_service_code,
         da.project_id app_service_project_id,
         ds. ports,
         ds.end_points,
@@ -207,7 +206,6 @@
         <result property="appServiceId" column="app_service_id"/>
         <result property="appServiceName" column="app_service_name"/>
         <result property="targetAppServiceId" column="target_app_service_id"/>
-        <result property="targetAppServiceCode" column="target_app_service_code"/>
         <result property="appServiceProjectId" column="app_service_project_id"/>
         <result property="loadBalanceIp" column="load_balance_ip"/>
         <result property="type" column="type"/>
