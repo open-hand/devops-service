@@ -2,7 +2,6 @@ package io.choerodon.devops.infra.dto;
 
 import java.util.List;
 
-import io.choerodon.devops.api.vo.AppServiceTargetVO;
 import io.choerodon.mybatis.entity.BaseDTO;
 
 /**
@@ -25,7 +24,6 @@ public class DevopsServiceQueryDTO extends BaseDTO {
     private String appServiceName;
     private String selectors;
     private List<AppServiceInstanceInfoDTO> instances;
-    private AppServiceTargetVO appServiceTargetVO;
     private String loadBalanceIp;
     private String message;
     private Long appServiceProjectId;
@@ -208,13 +206,5 @@ public class DevopsServiceQueryDTO extends BaseDTO {
 
     public void setError(String error) {
         this.error = error;
-    }
-
-    public AppServiceTargetVO getAppServiceTargetVO() {
-        return appServiceTargetVO;
-    }
-
-    public void setAppServiceTargetVO(AppServiceTargetVO appServiceTargetVO) {
-        this.appServiceTargetVO = appServiceTargetVO;
     }
 }
