@@ -290,7 +290,7 @@
     </select>
 
 
-    <update id="updateLabelsToNull">
+    <update id="updateSelectorsToNull">
         UPDATE devops_service ds
         SET ds.selectors = null
         WHERE ds.id = #{serviceId}
