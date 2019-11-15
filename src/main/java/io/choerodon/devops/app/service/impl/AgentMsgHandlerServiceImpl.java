@@ -463,7 +463,9 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     private void handleUpdatePvMsg(String key, Long envId, String msg,
                                    DevopsEnvResourceDTO devopsEnvResourceDTO,
                                    DevopsEnvResourceDetailDTO devopsEnvResourceDetailDTO) {
+        logger.info("Update pv message.envId is {}", envId);
         String resourceName = KeyParseUtil.getResourceName(key);
+        logger.info("pv name is {}", resourceName);
         DevopsEnvResourceDTO oldDevopsEnvResourceDTO =
                 devopsEnvResourceService.baseQueryOptions(
                         null,
@@ -496,7 +498,9 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     private void handleUpdatePvcMsg(String key, Long envId, String msg,
                                     DevopsEnvResourceDTO devopsEnvResourceDTO,
                                     DevopsEnvResourceDetailDTO devopsEnvResourceDetailDTO) {
+        logger.info("Update pvc message.envId is {}", envId);
         String resourceName = KeyParseUtil.getResourceName(key);
+        logger.info("pvc name is {}", resourceName);
         DevopsEnvResourceDTO oldDevopsEnvResourceDTO =
                 devopsEnvResourceService.baseQueryOptions(
                         null,
