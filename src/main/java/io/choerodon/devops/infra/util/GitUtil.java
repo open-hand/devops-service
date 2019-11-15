@@ -186,6 +186,7 @@ public class GitUtil {
             cloneCommand.setDirectory(new File(path));
             return cloneCommand.call();
         } catch (GitAPIException e) {
+            LOGGER.info("url:{}======sshKeyRsa:{}",url,sshKeyRsa);
             throw new CommonException(e.getMessage(), e);
         }
     }
