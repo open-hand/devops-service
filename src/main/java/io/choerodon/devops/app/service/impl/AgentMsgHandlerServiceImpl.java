@@ -1056,7 +1056,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 if (v1Service.getSpec().getExternalIPs() != null) {
                     devopsServiceDTO.setExternalIp(String.join(",", v1Service.getSpec().getExternalIPs()));
                 }
-                devopsServiceDTO.setLabels(json.serialize(v1Service.getMetadata().getLabels()));
+//                devopsServiceDTO.setLabels(json.serialize(v1Service.getMetadata().getLabels()));
                 devopsServiceDTO.setAnnotations(json.serialize(v1Service.getMetadata().getAnnotations()));
                 devopsServiceDTO.setId(devopsServiceService.baseCreate(devopsServiceDTO).getId());
 

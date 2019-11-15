@@ -78,7 +78,7 @@
         ds.ports,
         ds.`status`,
         ds.`type`,
-        ds.labels,
+        ds.selectors,
         ds.end_points,
         da.id AS app_service_id,
         da.`name` AS app_service_name,
@@ -130,7 +130,9 @@
         ds.id,
         ds.`name`,
         ds.external_ip,
-        ds.labels,
+        ds.selectors,
+        ds.target_app_service_id,
+        ds.target_app_service_code,
         da.project_id app_service_project_id,
         ds. ports,
         ds.end_points,
@@ -174,7 +176,12 @@
         devops_service ds
         INNER JOIN devops_env de ON ds.env_id = de.id
         LEFT JOIN devops_service_instance dsai ON dsai.service_id = ds.id
-        LEFT JOIN devops_app_service_instance dai ON dai.id = dsai.instance_id
+        LEFT JOIN devops_app_service_instance dai
+                ON (
+                dai.id = dsai.instance_id
+                or (dai.id = ds.target_instance_code and dai.env_id = ds.env_id)
+                or dai.app_service_id = ds.target_app_service_id
+                )
         LEFT JOIN devops_app_service da ON da.id = dai.app_service_id
         LEFT JOIN devops_env_command command ON ds.command_id = command.id
         WHERE
@@ -199,6 +206,8 @@
         <result property="status" column="status"/>
         <result property="appServiceId" column="app_service_id"/>
         <result property="appServiceName" column="app_service_name"/>
+        <result property="targetAppServiceId" column="target_app_service_id"/>
+        <result property="targetAppServiceCode" column="target_app_service_code"/>
         <result property="appServiceProjectId" column="app_service_project_id"/>
         <result property="loadBalanceIp" column="load_balance_ip"/>
         <result property="type" column="type"/>
@@ -283,7 +292,7 @@
 
     <update id="updateLabelsToNull">
         UPDATE devops_service ds
-        SET ds.labels = null
+        SET ds.selectors = null
         WHERE ds.id = #{serviceId}
     </update>
 
