@@ -19,8 +19,10 @@
         FROM devops_pv dpv
         LEFT JOIN devops_pvc dpvc on dpv.pvc_id = dpvc.id
         LEFT JOIN devops_cluster dc on dpv.cluster_id = dc.id
-        WHERE 1 = 1
+        <where>
+            dc.organization_id=#{organizationId}
         <include refid="sqlparams"/>
+        </where>
         ORDER BY id DESC
     </select>
 

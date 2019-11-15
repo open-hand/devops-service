@@ -28,7 +28,7 @@ public interface DevopsPvService {
     /**
      * 根据条件分页查询PV
      */
-    PageInfo<DevopsPvDTO> basePagePvByOptions(Boolean doPage, Pageable pageable, String params);
+    PageInfo<DevopsPvDTO> basePagePvByOptions(Long projectId,Boolean doPage, Pageable pageable, String params);
 
     /**
      * 分页查询pv以及关联的集群和PVC
@@ -38,7 +38,7 @@ public interface DevopsPvService {
      * @param params
      * @return
      */
-    PageInfo<DevopsPvVO> pageByOptions(Boolean doPage, Pageable pageable, String params);
+    PageInfo<DevopsPvVO> pageByOptions(Long projectId,Boolean doPage, Pageable pageable, String params);
 
     /**
      * 创建PV
@@ -138,5 +138,5 @@ public interface DevopsPvService {
      * @param params
      * @return
      */
-    List<DevopsPvVO> queryPvcRelatedPv(String params);
+    List<DevopsPvVO> queryPvcRelatedPv(Long projectId,String params);
 }
