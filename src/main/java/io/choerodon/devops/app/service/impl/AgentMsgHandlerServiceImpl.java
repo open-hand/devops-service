@@ -1644,7 +1644,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         if (!ObjectUtils.isEmpty(devopsClusterResourceDTO)) {
             AgentMsgVO agentMsgVO = json.deserialize(payloadMsg, AgentMsgVO.class);
             if (!ObjectUtils.isEmpty(payloadMsg) && CertManagerConstants.HELMRELEASEINSTALLFAILED.equals(agentMsgVO.getType())) {
-                devopsClusterResourceService.updateCertMangerStatus(clusterId, ClusterResourceStatus.UNINSTALL.getStatus(), agentMsgVO.getPayload());
+                devopsClusterResourceService.updateCertMangerStatus(clusterId, ClusterResourceStatus.UNINSTALLED.getStatus(), agentMsgVO.getPayload());
             } else {
                 devopsClusterResourceService.updateCertMangerStatus(clusterId, ClusterResourceStatus.DISABLED.getStatus(), null);
             }

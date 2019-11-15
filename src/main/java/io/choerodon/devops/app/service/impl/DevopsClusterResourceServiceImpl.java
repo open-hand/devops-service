@@ -195,22 +195,22 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         DevopsClusterResourceDTO devopsClusterResourceDTO = queryByClusterIdAndType(clusterId, ClusterResourceType.CERTMANAGER.getType());
         ClusterResourceVO clusterConfigVO = new ClusterResourceVO();
         if (ObjectUtils.isEmpty(devopsClusterResourceDTO)) {
-            clusterConfigVO.setStatus(ClusterResourceStatus.UNINSTALL.getStatus());
+            clusterConfigVO.setStatus(ClusterResourceStatus.UNINSTALLED.getStatus());
         } else {
             DevopsCertManagerRecordDTO devopsCertManagerRecordDTO = devopsCertManagerRecordMapper.selectByPrimaryKey(devopsClusterResourceDTO.getObjectId());
             if (!ObjectUtils.isEmpty(devopsCertManagerRecordDTO)) {
                 clusterConfigVO.setStatus(devopsCertManagerRecordDTO.getStatus());
                 clusterConfigVO.setMessage(devopsCertManagerRecordDTO.getError());
             }
-            clusterConfigVO.setType(ClusterResourceType.CERTMANAGER.getType());
+            clusterConfigVO.setOperate(devopsClusterResourceDTO.getOperate());
         }
-        clusterConfigVO.setOperate(devopsClusterResourceDTO.getOperate());
+        clusterConfigVO.setType(ClusterResourceType.CERTMANAGER.getType());
         list.add(clusterConfigVO);
         // 查询prometheus 的状态和信息
         DevopsClusterResourceDTO prometheus = devopsClusterResourceMapper.queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
         ClusterResourceVO clusterResourceVO = new ClusterResourceVO();
         if (ObjectUtils.isEmpty(prometheus)) {
-            clusterResourceVO.setStatus(ClusterResourceStatus.UNINSTALL.getStatus());
+            clusterResourceVO.setStatus(ClusterResourceStatus.UNINSTALLED.getStatus());
         } else {
             Long configId = prometheus.getConfigId();
             clusterResourceVO = queryPrometheusStatus(projectId, clusterId);
@@ -402,7 +402,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         ClusterResourceVO clusterResourceVO = new ClusterResourceVO();
         clusterResourceVO.setType(ClusterResourceType.PROMETHEUS.getType());
         if (devopsClusterResourceDTO == null) {
-            clusterResourceVO.setStatus(ClusterResourceStatus.UNINSTALL.getStatus());
+            clusterResourceVO.setStatus(ClusterResourceStatus.UNINSTALLED.getStatus());
             return clusterResourceVO;
         }
         AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQuery(devopsClusterResourceDTO.getObjectId());
@@ -423,7 +423,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
                 }
                 if (!isExist) {
                     basedeletePrometheus(clusterId);
-                    clusterResourceVO.setStatus(ClusterResourceStatus.UNINSTALL.getStatus());
+                    clusterResourceVO.setStatus(ClusterResourceStatus.UNINSTALLED.getStatus());
                     return clusterResourceVO;
                 }
             }
@@ -471,7 +471,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
                 } else {
                     clusterResourceVO.setStatus(ClusterResourceStatus.DISABLED.getStatus());
                 }
-                clusterResourceVO.setMessage(devopsEnvCommandDTO.getError()+fileError);
+                clusterResourceVO.setMessage(devopsEnvCommandDTO.getError() + fileError);
                 break;
         }
         clusterResourceVO.setOperate(devopsClusterResourceDTO.getOperate());

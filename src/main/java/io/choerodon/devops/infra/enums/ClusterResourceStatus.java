@@ -5,7 +5,7 @@ package io.choerodon.devops.infra.enums;
  * @since 2019/10/29
  */
 public enum ClusterResourceStatus {
-    UNINSTALL("uninstall"),
+    UNINSTALLED("uninstalled"),
     PROCESSING("processing"),
     AVAILABLE("available"),
     DISABLED("disabled");
