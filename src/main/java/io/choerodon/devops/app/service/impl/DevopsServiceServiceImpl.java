@@ -1090,7 +1090,12 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             //更新网络的时候判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
             String filePath = null;
             if (!serviceSagaPayLoad.getCreated()) {
-                filePath = clusterConnectionHandler.handDevopsEnvGitRepository(serviceSagaPayLoad.getProjectId(), serviceSagaPayLoad.getDevopsEnvironmentDTO().getCode(), serviceSagaPayLoad.getDevopsEnvironmentDTO().getEnvIdRsa());
+                filePath = clusterConnectionHandler.handDevopsEnvGitRepository(
+                        serviceSagaPayLoad.getProjectId(),
+                        serviceSagaPayLoad.getDevopsEnvironmentDTO().getCode(),
+                        serviceSagaPayLoad.getDevopsEnvironmentDTO().getEnvIdRsa(),
+                        serviceSagaPayLoad.getDevopsEnvironmentDTO().getType(),
+                        serviceSagaPayLoad.getDevopsEnvironmentDTO().getClusterCode());
             }
             //在gitops库处理instance文件
             ResourceConvertToYamlHandler<V1Service> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
