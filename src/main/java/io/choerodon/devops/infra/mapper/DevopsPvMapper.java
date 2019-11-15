@@ -11,18 +11,20 @@ import io.choerodon.devops.infra.dto.DevopsPvDTO;
 public interface DevopsPvMapper extends Mapper<DevopsPvDTO> {
 
 
-    List<DevopsPvDTO> listPvByOptions(@Param("searchParam") Map<String,Object> searchParamMap,
-                                     @Param("params") List<String> params);
+    List<DevopsPvDTO> listPvByOptions(@Param("organizationId") Long organizationId,
+                                      @Param("searchParam") Map<String, Object> searchParamMap,
+                                      @Param("params") List<String> params);
 
     /**
      * 和cluster表和pvc表做连接查询获取name
      *
      * @return
      */
-    DevopsPvDTO queryById(@Param("pvId")Long pvId);
+    DevopsPvDTO queryById(@Param("pvId") Long pvId);
 
     /**
      * 通过名称与集群id查询PV
+     *
      * @param name
      * @param clusterId
      * @return

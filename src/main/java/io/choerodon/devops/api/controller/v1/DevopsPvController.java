@@ -48,8 +48,8 @@ public class DevopsPvController {
             @ApiIgnore Pageable pageable,
             @ApiParam(value = "模糊搜索参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(devopsPvService.pageByOptions(doPage, pageable, params))
-                .map(target -> new ResponseEntity(target, HttpStatus.OK))
+        return Optional.ofNullable(devopsPvService.pageByOptions(projectId,doPage, pageable, params))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_PV_QUERY));
     }
 
@@ -117,7 +117,7 @@ public class DevopsPvController {
             @ApiParam(value = "pvId", required = true)
             @PathVariable(value = "pv_id")Long pvId){
         return Optional.ofNullable(devopsPvService.queryById(pvId))
-                .map(target -> new ResponseEntity(target, HttpStatus.OK))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() ->new CommonException(ERROR_PV_QUERY));
     }
 
@@ -225,7 +225,7 @@ public class DevopsPvController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "模糊搜索参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(devopsPvService.queryPvcRelatedPv(params))
+        return Optional.ofNullable(devopsPvService.queryPvcRelatedPv(projectId,params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_PV_QUERY));
     }

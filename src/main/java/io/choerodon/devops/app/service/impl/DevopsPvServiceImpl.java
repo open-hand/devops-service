@@ -72,20 +72,22 @@ public class DevopsPvServiceImpl implements DevopsPvService {
     private Gson gson = new Gson();
 
     @Override
-    public PageInfo<DevopsPvDTO> basePagePvByOptions(Boolean doPage, Pageable pageable, String params) {
+    public PageInfo<DevopsPvDTO> basePagePvByOptions(Long projectId, Boolean doPage, Pageable pageable, String params) {
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         // search_param 根据确定的键值对查询
         // params 是遍历字段模糊查询
         Map<String, Object> searchParamMap = TypeUtil.castMapParams(params);
         return PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize())
                 .doSelectPageInfo(() -> devopsPvMapper.listPvByOptions(
+                        projectDTO.getOrganizationId(),
                         TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
                         TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS))
                 ));
     }
 
     @Override
-    public PageInfo<DevopsPvVO> pageByOptions(Boolean doPage, Pageable pageable, String params) {
-        return ConvertUtils.convertPage(basePagePvByOptions(doPage, pageable, params), DevopsPvVO.class);
+    public PageInfo<DevopsPvVO> pageByOptions(Long projectId, Boolean doPage, Pageable pageable, String params) {
+        return ConvertUtils.convertPage(basePagePvByOptions(projectId, doPage, pageable, params), DevopsPvVO.class);
     }
 
     @Override
@@ -492,7 +494,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
     }
 
 
-    private BigDecimal convertResourceToDigits(String resourceString){
+    private BigDecimal convertResourceToDigits(String resourceString) {
         long size = Long.parseLong(resourceString.substring(0, resourceString.length() - 2));
         String unit = resourceString.substring(resourceString.length() - 2);
         int level = ResourceUnitLevelEnum.valueOf(unit.toUpperCase()).ordinal();
@@ -566,10 +568,12 @@ public class DevopsPvServiceImpl implements DevopsPvService {
 
 
     @Override
-    public List<DevopsPvVO> queryPvcRelatedPv(String params) {
+    public List<DevopsPvVO> queryPvcRelatedPv(Long projectId, String params) {
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         Map<String, Object> searchParamMap = TypeUtil.castMapParams(params);
         Map<String, String> map = (Map) searchParamMap.get(TypeUtil.SEARCH_PARAM);
         List<DevopsPvVO> devopsPvVOList = ConvertUtils.convertList(devopsPvMapper.listPvByOptions(
+                projectDTO.getOrganizationId(),
                 TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
                 TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS))), DevopsPvVO.class);
         String pvcStorage = map.get("requestResource");
