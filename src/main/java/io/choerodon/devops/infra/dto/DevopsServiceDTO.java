@@ -34,9 +34,6 @@ public class DevopsServiceDTO extends BaseDTO {
     @ApiModelProperty("目标对象是应用服务下所有实例时，应用服务的id")
     private Long targetAppServiceId;
 
-    @ApiModelProperty("目标对象是应用服务下所有实例时，应用服务的code")
-    private String targetAppServiceCode;
-
     @ApiModelProperty("目标对象是单个实例时，实例code")
     private String targetInstanceCode;
 
@@ -158,13 +155,5 @@ public class DevopsServiceDTO extends BaseDTO {
 
     public void setSelectors(String selectors) {
         this.selectors = selectors;
-    }
-
-    public String getTargetAppServiceCode() {
-        return targetAppServiceCode;
-    }
-
-    public void setTargetAppServiceCode(String targetAppServiceCode) {
-        this.targetAppServiceCode = targetAppServiceCode;
     }
 }

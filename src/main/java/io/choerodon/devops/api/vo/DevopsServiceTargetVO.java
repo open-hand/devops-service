@@ -13,6 +13,8 @@ import io.swagger.annotations.ApiModelProperty;
  */
 public class DevopsServiceTargetVO {
     private List<AppServiceInstanceInfoVO> instances;
+
+    private Long targetAppServiceId;
     /**
      * 是创建网络时所填的标签，也是这个网络本身的选择器
      */
@@ -43,5 +45,13 @@ public class DevopsServiceTargetVO {
 
     public void setEndPoints(Map<String, List<EndPointPortVO>> endPoints) {
         this.endPoints = endPoints;
+    }
+
+    public Long getTargetAppServiceId() {
+        return targetAppServiceId;
+    }
+
+    public void setTargetAppServiceId(Long targetAppServiceId) {
+        this.targetAppServiceId = targetAppServiceId;
     }
 }
