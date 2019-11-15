@@ -27,6 +27,7 @@ const OpCard = ({ index, record, isActive, intlPrefix, prefixCls, formatMessage,
     userImage,
   ] = map(podKeys, (item) => record.get(item));
   const commandId = record.get('commandId');
+  const commandError = record.get('commandError');
   const cardClass = classnames({
     'operation-record-card': true,
     'operation-record-card-active': isActive,
@@ -49,6 +50,11 @@ const OpCard = ({ index, record, isActive, intlPrefix, prefixCls, formatMessage,
               {formatMessage({ id: `${intlPrefix}.active` })}
             </span>
           </div>
+        )}
+        {commandError && status === 'failed' && (
+          <Tooltip title={commandError}>
+            <Icon type="info" className={`${prefixCls}-cases-record-error`} />
+          </Tooltip>
         )}
       </div>
       <div className="operation-record-step">
