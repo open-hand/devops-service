@@ -19,7 +19,7 @@ export default ({ name, errorMessage, describe, buttonData = [], status, classNa
     let color = 'rgba(0, 0, 0, 0.36)';
     let message = '';
     switch (status) {
-      case 'uninstall':
+      case 'uninstalled':
         color = 'rgba(0, 0, 0, 0.36)';
         message = formatMessage({ id: 'not_installed' });
         break;

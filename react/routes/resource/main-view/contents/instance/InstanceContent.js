@@ -27,6 +27,7 @@ const InstanceTitle = ({
   name,
   errorText,
   versionName,
+  formatMessage,
 }) => {
   const podSize = useMemo(() => ({
     width: 22,
@@ -54,7 +55,7 @@ const InstanceTitle = ({
     />
     <span className="c7ncd-page-title-text">{name}</span>
     <span className="c7ncd-page-title-version">
-      ({versionName})
+      ({versionName || (status === 'failed' && formatMessage({ id: 'deploy_failed' }))})
     </span>
   </Fragment>;
 };
@@ -147,7 +148,8 @@ const InstanceContent = observer(() => {
         podRunningCount={podRunningCount}
         podUnlinkCount={podUnlinkCount}
         errorText={error}
-        versionName={versionName || formatMessage({ id: 'deploy_failed' })}
+        versionName={versionName}
+        formatMessage={formatMessage}
       />;
     }
     return null;
