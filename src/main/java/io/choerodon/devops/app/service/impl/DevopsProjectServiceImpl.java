@@ -109,6 +109,7 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
         DevopsProjectDTO oldDevopsProjectDTO = devopsProjectMapper.selectByPrimaryKey(devopsProjectDTO);
         if (oldDevopsProjectDTO == null) {
             try {
+                logger.info("oldDevopsProjectDTO is null");
                 devopsProjectMapper.insertSelective(devopsProjectDTO);
             } catch (Exception e) {
                 logger.info("An exception occurred when inserting into devops_project: {}", JSONObject.toJSONString(devopsProjectDTO));
@@ -121,6 +122,7 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
             }
         } else {
             devopsProjectDTO.setObjectVersionNumber(oldDevopsProjectDTO.getObjectVersionNumber());
+            logger.info("devopsProjectDTO:{}",devopsProjectDTO);
             devopsProjectMapper.updateByPrimaryKeySelective(devopsProjectDTO);
         }
     }
