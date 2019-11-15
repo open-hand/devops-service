@@ -1,18 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 
-import static io.choerodon.devops.infra.constant.GitOpsConstants.*;
-
 import feign.FeignException;
-
-import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
-import io.choerodon.devops.infra.enums.AccessLevel;
-import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.eventhandler.payload.GitlabGroupPayload;
 import io.choerodon.devops.app.service.DevopsProjectService;
@@ -21,14 +10,23 @@ import io.choerodon.devops.app.service.UserAttrService;
 import io.choerodon.devops.infra.dto.DevopsProjectDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.dto.gitlab.GroupDTO;
+import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.enums.AccessLevel;
 import io.choerodon.devops.infra.enums.Visibility;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.util.GitOpsUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
+
+import static io.choerodon.devops.infra.constant.GitOpsConstants.*;
 
 @Service
 public class GitlabGroupServiceImpl implements GitlabGroupService {
@@ -108,16 +106,13 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
         // name: orgName-projectName + suffix
         String name = GitOpsUtil.renderGroupName(gitlabGroupPayload.getOrganizationName(),
                 gitlabGroupPayload.getProjectName(), suffix);
-        LOGGER.info("suffix:{}==========name:{}", suffix, name);
         // path: orgName-projectCode + suffix
         String path = GitOpsUtil.renderGroupPath(gitlabGroupPayload.getOrganizationCode(),
                 gitlabGroupPayload.getProjectCode(), suffix);
-        LOGGER.info("suffix:{}==========path:{}", suffix, path);
         group.setName(name);
         group.setPath(path);
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(gitlabGroupPayload.getUserId());
-        LOGGER.info("suffix:{}==========userGitlabId:{}", suffix, userAttrDTO.getGitlabUserId());
         if (userAttrDTO == null) {
             throw new CommonException("error.gitlab.user.sync.failed");
         }
@@ -126,10 +121,8 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
             groupDTO = gitlabServiceClientOperator.createGroup(group, TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         }
 
-        LOGGER.info("suffix:{}==========groupDTOId:{}", suffix, groupDTO.getId());
 
         DevopsProjectDTO devopsProjectDO = new DevopsProjectDTO(gitlabGroupPayload.getProjectId());
-        LOGGER.info("suffix:{}==========projectId:{}", suffix, gitlabGroupPayload.getProjectId());
         setCertainGroupIdBySuffix(suffix, TypeUtil.objToLong(groupDTO.getId()), devopsProjectDO);
         devopsProjectService.baseUpdate(devopsProjectDO);
     }
@@ -175,10 +168,13 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
         switch (suffix) {
             case APP_SERVICE_SUFFIX:
                 devopsProjectDTO.setDevopsAppGroupId(groupId);
+                break;
             case ENV_GROUP_SUFFIX:
                 devopsProjectDTO.setDevopsEnvGroupId(groupId);
+                break;
             case CLUSTER_ENV_GROUP_SUFFIX:
                 devopsProjectDTO.setDevopsClusterEnvGroupId(groupId);
+                break;
             default:
                 break;
         }
