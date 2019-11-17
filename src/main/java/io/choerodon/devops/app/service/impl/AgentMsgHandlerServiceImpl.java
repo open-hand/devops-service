@@ -945,8 +945,10 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                             break;
                         case PERSISTENT_VOLUME_KIND:
                             syncPersistentVolume(envId, errorDevopsFiles, resourceCommitVO, objects);
+                            break;
                         case PERSISTENT_VOLUME_CLAIM_KIND:
                             syncPersistentVolumeClaim(envId, errorDevopsFiles, resourceCommitVO, objects);
+                            break;
                         default:
                             syncCustom(envId, errorDevopsFiles, resourceCommitVO, objects);
                             break;
