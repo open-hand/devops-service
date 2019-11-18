@@ -39,7 +39,7 @@ export default () => {
       border={false}
       pristine
     >
-      <Column name="name" width={200} />
+      <Column name="name" width={200} sortable />
       {cluster.get('skipCheckProjectPermission') ? null : <Column renderer={renderActions} />}
       <Column name="code" />
     </Table>
