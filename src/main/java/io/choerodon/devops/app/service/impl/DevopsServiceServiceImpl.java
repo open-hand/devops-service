@@ -191,7 +191,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         V1Endpoints v1Endpoints = null;
         if (devopsServiceReqVO.getEndPoints() != null) {
             // 应用服务下不能创建endpoints类型网络
-            if (devopsServiceReqVO.getTargetAppServiceId() != null) {
+            if (devopsServiceReqVO.getAppServiceId() != null) {
                 throw new CommonException("error.app.create.endpoints.service");
             }
             v1Endpoints = initV1EndPoints(devopsServiceReqVO);
@@ -477,11 +477,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         return result;
     }
 
-    private Boolean checkServiceParam(String key) {
-        return key.equals("id") || key.equals("name") || key.equals("status");
-    }
-
-
     @Override
     public List<DevopsServiceDTO> baseListByEnvId(Long envId) {
         DevopsServiceDTO devopsServiceDTO = new DevopsServiceDTO();
@@ -582,47 +577,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     }
 
 
-    /**
-     * 获取实例
-     *
-     * @param devopsServiceReqVO 网络参数
-     * @return String
-     */
-    private String updateServiceInstanceAndGetCode(DevopsServiceReqVO devopsServiceReqVO,
-                                                   List<DevopsServiceInstanceDTO> addDevopsServiceInstanceDTOS,
-                                                   List<String> beforedevopsServiceAppInstanceDTOS) {
-        StringBuilder stringBuffer = new StringBuilder();
-        List<String> appServiceInstances = new ArrayList<>();
-        appServiceInstances.add(devopsServiceReqVO.getTargetInstanceCode());
-        if (appServiceInstances != null) {
-            appServiceInstances.forEach(appServiceInstance -> {
-                AppServiceInstanceDTO appServiceInstanceDTO =
-                        appServiceInstanceService.baseQueryByCodeAndEnv(appServiceInstance, devopsServiceReqVO.getEnvId());
-                //资源视图创建网络类型为选择实例时，需要将网络和实例对应的应用服务相关联
-                if (devopsServiceReqVO.getAppServiceId() == null && appServiceInstanceDTO != null) {
-                    devopsServiceReqVO.setAppServiceId(appServiceInstanceDTO.getAppServiceId());
-                }
-                stringBuffer.append(appServiceInstance).append("+");
-                if (beforedevopsServiceAppInstanceDTOS.contains(appServiceInstance)) {
-                    beforedevopsServiceAppInstanceDTOS.remove(appServiceInstance);
-                    return;
-                }
-                DevopsServiceInstanceDTO devopsServiceInstanceDTO = new DevopsServiceInstanceDTO();
-                if (appServiceInstanceDTO != null) {
-                    devopsServiceInstanceDTO.setInstanceId(appServiceInstanceDTO.getId());
-                }
-                devopsServiceInstanceDTO.setCode(appServiceInstance);
-                addDevopsServiceInstanceDTOS.add(devopsServiceInstanceDTO);
-            });
-        }
-        String instancesCode = stringBuffer.toString();
-        if (instancesCode.endsWith("+")) {
-            return instancesCode.substring(0, stringBuffer.toString().lastIndexOf('+'));
-        }
-        return instancesCode;
-    }
-
-
     private DevopsServiceDTO handlerCreateService(DevopsServiceReqVO devopsServiceReqVO) {
 
         //校验service相关参数
@@ -691,6 +645,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         }.getType()));
         devopsServiceTargetVO.setEndPoints(gson.fromJson(devopsServiceQueryDTO.getEndPoints(), new TypeToken<Map<String, List<EndPointPortVO>>>() {
         }.getType()));
+        devopsServiceTargetVO.setTargetAppServiceId(devopsServiceQueryDTO.getTargetAppServiceId());
         devopsServiceVO.setTarget(devopsServiceTargetVO);
 
         // service的dnsName为${serviceName.namespace}
