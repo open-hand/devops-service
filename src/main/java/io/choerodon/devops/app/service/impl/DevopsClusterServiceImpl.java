@@ -1,23 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.io.InputStream;
-import java.util.*;
-import java.util.stream.Collectors;
-
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO;
@@ -33,6 +17,21 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
 import io.choerodon.devops.infra.util.*;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
+
+import java.io.InputStream;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -138,8 +137,9 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
     @Override
     public void checkCode(Long projectId, String code) {
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         DevopsClusterDTO devopsClusterDTO = new DevopsClusterDTO();
-        devopsClusterDTO.setProjectId(projectId);
+        devopsClusterDTO.setOrganizationId(projectDTO.getOrganizationId());
         devopsClusterDTO.setCode(code);
         baseCheckCode(devopsClusterDTO);
     }
@@ -358,8 +358,8 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         }
 
         checkConnectEnvs(clusterId);
-        if(!ObjectUtils.isEmpty(devopsClusterDTO.getClientId())){
-            baseServiceClientOperator.deleteClient(devopsClusterDTO.getOrganizationId(),devopsClusterDTO.getClientId());
+        if (!ObjectUtils.isEmpty(devopsClusterDTO.getClientId())) {
+            baseServiceClientOperator.deleteClient(devopsClusterDTO.getOrganizationId(), devopsClusterDTO.getClientId());
         }
         baseDelete(clusterId);
 
@@ -521,7 +521,9 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         }
         Set<Long> ownerRoleProjectIds = new HashSet<>();
         projectWithRoleVOS.stream().forEach(v -> {
-            if (CollectionUtils.isEmpty(v.getRoles())) { return;}
+            if (CollectionUtils.isEmpty(v.getRoles())) {
+                return;
+            }
             Set<Long> collect = v.getRoles().stream().filter(role -> projectOwner.equals(role.getCode())).map(RoleVO::getId).collect(Collectors.toSet());
             if (!CollectionUtils.isEmpty(collect)) {
                 ownerRoleProjectIds.add(v.getId());
