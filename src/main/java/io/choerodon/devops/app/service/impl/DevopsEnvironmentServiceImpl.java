@@ -19,6 +19,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.asgard.saga.annotation.Saga;
@@ -1090,13 +1091,18 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         userPayload.setIamProjectId(preEnvironmentDTO.getProjectId());
         userPayload.setIamUserIds(devopsEnvPermissionUpdateVO.getUserIds());
 
+        List<Long> addIamUserIds = devopsEnvPermissionUpdateVO.getUserIds();
         // 判断更新的情况
         if (preEnvironmentDTO.getSkipCheckPermission()) {
             if (devopsEnvPermissionUpdateVO.getSkipCheckPermission()) {
                 return;
             } else {
+                // 待添加的用户列表为空
+                if (CollectionUtils.isEmpty(addIamUserIds)) {
+                    return;
+                }
                 // 添加权限
-                List<IamUserDTO> addIamUsers = baseServiceClientOperator.listUsersByIds(devopsEnvPermissionUpdateVO.getUserIds());
+                List<IamUserDTO> addIamUsers = baseServiceClientOperator.listUsersByIds(addIamUserIds);
                 addIamUsers.forEach(e -> devopsEnvUserPermissionService.baseCreate(new DevopsEnvUserPermissionDTO(e.getLoginName(), e.getId(), e.getRealName(), preEnvironmentDTO.getId(), true)));
 
                 userPayload.setOption(1);
@@ -1117,9 +1123,11 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 preEnvironmentDTO.setObjectVersionNumber(devopsEnvPermissionUpdateVO.getObjectVersionNumber());
                 devopsEnvironmentMapper.updateByPrimaryKeySelective(preEnvironmentDTO);
             } else {
+                // 待添加的用户列表为空
+                if (CollectionUtils.isEmpty(addIamUserIds)) {
+                    return;
+                }
                 // 待添加的用户
-                List<Long> addIamUserIds = devopsEnvPermissionUpdateVO.getUserIds();
-
                 List<Integer> addGitlabUserIds = userAttrService.baseListByUserIds(addIamUserIds)
                         .stream()
                         .map(UserAttrDTO::getGitlabUserId)
