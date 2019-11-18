@@ -291,7 +291,7 @@ function Branch(props) {
     return (
       <div className="c7ncd-tab-table">
         <Table className="c7n-branch-main-table" queryBar="bar" dataSet={tableDs}>
-          <Column name="branchName" renderer={branchNameRenderer} />
+          <Column name="branchName" renderer={branchNameRenderer} sortable />
           <Column align="right" width={60} renderer={actionRender} />
           <Column name="commitContent" className="lasetCommit" width={300} renderer={updateCommitRender} />
           <Column name="createUserRealName" renderer={createUserRender} />

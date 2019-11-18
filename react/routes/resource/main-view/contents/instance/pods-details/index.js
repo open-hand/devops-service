@@ -186,7 +186,7 @@ const PodDetail = memo(() => {
           <Column renderer={renderAction} width="0.7rem" />
           <Column name="containers" renderer={renderContainers} />
           <Column name="ip" width="1.2rem" />
-          <Column name="creationDate" renderer={renderDate} width="1rem" />
+          <Column name="creationDate" sortable renderer={renderDate} width="1rem" />
           <Column name="status" renderer={renderStatus} width="1rem" />
         </Table>
       </div>

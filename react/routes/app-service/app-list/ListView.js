@@ -304,7 +304,7 @@ const ListView = withRouter(observer((props) => {
           <Column name="code" sortable />
           <Column name="type" renderer={renderType} />
           <Column name="repoUrl" renderer={renderUrl} />
-          <Column name="creationDate" renderer={renderDate} />
+          <Column name="creationDate" renderer={renderDate} sortable />
           <Column name="active" renderer={renderStatus} width="0.7rem" align="left" />
         </Table>
       </Content>

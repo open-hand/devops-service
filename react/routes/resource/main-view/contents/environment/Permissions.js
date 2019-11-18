@@ -62,11 +62,11 @@ export default function Permissions() {
         queryBar="bar"
         pristine
       >
-        <Column name="realName" />
+        <Column name="realName" sortable />
         {getActionColumn()}
         <Column name="loginName" />
-        <Column name="role" renderer={renderRole} />
-        <Column name="creationDate" renderer={renderDate} />
+        <Column name="role" renderer={renderRole} sortable />
+        <Column name="creationDate" renderer={renderDate} sortable />
       </Table>
     </div>
   );

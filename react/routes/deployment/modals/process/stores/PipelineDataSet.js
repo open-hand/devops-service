@@ -16,5 +16,7 @@ export default ((intlPrefix, formatMessage, projectId) => ({
     { name: 'createUserUrl', type: 'string' },
     { name: 'id', type: 'number' },
   ],
-  queryFields: [],
+  queryFields: [
+    { name: 'name', type: 'string', label: formatMessage({ id: `${intlPrefix}.pipeline.name` }) },
+  ],
 }));
