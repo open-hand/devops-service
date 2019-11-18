@@ -645,7 +645,11 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         }.getType()));
         devopsServiceTargetVO.setEndPoints(gson.fromJson(devopsServiceQueryDTO.getEndPoints(), new TypeToken<Map<String, List<EndPointPortVO>>>() {
         }.getType()));
-        devopsServiceTargetVO.setTargetAppServiceId(devopsServiceQueryDTO.getTargetAppServiceId());
+        if (devopsServiceQueryDTO.getTargetAppServiceId() != null) {
+            devopsServiceTargetVO.setTargetAppServiceId(devopsServiceQueryDTO.getTargetAppServiceId());
+            AppServiceDTO appServiceDTO = applicationService.baseQuery(devopsServiceQueryDTO.getTargetAppServiceId());
+            devopsServiceTargetVO.setTargetAppServiceName(appServiceDTO.getName());
+        }
         devopsServiceVO.setTarget(devopsServiceTargetVO);
 
         // service的dnsName为${serviceName.namespace}

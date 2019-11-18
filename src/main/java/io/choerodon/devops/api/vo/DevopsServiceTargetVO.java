@@ -15,6 +15,7 @@ public class DevopsServiceTargetVO {
     private List<AppServiceInstanceInfoVO> instances;
 
     private Long targetAppServiceId;
+    private String targetAppServiceName;
     /**
      * 是创建网络时所填的标签，也是这个网络本身的选择器
      */
@@ -53,5 +54,13 @@ public class DevopsServiceTargetVO {
 
     public void setTargetAppServiceId(Long targetAppServiceId) {
         this.targetAppServiceId = targetAppServiceId;
+    }
+
+    public String getTargetAppServiceName() {
+        return targetAppServiceName;
+    }
+
+    public void setTargetAppServiceName(String targetAppServiceName) {
+        this.targetAppServiceName = targetAppServiceName;
     }
 }
