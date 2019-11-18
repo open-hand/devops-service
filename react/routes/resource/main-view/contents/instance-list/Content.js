@@ -80,9 +80,9 @@ const Content = observer(() => {
         border={false}
         queryBar="bar"
       >
-        <Column name="code" renderer={renderName} />
+        <Column name="code" renderer={renderName} sortable />
         <Column name="versionName" renderer={renderVersion} />
-        <Column name="appServiceName" renderer={renderAppName} />
+        <Column name="appServiceName" renderer={renderAppName} sortable />
         <Column renderer={renderPods} width="1rem" header={formatMessage({ id: `${intlPrefix}.instance.pod.status` })} />
       </Table>
     </div>

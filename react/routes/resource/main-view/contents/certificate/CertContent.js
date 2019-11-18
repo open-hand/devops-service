@@ -125,7 +125,7 @@ const CertContent = observer(() => {
         border={false}
         queryBar="bar"
       >
-        <Column name="certName" renderer={renderName} />
+        <Column name="certName" renderer={renderName} sortable />
         <Column renderer={renderAction} width="0.7rem" />
         <Column name="domains" renderer={renderDomains} />
         <Column renderer={renderValid} header={formatMessage({ id: 'validDate' })} width="1rem" />

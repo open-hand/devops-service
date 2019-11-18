@@ -1,5 +1,3 @@
-import getTablePostData from '../../../../../../utils/getTablePostData';
-
 export default ({ formatMessage }) => ({
   selection: false,
   pageSize: 10,
@@ -12,5 +10,7 @@ export default ({ formatMessage }) => ({
     { name: 'commandStatus', type: 'string' },
     { name: 'lastUpdateDate', type: 'string', label: formatMessage({ id: 'updateDate' }) },
   ],
-  queryFields: [],
+  queryFields: [
+    { name: 'name', type: 'string', label: formatMessage({ id: 'name' }) },
+  ],
 });

@@ -114,10 +114,10 @@ const pvcContent = observer((props) => {
         border={false}
         queryBar="bar"
       >
-        <Column name="name" renderer={renderName} />
+        <Column name="name" renderer={renderName} sortable />
         <Column renderer={renderAction} width={70} />
         <Column name="pvName" />
-        <Column name="accessModes" />
+        <Column name="accessModes" sortable />
         <Column name="requestResource" />
       </Table>
     </div>
