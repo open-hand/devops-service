@@ -116,7 +116,7 @@ const NetworkContent = observer(() => {
         <div className="net-target-item" key={key}>
           <span>{key}</span>=<span>{value}</span>
         </div>,
-      ),);
+      ));
     }
     if (endPoints) {
       const targetIps = _.split(_.keys(endPoints)[0], ',');
@@ -125,7 +125,7 @@ const NetworkContent = observer(() => {
         <div className="net-target-item" key={index}>
           <span>{item}</span>
         </div>,
-      ),);
+      ));
       _.map(portList, (item, index) => {
         port.push(
           <div className="net-target-item" key={index}>
@@ -300,7 +300,7 @@ const NetworkContent = observer(() => {
         border={false}
         queryBar="bar"
       >
-        <Column name="name" renderer={renderName} />
+        <Column name="name" renderer={renderName} sortable />
         <Column renderer={renderAction} width="0.7rem" />
         <Column renderer={renderTargetType} header={formatMessage({ id: `${intlPrefix}.application.net.targetType` })} width="1.2rem" />
         <Column renderer={renderTarget} header={formatMessage({ id: `${intlPrefix}.application.net.target` })} />

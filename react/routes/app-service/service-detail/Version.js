@@ -54,7 +54,7 @@ const Version = () => {
       <Content className={`${prefixCls}-detail-content`}>
         <Table dataSet={versionDs}>
           <Column name="version" sortable />
-          <Column name="creationDate" renderer={renderTime} />
+          <Column name="creationDate" renderer={renderTime} sortable />
         </Table>
       </Content>
     </TabPage>

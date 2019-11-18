@@ -121,10 +121,10 @@ const Cipher = observer(() => {
           border={false}
           queryBar="bar"
         >
-          <Column name="name" header={formatMessage({ id: `${intlPrefix}.application.tabs.cipher` })} renderer={renderName} />
+          <Column sortable name="name" header={formatMessage({ id: `${intlPrefix}.application.tabs.cipher` })} renderer={renderName} />
           <Column renderer={renderAction} width="0.7rem" />
           <Column name="key" renderer={renderKey} />
-          <Column name="lastUpdateDate" renderer={renderDate} width="1rem" />
+          <Column sortable name="lastUpdateDate" renderer={renderDate} width="1rem" />
         </Table>
       </div>
     </div>

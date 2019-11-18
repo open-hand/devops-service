@@ -31,5 +31,9 @@ export default ({ formatMessage, intlPrefix, projectId, envId }) => ({
     { name: 'error', type: 'string' },
     { name: 'projectId', type: 'number' },
   ],
-  queryFields: [],
+  queryFields: [
+    { name: 'code', type: 'string', label: formatMessage({ id: `${intlPrefix}.instance.name` }) },
+    { name: 'appServiceName', type: 'string', label: formatMessage({ id: 'appService' }) },
+    { name: 'versionName', type: 'string', label: formatMessage({ id: 'version' }) },
+  ],
 });

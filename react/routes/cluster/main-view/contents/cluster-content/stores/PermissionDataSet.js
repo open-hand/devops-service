@@ -42,5 +42,16 @@ export default ({ formatMessage, projectId, id, skipCheckProjectPermission }) =>
       textField: 'name',
     },
   ],
-  queryFields: [],
+  queryFields: [
+    {
+      name: 'name',
+      type: 'string',
+      label: formatMessage({ id: 'cluster.project.name' }),
+    },
+    {
+      name: 'code',
+      type: 'string',
+      label: formatMessage({ id: 'cluster.project.code' }),
+    },
+  ],
 });

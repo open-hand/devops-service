@@ -153,11 +153,11 @@ export default function DeployConfig() {
     >
       <Column name="name" sortable renderer={renderName} />
       {!disabled && <Column renderer={renderActions} width={70} />}
-      <Column name="description" sortable renderer={renderDescription} />
-      <Column name="appServiceName" />
-      <Column name="envName" />
+      <Column name="description" renderer={renderDescription} />
+      <Column name="appServiceName" sortable />
+      <Column name="envName" sortable />
       <Column name="createUserRealName" renderer={renderUser} />
-      <Column name="lastUpdateDate" renderer={renderDate} />
+      <Column name="lastUpdateDate" renderer={renderDate} sortable />
     </Table>
   </div>);
 }
