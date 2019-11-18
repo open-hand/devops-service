@@ -98,7 +98,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     public void createCertManager(Long clusterId) {
         DevopsClusterResourceDTO devopsClusterResourceDTO1 = queryByClusterIdAndType(clusterId, ClusterResourceType.CERTMANAGER.getType());
         if (!ObjectUtils.isEmpty(devopsClusterResourceDTO1)) {
-           throw  new CommonException("error.create.cert.manager.exist");
+            throw new CommonException("error.create.cert.manager.exist");
         }
         DevopsClusterResourceDTO devopsClusterResourceDTO = new DevopsClusterResourceDTO();
         devopsClusterResourceDTO.setType(ClusterResourceType.CERTMANAGER.getType());
@@ -519,14 +519,16 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     @Override
     public void deletePvc(Long clusterId) {
         DevopsClusterResourceDTO devopsClusterResourceDTO = queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
-        DevopsPrometheusDTO devopsPrometheusDTO = devopsPrometheusMapper.selectByPrimaryKey(devopsClusterResourceDTO.getConfigId());
-        DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
-        // 查询pvcId,并调用删除pvc的方法
-        List<Long> pvcIds = JSON.parseArray(devopsPrometheusDTO.getPvcId(), Long.class);
-        if (!CollectionUtils.isEmpty(pvcIds)) {
-            // 删除pvc
-            for (Long pvcId : pvcIds) {
-                devopsPvcService.delete(devopsClusterDTO.getSystemEnvId(), pvcId);
+        if (devopsClusterResourceDTO != null) {
+            DevopsPrometheusDTO devopsPrometheusDTO = devopsPrometheusMapper.selectByPrimaryKey(devopsClusterResourceDTO.getConfigId());
+            DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
+            // 查询pvcId,并调用删除pvc的方法
+            List<Long> pvcIds = JSON.parseArray(devopsPrometheusDTO.getPvcId(), Long.class);
+            if (!CollectionUtils.isEmpty(pvcIds)) {
+                // 删除pvc
+                for (Long pvcId : pvcIds) {
+                    devopsPvcService.delete(devopsClusterDTO.getSystemEnvId(), pvcId);
+                }
             }
         }
     }
