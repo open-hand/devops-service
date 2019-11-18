@@ -2,6 +2,8 @@ import React, { createContext, useContext, useEffect, useMemo } from 'react';
 import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
 import { DataSet } from 'choerodon-ui/pro';
+import { withRouter } from 'react-router-dom';
+
 import map from 'lodash/map';
 import ListDataSet from './ListDataSet';
 import DetailDataSet from './DetailDataSet';
@@ -16,12 +18,13 @@ export function useDeployStore() {
   return useContext(Store);
 }
 
-export const StoreProvider = injectIntl(inject('AppState')(
+export const StoreProvider = withRouter(injectIntl(inject('AppState')(
   (props) => {
     const {
       AppState: { currentMenuType: { projectId } },
       intl: { formatMessage },
       children,
+      location: { state },
     } = props;
     const intlPrefix = 'c7ncd.deploy';
     const deployTypeDs = useMemo(() => new DataSet({
@@ -55,6 +58,12 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const detailDs = useMemo(() => new DataSet(DetailDataSet()), []);
 
     useEffect(() => {
+      if (state && state.pipelineId) {
+        listDs.queryDataSet.getField('pipelineId').set('defaultValue', state.pipelineId);
+      }
+    }, []);
+
+    useEffect(() => {
       envOptionsDs.transport.read.url = `/devops/v1/projects/${projectId}/envs/list_by_active?active=true`;
       pipelineOptionsDs.transport.read.url = `/devops/v1/projects/${projectId}/pipeline/list_all`;
       envOptionsDs.query();
@@ -86,4 +95,4 @@ export const StoreProvider = injectIntl(inject('AppState')(
       </Store.Provider>
     );
   },
-));
+)));
