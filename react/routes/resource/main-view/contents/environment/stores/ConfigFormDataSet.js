@@ -42,6 +42,7 @@ export default ({ formatMessage, intlPrefix, projectId, store }) => {
       type: 'string',
       required: true,
       label: '描述',
+      maxLength: 200,
     }, {
       name: 'appServiceId',
       type: 'number',
