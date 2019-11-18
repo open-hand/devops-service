@@ -1515,11 +1515,11 @@ public class AppServiceServiceImpl implements AppServiceService {
         Long memberRoleId = baseServiceClientOperator.queryRoleIdByCode(PROJECT_MEMBER);
         List<DevopsUserPermissionVO> allProjectMembers = ConvertUtils.convertList(
                 baseServiceClientOperator.pagingQueryUsersByRoleIdOnProjectLevel(
-                        PageRequest.of(0,1), roleAssignmentSearchVO, memberRoleId, projectId, false).getList(), iamUserDTO -> iamUserTOUserPermissionVO(iamUserDTO, MEMBER, appServiceDTO.getCreationDate()));
+                        PageRequest.of(0, 1), roleAssignmentSearchVO, memberRoleId, projectId, false).getList(), iamUserDTO -> iamUserTOUserPermissionVO(iamUserDTO, MEMBER, appServiceDTO.getCreationDate()));
         // 获取项目下所有的项目所有者
         Long ownerId = baseServiceClientOperator.queryRoleIdByCode(PROJECT_OWNER);
         List<DevopsUserPermissionVO> allProjectOwners = ConvertUtils.convertList(
-                baseServiceClientOperator.pagingQueryUsersByRoleIdOnProjectLevel(PageRequest.of(0,1), roleAssignmentSearchVO, ownerId, projectId, false).getList(), iamUserDTO -> iamUserTOUserPermissionVO(iamUserDTO, OWNER, appServiceDTO.getCreationDate()));
+                baseServiceClientOperator.pagingQueryUsersByRoleIdOnProjectLevel(PageRequest.of(0, 1), roleAssignmentSearchVO, ownerId, projectId, false).getList(), iamUserDTO -> iamUserTOUserPermissionVO(iamUserDTO, OWNER, appServiceDTO.getCreationDate()));
 
         if (!appServiceDTO.getSkipCheckPermission()) {
             List<AppServiceUserRelDTO> userPermissionDTOS = appServiceUserRelMapper.listAllUserPermissionByAppId(appServiceId);
@@ -1557,14 +1557,14 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         // 根据参数搜索所有的项目成员
         Long memberRoleId = baseServiceClientOperator.queryRoleIdByCode(PROJECT_MEMBER);
-        PageInfo<IamUserDTO> allProjectMembers = baseServiceClientOperator.pagingQueryUsersByRoleIdOnProjectLevel(PageRequest.of(0,1), roleAssignmentSearchVO, memberRoleId, projectId, false);
+        PageInfo<IamUserDTO> allProjectMembers = baseServiceClientOperator.pagingQueryUsersByRoleIdOnProjectLevel(PageRequest.of(0, 1), roleAssignmentSearchVO, memberRoleId, projectId, false);
         if (allProjectMembers.getList().isEmpty()) {
             return Collections.emptyList();
         }
         // 获取项目下所有的项目所有者
         Long ownerId = baseServiceClientOperator.queryRoleIdByCode(PROJECT_OWNER);
         List<Long> allProjectOwnerIds = baseServiceClientOperator.pagingQueryUsersByRoleIdOnProjectLevel(
-                PageRequest.of(0,1), roleAssignmentSearchVO, ownerId, projectId, false)
+                PageRequest.of(0, 1), roleAssignmentSearchVO, ownerId, projectId, false)
                 .getList()
                 .stream()
                 .map(IamUserDTO::getId)
@@ -1595,6 +1595,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         //原先是否跳过权限检查
         boolean skip = appServiceDTO.getSkipCheckPermission();
+        List<Long> userIds = applicationPermissionVO.getUserIds();
         if (skip) {
             if (applicationPermissionVO.getSkipCheckPermission()) {
                 //原来跳过权限检查，现在也跳过权限检查
@@ -1604,9 +1605,12 @@ public class AppServiceServiceImpl implements AppServiceService {
                 appServiceDTO.setId(appServiceId);
                 appServiceDTO.setSkipCheckPermission(false);
                 appServiceMapper.updateByPrimaryKeySelective(appServiceDTO);
-                if (!CollectionUtils.isEmpty(applicationPermissionVO.getUserIds())) {
-                    applicationPermissionVO.getUserIds().stream().filter(Objects::nonNull).forEach(u -> appServiceUserPermissionService.baseCreate(u, appServiceId));
+                // 不添加成员
+                if (CollectionUtils.isEmpty(userIds)) {
+                    return;
                 }
+                applicationPermissionVO.getUserIds().stream().filter(Objects::nonNull)
+                        .forEach(u -> appServiceUserPermissionService.baseCreate(u, appServiceId));
                 devOpsUserPayload.setIamUserIds(applicationPermissionVO.getUserIds());
                 devOpsUserPayload.setOption(1);
             }
@@ -1619,10 +1623,14 @@ public class AppServiceServiceImpl implements AppServiceService {
                 appServiceUserPermissionService.baseDeleteByAppServiceId(appServiceId);
                 devOpsUserPayload.setOption(2);
             } else {
-                //原来不跳过权限检查，现在也不跳过权限检查，新增用户权限
-                if (!CollectionUtils.isEmpty(applicationPermissionVO.getUserIds())) {
-                    applicationPermissionVO.getUserIds().stream().filter(Objects::nonNull).forEach(u -> appServiceUserPermissionService.baseCreate(u, appServiceId));
+                // 不添加成员
+                if (CollectionUtils.isEmpty(userIds)) {
+                    return;
                 }
+                //原来不跳过权限检查，现在也不跳过权限检查，新增用户权限
+                applicationPermissionVO.getUserIds().stream().filter(Objects::nonNull)
+                        .forEach(u -> appServiceUserPermissionService.baseCreate(u, appServiceId));
+
                 devOpsUserPayload.setIamUserIds(applicationPermissionVO.getUserIds());
                 devOpsUserPayload.setOption(3);
             }
@@ -2373,7 +2381,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     @Override
     public List<ProjectVO> listProjectByShare(Long projectId, Boolean share) {
-        PageInfo<AppServiceGroupInfoVO> appServiceGroupInfoVOPageInfo = pageAppServiceByMode(projectId, share, null, null, PageRequest.of(0,1));
+        PageInfo<AppServiceGroupInfoVO> appServiceGroupInfoVOPageInfo = pageAppServiceByMode(projectId, share, null, null, PageRequest.of(0, 1));
         List<AppServiceGroupInfoVO> list = appServiceGroupInfoVOPageInfo.getList();
         List<ProjectVO> projectVOS = new ArrayList<>();
         if (CollectionUtils.isEmpty(list)) {
