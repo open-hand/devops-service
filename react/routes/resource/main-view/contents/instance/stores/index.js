@@ -33,7 +33,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
       intlPrefix,
       treeDs,
     } = useResourceStore();
-    const istStore = useStore();
+    const istStore = useStore({ defaultKey: getViewType === 'instance' ? 'cases' : 'details' });
 
     const tabs = useMemo(() => ({
       CASES_TAB: 'cases',
