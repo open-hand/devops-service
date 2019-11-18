@@ -171,7 +171,7 @@ const Deployment = withRouter(observer((props) => {
       title: formatMessage({ id: `${intlPrefix}.manual` }),
       children: <Deploy
         deployStore={deployStore}
-        refresh={refresh}
+        refresh={deployAfter}
         intlPrefix={intlPrefix}
         prefixCls={prefixCls}
       />,
@@ -201,6 +201,22 @@ const Deployment = withRouter(observer((props) => {
       });
     }
     history.push(`/devops/resource${search}`);
+  }
+
+  function deployAfter(instance) {
+    const { history, location: { search } } = props;
+
+    if (!instance) history.push(`/devops/resource${search}`);
+
+    history.push({
+      pathname: '/devops/resource',
+      search,
+      state: {
+        instanceId: instance.id,
+        appServiceId: instance.appServiceId,
+        envId: instance.envId,
+      },
+    });
   }
 
   function renderNumber({ value, record }) {
