@@ -63,6 +63,7 @@ const Deployment = withRouter(observer((props) => {
       openDetail(newDeployId, 'auto');
     }
   }, []);
+  
 
   function refresh() {
     envOptionsDs.query();

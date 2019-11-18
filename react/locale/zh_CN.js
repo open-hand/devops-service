@@ -2429,6 +2429,7 @@ const zhCN = {
   'pipeline.header.edit': '修改流水线',
   'pipeline.header.detail': '流水线详情',
   'pipeline.record': '流水线执行记录总览',
+  'pipeline.all.record': '查看执行记录',
   'pipeline.trigger': '触发方式',
   'pipeline.trigger.tip':
     '选择自动触发后，整条流水线会在满足条件后自动执行，但自动触发流水线中阶段一里的任务一不能设置为人工卡点；选择人工触发后，需指定审核人员手动触发该流水线',

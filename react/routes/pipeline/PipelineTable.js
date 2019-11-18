@@ -147,6 +147,19 @@ const PiplelineTable = withRouter(observer((props) => {
     linkToEdit(id);
   }
 
+  function gotoRecord(id, name) {
+    if (id) {
+      history.push({
+        pathname: '/devops/deployment-operation',
+        search,
+        state: {
+          pipelineId: id,
+          pipelineName: name,
+        },
+      });
+    }
+  }
+
   /**
    * 跳转到创建页面
    */
@@ -200,6 +213,11 @@ const PiplelineTable = withRouter(observer((props) => {
         service: ['devops-service.pipeline.delete'],
         text: formatMessage({ id: 'delete' }),
         action: deletePipeline.bind(this, id, itemName),
+      },
+      record: {
+        service: [],
+        text: formatMessage({ id: 'pipeline.all.record' }),
+        action: gotoRecord.bind(this, id, itemName),
       },
     };
 
