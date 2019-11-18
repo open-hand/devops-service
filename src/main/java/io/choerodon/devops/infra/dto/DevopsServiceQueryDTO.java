@@ -31,6 +31,7 @@ public class DevopsServiceQueryDTO extends BaseDTO {
     private String commandType;
     private String commandStatus;
     private String error;
+    private Long targetAppServiceId;
 
     public Long getId() {
         return id;
@@ -206,5 +207,13 @@ public class DevopsServiceQueryDTO extends BaseDTO {
 
     public void setError(String error) {
         this.error = error;
+    }
+
+    public Long getTargetAppServiceId() {
+        return targetAppServiceId;
+    }
+
+    public void setTargetAppServiceId(Long targetAppServiceId) {
+        this.targetAppServiceId = targetAppServiceId;
     }
 }
