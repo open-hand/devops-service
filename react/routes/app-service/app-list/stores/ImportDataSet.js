@@ -71,22 +71,26 @@ export default ((intlPrefix, formatMessage, projectId, selectedDs) => {
           record.getField('accessToken').set('required', false);
           break;
         case 'github':
+          record.getField('repositoryUrl').set('label', formatMessage({ id: `${intlPrefix}.url.github` }));
           handleRequired(record, true);
           record.getField('accessToken').set('required', false);
-          record.get('repositoryUrl') && record.set('repositoryUrl', null);
+          if (record.get('repositoryUrl') || !record.getField('repositoryUrl').isValid()) {
+            record.set('repositoryUrl', null);
+          }
           if (record.get('isTemplate')) {
             record.getField('githubTemplate').fetchLookup();
             record.get('githubTemplate') && record.set('repositoryUrl', record.get('githubTemplate'));
           }
-          record.getField('repositoryUrl').set('label', formatMessage({ id: `${intlPrefix}.url.github` }));
           record.getField('name').set('validator', checkName);
           record.getField('code').set('validator', checkCode);
           break;
         case 'gitlab':
-          record.get('repositoryUrl') && record.set('repositoryUrl', null);
-          handleRequired(record, true);
-          record.getField('accessToken').set('required', true);
           record.getField('repositoryUrl').set('label', formatMessage({ id: `${intlPrefix}.url.gitlab` }));
+          handleRequired(record, true);
+          if (record.get('repositoryUrl') || !record.getField('repositoryUrl').isValid()) {
+            record.set('repositoryUrl', null);
+          }
+          record.getField('accessToken').set('required', true);
           record.getField('name').set('validator', checkName);
           record.getField('code').set('validator', checkCode);
           break;

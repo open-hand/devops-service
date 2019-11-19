@@ -936,8 +936,12 @@ public class PipelineServiceImpl implements PipelineService {
                 pipelineStageService.baseDelete(t.getId());
                 updateUserRel(null, null, t.getId(), null);
                 pipelineTaskService.baseQueryTaskByStageId(t.getId()).forEach(taskE -> {
-                    pipelineTaskRecordService.baseDeleteRecordById(taskE.getId());
-                    updateUserRel(null, null, null, taskE.getId());
+                    pipelineTaskService.baseDeleteTaskById(taskE.getId());
+                    if (taskE.getType().equals(MANUAL)) {
+                        updateUserRel(null, null, null, taskE.getId());
+                    } else {
+                        pipelineAppDeployService.baseDeleteById(taskE.getAppServiceDeployId());
+                    }
                 });
             }
         });
