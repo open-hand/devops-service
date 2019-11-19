@@ -49,7 +49,7 @@ public interface AgentCommandService {
 
     void startDescribeConnection(String key, DescribeResourceVO describeResourceVO, Long clusterId);
 
-    void deletePod(DevopsEnvPodDTO devopsEnvPodDTO);
+    void deletePod(String podName, String namespace, Long clusterId);
 
     void unloadCertManager(Long clusterId);
 }
