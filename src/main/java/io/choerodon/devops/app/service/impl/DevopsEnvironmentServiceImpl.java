@@ -64,7 +64,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
      * 集群对应的环境name clusterName-env
      */
     private static final String SYSTEM_ENV_NAME = "%s-env";
-    private static final String CLUSTER_ENV_CODE_FORMAT="choerodon_%s";
+    private static final String CLUSTER_ENV_CODE_FORMAT="choerodon-cluster-%s";
 
     private static final Gson gson = new Gson();
     private static final String MEMBER = "member";
