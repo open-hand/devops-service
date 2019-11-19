@@ -4,7 +4,7 @@ import { observer } from 'mobx-react-lite';
 import { FormattedMessage } from 'react-intl';
 import { withRouter, Link } from 'react-router-dom';
 import { Page, Content, Header, Permission, Action, Breadcrumb, Choerodon } from '@choerodon/boot';
-import { Button } from 'choerodon-ui';
+import { Button, Spin } from 'choerodon-ui';
 import pick from 'lodash/pick';
 import TimePopover from '../../../components/timePopover';
 import { useAppTopStore } from '../stores';
@@ -28,6 +28,8 @@ const modalStyle1 = {
 const modalStyle2 = {
   width: 'calc(100vw - 3.52rem)',
 };
+
+let stopModal;
 
 const ListView = withRouter(observer((props) => {
   const {
@@ -122,7 +124,7 @@ const ListView = withRouter(observer((props) => {
       stop: {
         service: ['devops-service.app-service.updateActive'],
         text: formatMessage({ id: 'stop' }),
-        action: () => changeActive(false),
+        action: openStop.bind(this, record),
       },
       run: {
         service: ['devops-service.app-service.updateActive'],
@@ -254,6 +256,31 @@ const ListView = withRouter(observer((props) => {
       return false;
     }
   }
+
+  function openStop(record) {
+    stopModal = Modal.open({
+      key: modalKey3,
+      title: '正在校验',
+      children: <Spin />,
+      okCancel: false,
+      okText: formatMessage({ id: 'cancel' }),
+    });
+    checkPermission();
+  }
+
+  async function checkPermission(params) {
+    setTimeout(() => {
+      stopModal.update({
+        title: formatMessage({ id: `${intlPrefix}.stop` }, { name: listDs.current.get('name') }),
+        children: <FormattedMessage id={`${intlPrefix}.stop.tips`} />,
+        okCancel: true,
+        onOk: () => handleChangeActive(true),
+        okText: formatMessage({ id: 'stop' }),
+      });
+    }, 2000);
+    return true;
+  }
+
 
   function getHeader() {
     return <Header title={<FormattedMessage id="app.head" />}>
