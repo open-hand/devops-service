@@ -97,6 +97,11 @@ public class HandlerPersistentVolumeServiceImpl implements HandlerObjectFileRela
                 DevopsPvReqVO devopsPvReqVO = constructPv(
                         pv,
                         envId, "update");
+
+                if (!Objects.equals(devopsPvDTO.getRequestResource(), devopsPvReqVO.getRequestResource())) {
+                    GitOpsUtil.throwCapacityChangeException(filePath, devopsPvReqVO.getName());
+                }
+
                 boolean isNotChange = isIdentical(devopsPvDTO, devopsPvReqVO);
                 DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsPvDTO.getCommandId());
                 devopsPvReqVO.setId(devopsPvDTO.getId());
@@ -128,8 +133,8 @@ public class HandlerPersistentVolumeServiceImpl implements HandlerObjectFileRela
     private boolean isIdentical(DevopsPvDTO dbRecord, DevopsPvReqVO update) {
         return Objects.equals(dbRecord.getAccessModes(), update.getAccessModes())
                 && Objects.equals(dbRecord.getRequestResource(), update.getRequestResource())
-                && Objects.equals(dbRecord.getType(), update.getType());
-        // TODO 比较配置
+                && Objects.equals(dbRecord.getType(), update.getType())
+                && Objects.equals(dbRecord.getValueConfig(), update.getValueConfig());
     }
 
     private void addPersistentVolumes(Map<String, String> objectPath, Long envId, List<V1PersistentVolume> pvs, String path, Long userId) {
