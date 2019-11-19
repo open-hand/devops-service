@@ -391,4 +391,9 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     public ResponseEntity<String> getAdminToken() {
         return null;
     }
+
+    @Override
+    public ResponseEntity<GitLabUserDTO> queryAdminUser() {
+        throw new CommonException("error.gitlab.admin.id.query");
+    }
 }
