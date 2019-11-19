@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { observer } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
 import { Action, Choerodon } from '@choerodon/boot';
-import { Modal } from 'choerodon-ui/pro';
+import { Modal, Spin } from 'choerodon-ui/pro';
 import { handlePromptError } from '../../../../../utils';
 import eventStopProp from '../../../../../utils/eventStopProp';
 import TreeItemName from '../../../../../components/treeitem-name';
@@ -44,33 +44,75 @@ function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
     }
   }
 
-  function openDelete() {
+  async function openDelete() {
     const name = record.get('name');
-    Modal.open({
+    const deleteModal = Modal.open({
       key: deleteKey,
       title: formatMessage({ id: `${intlPrefix}.delete.title` }, { name }),
-      children: formatMessage({ id: `${intlPrefix}.delete.des` }),
-      okText: formatMessage({ id: 'delete' }),
-      okProps: { color: 'red' },
-      cancelProps: { color: 'dark' },
-      onOk: handleDelete,
+      children: <Spin />,
+      okCancel: false,
+      okText: formatMessage({ id: 'iknow' }),
+    });
+    const res = await checkStatus();
+    if (res) {
+      deleteModal.update({
+        children: formatMessage({ id: `${intlPrefix}.delete.des` }),
+        okText: formatMessage({ id: 'delete' }),
+        okProps: { color: 'red' },
+        cancelProps: { color: 'dark' },
+        okCancel: true,
+        onOk: handleDelete,
+      });
+    } else {
+      deleteModal.update({
+        children: formatMessage({ id: `${intlPrefix}.status.change` }),
+        onOk: refresh,
+      });
+    }
+  }
+
+  function checkStatus() {
+    const envId = record.get('id');
+    const status = getStatusInRecord();
+    const oldStatus = getEnvStatus(status);
+    return new Promise((resolve) => {
+      mainStore.checkStatus(projectId, envId).then((res) => {
+        if (handlePromptError(res)) {
+          const newStatus = getEnvStatus(res);
+          resolve(newStatus === oldStatus);
+        }
+      });
     });
   }
 
-  function openModifyModal() {
-    Modal.open({
+  async function openModifyModal() {
+    const modifyModal = Modal.open({
       key: formKey,
       title: formatMessage({ id: `${intlPrefix}.modify` }),
-      children: <EnvModifyForm
-        intlPrefix={intlPrefix}
-        refresh={refresh}
-        record={record}
-        store={envStore}
-      />,
-      drawer: true,
       style: modalStyle,
-      okText: formatMessage({ id: 'save' }),
+      children: <Spin />,
+      drawer: true,
+      okCancel: false,
+      okText: formatMessage({ id: 'iknow' }),
     });
+    const res = await checkStatus();
+    if (res) {
+      modifyModal.update({
+        okCancel: true,
+        children: <EnvModifyForm
+          intlPrefix={intlPrefix}
+          refresh={refresh}
+          record={record}
+          store={envStore}
+        />,
+        okText: formatMessage({ id: 'save' }),
+      });
+    } else {
+      modifyModal.update({
+        children: formatMessage({ id: `${intlPrefix}.status.change` }),
+        onOk: refresh,
+      });
+    }
   }
 
   async function handleEffect(target) {
@@ -88,38 +130,36 @@ function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
   }
 
   async function openEffectModal() {
-    let children;
-    let title;
-    let disabled = true;
     const envId = record.get('id');
-    try {
-      const res = await mainStore.checkEffect(projectId, envId);
-      if (handlePromptError(res)) {
-        title = '确认停用';
-        children = '当你点击确认后，该环境将被停用！';
-        disabled = false;
-      } else {
-        title = '不可停用';
-        children = '该环境下已有实例，且此环境正在运行中，无法停用！';
-      }
-    } catch (e) {
-      title = '出错了';
-      children = '请稍后重试。';
-      Choerodon.handleResponseError(e);
-    }
-
-    Modal.open({
-      movable: false,
-      closable: false,
-      header: true,
+    const name = record.get('name');
+    const effectModal = Modal.open({
       key: effectKey,
-      title,
-      children,
-      onOk: () => handleEffect(false),
-      okProps: {
-        disabled,
-      },
+      title: formatMessage({ id: `${intlPrefix}.stop.title` }, { name }),
+      children: <Spin />,
+      okCancel: false,
+      okText: formatMessage({ id: 'iknow' }),
     });
+    const res = await checkStatus();
+    if (res) {
+      const result = await mainStore.checkEffect(projectId, envId);
+      if (handlePromptError(result)) {
+        effectModal.update({
+          children: formatMessage({ id: `${intlPrefix}.stop.des` }),
+          okText: formatMessage({ id: 'ok' }),
+          okCancel: true,
+          onOk: () => handleEffect(false),
+        });
+      } else {
+        effectModal.update({
+          children: formatMessage({ id: `${intlPrefix}.no.stop.des` }),
+        });
+      }
+    } else {
+      effectModal.update({
+        children: formatMessage({ id: `${intlPrefix}.status.change` }),
+        onOk: refresh,
+      });
+    }
   }
 
   function getStatusInRecord() {
@@ -146,7 +186,6 @@ function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
 
     switch (result) {
       case RUNNING:
-      case DISCONNECTED:
         actionData = [{
           service: [],
           text: formatMessage({ id: `${intlPrefix}.modal.detail.stop` }),
@@ -155,6 +194,17 @@ function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
           service: [],
           text: formatMessage({ id: `${intlPrefix}.modal.detail.modify` }),
           action: openModifyModal,
+        }];
+        break;
+      case DISCONNECTED:
+        actionData = [{
+          service: [],
+          text: formatMessage({ id: `${intlPrefix}.modal.detail.modify` }),
+          action: openModifyModal,
+        }, {
+          service: [],
+          text: formatMessage({ id: `${intlPrefix}.modal.detail.delete` }),
+          action: openDelete,
         }];
         break;
       case STOPPED:
