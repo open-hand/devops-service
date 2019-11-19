@@ -73,11 +73,10 @@ const NetworkContent = observer(() => {
   }
 
   function renderTargetType({ record }) {
-    const { instances, selectors } = record.get('target') || {};
-    const appId = record.get('appServiceId');
+    const { instances, selectors, targetAppServiceId } = record.get('target') || {};
 
     let type = 'EndPoints';
-    if (appId && instances && instances.length) {
+    if (targetAppServiceId || (instances && instances.length)) {
       type = formatMessage({ id: 'instance' });
     } else if (selectors) {
       type = formatMessage({ id: 'label' });
@@ -87,7 +86,7 @@ const NetworkContent = observer(() => {
   }
 
   function renderTarget({ record }) {
-    const { instances, selectors, endPoints } = record.get('target') || {};
+    const { instances, selectors, endPoints, targetAppServiceName, targetAppServiceId } = record.get('target') || {};
     const node = [];
     const port = [];
     const len = endPoints ? 2 : 1;
@@ -110,6 +109,12 @@ const NetworkContent = observer(() => {
           );
         }
       });
+    } else if (targetAppServiceId && targetAppServiceName) {
+      node.push(
+        <div className="net-target-item">
+          <span>{targetAppServiceName}</span>
+        </div>
+      );
     }
     if (!_.isEmpty(selectors)) {
       _.forEach(selectors, (value, key) => node.push(
