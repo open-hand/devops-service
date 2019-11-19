@@ -345,14 +345,12 @@ export default class Index extends Component {
                 </Option>
               );
             });
-            if (data.length > 1) {
-              initIstOption.unshift(
-                <Option key="all_instance" value="all_instance">
-                  {formatMessage({ id: 'all_instance' })}
-                </Option>
-              );
-            }
           }
+          initIstOption.unshift(
+            <Option key="all_instance" value="all_instance">
+              {formatMessage({ id: 'all_instance' })}
+            </Option>
+          );
           this.setState({
             initIst,
             initIstOption,

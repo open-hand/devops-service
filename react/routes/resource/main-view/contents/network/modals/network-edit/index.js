@@ -62,6 +62,11 @@ class EditNetwork extends Component {
       config: {},
       initIst: [],
       initIstOption: [],
+      defaultOption: (
+        <Option key="all_instance" value="all_instance">
+          {props.intl.formatMessage({ id: 'all_instance' })}
+        </Option>
+      ),
       deletedInstance: [],
       network: {},
       envName: null,
@@ -150,9 +155,14 @@ class EditNetwork extends Component {
           const _targetIps = targetIps || [];
           _pushUnRecordIp(_externalIps, _unInputIp);
           _pushUnRecordIp(_targetIps, _unInputEndIp);
-          let appIst;
+          let targetAppServiceId;
+          let targetInstanceCode;
           if (!_.isEmpty(instances)) {
-            appIst = instances === 'all_instance' ? _.map(store.getIst, (item) => item.code) : instances;
+            if (instances === 'all_instance') {
+              targetAppServiceId = appServiceId;
+            } else {
+              targetInstanceCode = instances;
+            }
           }
           const ports = [];
           const label = {};
@@ -193,11 +203,11 @@ class EditNetwork extends Component {
 
           const {
             name: oldName,
-            appServiceId: oldAppId,
             target: {
               instances: oldAppInstance,
-              labels: oldLabel,
+              selectors: oldLabel,
               endPoints: oldEndPoints,
+              targetAppServiceId: oldTargetAppServiceId,
             },
             envId: oldEnvId,
             config: { externalIps: oldIps, ports: oldPorts },
@@ -214,23 +224,24 @@ class EditNetwork extends Component {
 
           const oldNetwork = {
             name: oldName,
-            appServiceId: oldAppId || null,
+            targetAppServiceId: oldTargetAppServiceId,
+            targetInstanceCode: oldIst && oldIst.length && oldIst.length === 1 && !oldTargetAppServiceId ? oldIst[0].code : null,
             instances: oldIst.length ? oldIst : null,
             envId: Number(oldEnvId),
             externalIp: oldIps,
             ports: oldPortId,
-            label: oldLabel || null,
+            selectors: oldLabel || null,
             endPoints: oldEndPoints,
             type,
           };
           const newNetwork = {
             name,
-            appServiceId: appServiceId || null,
-            instances: appIst,
+            targetAppServiceId,
+            targetInstanceCode,
             envId: Number(envId),
             externalIp: _externalIps.length ? _externalIps.join(',') : null,
             ports,
-            label: !_.isEmpty(label) ? label : null,
+            selectors: !_.isEmpty(label) ? label : null,
             endPoints: !_.isEmpty(endPoints) ? endPoints : null,
             type: config,
           };
@@ -274,33 +285,40 @@ class EditNetwork extends Component {
       netId,
       form: { setFieldsValue },
       envId,
+      intl: { formatMessage },
     } = this.props;
+    const {
+      defaultOption,
+    } = this.state;
     const { id } = AppState.currentMenuType;
     store.loadDataById(id, netId).then((data) => {
       if (data) {
         const { name, type, appServiceId, target, config, envName } = data;
-        const targetKeys = target && target.labels
+        const targetKeys = target && target.selectors
           ? 'param'
           : target && target.endPoints
             ? 'endPoints'
             : 'instance';
         let instances = [];
-        let labels = {};
+        let selectors = {};
         let endPoints = {};
-        target && ({ instances, labels, endPoints } = target);
+        let targetAppServiceId;
         const initIst = [];
+        target && ({ instances, selectors, endPoints, targetAppServiceId } = target);
         // 将默认选项直接生成，避免加载带来的异步问题
-        const initIstOption = [];
+        const initIstOption = [defaultOption];
         const deletedInstance = [];
-        if (appServiceId) {
+        let defaultInstance = '';
+        if (targetAppServiceId || (instances && instances.length)) {
           store.loadInstance(id, envId, appServiceId);
         }
-        if (instances && instances.length) {
+        if (!targetAppServiceId && instances && instances.length) {
           _.forEach(instances, (item) => {
             const { id: istId, code, status } = item;
+            defaultInstance = `${defaultInstance ? `${defaultInstance},` : ''}${code}`;
             initIst.push(code);
             initIstOption.push(
-              <Option key={istId} value={[code]}>
+              <Option key={istId} value={code}>
                 <Tooltip
                   title={
                     status ? (
@@ -311,7 +329,8 @@ class EditNetwork extends Component {
                   }
                   placement="right"
                 >
-                  {code}
+                  <Icon type="info" />
+                  <span style={{ color: 'red' }}>{code}</span>
                 </Tooltip>
               </Option>
             );
@@ -322,7 +341,7 @@ class EditNetwork extends Component {
         }
         this.setState({
           initApp: appServiceId,
-          labels: labels || {},
+          labels: selectors || {},
           initName: name,
           targetKeys,
           oldTargetKeys: targetKeys === 'param' ? 'targetKeys' : targetKeys,
@@ -331,6 +350,8 @@ class EditNetwork extends Component {
           initIst,
           initIstOption,
           deletedInstance,
+          defaultInstance,
+          targetAppServiceId,
           oldAppData: {
             initApp: appServiceId,
             initIst,
@@ -364,6 +385,7 @@ class EditNetwork extends Component {
         target: { labels, endPoints },
       },
       oldAppData: { initApp, initIst, initIstOption, deletedInstance },
+      defaultOption,
     } = this.state;
 
     // 设置初始数据
@@ -455,7 +477,7 @@ class EditNetwork extends Component {
       });
       this.setState({
         initApp: '',
-        initIstOption: [],
+        initIstOption: [defaultOption],
         initIst: [],
         deletedInstance: [],
       });
@@ -551,6 +573,7 @@ class EditNetwork extends Component {
         initIst,
         initIstOption,
       },
+      defaultOption,
     } = this.state;
     const { id } = AppState.currentMenuType;
     if (initApp === value) {
@@ -561,7 +584,7 @@ class EditNetwork extends Component {
     } else {
       this.setState({
         initIst: [],
-        initIstOption: [],
+        initIstOption: [defaultOption],
       });
     }
     resetFields(['instances']);
@@ -639,11 +662,13 @@ class EditNetwork extends Component {
     const { intl } = this.props;
     const { deletedInstance } = this.state;
     let msg;
-    _.forEach(value, (item) => {
-      if (_.includes(deletedInstance, item) && !msg) {
+    if (value) {
+      if (_.includes(value, ',')) {
+        msg = '请选择单个实例或者全部实例';
+      } else if (_.includes(deletedInstance, value) && !msg) {
         msg = intl.formatMessage({ id: 'network.instance.check.failed' });
       }
-    });
+    }
     if (msg) {
       callback(msg);
     } else {
@@ -885,6 +910,8 @@ class EditNetwork extends Component {
       config,
       envName,
       endPoints: endPointsData,
+      defaultInstance,
+      targetAppServiceId,
     } = this.state;
     const { name: menuName, id: projectId } = AppState.currentMenuType;
     const { getFieldDecorator, getFieldValue } = form;
@@ -1290,7 +1317,7 @@ class EditNetwork extends Component {
                   {...formItemLayout}
                 >
                   {getFieldDecorator('instances', {
-                    initialValue: initIst.length ? initIst.length > 1 ? 'all_instance' : initIst : undefined,
+                    initialValue: targetAppServiceId ? 'all_instance' : defaultInstance,
                     trigger: ['onChange', 'onSubmit'],
                     rules: [
                       {
@@ -1319,11 +1346,6 @@ class EditNetwork extends Component {
                         .toLowerCase()
                         .indexOf(input.toLowerCase()) >= 0}
                     >
-                      {istOption.concat(initIstOption).length > 1 && (
-                        <Option key="all_instance" value="all_instance">
-                          {intl.formatMessage({ id: 'all_instance' })}
-                        </Option>
-                      )}
                       {initIstOption}
                       {istOption}
                     </Select>

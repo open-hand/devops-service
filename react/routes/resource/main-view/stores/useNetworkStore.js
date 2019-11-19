@@ -63,7 +63,7 @@ export default function useStore() {
 
     async loadApp(projectId, envId, option, appId) {
       try {
-        const res = await axios.get(`/devops/v1/projects/${projectId}/app_service/list_by_env?envId=${envId}&status=running`);
+        const res = await axios.get(`/devops/v1/projects/${projectId}/app_service/list_all`);
         if (handlePromptError(res)) {
           this.setApp(res);
           if (option === 'update' && appId) {
