@@ -215,18 +215,26 @@ class EditNetwork extends Component {
           } = network;
 
           const oldIst = _.map(oldAppInstance, (item) => item.code);
-          const oldPortId = _.map(oldPorts, (item) => ({
-            nodePort: item.nodePort ? _.toNumber(item.nodePort) : null,
-            port: item.port ? _.toNumber(item.port) : null,
-            targetPort: item.targetPort ? _.toNumber(item.targetPort) : null,
-            protocol: item.protocol || null,
-          }));
+          const oldPortId = _.map(oldPorts, (item) => {
+            if (type === 'NodePort') {
+              return ({
+                nodePort: item.nodePort ? _.toNumber(item.nodePort) : null,
+                port: item.port ? _.toNumber(item.port) : null,
+                targetPort: item.targetPort ? _.toNumber(item.targetPort) : null,
+                protocol: item.protocol || null,
+              });
+            }
+            return ({
+              nodePort: item.nodePort ? _.toNumber(item.nodePort) : null,
+              port: item.port ? _.toNumber(item.port) : null,
+              targetPort: item.targetPort ? _.toNumber(item.targetPort) : null,
+            });
+          });
 
           const oldNetwork = {
             name: oldName,
-            targetAppServiceId: oldTargetAppServiceId,
-            targetInstanceCode: oldIst && oldIst.length && oldIst.length === 1 && !oldTargetAppServiceId ? oldIst[0].code : null,
-            instances: oldIst.length ? oldIst : null,
+            targetAppServiceId: oldTargetAppServiceId || undefined,
+            targetInstanceCode: oldIst && oldIst.length && oldIst.length === 1 && !oldTargetAppServiceId ? oldIst[0] : undefined,
             envId: Number(oldEnvId),
             externalIp: oldIps,
             ports: oldPortId,
@@ -329,8 +337,12 @@ class EditNetwork extends Component {
                   }
                   placement="right"
                 >
-                  <Icon type="info" />
-                  <span style={{ color: 'red' }}>{code}</span>
+                  {code}
+                  {status !== 'running' && (
+                    <Tooltip title={formatMessage({ id: 'deleted' })}>
+                      <Icon type="error" className="c7ncd-instance-status-icon" />
+                    </Tooltip>
+                  )}
                 </Tooltip>
               </Option>
             );
@@ -441,6 +453,7 @@ class EditNetwork extends Component {
           deletedInstance,
         });
         resetFields(['instances']);
+        store.loadInstance(id, envId, Number(initApp));
       }
     } else {
       // 切换到“填写标签”、“endPoints”时，生成相应表单项并清空应用实例数据
@@ -572,6 +585,7 @@ class EditNetwork extends Component {
         initApp,
         initIst,
         initIstOption,
+        deletedInstance,
       },
       defaultOption,
     } = this.state;
@@ -580,11 +594,13 @@ class EditNetwork extends Component {
       this.setState({
         initIst,
         initIstOption,
+        deletedInstance,
       });
     } else {
       this.setState({
         initIst: [],
         initIstOption: [defaultOption],
+        deletedInstance: [],
       });
     }
     resetFields(['instances']);
@@ -663,10 +679,10 @@ class EditNetwork extends Component {
     const { deletedInstance } = this.state;
     let msg;
     if (value) {
-      if (_.includes(value, ',')) {
-        msg = '请选择单个实例或者全部实例';
-      } else if (_.includes(deletedInstance, value) && !msg) {
+      if (_.includes(deletedInstance, value) && !msg) {
         msg = intl.formatMessage({ id: 'network.instance.check.failed' });
+      } else if (_.includes(value, ',')) {
+        msg = intl.formatMessage({ id: 'network.instance.check.failed.more' });
       }
     }
     if (msg) {

@@ -5,7 +5,7 @@ import { withRouter } from 'react-router-dom';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { Choerodon } from '@choerodon/boot';
 import _ from 'lodash';
-import { Button, Tooltip, Radio, Input, Form, Select } from 'choerodon-ui';
+import { Button, Tooltip, Radio, Input, Form, Select, Icon } from 'choerodon-ui';
 import Tips from '../new-tips';
 
 import '../../routes/main.less';
@@ -427,12 +427,10 @@ export default class DomainForm extends Component {
         const { id, status, name: delNetName } = deletedService[k];
         delNetOption = (
           <Option value={id} key={`${id}-network-error`}>
-            <div
-              className={`c7n-domain-create-status c7n-domain-create-status_${status}`}
-            >
-              <div>{formatMessage({ id: status })}</div>
-            </div>
             {delNetName}
+            <Tooltip title={formatMessage({ id: 'deleted' })}>
+              <Icon type="cancel" className="c7ncd-domain-network-status-icon" />
+            </Tooltip>
           </Option>
         );
       }
@@ -458,9 +456,6 @@ export default class DomainForm extends Component {
       // 生成网络选项
       const networkOption = _.map(network, ({ id, name: networkName }) => (
         <Option value={id} key={`${id}-network`}>
-          <div className="c7n-domain-create-status c7n-domain-create-status_running">
-            <div>{formatMessage({ id: 'running' })}</div>
-          </div>
           <Tooltip title={networkName}>{networkName}</Tooltip>
         </Option>
       ));
@@ -507,7 +502,6 @@ export default class DomainForm extends Component {
               initialValue: networkOption.length ? initNetwork : undefined,
             })(
               <Select
-                getPopupContainer={(triggerNode) => triggerNode.parentNode}
                 disabled={!envId}
                 filter
                 label={formatMessage({ id: 'domain.column.network' })}
