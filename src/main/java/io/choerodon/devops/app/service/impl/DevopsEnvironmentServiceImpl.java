@@ -64,6 +64,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
      * 集群对应的环境name clusterName-env
      */
     private static final String SYSTEM_ENV_NAME = "%s-env";
+    private static final String CLUSTER_ENV_CODE_FORMAT="choerodon_%s";
 
     private static final Gson gson = new Gson();
     private static final String MEMBER = "member";
@@ -1346,7 +1347,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         // 创建集群环境时默认不跳过权限校验
         devopsEnvironmentDTO.setSkipCheckPermission(Boolean.FALSE);
         devopsEnvironmentDTO.setName(String.format(SYSTEM_ENV_NAME, cluster.getName()));
-        devopsEnvironmentDTO.setCode(SYSTEM_ENV_NAMESPACE);
+        devopsEnvironmentDTO.setCode(String.format(CLUSTER_ENV_CODE_FORMAT,cluster.getCode()));
         devopsEnvironmentDTO.setType(EnvironmentType.SYSTEM.getValue());
         devopsEnvironmentDTO.setActive(true);
         devopsEnvironmentDTO.setSynchro(false);
