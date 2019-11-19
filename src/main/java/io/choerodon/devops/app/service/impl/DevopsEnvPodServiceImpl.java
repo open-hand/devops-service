@@ -272,7 +272,6 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
 
-        // Todo:和agent通信
-        agentCommandService.deletePod(devopsEnvPodDTO);
+        agentCommandService.deletePod(devopsEnvPodDTO.getName(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getClusterId());
     }
 }

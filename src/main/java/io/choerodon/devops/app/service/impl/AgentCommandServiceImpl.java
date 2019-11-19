@@ -406,8 +406,17 @@ public class AgentCommandServiceImpl implements AgentCommandService {
     }
 
     @Override
-    public void deletePod(DevopsEnvPodDTO devopsEnvPodDTO) {
-        //Todo
+    public void deletePod(String podName, String namespace, Long clusterId) {
+        AgentMsgVO msg = new AgentMsgVO();
+        msg.setKey(String.format(CLUSTER_FORMAT, clusterId));
+        DeletePodVO payload = new DeletePodVO(podName, namespace);
+        try {
+            msg.setPayload(mapper.writeValueAsString(payload));
+        } catch (IOException e) {
+            throw new CommonException("Unexpected error occurred when serializing DeletePodVO {}", payload.toString());
+        }
+        msg.setType(HelmType.DELETE_POD.toValue());
+        sendToWebsocket(clusterId, msg);
     }
 
     @Override

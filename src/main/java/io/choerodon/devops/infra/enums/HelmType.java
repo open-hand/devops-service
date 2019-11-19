@@ -69,6 +69,10 @@ public enum HelmType {
     CRD_UNLOAD_STATUS("crd_unload_status"),
     OPERATE_DOCKER_REGISTRY_SECRET_FAILED("operate_docker_registry_secret_failed"),
     OPERATE_DOCKER_REGISTRY_SECRET("operate_docker_registry_secret"),
+    /**
+     * 删除pod，由DevOps服务发到agent
+     */
+    DELETE_POD("delete_pod"),
     POD_METRICS_SYNC("pod_metrics_sync"),
     NODE_SYNC("node_sync");
 
