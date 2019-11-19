@@ -6,7 +6,7 @@ function getIpRequired({ record }) {
   return record.get('type') === 'NFS';
 }
 
-export default ((intlPrefix, formatMessage, projectId, typeDs, modeDs, storageDs) => {
+export default ((intlPrefix, formatMessage, projectId, typeDs, modeDs, storageDs, clusterDs) => {
   async function checkName(value, name, record) {
     const pa = /^[a-z]([-.a-z0-9]*[a-z0-9])?$/;
     if (!value) return;
@@ -64,7 +64,7 @@ export default ((intlPrefix, formatMessage, projectId, typeDs, modeDs, storageDs
         valueField: 'id',
         label: formatMessage({ id: `${intlPrefix}.cluster` }),
         required: true,
-        lookupUrl: `/devops/v1/projects/${projectId}/envs/list_clusters`,
+        options: clusterDs,
       },
       { name: 'name', type: 'string', label: formatMessage({ id: 'name' }), required: true, maxLength: 30, validator: checkName },
       { name: 'description', type: 'string', label: formatMessage({ id: 'description' }), maxLength: 40 },

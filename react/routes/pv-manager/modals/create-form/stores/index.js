@@ -3,6 +3,7 @@ import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
 import { DataSet } from 'choerodon-ui/pro';
 import FormDataSet from './FormDataSet';
+import OptionsDataSet from './OptionsDataSet';
 
 const Store = createContext();
 
@@ -57,7 +58,8 @@ export const StoreProvider = injectIntl(inject('AppState')(
       ],
       selection: 'single',
     }), []);
-    const formDs = useMemo(() => new DataSet(FormDataSet(intlPrefix, formatMessage, projectId, typeDs, modeDs, storageDs)), [projectId]);
+    const clusterDs = useMemo(() => new DataSet(OptionsDataSet(projectId)), [projectId]);
+    const formDs = useMemo(() => new DataSet(FormDataSet(intlPrefix, formatMessage, projectId, typeDs, modeDs, storageDs, clusterDs)), [projectId]);
 
     const value = {
       ...props,
