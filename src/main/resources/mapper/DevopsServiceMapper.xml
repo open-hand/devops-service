@@ -96,8 +96,8 @@
         cmd.error error,
         da.project_id AS app_service_project_id,
         dai.id AS instance_id,
-        dai.code AS ins_code,
-        dai.`status` AS ins_status
+        if(dai.code is null and ds.target_instance_code is not null, ds.target_instance_code,dai.code) AS ins_code,
+        if(dai.`status` is null and ds.target_instance_code is not null, 'deleted',dai.status) AS ins_status
         FROM
         (
         SELECT
@@ -167,7 +167,7 @@
          LIMIT 1
         # 使用LIMIT 1是因为表设计原因，根据多个实例创建的网络会有多条记录，但是message是一样的
         ) AS message,
-        dai.code AS ins_code,
+        if(dai.code is null and ds.target_instance_code is not null,  ds.target_instance_code, dai.status) AS ins_code,
         (SELECT count(1)
          FROM devops_env_pod dp
          WHERE dp.instance_id = dai.id) pod_count,
@@ -178,7 +178,7 @@
            AND dp.is_ready = TRUE) pod_running_count,
         dai.last_update_date AS ins_last_update_date,
         dai.object_version_number AS ins_object_version_number,
-        dai.status AS ins_status,
+        if(dai.status is null and ds.target_instance_code is not null, 'deleted', dai.status) AS ins_status,
         command.status AS commandStatus,
         command.command_type AS commandType,
         command.error
