@@ -321,14 +321,14 @@ public class DevopsClusterController {
      * @return String
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "查询集群下是否关联已连接环境")
+    @ApiOperation(value = "查询集群下是否关联已连接环境或者存在PV")
     @GetMapping("/{cluster_id}/check_connect_envs")
-    public ResponseEntity<Boolean> checkConnectEnvs(
+    public ResponseEntity<ClusterMsgVO> checkConnectEnvsAndPV(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群Id")
             @PathVariable(value = "cluster_id") Long clusterId) {
-        return Optional.ofNullable(devopsClusterService.checkConnectEnvs(clusterId))
+        return Optional.ofNullable(devopsClusterService.checkConnectEnvsAndPV(clusterId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.connect.env.query"));
     }

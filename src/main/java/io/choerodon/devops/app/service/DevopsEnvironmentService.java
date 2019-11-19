@@ -257,7 +257,7 @@ public interface DevopsEnvironmentService {
      * @param type      其他对象类型
      * @return boolean
      */
-    Boolean checkExist(Long projectId, Long envId, Long objectId, String type);
+    EnvironmentMsgVO checkExist(Long projectId, Long envId, Long objectId, String type);
 
     DevopsEnvironmentDTO baseCreate(DevopsEnvironmentDTO devopsEnvironmentDTO);
 

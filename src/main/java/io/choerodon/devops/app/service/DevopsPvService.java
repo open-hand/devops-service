@@ -4,6 +4,7 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 
 import com.github.pagehelper.PageInfo;
+import io.choerodon.devops.infra.dto.DevopsClusterDTO;
 import org.springframework.data.domain.Pageable;
 
 import io.choerodon.devops.api.vo.DevopsPvPermissionUpdateVO;
@@ -139,4 +140,11 @@ public interface DevopsPvService {
      * @return
      */
     List<DevopsPvVO> queryPvcRelatedPv(Long projectId,String params);
+
+    /**
+     * 根据集群ID查询集群
+     * @param clusterId
+     * @return
+     */
+    List<DevopsPvDTO> queryByClusterId(Long clusterId);
 }
