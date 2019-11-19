@@ -5,6 +5,7 @@ import { observer } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
 import TableDataSet from './TableDataSet';
 import { useResourceStore } from '../../../../stores';
+import { useMainStore } from '../../../stores';
 
 const Store = createContext();
 
@@ -15,12 +16,18 @@ export function useIstListStore() {
 export const StoreProvider = injectIntl(inject('AppState')(
   observer((props) => {
     const { AppState: { currentMenuType: { id } }, children } = props;
+
     const {
       intlPrefix,
       intl: { formatMessage },
       resourceStore: { getSelectedMenu: { parentId }, setUpTarget, getUpTarget },
       itemTypes: { IST_GROUP },
     } = useResourceStore();
+
+    const {
+      baseInfoDs,
+    } = useMainStore();
+
     const istListDs = useMemo(() => new DataSet(TableDataSet({
       formatMessage,
       intlPrefix,
@@ -28,9 +35,13 @@ export const StoreProvider = injectIntl(inject('AppState')(
       envId: parentId,
     })), [id, parentId]);
 
+
     const value = {
       ...props,
       istListDs,
+      baseInfoDs,
+      projectId: id,
+      envId: parentId,
     };
 
     useEffect(() => {

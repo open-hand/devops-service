@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+import io.choerodon.web.util.PageableHelper;
 import io.reactivex.Emitter;
 import io.reactivex.Observable;
 import io.reactivex.ObservableOnSubscribe;
@@ -25,7 +26,9 @@ import org.springframework.transaction.annotation.Transactional;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
-import io.choerodon.base.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.util.CollectionUtils;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.notify.NoticeSendDTO;
@@ -110,10 +113,10 @@ public class PipelineServiceImpl implements PipelineService {
 
 
     @Override
-    public PageInfo<PipelineVO> pageByOptions(Long projectId, PipelineSearchVO pipelineSearchVO, PageRequest pageRequest) {
+    public PageInfo<PipelineVO> pageByOptions(Long projectId, PipelineSearchVO pipelineSearchVO, Pageable pageable) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         Long userId = DetailsHelper.getUserDetails().getUserId();
-        String sortSql = pageRequest.getSort() != null ? pageRequest.getSort().toSql() : null;
+        String sortSql = pageable.getSort() != null ? PageableHelper.getSortSql(pageable.getSort()) : null;
         String sortSqlUnder = HumpToUnderlineUtil.toUnderLine(sortSql);
         List<PipelineVO> pipelineVOS = ConvertUtils.convertList(pipelineMapper.listByOptions(projectId, pipelineSearchVO, userId, sortSqlUnder), PipelineVO.class);
         List<PipelineVO> pipelineVOList;
@@ -127,7 +130,7 @@ public class PipelineServiceImpl implements PipelineService {
             pipelineVOList = pipelineVOS;
         }
 
-        PageInfo<PipelineVO> pageInfo = PageInfoUtil.createPageFromList(pipelineVOList, pageRequest);
+        PageInfo<PipelineVO> pageInfo = PageInfoUtil.createPageFromList(pipelineVOList, pageable);
 
         pageInfo.setList(pageInfo.getList().stream().peek(t -> {
             IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(t.getCreatedBy());
@@ -1219,7 +1222,7 @@ public class PipelineServiceImpl implements PipelineService {
         pipelineStageRecordService.baseCreateOrUpdate(stageRecordE);
         PipelineStageRecordDTO nextStageRecordE = getNextStage(stageRecordE.getId());
         if (nextStageRecordE != null) {
-            startNextStageRecord(nextStageRecordE.getId(), pipelineRecordDTO);
+            startNextStageRecord(stageRecordId, pipelineRecordDTO);
         } else {
             updateStatus(pipelineRecordId, null, WorkFlowStatus.SUCCESS.toValue(), null);
             IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(pipelineRecordDTO.getCreatedBy());
@@ -1521,7 +1524,7 @@ public class PipelineServiceImpl implements PipelineService {
             for (int i = 0; i < devopsDeployRecordVO.getStageDTOList().size(); i++) {
                 if (devopsDeployRecordVO.getStageDTOList().get(i).getStatus().equals(WorkFlowStatus.PENDINGCHECK.toValue())) {
                     List<PipelineTaskRecordDTO> list = pipelineTaskRecordService.baseQueryByStageRecordId(devopsDeployRecordVO.getStageDTOList().get(i).getId(), null);
-                    if (list != null && list.size() > 0) {
+                    if (!CollectionUtils.isEmpty(list)) {
                         Optional<PipelineTaskRecordDTO> taskRecordDTO = list.stream().filter(task -> task.getStatus().equals(WorkFlowStatus.PENDINGCHECK.toValue())).findFirst();
                         pipelineDetailVO.setStageName(devopsDeployRecordVO.getStageDTOList().get(i).getStageName());
                         pipelineDetailVO.setTaskRecordId(taskRecordDTO.get().getId());
@@ -1531,7 +1534,7 @@ public class PipelineServiceImpl implements PipelineService {
                         break;
                     }
                 } else if (devopsDeployRecordVO.getStageDTOList().get(i).getStatus().equals(WorkFlowStatus.UNEXECUTED.toValue())) {
-                    pipelineDetailVO.setType("stage");
+                    pipelineDetailVO.setType(STAGE);
                     pipelineDetailVO.setStageName(devopsDeployRecordVO.getStageDTOList().get(i - 1).getStageName());
                     pipelineDetailVO.setStageRecordId(devopsDeployRecordVO.getStageDTOList().get(i).getId());
                     pipelineDetailVO.setExecute(checkRecordTriggerPermission(null, devopsDeployRecordVO.getStageDTOList().get(i - 1).getId()));

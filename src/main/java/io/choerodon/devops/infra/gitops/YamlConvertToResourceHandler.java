@@ -1,6 +1,7 @@
 package io.choerodon.devops.infra.gitops;
 
 import java.util.Map;
+import java.util.Objects;
 
 import io.kubernetes.client.JSON;
 
@@ -9,27 +10,23 @@ import io.choerodon.devops.infra.util.TypeUtil;
 
 public class YamlConvertToResourceHandler<T> {
 
-    private T t;
+    private Class<T> targetClass;
 
-    public T getT() {
-        return t;
-    }
-
-    public void setT(T t) {
-        this.t = t;
+    public YamlConvertToResourceHandler(Class<T> targetClass) {
+        this.targetClass = Objects.requireNonNull(targetClass);
     }
 
     public T serializable(String yamlContent,
                           String filePath,
                           Map<String, String> objectPath) {
         JSON json = new JSON();
+        T result;
         try {
-            t = json.deserialize(yamlContent, t.getClass());
+            result = json.deserialize(yamlContent, targetClass);
         } catch (Exception e) {
             throw new GitOpsExplainException(e.getMessage(), filePath);
         }
-        objectPath.put(TypeUtil.objToString(t.hashCode()), filePath);
-        return t;
+        objectPath.put(TypeUtil.objToString(result.hashCode()), filePath);
+        return result;
     }
-
 }

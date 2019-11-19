@@ -27,5 +27,7 @@ export default ({ formatMessage, intlPrefix, projectId, envId }) => ({
     { name: 'domain', type: 'string', label: formatMessage({ id: 'address' }) },
     { name: 'pathList', type: 'object', label: formatMessage({ id: 'path' }) },
   ],
-  queryFields: [],
+  queryFields: [
+    { name: 'name', type: 'string', label: formatMessage({ id: `${intlPrefix}.application.net.ingress` }) },
+  ],
 });

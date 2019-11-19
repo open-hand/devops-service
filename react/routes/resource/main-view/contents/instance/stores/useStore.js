@@ -2,9 +2,9 @@ import { useLocalStore } from 'mobx-react-lite';
 import { axios, Choerodon } from '@choerodon/boot';
 import { handlePromptError } from '../../../../../../utils';
 
-export default function useStore() {
+export default function useStore({ defaultKey }) {
   return useLocalStore(() => ({
-    tabKey: 'cases',
+    tabKey: defaultKey || 'cases',
     detailLoading: false,
     detail: {},
     valueLoading: true,

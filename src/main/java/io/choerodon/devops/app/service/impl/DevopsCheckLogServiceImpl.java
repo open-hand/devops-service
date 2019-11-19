@@ -16,6 +16,7 @@ import com.zaxxer.hikari.util.UtilityElf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -23,13 +24,15 @@ import org.springframework.util.ObjectUtils;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
-import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
 import io.choerodon.devops.api.vo.kubernetes.CheckLog;
 import io.choerodon.devops.api.vo.kubernetes.ProjectCreateDTO;
+import io.choerodon.devops.app.eventhandler.payload.HarborPayload;
 import io.choerodon.devops.app.service.DevopsCheckLogService;
+import io.choerodon.devops.app.service.DevopsHarborUserService;
 import io.choerodon.devops.app.service.DevopsProjectService;
+import io.choerodon.devops.app.service.HarborService;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
 import io.choerodon.devops.infra.config.HarborConfigurationProperties;
 import io.choerodon.devops.infra.dto.*;
@@ -90,6 +93,10 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private BaseServiceClient baseServiceClient;
     @Autowired
     private DevopsProjectService devopsProjectService;
+    @Autowired
+    private DevopsHarborUserService devopsHarborUserService;
+    @Autowired
+    private HarborService harborService;
 
     @Override
     public void checkLog(String version) {
@@ -97,6 +104,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         executorService.execute(new UpgradeTask(version));
 
     }
+
 
     class UpgradeTask implements Runnable {
         private String version;
@@ -117,9 +125,12 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 DevopsCheckLogDTO devopsCheckLogDTO = new DevopsCheckLogDTO();
                 List<CheckLog> logs = new ArrayList<>();
                 devopsCheckLogDTO.setBeginCheckDate(new Date());
-                if ("0.19.0".equals(version)) {
+                if ("0.20.0".equals(version)) {
+                    syncHarborUser();
+                } else if ("0.19.0".equals(version)) {
                     syncEnvAppRelevance(logs);
-                    syncAppShare(logs);
+                    // 0.20.0删除此方法
+                    // syncAppShare(logs);
                     syncDeployRecord(logs);
                     // devops-service启动时不再迁移集群和证书，让用户升级时在总前端部署之后去界面调接口传入 0.19.5 迁移集群和证书
 //                    syncClusterAndCertifications(logs);
@@ -305,7 +316,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                         }
                     }
                 } catch (Exception e) {
-                    LOGGER.info("failed", e);
+                    LOGGER.info(FAILED, e);
                     throw new CommonException(e);
                 }
             }
@@ -361,7 +372,6 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             applicationShareMapper.deleteAll();
             LOGGER.info("insert application share rule.");
             appServiceVersionMapper.selectAll().stream()
-                    .filter(versionDTO -> versionDTO.getIsPublish() != null && versionDTO.getIsPublish().equals(1L))
                     .forEach(versionDTO -> {
                         CheckLog checkLog = new CheckLog();
                         checkLog.setContent(String.format(
@@ -530,7 +540,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
      * @return true 有，反之没有
      */
     private boolean hasOwners(Long projectId, Long ownerRoleId) {
-        return !ObjectUtils.isEmpty(baseServiceClientOperator.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(1, 1), new RoleAssignmentSearchVO(), ownerRoleId,
+        return !ObjectUtils.isEmpty(baseServiceClientOperator.pagingQueryUsersByRoleIdOnProjectLevel(PageRequest.of(1,1), new RoleAssignmentSearchVO(), ownerRoleId,
                 projectId, true).getList());
     }
 
@@ -546,5 +556,53 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         // 分配权限
         baseServiceClientOperator.assignProjectOwnerForUsersInProject(projectId, organizationOwners.stream().map(IamUserDTO::getId).collect(Collectors.toSet()), projectOwnerRoleId);
         LOGGER.info("Successfully add organization administrators to this project with id {}", projectId);
+    }
+
+    private void syncHarborUser() {
+        LOGGER.info("sync harbor user start");
+        List<DevopsProjectDTO> projectDTOLists = devopsProjectService.listAll();
+        projectDTOLists.forEach(devopsProjectDTO -> {
+            Boolean harbor = (!ObjectUtils.isEmpty(devopsProjectDTO.getHarborProjectUserName()) && !ObjectUtils.isEmpty(devopsProjectDTO.getHarborProjectUserPassword()) && !ObjectUtils.isEmpty(devopsProjectDTO.getHarborProjectUserEmail()));
+            Boolean idIsExist = (!ObjectUtils.isEmpty(devopsProjectDTO.getHarborUserId()) && !ObjectUtils.isEmpty(devopsProjectDTO.getHarborPullUserId()));
+            if (harbor && !idIsExist) {
+                // 迁移本地存在的用户
+                HarborUserDTO harborUserDTO = new HarborUserDTO();
+                harborUserDTO.setHarborProjectUserName(devopsProjectDTO.getHarborProjectUserName());
+                harborUserDTO.setHarborProjectUserPassword(devopsProjectDTO.getHarborProjectUserPassword());
+                harborUserDTO.setHarborProjectUserEmail(devopsProjectDTO.getHarborProjectUserEmail());
+                harborUserDTO.setPush(true);
+                devopsHarborUserService.baseCreate(harborUserDTO);
+                devopsProjectDTO.setHarborUserId(harborUserDTO.getId());
+
+                // 创建pull用户
+                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsProjectDTO.getIamProjectId());
+                createHarborUser(projectDTO, devopsProjectDTO, false);
+            }
+        });
+        LOGGER.info("sync harbor user success");
+    }
+
+
+    private void createHarborUser(ProjectDTO projectDTO, DevopsProjectDTO devopsProjectDTO, Boolean isPush) {
+        User user = harborService.convertUser(projectDTO, isPush,null);
+        HarborUserDTO harborUserDTO = new HarborUserDTO();
+        harborUserDTO.setHarborProjectUserName(user.getUsername());
+        harborUserDTO.setHarborProjectUserEmail(user.getEmail());
+        harborUserDTO.setHarborProjectUserPassword(user.getPassword());
+        harborUserDTO.setPush(isPush);
+        // 检查是否自定义harbor仓库
+        HarborPayload harborPayload = new HarborPayload();
+        DevopsConfigDTO devopsConfigDTO = new DevopsConfigDTO();
+        devopsConfigDTO.setProjectId(projectDTO.getId());
+        devopsHarborUserService.baseCreate(harborUserDTO);
+        if (isPush) {
+            devopsProjectDTO.setHarborUserId(harborUserDTO.getId());
+            harborService.createHarborUser(harborPayload, user, projectDTO, Arrays.asList(1));
+        } else {
+            devopsProjectDTO.setHarborPullUserId(harborUserDTO.getId());
+            harborService.createHarborUser(harborPayload, user, projectDTO, Arrays.asList(3));
+        }
+
+        devopsProjectService.baseUpdate(devopsProjectDTO);
     }
 }

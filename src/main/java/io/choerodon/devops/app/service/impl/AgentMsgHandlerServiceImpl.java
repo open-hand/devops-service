@@ -10,6 +10,9 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+
+import io.choerodon.devops.app.eventhandler.constants.CertManagerConstants;
+
 import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.*;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -19,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
@@ -35,6 +39,8 @@ import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.AppServiceMapper;
+import io.choerodon.devops.infra.mapper.DevopsPvMapper;
+import io.choerodon.devops.infra.mapper.DevopsPvcMapper;
 import io.choerodon.devops.infra.util.*;
 
 /**
@@ -57,6 +63,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     private static final String C7NHELMRELEASE_KIND = "c7nhelmrelease";
     private static final String CERTIFICATE_KIND = "certificate";
     private static final String SECRET_KIND = "secret";
+    private static final String PERSISTENT_VOLUME_KIND = "persistentvolume";
+    private static final String PERSISTENT_VOLUME_CLAIM_KIND = "persistentvolumeclaim";
     private static final String PUBLIC = "public";
     private static final Logger logger = LoggerFactory.getLogger(AgentMsgHandlerServiceImpl.class);
     private static final String RESOURCE_VERSION = "resourceVersion";
@@ -128,7 +136,16 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     private AgentCommandService agentCommandService;
     @Autowired
     private AppServiceMapper appServiceMapper;
-
+    @Autowired
+    private DevopsClusterResourceService devopsClusterResourceService;
+    @Autowired
+    private DevopsPvcService devopsPvcService;
+    @Autowired
+    private DevopsPvService devopsPvService;
+    @Autowired
+    private DevopsPvcMapper devopsPvcMapper;
+    @Autowired
+    private DevopsPvMapper devopsPvMapper;
 
     public void handlerUpdatePodMessage(String key, String msg, Long envId) {
         V1Pod v1Pod = json.deserialize(msg, V1Pod.class);
@@ -244,7 +261,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     }
 
     @Override
-    public void helmInstallResourceInfo(String key, String msg, Long clusterId) {
+    public void helmInstallResourceInfo(String key, String msg, Long clusterId, Long effectCommandId) {
         Long envId = getEnvId(key, clusterId);
         if (envId == null) {
             logger.info(ENV_NOT_EXIST, KeyParseUtil.getNamespace(key));
@@ -260,12 +277,17 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             if (devopsEnvCommandDTO != null) {
                 devopsEnvCommandDTO.setStatus(CommandStatus.SUCCESS.getStatus());
                 devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
-                AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQueryByAppServiceIdAndVersion(appServiceInstanceDTO.getAppServiceId(), releasePayloadVO.getChartVersion());
-                appServiceInstanceDTO.setAppServiceVersionId(appServiceVersionDTO.getId());
+                // 兼容集群组件
+                if (appServiceInstanceDTO.getAppServiceId() != null) {
+                    AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQueryByAppServiceIdAndVersion(appServiceInstanceDTO.getAppServiceId(), releasePayloadVO.getChartVersion());
+                    appServiceInstanceDTO.setAppServiceVersionId(appServiceVersionDTO.getId());
+                } else {
+                    appServiceInstanceDTO.setComponentVersion(releasePayloadVO.getChartVersion());
+                }
+                appServiceInstanceDTO.setEffectCommandId(effectCommandId);
                 appServiceInstanceDTO.setStatus(InstanceStatus.RUNNING.getStatus());
                 appServiceInstanceService.baseUpdate(appServiceInstanceDTO);
                 installResource(resources, appServiceInstanceDTO);
-
             }
         }
     }
@@ -273,7 +295,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
     @Override
     public void helmInstallJobInfo(String key, String msg, Long clusterId) {
-        if (msg.equals("null")) {
+        if ("null".equals(msg)) {
             return;
         }
         Long envId = getEnvId(key, clusterId);
@@ -306,7 +328,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                         FileUtil.yamlStringtoJson(job.getManifest()));
                 saveOrUpdateResource(devopsEnvResourceDTO, newDevopsEnvResourceDTO, devopsEnvResourceDetailDTO, appServiceInstanceDTO);
             }
-            // T这里要设置Command的状态 因为811行 GitOps sync方法里改了command的状态
+            // 这里要设置Command的状态 因为811行 GitOps sync方法里改了command的状态
             DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService
                     .baseQuery(appServiceInstanceDTO.getCommandId());
             devopsEnvCommandDTO.setStatus(CommandStatus.OPERATING.getStatus());
@@ -322,6 +344,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             Long envId = getEnvId(key, clusterId);
             if (envId == null) {
                 logger.info("{} {} clusterId:{}", ENV_NOT_EXIST, KeyParseUtil.getNamespace(key), clusterId);
+                logger.info("resource name: {}", KeyParseUtil.getResourceName(key));
                 return;
             }
 
@@ -335,13 +358,13 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             devopsEnvResourceDTO.setReversion(
                     TypeUtil.objToLong(
                             ((LinkedHashMap) ((LinkedHashMap) obj).get(METADATA)).get(RESOURCE_VERSION).toString()));
-            String releaseName = null;
-            DevopsEnvResourceDTO oldDevopsEnvResourceDTO = null;
-            AppServiceInstanceDTO appServiceInstanceDTO = null;
+            String releaseName;
+            DevopsEnvResourceDTO oldDevopsEnvResourceDTO;
+            AppServiceInstanceDTO appServiceInstanceDTO;
             ResourceType resourceType = ResourceType.forString(KeyParseUtil.getResourceType(key));
 
             if (resourceType == null) {
-                resourceType = ResourceType.forString("MissType");
+                resourceType = ResourceType.MISSTYPE;
             }
             switch (resourceType) {
                 case INGRESS:
@@ -387,6 +410,12 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                                     KeyParseUtil.getResourceName(key));
                     saveOrUpdateResource(devopsEnvResourceDTO, oldDevopsEnvResourceDTO, devopsEnvResourceDetailDTO, null);
                     break;
+                case PERSISTENT_VOLUME_CLAIM:
+                    handleUpdatePvcMsg(key, envId, msg, devopsEnvResourceDTO, devopsEnvResourceDetailDTO);
+                    break;
+                case PERSISTENT_VOLUME:
+                    handleUpdatePvMsg(key, envId, msg, devopsEnvResourceDTO, devopsEnvResourceDetailDTO);
+                    break;
                 default:
                     releaseName = KeyParseUtil.getReleaseName(key);
                     if (releaseName != null) {
@@ -418,6 +447,95 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         } catch (IOException e) {
             logger.info(e.toString());
         }
+    }
+
+    /**
+     * 处理更新PV的消息
+     * 主要工作是存devops_env_resource纪录，devops_env_resource_detail纪录，
+     * 更新PV相关纪录的状态
+     *
+     * @param key                        Agent消息的key
+     * @param envId                      环境id
+     * @param msg                        Agent消息内容
+     * @param devopsEnvResourceDTO       已经构建好的纪录
+     * @param devopsEnvResourceDetailDTO 已经构建好的纪录
+     */
+    private void handleUpdatePvMsg(String key, Long envId, String msg,
+                                   DevopsEnvResourceDTO devopsEnvResourceDTO,
+                                   DevopsEnvResourceDetailDTO devopsEnvResourceDetailDTO) {
+        logger.info("Update pv message.envId is {}", envId);
+        String resourceName = KeyParseUtil.getResourceName(key);
+        logger.info("pv name is {}", resourceName);
+        DevopsEnvResourceDTO oldDevopsEnvResourceDTO =
+                devopsEnvResourceService.baseQueryOptions(
+                        null,
+                        null,
+                        envId,
+                        ResourceType.PERSISTENT_VOLUME.getType(),
+                        resourceName);
+        saveOrUpdateResource(devopsEnvResourceDTO, oldDevopsEnvResourceDTO, devopsEnvResourceDetailDTO, null);
+        DevopsPvDTO devopsPvDTO = devopsPvService.queryByEnvIdAndName(envId, resourceName);
+        if (devopsPvDTO == null) {
+            logger.info("PV with envId {} and name {} is not found in database", envId, resourceName);
+            return;
+        }
+        V1PersistentVolume pv = json.deserialize(msg, V1PersistentVolume.class);
+        devopsPvDTO.setStatus(pv.getStatus().getPhase());
+        devopsPvMapper.updateByPrimaryKeySelective(devopsPvDTO);
+    }
+
+    /**
+     * 处理更新PVC的消息
+     * 主要工作是存devops_env_resource纪录，devops_env_resource_detail纪录，
+     * 更新PVC相关纪录的状态
+     *
+     * @param key                        Agent消息的key
+     * @param envId                      环境id
+     * @param msg                        Agent消息内容
+     * @param devopsEnvResourceDTO       已经构建好的纪录
+     * @param devopsEnvResourceDetailDTO 已经构建好的纪录
+     */
+    private void handleUpdatePvcMsg(String key, Long envId, String msg,
+                                    DevopsEnvResourceDTO devopsEnvResourceDTO,
+                                    DevopsEnvResourceDetailDTO devopsEnvResourceDetailDTO) {
+        logger.info("Update pvc message.envId is {}", envId);
+        String resourceName = KeyParseUtil.getResourceName(key);
+        logger.info("pvc name is {}", resourceName);
+        DevopsEnvResourceDTO oldDevopsEnvResourceDTO =
+                devopsEnvResourceService.baseQueryOptions(
+                        null,
+                        null,
+                        envId,
+                        ResourceType.PERSISTENT_VOLUME_CLAIM.getType(),
+                        resourceName);
+        saveOrUpdateResource(devopsEnvResourceDTO, oldDevopsEnvResourceDTO, devopsEnvResourceDetailDTO, null);
+        DevopsPvcDTO devopsPvcDTO = devopsPvcService.queryByEnvIdAndName(envId, resourceName);
+        if (devopsPvcDTO == null) {
+            logger.info("PVC with envId {} and name {} is not found in database", envId, resourceName);
+            return;
+        }
+        V1PersistentVolumeClaim pv = json.deserialize(msg, V1PersistentVolumeClaim.class);
+        devopsPvcDTO.setStatus(pv.getStatus().getPhase());
+        devopsPvcMapper.updateByPrimaryKeySelective(devopsPvcDTO);
+
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
+        DevopsPrometheusDTO devopsPrometheusDTO = devopsClusterResourceService.baseQueryPrometheusDTO(devopsEnvironmentDTO.getClusterId());
+        List<Long> pvcIds = com.alibaba.fastjson.JSON.parseArray(devopsPrometheusDTO.getPvcId(), Long.class);
+        List<DevopsPvcDTO> devopsPvcDTOS = new ArrayList<>();
+        if (pvcIds.contains(devopsPvcDTO.getId())) {
+            for (Long pvcId : pvcIds) {
+                DevopsPvcDTO devopsPvc = devopsPvcService.queryById(pvcId);
+                if (PvcStatus.BOUND.getStatus().equals(devopsPvc.getStatus())) {
+                    devopsPvcDTOS.add(devopsPvc);
+                    logger.info("cluster:{} PVC id:{} name:{} create successful", devopsEnvironmentDTO.getClusterId(), devopsPvc.getId(), devopsPvc.getName());
+                }
+            }
+            if (devopsPvcDTOS.size() == 3) {
+                devopsPrometheusDTO.setDevopsPvcDTO(devopsPvcDTOS);
+                devopsClusterResourceService.installPrometheus(devopsEnvironmentDTO.getClusterId(), devopsPrometheusDTO);
+            }
+        }
+
     }
 
     private void handleUpdateServiceMsg(String key, Long envId, String msg, DevopsEnvResourceDTO devopsEnvResourceDTO) {
@@ -601,8 +719,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     }
 
     @Override
-    public void helmUpgradeResourceInfo(String key, String msg, Long clusterId) {
-        helmInstallResourceInfo(key, msg, clusterId);
+    public void helmUpgradeResourceInfo(String key, String msg, Long clusterId, Long effectCommandId) {
+        helmInstallResourceInfo(key, msg, clusterId, effectCommandId);
     }
 
 
@@ -698,7 +816,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         ResourceType resourceType = ResourceType.forString(resourceSyncPayloadDTO.getResourceType());
         List<DevopsEnvResourceDTO> devopsEnvResourceDTOS;
         if (resourceType == null) {
-            resourceType = ResourceType.forString("MissType");
+            resourceType = ResourceType.MISSTYPE;
         }
         if (resourceSyncPayloadDTO.getResources() == null) {
             return;
@@ -744,6 +862,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 }
                 break;
             default:
+                // TODO 可能需要增加其他资源的同步
                 break;
         }
     }
@@ -824,11 +943,48 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                         case SECRET_KIND:
                             syncSecret(envId, errorDevopsFiles, resourceCommitVO, objects);
                             break;
+                        case PERSISTENT_VOLUME_KIND:
+                            syncPersistentVolume(envId, errorDevopsFiles, resourceCommitVO, objects);
+                            break;
+                        case PERSISTENT_VOLUME_CLAIM_KIND:
+                            syncPersistentVolumeClaim(envId, errorDevopsFiles, resourceCommitVO, objects);
+                            break;
                         default:
                             syncCustom(envId, errorDevopsFiles, resourceCommitVO, objects);
                             break;
                     }
                 });
+    }
+
+    private void syncPersistentVolume(Long envId, List<DevopsEnvFileErrorDTO> envFileErrorFiles, ResourceCommitVO resourceCommitVO, String[] objects) {
+        DevopsPvDTO devopsPvDTO = devopsPvService.queryByEnvIdAndName(envId, objects[1]);
+        if (devopsPvDTO == null) {
+            // 目前用户环境是支持PVC而不支持PV，如果PV在非系统环境创建，应该被视为自定义资源
+            syncCustom(envId, envFileErrorFiles, resourceCommitVO, objects);
+            return;
+        }
+        DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
+                .baseQueryByEnvIdAndResourceId(envId, devopsPvDTO.getId(), ObjectType.PERSISTENTVOLUME.getType());
+        updateEnvCommandStatus(resourceCommitVO,
+                devopsPvDTO.getCommandId(),
+                devopsEnvFileResourceDTO,
+                PERSISTENT_VOLUME_KIND,
+                devopsPvDTO.getName(),
+                CommandStatus.SUCCESS.getStatus(),
+                envFileErrorFiles);
+    }
+
+    private void syncPersistentVolumeClaim(Long envId, List<DevopsEnvFileErrorDTO> envFileErrorFiles, ResourceCommitVO resourceCommitVO, String[] objects) {
+        DevopsPvcDTO devopsPvcDTO = devopsPvcService.queryByEnvIdAndName(envId, objects[1]);
+        DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
+                .baseQueryByEnvIdAndResourceId(envId, devopsPvcDTO.getId(), ObjectType.PERSISTENTVOLUMECLAIM.getType());
+        updateEnvCommandStatus(resourceCommitVO,
+                devopsPvcDTO.getCommandId(),
+                devopsEnvFileResourceDTO,
+                PERSISTENT_VOLUME_CLAIM_KIND,
+                devopsPvcDTO.getName(),
+                CommandStatus.SUCCESS.getStatus(),
+                envFileErrorFiles);
     }
 
     private void syncSecret(Long envId, List<DevopsEnvFileErrorDTO> envFileErrorFiles, ResourceCommitVO resourceCommitVO,
@@ -906,7 +1062,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 if (v1Service.getSpec().getExternalIPs() != null) {
                     devopsServiceDTO.setExternalIp(String.join(",", v1Service.getSpec().getExternalIPs()));
                 }
-                devopsServiceDTO.setLabels(json.serialize(v1Service.getMetadata().getLabels()));
+//                devopsServiceDTO.setLabels(json.serialize(v1Service.getMetadata().getLabels()));
                 devopsServiceDTO.setAnnotations(json.serialize(v1Service.getMetadata().getAnnotations()));
                 devopsServiceDTO.setId(devopsServiceService.baseCreate(devopsServiceDTO).getId());
 
@@ -1175,87 +1331,108 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
         logger.info("sync command status!");
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
-        List<Command> commands = new ArrayList<>();
-        getCommands(envId, commands);
+        List<Command> commands = getCommandsToSync(envId);
 
         agentCommandService.gitopsSyncCommandStatus(clusterId, devopsEnvironmentDTO.getCode(), envId, commands);
 
     }
 
-
-    private void getCommands(Long envId, List<Command> commands) {
+    /**
+     * 获取环境下最近三分钟的还在处理中的command
+     *
+     * @param envId 环境id
+     * @return command列表
+     */
+    private List<Command> getCommandsToSync(Long envId) {
+        // TODO 这个方法内的SQL待优化
+        List<Command> commandsToSend = new ArrayList<>();
         List<Command> removeCommands = new ArrayList<>();
-        appServiceInstanceService.baseListByEnvId(envId).stream().forEach(applicationInstanceDTO -> {
-            Long commandId = applicationInstanceDTO.getCommandId();
-            if (commandId != null) {
-                Command command = new Command();
-                command.setId(applicationInstanceDTO.getCommandId());
-                command.setResourceType(INSTANCE_KIND);
-                command.setResourceName(applicationInstanceDTO.getCode());
-                commands.add(command);
-            }
-        });
-        devopsServiceService.baseListByEnvId(envId).stream().forEach(devopsServiceDTO -> {
-            Long commandId = devopsServiceDTO.getCommandId();
-            if (commandId != null) {
-                Command command = new Command();
-                command.setId(devopsServiceDTO.getCommandId());
-                command.setResourceType(SERVICE_KIND);
-                command.setResourceName(devopsServiceDTO.getName());
-                commands.add(command);
-            }
-        });
-        devopsIngressService.baseListByEnvId(envId).stream().forEach(devopsIngressDTO -> {
-            Long commandId = devopsIngressDTO.getCommandId();
-            if (commandId != null) {
-                Command command = new Command();
-                command.setId(devopsIngressDTO.getCommandId());
-                command.setResourceType(INGRESS_KIND);
-                command.setResourceName(devopsIngressDTO.getName());
-                commands.add(command);
-            }
-        });
-        certificationService.baseListByEnvId(envId).stream().forEach(certificationDTO -> {
-            Long commandId = certificationDTO.getCommandId();
-            if (commandId != null) {
-                Command command = new Command();
-                command.setId(certificationDTO.getCommandId());
-                command.setResourceType(CERTIFICATE_KIND);
-                command.setResourceName(certificationDTO.getName());
-                commands.add(command);
-            }
-        });
-        for (DevopsConfigMapDTO devopsConfigMapDTO : devopsConfigMapService.baseListByEnv(envId)) {
-            Long commandId = devopsConfigMapDTO.getCommandId();
-            if (commandId != null) {
-                Command command = new Command();
-                command.setId(commandId);
-                command.setResourceType(CONFIGMAP_KIND);
-                command.setResourceName(devopsConfigMapDTO.getName());
-                commands.add(command);
-            }
-        }
-        devopsSecretService.baseListByEnv(envId).forEach(devopsSecretDTO -> {
-            Long commandId = devopsSecretDTO.getCommandId();
-            if (commandId != null) {
-                Command command = new Command();
-                command.setId(commandId);
-                command.setResourceType(SECRET_KIND);
-                command.setResourceName(devopsSecretDTO.getName());
-                commands.add(command);
-            }
-        });
+        // instance
+        commandsToSend.addAll(appServiceInstanceService
+                .baseListByEnvId(envId)
+                .stream()
+                .filter(i -> i.getCommandId() != null)
+                .map(i -> constructCommand(i.getCommandId(), INSTANCE_KIND, i.getCode()))
+                .collect(Collectors.toList()));
+
+        // service
+        commandsToSend.addAll(devopsServiceService
+                .baseListByEnvId(envId)
+                .stream()
+                .filter(i -> i.getCommandId() != null)
+                .map(i -> constructCommand(i.getCommandId(), SERVICE_KIND, i.getName()))
+                .collect(Collectors.toList()));
+
+        // ingress
+        commandsToSend.addAll(devopsIngressService
+                .baseListByEnvId(envId)
+                .stream()
+                .filter(i -> i.getCommandId() != null)
+                .map(i -> constructCommand(i.getCommandId(), INGRESS_KIND, i.getName()))
+                .collect(Collectors.toList()));
+
+        // certification
+        commandsToSend.addAll(certificationService
+                .baseListByEnvId(envId)
+                .stream()
+                .filter(i -> i.getCommandId() != null)
+                .map(i -> constructCommand(i.getCommandId(), CERTIFICATE_KIND, i.getName()))
+                .collect(Collectors.toList()));
+
+        // configMap
+        commandsToSend.addAll(devopsConfigMapService
+                .baseListByEnv(envId)
+                .stream()
+                .filter(i -> i.getCommandId() != null)
+                .map(i -> constructCommand(i.getCommandId(), CONFIGMAP_KIND, i.getName()))
+                .collect(Collectors.toList()));
+
+        // secret
+        commandsToSend.addAll(devopsSecretService
+                .baseListByEnv(envId)
+                .stream()
+                .filter(i -> i.getCommandId() != null)
+                .map(i -> constructCommand(i.getCommandId(), SECRET_KIND, i.getName()))
+                .collect(Collectors.toList()));
+
+        // TODO 先注释掉，pv和pvc的创建逻辑调通后解除注释
+//        // pvc
+//        commandsToSend.addAll(devopsPvcService
+//                .baseListByEnvId(envId)
+//                .stream()
+//                .filter(i -> i.getCommandId() != null)
+//                .map(i -> constructCommand(i.getCommandId(), PERSISTENT_VOLUME_CLAIM_KIND, i.getName()))
+//                .collect(Collectors.toList()));
+//
+//        // pv
+//        commandsToSend.addAll(devopsPvService
+//                .baseListByEnvId(envId)
+//                .stream()
+//                .filter(i -> i.getCommandId() != null)
+//                .map(i -> constructCommand(i.getCommandId(), PERSISTENT_VOLUME_KIND, i.getName()))
+//                .collect(Collectors.toList()));
+
         Date d = new Date();
-        if (!commands.isEmpty()) {
-            commands.stream().forEach(command -> {
+        if (!commandsToSend.isEmpty()) {
+            commandsToSend.forEach(command -> {
                 DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(command.getId());
                 command.setCommit(devopsEnvCommandDTO.getSha());
                 if (!CommandStatus.OPERATING.getStatus().equals(devopsEnvCommandDTO.getStatus()) || (CommandStatus.OPERATING.getStatus().equals(devopsEnvCommandDTO.getStatus()) && d.getTime() - devopsEnvCommandDTO.getLastUpdateDate().getTime() <= 180000)) {
                     removeCommands.add(command);
                 }
             });
-            commands.removeAll(removeCommands);
+            commandsToSend.removeAll(removeCommands);
         }
+
+        return commandsToSend;
+    }
+
+    private Command constructCommand(Long commandId, String resourceKind, String resourceName) {
+        Command command = new Command();
+        command.setId(commandId);
+        command.setResourceType(resourceKind);
+        command.setResourceName(resourceName);
+        return command;
     }
 
 
@@ -1269,8 +1446,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
         logger.info("sync command status result: {}.", msg);
         List<Command> commands = JSONArray.parseArray(msg, Command.class);
-        List<Command> oldCommands = new ArrayList<>();
-        getCommands(envId, oldCommands);
+        List<Command> oldCommands = getCommandsToSync(envId);
         if (!oldCommands.isEmpty()) {
             oldCommands.stream().filter(oldCommand -> oldCommand.getId() != null).forEach(command ->
                     commands.stream().filter(command1 -> command1.getId() != null && command1.getId().equals(command.getId())).forEach(command1 -> {
@@ -1397,6 +1573,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             podUpdateVO.setReleaseNames(KeyParseUtil.getReleaseName(key));
             podUpdateVO.setStatus(0L);
 
+            // 将Pod Running的状态发送给敏捷组
             producer.applyAndReturn(
                     StartSagaBuilder
                             .newBuilder()
@@ -1466,32 +1643,52 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
     @Override
     public void getCertManagerInfo(String payloadMsg, Long clusterId) {
-        if (payloadMsg == null) {
-            agentCommandService.createCertManager(clusterId);
+        if (ObjectUtils.isEmpty(payloadMsg)) {
+            return;
+        }
+        DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceService.queryByClusterIdAndType(clusterId, ClusterResourceType.CERTMANAGER.getType());
+        if (!ObjectUtils.isEmpty(devopsClusterResourceDTO)) {
+            AgentMsgVO agentMsgVO = json.deserialize(payloadMsg, AgentMsgVO.class);
+            if (!ObjectUtils.isEmpty(payloadMsg) && CertManagerConstants.HELMRELEASEINSTALLFAILED.equals(agentMsgVO.getType())) {
+                devopsClusterResourceService.updateCertMangerStatus(clusterId, ClusterResourceStatus.UNINSTALLED.getStatus(), agentMsgVO.getPayload());
+            } else {
+                devopsClusterResourceService.updateCertMangerStatus(clusterId, ClusterResourceStatus.DISABLED.getStatus(), null);
+            }
         }
     }
 
 
-    private void updateResourceStatus(Long envId, DevopsEnvCommandDTO devopsEnvCommandDTO, InstanceStatus running, ServiceStatus running2, IngressStatus running3, CertificationStatus active) {
+    private void updateResourceStatus(Long envId,
+                                      DevopsEnvCommandDTO devopsEnvCommandDTO,
+                                      InstanceStatus instanceStatus,
+                                      ServiceStatus serviceStatus,
+                                      IngressStatus ingressStatus,
+                                      CertificationStatus certificationStatus) {
         if (devopsEnvCommandDTO.getObject().equals(INSTANCE_KIND)) {
             AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQuery(devopsEnvCommandDTO.getObjectId());
-            appServiceInstanceDTO.setStatus(running.getStatus());
-            appServiceInstanceService.updateStatus(appServiceInstanceDTO);
+            if (appServiceInstanceDTO != null
+                    && !InstanceStatus.RUNNING.getStatus().equals(appServiceInstanceDTO.getStatus())) {
+                appServiceInstanceDTO.setStatus(instanceStatus.getStatus());
+                appServiceInstanceService.updateStatus(appServiceInstanceDTO);
+            }
         }
         if (devopsEnvCommandDTO.getObject().equals(SERVICE_KIND)) {
             DevopsServiceDTO devopsServiceDTO = devopsServiceService.baseQuery(devopsEnvCommandDTO.getObjectId());
-            devopsServiceDTO.setStatus(running2.getStatus());
+            devopsServiceDTO.setStatus(serviceStatus.getStatus());
             devopsServiceService.updateStatus(devopsServiceDTO);
         }
         if (devopsEnvCommandDTO.getObject().equals(INGRESS_KIND)) {
             DevopsIngressDTO devopsIngressDTO = devopsIngressService.baseQuery(devopsEnvCommandDTO.getObjectId());
-            devopsIngressService.updateStatus(envId, devopsIngressDTO.getName(), running3.getStatus());
+            devopsIngressService.updateStatus(envId, devopsIngressDTO.getName(), ingressStatus.getStatus());
         }
         if (devopsEnvCommandDTO.getObject().equals(CERTIFICATE_KIND)) {
             CertificationDTO certificationDTO = certificationService.baseQueryById(devopsEnvCommandDTO.getObjectId());
-            certificationDTO.setStatus(active.getStatus());
+            certificationDTO.setStatus(certificationStatus.getStatus());
             certificationService.updateStatus(certificationDTO);
         }
+        // TODO by zmf pvc
+
+        // TODO by zmf pv
     }
 
     @Override
@@ -1636,6 +1833,16 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 podMetricsRedisInfoVOS.add(podMetricsRedisInfoVO);
             });
             agentPodService.handleRealTimePodData(podMetricsRedisInfoVOS);
+        }
+    }
+
+    @Override
+    public void unloadCertManager(String payload, Long clusterId) {
+        AgentMsgVO agentMsgVO = json.deserialize(payload, AgentMsgVO.class);
+        if (!ObjectUtils.isEmpty(agentMsgVO) && CertManagerConstants.HELMRELEASEDELETEFAILED.equals(agentMsgVO.getType())) {
+            devopsClusterResourceService.updateCertMangerStatus(clusterId, null, agentMsgVO.getPayload());
+        } else {
+            devopsClusterResourceService.unloadCertManager(clusterId);
         }
     }
 

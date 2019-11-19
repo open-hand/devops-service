@@ -22,4 +22,18 @@ public interface DevopsDeployValueMapper extends Mapper<DevopsDeployValueDTO> {
                                              @Param("params") List<String> params);
 
     DevopsDeployValueDTO queryById(@Param("valueId") Long id);
+
+    List<DevopsDeployValueDTO> listByOptionsWithOwner(@Param("projectId") Long projectId,
+                                                      @Param("appServiceId") Long appServiceId,
+                                                      @Param("envId") Long envId,
+                                                      @Param("userId") Long userId,
+                                                      @Param("searchParam") Map<String, Object> searchParam,
+                                                      @Param("params") List<String> params);
+
+    List<DevopsDeployValueDTO> listByOptionsWithMember(@Param("projectId") Long projectId,
+                                                       @Param("appServiceId") Long appServiceId,
+                                                       @Param("envId") Long envId,
+                                                       @Param("userId") Long userId,
+                                                       @Param("searchParam") Map<String, Object> searchParam,
+                                                       @Param("params") List<String> params);
 }

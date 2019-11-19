@@ -33,7 +33,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
       intlPrefix,
       treeDs,
     } = useResourceStore();
-    const istStore = useStore();
+    const istStore = useStore({ defaultKey: getViewType === 'instance' ? 'cases' : 'details' });
 
     const tabs = useMemo(() => ({
       CASES_TAB: 'cases',
@@ -47,6 +47,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
       intl,
       intlPrefix,
     })), []);
+
 
     function freshTree() {
       treeDs.query();
@@ -99,6 +100,13 @@ export const StoreProvider = injectIntl(inject('AppState')(
               method: 'post',
               data: postData,
             };
+          };
+          podsDs.transport.destroy = ({ data }) => {
+            const [envId, appId] = parentId.split('-');
+            const podId = data[0].id;
+            return {
+              url: `devops/v1/projects/${projectId}/pods/${podId}?env_id=${envId}`,
+              method: 'delete' };
           };
           queryData();
         }

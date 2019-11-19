@@ -1,15 +1,14 @@
 package io.choerodon.devops.infra.feign;
 
-import java.util.List;
 import java.util.Map;
-
-import io.choerodon.devops.api.vo.sonar.*;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.QueryMap;
+
+import io.choerodon.devops.api.vo.sonar.*;
 
 /**
  * Created by Sheep on 2019/5/6.

@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Action, Choerodon } from '@choerodon/boot';
-import { Table, Modal } from 'choerodon-ui/pro';
+import { Table, Modal, Tooltip } from 'choerodon-ui/pro';
 import TimePopover from '../../../../../components/time-popover';
 import UserInfo from '../../../../../components/userInfo';
 import ClickText from '../../../../../components/click-text';
@@ -105,12 +105,23 @@ export default function DeployConfig() {
   }
 
   function renderName({ value, record }) {
-    return <ClickText
-      clickAble={!disabled}
-      value={value}
-      onClick={openModifyModal}
-      record={record}
-    />;
+    return (
+      <ClickText
+        clickAble={!disabled}
+        value={value}
+        onClick={openModifyModal}
+        record={record}
+        showToolTip
+      />
+    );
+  }
+
+  function renderDescription({ value }) {
+    return (
+      <Tooltip title={value}>
+        {value}
+      </Tooltip>
+    );
   }
 
   function renderActions({ record }) {
@@ -138,11 +149,11 @@ export default function DeployConfig() {
     >
       <Column name="name" sortable renderer={renderName} />
       {!disabled && <Column renderer={renderActions} width={70} />}
-      <Column name="description" sortable />
-      <Column name="appServiceName" />
-      <Column name="envName" />
+      <Column name="description" renderer={renderDescription} />
+      <Column name="appServiceName" sortable />
+      <Column name="envName" sortable />
       <Column name="createUserRealName" renderer={renderUser} />
-      <Column name="lastUpdateDate" renderer={renderDate} width={100} />
+      <Column name="lastUpdateDate" renderer={renderDate} width={100} sortable />
     </Table>
   </div>);
 }

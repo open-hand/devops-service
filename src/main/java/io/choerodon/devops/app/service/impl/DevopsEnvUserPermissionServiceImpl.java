@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import io.choerodon.base.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsEnvUserVO;
 import io.choerodon.devops.app.service.DevopsEnvUserPermissionService;
@@ -47,14 +47,14 @@ public class DevopsEnvUserPermissionServiceImpl implements DevopsEnvUserPermissi
     }
 
     @Override
-    public PageInfo<DevopsEnvUserVO> pageByOptions(Long envId, PageRequest pageRequest,
+    public PageInfo<DevopsEnvUserVO> pageByOptions(Long envId, Pageable pageable,
                                                    String params) {
         Map<String, Object> maps = TypeUtil.castMapParams(params);
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
         List<String> paramList = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
 
         return ConvertUtils.convertPage(
-                PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize())
+                PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize())
                         .doSelectPageInfo(() -> devopsEnvUserPermissionMapper
                                 .listUserEnvPermissionByOption(envId, searchParamMap, paramList)),
                 DevopsEnvUserVO.class);

@@ -18,4 +18,7 @@ public interface DevopsEnvCommandMapper extends Mapper<DevopsEnvCommandDTO> {
     List<DevopsEnvCommandDTO> listAllInstanceCommandToMigrate();
 
     void updateSha(@Param("id") Long commandId, @Param("sha") String sha);
+
+    void deleteByObjectTypeAndObjectId(@Param("objectType") String objectType,
+                                       @Param("objectId") Long objectId);
 }

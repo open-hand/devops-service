@@ -205,13 +205,6 @@ const IstModals = injectIntl(observer(() => {
       group: 1,
       disabled: btnDisabled,
     }, {
-      name: formatMessage({ id: `${intlPrefix}.modal.detail` }),
-      icon: 'find_in_page',
-      handler: openDetailModal,
-      display: true,
-      group: 2,
-      disabled: !status,
-    }, {
       name: formatMessage({ id: 'refresh' }),
       icon: 'refresh',
       handler: refresh,

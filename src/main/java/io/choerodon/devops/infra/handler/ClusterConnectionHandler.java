@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import io.choerodon.devops.infra.util.FileUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -17,7 +16,9 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.ClusterSessionVO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.enums.EnvironmentType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.util.GitOpsUtil;
 import io.choerodon.devops.infra.util.GitUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 
@@ -133,22 +134,27 @@ public class ClusterConnectionHandler {
     }
 
 
-    public String handDevopsEnvGitRepository(Long projectId, String envCode, String envRsa) {
+    public String handDevopsEnvGitRepository(Long projectId, String envCode, String envRsa, String envType, String clusterCode) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         //本地路径
-        String path = String.format("gitops/%s/%s/%s",
-                organizationDTO.getCode(), projectDTO.getCode(), envCode);
+        String path = GitOpsUtil.getLocalPathToStoreEnv(organizationDTO.getCode(), projectDTO.getCode(), clusterCode, envCode);
         //生成环境git仓库ssh地址
         String url = GitUtil.getGitlabSshUrl(pattern, gitlabSshUrl, organizationDTO.getCode(),
-                projectDTO.getCode(), envCode);
+                projectDTO.getCode(), envCode, EnvironmentType.forValue(envType), clusterCode);
 
         File file = new File(path);
         if (!file.exists()) {
             gitUtil.cloneBySsh(path, url, envRsa);
         } else {
-            FileUtil.deleteDirectory(file);
-            gitUtil.cloneBySsh(path, url, envRsa);
+            String localPath = String.format("%s%s", path, "/.git");
+            // 如果文件夾存在并且文件夹不为空,去拉取新的配置
+            // 反之克隆远程的仓库的文件
+            if (file.isDirectory() && file.listFiles().length > 0) {
+                GitUtil.pullBySsh(localPath, envRsa);
+            } else {
+                gitUtil.cloneBySsh(path, url, envRsa);
+            }
         }
         return path;
     }

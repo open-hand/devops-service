@@ -1,16 +1,24 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.List;
 import java.util.Map;
 
 import io.kubernetes.client.models.V1EndpointAddress;
 import io.kubernetes.client.models.V1EndpointPort;
 import io.kubernetes.client.models.V1Endpoints;
+import org.springframework.stereotype.Component;
 
+import io.choerodon.devops.infra.dto.DevopsEnvFileResourceDTO;
+import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.devops.infra.enums.GitOpsObjectError;
 
+@Component
 public class ConvertV1EndPointsServiceImpl extends ConvertK8sObjectService<V1Endpoints> {
+    public ConvertV1EndPointsServiceImpl() {
+        super(V1Endpoints.class);
+    }
 
     @Override
     public void checkParameters(V1Endpoints v1Endpoints, Map<String, String> objectPath) {
@@ -44,5 +52,16 @@ public class ConvertV1EndPointsServiceImpl extends ConvertK8sObjectService<V1End
                 }
             }
         }
+    }
+
+    @Override
+    public void checkIfExist(List<V1Endpoints> v1EndpointsList, Long envId, List<DevopsEnvFileResourceDTO> beforeSyncDelete, Map<String, String> objectPath, V1Endpoints v1Endpoints) {
+        // 暂不做校验
+        v1EndpointsList.add(v1Endpoints);
+    }
+
+    @Override
+    public ResourceType getType() {
+        return ResourceType.ENDPOINTS;
     }
 }

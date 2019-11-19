@@ -1,12 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 
-import javax.annotation.Nullable;
-
 import feign.FeignException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.eventhandler.payload.GitlabGroupPayload;
 import io.choerodon.devops.app.service.DevopsProjectService;
@@ -15,15 +10,31 @@ import io.choerodon.devops.app.service.UserAttrService;
 import io.choerodon.devops.infra.dto.DevopsProjectDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.dto.gitlab.GroupDTO;
+import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.enums.AccessLevel;
 import io.choerodon.devops.infra.enums.Visibility;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
+import io.choerodon.devops.infra.util.GitOpsUtil;
+import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+import static io.choerodon.devops.infra.constant.GitOpsConstants.*;
 
 @Service
 public class GitlabGroupServiceImpl implements GitlabGroupService {
-    private static final String GROUP_NAME_FORMAT = "%s-%s%s";
-    private static final String ENV_GROUP_SUFFIX = "-gitops";
+    private static Logger LOGGER = LoggerFactory.getLogger(GitlabGroupServiceImpl.class);
 
+    @Autowired
+    private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
     private DevopsProjectService devopsProjectService;
     @Autowired
@@ -34,13 +45,15 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
     @Override
     public void createGroups(GitlabGroupPayload gitlabGroupPayload) {
         createGroup(gitlabGroupPayload, ENV_GROUP_SUFFIX);
-        createGroup(gitlabGroupPayload, null);
+        createGroup(gitlabGroupPayload, CLUSTER_ENV_GROUP_SUFFIX);
+        createGroup(gitlabGroupPayload, APP_SERVICE_SUFFIX);
     }
 
     @Override
     public void updateGroups(GitlabGroupPayload gitlabGroupPayload) {
         updateGroup(gitlabGroupPayload, ENV_GROUP_SUFFIX);
-        updateGroup(gitlabGroupPayload, null);
+        updateGroup(gitlabGroupPayload, CLUSTER_ENV_GROUP_SUFFIX);
+        updateGroup(gitlabGroupPayload, APP_SERVICE_SUFFIX);
     }
 
     @Override
@@ -57,18 +70,46 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
         return groupDTO;
     }
 
-    private void createGroup(GitlabGroupPayload gitlabGroupPayload, @Nullable final String suffix) {
-        final String actualSuffix = suffix == null ? "" : suffix;
+    /**
+     * create cluster env group
+     *
+     * @param projectDTO      choerodon平台项目
+     * @param organizationDTO choerodon平台组织
+     * @param userAttrDTO     当前用户
+     */
+    @Override
+    public void createClusterEnvGroup(ProjectDTO projectDTO, OrganizationDTO organizationDTO, UserAttrDTO userAttrDTO) {
+        GitlabGroupPayload payload = new GitlabGroupPayload();
+        payload.setOrganizationCode(organizationDTO.getCode());
+        payload.setOrganizationName(organizationDTO.getName());
+        payload.setProjectCode(projectDTO.getCode());
+        payload.setProjectName(projectDTO.getName());
+        payload.setProjectId(projectDTO.getId());
+        payload.setUserId(userAttrDTO.getIamUserId());
+        createGroup(payload, CLUSTER_ENV_GROUP_SUFFIX);
 
+        List<Long> ownerIds = baseServiceClientOperator.getAllMemberIdsWithoutMember(projectDTO.getId());
+        DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectDTO.getId());
+        if (devopsProjectDTO.getDevopsClusterEnvGroupId() == null) {
+            throw new CommonException("error.cluster.env.group.create");
+        }
+        ownerIds.forEach(id -> {
+                    UserAttrDTO ownerAttrDTO = userAttrService.baseQueryById(id);
+                    gitlabServiceClientOperator.createProjectMember(devopsProjectDTO.getDevopsClusterEnvGroupId().intValue(),
+                            new MemberDTO(ownerAttrDTO.getGitlabUserId().intValue(), AccessLevel.MASTER.value, ""));
+                }
+        );
+    }
+
+    private void createGroup(GitlabGroupPayload gitlabGroupPayload, final String suffix) {
         GroupDTO group = new GroupDTO();
 
         // name: orgName-projectName + suffix
-        String name = String.format(GROUP_NAME_FORMAT, gitlabGroupPayload.getOrganizationName(),
-                gitlabGroupPayload.getProjectName(), actualSuffix);
+        String name = GitOpsUtil.renderGroupName(gitlabGroupPayload.getOrganizationName(),
+                gitlabGroupPayload.getProjectName(), suffix);
         // path: orgName-projectCode + suffix
-        String path = String.format(GROUP_NAME_FORMAT, gitlabGroupPayload.getOrganizationCode(),
-                gitlabGroupPayload.getProjectCode(), actualSuffix);
-
+        String path = GitOpsUtil.renderGroupPath(gitlabGroupPayload.getOrganizationCode(),
+                gitlabGroupPayload.getProjectCode(), suffix);
         group.setName(name);
         group.setPath(path);
 
@@ -81,12 +122,9 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
             groupDTO = gitlabServiceClientOperator.createGroup(group, TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         }
 
+
         DevopsProjectDTO devopsProjectDO = new DevopsProjectDTO(gitlabGroupPayload.getProjectId());
-        if (ENV_GROUP_SUFFIX.equals(suffix)) {
-            devopsProjectDO.setDevopsEnvGroupId(TypeUtil.objToLong(groupDTO.getId()));
-        } else {
-            devopsProjectDO.setDevopsAppGroupId(TypeUtil.objToLong(groupDTO.getId()));
-        }
+        setCertainGroupIdBySuffix(suffix, TypeUtil.objToLong(groupDTO.getId()), devopsProjectDO);
         devopsProjectService.baseUpdate(devopsProjectDO);
     }
 
@@ -94,31 +132,24 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
      * 更新组
      *
      * @param gitlabGroupPayload 项目信息
-     * @param suffix             组名后缀，可为 null
+     * @param suffix             组名后缀
      */
-    private void updateGroup(GitlabGroupPayload gitlabGroupPayload, @Nullable final String suffix) {
-        final String actualSuffix = suffix == null ? "" : suffix;
-
+    private void updateGroup(GitlabGroupPayload gitlabGroupPayload, final String suffix) {
         GroupDTO group = new GroupDTO();
 
         // name: orgName-projectName + suffix
-        String name = String.format(GROUP_NAME_FORMAT, gitlabGroupPayload.getOrganizationName(),
-                gitlabGroupPayload.getProjectName(), actualSuffix);
+        String name = GitOpsUtil.renderGroupName(gitlabGroupPayload.getOrganizationName(),
+                gitlabGroupPayload.getProjectName(), suffix);
         // path: orgName-projectCode + suffix
-        String path = String.format(GROUP_NAME_FORMAT, gitlabGroupPayload.getOrganizationCode(),
-                gitlabGroupPayload.getProjectCode(), actualSuffix);
+        String path = GitOpsUtil.renderGroupPath(gitlabGroupPayload.getOrganizationCode(),
+                gitlabGroupPayload.getProjectCode(), suffix);
         group.setName(name);
         group.setPath(path);
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(gitlabGroupPayload.getUserId());
         DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(gitlabGroupPayload.getProjectId());
 
-        Integer groupId;
-        if (ENV_GROUP_SUFFIX.equals(suffix)) {
-            groupId = TypeUtil.objToInteger(devopsProjectDTO.getDevopsEnvGroupId());
-        } else {
-            groupId = TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId());
-        }
+        Integer groupId = getCertainGroupIdBySuffix(suffix, devopsProjectDTO);
 
         try {
             gitlabServiceClientOperator.updateGroup(groupId, TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), group);
@@ -127,4 +158,46 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
         }
     }
 
+    /**
+     * 根据suffix值的不同将groupId设置在不同的字段
+     *
+     * @param suffix           组 后缀
+     * @param groupId          GitLab组id
+     * @param devopsProjectDTO project
+     */
+    private void setCertainGroupIdBySuffix(String suffix, Long groupId, DevopsProjectDTO devopsProjectDTO) {
+        switch (suffix) {
+            case APP_SERVICE_SUFFIX:
+                devopsProjectDTO.setDevopsAppGroupId(groupId);
+                break;
+            case ENV_GROUP_SUFFIX:
+                devopsProjectDTO.setDevopsEnvGroupId(groupId);
+                break;
+            case CLUSTER_ENV_GROUP_SUFFIX:
+                devopsProjectDTO.setDevopsClusterEnvGroupId(groupId);
+                break;
+            default:
+                break;
+        }
+    }
+
+    /**
+     * 根据suffix值获取groupId
+     *
+     * @param suffix           组后缀
+     * @param devopsProjectDTO project
+     * @return GitLab组id
+     */
+    private Integer getCertainGroupIdBySuffix(String suffix, DevopsProjectDTO devopsProjectDTO) {
+        switch (suffix) {
+            case APP_SERVICE_SUFFIX:
+                return TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId());
+            case ENV_GROUP_SUFFIX:
+                return TypeUtil.objToInteger(devopsProjectDTO.getDevopsEnvGroupId());
+            case CLUSTER_ENV_GROUP_SUFFIX:
+                return TypeUtil.objToInteger(devopsProjectDTO.getDevopsClusterEnvGroupId());
+            default:
+                return null;
+        }
+    }
 }

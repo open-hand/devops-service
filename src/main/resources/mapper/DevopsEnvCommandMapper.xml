@@ -67,4 +67,11 @@ WHERE
          dc.sha = #{sha}
         WHERE dc.id = #{id}
     </update>
+
+    <delete id="deleteByObjectTypeAndObjectId">
+        DELETE
+        FROM devops_env_command
+        WHERE object = #{objectType,jdbcType=VARCHAR}
+        AND object_id = #{objectId,jdbcType=BIGINT}
+    </delete>
 </mapper>

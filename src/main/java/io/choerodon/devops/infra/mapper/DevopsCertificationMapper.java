@@ -42,4 +42,6 @@ public interface DevopsCertificationMapper extends Mapper<CertificationDTO> {
     CertificationDTO queryDetailById(@Param("certId") Long certId);
 
     List<CertificationDTO> listAllOrgCertificationToMigrate();
+
+    List<CertificationDTO> listClusterCertification(@Param("clusterId") Long clusterId);
 }

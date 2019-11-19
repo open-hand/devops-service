@@ -59,7 +59,7 @@ export default function EmptyShown() {
       describe={formatMessage({ id: `empty.tips.env.${access ? 'owner' : 'member'}` })}
       pathname="/devops/environment"
       access={access}
-      btnText={formatMessage({ id: 'empty.create.env' })}
+      btnText={formatMessage({ id: 'empty.link.env' })}
     /> : <Loading display />}
   </Fragment>;
 }

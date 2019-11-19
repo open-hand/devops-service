@@ -3,7 +3,7 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 
 import com.github.pagehelper.PageInfo;
-import io.choerodon.base.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.devops.api.vo.DevopsCustomizeResourceVO;
 import io.choerodon.devops.api.vo.DevopsCustomizeResourceReqVO;
 import io.choerodon.devops.infra.dto.DevopsCustomizeResourceDTO;
@@ -50,11 +50,11 @@ public interface DevopsCustomizeResourceService {
 
     /**
      * @param envId 环境id
-     * @param pageRequest 分页参数
+     * @param pageable 分页参数
      * @param params 查询参数
      * @return 分页后资源
      */
-    PageInfo<DevopsCustomizeResourceVO> pageResources(Long envId, PageRequest pageRequest, String params);
+    PageInfo<DevopsCustomizeResourceVO> pageResources(Long envId, Pageable pageable, String params);
 
     DevopsCustomizeResourceDTO baseCreate(DevopsCustomizeResourceDTO devopsCustomizeResourceDTO);
 
@@ -66,7 +66,7 @@ public interface DevopsCustomizeResourceService {
 
     DevopsCustomizeResourceDTO queryByEnvIdAndKindAndName(Long envId, String kind, String name);
 
-    PageInfo<DevopsCustomizeResourceDTO> pageDevopsCustomizeResourceE(Long envId, PageRequest pageRequest, String params);
+    PageInfo<DevopsCustomizeResourceDTO> pageDevopsCustomizeResourceE(Long envId, Pageable pageable, String params);
 
     void checkExist(Long envId, String kind, String name);
 }

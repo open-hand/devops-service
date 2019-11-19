@@ -1,0 +1,16 @@
+prometheus:
+  persistence:
+    enabled: true
+    existingClaim: {{prometheus-pvc}}
+alertmanager:
+  persistence:
+    enabled: true
+    existingClaim: {{alertmanager-pvc}}
+grafana:
+  persistence:
+    enabled: true
+      existingClaim: {{grafana-pvc}}
+  defaultPassword: {{adminPassword}}
+  externalDomain:  {{host}}
+global:
+  clusterName: {{clusterName}}

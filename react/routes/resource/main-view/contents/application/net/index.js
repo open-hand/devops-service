@@ -66,13 +66,15 @@ const Networking = observer(() => {
   }
 
   function renderTargetType({ record }) {
-    const { instances, labels } = record.get('target') || {};
+    const { instances, selectors, targetAppServiceId } = record.get('target') || {};
     const appId = record.get('appServiceId');
 
     let type = 'EndPoints';
-    if (appId && instances && instances.length) {
+    if (targetAppServiceId) {
+      type = formatMessage({ id: 'all_instance' });
+    } else if (instances && instances.length) {
       type = formatMessage({ id: 'instance' });
-    } else if (labels) {
+    } else if (selectors) {
       type = formatMessage({ id: 'label' });
     }
 
@@ -80,11 +82,17 @@ const Networking = observer(() => {
   }
 
   function renderTarget({ record }) {
-    const { instances, labels, endPoints } = record.get('target') || {};
+    const { instances, selectors, endPoints, targetAppServiceId, targetAppServiceName } = record.get('target') || {};
     const node = [];
     const port = [];
     const len = endPoints ? 2 : 1;
-    if (instances && instances.length) {
+    if (targetAppServiceId && targetAppServiceName) {
+      node.push(
+        <div className="net-target-item">
+          <span>{targetAppServiceName}</span>
+        </div>
+      );
+    } else if (instances && instances.length) {
       _.forEach(instances, ({ id: itemId, code, status }) => {
         const targetClass = classnames({
           'net-target-item': true,
@@ -104,8 +112,8 @@ const Networking = observer(() => {
         }
       });
     }
-    if (!_.isEmpty(labels)) {
-      _.forEach(labels, (value, key) => node.push(
+    if (!_.isEmpty(selectors)) {
+      _.forEach(selectors, (value, key) => node.push(
         <div className="net-target-item" key={key}>
           <span>{key}</span>=<span>{value}</span>
         </div>,

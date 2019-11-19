@@ -15,6 +15,7 @@
         JOIN devops_env de ON dn.env_id = de.id
         WHERE
         dn.project_id=#{projectId}
+        AND de.type = 'user'
         <if test="envId != null">
             AND dn.env_id = #{envId}
         </if>

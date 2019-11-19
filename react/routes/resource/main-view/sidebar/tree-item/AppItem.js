@@ -3,7 +3,8 @@ import PropTypes from 'prop-types';
 import { observer } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
 import { Action, Choerodon } from '@choerodon/boot';
-import { Icon, Modal } from 'choerodon-ui/pro';
+import { Icon, Modal, Tooltip } from 'choerodon-ui/pro';
+import AppName from '../../../../../components/appName';
 import { handlePromptError } from '../../../../../utils';
 import eventStopProp from '../../../../../utils/eventStopProp';
 import { useResourceStore } from '../../../stores';
@@ -53,9 +54,25 @@ function AppItem({ name, record, intl: { formatMessage }, intlPrefix }) {
     }];
     return <Action placement="bottomRight" data={actionData} onClick={eventStopProp} />;
   }
-
+  function renderIcon() {
+    const type = record.get('type');
+    let iconType = 'application_market';
+    let message = 'market';
+    if (type === 'normal_server') {
+      iconType = 'widgets';
+      message = 'project';
+    } else if (type === 'share_service') {
+      iconType = 'share';
+      message = 'share';
+    }
+    return (
+      <Tooltip title={formatMessage({ id: message })}>
+        <Icon type={iconType} />
+      </Tooltip>
+    );
+  }
   return <Fragment>
-    <Icon type="widgets" />
+    {renderIcon()}
     {name}
     {getSuffix()}
   </Fragment>;

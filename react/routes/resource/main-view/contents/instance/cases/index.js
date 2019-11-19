@@ -51,7 +51,7 @@ const InstanceEvent = ({ index, jobPodStatus, name, log, flag, event, intlPrefix
     <div key={index} className="operation-content-step">
       <div className="content-step-title">
         {jobPodStatus === 'running'
-          ? <Progress strokeWidth={10} width={13} type="loading" />
+          ? <Progress type="loading" />
           : <Icon
             type="wait_circle"
             className={`content-step-icon-${jobPodStatus}`}
@@ -87,17 +87,17 @@ const Cases = observer(() => {
     intl: { formatMessage },
     casesDs,
   } = useInstanceStore();
-  const [podTime, setPodTime] = useState('');
+  const [currentCommandId, setCurrentCommandId] = useState(null);
   const [expandKeys, setExpandKeys] = useState([]);
   const [ignore, setIgnore] = useState(false);
   const loading = casesDs.status === 'loading';
 
   useEffect(() => {
-    setPodTime('');
+    setCurrentCommandId(null);
   }, [id, parentId]);
 
   function changeEvent(data, isIgnore) {
-    setPodTime(data);
+    setCurrentCommandId(data);
     setIgnore(isIgnore);
   }
 
@@ -140,15 +140,15 @@ const Cases = observer(() => {
     const record = casesDs.data;
     if (record.length) {
       const currentPod = casesDs.find((data) => {
-        const time = data.get('createTime');
-        return time === podTime;
+        const commandId = data.get('commandId');
+        return commandId === currentCommandId;
       });
       const data = currentPod || casesDs.get(0);
       return (
         <Fragment>
           <Operation
             handleClick={changeEvent}
-            active={podTime}
+            active={currentCommandId}
           />
           <div className="cases-operation-content">
             {istEventDom(data)}

@@ -14,7 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import io.choerodon.base.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsConfigMapRespVO;
 import io.choerodon.devops.api.vo.DevopsConfigMapVO;
@@ -101,7 +102,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
         }
         DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(devopsConfigMapVO.getType());
         //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-        String filePath = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getEnvIdRsa());
+        String filePath = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getEnvIdRsa(), devopsEnvironmentDTO.getType(), devopsEnvironmentDTO.getClusterCode());
         //在gitops库处理ingress文件
         operateEnvGitLabFile(
                 TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), v1ConfigMap, devopsConfigMapVO.getType().equals(CREATE_TYPE), filePath, devopsConfigMapDTO, userAttrDTO, devopsEnvCommandDTO, devopsConfigMapVO.getAppServiceId());
@@ -158,10 +159,10 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
     }
 
     @Override
-    public PageInfo<DevopsConfigMapRespVO> pageByOptions(Long projectId, Long envId, PageRequest pageRequest, String searchParam, Long appServiceId) {
+    public PageInfo<DevopsConfigMapRespVO> pageByOptions(Long projectId, Long envId, Pageable pageable, String searchParam, Long appServiceId) {
 
         PageInfo<DevopsConfigMapDTO> devopsConfigMapDTOPageInfo = basePageByEnv(
-                envId, pageRequest, searchParam, appServiceId);
+                envId, pageable, searchParam, appServiceId);
         devopsConfigMapDTOPageInfo.getList().forEach(devopsConfigMapRepDTO -> {
             List<String> keys = new ArrayList<>();
             gson.fromJson(devopsConfigMapRepDTO.getValue(), Map.class).forEach((key, value) ->
@@ -208,7 +209,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
 
 
         //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-        String path = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getEnvIdRsa());
+        String path = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getEnvIdRsa(), devopsEnvironmentDTO.getType(), devopsEnvironmentDTO.getClusterCode());
 
         //查询改对象所在文件中是否含有其它对象
         DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
@@ -306,10 +307,10 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
     }
 
     @Override
-    public PageInfo<DevopsConfigMapDTO> basePageByEnv(Long envId, PageRequest pageRequest, String params, Long appServiceId) {
+    public PageInfo<DevopsConfigMapDTO> basePageByEnv(Long envId, Pageable pageable, String params, Long appServiceId) {
         Map maps = gson.fromJson(params, Map.class);
         return PageHelper
-                .startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> devopsConfigMapMapper.listByEnv(envId,
+                .startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable)).doSelectPageInfo(() -> devopsConfigMapMapper.listByEnv(envId,
                         TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
                         TypeUtil.cast(maps.get(TypeUtil.PARAMS)),
                         appServiceId));

@@ -26,6 +26,8 @@ const InstanceTitle = ({
   status,
   name,
   errorText,
+  versionName,
+  formatMessage,
 }) => {
   const podSize = useMemo(() => ({
     width: 22,
@@ -38,7 +40,6 @@ const InstanceTitle = ({
       PADDING_COLOR,
     },
   } = useMainStore();
-
   return <Fragment>
     <PodCircle
       style={podSize}
@@ -53,24 +54,9 @@ const InstanceTitle = ({
       }]}
     />
     <span className="c7ncd-page-title-text">{name}</span>
-    {status === 'failed' && (
-      <Tooltip
-        title={errorText}
-        placement="bottom"
-        overlayClassName={`${prefixCls}-instance-page-title-error-tooltip`}
-      >
-        <Icon type="error" className={`${prefixCls}-instance-page-title-icon`} />
-      </Tooltip>
-    )}
-    {status === 'operating' && (
-      <Tooltip title="处理中">
-        <Progress
-          className={`${prefixCls}-instance-page-title-icon-loading`}
-          type="loading"
-          size="small"
-        />
-      </Tooltip>
-    )}
+    <span className="c7ncd-page-title-version">
+      ({versionName || (status === 'failed' && formatMessage({ id: 'deploy_failed' }))})
+    </span>
   </Fragment>;
 };
 
@@ -91,7 +77,7 @@ const InstanceContent = observer(() => {
     istStore,
     baseDs,
   } = useInstanceStore();
-
+  const viewType = resourceStore.getViewType;
   const { getSelectedMenu: { key: selectedKey } } = resourceStore;
 
 
@@ -108,6 +94,7 @@ const InstanceContent = observer(() => {
       const podRunningCount = record.get('podRunningCount');
       const podCount = record.get('podCount');
       const error = record.get('error');
+      const versionName = record.get('versionName');
       return {
         id,
         status,
@@ -115,6 +102,7 @@ const InstanceContent = observer(() => {
         podRunningCount,
         podCount,
         error,
+        versionName,
       };
     }
 
@@ -127,7 +115,7 @@ const InstanceContent = observer(() => {
       const menuItem = treeDs.find((item) => item.get('key') === selectedKey && item.get('id') === current.id);
       if (menuItem) {
         const previous = pick(menuItem.toData(), ['status', 'name', 'podRunningCount', 'podCount']);
-        const next = omit(current, ['id', 'error']);
+        const next = pick(current, ['status', 'name', 'podRunningCount', 'podCount']);
 
         if (!isEqual(previous, next)) {
           runInAction(() => {
@@ -151,6 +139,7 @@ const InstanceContent = observer(() => {
         podRunningCount,
         podCount,
         error,
+        versionName,
       } = current;
       const podUnlinkCount = computeUnlinkPod(podCount, podRunningCount);
       return <InstanceTitle
@@ -159,6 +148,8 @@ const InstanceContent = observer(() => {
         podRunningCount={podRunningCount}
         podUnlinkCount={podUnlinkCount}
         errorText={error}
+        versionName={versionName}
+        formatMessage={formatMessage}
       />;
     }
     return null;
@@ -178,7 +169,29 @@ const InstanceContent = observer(() => {
       podUnlinkCount={podUnlinkCount}
     />;
   }
-
+  function chooseTab() {
+    const detailsTab = <TabPane
+      key={DETAILS_TAB}
+      tab={formatMessage({ id: `${intlPrefix}.instance.tabs.details` })}
+    >
+      <Suspense fallback={<Spin />}>
+        <Details />
+      </Suspense>
+    </TabPane>;
+    const casesTab = <TabPane
+      key={CASES_TAB}
+      tab={formatMessage({ id: `${intlPrefix}.instance.tabs.cases` })}
+    >
+      <Suspense fallback={<Spin />}>
+        <Cases />
+      </Suspense>
+    </TabPane>;
+    if (viewType === 'instance') {
+      return [casesTab, detailsTab];
+    } else {
+      return [detailsTab, casesTab];
+    }
+  }
   return (
     <div className={`${prefixCls}-instance`}>
       <PageTitle content={getTitle()} fallback={getFallBack()} />
@@ -188,22 +201,7 @@ const InstanceContent = observer(() => {
         activeKey={istStore.getTabKey}
         onChange={handleChange}
       >
-        <TabPane
-          key={CASES_TAB}
-          tab={formatMessage({ id: `${intlPrefix}.instance.tabs.cases` })}
-        >
-          <Suspense fallback={<Spin />}>
-            <Cases />
-          </Suspense>
-        </TabPane>
-        <TabPane
-          key={DETAILS_TAB}
-          tab={formatMessage({ id: `${intlPrefix}.instance.tabs.details` })}
-        >
-          <Suspense fallback={<Spin />}>
-            <Details />
-          </Suspense>
-        </TabPane>
+        {chooseTab()}
         <TabPane
           key={PODS_TAB}
           tab={formatMessage({ id: `${intlPrefix}.instance.tabs.pods` })}

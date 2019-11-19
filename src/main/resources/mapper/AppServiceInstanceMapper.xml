@@ -16,6 +16,7 @@
                   AND dp.is_ready = TRUE) pod_running_count,
                ins.app_service_id,
                ins.app_service_version_id,
+               ins.effect_command_id,
                version.version as version_name,
                das.name as app_service_name,
                ins.env_id,
@@ -516,20 +517,18 @@
 
 
     <select id="checkCodeExist" resultType="java.lang.Boolean">
-      SELECT
-	count( 1 ) >0  exist
-FROM
-	devops_app_service_instance dasi
-WHERE
-	dasi.`code` = #{code}
-	AND #{code} IN ( SELECT dasi.`code` FROM devops_app_service_instance dasi
-	<if test="envIds != null">
-        WHERE dasi.env_id in
-        <foreach collection="envIds" item="envIds" index="index"
-                 open="(" close=")" separator=",">
-            #{envIds}
-        </foreach>
-    </if> )
+        SELECT count(1) > 0 exist
+        FROM devops_app_service_instance dasi
+        WHERE exists(
+                SELECT count(1)
+                FROM devops_env
+                WHERE dasi.env_id = devops_env.id
+                  AND cluster_id =
+                      (SELECT cluster_id
+                       FROM devops_env
+                       WHERE devops_env.id = #{envId})
+            )
+          and code = #{code}
     </select>
 
 
@@ -582,5 +581,23 @@ WHERE
         SELECT DISTINCT ins.env_id, ins.app_service_id
         FROM devops_app_service_instance ins
         WHERE ins.status != 'deleted'
+    </select>
+
+    <select id="listByProjectIdsAndAppServiceId" resultType="io.choerodon.devops.infra.dto.DevopsEnvAppServiceDTO">
+        select ins.* from devops_app_service_instance ins
+        left join devops_env env on env.id =ins.env_id
+        where
+        env.project_id in
+        <foreach collection="projectIds" item="projectId" open="(" separator=" , " close=")">
+           #{projectId}
+        </foreach>
+        AND ins.app_service_id = #{appServiceId}
+    </select>
+
+    <select id="isComponentDeployed" resultType="boolean">
+        SELECT COUNT(1) > 0
+        FROM devops_app_service_instance dasi
+        WHERE dasi.env_id = #{envId,jdbcType=BIGINT}
+        AND dasi.component_chart_name = #{componentChartName,jdbcType=VARCHAR}
     </select>
 </mapper>

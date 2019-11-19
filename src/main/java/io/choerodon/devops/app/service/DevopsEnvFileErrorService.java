@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.github.pagehelper.PageInfo;
 
-import io.choerodon.base.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.devops.api.vo.DevopsEnvFileErrorVO;
 import io.choerodon.devops.infra.dto.DevopsEnvFileErrorDTO;
 
@@ -18,7 +18,7 @@ public interface DevopsEnvFileErrorService {
 
     List<DevopsEnvFileErrorDTO> baseListByEnvId(Long envId);
 
-    PageInfo<DevopsEnvFileErrorDTO> basePageByEnvId(Long envId, PageRequest pageRequest);
+    PageInfo<DevopsEnvFileErrorDTO> basePageByEnvId(Long envId, Pageable pageable);
 
     void baseDelete(DevopsEnvFileErrorDTO devopsEnvFileErrorDTO);
 

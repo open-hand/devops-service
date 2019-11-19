@@ -112,7 +112,7 @@ export default function ({ intlPrefix, record, prefixCls, formatMessage }) {
           <span>{updater}</span>
         </li>
       </ul>
-      <hr className="net-hr" />
+      <div className="net-hr" />
       <p className={`${prefixCls}-net-title`}>标签</p>
       {record && record.get('labels')
         ? (_.map(record.get('labels'), (value, key) => (

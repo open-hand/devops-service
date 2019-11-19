@@ -11,6 +11,7 @@ import 'echarts/lib/component/title';
 import 'echarts/lib/component/legend';
 import 'echarts/lib/component/grid';  
 import './Submission.less';
+import UserInfo from '../../../components/userInfo';
 
 class LineChart extends PureComponent {
   static propTypes = {
@@ -184,32 +185,7 @@ class LineChart extends PureComponent {
       <Spin spinning={loading}>
         {tooltip ? (
           <div className="c7n-report-commits-title">
-            {hasAvatar ? (
-              <span className="c7n-report-commits-avatar">
-                {avatar ? (
-                  <Avatar size="small" src={avatar} />
-                ) : (
-                  <Avatar size="small">
-                    {name && userName
-                      ? name
-                        .toString()
-                        .slice(0, 1)
-                        .toUpperCase()
-                      : '?'}
-                  </Avatar>
-                )}
-              </span>
-            ) : null}
-            {id === 0 ? (
-              <Tooltip
-                placement="top"
-                title={formatMessage({ id: `${languageType}.commits.unknown` })}
-              >
-                {name}
-              </Tooltip>
-            ) : (
-              name
-            )}
+            <UserInfo name={name || '?'} avatar={avatar} size="large" showTooltip={false} />
             {count ? (
               <span className="c7n-report-commits-text">{count} commits</span>
             ) : null}

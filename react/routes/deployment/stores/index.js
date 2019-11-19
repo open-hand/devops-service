@@ -2,15 +2,14 @@ import React, { createContext, useContext, useEffect, useMemo } from 'react';
 import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
 import { DataSet } from 'choerodon-ui/pro';
+import { withRouter } from 'react-router-dom';
+
 import map from 'lodash/map';
 import ListDataSet from './ListDataSet';
-import PipelineDataSet from './PipelineDataSet';
 import DetailDataSet from './DetailDataSet';
 import useStore from './useStore';
 import usePipelineStore from './usePipelineStore';
-import ManualDeployDataSet from './ManualDeployDataSet';
 import OptionsDataSet from './OptionsDataSet';
-import TableSelectDataSet from './TableSelectDataSet';
 
 const Store = createContext();
 const STATUS = ['success', 'failed', 'deleted', 'pendingcheck', 'stop', 'running'];
@@ -19,12 +18,13 @@ export function useDeployStore() {
   return useContext(Store);
 }
 
-export const StoreProvider = injectIntl(inject('AppState')(
+export const StoreProvider = withRouter(injectIntl(inject('AppState')(
   (props) => {
     const {
       AppState: { currentMenuType: { projectId } },
       intl: { formatMessage },
       children,
+      location: { state },
     } = props;
     const intlPrefix = 'c7ncd.deploy';
     const deployTypeDs = useMemo(() => new DataSet({
@@ -52,15 +52,16 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const pipelineStore = usePipelineStore();
 
     const envOptionsDs = useMemo(() => new DataSet(OptionsDataSet()), []);
-    const valueIdOptionsDs = useMemo(() => new DataSet(OptionsDataSet()), []);
-    const versionOptionsDs = useMemo(() => new DataSet(OptionsDataSet()), []);
     const pipelineOptionsDs = useMemo(() => new DataSet(OptionsDataSet()), []);
 
     const listDs = useMemo(() => new DataSet(ListDataSet(intlPrefix, formatMessage, projectId, envOptionsDs, deployTypeDs, deployResultDs, pipelineOptionsDs)), [projectId]);
-    const pipelineDs = useMemo(() => new DataSet(PipelineDataSet(intlPrefix, formatMessage, projectId)), [projectId]);
     const detailDs = useMemo(() => new DataSet(DetailDataSet()), []);
-    const manualDeployDs = useMemo(() => new DataSet(ManualDeployDataSet(intlPrefix, formatMessage, projectId, envOptionsDs, valueIdOptionsDs, versionOptionsDs, deployStore)), [projectId]);
-    const tableSelectDs = useMemo(() => new DataSet(TableSelectDataSet(intlPrefix, formatMessage, envOptionsDs, pipelineOptionsDs, listDs)), []);
+
+    useEffect(() => {
+      if (state && state.pipelineId) {
+        listDs.queryDataSet.getField('pipelineId').set('defaultValue', state.pipelineId);
+      }
+    }, []);
 
     useEffect(() => {
       envOptionsDs.transport.read.url = `/devops/v1/projects/${projectId}/envs/list_by_active?active=true`;
@@ -82,12 +83,9 @@ export const StoreProvider = injectIntl(inject('AppState')(
       ],
       intlPrefix,
       listDs,
-      pipelineDs,
       detailDs,
       deployStore,
       pipelineStore,
-      manualDeployDs,
-      tableSelectDs,
       envOptionsDs,
       pipelineOptionsDs,
     };
@@ -97,4 +95,4 @@ export const StoreProvider = injectIntl(inject('AppState')(
       </Store.Provider>
     );
   },
-));
+)));

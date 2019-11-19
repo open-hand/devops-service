@@ -10,6 +10,7 @@ import TimePopover from '../../../components/timePopover';
 import { useAppTopStore } from '../stores';
 import { useAppServiceStore } from './stores';
 import CreateForm from '../modals/creat-form';
+import EditForm from '../modals/edit-form';
 import ImportForm from './modal/import-form';
 import StatusTag from '../components/status-tag';
 
@@ -19,6 +20,8 @@ const { Column } = Table;
 const modalKey1 = Modal.key();
 const modalKey2 = Modal.key();
 const modalKey3 = Modal.key();
+const createModalKey = Modal.key();
+const editModalKey = Modal.key();
 const modalStyle1 = {
   width: 380,
 };
@@ -53,7 +56,7 @@ const ListView = withRouter(observer((props) => {
     if (isInit && listDs.status === 'ready') {
       const { location: { state } } = props;
       if (state && state.openCreate) {
-        openModal(listDs.create());
+        openCreate();
       }
       setIsInit(false);
     }
@@ -141,7 +144,7 @@ const ListView = withRouter(observer((props) => {
     } else if (record.get('active')) {
       return;
     } else {
-      actionItems = pick(actionData, ['run']);
+      actionItems = pick(actionData, ['run', 'delete']);
     }
     return <Action data={Object.values(actionItems)} />;
   }
@@ -155,23 +158,18 @@ const ListView = withRouter(observer((props) => {
     }
   }
 
-  function openModal(record) {
-    const isModify = record.status !== 'add';
+  function openCreate() {
     Modal.open({
-      key: modalKey1,
+      key: createModalKey,
       drawer: true,
       style: modalStyle1,
-      title: <FormattedMessage id={`${intlPrefix}.${isModify ? 'edit' : 'create'}`} />,
+      title: formatMessage({ id: `${intlPrefix}.create` }),
       children: <CreateForm
-        dataSet={listDs}
-        record={record}
-        appServiceStore={appServiceStore}
-        projectId={projectId}
+        refresh={refresh}
         intlPrefix={intlPrefix}
         prefixCls={prefixCls}
       />,
-      okText: formatMessage({ id: isModify ? 'save' : 'create' }),
-      onCancel: () => handleCancel(listDs),
+      okText: formatMessage({ id: 'create' }),
     });
   }
 
@@ -201,8 +199,21 @@ const ListView = withRouter(observer((props) => {
   }
 
   function openEdit() {
-    appServiceStore.setAppServiceId(listDs.current.get('id'));
-    openModal(listDs.current);
+    const appServiceId = listDs.current.get('id');
+
+    Modal.open({
+      key: editModalKey,
+      drawer: true,
+      style: modalStyle1,
+      title: formatMessage({ id: `${intlPrefix}.edit` }),
+      children: <EditForm
+        refresh={refresh}
+        intlPrefix={intlPrefix}
+        prefixCls={prefixCls}
+        appServiceId={appServiceId}
+      />,
+      okText: formatMessage({ id: 'save' }),
+    });
   }
 
   function handleDelete() {
@@ -251,7 +262,7 @@ const ListView = withRouter(observer((props) => {
       >
         <Button
           icon="playlist_add"
-          onClick={() => openModal(listDs.create())}
+          onClick={openCreate}
         >
           <FormattedMessage id={`${intlPrefix}.create`} />
         </Button>
@@ -293,7 +304,7 @@ const ListView = withRouter(observer((props) => {
           <Column name="code" sortable />
           <Column name="type" renderer={renderType} />
           <Column name="repoUrl" renderer={renderUrl} />
-          <Column name="creationDate" renderer={renderDate} />
+          <Column name="creationDate" renderer={renderDate} sortable />
           <Column name="active" renderer={renderStatus} width="0.7rem" align="left" />
         </Table>
       </Content>

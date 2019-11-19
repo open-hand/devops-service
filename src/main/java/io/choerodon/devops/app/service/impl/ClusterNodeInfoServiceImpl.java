@@ -15,7 +15,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import io.choerodon.base.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.AgentNodeInfoVO;
 import io.choerodon.devops.api.vo.ClusterNodeInfoVO;
@@ -146,9 +146,9 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
     }
 
     @Override
-    public PageInfo<ClusterNodeInfoVO> pageClusterNodeInfo(Long clusterId, Long projectId, PageRequest pageRequest) {
-        long start = (long) (pageRequest.getPage() - 1) * (long) pageRequest.getSize();
-        long stop = start + (long) pageRequest.getSize() - 1;
+    public PageInfo<ClusterNodeInfoVO> pageClusterNodeInfo(Long clusterId, Long projectId, Pageable pageable) {
+        long start = (long) (pageable.getPageNumber() - 1) * (long) pageable.getPageSize();
+        long stop = start + (long) pageable.getPageSize() - 1;
         String redisKey = getRedisClusterKey(clusterId, projectId);
 
         long total = stringRedisTemplate.opsForList().size(redisKey);
@@ -159,13 +159,13 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
                 .map(node -> JSONObject.parseObject(node, ClusterNodeInfoVO.class))
                 .collect(Collectors.toList());
         PageInfo<ClusterNodeInfoVO> result = new PageInfo();
-        if (total < pageRequest.getSize() * pageRequest.getPage()) {
-            result.setSize(TypeUtil.objToInt(total) - (pageRequest.getSize() * (pageRequest.getPage() - 1)));
+        if (total < pageable.getPageSize() * pageable.getPageNumber()) {
+            result.setSize(TypeUtil.objToInt(total) - (pageable.getPageSize() * (pageable.getPageNumber() - 1)));
         } else {
-            result.setSize(pageRequest.getSize());
+            result.setSize(pageable.getPageSize());
         }
-        result.setPageSize(pageRequest.getSize());
-        result.setPageNum(pageRequest.getPage());
+        result.setPageSize(pageable.getPageSize());
+        result.setPageNum(pageable.getPageNumber());
         result.setTotal(total);
         result.setList(nodes);
         return result;

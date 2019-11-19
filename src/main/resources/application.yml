@@ -39,6 +39,9 @@ choerodon:
       enabled: true # 启用任务调度消费端
       thread-num: 1 # 任务调度消费线程数
       poll-interval-ms: 1000 # 拉取间隔，默认1000毫秒
+  resource:
+    jwt:
+      ignore: /workflow/**, /sonar/**, /ci, /sonar/info, /v2/api-docs, /agent/**, /ws/**, /gitlab/email, /webhook/**, /v2/choerodon/**, /choerodon/**, /actuator/**, /prometheus, /devops/**, /pre_stop
 agent:
   version: "0.5.0" # devops-service此版本所预期的 choerodon-agent 的版本
   serviceUrl: "agent.example.com" # 用于 choerodon-agent 连接 devops-service 的地址
@@ -79,4 +82,5 @@ logging:
   level:
     io.choerodon.event.consumer: debug
     com.zaxxer: debug
+    io.choerodon.feign: warn
   config: classpath:logback-spring.xml

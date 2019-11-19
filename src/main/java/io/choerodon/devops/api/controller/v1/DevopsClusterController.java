@@ -5,9 +5,9 @@ import java.util.Optional;
 import javax.validation.Valid;
 
 import com.github.pagehelper.PageInfo;
-import io.choerodon.base.annotation.Permission;
-import io.choerodon.base.domain.PageRequest;
-import io.choerodon.base.enums.ResourceType;
+import io.choerodon.core.annotation.Permission;
+import org.springframework.data.domain.Pageable;
+import io.choerodon.core.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.*;
@@ -147,7 +147,7 @@ public class DevopsClusterController {
      *
      * @param projectId   项目id
      * @param clusterId   集群id
-     * @param pageRequest 分页参数
+     * @param pageable 分页参数
      * @param params      查询参数
      * @return page
      */
@@ -160,10 +160,10 @@ public class DevopsClusterController {
             @ApiParam(value = "集群Id")
             @PathVariable(value = "cluster_id") Long clusterId,
             @ApiParam(value = "分页参数")
-            @ApiIgnore PageRequest pageRequest,
+            @ApiIgnore Pageable pageable,
             @ApiParam(value = "模糊搜索参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(devopsClusterService.pageRelatedProjects(projectId, clusterId, pageRequest, params))
+        return Optional.ofNullable(devopsClusterService.pageRelatedProjects(projectId, clusterId, pageable, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.project.query"));
     }
@@ -284,12 +284,12 @@ public class DevopsClusterController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
-            @ApiIgnore PageRequest pageRequest,
+            @ApiIgnore Pageable pageable,
             @ApiParam(value = "是否需要分页")
             @RequestParam(value = "doPage", required = false) Boolean doPage,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(devopsClusterService.pageClusters(projectId, doPage, pageRequest, params))
+        return Optional.ofNullable(devopsClusterService.pageClusters(projectId, doPage, pageable, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_CLUSTER_QUERY));
     }
@@ -339,7 +339,7 @@ public class DevopsClusterController {
      * @param projectId   项目id
      * @param clusterId   集群id
      * @param nodeName    节点名称
-     * @param pageRequest 分页参数
+     * @param pageable 分页参数
      * @param searchParam 查询参数
      * @return pods
      */
@@ -355,10 +355,10 @@ public class DevopsClusterController {
             @ApiParam(value = "节点名称", required = true)
             @RequestParam(value = "node_name") String nodeName,
             @ApiParam(value = "分页参数")
-            @ApiIgnore PageRequest pageRequest,
+            @ApiIgnore Pageable pageable,
             @ApiParam(value = "查询参数", required = false)
             @RequestBody(required = false) String searchParam) {
-        return Optional.ofNullable(devopsClusterService.pagePodsByNodeName(clusterId, nodeName, pageRequest, searchParam))
+        return Optional.ofNullable(devopsClusterService.pagePodsByNodeName(clusterId, nodeName, pageable, searchParam))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.node.pod.query", nodeName));
     }
@@ -368,7 +368,7 @@ public class DevopsClusterController {
      *
      * @param projectId   项目ID
      * @param clusterId   集群id
-     * @param pageRequest 分页参数
+     * @param pageable 分页参数
      * @return Page
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
@@ -381,8 +381,8 @@ public class DevopsClusterController {
             @ApiParam(value = "集群id", required = true)
             @RequestParam(value = "cluster_id") Long clusterId,
             @ApiParam(value = "分页参数")
-            @ApiIgnore PageRequest pageRequest) {
-        return new ResponseEntity<>(clusterNodeInfoService.pageClusterNodeInfo(clusterId, projectId, pageRequest), HttpStatus.OK);
+            @ApiIgnore Pageable pageable) {
+        return new ResponseEntity<>(clusterNodeInfoService.pageClusterNodeInfo(clusterId, projectId, pageable), HttpStatus.OK);
     }
 
 

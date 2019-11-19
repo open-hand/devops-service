@@ -2,6 +2,8 @@ package io.choerodon.devops.infra.dto;
 
 import javax.persistence.*;
 
+import io.swagger.annotations.ApiModelProperty;
+
 import io.choerodon.mybatis.entity.BaseDTO;
 
 /**
@@ -32,6 +34,9 @@ public class DevopsEnvironmentDTO extends BaseDTO {
     private String code;
     private String token;
 
+    @ApiModelProperty("环境的类型 user/system")
+    private String type;
+
     private String description;
     private Boolean isActive;
     private Long devopsEnvGroupId;
@@ -47,6 +52,8 @@ public class DevopsEnvironmentDTO extends BaseDTO {
     private Boolean permission;
     @Transient
     private String clusterName;
+    @Transient
+    private String clusterCode;
 
     public String getClusterName() {
         return clusterName;
@@ -224,5 +231,21 @@ public class DevopsEnvironmentDTO extends BaseDTO {
 
     public void setSkipCheckPermission(Boolean skipCheckPermission) {
         isSkipCheckPermission = skipCheckPermission;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getClusterCode() {
+        return clusterCode;
+    }
+
+    public void setClusterCode(String clusterCode) {
+        this.clusterCode = clusterCode;
     }
 }

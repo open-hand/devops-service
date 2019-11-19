@@ -19,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import io.choerodon.base.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.ProjectCertificationPermissionUpdateVO;
 import io.choerodon.devops.api.vo.ProjectCertificationVO;
@@ -102,7 +102,7 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
     }
 
     @Override
-    public PageInfo<ProjectReqVO> pageRelatedProjects(Long projectId, Long certId, PageRequest pageRequest, String params) {
+    public PageInfo<ProjectReqVO> pageRelatedProjects(Long projectId, Long certId, Pageable pageable, String params) {
         CertificationDTO certificationDTO = certificationService.baseQueryById(certId);
         if (certificationDTO == null) {
             throw new CommonException(ERROR_CERTIFICATION_NOT_EXIST, certId);
@@ -113,7 +113,7 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
         if (CollectionUtils.isEmpty(paramList)) {
             // 如果不搜索，在数据库中进行分页
             PageInfo<DevopsCertificationProRelationshipDTO> relationPage = PageHelper.startPage(
-                    pageRequest.getPage(), pageRequest.getSize())
+                    pageable.getPageNumber(), pageable.getPageSize())
                     .doSelectPageInfo(() -> devopsCertificationProRelationshipService.baseListByCertificationId(certId));
             return ConvertUtils.convertPage(relationPage, permission -> {
                 ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(permission.getProjectId());
@@ -142,7 +142,7 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
                     .map(p -> ConvertUtils.convertObject(p, ProjectReqVO.class))
                     .collect(Collectors.toList());
 
-            return PageInfoUtil.createPageFromList(allMatched, pageRequest);
+            return PageInfoUtil.createPageFromList(allMatched, pageable);
         }
     }
 
@@ -279,10 +279,10 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
     }
 
     @Override
-    public PageInfo<ProjectCertificationVO> pageCerts(Long projectId, PageRequest pageRequest,
+    public PageInfo<ProjectCertificationVO> pageCerts(Long projectId, Pageable pageable,
                                                       String params) {
         PageInfo<CertificationDTO> certificationDTOS = certificationService
-                .basePage(projectId, null, pageRequest, params);
+                .basePage(projectId, null, pageable, params);
         PageInfo<ProjectCertificationVO> orgCertificationDTOS = new PageInfo<>();
         BeanUtils.copyProperties(certificationDTOS, orgCertificationDTOS);
         List<ProjectCertificationVO> orgCertifications = new ArrayList<>();

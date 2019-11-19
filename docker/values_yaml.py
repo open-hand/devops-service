@@ -31,7 +31,7 @@ def traversal(version_value_map, deploy_value_map, follow_keys, delta_map, updat
         if type(deploy_value_map[key]).__name__ == 'CommentedMap':
             if key in version_value_map.keys():
                 if type(version_value_map[key]).__name__ == 'CommentedMap':
-                    if len(version_value_map[key].keys()) == 0:
+                    if len(version_value_map[key].keys()) == 0 and len(deploy_value_map[key].keys()) != 0:
                         # version exist and is empty
                         version_value_map[key] = deploy_value_map[key]
                         add_list.append(follow_keys_copy)

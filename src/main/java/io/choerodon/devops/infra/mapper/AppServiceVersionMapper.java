@@ -114,5 +114,7 @@ public interface AppServiceVersionMapper extends Mapper<AppServiceVersionDTO> {
 
     List<AppServiceVersionDTO> listVersions(@Param("appServiceVersionIds") List<Long> appServiceVersionIds);
 
+    void deleteByIds(@Param("versionIds") Set<Long> versionIds);
+
     AppServiceVersionDTO queryByShareVersion(@Param("appServiceId") Long appServiceId, @Param("projectId") Long projectId);
 }

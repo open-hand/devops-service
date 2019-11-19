@@ -62,7 +62,7 @@ public class PipelineAppDeployServiceImpl implements PipelineAppDeployService {
     @Override
     public void baseCheckName(String name, Long envId) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
-        List<Long> envIds = devopsEnvironmentService.baseListByClusterId(devopsEnvironmentDTO.getClusterId()).stream().map(DevopsEnvironmentDTO::getId).collect(Collectors.toList());
+        List<Long> envIds = devopsEnvironmentService.baseListUserEnvByClusterId(devopsEnvironmentDTO.getClusterId()).stream().map(DevopsEnvironmentDTO::getId).collect(Collectors.toList());
         if(appDeployMapper.checkNameExist(name,envIds)) {
             throw new CommonException("error.app.instance.name.already.exist");
         }

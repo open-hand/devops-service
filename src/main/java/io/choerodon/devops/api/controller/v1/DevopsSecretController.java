@@ -11,9 +11,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
-import io.choerodon.base.annotation.Permission;
-import io.choerodon.base.domain.PageRequest;
-import io.choerodon.base.enums.ResourceType;
+import io.choerodon.core.annotation.Permission;
+import org.springframework.data.domain.Pageable;
+import io.choerodon.core.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.SecretReqVO;
@@ -109,7 +109,7 @@ public class DevopsSecretController {
      * 分页查询secret
      *
      * @param envId       环境id
-     * @param pageRequest 分页参数
+     * @param pageable 分页参数
      * @param params      查询参数
      * @param params      服务id
      * @return Page
@@ -127,12 +127,12 @@ public class DevopsSecretController {
             @ApiParam(value = "服务id")
             @RequestParam(value = "app_service_id", required = false) Long appServiceId,
             @ApiParam(value = "分页参数")
-            @ApiIgnore PageRequest pageRequest,
+            @ApiIgnore Pageable pageable,
             @ApiParam(value = "是否解码值")
             @RequestParam(value = "to_decode", required = false, defaultValue = "false") boolean toDecode,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(devopsSecretService.pageByOption(envId, pageRequest, params, appServiceId, toDecode))
+        return Optional.ofNullable(devopsSecretService.pageByOption(envId, pageable, params, appServiceId, toDecode))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.secret.list"));
     }

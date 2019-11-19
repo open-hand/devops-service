@@ -8,10 +8,12 @@ import { useAppTopStore } from '../stores';
 import { useServiceDetailStore } from './stores';
 import Detail from './modals/detail';
 import CreateForm from '../modals/creat-form';
+import EditForm from '../modals/edit-form';
 
 
 const modalKey1 = Modal.key();
 const modalKey2 = Modal.key();
+const editModalKey = Modal.key();
 const modalStyle = {
   width: 380,
 };
@@ -31,6 +33,10 @@ const HeaderButtons = observer(({ children }) => {
 
   const serviceActive = useMemo(() => detailDs.current && detailDs.current.get('active'), [detailDs.current]);
 
+  function refresh() {
+    detailDs.query();
+  }
+
   function openDetail() {
     const detailModal = Modal.open({
       key: modalKey1,
@@ -47,26 +53,21 @@ const HeaderButtons = observer(({ children }) => {
   }
 
   function openEdit() {
+    const appServiceId = detailDs.current.get('id');
+
     Modal.open({
-      key: modalKey1,
+      key: editModalKey,
       drawer: true,
       style: modalStyle,
-      title: <FormattedMessage id={`${intlPrefix}.edit`} />,
-      children: <CreateForm
-        dataSet={detailDs}
-        record={detailDs.current}
-        appServiceStore={appServiceStore}
-        projectId={id}
+      title: formatMessage({ id: `${intlPrefix}.edit` }),
+      children: <EditForm
+        refresh={refresh}
         intlPrefix={intlPrefix}
         prefixCls={prefixCls}
-        isDetailPage
+        appServiceId={appServiceId}
       />,
-      onCancel: () => handleCancel(),
+      okText: formatMessage({ id: 'save' }),
     });
-  }
-
-  function handleCancel() {
-    detailDs.current.reset();
   }
 
   function getActiveText() {

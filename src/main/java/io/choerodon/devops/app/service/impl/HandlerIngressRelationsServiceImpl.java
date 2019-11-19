@@ -20,10 +20,7 @@ import io.choerodon.devops.api.vo.DevopsIngressPathVO;
 import io.choerodon.devops.api.vo.DevopsIngressVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
-import io.choerodon.devops.infra.enums.CommandStatus;
-import io.choerodon.devops.infra.enums.CommandType;
 import io.choerodon.devops.infra.enums.GitOpsObjectError;
-import io.choerodon.devops.infra.enums.ObjectType;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.infra.util.GitUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
@@ -85,6 +82,11 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
         addIngress(objectPath, envId, projectId, addV1beta1Ingress, path, userId);
         //更新ingress
         updateIngress(objectPath, envId, projectId, updateV1beta1Ingress, path, userId);
+    }
+
+    @Override
+    public Class<V1beta1Ingress> getTarget() {
+        return V1beta1Ingress.class;
     }
 
     private void addIngress(Map<String, String> objectPath, Long envId, Long projectId, List<V1beta1Ingress> addV1beta1Ingress, String path, Long userId) {

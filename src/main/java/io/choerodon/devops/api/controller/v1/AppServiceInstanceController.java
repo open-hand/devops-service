@@ -14,8 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
-import io.choerodon.base.annotation.Permission;
-import io.choerodon.base.domain.PageRequest;
+import io.choerodon.core.annotation.Permission;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.*;
@@ -49,7 +49,7 @@ public class AppServiceInstanceController {
      * @param instanceId 实例id
      * @return 实例信息
      */
-    @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT,
+    @Permission(type = io.choerodon.core.enums.ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据实例id获取实例信息")
     @GetMapping(value = "/{instance_id}")
@@ -66,12 +66,12 @@ public class AppServiceInstanceController {
      * 分页查询环境下实例信息（基本信息）
      *
      * @param projectId   项目id
-     * @param pageRequest 分页参数
+     * @param pageable 分页参数
      * @param envId       环境id
      * @param params      搜索参数
      * @return page of AppInstanceInfoVO
      */
-    @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT,
+    @Permission(type = io.choerodon.core.enums.ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "分页查询环境下实例信息（基本信息）")
@@ -81,13 +81,13 @@ public class AppServiceInstanceController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiIgnore
-            @ApiParam(value = "分页参数") PageRequest pageRequest,
+            @ApiParam(value = "分页参数") Pageable pageable,
             @ApiParam(value = "环境ID")
             @RequestParam(value = "env_id") Long envId,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
         return new ResponseEntity<>(
-                appServiceInstanceService.pageInstanceInfoByOptions(projectId, envId, pageRequest, params), HttpStatus.OK);
+                appServiceInstanceService.pageInstanceInfoByOptions(projectId, envId, pageable, params), HttpStatus.OK);
     }
 
 
@@ -95,14 +95,14 @@ public class AppServiceInstanceController {
      * 分页查询服务部署
      *
      * @param projectId    项目id
-     * @param pageRequest  分页参数
+     * @param pageable  分页参数
      * @param envId        环境id
      * @param versionId    版本id
      * @param appServiceId 服务id
      * @param params       搜索参数
      * @return page of DevopsEnvPreviewInstanceVO
      */
-    @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT,
+    @Permission(type = io.choerodon.core.enums.ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "分页查询服务部署")
@@ -112,7 +112,7 @@ public class AppServiceInstanceController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiIgnore
-            @ApiParam(value = "分页参数") PageRequest pageRequest,
+            @ApiParam(value = "分页参数") Pageable pageable,
             @ApiParam(value = "环境ID")
             @RequestParam(value = "env_id", required = false) Long envId,
             @ApiParam(value = "版本ID")
@@ -124,7 +124,7 @@ public class AppServiceInstanceController {
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(appServiceInstanceService.pageByOptions(
-                projectId, pageRequest, envId, versionId, appServiceId, instanceId, params))
+                projectId, pageable, envId, versionId, appServiceId, instanceId, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.application.version.query"));
     }
@@ -137,7 +137,7 @@ public class AppServiceInstanceController {
      * @param instanceId 实例id
      * @return string
      */
-    @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT,
+    @Permission(type = io.choerodon.core.enums.ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "获取实例上次部署配置")
     @GetMapping(value = "/{instance_Id}/last_deploy_value")
@@ -160,7 +160,7 @@ public class AppServiceInstanceController {
      * @param deploymentName deployment name
      * @return 部署详情
      */
-    @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT,
+    @Permission(type = io.choerodon.core.enums.ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据实例id获取更多部署详情(Json格式)")
     @GetMapping(value = "/{instance_id}/deployment_detail_json")
@@ -182,7 +182,7 @@ public class AppServiceInstanceController {
      * @param daemonSetName daemonSet name
      * @return daemonSet详情
      */
-    @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT,
+    @Permission(type = io.choerodon.core.enums.ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据实例id获取更多daemonSet详情(Json格式)")
     @GetMapping(value = "/{instance_id}/daemon_set_detail_json")
@@ -204,7 +204,7 @@ public class AppServiceInstanceController {
      * @param statefulSetName statefulSet name
      * @return statefulSet详情
      */
-    @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT,
+    @Permission(type = io.choerodon.core.enums.ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据实例id获取更多statefulSet详情(Json格式)")
     @GetMapping(value = "/{instance_id}/stateful_set_detail_json")
@@ -226,7 +226,7 @@ public class AppServiceInstanceController {
      * @param deploymentName deployment name
      * @return 部署详情
      */
-    @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT,
+    @Permission(type = io.choerodon.core.enums.ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据实例id获取更多部署详情(Yaml格式)")
     @GetMapping(value = "/{instance_id}/deployment_detail_yaml")
@@ -248,7 +248,7 @@ public class AppServiceInstanceController {
      * @param daemonSetName daemonSet name
      * @return daemonSet详情
      */
-    @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT,
+    @Permission(type = io.choerodon.core.enums.ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据实例id获取更多daemonSet详情(Yaml格式)")
     @GetMapping(value = "/{instance_id}/daemon_set_detail_yaml")
@@ -270,7 +270,7 @@ public class AppServiceInstanceController {
      * @param statefulSetName statefulSet name
      * @return statefulSet详情
      */
-    @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT,
+    @Permission(type = io.choerodon.core.enums.ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据实例id获取更多statefulSet详情(Yaml格式)")
     @GetMapping(value = "/{instance_id}/stateful_set_detail_yaml")
@@ -292,7 +292,7 @@ public class AppServiceInstanceController {
      * @param versionId  版本Id
      * @return InstanceValueVO
      */
-    @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT,
+    @Permission(type = io.choerodon.core.enums.ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "获取升级Value")
@@ -318,7 +318,7 @@ public class AppServiceInstanceController {
      * @param versionId  版本id
      * @return InstanceValueVO
      */
-    @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(type = io.choerodon.core.enums.ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询服务部署时value")
     @GetMapping("/deploy_value")
@@ -342,7 +342,7 @@ public class AppServiceInstanceController {
      * @param instanceValueVO 部署value
      * @return InstanceValueVO
      */
-    @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(type = io.choerodon.core.enums.ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询预览value")
     @PostMapping("/preview_value")
@@ -364,7 +364,7 @@ public class AppServiceInstanceController {
      * @param instanceValueVO values对象
      * @return List
      */
-    @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(type = io.choerodon.core.enums.ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "校验values")
     @PostMapping("/value_format")
@@ -384,7 +384,7 @@ public class AppServiceInstanceController {
      * @return ApplicationInstanceVO
      */
     @ApiOperation(value = "部署服务")
-    @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT,
+    @Permission(type = io.choerodon.core.enums.ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @PostMapping
@@ -407,7 +407,7 @@ public class AppServiceInstanceController {
      * @return ApplicationInstanceVO
      */
     @ApiOperation(value = "更新服务")
-    @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT,
+    @Permission(type = io.choerodon.core.enums.ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @PutMapping
@@ -431,7 +431,7 @@ public class AppServiceInstanceController {
      * @param envId        环境id
      * @return baseList of AppInstanceCodeDTO
      */
-    @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(type = io.choerodon.core.enums.ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询运行中的实例")
     @GetMapping("/list_running_instance")
@@ -457,7 +457,7 @@ public class AppServiceInstanceController {
      * @param envId        环境id
      * @return baseList of RunningInstanceVO
      */
-    @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(type = io.choerodon.core.enums.ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "环境下某服务运行中或失败的实例")
     @GetMapping("/list_running_and_failed")
@@ -481,7 +481,7 @@ public class AppServiceInstanceController {
      * @param instanceId 实例id
      * @return DevopsEnvResourceDTO
      */
-    @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT,
+    @Permission(type = io.choerodon.core.enums.ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "获取部署实例release相关对象")
     @GetMapping("/{instance_id}/resources")
@@ -502,7 +502,7 @@ public class AppServiceInstanceController {
      * @param instanceId 实例id
      * @return List
      */
-    @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT,
+    @Permission(type = io.choerodon.core.enums.ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "获取部署实例Event事件")
     @GetMapping("/{instance_id}/events")
@@ -523,7 +523,7 @@ public class AppServiceInstanceController {
      * @param instanceId 实例id
      * @return responseEntity
      */
-    @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(type = io.choerodon.core.enums.ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "实例停止")
     @PutMapping(value = "/{instance_id}/stop")
@@ -543,7 +543,7 @@ public class AppServiceInstanceController {
      * @param instanceId 实例id
      * @return responseEntity
      */
-    @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(type = io.choerodon.core.enums.ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "实例重启")
     @PutMapping(value = "/{instance_id}/start")
@@ -563,7 +563,7 @@ public class AppServiceInstanceController {
      * @param instanceId 实例id
      * @return responseEntity
      */
-    @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(type = io.choerodon.core.enums.ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "实例重新部署")
     @PutMapping(value = "/{instance_id}/restart")
@@ -583,7 +583,7 @@ public class AppServiceInstanceController {
      * @param instanceId 实例id
      * @return responseEntity
      */
-    @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(type = io.choerodon.core.enums.ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "实例删除")
     @DeleteMapping(value = "/{instance_id}/delete")
@@ -592,7 +592,7 @@ public class AppServiceInstanceController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "实例ID", required = true)
             @PathVariable(value = "instance_id") Long instanceId) {
-        appServiceInstanceService.deleteInstance(instanceId);
+        appServiceInstanceService.deleteInstance(instanceId,false);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
@@ -602,7 +602,7 @@ public class AppServiceInstanceController {
      * @param projectId    项目id
      * @param instanceName 实例名
      */
-    @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(type = io.choerodon.core.enums.ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "校验实例名唯一性")
     @GetMapping(value = "/check_name")
@@ -627,7 +627,7 @@ public class AppServiceInstanceController {
      * @param endTime       结束时间
      * @return List
      */
-    @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT,
+    @Permission(type = io.choerodon.core.enums.ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "获取部署时长报表")
@@ -658,7 +658,7 @@ public class AppServiceInstanceController {
      * @param endTime      结束时间
      * @return List
      */
-    @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT,
+    @Permission(type = io.choerodon.core.enums.ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "获取部署次数报表")
@@ -690,7 +690,7 @@ public class AppServiceInstanceController {
      * @param endTime      结束时间
      * @return List
      */
-    @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT,
+    @Permission(type = io.choerodon.core.enums.ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "分页获取部署次数列表")
@@ -699,7 +699,7 @@ public class AppServiceInstanceController {
     public ResponseEntity<PageInfo<DeployDetailTableVO>> pageDeployFrequencyDetailTable(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "分页参数") PageRequest pageRequest,
+            @ApiParam(value = "分页参数") Pageable pageable,
             @ApiParam(value = "appServiceId")
             @RequestParam(value = "app_service_id", required = false) Long appServiceId,
             @ApiParam(value = "envIds")
@@ -708,7 +708,7 @@ public class AppServiceInstanceController {
             @RequestParam(required = true) Date startTime,
             @ApiParam(value = "endTime")
             @RequestParam(required = true) Date endTime) {
-        return Optional.ofNullable(appServiceInstanceService.pageDeployFrequencyTable(projectId, pageRequest, envIds, appServiceId, startTime, endTime))
+        return Optional.ofNullable(appServiceInstanceService.pageDeployFrequencyTable(projectId, pageable, envIds, appServiceId, startTime, endTime))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.deploy.frequency.get"));
     }
@@ -724,7 +724,7 @@ public class AppServiceInstanceController {
      * @param endTime       结束时间
      * @return PageInfo
      */
-    @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT,
+    @Permission(type = io.choerodon.core.enums.ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "分页获取部署时长列表")
@@ -734,7 +734,7 @@ public class AppServiceInstanceController {
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
-                    PageRequest pageRequest,
+                    Pageable pageable,
             @ApiParam(value = "envId")
             @RequestParam(value = "env_id", required = false) Long envId,
             @ApiParam(value = "appServiceIds")
@@ -743,7 +743,7 @@ public class AppServiceInstanceController {
             @RequestParam(required = true) Date startTime,
             @ApiParam(value = "endTime")
             @RequestParam(required = true) Date endTime) {
-        return Optional.ofNullable(appServiceInstanceService.pageDeployTimeTable(projectId, pageRequest, appServiceIds, envId, startTime, endTime))
+        return Optional.ofNullable(appServiceInstanceService.pageDeployTimeTable(projectId, pageable, appServiceIds, envId, startTime, endTime))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.deploy.time.get"));
     }
@@ -756,7 +756,7 @@ public class AppServiceInstanceController {
      * @return ApplicationInstanceVO
      */
     @ApiOperation(value = "部署自动化测试服务")
-    @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT,
+    @Permission(type = io.choerodon.core.enums.ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @PostMapping("/deploy_test_app")
@@ -778,7 +778,7 @@ public class AppServiceInstanceController {
      * @return ApplicationInstanceVO
      */
     @ApiOperation(value = "操作pod的数量")
-    @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT,
+    @Permission(type = io.choerodon.core.enums.ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @PutMapping("/operate_pod_count")
@@ -803,7 +803,7 @@ public class AppServiceInstanceController {
      * @return 实例信息
      */
     @ApiOperation(value = "根据实例commandId查询实例信息")
-    @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT,
+    @Permission(type = io.choerodon.core.enums.ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @GetMapping(value = "/query_by_command/{command_id}")

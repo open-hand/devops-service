@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.github.pagehelper.PageInfo;
 
-import io.choerodon.base.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.eventhandler.payload.BranchSagaPayLoad;
 import io.choerodon.devops.infra.dto.gitlab.BranchDTO;
@@ -73,11 +73,11 @@ public interface DevopsGitService {
      *
      * @param projectId    项目 ID
      * @param appServiceId 应用服务ID
-     * @param pageRequest  分页参数
+     * @param pageable  分页参数
      * @param params       search param
      * @return Page
      */
-    PageInfo<BranchVO> pageBranchByOptions(Long projectId, PageRequest pageRequest, Long appServiceId, String params);
+    PageInfo<BranchVO> pageBranchByOptions(Long projectId, Pageable pageable, Long appServiceId, String params);
 
     /**
      * 查询单个分支
@@ -121,10 +121,10 @@ public interface DevopsGitService {
      * @param projectId
      * @param appServiceId
      * @param state
-     * @param pageRequest
+     * @param pageable
      * @return
      */
-    MergeRequestTotalVO listMergeRequest(Long projectId, Long appServiceId, String state, PageRequest pageRequest);
+    MergeRequestTotalVO listMergeRequest(Long projectId, Long appServiceId, String state, Pageable pageable);
 
     /**
      * 分页获取标签列表

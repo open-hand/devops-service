@@ -1,6 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -11,11 +10,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.ProjectReqVO;
 import io.choerodon.devops.api.vo.iam.UserVO;
@@ -127,7 +126,7 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
     }
 
     @Override
-    public PageInfo<ProjectReqVO> pageProjects(Long projectId, PageRequest pageRequest, String searchParams) {
+    public PageInfo<ProjectReqVO> pageProjects(Long projectId, Pageable pageable, String searchParams) {
         Map<String, Object> searchMap = TypeUtil.castMapParams(searchParams);
         List<String> paramList = TypeUtil.cast(searchMap.get(TypeUtil.PARAMS));
 
@@ -135,7 +134,7 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
 
         PageInfo<ProjectDTO> projectDTOPageInfo = baseServiceClientOperator.pageProjectByOrgId(
                 iamProjectDTO.getOrganizationId(),
-                pageRequest.getPage(), pageRequest.getSize(), null, null,
+                pageable.getPageNumber(), pageable.getPageSize(), null, null,
                 paramList.isEmpty() ? null : paramList.get(0));
         return ConvertUtils.convertPage(projectDTOPageInfo, ProjectReqVO.class);
     }
@@ -144,6 +143,11 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
     public List<UserVO> listAllOwnerAndMembers(Long projectId) {
         List<IamUserDTO> allMember = baseServiceClientOperator.getAllMember(projectId);
         return allMember.stream().map(this::userDTOTOVO).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<DevopsProjectDTO> listAll() {
+        return devopsProjectMapper.selectAll();
     }
 
     private UserVO userDTOTOVO(IamUserDTO iamUserDTOList) {

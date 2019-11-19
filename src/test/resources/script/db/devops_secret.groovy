@@ -20,9 +20,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_secret.groovy') {
         }
 
         addUniqueConstraint(tableName: 'devops_secret',
-                constraintName: 'secret_uk_env_id_name', columnNames: 'env_id,name')
+                constraintName: 'uk_devops_secret_secret__env_id_name', columnNames: 'env_id,name')
 
-        createIndex(indexName: "idx_name", tableName: "devops_secret") {
+        createIndex(indexName: "idx_devops_secret__name", tableName: "devops_secret") {
             column(name: "name")
         }
     }

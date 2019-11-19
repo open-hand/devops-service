@@ -5,15 +5,14 @@ import { Action } from '@choerodon/boot';
 import { Modal, Table } from 'choerodon-ui/pro';
 import { keys } from 'lodash';
 import MouserOverWrapper from '../../../../../components/MouseOverWrapper/MouserOverWrapper';
-import StatusTags from '../../../../../components/status-tag';
 import TimePopover from '../../../../../components/timePopover/TimePopover';
 import { useResourceStore } from '../../../stores';
 import { useKeyValueStore } from './stores';
 import Modals from './modals';
 import KeyValueModal from '../application/modals/key-value';
 import { useMainStore } from '../../stores';
-import ClickText from '../../../../../components/click-text';
 import ResourceListTitle from '../../components/resource-list-title';
+import StatusIcon from '../../../../../components/StatusIcon';
 
 import './index.less';
 
@@ -52,21 +51,19 @@ const ConfigMap = observer((props) => {
   function renderName({ value, record }) {
     const commandStatus = record.get('commandStatus');
     const disabled = getEnvIsNotRunning() || commandStatus === 'operating';
+    const error = record.get('error');
+    
     return (
       <div className={`${prefixCls}-keyValue-name`}>
-        <StatusTags
-          name={formatMessage({ id: commandStatus || 'null' })}
-          colorCode={commandStatus || 'success'}
-          style={{ minWidth: 40, marginRight: '0.08rem', height: '0.16rem', lineHeight: '0.16rem' }}
+        <StatusIcon
+          width={0.4}
+          name={value}
+          clickAble={!disabled}
+          onClick={openModal}
+          status={commandStatus || ''}
+          error={error || ''}
+          permissionCode={permissions.edit}
         />
-        <MouserOverWrapper width={0.4} text={value}>
-          <ClickText
-            value={value}
-            clickAble={!disabled}
-            onClick={openModal}
-            permissionCode={permissions.edit}
-          />
-        </MouserOverWrapper>
       </div>
     );
   }
@@ -129,10 +126,10 @@ const ConfigMap = observer((props) => {
         border={false}
         queryBar="bar"
       >
-        <Column name="name" header={formatMessage({ id: `${intlPrefix}.cipher` })} renderer={renderName} />
+        <Column name="name" sortable header={formatMessage({ id: `${intlPrefix}.cipher` })} renderer={renderName} />
         <Column renderer={renderAction} width="0.7rem" />
         <Column name="value" renderer={renderValue} header={formatMessage({ id: 'key' })} />
-        <Column name="lastUpdateDate" renderer={renderDate} width="1rem" />
+        <Column name="lastUpdateDate" sortable renderer={renderDate} width="1rem" />
       </Table>
     </div>
   );

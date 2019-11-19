@@ -1,7 +1,10 @@
 package io.choerodon.devops.app.service;
 
 import io.choerodon.devops.app.eventhandler.payload.GitlabGroupPayload;
+import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.dto.gitlab.GroupDTO;
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 
 /**
  * GitLab组相关的操作
@@ -20,6 +23,15 @@ public interface GitlabGroupService {
      * @param gitlabGroupPayload 项目信息
      */
     void updateGroups(GitlabGroupPayload gitlabGroupPayload);
+
+    /**
+     * create cluster env group
+     *
+     * @param projectDTO      项目
+     * @param organizationDTO 组织
+     * @param userAttrDTO     当前用户
+     */
+    void createClusterEnvGroup(ProjectDTO projectDTO, OrganizationDTO organizationDTO, UserAttrDTO userAttrDTO);
 
     /**
      * 创建平台的应用组

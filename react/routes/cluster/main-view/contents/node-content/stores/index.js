@@ -6,6 +6,7 @@ import { DataSet } from 'choerodon-ui/pro/lib';
 import { useClusterStore } from '../../../../stores';
 import NodePodsDataSet from './NodePodsDataSet';
 import NodeInfoDataSet from './NodeInfoDataSet';
+import useStore from './useStore';
 
 const NodeContentStore = createContext();
 
@@ -19,25 +20,39 @@ const NodeContentStoreProvider = injectIntl(inject('AppState')(observer((props) 
   } = props;
   const { clusterStore } = useClusterStore();
   const { getSelectedMenu: { parentId, name } } = clusterStore;
+  const tabs = useMemo(() => ({
+    RESOURCE_TAB: 'resource',
+    MONITOR_TAB: 'monitor',
+  }), []);
+
   const nodePodsDs = useMemo(() => new DataSet(NodePodsDataSet()), []);
   const nodeInfoDs = useMemo(() => new DataSet(NodeInfoDataSet()), []);
+  const contentStore = useStore(tabs);
 
   useEffect(() => {
     clusterStore.setNoHeader(true);
   }, []);
 
+  const tabkey = contentStore.getTabKey;
   useEffect(() => {
-    nodeInfoDs.transport.read.url = `devops/v1/projects/${projectId}/clusters/nodes?cluster_id=${parentId}&node_name=${name}`;
-    nodeInfoDs.query();
-    nodePodsDs.transport.read.url = `devops/v1/projects/${projectId}/clusters/page_node_pods?cluster_id=${parentId}&node_name=${name}`;
-    nodePodsDs.query();
-  }, [projectId, name, parentId]);
+    if (tabkey === tabs.RESOURCE_TAB) {
+      nodeInfoDs.transport.read.url = `devops/v1/projects/${projectId}/clusters/nodes?cluster_id=${parentId}&node_name=${name}`;
+      nodeInfoDs.query();
+      nodePodsDs.transport.read.url = `devops/v1/projects/${projectId}/clusters/page_node_pods?cluster_id=${parentId}&node_name=${name}`;
+      nodePodsDs.query();
+    } else {
+      contentStore.loadGrafanaUrl(projectId, parentId);
+    }
+  }, [projectId, name, parentId, tabkey]);
 
   const value = {
     formatMessage,
     projectId,
     nodePodsDs,
     nodeInfoDs,
+    tabs,
+    contentStore,
+    COMPONENT_TAB: 'component',
   };
 
   return (

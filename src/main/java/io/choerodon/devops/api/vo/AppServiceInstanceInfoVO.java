@@ -18,6 +18,7 @@ public class AppServiceInstanceInfoVO {
     private Long podRunningCount;
     private Long appServiceId;
     private String appServiceName;
+    private String appServiceType;
     private Long appServiceVersionId;
     private String versionName;
     private Date lastUpdateDate;
@@ -29,10 +30,20 @@ public class AppServiceInstanceInfoVO {
     private String commandStatus;
     private String error;
     private Long projectId;
+    @ApiModelProperty("当前实例生效的commandId")
+    private Long effectCommandId;
 
     @JsonIgnore
     @ApiModelProperty("集群id")
     private Long clusterId;
+
+    public Long getEffectCommandId() {
+        return effectCommandId;
+    }
+
+    public void setEffectCommandId(Long effectCommandId) {
+        this.effectCommandId = effectCommandId;
+    }
 
     public Long getClusterId() {
         return clusterId;
@@ -184,5 +195,13 @@ public class AppServiceInstanceInfoVO {
 
     public void setProjectId(Long projectId) {
         this.projectId = projectId;
+    }
+
+    public String getAppServiceType() {
+        return appServiceType;
+    }
+
+    public void setAppServiceType(String appServiceType) {
+        this.appServiceType = appServiceType;
     }
 }

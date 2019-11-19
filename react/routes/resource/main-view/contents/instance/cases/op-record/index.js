@@ -16,7 +16,7 @@ const ICON_TYPE_MAPPING = {
   success: 'check_circle',
 };
 
-const OpCard = ({ index, record, isActive, intlPrefix, prefixCls, formatMessage, onClick }) => {
+const OpCard = ({ index, record, isActive, intlPrefix, prefixCls, formatMessage, onClick, effectCommandId }) => {
   const podKeys = useMemo(() => (['type', 'createTime', 'status', 'loginName', 'realName', 'userImage', 'podEventVO']), []);
   const [
     type,
@@ -26,11 +26,13 @@ const OpCard = ({ index, record, isActive, intlPrefix, prefixCls, formatMessage,
     realName,
     userImage,
   ] = map(podKeys, (item) => record.get(item));
+  const commandId = record.get('commandId');
+  const commandError = record.get('commandError');
   const cardClass = classnames({
     'operation-record-card': true,
     'operation-record-card-active': isActive,
   });
-  const handleClick = useCallback(() => onClick(createTime, index > 3), [createTime, index]);
+  const handleClick = useCallback(() => onClick(commandId, index > 3), [commandId, index]);
 
   return (
     <div
@@ -42,6 +44,18 @@ const OpCard = ({ index, record, isActive, intlPrefix, prefixCls, formatMessage,
           <Icon type={ICON_TYPE_MAPPING[status]} className={`${prefixCls}-cases-status-${status}`} />
         </Tooltip>
         <FormattedMessage id={`${intlPrefix}.instance.cases.${type}`} />
+        {effectCommandId && effectCommandId === commandId && (
+          <div className={`${prefixCls}-cases-record-effectCommand`}>
+            <span className={`${prefixCls}-cases-record-effectCommand-text`}>
+              {formatMessage({ id: `${intlPrefix}.active` })}
+            </span>
+          </div>
+        )}
+        {commandError && status === 'failed' && (
+          <Tooltip title={commandError}>
+            <Icon type="error" className={`${prefixCls}-cases-record-error`} />
+          </Tooltip>
+        )}
       </div>
       <div className="operation-record-step">
         <i className="operation-record-icon" />
@@ -62,40 +76,42 @@ const OpRecord = observer(({ handleClick, active }) => {
   const {
     intl: { formatMessage },
     casesDs,
+    baseDs,
   } = useInstanceStore();
-  const [cardActive, setCardActive] = useState('');
+  const [cardActive, setCardActive] = useState(null);
 
   useEffect(() => {
-    setCardActive('');
+    setCardActive(null);
   }, [id, parentId]);
 
-  function handleRecordClick(time, isIgnore) {
-    setCardActive(time);
-    handleClick(time, isIgnore);
+  function handleRecordClick(commandId, isIgnore) {
+    setCardActive(commandId);
+    handleClick(commandId, isIgnore);
   }
 
   function renderOperation() {
     let realActive = cardActive || active;
-    const isExist = casesDs.find((r) => r.get('createTime') === realActive);
+    const isExist = casesDs.find((r) => r.get('commandId') === realActive);
 
     if (!realActive || !isExist) {
       const firstRecord = casesDs.get(0);
-      realActive = firstRecord.get('createTime');
+      realActive = firstRecord.get('commandId');
     }
 
     return (
       <div ref={rowRef} className="cases-record-detail">
         {casesDs.map((record, index) => {
-          const createTime = record.get('createTime');
+          const commandId = record.get('commandId');
           return <OpCard
             index={index}
-            key={createTime}
-            isActive={realActive === createTime}
+            key={commandId}
+            isActive={realActive === commandId}
             formatMessage={formatMessage}
             record={record}
             prefixCls={prefixCls}
             intlPrefix={intlPrefix}
             onClick={handleRecordClick}
+            effectCommandId={baseDs.current && baseDs.current.get('effectCommandId')}
           />;
         })}
       </div>

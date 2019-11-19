@@ -44,7 +44,7 @@ public interface DevopsServiceMapper extends Mapper<DevopsServiceDTO> {
 
     int countNonDeletedServiceWithEnv(@Param("envId") Long envId, @Param("serviceId") Long serviceId);
 
-    void updateLabelsToNull(@Param("serviceId") Long serviceId);
+    void updateSelectorsToNull(@Param("serviceId") Long serviceId);
 
     void updateEndPointToNull(@Param("serviceId") Long serviceId);
 

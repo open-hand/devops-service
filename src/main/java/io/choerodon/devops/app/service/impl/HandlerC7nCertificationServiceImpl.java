@@ -102,6 +102,11 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
         });
     }
 
+    @Override
+    public Class<C7nCertification> getTarget() {
+        return C7nCertification.class;
+    }
+
     private void updateC7nCertificationPath(C7nCertification c7nCertification,
                                             Long envId, Map<String, String> objectPath, String path) {
         Long certId = checkC7nCertificationChanges(c7nCertification, envId, objectPath, path);

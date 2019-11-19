@@ -1,15 +1,8 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.List;
-import java.util.Map;
-
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.google.gson.Gson;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import io.choerodon.base.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.DevopsDeployValueVO;
@@ -30,6 +23,11 @@ import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.FileUtil;
 import io.choerodon.devops.infra.util.PageRequestUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -38,7 +36,6 @@ import io.choerodon.devops.infra.util.TypeUtil;
  */
 @Service
 public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
-    private static final Gson gson = new Gson();
     @Autowired
     private DevopsDeployValueMapper devopsDeployValueMapper;
     @Autowired
@@ -69,14 +66,17 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
     }
 
     @Override
-    public PageInfo<DevopsDeployValueVO> pageByOptions(Long projectId, Long appServiceId, Long envId, PageRequest pageRequest, String params) {
+    public PageInfo<DevopsDeployValueVO> pageByOptions(Long projectId, Long appServiceId, Long envId, Pageable pageable, String params) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedClusterList();
-        Long userId = null;
-        if (!baseServiceClientOperator.isProjectOwner(DetailsHelper.getUserDetails().getUserId(), projectDTO)) {
-            userId = DetailsHelper.getUserDetails().getUserId();
+        Long userId = DetailsHelper.getUserDetails().getUserId();
+        PageInfo<DevopsDeployValueDTO> deployValueDTOPageInfo;
+        boolean isOwner = baseServiceClientOperator.isProjectOwner(DetailsHelper.getUserDetails().getUserId(), projectDTO);
+        if (isOwner) {
+            deployValueDTOPageInfo = basePageByOptionsWithOwner(projectId, appServiceId, envId, userId, pageable, params);
+        } else {
+            deployValueDTOPageInfo = basePageByOptionsWithMember(projectId, appServiceId, envId, userId, pageable, params);
         }
-        PageInfo<DevopsDeployValueDTO> deployValueDTOPageInfo = basePageByOptions(projectId, appServiceId, envId, userId, pageRequest, params);
         PageInfo<DevopsDeployValueVO> page = ConvertUtils.convertPage(deployValueDTOPageInfo, DevopsDeployValueVO.class);
         page.getList().forEach(value -> {
             IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(value.getCreatedBy());
@@ -121,12 +121,21 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
     }
 
     @Override
-    public PageInfo<DevopsDeployValueDTO> basePageByOptions(Long projectId, Long appServiceId, Long envId, Long userId, PageRequest pageRequest, String params) {
+    public PageInfo<DevopsDeployValueDTO> basePageByOptionsWithOwner(Long projectId, Long appServiceId, Long envId, Long userId, Pageable pageable, String params) {
         Map<String, Object> maps = TypeUtil.castMapParams(params);
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
         List<String> paramList = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
-        return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest))
-                .doSelectPageInfo(() -> devopsDeployValueMapper.listByOptions(projectId, appServiceId, envId, userId, searchParamMap, paramList));
+        return PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable))
+                .doSelectPageInfo(() -> devopsDeployValueMapper.listByOptionsWithOwner(projectId, appServiceId, envId, userId, searchParamMap, paramList));
+    }
+
+    @Override
+    public PageInfo<DevopsDeployValueDTO> basePageByOptionsWithMember(Long projectId, Long appServiceId, Long envId, Long userId, Pageable pageable, String params) {
+        Map<String, Object> maps = TypeUtil.castMapParams(params);
+        Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
+        List<String> paramList = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
+        return PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable))
+                .doSelectPageInfo(() -> devopsDeployValueMapper.listByOptionsWithMember(projectId, appServiceId, envId, userId, searchParamMap, paramList));
     }
 
     @Override
@@ -169,7 +178,8 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
         if (deployValueId != null) {
             updateCheck = devopsDeployValueDTOS.size() == 1 && devopsDeployValueDTOS.get(0).getId().equals(deployValueId);
         }
-        if (!(devopsDeployValueDTOS.isEmpty() || updateCheck)) {
+        // 当查询结果不为空且不是更新部署配置时抛出异常
+        if (!devopsDeployValueDTOS.isEmpty() && !updateCheck) {
             throw new CommonException("error.devops.pipeline.value.name.exit");
         }
     }

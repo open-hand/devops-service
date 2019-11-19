@@ -11,9 +11,9 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import springfox.documentation.annotations.ApiIgnore;
 
-import io.choerodon.base.annotation.Permission;
-import io.choerodon.base.domain.PageRequest;
-import io.choerodon.base.enums.ResourceType;
+import io.choerodon.core.annotation.Permission;
+import org.springframework.data.domain.Pageable;
+import io.choerodon.core.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.DevopsIngressVO;
@@ -198,7 +198,7 @@ public class DevopsIngressController {
      *
      * @param projectId   项目id
      * @param envId       环境Id
-     * @param pageRequest 分页参数
+     * @param pageable 分页参数
      * @param params      搜索参数
      * @return Page
      */
@@ -212,12 +212,12 @@ public class DevopsIngressController {
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiIgnore
-            @ApiParam(value = "分页参数") PageRequest pageRequest,
+            @ApiParam(value = "分页参数") Pageable pageable,
             @ApiParam(value = "env_id", required = true)
             @PathVariable(value = "env_id") Long envId,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(devopsIngressService.pageByEnv(projectId, envId, pageRequest, params))
+        return Optional.ofNullable(devopsIngressService.pageByEnv(projectId, envId, pageable, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.appServiceInstance.query"));
     }

@@ -194,6 +194,20 @@ public class SagaTaskCodeConstants {
      * devops导入内部应用服务
      */
     public static final String DEVOPS_IMPORT_INTERNAL_APPLICATION_SERVICE = "devopsImportInternalAppService";
+    /**
+     * 删除环境
+     */
+    public static final String DEVOPS_DELETE_ENV = "devops-delete-env";
+    /**
+     * devops删除应用服务
+     */
+    public static final String DEVOPS_APP_DELETE = "devops-delete-app-service";
+
+    /**
+     * 应用市场下载失败删除gitlab相关项目
+     */
+    public static final String DEVOPS_MARKET_DELETE_GITLAB_PRO = "devops-market-failed-delete-gitlab-pro";
+
 
 
     private SagaTaskCodeConstants() {

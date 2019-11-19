@@ -1,4 +1,4 @@
-import React, { Fragment, lazy, Suspense, useMemo } from 'react';
+import React, { Fragment, lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Tabs, Spin } from 'choerodon-ui';
 import { useClusterContentStore } from './stores';
@@ -13,6 +13,8 @@ const { TabPane } = Tabs;
 
 const NodeList = lazy(() => import('./node-list'));
 const PermissionList = lazy(() => import('./permission-list'));
+const Monitor = lazy(() => import('./monitor'));
+const ComponentManage = lazy(() => import('./component-manage'));
 
 
 export default observer((props) => {
@@ -22,6 +24,8 @@ export default observer((props) => {
     tabs: {
       NODE_TAB,
       ASSIGN_TAB,
+      COMPONENT_TAB,
+      MONITOR_TAB,
     },
     contentStore,
     ClusterDetailDs,
@@ -85,6 +89,22 @@ export default observer((props) => {
         >
           <Suspense fallback={<Spin />}>
             <PermissionList />
+          </Suspense>
+        </TabPane>
+        <TabPane
+          key={COMPONENT_TAB}
+          tab={formatMessage({ id: `${intlPrefix}.component` })}
+        >
+          <Suspense fallback={<Spin />}>
+            <ComponentManage />
+          </Suspense>
+        </TabPane>
+        <TabPane
+          key={MONITOR_TAB}
+          tab={formatMessage({ id: `${intlPrefix}.monitor` })}
+        >
+          <Suspense fallback={<Spin />}>
+            <Monitor />
           </Suspense>
         </TabPane>
       </Tabs>

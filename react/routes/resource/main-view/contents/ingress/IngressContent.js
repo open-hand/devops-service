@@ -159,7 +159,7 @@ const IngressContent = observer(() => {
         queryBar="bar"
         rowHeight="auto"
       >
-        <Column name="name" renderer={renderName} />
+        <Column name="name" renderer={renderName} sortable />
         <Column renderer={renderAction} width="0.7rem" />
         <Column name="domain" renderer={renderDomain} />
         <Column name="pathList" renderer={renderPath} />

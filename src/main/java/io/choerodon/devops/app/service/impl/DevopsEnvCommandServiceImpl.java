@@ -8,7 +8,7 @@ import com.github.pagehelper.PageInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import io.choerodon.base.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.DevopsCommandEventService;
 import io.choerodon.devops.app.service.DevopsEnvCommandLogService;
@@ -85,8 +85,8 @@ public class DevopsEnvCommandServiceImpl implements DevopsEnvCommandService {
     }
 
     @Override
-    public PageInfo<DevopsEnvCommandDTO> basePageByObject(PageRequest pageRequest, String objectType, Long objectId, Date startTime, Date endTime) {
-        return PageHelper.startPage(pageRequest.getPage(),pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() ->
+    public PageInfo<DevopsEnvCommandDTO> basePageByObject(Pageable pageable, String objectType, Long objectId, Date startTime, Date endTime) {
+        return PageHelper.startPage(pageable.getPageNumber(),pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable)).doSelectPageInfo(() ->
                 devopsEnvCommandMapper.listByObject(objectType, objectId, startTime == null ? null : new java.sql.Date(startTime.getTime()), endTime == null ? null : new java.sql.Date(endTime.getTime())));
     }
 

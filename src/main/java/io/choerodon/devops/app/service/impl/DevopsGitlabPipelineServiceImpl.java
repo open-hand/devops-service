@@ -21,7 +21,7 @@ import org.springframework.stereotype.Service;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
-import io.choerodon.base.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.kubernetes.Stage;
@@ -282,7 +282,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
     }
 
     @Override
-    public PageInfo<DevopsGitlabPipelineVO> pageByOptions(Long appServiceId, String branch, PageRequest pageRequest, Date startTime, Date endTime) {
+    public PageInfo<DevopsGitlabPipelineVO> pageByOptions(Long appServiceId, String branch, Pageable pageable, Date startTime, Date endTime) {
         if (appServiceId == null) {
             return new PageInfo<>();
         }
@@ -290,7 +290,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
         List<DevopsGitlabPipelineVO> devopsGiltabPipelineDTOS = new ArrayList<>();
         PageInfo<DevopsGitlabPipelineDTO> devopsGitlabPipelineDOS = new PageInfo<>();
         if (branch == null) {
-            devopsGitlabPipelineDOS = basePageByApplicationId(appServiceId, pageRequest, startTime, endTime);
+            devopsGitlabPipelineDOS = basePageByApplicationId(appServiceId, pageable, startTime, endTime);
         } else {
             devopsGitlabPipelineDOS.setList(baseListByAppIdAndBranch(appServiceId, branch));
         }
@@ -410,8 +410,8 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
 
 
     @Override
-    public PageInfo<DevopsGitlabPipelineDTO> basePageByApplicationId(Long appServiceId, PageRequest pageRequest, Date startTime, Date endTime) {
-        return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() ->
+    public PageInfo<DevopsGitlabPipelineDTO> basePageByApplicationId(Long appServiceId, Pageable pageable, Date startTime, Date endTime) {
+        return PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderBy(pageable)).doSelectPageInfo(() ->
                 devopsGitlabPipelineMapper.listDevopsGitlabPipeline(appServiceId, startTime == null ? null : new java.sql.Date(startTime.getTime()), endTime == null ? null : new java.sql.Date(endTime.getTime())));
     }
 

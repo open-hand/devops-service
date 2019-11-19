@@ -25,6 +25,29 @@
     }
   }
 
+  &-effectCommand {
+    width: .32rem;
+    height: .14rem;
+    border-radius: .07rem;
+    border: 1px solid rgba(0, 191, 165, 1);
+    text-align: center;
+    font-weight: 500;
+    color: rgba(0, 191, 165, 1);
+    margin-left: .07rem;
+    line-height: .14rem;
+
+    &-text {
+      transform: scale(0.8);
+      margin: 0;
+      display: inline-block;
+    }
+  }
+
+  &-error {
+    color: #f44336;
+    margin-left: .07rem;
+  }
+
   .cases-record-title {
     margin-top: -0.3rem;
     white-space: nowrap;
@@ -54,6 +77,8 @@
 
       .operation-record-title {
         font-size: .12rem;
+        display: flex;
+        align-items: center;
 
         span {
           margin-left: .02rem;

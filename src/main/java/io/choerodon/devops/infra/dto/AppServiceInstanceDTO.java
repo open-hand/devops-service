@@ -2,6 +2,8 @@ package io.choerodon.devops.infra.dto;
 
 import javax.persistence.*;
 
+import io.swagger.annotations.ApiModelProperty;
+
 import io.choerodon.mybatis.entity.BaseDTO;
 
 /**
@@ -20,6 +22,12 @@ public class AppServiceInstanceDTO extends BaseDTO {
     private Long commandId;
     private String status;
     private Long valueId;
+    @ApiModelProperty("组件所对应的实例的版本/普通实例这个值为null")
+    private String componentVersion;
+    @ApiModelProperty("组件对应实例的chart名称/普通实例这个值为null")
+    private String componentChartName;
+    @ApiModelProperty("当前实例生效的commandId")
+    private Long effectCommandId;
 
     @Transient
     private String appServiceName;
@@ -56,6 +64,14 @@ public class AppServiceInstanceDTO extends BaseDTO {
     @Transient
     private String appServiceCode;
 
+
+    public Long getEffectCommandId() {
+        return effectCommandId;
+    }
+
+    public void setEffectCommandId(Long effectCommandId) {
+        this.effectCommandId = effectCommandId;
+    }
 
     public Long getAppServiceVersionId() {
         return appServiceVersionId;
@@ -256,5 +272,21 @@ public class AppServiceInstanceDTO extends BaseDTO {
 
     public void setAppServiceCode(String appServiceCode) {
         this.appServiceCode = appServiceCode;
+    }
+
+    public String getComponentVersion() {
+        return componentVersion;
+    }
+
+    public void setComponentVersion(String componentVersion) {
+        this.componentVersion = componentVersion;
+    }
+
+    public String getComponentChartName() {
+        return componentChartName;
+    }
+
+    public void setComponentChartName(String componentChartName) {
+        this.componentChartName = componentChartName;
     }
 }

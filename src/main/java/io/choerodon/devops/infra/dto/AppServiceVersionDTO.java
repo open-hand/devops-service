@@ -1,10 +1,9 @@
 package io.choerodon.devops.infra.dto;
 
 
-import java.util.Date;
-import javax.persistence.*;
-
 import io.choerodon.mybatis.entity.BaseDTO;
+
+import javax.persistence.*;
 
 /**
  * Created by Zenger on 2018/4/3.
@@ -23,8 +22,8 @@ public class AppServiceVersionDTO extends BaseDTO {
     private String image;
     private String commit;
     private String repository;
-    private Long isPublish;
-    private Date publishTime;
+    private Long harborConfigId;
+    private Long helmConfigId;
 
     @Transient
     private String appServiceName;
@@ -36,6 +35,26 @@ public class AppServiceVersionDTO extends BaseDTO {
     private String appServiceType;
     @Transient
     private String readme;
+    @Transient
+    private String values;
+    @Transient
+    private String chartName;
+
+    public String getChartName() {
+        return chartName;
+    }
+
+    public void setChartName(String chartName) {
+        this.chartName = chartName;
+    }
+
+    public String getValues() {
+        return values;
+    }
+
+    public void setValues(String values) {
+        this.values = values;
+    }
 
     public String getReadme() {
         return readme;
@@ -43,14 +62,6 @@ public class AppServiceVersionDTO extends BaseDTO {
 
     public void setReadme(String readme) {
         this.readme = readme;
-    }
-
-    public Date getPublishTime() {
-        return publishTime;
-    }
-
-    public void setPublishTime(Date publishTime) {
-        this.publishTime = publishTime;
     }
 
     public Long getId() {
@@ -133,14 +144,6 @@ public class AppServiceVersionDTO extends BaseDTO {
         this.valueId = valueId;
     }
 
-    public Long getIsPublish() {
-        return isPublish;
-    }
-
-    public void setIsPublish(Long isPublish) {
-        this.isPublish = isPublish;
-    }
-
     public Long getReadmeValueId() {
         return readmeValueId;
     }
@@ -155,5 +158,21 @@ public class AppServiceVersionDTO extends BaseDTO {
 
     public void setAppServiceType(String appServiceType) {
         this.appServiceType = appServiceType;
+    }
+
+    public Long getHarborConfigId() {
+        return harborConfigId;
+    }
+
+    public void setHarborConfigId(Long harborConfigId) {
+        this.harborConfigId = harborConfigId;
+    }
+
+    public Long getHelmConfigId() {
+        return helmConfigId;
+    }
+
+    public void setHelmConfigId(Long helmConfigId) {
+        this.helmConfigId = helmConfigId;
     }
 }

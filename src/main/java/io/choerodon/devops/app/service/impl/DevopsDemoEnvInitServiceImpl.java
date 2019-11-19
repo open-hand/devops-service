@@ -248,8 +248,8 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
      * @return the version
      */
 //    private AppMarketVersionVO getApplicationVersion(Long projectId, Long applicationId) {
-//        PageRequest pageRequest = new PageRequest(0, 1);
-//        PageInfo<ApplicationVersionRespVO> versions = applicationVersionService.pageByOptions(projectId, applicationId, pageRequest, null);
+//        Pageable pageable = new Pageable(0, 1);
+//        PageInfo<ApplicationVersionRespVO> versions = applicationVersionService.pageByOptions(projectId, applicationId, pageable, null);
 //        if (!versions.getList().isEmpty()) {
 //            AppMarketVersionVO appMarketVersionVO = new AppMarketVersionVO();
 //            BeanUtils.copyProperties(versions.getList().get(0), appMarketVersionVO);
@@ -269,7 +269,8 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
         try {
             byte[] bytes = StreamUtils.copyToByteArray(this.getClass().getClassLoader().getResourceAsStream(tgzFilePath));
             MockMultipartFile multipartFile = new MockMultipartFile("code-i.tgz", "code-i.tgz", "application/tgz", bytes);
-            appServiceVersionService.create(demoDataVO.getAppServiceVersionDTO().getImage(), applicationService.baseQuery(appServiceId).getToken(), demoDataVO.getAppServiceVersionDTO().getVersion(), demoDataVO.getAppServiceVersionDTO().getCommit(), multipartFile);
+            //harborConfigId需要传入
+            appServiceVersionService.create(demoDataVO.getAppServiceVersionDTO().getImage(),null, applicationService.baseQuery(appServiceId).getToken(), demoDataVO.getAppServiceVersionDTO().getVersion(), demoDataVO.getAppServiceVersionDTO().getCommit(), multipartFile);
         } catch (IOException e) {
             logger.error("can not find file {}", tgzFilePath);
             throw new CommonException(e);

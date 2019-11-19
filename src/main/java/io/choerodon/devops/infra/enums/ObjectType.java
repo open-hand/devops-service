@@ -1,8 +1,8 @@
 package io.choerodon.devops.infra.enums;
 
-import java.util.HashMap;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
+
+import java.util.HashMap;
 
 public enum ObjectType {
 
@@ -12,7 +12,9 @@ public enum ObjectType {
     CERTIFICATE("certificate"),
     CONFIGMAP("configMap"),
     SECRET("secret"),
-    CUSTOM("custom");
+    CUSTOM("custom"),
+    PERSISTENTVOLUMECLAIM("PersistentVolumeClaim"),
+    PERSISTENTVOLUME("PersistentVolume");
 
     private String type;
 

@@ -1,7 +1,7 @@
 package io.choerodon.devops.api.controller.v1
 
 import com.github.pagehelper.PageInfo
-import io.choerodon.base.domain.PageRequest
+import org.springframework.data.domain.PageRequest
 import io.choerodon.core.exception.CommonException
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.devops.DependencyInjectUtil

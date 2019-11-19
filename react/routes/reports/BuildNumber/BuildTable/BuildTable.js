@@ -10,6 +10,7 @@ import ReportsStore from '../../stores';
 import '../../../code-manager/contents/ciPipelineManage/index.less';
 import './BuildTable.less';
 import TimePopover from '../../../../components/timePopover/TimePopover';
+import UserInfo from '../../../../components/userInfo';
 
 const { AppState } = stores;
 
@@ -184,20 +185,10 @@ class BuildTable extends Component {
         </Tooltip>
       </div>
       <div className="c7n-des-commit">
-        <Tooltip
-          placement="top"
-          title={record.commitUserName ? record.commitUserName : ''}
-          trigger="hover"
-        >
-          {
-            record.commitUserUrl
-              ? <img className="c7n-image-avatar" src={record.commitUserUrl} alt="avatar" />
-              : <span className="c7n-avatar mr7">{ record.commitUserName ? record.commitUserName.substring(0, 1).toUpperCase() : '' }</span>
-          }
-        </Tooltip>
+        <UserInfo name={record.commitUserName || '?'} avatar={record.commitUserUrl} id={record.commitUserLoginName} showName={false} />
         <MouserOverWrapper text={record.commitContent} width={0.2}>
           <a
-            className="c7n-link-decoration"
+            className="c7n-link-decoration c7n-link-ml5"
             href={`${record.gitlabUrl.slice(0, -4)}/commit/${record.commit}`}
             target="_blank"
             rel="nofollow me noopener noreferrer"

@@ -15,6 +15,8 @@ const itemTypeMappings = {
   CIPHER_GROUP: 'group_secrets',
   CUSTOM_GROUP: 'group_customResources',
   IST_GROUP: 'group_instances',
+  PVC_ITEM: 'pvcs',
+  PVC_GROUP: 'group_pvcs',
 };
 
 const viewTypeMappings = {
@@ -22,7 +24,7 @@ const viewTypeMappings = {
   RES_VIEW_TYPE: 'resource',
 };
 
-const RES_TYPES = ['instances', 'services', 'ingresses', 'certifications', 'configMaps', 'secrets', 'customResources'];
+const RES_TYPES = ['instances', 'services', 'ingresses', 'certifications', 'configMaps', 'secrets', 'customResources', 'pvcs'];
 
 const ENV_KEYS = ['id', 'name', 'connect'];
 

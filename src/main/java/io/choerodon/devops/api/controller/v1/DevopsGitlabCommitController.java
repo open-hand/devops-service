@@ -4,9 +4,9 @@ import java.util.Date;
 import java.util.Optional;
 
 import com.github.pagehelper.PageInfo;
-import io.choerodon.base.annotation.Permission;
-import io.choerodon.base.domain.PageRequest;
-import io.choerodon.base.enums.ResourceType;
+import io.choerodon.core.annotation.Permission;
+import org.springframework.data.domain.Pageable;
+import io.choerodon.core.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.CommitFormRecordVO;
@@ -65,7 +65,7 @@ public class DevopsGitlabCommitController {
      *
      * @param projectId   项目id
      * @param appServiceIds      服务id
-     * @param pageRequest 分页参数
+     * @param pageable 分页参数
      * @return List
      */
     @Permission(type= ResourceType.PROJECT,
@@ -79,12 +79,12 @@ public class DevopsGitlabCommitController {
             @ApiParam(value = "服务ids", required = true)
             @RequestBody String appServiceIds,
             @ApiParam(value = "分页参数")
-            @ApiIgnore PageRequest pageRequest,
+            @ApiIgnore Pageable pageable,
             @ApiParam(value = "开始时间start_date", required = true)
             @RequestParam(value = "start_date") Date startDate,
             @ApiParam(value = "结束时间end_date", required = true)
             @RequestParam(value = "end_date") Date endDate) {
-        return Optional.ofNullable(devopsGitlabCommitService.pageRecordCommits(projectId, appServiceIds, pageRequest,
+        return Optional.ofNullable(devopsGitlabCommitService.pageRecordCommits(projectId, appServiceIds, pageable,
                 startDate, endDate))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.record.commit.get"));

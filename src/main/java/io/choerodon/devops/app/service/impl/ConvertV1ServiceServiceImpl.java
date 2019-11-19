@@ -3,26 +3,29 @@ package io.choerodon.devops.app.service.impl;
 import java.util.List;
 import java.util.Map;
 
-import io.choerodon.core.convertor.ApplicationContextHelper;
+import io.kubernetes.client.models.V1Service;
+import io.kubernetes.client.models.V1ServicePort;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
 import io.choerodon.devops.app.service.DevopsServiceService;
 import io.choerodon.devops.infra.dto.DevopsEnvFileResourceDTO;
 import io.choerodon.devops.infra.dto.DevopsServiceDTO;
 import io.choerodon.devops.infra.enums.GitOpsObjectError;
+import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.kubernetes.client.models.V1Service;
-import io.kubernetes.client.models.V1ServicePort;
 
-
+@Component
 public class ConvertV1ServiceServiceImpl extends ConvertK8sObjectService<V1Service> {
-
+    @Autowired
     private DevopsServiceService devopsServiceService;
+    @Autowired
     private DevopsEnvFileResourceService devopsEnvFileResourceService;
 
     public ConvertV1ServiceServiceImpl() {
-        this.devopsServiceService = ApplicationContextHelper.getSpringFactory().getBean(DevopsServiceService.class);
-        this.devopsEnvFileResourceService = ApplicationContextHelper.getSpringFactory().getBean(DevopsEnvFileResourceService.class);
+        super(V1Service.class);
     }
 
     @Override
@@ -43,6 +46,11 @@ public class ConvertV1ServiceServiceImpl extends ConvertK8sObjectService<V1Servi
         } else {
             v1Services.add(v1Service);
         }
+    }
+
+    @Override
+    public ResourceType getType() {
+        return ResourceType.SERVICE;
     }
 
     @Override

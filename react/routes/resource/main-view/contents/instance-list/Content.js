@@ -46,12 +46,22 @@ const Content = observer(() => {
   }
 
   function renderAppName({ value, record }) {
+    const appServiceType = record.get('appServiceType');
+    let iconType;
+    if (appServiceType === 'share_service') {
+      iconType = 'share';
+    } else if (appServiceType === 'market_service') {
+      iconType = 'application_market';
+    } else {
+      iconType = 'project';
+    }
     return (
       <AppName
         width={0.18}
         name={value}
         showIcon={!!record.get('projectId')}
-        self={record.get('projectId') === Number(id)}
+        self={iconType}
+        isInstance
       />
     );
   }
@@ -70,9 +80,9 @@ const Content = observer(() => {
         border={false}
         queryBar="bar"
       >
-        <Column name="code" renderer={renderName} />
+        <Column name="code" renderer={renderName} sortable />
         <Column name="versionName" renderer={renderVersion} />
-        <Column name="appServiceName" renderer={renderAppName} />
+        <Column name="appServiceName" renderer={renderAppName} sortable />
         <Column renderer={renderPods} width="1rem" header={formatMessage({ id: `${intlPrefix}.instance.pod.status` })} />
       </Table>
     </div>
