@@ -418,7 +418,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
         devopsEnvCommandService.baseListByObject(ObjectType.SERVICE.getType(), devopsServiceDTO.getId()).forEach(devopsEnvCommandDTO -> devopsEnvCommandService.baseDelete(devopsEnvCommandDTO.getId()));
         baseDelete(id);
-        devopsServiceInstanceService.baseDeleteByServiceId(id);
+        devopsServiceInstanceService.baseDeleteByOptions(id, null);
     }
 
 
