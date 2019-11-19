@@ -21,7 +21,7 @@
     "compile": "choerodon-front-boot compile"
   },
   "peerDependencies": {
-    "@choerodon/boot": "0.19.x",
+    "@choerodon/boot": "0.19.1",
     "@choerodon/master-pro": "0.19.x",
     "choerodon-ui": "0.8.x"
   },
