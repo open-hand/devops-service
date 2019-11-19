@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect } from 'react';
+import React, { Fragment, useEffect, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import map from 'lodash/map';
 import some from 'lodash/some';
@@ -9,11 +9,13 @@ import DynamicSelect from '../../../../../../../components/dynamic-select-new';
 const { Option } = Select;
 
 export default observer((props) => {
-  const { dataSet, nonePermissionDs, refresh, record, store, projectId, formatMessage, prefixCls, intlPrefix, modal } = props;
+  const { dataSet, nonePermissionDs, refresh, baseDs, store, projectId, formatMessage, prefixCls, intlPrefix, modal } = props;
   useEffect(() => {
     dataSet.getField('iamUserId').set('options', nonePermissionDs);
     nonePermissionDs.query();
   }, []);
+
+  const record = useMemo(() => baseDs.current, [baseDs.current]);
 
   modal.handleOk(async () => {
     const skipCheckPermission = record.get('skipCheckPermission');
@@ -79,7 +81,7 @@ export default observer((props) => {
           <Option value={false}>{formatMessage({ id: `${intlPrefix}.member.specific` })}</Option>
         </SelectBox>
       </Form>
-      {!record.get('skipCheckPermission') && (
+      {record && !record.get('skipCheckPermission') && (
         <DynamicSelect
           selectDataSet={dataSet} 
           optionsFilter={handleUserFilter} 

@@ -142,7 +142,7 @@ const EnvModals = observer(() => {
       nonePermissionDs,
       formatMessage,
       store: modalStore,
-      record: baseDs.current,
+      baseDs,
       intlPrefix,
       prefixCls,
       refresh,
