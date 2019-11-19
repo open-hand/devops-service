@@ -128,8 +128,8 @@ public class HandlerPersistentVolumeServiceImpl implements HandlerObjectFileRela
     private boolean isIdentical(DevopsPvDTO dbRecord, DevopsPvReqVO update) {
         return Objects.equals(dbRecord.getAccessModes(), update.getAccessModes())
                 && Objects.equals(dbRecord.getRequestResource(), update.getRequestResource())
-                && Objects.equals(dbRecord.getType(), update.getType());
-        // TODO 比较配置
+                && Objects.equals(dbRecord.getType(), update.getType())
+                && Objects.equals(dbRecord.getValueConfig(), update.getValueConfig());
     }
 
     private void addPersistentVolumes(Map<String, String> objectPath, Long envId, List<V1PersistentVolume> pvs, String path, Long userId) {
