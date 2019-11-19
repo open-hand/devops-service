@@ -173,7 +173,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
                         TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
                         "pv-" + devopsPvDTO.getName() + ".yaml",
                         "DELETE FILE",
-                        TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+                        TypeUtil.objToInteger(GitUserNameUtil.getAdminId()));
             }
             return true;
         } else {
@@ -193,7 +193,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
                     devopsEnvFileResourceDTO.getFilePath())) {
                 gitlabServiceClientOperator.deleteFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
                         devopsEnvFileResourceDTO.getFilePath(), "DELETE FILE",
-                        TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+                        TypeUtil.objToInteger(GitUserNameUtil.getAdminId()));
             }
         } else {
             ResourceConvertToYamlHandler<V1PersistentVolume> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
@@ -203,7 +203,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
             v1PersistentVolume.setMetadata(v1ObjectMeta);
             resourceConvertToYamlHandler.setType(v1PersistentVolume);
             Integer projectId = TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId());
-            resourceConvertToYamlHandler.operationEnvGitlabFile(null, projectId, DELETE, userAttrDTO.getGitlabUserId(), pvId,
+            resourceConvertToYamlHandler.operationEnvGitlabFile(null, projectId, DELETE,(long)GitUserNameUtil.getAdminId(), pvId,
                     PERSISTENVOLUME, null, false, devopsEnvironmentDTO.getId(), path);
         }
         return true;
@@ -562,7 +562,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         ResourceConvertToYamlHandler<V1PersistentVolume> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
         resourceConvertToYamlHandler.setType(v1PersistentVolume);
         resourceConvertToYamlHandler.operationEnvGitlabFile("pv" + devopsPvDTO.getName(), gitlabEnvGroupProjectId,
-                CREATE, userAttrDTO.getGitlabUserId(), devopsPvDTO.getId(), PERSISTENVOLUME, null, false,
+                CREATE, (long) GitUserNameUtil.getAdminId(), devopsPvDTO.getId(), PERSISTENVOLUME, null, false,
                 devopsEnvironmentDTO.getId(), path);
     }
 

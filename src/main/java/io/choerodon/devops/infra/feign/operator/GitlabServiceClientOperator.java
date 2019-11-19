@@ -64,6 +64,16 @@ public class GitlabServiceClientOperator {
         return userDTOResponseEntity.getBody();
     }
 
+    public GitLabUserDTO queryAdminUser() {
+        ResponseEntity<GitLabUserDTO> userDTOResponseEntity;
+        try {
+            userDTOResponseEntity = gitlabServiceClient.queryAdminUser();
+        } catch (FeignException e) {
+            throw new CommonException(e);
+        }
+        return userDTOResponseEntity.getBody();
+    }
+
     public GitLabUserDTO updateUser(Integer userId, Integer projectsLimit, GitlabUserReqDTO userReqDTO) {
         ResponseEntity<GitLabUserDTO> userDTOResponseEntity;
         try {

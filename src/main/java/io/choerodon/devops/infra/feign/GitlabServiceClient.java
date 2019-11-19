@@ -28,6 +28,9 @@ public interface GitlabServiceClient {
     ResponseEntity<GitLabUserDTO> queryUserByUserName(
             @PathVariable("username") String username);
 
+    @GetMapping(value = "/v1/users/currentUser")
+    ResponseEntity<GitLabUserDTO> queryAdminUser();
+
     @GetMapping(value = "/v1/groups/{groupId}/members/{userId}")
     ResponseEntity<MemberDTO> queryGroupMember(
             @PathVariable("groupId") Integer groupId,
