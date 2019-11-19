@@ -326,11 +326,9 @@ class EditNetwork extends Component {
           // 将默认选项直接生成，避免加载带来的异步问题
           const initIstOption = [defaultOption];
           const deletedInstance = [];
-          let defaultInstance = '';
           if (!targetAppServiceId && instances && instances.length) {
             _.forEach(instances, (item) => {
               const { id: istId, code, status } = item;
-              defaultInstance = `${defaultInstance ? `${defaultInstance},` : ''}${code}`;
               initIst.push(code);
               initIstOption.push(
                 <Option key={istId} value={code}>
@@ -367,7 +365,6 @@ class EditNetwork extends Component {
             initIst,
             initIstOption,
             deletedInstance,
-            defaultInstance,
             targetAppServiceId,
             oldAppData: {
               initApp: appServiceId,
@@ -627,9 +624,13 @@ class EditNetwork extends Component {
     const { deletedInstance } = this.state;
     let msg;
     if (value) {
-      if (_.includes(deletedInstance, value) && !msg) {
-        msg = intl.formatMessage({ id: 'network.instance.check.failed' });
-      } else if (_.includes(value, ',')) {
+      const data = value.split(',');
+      _.forEach(data, (item) => {
+        if (_.includes(deletedInstance, item) && !msg) {
+          msg = intl.formatMessage({ id: 'network.instance.check.failed' });
+        }
+      });
+      if (data[1] && !msg) {
         msg = intl.formatMessage({ id: 'network.instance.check.failed.more' });
       }
     }
@@ -872,7 +873,6 @@ class EditNetwork extends Component {
       labels,
       config,
       endPoints: endPointsData,
-      defaultInstance,
       targetAppServiceId,
     } = this.state;
     const { projectId } = AppState.currentMenuType;
@@ -1182,7 +1182,6 @@ class EditNetwork extends Component {
         );
       },
     );
-    const defaultIst = initIst.length ? initIst : undefined;
 
     return (
       <div className="c7n-region">
@@ -1255,7 +1254,7 @@ class EditNetwork extends Component {
                     {...formItemLayout}
                   >
                     {getFieldDecorator('appInstance', {
-                      initialValue: targetAppServiceId ? 'all_instance' : defaultInstance,
+                      initialValue: targetAppServiceId ? 'all_instance' : initIst.join(),
                       trigger: ['onChange', 'onSubmit'],
                       rules: [
                         {
@@ -1284,11 +1283,6 @@ class EditNetwork extends Component {
                           .toLowerCase()
                           .indexOf(input.toLowerCase()) >= 0}
                       >
-                        {istOption.concat(initIstOption).length > 1 && (
-                          <Option key="all_instance" value="all_instance">
-                            {intl.formatMessage({ id: 'all_instance' })}
-                          </Option>
-                        )}
                         {initIstOption}
                         {istOption}
                       </Select>,
