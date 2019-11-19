@@ -416,7 +416,7 @@ public class AgentCommandServiceImpl implements AgentCommandService {
         msg.setKey(String.format(KEY_FORMAT,
                 clusterId,
                 CertManagerConstants.CERT_MANAGER_REALASE_NAME));
-        msg.setType(HelmType.CERT_MANAGER_UNLOAD.toValue());
+        msg.setType(HelmType.CERT_MANAGER_UNINSTALL.toValue());
         sendToWebsocket(clusterId, msg);
     }
 }
