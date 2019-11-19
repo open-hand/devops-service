@@ -25,7 +25,7 @@ spec:
           lifecycle:
             preStop:
               exec:
-                command: ["/bin/sh", "-c"," curl -X POST localhost:{{ .Values.service.port }}/pre_stop"]
+                command: ["/bin/sh", "-c","curl -X POST localhost:{{ .Values.service.port }}/pre_stop"]
           env:
 {{- range $name, $value := .Values.env.open }}
 {{- if not (empty $value) }}
