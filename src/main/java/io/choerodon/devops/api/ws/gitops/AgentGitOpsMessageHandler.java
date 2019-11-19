@@ -184,7 +184,7 @@ public class AgentGitOpsMessageHandler implements TextMessageHandler<AgentMsgVO>
                 agentMsgHandlerService.getCertManagerInfo(msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
              // 获取 卸载cert-manager状态
-            case CERT_MANAGER_UNLOAD_STATUS:
+            case CERT_MANAGER_UNINSTALL_STATUS:
                 agentMsgHandlerService.unloadCertManager(msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
             // 接收Agent定时发送的节点数据
