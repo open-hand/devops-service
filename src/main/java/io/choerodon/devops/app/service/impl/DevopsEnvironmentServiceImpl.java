@@ -1634,7 +1634,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         EnvironmentMsgVO environmentMsgVO = new EnvironmentMsgVO(false, false, false);
         if (type == null) {
             if (devopsEnvironmentMapper.selectByPrimaryKey(envId) != null) {
-                environmentMsgVO.setCheckExist(true);
+                environmentMsgVO.setCheckEnvExist(true);
             }
             return environmentMsgVO;
         }
