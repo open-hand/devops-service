@@ -57,6 +57,11 @@ public class HandlePVCFileRelationServiceImpl implements HandlerObjectFileRelati
                 DevopsPvcReqVO devopsPvcReqVO = constructPvc(
                         pvc,
                         envId, "update");
+
+                if (!Objects.equals(devopsPvcDTO.getRequestResource(), devopsPvcReqVO.getRequestResource())) {
+                    GitOpsUtil.throwCapacityChangeException(filePath, devopsPvcReqVO.getName());
+                }
+
                 boolean isNotChange = isIdentical(devopsPvcDTO, devopsPvcReqVO);
                 DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsPvcDTO.getCommandId());
                 devopsPvcReqVO.setId(devopsPvcDTO.getId());

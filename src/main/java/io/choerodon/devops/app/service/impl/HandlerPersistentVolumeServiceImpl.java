@@ -97,6 +97,11 @@ public class HandlerPersistentVolumeServiceImpl implements HandlerObjectFileRela
                 DevopsPvReqVO devopsPvReqVO = constructPv(
                         pv,
                         envId, "update");
+
+                if (!Objects.equals(devopsPvDTO.getRequestResource(), devopsPvReqVO.getRequestResource())) {
+                    GitOpsUtil.throwCapacityChangeException(filePath, devopsPvReqVO.getName());
+                }
+
                 boolean isNotChange = isIdentical(devopsPvDTO, devopsPvReqVO);
                 DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsPvDTO.getCommandId());
                 devopsPvReqVO.setId(devopsPvDTO.getId());

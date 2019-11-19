@@ -86,6 +86,7 @@ public enum GitOpsObjectError {
     PERSISTENT_VOLUME_NFS_SERVER_NOT_FOUND("pv.nfs.server.not.found"),
     PERSISTENT_VOLUME_NFS_SERVER_NOT_IP("pv.nfs.server.not.ip"),
     PERSISTENT_VOLUME_HOSTPATH_PATH_NOT_FOUND("pv.hostpath.path.not.found"),
+    CAPACITY_CHANGE_NOT_ALLOWED("capacity.change.not.allow"),
     OBJECT_EXIST("object.exist"),
     FILE_NOT_YAML("error.file.not.yaml.format"),
     DUPLICATED_CLUSTER_COMPONENT("duplicated.cluster.component"),

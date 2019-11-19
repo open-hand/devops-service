@@ -201,4 +201,15 @@ public class GitOpsUtil {
         throw new GitOpsExplainException(
                 GitOpsObjectError.OBJECT_EXIST.getError(), filePath, resourceName);
     }
+
+    /**
+     * 抛出容量改变的异常
+     *
+     * @param filePath     资源所在文件路径
+     * @param resourceName 资源名称
+     */
+    public static void throwCapacityChangeException(String filePath, String resourceName) {
+        throw new GitOpsExplainException(
+                GitOpsObjectError.CAPACITY_CHANGE_NOT_ALLOWED.getError(), filePath, resourceName);
+    }
 }
