@@ -1469,7 +1469,8 @@ const zhCN = {
   'network.name.check.exist': '名称已存在',
   'network.ip.check.failed':
     '请输入正确的ip，类似 (0-255).(0-255).(0-255).(0-255)',
-  'network.instance.check.failed': '请移除不可用实例',
+  'network.instance.check.failed': '请移除不可用的实例',
+  'network.instance.check.failed.more': '请选择目标对象为所有实例或单个实例',
   'network.port.check.failed': '端口在0-65535之间',
   'network.nport.check.failed': '在30000-32767之间',
   'network.label.check.failed': '输入有误，详细规则见框后提示',

@@ -53,7 +53,7 @@ const OpCard = ({ index, record, isActive, intlPrefix, prefixCls, formatMessage,
         )}
         {commandError && status === 'failed' && (
           <Tooltip title={commandError}>
-            <Icon type="info" className={`${prefixCls}-cases-record-error`} />
+            <Icon type="error" className={`${prefixCls}-cases-record-error`} />
           </Tooltip>
         )}
       </div>

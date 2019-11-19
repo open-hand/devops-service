@@ -54,7 +54,7 @@ export default ({ name, errorMessage, describe, buttonData = [], status, classNa
         <span>{name}</span>
         {errorMessage && (
           <Tooltip placement="top" title={errorMessage}>
-            <Icon type="info" className={`${prefixCls}-card-wrap-title-icon`} />
+            <Icon type="error" className={`${prefixCls}-card-wrap-title-icon`} />
           </Tooltip>
         )}
       </div>
