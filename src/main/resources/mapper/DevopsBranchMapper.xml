@@ -34,6 +34,9 @@
             </foreach>
         </if>
         ORDER BY
+        <if test="sortString != null and sortString != ''">
+            #{sortString,jdbcType=VARCHAR} ,
+        </if>
         db.branch_name='master' DESC,
         db.id DESC
     </select>
