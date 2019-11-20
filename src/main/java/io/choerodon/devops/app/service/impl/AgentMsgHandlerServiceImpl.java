@@ -338,6 +338,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     @Override
     public void resourceUpdate(String key, String msg, Long clusterId) {
         try {
+            logger.debug("key:{} msg:{} clusterId:{}", key, msg, clusterId);
             Long envId = getEnvId(key, clusterId);
             if (envId == null) {
                 logger.info("{} {} clusterId:{}", ENV_NOT_EXIST, KeyParseUtil.getNamespace(key), clusterId);
