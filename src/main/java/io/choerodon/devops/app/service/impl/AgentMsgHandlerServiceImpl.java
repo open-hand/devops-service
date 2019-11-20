@@ -366,7 +366,6 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             DevopsEnvResourceDTO oldDevopsEnvResourceDTO;
             AppServiceInstanceDTO appServiceInstanceDTO;
             ResourceType resourceType = ResourceType.forString(KeyParseUtil.getResourceType(key));
-            logger.info("resourceType:{},type:{},isEqual:{}",resourceType,KeyParseUtil.getResourceType(key),resourceType.equals(ResourceType.PERSISTENT_VOLUME));
             if (resourceType == null) {
                 resourceType = ResourceType.MISSTYPE;
             }
