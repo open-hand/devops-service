@@ -1630,17 +1630,24 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     @Override
-    public Boolean checkExist(Long projectId, Long envId, Long objectId, String type) {
+    public EnvironmentMsgVO checkExist(Long projectId, Long envId, Long objectId, String type) {
         // type为null表示查询环境是否存在
+        EnvironmentMsgVO environmentMsgVO = new EnvironmentMsgVO(false, false, false);
         if (type == null) {
-            return devopsEnvironmentMapper.selectByPrimaryKey(envId) != null;
+            if (devopsEnvironmentMapper.selectByPrimaryKey(envId) != null) {
+                environmentMsgVO.setCheckEnvExist(true);
+            }
+            return environmentMsgVO;
         }
         // type为app表示查询应用服务是否存在
         if ("app".equals(type)) {
             DevopsEnvAppServiceDTO devopsEnvAppServiceDTO = new DevopsEnvAppServiceDTO();
             devopsEnvAppServiceDTO.setEnvId(envId);
             devopsEnvAppServiceDTO.setAppServiceId(objectId);
-            return devopsEnvAppServiceMapper.selectOne(devopsEnvAppServiceDTO) != null;
+            if (devopsEnvAppServiceMapper.selectOne(devopsEnvAppServiceDTO) != null) {
+                environmentMsgVO.setCheckAppExist(true);
+            }
+            return environmentMsgVO;
         }
         boolean check = false;
         ObjectType objectType = ObjectType.valueOf(type.toUpperCase());
@@ -1699,6 +1706,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             default:
                 break;
         }
-        return check;
+        environmentMsgVO.setCheckResources(check);
+        return environmentMsgVO;
     }
 }

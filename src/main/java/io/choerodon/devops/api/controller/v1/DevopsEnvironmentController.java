@@ -568,7 +568,7 @@ public class DevopsEnvironmentController {
             roles = {InitRoleCode.PROJECT_OWNER,InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "检查资源是否存在")
     @GetMapping(value = "/{env_id}/check")
-    public ResponseEntity<Boolean> checkExist(
+    public ResponseEntity<EnvironmentMsgVO> checkExist(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "对象类型,对象类型为空时，表示查询环境是否存在")

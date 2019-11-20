@@ -123,7 +123,7 @@ public interface DevopsClusterService {
      * @param clusterId 集群id
      * @return
      */
-    Boolean checkConnectEnvs(Long clusterId);
+    ClusterMsgVO checkConnectEnvsAndPV(Long clusterId);
 
     /**
      * 分页查询节点下的Pod

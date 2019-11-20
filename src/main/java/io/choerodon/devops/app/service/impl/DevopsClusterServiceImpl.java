@@ -7,10 +7,7 @@ import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO;
 import io.choerodon.devops.api.vo.iam.RoleVO;
 import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.infra.dto.DevopsClusterDTO;
-import io.choerodon.devops.infra.dto.DevopsClusterProPermissionDTO;
-import io.choerodon.devops.infra.dto.DevopsEnvPodDTO;
-import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
+import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
@@ -60,6 +57,8 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     private DevopsClusterProPermissionService devopsClusterProPermissionService;
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
+    @Autowired
+    private DevopsPvService devopsPvService;
 
 
     @Override
@@ -356,8 +355,6 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         if (devopsClusterDTO == null) {
             return;
         }
-
-        checkConnectEnvs(clusterId);
         if (!ObjectUtils.isEmpty(devopsClusterDTO.getClientId())) {
             baseServiceClientOperator.deleteClient(devopsClusterDTO.getOrganizationId(), devopsClusterDTO.getClientId());
         }
@@ -367,16 +364,23 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     }
 
     @Override
-    public Boolean checkConnectEnvs(Long clusterId) {
+    public ClusterMsgVO checkConnectEnvsAndPV(Long clusterId) {
+        ClusterMsgVO clusterMsgVO = new ClusterMsgVO(false, false);
         List<Long> connectedEnvList = clusterConnectionHandler.getConnectedClusterList();
         List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = devopsEnvironmentService.baseListUserEnvByClusterId(clusterId);
+
         if (connectedEnvList.contains(clusterId)) {
-            throw new CommonException("error.cluster.connected");
+            clusterMsgVO.setCheckEnv(true);
         }
         if (!devopsEnvironmentDTOS.isEmpty()) {
             throw new CommonException("error.cluster.delete");
         }
-        return true;
+        //集群是否存在PV
+        List<DevopsPvDTO> clusterDTOList = devopsPvService.queryByClusterId(clusterId);
+        if (!Objects.isNull(clusterDTOList) && clusterDTOList.size() > 0) {
+            clusterMsgVO.setCheckPV(true);
+        }
+        return clusterMsgVO;
     }
 
 

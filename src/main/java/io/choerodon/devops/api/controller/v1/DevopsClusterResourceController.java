@@ -3,6 +3,7 @@ package io.choerodon.devops.api.controller.v1;
 import java.util.List;
 import java.util.Optional;
 
+import io.choerodon.devops.api.vo.CertManagerMsgVO;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,14 +68,14 @@ public class DevopsClusterResourceController {
     }
 
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "校验cert_manager能否被卸载")
+    @ApiOperation(value = "校验集群下的环境中是否存在使用CertManager申请或上传的证书")
     @GetMapping("/cert_manager/check")
-    public ResponseEntity<Boolean> checkCertManager(
+    public ResponseEntity<CertManagerMsgVO> checkCertManager(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群id", required = true)
             @RequestParam(name = "cluster_id", required = true) Long clusterId) {
-        return new ResponseEntity<Boolean>(devopsClusterResourceService.checkCertManager(clusterId), HttpStatus.OK);
+        return new ResponseEntity<CertManagerMsgVO>(devopsClusterResourceService.checkCertManager(clusterId), HttpStatus.OK);
     }
 
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})

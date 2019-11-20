@@ -585,4 +585,11 @@ public class DevopsPvServiceImpl implements DevopsPvService {
                 .filter((e) -> compareResource(e.getRequestResource(), pvcStorage) > 0)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public List<DevopsPvDTO> queryByClusterId(Long clusterId) {
+        DevopsPvDTO devopsPvDTO=new DevopsPvDTO();
+        devopsPvDTO.setClusterId(clusterId);
+        return devopsPvMapper.select(devopsPvDTO);
+    }
 }

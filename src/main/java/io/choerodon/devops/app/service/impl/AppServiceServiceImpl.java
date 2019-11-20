@@ -414,22 +414,24 @@ public class AppServiceServiceImpl implements AppServiceService {
      * @param appServiceId 服务id
      * @param projectId    项目id
      */
-    private void checkCanDisable(Long appServiceId, Long projectId) {
+    private AppServiceMsgVO checkCanDisable(Long appServiceId, Long projectId) {
         int nonDeleteInstancesCount = appServiceInstanceMapper.countNonDeletedInstances(appServiceId, projectId);
+        AppServiceMsgVO appServiceMsgVO = new AppServiceMsgVO(false, false);
         if (nonDeleteInstancesCount > 0) {
             throw new CommonException("error.disable.application.service", appServiceId);
         }
 
         int shareRulesCount = appServiceShareRuleMapper.countShareRulesByAppServiceId(appServiceId);
         if (shareRulesCount > 0) {
-            throw new CommonException("error.disable.application.service.due.to.share");
+            appServiceMsgVO.setCheckRule(true);
         }
 
         if (devopsEnvAppServiceMapper.countRelatedSecret(appServiceId, null, projectId) != 0
                 || devopsEnvAppServiceMapper.countRelatedService(appServiceId, null, projectId) != 0
                 || devopsEnvAppServiceMapper.countRelatedConfigMap(appServiceId, null, projectId) != 0) {
-            throw new CommonException("error.disable.application.service.due.to.resources");
+            appServiceMsgVO.setCheckResources(true);
         }
+        return appServiceMsgVO;
     }
 
     @Override
@@ -2419,6 +2421,11 @@ public class AppServiceServiceImpl implements AppServiceService {
             serviceTemplateVOS.add(appServiceTemplateVO);
         });
         return serviceTemplateVOS;
+    }
+
+    @Override
+    public AppServiceMsgVO checkAppService(Long projectId, Long appServiceId, Boolean active) {
+        return checkCanDisable(appServiceId, projectId);
     }
 
     private AppServiceVO dtoTOVo(AppServiceDTO appServiceDTO, Map<Long, List<AppServiceVersionDTO>> appVerisonMap) {

@@ -466,4 +466,6 @@ public interface AppServiceService {
     void deleteAppServiceSage(Long projectId,Long appServiceId);
 
     List<AppServiceTemplateVO> listServiceTemplates();
+
+    AppServiceMsgVO checkAppService(Long projectId, Long appServiceId, Boolean active);
 }

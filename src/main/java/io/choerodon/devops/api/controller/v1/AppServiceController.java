@@ -144,6 +144,21 @@ public class AppServiceController {
                 .orElseThrow(() -> new CommonException("error.app.service.active"));
     }
 
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "项目下停用服务校验")
+    @PutMapping("/check/{app_service_id}")
+    public ResponseEntity<AppServiceMsgVO> checkAppService(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "服务id", required = true)
+            @PathVariable(value = "app_service_id") Long appServiceId,
+            @ApiParam(value = "启用停用", required = true)
+            @RequestParam Boolean active) {
+        return Optional.ofNullable(applicationServiceService.checkAppService(projectId, appServiceId, active))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.app.service.check"));
+    }
+
     /**
      * 项目下删除创建失败服务
      *
