@@ -263,13 +263,14 @@ public class AgentCommandServiceImpl implements AgentCommandService {
     }
 
     @Override
-
     public void startOrStopInstance(String payload, String name, String type, String namespace, Long commandId, Long envId, Long clusterId) {
         AgentMsgVO msg = new AgentMsgVO();
-        msg.setKey(CLUSTER + clusterId + ".env:" + namespace + ".envId:" + envId + ".release:" + name);
+        String key = CLUSTER + clusterId + ".env:" + namespace + ".envId:" + envId + ".release:" + name;
+        msg.setKey(key);
         msg.setType(type);
         msg.setPayload(payload);
         msg.setCommandId(commandId);
+        LOGGER.debug("Sending {} command. The key is: {}. THe commandId is: {}. The payload is {}. ", type, key, commandId, payload);
         sendToWebsocket(clusterId, msg);
     }
 

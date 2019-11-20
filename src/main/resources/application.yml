@@ -83,4 +83,5 @@ logging:
     io.choerodon.event.consumer: debug
     com.zaxxer: debug
     io.choerodon.feign: warn
+    io.choerodon.devops.app.service: debug
   config: classpath:logback-spring.xml
