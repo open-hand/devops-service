@@ -8,10 +8,10 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.DevopsBranchService;
 import io.choerodon.devops.infra.dto.DevopsBranchDTO;
@@ -94,8 +94,6 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
 
     @Override
     public PageInfo<DevopsBranchDTO> basePageBranch(Long appServiceId, Pageable pageable, String params) {
-
-        PageInfo<DevopsBranchDTO> devopsBranchDTOPageInfo;
         Map<String, Object> maps = TypeUtil.castMapParams(params);
         Sort sort = pageable.getSort();
         String sortResult = "";
@@ -110,12 +108,13 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
                     })
                     .collect(Collectors.joining(","));
         }
-        devopsBranchDTOPageInfo = PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), sortResult)
+        String sortString = sortResult;
+        return PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize())
                 .doSelectPageInfo(
                         () -> devopsBranchMapper.list(appServiceId,
+                                sortString,
                                 TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
                                 TypeUtil.cast(maps.get(TypeUtil.PARAMS))));
-        return devopsBranchDTOPageInfo;
     }
 
 
