@@ -266,6 +266,7 @@ const deployment = {
   'c7ncd.deployment.instance.cases.ignore': '当前仅保留最近4条操作记录的详情',
   'c7ncd.deployment.instance.detail.empty': '暂无部署详细信息',
   'c7ncd.deployment.instance.cases.log': '查看日志详情',
+  'c7ncd.deployment.instance.cases.fullScreen': '全屏显示',
   'c7ncd.deployment.instance.cases.create': '部署实例',
   'c7ncd.deployment.instance.cases.update': '更新实例',
   'c7ncd.deployment.instance.cases.stop': '停止实例',

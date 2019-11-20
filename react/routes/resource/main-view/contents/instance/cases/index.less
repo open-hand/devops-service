@@ -88,7 +88,7 @@
 
 .c7n-term-wrap {
   background: #000;
-  height: 100%;
+  height: ~"calc(100% - 0.32rem)";
 }
 
 .c7n-log-editor {
@@ -107,5 +107,40 @@
     Consolas,
     source-code-pro,
     monospace !important;
+  }
+}
+
+.CodeMirror-fullScreen {
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: auto;
+  z-index: 9;
+}
+
+.c7ncd-log-sidebar-content_full,
+.c7ncd-log-sidebar-content {
+  position: relative;
+  overflow: hidden;
+  height: 100%;
+  border: 1px solid rgba(0, 0, 0, .12);
+  background: #fff;
+}
+
+.c7ncd-log-sidebar-content_full {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 100%;
+}
+
+.c7ncd-term-fullscreen {
+  display: flex;
+  height: .36rem;
+
+  &-button {
+    margin-left: auto;
   }
 }
