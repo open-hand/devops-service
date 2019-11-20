@@ -2424,7 +2424,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public AppServiceMsgVO checkAppService(Long projectId, Long appServiceId, Boolean active) {
+    public AppServiceMsgVO checkAppService(Long projectId, Long appServiceId) {
         return checkCanDisable(appServiceId, projectId);
     }
 

@@ -151,10 +151,8 @@ public class AppServiceController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "服务id", required = true)
-            @PathVariable(value = "app_service_id") Long appServiceId,
-            @ApiParam(value = "启用停用", required = true)
-            @RequestParam Boolean active) {
-        return Optional.ofNullable(applicationServiceService.checkAppService(projectId, appServiceId, active))
+            @PathVariable(value = "app_service_id") Long appServiceId) {
+        return Optional.ofNullable(applicationServiceService.checkAppService(projectId, appServiceId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.app.service.check"));
     }
