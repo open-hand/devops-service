@@ -29,7 +29,7 @@ const modalStyle2 = {
   width: 'calc(100vw - 3.52rem)',
 };
 
-let stopModal;
+// let stopModal;
 
 const ListView = withRouter(observer((props) => {
   const {
@@ -258,27 +258,40 @@ const ListView = withRouter(observer((props) => {
   }
 
   function openStop(record) {
-    stopModal = Modal.open({
+    const id = record.get('id');
+    
+    const stopModal = Modal.open({
       key: modalKey3,
       title: formatMessage({ id: `${intlPrefix}.check` }),
       children: <Spin />,
       okCancel: false,
       okText: formatMessage({ id: 'cancel' }),
     });
-    checkPermission(record.get('id'));
-  }
 
-  async function checkPermission(id) {
     appServiceStore.checkAppService(projectId, id).then((res) => {
       const { checkResources, checkRule } = res;
+      const status = checkResources || checkRule;
+      let childrenContent;
+
+      if (!status) {
+        childrenContent = <FormattedMessage id={`${intlPrefix}.stop.tips`} />;
+      } else if (checkResources && !checkRule) {
+        childrenContent = formatMessage({ id: `${intlPrefix}.has.resource` });
+      } else if (!checkResources && checkRule) {
+        childrenContent = formatMessage({ id: `${intlPrefix}.has.rules` });
+      } else {
+        childrenContent = formatMessage({ id: `${intlPrefix}.has.both` });
+      }
+
       const statusObj = {
-        title: checkResources || checkRule ? formatMessage({ id: `${intlPrefix}.cannot.stop` }, { name: listDs.current.get('name') }) : formatMessage({ id: `${intlPrefix}.stop` }, { name: listDs.current.get('name') }),
+        title: status ? formatMessage({ id: `${intlPrefix}.cannot.stop` }, { name: listDs.current.get('name') }) : formatMessage({ id: `${intlPrefix}.stop` }, { name: listDs.current.get('name') }),
         // eslint-disable-next-line no-nested-ternary
-        children: checkResources && checkRule ? formatMessage({ id: `${intlPrefix}.has.both` }) : (checkResources ? formatMessage({ id: `${intlPrefix}.has.resource` }) : (checkRule ? formatMessage({ id: `${intlPrefix}.has.rules` }) : <FormattedMessage id={`${intlPrefix}.stop.tips`} />)),
-        okCancel: !checkResources && !checkRule,
-        onOk: () => (checkResources || checkRule ? stopModal.close() : handleChangeActive(false)),
-        okText: checkResources || checkRule ? formatMessage({ id: 'iknow' }) : formatMessage({ id: 'stop' }),
+        children: childrenContent,
+        okCancel: !status,
+        onOk: () => (status ? stopModal.close() : handleChangeActive(false)),
+        okText: status ? formatMessage({ id: 'iknow' }) : formatMessage({ id: 'stop' }),
       };
+
       stopModal.update(statusObj);
     }).catch((err) => {
       Choerodon.handleResponseError(err);
