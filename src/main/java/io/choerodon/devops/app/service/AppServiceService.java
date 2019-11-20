@@ -467,5 +467,5 @@ public interface AppServiceService {
 
     List<AppServiceTemplateVO> listServiceTemplates();
 
-    AppServiceMsgVO checkAppService(Long projectId, Long appServiceId, Boolean active);
+    AppServiceMsgVO checkAppService(Long projectId, Long appServiceId);
 }
