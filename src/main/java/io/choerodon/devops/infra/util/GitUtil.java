@@ -1,19 +1,22 @@
 package io.choerodon.devops.infra.util;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Pattern;
-
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.GitConfigVO;
+import io.choerodon.devops.api.vo.GitEnvConfigVO;
+import io.choerodon.devops.app.service.DevopsEnvironmentService;
+import io.choerodon.devops.infra.dto.DevopsClusterDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.enums.EnvironmentType;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.*;
-import org.eclipse.jgit.api.errors.*;
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
@@ -30,21 +33,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
-import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.GitConfigVO;
-import io.choerodon.devops.api.vo.GitEnvConfigVO;
-import io.choerodon.devops.app.service.DevopsEnvironmentService;
-import io.choerodon.devops.infra.constant.GitOpsConstants;
-import io.choerodon.devops.infra.dto.DevopsClusterDTO;
-import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
-import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
-import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.enums.EnvironmentType;
-import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Created by younger on 2018/3/29.
@@ -186,7 +182,7 @@ public class GitUtil {
             cloneCommand.setDirectory(new File(path));
             return cloneCommand.call();
         } catch (GitAPIException e) {
-            LOGGER.info("url:{}======sshKeyRsa:{}",url,sshKeyRsa);
+            LOGGER.info("url:{}======sshKeyRsa:{}", url, sshKeyRsa);
             throw new CommonException(e.getMessage(), e);
         }
     }
@@ -667,7 +663,7 @@ public class GitUtil {
 
     public GitConfigVO getGitConfig(Long clusterId) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(clusterId);
-        List<DevopsEnvironmentDTO> devopsEnvironments = devopsEnvironmentService.baseListUserEnvByClusterId(clusterId);
+        List<DevopsEnvironmentDTO> devopsEnvironments = devopsEnvironmentService.listAllEnvByClusterId(clusterId);
         GitConfigVO gitConfigVO = new GitConfigVO();
         List<GitEnvConfigVO> gitEnvConfigDTOS = new ArrayList<>();
         devopsEnvironments.stream().filter(devopsEnvironmentE -> devopsEnvironmentE.getGitlabEnvProjectId() != null).forEach(devopsEnvironmentE -> {
