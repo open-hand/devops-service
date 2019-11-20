@@ -18,6 +18,7 @@ spec:
 {{ include "service.microservice.labels" . | indent 8 }}
 {{ include "service.labels.standard" . | indent 8 }}
     spec:
+      terminationGracePeriodSeconds: 30
       containers:
         - name: {{ .Release.Name }}
           image: "{{ .Values.image.repository }}:{{ .Chart.Version }}"
