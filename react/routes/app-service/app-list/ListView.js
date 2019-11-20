@@ -4,7 +4,7 @@ import { observer } from 'mobx-react-lite';
 import { FormattedMessage } from 'react-intl';
 import { withRouter, Link } from 'react-router-dom';
 import { Page, Content, Header, Permission, Action, Breadcrumb, Choerodon } from '@choerodon/boot';
-import { Button } from 'choerodon-ui';
+import { Button, Spin } from 'choerodon-ui';
 import pick from 'lodash/pick';
 import TimePopover from '../../../components/timePopover';
 import { useAppTopStore } from '../stores';
@@ -28,6 +28,8 @@ const modalStyle1 = {
 const modalStyle2 = {
   width: 'calc(100vw - 3.52rem)',
 };
+
+// let stopModal;
 
 const ListView = withRouter(observer((props) => {
   const {
@@ -122,7 +124,7 @@ const ListView = withRouter(observer((props) => {
       stop: {
         service: ['devops-service.app-service.updateActive'],
         text: formatMessage({ id: 'stop' }),
-        action: () => changeActive(false),
+        action: openStop.bind(this, record),
       },
       run: {
         service: ['devops-service.app-service.updateActive'],
@@ -254,6 +256,48 @@ const ListView = withRouter(observer((props) => {
       return false;
     }
   }
+
+  function openStop(record) {
+    const id = record.get('id');
+    
+    const stopModal = Modal.open({
+      key: modalKey3,
+      title: formatMessage({ id: `${intlPrefix}.check` }),
+      children: <Spin />,
+      okCancel: false,
+      okText: formatMessage({ id: 'cancel' }),
+    });
+
+    appServiceStore.checkAppService(projectId, id).then((res) => {
+      const { checkResources, checkRule } = res;
+      const status = checkResources || checkRule;
+      let childrenContent;
+
+      if (!status) {
+        childrenContent = <FormattedMessage id={`${intlPrefix}.stop.tips`} />;
+      } else if (checkResources && !checkRule) {
+        childrenContent = formatMessage({ id: `${intlPrefix}.has.resource` });
+      } else if (!checkResources && checkRule) {
+        childrenContent = formatMessage({ id: `${intlPrefix}.has.rules` });
+      } else {
+        childrenContent = formatMessage({ id: `${intlPrefix}.has.both` });
+      }
+
+      const statusObj = {
+        title: status ? formatMessage({ id: `${intlPrefix}.cannot.stop` }, { name: listDs.current.get('name') }) : formatMessage({ id: `${intlPrefix}.stop` }, { name: listDs.current.get('name') }),
+        // eslint-disable-next-line no-nested-ternary
+        children: childrenContent,
+        okCancel: !status,
+        onOk: () => (status ? stopModal.close() : handleChangeActive(false)),
+        okText: status ? formatMessage({ id: 'iknow' }) : formatMessage({ id: 'stop' }),
+      };
+
+      stopModal.update(statusObj);
+    }).catch((err) => {
+      Choerodon.handleResponseError(err);
+    });
+  }
+
 
   function getHeader() {
     return <Header title={<FormattedMessage id="app.head" />}>
