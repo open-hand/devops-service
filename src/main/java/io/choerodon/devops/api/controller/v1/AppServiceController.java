@@ -146,7 +146,7 @@ public class AppServiceController {
 
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下停用服务校验")
-    @PutMapping("/check/{app_service_id}")
+    @GetMapping("/check/{app_service_id}")
     public ResponseEntity<AppServiceMsgVO> checkAppService(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
