@@ -1551,6 +1551,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         DevopsEnvironmentDTO devopsEnvironmentDTO = new DevopsEnvironmentDTO();
         devopsEnvironmentDTO.setProjectId(projectId);
         devopsEnvironmentDTO.setActive(active);
+        devopsEnvironmentDTO.setType(EnvironmentType.USER.getValue());
         return devopsEnvironmentMapper.select(devopsEnvironmentDTO);
     }
 
