@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -23,6 +24,7 @@ import io.choerodon.devops.infra.mapper.AppServiceMapper;
 import io.choerodon.devops.infra.mapper.DevopsPvMapper;
 import io.choerodon.devops.infra.mapper.DevopsPvcMapper;
 import io.choerodon.devops.infra.util.*;
+
 import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.*;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -33,6 +35,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.security.cert.CertificateException;
@@ -340,7 +343,10 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         try {
             logger.debug("key:{} msg:{} clusterId:{}", key, msg, clusterId);
             Long envId = getEnvId(key, clusterId);
-            if (envId == null) {
+
+            String type = KeyParseUtil.getResourceType(key);
+
+            if (envId == null && !PERSISTENT_VOLUME_KIND.equals(type)) {
                 logger.info("{} {} clusterId:{}", ENV_NOT_EXIST, KeyParseUtil.getNamespace(key), clusterId);
                 logger.info("resource name: {}", KeyParseUtil.getResourceName(key));
                 return;
@@ -350,7 +356,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             DevopsEnvResourceDTO devopsEnvResourceDTO = new DevopsEnvResourceDTO();
             DevopsEnvResourceDetailDTO devopsEnvResourceDetailDTO = new DevopsEnvResourceDetailDTO();
             devopsEnvResourceDetailDTO.setMessage(msg);
-            devopsEnvResourceDTO.setKind(KeyParseUtil.getResourceType(key));
+            devopsEnvResourceDTO.setKind(type);
             devopsEnvResourceDTO.setEnvId(envId);
             devopsEnvResourceDTO.setName(KeyParseUtil.getResourceName(key));
             devopsEnvResourceDTO.setReversion(
@@ -412,7 +418,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                     handleUpdatePvcMsg(key, envId, msg, devopsEnvResourceDTO, devopsEnvResourceDetailDTO);
                     break;
                 case PERSISTENT_VOLUME:
-                    handleUpdatePvMsg(key, envId, msg, devopsEnvResourceDTO, devopsEnvResourceDetailDTO);
+                    // env id是null的
+                    handleUpdatePvMsg(key, clusterId, msg, devopsEnvResourceDTO, devopsEnvResourceDetailDTO);
                     break;
                 default:
                     releaseName = KeyParseUtil.getReleaseName(key);
@@ -453,30 +460,34 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
      * 更新PV相关纪录的状态
      *
      * @param key                        Agent消息的key
-     * @param envId                      环境id
+     * @param clusterId                  集群id
      * @param msg                        Agent消息内容
      * @param devopsEnvResourceDTO       已经构建好的纪录
      * @param devopsEnvResourceDetailDTO 已经构建好的纪录
      */
-    private void handleUpdatePvMsg(String key, Long envId, String msg,
+    private void handleUpdatePvMsg(String key, Long clusterId, String msg,
                                    DevopsEnvResourceDTO devopsEnvResourceDTO,
                                    DevopsEnvResourceDetailDTO devopsEnvResourceDetailDTO) {
-        logger.info("Update pv message.envId is {}", envId);
+        logger.info("Update pv message.clusterId is {}", clusterId);
         String resourceName = KeyParseUtil.getResourceName(key);
         logger.info("pv name is {}", resourceName);
+
+        DevopsPvDTO devopsPvDTO = devopsPvService.queryWithEnvByClusterIdAndName(clusterId, resourceName);
+        if (devopsPvDTO == null) {
+            // 这个逻辑意味着自定义资源中的PV的message信息是不存数据库的
+            logger.info("PV with clusterId {} and name {} is not found in database", clusterId, resourceName);
+            return;
+        }
+
         DevopsEnvResourceDTO oldDevopsEnvResourceDTO =
                 devopsEnvResourceService.baseQueryOptions(
                         null,
                         null,
-                        envId,
+                        devopsPvDTO.getEnvId(),
                         ResourceType.PERSISTENT_VOLUME.getType(),
                         resourceName);
         saveOrUpdateResource(devopsEnvResourceDTO, oldDevopsEnvResourceDTO, devopsEnvResourceDetailDTO, null);
-        DevopsPvDTO devopsPvDTO = devopsPvService.queryByEnvIdAndName(envId, resourceName);
-        if (devopsPvDTO == null) {
-            logger.info("PV with envId {} and name {} is not found in database", envId, resourceName);
-            return;
-        }
+
         V1PersistentVolume pv = json.deserialize(msg, V1PersistentVolume.class);
         devopsPvDTO.setStatus(pv.getStatus().getPhase());
         devopsPvMapper.updateByPrimaryKeySelective(devopsPvDTO);
@@ -1786,12 +1797,12 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
 
     private Long getEnvId(String key, Long clusterId) {
-        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryByClusterIdAndCode(clusterId, KeyParseUtil.getNamespace(key));
-        Long envId = null;
-        if (devopsEnvironmentDTO != null) {
-            envId = devopsEnvironmentDTO.getId();
+        String namespace = KeyParseUtil.getNamespace(key);
+        if (StringUtils.isEmpty(namespace)) {
+            return null;
         }
-        return envId;
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryByClusterIdAndCode(clusterId, namespace);
+        return devopsEnvironmentDTO == null ? null : devopsEnvironmentDTO.getId();
     }
 
     @Override

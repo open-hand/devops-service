@@ -324,6 +324,11 @@ public class DevopsPvServiceImpl implements DevopsPvService {
     }
 
     @Override
+    public DevopsPvDTO queryWithEnvByClusterIdAndName(Long clusterId, String name) {
+        return devopsPvMapper.queryWithEnvByClusterIdAndName(clusterId, name);
+    }
+
+    @Override
     public DevopsPvDTO createOrUpdateByGitOps(DevopsPvReqVO devopsPvReqVO, Long userId) {
         // 校验环境是否连接
         DevopsEnvironmentDTO environmentDTO = devopsEnvironmentService.baseQueryById(devopsPvReqVO.getEnvId());
