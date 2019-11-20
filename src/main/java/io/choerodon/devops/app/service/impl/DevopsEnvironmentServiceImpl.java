@@ -1,31 +1,13 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.*;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import javax.annotation.PostConstruct;
-
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
-
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
-import org.springframework.data.domain.Pageable;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -52,6 +34,23 @@ import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
+
+import javax.annotation.PostConstruct;
+import java.util.*;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Created by younger on 2018/4/9.
@@ -64,7 +63,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
      * 集群对应的环境name clusterName-env
      */
     private static final String SYSTEM_ENV_NAME = "%s-env";
-    private static final String CLUSTER_ENV_CODE_FORMAT="choerodon-cluster-%s";
 
     private static final Gson gson = new Gson();
     private static final String MEMBER = "member";
@@ -1347,7 +1345,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         // 创建集群环境时默认不跳过权限校验
         devopsEnvironmentDTO.setSkipCheckPermission(Boolean.FALSE);
         devopsEnvironmentDTO.setName(String.format(SYSTEM_ENV_NAME, cluster.getName()));
-        devopsEnvironmentDTO.setCode(String.format(CLUSTER_ENV_CODE_FORMAT,cluster.getCode()));
+        devopsEnvironmentDTO.setCode(SYSTEM_ENV_NAMESPACE);
         devopsEnvironmentDTO.setType(EnvironmentType.SYSTEM.getValue());
         devopsEnvironmentDTO.setActive(true);
         devopsEnvironmentDTO.setSynchro(false);

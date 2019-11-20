@@ -333,8 +333,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     public DevopsPrometheusVO queryPrometheus(Long clusterId) {
         DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceMapper.queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
         DevopsPrometheusDTO devopsPrometheusDTO = devopsPrometheusMapper.selectByPrimaryKey(devopsClusterResourceDTO.getConfigId());
-        DevopsPrometheusVO devopsPrometheusVO = ConvertUtils.convertObject(devopsPrometheusDTO, DevopsPrometheusVO.class);
-        return devopsPrometheusVO;
+        return ConvertUtils.convertObject(devopsPrometheusDTO, DevopsPrometheusVO.class);
     }
 
     @Override
