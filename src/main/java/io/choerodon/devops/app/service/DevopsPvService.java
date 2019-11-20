@@ -4,12 +4,11 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 
 import com.github.pagehelper.PageInfo;
-import io.choerodon.devops.infra.dto.DevopsClusterDTO;
 import org.springframework.data.domain.Pageable;
 
 import io.choerodon.devops.api.vo.DevopsPvPermissionUpdateVO;
-import io.choerodon.devops.api.vo.DevopsPvVO;
 import io.choerodon.devops.api.vo.DevopsPvReqVO;
+import io.choerodon.devops.api.vo.DevopsPvVO;
 import io.choerodon.devops.api.vo.ProjectReqVO;
 import io.choerodon.devops.infra.dto.DevopsPvDTO;
 
@@ -29,7 +28,7 @@ public interface DevopsPvService {
     /**
      * 根据条件分页查询PV
      */
-    PageInfo<DevopsPvDTO> basePagePvByOptions(Long projectId,Boolean doPage, Pageable pageable, String params);
+    PageInfo<DevopsPvDTO> basePagePvByOptions(Long projectId, Boolean doPage, Pageable pageable, String params);
 
     /**
      * 分页查询pv以及关联的集群和PVC
@@ -39,7 +38,7 @@ public interface DevopsPvService {
      * @param params
      * @return
      */
-    PageInfo<DevopsPvVO> pageByOptions(Long projectId,Boolean doPage, Pageable pageable, String params);
+    PageInfo<DevopsPvVO> pageByOptions(Long projectId, Boolean doPage, Pageable pageable, String params);
 
     /**
      * 创建PV
@@ -109,6 +108,15 @@ public interface DevopsPvService {
      */
     DevopsPvDTO queryByEnvIdAndName(Long envId, String name);
 
+    /**
+     * 根据集群id和PV名称查询PV
+     *
+     * @param clusterId 集群id
+     * @param name      pv名称
+     * @return pv
+     */
+    DevopsPvDTO queryWithEnvByClusterIdAndName(Long clusterId, String name);
+
     DevopsPvDTO createOrUpdateByGitOps(DevopsPvReqVO devopsPvReqVO, Long userId);
 
     void deleteByGitOps(Long pvId);
@@ -136,13 +144,15 @@ public interface DevopsPvService {
 
     /**
      * 供创建pvc时查询可用pv时用
+     *
      * @param params
      * @return
      */
-    List<DevopsPvVO> queryPvcRelatedPv(Long projectId,String params);
+    List<DevopsPvVO> queryPvcRelatedPv(Long projectId, String params);
 
     /**
      * 根据集群ID查询集群
+     *
      * @param clusterId
      * @return
      */
