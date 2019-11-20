@@ -113,22 +113,7 @@ const PiplelineTable = withRouter(observer((props) => {
       cancelText: <FormattedMessage id="cancel" />,
     });
   }
-  /**
-   * 打开execute模态框
-   * @param {*} id 
-   * @param {*} itemName 
-   */
-  async function openExecuteCheck(id, itemName) {
-    Modal.open({
-      key: modalKey,
-      title: `${formatMessage({ id: 'pipeline.execute' })}“${itemName}”`,
-      // footer: null,
-      okCancel: false,
-      onOk: () => { true; },
-      okText: <FormattedMessage id="close" />,
-      children: <ExecuteModalContent id={id} />,
-    });
-  }
+
   /**
    * 打开编辑页面
    * @param id
@@ -231,7 +216,7 @@ const PiplelineTable = withRouter(observer((props) => {
     if (!edit) {
       actionItem = filterItem(actionItem, ['remove']);
     }
-    
+
     return (<Action data={_.map(actionItem, (item) => ({ ...action[item] }))} />);
   }
 
@@ -250,69 +235,131 @@ const PiplelineTable = withRouter(observer((props) => {
     return <UserInfo avatar={createUserUrl || ''} name={createUserRealName || ''} id={createUserName || ''} />;
   }
 
-  const ExecuteModalContent = ({ modal, id }) => {
-    const [executeCheck, changeExCheck] = useState(false);
-    const [executeEnv, changeExEnv] = useState(null);
-    let check;
-    useEffect(() => {
-      check = checkStatus();
-    }, []);
+  // const ExecuteModalContent = ({ modal, id }) => {
+  //   const [executeCheck, changeExCheck] = useState(false);
+  //   const [executeEnv, changeExEnv] = useState(null);
+  //   let check;
+  //   useEffect(() => {
+  //     check = checkStatus();
+  //   }, []);
 
-    async function checkStatus() {
-      const response = await PiplineStore
-        .checkExcecute(projectId, id)
-        .catch((e) => Choerodon.handleResponseError(e));
-      if (response && response.failed) {
-        changeExCheck(false);
-        return;
-      }
+  //   async function checkStatus() {
+  //     const response = await PiplineStore
+  //       .checkExcecute(projectId, id)
+  //       .catch((e) => Choerodon.handleResponseError(e));
+  //     if (response && response.failed) {
+  //       changeExCheck(false);
+  //       return;
+  //     }
 
-      if (response && response.permission && response.versions) {
-        changeExCheck(EXECUTE_PASS);
-        modal.update({ okCancel: true, okText: <FormattedMessage id="submit" />, onOk: executeFun });
-        return;
-      }
-      changeExCheck(EXECUTE_FAILED);
-      changeExEnv(response.envName);
+  //     if (response && response.permission && response.versions) {
+  //       changeExCheck(EXECUTE_PASS);
+  //       modal.update({ okCancel: true, okText: <FormattedMessage id="submit" />, onOk: executeFun });
+  //       return;
+  //     }
+  //     changeExCheck(EXECUTE_FAILED);
+  //     changeExEnv(response.envName);
+  //   }
+
+  //   function closeExecuteCheck() {
+  //     changeExCheck(false);
+  //     changeExEnv(null);
+  //     modal.close();
+  //   }
+
+  //   async function executeFun() {
+  //     const response = await PiplineStore
+  //       .executePipeline(projectId, id)
+  //       .catch((e) => Choerodon.handleResponseError(e));
+  //     if (handlePromptError(response, false)) {
+  //       linkToRecord(id);
+  //     }
+  //     closeExecuteCheck();
+  //     handleRefresh();
+  //     check = null;
+  //   }
+  //   return (
+  //     <Fragment>
+  //       <div className="c7n-padding-top_8">
+  //         { /* eslint-disable-next-line no-nested-ternary */}
+  //         {executeCheck 
+  //           ? (executeEnv 
+  //             ? <FormattedMessage
+  //               id="pipeline.execute.no.permission"
+  //               values={{ envName: executeEnv }} 
+  //             />
+  //             : <FormattedMessage id={`pipeline.execute.${executeCheck}`} /> 
+  //           )
+  //           : <Fragment>
+  //             <Spin size="small" />
+  //             <span className={`${prefixCls}-execute`}>{formatMessage({ id: 'pipeline.execute.checking' })}</span>
+  //           </Fragment>}
+  //       </div>
+  //     </Fragment>
+  //   );
+  // };
+
+  /**
+     * 打开execute模态框
+     * @param {*} id 
+     * @param {*} itemName 
+     */
+  async function openExecuteCheck(id, itemName) {
+    const myModal = Modal.open({
+      key: modalKey,
+      title: `${formatMessage({ id: 'pipeline.execute' })}“${itemName}”`,
+      // footer: null,
+      okCancel: false,
+      onOk: () => { true; },
+      okText: <FormattedMessage id="close" />,
+      children: (
+        <Fragment>
+          <Spin size="small" />&nbsp;
+          <span className={`${prefixCls}-execute`}>{formatMessage({ id: 'pipeline.execute.checking' })}</span>
+        </Fragment>
+      ),
+    });
+
+    const response = await PiplineStore
+      .checkExcecute(projectId, id)
+      .catch((e) => Choerodon.handleResponseError(e));
+
+    let executeStatus;
+    let envName;
+
+    if (response && response.permission && response.versions) {
+      envName = response.envName;
+      executeStatus = EXECUTE_PASS;
+    } else if (response && response.failed) {
+      executeStatus = EXECUTE_FAILED;
+    } else {
+      executeStatus = EXECUTE_FAILED;
     }
 
-    function closeExecuteCheck() {
-      changeExCheck(false);
-      changeExEnv(null);
-      modal.close();
-    }
+    myModal.update({
+      okCancel: true,
+      okText: !envName ? <FormattedMessage id="submit" /> : <FormattedMessage id="iknow" />,
+      onOk: () => (!envName ? executeFun(id, myModal) : true),
+      children: (envName
+        ? <FormattedMessage
+          id="pipeline.execute.no.permission"
+          values={{ envName }}
+        />
+        : <FormattedMessage id={`pipeline.execute.${executeStatus}`} />
+      ),
+    });
+  }
 
-    async function executeFun() {
-      const response = await PiplineStore
-        .executePipeline(projectId, id)
-        .catch((e) => Choerodon.handleResponseError(e));
-      if (handlePromptError(response, false)) {
-        linkToRecord(id);
-      }
-      closeExecuteCheck();
-      handleRefresh();
-      check = null;
+  async function executeFun(id, myModal) {
+    const response = await PiplineStore
+      .executePipeline(projectId, id)
+      .catch((e) => Choerodon.handleResponseError(e));
+    if (handlePromptError(response, false)) {
+      linkToRecord(id);
+      myModal.close();
     }
-    return (
-      <Fragment>
-        <div className="c7n-padding-top_8">
-          { /* eslint-disable-next-line no-nested-ternary */}
-          {executeCheck 
-            ? (executeEnv 
-              ? <FormattedMessage
-                id="pipeline.execute.no.permission"
-                values={{ envName: executeEnv }} 
-              />
-              : <FormattedMessage id={`pipeline.execute.${executeCheck}`} /> 
-            )
-            : <Fragment>
-              <Spin size="small" />
-              <span className={`${prefixCls}-execute`}>{formatMessage({ id: 'pipeline.execute.checking' })}</span>
-            </Fragment>}
-        </div>
-      </Fragment>
-    );
-  };
+    handleRefresh();
+  }
 
   return (
     <Page
