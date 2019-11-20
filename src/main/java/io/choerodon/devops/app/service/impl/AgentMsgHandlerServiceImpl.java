@@ -346,7 +346,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
             String type = KeyParseUtil.getResourceType(key);
 
-            if (envId == null && !PERSISTENT_VOLUME_KIND.equals(type)) {
+            if (envId == null && !ResourceType.PERSISTENT_VOLUME.getType().equals(type)) {
                 logger.info("{} {} clusterId:{}", ENV_NOT_EXIST, KeyParseUtil.getNamespace(key), clusterId);
                 logger.info("resource name: {}", KeyParseUtil.getResourceName(key));
                 return;
