@@ -148,9 +148,9 @@ public interface DevopsEnvironmentService {
     /**
      * 分页查询环境下用户权限
      *
-     * @param projectId   项目id
-     * @param pageable 分页参数
-     * @param envId       环境id
+     * @param projectId 项目id
+     * @param pageable  分页参数
+     * @param envId     环境id
      * @return page
      */
     PageInfo<DevopsUserPermissionVO> pageUserPermissionByEnvId(Long projectId, Pageable pageable,
@@ -308,6 +308,14 @@ public interface DevopsEnvironmentService {
      * @param envId       集群的配置库id
      */
     void deleteSystemEnv(Long projectId, Long clusterId, String clusterCode, Long envId);
+
+    /**
+     * 查出指定集群的所有环境
+     *
+     * @param clusterId
+     * @return
+     */
+    List<DevopsEnvironmentDTO> listAllEnvByClusterId(Long clusterId);
 
     DevopsEnvironmentDTO queryByTokenWithClusterCode(@Param("token") String token);
 }
