@@ -134,14 +134,10 @@ export default observer((props) => {
   }
 
   function getPopoverContent() {
-    const data = {
-      gitops: 'success',
-      monitor: 'operating',
-      health: 'pending',
-    };
+    const { getPrometheusStatus } = contentStore;
     return (
       <Fragment>
-        {map(data, (value, key) => (
+        {map(getPrometheusStatus, (value, key) => (
           <div className={`${prefixCls}-install-step`} key={key}>
             <div className={`${prefixCls}-install-step-content`}>
               <span className={`${prefixCls}-install-step-status ${prefixCls}-install-step-status-${value}`} />

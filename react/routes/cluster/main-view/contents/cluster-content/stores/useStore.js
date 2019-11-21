@@ -29,6 +29,14 @@ export default function useStore({ NODE_TAB }) {
       return this.componentList;
     },
 
+    prometheusStatus: [],
+    setPrometheusStatus(data) {
+      this.prometheusStatus = data;
+    },
+    get getPrometheusStatus() {
+      return this.prometheusStatus;
+    },
+
     async loadGrafanaUrl(projectId, clusterId) {
       try {
         const res = await axios.get(`/devops/v1/projects/${projectId}/cluster_resource/grafana_url?cluster_id=${clusterId}&type=cluster`);
@@ -51,7 +59,7 @@ export default function useStore({ NODE_TAB }) {
       }
     },
 
-    async installCerManager(projectId, clusterId) {
+    async installCertManager(projectId, clusterId) {
       try {
         const res = await axios.post(`/devops/v1/projects/${projectId}/cluster_resource/cert_manager/deploy?cluster_id=${clusterId}`);
         return handlePromptError(res);
@@ -82,6 +90,17 @@ export default function useStore({ NODE_TAB }) {
       } catch (e) {
         Choerodon.handleResponseError(e);
         return false;
+      }
+    },
+
+    async loadPrometheusStatus(projectId, clusterId) {
+      try {
+        const res = await axios.get(`/devops/v1/projects/${projectId}/cluster_resource/prometheus/deploy_status?cluster_id=${clusterId}`);
+        if (handlePromptError(res)) {
+          this.setPrometheusStatus(res);
+        }
+      } catch (e) {
+        Choerodon.handleResponseError(e);
       }
     },
   }));

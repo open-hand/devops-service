@@ -4,6 +4,7 @@ import { observer } from 'mobx-react-lite';
 import { injectIntl } from 'react-intl';
 import { DataSet } from 'choerodon-ui/pro';
 import FormDataSet from './FormDataSet';
+import PvOptionsDataSet from './PvOptionsDataSet';
 
 const Store = createContext();
 
@@ -22,7 +23,8 @@ export const StoreProvider = injectIntl(inject('AppState')(
       clusterId,
     } = props;
 
-    const formDs = useMemo(() => new DataSet(FormDataSet({ formatMessage, intlPrefix, projectId, clusterId })), [projectId, clusterId]);
+    const pvDs = useMemo(() => new DataSet(PvOptionsDataSet(projectId)), [projectId]);
+    const formDs = useMemo(() => new DataSet(FormDataSet({ formatMessage, intlPrefix, projectId, clusterId, pvDs })), [projectId, clusterId]);
 
     useEffect(() => {
       if (type === 'create') {

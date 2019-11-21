@@ -31,7 +31,7 @@ const ClusterModals = observer(() => {
   } = useClusterStore();
   const {
     contentStore,
-    tabs: { NODE_TAB, ASSIGN_TAB },
+    tabs: { NODE_TAB, ASSIGN_TAB, COMPONENT_TAB, MONITOR_TAB },
     PermissionDs,
     NodeListDs,
     ClusterDetailDs,
@@ -62,10 +62,21 @@ const ClusterModals = observer(() => {
   function refresh() {
     resreshTree();
     ClusterDetailDs.query();
-    if (getTabKey === NODE_TAB) {
-      NodeListDs.query();
-    } else {
-      PermissionDs.query();
+    switch (getTabKey) {
+      case NODE_TAB:
+        NodeListDs.query();
+        break;
+      case ASSIGN_TAB:
+        PermissionDs.query();
+        break;
+      case COMPONENT_TAB:
+        contentStore.loadComponentList(projectId, id);
+        contentStore.loadPrometheusStatus(projectId, id);
+        break;
+      case MONITOR_TAB:
+        contentStore.loadGrafanaUrl(projectId, id);
+        break;
+      default:
     }
   }
   function resreshTree() {
