@@ -16,6 +16,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
@@ -52,7 +53,7 @@ public class AppServiceController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "服务信息", required = true)
-            @RequestBody AppServiceReqVO appServiceReqVO) {
+            @RequestBody @Validated AppServiceReqVO appServiceReqVO) {
         return Optional.ofNullable(applicationServiceService.create(projectId, appServiceReqVO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.app.service.create"));
