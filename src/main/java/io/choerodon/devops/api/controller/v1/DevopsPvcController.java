@@ -25,7 +25,7 @@ import javax.validation.Valid;
 import java.util.Optional;
 
 @RestController
-@RequestMapping(value = "/v1/projects/{project_id}/pvc")
+@RequestMapping(value = "/v1/projects/{project_id}/pvcs")
 public class DevopsPvcController {
     @Autowired
     DevopsPvcService devopsPvcService;
@@ -91,12 +91,12 @@ public class DevopsPvcController {
     @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "删除PVC")
-    @DeleteMapping("/{env_id}/{pvc_id}")
+    @DeleteMapping("/{pvc_id}")
     public ResponseEntity<Boolean> deletePvc(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)
-            @PathVariable(value = "env_id") Long envId,
+            @RequestParam(value = "env_id") Long envId,
             @ApiParam(value = "PVC id", required = true)
             @PathVariable(value = "pvc_id") Long pvcId) {
         return Optional.of(devopsPvcService.delete(envId, pvcId))
@@ -113,9 +113,9 @@ public class DevopsPvcController {
      */
     @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "删除PVC")
+    @ApiOperation(value = "检查PVC名称的唯一性")
     @GetMapping("/check_name")
-    public void deletePvc(
+    public void checkName(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)
