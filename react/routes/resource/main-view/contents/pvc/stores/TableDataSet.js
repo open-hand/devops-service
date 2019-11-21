@@ -9,13 +9,13 @@ export default ({ formatMessage, intlPrefix, projectId, envId }) => ({
       const postData = getTablePostData(data);
 
       return {
-        url: `/devops/v1/projects/${projectId}/pvc/page_by_options?env_id=${envId}`,
+        url: `/devops/v1/projects/${projectId}/pvcs/page_by_options?env_id=${envId}`,
         method: 'post',
         data: postData,
       };
     },
     destroy: ({ data: [data] }) => ({
-      url: `/devops/v1/projects/${projectId}/pvc/${envId}/${data.id}`,
+      url: `/devops/v1/projects/${projectId}/pvcs/${data.id}?env_id=${envId}`,
       method: 'delete',
     }),
   },
