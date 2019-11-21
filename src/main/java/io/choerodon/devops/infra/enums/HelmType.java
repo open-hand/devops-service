@@ -64,7 +64,6 @@ public enum HelmType {
     CERT_MANAGER_INSTALL("cert_manager_install"),
     CERT_MANAGER_STATUS("cert_manager_status"),
     CERT_MANAGER_UNINSTALL("cert_manager_uninstall"),
-    CERT_MANAGER_UNINSTALL_STATUS("cert_manager_uninstall_status"),
     CRD_UNLOAD("crd_unload"),
     CRD_UNLOAD_STATUS("crd_unload_status"),
     OPERATE_DOCKER_REGISTRY_SECRET_FAILED("operate_docker_registry_secret_failed"),
