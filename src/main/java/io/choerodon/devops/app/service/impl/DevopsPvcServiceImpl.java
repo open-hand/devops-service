@@ -1,24 +1,8 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.math.BigDecimal;
-import java.util.*;
-
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
-import io.kubernetes.client.custom.Quantity;
-import io.kubernetes.client.models.V1ObjectMeta;
-import io.kubernetes.client.models.V1PersistentVolumeClaim;
-import io.kubernetes.client.models.V1PersistentVolumeClaimSpec;
-import io.kubernetes.client.models.V1ResourceRequirements;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsPvcReqVO;
 import io.choerodon.devops.api.vo.DevopsPvcRespVO;
@@ -35,6 +19,21 @@ import io.choerodon.devops.infra.mapper.DevopsEnvCommandMapper;
 import io.choerodon.devops.infra.mapper.DevopsPvMapper;
 import io.choerodon.devops.infra.mapper.DevopsPvcMapper;
 import io.choerodon.devops.infra.util.*;
+import io.kubernetes.client.custom.Quantity;
+import io.kubernetes.client.models.V1ObjectMeta;
+import io.kubernetes.client.models.V1PersistentVolumeClaim;
+import io.kubernetes.client.models.V1PersistentVolumeClaimSpec;
+import io.kubernetes.client.models.V1ResourceRequirements;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.util.*;
 
 @Service
 public class DevopsPvcServiceImpl implements DevopsPvcService {
@@ -330,11 +329,19 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
         V1ObjectMeta metadata = new V1ObjectMeta();
         metadata.setName(devopsPvcDTO.getName());
 
+        //设置PVC的访问模式
+
         //设置pvc需要绑定的PV名称和资源
         v1PersistentVolumeClaim.setMetadata(metadata);
+
+        List<String> accessModesList = new ArrayList<>();
+        accessModesList.add(devopsPvcDTO.getAccessModes());
+
         V1PersistentVolumeClaimSpec v1PersistentVolumeClaimSpec = new V1PersistentVolumeClaimSpec();
         v1PersistentVolumeClaimSpec.setVolumeName(devopsPvcDTO.getPvName());
+        v1PersistentVolumeClaimSpec.setAccessModes(accessModesList);
         v1PersistentVolumeClaimSpec.setResources(getResource(devopsPvcDTO.getRequestResource()));
+        v1PersistentVolumeClaim.setSpec(v1PersistentVolumeClaimSpec);
 
         return v1PersistentVolumeClaim;
     }
