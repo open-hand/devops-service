@@ -144,12 +144,20 @@
                 AND
                     dpv.description LIKE CONCAT(CONCAT('%', #{searchParam.description, jdbcType=VARCHAR}),'%')
             </if>
+            <if test="searchParam.appServiceName != null and searchParam.appServiceName != ''">
+                AND da.name LIKE CONCAT(CONCAT('%', #{searchParam.appServiceName}), '%')
+            </if>
+            <if test="searchParam.envName != null and searchParam.envName != ''">
+                AND de.name LIKE CONCAT(CONCAT('%', #{searchParam.envName}), '%')
+            </if>
         </if>
         <if test='params != null and params.size > 0'>
             AND
             <foreach collection="params" item="param" open="(" separator=" OR " close=")">
                 (dpv.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-                OR dpv.description LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%'))
+                OR dpv.description LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                OR da.name LIKE CONCAT(CONCAT('%', #{searchParam.appServiceName}), '%')
+                OR de.name LIKE CONCAT(CONCAT('%', #{searchParam.envName}), '%'))
             </foreach>
         </if>
     </sql>
