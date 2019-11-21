@@ -28,19 +28,7 @@ public class DevopsPvProPermissionServiceImpl implements DevopsPvProPermissionSe
     @Transactional(propagation = Propagation.REQUIRED)
     @Override
     public void batchInsertIgnore(Long pvId, List<Long> projectIds) {
-        if (projectIds == null){
-            return;
-        }
-
-        DevopsPvProPermissionDTO devopsPvProPermissionDTO = new DevopsPvProPermissionDTO();
-        devopsPvProPermissionDTO.setPvId(pvId);
-
-        projectIds.forEach(projectId -> {
-            devopsPvProPermissionDTO.setProjectId(projectId);
-            if (devopsPvProPermissionMapper.selectOne(devopsPvProPermissionDTO) != null){
-                devopsPvProPermissionMapper.insert(devopsPvProPermissionDTO);
-            }
-        });
+        devopsPvProPermissionMapper.batchInsert(pvId, projectIds);
     }
 
     @Override

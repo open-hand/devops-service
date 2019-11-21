@@ -122,7 +122,18 @@ public interface DevopsPvService {
     void deleteByGitOps(Long pvId);
 
     /**
-     * 分页查询组织下特定项目关联的pv
+     * PV跳过权限校验，查询所属集群下的所有项目
+     *
+     * @param projectId
+     * @param pvId
+     * @param pageable
+     * @param params
+     * @return
+     */
+    PageInfo<ProjectReqVO> pageProjects(Long projectId, Long pvId, Pageable pageable, String params);
+
+    /**
+     * PV不跳过权限校验，查询有关联的项目
      *
      * @param projectId
      * @param pvId
