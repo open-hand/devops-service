@@ -79,6 +79,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
           break;
         case tabs.COMPONENT_TAB:
           contentStore.loadComponentList(projectId, id);
+          contentStore.loadPrometheusStatus(projectId, id);
           break;
         case tabs.MONITOR_TAB:
           contentStore.loadGrafanaUrl(projectId, id);
