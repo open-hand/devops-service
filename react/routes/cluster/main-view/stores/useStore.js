@@ -42,7 +42,7 @@ export default function useStore() {
       return axios.delete(`/devops/v1/projects/${projectId}/clusters/${clusterId}`);
     },
     deleteCheck(projectId, clusterId) {
-      return axios.get(`/devops/v1/projects/${projectId}/clusters/${clusterId}/check_connect_envs`);
+      return axios.get(`/devops/v1/projects/${projectId}/clusters/${clusterId}/check_connect_envs_and_pv`);
     },
   }));
 }
