@@ -2,7 +2,7 @@ import React, { Fragment, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { Action, Choerodon } from '@choerodon/boot';
-import { Modal, Icon } from 'choerodon-ui/pro';
+import { Modal, Icon, Spin } from 'choerodon-ui/pro';
 import { Input } from 'choerodon-ui';
 import { useClusterStore } from '../../../stores';
 import { useClusterMainStore } from '../../stores';
@@ -45,40 +45,54 @@ function ClusterItem({
     treeDs.query();
   }
 
-  function deleteItem() {
+  async function deleteItem() {
     const code = record.get('code');
     const clusterName = record.get('name');
-    const modalContent = (
-      <div>
-        <FormattedMessage id="cluster.delDes_1" />
-        <div
-          className={`${prefixCls}-delete-input`}
-        >
-          <Input
-            value={`helm del choerodon-cluster-agent-code ${code || ''} --purge`}
-            readOnly
-            copy
-          />
-        </div>
-        <div className={`${prefixCls}-delete-notice`}>
-          <Icon type="error" /><FormattedMessage id="cluster.delDes_2" />
-        </div>
-      </div>
-    );
-    mainStore.deleteCheck(projectId, record.get('id'))
-      .then(data => {
-        if (data && data.failed) {
-          Choerodon.prompt(data.message);
-        } else {
-          Modal.open({
-            key: deleteModalKey,
-            title: formatMessage({ id: `${intlPrefix}.action.delete.title` }, { name: clusterName }),
-            children: modalContent,
-            onOk: handleDelete,
-            okText: formatMessage({ id: 'cluster.del.confirm' }),
-          });
-        }
+    const deleteModal = Modal.open({
+      key: deleteModalKey,
+      title: formatMessage({ id: `${intlPrefix}.action.delete.title` }, { name: clusterName }),
+      children: <Spin />,
+      okCancel: false,
+      okText: formatMessage({ id: 'iknow' }),
+    });
+    const res = await mainStore.deleteCheck(projectId, record.get('id'));
+    if (res && (res.checkEnv || res.checkPV)) {
+      let message = ''; 
+      if (res.checkPV) {
+        message = formatMessage({ id: 'c7ncd.cluster.action.can\'t.delete.pv' });
+      }
+      if (res.checkEnv) {
+        message = formatMessage({ id: 'c7ncd.cluster.action.can\'t.delete.env' });
+      }
+      deleteModal.update({
+        title: formatMessage({ id: 'c7ncd.cluster.action.can\'t.delete' }),
+        children: message,
       });
+    } else {
+      const modalContent = (
+        <div>
+          <FormattedMessage id="cluster.delDes_1" />
+          <div
+            className={`${prefixCls}-delete-input`}
+          >
+            <Input
+              value={`helm del choerodon-cluster-agent-code ${code || ''} --purge`}
+              readOnly
+              copy
+            />
+          </div>
+          <div className={`${prefixCls}-delete-notice`}>
+            <Icon type="error" /><FormattedMessage id="cluster.delDes_2" />
+          </div>
+        </div>
+      );
+      deleteModal.update({
+        children: modalContent,
+        onOk: handleDelete,
+        okCancel: true,
+        okText: formatMessage({ id: 'cluster.del.confirm' }),
+      });
+    }
   }
 
   async function handleDelete() {
