@@ -2,6 +2,8 @@ package io.choerodon.devops.api.controller.v1
 
 import com.github.pagehelper.PageInfo
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
+
 import io.choerodon.core.exception.CommonException
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.devops.DependencyInjectUtil
@@ -75,7 +77,7 @@ class ProjectCertificationControllerSpec extends Specification {
         List<ProjectDTO> projectDOList = new ArrayList<>()
         projectDOList.add(projectDO)
         PageInfo<ProjectDTO> projectDOPage = new PageInfo<>(projectDOList)
-        Mockito.when(baseServiceClientOperator.pageProjectByOrgId(anyLong(),anyInt(),anyInt(),anyString(),anyString(),anyString())).thenReturn(projectDOPage)
+        Mockito.when(baseServiceClientOperator.pageProjectByOrgId(anyLong(),anyInt(),anyInt(), any(Sort), anyString(),anyString(),anyString())).thenReturn(projectDOPage)
 
 //        List<ProjectDTO> projectDOList2 = new ArrayList<>()
 //        projectDOList.add(projectDO)
