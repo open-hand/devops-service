@@ -1,0 +1,59 @@
+@import '~choerodon-ui/lib/style/themes/default';
+
+.c7ncd-create-network {
+  width: 70%;
+  .@{c7n-pro-prefix}-validation-message {
+    position: absolute;
+  }
+
+  .network-panel-title {
+    display: flex;
+    margin-bottom: 10px;
+
+    i {
+      line-height: 24px;
+      font-size: 16px;
+      padding-right: 5px;
+    }
+
+    &_disabled {
+      color: rgba(0, 0, 0, .36);
+    }
+
+    span {
+      font-size: 16px;
+      font-weight: 500;
+      line-height: 24px;
+      margin-bottom: 10px;
+    }
+  }
+
+  .network-panel {
+    margin-bottom: 32px;
+  }
+  .group-port {
+    width: 120%;
+    .externalIps {
+      width: 100%;
+    }
+  }
+
+  .target-form {
+    .app-instance-select {
+      width: 100%;
+    }
+  }
+  .network-group-icon, .delete-icon-target {
+    position: relative;
+    font-size: 18px;
+  }
+
+  .delete-icon {
+    position: relative;
+    font-size: 18px;
+    top: 6px;
+    &.icon-delete {
+      cursor: pointer;
+    }
+  }
+}

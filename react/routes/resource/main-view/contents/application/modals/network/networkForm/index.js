@@ -135,11 +135,10 @@ export default class CreateNetwork extends Component {
    * @param value
    * @param callback
    */
-  checkIP = (rule, value, callback, type) => {
+  checkIP = (value, name, record) => {
     const { intl: { formatMessage } } = this.props;
     const p = /^((\d|[1-9]\d|1\d{2}|2[0-4]\d|25[0-5])\.){3}(\d|[1-9]\d|1\d{2}|2[0-4]\d|25[0-5])$/;
     const validIp = {};
-    const data = type === 'targetIps' ? 'targetIp' : 'validIp';
     let errorMsg;
     if (value && value.length) {
       _.forEach(value, (item) => {
@@ -148,10 +147,7 @@ export default class CreateNetwork extends Component {
           validIp[item] = true;
         }
       });
-      this.setState({ [data]: validIp });
-      callback(errorMsg);
-    } else {
-      callback();
+      return errorMsg;
     }
   };
 

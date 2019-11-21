@@ -8,9 +8,11 @@ import Detail from './detail';
 import KeyValueModal from './key-value';
 import DomainModal from './domain';
 import CreateNetwork from './network';
+import CreateNetwork2 from './network2';
 
 const modalKey1 = Modal.key();
 const modalKey2 = Modal.key();
+const createNetWorkKey = Modal.key();
 const modalStyle2 = {
   width: 'calc(100vw - 3.52rem)',
 };
@@ -128,6 +130,21 @@ const AppModals = observer(() => {
     isLoad && setTabKey(NET_TAB);
   }
 
+  function openNetWork() {
+    Modal.open({
+      key: createNetWorkKey,
+      title: formatMessage({ id: 'network.header.create' }),
+      style: { width: 740 },
+      okText: formatMessage({ id: 'create' }),
+      drawer: true,
+      children: <CreateNetwork2 
+        envId={parentId}
+        appId={id} 
+        networkStore={networkStore}
+      />,
+    });
+  }
+
   function getButtons() {
     const envRecord = treeDs.find((record) => record.get('key') === parentId);
     const connect = envRecord.get('connect');
@@ -138,7 +155,7 @@ const AppModals = observer(() => {
       disabled,
       name: formatMessage({ id: `${intlPrefix}.create.network` }),
       icon: 'playlist_add',
-      handler: () => setShowNetwork(true),
+      handler: openNetWork,
       display: true,
       group: 1,
     }, {
