@@ -352,9 +352,8 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
         String unit = resourceString.substring(resourceString.length() - 2);
         int level = ResourceUnitLevelEnum.valueOf(unit.toUpperCase()).ordinal();
 
-        for (int i = 0; i <= level; i++) {
-            size *= 1024;
-        }
+        // 1024的一次方 对应ki 1024的2次方 对应Mi 以此类推
+        size = (long) (size * Math.pow(1024, level + 2));
 
         BigDecimal bigDecimal = new BigDecimal(size);
         Quantity quantity = new Quantity(bigDecimal, Quantity.Format.BINARY_SI);
