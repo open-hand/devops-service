@@ -97,7 +97,7 @@ const pvcContent = observer((props) => {
     }
     const action = [
       {
-        service: [],
+        service: ['devops-service.devops-pvc.deletePvc'],
         text: formatMessage({ id: 'delete' }),
         action: handleDelete,
       },

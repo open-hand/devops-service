@@ -8,7 +8,7 @@ export default (({ intlPrefix, formatMessage, projectId, envId, typeDs, modeDs, 
     if (!value) return;
     if (pa.test(value)) {
       try {
-        const res = await axios.get(`/devops/v1/projects/${projectId}/pvc/check_name?env_id=${envId}&name=${value}`);
+        const res = await axios.get(`/devops/v1/projects/${projectId}/pvcs/check_name?env_id=${envId}&name=${value}`);
         if (res && res.failed) {
           return formatMessage({ id: 'checkNameExist' });
         } else {
@@ -49,7 +49,7 @@ export default (({ intlPrefix, formatMessage, projectId, envId, typeDs, modeDs, 
         const res = omit(data, ['__id', '__status', 'storage', 'unit']);
         res.requestResource = `${data.storage}${data.unit}`;
         return ({
-          url: `/devops/v1/projects/${projectId}/pvc`,
+          url: `/devops/v1/projects/${projectId}/pvcs`,
           method: 'post',
           data: res,
         });
