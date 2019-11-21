@@ -1656,15 +1656,32 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         if (ObjectUtils.isEmpty(payloadMsg)) {
             return;
         }
+        AgentMsgVO agentMsgVO = json.deserialize(payloadMsg, AgentMsgVO.class);
+        if (!CertManagerConstants.CERT_MANAGER_STATUS.equals(agentMsgVO.getType())) {
+            return;
+        }
         DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceService.queryByClusterIdAndType(clusterId, ClusterResourceType.CERTMANAGER.getType());
+        AgentMsgStatusVO agentMsgStatusVO = json.deserialize(agentMsgVO.getPayload(), AgentMsgStatusVO.class);
+
         if (!ObjectUtils.isEmpty(devopsClusterResourceDTO)) {
-            AgentMsgVO agentMsgVO = json.deserialize(payloadMsg, AgentMsgVO.class);
-            if (!ObjectUtils.isEmpty(payloadMsg) && CertManagerConstants.HELMRELEASEINSTALLFAILED.equals(agentMsgVO.getType())) {
-                devopsClusterResourceService.updateCertMangerStatus(clusterId, ClusterResourceStatus.UNINSTALLED.getStatus(), agentMsgVO.getPayload());
-            } else {
-                devopsClusterResourceService.updateCertMangerStatus(clusterId, ClusterResourceStatus.DISABLED.getStatus(), null);
+            //安装返回
+            if (ClusterResourceOperateType.INSTALL.getType().equals(devopsClusterResourceDTO.getOperate())) {
+                if (!CertManagerConstants.RUNING.equals(agentMsgStatusVO.getStatus())) {
+                    devopsClusterResourceService.updateCertMangerStatus(clusterId, ClusterResourceStatus.UNINSTALLED.getStatus(), agentMsgVO.getPayload());
+                } else {
+                    devopsClusterResourceService.updateCertMangerStatus(clusterId, ClusterResourceStatus.DISABLED.getStatus(), null);
+                }
+            }
+            //卸载返回
+            if (ClusterResourceOperateType.UNINSTALL.getType().equals(devopsClusterResourceDTO.getOperate())) {
+                if (!CertManagerConstants.DELETED.equals(agentMsgStatusVO.getStatus())) {
+                    devopsClusterResourceService.updateCertMangerStatus(clusterId, null, agentMsgVO.getPayload());
+                } else {
+                    devopsClusterResourceService.unloadCertManager(clusterId);
+                }
             }
         }
+
     }
 
 
@@ -1843,16 +1860,6 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 podMetricsRedisInfoVOS.add(podMetricsRedisInfoVO);
             });
             agentPodService.handleRealTimePodData(podMetricsRedisInfoVOS);
-        }
-    }
-
-    @Override
-    public void unloadCertManager(String payload, Long clusterId) {
-        AgentMsgVO agentMsgVO = json.deserialize(payload, AgentMsgVO.class);
-        if (!ObjectUtils.isEmpty(agentMsgVO) && CertManagerConstants.HELMRELEASEDELETEFAILED.equals(agentMsgVO.getType())) {
-            devopsClusterResourceService.updateCertMangerStatus(clusterId, null, agentMsgVO.getPayload());
-        } else {
-            devopsClusterResourceService.unloadCertManager(clusterId);
         }
     }
 

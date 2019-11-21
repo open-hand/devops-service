@@ -81,5 +81,4 @@ public interface AgentMsgHandlerService {
 
     void handlePodMetricsSync(String key, String result, Long clusterId);
 
-    void unloadCertManager(String payload, Long objToLong);
 }

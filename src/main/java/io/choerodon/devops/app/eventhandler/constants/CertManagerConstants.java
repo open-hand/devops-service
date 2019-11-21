@@ -2,6 +2,7 @@ package io.choerodon.devops.app.eventhandler.constants;
 
 /**
  * 此类放CertManager常量
+ *
  * @author zhaotianxin
  * @since 2019/11/1
  */
@@ -16,9 +17,21 @@ public class CertManagerConstants {
      */
     public static final String CERT_MANAGER_NAME_SPACE = "kube-system";
 
-    public static final String CERT_MANAGER_REALASE_NAME= "choerodon-cert-manager";
+    public static final String CERT_MANAGER_REALASE_NAME = "choerodon-cert-manager";
+    /**
+     * 证书管理的标志
+     */
+    public static final String CERT_MANAGER_STATUS = "cert_manager_status";
 
-    public static final String HELMRELEASEINSTALLFAILED = "helm_release_install_failed";
+    /**
+     * 证书管理安装成功的标志
+     */
+    public static final String RUNING = " running";
 
-    public static final String HELMRELEASEDELETEFAILED = "helm_release_delete_failed";
+    /**
+     * 证书管理卸载成功的标志
+     */
+    public static final String DELETED = "deleted";
+
+
 }
