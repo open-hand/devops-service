@@ -4,14 +4,13 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -31,6 +30,7 @@ import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsDeployValueMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.FileUtil;
+import io.choerodon.devops.infra.util.PageRequestUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 
 /**
@@ -53,14 +53,13 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
     @Autowired
     private AppServiceInstanceService appServiceInstanceService;
 
-    private static final String ONE_SPACE = " ";
     /**
      * 前端传入的排序字段和Mapper文件中的字段名的映射
      */
     private static final Map<String, String> orderByFieldMap;
 
     static {
-        Map<String, String> map =new HashMap<>();
+        Map<String, String> map = new HashMap<>();
         map.put("envName", "de.name");
         map.put("appServiceName", "da.name");
         map.put("name", "dpv.name");
@@ -110,10 +109,6 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
         return page;
     }
 
-    private String getOrderByString(Sort sort) {
-        return sort.stream().map(t -> orderByFieldMap.get(t.getProperty()) + ONE_SPACE + t.getDirection()).collect(Collectors.joining(","));
-    }
-
     @Override
     public DevopsDeployValueVO query(Long projectId, Long valueId) {
         DevopsDeployValueVO devopsDeployValueVO = ConvertUtils.convertObject(devopsDeployValueMapper.queryById(valueId), DevopsDeployValueVO.class);
@@ -136,9 +131,7 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
         List<PipelineAppServiceDeployDTO> pipelineAppServiceDeployDTOS = pipelineAppDeployService.baseQueryByValueId(valueId);
         if (pipelineAppServiceDeployDTOS == null || pipelineAppServiceDeployDTOS.isEmpty()) {
             List<AppServiceInstanceDTO> appServiceInstanceDTOS = appServiceInstanceService.baseListByValueId(valueId);
-            if (appServiceInstanceDTOS == null || appServiceInstanceDTOS.isEmpty()) {
-                return true;
-            }
+            return CollectionUtils.isEmpty(appServiceInstanceDTOS);
         }
         return false;
     }
@@ -148,7 +141,7 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
         Map<String, Object> maps = TypeUtil.castMapParams(params);
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
         List<String> paramList = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
-        return PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), getOrderByString(pageable.getSort()))
+        return PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderString(pageable.getSort(), orderByFieldMap))
                 .doSelectPageInfo(() -> devopsDeployValueMapper.listByOptionsWithOwner(projectId, appServiceId, envId, userId, searchParamMap, paramList));
     }
 
@@ -157,7 +150,7 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
         Map<String, Object> maps = TypeUtil.castMapParams(params);
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
         List<String> paramList = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
-        return PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), getOrderByString(pageable.getSort()))
+        return PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderString(pageable.getSort(), orderByFieldMap))
                 .doSelectPageInfo(() -> devopsDeployValueMapper.listByOptionsWithMember(projectId, appServiceId, envId, userId, searchParamMap, paramList));
     }
 
