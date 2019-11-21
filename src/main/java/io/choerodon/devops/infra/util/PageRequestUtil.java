@@ -1,6 +1,9 @@
 package io.choerodon.devops.infra.util;
 
+import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
@@ -8,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.DevopsUserPermissionVO;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -54,5 +58,43 @@ public class PageRequestUtil {
             }
             return field + ONE_SPACE + t.getDirection();
         }).collect(Collectors.joining(","));
+    }
+
+    public static List<DevopsUserPermissionVO> sortUserPermission(List<DevopsUserPermissionVO> toBeSorted, Sort sort) {
+        if (sort.isSorted()) {
+            // 取第一个
+            Sort.Order order = sort.iterator().next();
+            switch (order.getProperty()) {
+                case "loginName":
+                    return PageRequestUtil.sortByComparableKey(toBeSorted, DevopsUserPermissionVO::getLoginName, order.getDirection());
+                case "realName":
+                    return PageRequestUtil.sortByComparableKey(toBeSorted, DevopsUserPermissionVO::getRealName, order.getDirection());
+                case "creationDate":
+                    return PageRequestUtil.sortByComparableKey(toBeSorted, DevopsUserPermissionVO::getCreationDate, order.getDirection());
+                default:
+                    throw new CommonException("error.field.not.supported.for.sort", order.getProperty());
+            }
+        } else {
+            return toBeSorted;
+        }
+    }
+
+    /**
+     * 根据Comparable类型的属性对列表进行排序
+     *
+     * @param toBeSorted   待排序的列表
+     * @param keyExtractor 提取Comparable类型属性的逻辑
+     * @param direction    排序的升序或者降序
+     * @param <T>          待排序对象类型
+     * @param <U>          待排序对象用于排序的字段类型
+     * @return 排序完成的列表
+     */
+    public static <T, U extends Comparable<? super U>> List<T> sortByComparableKey(List<T> toBeSorted, Function<? super T, ? extends U> keyExtractor, Sort.Direction direction) {
+        Comparator<T> comparator = Comparator.comparing(keyExtractor);
+        if (direction == Sort.Direction.DESC) {
+            comparator = comparator.reversed();
+        }
+        toBeSorted.sort(comparator);
+        return toBeSorted;
     }
 }
