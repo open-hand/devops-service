@@ -59,4 +59,16 @@ public class AgentMsgVO {
     public void setClusterId(String clusterId) {
         this.clusterId = clusterId;
     }
+
+    @Override
+    public String toString() {
+        return "AgentMsgVO{" +
+                "key='" + key + '\'' +
+                ", type='" + type + '\'' +
+                ", payload='" + payload + '\'' +
+                ", msgType=" + msgType +
+                ", commandId=" + commandId +
+                ", clusterId='" + clusterId + '\'' +
+                '}';
+    }
 }
