@@ -1,6 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import static io.choerodon.devops.infra.enums.AppServiceType.*;
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.*;
 
@@ -31,6 +30,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -43,7 +44,6 @@ import retrofit2.Retrofit;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
-import org.springframework.data.domain.Pageable;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.validator.ApplicationValidator;
@@ -1547,6 +1547,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         if (userPermissionVOS.isEmpty()) {
             return ConvertUtils.convertPage(new PageInfo<>(), DevopsUserPermissionVO.class);
         } else {
+            userPermissionVOS = PageRequestUtil.sortUserPermission(userPermissionVOS, pageable.getSort());
             return PageInfoUtil.createPageFromList(new ArrayList<>(userPermissionVOS), pageable);
         }
     }

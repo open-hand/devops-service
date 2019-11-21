@@ -129,11 +129,12 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
     @Override
     public PageInfo<ProjectReqVO> pageProjects(Long projectId, Pageable pageable, String searchParams) {
         Map<String, Object> searchMap = TypeUtil.castMapParams(searchParams);
+        Map<String, Object> searchParamsMap = TypeUtil.cast(searchMap.get(TypeUtil.SEARCH_PARAM));
         String name = null;
         String code = null;
-        if (!CollectionUtils.isEmpty(searchMap)) {
-            name = TypeUtil.cast(searchMap.get("name"));
-            code = TypeUtil.cast(searchMap.get("code"));
+        if (!CollectionUtils.isEmpty(searchParamsMap)) {
+            name = TypeUtil.cast(searchParamsMap.get("name"));
+            code = TypeUtil.cast(searchParamsMap.get("code"));
         }
         List<String> paramList = TypeUtil.cast(searchMap.get(TypeUtil.PARAMS));
 

@@ -41,6 +41,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -957,6 +958,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 .collect(Collectors.toList());
         members.addAll(owners);
 
+        members = PageRequestUtil.sortUserPermission(members, pageable.getSort());
         // 根据结果手动设置page的相关属性
         return PageInfoUtil.createPageFromList(members, pageable);
     }
