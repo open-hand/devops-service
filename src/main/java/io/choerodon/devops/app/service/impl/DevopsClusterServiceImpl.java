@@ -13,6 +13,7 @@ import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
+import io.choerodon.devops.infra.mapper.DevopsPvProPermissionMapper;
 import io.choerodon.devops.infra.util.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,6 +60,8 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
     private DevopsPvService devopsPvService;
+    @Autowired
+    private DevopsPvProPermissionMapper devopsPvProPermissionMapper;
 
 
     @Override
@@ -252,6 +255,14 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         if (clusterId == null || relatedProjectId == null) {
             return;
         }
+        //查出该集群关联的所有PV，删除与relatedProjectId的关联信息
+        List<Long> pvIds = devopsPvService.queryByClusterId(clusterId).stream()
+                .map(DevopsPvDTO::getId)
+                .collect(Collectors.toList());
+        if (!pvIds.isEmpty()) {
+            devopsPvProPermissionMapper.batchDeleteByPvIdsAndProjectId(pvIds, relatedProjectId);
+        }
+
         DevopsClusterProPermissionDTO permission = new DevopsClusterProPermissionDTO();
         permission.setClusterId(clusterId);
         permission.setProjectId(relatedProjectId);

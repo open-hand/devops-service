@@ -1,20 +1,8 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.math.BigDecimal;
-import java.util.*;
-import java.util.stream.Collectors;
-
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
-import io.kubernetes.client.custom.Quantity;
-import io.kubernetes.client.models.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.validator.DevopsPvValidator;
 import io.choerodon.devops.api.vo.DevopsPvPermissionUpdateVO;
@@ -31,17 +19,29 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
+import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvCommandMapper;
 import io.choerodon.devops.infra.mapper.DevopsPvMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.PageInfoUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
+import io.kubernetes.client.custom.Quantity;
+import io.kubernetes.client.models.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+
+import java.math.BigDecimal;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class DevopsPvServiceImpl implements DevopsPvService {
 
-    private static final String PERSISTENVOLUME = "PersistentVolume";
+    private static final String PERSISTENTVOLUME = "PersistentVolume";
     private static final String CREATE = "create";
     private static final String DELETE = "delete";
     private static final String MASTER = "master";
@@ -68,6 +68,10 @@ public class DevopsPvServiceImpl implements DevopsPvService {
     private DevopsEnvCommandMapper devopsEnvCommandMapper;
     @Autowired
     GitlabServiceClientOperator gitlabServiceClientOperator;
+    @Autowired
+    DevopsProjectService devopsProjectService;
+    @Autowired
+    DevopsClusterMapper devopsClusterMapper;
 
     private Gson gson = new Gson();
 
@@ -159,7 +163,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
 
         // 查询对象所在文件中是否含有其它对象
         DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
-                .baseQueryByEnvIdAndResourceId(devopsEnvironmentDTO.getId(), pvId, PERSISTENVOLUME);
+                .baseQueryByEnvIdAndResourceId(devopsEnvironmentDTO.getId(), pvId, PERSISTENTVOLUME);
         if (devopsEnvFileResourceDTO == null) {
             //删除pv
             devopsPvMapper.deleteByPrimaryKey(pvId);
@@ -203,8 +207,8 @@ public class DevopsPvServiceImpl implements DevopsPvService {
             v1PersistentVolume.setMetadata(v1ObjectMeta);
             resourceConvertToYamlHandler.setType(v1PersistentVolume);
             Integer projectId = TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId());
-            resourceConvertToYamlHandler.operationEnvGitlabFile(null, projectId, DELETE,(long)GitUserNameUtil.getAdminId(), pvId,
-                    PERSISTENVOLUME, null, false, devopsEnvironmentDTO.getId(), path);
+            resourceConvertToYamlHandler.operationEnvGitlabFile(null, projectId, DELETE, (long) GitUserNameUtil.getAdminId(), pvId,
+                    PERSISTENTVOLUME, null, false, devopsEnvironmentDTO.getId(), path);
         }
         return true;
     }
@@ -237,7 +241,9 @@ public class DevopsPvServiceImpl implements DevopsPvService {
                 updateCheckPermission(update);
 
                 //批量插入
-                devopsPvProPermissionService.batchInsertIgnore(update.getPvId(), update.getProjectIds());
+                if (!update.getProjectIds().isEmpty()) {
+                    devopsPvProPermissionService.batchInsertIgnore(update.getPvId(), update.getProjectIds());
+                }
             }
         } else {
             // 原来不公开,现在设置公开，更新版本号，直接删除原来的权限表中的数据
@@ -246,10 +252,14 @@ public class DevopsPvServiceImpl implements DevopsPvService {
                 updateCheckPermission(update);
 
                 //批量删除
-                devopsPvProPermissionService.baseListByPvId(update.getPvId());
+                DevopsPvProPermissionDTO devopsPvProPermissionDTO = new DevopsPvProPermissionDTO();
+                devopsPvProPermissionDTO.setPvId(update.getPvId());
+                devopsPvProPermissionService.baseDeletePermission(devopsPvProPermissionDTO);
             } else {
-                //原来不公开，现在也不公开,则根据ids批量插入
-                devopsPvProPermissionService.batchInsertIgnore(update.getPvId(), update.getProjectIds());
+                //原来不公开，现在也不公开，继续添加新的项目
+                if (!update.getProjectIds().isEmpty()) {
+                    devopsPvProPermissionService.batchInsertIgnore(update.getPvId(), update.getProjectIds());
+                }
             }
 
         }
@@ -381,6 +391,32 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         devopsPvProPermissionService.baseDeleteByPvId(pvId);
     }
 
+    @Override
+    public PageInfo<ProjectReqVO> pageProjects(Long projectId, Long pvId, Pageable pageable, String params) {
+        DevopsPvDTO devopsPvDTO = baseQueryById(pvId);
+        if (devopsPvDTO == null) {
+            throw new CommonException("error.pv.not.exists");
+        }
+
+        Map<String, Object> map = TypeUtil.castMapParams(params);
+        //接收模糊查询参数列表
+        List<String> paramList = TypeUtil.cast(map.get(TypeUtil.PARAMS));
+        //跳过权限校验,PV分配的有权限的项目和集群下有权限的项目一样
+        if (devopsPvDTO.getSkipCheckProjectPermission()) {
+            DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(devopsPvDTO.getClusterId());
+            //集群跳过权限校验
+            if (devopsClusterDTO.getSkipCheckProjectPermission()) {
+                return devopsProjectService.pageProjects(projectId, pageable, params);
+            } else {
+                //集群不跳过权限校验
+                return devopsClusterService.pageRelatedProjects(projectId, devopsClusterDTO.getId(), pageable, params);
+            }
+        } else {
+            return null;
+        }
+    }
+
+    @Override
     public PageInfo<ProjectReqVO> pageRelatedProjects(Long projectId, Long pvId, Pageable pageable, String params) {
         DevopsPvDTO devopsPvDTO = baseQueryById(pvId);
         if (devopsPvDTO == null) {
@@ -391,8 +427,8 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         //接收模糊查询参数列表
         List<String> paramList = TypeUtil.cast(map.get(TypeUtil.PARAMS));
 
-        // 搜索参数为空，则直接查询后分页
         if (CollectionUtils.isEmpty(paramList)) {
+            // 如果不搜索
             PageInfo<DevopsPvProPermissionDTO> relationPage = PageHelper.startPage(
                     pageable.getPageNumber(), pageable.getPageSize())
                     .doSelectPageInfo(() -> devopsPvProPermissionService.baseListByPvId(pvId));
@@ -401,26 +437,20 @@ public class DevopsPvServiceImpl implements DevopsPvService {
                 return new ProjectReqVO(permission.getProjectId(), projectDTO.getName(), projectDTO.getCode());
             });
         } else {
-            // 搜索参数不为空
-            // 先查询数据库中的有权限的项目
-            List<Long> permissions = devopsPvProPermissionService.baseListByPvId(pvId)
-                    .stream()
-                    .map(DevopsPvProPermissionDTO::getProjectId)
-                    .collect(Collectors.toList());
-
-            //没有权限关联就直接返回空分页查询结果
-            if (CollectionUtils.isEmpty(permissions)) {
-                return new PageInfo<>();
-            }
-
             // 如果要搜索，需要手动在程序内分页
             ProjectDTO iamProjectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
 
-            // feign调用查询所有组织下的项目的接口,加入搜索参数
+            // 手动查出所有组织下的项目
             List<ProjectDTO> filteredProjects = baseServiceClientOperator.listIamProjectByOrgId(
                     iamProjectDTO.getOrganizationId(),
                     null, null,
                     paramList.get(0));
+
+            // 数据库中的有权限的项目
+            List<Long> permissions = devopsPvProPermissionService.baseListByPvId(pvId)
+                    .stream()
+                    .map(DevopsPvProPermissionDTO::getProjectId)
+                    .collect(Collectors.toList());
 
             // 过滤出在数据库中有权限的项目信息
             List<ProjectReqVO> allMatched = filteredProjects
@@ -450,7 +480,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
     private V1PersistentVolume initV1PersistentVolume(DevopsPvDTO devopsPvDTO) {
         V1PersistentVolume v1PersistentVolume = new V1PersistentVolume();
         v1PersistentVolume.setApiVersion("v1");
-        v1PersistentVolume.setKind(PERSISTENVOLUME);
+        v1PersistentVolume.setKind(PERSISTENTVOLUME);
 
         //设置pv名称
         V1ObjectMeta v1ObjectMeta = new V1ObjectMeta();
@@ -565,7 +595,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         ResourceConvertToYamlHandler<V1PersistentVolume> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
         resourceConvertToYamlHandler.setType(v1PersistentVolume);
         resourceConvertToYamlHandler.operationEnvGitlabFile("pv" + devopsPvDTO.getName(), gitlabEnvGroupProjectId,
-                CREATE, (long) GitUserNameUtil.getAdminId(), devopsPvDTO.getId(), PERSISTENVOLUME, null, false,
+                CREATE, (long) GitUserNameUtil.getAdminId(), devopsPvDTO.getId(), PERSISTENTVOLUME, null, false,
                 devopsEnvironmentDTO.getId(), path);
     }
 
@@ -591,7 +621,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
 
     @Override
     public List<DevopsPvDTO> queryByClusterId(Long clusterId) {
-        DevopsPvDTO devopsPvDTO=new DevopsPvDTO();
+        DevopsPvDTO devopsPvDTO = new DevopsPvDTO();
         devopsPvDTO.setClusterId(clusterId);
         return devopsPvMapper.select(devopsPvDTO);
     }
