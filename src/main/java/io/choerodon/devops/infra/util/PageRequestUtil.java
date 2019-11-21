@@ -1,10 +1,11 @@
 package io.choerodon.devops.infra.util;
 
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import com.google.common.collect.Lists;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-
-import java.util.stream.Collectors;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -12,6 +13,8 @@ import java.util.stream.Collectors;
  * Description:
  */
 public class PageRequestUtil {
+    private static final String ONE_SPACE = " ";
+
     private PageRequestUtil() {
     }
 
@@ -32,5 +35,16 @@ public class PageRequestUtil {
                     .collect(Collectors.joining(","));
         }
         return "";
+    }
+
+    /**
+     * 获取排序SQL字符串
+     *
+     * @param sort            {@link Pageable#getSort()}中的sort对象
+     * @param orderByFieldMap 前端传入的字段与mybatis中字段的映射。如果前端传入的字段在map中不存在就使用前端传入的字段
+     * @return 排序SQL字段
+     */
+    public static String getOrderString(Sort sort, Map<String, String> orderByFieldMap) {
+        return sort.stream().map(t -> orderByFieldMap.getOrDefault(t.getProperty(), t.getProperty()) + ONE_SPACE + t.getDirection()).collect(Collectors.joining(","));
     }
 }

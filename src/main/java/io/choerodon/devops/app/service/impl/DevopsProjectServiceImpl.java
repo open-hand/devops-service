@@ -14,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.ProjectReqVO;
@@ -135,7 +136,7 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
         PageInfo<ProjectDTO> projectDTOPageInfo = baseServiceClientOperator.pageProjectByOrgId(
                 iamProjectDTO.getOrganizationId(),
                 pageable.getPageNumber(), pageable.getPageSize(), null, null,
-                paramList.isEmpty() ? null : paramList.get(0));
+                CollectionUtils.isEmpty(paramList) ? null : paramList.get(0));
         return ConvertUtils.convertPage(projectDTOPageInfo, ProjectReqVO.class);
     }
 

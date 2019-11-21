@@ -6,17 +6,15 @@ import java.util.stream.Collectors;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.validator.DevopsCertificationValidator;
 import io.choerodon.devops.api.vo.C7nCertificationVO;
@@ -29,13 +27,12 @@ import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.*;
-import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsCertificationFileMapper;
 import io.choerodon.devops.infra.mapper.DevopsCertificationMapper;
-import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
 import io.choerodon.devops.infra.mapper.DevopsIngressMapper;
 import io.choerodon.devops.infra.util.*;
 
@@ -56,8 +53,6 @@ public class CertificationServiceImpl implements CertificationService {
 
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
-    @Autowired
-    private DevopsEnvironmentMapper devopsEnvironmentMapper;
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
@@ -80,6 +75,22 @@ public class CertificationServiceImpl implements CertificationService {
     private DevopsCertificationFileMapper devopsCertificationFileMapper;
     @Autowired
     private DevopsIngressMapper devopsIngressMapper;
+
+    /**
+     * 前端传入的排序字段和Mapper文件中的字段名的映射
+     */
+    private static final Map<String, String> orderByFieldMap;
+
+    static {
+        Map<String, String> map = new HashMap<>();
+        map.put("envName", "de.name");
+        map.put("envCode", "de.code");
+        map.put("certName", "dc.`name`");
+        map.put("commonName", "dc.domains");
+        map.put("domain", "dc.domains");
+        orderByFieldMap = Collections.unmodifiableMap(map);
+    }
+
 
     private Gson gson = new Gson();
 
@@ -324,8 +335,9 @@ public class CertificationServiceImpl implements CertificationService {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         List<ProjectCertificationVO> projectCertificationVOS = new ArrayList<>();
         baseListByProject(projectId, projectDTO.getOrganizationId()).forEach(certificationDTO -> {
-            List<String> domains = gson.fromJson(certificationDTO.getDomains(), new TypeToken<List<String>>() {}.getType());
-            ProjectCertificationVO projectCertificationVO = new ProjectCertificationVO(certificationDTO.getName(),domains.get(0));
+            List<String> domains = gson.fromJson(certificationDTO.getDomains(), new TypeToken<List<String>>() {
+            }.getType());
+            ProjectCertificationVO projectCertificationVO = new ProjectCertificationVO(certificationDTO.getName(), domains.get(0));
             projectCertificationVO.setId(certificationDTO.getId());
             projectCertificationVO.setDomain(domains.get(0));
             projectCertificationVOS.add(projectCertificationVO);
@@ -467,28 +479,8 @@ public class CertificationServiceImpl implements CertificationService {
     public PageInfo<CertificationDTO> basePage(Long projectId, Long envId, Pageable pageable, String params) {
         Map<String, Object> maps = TypeUtil.castMapParams(params);
 
-        Sort sort = pageable.getSort();
-        String sortResult = "";
-        if (sort != null) {
-            sortResult = Lists.newArrayList(pageable.getSort().iterator()).stream()
-                    .map(t -> {
-                        String property = t.getProperty();
-                        if (property.equals("envName")) {
-                            property = "de.name";
-                        } else if (property.equals("envCode")) {
-                            property = "de.code";
-                        } else if (property.equals("certName")) {
-                            property = "dc.`name`";
-                        } else if (property.equals("commonName")) {
-                            property = "dc.domains";
-                        }
-                        return property + " " + t.getDirection();
-                    })
-                    .collect(Collectors.joining(","));
-        }
-
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
-        PageInfo<CertificationDTO> certificationDTOPage = PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), sortResult)
+        PageInfo<CertificationDTO> certificationDTOPage = PageHelper.startPage(pageable.getPageNumber(), pageable.getPageSize(), PageRequestUtil.getOrderString(pageable.getSort(), orderByFieldMap))
                 .doSelectPageInfo(() -> devopsCertificationMapper.listCertificationByOptions(projectId, envId, searchParamMap, TypeUtil.cast(maps.get(TypeUtil.PARAMS))));
 
         // check if cert is overdue
