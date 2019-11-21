@@ -51,7 +51,7 @@ class DevopsProjectControllerSpec extends Specification {
 
         projectDTOList.add(projectDTO)
         pageInfo.setList(projectDTOList)
-        Mockito.doReturn(pageInfo).when(mockBaseServiceClientOperator).pageProjectByOrgId(1L, 1, 20, null, null, null)
+        Mockito.doReturn(pageInfo).when(mockBaseServiceClientOperator).pageProjectByOrgId(1L, 1, 20, null, null, null, null)
     }
 
     def "QueryProjectGroupReady"() {

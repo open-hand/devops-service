@@ -7,6 +7,8 @@ import com.google.common.collect.Lists;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
+import io.choerodon.core.exception.CommonException;
+
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  14:58 2019/4/4
@@ -45,6 +47,12 @@ public class PageRequestUtil {
      * @return 排序SQL字段
      */
     public static String getOrderString(Sort sort, Map<String, String> orderByFieldMap) {
-        return sort.stream().map(t -> orderByFieldMap.getOrDefault(t.getProperty(), t.getProperty()) + ONE_SPACE + t.getDirection()).collect(Collectors.joining(","));
+        return sort.stream().map(t -> {
+            String field = orderByFieldMap.get(t.getProperty());
+            if (field == null) {
+                throw new CommonException("error.field.not.supported.for.sort", t.getProperty());
+            }
+            return field + ONE_SPACE + t.getDirection();
+        }).collect(Collectors.joining(","));
     }
 }

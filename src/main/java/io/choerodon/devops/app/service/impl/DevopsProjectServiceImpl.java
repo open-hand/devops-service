@@ -129,13 +129,19 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
     @Override
     public PageInfo<ProjectReqVO> pageProjects(Long projectId, Pageable pageable, String searchParams) {
         Map<String, Object> searchMap = TypeUtil.castMapParams(searchParams);
+        String name = null;
+        String code = null;
+        if (!CollectionUtils.isEmpty(searchMap)) {
+            name = TypeUtil.cast(searchMap.get("name"));
+            code = TypeUtil.cast(searchMap.get("code"));
+        }
         List<String> paramList = TypeUtil.cast(searchMap.get(TypeUtil.PARAMS));
 
         ProjectDTO iamProjectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
 
         PageInfo<ProjectDTO> projectDTOPageInfo = baseServiceClientOperator.pageProjectByOrgId(
                 iamProjectDTO.getOrganizationId(),
-                pageable.getPageNumber(), pageable.getPageSize(), null, null,
+                pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort(), name, code,
                 CollectionUtils.isEmpty(paramList) ? null : paramList.get(0));
         return ConvertUtils.convertPage(projectDTOPageInfo, ProjectReqVO.class);
     }

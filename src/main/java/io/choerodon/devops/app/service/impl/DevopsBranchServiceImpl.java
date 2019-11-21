@@ -103,6 +103,8 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
                         String property = t.getProperty();
                         if ("branchName".equals(property)) {
                             property = "db.branch_name";
+                        } else {
+                            throw new CommonException("error.field.not.supported.for.sort", t.getProperty());
                         }
                         return property + " " + t.getDirection();
                     })
