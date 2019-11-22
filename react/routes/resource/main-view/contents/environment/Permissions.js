@@ -64,8 +64,8 @@ export default function Permissions() {
       >
         <Column name="realName" sortable />
         {getActionColumn()}
-        <Column name="loginName" />
-        <Column name="role" renderer={renderRole} sortable />
+        <Column name="loginName" sortable />
+        <Column name="role" renderer={renderRole} />
         <Column name="creationDate" renderer={renderDate} sortable />
       </Table>
     </div>
