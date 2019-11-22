@@ -9,7 +9,7 @@
         dpro.admin_password,
         dpro.grafana_domain,
         dpro.object_version_number,
-        (SELECT dpv.name FROM devops_pv dpv WHERE dpv.id = dpro.pormetheus_pv_id) AS PROMETHEUS_PV_NAME,
+        (SELECT dpv.name FROM devops_pv dpv WHERE dpv.id = dpro.prometheus_pv_id) AS PROMETHEUS_PV_NAME,
         (SELECT dpv.name FROM devops_pv dpv WHERE dpv.id = dpro.grafana_pv_id) AS GRAFANA_PV_NAME,
         (SELECT dpv.name FROM devops_pv dpv WHERE dpv.id = dpro.alertmanager_pv_id) AS ALERTMANAGER_PV_NAME
         FROM devops_prometheus dpro

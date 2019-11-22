@@ -543,7 +543,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     private void createPVC(Long projectId, DevopsPrometheusVO devopsPrometheusVO, Long systemEnvId) {
         DevopsPvcReqVO prometheusPvcReqVO = operatePV(devopsPrometheusVO.getPrometheusPvId(), systemEnvId, PrometheusPVTypeEnum.PROMETHEUS_PV.value());
         DevopsPvcReqVO grafanaPvcReqVO = operatePV(devopsPrometheusVO.getGrafanaPvId(), systemEnvId, PrometheusPVTypeEnum.GRAFANA_PV.value());
-        DevopsPvcReqVO alertmanagerPvcReqVO = operatePV(devopsPrometheusVO.getGrafanaPvId(), systemEnvId, PrometheusPVTypeEnum.ALERTMANAGER_PV.value());
+        DevopsPvcReqVO alertmanagerPvcReqVO = operatePV(devopsPrometheusVO.getAlertmanagerPvId(), systemEnvId, PrometheusPVTypeEnum.ALERTMANAGER_PV.value());
         devopsPvcService.create(projectId, prometheusPvcReqVO);
         devopsPvcService.create(projectId, grafanaPvcReqVO);
         devopsPvcService.create(projectId, alertmanagerPvcReqVO);
