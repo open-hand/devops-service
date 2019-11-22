@@ -25,8 +25,8 @@ public class DevopsPrometheusDTO extends BaseDTO {
     @ApiModelProperty("grafana.ingress.hosts")
     private String grafanaDomain;
 
-    @ApiModelProperty("PormetheusPvId")
-    private Long pormetheusPvId;
+    @ApiModelProperty("PrometheusPvId")
+    private Long prometheusPvId;
 
     @ApiModelProperty("GrafanaPvId")
     private Long grafanaPvId;
@@ -93,12 +93,12 @@ public class DevopsPrometheusDTO extends BaseDTO {
         this.devopsPvcDTO = devopsPvcDTO;
     }
 
-    public Long getPormetheusPvId() {
-        return pormetheusPvId;
+    public Long getPrometheusPvId() {
+        return prometheusPvId;
     }
 
-    public void setPormetheusPvId(Long pormetheusPvId) {
-        this.pormetheusPvId = pormetheusPvId;
+    public void setPrometheusPvId(Long prometheusPvId) {
+        this.prometheusPvId = prometheusPvId;
     }
 
     public Long getGrafanaPvId() {
