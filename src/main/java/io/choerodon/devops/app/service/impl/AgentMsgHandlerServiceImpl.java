@@ -20,9 +20,7 @@ import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.choerodon.devops.infra.mapper.AppServiceMapper;
-import io.choerodon.devops.infra.mapper.DevopsPvMapper;
-import io.choerodon.devops.infra.mapper.DevopsPvcMapper;
+import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
 
 import io.kubernetes.client.JSON;
@@ -146,6 +144,10 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     private DevopsPvcMapper devopsPvcMapper;
     @Autowired
     private DevopsPvMapper devopsPvMapper;
+    @Autowired
+    private DevopsCertManagerRecordMapper devopsCertManagerRecordMapper;
+    @Autowired
+    private DevopsCertManagerMapper devopsCertManagerMapper;
 
     public void handlerUpdatePodMessage(String key, String msg, Long envId) {
         V1Pod v1Pod = json.deserialize(msg, V1Pod.class);
@@ -1669,7 +1671,24 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         AgentMsgStatusVO agentMsgStatusVO = json.deserialize(agentMsgVO.getPayload(), AgentMsgStatusVO.class);
         //如果集群安装了cert_manager而数据库没有数据就插入数据库
         if (Objects.isNull(devopsClusterResourceDTO) && CertManagerConstants.RUNNING.equals(agentMsgStatusVO.getStatus())) {
-            devopsClusterResourceService.createCertManager(clusterId);
+            DevopsClusterResourceDTO clusterResourceDTO = new DevopsClusterResourceDTO();
+            clusterResourceDTO.setType(ClusterResourceType.CERTMANAGER.getType());
+            clusterResourceDTO.setClusterId(clusterId);
+
+            DevopsCertManagerRecordDTO devopsCertManagerRecordDTO = new DevopsCertManagerRecordDTO();
+            devopsCertManagerRecordDTO.setStatus(ClusterResourceStatus.AVAILABLE.getStatus());
+            devopsCertManagerRecordMapper.insertSelective(devopsCertManagerRecordDTO);
+            //记录chart信息
+            DevopsCertManagerDTO devopsCertManagerDTO = new DevopsCertManagerDTO();
+            devopsCertManagerDTO.setNamespace(CertManagerConstants.CERT_MANAGER_NAME_SPACE);
+            devopsCertManagerDTO.setChartVersion(CertManagerConstants.CERT_MANAGER_CHART_VERSION);
+            devopsCertManagerMapper.insertSelective(devopsCertManagerDTO);
+            // 插入数据
+            clusterResourceDTO.setObjectId(devopsCertManagerRecordDTO.getId());
+            clusterResourceDTO.setClusterId(clusterId);
+            clusterResourceDTO.setOperate(ClusterResourceOperateType.INSTALL.getType());
+            clusterResourceDTO.setConfigId(devopsCertManagerDTO.getId());
+            devopsClusterResourceService.baseCreate(clusterResourceDTO);
         }
 
         if (!ObjectUtils.isEmpty(devopsClusterResourceDTO)) {
