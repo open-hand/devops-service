@@ -7,7 +7,7 @@ export default ((intlPrefix, formatMessage, projectId, pvId) => ({
   paging: false,
   transport: {
     read: {
-      url: `/devops/v1/projects/${projectId}/pv/${pvId}`,
+      url: `/devops/v1/projects/${projectId}/pvs/${pvId}`,
       method: 'get',
     },
   },

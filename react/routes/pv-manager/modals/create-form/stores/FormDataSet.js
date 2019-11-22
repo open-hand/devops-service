@@ -12,7 +12,7 @@ export default ((intlPrefix, formatMessage, projectId, typeDs, modeDs, storageDs
     if (!value) return;
     if (pa.test(value)) {
       try {
-        const res = await axios.get(`/devops/v1/projects/${projectId}/pv/check_name?clusterId=${record.get('clusterId')}&pvName=${value}`);
+        const res = await axios.get(`/devops/v1/projects/${projectId}/pvs/check_name?clusterId=${record.get('clusterId')}&pvName=${value}`);
         if (res && res.failed) {
           return formatMessage({ id: 'checkNameExist' });
         } else {
@@ -50,7 +50,7 @@ export default ((intlPrefix, formatMessage, projectId, typeDs, modeDs, storageDs
         res.requestResource = `${data.storage}${data.unit}`;
         res.valueConfig = JSON.stringify(pick(data, ['server', 'path']));
         return ({
-          url: `/devops/v1/projects/${projectId}/pv`,
+          url: `/devops/v1/projects/${projectId}/pvs`,
           method: 'post',
           data: res,
         });
