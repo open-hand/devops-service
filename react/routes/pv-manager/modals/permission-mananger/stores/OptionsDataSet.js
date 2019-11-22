@@ -4,7 +4,7 @@ export default ((projectId, pvId) => ({
   paging: false,
   transport: {
     read: {
-      url: `/devops/v1/projects/${projectId}/pv/${pvId}/permission/list_non_related`,
+      url: `/devops/v1/projects/${projectId}/pvs/${pvId}/permission/list_non_related`,
       method: 'post',
     },
   },

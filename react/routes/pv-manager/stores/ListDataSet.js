@@ -9,13 +9,13 @@ export default ((intlPrefix, formatMessage, projectId) => ({
       const postData = getTablePostData(data);
 
       return ({
-        url: `/devops/v1/projects/${projectId}/pv/page_by_options?doPage=true`,
+        url: `/devops/v1/projects/${projectId}/pvs/page_by_options?doPage=true`,
         method: 'post',
         data: postData,
       });
     },
     destroy: ({ data: [data] }) => ({
-      url: `/devops/v1/projects/${projectId}/pv/${data.id}`,
+      url: `/devops/v1/projects/${projectId}/pvs/${data.id}`,
       method: 'delete',
     }),
   },

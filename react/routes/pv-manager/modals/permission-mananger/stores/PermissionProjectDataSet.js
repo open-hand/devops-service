@@ -9,7 +9,7 @@ export default ((intlPrefix, formatMessage, projectId, pvId, optionsDs, DetailDs
     read: ({ data }) => {
       const postData = getTablePostData(data);
       return ({
-        url: `/devops/v1/projects/${projectId}/pv/${pvId}/permission/page_related`,
+        url: `/devops/v1/projects/${projectId}/pvs/${pvId}/permission/page_related`,
         method: 'post',
         data: postData,
       });
@@ -22,13 +22,13 @@ export default ((intlPrefix, formatMessage, projectId, pvId, optionsDs, DetailDs
         pvId,
       };
       return ({
-        url: `/devops/v1/projects/${projectId}/pv/${pvId}/permission`,
+        url: `/devops/v1/projects/${projectId}/pvs/${pvId}/permission`,
         method: 'post',
         data: res,
       });
     },
     destroy: ({ data: [data] }) => ({
-      url: `/devops/v1/projects/${projectId}/pv/${pvId}/permission?related_project_id=${data.id}`,
+      url: `/devops/v1/projects/${projectId}/pvs/${pvId}/permission?related_project_id=${data.id}`,
       method: 'delete',
     }),
   },
