@@ -26,7 +26,7 @@ public class CertManagerConstants {
     /**
      * 证书管理安装成功的标志
      */
-    public static final String RUNING = " running";
+    public static final String RUNNING = "running";
 
     /**
      * 证书管理卸载成功的标志
