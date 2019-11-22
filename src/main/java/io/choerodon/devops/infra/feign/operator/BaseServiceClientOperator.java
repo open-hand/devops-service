@@ -1,27 +1,7 @@
 package io.choerodon.devops.infra.feign.operator;
 
-import static io.choerodon.core.iam.InitRoleCode.PROJECT_MEMBER;
-import static io.choerodon.core.iam.InitRoleCode.PROJECT_OWNER;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.ExceptionResponse;
 import io.choerodon.core.exception.FeignException;
@@ -33,6 +13,22 @@ import io.choerodon.devops.infra.dto.iam.*;
 import io.choerodon.devops.infra.enums.OrgPublishMarketStatus;
 import io.choerodon.devops.infra.feign.BaseServiceClient;
 import io.choerodon.devops.infra.util.FeignParamUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static io.choerodon.core.iam.InitRoleCode.PROJECT_MEMBER;
+import static io.choerodon.core.iam.InitRoleCode.PROJECT_OWNER;
 
 /**
  * Created by Sheep on 2019/7/11.
@@ -71,10 +67,12 @@ public class BaseServiceClientOperator {
 
 
     public List<ProjectDTO> listIamProjectByOrgId(Long organizationId, String name, String code, String params) {
-        Pageable pageable = PageRequest.of(0, 1);
+        Map<String, Object> map = new HashMap<>();
+        map.put("page", 0);
+        map.put("size", 0);
         ResponseEntity<PageInfo<ProjectDTO>> pageResponseEntity =
-                baseServiceClient.pageProjectsByOrgId(organizationId, FeignParamUtils.encodePageRequest(pageable), name, code, true, params);
-        return pageResponseEntity.getBody().getList();
+                baseServiceClient.pageProjectsByOrgId(organizationId, map, name, code, true, params);
+        return Objects.requireNonNull(pageResponseEntity.getBody()).getList();
     }
 
     public PageInfo<ProjectDTO> pageProjectByOrgId(Long organizationId, int page, int size, Sort sort, String name, String code, String params) {
@@ -101,8 +99,7 @@ public class BaseServiceClientOperator {
     public List<ProjectWithRoleVO> listProjectWithRoleDTO(Long userId) {
         List<ProjectWithRoleVO> returnList = new ArrayList<>();
         int page = 0;
-        // TODO 此处的分页参数，在以后需要改为0，然后通知iam框架组修改接口，处理size=0的情况
-        int size = 10000;
+        int size = 0;
         ResponseEntity<PageInfo<ProjectWithRoleVO>> pageResponseEntity =
                 baseServiceClient.listProjectWithRole(userId, page, size);
         PageInfo<ProjectWithRoleVO> projectWithRoleDTOPage = pageResponseEntity.getBody();
