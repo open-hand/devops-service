@@ -1,6 +1,6 @@
 import React, { useCallback, Fragment } from 'react';
 import { Page, Content, Header, Permission, Action, Breadcrumb, Choerodon } from '@choerodon/boot';
-import { Table, Modal, Spin } from 'choerodon-ui/pro';
+import { Table, Modal, Spin, Tooltip } from 'choerodon-ui/pro';
 import { Button } from 'choerodon-ui';
 import { FormattedMessage } from 'react-intl';
 import { withRouter } from 'react-router-dom';
@@ -76,7 +76,9 @@ const AppService = withRouter(observer((props) => {
           color={color}
           style={statusStyle}
         />
-        <span>{value}</span>
+        <Tooltip title={value} placement="topLeft">
+          {value}
+        </Tooltip>
       </Fragment>
 
     );

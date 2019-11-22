@@ -53,6 +53,7 @@ export default injectIntl(observer(() => {
         optionsDs={optionsDs}
         intlPrefix={intlPrefix}
         prefixCls={prefixCls}
+        DetailDs={DetailDs}
       />,
       okText: formatMessage({ id: 'add' }),
       onCancel: handleCancel,
