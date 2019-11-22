@@ -1662,6 +1662,10 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         }
         DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceService.queryByClusterIdAndType(clusterId, ClusterResourceType.CERTMANAGER.getType());
         AgentMsgStatusVO agentMsgStatusVO = json.deserialize(agentMsgVO.getPayload(), AgentMsgStatusVO.class);
+        //首次启动的话会刷进去数据
+        if (Objects.isNull(devopsClusterResourceDTO) && CertManagerConstants.RUNING.equals(agentMsgStatusVO.getStatus())) {
+            devopsClusterResourceService.createCertManager(clusterId);
+        }
 
         if (!ObjectUtils.isEmpty(devopsClusterResourceDTO)) {
             //安装返回
