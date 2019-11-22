@@ -16,16 +16,15 @@ import org.springframework.web.multipart.MultipartFile;
 public interface DevopsCustomizeResourceService {
 
     /**
-     *
-     * @param projectId 项目id
+     * @param projectId                    项目id
      * @param devopsCustomizeResourceReqVO 相关信息
-     * @param contentFile 内容文件
+     * @param contentFile                  内容文件
      */
     void createOrUpdateResource(Long projectId, DevopsCustomizeResourceReqVO devopsCustomizeResourceReqVO, MultipartFile contentFile);
 
 
     /**
-     * @param type 资源类型
+     * @param type                       资源类型
      * @param devopsCustomizeResourceDTO 资源信息
      */
     void createOrUpdateResourceByGitOps(String type, DevopsCustomizeResourceDTO devopsCustomizeResourceDTO, Long userId, Long envId);
@@ -49,9 +48,9 @@ public interface DevopsCustomizeResourceService {
     DevopsCustomizeResourceVO queryDevopsCustomizeResourceDetail(Long resourceId);
 
     /**
-     * @param envId 环境id
+     * @param envId    环境id
      * @param pageable 分页参数
-     * @param params 查询参数
+     * @param params   查询参数
      * @return 分页后资源
      */
     PageInfo<DevopsCustomizeResourceVO> pageResources(Long envId, Pageable pageable, String params);
@@ -69,4 +68,8 @@ public interface DevopsCustomizeResourceService {
     PageInfo<DevopsCustomizeResourceDTO> pageDevopsCustomizeResourceE(Long envId, Pageable pageable, String params);
 
     void checkExist(Long envId, String kind, String name);
+
+    List<DevopsCustomizeResourceDTO> baseListByEnvId(Long envId);
+
+    void baseDeleteCustomizeResourceByEnvId(Long envId);
 }

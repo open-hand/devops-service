@@ -7,6 +7,8 @@ import io.choerodon.devops.infra.mapper.DevopsCustomizeResourceContentMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  9:11 2019/7/12
@@ -43,5 +45,10 @@ public class DevopsCustomizeResourceContentServiceImpl implements DevopsCustomiz
         if (devopsCustomizeResourceContentMapper.deleteByPrimaryKey(contentId) != 1) {
             throw new CommonException("error.customize.resource.content.delete.error");
         }
+    }
+
+    @Override
+    public void baseDeleteByContentIds(List<Long> contentIds) {
+        devopsCustomizeResourceContentMapper.deleteByContentIds(contentIds);
     }
 }

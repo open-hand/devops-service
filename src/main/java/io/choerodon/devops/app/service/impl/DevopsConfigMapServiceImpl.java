@@ -377,4 +377,11 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
         devopsEnvCommandDTO.setStatus(CommandStatus.OPERATING.getStatus());
         return devopsEnvCommandDTO;
     }
+
+    @Override
+    public void baseDeleteByEnvId(Long envId) {
+        DevopsConfigMapDTO devopsConfigMapDTO = new DevopsConfigMapDTO();
+        devopsConfigMapDTO.setEnvId(envId);
+        devopsConfigMapMapper.delete(devopsConfigMapDTO);
+    }
 }

@@ -41,7 +41,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -162,6 +161,18 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private GitlabGroupService gitlabGroupService;
     @Autowired
     private DevopsClusterMapper devopsClusterMapper;
+    @Autowired
+    private DevopsSecretService devopsSecretService;
+    @Autowired
+    private DevopsConfigMapService devopsConfigMapService;
+    @Autowired
+    private DevopsCustomizeResourceService devopsCustomizeResourceService;
+    @Autowired
+    private DevopsCustomizeResourceContentService devopsCustomizeResourceContentService;
+    @Autowired
+    private DevopsPvcService devopsPvcService;
+    @Autowired
+    private DevopsServiceInstanceService devopsServiceInstanceService;
 
     @PostConstruct
     private void init() {
@@ -1240,8 +1251,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         if (devopsEnvironmentDTO == null) {
             return;
         }
-
-        if (!Boolean.FALSE.equals(devopsEnvironmentDTO.getActive()) && !Boolean.TRUE.equals(devopsEnvironmentDTO.getFailed())) {
+        List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedClusterList();
+        //排除掉运行中的环境
+        if (Boolean.TRUE.equals(devopsEnvironmentDTO.getActive()) && Boolean.FALSE.equals(devopsEnvironmentDTO.getFailed()) && upgradeClusterList.contains(devopsEnvironmentDTO.getClusterId())) {
             throw new CommonException("error.env.delete");
         }
         devopsEnvironmentDTO.setSynchro(Boolean.FALSE);
@@ -1271,21 +1283,41 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
         // 删除环境对应的实例
         appServiceInstanceService.baseListByEnvId(envId).forEach(instanceE ->
-                devopsEnvCommandService.baseListByObject(HelmObjectKind.INSTANCE.toValue(), instanceE.getId()).forEach(t -> devopsEnvCommandService.baseDeleteByEnvCommandId(t)));
+                devopsEnvCommandService.baseListByObject(ObjectType.INSTANCE.getType(), instanceE.getId()).forEach(t -> devopsEnvCommandService.baseDeleteByEnvCommandId(t)));
         appServiceInstanceService.deleteByEnvId(envId);
+
         // 删除环境对应的域名、域名路径
         devopsIngressService.baseListByEnvId(envId).forEach(ingressE ->
-                devopsEnvCommandService.baseListByObject(HelmObjectKind.INGRESS.toValue(), ingressE.getId()).forEach(t -> devopsEnvCommandService.baseDeleteByEnvCommandId(t)));
+                devopsEnvCommandService.baseListByObject(ObjectType.INGRESS.getType(), ingressE.getId()).forEach(t -> devopsEnvCommandService.baseDeleteByEnvCommandId(t)));
         devopsIngressService.deleteIngressAndIngressPathByEnvId(envId);
+
         // 删除环境对应的网络和网络实例
         devopsServiceService.baseListByEnvId(envId).forEach(serviceE ->
-                devopsEnvCommandService.baseListByObject(HelmObjectKind.SERVICE.toValue(), serviceE.getId()).forEach(t -> devopsEnvCommandService.baseDeleteByEnvCommandId(t)));
+                devopsEnvCommandService.baseListByObject(ObjectType.SERVICE.getType(), serviceE.getId()).forEach(t -> devopsEnvCommandService.baseDeleteByEnvCommandId(t)));
         devopsServiceService.baseDeleteServiceAndInstanceByEnvId(envId);
+
         // 删除实例对应的部署纪录
         devopsDeployRecordService.deleteManualRecordByEnv(envId);
 
-        // 删除环境
-        baseDeleteById(envId);
+        // 删除环境对应的secret
+        devopsSecretService.baseListByEnv(envId).forEach(secretE ->
+                devopsEnvCommandService.baseListByObject(ObjectType.SECRET.getType(), secretE.getId()).forEach(t -> devopsEnvCommandService.baseDeleteByEnvCommandId(t)));
+        devopsSecretService.baseDeleteSecretByEnvId(envId);
+
+        // 删除环境对应的configMap
+        devopsConfigMapService.baseListByEnv(envId).forEach(configMapE ->
+                devopsEnvCommandService.baseListByObject(ObjectType.CONFIGMAP.getType(), configMapE.getId()).forEach(t -> devopsEnvCommandService.baseDeleteByEnvCommandId(t)));
+        devopsConfigMapService.baseDeleteByEnvId(envId);
+
+        // 删除环境对应的自定义资源
+        devopsCustomizeResourceService.baseListByEnvId(envId).forEach(customE ->
+                devopsEnvCommandService.baseListByObject(ObjectType.CUSTOM.getType(), customE.getId()).forEach(t -> devopsEnvCommandService.baseDeleteByEnvCommandId(t)));
+        devopsCustomizeResourceService.baseDeleteCustomizeResourceByEnvId(envId);
+        // 删除PVC
+        devopsCustomizeResourceService.baseListByEnvId(envId).forEach(pvcE ->
+                devopsEnvCommandService.baseListByObject(ObjectType.PERSISTENTVOLUMECLAIM.getType(), pvcE.getId()).forEach(t -> devopsEnvCommandService.baseDeleteByEnvCommandId(t)));
+        devopsPvcService.baseDeleteByEnvId(envId);
+
         // 删除gitlab库, 删除之前查询是否存在
         if (devopsEnvironmentDTO.getGitlabEnvProjectId() != null) {
             Integer gitlabProjectId = TypeUtil.objToInt(devopsEnvironmentDTO.getGitlabEnvProjectId());

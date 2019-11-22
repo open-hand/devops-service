@@ -97,6 +97,8 @@ public interface DevopsSecretService {
 
     void baseDelete(Long secretId);
 
+    void baseDeleteSecretByEnvId(Long envId);
+
     void baseCheckName(String name, Long envId);
 
     DevopsSecretDTO baseQueryByEnvIdAndName(Long envId, String name);

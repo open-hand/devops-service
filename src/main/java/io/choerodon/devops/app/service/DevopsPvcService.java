@@ -1,14 +1,12 @@
 package io.choerodon.devops.app.service;
 
-import java.util.List;
-
 import com.github.pagehelper.PageInfo;
-
 import io.choerodon.devops.api.vo.DevopsPvcReqVO;
 import io.choerodon.devops.api.vo.DevopsPvcRespVO;
 import io.choerodon.devops.infra.dto.DevopsPvcDTO;
-
 import org.springframework.data.domain.Pageable;
+
+import java.util.List;
 
 public interface DevopsPvcService {
     /**
@@ -77,4 +75,5 @@ public interface DevopsPvcService {
 
     DevopsPvcDTO queryByPvId(Long pvId);
 
+    void baseDeleteByEnvId(Long envId);
 }
