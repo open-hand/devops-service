@@ -9,6 +9,7 @@ import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.annotation.Permission;
@@ -64,7 +65,7 @@ public class DevopsClusterResourceController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群id", required = true)
             @RequestParam(name = "cluster_id", required = true) Long clusterId) {
-        return new ResponseEntity<Boolean>(devopsClusterResourceService.deleteCertManager(clusterId), HttpStatus.OK);
+        return new ResponseEntity<>(devopsClusterResourceService.deleteCertManager(clusterId), HttpStatus.OK);
     }
 
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
@@ -75,19 +76,19 @@ public class DevopsClusterResourceController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群id", required = true)
             @RequestParam(name = "cluster_id", required = true) Long clusterId) {
-        return new ResponseEntity<CertManagerMsgVO>(devopsClusterResourceService.checkCertManager(clusterId), HttpStatus.OK);
+        return new ResponseEntity<>(devopsClusterResourceService.checkCertManager(clusterId), HttpStatus.OK);
     }
 
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "集群下安装prometheus")
-    @PostMapping("/prometheus/create")
+    @PostMapping("/prometheus")
     public ResponseEntity<Boolean> create(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群id", required = true)
-            @RequestParam(name = "cluster_id", required = true) Long clusterId,
-            @ApiParam(value = "请求体", required = true)
-            @RequestBody DevopsPrometheusVO prometheusVo) {
+            @RequestParam(name = "cluster_id") Long clusterId,
+            @ApiParam(value = "请求体")
+            @RequestBody @Validated DevopsPrometheusVO prometheusVo) {
         return Optional.ofNullable( devopsClusterResourceService.createPrometheus(projectId,clusterId,prometheusVo))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.prometheus.create"));

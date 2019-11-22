@@ -74,4 +74,7 @@ public interface DevopsPvcService {
      * @return pvc列表
      */
     List<DevopsPvcDTO> baseListByEnvId(Long envId);
+
+    DevopsPvcDTO queryByPvId(Long pvId);
+
 }

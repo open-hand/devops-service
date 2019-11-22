@@ -25,11 +25,14 @@ public class DevopsPrometheusDTO extends BaseDTO {
     @ApiModelProperty("grafana.ingress.hosts")
     private String grafanaDomain;
 
-    @ApiModelProperty("pvId")
-    private String pvId;
+    @ApiModelProperty("PormetheusPvId")
+    private Long pormetheusPvId;
 
-    @ApiModelProperty("pvcId")
-    private String pvcId;
+    @ApiModelProperty("GrafanaPvId")
+    private Long grafanaPvId;
+
+    @ApiModelProperty("AlertmanagerPvId")
+    private Long alertmanagerPvId;
 
     @ApiModelProperty("集群id")
     private Long clusterId;
@@ -66,22 +69,6 @@ public class DevopsPrometheusDTO extends BaseDTO {
         this.grafanaDomain = grafanaDomain;
     }
 
-    public String getPvId() {
-        return pvId;
-    }
-
-    public void setPvId(String pvId) {
-        this.pvId = pvId;
-    }
-
-    public String getPvcId() {
-        return pvcId;
-    }
-
-    public void setPvcId(String pvcId) {
-        this.pvcId = pvcId;
-    }
-
     public Long getClusterId() {
         return clusterId;
     }
@@ -104,5 +91,29 @@ public class DevopsPrometheusDTO extends BaseDTO {
 
     public void setDevopsPvcDTO(List<DevopsPvcDTO> devopsPvcDTO) {
         this.devopsPvcDTO = devopsPvcDTO;
+    }
+
+    public Long getPormetheusPvId() {
+        return pormetheusPvId;
+    }
+
+    public void setPormetheusPvId(Long pormetheusPvId) {
+        this.pormetheusPvId = pormetheusPvId;
+    }
+
+    public Long getGrafanaPvId() {
+        return grafanaPvId;
+    }
+
+    public void setGrafanaPvId(Long grafanaPvId) {
+        this.grafanaPvId = grafanaPvId;
+    }
+
+    public Long getAlertmanagerPvId() {
+        return alertmanagerPvId;
+    }
+
+    public void setAlertmanagerPvId(Long alertmanagerPvId) {
+        this.alertmanagerPvId = alertmanagerPvId;
     }
 }

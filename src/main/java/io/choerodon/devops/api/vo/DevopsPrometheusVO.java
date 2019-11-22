@@ -1,10 +1,8 @@
 package io.choerodon.devops.api.vo;
 
-import java.util.List;
-import java.util.Map;
-import javax.validation.constraints.NotNull;
-
 import io.swagger.annotations.ApiModelProperty;
+
+import javax.validation.constraints.NotNull;
 
 /**
  * @author: 25499
@@ -15,6 +13,7 @@ public class DevopsPrometheusVO {
 
     @ApiModelProperty("promtheusid/更新必填")
     private Long id;
+
     @ApiModelProperty("admin密码/必填")
     @NotNull(message = "error.admin.password.null")
     private String adminPassword;
@@ -23,9 +22,17 @@ public class DevopsPrometheusVO {
     @NotNull(message = "error.grafana.null")
     private String grafanaDomain;
 
-    @ApiModelProperty("pvIds/必填")
-    @NotNull(message = "error.pv.name.null")
-    private List<PrometheusPVVO> pvs;
+    @ApiModelProperty("PormetheusPvId/必填")
+    @NotNull(message = "error.pormetheus.pv.id.null")
+    private Long pormetheusPvId;
+
+    @ApiModelProperty("GrafanaPvId/必填")
+    @NotNull(message = "error.grafana.pv.id.null")
+    private Long grafanaPvId;
+
+    @ApiModelProperty("AlertmanagerPvId/必填")
+    @NotNull(message = "error.alertmanager.pv.id.null")
+    private Long alertmanagerPvId;
 
 
     @ApiModelProperty("cluster编码/必填")
@@ -56,19 +63,35 @@ public class DevopsPrometheusVO {
         this.grafanaDomain = grafanaDomain;
     }
 
-    public List<PrometheusPVVO> getPvs() {
-        return pvs;
-    }
-
-    public void setPvs(List<PrometheusPVVO> pvs) {
-        this.pvs = pvs;
-    }
-
     public String getClusterCode() {
         return clusterCode;
     }
 
     public void setClusterCode(String clusterCode) {
         this.clusterCode = clusterCode;
+    }
+
+    public Long getPormetheusPvId() {
+        return pormetheusPvId;
+    }
+
+    public void setPormetheusPvId(Long pormetheusPvId) {
+        this.pormetheusPvId = pormetheusPvId;
+    }
+
+    public Long getGrafanaPvId() {
+        return grafanaPvId;
+    }
+
+    public void setGrafanaPvId(Long grafanaPvId) {
+        this.grafanaPvId = grafanaPvId;
+    }
+
+    public Long getAlertmanagerPvId() {
+        return alertmanagerPvId;
+    }
+
+    public void setAlertmanagerPvId(Long alertmanagerPvId) {
+        this.alertmanagerPvId = alertmanagerPvId;
     }
 }

@@ -1,6 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import com.alibaba.fastjson.JSON;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.eventhandler.constants.CertManagerConstants;
@@ -14,7 +13,6 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.GenerateUUID;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +32,8 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     private static final String INSTANCE_FAILED = "failed";
     private static final String GRAFANA_NODE = "/d/choerodon-default-node/jie-dian";
     private static final String GRAFANA_CLUSTER = "/d/choerodon-default-cluster/ji-qun";
+    private static final String ERROR_CLUSTER_NOT_EXIST = "error.cluster.not.exist";
+
     @Autowired
     private DevopsClusterResourceMapper devopsClusterResourceMapper;
     @Autowired
@@ -255,49 +255,35 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean createPrometheus(Long projectId, Long clusterId, DevopsPrometheusVO devopsPrometheusVO) {
-        DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
-        if (devopsClusterDTO.getSystemEnvId() == null) {
+        DevopsClusterDTO devopsClusterDTO = checkClusterExist(clusterId);
+        Long systemEnvId = devopsClusterDTO.getSystemEnvId();
+        if (systemEnvId == null) {
             throw new CommonException("no.cluster.system.env");
         }
 
-        ClientDTO clientDTO = baseServiceClientOperator.queryClientBySourceId(devopsClusterDTO.getOrganizationId(), devopsClusterDTO.getId());
-        if (clientDTO == null || clientDTO.getId() == null) {
-            // 添加客户端
-            ClientVO clientVO = new ClientVO();
-            clientVO.setName(devopsClusterDTO.getChoerodonId());
-            clientVO.setOrganizationId(devopsClusterDTO.getOrganizationId());
-            clientVO.setAuthorizedGrantTypes("password,implicit,client_credentials,refresh_token,authorization_code");
-            clientVO.setSecret(GenerateUUID.generateUUID().substring(0, 16).replace("-", "A"));
-            clientVO.setRefreshTokenValidity(360000L);
-            clientVO.setAccessTokenValidity(360000L);
-            clientVO.setSourceId(clusterId);
-            clientVO.setSourceType("cluster");
-            clientDTO = baseServiceClientOperator.createClient(devopsClusterDTO.getOrganizationId(), clientVO);
-        }
-        if (!ObjectUtils.isEmpty(clientDTO)) {
+        // 解决分布式事务问题，注册client成功，更新cluster表client字段失败
+        if (devopsClusterDTO.getClientId() == null) {
+            ClientDTO clientDTO = baseServiceClientOperator.queryClientBySourceId(devopsClusterDTO.getOrganizationId(), devopsClusterDTO.getId());
+            // 集群未注册client，则先注册
+            if (clientDTO == null) {
+                clientDTO = registerClient(devopsClusterDTO);
+            }
             devopsClusterDTO.setClientId(clientDTO.getId());
             devopsClusterService.baseUpdate(devopsClusterDTO);
         }
-
-        DevopsPrometheusDTO devopsPrometheusDTO = prometheusVoToDto(devopsPrometheusVO);
-        DevopsClusterResourceDTO devopsClusterResource = devopsClusterResourceService.queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
+        DevopsPrometheusDTO devopsPrometheusDTO = ConvertUtils.convertObject(devopsPrometheusVO, DevopsPrometheusDTO.class);
+        DevopsClusterResourceDTO devopsClusterResource = queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
         if (devopsClusterResource != null) {
             throw new CommonException("error.prometheus.already.exist");
         }
 
-        devopsPrometheusDTO.setClusterId(clusterId);
-        // 创建pvc
-        List<Long> pvcIds = new ArrayList<>();
-        devopsPrometheusVO.getPvs().stream().forEach(prometheusPVVO -> {
-            DevopsPvcReqVO devopsPvcReqVO = operatePV(prometheusPVVO.getPvId(), devopsClusterDTO, prometheusPVVO.getType());
-            DevopsPvcRespVO pvcRespVO = devopsPvcService.create(projectId, devopsPvcReqVO);
-            pvcIds.add(pvcRespVO.getId());
-        });
+        createPVC(projectId, devopsPrometheusVO, systemEnvId);
 
-        devopsPrometheusDTO.setPvcId(JSON.toJSON(pvcIds).toString());
+        devopsPrometheusDTO.setClusterId(clusterId);
         if (devopsPrometheusMapper.insertSelective(devopsPrometheusDTO) != 1) {
             throw new CommonException("error.insert.prometheus");
         }
+
         DevopsClusterResourceDTO devopsClusterResourceDTO = new DevopsClusterResourceDTO();
         devopsClusterResourceDTO.setClusterId(clusterId);
         devopsClusterResourceDTO.setConfigId(devopsPrometheusDTO.getId());
@@ -308,6 +294,8 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         devopsClusterResourceService.baseCreate(devopsClusterResourceDTO);
         return true;
     }
+
+
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -352,16 +340,16 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         PrometheusStageVO prometheusStageVO = new PrometheusStageVO();
         //校验三个pvc状态，都为bound即为安装成功
         DevopsPrometheusDTO devopsPrometheusDTO = devopsPrometheusMapper.selectByPrimaryKey(devopsClusterResourceDTO.getConfigId());
-        List<Long> pvcIds = JSON.parseArray(devopsPrometheusDTO.getPvcId(), Long.class);
-        Iterator<Long> iteratorPvcIds = pvcIds.iterator();
-        while (iteratorPvcIds.hasNext()) {
-            Long pvcId = iteratorPvcIds.next();
-            DevopsPvcDTO devopsPvc = devopsPvcService.queryById(pvcId);
-            if (PvcStatus.BOUND.getStatus().equals(devopsPvc.getStatus())) {
-                iteratorPvcIds.remove();
-            }
+        DevopsPvcDTO pormetheusPVC = devopsPvcService.queryById(devopsPrometheusDTO.getPormetheusPvId());
+        DevopsPvcDTO grafanaPVC = devopsPvcService.queryById(devopsPrometheusDTO.getGrafanaPvId());
+        DevopsPvcDTO alertmanagerPVC = devopsPvcService.queryById(devopsPrometheusDTO.getAlertmanagerPvId());
+        if (pormetheusPVC == null || grafanaPVC == null || alertmanagerPVC == null) {
+            return new PrometheusStageVO(PrometheusDeploy.OPERATING.getStaus(),
+                    PrometheusDeploy.WAITING.getStaus(), PrometheusDeploy.WAITING.getStaus());
         }
-        if (CollectionUtils.isEmpty(pvcIds)) {
+        if (PvcStatus.BOUND.getStatus().equals(pormetheusPVC.getStatus())
+                && PvcStatus.BOUND.getStatus().equals(grafanaPVC.getStatus())
+                && PvcStatus.BOUND.getStatus().equals(alertmanagerPVC.getStatus())) {
             prometheusStageVO.setCreatePvc((PrometheusDeploy.SUCCESSED.getStaus()));
             prometheusStageVO.setCreateConfig(PrometheusDeploy.WAITING.getStaus());
             prometheusStageVO.setInstallPrometheus(PrometheusDeploy.WAITING.getStaus());
@@ -405,7 +393,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     @Override
     @Transactional
     public ClusterResourceVO queryPrometheusStatus(Long projectId, Long clusterId) {
-        DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceMapper.queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
+        DevopsClusterResourceDTO devopsClusterResourceDTO = queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
         ClusterResourceVO clusterResourceVO = new ClusterResourceVO();
         clusterResourceVO.setType(ClusterResourceType.PROMETHEUS.getType());
         if (devopsClusterResourceDTO == null) {
@@ -419,16 +407,10 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
             if (appServiceInstanceDTO == null) {
                 //验证pvc是否存在,三个pvc都不存在才去删除prometheus
                 DevopsPrometheusDTO devopsPrometheusDTO = devopsPrometheusMapper.selectByPrimaryKey(devopsClusterResourceDTO.getConfigId());
-                List<Long> pvcIds = JSON.parseArray(devopsPrometheusDTO.getPvcId(), Long.class);
-                Boolean isExist = false;
-                for (Long pvcId : pvcIds) {
-                    DevopsPvcDTO devopsPvcDTO = devopsPvcService.queryById(pvcId);
-                    if (!ObjectUtils.isEmpty(devopsPvcDTO)) {
-                        isExist = true;
-                        break;
-                    }
-                }
-                if (!isExist) {
+                DevopsPvcDTO pormetheusPVC = devopsPvcService.queryById(devopsPrometheusDTO.getPormetheusPvId());
+                DevopsPvcDTO grafanaPVC = devopsPvcService.queryById(devopsPrometheusDTO.getGrafanaPvId());
+                DevopsPvcDTO alertmanagerPVC = devopsPvcService.queryById(devopsPrometheusDTO.getAlertmanagerPvId());
+                if (pormetheusPVC == null && grafanaPVC == null && alertmanagerPVC == null) {
                     basedeletePrometheus(clusterId);
                     clusterResourceVO.setStatus(ClusterResourceStatus.UNINSTALLED.getStatus());
                     return clusterResourceVO;
@@ -449,14 +431,12 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
 
                 clusterResourceVO.setStatus(ClusterResourceStatus.PROCESSING.getStatus());
                 //查询pod状态
-                devopsEnvPodDTOS.stream().forEach(devopsEnvPodVO -> {
-                    devopsEnvPodService.fillContainers(devopsEnvPodVO);
-                });
+                devopsEnvPodDTOS.stream().forEach(devopsEnvPodVO -> devopsEnvPodService.fillContainers(devopsEnvPodVO));
 
                 List<ContainerVO> readyPod = new ArrayList<>();
                 //健康检查，ready=true的pod大于1就是可用的
                 devopsEnvPodDTOS.stream().forEach(devopsEnvPodVO -> {
-                    if (devopsEnvPodVO.getReady() == true) {
+                    if (Boolean.TRUE.equals(devopsEnvPodVO.getReady())) {
                         readyPod.addAll(devopsEnvPodVO.getContainers().stream().filter(pod -> pod.getReady() == true).collect(Collectors.toList()));
                     }
                 });
@@ -524,31 +504,19 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void deletePvc(Long clusterId) {
         DevopsClusterResourceDTO devopsClusterResourceDTO = queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
         if (devopsClusterResourceDTO != null) {
             DevopsPrometheusDTO devopsPrometheusDTO = devopsPrometheusMapper.selectByPrimaryKey(devopsClusterResourceDTO.getConfigId());
             DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
-            // 查询pvcId,并调用删除pvc的方法
-            List<Long> pvcIds = JSON.parseArray(devopsPrometheusDTO.getPvcId(), Long.class);
-            if (!CollectionUtils.isEmpty(pvcIds)) {
-                // 删除pvc
-                for (Long pvcId : pvcIds) {
-                    devopsPvcService.delete(devopsClusterDTO.getSystemEnvId(), pvcId);
-                }
-            }
+            DevopsPvcDTO pormetheusPvcDTO = devopsPvcService.queryByPvId(devopsPrometheusDTO.getPormetheusPvId());
+            DevopsPvcDTO grafanaPvcDTO = devopsPvcService.queryByPvId(devopsPrometheusDTO.getGrafanaPvId());
+            DevopsPvcDTO alertmanagerDTO = devopsPvcService.queryByPvId(devopsPrometheusDTO.getAlertmanagerPvId());
+            devopsPvcService.delete(devopsClusterDTO.getSystemEnvId(), pormetheusPvcDTO.getId());
+            devopsPvcService.delete(devopsClusterDTO.getSystemEnvId(), grafanaPvcDTO.getId());
+            devopsPvcService.delete(devopsClusterDTO.getSystemEnvId(), alertmanagerDTO.getId());
         }
-    }
-
-    private DevopsPrometheusDTO prometheusVoToDto(DevopsPrometheusVO prometheusVo) {
-        DevopsPrometheusDTO devopsPrometheusDTO = new DevopsPrometheusDTO();
-        BeanUtils.copyProperties(prometheusVo, devopsPrometheusDTO);
-        List<Long> pvIds = new ArrayList<>();
-        prometheusVo.getPvs().forEach(prometheusPVVO -> {
-            pvIds.add(prometheusPVVO.getPvId());
-        });
-        devopsPrometheusDTO.setPvId(JSON.toJSON(pvIds).toString());
-        return devopsPrometheusDTO;
     }
 
     private Boolean checkValidity(Date date, Date validFrom, Date validUntil) {
@@ -556,14 +524,51 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
                 && date.after(validFrom) && date.before(validUntil);
     }
 
-    private DevopsPvcReqVO operatePV(Long pvId, DevopsClusterDTO devopsClusterDTO, String name) {
+    private DevopsPvcReqVO operatePV(Long pvId, Long envId, String name) {
         DevopsPvcReqVO devopsPvcReqVO = new DevopsPvcReqVO();
         DevopsPvVO devopsPvVO = devopsPvService.queryById(pvId);
         devopsPvcReqVO.setPvId(devopsPvVO.getId());
         devopsPvcReqVO.setName(name);
         devopsPvcReqVO.setAccessModes(devopsPvVO.getAccessModes());
         devopsPvcReqVO.setRequestResource(devopsPvVO.getRequestResource());
-        devopsPvcReqVO.setEnvId(devopsClusterDTO.getSystemEnvId());
+        devopsPvcReqVO.setEnvId(envId);
         return devopsPvcReqVO;
+    }
+
+    /**
+     * 创建与安装Prometheus相关的PVC
+     * @param projectId
+     * @param devopsPrometheusVO
+     * @param systemEnvId
+     */
+    private void createPVC(Long projectId, DevopsPrometheusVO devopsPrometheusVO, Long systemEnvId) {
+        DevopsPvcReqVO pormetheusPvcReqVO = operatePV(devopsPrometheusVO.getPormetheusPvId(), systemEnvId, PrometheusPVTypeEnum.PORMETHEUS_PV.value());
+        DevopsPvcReqVO grafanaPvcReqVO = operatePV(devopsPrometheusVO.getGrafanaPvId(), systemEnvId, PrometheusPVTypeEnum.GRAFANA_PV.value());
+        DevopsPvcReqVO alertmanagerPvcReqVO = operatePV(devopsPrometheusVO.getGrafanaPvId(), systemEnvId, PrometheusPVTypeEnum.ALERTMANAGER_PV.value());
+        devopsPvcService.create(projectId, pormetheusPvcReqVO);
+        devopsPvcService.create(projectId, grafanaPvcReqVO);
+        devopsPvcService.create(projectId, alertmanagerPvcReqVO);
+    }
+
+    private DevopsClusterDTO checkClusterExist(Long clusterId) {
+        DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
+        if (devopsClusterDTO == null) {
+            throw new CommonException(ERROR_CLUSTER_NOT_EXIST);
+        }
+        return devopsClusterDTO;
+    }
+
+    private ClientDTO registerClient(DevopsClusterDTO devopsClusterDTO) {
+        // 添加客户端
+        ClientVO clientVO = new ClientVO();
+        clientVO.setName(devopsClusterDTO.getChoerodonId());
+        clientVO.setOrganizationId(devopsClusterDTO.getOrganizationId());
+        clientVO.setAuthorizedGrantTypes("password,implicit,client_credentials,refresh_token,authorization_code");
+        clientVO.setSecret(GenerateUUID.generateUUID().substring(0, 16).replace("-", "A"));
+        clientVO.setRefreshTokenValidity(360000L);
+        clientVO.setAccessTokenValidity(360000L);
+        clientVO.setSourceId(devopsClusterDTO.getId());
+        clientVO.setSourceType("cluster");
+        return baseServiceClientOperator.createClient(devopsClusterDTO.getOrganizationId(), clientVO);
     }
 }
