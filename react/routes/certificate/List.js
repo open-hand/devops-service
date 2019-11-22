@@ -103,7 +103,6 @@ const AppService = withRouter(observer((props) => {
       />,
       children: <PermissionManage
         dataSet={detailDs}
-        record={detailDs.current}
         allProjectDs={allProjectDs}
         permissionProjectDs={permissionProjectDs}
         optionsDs={optionsDs}

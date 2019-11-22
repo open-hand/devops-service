@@ -7,7 +7,7 @@ import some from 'lodash/some';
 
 import './index.less';
 
-export default injectIntl(observer(({ dataSet, optionsDs, intlPrefix, prefixCls, modal }) => {
+export default injectIntl(observer(({ dataSet, optionsDs, intlPrefix, prefixCls, modal, DetailDs }) => {
   useEffect(() => {
     optionsDs.query();
     handleCreate();
@@ -16,6 +16,7 @@ export default injectIntl(observer(({ dataSet, optionsDs, intlPrefix, prefixCls,
   modal.handleOk(async () => {
     try {
       if (await dataSet.submit() !== false) {
+        DetailDs.query();
         dataSet.query();
       } else {
         return false;

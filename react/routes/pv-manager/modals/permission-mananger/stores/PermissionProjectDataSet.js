@@ -1,15 +1,17 @@
 import map from 'lodash/map';
+import compact from 'lodash/compact';
 import getTablePostData from '../../../../../utils/getTablePostData';
 
 export default ((intlPrefix, formatMessage, projectId, pvId, optionsDs, DetailDs) => ({
   autoCreate: false,
   autoQuery: false,
   selection: false,
+  paging: true,
   transport: {
     read: ({ data }) => {
       const postData = getTablePostData(data);
       return ({
-        url: `/devops/v1/projects/${projectId}/pvs/${pvId}/permission/page_related`,
+        url: `/devops/v1/projects/${projectId}/pvs/${pvId}/page_related`,
         method: 'post',
         data: postData,
       });
@@ -18,7 +20,7 @@ export default ((intlPrefix, formatMessage, projectId, pvId, optionsDs, DetailDs
       const res = {
         objectVersionNumber: DetailDs.current.get('objectVersionNumber'),
         skipCheckProjectPermission: false,
-        projectIds: map(data, 'projectId'),
+        projectIds: compact(map(data, 'projectId') || []),
         pvId,
       };
       return ({
@@ -35,7 +37,7 @@ export default ((intlPrefix, formatMessage, projectId, pvId, optionsDs, DetailDs
   fields: [
     { name: 'name', type: 'string', label: formatMessage({ id: `${intlPrefix}.project.name` }) },
     { name: 'code', type: 'string', label: formatMessage({ id: `${intlPrefix}.project.code` }) },
-    { name: 'projectId', type: 'number', textField: 'name', valueField: 'id', label: formatMessage({ id: 'project' }), options: optionsDs, required: true },
+    { name: 'projectId', type: 'number', textField: 'name', valueField: 'id', label: formatMessage({ id: `${intlPrefix}.project` }), options: optionsDs, required: true },
   ],
   queryFields: [
     { name: 'name', type: 'string', label: formatMessage({ id: `${intlPrefix}.project.name` }) },

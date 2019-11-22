@@ -3,6 +3,7 @@ import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import map from 'lodash/map';
 import some from 'lodash/some';
+import compact from 'lodash/compact';
 import { SelectBox, Select, Form } from 'choerodon-ui/pro';
 import { Button, Tooltip } from 'choerodon-ui';
 
@@ -43,7 +44,7 @@ export default observer(({ dataSet, refresh, record, store, projectId, formatMes
       dataSet.transport.create = ({ data }) => {
         const res = {
           skipCheckPermission: false,
-          userIds: map(data, 'iamUserId'),
+          userIds: compact(map(data, 'iamUserId') || []),
         };
         return {
           url: `/devops/v1/projects/${projectId}/app_service/${record.get('id')}/update_permission`,
