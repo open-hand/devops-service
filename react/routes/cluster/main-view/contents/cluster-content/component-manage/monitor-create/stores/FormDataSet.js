@@ -1,4 +1,5 @@
 import omit from 'lodash/omit';
+import pick from 'lodash/pick';
 
 export default ({ formatMessage, intlPrefix, projectId, clusterId, pvDs }) => ({
   autoCreate: false,
@@ -19,7 +20,7 @@ export default ({ formatMessage, intlPrefix, projectId, clusterId, pvDs }) => ({
       });
     },
     update: ({ data: [data] }) => {
-      const postData = omit(data, ['__id', '__status']);
+      const postData = pick(data, ['adminPassword', 'grafanaDomain', 'objectVersionNumber']);
       return ({
         url: `/devops/v1/projects/${projectId}/cluster_resource/prometheus?cluster_id=${clusterId}`,
         method: 'put',
