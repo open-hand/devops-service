@@ -22,9 +22,9 @@ public class DevopsPrometheusVO {
     @NotNull(message = "error.grafana.null")
     private String grafanaDomain;
 
-    @ApiModelProperty("PormetheusPvId/必填")
-    @NotNull(message = "error.pormetheus.pv.id.null")
-    private Long pormetheusPvId;
+    @ApiModelProperty("PrometheusPvId/必填")
+    @NotNull(message = "error.prometheus.pv.id.null")
+    private Long prometheusPvId;
 
     @ApiModelProperty("GrafanaPvId/必填")
     @NotNull(message = "error.grafana.pv.id.null")
@@ -72,12 +72,12 @@ public class DevopsPrometheusVO {
         this.clusterCode = clusterCode;
     }
 
-    public Long getPormetheusPvId() {
-        return pormetheusPvId;
+    public Long getPrometheusPvId() {
+        return prometheusPvId;
     }
 
-    public void setPormetheusPvId(Long pormetheusPvId) {
-        this.pormetheusPvId = pormetheusPvId;
+    public void setPrometheusPvId(Long prometheusPvId) {
+        this.prometheusPvId = prometheusPvId;
     }
 
     public Long getGrafanaPvId() {

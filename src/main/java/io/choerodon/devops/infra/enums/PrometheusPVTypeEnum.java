@@ -6,7 +6,7 @@ package io.choerodon.devops.infra.enums;
  */
 public enum PrometheusPVTypeEnum {
 
-    PORMETHEUS_PV("Pormetheus-PV"),
+    PROMETHEUS_PV("Prometheus-PV"),
     GRAFANA_PV("Grafana-PV"),
     ALERTMANAGER_PV("Alertmanager-PV");
 
