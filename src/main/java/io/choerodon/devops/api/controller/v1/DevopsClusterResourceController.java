@@ -128,7 +128,7 @@ public class DevopsClusterResourceController {
     public ResponseEntity<PrometheusStageVO> getDeployStatus(
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群id", required = true)
-            @RequestParam(name = "cluster_id", required = true) Long clusterId) {
+            @RequestParam(name = "cluster_id") Long clusterId) {
         return Optional.ofNullable(devopsClusterResourceService.queryDeployStage(clusterId))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.prometheus.deploy.status"));
