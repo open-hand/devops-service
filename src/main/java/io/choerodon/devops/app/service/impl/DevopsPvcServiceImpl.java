@@ -382,4 +382,11 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
         devopsEnvCommandDTO.setStatus(CommandStatus.OPERATING.getStatus());
         return devopsEnvCommandDTO;
     }
+
+    @Override
+    public void baseDeleteByEnvId(Long envId) {
+        DevopsPvcDTO devopsPvcDTO = new DevopsPvcDTO();
+        devopsPvcDTO.setEnvId(envId);
+        devopsPvcMapper.delete(devopsPvcDTO);
+    }
 }

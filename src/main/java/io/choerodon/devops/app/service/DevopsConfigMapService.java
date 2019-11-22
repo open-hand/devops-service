@@ -39,4 +39,6 @@ public interface DevopsConfigMapService {
 
     List<DevopsConfigMapDTO> baseListByEnv(Long envId);
 
+    void baseDeleteByEnvId(Long envId);
+
 }

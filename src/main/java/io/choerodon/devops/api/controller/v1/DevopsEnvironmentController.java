@@ -427,7 +427,7 @@ public class DevopsEnvironmentController {
      */
     @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "删除已停用/失败的环境")
+    @ApiOperation(value = "删除未连接/已停用/失败的环境")
     @DeleteMapping(value = "/{env_id}")
     public ResponseEntity deleteDeactivatedEnvironment(
             @ApiParam(value = "项目id", required = true)

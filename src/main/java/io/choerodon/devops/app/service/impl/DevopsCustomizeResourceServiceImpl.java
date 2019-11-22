@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service.impl;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -427,6 +428,25 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
         DevopsCustomizeResourceDTO devopsCustomizeResourceDTO = new DevopsCustomizeResourceDTO(envId, kind, name);
         if (devopsCustomizeResourceMapper.selectOne(devopsCustomizeResourceDTO) != null) {
             throw new CommonException("error.kind.name.exist");
+        }
+    }
+
+    @Override
+    public List<DevopsCustomizeResourceDTO> baseListByEnvId(Long envId) {
+        DevopsCustomizeResourceDTO devopsCustomizeResourceDTO = new DevopsCustomizeResourceDTO();
+        devopsCustomizeResourceDTO.setEnvId(envId);
+        return devopsCustomizeResourceMapper.select(devopsCustomizeResourceDTO);
+    }
+
+    @Override
+    public void baseDeleteCustomizeResourceByEnvId(Long envId) {
+        DevopsCustomizeResourceDTO devopsCustomizeResourceDTO = new DevopsCustomizeResourceDTO();
+        devopsCustomizeResourceDTO.setEnvId(envId);
+        List<Long> resourceContentIds = devopsCustomizeResourceMapper.select(devopsCustomizeResourceDTO).stream()
+                .map(DevopsCustomizeResourceDTO::getContentId).collect(Collectors.toList());
+        devopsCustomizeResourceMapper.delete(devopsCustomizeResourceDTO);
+        if (!resourceContentIds.isEmpty()) {
+            devopsCustomizeResourceContentService.baseDeleteByContentIds(resourceContentIds);
         }
     }
 }
