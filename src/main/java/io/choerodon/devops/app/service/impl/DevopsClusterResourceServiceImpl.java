@@ -146,10 +146,10 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         DevopsClusterResourceDTO devopsClusterResourceDTO = queryByClusterIdAndType(clusterId, ClusterResourceType.CERTMANAGER.getType());
         DevopsCertManagerRecordDTO devopsCertManagerRecordDTO = devopsCertManagerRecordMapper.selectByPrimaryKey(devopsClusterResourceDTO.getObjectId());
         devopsCertManagerRecordDTO.setStatus(ClusterResourceStatus.PROCESSING.getStatus());
-        devopsCertManagerRecordMapper.updateByPrimaryKey(devopsCertManagerRecordDTO);
-        agentCommandService.unloadCertManager(clusterId);
         devopsClusterResourceDTO.setOperate(ClusterResourceOperateType.UNINSTALL.getType());
+        devopsCertManagerRecordMapper.updateByPrimaryKey(devopsCertManagerRecordDTO);
         baseUpdate(devopsClusterResourceDTO);
+        agentCommandService.unloadCertManager(clusterId);
         return true;
     }
 
