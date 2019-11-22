@@ -88,6 +88,7 @@ public class CertificationServiceImpl implements CertificationService {
         map.put("certName", "dc.`name`");
         map.put("commonName", "dc.domains");
         map.put("domain", "dc.domains");
+        map.put("name", "dc.`name`");
         orderByFieldMap = Collections.unmodifiableMap(map);
     }
 
