@@ -34,9 +34,10 @@ public class DevopsPrometheusVO {
     @NotNull(message = "error.alertmanager.pv.id.null")
     private Long alertmanagerPvId;
 
+    @ApiModelProperty("集群id")
+    private Long clusterId;
 
-    @ApiModelProperty("cluster编码/必填")
-    @NotNull(message = "error.cluster.code.null")
+    @ApiModelProperty("cluster编码")
     private String clusterCode;
 
     public Long getId() {
@@ -93,5 +94,13 @@ public class DevopsPrometheusVO {
 
     public void setAlertmanagerPvId(Long alertmanagerPvId) {
         this.alertmanagerPvId = alertmanagerPvId;
+    }
+
+    public Long getClusterId() {
+        return clusterId;
+    }
+
+    public void setClusterId(Long clusterId) {
+        this.clusterId = clusterId;
     }
 }
