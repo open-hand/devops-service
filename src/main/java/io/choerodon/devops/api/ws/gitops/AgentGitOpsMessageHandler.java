@@ -182,7 +182,7 @@ public class AgentGitOpsMessageHandler implements TextMessageHandler<AgentMsgVO>
                 break;
             // Agent启动的时候发送给Devops,
             case CERT_MANAGER_STATUS:
-                agentMsgHandlerService.getCertManagerInfo(msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
+                agentMsgHandlerService.getCertManagerInfo(msg, TypeUtil.objToLong(msg.getClusterId()));
                 break;
             // 接收Agent定时发送的节点数据
             case NODE_SYNC:
