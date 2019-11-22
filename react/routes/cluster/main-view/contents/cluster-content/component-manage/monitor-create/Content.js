@@ -40,7 +40,7 @@ export default (props) => {
   function handlePvFilter(optionRecord, name) {
     const pvId = optionRecord.get('id');
     const record = formDs.current;
-    const arr = filter(['prometheusPV', 'grafanaPV', 'alertManagerPV'], (item) => item !== name);
+    const arr = filter(['prometheusPvId', 'grafanaPvId', 'alertmanagerPvId'], (item) => item !== name);
     let result = true;
     forEach(arr, (item) => {
       if (pvId === record.get(item)) {
@@ -60,9 +60,9 @@ export default (props) => {
         <span>{formatMessage({ id: `${intlPrefix}.monitor.pv` })}</span>
       </div>
       <Form dataSet={formDs}>
-        <Select name="prometheusPV" searchable disabled={isModify} optionsFilter={(record) => handlePvFilter(record, 'prometheusPV')} />
-        <Select name="grafanaPV" searchable disabled={isModify} optionsFilter={(record) => handlePvFilter(record, 'grafanaPV')} />
-        <Select name="alertManagerPV" searchable disabled={isModify} optionsFilter={(record) => handlePvFilter(record, 'alertManagerPV')} />
+        <Select name="prometheusPvId" searchable disabled={isModify} optionsFilter={(record) => handlePvFilter(record, 'prometheusPvId')} />
+        <Select name="grafanaPvId" searchable disabled={isModify} optionsFilter={(record) => handlePvFilter(record, 'grafanaPvId')} />
+        <Select name="alertmanagerPvId" searchable disabled={isModify} optionsFilter={(record) => handlePvFilter(record, 'alertmanagerPvId')} />
       </Form>
     </div>
   );

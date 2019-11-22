@@ -112,7 +112,7 @@ export default injectIntl(observer(({
           </Option>
         </SelectBox>
       </Form>
-      {!record.get('skipCheckProjectPermission') ? (
+      {record && !record.get('skipCheckProjectPermission') ? (
         <Fragment>
           <Button
             type="primary"

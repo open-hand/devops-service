@@ -1,4 +1,4 @@
-import pick from 'lodash/pick';
+import omit from 'lodash/omit';
 
 export default ({ formatMessage, intlPrefix, projectId, clusterId, pvDs }) => ({
   autoCreate: false,
@@ -11,47 +11,19 @@ export default ({ formatMessage, intlPrefix, projectId, clusterId, pvDs }) => ({
       method: 'get',
     },
     create: ({ data: [data] }) => {
-      const postData = pick(data, ['adminPassword', 'grafanaDomain']);
-      postData.pvIds = [
-        {
-          type: 'prometheus-pv',
-          pvId: data.prometheusPV,
-        },
-        {
-          type: 'grafana-pv',
-          pvId: data.grafanaPV,
-        },
-        {
-          type: 'alertmanager-pv',
-          pvId: data.alertManagerPV,
-        },
-      ];
+      const postData = omit(data, ['__id', '__status']);
       return ({
-        url: `/devops/v1/projects/${projectId}/cluster_resource/prometheus/create?cluster_id=${clusterId}`,
+        url: `/devops/v1/projects/${projectId}/cluster_resource/prometheus?cluster_id=${clusterId}`,
         method: 'post',
         data: postData,
       });
     },
     update: ({ data: [data] }) => {
-      const postData = pick(data, ['adminPassword', 'grafanaDomain', 'id']);
-      postData.pvIds = [
-        {
-          type: 'prometheus-pv',
-          pvId: data.prometheusPV,
-        },
-        {
-          type: 'grafana-pv',
-          pvId: data.grafanaPV,
-        },
-        {
-          type: 'alertmanager-pv',
-          pvId: data.alertManagerPV,
-        },
-      ];
+      const postData = omit(data, ['__id', '__status']);
       return ({
-        url: `/devops/v1/projects/${projectId}/cluster_resource/prometheus/update?cluster_id=${clusterId}`,
+        url: `/devops/v1/projects/${projectId}/cluster_resource/prometheus?cluster_id=${clusterId}`,
         method: 'put',
-        data,
+        data: postData,
       });
     },
   },
@@ -69,7 +41,7 @@ export default ({ formatMessage, intlPrefix, projectId, clusterId, pvDs }) => ({
       required: true,
     },
     {
-      name: 'prometheusPV',
+      name: 'prometheusPvId',
       type: 'number',
       textField: 'name',
       valueField: 'id',
@@ -78,7 +50,7 @@ export default ({ formatMessage, intlPrefix, projectId, clusterId, pvDs }) => ({
       options: pvDs,
     },
     {
-      name: 'grafanaPV',
+      name: 'grafanaPvId',
       type: 'number',
       textField: 'name',
       valueField: 'id',
@@ -87,7 +59,7 @@ export default ({ formatMessage, intlPrefix, projectId, clusterId, pvDs }) => ({
       options: pvDs,
     },
     {
-      name: 'alertManagerPV',
+      name: 'alertmanagerPvId',
       type: 'number',
       textField: 'name',
       valueField: 'id',
