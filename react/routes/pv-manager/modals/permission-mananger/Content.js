@@ -4,9 +4,9 @@ import { Table, Modal, SelectBox, Form, Icon, Button } from 'choerodon-ui/pro';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import AddProject from './AddProject';
+import { usePVPermissionStore } from './stores';
 
 import './index.less';
-import { usePVPermissionStore } from './stores';
 
 const { Column } = Table;
 const { Option } = SelectBox;
@@ -76,7 +76,6 @@ export default injectIntl(observer(() => {
 
   function renderAction() {
     const actionData = [{
-      service: [],
       text: formatMessage({ id: `${intlPrefix}.permission.delete` }),
       action: handleDelete,
     }];
@@ -97,8 +96,8 @@ export default injectIntl(observer(() => {
       </Form>
       {record && record.get('skipCheckProjectPermission') ? (
         <Table dataSet={allProjectDs}>
-          <Column name="name" sortable />
-          <Column name="code" sortable />
+          <Column name="name" />
+          <Column name="code" />
         </Table>
       ) : (
         <Fragment>
@@ -111,9 +110,9 @@ export default injectIntl(observer(() => {
             <FormattedMessage id={`${intlPrefix}.project.add`} />
           </Button>
           <Table dataSet={permissionProjectDs} pristine>
-            <Column name="name" sortable />
+            <Column name="name" />
             <Column renderer={renderAction} />
-            <Column name="code" sortable />
+            <Column name="code" />
           </Table>
         </Fragment>
       )}
