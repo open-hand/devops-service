@@ -310,7 +310,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         if (devopsPrometheusMapper.updateByPrimaryKey(devopsPrometheusDTO) != 1) {
             throw new CommonException("error.prometheus.update");
         }
-        DevopsClusterResourceDTO devopsClusterResource = devopsClusterResourceService.queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
+        DevopsClusterResourceDTO devopsClusterResource = queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
         devopsClusterResource.setOperate(ClusterResourceOperateType.UPGRADE.getType());
         devopsClusterResourceService.baseUpdate(devopsClusterResource);
         return true;
@@ -319,9 +319,8 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
 
     @Override
     public DevopsPrometheusVO queryPrometheus(Long clusterId) {
-        DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceMapper.queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
-        DevopsPrometheusDTO devopsPrometheusDTO = devopsPrometheusMapper.selectByPrimaryKey(devopsClusterResourceDTO.getConfigId());
-        return ConvertUtils.convertObject(devopsPrometheusDTO, DevopsPrometheusVO.class);
+        DevopsClusterResourceDTO devopsClusterResourceDTO = queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
+        return devopsPrometheusMapper.queryPrometheusWithPvById(devopsClusterResourceDTO.getConfigId());
     }
 
     @Override
@@ -340,7 +339,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         PrometheusStageVO prometheusStageVO = new PrometheusStageVO();
         //校验三个pvc状态，都为bound即为安装成功
         DevopsPrometheusDTO devopsPrometheusDTO = devopsPrometheusMapper.selectByPrimaryKey(devopsClusterResourceDTO.getConfigId());
-        DevopsPvcDTO pormetheusPVC = devopsPvcService.queryById(devopsPrometheusDTO.getPormetheusPvId());
+        DevopsPvcDTO pormetheusPVC = devopsPvcService.queryById(devopsPrometheusDTO.getPrometheusPvId());
         DevopsPvcDTO grafanaPVC = devopsPvcService.queryById(devopsPrometheusDTO.getGrafanaPvId());
         DevopsPvcDTO alertmanagerPVC = devopsPvcService.queryById(devopsPrometheusDTO.getAlertmanagerPvId());
         if (pormetheusPVC == null || grafanaPVC == null || alertmanagerPVC == null) {
@@ -407,7 +406,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
             if (appServiceInstanceDTO == null) {
                 //验证pvc是否存在,三个pvc都不存在才去删除prometheus
                 DevopsPrometheusDTO devopsPrometheusDTO = devopsPrometheusMapper.selectByPrimaryKey(devopsClusterResourceDTO.getConfigId());
-                DevopsPvcDTO pormetheusPVC = devopsPvcService.queryById(devopsPrometheusDTO.getPormetheusPvId());
+                DevopsPvcDTO pormetheusPVC = devopsPvcService.queryById(devopsPrometheusDTO.getPrometheusPvId());
                 DevopsPvcDTO grafanaPVC = devopsPvcService.queryById(devopsPrometheusDTO.getGrafanaPvId());
                 DevopsPvcDTO alertmanagerPVC = devopsPvcService.queryById(devopsPrometheusDTO.getAlertmanagerPvId());
                 if (pormetheusPVC == null && grafanaPVC == null && alertmanagerPVC == null) {
@@ -510,7 +509,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         if (devopsClusterResourceDTO != null) {
             DevopsPrometheusDTO devopsPrometheusDTO = devopsPrometheusMapper.selectByPrimaryKey(devopsClusterResourceDTO.getConfigId());
             DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
-            DevopsPvcDTO pormetheusPvcDTO = devopsPvcService.queryByPvId(devopsPrometheusDTO.getPormetheusPvId());
+            DevopsPvcDTO pormetheusPvcDTO = devopsPvcService.queryByPvId(devopsPrometheusDTO.getPrometheusPvId());
             DevopsPvcDTO grafanaPvcDTO = devopsPvcService.queryByPvId(devopsPrometheusDTO.getGrafanaPvId());
             DevopsPvcDTO alertmanagerDTO = devopsPvcService.queryByPvId(devopsPrometheusDTO.getAlertmanagerPvId());
             devopsPvcService.delete(devopsClusterDTO.getSystemEnvId(), pormetheusPvcDTO.getId());

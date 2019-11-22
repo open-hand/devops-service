@@ -26,19 +26,30 @@ public class DevopsPrometheusVO {
     @NotNull(message = "error.prometheus.pv.id.null")
     private Long prometheusPvId;
 
+    @ApiModelProperty("PrometheusPv名称")
+    private String prometheusPvName;
+
     @ApiModelProperty("GrafanaPvId/必填")
     @NotNull(message = "error.grafana.pv.id.null")
     private Long grafanaPvId;
 
+    @ApiModelProperty("GrafanaPv名称")
+    private String grafanaPvName;
+
     @ApiModelProperty("AlertmanagerPvId/必填")
     @NotNull(message = "error.alertmanager.pv.id.null")
     private Long alertmanagerPvId;
+
+    @ApiModelProperty("AlertmanagerPv名称")
+    private String alertmanagerPvName;
 
     @ApiModelProperty("集群id")
     private Long clusterId;
 
     @ApiModelProperty("cluster编码")
     private String clusterCode;
+
+    private Long objectVersionNumber;
 
     public Long getId() {
         return id;
@@ -102,5 +113,37 @@ public class DevopsPrometheusVO {
 
     public void setClusterId(Long clusterId) {
         this.clusterId = clusterId;
+    }
+
+    public Long getObjectVersionNumber() {
+        return objectVersionNumber;
+    }
+
+    public void setObjectVersionNumber(Long objectVersionNumber) {
+        this.objectVersionNumber = objectVersionNumber;
+    }
+
+    public String getPrometheusPvName() {
+        return prometheusPvName;
+    }
+
+    public void setPrometheusPvName(String prometheusPvName) {
+        this.prometheusPvName = prometheusPvName;
+    }
+
+    public String getGrafanaPvName() {
+        return grafanaPvName;
+    }
+
+    public void setGrafanaPvName(String grafanaPvName) {
+        this.grafanaPvName = grafanaPvName;
+    }
+
+    public String getAlertmanagerPvName() {
+        return alertmanagerPvName;
+    }
+
+    public void setAlertmanagerPvName(String alertmanagerPvName) {
+        this.alertmanagerPvName = alertmanagerPvName;
     }
 }

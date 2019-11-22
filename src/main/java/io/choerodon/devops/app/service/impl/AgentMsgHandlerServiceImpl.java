@@ -531,7 +531,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
         DevopsPrometheusDTO devopsPrometheusDTO = devopsClusterResourceService.baseQueryPrometheusDTO(devopsEnvironmentDTO.getClusterId());
         if (devopsPrometheusDTO != null) {
-            Long pormetheusPvId = devopsPrometheusDTO.getPormetheusPvId();
+            Long pormetheusPvId = devopsPrometheusDTO.getPrometheusPvId();
             Long grafanaPvId = devopsPrometheusDTO.getGrafanaPvId();
             Long alertmanagerPvId = devopsPrometheusDTO.getAlertmanagerPvId();
             Long pvcId = devopsPvcDTO.getId();

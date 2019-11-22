@@ -97,12 +97,12 @@ public class DevopsClusterResourceController {
 
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "升级prometheus")
-    @PutMapping("/prometheus/update")
+    @PutMapping("/prometheus")
     public ResponseEntity<Boolean> update(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群id", required = true)
-            @RequestParam(name = "cluster_id", required = true) Long clusterId,
+            @RequestParam(name = "cluster_id") Long clusterId,
             @ApiParam(value = "请求体", required = true)
             @RequestBody DevopsPrometheusVO prometheusVo) {
         return Optional.ofNullable(devopsClusterResourceService.updatePrometheus(projectId, clusterId, prometheusVo))
