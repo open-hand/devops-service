@@ -1673,20 +1673,20 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         }
 
         if (!ObjectUtils.isEmpty(devopsClusterResourceDTO)) {
-            //安装返回
+            //安装返回,如果不是running状态就是不可用
             if (ClusterResourceOperateType.INSTALL.getType().equals(devopsClusterResourceDTO.getOperate())) {
-                if (!CertManagerConstants.RUNNING.equals(agentMsgStatusVO.getStatus())) {
-                    devopsClusterResourceService.updateCertMangerStatus(clusterId, ClusterResourceStatus.UNINSTALLED.getStatus(), agentMsgVO.getPayload());
+                if (CertManagerConstants.RUNNING.equals(agentMsgStatusVO.getStatus())) {
+                    devopsClusterResourceService.updateCertMangerStatus(clusterId, ClusterResourceStatus.AVAILABLE.getStatus(), null);
                 } else {
-                    devopsClusterResourceService.updateCertMangerStatus(clusterId, ClusterResourceStatus.DISABLED.getStatus(), null);
+                    devopsClusterResourceService.updateCertMangerStatus(clusterId, ClusterResourceStatus.DISABLED.getStatus(), agentMsgVO.getPayload());
                 }
             }
             //卸载返回
             if (ClusterResourceOperateType.UNINSTALL.getType().equals(devopsClusterResourceDTO.getOperate())) {
-                if (!CertManagerConstants.DELETED.equals(agentMsgStatusVO.getStatus())) {
-                    devopsClusterResourceService.updateCertMangerStatus(clusterId, null, agentMsgVO.getPayload());
-                } else {
+                if (CertManagerConstants.DELETED.equals(agentMsgStatusVO.getStatus())) {
                     devopsClusterResourceService.unloadCertManager(clusterId);
+                } else {
+                    devopsClusterResourceService.updateCertMangerStatus(clusterId, ClusterResourceStatus.DISABLED.getStatus(), agentMsgVO.getPayload());
                 }
             }
         }
