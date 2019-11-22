@@ -9,7 +9,7 @@ databaseChangeLog(logicalFilePath: 'devops_prometheus.groovy') {
             column(name: 'admin_password', type: 'VARCHAR(50)', remarks: 'admin密码')
             column(name: 'grafana_domain', type: 'VARCHAR(50)', remarks: 'grafana的域名地址')
             column(name: 'cluster_id', type: 'BIGINT UNSIGNED', remarks: 'cluster id')
-            column(name: 'pormetheus_pv_id', type: 'BIGINT UNSIGNED', remarks: 'PormetheusPv id')
+            column(name: 'prometheus_pv_id', type: 'BIGINT UNSIGNED', remarks: 'PrometheusPv id')
             column(name: 'grafana_pv_id', type: 'BIGINT UNSIGNED', remarks: 'GrafanaPv id')
             column(name: 'alertmanager_pv_id', type: 'BIGINT UNSIGNED', remarks: 'AlertmanagerPv id')
 
