@@ -1662,14 +1662,14 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceService.queryByClusterIdAndType(clusterId, ClusterResourceType.CERTMANAGER.getType());
         AgentMsgStatusVO agentMsgStatusVO = json.deserialize(agentMsgVO.getPayload(), AgentMsgStatusVO.class);
         //如果集群安装了cert_manager而数据库没有数据就插入数据库
-        if (Objects.isNull(devopsClusterResourceDTO) && CertManagerConstants.RUNING.equals(agentMsgStatusVO.getStatus())) {
+        if (Objects.isNull(devopsClusterResourceDTO) && CertManagerConstants.RUNNING.equals(agentMsgStatusVO.getStatus())) {
             devopsClusterResourceService.createCertManager(clusterId);
         }
 
         if (!ObjectUtils.isEmpty(devopsClusterResourceDTO)) {
             //安装返回
             if (ClusterResourceOperateType.INSTALL.getType().equals(devopsClusterResourceDTO.getOperate())) {
-                if (!CertManagerConstants.RUNING.equals(agentMsgStatusVO.getStatus())) {
+                if (!CertManagerConstants.RUNNING.equals(agentMsgStatusVO.getStatus())) {
                     devopsClusterResourceService.updateCertMangerStatus(clusterId, ClusterResourceStatus.UNINSTALLED.getStatus(), agentMsgVO.getPayload());
                 } else {
                     devopsClusterResourceService.updateCertMangerStatus(clusterId, ClusterResourceStatus.DISABLED.getStatus(), null);
