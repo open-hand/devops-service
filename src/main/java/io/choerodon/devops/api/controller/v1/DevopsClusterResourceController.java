@@ -115,7 +115,7 @@ public class DevopsClusterResourceController {
     @GetMapping("/prometheus")
     public ResponseEntity<DevopsPrometheusVO> query(
             @ApiParam(value = "集群id", required = true)
-            @RequestParam(name = "cluster_id", required = true) Long clusterId) {
+            @RequestParam(name = "cluster_id") Long clusterId) {
 
         return Optional.ofNullable(devopsClusterResourceService.queryPrometheus(clusterId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
