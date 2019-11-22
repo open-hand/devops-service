@@ -444,6 +444,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                             property = "ds.target_port";
                         } else if (property.equals("appServiceName")) {
                             property = "app_service_name";
+                        } else if ("id".equals(property)) {
+                            property = "ds.id";
                         } else {
                             throw new CommonException("error.field.not.supported.for.sort", t.getProperty());
                         }
