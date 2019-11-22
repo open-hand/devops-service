@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
+import io.choerodon.devops.api.vo.AgentMsgVO;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 
 /**
@@ -71,7 +72,7 @@ public interface AgentMsgHandlerService {
 
     void getTestAppStatus(String key, String msg, Long clusterId);
 
-    void getCertManagerInfo(String msg, Long clusterId);
+    void getCertManagerInfo(AgentMsgVO msg, Long clusterId);
 
     void handleNodeSync(String msg, Long clusterId);
 

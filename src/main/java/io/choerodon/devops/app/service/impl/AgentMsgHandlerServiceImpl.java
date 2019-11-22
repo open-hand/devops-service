@@ -1652,17 +1652,16 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     }
 
     @Override
-    public void getCertManagerInfo(String payloadMsg, Long clusterId) {
-        if (ObjectUtils.isEmpty(payloadMsg)) {
+    public void getCertManagerInfo(AgentMsgVO agentMsgVO, Long clusterId) {
+        if (ObjectUtils.isEmpty(agentMsgVO)) {
             return;
         }
-        AgentMsgVO agentMsgVO = json.deserialize(payloadMsg, AgentMsgVO.class);
         if (!CertManagerConstants.CERT_MANAGER_STATUS.equals(agentMsgVO.getType())) {
             return;
         }
         DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceService.queryByClusterIdAndType(clusterId, ClusterResourceType.CERTMANAGER.getType());
         AgentMsgStatusVO agentMsgStatusVO = json.deserialize(agentMsgVO.getPayload(), AgentMsgStatusVO.class);
-        //首次启动的话会刷进去数据
+        //如果集群安装了cert_manager而数据库没有数据就插入数据库
         if (Objects.isNull(devopsClusterResourceDTO) && CertManagerConstants.RUNING.equals(agentMsgStatusVO.getStatus())) {
             devopsClusterResourceService.createCertManager(clusterId);
         }
