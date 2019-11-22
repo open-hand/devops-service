@@ -571,6 +571,7 @@ const envrionment = {
   'c7ncd.env.config.modify': '修改部属配置',
   'c7ncd.env.delete.title': '删除环境“{name}”',
   'c7ncd.env.delete.des': '确定要删除该环境吗？',
+  'c7ncd.env.delete.des.resource.confirm': '确定要删除该环境吗？删除后，该环境下所有资源将被彻底删除，且不能恢复。',
   'c7ncd.env.config.delete.disable': '删除部署配置“{name}”',
   'c7ncd.env.config.delete.des': '确定要删除该部署配置吗？',
   'c7ncd.env.config.delete.describe': '仅能删除没有关联任务和关联实例的部署配置。',

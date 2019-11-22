@@ -46,6 +46,8 @@ function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
 
   async function openDelete() {
     const name = record.get('name');
+    const envId = record.get('id');
+
     const deleteModal = Modal.open({
       key: deleteKey,
       title: formatMessage({ id: `${intlPrefix}.delete.title` }, { name }),
@@ -53,10 +55,14 @@ function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
       okCancel: false,
       okText: formatMessage({ id: 'iknow' }),
     });
+
     const res = await checkStatus();
+
     if (res) {
+      const result = await mainStore.checkEffect(projectId, envId);
+      const message = formatMessage({ id: handlePromptError(result) ? `${intlPrefix}.delete.des` : `${intlPrefix}.delete.des.resource.confirm` });
       deleteModal.update({
-        children: formatMessage({ id: `${intlPrefix}.delete.des` }),
+        children: message,
         okText: formatMessage({ id: 'delete' }),
         okProps: { color: 'red' },
         cancelProps: { color: 'dark' },
