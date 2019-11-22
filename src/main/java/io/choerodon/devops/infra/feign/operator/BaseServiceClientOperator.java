@@ -497,8 +497,11 @@ public class BaseServiceClientOperator {
 
     public ClientDTO createClient(Long organizationId, ClientVO clientVO) {
         try {
-            ResponseEntity<ClientDTO> clientDTOResponseEntity = baseServiceClient.createClient(organizationId, clientVO);
-            return clientDTOResponseEntity.getBody();
+            ClientDTO client = baseServiceClient.createClient(organizationId, clientVO).getBody();
+            if (client == null) {
+                throw new CommonException("error.create.client");
+            }
+            return client;
         } catch (Exception ex) {
             throw new CommonException("error.create.client");
         }

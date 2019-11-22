@@ -37,7 +37,7 @@ import java.util.*;
 
 @Service
 public class DevopsPvcServiceImpl implements DevopsPvcService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsPvServiceImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsPvcServiceImpl.class);
 
     private Gson gson = new Gson();
     @Autowired
@@ -269,6 +269,16 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
         DevopsPvcDTO searchCondition = new DevopsPvcDTO();
         searchCondition.setEnvId(Objects.requireNonNull(envId));
         return devopsPvcMapper.select(searchCondition);
+    }
+
+    @Override
+    public DevopsPvcDTO queryByPvId(Long pvId) {
+        if (pvId == null) {
+            throw new CommonException("error.pv.id.null");
+        }
+        DevopsPvcDTO devopsPvcDTO = new DevopsPvcDTO();
+        devopsPvcDTO.setPvId(pvId);
+        return devopsPvcMapper.selectOne(devopsPvcDTO);
     }
 
     private DevopsPvcDTO handlePvc(DevopsPvcReqVO devopsPvcReqVO, Long projectId) {

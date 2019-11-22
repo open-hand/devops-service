@@ -529,23 +529,29 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
         DevopsPrometheusDTO devopsPrometheusDTO = devopsClusterResourceService.baseQueryPrometheusDTO(devopsEnvironmentDTO.getClusterId());
         if (devopsPrometheusDTO != null) {
-            List<Long> pvcIds = com.alibaba.fastjson.JSON.parseArray(devopsPrometheusDTO.getPvcId(), Long.class);
-            List<DevopsPvcDTO> devopsPvcDTOS = new ArrayList<>();
-            if (pvcIds.contains(devopsPvcDTO.getId())) {
-                for (Long pvcId : pvcIds) {
-                    DevopsPvcDTO devopsPvc = devopsPvcService.queryById(pvcId);
-                    if (PvcStatus.BOUND.getStatus().equals(devopsPvc.getStatus())) {
-                        devopsPvcDTOS.add(devopsPvc);
-                        logger.info("cluster:{} PVC id:{} name:{} create successful", devopsEnvironmentDTO.getClusterId(), devopsPvc.getId(), devopsPvc.getName());
-                    }
-                }
+            Long pormetheusPvId = devopsPrometheusDTO.getPormetheusPvId();
+            Long grafanaPvId = devopsPrometheusDTO.getGrafanaPvId();
+            Long alertmanagerPvId = devopsPrometheusDTO.getAlertmanagerPvId();
+            Long pvcId = devopsPvcDTO.getId();
+            if (pvcId == pormetheusPvId || pvcId == grafanaPvId || pvcId == alertmanagerPvId) {
+                List<DevopsPvcDTO> devopsPvcDTOS = new ArrayList<>();
+                addBoundPVC(devopsPvcDTOS, pormetheusPvId);
+                addBoundPVC(devopsPvcDTOS, grafanaPvId);
+                addBoundPVC(devopsPvcDTOS, alertmanagerPvId);
+
                 if (devopsPvcDTOS.size() == 3) {
                     devopsPrometheusDTO.setDevopsPvcDTO(devopsPvcDTOS);
                     devopsClusterResourceService.installPrometheus(devopsEnvironmentDTO.getClusterId(), devopsPrometheusDTO);
                 }
             }
         }
+    }
 
+    private void addBoundPVC(List<DevopsPvcDTO> devopsPvcDTOS, Long pvId) {
+        DevopsPvcDTO devopsPvc = devopsPvcService.queryByPvId(pvId);
+        if (PvcStatus.BOUND.getStatus().equals(devopsPvc.getStatus())) {
+            devopsPvcDTOS.add(devopsPvc);
+        }
     }
 
     private void handleUpdateServiceMsg(String key, Long envId, String msg, DevopsEnvResourceDTO devopsEnvResourceDTO) {
