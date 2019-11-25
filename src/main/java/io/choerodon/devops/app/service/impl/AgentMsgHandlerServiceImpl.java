@@ -1414,22 +1414,21 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 .map(i -> constructCommand(i.getCommandId(), SECRET_KIND, i.getName()))
                 .collect(Collectors.toList()));
 
-        // TODO 先注释掉，pv和pvc的创建逻辑调通后解除注释
-//        // pvc
-//        commandsToSend.addAll(devopsPvcService
-//                .baseListByEnvId(envId)
-//                .stream()
-//                .filter(i -> i.getCommandId() != null)
-//                .map(i -> constructCommand(i.getCommandId(), PERSISTENT_VOLUME_CLAIM_KIND, i.getName()))
-//                .collect(Collectors.toList()));
-//
-//        // pv
-//        commandsToSend.addAll(devopsPvService
-//                .baseListByEnvId(envId)
-//                .stream()
-//                .filter(i -> i.getCommandId() != null)
-//                .map(i -> constructCommand(i.getCommandId(), PERSISTENT_VOLUME_KIND, i.getName()))
-//                .collect(Collectors.toList()));
+        // pvc
+        commandsToSend.addAll(devopsPvcService
+                .baseListByEnvId(envId)
+                .stream()
+                .filter(i -> i.getCommandId() != null)
+                .map(i -> constructCommand(i.getCommandId(), PERSISTENT_VOLUME_CLAIM_KIND, i.getName()))
+                .collect(Collectors.toList()));
+
+        // pv
+        commandsToSend.addAll(devopsPvService
+                .baseListByEnvId(envId)
+                .stream()
+                .filter(i -> i.getCommandId() != null)
+                .map(i -> constructCommand(i.getCommandId(), PERSISTENT_VOLUME_KIND, i.getName()))
+                .collect(Collectors.toList()));
 
         Date d = new Date();
         if (!commandsToSend.isEmpty()) {
