@@ -80,7 +80,7 @@ public abstract class UpdateUserPermissionService {
     private void deleteGitlabMember(Integer gitlabProjectId, Integer userId) {
         MemberDTO projectMember = gitlabServiceClientOperator
                 .getProjectMember(gitlabProjectId, userId);
-        if (projectMember.getId() != null) {
+        if (projectMember == null || projectMember.getId() != null) {
             gitlabServiceClientOperator.deleteProjectMember(gitlabProjectId, userId);
         }
     }
