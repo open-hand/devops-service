@@ -391,6 +391,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         devopsPvProPermissionService.baseDeleteByPvId(pvId);
     }
 
+    //跳过权限校验,PV分配的有权限的项目和集群下有权限的项目一样
     @Override
     public PageInfo<ProjectReqVO> pageProjects(Long projectId, Long pvId, Pageable pageable, String params) {
         DevopsPvDTO devopsPvDTO = baseQueryById(pvId);
@@ -401,18 +402,14 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         Map<String, Object> map = TypeUtil.castMapParams(params);
         //接收模糊查询参数列表
         List<String> paramList = TypeUtil.cast(map.get(TypeUtil.PARAMS));
-        //跳过权限校验,PV分配的有权限的项目和集群下有权限的项目一样
-        if (devopsPvDTO.getSkipCheckProjectPermission()) {
-            DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(devopsPvDTO.getClusterId());
-            //集群跳过权限校验
-            if (devopsClusterDTO.getSkipCheckProjectPermission()) {
-                return devopsProjectService.pageProjects(projectId, pageable, params);
-            } else {
-                //集群不跳过权限校验
-                return devopsClusterService.pageRelatedProjects(projectId, devopsClusterDTO.getId(), pageable, params);
-            }
+
+        DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(devopsPvDTO.getClusterId());
+        //集群跳过权限校验
+        if (devopsClusterDTO.getSkipCheckProjectPermission()) {
+            return devopsProjectService.pageProjects(projectId, pageable, params);
         } else {
-            return null;
+            //集群不跳过权限校验
+            return devopsClusterService.pageRelatedProjects(projectId, devopsClusterDTO.getId(), pageable, params);
         }
     }
 
