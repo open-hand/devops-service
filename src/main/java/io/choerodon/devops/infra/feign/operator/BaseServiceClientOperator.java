@@ -1,7 +1,24 @@
 package io.choerodon.devops.infra.feign.operator;
 
+import static io.choerodon.core.iam.InitRoleCode.PROJECT_MEMBER;
+import static io.choerodon.core.iam.InitRoleCode.PROJECT_OWNER;
+
+import java.util.*;
+import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.ExceptionResponse;
 import io.choerodon.core.exception.FeignException;
@@ -13,22 +30,7 @@ import io.choerodon.devops.infra.dto.iam.*;
 import io.choerodon.devops.infra.enums.OrgPublishMarketStatus;
 import io.choerodon.devops.infra.feign.BaseServiceClient;
 import io.choerodon.devops.infra.util.FeignParamUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static io.choerodon.core.iam.InitRoleCode.PROJECT_MEMBER;
-import static io.choerodon.core.iam.InitRoleCode.PROJECT_OWNER;
+import io.choerodon.mybatis.autoconfigure.CustomPageRequest;
 
 /**
  * Created by Sheep on 2019/7/11.
@@ -193,11 +195,11 @@ public class BaseServiceClientOperator {
         // 项目下所有项目成员
         List<Long> memberIds =
 
-                this.pagingQueryUsersByRoleIdOnProjectLevel(PageRequest.of(0, 1), new RoleAssignmentSearchVO(), memberId,
+                this.pagingQueryUsersByRoleIdOnProjectLevel(CustomPageRequest.of(0, 0), new RoleAssignmentSearchVO(), memberId,
                         projectId, false).getList().stream().map(IamUserDTO::getId).collect(Collectors.toList());
         // 项目下所有项目所有者
         List<Long> ownerIds =
-                this.pagingQueryUsersByRoleIdOnProjectLevel(PageRequest.of(0, 1), new RoleAssignmentSearchVO(), ownerId,
+                this.pagingQueryUsersByRoleIdOnProjectLevel(CustomPageRequest.of(0, 0), new RoleAssignmentSearchVO(), ownerId,
 
                         projectId, false).getList().stream().map(IamUserDTO::getId).collect(Collectors.toList());
         return memberIds.stream().filter(e -> !ownerIds.contains(e)).collect(Collectors.toList());
@@ -212,11 +214,11 @@ public class BaseServiceClientOperator {
         // 项目下所有项目成员
         List<Long> memberIds =
 
-                this.pagingQueryUsersByRoleIdOnProjectLevel(PageRequest.of(0, 1), new RoleAssignmentSearchVO(), memberId,
+                this.pagingQueryUsersByRoleIdOnProjectLevel(CustomPageRequest.of(0, 0), new RoleAssignmentSearchVO(), memberId,
                         projectId, false).getList().stream().map(IamUserDTO::getId).collect(Collectors.toList());
         // 项目下所有项目所有者
         List<Long> ownerIds =
-                this.pagingQueryUsersByRoleIdOnProjectLevel(PageRequest.of(0, 1), new RoleAssignmentSearchVO(), ownerId,
+                this.pagingQueryUsersByRoleIdOnProjectLevel(CustomPageRequest.of(0, 0), new RoleAssignmentSearchVO(), ownerId,
 
                         projectId, false).getList().stream().map(IamUserDTO::getId).collect(Collectors.toList());
         return ownerIds.stream().filter(e -> !memberIds.contains(e)).collect(Collectors.toList());
@@ -229,11 +231,11 @@ public class BaseServiceClientOperator {
         Long ownerId = this.queryRoleIdByCode(PROJECT_OWNER);
         // 项目下所有项目成员
 
-        List<IamUserDTO> list = this.pagingQueryUsersByRoleIdOnProjectLevel(PageRequest.of(0, 1), new RoleAssignmentSearchVO(), memberId,
+        List<IamUserDTO> list = this.pagingQueryUsersByRoleIdOnProjectLevel(CustomPageRequest.of(0, 0), new RoleAssignmentSearchVO(), memberId,
                 projectId, false).getList();
         List<Long> memberIds = list.stream().filter(IamUserDTO::getEnabled).map(IamUserDTO::getId).collect(Collectors.toList());
         // 项目下所有项目所有者
-        this.pagingQueryUsersByRoleIdOnProjectLevel(PageRequest.of(0, 1), new RoleAssignmentSearchVO(), ownerId,
+        this.pagingQueryUsersByRoleIdOnProjectLevel(CustomPageRequest.of(0, 0), new RoleAssignmentSearchVO(), ownerId,
 
                 projectId, false).getList().stream().filter(IamUserDTO::getEnabled).forEach(t -> {
             if (!memberIds.contains(t.getId())) {
