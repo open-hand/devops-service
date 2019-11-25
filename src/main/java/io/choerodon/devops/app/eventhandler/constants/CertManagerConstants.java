@@ -18,6 +18,7 @@ public class CertManagerConstants {
     public static final String CERT_MANAGER_NAME_SPACE = "kube-system";
 
     public static final String CERT_MANAGER_REALASE_NAME = "choerodon-cert-manager";
+    public static final String CERT_MANAGER_REALASE_NAME_C7N = "choerodon";
     /**
      * 证书管理的标志
      */
@@ -32,6 +33,8 @@ public class CertManagerConstants {
      * 证书管理卸载成功的标志
      */
     public static final String DELETED = "deleted";
+
+    public static final String RELEASE_NAME = "releaseName";
 
 
 }
