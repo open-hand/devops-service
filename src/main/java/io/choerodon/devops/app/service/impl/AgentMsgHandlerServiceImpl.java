@@ -531,13 +531,13 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
         DevopsPrometheusDTO devopsPrometheusDTO = devopsClusterResourceService.baseQueryPrometheusDTO(devopsEnvironmentDTO.getClusterId());
         if (devopsPrometheusDTO != null) {
-            Long pormetheusPvId = devopsPrometheusDTO.getPrometheusPvId();
+            Long prometheusPvId = devopsPrometheusDTO.getPrometheusPvId();
             Long grafanaPvId = devopsPrometheusDTO.getGrafanaPvId();
             Long alertmanagerPvId = devopsPrometheusDTO.getAlertmanagerPvId();
-            Long pvcId = devopsPvcDTO.getId();
-            if (pvcId == pormetheusPvId || pvcId == grafanaPvId || pvcId == alertmanagerPvId) {
+            Long pvId = devopsPvcDTO.getPvId();
+            if (pvId.equals(prometheusPvId) || pvId.equals(grafanaPvId) || pvId.equals(alertmanagerPvId)) {
                 List<DevopsPvcDTO> devopsPvcDTOS = new ArrayList<>();
-                addBoundPVC(devopsPvcDTOS, pormetheusPvId);
+                addBoundPVC(devopsPvcDTOS, prometheusPvId);
                 addBoundPVC(devopsPvcDTOS, grafanaPvId);
                 addBoundPVC(devopsPvcDTOS, alertmanagerPvId);
 
