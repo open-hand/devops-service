@@ -118,4 +118,10 @@
         WHERE dpv.name = #{name}
         AND dpv.cluster_id = #{clusterId}
     </select>
+
+    <update id="updateStatusById">
+        UPDATE devops_pv
+        SET devops_pv.status = #{status}
+        WHERE devops_pv.id = #{id}
+    </update>
 </mapper>

@@ -39,6 +39,7 @@ import java.io.IOException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -1463,24 +1464,49 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         }
 
         logger.info("sync command status result: {}.", msg);
-        List<Command> commands = JSONArray.parseArray(msg, Command.class);
+
+        Map<Long, Command> syncCommandMap = JSONArray.parseArray(msg, Command.class)
+                .stream()
+                .filter(c -> c != null && c.getId() != null)
+                .collect(Collectors.toMap(Command::getId, Function.identity()));
+
         List<Command> oldCommands = getCommandsToSync(envId);
-        if (!oldCommands.isEmpty()) {
-            oldCommands.stream().filter(oldCommand -> oldCommand.getId() != null).forEach(command ->
-                    commands.stream().filter(command1 -> command1.getId() != null && command1.getId().equals(command.getId())).forEach(command1 -> {
-                        DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(command.getId());
-                        if (command1.getCommit() != null && command.getCommit() != null && command.getCommit().equals(command1.getCommit())) {
-                            devopsEnvCommandDTO.setStatus(CommandStatus.SUCCESS.getStatus());
-                            updateResourceStatus(envId, devopsEnvCommandDTO, InstanceStatus.RUNNING, ServiceStatus.RUNNING, IngressStatus.RUNNING, CertificationStatus.ACTIVE);
-                        } else {
-                            devopsEnvCommandDTO.setStatus(CommandStatus.FAILED.getStatus());
-                            devopsEnvCommandDTO.setError("The deploy is time out!");
-                            updateResourceStatus(envId, devopsEnvCommandDTO, InstanceStatus.FAILED, ServiceStatus.FAILED, IngressStatus.FAILED, CertificationStatus.FAILED);
-                        }
-                        devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
-                    })
-            );
-        }
+        oldCommands.stream()
+                .filter(oldCommand -> oldCommand.getId() != null)
+                .forEach(oldCommand -> {
+                    Command newCommand = syncCommandMap.get(oldCommand.getId());
+                    if (newCommand == null) {
+                        return;
+                    }
+
+                    // 查询command
+                    DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(oldCommand.getId());
+                    // 对比两边command的sha值是否相等
+                    if (newCommand.getCommit() != null
+                            && Objects.equals(oldCommand.getCommit(), newCommand.getCommit())) {
+
+                        devopsEnvCommandDTO.setStatus(CommandStatus.SUCCESS.getStatus());
+                        updateResourceStatus(envId, devopsEnvCommandDTO,
+                                InstanceStatus.RUNNING,
+                                ServiceStatus.RUNNING,
+                                IngressStatus.RUNNING,
+                                CertificationStatus.ACTIVE,
+                                PvStatus.valueOf(newCommand.getResourceStatus()),
+                                PvcStatus.valueOf(newCommand.getResourceStatus()));
+                    } else {
+                        devopsEnvCommandDTO.setStatus(CommandStatus.FAILED.getStatus());
+                        devopsEnvCommandDTO.setError("The deploy is time out!");
+
+                        // 如果是超时，不将pv和pvc的纪录本身的状态更改
+                        updateResourceStatus(envId, devopsEnvCommandDTO,
+                                InstanceStatus.FAILED,
+                                ServiceStatus.FAILED,
+                                IngressStatus.FAILED,
+                                CertificationStatus.FAILED, null, null);
+                    }
+
+                    devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
+                });
     }
 
     @Override
@@ -1718,32 +1744,46 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                                       InstanceStatus instanceStatus,
                                       ServiceStatus serviceStatus,
                                       IngressStatus ingressStatus,
-                                      CertificationStatus certificationStatus) {
-        if (devopsEnvCommandDTO.getObject().equals(INSTANCE_KIND)) {
-            AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQuery(devopsEnvCommandDTO.getObjectId());
-            if (appServiceInstanceDTO != null
-                    && !InstanceStatus.RUNNING.getStatus().equals(appServiceInstanceDTO.getStatus())) {
-                appServiceInstanceDTO.setStatus(instanceStatus.getStatus());
-                appServiceInstanceService.updateStatus(appServiceInstanceDTO);
-            }
+                                      CertificationStatus certificationStatus,
+                                      PvStatus pvStatus,
+                                      PvcStatus pvcStatus) {
+        switch (devopsEnvCommandDTO.getObject()) {
+            case INSTANCE_KIND:
+                AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQuery(devopsEnvCommandDTO.getObjectId());
+                if (appServiceInstanceDTO != null
+                        && !InstanceStatus.RUNNING.getStatus().equals(appServiceInstanceDTO.getStatus())) {
+                    appServiceInstanceDTO.setStatus(instanceStatus.getStatus());
+                    appServiceInstanceService.updateStatus(appServiceInstanceDTO);
+                }
+                break;
+            case SERVICE_KIND:
+                DevopsServiceDTO devopsServiceDTO = devopsServiceService.baseQuery(devopsEnvCommandDTO.getObjectId());
+                devopsServiceDTO.setStatus(serviceStatus.getStatus());
+                devopsServiceService.updateStatus(devopsServiceDTO);
+                break;
+            case INGRESS_KIND:
+                DevopsIngressDTO devopsIngressDTO = devopsIngressService.baseQuery(devopsEnvCommandDTO.getObjectId());
+                devopsIngressService.updateStatus(envId, devopsIngressDTO.getName(), ingressStatus.getStatus());
+                break;
+            case CERTIFICATE_KIND:
+                CertificationDTO certificationDTO = certificationService.baseQueryById(devopsEnvCommandDTO.getObjectId());
+                certificationDTO.setStatus(certificationStatus.getStatus());
+                certificationService.updateStatus(certificationDTO);
+                break;
+            case PERSISTENT_VOLUME_KIND:
+                if (pvStatus != null) {
+                    devopsPvMapper.updateStatusById(devopsEnvCommandDTO.getObjectId(), pvStatus.getStatus());
+                }
+                break;
+            case PERSISTENT_VOLUME_CLAIM_KIND:
+                if (pvcStatus != null) {
+                    devopsPvcMapper.updateStatusById(devopsEnvCommandDTO.getObjectId(), pvcStatus.getStatus());
+                }
+                break;
+            default:
+                logger.warn("Unexpected resource kind when syncing commands: {}", devopsEnvCommandDTO.getObject());
+                break;
         }
-        if (devopsEnvCommandDTO.getObject().equals(SERVICE_KIND)) {
-            DevopsServiceDTO devopsServiceDTO = devopsServiceService.baseQuery(devopsEnvCommandDTO.getObjectId());
-            devopsServiceDTO.setStatus(serviceStatus.getStatus());
-            devopsServiceService.updateStatus(devopsServiceDTO);
-        }
-        if (devopsEnvCommandDTO.getObject().equals(INGRESS_KIND)) {
-            DevopsIngressDTO devopsIngressDTO = devopsIngressService.baseQuery(devopsEnvCommandDTO.getObjectId());
-            devopsIngressService.updateStatus(envId, devopsIngressDTO.getName(), ingressStatus.getStatus());
-        }
-        if (devopsEnvCommandDTO.getObject().equals(CERTIFICATE_KIND)) {
-            CertificationDTO certificationDTO = certificationService.baseQueryById(devopsEnvCommandDTO.getObjectId());
-            certificationDTO.setStatus(certificationStatus.getStatus());
-            certificationService.updateStatus(certificationDTO);
-        }
-        // TODO by zmf pvc
-
-        // TODO by zmf pv
     }
 
     @Override

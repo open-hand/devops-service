@@ -50,8 +50,16 @@ public interface DevopsPvMapper extends Mapper<DevopsPvDTO> {
      * @return pv
      */
     DevopsPvDTO queryWithEnvByClusterIdAndName(@Param("clusterId") Long clusterId,
-                                        @Param("name") String name);
+                                               @Param("name") String name);
 
 
     DevopsPvDTO queryWithEnvByPrimaryKey(@Param("pvId") Long pvId);
+
+    /**
+     * 根据id更新状态
+     *
+     * @param id     id
+     * @param status 状态
+     */
+    void updateStatusById(@Param("id") Long id, @Param("status") String status);
 }
