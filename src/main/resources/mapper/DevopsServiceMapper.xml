@@ -226,7 +226,7 @@
         <result property="error" column="error"/>
         <result property="envName" column="env_name"/>
         <result property="envCode" column="env_code"/>
-        <result property="labels" column="labels"/>
+        <result property="selectors" column="selectors"/>
         <result property="endPoints" column="end_points"/>
         <result property="createdBy" column="created_by"/>
         <result property="creationDate" column="creation_date"/>
