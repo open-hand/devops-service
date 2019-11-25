@@ -140,6 +140,7 @@ const PiplelineTable = withRouter(observer((props) => {
         state: {
           pipelineId: id,
           pipelineName: name,
+          backPath: `/devops/pipeline${search}`,
         },
       });
     }
