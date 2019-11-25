@@ -34,6 +34,8 @@ import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
+import io.choerodon.mybatis.autoconfigure.CustomPageRequest;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -806,7 +808,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         }
 
         // 获取项目下所有项目成员
-        PageInfo<UserVO> allProjectMemberPage = getMembersFromProject(PageRequest.of(0, 1), projectId, "");
+        PageInfo<UserVO> allProjectMemberPage = getMembersFromProject(CustomPageRequest.of(0, 0), projectId, "");
 
         // 所有项目成员中有权限的
         allProjectMemberPage.getList().stream().filter(e -> userIds.contains(e.getId())).forEach(e -> {
@@ -914,7 +916,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         // 根据搜索参数查询所有的项目所有者
         Long ownerId = baseServiceClientOperator.queryRoleIdByCode(PROJECT_OWNER);
         PageInfo<IamUserDTO> projectOwners = baseServiceClientOperator.pagingQueryUsersByRoleIdOnProjectLevel(
-                PageRequest.of(0, 1), roleAssignmentSearchVO, ownerId, projectId, false);
+                CustomPageRequest.of(0, 0), roleAssignmentSearchVO, ownerId, projectId, false);
 
         List<Long> ownerIds = projectOwners
                 .getList()
@@ -945,7 +947,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             Long memberRoleId = baseServiceClientOperator.queryRoleIdByCode(PROJECT_MEMBER);
 
             members = baseServiceClientOperator.pagingQueryUsersByRoleIdOnProjectLevel(
-                    PageRequest.of(0, 1), roleAssignmentSearchVO, memberRoleId, projectId, false)
+                    CustomPageRequest.of(0, 0), roleAssignmentSearchVO, memberRoleId, projectId, false)
                     .getList()
                     .stream()
                     .filter(u -> !ownerIds.contains(u.getId()))
@@ -999,7 +1001,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         // 根据参数搜索所有的项目成员
         Long memberRoleId = baseServiceClientOperator.queryRoleIdByCode(PROJECT_MEMBER);
         PageInfo<IamUserDTO> allProjectMembers = baseServiceClientOperator.pagingQueryUsersByRoleIdOnProjectLevel(
-                PageRequest.of(0, 1), roleAssignmentSearchVO, memberRoleId, projectId, false);
+                CustomPageRequest.of(0, 0), roleAssignmentSearchVO, memberRoleId, projectId, false);
         if (allProjectMembers.getList().isEmpty()) {
             return Collections.emptyList();
         }
@@ -1007,7 +1009,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         // 获取项目下所有的项目所有者（带上搜索参数搜索可以获得更精确的结果）
         Long ownerId = baseServiceClientOperator.queryRoleIdByCode(PROJECT_OWNER);
         List<Long> allProjectOwnerIds = baseServiceClientOperator.pagingQueryUsersByRoleIdOnProjectLevel(
-                PageRequest.of(0, 1), roleAssignmentSearchVO, ownerId, projectId, false)
+                CustomPageRequest.of(0, 0), roleAssignmentSearchVO, ownerId, projectId, false)
                 .getList()
                 .stream()
                 .map(IamUserDTO::getId)
@@ -1190,11 +1192,11 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         Long memberId = baseServiceClientOperator.queryRoleIdByCode(PROJECT_MEMBER);
         // 所有项目成员，可能还带有项目所有者的角色
         PageInfo<IamUserDTO> allMemberWithOtherUsersPage = baseServiceClientOperator
-                .pagingQueryUsersByRoleIdOnProjectLevel(PageRequest.of(0, 1), roleAssignmentSearchVO,
+                .pagingQueryUsersByRoleIdOnProjectLevel(CustomPageRequest.of(0, 0), roleAssignmentSearchVO,
                         memberId, projectId, false);
         // 所有项目所有者
         PageInfo<IamUserDTO> allOwnerUsersPage = baseServiceClientOperator
-                .pagingQueryUsersByRoleIdOnProjectLevel(PageRequest.of(0, 1), roleAssignmentSearchVO,
+                .pagingQueryUsersByRoleIdOnProjectLevel(CustomPageRequest.of(0, 0), roleAssignmentSearchVO,
                         ownerId, projectId, false);
         //合并项目所有者和项目成员
         Set<IamUserDTO> iamUserDTOS = new HashSet<>(allMemberWithOtherUsersPage.getList());
