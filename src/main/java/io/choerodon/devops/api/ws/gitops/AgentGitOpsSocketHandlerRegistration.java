@@ -217,6 +217,7 @@ public class AgentGitOpsSocketHandlerRegistration implements SocketHandlerRegist
      */
     @Scheduled(initialDelay = 10 * 1000, fixedRate = 10 * 1000)
     public void sendPing() {
+        logger.info("Sending ping message...");
         for (WebSocketSession session : webSocketSessions) {
             try {
                 session.sendMessage(new PingMessage());
