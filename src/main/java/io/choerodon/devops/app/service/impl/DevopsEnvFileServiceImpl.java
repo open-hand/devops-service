@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.github.pagehelper.PageInfo;
@@ -48,6 +49,9 @@ public class DevopsEnvFileServiceImpl implements DevopsEnvFileService {
     @Override
     public List<DevopsEnvFileErrorVO> listByEnvId(Long envId) {
         String gitlabProjectPath = getGitlabUrl(envId);
+        if ("".equals(gitlabProjectPath)) {
+            return new ArrayList<>();
+        }
         List<DevopsEnvFileErrorDTO> devopsEnvFileErrorDTOS = devopsEnvFileErrorService.baseListByEnvId(envId);
         List<DevopsEnvFileErrorVO> devopsEnvFileErrorVOS = ConvertUtils.convertList(devopsEnvFileErrorDTOS, this::dtoToVo);
         devopsEnvFileErrorVOS.forEach(devopsEnvFileErrorVO -> setCommitAndFileUrl(devopsEnvFileErrorVO, gitlabProjectPath));
@@ -57,6 +61,9 @@ public class DevopsEnvFileServiceImpl implements DevopsEnvFileService {
     @Override
     public PageInfo<DevopsEnvFileErrorVO> pageByEnvId(Long envId, Pageable pageable) {
         String gitlabProjectPath = getGitlabUrl(envId);
+        if ("".equals(gitlabProjectPath)) {
+            return new PageInfo<>();
+        }
         PageInfo<DevopsEnvFileErrorDTO> devopsEnvFileErrorDTOPageInfo = devopsEnvFileErrorService.basePageByEnvId(envId, pageable);
         PageInfo<DevopsEnvFileErrorVO> devopsEnvFileErrorVOPageInfo = ConvertUtils.convertPage(devopsEnvFileErrorDTOPageInfo, this::dtoToVo);
         devopsEnvFileErrorVOPageInfo.getList().forEach(devopsEnvFileErrorVO -> setCommitAndFileUrl(devopsEnvFileErrorVO, gitlabProjectPath));
@@ -127,6 +134,9 @@ public class DevopsEnvFileServiceImpl implements DevopsEnvFileService {
 
     private String getGitlabUrl(Long envId) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
+        if (devopsEnvironmentDTO == null) {
+            return "";
+        }
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
         OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
