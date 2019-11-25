@@ -40,6 +40,22 @@ const InstanceTitle = ({
       PADDING_COLOR,
     },
   } = useMainStore();
+
+  function getVersionName() {
+    let message = '';
+    switch (status) {
+      case 'failed':
+        message = formatMessage({ id: 'deploy_failed' });
+        break;
+      case 'operating':
+        message = formatMessage({ id: 'pending' });
+        break;
+      default:
+        break;
+    }
+    return message;
+  }
+
   return <Fragment>
     <PodCircle
       style={podSize}
@@ -55,7 +71,7 @@ const InstanceTitle = ({
     />
     <span className="c7ncd-page-title-text">{name}</span>
     <span className="c7ncd-page-title-version">
-      ({versionName || (status === 'failed' && formatMessage({ id: 'deploy_failed' }))})
+      ({versionName || getVersionName()})
     </span>
   </Fragment>;
 };
