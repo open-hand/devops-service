@@ -1,11 +1,9 @@
 package io.choerodon.devops.infra.dto;
 
-import io.choerodon.mybatis.entity.BaseDTO;
-
 import javax.persistence.Table;
 
 @Table(name = "devops_pv_project_rel")
-public class DevopsPvProPermissionDTO extends BaseDTO {
+public class DevopsPvProPermissionDTO {
 
     private Long pvId;
 
