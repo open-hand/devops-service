@@ -6,9 +6,9 @@ package io.choerodon.devops.infra.enums;
  */
 public enum PrometheusPVCTypeEnum {
 
-    PROMETHEUS_PVC("Prometheus-PVC"),
-    GRAFANA_PVC("Grafana-PVC"),
-    ALERTMANAGER_PVC("Alertmanager-PVC");
+    PROMETHEUS_PVC("prometheus-pvc"),
+    GRAFANA_PVC("grafana-pvc"),
+    ALERTMANAGER_PVC("alertmanager-pvc");
 
     private final String value;
 
