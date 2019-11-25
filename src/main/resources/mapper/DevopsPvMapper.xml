@@ -63,21 +63,22 @@
 
     <select id="queryById" resultType="io.choerodon.devops.infra.dto.DevopsPvDTO">
         SELECT dpv.id id,
-               dpv.pvc_id pvc_id,
-               dpv.cluster_id cluster_id,
-               dpv.name name,
-               dpv.type type,
-               dpv.description description,
-               dpv.status status,
-               dpv.request_resource request_resource,
-               dpv.access_modes access_modes,
-               dpv.command_id command_id,
-               dpvc.name pvc_name,
-               dc.name cluster_name,
-               dpv.skip_check_project_permission skip_check_project_permission
+        dpv.pvc_id pvc_id,
+        dpv.cluster_id cluster_id,
+        dpv.name name,
+        dpv.type type,
+        dpv.description description,
+        dpv.status status,
+        dpv.request_resource request_resource,
+        dpv.access_modes access_modes,
+        dpv.command_id command_id,
+        dpv.object_version_number,
+        dpvc.name pvc_name,
+        dc.name cluster_name,
+        dpv.skip_check_project_permission skip_check_project_permission
         FROM devops_pv dpv
-                 LEFT JOIN devops_pvc dpvc on dpv.pvc_id = dpvc.id
-                 LEFT JOIN devops_cluster dc on dpv.cluster_id = dc.id
+        LEFT JOIN devops_pvc dpvc on dpv.pvc_id = dpvc.id
+        LEFT JOIN devops_cluster dc on dpv.cluster_id = dc.id
         WHERE dpv.id = #{pvId}
     </select>
 

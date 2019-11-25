@@ -37,6 +37,9 @@ public class DevopsPvVO {
     @ApiModelProperty("是否跳过权限校验")
     private Boolean skipCheckProjectPermission;
 
+    @ApiModelProperty("版本号")
+    private Long ObjectVersionNumber;
+
     public Long getId() {
         return id;
     }
@@ -123,5 +126,13 @@ public class DevopsPvVO {
 
     public void setClusterId(Long clusterId) {
         this.clusterId = clusterId;
+    }
+
+    public Long getObjectVersionNumber() {
+        return ObjectVersionNumber;
+    }
+
+    public void setObjectVersionNumber(Long objectVersionNumber) {
+        ObjectVersionNumber = objectVersionNumber;
     }
 }
