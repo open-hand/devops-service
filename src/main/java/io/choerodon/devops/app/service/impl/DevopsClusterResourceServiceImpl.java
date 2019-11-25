@@ -277,8 +277,6 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
             throw new CommonException("error.prometheus.already.exist");
         }
 
-        createPVC(projectId, devopsPrometheusVO, systemEnvId);
-
         devopsPrometheusDTO.setClusterId(clusterId);
         if (devopsPrometheusMapper.insertSelective(devopsPrometheusDTO) != 1) {
             throw new CommonException("error.insert.prometheus");
@@ -292,15 +290,17 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         devopsClusterResourceDTO.setType(ClusterResourceType.PROMETHEUS.getType());
         devopsClusterResourceDTO.setOperate(ClusterResourceOperateType.INSTALL.getType());
         devopsClusterResourceService.baseCreate(devopsClusterResourceDTO);
+
+        // 创建PVC
+        createPVC(projectId, devopsPrometheusVO, systemEnvId);
         return true;
     }
-
 
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean updatePrometheus(Long projectId, Long clusterId, DevopsPrometheusVO devopsPrometheusVO) {
-        DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
+        DevopsClusterDTO devopsClusterDTO = checkClusterExist(clusterId);
         if (devopsClusterDTO.getSystemEnvId() == null) {
             throw new CommonException("error.cluster.system.envId.null");
         }
@@ -310,9 +310,13 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         if (devopsPrometheusMapper.updateByPrimaryKey(devopsPrometheusDTO) != 1) {
             throw new CommonException("error.prometheus.update");
         }
-        DevopsClusterResourceDTO devopsClusterResource = queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
-        devopsClusterResource.setOperate(ClusterResourceOperateType.UPGRADE.getType());
-        devopsClusterResourceService.baseUpdate(devopsClusterResource);
+        DevopsClusterResourceDTO clusterResourceDTO = queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
+        clusterResourceDTO.setOperate(ClusterResourceOperateType.UPGRADE.getType());
+
+        // 升级prometheus版本
+        AppServiceInstanceDTO appServiceInstanceDTO = componentReleaseService.updateReleaseForPrometheus(devopsPrometheusDTO, clusterResourceDTO.getObjectId(), devopsClusterDTO.getSystemEnvId());
+        clusterResourceDTO.setObjectId(appServiceInstanceDTO.getId());
+        devopsClusterResourceService.baseUpdate(clusterResourceDTO);
         return true;
     }
 

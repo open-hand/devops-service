@@ -542,6 +542,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 addBoundPVC(devopsPvcDTOS, alertmanagerPvId);
 
                 if (devopsPvcDTOS.size() == 3) {
+                    logger.info("Start to install prometheus, clusterId : {} ", devopsEnvironmentDTO.getClusterId());
                     devopsPrometheusDTO.setDevopsPvcDTO(devopsPvcDTOS);
                     devopsClusterResourceService.installPrometheus(devopsEnvironmentDTO.getClusterId(), devopsPrometheusDTO);
                 }
