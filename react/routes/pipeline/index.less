@@ -5,13 +5,29 @@
     padding-bottom: 0;
     padding-top: 0.06rem;
     .@{c7n-pro-prefix}-table-advanced-query-bar {
-      .@{c7n-pro-prefix}-select-multiple {
-        max-width: 2.6rem;
-        width: 22%;
-      }
       .@{c7n-pro-prefix}-select-wrapper {
-        max-width: 2.6rem;
-        width: 22%;
+        width: 2.8rem;
+      }
+      .@{c7n-pro-prefix}-select-multiple-block {
+        background: none;
+        color: rgb(0, 0, 0);
+        padding-right: 0;
+
+        & > div:not(:last-child) {
+          max-width: 100%;
+        }
+
+        &:after {
+          content: ',';
+        }
+
+        &:nth-last-child(2):after {
+          content: none;
+        }
+
+        .icon {
+          display: none;
+        }
       }
     }
     &-execute {

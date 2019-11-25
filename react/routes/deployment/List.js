@@ -317,11 +317,17 @@ const Deployment = withRouter(observer((props) => {
     isLoad && refresh();
   }
 
+  function getBackPath() {
+    const { location: { state } } = props;
+    const { backPath } = state || {};
+    return backPath || '';
+  }
+
   return (
     <Page
       service={permissions}
     >
-      <Header title={<FormattedMessage id="app.head" />}>
+      <Header title={<FormattedMessage id="app.head" />} backPath={getBackPath()}>
         <Permission
           service={['devops-service.app-service-instance.deploy']}
         >
