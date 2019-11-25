@@ -26,7 +26,7 @@ public class PageRequestUtil {
 
     public static String checkSortIsEmpty(Pageable pageable) {
         String index = "";
-        if (pageable.getSort() == null) {
+        if (pageable.getSort() == null || pageable.getSort().isUnsorted()) {
             index = "true";
         }
         return index;
