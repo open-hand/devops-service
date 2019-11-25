@@ -83,6 +83,12 @@ export default ({ formatMessage, projectId, envId, appId }) => {
         name: 'protocol',
         type: 'string', 
         label: formatMessage({ id: 'ist.deploy.ports.protocol' }),
+        dynamicProps: {
+          required: ({ dataSet, record, name }) => {
+            if (!dataSet.parent.current) return false;
+            return dataSet.parent.current.get('protocol') === 'NodePort';
+          },
+        },
       },
     ],
   };

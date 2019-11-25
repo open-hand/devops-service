@@ -141,6 +141,7 @@ const AppModals = observer(() => {
         envId={parentId}
         appId={id} 
         networkStore={networkStore}
+        refresh={refresh}
       />,
     });
   }

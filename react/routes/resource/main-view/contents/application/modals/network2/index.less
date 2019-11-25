@@ -7,30 +7,24 @@
   }
 
   .network-panel-title {
-    display: flex;
-    margin-bottom: 10px;
-
-    i {
-      line-height: 24px;
-      font-size: 16px;
-      padding-right: 5px;
-    }
-
-    &_disabled {
-      color: rgba(0, 0, 0, .36);
-    }
-
-    span {
-      font-size: 16px;
-      font-weight: 500;
-      line-height: 24px;
-      margin-bottom: 10px;
-    }
+    height: 0.22rem;
+    font-size: 0.16rem;
+    color: #000;
+    line-height: 0.22rem;
+    margin-bottom: 0;
+    margin-top: 0.21rem;
   }
 
   .network-panel {
-    margin-bottom: 32px;
+    margin-bottom: 0.32rem;
   }
+  .network-panel-target-select {
+    margin-bottom: -0.14rem;
+  }
+  .type-span, .target-instance {
+    margin-right: 0.6rem;
+  }
+
   .group-port {
     width: 120%;
     .externalIps {
@@ -43,17 +37,32 @@
       width: 100%;
     }
   }
+
+  .type-form {
+    margin-bottom: -0.16rem;
+  }
+
   .network-group-icon, .delete-icon-target {
     position: relative;
-    font-size: 18px;
+    font-size: 0.18rem;
   }
 
   .delete-icon {
     position: relative;
-    font-size: 18px;
-    top: 6px;
+    font-size: 0.18rem;
+    top: 0.06rem;
     &.icon-delete {
       cursor: pointer;
     }
+  }
+
+  .hr {
+    width: 7.4rem;
+    margin-left: -0.25rem;
+    border-bottom: 0.01rem solid #e0e0e0;
+    margin-top: 9px;
+  }
+  .label-form {
+    margin-top: -0.07rem;
   }
 }

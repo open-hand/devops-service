@@ -31,7 +31,7 @@ function StoreProvider(props) {
   const portDs = useMemo(() => new DataSet(PortDataSet({ formatMessage, projectId, envId, appId })), [projectId, envId, appId]);
   const targetLabelsDs = useMemo(() => new DataSet(TargetLabelsDataSet({ formatMessage, keyOptionsDs })), [keyOptionsDs]);
   
-  const formDs = useMemo(() => new DataSet(CreateFormDataSet({ formatMessage, portDs, targetLabelsDs, appInstanceOptionsDs, networkStore, projectId, envId, appId })), [projectId, envId, appId, portDs, targetLabelsDs, appInstanceOptionsDs]);
+  const formDs = useMemo(() => new DataSet(CreateFormDataSet({ formatMessage, portDs, targetLabelsDs, appInstanceOptionsDs, networkStore, projectId, envId, appId })), [projectId, envId, appId]);
 
   const value = {
     ...props,

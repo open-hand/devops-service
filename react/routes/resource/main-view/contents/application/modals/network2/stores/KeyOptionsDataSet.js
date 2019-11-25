@@ -1,6 +1,7 @@
 import _ from 'lodash';
 
 export default (projectId, envId, appId) => ({
+  autoQuery: true,
   transport: {
     read: {
       method: 'get',

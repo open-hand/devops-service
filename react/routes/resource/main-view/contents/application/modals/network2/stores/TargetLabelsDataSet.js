@@ -33,6 +33,13 @@ export default ({ formatMessage, keyOptionsDs }) => {
     }
   }
 
+  const dynamicProps = {
+    required: ({ dataSet, record, name }) => {
+      if (!dataSet.parent.current) return false;
+      return dataSet.parent.current.get('target') === 'param';
+    },
+  };
+
 
   return {
     autoCreate: true,
@@ -45,6 +52,7 @@ export default ({ formatMessage, keyOptionsDs }) => {
         validator: checkKeywords,
         textField: 'key',
         valueField: 'meaning',
+        dynamicProps,
       },
       {
         name: 'value',
@@ -54,6 +62,7 @@ export default ({ formatMessage, keyOptionsDs }) => {
         validator: checkValue,
         textField: 'value',
         valueField: 'meaning',
+        dynamicProps,
       },
     ],
     events: {

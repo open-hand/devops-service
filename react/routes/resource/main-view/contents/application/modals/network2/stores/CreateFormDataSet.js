@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import { map, forOwn } from 'lodash';
 
 export default ({ formatMessage, portDs, targetLabelsDs, appInstanceOptionsDs, networkStore, projectId, envId, appId }) => {
   /**
@@ -35,6 +35,54 @@ export default ({ formatMessage, portDs, targetLabelsDs, appInstanceOptionsDs, n
       return errorMsg;
     }
   }
+
+  function transFormData(data) {
+    const { portDs: portData, targetLabelsDs: targetLabelsData, target, appInstance, name, type, externalIps } = data;
+
+    // NOTE: 转换port的数据，过滤掉不用的数据
+    const ports = map(portData, (value) => ({
+      port: value.port,
+      targetPort: value.port,
+      nodeport: value.nodeport,
+      protocol: value.protocol,
+    }));
+          
+    let targetAppServiceId;
+    let targetInstanceCode;
+    const selectors = {};
+    // 目标对象是实例还是选择器
+    if (target === 'instance') {
+      /**
+       * NOTE: 处理所有实例和单个实例的问题 
+       * 所有实例直接与AppService关联所以此处赋值给targetAppServiceId
+       * 单个实例直接与AppInstnace关联所以此处赋值给targetInstanceCode 
+       */
+      if (appInstance === formatMessage({ id: 'all_instance' })) {
+        targetAppServiceId = appId;
+      } else {
+        targetInstanceCode = appInstance;
+      }
+    } else {
+      // NOTE: 处理selectors,将targetLabels的数组转换成key，value的对象
+      forOwn(targetLabelsDs, (value, key) => {
+        selectors[value.keyword] = value.value;
+      });
+    }
+  
+    return {
+      appServiceId: appId,
+      envId,
+      targetInstanceCode,
+      targetAppServiceId,
+      name,
+      externalIp: externalIps.join(','),
+      type,
+      ports,
+      selectors,
+      endPoints: null,
+    };
+  }
+  
   
   return {
     autoCreate: true,
@@ -68,6 +116,9 @@ export default ({ formatMessage, portDs, targetLabelsDs, appInstanceOptionsDs, n
         options: appInstanceOptionsDs,
         textField: 'code',
         valueField: 'code',
+        dynamicProps: {
+          required: ({ dataSet, record, name }) => record.get('target') !== 'param',
+        },
       },
       {
         name: 'externalIps',
@@ -77,61 +128,42 @@ export default ({ formatMessage, portDs, targetLabelsDs, appInstanceOptionsDs, n
       },
     ],
     transport: {
-      create: ({ data: [data] }) => {
-        /**
-         * NOTE: 转换port的数据，过滤掉不用的数据
-         */
-        const ports = _.map(data.portDs, (value, key) => ({
-          port: value.port,
-          targetPort: value.port,
-          nodeport: value.nodeport,
-          protocol: value.protocol,
-        }));
-
-        
-        let targetAppServiceId;
-        let targetInstanceCode;
-        const selectors = {};
-        // 目标对象是实例还是选择器
-        if (data.target === 'instance') {
-          /**
-           * NOTE: 处理所有实例和单个实例的问题 
-           * 所有实例直接与AppService关联所以此处赋值给targetAppServiceId
-           * 单个实例直接与AppInstnace关联所以此处赋值给targetInstanceCode
-          */
-          if (data.appInstance === formatMessage({ id: 'all_instance' })) {
-            targetAppServiceId = appId;
-          } else {
-            targetInstanceCode = data.appInstance;
-          }
-        } else {
-          /**
-           * NOTE: 处理selectors,将targetLabels的数组转换成key，value的对象
-          */
-          _.forOwn(data.targetLabelsDs, (value, key) => {
-            selectors[value.keyword] = value.value;
-          });
+      create: ({ data: [data] }) => ({
+        method: 'post',
+        url: `/devops/v1/projects/${projectId}/service`,
+        data: transFormData(data),
+      }),
+    },
+    events: {
+      update({ dataSet, record, name, value, oldValue }) {
+        switch (name) {
+          case 'target':
+            handleTargetChange({ targetLabelsDs, value, record, dataSet });
+            break;
+          case 'type':
+            handleTypeChange({ portDs, value, record });
+            break;
+          default:
+            break;
         }
-        
-      
-        const reqData = {
-          appServiceId: appId,
-          envId,
-          targetInstanceCode,
-          targetAppServiceId,
-          name: data.name,
-          externalIp: data.externalIps.join(','),
-          type: data.type,
-          ports,
-          selectors,
-          endPoints: null,
-        };
-        return {
-          method: 'post',
-          url: `/devops/v1/projects/${projectId}/service`,
-          data: reqData,
-        };
       },
     },
   };
 };
+
+function handleTargetChange({ targetLabelsDs, value, record, dataSet }) {
+  const isParam = value === 'param';
+  if (isParam) {
+    record.set('appInstance', null);
+  } else {
+    targetLabelsDs.reset();
+  }
+}
+
+
+function handleTypeChange({ portDs, value, record }) {
+  portDs.reset();
+  if (value !== 'ClusterIP') {
+    record.set('externalIps', null);
+  }
+}
