@@ -186,7 +186,7 @@ public class AgentCommandServiceImpl implements AgentCommandService {
     public void createCertManager(Long clusterId) {
         AgentMsgVO msg = new AgentMsgVO();
         Payload payload = new Payload(
-                CertManagerConstants.CERT_MANAGER_NAME_SPACE,
+                CertManagerConstants.CERT_MANAGER_REALASE_NAME_C7N,
                 certManagerUrl,
                 "cert-manager",
                 CertManagerConstants.CERT_MANAGER_CHART_VERSION,
@@ -427,6 +427,7 @@ public class AgentCommandServiceImpl implements AgentCommandService {
                 clusterId,
                 CertManagerConstants.CERT_MANAGER_REALASE_NAME));
         msg.setType(HelmType.CERT_MANAGER_UNINSTALL.toValue());
+        msg.setPayload("{" + "\"" + CertManagerConstants.RELEASE_NAME + "\"" + ":" + "\"" + CertManagerConstants.CERT_MANAGER_REALASE_NAME + "\"" + "}");
         sendToWebsocket(clusterId, msg);
     }
 }
