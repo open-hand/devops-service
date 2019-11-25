@@ -12,6 +12,7 @@ import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.ConvertUtils;
+import io.choerodon.devops.infra.util.CustomContextUtil;
 import io.choerodon.devops.infra.util.GenerateUUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -483,6 +484,8 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     public void installPrometheus(Long clusterId, DevopsPrometheusDTO devopsPrometheusDTO) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
         DevopsClusterResourceDTO clusterResourceDTO = queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
+        // 设置当前操作用户
+        CustomContextUtil.setUserContext(clusterResourceDTO.getLastUpdatedBy());
         AppServiceInstanceDTO appServiceInstanceDTO = null;
         if (ClusterResourceOperateType.INSTALL.getType().equals(clusterResourceDTO.getOperate())) {
             appServiceInstanceDTO = componentReleaseService.createReleaseForPrometheus(devopsClusterDTO.getSystemEnvId(), devopsPrometheusDTO);
