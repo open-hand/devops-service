@@ -1318,6 +1318,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 devopsEnvCommandService.baseListByObject(ObjectType.PERSISTENTVOLUMECLAIM.getType(), pvcE.getId()).forEach(t -> devopsEnvCommandService.baseDeleteByEnvCommandId(t)));
         devopsPvcService.baseDeleteByEnvId(envId);
 
+        // 删除环境
+        baseDeleteById(envId);
+
         // 删除gitlab库, 删除之前查询是否存在
         if (devopsEnvironmentDTO.getGitlabEnvProjectId() != null) {
             Integer gitlabProjectId = TypeUtil.objToInt(devopsEnvironmentDTO.getGitlabEnvProjectId());
