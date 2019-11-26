@@ -1491,8 +1491,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                                 ServiceStatus.RUNNING,
                                 IngressStatus.RUNNING,
                                 CertificationStatus.ACTIVE,
-                                PvStatus.valueOf(newCommand.getResourceStatus()),
-                                PvcStatus.valueOf(newCommand.getResourceStatus()));
+                                PvStatus.forValue(newCommand.getResourceStatus()),
+                                PvcStatus.forValue(newCommand.getResourceStatus()));
                     } else {
                         devopsEnvCommandDTO.setStatus(CommandStatus.FAILED.getStatus());
                         devopsEnvCommandDTO.setError("The deploy is time out!");
