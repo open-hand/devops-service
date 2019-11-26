@@ -6,11 +6,17 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pvc.groovy') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，PVC id', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
-            column(name: 'name', type: 'VARCHAR(32)', remarks: 'PVC名称')
-            column(name: 'env_id', type: 'BIGINT UNSIGNED', remarks: '环境id')
+            column(name: 'name', type: 'VARCHAR(40)', remarks: 'PVC名称'){
+                constraints(nullable: false)
+            }
+            column(name: 'env_id', type: 'BIGINT UNSIGNED', remarks: '环境id'){
+                constraints(nullable: false)
+            }
             column(name: 'pv_id', type: 'BIGINT UNSIGNED', remarks: '绑定PV id')
             column(name: 'pv_name', type: 'VARCHAR(32)', remarks: '绑定PV 名称')
-            column(name: 'project_id', type: 'BIGINT UNSIGNED', remarks: '项目id')
+            column(name: 'project_id', type: 'BIGINT UNSIGNED', remarks: '项目id'){
+                constraints(nullable: false)
+            }
             column(name: 'access_modes', type: 'VARCHAR(32)', remarks: '访问模式')
             column(name: 'request_resource', type: 'VARCHAR(32)', remarks: '申请资源大小')
             column(name: 'status', type: 'VARCHAR(32)', remarks: 'PVC状态')

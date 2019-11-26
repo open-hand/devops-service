@@ -6,12 +6,18 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pv') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: 'id', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
-            column(name: 'name', type: 'VARCHAR(30)', remarks: 'pv名称')
-            column(name: 'type', type: 'VARCHAR(10)', remarks: 'pv存储类型')
+            column(name: 'name', type: 'VARCHAR(40)', remarks: 'pv名称'){
+                constraints(nullable: false)
+            }
+            column(name: 'type', type: 'VARCHAR(10)', remarks: 'pv存储类型'){
+                constraints(nullable: false)
+            }
             column(name: 'description', type: 'VARCHAR(40)', remarks: 'pv描述')
             column(name: 'status', 'type':'VARCHAR(32)' ,remarks: 'pv状态')
             column(name: 'pvc_id', type: 'BIGINT UNSIGNED', remarks: '关联的pvc')
-            column(name: 'cluster_id',type: 'BIGINT UNSIGNED', remarks: '所属集群')
+            column(name: 'cluster_id',type: 'BIGINT UNSIGNED', remarks: '所属集群'){
+                constraints(nullable: false)
+            }
             column(name: 'storage', type: 'VARCHAR(20)',remarks: '存储容量')
             column(name: 'access_modes', type: 'VARCHAR(20)', remarks: '访问类型')
             column(name: 'skip_check_project_permission', type: 'TINYINT(1)',defaultValue: 1,remarks: '指定权限,是否只属于特定项目，默认为1')
