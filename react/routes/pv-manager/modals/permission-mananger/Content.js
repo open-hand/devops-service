@@ -77,7 +77,7 @@ export default injectIntl(observer(() => {
 
   function renderAction() {
     const actionData = [{
-      text: formatMessage({ id: `${intlPrefix}.permission.delete` }),
+      text: formatMessage({ id: `${intlPrefix}.permission.delete.title` }),
       action: handleDelete,
     }];
     return <Action data={actionData} />;

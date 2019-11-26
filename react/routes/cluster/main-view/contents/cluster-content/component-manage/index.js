@@ -1,7 +1,6 @@
 import React, { Fragment, useMemo } from 'react';
 import { Modal, Spin } from 'choerodon-ui/pro';
 import map from 'lodash/map';
-import sortBy from 'lodash/sortBy';
 import { observer } from 'mobx-react-lite';
 import { useClusterMainStore } from '../../../stores';
 import { useClusterContentStore } from '../stores';
@@ -198,6 +197,7 @@ export default observer((props) => {
       children: <Spin />,
       okCancel: false,
       okText: formatMessage({ id: 'iknow' }),
+      footer: null,
     });
     const res = await contentStore.checkUninstallCert(projectId, clusterId);
     if (handlePromptError(res)) {
@@ -207,12 +207,16 @@ export default observer((props) => {
           okText: formatMessage({ id: 'uninstall' }),
           okCancel: true,
           onOk: handleUninstallCert,
+          footer: (okBtn, cancelBtn) => <div>{okBtn}{cancelBtn}</div>,
         });
       } else {
         deleteModal.update({
           children: formatMessage({ id: `${intlPrefix}.cert.uninstall.disabled` }),
+          footer: (okBtn) => okBtn,
         });
       }
+    } else {
+      deleteModal.close(true);
     }
   }
 
