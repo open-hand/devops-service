@@ -9,7 +9,7 @@ alertmanager:
 grafana:
   persistence:
     enabled: true
-      existingClaim: {{grafana-pvc}}
+    existingClaim: {{grafana-pvc}}
   defaultPassword: {{adminPassword}}
   externalDomain:  {{host}}
 global:
