@@ -297,11 +297,11 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
                     .orElseThrow(() -> new CommonException("error.pv.not.exists"));
         }
 
-        if (devopsPvDTO.getName() != null) {
+        if (devopsPvDTO.getPvcName() != null) {
             throw new CommonException("error.pv.bound");
         }
 
-        devopsPvDTO.setName(devopsPvcReqVO.getName());
+        devopsPvDTO.setPvcName(devopsPvcReqVO.getName());
         devopsPvMapper.insert(devopsPvDTO);
 
         devopsPvcDTO.setPvName(devopsPvDTO.getName());
