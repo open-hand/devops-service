@@ -43,7 +43,7 @@ public class DevopsPrometheusDTO extends BaseDTO {
 
     @ApiModelProperty("pvc")
     @Transient
-    private List<DevopsPvcDTO> devopsPvcDTO;
+    private List<DevopsPvcDTO> devopsPvcList;
 
     public Long getId() {
         return id;
@@ -85,12 +85,12 @@ public class DevopsPrometheusDTO extends BaseDTO {
         this.clusterCode = clusterCode;
     }
 
-    public List<DevopsPvcDTO> getDevopsPvcDTO() {
-        return devopsPvcDTO;
+    public List<DevopsPvcDTO> getDevopsPvcList() {
+        return devopsPvcList;
     }
 
-    public void setDevopsPvcDTO(List<DevopsPvcDTO> devopsPvcDTO) {
-        this.devopsPvcDTO = devopsPvcDTO;
+    public void setDevopsPvcList(List<DevopsPvcDTO> devopsPvcList) {
+        this.devopsPvcList = devopsPvcList;
     }
 
     public Long getPrometheusPvId() {
