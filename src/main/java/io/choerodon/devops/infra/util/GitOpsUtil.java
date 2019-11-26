@@ -111,8 +111,8 @@ public class GitOpsUtil {
     /**
      * 根据资源名称对资源进行分拣处理，从所有涉及的资源分拣出哪些是新增的，更新的和删除的
      *
-     * @param beforeResourceNames 此处操作前数据库的所有资源名称
-     * @param all                 所有涉及的资源，分类之后这个列表中存放的是待删除的资源
+     * @param beforeResourceNames 此处操作前数据库的所有资源名称，分类之后这个列表中存放的是待删除的资源
+     * @param all                 所有涉及的资源
      * @param add                 放置新增的资源的容器，分类之后将需要更新的资源放入此处，建议传入时为空
      * @param update              放置更新的资源的容器，分类之后将需要更新的资源放入此处，建议传入时为空
      * @param getName             获取资源的名称的逻辑
@@ -122,12 +122,10 @@ public class GitOpsUtil {
                                            List<T> add,
                                            List<T> update,
                                            Function<T, String> getName) {
-        Iterator<T> iterator = all.iterator();
-        while (iterator.hasNext()) {
-            T obj = iterator.next();
+        for (T obj : all) {
             if (beforeResourceNames.contains(getName.apply(obj))) {
                 update.add(obj);
-                iterator.remove();
+                beforeResourceNames.remove(getName.apply(obj));
             } else {
                 add.add(obj);
             }
