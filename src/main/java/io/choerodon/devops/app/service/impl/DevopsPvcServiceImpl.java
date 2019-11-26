@@ -302,7 +302,7 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
         }
 
         devopsPvDTO.setPvcName(devopsPvcReqVO.getName());
-        devopsPvMapper.insert(devopsPvDTO);
+        devopsPvMapper.updateByPrimaryKeySelective(devopsPvDTO);
 
         devopsPvcDTO.setPvName(devopsPvDTO.getName());
         devopsPvcDTO.setRequestResource(devopsPvDTO.getRequestResource());
