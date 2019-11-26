@@ -528,7 +528,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         devopsPvcDTOList.add(prometheusPvcDTO);
         devopsPvcDTOList.add(grafanaPvcDTO);
         devopsPvcDTOList.add(alertmanagerDTO);
-        devopsPrometheusDTO.setDevopsPvcDTO(devopsPvcDTOList);
+        devopsPrometheusDTO.setDevopsPvcList(devopsPvcDTOList);
     }
 
     private Boolean checkValidity(Date date, Date validFrom, Date validUntil) {
