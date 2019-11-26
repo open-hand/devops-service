@@ -28,9 +28,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pvc.groovy') {
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
 
-        addUniqueConstraint(tableName: 'devops_pvc', constraintName: 'uk_env_id_pvc_name', columnNames: 'env_id,name')
+        addUniqueConstraint(tableName: 'devops_pvc', constraintName: 'uk_devops_pvc_env_id_pvc_name', columnNames: 'env_id,name')
 
-        createIndex(indexName: "idx_pvc_name", tableName: "devops_pvc") {
+        createIndex(indexName: "idx_devops_pvc_name", tableName: "devops_pvc") {
             column(name: "name")
         }
     }
