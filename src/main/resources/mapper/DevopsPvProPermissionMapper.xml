@@ -13,7 +13,7 @@
         project_id=#{projectId}
         AND
         pv_id IN
-        <foreach collection="pvIds" item="pvId" separator="," open="(" close=",">
+        <foreach collection="pvIds" item="pvId" separator="," open="(" close=")">
             #{pvId}
         </foreach>
     </delete>
