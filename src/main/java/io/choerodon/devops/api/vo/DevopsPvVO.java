@@ -26,7 +26,7 @@ public class DevopsPvVO {
     private String type;
 
     @ApiModelProperty("关联PVC名称")
-    private Long pvcName;
+    private String pvcName;
 
     @ApiModelProperty("访问模式")
     private String accessModes;
@@ -88,11 +88,11 @@ public class DevopsPvVO {
         this.type = type;
     }
 
-    public Long getPvcName() {
+    public String getPvcName() {
         return pvcName;
     }
 
-    public void setPvcName(Long pvcName) {
+    public void setPvcName(String pvcName) {
         this.pvcName = pvcName;
     }
 
