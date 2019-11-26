@@ -2,6 +2,8 @@ package io.choerodon.devops.app.service.impl;
 
 import javax.annotation.Nullable;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -27,6 +29,8 @@ import io.choerodon.devops.infra.util.*;
  */
 @Service
 public class ComponentReleaseServiceImpl implements ComponentReleaseService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ComponentReleaseServiceImpl.class);
 
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
@@ -63,6 +67,7 @@ public class ComponentReleaseServiceImpl implements ComponentReleaseService {
 
         String values = ComponentValuesTemplateUtil.convert(componentType, componentDTO);
 
+        LOGGER.info("Yaml values is {}", values);
         //校验values
         FileUtil.checkYamlFormat(values);
 
