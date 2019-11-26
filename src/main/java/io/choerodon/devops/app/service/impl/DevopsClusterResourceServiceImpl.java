@@ -487,6 +487,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         // 设置当前操作用户
         CustomContextUtil.setUserContext(clusterResourceDTO.getLastUpdatedBy());
         AppServiceInstanceDTO appServiceInstanceDTO = null;
+        devopsPrometheusDTO.setClusterCode(devopsClusterDTO.getCode());
         if (ClusterResourceOperateType.INSTALL.getType().equals(clusterResourceDTO.getOperate())) {
             appServiceInstanceDTO = componentReleaseService.createReleaseForPrometheus(devopsClusterDTO.getSystemEnvId(), devopsPrometheusDTO);
             clusterResourceDTO.setObjectId(appServiceInstanceDTO.getId());
