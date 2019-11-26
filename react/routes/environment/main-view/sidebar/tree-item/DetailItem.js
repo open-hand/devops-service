@@ -52,8 +52,7 @@ function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
       key: deleteKey,
       title: formatMessage({ id: `${intlPrefix}.delete.title` }, { name }),
       children: <Spin />,
-      okCancel: false,
-      okText: formatMessage({ id: 'iknow' }),
+      footer: null,
     });
 
     const res = await checkStatus();
@@ -66,8 +65,12 @@ function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
         okText: formatMessage({ id: 'delete' }),
         okProps: { color: 'red' },
         cancelProps: { color: 'dark' },
-        okCancel: true,
         onOk: handleDelete,
+        footer: ((okBtn, cancelBtn) => (
+          <Fragment>
+            {okBtn}{cancelBtn}
+          </Fragment>
+        )),
       });
     } else {
       deleteModal.update({
@@ -142,23 +145,36 @@ function DetailItem({ record, search, intl: { formatMessage }, intlPrefix }) {
       key: effectKey,
       title: formatMessage({ id: `${intlPrefix}.stop.title` }, { name }),
       children: <Spin />,
-      okCancel: false,
-      okText: formatMessage({ id: 'iknow' }),
+      footer: null,
     });
     const res = await checkStatus();
     if (res) {
       const result = await mainStore.checkEffect(projectId, envId);
+
       if (handlePromptError(result)) {
         effectModal.update({
           children: formatMessage({ id: `${intlPrefix}.stop.des` }),
           okText: formatMessage({ id: 'ok' }),
           okCancel: true,
           onOk: () => handleEffect(false),
+          footer: ((okBtn, cancelBtn) => (
+            <Fragment>
+              {okBtn}{cancelBtn}
+            </Fragment>
+          )),
         });
-      } else {
+      } else if (!result.failed) {
         effectModal.update({
           children: formatMessage({ id: `${intlPrefix}.no.stop.des` }),
+          okText: formatMessage({ id: 'iknow' }),
+          footer: ((okBtn, cancelBtn) => (
+            <Fragment>
+              {okBtn}
+            </Fragment>
+          )),
         });
+      } else {
+        effectModal.close();
       }
     } else {
       effectModal.update({

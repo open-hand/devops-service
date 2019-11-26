@@ -15,6 +15,7 @@ import ImportForm from './modal/import-form';
 import StatusTag from '../components/status-tag';
 
 import './index.less';
+import { handlePromptError } from '../../../utils';
 
 const { Column } = Table;
 const modalKey1 = Modal.key();
@@ -259,40 +260,48 @@ const ListView = withRouter(observer((props) => {
 
   function openStop(record) {
     const id = record.get('id');
-    
+
     const stopModal = Modal.open({
       key: modalKey3,
       title: formatMessage({ id: `${intlPrefix}.check` }),
       children: <Spin />,
-      okCancel: false,
-      okText: formatMessage({ id: 'cancel' }),
+      footer: null,
     });
 
     appServiceStore.checkAppService(projectId, id).then((res) => {
-      const { checkResources, checkRule } = res;
-      const status = checkResources || checkRule;
-      let childrenContent;
+      if (handlePromptError(res)) {
+        const { checkResources, checkRule } = res;
+        const status = checkResources || checkRule;
+        let childrenContent;
 
-      if (!status) {
-        childrenContent = <FormattedMessage id={`${intlPrefix}.stop.tips`} />;
-      } else if (checkResources && !checkRule) {
-        childrenContent = formatMessage({ id: `${intlPrefix}.has.resource` });
-      } else if (!checkResources && checkRule) {
-        childrenContent = formatMessage({ id: `${intlPrefix}.has.rules` });
+        if (!status) {
+          childrenContent = <FormattedMessage id={`${intlPrefix}.stop.tips`} />;
+        } else if (checkResources && !checkRule) {
+          childrenContent = formatMessage({ id: `${intlPrefix}.has.resource` });
+        } else if (!checkResources && checkRule) {
+          childrenContent = formatMessage({ id: `${intlPrefix}.has.rules` });
+        } else {
+          childrenContent = formatMessage({ id: `${intlPrefix}.has.both` });
+        }
+
+        const statusObj = {
+          title: status ? formatMessage({ id: `${intlPrefix}.cannot.stop` }, { name: listDs.current.get('name') }) : formatMessage({ id: `${intlPrefix}.stop` }, { name: listDs.current.get('name') }),
+          // eslint-disable-next-line no-nested-ternary
+          children: childrenContent,
+          okCancel: !status,
+          onOk: () => (status ? stopModal.close() : handleChangeActive(false)),
+          okText: status ? formatMessage({ id: 'iknow' }) : formatMessage({ id: 'stop' }),
+          footer: ((okBtn, cancelBtn) => (
+            <Fragment>
+              {okBtn}
+              {!status && cancelBtn}
+            </Fragment>
+          )),
+        };
+        stopModal.update(statusObj);
       } else {
-        childrenContent = formatMessage({ id: `${intlPrefix}.has.both` });
+        stopModal.close();
       }
-
-      const statusObj = {
-        title: status ? formatMessage({ id: `${intlPrefix}.cannot.stop` }, { name: listDs.current.get('name') }) : formatMessage({ id: `${intlPrefix}.stop` }, { name: listDs.current.get('name') }),
-        // eslint-disable-next-line no-nested-ternary
-        children: childrenContent,
-        okCancel: !status,
-        onOk: () => (status ? stopModal.close() : handleChangeActive(false)),
-        okText: status ? formatMessage({ id: 'iknow' }) : formatMessage({ id: 'stop' }),
-      };
-
-      stopModal.update(statusObj);
     }).catch((err) => {
       Choerodon.handleResponseError(err);
     });

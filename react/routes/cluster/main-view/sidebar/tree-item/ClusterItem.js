@@ -52,12 +52,11 @@ function ClusterItem({
       key: deleteModalKey,
       title: formatMessage({ id: `${intlPrefix}.action.delete.title` }, { name: clusterName }),
       children: <Spin />,
-      okCancel: false,
-      okText: formatMessage({ id: 'iknow' }),
+      footer: null,
     });
     const res = await mainStore.deleteCheck(projectId, record.get('id'));
     if (res && (res.checkEnv || res.checkPV)) {
-      let message = ''; 
+      let message = '';
       if (res.checkPV) {
         message = formatMessage({ id: 'c7ncd.cluster.action.can\'t.delete.pv' });
       }
@@ -90,6 +89,11 @@ function ClusterItem({
         children: modalContent,
         onOk: handleDelete,
         okCancel: true,
+        footer: ((okBtn, cancelBtn) => (
+          <Fragment>
+            {okBtn}{cancelBtn}
+          </Fragment>
+        )),
         okText: formatMessage({ id: 'cluster.del.confirm' }),
       });
     }
