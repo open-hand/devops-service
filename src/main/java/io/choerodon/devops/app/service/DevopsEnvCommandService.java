@@ -6,6 +6,8 @@ import java.util.List;
 import com.github.pagehelper.PageInfo;
 
 import org.springframework.data.domain.Pageable;
+
+import io.choerodon.devops.api.vo.kubernetes.Command;
 import io.choerodon.devops.infra.dto.DevopsEnvCommandDTO;
 
 /**
@@ -35,4 +37,12 @@ public interface DevopsEnvCommandService {
     List<DevopsEnvCommandDTO> baseListByObject(String objectType, Long objectId);
 
     void baseDeleteByEnvCommandId(DevopsEnvCommandDTO devopsEnvCommandDTO);
+
+    /**
+     * 列出三分钟以上还在处理中状态的实例相关的command
+     * @param envId 环境id
+     * @param beforeDate 特定时间字符串，格式为：'yyyy-MM-dd HH:mm:ss'
+     * @return commands
+     */
+    List<Command> listInstanceCommandsToSync(Long envId, String beforeDate);
 }

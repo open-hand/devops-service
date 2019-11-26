@@ -6,10 +6,11 @@ import java.util.List;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import org.springframework.data.domain.Pageable;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.kubernetes.Command;
 import io.choerodon.devops.app.service.DevopsCommandEventService;
 import io.choerodon.devops.app.service.DevopsEnvCommandLogService;
 import io.choerodon.devops.app.service.DevopsEnvCommandService;
@@ -113,5 +114,10 @@ public class DevopsEnvCommandServiceImpl implements DevopsEnvCommandService {
         devopsEnvCommandLogService.baseDeleteByCommandId(devopsEnvCommandDTO.getId());
         devopsCommandEventService.baseDeleteByCommandId(devopsEnvCommandDTO.getId());
         devopsEnvCommandMapper.deleteByPrimaryKey(devopsEnvCommandDTO.getId());
+    }
+
+    @Override
+    public List<Command> listInstanceCommandsToSync(Long envId, String beforeDate) {
+        return devopsEnvCommandMapper.listCommandsToSync(envId, beforeDate);
     }
 }

@@ -1,9 +1,28 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.io.IOException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import io.kubernetes.client.JSON;
+import io.kubernetes.client.models.*;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
@@ -23,30 +42,13 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
 
-import io.kubernetes.client.JSON;
-import io.kubernetes.client.models.*;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
-
-import java.io.IOException;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 /**
  * Created by Zenger on 2018/4/17.
  */
 @Service
 public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
+    private static final int THREE_MINUTE_MILLISECONDS = 3 * 60 * 1000;
+    private static final String DATE_PATTERN = "yyyy-MM-dd HH:mm:ss";
 
     public static final String CREATE_TYPE = "create";
     public static final String UPDATE_TYPE = "update";
@@ -1365,96 +1367,16 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
      * @return command列表
      */
     private List<Command> getCommandsToSync(Long envId) {
-        // TODO 这个方法内的SQL待优化
-        List<Command> commandsToSend = new ArrayList<>();
-        List<Command> removeCommands = new ArrayList<>();
-        // instance
-        commandsToSend.addAll(appServiceInstanceService
-                .baseListByEnvId(envId)
-                .stream()
-                .filter(i -> i.getCommandId() != null)
-                .map(i -> constructCommand(i.getCommandId(), INSTANCE_KIND, i.getCode()))
-                .collect(Collectors.toList()));
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(DATE_PATTERN);
 
-        // service
-        commandsToSend.addAll(devopsServiceService
-                .baseListByEnvId(envId)
-                .stream()
-                .filter(i -> i.getCommandId() != null)
-                .map(i -> constructCommand(i.getCommandId(), SERVICE_KIND, i.getName()))
-                .collect(Collectors.toList()));
+        // 获取三分钟以前的时间
+        Date threeMinutesBefore = new Date(System.currentTimeMillis() - THREE_MINUTE_MILLISECONDS);
+        String dateString = simpleDateFormat.format(threeMinutesBefore);
 
-        // ingress
-        commandsToSend.addAll(devopsIngressService
-                .baseListByEnvId(envId)
-                .stream()
-                .filter(i -> i.getCommandId() != null)
-                .map(i -> constructCommand(i.getCommandId(), INGRESS_KIND, i.getName()))
-                .collect(Collectors.toList()));
-
-        // certification
-        commandsToSend.addAll(certificationService
-                .baseListByEnvId(envId)
-                .stream()
-                .filter(i -> i.getCommandId() != null)
-                .map(i -> constructCommand(i.getCommandId(), CERTIFICATE_KIND, i.getName()))
-                .collect(Collectors.toList()));
-
-        // configMap
-        commandsToSend.addAll(devopsConfigMapService
-                .baseListByEnv(envId)
-                .stream()
-                .filter(i -> i.getCommandId() != null)
-                .map(i -> constructCommand(i.getCommandId(), CONFIGMAP_KIND, i.getName()))
-                .collect(Collectors.toList()));
-
-        // secret
-        commandsToSend.addAll(devopsSecretService
-                .baseListByEnv(envId)
-                .stream()
-                .filter(i -> i.getCommandId() != null)
-                .map(i -> constructCommand(i.getCommandId(), SECRET_KIND, i.getName()))
-                .collect(Collectors.toList()));
-
-        // pvc
-        commandsToSend.addAll(devopsPvcService
-                .baseListByEnvId(envId)
-                .stream()
-                .filter(i -> i.getCommandId() != null)
-                .map(i -> constructCommand(i.getCommandId(), PERSISTENT_VOLUME_CLAIM_KIND, i.getName()))
-                .collect(Collectors.toList()));
-
-        // pv
-        commandsToSend.addAll(devopsPvService
-                .baseListByEnvId(envId)
-                .stream()
-                .filter(i -> i.getCommandId() != null)
-                .map(i -> constructCommand(i.getCommandId(), PERSISTENT_VOLUME_KIND, i.getName()))
-                .collect(Collectors.toList()));
-
-        Date d = new Date();
-        if (!commandsToSend.isEmpty()) {
-            commandsToSend.forEach(command -> {
-                DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(command.getId());
-                command.setCommit(devopsEnvCommandDTO.getSha());
-                if (!CommandStatus.OPERATING.getStatus().equals(devopsEnvCommandDTO.getStatus()) || (CommandStatus.OPERATING.getStatus().equals(devopsEnvCommandDTO.getStatus()) && d.getTime() - devopsEnvCommandDTO.getLastUpdateDate().getTime() <= 180000)) {
-                    removeCommands.add(command);
-                }
-            });
-            commandsToSend.removeAll(removeCommands);
-        }
-
+        List<Command> commandsToSend = devopsEnvCommandService.listInstanceCommandsToSync(envId, dateString);
+        logger.debug("Sending commands to sync. The size is {}", commandsToSend.size());
         return commandsToSend;
     }
-
-    private Command constructCommand(Long commandId, String resourceKind, String resourceName) {
-        Command command = new Command();
-        command.setId(commandId);
-        command.setResourceType(resourceKind);
-        command.setResourceName(resourceName);
-        return command;
-    }
-
 
     @Override
     public void resourceStatusSync(String key, String msg, Long clusterId) {
