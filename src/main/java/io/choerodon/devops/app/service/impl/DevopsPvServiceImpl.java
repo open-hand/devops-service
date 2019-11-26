@@ -463,7 +463,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
     @Override
     public List<DevopsPvDTO> baseListByEnvId(Long envId) {
         DevopsPvDTO searchCondition = new DevopsPvDTO();
-        searchCondition.setEnvId(Objects.requireNonNull(envId));
+        searchCondition.setClusterId(Objects.requireNonNull(devopsEnvironmentService.baseQueryById(envId).getClusterId()));
         return devopsPvMapper.select(searchCondition);
     }
 
