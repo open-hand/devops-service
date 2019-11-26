@@ -293,7 +293,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         devopsClusterResourceService.baseCreate(devopsClusterResourceDTO);
 
         // 创建PVC
-        createPVC(projectId, devopsPrometheusVO, systemEnvId);
+        createPVC(projectId, devopsPrometheusVO, systemEnvId, clusterId);
         return true;
     }
 
@@ -530,11 +530,11 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
                 && date.after(validFrom) && date.before(validUntil);
     }
 
-    private DevopsPvcReqVO operatePV(Long pvId, Long envId, String name) {
+    private DevopsPvcReqVO operatePV(Long pvId, Long envId, String name, Long clusterId) {
         DevopsPvcReqVO devopsPvcReqVO = new DevopsPvcReqVO();
         DevopsPvVO devopsPvVO = devopsPvService.queryById(pvId);
         devopsPvcReqVO.setPvId(devopsPvVO.getId());
-        devopsPvcReqVO.setName(name);
+        devopsPvcReqVO.setName(name + "-" + clusterId);
         devopsPvcReqVO.setAccessModes(devopsPvVO.getAccessModes());
         devopsPvcReqVO.setRequestResource(devopsPvVO.getRequestResource());
         devopsPvcReqVO.setEnvId(envId);
@@ -545,12 +545,13 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
      * 创建与安装Prometheus相关的PVC
      * @param projectId
      * @param devopsPrometheusVO
+     * @param clusterId
      * @param systemEnvId
      */
-    private void createPVC(Long projectId, DevopsPrometheusVO devopsPrometheusVO, Long systemEnvId) {
-        DevopsPvcReqVO prometheusPvcReqVO = operatePV(devopsPrometheusVO.getPrometheusPvId(), systemEnvId, PrometheusPVCTypeEnum.PROMETHEUS_PVC.value());
-        DevopsPvcReqVO grafanaPvcReqVO = operatePV(devopsPrometheusVO.getGrafanaPvId(), systemEnvId, PrometheusPVCTypeEnum.GRAFANA_PVC.value());
-        DevopsPvcReqVO alertmanagerPvcReqVO = operatePV(devopsPrometheusVO.getAlertmanagerPvId(), systemEnvId, PrometheusPVCTypeEnum.ALERTMANAGER_PVC.value());
+    private void createPVC(Long projectId, DevopsPrometheusVO devopsPrometheusVO, Long systemEnvId, Long clusterId) {
+        DevopsPvcReqVO prometheusPvcReqVO = operatePV(devopsPrometheusVO.getPrometheusPvId(), systemEnvId, PrometheusPVCTypeEnum.PROMETHEUS_PVC.value(), clusterId);
+        DevopsPvcReqVO grafanaPvcReqVO = operatePV(devopsPrometheusVO.getGrafanaPvId(), systemEnvId, PrometheusPVCTypeEnum.GRAFANA_PVC.value(), clusterId);
+        DevopsPvcReqVO alertmanagerPvcReqVO = operatePV(devopsPrometheusVO.getAlertmanagerPvId(), systemEnvId, PrometheusPVCTypeEnum.ALERTMANAGER_PVC.value(), clusterId);
         devopsPvcService.create(projectId, prometheusPvcReqVO);
         devopsPvcService.create(projectId, grafanaPvcReqVO);
         devopsPvcService.create(projectId, alertmanagerPvcReqVO);
