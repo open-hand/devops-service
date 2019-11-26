@@ -613,7 +613,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         // 筛选容量大于或等于pvc容量
         if (pvcStorage != null) {
             return devopsPvVOList.stream()
-                    .filter((e) -> compareResource(e.getRequestResource(), pvcStorage) > 0 && e.getName() == null)
+                    .filter((e) -> compareResource(e.getRequestResource(), pvcStorage) > 0 && e.getPvcName() == null)
                     .collect(Collectors.toList());
         } else {
             return devopsPvVOList.stream()
