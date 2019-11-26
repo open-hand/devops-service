@@ -65,6 +65,7 @@ public class ComponentReleaseServiceImpl implements ComponentReleaseService {
         //校验环境相关信息
         devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
 
+        LOGGER.info("Current installing component is {}", componentDTO);
         String values = ComponentValuesTemplateUtil.convert(componentType, componentDTO);
 
         LOGGER.info("Yaml values is {}", values);
