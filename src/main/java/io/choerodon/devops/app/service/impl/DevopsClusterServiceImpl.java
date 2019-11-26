@@ -219,11 +219,14 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
                 //如果在PV里面有未非配权限的项目，则删除
                 List<DevopsPvProPermissionDTO> devopsPvProPermissionDTOList = devopsPvProPermissionMapper.listByClusterId(update.getClusterId());
-
-                List<DevopsPvProPermissionDTO> devopsPvProPermissionDTOToDeleteList = devopsPvProPermissionDTOList.stream()
-                        .filter(e -> !update.getProjectIds().contains(e.getProjectId()))
-                        .collect(Collectors.toList());
-                devopsPvProPermissionMapper.batchDelete(devopsPvProPermissionDTOToDeleteList);
+                if (!devopsPvProPermissionDTOList.isEmpty()) {
+                    List<DevopsPvProPermissionDTO> devopsPvProPermissionDTOToDeleteList = devopsPvProPermissionDTOList.stream()
+                            .filter(e -> !update.getProjectIds().contains(e.getProjectId()))
+                            .collect(Collectors.toList());
+                    if (!devopsPvProPermissionDTOToDeleteList.isEmpty()) {
+                        devopsPvProPermissionMapper.batchDelete(devopsPvProPermissionDTOToDeleteList);
+                    }
+                }
 
             }
         } else {
