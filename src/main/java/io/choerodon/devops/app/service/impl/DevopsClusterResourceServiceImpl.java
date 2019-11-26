@@ -311,6 +311,8 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         if (devopsPrometheusMapper.updateByPrimaryKey(devopsPrometheusDTO) != 1) {
             throw new CommonException("error.prometheus.update");
         }
+        // 添加prometheus挂载的pvc
+        addPvcList(devopsPrometheusDTO);
         DevopsClusterResourceDTO clusterResourceDTO = queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
         clusterResourceDTO.setOperate(ClusterResourceOperateType.UPGRADE.getType());
 
@@ -488,15 +490,8 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         CustomContextUtil.setUserContext(clusterResourceDTO.getLastUpdatedBy());
         AppServiceInstanceDTO appServiceInstanceDTO = null;
         devopsPrometheusDTO.setClusterCode(devopsClusterDTO.getCode());
-        if (ClusterResourceOperateType.INSTALL.getType().equals(clusterResourceDTO.getOperate())) {
-            appServiceInstanceDTO = componentReleaseService.createReleaseForPrometheus(devopsClusterDTO.getSystemEnvId(), devopsPrometheusDTO);
-            clusterResourceDTO.setObjectId(appServiceInstanceDTO.getId());
-        }
-        if (ClusterResourceOperateType.UPGRADE.getType().equals(clusterResourceDTO.getOperate())) {
-            appServiceInstanceDTO = componentReleaseService.updateReleaseForPrometheus(devopsPrometheusDTO, clusterResourceDTO.getObjectId(), devopsClusterDTO.getSystemEnvId());
-            clusterResourceDTO.setObjectId(appServiceInstanceDTO.getId());
-        }
-        devopsPrometheusMapper.updateByPrimaryKeySelective(devopsPrometheusDTO);
+        appServiceInstanceDTO = componentReleaseService.createReleaseForPrometheus(devopsClusterDTO.getSystemEnvId(), devopsPrometheusDTO);
+        clusterResourceDTO.setObjectId(appServiceInstanceDTO.getId());
         devopsClusterResourceService.baseUpdate(clusterResourceDTO);
     }
 
@@ -524,6 +519,16 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
             devopsPvcService.delete(devopsClusterDTO.getSystemEnvId(), grafanaPvcDTO.getId());
             devopsPvcService.delete(devopsClusterDTO.getSystemEnvId(), alertmanagerDTO.getId());
         }
+    }
+    private void addPvcList(DevopsPrometheusDTO devopsPrometheusDTO) {
+        DevopsPvcDTO prometheusPvcDTO = devopsPvcService.queryByPvId(devopsPrometheusDTO.getPrometheusPvId());
+        DevopsPvcDTO grafanaPvcDTO = devopsPvcService.queryByPvId(devopsPrometheusDTO.getGrafanaPvId());
+        DevopsPvcDTO alertmanagerDTO = devopsPvcService.queryByPvId(devopsPrometheusDTO.getAlertmanagerPvId());
+        List<DevopsPvcDTO> devopsPvcDTOList = new ArrayList<>();
+        devopsPvcDTOList.add(prometheusPvcDTO);
+        devopsPvcDTOList.add(grafanaPvcDTO);
+        devopsPvcDTOList.add(alertmanagerDTO);
+        devopsPrometheusDTO.setDevopsPvcDTO(devopsPvcDTOList);
     }
 
     private Boolean checkValidity(Date date, Date validFrom, Date validUntil) {
