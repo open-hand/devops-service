@@ -1706,7 +1706,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             devopsCertManagerRecordMapper.insertSelective(devopsCertManagerRecordDTO);
             //记录chart信息
             DevopsCertManagerDTO devopsCertManagerDTO = new DevopsCertManagerDTO();
-            devopsCertManagerDTO.setNamespace(CertManagerConstants.CERT_MANAGER_NAME_SPACE);
+            devopsCertManagerDTO.setNamespace(CertManagerConstants.CERT_MANAGER_REALASE_NAME_C7N);
             devopsCertManagerDTO.setChartVersion(CertManagerConstants.CERT_MANAGER_CHART_VERSION);
             devopsCertManagerMapper.insertSelective(devopsCertManagerDTO);
             // 插入数据
