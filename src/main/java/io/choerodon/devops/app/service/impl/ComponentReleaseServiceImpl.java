@@ -107,7 +107,7 @@ public class ComponentReleaseServiceImpl implements ComponentReleaseService {
             appServiceInstanceService.baseUpdate(appServiceInstanceDTO);
         }
 
-        AppServiceDeployVO appServiceDeployVO = new AppServiceDeployVO(null, systemEnvId, values, null, commandType.getType(), instanceId, code, null, null);
+        AppServiceDeployVO appServiceDeployVO = new AppServiceDeployVO(null, systemEnvId, values, null, commandType.getType(), appServiceInstanceDTO.getId(), code, null, null);
         AppServiceDTO fakeAppService = new AppServiceDTO();
         fakeAppService.setCode(appServiceVersionDTO.getChartName());
 
