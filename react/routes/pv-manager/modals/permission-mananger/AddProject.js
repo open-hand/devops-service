@@ -41,8 +41,8 @@ export default injectIntl(observer(({ dataSet, optionsDs, intlPrefix, prefixCls,
 
   return (
     <div className={`${prefixCls}-project-add`}>
-      {map(dataSet.created, (record) => (
-        <div className={`${prefixCls}-project-add-item`}>
+      {map(dataSet.created, (record, index) => (
+        <div className={`${prefixCls}-project-add-item`} key={index}>
           <Form record={record}>
             <Select name="projectId" searchable optionsFilter={handleFilter} />
           </Form>

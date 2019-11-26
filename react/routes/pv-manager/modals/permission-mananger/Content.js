@@ -67,7 +67,7 @@ export default injectIntl(observer(() => {
   function handleDelete() {
     const modalProps = {
       title: formatMessage({ id: `${intlPrefix}.permission.delete.title` }),
-      children: formatMessage({ id: `${intlPrefix}.permission.delete.des` }),
+      children: formatMessage({ id: `${intlPrefix}.permission.project.delete.des` }),
       okText: formatMessage({ id: 'delete' }),
       okProps: { color: 'red' },
       cancelProps: { color: 'dark' },
@@ -77,7 +77,7 @@ export default injectIntl(observer(() => {
 
   function renderAction() {
     const actionData = [{
-      text: formatMessage({ id: `${intlPrefix}.permission.delete` }),
+      text: formatMessage({ id: `${intlPrefix}.permission.delete.title` }),
       action: handleDelete,
     }];
     return <Action data={actionData} />;
