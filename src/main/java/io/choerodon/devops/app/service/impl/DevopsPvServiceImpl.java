@@ -606,14 +606,19 @@ public class DevopsPvServiceImpl implements DevopsPvService {
                 projectDTO.getOrganizationId(),
                 TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
                 TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS))), DevopsPvVO.class);
+        if (devopsPvVOList==null){
+            throw new CommonException("error.pv.query");
+        }
         String pvcStorage = map.get("requestResource");
         // 筛选容量大于或等于pvc容量
         if (pvcStorage != null) {
             return devopsPvVOList.stream()
-                    .filter((e) -> compareResource(e.getRequestResource(), pvcStorage) > 0)
+                    .filter((e) -> compareResource(e.getRequestResource(), pvcStorage) > 0 && e.getName() == null)
                     .collect(Collectors.toList());
         } else {
-            return devopsPvVOList;
+            return devopsPvVOList.stream()
+                    .filter(e -> e.getName() == null)
+                    .collect(Collectors.toList());
         }
     }
 

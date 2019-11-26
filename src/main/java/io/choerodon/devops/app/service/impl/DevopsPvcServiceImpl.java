@@ -296,6 +296,14 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
             devopsPvDTO = Optional.ofNullable(devopsPvMapper.queryByNameAndClusterId(devopsPvcReqVO.getPvName(), devopsPvcReqVO.getClusterId()))
                     .orElseThrow(() -> new CommonException("error.pv.not.exists"));
         }
+
+        if (devopsPvDTO.getName() != null) {
+            throw new CommonException("error.pv.bound");
+        }
+
+        devopsPvDTO.setName(devopsPvcReqVO.getName());
+        devopsPvMapper.insert(devopsPvDTO);
+
         devopsPvcDTO.setPvName(devopsPvDTO.getName());
         devopsPvcDTO.setRequestResource(devopsPvDTO.getRequestResource());
         devopsPvcDTO.setAccessModes(devopsPvDTO.getAccessModes());
@@ -339,11 +347,10 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
         V1ObjectMeta metadata = new V1ObjectMeta();
         metadata.setName(devopsPvcDTO.getName());
 
-        //设置PVC的访问模式
-
         //设置pvc需要绑定的PV名称和资源
         v1PersistentVolumeClaim.setMetadata(metadata);
 
+        //设置PVC的访问模式
         List<String> accessModesList = new ArrayList<>();
         accessModesList.add(devopsPvcDTO.getAccessModes());
 

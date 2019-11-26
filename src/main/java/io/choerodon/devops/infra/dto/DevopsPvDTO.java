@@ -25,10 +25,7 @@ public class DevopsPvDTO extends BaseDTO {
     @ApiModelProperty("pv状态")
     private String status;
 
-    @ApiModelProperty("关联的pvcId")
-    private Long pvcId;
-
-    @Transient
+    @ApiModelProperty("关联的pvcName")
     private String pvcName;
 
     @Transient
@@ -94,14 +91,6 @@ public class DevopsPvDTO extends BaseDTO {
 
     public void setStatus(String status) {
         this.status = status;
-    }
-
-    public Long getPvcId() {
-        return pvcId;
-    }
-
-    public void setPvcId(Long pvcId) {
-        this.pvcId = pvcId;
     }
 
     public Long getClusterId() {
