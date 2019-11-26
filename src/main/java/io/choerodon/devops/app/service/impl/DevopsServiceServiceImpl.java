@@ -820,7 +820,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     }
 
     private DevopsServiceDTO handlerUpdateService(DevopsServiceReqVO devopsServiceReqVO, DevopsServiceDTO devopsServiceDTO) {
-        BeanUtils.copyProperties(devopsServiceReqVO, devopsServiceDTO);
         //service参数校验
         DevopsServiceValidator.checkService(devopsServiceReqVO);
         initDevopsServicePorts(devopsServiceReqVO);
