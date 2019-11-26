@@ -15,7 +15,7 @@ public class Command {
     @ApiModelProperty("这个command对应的git sha值")
     private String commit;
 
-    @ApiModelProperty("资源的状态")
+    @ApiModelProperty("资源的状态/如果资源需要状态，由agent返回")
     private String resourceStatus;
 
     public Long getId() {
