@@ -47,4 +47,10 @@
             </foreach>
         </if>
     </sql>
+
+    <update id="updateStatusById">
+        UPDATE devops_pvc
+        SET devops_pvc.status = #{status}
+        WHERE devops_pvc.id = #{id}
+    </update>
 </mapper>
