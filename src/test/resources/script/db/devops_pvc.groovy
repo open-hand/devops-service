@@ -6,11 +6,17 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pvc.groovy') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，PVC id', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
-            column(name: 'name', type: 'VARCHAR(32)', remarks: 'PVC名称')
-            column(name: 'env_id', type: 'BIGINT UNSIGNED', remarks: '环境id')
+            column(name: 'name', type: 'VARCHAR(40)', remarks: 'PVC名称'){
+                constraints(nullable: false)
+            }
+            column(name: 'env_id', type: 'BIGINT UNSIGNED', remarks: '环境id'){
+                constraints(nullable: false)
+            }
             column(name: 'pv_id', type: 'BIGINT UNSIGNED', remarks: '绑定PV id')
             column(name: 'pv_name', type: 'VARCHAR(32)', remarks: '绑定PV 名称')
-            column(name: 'project_id', type: 'BIGINT UNSIGNED', remarks: '项目id')
+            column(name: 'project_id', type: 'BIGINT UNSIGNED', remarks: '项目id'){
+                constraints(nullable: false)
+            }
             column(name: 'access_modes', type: 'VARCHAR(32)', remarks: '访问模式')
             column(name: 'request_resource', type: 'VARCHAR(32)', remarks: '申请资源大小')
             column(name: 'status', type: 'VARCHAR(32)', remarks: 'PVC状态')
@@ -22,10 +28,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pvc.groovy') {
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
 
-        addUniqueConstraint(tableName: 'devops_pvc',
-                constraintName: 'uk_devops_pvc__env_id__name', columnNames: 'env_id,name')
+        addUniqueConstraint(tableName: 'devops_pvc', constraintName: 'uk_env_id_pvc_name', columnNames: 'env_id,name')
 
-        createIndex(indexName: "idx_devops_pvc_name", tableName: "devops_pvc") {
+        createIndex(indexName: "idx_pvc_name", tableName: "devops_pvc") {
             column(name: "name")
         }
     }
