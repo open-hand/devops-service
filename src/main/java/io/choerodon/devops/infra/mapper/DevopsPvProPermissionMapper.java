@@ -10,4 +10,8 @@ public interface DevopsPvProPermissionMapper extends Mapper<DevopsPvProPermissio
     void batchInsert(@Param("pvId") Long pvId, @Param("projectIds") List<Long> projectIds);
 
     void batchDeleteByPvIdsAndProjectId(@Param("pvIds") List<Long> pvIds, @Param("projectId") Long projectId);
+
+    List<DevopsPvProPermissionDTO> listByClusterId(@Param("clusterId") Long clusterId);
+
+    void batchDelete(@Param("devopsPvProPermissionDTOS") List<DevopsPvProPermissionDTO> devopsPvProPermissionDTOS);
 }

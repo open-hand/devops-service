@@ -7,11 +7,29 @@
             (#{pvId},#{projectId})
         </foreach>
     </insert>
+
     <delete id="batchDeleteByPvIdsAndProjectId">
         DELETE FROM devops_pv_project_rel WHERE
-        <foreach collection="pvIds" item="pvId" separator="OR">
-            (pv_id=#{pvId})
+        project_id=#{projectId}
+        AND
+        pv_id IN
+        <foreach collection="pvIds" item="pvId" separator="," open="(" close=",">
+            #{pvId}
         </foreach>
-        AND project_id=#{projectId}
+    </delete>
+
+    <select id="listByClusterId" resultType="io.choerodon.devops.infra.dto.DevopsPvProPermissionDTO">
+        SELECT * FROM devops_pv_project_rel dppr
+        JOIN devops_pv dp ON  dppr.pv_id=dp.id
+        WHERE dp.skip_check_project_permission=0
+        AND dp.cluster_id=#{clusterId}
+    </select>
+
+    <delete id="batchDelete">
+        DELETE FROM devops_pv_project_rel dppr
+        WHERE
+            <foreach collection="devopsPvProPermissionDTOS" item="devopsPvProPermissionDTO" open="(" close=")" separator="OR">
+                dppr.pv_id=#{devopsPvProPermissionDTO.pvId} AND dppr.project_id=#{devopsPvProPermissionDTO.projectId}
+            </foreach>
     </delete>
 </mapper>
