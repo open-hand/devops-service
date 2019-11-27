@@ -320,15 +320,26 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
             code = TypeUtil.cast(searchParamsMap.get("code"));
         }
         List<String> paramList = TypeUtil.cast(map.get(TypeUtil.PARAMS));
-        if (CollectionUtils.isEmpty(paramList) && StringUtils.isEmpty(name) && StringUtils.isEmpty(code)) {
-            // 如果不搜索
-            PageInfo<DevopsClusterProPermissionDTO> relationPage = PageHelper.startPage(
-                    pageable.getPageNumber(), pageable.getPageSize())
-                    .doSelectPageInfo(() -> devopsClusterProPermissionService.baseListByClusterId(clusterId));
-            return ConvertUtils.convertPage(relationPage, permission -> {
-                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(permission.getProjectId());
-                return new ProjectReqVO(permission.getProjectId(), projectDTO.getName(), projectDTO.getCode());
-            });
+        if (CollectionUtils.isEmpty(paramList)) {
+            //如果不分页
+            if (pageable.getPageSize() == 0) {
+                Set<Long> devopsProjectIds = devopsClusterProPermissionService.baseListByClusterId(clusterId).stream()
+                        .map(DevopsClusterProPermissionDTO::getProjectId)
+                        .collect(Collectors.toSet());
+                List<ProjectReqVO> projectReqVOList = baseServiceClientOperator.queryProjectsByIds(devopsProjectIds).stream()
+                        .map(i -> new ProjectReqVO(i.getId(), i.getName(), i.getCode()))
+                        .collect(Collectors.toList());
+                return PageInfoUtil.createPageFromList(projectReqVOList, pageable);
+            } else {
+                // 如果不搜索
+                PageInfo<DevopsClusterProPermissionDTO> relationPage = PageHelper.startPage(
+                        pageable.getPageNumber(), pageable.getPageSize())
+                        .doSelectPageInfo(() -> devopsClusterProPermissionService.baseListByClusterId(clusterId));
+                return ConvertUtils.convertPage(relationPage, permission -> {
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(permission.getProjectId());
+                    return new ProjectReqVO(permission.getProjectId(), projectDTO.getName(), projectDTO.getCode());
+                });
+            }
         } else {
             // 如果要搜索，需要手动在程序内分页
             ProjectDTO iamProjectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
