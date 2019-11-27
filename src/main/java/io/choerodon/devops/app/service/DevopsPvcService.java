@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.devops.api.vo.DevopsPvcReqVO;
 import io.choerodon.devops.api.vo.DevopsPvcRespVO;
+import io.choerodon.devops.app.eventhandler.payload.PersistentVolumeClaimPayload;
 import io.choerodon.devops.infra.dto.DevopsPvcDTO;
 import org.springframework.data.domain.Pageable;
 
@@ -72,6 +73,8 @@ public interface DevopsPvcService {
      * @return pvc列表
      */
     List<DevopsPvcDTO> baseListByEnvId(Long envId);
+
+    void operatePvcBySaga(PersistentVolumeClaimPayload persistentVolumeClaimPayload);
 
     DevopsPvcDTO queryByPvId(Long pvId);
 

@@ -1,16 +1,16 @@
 package io.choerodon.devops.app.service;
 
 
-import java.util.List;
-
 import com.github.pagehelper.PageInfo;
-import org.springframework.data.domain.Pageable;
-
 import io.choerodon.devops.api.vo.DevopsPvPermissionUpdateVO;
 import io.choerodon.devops.api.vo.DevopsPvReqVO;
 import io.choerodon.devops.api.vo.DevopsPvVO;
 import io.choerodon.devops.api.vo.ProjectReqVO;
+import io.choerodon.devops.app.eventhandler.payload.PersistentVolumePayload;
 import io.choerodon.devops.infra.dto.DevopsPvDTO;
+import org.springframework.data.domain.Pageable;
+
+import java.util.List;
 
 
 public interface DevopsPvService {
@@ -168,4 +168,6 @@ public interface DevopsPvService {
      * @return
      */
     List<DevopsPvDTO> queryByClusterId(Long clusterId);
+
+    void operatePvBySaga(PersistentVolumePayload persistentVolumePayload);
 }
