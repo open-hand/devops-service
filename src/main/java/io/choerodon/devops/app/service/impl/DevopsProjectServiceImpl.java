@@ -130,7 +130,7 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
     @Override
     public PageInfo<ProjectReqVO> pageProjects(Long projectId, Pageable pageable, String searchParams) {
         ProjectDTO iamProjectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        return pageProjectsByOrganizationId(iamProjectDTO.getId(), pageable, searchParams);
+        return pageProjectsByOrganizationId(iamProjectDTO.getOrganizationId(), pageable, searchParams);
     }
 
     @Override
