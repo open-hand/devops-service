@@ -50,7 +50,7 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
     @Override
     public PageInfo<DevopsDeployRecordVO> pageByProjectId(Long projectId, String params, Pageable pageable) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        Boolean projectOwner = baseServiceClientOperator.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectDTO);
+        Boolean projectOwner = baseServiceClientOperator.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectDTO.getId());
 
         PageInfo<DevopsDeployRecordDTO> devopsDeployRecordDTOPageInfo = basePageByProjectId(projectId, params, pageable);
 

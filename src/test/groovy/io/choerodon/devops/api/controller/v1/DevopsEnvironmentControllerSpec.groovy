@@ -406,7 +406,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
 
         mockQueryUsersByIds()
 
-        PowerMockito.when(mockBaseServiceClientOperator.isProjectOwner(anyLong(), any(ProjectDTO))).thenReturn(true)
+        PowerMockito.when(mockBaseServiceClientOperator.isProjectOwner(anyLong(), anyLong())).thenReturn(true)
 
         mockQueryUsersByRoleId()
 

@@ -114,13 +114,12 @@ public class PipelineServiceImpl implements PipelineService {
 
     @Override
     public PageInfo<PipelineVO> pageByOptions(Long projectId, PipelineSearchVO pipelineSearchVO, Pageable pageable) {
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         Long userId = DetailsHelper.getUserDetails().getUserId();
         String sortSql = pageable.getSort() != null ? PageableHelper.getSortSql(pageable.getSort()) : null;
         String sortSqlUnder = HumpToUnderlineUtil.toUnderLine(sortSql);
         List<PipelineVO> pipelineVOS = ConvertUtils.convertList(pipelineMapper.listByOptions(projectId, pipelineSearchVO, userId, sortSqlUnder), PipelineVO.class);
         List<PipelineVO> pipelineVOList;
-        Boolean projectOwner = baseServiceClientOperator.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectDTO);
+        Boolean projectOwner = baseServiceClientOperator.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectId);
         if (pipelineSearchVO != null && pipelineSearchVO.getManager() != null && pipelineSearchVO.getManager()) {
             pipelineVOList = pipelineVOS.stream().filter(t -> {
                 List<Long> pipelineEnvIds = getAllAppDeploy(t.getId()).stream().map(PipelineAppServiceDeployDTO::getEnvId).collect(Collectors.toList());
@@ -477,8 +476,7 @@ public class PipelineServiceImpl implements PipelineService {
         if (allAppDeploys.isEmpty()) {
             return checkDeployDTO;
         }
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        if (!baseServiceClientOperator.isProjectOwner(userId, projectDTO)) {
+        if (!baseServiceClientOperator.isProjectOwner(userId, projectId)) {
             List<Long> envIds = devopsEnvUserPermissionService
                     .listByUserId(userId)
                     .stream()
@@ -620,8 +618,7 @@ public class PipelineServiceImpl implements PipelineService {
 
     @Override
     public PipelineRecordReqVO getRecordById(Long projectId, Long pipelineRecordId) {
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        Boolean projectOwner = baseServiceClientOperator.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectDTO);
+        Boolean projectOwner = baseServiceClientOperator.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectId);
         PipelineRecordReqVO recordReqDTO = new PipelineRecordReqVO();
         PipelineRecordDTO pipelineRecordE = pipelineRecordService.baseQueryById(pipelineRecordId);
         BeanUtils.copyProperties(pipelineRecordE, recordReqDTO);
@@ -657,7 +654,7 @@ public class PipelineServiceImpl implements PipelineService {
                         recordReqDTO.setExecute(checkTaskTriggerPermission(r.getId()));
                     }
                 } else {
-                    taskRecordDTO.setEnvPermission(getTaskEnvPermission(projectDTO));
+                    taskRecordDTO.setEnvPermission(getTaskEnvPermission(projectId));
                 }
                 return taskRecordDTO;
             }).collect(Collectors.toList());
@@ -992,9 +989,9 @@ public class PipelineServiceImpl implements PipelineService {
         }
     }
 
-    private Boolean getTaskEnvPermission(ProjectDTO projectDTO) {
+    private Boolean getTaskEnvPermission(Long projectId) {
         Boolean envPermission = true;
-        if (!baseServiceClientOperator.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectDTO)) {
+        if (!baseServiceClientOperator.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectId)) {
             List<Long> envIds = devopsEnvUserPermissionService
                     .listByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId())).stream()
                     .filter(DevopsEnvUserPermissionDTO::getPermitted)
