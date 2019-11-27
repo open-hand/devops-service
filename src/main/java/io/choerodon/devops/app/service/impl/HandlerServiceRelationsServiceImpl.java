@@ -220,7 +220,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
             if ((value = selector.get(AppServiceInstanceService.INSTANCE_LABEL_RELEASE)) != null) {
                 devopsServiceReqVO.setTargetInstanceCode(value);
             }
-            if ((value = selector.get(AppServiceInstanceService.INSTANCE_LABEL_APPLICATION_ID)) != null) {
+            if ((value = selector.get(AppServiceInstanceService.INSTANCE_LABEL_APP_SERVICE_ID)) != null) {
                 AppServiceDTO appServiceDTO = appServiceService.baseQuery(TypeUtil.objToLong(value));
                 devopsServiceReqVO.setTargetAppServiceId(appServiceDTO.getId());
                 devopsServiceReqVO.setTargetInstanceCode(appServiceDTO.getCode());
