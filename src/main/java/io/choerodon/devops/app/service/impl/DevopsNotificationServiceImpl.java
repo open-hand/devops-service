@@ -32,6 +32,7 @@ import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.PageRequestUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
+import io.choerodon.mybatis.autoconfigure.CustomPageRequest;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -182,7 +183,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
                         } else {
                             return "短消息";
                         }
-                    }).collect(Collectors.toList()).toArray(), ","));
+                    }).toArray(), ","));
                     if (devopsNotificationDTO.getNotifyObject().equals(TriggerObject.HANDLER.getObject())) {
                         List<IamUserDTO> users = baseServiceClientOperator.listUsersByIds(Arrays.asList(GitUserNameUtil.getUserId().longValue()));
                         if (!users.isEmpty()) {
@@ -203,7 +204,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
                             } else {
                                 return userDTO.getLoginName();
                             }
-                        }).collect(Collectors.toList()).toArray(), ","));
+                        }).toArray(), ","));
                     }
                     return resourceCheckVO;
                 }
@@ -254,7 +255,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
             Long ownerId = baseServiceClientOperator.queryRoleIdByCode(PROJECT_OWNER);
             PageInfo<IamUserDTO> allOwnerUsersPage = baseServiceClientOperator
 
-                    .pagingQueryUsersByRoleIdOnProjectLevel(PageRequest.of(0,1), new RoleAssignmentSearchVO(),
+                    .pagingQueryUsersByRoleIdOnProjectLevel(CustomPageRequest.of(0, 0), new RoleAssignmentSearchVO(),
 
                             ownerId, devopsEnvironmentDTO.getProjectId(), false);
             List<NoticeSendDTO.User> users = new ArrayList<>();
@@ -283,7 +284,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         notifyVO.setParams(params);
         try {
             //根据不同的通知方式发送验证码
-            triggerTypes.stream().forEach(triggerType -> {
+            triggerTypes.forEach(triggerType -> {
                 if (triggerType.equals(TriggerType.EMAIL.getType())) {
                     notifyVO.setSourceId(devopsEnvironmentDTO.getProjectId());
                     notifyVO.setCode(RESOURCE_DELETE_CONFIRMATION);
