@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service.impl;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSONObject;
@@ -128,6 +129,12 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
 
     @Override
     public PageInfo<ProjectReqVO> pageProjects(Long projectId, Pageable pageable, String searchParams) {
+        ProjectDTO iamProjectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        return pageProjectsByOrganizationId(iamProjectDTO.getId(), pageable, searchParams);
+    }
+
+    @Override
+    public PageInfo<ProjectReqVO> pageProjectsByOrganizationId(Long organizationId, Pageable pageable, String searchParams) {
         Map<String, Object> searchMap = TypeUtil.castMapParams(searchParams);
         Map<String, Object> searchParamsMap = TypeUtil.cast(searchMap.get(TypeUtil.SEARCH_PARAM));
         String name = null;
@@ -138,10 +145,9 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
         }
         List<String> paramList = TypeUtil.cast(searchMap.get(TypeUtil.PARAMS));
 
-        ProjectDTO iamProjectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
 
         PageInfo<ProjectDTO> projectDTOPageInfo = baseServiceClientOperator.pageProjectByOrgId(
-                iamProjectDTO.getOrganizationId(),
+                Objects.requireNonNull(organizationId),
                 pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort(), name, code,
                 CollectionUtils.isEmpty(paramList) ? null : paramList.get(0));
         return ConvertUtils.convertPage(projectDTOPageInfo, ProjectReqVO.class);
