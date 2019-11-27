@@ -11,9 +11,7 @@ import io.choerodon.devops.infra.dto.iam.ClientVO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.*;
-import io.choerodon.devops.infra.util.ConvertUtils;
-import io.choerodon.devops.infra.util.CustomContextUtil;
-import io.choerodon.devops.infra.util.GenerateUUID;
+import io.choerodon.devops.infra.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -79,6 +77,8 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     private DevopsPvService devopsPvService;
     @Autowired
     private DevopsEnvFileErrorService devopsEnvFileErrorService;
+    @Autowired
+    private UserAttrService userAttrService;
 
     @Override
     public void baseCreate(DevopsClusterResourceDTO devopsClusterResourceDTO) {
@@ -260,7 +260,10 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         if (systemEnvId == null) {
             throw new CommonException("no.cluster.system.env");
         }
-
+        // 校验环境相关信息
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(systemEnvId);
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
         // 解决分布式事务问题，注册client成功，更新cluster表client字段失败
         if (devopsClusterDTO.getClientId() == null) {
             ClientDTO clientDTO = baseServiceClientOperator.queryClientBySourceId(devopsClusterDTO.getOrganizationId(), devopsClusterDTO.getId());
@@ -412,6 +415,10 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
             if (appServiceInstanceDTO == null) {
                 //验证pvc是否存在,三个pvc都不存在才去删除prometheus
                 DevopsPrometheusDTO devopsPrometheusDTO = devopsPrometheusMapper.selectByPrimaryKey(devopsClusterResourceDTO.getConfigId());
+                if (devopsPrometheusDTO == null) {
+                    clusterResourceVO.setStatus(ClusterResourceStatus.UNINSTALLED.getStatus());
+                    return clusterResourceVO;
+                }
                 DevopsPvcDTO pormetheusPVC = devopsPvcService.queryById(devopsPrometheusDTO.getPrometheusPvId());
                 DevopsPvcDTO grafanaPVC = devopsPvcService.queryById(devopsPrometheusDTO.getGrafanaPvId());
                 DevopsPvcDTO alertmanagerPVC = devopsPvcService.queryById(devopsPrometheusDTO.getAlertmanagerPvId());
