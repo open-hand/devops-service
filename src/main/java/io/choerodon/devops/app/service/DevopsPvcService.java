@@ -79,4 +79,10 @@ public interface DevopsPvcService {
     DevopsPvcDTO queryByPvId(Long pvId);
 
     void baseDeleteByEnvId(Long envId);
+
+    /**
+     * 重试将PVC推向GitLab（pvc推向gitlab失败时可用，不失败时用了没有效果也不会报错）
+     * @param pvcId pvcId
+     */
+    void retryPushPvcToGitLab(Long pvcId);
 }

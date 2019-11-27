@@ -447,4 +447,13 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
         devopsPvcDTO.setEnvId(envId);
         devopsPvcMapper.delete(devopsPvcDTO);
     }
+
+    @Override
+    public void retryPushPvcToGitLab(Long pvcId) {
+        // TODO by zmf
+        DevopsPvcDTO devopsPvcDTO = devopsPvcMapper.selectByPrimaryKey(pvcId);
+        if (devopsPvcDTO == null) {
+            throw new CommonException("error.pvc.not.exists");
+        }
+    }
 }
