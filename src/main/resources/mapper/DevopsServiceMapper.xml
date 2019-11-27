@@ -167,7 +167,7 @@
          LIMIT 1
         # 使用LIMIT 1是因为表设计原因，根据多个实例创建的网络会有多条记录，但是message是一样的
         ) AS message,
-        if(dai.code is null and ds.target_instance_code is not null,  ds.target_instance_code, dai.status) AS ins_code,
+        if(dai.code is null and ds.target_instance_code is not null,  ds.target_instance_code, dai.code) AS ins_code,
         (SELECT count(1)
          FROM devops_env_pod dp
          WHERE dp.instance_id = dai.id) pod_count,
