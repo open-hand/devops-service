@@ -594,10 +594,11 @@
         AND ins.app_service_id = #{appServiceId}
     </select>
 
-    <select id="isComponentDeployed" resultType="boolean">
+    <select id="isOtherComponentDeployed" resultType="boolean">
         SELECT COUNT(1) > 0
         FROM devops_app_service_instance dasi
         WHERE dasi.env_id = #{envId,jdbcType=BIGINT}
         AND dasi.component_chart_name = #{componentChartName,jdbcType=VARCHAR}
+        AND dasi.code != #{instanceCode}
     </select>
 </mapper>

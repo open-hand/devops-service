@@ -72,7 +72,8 @@ public interface AppServiceInstanceMapper extends Mapper<AppServiceInstanceDTO> 
 
     List<AppServiceInstanceDTO> listByProjectIdsAndAppServiceId(@Param("projectIds") Set<Long> projectIds,@Param("appServiceId") Long appServiceId);
 
-    boolean isComponentDeployed(
+    boolean isOtherComponentDeployed(
             @Param("envId") Long envId,
+            @Param("instanceCode") String instanceCode,
             @Param("componentChartName") String componentChartName);
 }

@@ -86,9 +86,8 @@ public class ConvertC7nHelmReleaseServiceImpl extends ConvertK8sObjectService<C7
                 }
 
                 // 一个集群环境只允许安装一个组件chart的一个实例
-                if (devopsEnvFileResourceDTO != null
-                        && GitOpsUtil.isClusterComponent(devopsEnvironmentDTO.getType(), c7nHelmRelease)
-                        && appServiceInstanceMapper.isComponentDeployed(envId, chartName)) {
+                if (GitOpsUtil.isClusterComponent(devopsEnvironmentDTO.getType(), c7nHelmRelease)
+                        && appServiceInstanceMapper.isOtherComponentDeployed(envId, instanceCode,chartName)) {
                     throw new GitOpsExplainException(GitOpsObjectError.DUPLICATED_CLUSTER_COMPONENT.getError(), filePath, c7nHelmRelease.getSpec().getChartName());
                 }
             }
