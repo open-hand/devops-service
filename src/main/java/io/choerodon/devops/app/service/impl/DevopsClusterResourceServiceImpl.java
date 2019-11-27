@@ -526,6 +526,22 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
             devopsPvcService.delete(devopsClusterDTO.getSystemEnvId(), alertmanagerDTO.getId());
         }
     }
+
+    @Override
+    public void retryPvc(List<Long> pvcIds) {
+        //TODO by zmf
+    }
+
+    @Override
+    public void reDeployPrometheus(Long instanceId) {
+        // TODO by zmf
+    }
+
+    @Override
+    public void retrySystemEnvGitOps(Long envId) {
+        // TODO by zmf
+    }
+
     private void addPvcList(DevopsPrometheusDTO devopsPrometheusDTO) {
         DevopsPvcDTO prometheusPvcDTO = devopsPvcService.queryByPvId(devopsPrometheusDTO.getPrometheusPvId());
         DevopsPvcDTO grafanaPvcDTO = devopsPvcService.queryByPvId(devopsPrometheusDTO.getGrafanaPvId());

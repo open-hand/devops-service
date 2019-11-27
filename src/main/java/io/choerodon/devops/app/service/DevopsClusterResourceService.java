@@ -56,6 +56,7 @@ public interface DevopsClusterResourceService {
 
     /**
      * 查询集群下的prometheus，返回vo对象
+     *
      * @param clusterId
      * @return
      */
@@ -63,6 +64,7 @@ public interface DevopsClusterResourceService {
 
     /**
      * 查询集群下的prometheus，返回DTO对象
+     *
      * @param clusterId
      * @return
      */
@@ -70,6 +72,7 @@ public interface DevopsClusterResourceService {
 
     /**
      * 查询安装prometheus的进程
+     *
      * @param clusterId
      * @return
      */
@@ -77,6 +80,7 @@ public interface DevopsClusterResourceService {
 
     /**
      * 查询部署prometheus状态
+     *
      * @param projectId
      * @param clusterId
      * @return
@@ -87,6 +91,7 @@ public interface DevopsClusterResourceService {
 
     /**
      * 删除prometheus和对应的集群资源数据
+     *
      * @param clusterId
      */
     void basedeletePrometheus(Long clusterId);
@@ -103,10 +108,32 @@ public interface DevopsClusterResourceService {
 
     /**
      * 部署prometheus
+     *
      * @param clusterId
      * @param devopsPrometheusDTO
      */
     void installPrometheus(Long clusterId, DevopsPrometheusDTO devopsPrometheusDTO);
 
     void deletePvc(Long clusterId);
+
+    /**
+     * 重试pvc推向GitLab
+     *
+     * @param pvcIds 所有的pvcId,正常的pvc也可以传，不止是失败的
+     */
+    void retryPvc(List<Long> pvcIds);
+
+    /**
+     * prometheus实例重新部署
+     *
+     * @param instanceId prometheus组件对应的实例id
+     */
+    void reDeployPrometheus(Long instanceId);
+
+    /**
+     * 重试系统环境的GitOps解析
+     *
+     * @param envId 环境id
+     */
+    void retrySystemEnvGitOps(Long envId);
 }
