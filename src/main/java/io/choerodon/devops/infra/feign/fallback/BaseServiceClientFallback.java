@@ -247,4 +247,10 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     public ResponseEntity<ClientDTO> queryClientBySourceId(Long organizationId, Long sourceId) {
         throw new CommonException("error.query.client");
     }
+
+    @Override
+    public ResponseEntity<Boolean> checkIsProjectOwner(Long id, Long projectId) {
+        throw new CommonException("error.check.project.permission");
+    }
+
 }

@@ -114,7 +114,7 @@ class DevopsCustomizeResourceControllerSpec extends Specification {
         projectDO.setOrganizationId(1L)
         when(mockBaseServiceClientOperator.queryIamProjectById(anyLong())).thenReturn(projectDO)
 
-        when(mockBaseServiceClientOperator.isProjectOwner(anyLong(), any(ProjectDTO))).thenReturn(true)
+        when(mockBaseServiceClientOperator.isProjectOwner(anyLong(), anyLong())).thenReturn(true)
 
         IamUserDTO user = new IamUserDTO()
         user.setLoginName("loginName")

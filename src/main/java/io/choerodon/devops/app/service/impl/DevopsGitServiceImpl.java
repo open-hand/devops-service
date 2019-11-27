@@ -285,7 +285,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         AppServiceDTO applicationDTO = appServiceService.baseQuery(appServiceId);
         // 查询用户是否在该gitlab project下
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-        if (!baseServiceClientOperator.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectDTO)) {
+        if (!baseServiceClientOperator.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectId)) {
             MemberDTO memberDTO = gitlabServiceClientOperator.getProjectMember(applicationDTO.getGitlabProjectId(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
             if (memberDTO == null) {
                 throw new CommonException("error.user.not.in.gitlab.project");

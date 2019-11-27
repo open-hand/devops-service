@@ -155,7 +155,7 @@ class DevopsDeployValueControllerSpec extends Specification {
         PowerMockito.when(clusterConnectionHandler.getUpdatedClusterList()).thenReturn([1])
 
         PowerMockito.when(mockBaseServiceClientOperator.queryIamProjectById(eq(1))).thenReturn(new ProjectDTO())
-        PowerMockito.when(mockBaseServiceClientOperator.isProjectOwner(anyLong(), any(ProjectDTO))).thenReturn(true)
+        PowerMockito.when(mockBaseServiceClientOperator.isProjectOwner(anyLong(), anyLong())).thenReturn(true)
 
         IamUserDTO iamUserDTO = new IamUserDTO()
         PowerMockito.when(mockBaseServiceClientOperator.queryUserByUserId(anyLong())).thenReturn(iamUserDTO)

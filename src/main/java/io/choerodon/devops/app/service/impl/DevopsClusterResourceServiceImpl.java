@@ -217,7 +217,6 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         if (ObjectUtils.isEmpty(prometheus)) {
             clusterResourceVO.setStatus(ClusterResourceStatus.UNINSTALLED.getStatus());
         } else {
-            Long configId = prometheus.getConfigId();
             clusterResourceVO = queryPrometheusStatus(projectId, clusterId);
         }
         clusterResourceVO.setType(ClusterResourceType.PROMETHEUS.getType());

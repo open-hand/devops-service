@@ -82,9 +82,8 @@ public class DevopsEnvUserPermissionServiceImpl implements DevopsEnvUserPermissi
     @Override
     public void checkEnvDeployPermission(Long userId, Long envId) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
         //判断当前用户是否是项目所有者，如果是，直接跳过校验，如果不是，校验环境权限
-        if (!baseServiceClientOperator.isProjectOwner(userId, projectDTO)) {
+        if (!baseServiceClientOperator.isProjectOwner(userId, devopsEnvironmentDTO.getProjectId())) {
             DevopsEnvUserPermissionDTO devopsEnvUserPermissionDO = new DevopsEnvUserPermissionDTO(envId, userId);
             devopsEnvUserPermissionDO = devopsEnvUserPermissionMapper.selectOne(devopsEnvUserPermissionDO);
             if (devopsEnvUserPermissionDO != null && !devopsEnvUserPermissionDO.getPermitted()) {

@@ -245,15 +245,14 @@ public class BaseServiceClientOperator {
         return list;
     }
 
-    public Boolean isProjectOwner(Long userId, ProjectDTO projectDTO) {
-        List<ProjectWithRoleVO> projectWithRoleVOList = listProjectWithRoleDTO(userId);
-        List<RoleVO> roleVOS = new ArrayList<>();
-        projectWithRoleVOList.stream().filter(projectWithRoleDTO ->
-                projectWithRoleDTO.getName().equals(projectDTO.getName())).forEach(projectWithRoleDTO ->
-                roleVOS.addAll(projectWithRoleDTO.getRoles()
-                        .stream().filter(roleDTO -> roleDTO.getCode().equals(PROJECT_OWNER))
-                        .collect(Collectors.toList())));
-        return !roleVOS.isEmpty();
+    public Boolean isProjectOwner(Long userId, Long projectId) {
+        Boolean isProjectOwner;
+        try {
+            isProjectOwner = baseServiceClient.checkIsProjectOwner(userId, projectId).getBody();
+        } catch (FeignException e) {
+            throw new CommonException(e);
+        }
+        return isProjectOwner;
     }
 
     public IamAppDTO createIamApp(Long organizationId, IamAppDTO appDTO) {

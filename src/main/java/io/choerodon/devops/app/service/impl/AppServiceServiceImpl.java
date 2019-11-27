@@ -455,7 +455,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     public PageInfo<AppServiceRepVO> pageCodeRepository(Long projectId, Pageable pageable, String params) {
         UserAttrDTO userAttrDTO = userAttrMapper.selectByPrimaryKey(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        Boolean isProjectOwner = baseServiceClientOperator.isProjectOwner(userAttrDTO.getIamUserId(), projectDTO);
+        Boolean isProjectOwner = baseServiceClientOperator.isProjectOwner(userAttrDTO.getIamUserId(), projectDTO.getId());
         OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 
         Map maps = gson.fromJson(params, Map.class);
@@ -473,7 +473,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     public List<AppServiceRepVO> listByActive(Long projectId) {
         Long userId = TypeUtil.objToLong(GitUserNameUtil.getUserId());
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        Boolean projectOwner = baseServiceClientOperator.isProjectOwner(userId, projectDTO);
+        Boolean projectOwner = baseServiceClientOperator.isProjectOwner(userId, projectDTO.getId());
         List<AppServiceDTO> applicationDTOServiceList;
         if (projectOwner) {
             applicationDTOServiceList = appServiceMapper.listByActive(projectId);
@@ -491,8 +491,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public Integer countByActive(Long projectId) {
         Long userId = TypeUtil.objToLong(GitUserNameUtil.getUserId());
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        Boolean projectOwner = baseServiceClientOperator.isProjectOwner(userId, projectDTO);
+        Boolean projectOwner = baseServiceClientOperator.isProjectOwner(userId, projectId);
         int count;
         if (projectOwner) {
             count = appServiceMapper.countByActive(projectId);
@@ -1859,7 +1858,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         Map<String, Object> mapParams = TypeUtil.castMapParams(params);
         Long userId = GitUserNameUtil.getUserId().longValue();
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        Boolean projectOwner = baseServiceClientOperator.isProjectOwner(userId, projectDTO);
+        Boolean projectOwner = baseServiceClientOperator.isProjectOwner(userId, projectDTO.getId());
         List<AppServiceDTO> list;
         if (projectOwner) {
             //是否需要分页

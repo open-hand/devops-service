@@ -1,15 +1,6 @@
 package io.choerodon.devops.infra.feign;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import javax.validation.Valid;
-
 import com.github.pagehelper.PageInfo;
-import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
 import io.choerodon.devops.api.vo.OrganizationSimplifyVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
 import io.choerodon.devops.api.vo.iam.*;
@@ -17,6 +8,14 @@ import io.choerodon.devops.api.vo.kubernetes.MemberRoleVO;
 import io.choerodon.devops.api.vo.kubernetes.ProjectCreateDTO;
 import io.choerodon.devops.infra.dto.iam.*;
 import io.choerodon.devops.infra.feign.fallback.BaseServiceClientFallback;
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by younger on 2018/3/29.
@@ -256,5 +255,11 @@ public interface BaseServiceClient {
      */
     @GetMapping(value = "/v1/organizations/{organization_id}/clients/source/{source_id}")
     ResponseEntity<ClientDTO> queryClientBySourceId(@PathVariable("organization_id") Long organizationId, @PathVariable("source_id") Long sourceId);
+
+
+    @GetMapping("/v1/users/{id}/projects/{project_id}/check_is_owner")
+    ResponseEntity<Boolean> checkIsProjectOwner(
+            @PathVariable("id") Long id,
+            @PathVariable("project_id") Long projectId);
 
 }

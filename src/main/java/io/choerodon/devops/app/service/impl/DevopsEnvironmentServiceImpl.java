@@ -448,10 +448,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 .listByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId())).stream()
                 .filter(DevopsEnvUserPermissionDTO::getPermitted)
                 .map(DevopsEnvUserPermissionDTO::getEnvId).collect(Collectors.toList());
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         // 查询当前用户是否为项目所有者
         Boolean isProjectOwner = baseServiceClientOperator
-                .isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectDTO);
+                .isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectId);
 
         List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedClusterList();
         List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = baseListByProjectIdAndActive(projectId, active).stream()
@@ -471,8 +470,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         List<DevopsEnvironmentViewVO> connectedEnvs = new ArrayList<>();
         List<DevopsEnvironmentViewVO> unConnectedEnvs = new ArrayList<>();
 
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        boolean isOwner = baseServiceClientOperator.isProjectOwner(DetailsHelper.getUserDetails().getUserId(), projectDTO);
+        boolean isOwner = baseServiceClientOperator.isProjectOwner(DetailsHelper.getUserDetails().getUserId(), projectId);
 
         List<DevopsEnvironmentViewDTO> views;
         if (isOwner) {
@@ -521,8 +519,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         List<DevopsResourceEnvOverviewVO> connectedEnvs = new ArrayList<>();
         List<DevopsResourceEnvOverviewVO> unConnectedEnvs = new ArrayList<>();
 
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        boolean isOwner = baseServiceClientOperator.isProjectOwner(DetailsHelper.getUserDetails().getUserId(), projectDTO);
+        boolean isOwner = baseServiceClientOperator.isProjectOwner(DetailsHelper.getUserDetails().getUserId(), projectId);
 
         List<DevopsResourceEnvOverviewDTO> views;
         if (isOwner) {
@@ -1051,9 +1048,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             throw new CommonException(ERROR_GITLAB_USER_SYNC_FAILED);
         }
 
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
 
-        if (baseServiceClientOperator.isProjectOwner(userAttrDTO.getIamUserId(), projectDTO)) {
+        if (baseServiceClientOperator.isProjectOwner(userAttrDTO.getIamUserId(), projectId)) {
             throw new CommonException("error.delete.permission.of.project.owner");
         }
 
