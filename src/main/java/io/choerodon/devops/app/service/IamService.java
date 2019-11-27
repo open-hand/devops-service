@@ -19,6 +19,7 @@ import io.choerodon.devops.infra.dto.iam.ProjectDTO;
  * Date:  10:57 2019/7/11
  * Description:
  */
+@Deprecated
 public interface IamService {
 
     ProjectDTO queryIamProject(Long projectId);

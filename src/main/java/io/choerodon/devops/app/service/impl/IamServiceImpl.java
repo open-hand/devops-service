@@ -38,6 +38,7 @@ import io.choerodon.devops.infra.feign.BaseServiceClient;
  * Date:  11:00 2019/7/11
  * Description:
  */
+@Deprecated
 @Service
 public class IamServiceImpl implements IamService {
     private static final Logger LOGGER = LoggerFactory.getLogger(IamServiceImpl.class);
