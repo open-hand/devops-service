@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import org.springframework.data.domain.Pageable;
@@ -110,7 +111,14 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
 
         Map<String, Object> map = TypeUtil.castMapParams(params);
         List<String> paramList = TypeUtil.cast(map.get(TypeUtil.PARAMS));
-        if (CollectionUtils.isEmpty(paramList)) {
+        Map<String, Object> searchParamsMap = TypeUtil.cast(map.get(TypeUtil.SEARCH_PARAM));
+        String name = null;
+        String code = null;
+        if (!CollectionUtils.isEmpty(searchParamsMap)) {
+            name = TypeUtil.cast(searchParamsMap.get("name"));
+            code = TypeUtil.cast(searchParamsMap.get("code"));
+        }
+        if (CollectionUtils.isEmpty(paramList) && StringUtils.isEmpty(name) && StringUtils.isEmpty(code)) {
             // 如果不搜索，在数据库中进行分页
             PageInfo<DevopsCertificationProRelationshipDTO> relationPage = PageHelper.startPage(
                     pageable.getPageNumber(), pageable.getPageSize())
@@ -126,7 +134,7 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
             // 手动查出所有组织下的项目
             List<ProjectDTO> filteredProjects = baseServiceClientOperator.listIamProjectByOrgId(
                     iamProjectDTO.getOrganizationId(),
-                    null, null,
+                    name, code,
                     paramList.get(0));
 
             // 数据库中的有权限的项目

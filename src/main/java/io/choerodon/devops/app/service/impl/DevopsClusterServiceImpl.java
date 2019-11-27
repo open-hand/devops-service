@@ -1,7 +1,23 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.io.InputStream;
+import java.util.*;
+import java.util.stream.Collectors;
+
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO;
@@ -15,21 +31,6 @@ import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
 import io.choerodon.devops.infra.mapper.DevopsPvProPermissionMapper;
 import io.choerodon.devops.infra.util.*;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
-
-import java.io.InputStream;
-import java.util.*;
-import java.util.stream.Collectors;
 
 
 @Service
@@ -311,8 +312,15 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         }
 
         Map<String, Object> map = TypeUtil.castMapParams(params);
+        Map<String, Object> searchParamsMap = TypeUtil.cast(map.get(TypeUtil.SEARCH_PARAM));
+        String name = null;
+        String code = null;
+        if (!CollectionUtils.isEmpty(searchParamsMap)) {
+            name = TypeUtil.cast(searchParamsMap.get("name"));
+            code = TypeUtil.cast(searchParamsMap.get("code"));
+        }
         List<String> paramList = TypeUtil.cast(map.get(TypeUtil.PARAMS));
-        if (CollectionUtils.isEmpty(paramList)) {
+        if (CollectionUtils.isEmpty(paramList) && StringUtils.isEmpty(name) && StringUtils.isEmpty(code)) {
             // 如果不搜索
             PageInfo<DevopsClusterProPermissionDTO> relationPage = PageHelper.startPage(
                     pageable.getPageNumber(), pageable.getPageSize())
@@ -328,7 +336,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
             // 手动查出所有组织下的项目
             List<ProjectDTO> filteredProjects = baseServiceClientOperator.listIamProjectByOrgId(
                     iamProjectDTO.getOrganizationId(),
-                    null, null,
+                    name, code,
                     paramList.get(0));
 
             // 数据库中的有权限的项目
