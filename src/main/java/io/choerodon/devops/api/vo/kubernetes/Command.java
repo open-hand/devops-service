@@ -58,4 +58,14 @@ public class Command {
     public void setResourceStatus(String resourceStatus) {
         this.resourceStatus = resourceStatus;
     }
+
+    @Override
+    public String toString() {
+        return "Command{" +
+                "id=" + id +
+                ", resourceType='" + resourceType + '\'' +
+                ", resourceName='" + resourceName + '\'' +
+                ", commit='" + commit + '\'' +
+                '}';
+    }
 }
