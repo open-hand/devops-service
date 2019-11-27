@@ -6,33 +6,36 @@ package io.choerodon.devops.api.vo;
  * @description:
  */
 public class PrometheusStageVO {
-    private String createPvc;
-    private String createConfig;
+    private String parserPvc;
+    private String boundPvc;
+    private String parserPrometheus;
     private String installPrometheus;
+    private String error;
 
     public PrometheusStageVO() {
     }
 
-    public PrometheusStageVO(String createPvc, String createConfig, String installPrometheus) {
-        this.createPvc = createPvc;
-        this.createConfig = createConfig;
+    public PrometheusStageVO(String parserPvc, String boundPvc, String parserPrometheus, String installPrometheus) {
+        this.parserPvc = parserPvc;
+        this.boundPvc = boundPvc;
+        this.parserPrometheus = parserPrometheus;
         this.installPrometheus = installPrometheus;
     }
 
-    public String getCreatePvc() {
-        return createPvc;
+    public String getBoundPvc() {
+        return boundPvc;
     }
 
-    public void setCreatePvc(String createPvc) {
-        this.createPvc = createPvc;
+    public void setBoundPvc(String boundPvc) {
+        this.boundPvc = boundPvc;
     }
 
-    public String getCreateConfig() {
-        return createConfig;
+    public String getParserPrometheus() {
+        return parserPrometheus;
     }
 
-    public void setCreateConfig(String createConfig) {
-        this.createConfig = createConfig;
+    public void setParserPrometheus(String parserPrometheus) {
+        this.parserPrometheus = parserPrometheus;
     }
 
     public String getInstallPrometheus() {
@@ -41,5 +44,21 @@ public class PrometheusStageVO {
 
     public void setInstallPrometheus(String installPrometheus) {
         this.installPrometheus = installPrometheus;
+    }
+
+    public String getParserPvc() {
+        return parserPvc;
+    }
+
+    public void setParserPvc(String parserPvc) {
+        this.parserPvc = parserPvc;
+    }
+
+    public String getError() {
+        return error;
+    }
+
+    public void setError(String error) {
+        this.error = error;
     }
 }

@@ -21,7 +21,7 @@ import io.choerodon.devops.infra.enums.ResourceType;
 public interface AppServiceInstanceService {
     String INSTANCE_LABEL_RELEASE = "choerodon.io/release";
     String INSTANCE_LABEL_APPLICATION = "choerodon.io/application";
-    String INSTANCE_LABEL_APPLICATION_ID = "choerodon.io/application";
+    String INSTANCE_LABEL_APP_SERVICE_ID = "choerodon.io/app-service-id";
 
     /**
      * 根据实例id查询实例信息

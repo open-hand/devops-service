@@ -64,8 +64,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     public static final String SERVICE = "Service";
     public static final String SERVICE_PREFIX = "svc-";
     private static final String SERVICE_LABLE = "choerodon.io/network";
-    private static final String SERVICE_LABLE_APPLICATION = "choerodon.io/application";
-    private static final String SERVICE_LABLE_RELEASE = "choerodon.io/release";
     private static final String SERVICE_LABLE_VALUE = "service";
     private static final String MASTER = "master";
 
@@ -939,7 +937,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             selectors.put(AppServiceInstanceService.INSTANCE_LABEL_RELEASE, targetInstanceCode);
         }
         if (targetAppServiceId != null) {
-            selectors.put(AppServiceInstanceService.INSTANCE_LABEL_APPLICATION_ID, targetAppServiceId.toString());
+            selectors.put(AppServiceInstanceService.INSTANCE_LABEL_APP_SERVICE_ID, targetAppServiceId.toString());
         }
         return selectors;
     }
